@@ -7,23 +7,14 @@
 from __future__ import print_function
 
 import json
-import mox
 import os
-import tempfile
-import unittest
+import mock
+import tarfile
 
-from chromite.cbuildbot import commands
-from chromite.lib import config_lib
 from chromite.lib import config_lib_unittest
-from chromite.lib import constants
-from chromite.lib import failures_lib
-
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import osutils
 from chromite.lib import parallel
 
-from chromite.lib.paygen import download_cache
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gslib
 from chromite.lib.paygen import gspaths
@@ -36,1481 +27,34 @@ from chromite.lib.paygen import paygen_payload_lib
 # pylint: disable=protected-access
 
 
-class PayloadManagerTest(cros_test_lib.MockTestCase):
-  """Unittests for the PayloadManager."""
-
-  def testAdd(self):
-    """Test adding payloads to the manager."""
-    pm = paygen_build_lib.PayloadManager()
-
-    labels = ['test']
-    payloads = [gspaths.Payload(tgt_image='foo',
-                                src_image='bar',
-                                uri='baz'),
-                gspaths.Payload(tgt_image='apple',
-                                src_image='orange',
-                                uri='mango')]
-
-    pm.Add(labels, payloads)
-
-    for payload, p in zip(payloads, pm.payloads):
-      self.assertEquals(labels, p.labels)
-      self.assertEquals(payload.tgt_image, p.tgt_image)
-      self.assertEquals(payload.src_image, p.src_image)
-      self.assertEquals(payload.uri, p.uri)
-
-  def testGet(self):
-    """Test retrieving payloads from the manager."""
-    pm = paygen_build_lib.PayloadManager()
-
-    p1 = gspaths.Payload(tgt_image='foo', labels=['foo', 'test'])
-    p2 = gspaths.Payload(tgt_image='bar', labels=['bar', 'test'])
-
-    pm.payloads = [p1, p2]
-
-    self.assertEquals([p1], pm.Get(['foo']))
-    self.assertEquals([p2], pm.Get(['bar']))
-    self.assertEquals([p1, p2], pm.Get(['test']))
-    self.assertEquals([], pm.Get(['foo', 'bar']))
-
-  def testGetOnly(self):
-    """Test retrieving payloads from the manager."""
-    pm = paygen_build_lib.PayloadManager()
-
-    p1 = gspaths.Payload(tgt_image='bar', labels=['bar', 'test'])
-    p2 = gspaths.Payload(tgt_image='bar', labels=['bar', 'test', 'test2'])
-
-    pm.payloads = [p1, p2]
-
-    self.assertEquals([p1, p2], pm.Get(['bar', 'test']))
-    self.assertEquals([p1], pm.GetOnly(['bar', 'test']))
-
-
-class BasePaygenBuildLibTest(cros_test_lib.MoxTempDirTestCase):
+class BasePaygenBuildLibTest(cros_test_lib.MockTestCase):
   """Base class for testing PaygenBuildLib class."""
 
-  def _GetPaygenBuildInstance(self, disable_tests=False):
-    """Helper method to create a standard Paygen instance."""
-    return paygen_build_lib.PaygenBuild(self.foo_build, self.tempdir,
-                                        config_lib_unittest.MockSiteConfig(),
-                                        disable_tests=disable_tests)
-
-  def _GetBuildTestImage(self, build):
-    """Returns a test image object for the build.
-
-    Args:
-      build: gspaths.Build object describing the build to create fake images
-        for.
-    """
-    return gspaths.UnsignedImageArchive(bucket=build.bucket,
-                                        channel=build.channel,
-                                        board=build.board,
-                                        version=build.version,
-                                        milestone='R12',
-                                        image_type='test')
-
-  def _TestDiscoverArtifacts(self, list_files_uri, list_files_result,
-                             test_func, test_args, should_succeed,
-                             expected_result):
-    """Test artifact discovery using mocked gsutil results."""
-    self.mox.StubOutWithMock(urilib, 'ListFiles')
-    urilib.ListFiles(list_files_uri).AndReturn(list_files_result)
-    self.mox.ReplayAll()
-
-    if should_succeed:
-      self.assertEqual(test_func(*test_args), expected_result)
-    else:
-      self.assertRaises(expected_result, test_func, *test_args)
-
-
-class PaygenBuildLibTest(BasePaygenBuildLibTest):
-  """Test PaygenBuildLib class."""
-
   def setUp(self):
     self.maxDiff = None
 
-    self.prev_image = gspaths.Image(channel='foo-channel',
-                                    board='foo-board',
-                                    version='1.0.0',
-                                    key='mp')
-    self.prev2_image = gspaths.Image(channel='foo-channel',
-                                     board='foo-board',
-                                     version='1.1.0',
-                                     key='mp')
-
-    self.foo_build = gspaths.Build(bucket='crt',
-                                   channel='foo-channel',
-                                   board='foo-board',
-                                   version='1.2.3')
-
-    # Create an additional 'special' image like NPO that isn't NPO,
-    # and keyed with a weird key. It should match none of the filters.
-    self.special_image = gspaths.Image(bucket='crt',
-                                       channel='foo-channel',
-                                       board='foo-board',
-                                       version='1.2.3',
-                                       key='foo-key',
-                                       image_channel='special-channel')
-
-    self.images = self._GetBuildImages(self.foo_build)
-    self.basic_image, self.premp_image = self.images
-
-    self.test_image = self._GetBuildTestImage(self.foo_build)
-
-  def _GetBuildImages(self, build):
-    """Create basic_image, npo_image, premp_image, premp_npo_image.
-
-    Args:
-      build: gspaths.Build object describing the build to create fake images
-        for.
-    """
-    # NPOs should have image_version incremented, but it doesn't matter for our
-    # testing.
-    basic_image = gspaths.Image(key='mp-v2', **build)
-    premp_image = gspaths.Image(key='premp', **build)
-
-    # Code in several places depends on the order.
-    return [basic_image, premp_image]
-
-  def testGetFlagURI(self):
-    """Validate the helper method to create flag URIs for our current build."""
-    paygen = self._GetPaygenBuildInstance()
-
-    self.assertEqual(
-        paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK),
-        'gs://crt/foo-channel/foo-board/1.2.3/payloads/LOCK_flag')
-    self.assertEqual(
-        paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED),
-        'gs://crt/foo-channel/foo-board/1.2.3/payloads/FINISHED_flag')
-
-  def testFilterHelpers(self):
-    """Test _FilterForMp helper method."""
-
-    # All of the filter helpers should handle empty list.
-    self.assertEqual(paygen_build_lib._FilterForMp([]), [])
-    self.assertEqual(paygen_build_lib._FilterForPremp([]), [])
-    self.assertEqual(paygen_build_lib._FilterForBasic([]), [])
-
-    # prev_image lets us test with an 'mp' key, instead of an 'mp-v2' key.
-    images = list(self.images) + [self.special_image, self.prev_image]
-
-    self.assertEqual(paygen_build_lib._FilterForMp(images),
-                     [self.basic_image, self.prev_image])
-
-    self.assertEqual(paygen_build_lib._FilterForPremp(images),
-                     [self.premp_image])
-
-    self.assertEqual(paygen_build_lib._FilterForBasic(images),
-                     [self.basic_image, self.premp_image, self.prev_image])
-
-  def testValidateExpectedBuildImages(self):
-    """Test a function that validates expected images are found on a build."""
-    paygen = self._GetPaygenBuildInstance()
-
-    # Test with basic mp image only.
-    paygen._ValidateExpectedBuildImages(self.foo_build, (self.basic_image,))
-
-    # Test with basic mp and mp npo images.
-    paygen._ValidateExpectedBuildImages(self.foo_build, (self.basic_image,))
-    # Test with basic mp and premp images.
-    paygen._ValidateExpectedBuildImages(self.foo_build, (self.basic_image,
-                                                         self.premp_image))
-
-    # Test with basic mp and premp images.
-    paygen._ValidateExpectedBuildImages(self.foo_build, (self.basic_image,
-                                                         self.premp_image))
-
-    # Test with 4 different images.
-    paygen._ValidateExpectedBuildImages(self.foo_build, (self.basic_image,
-                                                         self.premp_image))
-
-    # No images isn't valid.
-    with self.assertRaises(paygen_build_lib.ImageMissing):
-      paygen._ValidateExpectedBuildImages(self.foo_build, [])
-
-    # More than one of the same type of image should trigger BuildCorrupt
-    with self.assertRaises(paygen_build_lib.BuildCorrupt):
-      paygen._ValidateExpectedBuildImages(self.foo_build, (self.basic_image,
-                                                           self.basic_image))
-
-    # Unexpected images should trigger BuildCorrupt
-    with self.assertRaises(paygen_build_lib.BuildCorrupt):
-      paygen._ValidateExpectedBuildImages(self.foo_build,
-                                          (self.basic_image,
-                                           self.special_image))
-
-  def testDiscoverImages(self):
-    """Test _DiscoverSignedImages."""
-    paygen = self._GetPaygenBuildInstance()
-    uri_base = 'gs://crt/foo-channel/foo-board/1.2.3'
-
-    uri_basic = os.path.join(
-        uri_base, 'chromeos_1.2.3_foo-board_recovery_foo-channel_mp-v3.bin')
-    uri_premp = os.path.join(
-        uri_base, 'chromeos_1.2.3_foo-board_recovery_foo-channel_premp.bin')
-    file_list_result = [uri_basic, uri_premp]
-
-    base_image_params = {'channel': 'foo-channel',
-                         'board': 'foo-board',
-                         'version': '1.2.3',
-                         'bucket': 'crt'}
-    expected_basic = gspaths.Image(key='mp-v3', uri=uri_basic,
-                                   **base_image_params)
-    expected_premp = gspaths.Image(key='premp', uri=uri_premp,
-                                   **base_image_params)
-    expected_result = [expected_basic, expected_premp]
-
-    self._TestDiscoverArtifacts(
-        os.path.join(uri_base, 'chromeos_*_foo-board_*_*_*.bin'),
-        file_list_result,
-        paygen._DiscoverSignedImages,
-        [self.foo_build],
-        True,
-        expected_result)
-
-  def testDiscoverTestImageArchives(self):
-    """Test _DiscoverTestImages (success)."""
-    paygen = self._GetPaygenBuildInstance()
-    uri_base = 'gs://crt/foo-channel/foo-board/1.2.3'
-
-    uri_test_archive = os.path.join(
-        uri_base, 'ChromeOS-test-R12-1.2.3-foo-board.tar.xz')
-    file_list_result = [uri_test_archive]
-
-    expected_test_archive = gspaths.UnsignedImageArchive(
-        channel='foo-channel',
-        board='foo-board',
-        version='1.2.3',
-        bucket='crt',
-        uri=uri_test_archive,
-        milestone='R12',
-        image_type='test')
-    expected_result = [expected_test_archive]
-
-    self._TestDiscoverArtifacts(
-        os.path.join(uri_base, 'ChromeOS-test-*-1.2.3-foo-board.tar.xz'),
-        file_list_result,
-        paygen._DiscoverTestImages,
-        [self.foo_build],
-        True,
-        expected_result)
-
-  def testDiscoverTestImageArchivesMultipleResults(self):
-    """Test _DiscoverTestImages (fails due to multiple results)."""
-    paygen = self._GetPaygenBuildInstance()
-    uri_base = 'gs://crt/foo-channel/foo-board/1.2.3'
-
-    uri_test_archive1 = os.path.join(
-        uri_base, 'ChromeOS-test-R12-1.2.3-foo-board.tar.xz')
-    uri_test_archive2 = os.path.join(
-        uri_base, 'ChromeOS-test-R13-1.2.3-foo-board.tar.xz')
-    file_list_result = [uri_test_archive1, uri_test_archive2]
-
-    self._TestDiscoverArtifacts(
-        os.path.join(uri_base, 'ChromeOS-test-*-1.2.3-foo-board.tar.xz'),
-        file_list_result,
-        paygen._DiscoverTestImages,
-        [self.foo_build],
-        False,
-        paygen_build_lib.BuildCorrupt)
-
-  def testDiscoverTestImageArchivesMissing(self):
-    """Test _DiscoverTestImages (fails due to missing images)."""
-    paygen = self._GetPaygenBuildInstance()
-    uri_base = 'gs://crt/foo-channel/foo-board/1.2.3'
-
-    self._TestDiscoverArtifacts(
-        os.path.join(uri_base, 'ChromeOS-test-*-1.2.3-foo-board.tar.xz'),
-        [],
-        paygen._DiscoverTestImages,
-        [self.foo_build],
-        False,
-        paygen_build_lib.ImageMissing)
-
-  def testDiscoverFsiBuildsForDeltas(self):
-    """Using test goldeneye values, test _DiscoverFsiBuildsForDeltas."""
-    # Set up mock goldeneye fsi information.
-    mock_return_fsi = paygen_build_lib.json.dumps(
-        {'fsis':
-         [{u'is_delta_supported': True, u'chrome_os_version': u'2465.105.0',
-           u'board':
-           {u'public_codename': u'valid-board', u'is_active': True},
-           u'is_lab_stable': True, u'chrome_version': u'31.0.1650.61'},
-          {u'is_delta_supported': True, u'chrome_os_version': u'2467.109.0',
-           u'board':
-           {u'public_codename': u'valid-board', u'is_active': True},
-           u'is_lab_stable': False, u'chrome_version': u'31.0.1650.61'},
-          {u'is_delta_supported': False, u'chrome_os_version': u'2913.331.0',
-           u'board':
-           {u'public_codename': u'valid-board', u'is_active': True},
-           u'is_lab_stable': True, u'chrome_version': u'31.0.1650.61'}]
-        }
-    )
-
-    self.mox.StubOutWithMock(gslib, 'Cat')
-    gslib.Cat(paygen_build_lib.FSI_URI).AndReturn(mock_return_fsi)
-    gslib.Cat(paygen_build_lib.FSI_URI).AndReturn(mock_return_fsi)
-    self.mox.ReplayAll()
-
-    # Test a board with FSI values on stable-channel.
-    paygen = paygen_build_lib.PaygenBuild(
-        gspaths.Build(channel='stable-channel', board='valid-board',
-                      version='1.2.3'),
-        self.tempdir,
-        config_lib_unittest.MockSiteConfig())
-
-    self.assertEqual(
-        sorted(paygen._DiscoverFsiBuildsForDeltas()),
-        [gspaths.Build(board='valid-board',
-                       channel='stable-channel',
-                       version='2465.105.0'),
-         gspaths.Build(board='valid-board',
-                       channel='stable-channel',
-                       version='2467.109.0')])
-
-    # Test a board without FSI values on stable-channel.
-    paygen = paygen_build_lib.PaygenBuild(
-        gspaths.Build(channel='stable-channel', board='no-fsi-board',
-                      version='1.2.3'),
-        self.tempdir,
-        config_lib_unittest.MockSiteConfig())
-
-    self.assertEqual(paygen._DiscoverFsiBuildsForDeltas(), [])
-
-    # Test a board with FSI values on non-stable-channel.
-    paygen = paygen_build_lib.PaygenBuild(
-        gspaths.Build(channel='beta-channel', board='valid-board',
-                      version='1.2.3'),
-        self.tempdir,
-        config_lib_unittest.MockSiteConfig())
-
-    self.assertEqual(paygen._DiscoverFsiBuildsForDeltas(), [])
-
-  def testDiscoverAllFsiBuildsForDeltaTesting(self):
-    """With goldeneye values, test _DiscoverAllFsiBuildsForDeltaTesting."""
-    mock_return_fsi = paygen_build_lib.json.dumps(
-        {'fsis':
-         [{u'is_delta_supported': True, u'chrome_os_version': u'2465.105.0',
-           u'board':
-           {u'public_codename': u'valid-board', u'is_active': True},
-           u'is_lab_stable': True, u'chrome_version': u'31.0.1650.61'},
-          {u'is_delta_supported': True, u'chrome_os_version': u'2467.109.0',
-           u'board':
-           {u'public_codename': u'valid-board', u'is_active': True},
-           u'is_lab_stable': False, u'chrome_version': u'31.0.1650.61'}]
-        }
-    )
-
-    self.mox.StubOutWithMock(gslib, 'Cat')
-    gslib.Cat(paygen_build_lib.FSI_URI).AndReturn(mock_return_fsi)
-    self.mox.ReplayAll()
-
-    # Test that only FSIs marked as is_lab_stable are selected.
-    paygen = paygen_build_lib.PaygenBuild(
-        gspaths.Build(channel='stable-channel', board='valid-board',
-                      version='1.2.3'),
-        self.tempdir,
-        config_lib_unittest.MockSiteConfig())
-
-    self.assertEqual(
-        paygen._DiscoverAllFsiBuildsForDeltaTesting(),
-        [gspaths.Build(board='valid-board',
-                       channel='stable-channel',
-                       version='2465.105.0')])
-
-  @cros_test_lib.NetworkTest()
-  def testDiscoverAllFsiBuildsForFullTesting(self):
-    """With goldeneye values, test _DiscoverAllFsiBuildsForFullTesting."""
-    paygen = paygen_build_lib.PaygenBuild(
-        gspaths.Build(channel='stable-channel', board='auron-yuna',
-                      version='1.2.3'),
-        self.tempdir,
-        config_lib_unittest.MockSiteConfig())
-
-    # Search for real FSIs for an older/live board.
-    self.assertEqual(paygen._DiscoverAllFsiBuildsForFullTesting(),
-                     ['8530.96.0'])
-
-  def testDiscoverNmoBuild(self):
-    """Test _DiscoverNmoBuild (N minus One)."""
-    paygen = self._GetPaygenBuildInstance()
-
-    # Set up mock goldeneye omaha status information.
-    mock_return_foo = paygen_build_lib.json.dumps(
-        {'omaha_data':
-         [{u'is_mp_keyset': True, u'chrome_version': u'47.0.2514.0',
-           u'keyset': u'foo-mp',
-           u'board':
-           {u'public_codename': u'foo-board', u'is_active': True},
-           u'chrome_os_version': u'7478.0.0', u'channel': u'foo',
-           u'payloads':
-           [{u'max_fraction': False,
-             u'name': u'foo-channel/foo/7478.0.0/payloads/'
-                      u'chromeos_7475.0.0-7478.0.0_foo_foo'
-                      u'-channel_delta_mp.bin-877f148a914c1cdbe2'
-                      u'42aa4247a1d135.signed', u'fraction': 1.0},
-            {u'max_fraction': False,
-             u'name': u'foo-channel/foo/7478.0.0/payloads/'
-                      u'chromeos_7478.0.0_foo_foo-channel_'
-                      u'full_mp.bin-fddc0ae18c9845325c13704ee00b'
-                      u'd0a4.signed', u'fraction': 1.0}]}]
-        }
-    )
-
-    mock_return_not_foo = {
-        'omaha_data':
-        [{u'is_mp_keyset': True, u'chrome_version': u'47.0.2514.0',
-          u'keyset': u'notfoo-mp',
-          u'board':
-          {u'public_codename': u'notfoo-board', u'is_active': True},
-          u'chrome_os_version': u'7478.0.0', u'channel': u'notfoo-channel',
-          u'payloads':
-          [{u'max_fraction': False,
-            u'name': u'notfoo-channel/notfoo/7478.0.0/payloads/'
-                     u'chromeos_7475.0.0-7478.0.0_notfoo_notfoo'
-                     u'-channel_delta_mp.bin-877f148a914c1cdbe2'
-                     u'42aa4247a1d135.signed', u'fraction': 1.0},
-           {u'max_fraction': False,
-            u'name': u'notfoo-channel/notfoo/7478.0.0/payloads/'
-                     u'chromeos_7478.0.0_notfoo_notfoo-channel_'
-                     u'full_mp.bin-fddc0ae18c9845325c13704ee00b'
-                     u'd0a4.signed', u'fraction': 1.0}]}]
-        }
-
-    # Mock out the actual call to gslib.Cat that occurs before a cached
-    # result exists in the paygen object.
-    self.mox.StubOutWithMock(gslib, 'Cat')
-    gslib.Cat(paygen_build_lib.OMAHA_URI).AndReturn(mock_return_foo)
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    self.assertEqual(paygen._DiscoverNmoBuild(),
-                     [gspaths.Build(bucket='crt',
-                                    channel='foo-channel',
-                                    board='foo-board',
-                                    version='7478.0.0')])
-
-    paygen.cachedOmahaJson = mock_return_not_foo
-    self.assertEqual(paygen._DiscoverNmoBuild(), [])
-
-  def testDiscoverRequiredFullPayloads(self):
-    """Test _DiscoverRequiredFullPayloads."""
-    paygen = self._GetPaygenBuildInstance()
-
-    self.assertEqual(paygen._DiscoverRequiredFullPayloads([]), [])
-
-    self.assertItemsEqual(
-        paygen._DiscoverRequiredFullPayloads(self.images + [self.test_image]),
-        [gspaths.Payload(tgt_image=self.basic_image),
-         gspaths.Payload(tgt_image=self.premp_image),
-         gspaths.Payload(tgt_image=self.test_image)])
-
-  def testDiscoverRequiredFromPreviousDeltas(self):
-    """Test _DiscoverRequiredFromPreviousDeltas."""
-    paygen = self._GetPaygenBuildInstance()
-
-    images = [self.basic_image]
-    prevs = [self.prev_image, self.prev2_image]
-
-    # Empty lists.
-    results = paygen._DiscoverRequiredFromPreviousDeltas([], [])
-    expected = []
-    self.assertEqual(results, expected)
-
-    # Empty previous list.
-    results = paygen._DiscoverRequiredFromPreviousDeltas(images, [])
-    expected = []
-    self.assertEqual(results, expected)
-
-    # Empty target list.
-    results = paygen._DiscoverRequiredFromPreviousDeltas([], prevs)
-    expected = []
-    self.assertEqual(results, expected)
-
-    # Basic list.
-    results = paygen._DiscoverRequiredFromPreviousDeltas(images, prevs)
-    expected = [gspaths.Payload(tgt_image=self.basic_image,
-                                src_image=self.prev_image),
-                gspaths.Payload(tgt_image=self.basic_image,
-                                src_image=self.prev2_image)]
-    self.assertEqual(results, expected)
-
-    # Inverted order (should return nothing).
-    results = paygen._DiscoverRequiredFromPreviousDeltas(
-        [self.prev_image], images)
-    expected = []
-    self.assertEqual(results, expected)
-
-  def testDiscoverRequiredPayloadsIncompleteBuild(self):
-    """Test _DiscoverRequiredPayloads."""
-
-    paygen = self._GetPaygenBuildInstance()
-
-    self.mox.StubOutWithMock(paygen, '_DiscoverSignedImages')
-    self.mox.StubOutWithMock(paygen, '_DiscoverNmoBuild')
-    self.mox.StubOutWithMock(paygen, '_DiscoverFsiBuildsForDeltas')
-
-    paygen._DiscoverSignedImages(paygen._build).AndRaise(
-        paygen_build_lib.ImageMissing())
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    with self.assertRaises(paygen_build_lib.BuildNotReady):
-      paygen._DiscoverRequiredPayloads()
-
-  def testDiscoverRequiredPayloads(self):
-    """Test _DiscoverRequiredPayloads."""
-
-    paygen = self._GetPaygenBuildInstance()
-
-    output_uri = 'gs://foo'
-
-    self.mox.StubOutWithMock(paygen, '_DiscoverSignedImages')
-    self.mox.StubOutWithMock(paygen, '_DiscoverTestImages')
-    self.mox.StubOutWithMock(paygen, '_DiscoverNmoBuild')
-    self.mox.StubOutWithMock(paygen, '_DiscoverFsiBuildsForDeltas')
-    self.mox.StubOutWithMock(paygen_payload_lib, 'DefaultPayloadUri')
-
-    nmo_build = gspaths.Build(bucket='crt',
-                              channel='foo-channel',
-                              board='foo-board',
-                              version='1.2.2')
-    fsi1_build = gspaths.Build(bucket='crt',
-                               channel='foo-channel',
-                               board='foo-board',
-                               version='1.0.0')
-    fsi2_build = gspaths.Build(bucket='crt',
-                               channel='foo-channel',
-                               board='foo-board',
-                               version='1.1.0')
-
-    nmo_images = self._GetBuildImages(nmo_build)
-    nmo_test_image = self._GetBuildTestImage(nmo_build)
-    fsi1_images = self._GetBuildImages(fsi1_build)
-    fsi1_test_image = self._GetBuildTestImage(fsi1_build)
-    fsi2_images = self._GetBuildImages(fsi2_build)
-    fsi2_test_image = self._GetBuildTestImage(fsi2_build)
-
-    paygen._DiscoverSignedImages(paygen._build).AndReturn(self.images)
-    paygen._DiscoverTestImages(paygen._build).AndReturn(
-        [self.test_image])
-    paygen._DiscoverFsiBuildsForDeltas().AndReturn([fsi1_build, fsi2_build])
-    paygen._DiscoverNmoBuild().AndReturn([nmo_build])
-    paygen._DiscoverSignedImages(fsi1_build).AndReturn(fsi1_images)
-    paygen._DiscoverTestImages(fsi1_build).AndReturn([fsi1_test_image])
-    paygen._DiscoverSignedImages(fsi2_build).AndReturn(fsi2_images)
-    paygen._DiscoverTestImages(fsi2_build).AndReturn([fsi2_test_image])
-    paygen._DiscoverSignedImages(nmo_build).AndReturn(nmo_images)
-    paygen._DiscoverTestImages(nmo_build).AndReturn([nmo_test_image])
-
-    # Simplify the output URIs, so it's easy to check them below.
-    paygen_payload_lib.DefaultPayloadUri(
-        mox.IsA(gspaths.Payload), None).MultipleTimes().AndReturn(output_uri)
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    self.maxDiff = None
-
-    payload_manager = paygen._DiscoverRequiredPayloads()
-
-    expected = [gspaths.Payload(tgt_image=self.basic_image, uri=output_uri,
-                                labels=['full']),
-                gspaths.Payload(tgt_image=self.premp_image, uri=output_uri,
-                                labels=['full']),
-
-                gspaths.Payload(tgt_image=nmo_images[0], uri=output_uri,
-                                labels=['full', 'previous']),
-                gspaths.Payload(tgt_image=nmo_images[1], uri=output_uri,
-                                labels=['full', 'previous']),
-                # NMO Delta
-                gspaths.Payload(tgt_image=self.basic_image,
-                                src_image=nmo_images[0],
-                                uri=output_uri,
-                                labels=['delta', 'previous']),
-                gspaths.Payload(tgt_image=self.premp_image,
-                                src_image=nmo_images[1],
-                                uri=output_uri,
-                                labels=['delta', 'previous']),
-                # FSI Deltas
-                gspaths.Payload(tgt_image=self.basic_image,
-                                src_image=fsi1_images[0],
-                                uri=output_uri,
-                                labels=['delta', 'fsi']),
-                gspaths.Payload(tgt_image=self.premp_image,
-                                src_image=fsi1_images[1],
-                                uri=output_uri,
-                                labels=['delta', 'fsi']),
-                gspaths.Payload(tgt_image=self.basic_image,
-                                src_image=fsi2_images[0],
-                                uri=output_uri,
-                                labels=['delta', 'fsi']),
-                gspaths.Payload(tgt_image=self.premp_image,
-                                src_image=fsi2_images[1],
-                                uri=output_uri,
-                                labels=['delta', 'fsi']),
-
-                # Test full payload.
-                gspaths.Payload(tgt_image=self.test_image,
-                                uri=output_uri,
-                                labels=['test', 'full']),
-                gspaths.Payload(tgt_image=nmo_test_image,
-                                uri=output_uri,
-                                labels=['test', 'full', 'previous']),
-
-                # Test N to N delta.
-                gspaths.Payload(tgt_image=self.test_image,
-                                src_image=self.test_image,
-                                uri=output_uri,
-                                labels=['test', 'delta', 'n2n']),
-
-                # Test NMO delta.
-                gspaths.Payload(tgt_image=self.test_image,
-                                src_image=nmo_test_image,
-                                uri=output_uri,
-                                labels=['test', 'delta', 'previous']),
-
-                # Test FSI deltas.
-                gspaths.Payload(tgt_image=self.test_image,
-                                src_image=fsi1_test_image,
-                                uri=output_uri,
-                                labels=['test', 'delta', 'fsi']),
-                gspaths.Payload(tgt_image=self.test_image,
-                                src_image=fsi2_test_image,
-                                uri=output_uri,
-                                labels=['test', 'delta', 'fsi'])]
-    results = payload_manager.Get([])
-    self.assertItemsEqual(sorted(results), sorted(expected))
-
-  def testDiscoverRequiredPayloadsPreviousSkipped(self):
-    """Test _DiscoverRequiredPayload.
-
-    Ensures that no test delta payload is generated if generation of a
-    signed delta from the same build was skipped.
-    """
-
-    paygen = self._GetPaygenBuildInstance()
-
-    output_uri = 'gs://foo'
-
-    self.mox.StubOutWithMock(paygen, '_DiscoverSignedImages')
-    self.mox.StubOutWithMock(paygen, '_DiscoverTestImages')
-    self.mox.StubOutWithMock(paygen, '_DiscoverNmoBuild')
-    self.mox.StubOutWithMock(paygen, '_DiscoverFsiBuildsForDeltas')
-    self.mox.StubOutWithMock(paygen_payload_lib, 'DefaultPayloadUri')
-
-    nmo_build = gspaths.Build(bucket='crt',
-                              channel='foo-channel',
-                              board='foo-board',
-                              version='1.2.2')
-    fsi1_build = gspaths.Build(bucket='crt',
-                               channel='foo-channel',
-                               board='foo-board',
-                               version='1.0.0')
-    fsi2_build = gspaths.Build(bucket='crt',
-                               channel='foo-channel',
-                               board='foo-board',
-                               version='1.1.0')
-
-    fsi1_images = self._GetBuildImages(fsi1_build)
-    fsi1_test_image = self._GetBuildTestImage(fsi1_build)
-    fsi2_images = self._GetBuildImages(fsi2_build)
-    fsi2_test_image = self._GetBuildTestImage(fsi2_build)
-
-    paygen._DiscoverSignedImages(paygen._build).AndReturn(self.images)
-    paygen._DiscoverTestImages(paygen._build).AndReturn(
-        [self.test_image])
-    paygen._DiscoverFsiBuildsForDeltas().AndReturn([fsi1_build, fsi2_build])
-    paygen._DiscoverNmoBuild().AndReturn([nmo_build])
-    paygen._DiscoverSignedImages(fsi1_build).AndReturn(fsi1_images)
-    paygen._DiscoverTestImages(fsi1_build).AndReturn([fsi1_test_image])
-    paygen._DiscoverSignedImages(fsi2_build).AndReturn(fsi2_images)
-    paygen._DiscoverTestImages(fsi2_build).AndReturn([fsi2_test_image])
-    paygen._DiscoverSignedImages(nmo_build).AndRaise(
-        paygen_build_lib.ImageMissing('nmo build is missing some image'))
-    # _DiscoverTestImages(nmo_build) should NOT be called.
-
-    # Simplify the output URIs, so it's easy to check them below.
-    paygen_payload_lib.DefaultPayloadUri(
-        mox.IsA(gspaths.Payload), None).MultipleTimes().AndReturn(output_uri)
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    payload_manager = paygen._DiscoverRequiredPayloads()
-
-    # IMPORTANT: we intentionally omit the NMO payload from the expected list
-    # of payloads as it is a duplicate of one of the FSIs.
-    expected = [
-        gspaths.Payload(tgt_image=self.basic_image, uri=output_uri,
-                        labels=['full']),
-        gspaths.Payload(tgt_image=self.premp_image, uri=output_uri,
-                        labels=['full']),
-        # FSI Deltas
-        gspaths.Payload(tgt_image=self.basic_image,
-                        src_image=fsi1_images[0],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.premp_image,
-                        src_image=fsi1_images[1],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.basic_image,
-                        src_image=fsi2_images[0],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.premp_image,
-                        src_image=fsi2_images[1],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        # Test full payload.
-        gspaths.Payload(tgt_image=self.test_image,
-                        uri=output_uri,
-                        labels=['test', 'full']),
-        # Test FSI deltas.
-        gspaths.Payload(tgt_image=self.test_image,
-                        src_image=fsi1_test_image,
-                        uri=output_uri,
-                        labels=['test', 'delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.test_image,
-                        src_image=fsi2_test_image,
-                        uri=output_uri,
-                        labels=['test', 'delta', 'fsi']),
-        # Test Loopback Delta
-        gspaths.Payload(tgt_image=self.test_image,
-                        src_image=self.test_image,
-                        uri=output_uri,
-                        labels=['test', 'delta', 'n2n']),
-    ]
-    results = payload_manager.Get([])
-    self.assertItemsEqual(sorted(results), sorted(expected))
-
-  def testDiscoverRequiredPayloadsNmoIsAlsoFsi(self):
-    """Test _DiscoverRequiredPayloads."""
-
-    paygen = self._GetPaygenBuildInstance()
-
-    output_uri = 'gs://foo'
-
-    self.mox.StubOutWithMock(paygen, '_DiscoverSignedImages')
-    self.mox.StubOutWithMock(paygen, '_DiscoverTestImages')
-    self.mox.StubOutWithMock(paygen, '_DiscoverNmoBuild')
-    self.mox.StubOutWithMock(paygen, '_DiscoverFsiBuildsForDeltas')
-    self.mox.StubOutWithMock(paygen_payload_lib, 'DefaultPayloadUri')
-
-    nmo_build = gspaths.Build(bucket='crt',
-                              channel='foo-channel',
-                              board='foo-board',
-                              version='1.2.2')
-    fsi1_build = gspaths.Build(bucket='crt',
-                               channel='foo-channel',
-                               board='foo-board',
-                               version='1.0.0')
-    fsi2_build = gspaths.Build(bucket='crt',
-                               channel='foo-channel',
-                               board='foo-board',
-                               version='1.2.2')
-
-    fsi1_images = self._GetBuildImages(fsi1_build)
-    fsi1_test_image = self._GetBuildTestImage(fsi1_build)
-    fsi2_images = self._GetBuildImages(fsi2_build)
-    fsi2_test_image = self._GetBuildTestImage(fsi2_build)
-
-    paygen._DiscoverSignedImages(paygen._build).AndReturn(self.images)
-    paygen._DiscoverTestImages(paygen._build).AndReturn(
-        [self.test_image])
-    paygen._DiscoverFsiBuildsForDeltas().AndReturn([fsi1_build, fsi2_build])
-    paygen._DiscoverNmoBuild().AndReturn([nmo_build])
-    paygen._DiscoverSignedImages(fsi1_build).AndReturn(fsi1_images)
-    paygen._DiscoverSignedImages(fsi2_build).AndReturn(fsi2_images)
-    paygen._DiscoverTestImages(fsi1_build).AndReturn([fsi1_test_image])
-    paygen._DiscoverTestImages(fsi2_build).AndReturn([fsi2_test_image])
-
-    # Simplify the output URIs, so it's easy to check them below.
-    paygen_payload_lib.DefaultPayloadUri(
-        mox.IsA(gspaths.Payload), None).MultipleTimes().AndReturn(output_uri)
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    payload_manager = paygen._DiscoverRequiredPayloads()
-
-    expected = [
-        gspaths.Payload(tgt_image=self.basic_image, uri=output_uri,
-                        labels=['full']),
-        gspaths.Payload(tgt_image=self.premp_image, uri=output_uri,
-                        labels=['full']),
-        # FSI Deltas
-        gspaths.Payload(tgt_image=self.basic_image,
-                        src_image=fsi1_images[0],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.premp_image,
-                        src_image=fsi1_images[1],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.basic_image,
-                        src_image=fsi2_images[0],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.premp_image,
-                        src_image=fsi2_images[1],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        # Test full payload.
-        gspaths.Payload(tgt_image=self.test_image,
-                        uri=output_uri,
-                        labels=['test', 'full']),
-        # Test FSI deltas.
-        gspaths.Payload(tgt_image=self.test_image,
-                        src_image=fsi1_test_image,
-                        uri=output_uri,
-                        labels=['test', 'delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.test_image,
-                        src_image=fsi2_test_image,
-                        uri=output_uri,
-                        labels=['test', 'delta', 'fsi']),
-        # Test Loopback Delta
-        gspaths.Payload(tgt_image=self.test_image,
-                        src_image=self.test_image,
-                        uri=output_uri,
-                        labels=['test', 'delta', 'n2n']),
-    ]
-
-    results = payload_manager.Get([])
-    self.assertItemsEqual(sorted(results), sorted(expected))
-
-  def testFindFullTestPayloads(self):
-    paygen = self._GetPaygenBuildInstance()
-
-    self.mox.StubOutWithMock(urilib, 'ListFiles')
-
-    urilib.ListFiles(
-        'gs://crt/find_channel/foo-board/find_full_version/payloads/'
-        'chromeos_find_full_version_foo-board_find_channel_full_test.bin-*'
-    ).AndReturn(['foo', 'foo.json', 'foo.log', 'bar'])
-
-    urilib.ListFiles(
-        'gs://crt/diff_channel/foo-board/find_full_version/payloads/'
-        'chromeos_find_full_version_foo-board_diff_channel_full_test.bin-*'
-    ).AndReturn(['foo'])
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    # Call once and use mocked look up. Make sure we filter properly.
-    self.assertEqual(
-        paygen._FindFullTestPayloads('find_channel', 'find_full_version'),
-        ['foo', 'bar'])
-
-    # Call with different channel, which does a different lookup.
-    self.assertEqual(
-        paygen._FindFullTestPayloads('diff_channel', 'find_full_version'),
-        ['foo'])
-
-
-    # Call a second time to verify we get cached results (no lookup).
-    self.assertEqual(
-        paygen._FindFullTestPayloads('find_channel', 'find_full_version'),
-        ['foo', 'bar'])
-
-  def DoGeneratePayloadsTest(self, test_dry_run):
-    """Test paygen_build_lib._GeneratePayloads."""
-    paygen = paygen_build_lib.PaygenBuild(
-        self.foo_build, self.tempdir,
-        config_lib_unittest.MockSiteConfig(),
-        dry_run=test_dry_run)
-
-    basic_payload = gspaths.Payload(tgt_image=self.basic_image,
-                                    src_image=self.basic_image)
-    premp_payload = gspaths.Payload(tgt_image=self.premp_image,
-                                    src_image=self.premp_image)
-
-    self.mox.StubOutWithMock(parallel, 'RunTasksInProcessPool')
-    self.mox.StubOutWithMock(paygen_build_lib, '_GenerateSinglePayload')
-
-    expected_payload_args = [
-        (basic_payload, mox.IsA(str), True, test_dry_run),
-        (premp_payload, mox.IsA(str), True, test_dry_run)
-    ]
-
-    parallel.RunTasksInProcessPool(paygen_build_lib._GenerateSinglePayload,
-                                   expected_payload_args)
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    paygen._GeneratePayloads((basic_payload, premp_payload))
-
-    self.mox.UnsetStubs()
-
-  def testGeneratePayloads(self):
-    """Test paygen_build_lib._GeneratePayloads, no dry_run."""
-
-    # Test every combination of the boolean arguments.
-    for test_dry_run in (True, False):
-      self.DoGeneratePayloadsTest(test_dry_run)
-
-  def testGeneratePayloadInProcess(self):
-    """Make sure the _GenerateSinglePayload calls into paygen_payload_lib."""
-
-    basic_payload = gspaths.Payload(tgt_image=self.basic_image,
-                                    src_image=self.basic_image)
-
-    self.mox.StubOutWithMock(paygen_payload_lib, 'CreateAndUploadPayload')
-
-    # Verify that we actually generate the payload.
-    paygen_payload_lib.CreateAndUploadPayload(
-        basic_payload,
-        mox.IsA(download_cache.DownloadCache),
-        work_dir=self.tempdir,
-        sign=False,
-        dry_run=True)
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    paygen_build_lib._GenerateSinglePayload(basic_payload, self.tempdir,
-                                            False, True)
-
-  def testCleanupBuild(self):
-    """Test PaygenBuild._CleanupBuild."""
-    paygen = self._GetPaygenBuildInstance()
-
-    self.mox.StubOutWithMock(gslib, 'Remove')
-    gslib.Remove('gs://crt/foo-channel/foo-board/1.2.3/payloads/signing',
-                 recurse=True, ignore_no_match=True)
-    self.mox.ReplayAll()
-
-    paygen._CleanupBuild()
-
-  def _CreatePayloadsSetup(self, disable_tests=False):
-    """Helper method for related CreatePayloads tests."""
-    paygen = self._GetPaygenBuildInstance(disable_tests=disable_tests)
-
-    self.mox.StubOutWithMock(gslock, 'Lock')
-    self.mox.StubOutWithMock(gslib, 'CreateWithContents')
-    self.mox.StubOutWithMock(gslib, 'Exists')
-    self.mox.StubOutWithMock(gslib, 'Remove')
-    self.mox.StubOutWithMock(paygen, '_DiscoverRequiredPayloads')
-    self.mox.StubOutWithMock(paygen, '_MapToArchive')
-    self.mox.StubOutWithMock(paygen, '_GeneratePayloads')
-    self.mox.StubOutWithMock(paygen, '_AutotestPayloads')
-    self.mox.StubOutWithMock(paygen, '_CreatePayloadTests')
-    self.mox.StubOutWithMock(paygen, '_CleanupBuild')
-
-    return paygen
-
-  def testCreatePayloadsLockedBuild(self):
-    """Test paygen_build_lib._GeneratePayloads if the build is locked."""
-    paygen = self._CreatePayloadsSetup()
-    lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
-
-    gslock.Lock(lock_uri, dry_run=False).AndRaise(gslock.LockNotAcquired())
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    with self.assertRaises(paygen_build_lib.BuildLocked):
-      paygen.CreatePayloads()
-
-  def testCreatePayloadsFinishedBuild(self):
-    """Test paygen_build_lib._GeneratePayloads if the build marked finished."""
-    paygen = self._CreatePayloadsSetup()
-
-    lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
-    finished_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
-
-    lock = self.mox.CreateMockAnything()
-
-    gslock.Lock(lock_uri, dry_run=False).AndReturn(lock)
-    lock.__enter__().AndReturn(lock)
-    gslib.Exists(finished_uri).AndReturn(True)
-    lock.__exit__(
-        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(None)
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    with self.assertRaises(paygen_build_lib.BuildFinished):
-      paygen.CreatePayloads()
-
-  def testCreatePayloadsBuildNotReady(self):
-    """Test paygen_build_lib._GeneratePayloads if not all images are there."""
-    paygen = self._CreatePayloadsSetup()
-
-    lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
-    finished_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
-
-    lock = self.mox.CreateMockAnything()
-
-    gslock.Lock(lock_uri, dry_run=False).AndReturn(lock)
-    lock.__enter__().AndReturn(lock)
-    gslib.Exists(finished_uri).AndReturn(False)
-    paygen._DiscoverRequiredPayloads(
-        ).AndRaise(paygen_build_lib.BuildNotReady())
-    lock.__exit__(
-        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(None)
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    with self.assertRaises(paygen_build_lib.BuildNotReady):
-      paygen.CreatePayloads()
-
-  def testCreatePayloadsCreateFailed(self):
-    """Test paygen_build_lib._GeneratePayloads if payload generation failed."""
-    paygen = self._CreatePayloadsSetup()
-
-    lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
-    finished_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
-
-    lock = self.mox.CreateMockAnything()
-    payload = gspaths.Payload(tgt_image='foo')
-    payload_list = [payload]
-    payload_manager = paygen_build_lib.PayloadManager()
-    payload_manager.Add([], payload_list)
-
-    mock_exception = Exception()
-
-    gslock.Lock(lock_uri, dry_run=False).AndReturn(lock)
-    lock.__enter__().AndReturn(lock)
-    gslib.Exists(finished_uri).AndReturn(False)
-    paygen._DiscoverRequiredPayloads().AndReturn(payload_manager)
-    self.mox.StubOutWithMock(paygen_payload_lib, 'FindExistingPayloads')
-    paygen_payload_lib.FindExistingPayloads(payload).AndReturn([])
-    paygen._GeneratePayloads(payload_list).AndRaise(mock_exception)
-    lock.__exit__(
-        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(None)
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    with self.assertRaises(Exception):
-      paygen.CreatePayloads()
-
-  def testCreatePayloadsSuccess(self):
-    """Test paygen_build_lib._GeneratePayloads success."""
-    paygen = self._CreatePayloadsSetup()
-
-    lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
-    finished_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
-
-    lock = self.mox.CreateMockAnything()
-    payload = gspaths.Payload(tgt_image='foo')
-    payload_list = [payload]
-
-    payload_manager = paygen_build_lib.PayloadManager()
-    payload_manager.Add([], payload_list)
-
-    gslock.Lock(lock_uri, dry_run=False).AndReturn(lock)
-    lock.__enter__().AndReturn(lock)
-    gslib.Exists(finished_uri).AndReturn(False)
-    paygen._DiscoverRequiredPayloads().AndReturn(payload_manager)
-    self.mox.StubOutWithMock(paygen_payload_lib, 'FindExistingPayloads')
-    paygen_payload_lib.FindExistingPayloads(payload).AndReturn([])
-    paygen._GeneratePayloads(payload_list)
-    paygen._MapToArchive('foo-board', '1.2.3').AndReturn(
-        ('archive_board', 'archive_build', 'archive_build_uri'))
-    paygen._CreatePayloadTests(payload_manager).AndReturn(['Test Payloads'])
-    paygen._AutotestPayloads(['Test Payloads']).AndReturn(('foo-suite-name',
-                                                           finished_uri))
-    paygen._CleanupBuild()
-    lock.__exit__(
-        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(None)
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    paygen.CreatePayloads()
-
-  def testCreatePayloadsAlreadyExists(self):
-    """Test paygen_build_lib._GeneratePayloads success."""
-    paygen = self._CreatePayloadsSetup()
-
-    lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
-    finished_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
-
-    lock = self.mox.CreateMockAnything()
-    self.mox.StubOutWithMock(paygen_payload_lib, 'FindExistingPayloads')
-    self.mox.StubOutWithMock(paygen_payload_lib, 'SetPayloadUri')
-    payload_existing = gspaths.Payload(tgt_image='foo')
-    payload_new = gspaths.Payload(tgt_image='bar')
-
-    payload_manager = paygen_build_lib.PayloadManager()
-    payload_manager.Add([], [payload_existing, payload_new])
-
-    gslock.Lock(lock_uri, dry_run=False).AndReturn(lock)
-    lock.__enter__().AndReturn(lock)
-    gslib.Exists(finished_uri).AndReturn(False)
-    paygen._DiscoverRequiredPayloads().AndReturn(payload_manager)
-    paygen_payload_lib.FindExistingPayloads(payload_existing).AndReturn(
-        [payload_existing])
-    paygen_payload_lib.FindExistingPayloads(payload_new).AndReturn([])
-    paygen_payload_lib.SetPayloadUri(payload_existing, payload_existing)
-    paygen._GeneratePayloads([payload_new])
-    paygen._MapToArchive('foo-board', '1.2.3').AndReturn(
-        ('archive_board', 'archive_build', 'archive_build_uri'))
-    paygen._CreatePayloadTests(payload_manager).AndReturn(['Test Payloads'])
-    paygen._AutotestPayloads(['Test Payloads']).AndReturn(('foo-suite-name',
-                                                           finished_uri))
-    paygen._CleanupBuild()
-    lock.__exit__(
-        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(None)
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    paygen.CreatePayloads()
-
-  def testCreatePayloadsSkipTests(self):
-    """Test paygen_build_lib._GeneratePayloads success."""
-    paygen = self._CreatePayloadsSetup(disable_tests=True)
-
-    lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
-    finished_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
-
-    lock = self.mox.CreateMockAnything()
-    payload = gspaths.Payload(tgt_image='foo')
-    payload_list = [payload]
-
-    payload_manager = paygen_build_lib.PayloadManager()
-    payload_manager.Add([], payload_list)
-
-    gslock.Lock(lock_uri, dry_run=False).AndReturn(lock)
-    lock.__enter__().AndReturn(lock)
-    gslib.Exists(finished_uri).AndReturn(False)
-    paygen._DiscoverRequiredPayloads().AndReturn(payload_manager)
-    self.mox.StubOutWithMock(paygen_payload_lib, 'FindExistingPayloads')
-    paygen_payload_lib.FindExistingPayloads(payload).AndReturn([])
-    paygen._GeneratePayloads(payload_list)
-    paygen._CleanupBuild()
-    lock.__exit__(
-        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(None)
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    paygen.CreatePayloads()
-
-  def setupAutotestPayloadsTests(self):
-    paygen = self._GetPaygenBuildInstance()
-
-    self.mox.StubOutWithMock(paygen, '_EmitControlFile')
-
-    return paygen
-
-  def testAutotestPayloads(self):
-    """Test that Autotest tarballs are uploaded and metadata returned."""
-    paygen = self.setupAutotestPayloadsTests()
-
-    payload_tests = ['Payload Tests']
-    # Don't pollute the src directory.
-    paygen._archive_build_uri = tempfile.gettempdir() + 'archive_build_uri'
-    paygen._archive_build = 'foo-bd-release/R9001-1234.56.7'
-
-    test_channel = paygen._build.channel.rpartition('-')[0]
-    suite_name = (paygen.PAYGEN_AU_SUITE_TEMPLATE % test_channel)
-    for test in payload_tests:
-      paygen._EmitControlFile(test, suite_name, mox.IgnoreArg())
-
-    self.mox.ReplayAll()
-
-    paygen._AutotestPayloads(payload_tests)
-
-  def setupCreatePayloadTests(self):
-    paygen = self._GetPaygenBuildInstance()
-
-    self.mox.StubOutWithMock(paygen, '_DiscoverAllFsiBuildsForDeltaTesting')
-    self.mox.StubOutWithMock(paygen, '_DiscoverAllFsiBuildsForFullTesting')
-    self.mox.StubOutWithMock(paygen, '_FindFullTestPayloads')
-
-    return paygen
-
-  def testCreatePayloadTestsEmpty(self):
-
-    payloads = []
-    payload_manager = paygen_build_lib.PayloadManager()
-    payload_manager.Add([], payloads)
-
-    paygen = self.setupCreatePayloadTests()
-
-    paygen._DiscoverAllFsiBuildsForDeltaTesting().AndReturn([])
-    paygen._DiscoverAllFsiBuildsForFullTesting().AndReturn([])
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    expected = paygen._CreatePayloadTests(payload_manager)
-    self.assertEqual(expected, [])
-
-  def testCreatePayloadTestsPopulated(self):
-
-    payloads = [
-        gspaths.Payload(tgt_image=self.test_image),
-        gspaths.Payload(tgt_image=self.prev_image, src_image=self.test_image)
-    ]
-
-    payload_manager = paygen_build_lib.PayloadManager()
-    payload_manager.Add(['test', 'full'], [payloads[0]])
-    payload_manager.Add(['test', 'delta'], [payloads[1]])
-
-    paygen = self.setupCreatePayloadTests()
-
-    # We search for FSIs once for each full payload.
-    paygen._DiscoverAllFsiBuildsForDeltaTesting().AndReturn(['0.9.9', '1.0.0'])
-    paygen._DiscoverAllFsiBuildsForFullTesting().AndReturn(['0.9.9', '1.0.0'])
-    paygen._FindFullTestPayloads('stable-channel', '0.9.9').AndReturn(False)
-    paygen._FindFullTestPayloads('stable-channel', '1.0.0').AndReturn(True)
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    self.maxDiff = None
-
-    labelled_payloads = [
-        gspaths.Payload(tgt_image=self.test_image, labels=['test', 'full']),
-        gspaths.Payload(tgt_image=self.prev_image, src_image=self.test_image,
-                        labels=['test', 'delta'])
-    ]
-    expected = paygen._CreatePayloadTests(payload_manager)
-    self.assertEqual(expected, [
-        paygen.PayloadTest(
-            labelled_payloads[0], src_channel='foo-channel',
-            src_version='1.2.3'),
-        paygen.PayloadTest(
-            labelled_payloads[0], src_channel='stable-channel',
-            src_version='1.0.0'),
-        paygen.PayloadTest(
-            labelled_payloads[1]),
-    ])
-
-  def testCreatePayloadTestsLabStableFsiDelta(self):
-    payloads = [
-        gspaths.Payload(tgt_image=self.prev_image, src_image=self.test_image)
-    ]
-
-    payload_manager = paygen_build_lib.PayloadManager()
-    payload_manager.Add(['test', 'delta', 'fsi'], payloads)
-
-    paygen = self.setupCreatePayloadTests()
-
-    paygen._DiscoverAllFsiBuildsForDeltaTesting().AndReturn([self.foo_build])
-    paygen._DiscoverAllFsiBuildsForFullTesting().AndReturn([])
-
-    self.mox.ReplayAll()
-
-    labelled_payloads = [
-        gspaths.Payload(tgt_image=self.prev_image, src_image=self.test_image,
-                        labels=['test', 'delta', 'fsi'])
-    ]
-    expected = paygen._CreatePayloadTests(payload_manager)
-    self.assertEquals(expected, [paygen.PayloadTest(labelled_payloads[0])])
-
-  def testCreatePayloadTestsLabUnstableFsiDelta(self):
-    payloads = [
-        gspaths.Payload(tgt_image=self.prev_image, src_image=self.test_image)
-    ]
-
-    payload_manager = paygen_build_lib.PayloadManager()
-    payload_manager.Add(['test', 'delta', 'fsi'], payloads)
-
-    paygen = self.setupCreatePayloadTests()
-
-    paygen._DiscoverAllFsiBuildsForDeltaTesting().AndReturn(
-        [gspaths.Build(bucket='crt', channel='not-foo-channel',
-                       board='foo-board', version='1.2.3')]
-    )
-    paygen._DiscoverAllFsiBuildsForFullTesting().AndReturn([])
-
-    self.mox.ReplayAll()
-
-    expected = paygen._CreatePayloadTests(payload_manager)
-    self.assertEquals(expected, [])
-
-  @unittest.skipIf(not paygen_build_lib.test_control,
-                   'Autotest repository needed.')
-  @osutils.TempFileDecorator
-  def testEmitControlFile(self):
-    """Test that we emit control files correctly."""
-    control_dir = self.tempdir
-    control_file_name = self.tempfile
-
-    payload = gspaths.Payload(tgt_image=self.basic_image,
-                              src_image=self.basic_image)
-
-    site_config = config_lib_unittest.MockSiteConfig()
-    site_config.Add('build_to_introduce_boards',
-                    boards=['foo_board'])
-
-    suite_name = 'paygen_foo'
-    paygen = paygen_build_lib.PaygenBuild(
-        self.foo_build, self.tempdir, site_config)
-
-    osutils.WriteFile(control_file_name, """
-AUTHOR = "Chromium OS"
-NAME = "autoupdate_EndToEndTest"
-TIME = "MEDIUM"
-TEST_CATEGORY = "Functional"
-TEST_CLASS = "platform"
-TEST_TYPE = "server"
-DOC = "Faux doc"
-
-""")
-
-    self.mox.StubOutWithMock(urilib, 'ListFiles')
-    self.mox.StubOutWithMock(urilib, 'Exists')
-
-    urilib.Exists(
-        'gs://chromeos-releases/foo-channel/foo-board/1.2.3/stateful.tgz'
-        ).AndReturn(True)
-
-    urilib.ListFiles(
-        gspaths.ChromeosReleases.PayloadUri(
-            self.basic_image.channel, self.basic_image.board,
-            self.basic_image.version,
-            '*', bucket=self.basic_image.bucket)).AndReturn(
-                ['gs://foo/bar.tar.bz2'])
-
-    self.mox.StubOutWithMock(
-        paygen_build_lib.test_control, 'get_control_file_name')
-    paygen_build_lib.test_control.get_control_file_name().AndReturn(
-        control_file_name)
-
-    self.mox.ReplayAll()
-
-    payload_test = paygen_build_lib.PaygenBuild.PayloadTest(payload)
-    cf = paygen._EmitControlFile(payload_test, suite_name, control_dir)
-
-    control_contents = osutils.ReadFile(cf)
-
-    self.assertEqual(control_contents, '''name = 'paygen_foo'
-update_type = 'delta'
-source_release = '1.2.3'
-target_release = '1.2.3'
-target_payload_uri = 'None'
-SUITE = 'paygen_foo'
-source_payload_uri = 'gs://foo/bar.tar.bz2'
-source_archive_uri = 'gs://chromeos-releases/foo-channel/foo-board/1.2.3'
-
-AUTHOR = "Chromium OS"
-NAME = "autoupdate_EndToEndTest_paygen_foo_delta_1.2.3"
-TIME = "MEDIUM"
-TEST_CATEGORY = "Functional"
-TEST_CLASS = "platform"
-TEST_TYPE = "server"
-DOC = "Faux doc"
-
-''')
-
-  def testScheduleAutotestTests(self):
-    """Test scheduling autotest tests with build autotest proxy."""
-    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-
-    timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
-    paygen_build_lib.commands.RunHWTestSuite(
-        board='foo-board', build='foo-board-release/R99-1.2.3', file_bugs=True,
-        pool='bvt', priority=constants.HWTEST_BUILD_PRIORITY,
-        suite='paygen_au_foo', timeout_mins=timeout_mins,
-        retry=True, wait_for_results=True,
-        suite_min_duts=2, debug=False, skip_duts_check=False,
-        job_keyvals=None).AndReturn(
-            commands.HWTestSuiteResult(None, None))
-
-    self.mox.ReplayAll()
-
-    # Setup preliminary values needed for scheduling autotests.
-    suite_name = 'paygen_au_foo'
-    archive_board = 'foo-board'
-    archive_build = 'foo-board-release/R99-1.2.3'
-    skip_duts_check = False
-    debug = False
-
-    paygen_build_lib.ScheduleAutotestTests(suite_name, archive_board,
-                                           archive_build, skip_duts_check,
-                                           debug)
-
-  def testScheduleAutotestTestsWarn(self):
-    """Test scheduling autotest tests with build autotest proxy."""
-    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-
-    timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
-    to_raise = failures_lib.TestWarning(
-        '** Suite passed with a warning code **')
-    paygen_build_lib.commands.RunHWTestSuite(
-        board='foo-board', build='foo-board-release/R99-1.2.3', file_bugs=True,
-        pool='bvt', priority=constants.HWTEST_BUILD_PRIORITY,
-        suite='paygen_au_foo', timeout_mins=timeout_mins,
-        retry=True, wait_for_results=True, suite_min_duts=2,
-        debug=False, skip_duts_check=False, job_keyvals=None).AndReturn(
-            commands.HWTestSuiteResult(to_raise, None))
-
-    self.mox.ReplayAll()
-
-    # Setup preliminary values needed for scheduling autotests.
-    suite_name = 'paygen_au_foo'
-    archive_board = 'foo-board'
-    archive_build = 'foo-board-release/R99-1.2.3'
-    skip_duts_check = False
-    debug = False
-
-    paygen_build_lib.ScheduleAutotestTests(suite_name, archive_board,
-                                           archive_build, skip_duts_check,
-                                           debug)
-
-  def testMapToArchive(self):
-    """Test that mapping to images archive names/locations works."""
-    self.mox.StubOutWithMock(urilib, 'ListFiles')
-    urilib.ListFiles(
-        gspaths.ChromeosImageArchive.BuildUri(
-            'foo_board', '*', '1.2.3')).AndReturn(
-                ['gs://foo-archive/foo_board/R11-1.2.3/somefile'])
-
-    self.mox.ReplayAll()
-
-    site_config = config_lib_unittest.MockSiteConfig()
-    site_config.Add('build_to_introduce_boards',
-                    boards=['foo_board', 'bar_board', 'bar-board'])
-
-    paygen = paygen_build_lib.PaygenBuild(self.foo_build, self.tempdir,
-                                          site_config)
-
-    # Case 1: mapping successful.
-    self.assertEqual(
-        paygen._MapToArchive('foo-board', '1.2.3'),
-        ('foo_board', 'foo_board/R11-1.2.3',
-         'gs://foo-archive/foo_board/R11-1.2.3'))
-
-    # Case 2: failure, too many build board names found.
-    with self.assertRaises(paygen_build_lib.ArchiveError):
-      paygen._MapToArchive('bar-board', '1.2.3')
-
-    # Case 3: failure, build board name not found.
-    with self.assertRaises(paygen_build_lib.ArchiveError):
-      paygen._MapToArchive('baz-board', '1.2.3')
-
-class PaygenJsonTests(cros_test_lib.MockTestCase):
-  """Test cases that require mocking paygen.json fetching."""
-  def setUp(self):
     # Clear json cache.
     paygen_build_lib.PaygenBuild._cachedPaygenJson = None
 
-    # Mock out the json load with parsed json data.
+    # Mock out fetching of paygen.json from GS.
+    self.mockGetJson = self.PatchObject(
+        paygen_build_lib, '_GetJson',
+        side_effect=lambda _: self.getParseTestPaygenJson())
+
+    # Mock a few more to ensure there is no accidental GS interaction.
+    self.mockUriList = self.PatchObject(urilib, 'ListFiles')
+
+
+  def getParseTestPaygenJson(self):
+    """Fetch raw parsed json from our test copy of paygen.json."""
+    # TODO: Add caching, so we don't keep loading/parsing the same file.
     paygen_json_file = os.path.join(os.path.dirname(__file__),
                                     'testdata', 'paygen.json')
     with open(paygen_json_file, 'r') as fp:
-      parsed_test_json = json.load(fp)
+      return json.load(fp)
 
-    self.mockGetJson = self.PatchObject(paygen_build_lib, '_GetJson',
-                                        return_value=parsed_test_json)
-
-  def tearDown(self):
-    # Clear json cache.
-    paygen_build_lib.PaygenBuild._cachedPaygenJson = None
+class PaygenJsonTests(BasePaygenBuildLibTest):
+  """Test cases that require mocking paygen.json fetching."""
 
   def testGetPaygenJsonCaching(self):
     result = paygen_build_lib.PaygenBuild.GetPaygenJson()
@@ -1524,7 +68,7 @@ class PaygenJsonTests(cros_test_lib.MockTestCase):
     self.mockGetJson.assert_not_called()
 
   def testGetPaygenJsonBoard(self):
-    result = paygen_build_lib.PaygenBuild.GetPaygenJson('unknown-board')
+    result = paygen_build_lib.PaygenBuild.GetPaygenJson('unknown')
     self.assertEqual(len(result), 0)
 
     result = paygen_build_lib.PaygenBuild.GetPaygenJson('auron-yuna')
@@ -1558,227 +102,1019 @@ class PaygenJsonTests(cros_test_lib.MockTestCase):
         paygen_build_lib.PaygenBuild.GetPaygenJson(
             'auron-yuna', 'stable-channel'))
 
+    # Look up data for a board with no payloads.
+    result = paygen_build_lib.PaygenBuild.GetPaygenJson(
+        'arkham', 'canary')
+    self.assertEqual(len(result), 0)
+
   def testValidateBoardConfig(self):
     """Test ValidateBoardConfig."""
     # Test a known board works.
     paygen_build_lib.ValidateBoardConfig('x86-mario')
+
+    # Test a known variant board works.
+    paygen_build_lib.ValidateBoardConfig('auron-yuna')
 
     # Test an unknown board doesn't.
     with self.assertRaises(paygen_build_lib.BoardNotConfigured):
       paygen_build_lib.ValidateBoardConfig('unknown')
 
 
-class PaygenBuildLibTest_ImageTypes(BasePaygenBuildLibTest):
-  """Test PaygenBuildLib class for mixed image types."""
+class BasePaygenBuildLibTestWithBuilds(BasePaygenBuildLibTest,
+                                       cros_test_lib.TempDirTestCase):
+  """Test PaygenBuildLib class."""
 
   def setUp(self):
-    self.prev_image = gspaths.Image(channel='foo-channel',
+    self.maxDiff = None
+
+    self.prev_build = gspaths.Build(bucket='crt',
+                                    channel='foo-channel',
                                     board='foo-board',
-                                    version='1.0.0',
-                                    key='mp')
-    self.prev2_image = gspaths.Image(channel='foo-channel',
-                                     board='foo-board',
-                                     version='1.1.0',
-                                     key='mp',
-                                     image_type='base')
-    self.prev3_image = gspaths.Image(channel='foo-channel',
-                                     board='foo-board',
-                                     version='1.2.0',
-                                     key='mp',
-                                     image_type='base')
-    self.foo_build = gspaths.Build(bucket='crt',
-                                   channel='foo-channel',
-                                   board='foo-board',
-                                   version='1.2.3')
-    self.images = self._GetBuildImages(self.foo_build)
-    self.basic_image, self.premp_image = self.images
+                                    version='1.0.0')
 
-  def _GetBuildImages(self, build):
-    """Create basic_image, npo_image, premp_image, premp_npo_image.
+    self.prev_image = gspaths.Image(key='mp', **self.prev_build)
+    self.prev_premp_image = gspaths.Image(key='premp', **self.prev_build)
+    self.prev_test_image = gspaths.UnsignedImageArchive(
+        image_type='test', **self.prev_build)
 
-    Args:
-      build: gspaths.Build object describing the build to create fake images
-        for.
-    """
-    # NPOs should have image_version incremented, but it doesn't matter for our
-    # testing.
-    basic_image = gspaths.Image(image_type='base', key='mp-v2', **build)
-    premp_image = gspaths.Image(image_type='base', key='premp', **build)
+    self.target_build = gspaths.Build(bucket='crt',
+                                      channel='foo-channel',
+                                      board='foo-board',
+                                      version='1.2.3')
 
-    # Code in several places depends on the order.
-    return [basic_image, premp_image]
+    # Create an additional 'special' image like NPO that isn't NPO,
+    # and keyed with a weird key. It should match none of the filters.
+    self.special_image = gspaths.Image(bucket='crt',
+                                       channel='foo-channel',
+                                       board='foo-board',
+                                       version='1.2.3',
+                                       key='foo-key',
+                                       image_channel='special-channel')
 
-  def testImageTypeFilter(self):
-    """Test filtering based on image types."""
-    self.assertEqual(paygen_build_lib._FilterForImageType([], ''), [])
-    images = list(self.images) + [self.prev_image, self.prev2_image,
-                                  self.prev3_image]
-    self.assertEqual(paygen_build_lib._FilterForImageType(images, 'base'),
-                     [self.basic_image, self.premp_image, self.prev2_image,
-                      self.prev3_image])
+    self.basic_image = gspaths.Image(key='mp-v2', **self.target_build)
+    self.premp_image = gspaths.Image(key='premp', **self.target_build)
+    self.test_image = gspaths.UnsignedImageArchive(
+        image_type='test', **self.target_build)
+
+    self.mp_full_payload = gspaths.Payload(tgt_image=self.basic_image)
+    self.test_full_payload = gspaths.Payload(tgt_image=self.test_image)
+    self.mp_delta_payload = gspaths.Payload(tgt_image=self.basic_image,
+                                            src_image=self.prev_image)
+    self.test_delta_payload = gspaths.Payload(tgt_image=self.test_image,
+                                              src_image=self.prev_test_image)
+
+    self.full_payload_test = paygen_build_lib.PayloadTest(
+        self.test_full_payload,
+        self.target_build.channel,
+        self.target_build.version)
+    self.delta_payload_test = paygen_build_lib.PayloadTest(
+        self.test_delta_payload)
+
+
+  def _GetPaygenBuildInstance(self,
+                              dry_run=False,
+                              skip_delta_payloads=False):
+    """Helper method to create a standard Paygen instance."""
+    return paygen_build_lib.PaygenBuild(self.target_build, self.tempdir,
+                                        config_lib_unittest.MockSiteConfig(),
+                                        dry_run=dry_run,
+                                        skip_delta_payloads=skip_delta_payloads)
+
+  def testGetFlagURI(self):
+    """Validate the helper method to create flag URIs for our current build."""
+    paygen = self._GetPaygenBuildInstance()
+
+    self.assertEqual(
+        paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK),
+        'gs://crt/foo-channel/foo-board/1.2.3/payloads/LOCK_flag')
+    self.assertEqual(
+        paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED),
+        'gs://crt/foo-channel/foo-board/1.2.3/payloads/FINISHED_flag')
+
+  def testFilterHelpers(self):
+    """Test _FilterForMp helper method."""
+
+    # All of the filter helpers should handle empty list.
+    self.assertEqual(paygen_build_lib._FilterForMp([]), [])
+    self.assertEqual(paygen_build_lib._FilterForPremp([]), [])
+    self.assertEqual(paygen_build_lib._FilterForBasic([]), [])
+
+    # prev_image lets us test with an 'mp' key, instead of an 'mp-v2' key.
+    images = [self.basic_image, self.premp_image,
+              self.special_image, self.prev_image]
+
+    self.assertEqual(paygen_build_lib._FilterForMp(images),
+                     [self.basic_image, self.prev_image])
+
+    self.assertEqual(paygen_build_lib._FilterForPremp(images),
+                     [self.premp_image])
+
+    self.assertEqual(paygen_build_lib._FilterForBasic(images),
+                     [self.basic_image, self.premp_image, self.prev_image])
+
+  def testMapToArchive(self):
+    """Test the _MapToArchive method."""
+    # TODO
+
+  def testValidateExpectedBuildImages(self):
+    """Test a function that validates expected images are found on a build."""
+    paygen = self._GetPaygenBuildInstance()
+
+    # Test with basic mp image only.
+    paygen._ValidateExpectedBuildImages(self.target_build, (self.basic_image,))
+
+    # Test with basic mp and mp npo images.
+    paygen._ValidateExpectedBuildImages(self.target_build, (self.basic_image,))
+    # Test with basic mp and premp images.
+    paygen._ValidateExpectedBuildImages(self.target_build, (self.basic_image,
+                                                            self.premp_image))
+
+    # Test with basic mp and premp images.
+    paygen._ValidateExpectedBuildImages(self.target_build, (self.basic_image,
+                                                            self.premp_image))
+
+    # Test with 4 different images.
+    paygen._ValidateExpectedBuildImages(self.target_build, (self.basic_image,
+                                                            self.premp_image))
+
+    # No images isn't valid.
+    with self.assertRaises(paygen_build_lib.ImageMissing):
+      paygen._ValidateExpectedBuildImages(self.target_build, [])
+
+    # More than one of the same type of image should trigger BuildCorrupt
+    with self.assertRaises(paygen_build_lib.BuildCorrupt):
+      paygen._ValidateExpectedBuildImages(self.target_build, (self.basic_image,
+                                                              self.basic_image))
+
+    # Unexpected images should trigger BuildCorrupt
+    with self.assertRaises(paygen_build_lib.BuildCorrupt):
+      paygen._ValidateExpectedBuildImages(self.target_build,
+                                          (self.basic_image,
+                                           self.special_image))
+
+
+class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
+  """Test discovery of images."""
 
   def testDiscoverImages(self):
     """Test _DiscoverSignedImages."""
     paygen = self._GetPaygenBuildInstance()
+
     uri_base = 'gs://crt/foo-channel/foo-board/1.2.3'
 
     uri_basic = os.path.join(
-        uri_base, 'chromeos_1.2.3_foo-board_base_foo-channel_mp-v3.bin')
+        uri_base, 'chromeos_1.2.3_foo-board_recovery_foo-channel_mp-v3.bin')
     uri_premp = os.path.join(
-        uri_base, 'chromeos_1.2.3_foo-board_base_foo-channel_premp.bin')
-    file_list_result = [uri_basic, uri_premp]
+        uri_base, 'chromeos_1.2.3_foo-board_recovery_foo-channel_premp.bin')
 
+    self.mockUriList.return_value = [uri_basic, uri_premp]
+
+    # Run the test.
+    result = paygen._DiscoverSignedImages(self.target_build)
+
+    # See if we got the results we expect.
     base_image_params = {'channel': 'foo-channel',
                          'board': 'foo-board',
                          'version': '1.2.3',
                          'bucket': 'crt'}
-    expected_basic = gspaths.Image(key='mp-v3',
-                                   image_type='base',
-                                   uri=uri_basic,
+    expected_basic = gspaths.Image(key='mp-v3', uri=uri_basic,
                                    **base_image_params)
-    expected_premp = gspaths.Image(key='premp',
-                                   image_type='base',
-                                   uri=uri_premp,
+    expected_premp = gspaths.Image(key='premp', uri=uri_premp,
                                    **base_image_params)
     expected_result = [expected_basic, expected_premp]
 
-    self._TestDiscoverArtifacts(
-        os.path.join(uri_base, 'chromeos_*_foo-board_*_*_*.bin'),
-        file_list_result,
-        paygen._DiscoverSignedImages,
-        [self.foo_build],
-        True,
-        expected_result)
+    self.assertEqual(result, expected_result)
 
-  def testDiscoverRequiredFromPreviousDeltas(self):
-    """Test _DiscoverRequiredFromPreviousDeltas."""
+  def testDiscoverTestImages(self):
+    """Test _DiscoverTestImages (success)."""
     paygen = self._GetPaygenBuildInstance()
 
-    images = [self.basic_image]
-    prevs = [self.prev_image, self.prev2_image, self.prev3_image]
+    uri_base = 'gs://crt/foo-channel/foo-board/1.2.3'
 
-    # Empty lists.
-    results = paygen._DiscoverRequiredFromPreviousDeltas([], [])
-    expected = []
-    self.assertEqual(results, expected)
+    uri_test_archive = os.path.join(
+        uri_base, 'ChromeOS-test-R12-1.2.3-foo-board.tar.xz')
+    self.mockUriList.return_value = [uri_test_archive]
 
-    # Empty previous list.
-    results = paygen._DiscoverRequiredFromPreviousDeltas(images, [])
-    expected = []
-    self.assertEqual(results, expected)
+    # Run the test.
+    result = paygen._DiscoverTestImage(self.target_build)
 
-    # Empty target list.
-    results = paygen._DiscoverRequiredFromPreviousDeltas([], prevs)
-    expected = []
-    self.assertEqual(results, expected)
+    expected_test_archive = gspaths.UnsignedImageArchive(
+        channel='foo-channel',
+        board='foo-board',
+        version='1.2.3',
+        bucket='crt',
+        uri=uri_test_archive,
+        milestone='R12',
+        image_type='test')
 
-    # Basic list.
-    results = paygen._DiscoverRequiredFromPreviousDeltas(images, prevs)
-    expected = [gspaths.Payload(tgt_image=self.basic_image,
-                                src_image=self.prev2_image),
-                gspaths.Payload(tgt_image=self.basic_image,
-                                src_image=self.prev3_image)]
-    self.assertEqual(results, expected)
+    self.assertEqual(result, expected_test_archive)
 
-    # Inverted order (should return nothing).
-    results = paygen._DiscoverRequiredFromPreviousDeltas(
-        [self.prev_image], images)
-    expected = []
-    self.assertEqual(results, expected)
+  def testDiscoverTestImagesMultipleResults(self):
+    """Test _DiscoverTestImages (fails due to multiple results)."""
+    paygen = self._GetPaygenBuildInstance()
+    uri_base = 'gs://crt/foo-channel/foo-board/1.2.3'
 
-  def testDiscoverRequiredPayloads(self):
-    """Test _DiscoverRequiredPayloads."""
+    uri_test_archive1 = os.path.join(
+        uri_base, 'ChromeOS-test-R12-1.2.3-foo-board.tar.xz')
+    uri_test_archive2 = os.path.join(
+        uri_base, 'ChromeOS-test-R13-1.2.3-foo-board.tar.xz')
+    self.mockUriList.return_value = [uri_test_archive1, uri_test_archive2]
+
+    # Run the test.
+    with self.assertRaises(paygen_build_lib.BuildCorrupt):
+      paygen._DiscoverTestImage(self.target_build)
+
+  def testDiscoverRequiredDeltasBuildToBuild(self):
+    """Test _DiscoverRequiredDeltasBuildToBuild"""
+    paygen = self._GetPaygenBuildInstance()
+
+    # Test the empty case.
+    results = paygen._DiscoverRequiredDeltasBuildToBuild([], [])
+    self.assertItemsEqual(results, [])
+
+    # Fully populated prev and current.
+    results = paygen._DiscoverRequiredDeltasBuildToBuild(
+        [self.prev_test_image],
+        [self.test_image])
+    self.assertItemsEqual(results, [
+        gspaths.Payload(src_image=self.prev_test_image,
+                        tgt_image=self.test_image),
+    ])
+
+    # Mismatch MP, PreMP
+    results = paygen._DiscoverRequiredDeltasBuildToBuild(
+        [self.prev_premp_image],
+        [self.basic_image])
+    self.assertItemsEqual(results, [])
+
+    # It's totally legal for a build to be signed for both PreMP and MP at the
+    # same time. If that happens we generate:
+    # MP -> MP, PreMP -> PreMP, test -> test.
+    results = paygen._DiscoverRequiredDeltasBuildToBuild(
+        [self.prev_image, self.prev_premp_image, self.prev_test_image],
+        [self.basic_image, self.premp_image, self.test_image])
+    self.assertItemsEqual(results, [
+        gspaths.Payload(src_image=self.prev_image,
+                        tgt_image=self.basic_image),
+        gspaths.Payload(src_image=self.prev_premp_image,
+                        tgt_image=self.premp_image),
+        gspaths.Payload(src_image=self.prev_test_image,
+                        tgt_image=self.test_image),
+    ])
+
+
+class MockImageDiscoveryHelper(BasePaygenBuildLibTest):
+  """Tests DiscoverRequiredPayloads using a fixed paygen.json from testdata."""
+
+  def setUp(self):
+    # We want to use a dict as dict key, but can't.
+    # Use a list of key, value tuples.
+    self.signedResults = []
+    self.testResults = []
+
+    self.PatchObject(
+        paygen_build_lib.PaygenBuild, '_DiscoverSignedImages',
+        side_effect=self._DiscoverSignedImages)
+    self.PatchObject(
+        paygen_build_lib.PaygenBuild, '_DiscoverTestImage',
+        side_effect=self._DiscoverTestImage)
+
+  def _DiscoverSignedImages(self, build):
+    for b, images in self.signedResults:
+      if build == b:
+        return images
+    raise paygen_build_lib.ImageMissing(build)
+
+  def _DiscoverTestImage(self, build):
+    for b, images in self.testResults:
+      if build == b:
+        return images
+    raise paygen_build_lib.ImageMissing()
+
+  def addSignedImage(self, build, key='mp'):
+    images = []
+    for i in xrange(len(self.signedResults)):
+      if build == self.signedResults[i][0]:
+        images = self.signedResults[i][1]
+        self.signedResults.pop(i)
+        break
+
+    image = gspaths.Image(key=key, image_version=build.version,
+                          image_type='recovery', **build)
+    images.append(image)
+    self.signedResults.append((build, images))
+    return image
+
+  def addTestImage(self, build):
+    for i in xrange(len(self.testResults)):
+      if build == self.testResults[i][0]:
+        self.testResults.pop(i)
+        break
+
+    image = gspaths.UnsignedImageArchive(**build)
+    self.testResults.append((build, image))
+    return image
+
+
+class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
+                                                 cros_test_lib.TempDirTestCase):
+  """Test deciding what payloads to generate."""
+
+  def _GetPaygenBuildInstance(self, build, skip_delta_payloads=False):
+    """Helper method to create a standard Paygen instance."""
+    return paygen_build_lib.PaygenBuild(
+        build, self.tempdir,
+        config_lib_unittest.MockSiteConfig(),
+        skip_delta_payloads=skip_delta_payloads)
+
+  def testImagesNotReady(self):
+    """See that we do the right thing if there are no images for the build."""
+    target_build = gspaths.Build(bucket='crt',
+                                 channel='canary-channel',
+                                 board='auron-yuna',
+                                 version='9999.0.0')
+
+    paygen = self._GetPaygenBuildInstance(target_build)
+
+    with self.assertRaises(paygen_build_lib.BuildNotReady):
+      paygen._DiscoverRequiredPayloads()
+
+    # Re-run with a test image, but no signed images.
+    self.addTestImage(target_build)
+    with self.assertRaises(paygen_build_lib.BuildNotReady):
+      paygen._DiscoverRequiredPayloads()
+
+  def testCanaryEverything(self):
+    """Handle the canary payloads and tests."""
+    # Make our random strings deterministic for testing.
+    self.PatchObject(gspaths, '_RandomString', return_value='<random>')
+
+    target_build = gspaths.Build(bucket='crt',
+                                 channel='canary-channel',
+                                 board='auron-yuna',
+                                 version='9999.0.0')
+    prev_build = gspaths.Build(bucket='crt',
+                               channel='canary-channel',
+                               board='auron-yuna',
+                               version='9756.0.0')
+
+    # Create our images.
+    premp_image = self.addSignedImage(target_build, key='premp')
+    mp_image = self.addSignedImage(target_build)
+    test_image = self.addTestImage(target_build)
+    prev_premp_image = self.addSignedImage(prev_build, key='premp')
+    prev_mp_image = self.addSignedImage(prev_build)
+    prev_test_image = self.addTestImage(prev_build)
+
+    # Run the test.
+    paygen = self._GetPaygenBuildInstance(target_build)
+    payloads, tests = paygen._DiscoverRequiredPayloads()
+
+    # pylint: disable=line-too-long
+    # Define the expected payloads, including URLs.
+    mp_full = gspaths.Payload(
+        tgt_image=mp_image,
+        uri='gs://crt/canary-channel/auron-yuna/9999.0.0/payloads/chromeos_9999.0.0_auron-yuna_canary-channel_full_mp.bin-<random>.signed')
+    premp_full = gspaths.Payload(
+        tgt_image=premp_image,
+        uri='gs://crt/canary-channel/auron-yuna/9999.0.0/payloads/chromeos_9999.0.0_auron-yuna_canary-channel_full_premp.bin-<random>.signed')
+    test_full = gspaths.Payload(
+        tgt_image=test_image,
+        uri='gs://crt/canary-channel/auron-yuna/9999.0.0/payloads/chromeos_9999.0.0_auron-yuna_canary-channel_full_test.bin-<random>')
+    n2n_delta = gspaths.Payload(
+        tgt_image=test_image,
+        src_image=test_image,
+        uri='gs://crt/canary-channel/auron-yuna/9999.0.0/payloads/chromeos_9999.0.0-9999.0.0_auron-yuna_canary-channel_delta_test.bin-<random>')
+    mp_delta = gspaths.Payload(
+        tgt_image=mp_image,
+        src_image=prev_mp_image,
+        uri='gs://crt/canary-channel/auron-yuna/9999.0.0/payloads/chromeos_9756.0.0-9999.0.0_auron-yuna_canary-channel_delta_mp.bin-<random>.signed')
+    premp_delta = gspaths.Payload(
+        tgt_image=premp_image,
+        src_image=prev_premp_image,
+        uri='gs://crt/canary-channel/auron-yuna/9999.0.0/payloads/chromeos_9756.0.0-9999.0.0_auron-yuna_canary-channel_delta_premp.bin-<random>.signed')
+    test_delta = gspaths.Payload(
+        tgt_image=test_image,
+        src_image=prev_test_image,
+        uri='gs://crt/canary-channel/auron-yuna/9999.0.0/payloads/chromeos_9756.0.0-9999.0.0_auron-yuna_canary-channel_delta_test.bin-<random>')
+
+    # Verify the results.
+    self.assertItemsEqual(
+        payloads,
+        [
+            mp_full,
+            premp_full,
+            test_full,
+            n2n_delta,
+            mp_delta,
+            premp_delta,
+            test_delta,
+        ])
+
+    self.assertItemsEqual(
+        tests,
+        [
+            paygen_build_lib.PayloadTest(test_full,
+                                         'canary-channel', '9999.0.0'),
+            paygen_build_lib.PayloadTest(n2n_delta),
+            paygen_build_lib.PayloadTest(test_delta),
+        ])
+
+  def testCanaryPrempMismatch(self):
+    """Handle the canary payloads and testss."""
+    target_build = gspaths.Build(bucket='crt',
+                                 channel='canary-channel',
+                                 board='auron-yuna',
+                                 version='9999.0.0')
+    prev_build = gspaths.Build(bucket='crt',
+                               channel='canary-channel',
+                               board='auron-yuna',
+                               version='9756.0.0')
+
+    # Create our images.
+    mp_image = self.addSignedImage(target_build)
+    test_image = self.addTestImage(target_build)
+    _prev_premp_image = self.addSignedImage(prev_build, key='premp')
+    prev_test_image = self.addTestImage(prev_build)
+
+    # Run the test.
+    paygen = self._GetPaygenBuildInstance(target_build)
+    payloads, tests = paygen._DiscoverRequiredPayloads()
+
+    # Define the expected payloads. Test delta from prev, but no signed ones.
+    mp_full = gspaths.Payload(tgt_image=mp_image, uri=mock.ANY)
+    test_full = gspaths.Payload(tgt_image=test_image, uri=mock.ANY)
+    n2n_delta = gspaths.Payload(tgt_image=test_image, src_image=test_image,
+                                uri=mock.ANY)
+    test_delta = gspaths.Payload(tgt_image=test_image,
+                                 src_image=prev_test_image,
+                                 uri=mock.ANY)
+
+    # Verify the results.
+    self.assertItemsEqual(
+        payloads,
+        [
+            mp_full,
+            test_full,
+            n2n_delta,
+            test_delta,
+        ])
+
+    self.assertItemsEqual(
+        tests,
+        [
+            paygen_build_lib.PayloadTest(test_full,
+                                         'canary-channel', '9999.0.0'),
+            paygen_build_lib.PayloadTest(n2n_delta),
+            paygen_build_lib.PayloadTest(test_delta),
+        ])
+
+  def testCanarySkipDeltas(self):
+    """Handle the canary payloads and testss."""
+    target_build = gspaths.Build(bucket='crt',
+                                 channel='canary-channel',
+                                 board='auron-yuna',
+                                 version='9999.0.0')
+    prev_build = gspaths.Build(bucket='crt',
+                               channel='canary-channel',
+                               board='auron-yuna',
+                               version='9756.0.0')
+
+    # Create our images.
+    mp_image = self.addSignedImage(target_build)
+    test_image = self.addTestImage(target_build)
+    _prev_premp_image = self.addSignedImage(prev_build, key='premp')
+    _prev_test_image = self.addTestImage(prev_build)
+
+    # Run the test.
+    paygen = self._GetPaygenBuildInstance(
+        target_build, skip_delta_payloads=True)
+    payloads, tests = paygen._DiscoverRequiredPayloads()
+
+    # Define the expected payloads. Test delta from prev, but no signed ones.
+    mp_full = gspaths.Payload(tgt_image=mp_image, uri=mock.ANY)
+    test_full = gspaths.Payload(tgt_image=test_image, uri=mock.ANY)
+
+    # Verify the results.
+    self.assertItemsEqual(
+        payloads,
+        [
+            mp_full,
+            test_full,
+        ])
+
+    self.assertItemsEqual(
+        tests,
+        [
+            paygen_build_lib.PayloadTest(test_full,
+                                         'canary-channel', '9999.0.0'),
+        ])
+
+  def testStable(self):
+    """Handle the canary payloads and testss."""
+    target_build = gspaths.Build(bucket='crt',
+                                 channel='stable-channel',
+                                 board='auron-yuna',
+                                 version='9999.0.0')
+    build_8530 = gspaths.Build(bucket='crt',
+                               channel='stable-channel',
+                               board='auron-yuna',
+                               version='8530.96.0')
+    build_8743 = gspaths.Build(bucket='crt',
+                               channel='stable-channel',
+                               board='auron-yuna',
+                               version='8743.85.0')
+    build_8872 = gspaths.Build(bucket='crt',
+                               channel='stable-channel',
+                               board='auron-yuna',
+                               version='8872.76.0')
+    build_9000 = gspaths.Build(bucket='crt',
+                               channel='stable-channel',
+                               board='auron-yuna',
+                               version='9000.91.0')
+    build_9202 = gspaths.Build(bucket='crt',
+                               channel='stable-channel',
+                               board='auron-yuna',
+                               version='9202.64.0')
+    build_9334 = gspaths.Build(bucket='crt',
+                               channel='stable-channel',
+                               board='auron-yuna',
+                               version='9334.72.0')
+    build_9460 = gspaths.Build(bucket='crt',
+                               channel='stable-channel',
+                               board='auron-yuna',
+                               version='9460.60.0')
+    build_9460_67 = gspaths.Build(bucket='crt',
+                                  channel='stable-channel',
+                                  board='auron-yuna',
+                                  version='9460.67.0')
+
+    # Create our images, ignore FSI 6457.83.0, 7390.68.0
+    mp_image = self.addSignedImage(target_build)
+    test_image = self.addTestImage(target_build)
+
+    image_8530 = self.addSignedImage(build_8530)
+    test_image_8530 = self.addTestImage(build_8530)
+
+    image_8743 = self.addSignedImage(build_8743)
+    test_image_8743 = self.addTestImage(build_8743)
+
+    image_8872 = self.addSignedImage(build_8872)
+    test_image_8872 = self.addTestImage(build_8872)
+
+    image_9000 = self.addSignedImage(build_9000)
+    test_image_9000 = self.addTestImage(build_9000)
+
+    image_9202 = self.addSignedImage(build_9202)
+    test_image_9202 = self.addTestImage(build_9202)
+
+    image_9334 = self.addSignedImage(build_9334)
+    test_image_9334 = self.addTestImage(build_9334)
+
+    image_9460 = self.addSignedImage(build_9460)
+    test_image_9460 = self.addTestImage(build_9460)
+
+    image_9460_67 = self.addSignedImage(build_9460_67)
+    test_image_9460_67 = self.addTestImage(build_9460_67)
+
+    # Run the test.
+    paygen = self._GetPaygenBuildInstance(target_build)
+    payloads, tests = paygen._DiscoverRequiredPayloads()
+
+    # Define the expected payloads. Test delta from prev, but no signed ones.
+    mp_full = gspaths.Payload(tgt_image=mp_image, uri=mock.ANY)
+    test_full = gspaths.Payload(tgt_image=test_image, uri=mock.ANY)
+    n2n_delta = gspaths.Payload(tgt_image=test_image, src_image=test_image,
+                                uri=mock.ANY)
+
+    mp_delta_8530 = gspaths.Payload(
+        tgt_image=mp_image, src_image=image_8530, uri=mock.ANY)
+    test_delta_8530 = gspaths.Payload(
+        tgt_image=test_image, src_image=test_image_8530, uri=mock.ANY)
+    mp_delta_8743 = gspaths.Payload(
+        tgt_image=mp_image, src_image=image_8743, uri=mock.ANY)
+    test_delta_8743 = gspaths.Payload(
+        tgt_image=test_image, src_image=test_image_8743, uri=mock.ANY)
+    mp_delta_8872 = gspaths.Payload(
+        tgt_image=mp_image, src_image=image_8872, uri=mock.ANY)
+    test_delta_8872 = gspaths.Payload(
+        tgt_image=test_image, src_image=test_image_8872, uri=mock.ANY)
+    mp_delta_9000 = gspaths.Payload(
+        tgt_image=mp_image, src_image=image_9000, uri=mock.ANY)
+    test_delta_9000 = gspaths.Payload(
+        tgt_image=test_image, src_image=test_image_9000, uri=mock.ANY)
+    mp_delta_9202 = gspaths.Payload(
+        tgt_image=mp_image, src_image=image_9202, uri=mock.ANY)
+    test_delta_9202 = gspaths.Payload(
+        tgt_image=test_image, src_image=test_image_9202, uri=mock.ANY)
+    mp_delta_9334 = gspaths.Payload(
+        tgt_image=mp_image, src_image=image_9334, uri=mock.ANY)
+    test_delta_9334 = gspaths.Payload(
+        tgt_image=test_image, src_image=test_image_9334, uri=mock.ANY)
+    mp_delta_9460 = gspaths.Payload(
+        tgt_image=mp_image, src_image=image_9460, uri=mock.ANY)
+    test_delta_9460 = gspaths.Payload(
+        tgt_image=test_image, src_image=test_image_9460, uri=mock.ANY)
+    mp_delta_9460_67 = gspaths.Payload(
+        tgt_image=mp_image, src_image=image_9460_67, uri=mock.ANY)
+    test_delta_9460_67 = gspaths.Payload(
+        tgt_image=test_image, src_image=test_image_9460_67, uri=mock.ANY)
+
+    # Verify the results.
+    self.assertItemsEqual(
+        payloads,
+        [
+            mp_full,
+            test_full,
+            n2n_delta,
+            mp_delta_8530, test_delta_8530,
+            mp_delta_8743, test_delta_8743,
+            mp_delta_8872, test_delta_8872,
+            mp_delta_9000, test_delta_9000,
+            mp_delta_9202, test_delta_9202,
+            mp_delta_9334, test_delta_9334,
+            mp_delta_9460, test_delta_9460,
+            mp_delta_9460_67, test_delta_9460_67,
+        ])
+
+    self.assertItemsEqual(
+        tests,
+        [
+            paygen_build_lib.PayloadTest(
+                test_full, 'stable-channel', '9999.0.0'),
+            paygen_build_lib.PayloadTest(
+                test_full, 'stable-channel', '8530.96.0'),
+            paygen_build_lib.PayloadTest(n2n_delta),
+            paygen_build_lib.PayloadTest(test_delta_8530),
+            paygen_build_lib.PayloadTest(test_delta_8743),
+            paygen_build_lib.PayloadTest(test_delta_8872),
+            paygen_build_lib.PayloadTest(test_delta_9000),
+            paygen_build_lib.PayloadTest(test_delta_9202),
+            paygen_build_lib.PayloadTest(test_delta_9334),
+            paygen_build_lib.PayloadTest(test_delta_9460),
+            # test_image_9460_67 had test turned off in json.
+        ])
+
+
+class TestPayloadGeneration(BasePaygenBuildLibTestWithBuilds):
+  """Test GeneratePayloads method."""
+
+  def testGeneratePayloads(self):
+    """Test paygen_build_lib._GeneratePayloads, no dry_run."""
+    poolMock = self.PatchObject(parallel, 'RunTasksInProcessPool')
+
+    paygen = self._GetPaygenBuildInstance()
+    paygen._GeneratePayloads((self.mp_full_payload,
+                              self.mp_delta_payload,
+                              self.test_delta_payload))
+
+    self.assertEqual(
+        poolMock.call_args_list,
+        [mock.call(paygen_build_lib._GenerateSinglePayload,
+                   [(self.mp_full_payload, self.tempdir, True, False),
+                    (self.mp_delta_payload, self.tempdir, True, False),
+                    (self.test_delta_payload, self.tempdir, False, False)])])
+
+  def testGeneratePayloadsDryrun(self):
+    """Ensure we correctly pass along the dryrun flag."""
+    poolMock = self.PatchObject(parallel, 'RunTasksInProcessPool')
+
+    paygen = self._GetPaygenBuildInstance(dry_run=True)
+    paygen._GeneratePayloads((self.mp_full_payload,
+                              self.mp_delta_payload,
+                              self.test_delta_payload))
+
+    self.assertEqual(
+        poolMock.call_args_list,
+        [mock.call(paygen_build_lib._GenerateSinglePayload,
+                   [(self.mp_full_payload, self.tempdir, True, True),
+                    (self.mp_delta_payload, self.tempdir, True, True),
+                    (self.test_delta_payload, self.tempdir, False, True)])])
+
+  def testGeneratePayloadInProcess(self):
+    """Make sure the _GenerateSinglePayload calls into paygen_payload_lib."""
+    createMock = self.PatchObject(
+        paygen_payload_lib, 'CreateAndUploadPayload')
+
+    paygen_build_lib._GenerateSinglePayload(
+        self.test_delta_payload, self.tempdir, False, False)
+
+    self.assertEqual(
+        createMock.call_args_list,
+        [mock.call(self.test_delta_payload,
+                   mock.ANY,
+                   work_dir=self.tempdir,
+                   sign=False,
+                   dry_run=False)])
+
+  def testCleanupBuild(self):
+    """Test PaygenBuild._CleanupBuild."""
+    removeMock = self.PatchObject(gslib, 'Remove')
 
     paygen = self._GetPaygenBuildInstance()
 
-    output_uri = 'gs://foo'
+    paygen._CleanupBuild()
 
-    self.mox.StubOutWithMock(paygen, '_DiscoverSignedImages')
-    self.mox.StubOutWithMock(paygen, '_DiscoverTestImages')
-    self.mox.StubOutWithMock(paygen, '_DiscoverNmoBuild')
-    self.mox.StubOutWithMock(paygen, '_DiscoverFsiBuildsForDeltas')
-    self.mox.StubOutWithMock(paygen_payload_lib, 'DefaultPayloadUri')
+    self.assertEqual(
+        removeMock.call_args_list,
+        [mock.call('gs://crt/foo-channel/foo-board/1.2.3/payloads/signing',
+                   recurse=True, ignore_no_match=True)])
 
-    nmo_build = gspaths.Build(bucket='crt',
-                              channel='foo-channel',
-                              board='foo-board',
-                              version='1.2.2')
-    fsi1_build = gspaths.Build(bucket='crt',
-                               channel='foo-channel',
-                               board='foo-board',
-                               version='1.0.0')
-    fsi2_build = gspaths.Build(bucket='crt',
-                               channel='foo-channel',
-                               board='foo-board',
-                               version='1.1.0')
+class TestCreatePayloads(BasePaygenBuildLibTestWithBuilds):
+  """Test CreatePayloads."""
+  def setUp(self):
+    self.mockCreate = self.PatchObject(gslib, 'CreateWithContents')
+    self.mockExists = self.PatchObject(gslib, 'Exists')
+    self.mockRemove = self.PatchObject(gslib, 'Remove')
+    self.mockLock = self.PatchObject(gslock, 'Lock')
 
-    nmo_images = self._GetBuildImages(nmo_build)
-    fsi1_images = self._GetBuildImages(fsi1_build)
-    fsi1_test_image = self._GetBuildTestImage(fsi1_build)
-    fsi2_images = self._GetBuildImages(fsi2_build)
-    fsi2_test_image = self._GetBuildTestImage(fsi2_build)
+    self.mockDiscover = self.PatchObject(
+        paygen_build_lib.PaygenBuild, '_DiscoverRequiredPayloads')
+    self.mockGenerate = self.PatchObject(
+        paygen_build_lib.PaygenBuild, '_GeneratePayloads')
+    self.mockArchive = self.PatchObject(
+        paygen_build_lib.PaygenBuild, '_MapToArchive')
+    self.mockAutotest = self.PatchObject(
+        paygen_build_lib.PaygenBuild, '_AutotestPayloads')
+    self.mockCleanup = self.PatchObject(
+        paygen_build_lib.PaygenBuild, '_CleanupBuild')
+    self.mockExisting = self.PatchObject(
+        paygen_payload_lib, 'FindExistingPayloads')
 
-    paygen._DiscoverSignedImages(paygen._build).AndReturn(self.images)
-    paygen._DiscoverTestImages(paygen._build).AndReturn([])
-    paygen._DiscoverFsiBuildsForDeltas().AndReturn([fsi1_build, fsi2_build])
-    paygen._DiscoverSignedImages(fsi1_build).AndReturn(fsi1_images)
-    paygen._DiscoverTestImages(fsi1_build).AndReturn([fsi1_test_image])
-    paygen._DiscoverSignedImages(fsi2_build).AndReturn(fsi2_images)
-    paygen._DiscoverTestImages(fsi2_build).AndReturn([fsi2_test_image])
-    paygen._DiscoverNmoBuild().AndReturn([nmo_build])
-    paygen._DiscoverSignedImages(nmo_build).AndReturn(nmo_images)
-    paygen._DiscoverTestImages(nmo_build).AndReturn([])
+  def testCreatePayloadsLockedBuild(self):
+    self.mockLock.side_effect = gslock.LockNotAcquired
 
-    # Simplify the output URIs, so it's easy to check them below.
-    paygen_payload_lib.DefaultPayloadUri(
-        mox.IsA(gspaths.Payload), None).MultipleTimes().AndReturn(output_uri)
+    paygen = self._GetPaygenBuildInstance()
 
-    # Run the test verification.
-    self.mox.ReplayAll()
+    with self.assertRaises(paygen_build_lib.BuildLocked):
+      paygen.CreatePayloads()
 
-    self.maxDiff = None
+  def testCreatePayloadsFinishedBuild(self):
+    """Test paygen_build_lib._GeneratePayloads if the build marked finished."""
+    self.mockExists.return_value = True
 
-    payload_manager = paygen._DiscoverRequiredPayloads()
+    paygen = self._GetPaygenBuildInstance()
+    finished_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
 
-    expected = [
-        gspaths.Payload(tgt_image=self.basic_image, uri=output_uri,
-                        labels=['full']),
-        gspaths.Payload(tgt_image=self.premp_image, uri=output_uri,
-                        labels=['full']),
+    with self.assertRaises(paygen_build_lib.BuildFinished):
+      paygen.CreatePayloads()
 
-        gspaths.Payload(tgt_image=nmo_images[0], uri=output_uri,
-                        labels=['full', 'previous']),
-        gspaths.Payload(tgt_image=nmo_images[1], uri=output_uri,
-                        labels=['full', 'previous']),
-        # No NPO Deltas because the basic images have different image types.
+    self.mockExists.assert_called_once(finished_uri)
 
-        # NMO deltas.
-        gspaths.Payload(tgt_image=self.basic_image,
-                        src_image=nmo_images[0],
-                        uri=output_uri,
-                        labels=['delta', 'previous']),
-        gspaths.Payload(tgt_image=self.premp_image,
-                        src_image=nmo_images[1],
-                        uri=output_uri,
-                        labels=['delta', 'previous']),
+    self.assertEqual(self.mockCleanup.call_args_list, [mock.call()])
 
-        # FSI Deltas.
-        gspaths.Payload(tgt_image=self.basic_image,
-                        src_image=fsi1_images[0],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.premp_image,
-                        src_image=fsi1_images[1],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.basic_image,
-                        src_image=fsi2_images[0],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.premp_image,
-                        src_image=fsi2_images[1],
-                        uri=output_uri,
-                        labels=['delta', 'fsi'])]
+  def testCreatePayloadsBuildNotReady(self):
+    """Test paygen_build_lib._GeneratePayloads if not all images are there."""
+    self.mockExists.return_value = False
+    self.mockDiscover.side_effect = paygen_build_lib.BuildNotReady
 
-    results = payload_manager.Get([])
-    self.assertItemsEqual(sorted(results), sorted(expected))
+    paygen = self._GetPaygenBuildInstance()
+
+    with self.assertRaises(paygen_build_lib.BuildNotReady):
+      paygen.CreatePayloads()
+
+    self.assertEqual(self.mockCleanup.call_args_list, [mock.call()])
+
+  def testCreatePayloadsCreateFailed(self):
+    """Test paygen_build_lib._GeneratePayloads if payload generation failed."""
+    mockException = Exception
+
+    self.mockGenerate.side_effect = mockException
+
+    paygen = self._GetPaygenBuildInstance()
+
+    with self.assertRaises(mockException):
+      paygen.CreatePayloads()
+
+    self.assertEqual(self.mockCleanup.call_args_list, [mock.call()])
+
+  def testCreatePayloadsSuccess(self):
+    """Test paygen_build_lib._GeneratePayloads success."""
+    self.mockArchive.return_value = (
+        'archive_board', 'archive_build', 'archive_build_uri')
+    self.mockAutotest.return_value = 'suite_name'
+    self.mockExisting.return_value = None
+
+    payloads = [
+        self.mp_full_payload,
+        self.test_full_payload,
+        self.test_delta_payload,
+    ]
+    payload_tests = [
+        self.full_payload_test,
+        self.delta_payload_test,
+    ]
+
+    self.mockExists.return_value = False
+    self.mockDiscover.return_value = (payloads, payload_tests)
+
+    paygen = self._GetPaygenBuildInstance()
+
+    testdata = paygen.CreatePayloads()
+
+    self.assertEqual(
+        testdata,
+        ('suite_name', 'archive_board', 'archive_build',
+         'gs://crt/foo-channel/foo-board/1.2.3/payloads/FINISHED_flag')
+    )
+
+    self.assertEqual(self.mockGenerate.call_args_list, [
+        mock.call(payloads),
+    ])
+
+    self.assertEqual(self.mockArchive.call_args_list, [
+        mock.call('foo-board', '1.2.3'),
+    ])
+
+    self.assertEqual(self.mockAutotest.call_args_list, [
+        mock.call(payload_tests),
+    ])
+
+    self.assertEqual(self.mockCleanup.call_args_list, [mock.call()])
+
+  def testCreatePayloadsSuccessAllExist(self):
+    """Test paygen_build_lib._GeneratePayloads success."""
+    self.mockArchive.return_value = (
+        'archive_board', 'archive_build', 'archive_build_uri')
+    self.mockAutotest.return_value = 'suite_name'
+    self.mockExisting.return_value = ['existing_url']
+
+    payloads = [
+        self.mp_full_payload,
+        self.test_full_payload,
+        self.test_delta_payload,
+    ]
+    payload_tests = [
+        self.full_payload_test,
+        self.delta_payload_test,
+    ]
+
+    self.mockExists.return_value = False
+    self.mockDiscover.return_value = (payloads, payload_tests)
+
+    paygen = self._GetPaygenBuildInstance()
+
+    testdata = paygen.CreatePayloads()
+
+    self.assertEqual(
+        testdata,
+        ('suite_name', 'archive_board', 'archive_build',
+         'gs://crt/foo-channel/foo-board/1.2.3/payloads/FINISHED_flag')
+    )
+
+    # Note... no payloads were generated.
+    self.assertEqual(self.mockGenerate.call_args_list, [])
+
+    self.assertEqual(self.mockArchive.call_args_list, [
+        mock.call('foo-board', '1.2.3'),
+    ])
+
+    self.assertEqual(self.mockAutotest.call_args_list, [
+        mock.call(payload_tests),
+    ])
+
+    self.assertEqual(self.mockCleanup.call_args_list, [mock.call()])
+
+class TestAutotestPayloadsPayloads(BasePaygenBuildLibTestWithBuilds):
+  """Test autotest tarball generation."""
+  def setUp(self):
+    # For autotest, we have to look up URLs for old builds. Mock out lookup.
+    self.mockFind = self.PatchObject(
+        paygen_build_lib.PaygenBuild, '_FindFullTestPayloads',
+        side_effect=lambda channel, version: ['%s_%s_uri' % (channel, version)])
+
+    self.mockExists = self.PatchObject(
+        urilib, 'Exists',
+        side_effect=lambda uri: uri and uri.endswith('stateful.tgz'))
+
+    self.mockCopy = self.PatchObject(gslib, 'Copy')
+
+
+    # Our images have to exist, and have URIs for autotest.
+    self.test_image.uri = 'test_image_uri'
+    self.prev_test_image.uri = 'prev_test_image_uri'
+
+  def testAutotestPayloadsSuccess(self):
+    payload_tests = [
+        self.full_payload_test,
+        self.delta_payload_test,
+    ]
+
+    paygen = self._GetPaygenBuildInstance()
+
+    # These are normally set during CreatePayloads.
+    paygen._archive_board = 'archive_board'
+    paygen._archive_build = 'archive_board/R62-9778.0.0'
+    paygen._archive_build_uri = 'archive_uri'
+
+    paygen._AutotestPayloads(payload_tests)
+
+    tarball_path = os.path.join(
+        self.tempdir, 'autotests/paygen_au_foo_control.tar.bz2')
+
+    # Verify that we uploaded the results correctly.
+    self.assertEqual(self.mockCopy.call_args_list, [
+        mock.call(tarball_path, 'archive_uri/paygen_au_foo_control.tar.bz2',
+                  acl='public-read'),
+    ])
+
+    delta_ctrl = 'autotest/au_control_files/control.paygen_au_foo_delta_1.0.0'
+    full_ctrl = 'autotest/au_control_files/control.paygen_au_foo_full_1.2.3'
+
+    # Verify tarfile contents.
+    with tarfile.open(tarball_path) as t:
+      self.assertItemsEqual(
+          t.getnames(),
+          ['autotest/au_control_files', delta_ctrl, full_ctrl])
+
+      delta_fp = t.extractfile(delta_ctrl)
+      delta_contents = delta_fp.read()
+      delta_fp.close()
+
+      full_fp = t.extractfile(full_ctrl)
+      full_contents = full_fp.read()
+      full_fp.close()
+
+    # We only checking the beginning to avoid the very long doc string.
+    self.assertTrue(delta_contents.startswith("""name = 'paygen_au_foo'
+update_type = 'delta'
+source_release = '1.0.0'
+target_release = '1.2.3'
+target_payload_uri = 'None'
+SUITE = 'paygen_au_foo'
+source_payload_uri = 'foo-channel_1.0.0_uri'
+source_archive_uri = 'gs://chromeos-releases/foo-channel/foo-board/1.0.0'
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import logging
+from autotest_lib.client.bin import sysinfo
+from autotest_lib.client.common_lib import error, utils
+from autotest_lib.client.cros import constants
+from autotest_lib.server import host_attributes
+
+AUTHOR = "Chromium OS"
+NAME = "autoupdate_EndToEndTest_paygen_au_foo_delta_1.0.0"
+TIME = "MEDIUM"
+TEST_CATEGORY = "Functional"
+TEST_CLASS = "platform"
+TEST_TYPE = "server"
+JOB_RETRIES = 1
+BUG_TEMPLATE = {
+    'cc': ['chromeos-installer-alerts@google.com'],
+    'components': ['Internals>Installer'],
+}
+
+# Skip provision special task for AU tests.
+DEPENDENCIES = "skip_provision"
+
+# Disable server-side packaging support for this test.
+# This control file is used as the template for paygen_au_canary suite, which
+# creates the control files during paygen. Therefore, autotest server package
+# does not have these test control files for paygen_au_canary suite.
+REQUIRE_SSP = False
+
+DOC ="""))
+
+    # We only checking the beginning to avoid the very long doc string.
+    self.assertTrue(full_contents.startswith("""name = 'paygen_au_foo'
+update_type = 'full'
+source_release = '1.2.3'
+target_release = '1.2.3'
+target_payload_uri = 'None'
+SUITE = 'paygen_au_foo'
+source_payload_uri = 'foo-channel_1.2.3_uri'
+source_archive_uri = 'gs://chromeos-releases/foo-channel/foo-board/1.2.3'
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import logging
+from autotest_lib.client.bin import sysinfo
+from autotest_lib.client.common_lib import error, utils
+from autotest_lib.client.cros import constants
+from autotest_lib.server import host_attributes
+
+AUTHOR = "Chromium OS"
+NAME = "autoupdate_EndToEndTest_paygen_au_foo_full_1.2.3"
+TIME = "MEDIUM"
+TEST_CATEGORY = "Functional"
+TEST_CLASS = "platform"
+TEST_TYPE = "server"
+JOB_RETRIES = 1
+BUG_TEMPLATE = {
+    'cc': ['chromeos-installer-alerts@google.com'],
+    'components': ['Internals>Installer'],
+}
+
+# Skip provision special task for AU tests.
+DEPENDENCIES = "skip_provision"
+
+# Disable server-side packaging support for this test.
+# This control file is used as the template for paygen_au_canary suite, which
+# creates the control files during paygen. Therefore, autotest server package
+# does not have these test control files for paygen_au_canary suite.
+REQUIRE_SSP = False
+
+DOC ="""))

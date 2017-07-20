@@ -457,14 +457,14 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
             site_config=self._run.site_config,
             dry_run=self.debug,
             skip_delta_payloads=self.skip_delta_payloads,
-            disable_tests=self.skip_testing,
             skip_duts_check=self.skip_duts_check)
 
-        metadata = paygen.CreatePayloads()
-        suite_name, archive_board, archive_build, finished_uri = metadata
+        testdata = paygen.CreatePayloads()
 
         # Now, schedule the payload tests if desired.
         if not self.skip_testing:
+          suite_name, archive_board, archive_build, finished_uri = testdata
+
           models = [archive_board]
           # For unified builds, we need to use an explicit model since only
           # those will actually exist in the hardware test farm.

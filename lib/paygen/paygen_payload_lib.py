@@ -750,16 +750,6 @@ def DefaultPayloadUri(payload, random_str=None):
     raise Error('Unknown image type %s' % type(payload.tgt_image))
 
 
-def SetPayloadUri(payload, uri):
-  """Sets (overrides) the URI in a payload object.
-
-  Args:
-    payload: gspaths.Payload instance.
-    uri: A URI (string) to the payload file.
-  """
-  payload.uri = uri
-
-
 def FillInPayloadUri(payload, random_str=None):
   """Fill in default output URI for a payload if missing.
 
@@ -768,7 +758,7 @@ def FillInPayloadUri(payload, random_str=None):
     random_str: A hook to force a specific random_str. None means generate it.
   """
   if not payload.uri:
-    SetPayloadUri(payload, DefaultPayloadUri(payload, random_str))
+    payload.uri = DefaultPayloadUri(payload, random_str)
 
 
 def _FilterNonPayloadUris(payload_uris):

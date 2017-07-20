@@ -649,7 +649,7 @@
       "chrome_version": "59.0.3071.113",
       "milestone": 59,
       "generate_delta": true,
-      "delta_payload_tests": true,
+      "delta_payload_tests": false,
       "full_payload_tests": false
     },
     {
