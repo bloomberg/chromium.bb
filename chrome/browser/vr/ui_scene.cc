@@ -162,53 +162,6 @@ bool UiScene::HasVisibleHeadLockedElements() const {
   return !GetHeadLockedElements().empty();
 }
 
-void UiScene::SetMode(ColorScheme::Mode mode) {
-  if (mode == mode_)
-    return;
-
-  mode_ = mode;
-  for (const auto& element : ui_elements_)
-    element->SetMode(mode);
-}
-
-ColorScheme::Mode UiScene::mode() const {
-  return mode_;
-}
-
-SkColor UiScene::GetWorldBackgroundColor() const {
-  return showing_splash_screen_
-             ? ColorScheme::GetColorScheme(mode_).splash_screen_background
-             : ColorScheme::GetColorScheme(mode_).world_background;
-}
-
-void UiScene::SetBackgroundDistance(float distance) {
-  background_distance_ = distance;
-}
-
-float UiScene::GetBackgroundDistance() const {
-  return background_distance_;
-}
-
-bool UiScene::GetWebVrRenderingEnabled() const {
-  return webvr_rendering_enabled_;
-}
-
-void UiScene::SetWebVrRenderingEnabled(bool enabled) {
-  webvr_rendering_enabled_ = enabled;
-}
-
-void UiScene::set_is_exiting() {
-  is_exiting_ = true;
-}
-
-void UiScene::set_is_prompting_to_exit(bool prompting) {
-  is_prompting_to_exit_ = prompting;
-}
-
-void UiScene::set_showing_splash_screen(bool showing) {
-  showing_splash_screen_ = showing;
-}
-
 const std::vector<std::unique_ptr<UiElement>>& UiScene::GetUiElements() const {
   return ui_elements_;
 }

@@ -74,23 +74,19 @@ class UiScene {
   std::vector<const UiElement*> GetHeadLockedElements() const;
   bool HasVisibleHeadLockedElements() const;
 
-  void SetMode(ColorScheme::Mode mode);
-  ColorScheme::Mode mode() const;
+  float background_distance() const { return background_distance_; }
+  void set_background_distance(float d) { background_distance_ = d; }
+  SkColor background_color() const { return background_color_; }
+  void set_background_color(SkColor color) { background_color_ = color; }
 
-  SkColor GetWorldBackgroundColor() const;
-
-  void SetBackgroundDistance(float distance);
-  float GetBackgroundDistance() const;
-
-  bool GetWebVrRenderingEnabled() const;
-  void SetWebVrRenderingEnabled(bool enabled);
-
-  bool is_exiting() const { return is_exiting_; }
-  void set_is_exiting();
-  bool is_prompting_to_exit() const { return is_prompting_to_exit_; }
-  void set_is_prompting_to_exit(bool prompting);
-  bool showing_splash_screen() const { return showing_splash_screen_; }
-  void set_showing_splash_screen(bool showing);
+  bool web_vr_rendering_enabled() const { return webvr_rendering_enabled_; }
+  void set_web_vr_rendering_enabled(bool enabled) {
+    webvr_rendering_enabled_ = enabled;
+  }
+  bool reticle_rendering_enabled() const { return reticle_rendering_enabled_; }
+  void set_reticle_rendering_enabled(bool enabled) {
+    reticle_rendering_enabled_ = enabled;
+  }
 
   void OnGLInitialized();
 
@@ -103,11 +99,10 @@ class UiScene {
   ColorScheme::Mode mode_ = ColorScheme::kModeNormal;
 
   float background_distance_ = 10.0f;
-  bool webvr_rendering_enabled_ = true;
+  SkColor background_color_ = 0;
+  bool webvr_rendering_enabled_ = false;
+  bool reticle_rendering_enabled_ = true;
   bool gl_initialized_ = false;
-  bool is_exiting_ = false;
-  bool is_prompting_to_exit_ = false;
-  bool showing_splash_screen_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UiScene);
 };

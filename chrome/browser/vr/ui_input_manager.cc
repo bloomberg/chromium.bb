@@ -53,7 +53,7 @@ void UiInputManager::HandleInput(const gfx::Vector3dF& laser_direction,
     gfx::Point3F plane_intersection_point;
     float distance_to_plane;
     if (!GetTargetLocalPoint(eye_to_target, *input_locked_element_,
-                             2 * scene_->GetBackgroundDistance(),
+                             2 * scene_->background_distance(),
                              &target_local_point, &plane_intersection_point,
                              &distance_to_plane)) {
       target_local_point = kInvalidTargetPoint;
@@ -294,7 +294,7 @@ void UiInputManager::GetVisualTargetElement(
   // Compute the distance from the eyes to the distance limiting sphere. Note
   // that the sphere is centered at the controller, rather than the eye, for
   // simplicity.
-  float distance = scene_->GetBackgroundDistance();
+  float distance = scene_->background_distance();
   *out_target_point = GetRayPoint(laser_origin, laser_direction, distance);
   *out_eye_to_target = *out_target_point - kOrigin;
   out_eye_to_target->GetNormalized(out_eye_to_target);

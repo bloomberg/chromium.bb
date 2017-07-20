@@ -491,7 +491,7 @@ void VrShellGl::UpdateController(const gfx::Vector3dF& head_direction) {
 }
 
 void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
-  if (scene_->is_exiting()) {
+  if (is_exiting_) {
     // When we're exiting, we don't show the reticle and the only input
     // processing we do is to handle immediate exits.
     SendImmediateExitRequestIfNecessary();
@@ -975,7 +975,7 @@ void VrShellGl::DrawFrameSubmitWhenReady(
 }
 
 bool VrShellGl::ShouldDrawWebVr() {
-  return web_vr_mode_ && scene_->GetWebVrRenderingEnabled();
+  return web_vr_mode_ && scene_->web_vr_rendering_enabled();
 }
 
 void VrShellGl::DrawWebVr() {

@@ -594,6 +594,8 @@ void VrShell::ExitVrDueToUnsupportedMode(vr::UiUnsupportedMode mode) {
     return;
   }
   ui_->SetIsExiting();
+  PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::set_is_exiting,
+                                       gl_thread_->GetVrShellGl(), true));
   main_thread_task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&VrShell::ForceExitVr, weak_ptr_factory_.GetWeakPtr()),
