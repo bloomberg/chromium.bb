@@ -3095,9 +3095,10 @@ std::string ChromeContentBrowserClient::GetMetricSuffixForURL(const GURL& url) {
   // histograms review. Only Google domains should be here for privacy purposes.
   // TODO(falken): Ideally Chrome would log the relevant UMA directly and this
   // function could be removed.
-  if (page_load_metrics::IsGoogleSearchResultUrl(url)) {
+  if (page_load_metrics::IsGoogleSearchResultUrl(url))
     return "search";
-  }
+  if (url.host() == "docs.google.com")
+    return "docs";
   return std::string();
 }
 

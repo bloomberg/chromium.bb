@@ -90123,6 +90123,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="MobileStartup.ToolbarInflationTime"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="ChromeContentBrowserClientMetricSuffixes"
+    separator=".">
+  <suffix name="search"
+      label="Custom histogram for the Google Search results page"/>
+  <suffix name="docs" label="Custom histogram for Google Docs"/>
+  <affected-histogram
+      name="ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="ChromeOS.MachineIdRegen.AgeSeconds" separator="_">
   <suffix name="Network"/>
   <suffix name="Periodic"/>
@@ -95888,8 +95897,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       name="PageLoad.Clients.ServiceWorker.PaintTiming.ParseStartToFirstContentfulPaint"/>
   <affected-histogram
       name="PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart"/>
-  <affected-histogram
-      name="ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadMetricsClientsSubresourceFilter"
