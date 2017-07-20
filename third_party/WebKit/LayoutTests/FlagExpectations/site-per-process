@@ -9,14 +9,6 @@ crbug.com/393285 http/tests/text-autosizing/wide-iframe.html [ Failure ]
 crbug.com/393285 virtual/mojo-loading/http/tests/text-autosizing/narrow-iframe.html [ Failure ]
 crbug.com/393285 virtual/mojo-loading/http/tests/text-autosizing/wide-iframe.html [ Failure ]
 
-# https://crbug.com/710098: Tests failing because of r462933.
-crbug.com/710098 http/tests/security/document-all.html [ Failure ]
-crbug.com/710098 http/tests/security/window-named-proto.html [ Failure ]
-crbug.com/710098 http/tests/security/window-named-valueOf.html [ Failure ]
-crbug.com/710098 virtual/mojo-loading/http/tests/security/document-all.html [ Failure ]
-crbug.com/710098 virtual/mojo-loading/http/tests/security/window-named-proto.html [ Failure ]
-crbug.com/710098 virtual/mojo-loading/http/tests/security/window-named-valueOf.html [ Failure ]
-
 # https://crbug.com/700535: Times out after r454488 landed.
 crbug.com/700535 fast/dnd/dropEffect-for-effectAllowed.html [ Timeout ]
 
@@ -123,21 +115,7 @@ crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixe
 crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.js [ Timeout ]
 crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-referrer-policy.js [ Timeout ]
 crbug.com/623268 http/tests/inspector/console-cross-origin-iframe-logging.html [ Failure ]
-crbug.com/623268 http/tests/inspector/inspect-iframe-from-different-domain.html [ Timeout ]
 crbug.com/623268 virtual/mojo-loading/http/tests/inspector/console-cross-origin-iframe-logging.html [ Failure ]
-crbug.com/623268 virtual/mojo-loading/http/tests/inspector/inspect-iframe-from-different-domain.html [ Timeout ]
-
-# https://crbug.com/623210 - DevTools extensions load in separate process in layout tests.
-crbug.com/623210 http/tests/inspector/extensions-headers.html [ Timeout ]
-crbug.com/623210 http/tests/inspector/extensions-iframe-eval.html [ Timeout ]
-crbug.com/623210 http/tests/inspector/extensions-ignore-cache.html [ Timeout ]
-crbug.com/623210 http/tests/inspector/extensions-network-redirect.html [ Timeout ]
-crbug.com/623210 http/tests/inspector/extensions-useragent.html [ Timeout ]
-crbug.com/623210 virtual/mojo-loading/http/tests/inspector/extensions-headers.html [ Timeout ]
-crbug.com/623210 virtual/mojo-loading/http/tests/inspector/extensions-iframe-eval.html [ Timeout ]
-crbug.com/623210 virtual/mojo-loading/http/tests/inspector/extensions-ignore-cache.html [ Timeout ]
-crbug.com/623210 virtual/mojo-loading/http/tests/inspector/extensions-network-redirect.html [ Timeout ]
-crbug.com/623210 virtual/mojo-loading/http/tests/inspector/extensions-useragent.html [ Timeout ]
 
 # https://crbug.com/623265 - cross-site navigation in main page breaks test.
 crbug.com/623265 http/tests/inspector/indexeddb/resources-panel.html [ Timeout ]
@@ -171,10 +149,6 @@ crbug.com/451577 http/tests/inspector/network/network-datareceived.html [ Timeou
 crbug.com/451577 virtual/mojo-loading/http/tests/inspector/network/network-datareceived.html [ Timeout Pass ]
 crbug.com/24182 http/tests/perf/large-inlined-script.html [ Timeout Pass ]
 crbug.com/24182 virtual/mojo-loading/http/tests/perf/large-inlined-script.html [ Timeout Pass ]
-
-# https://crbug.com/680307: blob-url-in-iframe.html is missing PASS w/ --site-per-process
-crbug.com/680307 http/tests/security/mixedContent/blob-url-in-iframe.html [ Failure ]
-crbug.com/680307 virtual/mojo-loading/http/tests/security/mixedContent/blob-url-in-iframe.html [ Failure ]
 
 # https://crbug.com/650348: Remove input event forwarding path from RenderFrameProxies
 # This test needs to be modified to not rely on EventSender passing mouse events directly to an OOPIF.
