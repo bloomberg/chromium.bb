@@ -224,7 +224,7 @@ const char kDropSyncCredentialDescription[] =
 const char kEasyUnlockBluetoothLowEnergyDiscoveryName[] =
     "Smart Lock Bluetooth Low Energy Discovery";
 const char kEasyUnlockBluetoothLowEnergyDiscoveryDescription[] =
-    "Enables a Smart Lock setting that allows Chromebook to discover phones "
+    "Disables a Smart Lock setting that allows Chromebook to discover phones "
     "over Bluetooth Low Energy in order to unlock the Chromebook when the "
     "phone is in its proximity.";
 

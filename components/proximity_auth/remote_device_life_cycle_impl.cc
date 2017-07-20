@@ -88,8 +88,8 @@ void RemoteDeviceLifeCycleImpl::RemoveObserver(Observer* observer) {
 
 std::unique_ptr<cryptauth::ConnectionFinder>
 RemoteDeviceLifeCycleImpl::CreateConnectionFinder() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
     return base::MakeUnique<BluetoothLowEnergyConnectionFinder>(
         remote_device_, bluetooth_throttler_);
   } else {

@@ -382,8 +382,8 @@ void EasyUnlockService::ShowInitialUserState() {
   if (!GetScreenlockStateHandler())
     return;
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery) &&
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kEnableChromeOSLogin)) {
     UpdateScreenlockState(ScreenlockState::PASSWORD_REQUIRED_FOR_LOGIN);
@@ -480,8 +480,8 @@ void EasyUnlockService::AttemptAuth(const AccountId& account_id,
   // TODO(tengs): We notify ProximityAuthSystem whenever unlock attempts are
   // attempted. However, we ideally should refactor the auth attempt logic to
   // the proximity_auth component.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery) &&
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) &&
       proximity_auth_system_) {
     proximity_auth_system_->OnAuthAttempted(account_id);
   }
@@ -704,8 +704,8 @@ void EasyUnlockService::OnBluetoothAdapterPresentChanged() {
   // On device boot, we can't show the initial user state until Bluetooth is
   // detected to be present.
   if (GetType() == TYPE_SIGNIN &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kEnableChromeOSLogin)) {
     ShowInitialUserState();
@@ -800,8 +800,8 @@ EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
 void EasyUnlockService::SetProximityAuthDevices(
     const AccountId& account_id,
     const cryptauth::RemoteDeviceList& remote_devices) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery))
     return;
 
   if (!proximity_auth_system_) {

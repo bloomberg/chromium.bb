@@ -402,8 +402,8 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   // ShowInitialUserState() will display a tooltip explaining that the user must
   // enter their password. We will skip the entire login code path unless the
   // --enable-chromeos-login flag is enabled.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery) &&
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kEnableChromeOSLogin)) {
     return;

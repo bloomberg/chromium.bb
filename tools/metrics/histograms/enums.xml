@@ -23109,6 +23109,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-277144896" label="enable-viewport-meta"/>
   <int value="-275870837"
       label="OmniboxUIExperimentHideSuggestionUrlPath:enabled"/>
+  <int value="-275619817"
+      label="disable-proximity-auth-bluetooth-low-energy-discovery"/>
   <int value="-275164173" label="QuickUnlockPinSignin:enabled"/>
   <int value="-268357961" label="enable-feature-policy"/>
   <int value="-254887599" label="google-profile-info"/>
@@ -23376,8 +23378,6 @@ from previous Chrome versions.
   <int value="649111851" label="MidiManagerCros:enabled"/>
   <int value="651421878" label="VideoRotateToFullscreen:enabled"/>
   <int value="652561231" label="CustomContextMenu:enabled"/>
-  <int value="683410401"
-      label="enable-proximity-auth-bluetooth-low-energy-discovery"/>
   <int value="684806628" label="TranslateLanguageByULP:disabled"/>
   <int value="685916283" label="enable-zip-archiver-on-file-manager"/>
   <int value="689489984" label="disable-zero-suggest"/>
