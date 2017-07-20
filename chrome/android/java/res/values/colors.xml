@@ -44,7 +44,7 @@
 
     <!-- Infobar colors -->
     <color name="infobar_accent_blue">#4285f4</color>
-    <color name="infobar_descriptive_text_color">@color/black_alpha_54</color>
+    <color name="infobar_descriptive_text_color">#646464</color>
 
     <!-- Snackbar colors -->
     <color name="snackbar_background_color">#282C32</color>
@@ -61,11 +61,11 @@
 
     <!-- Connection Info Popup colors -->
     <color name="connection_info_popup_reset_cert_decisions_button">#000000</color>
-    <color name="connection_info_popup_text">@color/black_alpha_87</color>
+    <color name="connection_info_popup_text">#444444</color>
 
     <!-- Page Info Popup colors -->
-    <color name="page_info_popup_text">@color/black_alpha_87</color>
-    <color name="page_info_popup_text_link">@color/google_blue_700</color>
+    <color name="page_info_popup_text">#444444</color>
+    <color name="page_info_popup_text_link">#4285f4</color>
 
     <!-- URL Emphasizer colors -->
     <color name="url_emphasis_non_emphasized_text">#80333333</color>
