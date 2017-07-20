@@ -14,9 +14,10 @@ touching. Any committer can review code, but an owner must provide a review
 for each directory you are touching. If you have doubts, look at the git blame
 for the file and the `OWNERS` files (see below).
 
-To indicate a positive review, the reviewer types "LGTM" (case insensitive)
-into a comment on the code review. This stands for "Looks Good To Me." The text
-"not LGTM" will cancel out a previous positive review.
+To indicate a positive review, the reviewer chooses "+1" in Code-Review field
+on Gerrit, or types "LGTM" (case insensitive) into a comment on Rietveld. This
+stands for "Looks Good To Me." "-1" in Code-Review field on Gerrit or the text
+"not LGTM" on Rietveld will cancel out a previous positive review.
 
 If you have multiple reviewers, make it clear in the message you send
 requesting review what you expect from each reviewer. Otherwise people might
@@ -68,7 +69,7 @@ committer is sufficient.
 #### Expectations of owners
 
 The existing owners of a directory approve additions to the list. It is
-preferrable to have many directories, each with a smaller number of specific
+preferable to have many directories, each with a smaller number of specific
 owners rather than large directories with many owners. Owners must:
 
   * Demonstrate excellent judgment, teamwork and ability to uphold Chrome
@@ -101,8 +102,8 @@ only in cases where a review is unnecessary or as described below. The most
 common use of TBR is to revert patches that broke the build.
 
 TBR does not mean "no review." A reviewer TBR-ed on a change should still
-review the change. If there comments after landing the author is obligated to
-address them in a followup patch.
+review the change. If there are comments after landing, the author is obligated
+to address them in a followup patch.
 
 Do not use TBR just because a change is urgent or the reviewer is being slow.
 Contact the reviewer directly or find somebody.
@@ -200,7 +201,7 @@ b@chromium.org
 ```
 
 The `per-file` directive allows owners to be added that apply only to files
-matching a pattern. In this example, owners from the parent directiory
+matching a pattern. In this example, owners from the parent directory
 apply, plus one person for some classes of files, and all committers are
 owners for the readme:
 ```
