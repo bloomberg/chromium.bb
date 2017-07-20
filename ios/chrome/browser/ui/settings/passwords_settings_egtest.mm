@@ -553,10 +553,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
 // Checks that deleting a password from password details view goes back to the
 // list-of-passwords view.
-// TODO(crbug.com/515462) This test stopped working after
-// https://chromium-review.googlesource.com/c/573381/ landed. Needs to be
-// investigated and fixed.
-- (void)DISABLED_testDeletion {
+- (void)testDeletion {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       password_manager::features::kViewPasswords);
@@ -1066,8 +1063,11 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
 // Check that stored entries are shown no matter what the preference for saving
 // passwords is.
-// TODO(crbug.com/515462): Fix the scrolling.
-- (void)DISABLED_testStoredEntriesAlwaysShown {
+- (void)testStoredEntriesAlwaysShown {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kViewPasswords);
+
   SaveExamplePasswordForm();
 
   PasswordForm blacklisted;
