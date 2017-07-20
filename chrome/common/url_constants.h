@@ -139,6 +139,10 @@ extern const char kChromeUIMetroFlowURL[];
 extern const char kChromeUITabModalConfirmDialogURL[];
 #endif
 
+#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
+extern const char kChromeUIMemoryInternalsURL[];
+#endif
+
 #if BUILDFLAG(ENABLE_WEBRTC)
 extern const char kChromeUIWebRtcLogsURL[];
 #endif
@@ -327,6 +331,10 @@ extern const char kChromeUIMetroFlowHost[];
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
 extern const char kChromeUITabModalConfirmDialogHost[];
+#endif
+
+#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
+extern const char kChromeUIMemoryInternalsHost[];
 #endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)

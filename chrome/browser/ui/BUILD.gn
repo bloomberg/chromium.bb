@@ -2127,6 +2127,12 @@ split_static_library("ui") {
         "webui/signin/signin_dice_internals_ui.h",
       ]
     }
+    if (enable_oop_heap_profiling) {
+      sources += [
+        "webui/memory_internals_ui.cc",
+        "webui/memory_internals_ui.h",
+      ]
+    }
     if (is_mac && !mac_views_browser) {
       sources -= [
         # This is not explicitly excluded in GYP, but I think the static
