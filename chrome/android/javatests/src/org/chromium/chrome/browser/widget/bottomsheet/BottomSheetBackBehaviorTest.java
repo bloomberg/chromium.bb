@@ -170,6 +170,30 @@ public class BottomSheetBackBehaviorTest {
 
     @Test
     @SmallTest
+    public void testBackButton_backButtonOpensSheetAndShowsToolbar()
+            throws ExecutionException, InterruptedException, TimeoutException {
+        final Tab tab = launchNewTabFromChrome("about:blank");
+
+        assertEquals("Tab should be on about:blank.", "about:blank", tab.getUrl());
+
+        assertEquals("The bottom sheet should be peeking.", BottomSheet.SHEET_STATE_PEEK,
+                mBottomSheet.getSheetState());
+
+        // This also waits for the controls to be hidden.
+        hideBrowserControls(tab);
+
+        // Back button press should open the bottom sheet since backward navigation is not
+        // possible and show the toolbar.
+        pressBackButton();
+        endBottomSheetAnimations();
+
+        waitForShownBrowserControls();
+        assertEquals("The bottom sheet should be at half height.", BottomSheet.SHEET_STATE_HALF,
+                mBottomSheet.getSheetState());
+    }
+
+    @Test
+    @SmallTest
     public void testBackButton_backWithNavigation()
             throws ExecutionException, InterruptedException, TimeoutException {
         final Tab tab = mBottomSheet.getActiveTab();
@@ -256,6 +280,39 @@ public class BottomSheetBackBehaviorTest {
             public Tab call() {
                 return mActivity.getTabCreator(false).launchUrl(
                         url, TabLaunchType.FROM_CHROME_UI);
+            }
+        });
+    }
+
+    /**
+     * Wait for the browser controls to be hidden.
+     * @param tab The active tab.
+     */
+    private void hideBrowserControls(final Tab tab) throws ExecutionException {
+        // Hide the browser controls.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                tab.getActivity().getFullscreenManager().setHideBrowserControlsAndroidView(true);
+            }
+        });
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mBottomSheet.isToolbarAndroidViewHidden();
+            }
+        });
+    }
+
+    /**
+     * Wait for the browser controls to be shown.
+     */
+    private void waitForShownBrowserControls() throws ExecutionException {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !mBottomSheet.isToolbarAndroidViewHidden();
             }
         });
     }
