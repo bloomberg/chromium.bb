@@ -59,6 +59,7 @@ import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.UiUtils;
 
 import java.lang.annotation.Retention;
@@ -523,6 +524,7 @@ public class BottomSheet
         if (!isSheetOpen() && tab != null && !tab.canGoBack() && !isInOverviewMode()
                 && tab.getLaunchType() == TabLaunchType.FROM_CHROME_UI) {
             mBackButtonDismissesChrome = true;
+
             setSheetState(SHEET_STATE_HALF, true);
             return true;
         } else if (isSheetOpen() && !mBackButtonDismissesChrome) {
@@ -674,7 +676,8 @@ public class BottomSheet
     /**
      * @return Whether or not the toolbar Android View is hidden due to being scrolled off-screen.
      */
-    private boolean isToolbarAndroidViewHidden() {
+    @VisibleForTesting
+    public boolean isToolbarAndroidViewHidden() {
         return mFullscreenManager == null || mFullscreenManager.getBottomControlOffset() > 0
                 || mControlContainer.getVisibility() != VISIBLE;
     }
@@ -1029,6 +1032,12 @@ public class BottomSheet
      */
     private void onSheetOpened() {
         if (mIsSheetOpen) return;
+
+        // Make sure the toolbar is visible before expanding the sheet.
+        Tab tab = getActiveTab();
+        if (isToolbarAndroidViewHidden() && tab != null) {
+            tab.updateBrowserControlsState(BrowserControlsState.SHOWN, false);
+        }
 
         mIsSheetOpen = true;
         dismissSelectedText();
