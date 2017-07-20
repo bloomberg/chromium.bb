@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.ui.UiUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -106,6 +107,9 @@ public class BottomSheetContentController extends BottomNavigationView
             } else {
                 clearBottomSheetContents(false);
             }
+            // The keyboard should be hidden when the sheet is closed in case it was made visible by
+            // sheet content.
+            UiUtils.hideKeyboard((View) BottomSheetContentController.this);
             // TODO(twellington): determine a policy for destroying the
             //                    SuggestionsBottomSheetContent.
         }
