@@ -87,7 +87,8 @@ public final class NewTabPageUma {
      * Possible results when sizing the NewTabPageLayout.
      * Do not remove or change existing values other than NUM_NTP_LAYOUT_RESULTS.
      */
-    @IntDef({NTP_LAYOUT_DOES_NOT_FIT, NTP_LAYOUT_FITS_WITHOUT_FIELD_TRIAL,
+    @IntDef({NTP_LAYOUT_DOES_NOT_FIT, NTP_LAYOUT_DOES_NOT_FIT_PUSH_MOST_LIKELY,
+            NTP_LAYOUT_FITS_NO_FIELD_TRIAL, NTP_LAYOUT_FITS_WITHOUT_FIELD_TRIAL,
             NTP_LAYOUT_FITS_WITH_FIELD_TRIAL, NTP_LAYOUT_CONDENSED, NUM_NTP_LAYOUT_RESULTS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface NTPLayoutResult {}
