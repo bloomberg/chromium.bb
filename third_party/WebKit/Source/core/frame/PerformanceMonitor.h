@@ -20,6 +20,7 @@ class ExecuteScript;
 class RecalculateStyle;
 class UpdateLayout;
 class UserCallback;
+class V8Compile;
 }
 
 class DOMWindow;
@@ -87,6 +88,9 @@ class CORE_EXPORT PerformanceMonitor final
 
   void Will(const probe::UserCallback&);
   void Did(const probe::UserCallback&);
+
+  void Will(const probe::V8Compile&);
+  void Did(const probe::V8Compile&);
 
   void DocumentWriteFetchScript(Document*);
 

@@ -152,6 +152,7 @@ interface CoreProbes {
   ExecuteScript([Keep] ExecutionContext* context);
   CallFunction([Keep] ExecutionContext* context, v8::Local<v8::Function> function, int depth = 0);
   UserCallback([Keep] ExecutionContext* context, const char* name, const AtomicString& atomicName, bool recurring, EventTarget* eventTarget = nullptr);
+  V8Compile([Keep] ExecutionContext* context, const String& file_name, int line, int column);
   ParseHTML(Document* document, HTMLDocumentParser* parser);
   void forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState, bool* result);
   void shouldWaitForDebuggerOnWorkerStart(ExecutionContext* context, bool* result);
