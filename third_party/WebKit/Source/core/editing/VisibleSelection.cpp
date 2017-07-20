@@ -574,6 +574,18 @@ static Element* LowestEditableAncestor(Node* node) {
   return nullptr;
 }
 
+template <typename Strategy>
+static bool ShouldAdjustPositionToAvoidCrossingEditingBoundaries(
+    const PositionTemplate<Strategy>& position,
+    const ContainerNode* editable_root,
+    const Element* base_editable_ancestor) {
+  if (editable_root)
+    return true;
+  Element* const editable_ancestor =
+      LowestEditableAncestor(position.ComputeContainerNode());
+  return editable_ancestor != base_editable_ancestor;
+}
+
 // The selection ends in editable content or non-editable content inside a
 // different editable ancestor, move backward until non-editable content inside
 // the same lowest editable ancestor is reached.
@@ -582,9 +594,8 @@ PositionTemplate<Strategy> AdjustSelectionEndToAvoidCrossingEditingBoundaries(
     const PositionTemplate<Strategy>& end,
     ContainerNode* end_root,
     Element* base_editable_ancestor) {
-  Element* const end_editable_ancestor =
-      LowestEditableAncestor(end.ComputeContainerNode());
-  if (end_root || end_editable_ancestor != base_editable_ancestor) {
+  if (ShouldAdjustPositionToAvoidCrossingEditingBoundaries(
+          end, end_root, base_editable_ancestor)) {
     PositionTemplate<Strategy> position =
         PreviousVisuallyDistinctCandidate(end);
     Element* shadow_ancestor = end_root ? end_root->OwnerShadowHost() : nullptr;
@@ -616,9 +627,8 @@ PositionTemplate<Strategy> AdjustSelectionStartToAvoidCrossingEditingBoundaries(
     const PositionTemplate<Strategy>& start,
     ContainerNode* start_root,
     Element* base_editable_ancestor) {
-  Element* const start_editable_ancestor =
-      LowestEditableAncestor(start.ComputeContainerNode());
-  if (start_root || start_editable_ancestor != base_editable_ancestor) {
+  if (ShouldAdjustPositionToAvoidCrossingEditingBoundaries(
+          start, start_root, base_editable_ancestor)) {
     PositionTemplate<Strategy> position = NextVisuallyDistinctCandidate(start);
     Element* shadow_ancestor =
         start_root ? start_root->OwnerShadowHost() : nullptr;
