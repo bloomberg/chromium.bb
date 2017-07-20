@@ -38,9 +38,17 @@ void Create(const CreateParams& create_params);
 // this method more than once, the initialization will only be performed once.
 void BuildMessageLoop();
 
+// Destroys the message loop create by BuildMessageLoop. It is safe to call
+// multiple time.
+void DestroyMessageLoop();
+
 // Creates a network change notifier.  It is safe to call this method more than
 // once, the initialization will only be performed once.
 void CreateNetworkChangeNotifier();
+
+// Destroys the network change notifier created by CreateNetworkChangeNotifier.
+// It is safe to call this method multiple time.
+void DestroyNetworkChangeNotifier();
 
 // Starts a global base::TaskScheduler. This method must be called to start
 // the Task Scheduler that is created in |Create|. If |init_params| is null,

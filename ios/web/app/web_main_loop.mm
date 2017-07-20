@@ -41,7 +41,12 @@ namespace web {
 // remove this.
 WebMainLoop* g_current_web_main_loop = nullptr;
 
-WebMainLoop::WebMainLoop() : result_code_(0), created_threads_(false) {
+WebMainLoop::WebMainLoop()
+    : result_code_(0),
+      created_threads_(false),
+      destroy_message_loop_(base::Bind(&ios_global_state::DestroyMessageLoop)),
+      destroy_network_change_notifier_(
+          base::Bind(&ios_global_state::DestroyNetworkChangeNotifier)) {
   DCHECK(!g_current_web_main_loop);
   g_current_web_main_loop = this;
 }
