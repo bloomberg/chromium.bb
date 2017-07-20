@@ -32,8 +32,7 @@ class CONTENT_EXPORT InProcessVideoCaptureProvider
 
   void Uninitialize() override;
 
-  void GetDeviceInfosAsync(
-      const GetDeviceInfosCallback& result_callback) override;
+  void GetDeviceInfosAsync(GetDeviceInfosCallback result_callback) override;
 
   std::unique_ptr<VideoCaptureDeviceLauncher> CreateDeviceLauncher() override;
 

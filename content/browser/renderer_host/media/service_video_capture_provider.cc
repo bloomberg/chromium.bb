@@ -7,41 +7,72 @@
 #include "content/browser/renderer_host/media/service_video_capture_device_launcher.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
+#include "media/base/scoped_callback_runner.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/video_capture/public/interfaces/constants.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
 
+namespace {
+
+class ServiceConnectorImpl
+    : public content::ServiceVideoCaptureProvider::ServiceConnector {
+ public:
+  ServiceConnectorImpl() {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    connector_ = content::ServiceManagerConnection::GetForProcess()
+                     ->GetConnector()
+                     ->Clone();
+    DETACH_FROM_SEQUENCE(sequence_checker_);
+  }
+
+  void BindFactoryProvider(
+      video_capture::mojom::DeviceFactoryProviderPtr* provider) override {
+    connector_->BindInterface(video_capture::mojom::kServiceName, provider);
+  }
+
+ private:
+  std::unique_ptr<service_manager::Connector> connector_;
+  SEQUENCE_CHECKER(sequence_checker_);
+};
+
+}  // anonymous namespace
+
 namespace content {
 
 ServiceVideoCaptureProvider::ServiceVideoCaptureProvider()
-    : has_created_device_launcher_(false) {
-  sequence_checker_.DetachFromSequence();
-  DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  connector_ =
-      ServiceManagerConnection::GetForProcess()->GetConnector()->Clone();
+    : ServiceVideoCaptureProvider(base::MakeUnique<ServiceConnectorImpl>()) {}
+
+ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
+    std::unique_ptr<ServiceConnector> service_connector)
+    : service_connector_(std::move(service_connector)),
+      has_created_device_launcher_(false) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 ServiceVideoCaptureProvider::~ServiceVideoCaptureProvider() {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UninitializeInternal(ReasonForUninitialize::kShutdown);
 }
 
 void ServiceVideoCaptureProvider::Uninitialize() {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UninitializeInternal(ReasonForUninitialize::kClientRequest);
 }
 
 void ServiceVideoCaptureProvider::GetDeviceInfosAsync(
-    const base::Callback<void(
-        const std::vector<media::VideoCaptureDeviceInfo>&)>& result_callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+    GetDeviceInfosCallback result_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LazyConnectToService();
-  device_factory_->GetDeviceInfos(result_callback);
+  // Use a ScopedCallbackRunner to make sure that |result_callback| gets
+  // invoked with an empty result in case that the service drops the request.
+  device_factory_->GetDeviceInfos(media::ScopedCallbackRunner(
+      std::move(result_callback),
+      std::vector<media::VideoCaptureDeviceInfo>()));
 }
 
 std::unique_ptr<VideoCaptureDeviceLauncher>
 ServiceVideoCaptureProvider::CreateDeviceLauncher() {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LazyConnectToService();
   has_created_device_launcher_ = true;
   return base::MakeUnique<ServiceVideoCaptureDeviceLauncher>(&device_factory_);
@@ -66,8 +97,7 @@ void ServiceVideoCaptureProvider::LazyConnectToService() {
   has_created_device_launcher_ = false;
   time_of_last_connect_ = base::TimeTicks::Now();
 
-  connector_->BindInterface(video_capture::mojom::kServiceName,
-                            &device_factory_provider_);
+  service_connector_->BindFactoryProvider(&device_factory_provider_);
   device_factory_provider_->ConnectToDeviceFactory(
       mojo::MakeRequest(&device_factory_));
   // Unretained |this| is safe, because |this| owns |device_factory_|.
@@ -77,7 +107,7 @@ void ServiceVideoCaptureProvider::LazyConnectToService() {
 }
 
 void ServiceVideoCaptureProvider::OnLostConnectionToDeviceFactory() {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This may indicate that the video capture service has crashed. Uninitialize
   // here, so that a new connection will be established when clients try to
   // reconnect.

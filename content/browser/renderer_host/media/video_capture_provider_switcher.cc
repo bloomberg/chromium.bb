@@ -75,8 +75,9 @@ void VideoCaptureProviderSwitcher::Uninitialize() {
 }
 
 void VideoCaptureProviderSwitcher::GetDeviceInfosAsync(
-    const GetDeviceInfosCallback& result_callback) {
-  media_device_capture_provider_->GetDeviceInfosAsync(result_callback);
+    GetDeviceInfosCallback result_callback) {
+  media_device_capture_provider_->GetDeviceInfosAsync(
+      std::move(result_callback));
 }
 
 std::unique_ptr<VideoCaptureDeviceLauncher>

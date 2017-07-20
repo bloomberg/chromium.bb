@@ -15,7 +15,7 @@ namespace media {
 class CAPTURE_EXPORT VideoCaptureSystem {
  public:
   using DeviceInfoCallback =
-      base::Callback<void(const std::vector<VideoCaptureDeviceInfo>&)>;
+      base::OnceCallback<void(const std::vector<VideoCaptureDeviceInfo>&)>;
 
   virtual ~VideoCaptureSystem() {}
 
@@ -23,8 +23,7 @@ class CAPTURE_EXPORT VideoCaptureSystem {
   // VideoCaptureSystem instance to guarantee that it stays alive during the
   // asynchronous operation. |result_callback| is invoked on the same thread
   // that calls GetDeviceInfosAsync()
-  virtual void GetDeviceInfosAsync(
-      const DeviceInfoCallback& result_callback) = 0;
+  virtual void GetDeviceInfosAsync(DeviceInfoCallback result_callback) = 0;
 
   // Creates a VideoCaptureDevice object. Returns nullptr if something goes
   // wrong.
