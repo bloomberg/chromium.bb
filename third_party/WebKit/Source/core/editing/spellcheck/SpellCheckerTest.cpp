@@ -128,8 +128,7 @@ TEST_F(SpellCheckerTest, MarkAndReplaceForHandlesMultipleReplacements) {
       ToSpellCheckMarker(GetDocument().Markers().Markers()[0])->Description());
 }
 
-TEST_F(SpellCheckerTest,
-       GetSpellCheckMarkerTouchingSelection_FirstCharSelected) {
+TEST_F(SpellCheckerTest, GetSpellCheckMarkerUnderSelection_FirstCharSelected) {
   SetBodyContent(
       "<div contenteditable>"
       "spllchck"
@@ -149,12 +148,11 @@ TEST_F(SpellCheckerTest,
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
-          .GetSpellCheckMarkerTouchingSelection();
+          .GetSpellCheckMarkerUnderSelection();
   EXPECT_TRUE(result);
 }
 
-TEST_F(SpellCheckerTest,
-       GetSpellCheckMarkerTouchingSelection_LastCharSelected) {
+TEST_F(SpellCheckerTest, GetSpellCheckMarkerUnderSelection_LastCharSelected) {
   SetBodyContent(
       "<div contenteditable>"
       "spllchck"
@@ -174,12 +172,12 @@ TEST_F(SpellCheckerTest,
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
-          .GetSpellCheckMarkerTouchingSelection();
+          .GetSpellCheckMarkerUnderSelection();
   EXPECT_TRUE(result);
 }
 
 TEST_F(SpellCheckerTest,
-       GetSpellCheckMarkerTouchingSelection_SingleCharWordSelected) {
+       GetSpellCheckMarkerUnderSelection_SingleCharWordSelected) {
   SetBodyContent(
       "<div contenteditable>"
       "s"
@@ -199,12 +197,12 @@ TEST_F(SpellCheckerTest,
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
-          .GetSpellCheckMarkerTouchingSelection();
+          .GetSpellCheckMarkerUnderSelection();
   EXPECT_TRUE(result);
 }
 
 TEST_F(SpellCheckerTest,
-       GetSpellCheckMarkerTouchingSelection_CaretLeftOfSingleCharWord) {
+       GetSpellCheckMarkerUnderSelection_CaretLeftOfSingleCharWord) {
   SetBodyContent(
       "<div contenteditable>"
       "s"
@@ -224,12 +222,12 @@ TEST_F(SpellCheckerTest,
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
-          .GetSpellCheckMarkerTouchingSelection();
-  EXPECT_TRUE(result);
+          .GetSpellCheckMarkerUnderSelection();
+  EXPECT_FALSE(result);
 }
 
 TEST_F(SpellCheckerTest,
-       GetSpellCheckMarkerTouchingSelection_CaretRightOfSingleCharWord) {
+       GetSpellCheckMarkerUnderSelection_CaretRightOfSingleCharWord) {
   SetBodyContent(
       "<div contenteditable>"
       "s"
@@ -249,12 +247,12 @@ TEST_F(SpellCheckerTest,
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
-          .GetSpellCheckMarkerTouchingSelection();
-  EXPECT_TRUE(result);
+          .GetSpellCheckMarkerUnderSelection();
+  EXPECT_FALSE(result);
 }
 
 TEST_F(SpellCheckerTest,
-       GetSpellCheckMarkerTouchingSelection_CaretLeftOfMultiCharWord) {
+       GetSpellCheckMarkerUnderSelection_CaretLeftOfMultiCharWord) {
   SetBodyContent(
       "<div contenteditable>"
       "spllchck"
@@ -274,12 +272,12 @@ TEST_F(SpellCheckerTest,
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
-          .GetSpellCheckMarkerTouchingSelection();
-  EXPECT_TRUE(result);
+          .GetSpellCheckMarkerUnderSelection();
+  EXPECT_FALSE(result);
 }
 
 TEST_F(SpellCheckerTest,
-       GetSpellCheckMarkerTouchingSelection_CaretRightOfMultiCharWord) {
+       GetSpellCheckMarkerUnderSelection_CaretRightOfMultiCharWord) {
   SetBodyContent(
       "<div contenteditable>"
       "spllchck"
@@ -299,12 +297,11 @@ TEST_F(SpellCheckerTest,
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
-          .GetSpellCheckMarkerTouchingSelection();
-  EXPECT_TRUE(result);
+          .GetSpellCheckMarkerUnderSelection();
+  EXPECT_FALSE(result);
 }
 
-TEST_F(SpellCheckerTest,
-       GetSpellCheckMarkerTouchingSelection_CaretMiddleOfWord) {
+TEST_F(SpellCheckerTest, GetSpellCheckMarkerUnderSelection_CaretMiddleOfWord) {
   SetBodyContent(
       "<div contenteditable>"
       "spllchck"
@@ -324,12 +321,12 @@ TEST_F(SpellCheckerTest,
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
-          .GetSpellCheckMarkerTouchingSelection();
+          .GetSpellCheckMarkerUnderSelection();
   EXPECT_TRUE(result);
 }
 
 TEST_F(SpellCheckerTest,
-       GetSpellCheckMarkerTouchingSelection_CaretOneCharLeftOfMisspelling) {
+       GetSpellCheckMarkerUnderSelection_CaretOneCharLeftOfMisspelling) {
   SetBodyContent(
       "<div contenteditable>"
       "a spllchck"
@@ -349,12 +346,12 @@ TEST_F(SpellCheckerTest,
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
-          .GetSpellCheckMarkerTouchingSelection();
+          .GetSpellCheckMarkerUnderSelection();
   EXPECT_FALSE(result);
 }
 
 TEST_F(SpellCheckerTest,
-       GetSpellCheckMarkerTouchingSelection_CaretOneCharRightOfMisspelling) {
+       GetSpellCheckMarkerUnderSelection_CaretOneCharRightOfMisspelling) {
   SetBodyContent(
       "<div contenteditable>"
       "spllchck a"
@@ -374,7 +371,7 @@ TEST_F(SpellCheckerTest,
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
-          .GetSpellCheckMarkerTouchingSelection();
+          .GetSpellCheckMarkerUnderSelection();
   EXPECT_FALSE(result);
 }
 
