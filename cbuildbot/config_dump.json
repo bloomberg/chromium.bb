@@ -1264,10 +1264,7 @@
         ],
         "buildslave_type": "baremetal",
         "important": false,
-        "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "manifest": "official.xml"
     },
     "amd64-generic-cheets-chromium-pfq": {
         "_template": "chromium_pfq",
@@ -1278,9 +1275,6 @@
         "important": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "amd64-generic-cheets-compile-only-pre-cq": {
@@ -1288,16 +1282,12 @@
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "amd64-generic-cheets-factory": {
@@ -1322,9 +1312,6 @@
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "amd64-generic-cheets-no-vmtest-pre-cq": {
@@ -1332,16 +1319,12 @@
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "amd64-generic-cheets-paladin": {
@@ -1349,7 +1332,6 @@
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal",
         "description": "Commit Queue (internal)",
         "important": false,
         "internal": true,
@@ -1360,7 +1342,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests_override": null
+        "vm_tests": []
     },
     "amd64-generic-cheets-payloads": {
         "_template": "payloads",
@@ -1388,11 +1370,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        "buildslave_type": "baremetal"
     },
     "amd64-generic-cheets-release-afdo": {
         "_template": "release_afdo_generate",
@@ -1407,11 +1385,7 @@
                     "amd64-generic-cheets"
                 ],
                 "grouped": true,
-                "name": "amd64-generic-cheets-release-afdo-generate",
-                "vm_tests": [
-                    "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-                ],
-                "vm_tests_override": null
+                "name": "amd64-generic-cheets-release-afdo-generate"
             },
             {
                 "_template": "release_afdo_use",
@@ -1419,39 +1393,23 @@
                     "amd64-generic-cheets"
                 ],
                 "grouped": true,
-                "name": "amd64-generic-cheets-release-afdo-use",
-                "vm_tests": [
-                    "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-                ],
-                "vm_tests_override": null
+                "name": "amd64-generic-cheets-release-afdo-use"
             }
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        ]
     },
     "amd64-generic-cheets-release-afdo-generate": {
         "_template": "release_afdo_generate",
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        "buildslave_type": "baremetal"
     },
     "amd64-generic-cheets-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        "buildslave_type": "baremetal"
     },
     "amd64-generic-cheets-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
@@ -1459,10 +1417,7 @@
             "amd64-generic-cheets"
         ],
         "buildslave_type": "baremetal",
-        "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "manifest": "official.xml"
     },
     "amd64-generic-cheets-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
@@ -1472,9 +1427,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "amd64-generic-cheets-unittest-stress": {
@@ -1482,16 +1434,12 @@
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "amd64-generic-chromium-pfq": {
@@ -3703,10 +3651,7 @@
         ],
         "buildslave_type": "baremetal",
         "important": false,
-        "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "manifest": "official.xml"
     },
     "betty-chromium-pfq": {
         "_template": "chromium_pfq",
@@ -3717,9 +3662,6 @@
         "important": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "betty-compile-only-pre-cq": {
@@ -3727,16 +3669,12 @@
         "boards": [
             "betty"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "betty-factory": {
@@ -3761,9 +3699,6 @@
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "betty-no-vmtest-pre-cq": {
@@ -3771,16 +3706,12 @@
         "boards": [
             "betty"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "betty-nyc-android-pfq": {
@@ -3816,8 +3747,7 @@
         "prebuilts": "private",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests_override": null
+        ]
     },
     "betty-payloads": {
         "_template": "payloads",
@@ -3846,11 +3776,7 @@
             "betty"
         ],
         "buildslave_type": "baremetal",
-        "important": true,
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        "important": true
     },
     "betty-release-afdo": {
         "_template": "release_afdo_generate",
@@ -3865,11 +3791,7 @@
                     "betty"
                 ],
                 "grouped": true,
-                "name": "betty-release-afdo-generate",
-                "vm_tests": [
-                    "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-                ],
-                "vm_tests_override": null
+                "name": "betty-release-afdo-generate"
             },
             {
                 "_template": "release_afdo_use",
@@ -3877,39 +3799,23 @@
                     "betty"
                 ],
                 "grouped": true,
-                "name": "betty-release-afdo-use",
-                "vm_tests": [
-                    "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-                ],
-                "vm_tests_override": null
+                "name": "betty-release-afdo-use"
             }
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        ]
     },
     "betty-release-afdo-generate": {
         "_template": "release_afdo_generate",
         "boards": [
             "betty"
         ],
-        "buildslave_type": "baremetal",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        "buildslave_type": "baremetal"
     },
     "betty-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "betty"
         ],
-        "buildslave_type": "baremetal",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        "buildslave_type": "baremetal"
     },
     "betty-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
@@ -3917,10 +3823,7 @@
             "betty"
         ],
         "buildslave_type": "baremetal",
-        "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "manifest": "official.xml"
     },
     "betty-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
@@ -3930,9 +3833,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "betty-unittest-stress": {
@@ -3940,16 +3840,12 @@
         "boards": [
             "betty"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "binhost-pre-cq": {
@@ -6396,10 +6292,7 @@
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 3,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
         ],
-        "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "manifest": "official.xml"
     },
     "cyan-chromium-pfq": {
         "_template": "chromium_pfq",
@@ -6410,9 +6303,6 @@
         "important": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "cyan-compile-only-pre-cq": {
@@ -6420,16 +6310,12 @@
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "cyan-factory": {
@@ -6454,9 +6340,6 @@
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "cyan-no-vmtest-pre-cq": {
@@ -6464,16 +6347,12 @@
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "cyan-nyc-android-pfq": {
@@ -6482,7 +6361,6 @@
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 3,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
@@ -6492,9 +6370,6 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "cyan-paladin": {
@@ -6503,7 +6378,6 @@
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal",
         "description": "Commit Queue (internal)",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"offload_failures_only\": true,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
@@ -6516,7 +6390,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests_override": null
+        "vm_tests": []
     },
     "cyan-payloads": {
         "_template": "payloads",
@@ -6545,11 +6419,7 @@
             "cyan"
         ],
         "buildslave_type": "baremetal",
-        "important": true,
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        "important": true
     },
     "cyan-release-afdo": {
         "_template": "release_afdo_generate",
@@ -6564,11 +6434,7 @@
                     "cyan"
                 ],
                 "grouped": true,
-                "name": "cyan-release-afdo-generate",
-                "vm_tests": [
-                    "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-                ],
-                "vm_tests_override": null
+                "name": "cyan-release-afdo-generate"
             },
             {
                 "_template": "release_afdo_use",
@@ -6576,39 +6442,23 @@
                     "cyan"
                 ],
                 "grouped": true,
-                "name": "cyan-release-afdo-use",
-                "vm_tests": [
-                    "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-                ],
-                "vm_tests_override": null
+                "name": "cyan-release-afdo-use"
             }
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        ]
     },
     "cyan-release-afdo-generate": {
         "_template": "release_afdo_generate",
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        "buildslave_type": "baremetal"
     },
     "cyan-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        "buildslave_type": "baremetal"
     },
     "cyan-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
@@ -6616,10 +6466,7 @@
             "cyan"
         ],
         "buildslave_type": "baremetal",
-        "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "manifest": "official.xml"
     },
     "cyan-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
@@ -6629,9 +6476,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "cyan-unittest-stress": {
@@ -6639,16 +6483,12 @@
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "daisy-chrome-perf": {
@@ -15779,10 +15619,7 @@
         ],
         "buildslave_type": "baremetal",
         "important": false,
-        "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "manifest": "official.xml"
     },
     "newbie-chromium-pfq": {
         "_template": "chromium_pfq",
@@ -15793,9 +15630,6 @@
         "important": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "newbie-compile-only-pre-cq": {
@@ -15803,16 +15637,12 @@
         "boards": [
             "newbie"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "newbie-factory": {
@@ -15837,9 +15667,6 @@
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "newbie-no-vmtest-pre-cq": {
@@ -15847,16 +15674,12 @@
         "boards": [
             "newbie"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "newbie-paladin": {
@@ -15864,7 +15687,6 @@
         "boards": [
             "newbie"
         ],
-        "buildslave_type": "baremetal",
         "description": "Commit Queue (internal)",
         "important": false,
         "internal": true,
@@ -15875,7 +15697,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests_override": null
+        "vm_tests": []
     },
     "newbie-payloads": {
         "_template": "payloads",
@@ -15904,11 +15726,7 @@
             "newbie"
         ],
         "buildslave_type": "baremetal",
-        "important": true,
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        "important": true
     },
     "newbie-release-afdo": {
         "_template": "release_afdo_generate",
@@ -15923,11 +15741,7 @@
                     "newbie"
                 ],
                 "grouped": true,
-                "name": "newbie-release-afdo-generate",
-                "vm_tests": [
-                    "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-                ],
-                "vm_tests_override": null
+                "name": "newbie-release-afdo-generate"
             },
             {
                 "_template": "release_afdo_use",
@@ -15935,39 +15749,23 @@
                     "newbie"
                 ],
                 "grouped": true,
-                "name": "newbie-release-afdo-use",
-                "vm_tests": [
-                    "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-                ],
-                "vm_tests_override": null
+                "name": "newbie-release-afdo-use"
             }
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        ]
     },
     "newbie-release-afdo-generate": {
         "_template": "release_afdo_generate",
         "boards": [
             "newbie"
         ],
-        "buildslave_type": "baremetal",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        "buildslave_type": "baremetal"
     },
     "newbie-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "newbie"
         ],
-        "buildslave_type": "baremetal",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        "buildslave_type": "baremetal"
     },
     "newbie-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
@@ -15975,10 +15773,7 @@
             "newbie"
         ],
         "buildslave_type": "baremetal",
-        "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "manifest": "official.xml"
     },
     "newbie-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
@@ -15988,9 +15783,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "newbie-unittest-stress": {
@@ -15998,16 +15790,12 @@
         "boards": [
             "newbie"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "ninja-chrome-pfq": {
@@ -16204,10 +15992,7 @@
         ],
         "buildslave_type": "baremetal",
         "important": false,
-        "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "manifest": "official.xml"
     },
     "novato-chromium-pfq": {
         "_template": "chromium_pfq",
@@ -16218,9 +16003,6 @@
         "important": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "novato-compile-only-pre-cq": {
@@ -16228,16 +16010,12 @@
         "boards": [
             "novato"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "novato-factory": {
@@ -16262,9 +16040,6 @@
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "novato-no-vmtest-pre-cq": {
@@ -16272,16 +16047,12 @@
         "boards": [
             "novato"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "novato-paladin": {
@@ -16289,7 +16060,6 @@
         "boards": [
             "novato"
         ],
-        "buildslave_type": "baremetal",
         "description": "Commit Queue (internal)",
         "important": false,
         "internal": true,
@@ -16300,7 +16070,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests_override": null
+        "vm_tests": []
     },
     "novato-payloads": {
         "_template": "payloads",
@@ -16329,11 +16099,7 @@
             "novato"
         ],
         "buildslave_type": "baremetal",
-        "important": true,
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        "important": true
     },
     "novato-release-afdo": {
         "_template": "release_afdo_generate",
@@ -16348,11 +16114,7 @@
                     "novato"
                 ],
                 "grouped": true,
-                "name": "novato-release-afdo-generate",
-                "vm_tests": [
-                    "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-                ],
-                "vm_tests_override": null
+                "name": "novato-release-afdo-generate"
             },
             {
                 "_template": "release_afdo_use",
@@ -16360,39 +16122,23 @@
                     "novato"
                 ],
                 "grouped": true,
-                "name": "novato-release-afdo-use",
-                "vm_tests": [
-                    "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-                ],
-                "vm_tests_override": null
+                "name": "novato-release-afdo-use"
             }
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        ]
     },
     "novato-release-afdo-generate": {
         "_template": "release_afdo_generate",
         "boards": [
             "novato"
         ],
-        "buildslave_type": "baremetal",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        "buildslave_type": "baremetal"
     },
     "novato-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "novato"
         ],
-        "buildslave_type": "baremetal",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        "buildslave_type": "baremetal"
     },
     "novato-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
@@ -16400,10 +16146,7 @@
             "novato"
         ],
         "buildslave_type": "baremetal",
-        "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "manifest": "official.xml"
     },
     "novato-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
@@ -16413,9 +16156,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "novato-unittest-stress": {
@@ -16423,16 +16163,12 @@
         "boards": [
             "novato"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "nyan-chrome-pfq": {

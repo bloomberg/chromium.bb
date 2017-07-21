@@ -717,16 +717,6 @@ _cheets_vmtest_boards = frozenset([
     'novato',
 ])
 
-# List of boards that run VMTests but only the smoke tests, not the AU tests
-# until b/31341543 has been fixed.
-_smoke_only_vmtest_boards = frozenset([
-    'amd64-generic-cheets',
-    'betty',
-    'cyan',
-    'newbie',
-    'novato',
-])
-
 # This is a list of configs that should be included on the main waterfall, but
 # aren't included by default (see IsDefaultMainWaterfall). This loosely
 # corresponds to the set of experimental or self-standing configs.
@@ -1002,13 +992,6 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'no_vmtest_builder',
       vm_tests=[],
-      vm_tests_override=None,
-      gce_tests=[],
-  )
-
-  site_config.AddTemplate(
-      'smoke_only_vmtest_builder',
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
       vm_tests_override=None,
       gce_tests=[],
   )
@@ -1678,8 +1661,6 @@ def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
       board_config.apply(site_config.templates.no_unittest_builder)
     if board in boards_dict['no_vmtest_boards']:
       board_config.apply(site_config.templates.no_vmtest_builder)
-    if board in _smoke_only_vmtest_boards:
-      board_config.apply(site_config.templates.smoke_only_vmtest_builder)
     if board in _beaglebone_boards:
       board_config.apply(site_config.templates.beaglebone)
 
