@@ -383,9 +383,13 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewLoadingTaskQueue(
     MainThreadTaskQueue::QueueType queue_type) {
   DCHECK_EQ(MainThreadTaskQueue::QueueClassForQueueType(queue_type),
             MainThreadTaskQueue::QueueClass::LOADING);
-  return NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(queue_type)
-                          .SetCanBeSuspended(true)
-                          .SetCanBeBlocked(true));
+  return NewTaskQueue(
+      MainThreadTaskQueue::QueueCreationParams(queue_type)
+          .SetCanBeSuspended(true)
+          .SetCanBeBlocked(true)
+          .SetUsedForControlTasks(
+              queue_type ==
+              MainThreadTaskQueue::QueueType::FRAME_LOADING_CONTROL));
 }
 
 scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewTimerTaskQueue(
@@ -1634,7 +1638,8 @@ bool RendererSchedulerImpl::TaskQueuePolicy::IsQueueEnabled(
 
 TaskQueue::QueuePriority RendererSchedulerImpl::TaskQueuePolicy::GetPriority(
     MainThreadTaskQueue* task_queue) const {
-  return priority;
+  return task_queue->UsedForControlTasks() ? TaskQueue::HIGH_PRIORITY
+                                           : priority;
 }
 
 RendererSchedulerImpl::TimeDomainType
