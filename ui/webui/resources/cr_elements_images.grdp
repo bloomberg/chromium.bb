@@ -15,8 +15,10 @@
            file="images/icon_cancel_toolbar.svg" type="BINDATA" />
   <include name="IDR_WEBUI_IMAGES_ICON_CLEAR"
            file="images/icon_clear.svg" type="BINDATA" />
-  <include name="IDR_WEBUI_IMAGES_ICON_DELETE"
-           file="images/icon_delete.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ICON_DELETE_GRAY"
+           file="images/icon_delete_gray.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ICON_DELETE_WHITE"
+           file="images/icon_delete_white.svg" type="BINDATA" />
   <include name="IDR_WEBUI_IMAGES_ICON_EXPAND_LESS"
            file="images/icon_expand_less.svg" type="BINDATA" />
   <include name="IDR_WEBUI_IMAGES_ICON_EXPAND_MORE"
