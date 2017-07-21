@@ -54,8 +54,9 @@ class MockTest : public testing::Test {
 
     // Set an expectation so mock_proxy's CallMethod() will use
     // HandleMockProxyResponseWithMessageLoop() to return responses.
-    EXPECT_CALL(*mock_proxy_.get(), CallMethod(_, _, _)).WillRepeatedly(
-        Invoke(this, &MockTest::HandleMockProxyResponseWithMessageLoop));
+    EXPECT_CALL(*mock_proxy_.get(), DoCallMethod(_, _, _))
+        .WillRepeatedly(
+            Invoke(this, &MockTest::HandleMockProxyResponseWithMessageLoop));
 
     // Set an expectation so mock_bus's GetObjectProxy() for the given
     // service name and the object path will return mock_proxy_.
@@ -120,20 +121,20 @@ class MockTest : public testing::Test {
   void HandleMockProxyResponseWithMessageLoop(
       MethodCall* method_call,
       int timeout_ms,
-      ObjectProxy::ResponseCallback response_callback) {
+      ObjectProxy::ResponseCallback* response_callback) {
     std::unique_ptr<Response> response =
         CreateMockProxyResponse(method_call, timeout_ms);
     message_loop_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&MockTest::RunResponseCallback, base::Unretained(this),
-                   response_callback, base::Passed(&response)));
+        base::BindOnce(&MockTest::RunResponseCallback, base::Unretained(this),
+                       std::move(*response_callback), base::Passed(&response)));
   }
 
   // Runs the given response callback with the given response.
   void RunResponseCallback(
       ObjectProxy::ResponseCallback response_callback,
       std::unique_ptr<Response> response) {
-    response_callback.Run(response.get());
+    std::move(response_callback).Run(response.get());
   }
 };
 
