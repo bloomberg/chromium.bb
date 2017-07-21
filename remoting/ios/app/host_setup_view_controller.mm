@@ -15,26 +15,20 @@
 #import "remoting/ios/app/host_setup_view_cell.h"
 #import "remoting/ios/app/remoting_theme.h"
 
-static NSString* const kReusableIdentifierItem = @"remotingSetupStepVCItem";
+#include "base/strings/string_split.h"
+#include "base/strings/sys_string_conversions.h"
+#include "remoting/base/string_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
-// TODO(yuweih): i18n
-// Clang doesn't allow string literal concatenation in string array but
-// `git cl format` will break down long lines into multiple string literals.
-// This is to disable the warning until we move these to a better place.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wobjc-string-concatenation"
-static NSArray<NSString*>* const kSetupSteps = @[
-  @"Go to the computer that you want to remotely access",
-  @"Visit google.com/remotedesktop from your Chrome browser",
-  @"Install the Chrome Remote Desktop software and follow the instructions to "
-   "complete the setup",
-  @"After your remote device is setup, you can access it directly from this "
-   "page",
-];
-#pragma clang diagnostic pop
+static NSString* const kReusableIdentifierItem = @"remotingSetupStepVCItem";
 
 static const CGFloat kHeaderHeight = 80.f;
 static const CGFloat kFooterHeight = 15.f;  // 80.0f for HostSetupFooterView
+
+@interface HostSetupViewController () {
+  std::vector<std::string> setupSteps;
+}
+@end
 
 @implementation HostSetupViewController
 
@@ -56,6 +50,10 @@ static const CGFloat kFooterHeight = 15.f;  // 80.0f for HostSetupFooterView
     [self.collectionView registerClass:[UICollectionReusableView class]
             forSupplementaryViewOfKind:UICollectionElementKindSectionFooter
                    withReuseIdentifier:UICollectionElementKindSectionFooter];
+
+    setupSteps = base::SplitString(
+        l10n_util::GetStringUTF8(IDS_HOST_SETUP_INSTRUCTIONS), "\n",
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   }
   return self;
 }
@@ -73,7 +71,7 @@ static const CGFloat kFooterHeight = 15.f;  // 80.0f for HostSetupFooterView
 
 - (NSInteger)collectionView:(UICollectionView*)collectionView
      numberOfItemsInSection:(NSInteger)section {
-  return kSetupSteps.count;
+  return setupSteps.size();
 }
 
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
@@ -81,7 +79,8 @@ static const CGFloat kFooterHeight = 15.f;  // 80.0f for HostSetupFooterView
   HostSetupViewCell* cell = [collectionView
       dequeueReusableCellWithReuseIdentifier:kReusableIdentifierItem
                                 forIndexPath:indexPath];
-  [cell setContentText:kSetupSteps[indexPath.item] number:indexPath.item + 1];
+  NSString* contentText = base::SysUTF8ToNSString(setupSteps[indexPath.item]);
+  [cell setContentText:contentText number:indexPath.item + 1];
   return cell;
 }
 

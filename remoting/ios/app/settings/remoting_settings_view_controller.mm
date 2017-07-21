@@ -264,7 +264,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
   SettingOption* directMode = [[SettingOption alloc] init];
   directMode.title = l10n_util::GetNSString(IDS_SELECT_TOUCH_MODE);
   // TODO(nicholss): I think this text changes based on value. Confirm.
-  directMode.subtext = @"Screen acts like a touch screen";
+  directMode.subtext = l10n_util::GetNSString(IDS_TOUCH_MODE_DESCRIPTION);
   directMode.style = OptionSelector;
   directMode.checked =
       self.inputMode == remoting::GestureInterpreter::DIRECT_INPUT_MODE;
@@ -277,7 +277,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
   SettingOption* trackpadMode = [[SettingOption alloc] init];
   trackpadMode.title = l10n_util::GetNSString(IDS_SELECT_TRACKPAD_MODE);
   // TODO(nicholss): I think this text changes based on value. Confirm.
-  trackpadMode.subtext = @"Screen acts like a trackpad";
+  trackpadMode.subtext = l10n_util::GetNSString(IDS_TRACKPAD_MODE_DESCRIPTION);
   trackpadMode.style = OptionSelector;
   trackpadMode.checked =
       self.inputMode == remoting::GestureInterpreter::TRACKPAD_INPUT_MODE;
