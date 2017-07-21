@@ -836,33 +836,35 @@ SpellChecker::GetSpellCheckMarkerUnderSelection() {
   if (selection.IsNone())
     return Optional<std::pair<Node*, SpellCheckMarker*>>();
 
-  const EphemeralRange& range_to_check = FirstEphemeralRangeOf(selection);
+  // Caret and range selections always return valid normalized ranges.
+  const EphemeralRange& selection_range = FirstEphemeralRangeOf(selection);
 
-  Node* const start_container =
-      range_to_check.StartPosition().ComputeContainerNode();
-  const unsigned start_offset =
-      range_to_check.StartPosition().ComputeOffsetInContainerNode();
-  Node* const end_container =
-      range_to_check.EndPosition().ComputeContainerNode();
-  const unsigned end_offset =
-      range_to_check.EndPosition().ComputeOffsetInContainerNode();
+  Node* const selection_start_container =
+      selection_range.StartPosition().ComputeContainerNode();
+  Node* const selection_end_container =
+      selection_range.EndPosition().ComputeContainerNode();
 
-  for (Node& node : range_to_check.Nodes()) {
-    const DocumentMarkerVector& markers_in_node =
-        GetFrame().GetDocument()->Markers().MarkersFor(
-            &node, DocumentMarker::MisspellingMarkers());
-    for (DocumentMarker* marker : markers_in_node) {
-      if (node == start_container && marker->EndOffset() <= start_offset)
-        continue;
-      if (node == end_container && marker->StartOffset() >= end_offset)
-        continue;
+  // We don't currently support the case where a misspelling spans multiple
+  // nodes. See crbug.com/720065
+  if (selection_start_container != selection_end_container)
+    return {};
 
-      return std::make_pair(&node, &ToSpellCheckMarker(*marker));
-    }
-  }
+  if (!selection_start_container->IsTextNode())
+    return {};
 
-  // No marker found
-  return Optional<std::pair<Node*, SpellCheckMarker*>>();
+  const unsigned selection_start_offset =
+      selection_range.StartPosition().ComputeOffsetInContainerNode();
+  const unsigned selection_end_offset =
+      selection_range.EndPosition().ComputeOffsetInContainerNode();
+
+  DocumentMarker* const marker =
+      GetFrame().GetDocument()->Markers().FirstMarkerIntersectingOffsetRange(
+          ToText(*selection_start_container), selection_start_offset,
+          selection_end_offset, DocumentMarker::MisspellingMarkers());
+  if (!marker)
+    return Optional<std::pair<Node*, SpellCheckMarker*>>();
+
+  return std::make_pair(selection_start_container, ToSpellCheckMarker(marker));
 }
 
 void SpellChecker::ReplaceMisspelledRange(const String& text) {
