@@ -109,6 +109,12 @@ const char kCastInitialScreenWidth[] = "cast-initial-screen-width";
 const char kCastInitialScreenHeight[] = "cast-initial-screen-height";
 const char kUseDoubleBuffering[] = "use-double-buffering";
 
+// Used to pass configuration for the I2S input to enable loopback for AEC.
+const char kLoopbackI2sBits[] = "loopback-i2s-bits";
+const char kLoopbackI2sChannels[] = "loopback-i2s-channels";
+const char kLoopbackI2sNumber[] = "loopback-i2s-number";
+const char kLoopbackI2sRate[] = "loopback-i2s-rate";
+
 // When present, desktop cast_shell will create 1080p window (provided display
 // resolution is high enough).  Otherwise, cast_shell defaults to 720p.
 const char kDesktopWindow1080p[] = "desktop-window-1080p";
