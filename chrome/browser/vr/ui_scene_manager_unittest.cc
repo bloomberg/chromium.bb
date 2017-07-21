@@ -25,10 +25,20 @@ using TargetProperty::VISIBILITY;
 using TargetProperty::OPACITY;
 
 namespace {
+std::set<UiElementDebugId> kBackgroundElements = {
+    kBackgroundFront, kBackgroundLeft, kBackgroundBack,
+    kBackgroundRight, kBackgroundTop,  kBackgroundBottom};
+std::set<UiElementDebugId> kFloorCeilingBackgroundElements = {
+    kBackgroundFront, kBackgroundLeft,   kBackgroundBack, kBackgroundRight,
+    kBackgroundTop,   kBackgroundBottom, kCeiling,        kFloor};
 std::set<UiElementDebugId> kElementsVisibleInBrowsing = {
-    kContentQuad, kBackplane, kCeiling, kFloor, kUrlBar};
+    kBackgroundFront, kBackgroundLeft,   kBackgroundBack, kBackgroundRight,
+    kBackgroundTop,   kBackgroundBottom, kCeiling,        kFloor,
+    kContentQuad,     kBackplane,        kUrlBar};
 std::set<UiElementDebugId> kElementsVisibleWithExitPrompt = {
-    kExitPrompt, kExitPromptBackplane, kCeiling, kFloor};
+    kBackgroundFront, kBackgroundLeft,     kBackgroundBack, kBackgroundRight,
+    kBackgroundTop,   kBackgroundBottom,   kCeiling,        kFloor,
+    kExitPrompt,      kExitPromptBackplane};
 }  // namespace
 
 TEST_F(UiSceneManagerTest, ExitPresentAndFullscreenOnAppButtonClick) {
@@ -168,55 +178,33 @@ TEST_F(UiSceneManagerTest, UiUpdatesForIncognito) {
   MakeManager(kNotInCct, kNotInWebVr);
 
   // Hold onto the background color to make sure it changes.
-  SkColor initial_background = scene_->background_color();
+  SkColor initial_background = GetBackgroundColor();
   manager_->SetFullscreen(true);
 
-  {
-    SCOPED_TRACE("Entered Fullsceen");
-    // Make sure background has changed for fullscreen.
-    EXPECT_NE(initial_background, scene_->background_color());
-  }
+  // Make sure background has changed for fullscreen.
+  EXPECT_NE(initial_background, GetBackgroundColor());
 
-  SkColor fullscreen_background = scene_->background_color();
+  SkColor fullscreen_background = GetBackgroundColor();
 
   manager_->SetIncognito(true);
 
-  {
-    SCOPED_TRACE("Entered Incognito");
-    // Make sure background has changed for incognito.
-    EXPECT_NE(fullscreen_background, scene_->background_color());
-    EXPECT_NE(initial_background, scene_->background_color());
-  }
+  // Make sure background has changed for incognito.
+  EXPECT_NE(fullscreen_background, GetBackgroundColor());
+  EXPECT_NE(initial_background, GetBackgroundColor());
 
-  SkColor incognito_background = scene_->background_color();
+  SkColor incognito_background = GetBackgroundColor();
 
   manager_->SetIncognito(false);
-
-  {
-    SCOPED_TRACE("Exited Incognito");
-    EXPECT_EQ(fullscreen_background, scene_->background_color());
-  }
+  EXPECT_EQ(fullscreen_background, GetBackgroundColor());
 
   manager_->SetFullscreen(false);
-
-  {
-    SCOPED_TRACE("Exited Fullsceen");
-    EXPECT_EQ(initial_background, scene_->background_color());
-  }
+  EXPECT_EQ(initial_background, GetBackgroundColor());
 
   manager_->SetIncognito(true);
-
-  {
-    SCOPED_TRACE("Entered Incognito");
-    EXPECT_EQ(incognito_background, scene_->background_color());
-  }
+  EXPECT_EQ(incognito_background, GetBackgroundColor());
 
   manager_->SetIncognito(false);
-
-  {
-    SCOPED_TRACE("Exited Incognito");
-    EXPECT_EQ(initial_background, scene_->background_color());
-  }
+  EXPECT_EQ(initial_background, GetBackgroundColor());
 }
 
 TEST_F(UiSceneManagerTest, WebVrAutopresentedInsecureOrigin) {
@@ -227,8 +215,10 @@ TEST_F(UiSceneManagerTest, WebVrAutopresentedInsecureOrigin) {
   manager_->SetWebVrMode(true, false);
   // Initially, the security warnings should not be visible since the first
   // WebVR frame is not received.
-  VerifyElementsVisible("Initial",
-                        std::set<UiElementDebugId>{kSplashScreenIcon});
+  auto initial_elements = kBackgroundElements;
+  initial_elements.insert(kSplashScreenIcon);
+
+  VerifyElementsVisible("Initial", initial_elements);
   manager_->OnWebVrFrameAvailable();
   VerifyElementsVisible("Autopresented", std::set<UiElementDebugId>{
                                              kWebVrPermanentHttpSecurityWarning,
@@ -254,8 +244,9 @@ TEST_F(UiSceneManagerTest, WebVrAutopresented) {
   manager_->SetWebVrSecureOrigin(true);
 
   // Initially, we should only show the splash screen.
-  VerifyElementsVisible("Initial",
-                        std::set<UiElementDebugId>{kSplashScreenIcon});
+  auto initial_elements = kBackgroundElements;
+  initial_elements.insert(kSplashScreenIcon);
+  VerifyElementsVisible("Initial", initial_elements);
 
   // Enter WebVR with autopresentation.
   manager_->SetWebVrMode(true, false);
@@ -275,15 +266,16 @@ TEST_F(UiSceneManagerTest, WebVrAutopresented) {
 }
 
 TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
-  std::set<UiElementDebugId> visible_in_fullscreen = {
-      kContentQuad, kCloseButton, kBackplane,
-      kCeiling,     kFloor,       kExclusiveScreenToast,
-  };
+  auto visible_in_fullscreen = kFloorCeilingBackgroundElements;
+  visible_in_fullscreen.insert(kContentQuad);
+  visible_in_fullscreen.insert(kBackplane);
+  visible_in_fullscreen.insert(kCloseButton);
+  visible_in_fullscreen.insert(kExclusiveScreenToast);
 
   MakeManager(kNotInCct, kNotInWebVr);
 
   // Hold onto the background color to make sure it changes.
-  SkColor initial_background = scene_->background_color();
+  SkColor initial_background = GetBackgroundColor();
   VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
   UiElement* content_quad = scene_->GetUiElementByDebugId(kContentQuad);
   gfx::SizeF initial_content_size = content_quad->size();
@@ -295,7 +287,7 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   manager_->SetFullscreen(true);
   VerifyElementsVisible("In fullscreen", visible_in_fullscreen);
   // Make sure background has changed for fullscreen.
-  EXPECT_NE(initial_background, scene_->background_color());
+  EXPECT_NE(initial_background, GetBackgroundColor());
   // Should have started transition.
   EXPECT_TRUE(IsAnimating(content_quad, {TRANSFORM, BOUNDS}));
   // Finish the transition.
@@ -307,7 +299,7 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   // Everything should return to original state after leaving fullscreen.
   manager_->SetFullscreen(false);
   VerifyElementsVisible("Restore initial", kElementsVisibleInBrowsing);
-  EXPECT_EQ(initial_background, scene_->background_color());
+  EXPECT_EQ(initial_background, GetBackgroundColor());
   // Should have started transition.
   EXPECT_TRUE(IsAnimating(content_quad, {TRANSFORM, BOUNDS}));
   // Finish the transition.
