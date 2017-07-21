@@ -530,6 +530,11 @@ bool WindowTree::SetModalType(const ClientWindowId& window_id,
     return false;
   }
 
+  if (user_id_ == InvalidUserId() && modal_type == MODAL_TYPE_SYSTEM) {
+    DVLOG(1) << "SetModalType failed (invalid user id)";
+    return false;
+  }
+
   if (ShouldRouteToWindowManager(window)) {
     WindowTree* wm_tree = GetWindowManagerDisplayRoot(window)
                               ->window_manager_state()
@@ -552,10 +557,6 @@ bool WindowTree::SetModalType(const ClientWindowId& window_id,
   auto* display_root = GetWindowManagerDisplayRoot(window);
   switch (modal_type) {
     case MODAL_TYPE_SYSTEM:
-      if (user_id_ == InvalidUserId()) {
-        DVLOG(1) << "SetModalType failed (invalid user id)";
-        return false;
-      }
       if (!display_root) {
         DVLOG(1) << "SetModalType failed (no display root)";
         return false;
