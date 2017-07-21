@@ -23,6 +23,9 @@
 
 #include "core/layout/line/InlineTextBox.h"
 
+#include "core/dom/Document.h"
+#include "core/editing/FrameSelection.h"
+#include "core/frame/LocalFrame.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/api/LineLayoutBR.h"
 #include "core/layout/api/LineLayoutBox.h"
@@ -175,8 +178,6 @@ SelectionState InlineTextBox::GetSelectionState() const {
   SelectionState state = GetLineLayoutItem().GetSelectionState();
   if (state == SelectionState::kStart || state == SelectionState::kEnd ||
       state == SelectionState::kStartAndEnd) {
-    int start_pos, end_pos;
-    std::tie(start_pos, end_pos) = GetLineLayoutItem().SelectionStartEnd();
     // The position after a hard line break is considered to be past its end.
     // See the corresponding code in InlineTextBox::isSelected.
     int last_selectable = Start() + Len() - (IsLineBreak() ? 1 : 0);
@@ -187,19 +188,26 @@ SelectionState InlineTextBox::GetSelectionState() const {
                 LineBreak::kAfterWhiteSpace
             ? -1
             : 0;
-    bool start = (state != SelectionState::kEnd && start_pos >= start_ &&
-                  start_pos <= start_ + len_ +
-                                   end_of_line_adjustment_for_css_line_break);
-    bool end = (state != SelectionState::kStart && end_pos > start_ &&
-                end_pos <= last_selectable);
+    const FrameSelection& selection =
+        GetLineLayoutItem().GetDocument().GetFrame()->Selection();
+    bool start =
+        (state != SelectionState::kEnd &&
+         selection.LayoutSelectionStart().value() >= start_ &&
+         selection.LayoutSelectionStart().value() <=
+             start_ + len_ + end_of_line_adjustment_for_css_line_break);
+    bool end = (state != SelectionState::kStart &&
+                selection.LayoutSelectionEnd().value() > start_ &&
+                selection.LayoutSelectionEnd().value() <= last_selectable);
     if (start && end)
       state = SelectionState::kStartAndEnd;
     else if (start)
       state = SelectionState::kStart;
     else if (end)
       state = SelectionState::kEnd;
-    else if ((state == SelectionState::kEnd || start_pos < start_) &&
-             (state == SelectionState::kStart || end_pos > last_selectable))
+    else if ((state == SelectionState::kEnd ||
+              selection.LayoutSelectionStart().value() < start_) &&
+             (state == SelectionState::kStart ||
+              selection.LayoutSelectionEnd().value() > last_selectable))
       state = SelectionState::kInside;
     else if (state == SelectionState::kStartAndEnd)
       state = SelectionState::kNone;
@@ -532,11 +540,21 @@ void InlineTextBox::SelectionStartEnd(int& s_pos, int& e_pos) const {
     start_pos = 0;
     end_pos = GetLineLayoutItem().TextLength();
   } else {
-    std::tie(start_pos, end_pos) = GetLineLayoutItem().SelectionStartEnd();
-    if (GetLineLayoutItem().GetSelectionState() == SelectionState::kStart)
+    const FrameSelection& selection =
+        GetLineLayoutItem().GetDocument().GetFrame()->Selection();
+    if (GetLineLayoutItem().GetSelectionState() == SelectionState::kStart) {
+      start_pos = selection.LayoutSelectionStart().value();
       end_pos = GetLineLayoutItem().TextLength();
-    else if (GetLineLayoutItem().GetSelectionState() == SelectionState::kEnd)
+    } else if (GetLineLayoutItem().GetSelectionState() ==
+               SelectionState::kEnd) {
       start_pos = 0;
+      end_pos = selection.LayoutSelectionEnd().value();
+    } else {
+      DCHECK(GetLineLayoutItem().GetSelectionState() ==
+             SelectionState::kStartAndEnd);
+      start_pos = selection.LayoutSelectionStart().value();
+      end_pos = selection.LayoutSelectionEnd().value();
+    }
   }
 
   s_pos = std::max(start_pos - start_, 0);
