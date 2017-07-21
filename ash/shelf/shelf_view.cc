@@ -1487,6 +1487,12 @@ void ShelfView::ViewHierarchyChanged(
 }
 
 void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
+  // Convert the event location from current view to screen, since swiping up on
+  // the shelf can open the fullscreen app list. Updating the bounds of the app
+  // list during dragging is based on screen coordinate space.
+  gfx::Point location_in_screen(event->location());
+  View::ConvertPointToScreen(this, &location_in_screen);
+  event->set_location(location_in_screen);
   if (shelf_->ProcessGestureEvent(*event))
     event->StopPropagation();
 }

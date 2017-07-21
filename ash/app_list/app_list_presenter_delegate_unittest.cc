@@ -697,10 +697,8 @@ TEST_F(AppListPresenterDelegateTest,
   app_list_presenter_impl()->Show(GetPrimaryDisplayId());
   EXPECT_TRUE(app_list::features::IsFullscreenAppListEnabled());
   EXPECT_FALSE(GetPrimaryShelf()->IsHorizontalAlignment());
-  // TODO(muyuanli): This should be SHELF_BACKGROUND_OVERLAP but the test
-  // construction code is not quite correct. See crbug.com/742461.
   EXPECT_EQ(GetPrimaryShelf()->shelf_layout_manager()->GetShelfBackgroundType(),
-            SHELF_BACKGROUND_DEFAULT);
+            SHELF_BACKGROUND_OVERLAP);
 }
 
 // Tests that the half app list closes if the user taps outside its bounds.

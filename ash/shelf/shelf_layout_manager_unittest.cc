@@ -25,12 +25,17 @@
 #include "ash/system/tray/test_system_tray_item.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
+#include "ui/app_list/app_list_features.h"
+#include "ui/app_list/presenter/app_list.h"
+#include "ui/app_list/presenter/test/test_app_list_presenter.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
@@ -310,6 +315,80 @@ class ShelfLayoutManagerTest : public AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManagerTest);
 };
+
+TEST_F(ShelfLayoutManagerTest, SwipingUpOnShelfForFullscreenAppList) {
+  // TODO: investigate failure in mash, http://crbug.com/695686.
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+
+  // TODO(minch): Add more tests for shelf alignment or mode changed during
+  // dragging. http://crbug.com/747016.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      app_list::features::kEnableFullscreenAppList);
+  Shell* shell = Shell::Get();
+  shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shelf* shelf = GetPrimaryShelf();
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+
+  // Note: A window must be visible in order to hide the shelf.
+  CreateTestWidget();
+
+  app_list::test::TestAppListPresenter test_app_list_presenter;
+  shell->app_list()->SetAppListPresenter(
+      test_app_list_presenter.CreateInterfacePtrAndBind());
+
+  ui::test::EventGenerator& generator(GetEventGenerator());
+  constexpr base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
+  constexpr int kNumScrollSteps = 4;
+
+  gfx::Point start = GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint();
+  gfx::Rect work_area_bounds = shelf->GetUserWorkAreaBounds();
+  gfx::Vector2d delta;
+
+  // Swiping up more than one third of the work area's height should show the
+  // app list.
+  delta.set_y(work_area_bounds.height() / 2.0);
+  gfx::Point end = start - delta;
+  generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(1u, test_app_list_presenter.show_count());
+  EXPECT_EQ(0u, test_app_list_presenter.dismiss_count());
+  EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
+
+  // Swiping up less than one third of the works area's height should begin to
+  // show, but then ultimately dismiss the app list.
+  delta.set_y(work_area_bounds.height() / 4.0);
+  end = start - delta;
+  // TODO(minch): investigate failure without EnableMaximizeMode again here.
+  // http://crbug.com/746481.
+  shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(2u, test_app_list_presenter.show_count());
+  EXPECT_EQ(1u, test_app_list_presenter.dismiss_count());
+  EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
+
+  // Swiping down on the shelf should hide it.
+  end = start + delta;
+  generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+
+  // Swiping up should show the shelf but not the app list if shelf is hidden.
+  generator.GestureScrollSequence(end, start, kTimeDelta, kNumScrollSteps);
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+  EXPECT_EQ(2u, test_app_list_presenter.show_count());
+  EXPECT_EQ(1u, test_app_list_presenter.dismiss_count());
+  EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
+}
 
 void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   Shelf* shelf = GetPrimaryShelf();

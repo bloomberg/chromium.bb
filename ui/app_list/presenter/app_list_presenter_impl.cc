@@ -82,6 +82,11 @@ void AppListPresenterImpl::Show(int64_t display_id) {
   base::RecordAction(base::UserMetricsAction("Launcher_Show"));
 }
 
+void AppListPresenterImpl::SetYPosition(int y_position_in_screen) {
+  if (view_)
+    view_->SetYPosition(y_position_in_screen);
+}
+
 void AppListPresenterImpl::Dismiss() {
   if (!is_visible_)
     return;

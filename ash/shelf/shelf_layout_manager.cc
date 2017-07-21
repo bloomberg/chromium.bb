@@ -24,6 +24,7 @@
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/screen_pinning_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -49,15 +50,15 @@ namespace ash {
 namespace {
 
 // Delay before showing the shelf. This is after the mouse stops moving.
-const int kAutoHideDelayMS = 200;
+constexpr int kAutoHideDelayMS = 200;
 
 // Duration of the animation to show or hide the shelf.
-const int kAnimationDurationMS = 200;
+constexpr int kAnimationDurationMS = 200;
 
 // To avoid hiding the shelf when the mouse transitions from a message bubble
 // into the shelf, the hit test area is enlarged by this amount of pixels to
 // keep the shelf from hiding.
-const int kNotificationBubbleGapHeight = 6;
+constexpr int kNotificationBubbleGapHeight = 6;
 
 // The maximum size of the region on the display opposing the shelf managed by
 // this ShelfLayoutManager which can trigger showing the shelf.
@@ -69,7 +70,11 @@ const int kNotificationBubbleGapHeight = 6;
 // from the right edge of the primary display which can trigger showing the
 // auto hidden shelf. The region is used to make it easier to trigger showing
 // the auto hidden shelf when the shelf is on the boundary between displays.
-const int kMaxAutoHideShowShelfRegionSize = 10;
+constexpr int kMaxAutoHideShowShelfRegionSize = 10;
+
+// The velocity the app list must be dragged in order to change the state of the
+// app list for fling event, measured in DIPs/event.
+constexpr int kAppListDragVelocityThreshold = 25;
 
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
@@ -147,8 +152,6 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
       shelf_(shelf),
       window_overlaps_shelf_(false),
       mouse_over_shelf_when_auto_hide_timer_started_(false),
-      is_fullscreen_app_list_enabled_(
-          app_list::features::IsFullscreenAppListEnabled()),
       gesture_drag_status_(GESTURE_DRAG_NONE),
       gesture_drag_amount_(0.f),
       gesture_drag_auto_hide_state_(SHELF_AUTO_HIDE_SHOWN),
@@ -352,7 +355,8 @@ void ShelfLayoutManager::RemoveObserver(ShelfLayoutManagerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool ShelfLayoutManager::ProcessGestureEvent(const ui::GestureEvent& event) {
+bool ShelfLayoutManager::ProcessGestureEvent(
+    const ui::GestureEvent& event_in_screen) {
   // The gestures are disabled in the lock/login screen.
   SessionController* controller = Shell::Get()->session_controller();
   if (!controller->NumberOfLoggedInUsers() || controller->IsScreenLocked())
@@ -361,22 +365,27 @@ bool ShelfLayoutManager::ProcessGestureEvent(const ui::GestureEvent& event) {
   if (IsShelfHiddenForFullscreen())
     return false;
 
-  if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
-    StartGestureDrag(event);
+  if (event_in_screen.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
+    StartGestureDrag(event_in_screen);
     return true;
   }
 
-  if (gesture_drag_status_ != GESTURE_DRAG_IN_PROGRESS)
+  if (gesture_drag_status_ != GESTURE_DRAG_IN_PROGRESS &&
+      gesture_drag_status_ != GESTURE_DRAG_APPLIST_IN_PROGRESS) {
     return false;
+  }
 
-  if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE) {
-    UpdateGestureDrag(event);
+  if (event_in_screen.type() == ui::ET_GESTURE_SCROLL_UPDATE) {
+    UpdateGestureDrag(event_in_screen);
     return true;
   }
 
-  if (event.type() == ui::ET_GESTURE_SCROLL_END ||
-      event.type() == ui::ET_SCROLL_FLING_START) {
-    CompleteGestureDrag(event);
+  if (event_in_screen.type() == ui::ET_GESTURE_SCROLL_END ||
+      event_in_screen.type() == ui::ET_SCROLL_FLING_START) {
+    if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS)
+      CompleteAppListDrag(event_in_screen);
+    else
+      CompleteGestureDrag(event_in_screen);
     return true;
   }
 
@@ -434,7 +443,7 @@ void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
     return;
 
   is_app_list_visible_ = shown;
-  if (is_fullscreen_app_list_enabled_)
+  if (app_list::features::IsFullscreenAppListEnabled())
     MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
 }
 
@@ -474,6 +483,9 @@ void ShelfLayoutManager::OnKeyboardClosed() {
 }
 
 ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
+  const bool is_fullscreen_app_list_enabled =
+      app_list::features::IsFullscreenAppListEnabled();
+
   if (state_.pre_lock_screen_animation_active)
     return SHELF_BACKGROUND_DEFAULT;
 
@@ -484,11 +496,11 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   // If the app list is active and the shelf is oriented vertically, enable the
   // shelf background.
   if (is_app_list_visible_ && !shelf_->IsHorizontalAlignment() &&
-      is_fullscreen_app_list_enabled_)
+      is_fullscreen_app_list_enabled)
     return SHELF_BACKGROUND_OVERLAP;
 
   // If the app list is active, hide the shelf background to prevent overlap.
-  if (is_app_list_visible_ && is_fullscreen_app_list_enabled_)
+  if (is_app_list_visible_ && is_fullscreen_app_list_enabled)
     return SHELF_BACKGROUND_DEFAULT;
 
   if (state_.visibility_state != SHELF_AUTO_HIDE &&
@@ -1088,24 +1100,50 @@ bool ShelfLayoutManager::IsShelfAutoHideForFullscreenMaximized() const {
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, Gesture functions:
 
-void ShelfLayoutManager::StartGestureDrag(const ui::GestureEvent& gesture) {
-  gesture_drag_status_ = GESTURE_DRAG_IN_PROGRESS;
+void ShelfLayoutManager::StartGestureDrag(
+    const ui::GestureEvent& gesture_in_screen) {
+  if (CanStartFullscreenAppListDrag(
+          gesture_in_screen.details().scroll_y_hint())) {
+    Shell::Get()->ShowAppList();
+    Shell::Get()->SetAppListYPosition(gesture_in_screen.location().y());
+    gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
+  } else {
+    gesture_drag_status_ = GESTURE_DRAG_IN_PROGRESS;
+    gesture_drag_auto_hide_state_ = visibility_state() == SHELF_AUTO_HIDE
+                                        ? auto_hide_state()
+                                        : SHELF_AUTO_HIDE_SHOWN;
+    MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+  }
   gesture_drag_amount_ = 0.f;
-  gesture_drag_auto_hide_state_ = visibility_state() == SHELF_AUTO_HIDE
-                                      ? auto_hide_state()
-                                      : SHELF_AUTO_HIDE_SHOWN;
-  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 }
 
-void ShelfLayoutManager::UpdateGestureDrag(const ui::GestureEvent& gesture) {
-  gesture_drag_amount_ += PrimaryAxisValue(gesture.details().scroll_y(),
-                                           gesture.details().scroll_x());
-  LayoutShelf();
+void ShelfLayoutManager::UpdateGestureDrag(
+    const ui::GestureEvent& gesture_in_screen) {
+  if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS) {
+    // Dismiss the app list if the shelf changed to vertical alignment or mode
+    // changed to non-tablet mode during dragging.
+    if (!Shell::Get()
+             ->tablet_mode_controller()
+             ->IsTabletModeWindowManagerEnabled() ||
+        !shelf_->IsHorizontalAlignment()) {
+      Shell::Get()->DismissAppList();
+      gesture_drag_status_ = GESTURE_DRAG_NONE;
+      return;
+    }
+    Shell::Get()->SetAppListYPosition(gesture_in_screen.location().y());
+    gesture_drag_amount_ += gesture_in_screen.details().scroll_y();
+  } else {
+    gesture_drag_amount_ +=
+        PrimaryAxisValue(gesture_in_screen.details().scroll_y(),
+                         gesture_in_screen.details().scroll_x());
+    LayoutShelf();
+  }
 }
 
-void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
+void ShelfLayoutManager::CompleteGestureDrag(
+    const ui::GestureEvent& gesture_in_screen) {
   bool should_change = false;
-  if (gesture.type() == ui::ET_GESTURE_SCROLL_END) {
+  if (gesture_in_screen.type() == ui::ET_GESTURE_SCROLL_END) {
     // The visibility of the shelf changes only if the shelf was dragged X%
     // along the correct axis. If the shelf was already visible, then the
     // direction of the drag does not matter.
@@ -1117,7 +1155,7 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
 
     should_change =
         IsSwipingCorrectDirection() && drag_ratio > kDragHideThreshold;
-  } else if (gesture.type() == ui::ET_SCROLL_FLING_START) {
+  } else if (gesture_in_screen.type() == ui::ET_SCROLL_FLING_START) {
     should_change = IsSwipingCorrectDirection();
   } else {
     NOTREACHED();
@@ -1155,10 +1193,74 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
   gesture_drag_status_ = GESTURE_DRAG_NONE;
 }
 
-void ShelfLayoutManager::CancelGestureDrag() {
-  gesture_drag_status_ = GESTURE_DRAG_CANCEL_IN_PROGRESS;
-  UpdateVisibilityState();
+void ShelfLayoutManager::CompleteAppListDrag(
+    const ui::GestureEvent& gesture_in_screen) {
+  bool should_show_app_list = false;
+  if (gesture_in_screen.type() == ui::ET_SCROLL_FLING_START &&
+      fabs(gesture_in_screen.details().velocity_y()) >
+          kAppListDragVelocityThreshold) {
+    // If the scroll sequence terminates with a fling, show the app list if
+    // the fling was fast enough and in the correct direction, otherwise close
+    // it.
+    should_show_app_list = gesture_in_screen.details().velocity_y() < 0;
+  } else {
+    // Show the app list if it is already at least one-third visible.
+    should_show_app_list =
+        -gesture_drag_amount_ >= shelf_->GetUserWorkAreaBounds().height() / 3.0;
+  }
+
+  if (should_show_app_list) {
+    Shell::Get()->SetAppListYPosition(
+        display::Screen::GetScreen()
+            ->GetDisplayNearestWindow(shelf_widget_->GetNativeWindow())
+            .work_area()
+            .y());
+  } else {
+    Shell::Get()->DismissAppList();
+  }
+
   gesture_drag_status_ = GESTURE_DRAG_NONE;
+}
+
+void ShelfLayoutManager::CancelGestureDrag() {
+  if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS) {
+    Shell::Get()->DismissAppList();
+  } else {
+    gesture_drag_status_ = GESTURE_DRAG_CANCEL_IN_PROGRESS;
+    UpdateVisibilityState();
+  }
+  gesture_drag_status_ = GESTURE_DRAG_NONE;
+}
+
+bool ShelfLayoutManager::CanStartFullscreenAppListDrag(
+    float scroll_y_hint) const {
+  // Only fullscreen app list can be dragged from the shelf.
+  if (!app_list::features::IsFullscreenAppListEnabled())
+    return false;
+
+  // Fullscreen app list can only be dragged from bottom alignment shelf in the
+  // tablet mode.
+  if (!Shell::Get()
+           ->tablet_mode_controller()
+           ->IsTabletModeWindowManagerEnabled() ||
+      !shelf_->IsHorizontalAlignment()) {
+    return false;
+  }
+
+  // If the shelf is not visible, swiping up should show the shelf.
+  if (!IsVisible())
+    return false;
+
+  // If app list is already opened, swiping up on the shelf should keep the app
+  // list opened.
+  if (is_app_list_visible_)
+    return false;
+
+  // Swipes down on shelf should hide the shelf.
+  if (scroll_y_hint >= 0)
+    return false;
+
+  return true;
 }
 
 bool ShelfLayoutManager::IsSwipingCorrectDirection() {

@@ -139,6 +139,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Changes |app_list_state_| from |PEEKING| to |FULLSCREEN_ALL_APPS|.
   bool HandleScroll(const ui::Event* event);
 
+  // Sets y position of the app list bounds to |y_position_in_screen|.
+  void SetYPosition(int y_position_in_screen);
+
  private:
   friend class test::AppListViewTestApi;
 
