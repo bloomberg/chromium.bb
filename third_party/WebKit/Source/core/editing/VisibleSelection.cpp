@@ -448,6 +448,14 @@ void VisibleSelectionTemplate<Strategy>::UpdateSelectionType() {
     affinity_ = TextAffinity::kDownstream;
 }
 
+// TODO(editing-dev): Once we move all static functions into anonymous
+// namespace, we should get rid of this forward declaration.
+template <typename Strategy>
+static EphemeralRangeTemplate<Strategy>
+AdjustSelectionToAvoidCrossingEditingBoundaries(
+    const EphemeralRangeTemplate<Strategy>&,
+    const PositionTemplate<Strategy>& base);
+
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::Validate(
     const SelectionTemplate<Strategy>& passed_selection,
@@ -492,7 +500,11 @@ void VisibleSelectionTemplate<Strategy>::Validate(
             EphemeralRangeTemplate<Strategy>(start_, end_));
   }
 
-  AdjustSelectionToAvoidCrossingEditingBoundaries();
+  const EphemeralRangeTemplate<Strategy> editing_adjusted_range =
+      AdjustSelectionToAvoidCrossingEditingBoundaries(
+          EphemeralRangeTemplate<Strategy>(start_, end_), base_);
+  start_ = editing_adjusted_range.StartPosition();
+  end_ = editing_adjusted_range.EndPosition();
   UpdateSelectionType();
 
   if (GetSelectionType() == kRangeSelection) {
@@ -653,22 +665,24 @@ PositionTemplate<Strategy> AdjustSelectionStartToAvoidCrossingEditingBoundaries(
 }
 
 template <typename Strategy>
-void VisibleSelectionTemplate<
-    Strategy>::AdjustSelectionToAvoidCrossingEditingBoundaries() {
-  if (base_.IsNull() || start_.IsNull() || end_.IsNull())
-    return;
+static EphemeralRangeTemplate<Strategy>
+AdjustSelectionToAvoidCrossingEditingBoundaries(
+    const EphemeralRangeTemplate<Strategy>& range,
+    const PositionTemplate<Strategy>& base) {
+  DCHECK(base.IsNotNull());
+  DCHECK(range.IsNotNull());
 
-  ContainerNode* base_root = HighestEditableRoot(base_);
-  ContainerNode* start_root = HighestEditableRoot(start_);
-  ContainerNode* end_root = HighestEditableRoot(end_);
+  ContainerNode* base_root = HighestEditableRoot(base);
+  ContainerNode* start_root = HighestEditableRoot(range.StartPosition());
+  ContainerNode* end_root = HighestEditableRoot(range.EndPosition());
 
   Element* base_editable_ancestor =
-      LowestEditableAncestor(base_.ComputeContainerNode());
+      LowestEditableAncestor(base.ComputeContainerNode());
 
   // The base, start and end are all in the same region.  No adjustment
   // necessary.
   if (base_root == start_root && base_root == end_root)
-    return;
+    return range;
 
   // The selection is based in editable content.
   if (base_root) {
@@ -677,49 +691,53 @@ void VisibleSelectionTemplate<
     // If the start is in non-editable content that is inside the base's
     // editable root, put it at the first editable position after start inside
     // the base's editable root.
+    PositionTemplate<Strategy> start = range.StartPosition();
     if (start_root != base_root) {
       const VisiblePositionTemplate<Strategy> first =
-          FirstEditableVisiblePositionAfterPositionInRoot(start_, *base_root);
-      start_ = first.DeepEquivalent();
-      if (start_.IsNull()) {
+          FirstEditableVisiblePositionAfterPositionInRoot(start, *base_root);
+      start = first.DeepEquivalent();
+      if (start.IsNull()) {
         NOTREACHED();
-        start_ = end_;
+        return {};
       }
     }
     // If the end is outside the base's editable root, cap it at the end of that
     // root.
     // If the end is in non-editable content that is inside the base's root, put
     // it at the last editable position before the end inside the base's root.
+    PositionTemplate<Strategy> end = range.EndPosition();
     if (end_root != base_root) {
       const VisiblePositionTemplate<Strategy> last =
-          LastEditableVisiblePositionBeforePositionInRoot(end_, *base_root);
-      end_ = last.DeepEquivalent();
-      if (end_.IsNull())
-        end_ = start_;
+          LastEditableVisiblePositionBeforePositionInRoot(end, *base_root);
+      end = last.DeepEquivalent();
+      if (end.IsNull())
+        end = start;
     }
-    // The selection is based in non-editable content.
+    return {start, end};
   } else {
+    // The selection is based in non-editable content.
     // FIXME: Non-editable pieces inside editable content should be atomic, in
     // the same way that editable pieces in non-editable content are atomic.
-    end_ = AdjustSelectionEndToAvoidCrossingEditingBoundaries(
-        end_, end_root, base_editable_ancestor);
-    if (end_.IsNull()) {
+    const PositionTemplate<Strategy>& end =
+        AdjustSelectionEndToAvoidCrossingEditingBoundaries(
+            range.EndPosition(), end_root, base_editable_ancestor);
+    if (end.IsNull()) {
       // The selection crosses an Editing boundary.  This is a
       // programmer error in the editing code.  Happy debugging!
       NOTREACHED();
-      *this = VisibleSelectionTemplate<Strategy>();
-      return;
+      return {};
     }
 
-    start_ = AdjustSelectionStartToAvoidCrossingEditingBoundaries(
-        start_, start_root, base_editable_ancestor);
-    if (start_.IsNull()) {
+    const PositionTemplate<Strategy>& start =
+        AdjustSelectionStartToAvoidCrossingEditingBoundaries(
+            range.StartPosition(), start_root, base_editable_ancestor);
+    if (start.IsNull()) {
       // The selection crosses an Editing boundary.  This is a
       // programmer error in the editing code.  Happy debugging!
       NOTREACHED();
-      *this = VisibleSelectionTemplate<Strategy>();
-      return;
+      return {};
     }
+    return {start, end};
   }
 }
 

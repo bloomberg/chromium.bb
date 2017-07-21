@@ -155,7 +155,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   void Validate(const SelectionTemplate<Strategy>&, TextGranularity);
 
   // Support methods for Validate()
-  void AdjustSelectionToAvoidCrossingEditingBoundaries();
   void UpdateSelectionType();
 
   // We need to store these as Positions because VisibleSelection is
