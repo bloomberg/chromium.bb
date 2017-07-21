@@ -409,8 +409,9 @@ void LogPredictionQualityMetrics(
                               (predicted_type << 16) | actual_type);
 
   form_interactions_ukm_logger->LogFieldType(
-      form.form_signature(), field.GetFieldSignature(), prediction_source,
-      metric_type, predicted_type, actual_type);
+      form.form_parsed_timestamp(), form.form_signature(),
+      field.GetFieldSignature(), prediction_source, metric_type, predicted_type,
+      actual_type);
 
   // NO_SERVER_DATA is the equivalent of predicting UNKNOWN.
   if (predicted_type == NO_SERVER_DATA)
@@ -908,6 +909,7 @@ void AutofillMetrics::LogProfileActionOnFormSubmitted(
 // static
 void AutofillMetrics::LogAutofillFormSubmittedState(
     AutofillFormSubmittedState state,
+    const base::TimeTicks& form_parsed_timestamp,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   UMA_HISTOGRAM_ENUMERATION("Autofill.FormSubmittedState", state,
                             AUTOFILL_FORM_SUBMITTED_STATE_ENUM_SIZE);
@@ -942,7 +944,7 @@ void AutofillMetrics::LogAutofillFormSubmittedState(
       NOTREACHED();
       break;
   }
-  form_interactions_ukm_logger->LogFormSubmitted(state);
+  form_interactions_ukm_logger->LogFormSubmitted(state, form_parsed_timestamp);
 }
 
 // static
@@ -1090,8 +1092,10 @@ void AutofillMetrics::FormEventLogger::OnDidPollSuggestions(
 }
 
 void AutofillMetrics::FormEventLogger::OnDidShowSuggestions(
-    const AutofillField& field) {
-  form_interactions_ukm_logger_->LogSuggestionsShown(field);
+    const AutofillField& field,
+    const base::TimeTicks& form_parsed_timestamp) {
+  form_interactions_ukm_logger_->LogSuggestionsShown(field,
+                                                     form_parsed_timestamp);
 
   Log(AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN);
   if (!has_logged_suggestions_shown_) {
@@ -1112,9 +1116,11 @@ void AutofillMetrics::FormEventLogger::OnDidShowSuggestions(
   }
 }
 
-void AutofillMetrics::FormEventLogger::OnDidSelectMaskedServerCardSuggestion() {
+void AutofillMetrics::FormEventLogger::OnDidSelectMaskedServerCardSuggestion(
+    const base::TimeTicks& form_parsed_timestamp) {
   DCHECK(is_for_credit_card_);
-  form_interactions_ukm_logger_->LogSelectedMaskedServerCard();
+  form_interactions_ukm_logger_->LogSelectedMaskedServerCard(
+      form_parsed_timestamp);
 
   Log(AutofillMetrics::FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED);
   if (!has_logged_masked_server_card_suggestion_selected_) {
@@ -1125,10 +1131,11 @@ void AutofillMetrics::FormEventLogger::OnDidSelectMaskedServerCardSuggestion() {
 }
 
 void AutofillMetrics::FormEventLogger::OnDidFillSuggestion(
-    const CreditCard& credit_card) {
+    const CreditCard& credit_card,
+    const base::TimeTicks& form_parsed_timestamp) {
   DCHECK(is_for_credit_card_);
   form_interactions_ukm_logger_->LogDidFillSuggestion(
-      static_cast<int>(credit_card.record_type()));
+      static_cast<int>(credit_card.record_type()), form_parsed_timestamp);
 
   if (credit_card.record_type() == CreditCard::MASKED_SERVER_CARD)
     Log(AutofillMetrics::FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED);
@@ -1163,10 +1170,11 @@ void AutofillMetrics::FormEventLogger::OnDidFillSuggestion(
 }
 
 void AutofillMetrics::FormEventLogger::OnDidFillSuggestion(
-    const AutofillProfile& profile) {
+    const AutofillProfile& profile,
+    const base::TimeTicks& form_parsed_timestamp) {
   DCHECK(!is_for_credit_card_);
   form_interactions_ukm_logger_->LogDidFillSuggestion(
-      static_cast<int>(profile.record_type()));
+      static_cast<int>(profile.record_type()), form_parsed_timestamp);
 
   if (profile.record_type() == AutofillProfile::SERVER_PROFILE)
     Log(AutofillMetrics::FORM_EVENT_SERVER_SUGGESTION_FILLED);
@@ -1292,7 +1300,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::OnFormsParsed(
     return;
 
   url_ = url;
-  form_parsed_timestamp_ = base::TimeTicks::Now();
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogInteractedWithForm(
@@ -1317,7 +1324,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogInteractedWithForm(
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogSuggestionsShown(
-    const AutofillField& field) {
+    const AutofillField& field,
+    const base::TimeTicks& form_parsed_timestamp) {
   if (!CanLog())
     return;
 
@@ -1334,10 +1342,11 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogSuggestionsShown(
   builder->AddMetric(internal::kUKMServerTypeMetricName,
                      static_cast<int>(field.server_type()));
   builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
-                     MillisecondsSinceFormParsed());
+                     MillisecondsSinceFormParsed(form_parsed_timestamp));
 }
 
-void AutofillMetrics::FormInteractionsUkmLogger::LogSelectedMaskedServerCard() {
+void AutofillMetrics::FormInteractionsUkmLogger::LogSelectedMaskedServerCard(
+    const base::TimeTicks& form_parsed_timestamp) {
   if (!CanLog())
     return;
 
@@ -1348,11 +1357,12 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogSelectedMaskedServerCard() {
       ukm_recorder_->GetEntryBuilder(
           source_id_, internal::kUKMSelectedMaskedServerCardEntryName);
   builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
-                     MillisecondsSinceFormParsed());
+                     MillisecondsSinceFormParsed(form_parsed_timestamp));
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogDidFillSuggestion(
-    int record_type) {
+    int record_type,
+    const base::TimeTicks& form_parsed_timestamp) {
   if (!CanLog())
     return;
 
@@ -1364,11 +1374,12 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogDidFillSuggestion(
                                      internal::kUKMSuggestionFilledEntryName);
   builder->AddMetric(internal::kUKMRecordTypeMetricName, record_type);
   builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
-                     MillisecondsSinceFormParsed());
+                     MillisecondsSinceFormParsed(form_parsed_timestamp));
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogTextFieldDidChange(
-    const AutofillField& field) {
+    const AutofillField& field,
+    const base::TimeTicks& form_parsed_timestamp) {
   if (!CanLog())
     return;
 
@@ -1391,7 +1402,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogTextFieldDidChange(
   builder->AddMetric(internal::kUKMIsAutofilledMetricName, field.is_autofilled);
   builder->AddMetric(internal::kUKMIsEmptyMetricName, field.IsEmpty());
   builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
-                     MillisecondsSinceFormParsed());
+                     MillisecondsSinceFormParsed(form_parsed_timestamp));
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogFieldFillStatus(
@@ -1408,7 +1419,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFieldFillStatus(
       ukm_recorder_->GetEntryBuilder(source_id_,
                                      internal::kUKMFieldFillStatusEntryName);
   builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
-                     MillisecondsSinceFormParsed());
+                     MillisecondsSinceFormParsed(form.form_parsed_timestamp()));
   builder->AddMetric(internal::kUKMFormSignatureMetricName,
                      static_cast<int64_t>(form.form_signature()));
   builder->AddMetric(internal::kUKMFieldSignatureMetricName,
@@ -1421,7 +1432,10 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFieldFillStatus(
                      static_cast<int64_t>(field.previously_autofilled()));
 }
 
+// TODO(szhangcs): Take FormStructure and AutofillField and extract
+// FormSignature and TimeTicks inside the function.
 void AutofillMetrics::FormInteractionsUkmLogger::LogFieldType(
+    const base::TimeTicks& form_parsed_timestamp,
     FormSignature form_signature,
     FieldSignature field_signature,
     QualityMetricPredictionSource prediction_source,
@@ -1438,7 +1452,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFieldType(
       ukm_recorder_->GetEntryBuilder(source_id_,
                                      internal::kUKMFieldTypeEntryName);
   builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
-                     MillisecondsSinceFormParsed());
+                     MillisecondsSinceFormParsed(form_parsed_timestamp));
   builder->AddMetric(internal::kUKMFormSignatureMetricName,
                      static_cast<int64_t>(form_signature));
   builder->AddMetric(internal::kUKMFieldSignatureMetricName,
@@ -1454,7 +1468,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFieldType(
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
-    AutofillFormSubmittedState state) {
+    AutofillFormSubmittedState state,
+    const base::TimeTicks& form_parsed_timestamp) {
   if (!CanLog())
     return;
 
@@ -1466,13 +1481,13 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
                                      internal::kUKMFormSubmittedEntryName);
   builder->AddMetric(internal::kUKMAutofillFormSubmittedStateMetricName,
                      static_cast<int>(state));
-  if (form_parsed_timestamp_.is_null())
+  if (form_parsed_timestamp.is_null())
     DCHECK(state == NON_FILLABLE_FORM_OR_NEW_DATA ||
            state == FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS)
         << state;
   else
     builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
-                       MillisecondsSinceFormParsed());
+                       MillisecondsSinceFormParsed(form_parsed_timestamp));
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::UpdateSourceURL(
@@ -1486,14 +1501,13 @@ bool AutofillMetrics::FormInteractionsUkmLogger::CanLog() const {
   return ukm_recorder_ && url_.is_valid();
 }
 
-int64_t
-AutofillMetrics::FormInteractionsUkmLogger::MillisecondsSinceFormParsed()
-    const {
-  DCHECK(!form_parsed_timestamp_.is_null());
+int64_t AutofillMetrics::FormInteractionsUkmLogger::MillisecondsSinceFormParsed(
+    const base::TimeTicks& form_parsed_timestamp) const {
+  DCHECK(!form_parsed_timestamp.is_null());
   // Use the pinned timestamp as the current time if it's set.
   base::TimeTicks now =
       pinned_timestamp_.is_null() ? base::TimeTicks::Now() : pinned_timestamp_;
-  return (now - form_parsed_timestamp_).InMilliseconds();
+  return (now - form_parsed_timestamp).InMilliseconds();
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::GetNewSourceID() {

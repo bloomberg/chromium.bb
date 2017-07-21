@@ -10,9 +10,15 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/payments/full_card_request.h"
+#include "components/autofill/core/browser/payments/payments_client.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/test_autofill_client.h"
+#include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/core/address_normalizer.h"
 #include "components/payments/core/test_payment_request_delegate.h"
 #include "components/strings/grit/components_strings.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -78,10 +84,20 @@ class FakeAddressNormalizer : public AddressNormalizer {
   AddressNormalizer::Delegate* requester_;
 };
 
-class FakePaymentRequestDelegate : public PaymentRequestDelegate {
+class FakePaymentRequestDelegate
+    : public PaymentRequestDelegate,
+      public autofill::payments::PaymentsClientDelegate {
  public:
   FakePaymentRequestDelegate()
-      : locale_("en-US"), last_committed_url_("https://shop.com") {}
+      : locale_("en-US"),
+        last_committed_url_("https://shop.com"),
+        personal_data_("en-US"),
+        request_context_(new net::TestURLRequestContextGetter(
+            base::ThreadTaskRunnerHandle::Get())),
+        payments_client_(request_context_.get(), this),
+        full_card_request_(&autofill_client_,
+                           &payments_client_,
+                           &personal_data_) {}
   void ShowDialog(PaymentRequest* request) override {}
 
   void CloseDialog() override {}
@@ -120,7 +136,7 @@ class FakePaymentRequestDelegate : public PaymentRequestDelegate {
 
   void CompleteFullCardRequest() {
     full_card_result_delegate_->OnFullCardRequestSucceeded(
-        full_card_request_card_, base::ASCIIToUTF16("123"));
+        full_card_request_, full_card_request_card_, base::ASCIIToUTF16("123"));
   }
 
   autofill::RegionDataLoader* GetRegionDataLoader() override { return nullptr; }
@@ -131,7 +147,11 @@ class FakePaymentRequestDelegate : public PaymentRequestDelegate {
   std::string locale_;
   const GURL last_committed_url_;
   FakeAddressNormalizer address_normalizer_;
-
+  autofill::PersonalDataManager personal_data_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
+  autofill::TestAutofillClient autofill_client_;
+  autofill::payments::PaymentsClient payments_client_;
+  autofill::payments::FullCardRequest full_card_request_;
   autofill::CreditCard full_card_request_card_;
   base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
       full_card_result_delegate_;
@@ -328,7 +348,9 @@ TEST_F(AutofillPaymentInstrumentTest, IsValidForCanMakePayment_NoNumber) {
 // the billing address has been normalized and the card has been unmasked.
 TEST_F(AutofillPaymentInstrumentTest,
        InvokePaymentApp_NormalizationBeforeUnmask) {
-  TestPaymentRequestDelegate delegate(/*personal_data_manager=*/nullptr);
+  auto personal_data_manager =
+      base::MakeUnique<autofill::TestPersonalDataManager>();
+  TestPaymentRequestDelegate delegate(personal_data_manager.get());
   delegate.DelayFullCardRequestCompletion();
   delegate.test_address_normalizer()->DelayNormalization();
 
@@ -357,7 +379,9 @@ TEST_F(AutofillPaymentInstrumentTest,
 // the billing address has been normalized and the card has been unmasked.
 TEST_F(AutofillPaymentInstrumentTest,
        InvokePaymentApp_UnmaskBeforeNormalization) {
-  TestPaymentRequestDelegate delegate(/*personal_data_manager=*/nullptr);
+  auto personal_data_manager =
+      base::MakeUnique<autofill::TestPersonalDataManager>();
+  TestPaymentRequestDelegate delegate(personal_data_manager.get());
   delegate.DelayFullCardRequestCompletion();
   delegate.test_address_normalizer()->DelayNormalization();
 

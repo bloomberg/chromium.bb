@@ -26,7 +26,7 @@ class PaymentRequestStateTest : public testing::Test,
  protected:
   PaymentRequestStateTest()
       : num_on_selected_information_changed_called_(0),
-        test_payment_request_delegate_(/*personal_data_manager=*/nullptr),
+        test_payment_request_delegate_(&test_personal_data_manager_),
         journey_logger_(test_payment_request_delegate_.IsIncognito(),
                         GURL("http://www.test.com"),
                         test_payment_request_delegate_.GetUkmRecorder()),

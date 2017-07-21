@@ -19,12 +19,22 @@ namespace payments {
 FullCardRequest::FullCardRequest(RiskDataLoader* risk_data_loader,
                                  payments::PaymentsClient* payments_client,
                                  PersonalDataManager* personal_data_manager)
+    : FullCardRequest(risk_data_loader,
+                      payments_client,
+                      personal_data_manager,
+                      base::TimeTicks()) {}
+
+FullCardRequest::FullCardRequest(RiskDataLoader* risk_data_loader,
+                                 payments::PaymentsClient* payments_client,
+                                 PersonalDataManager* personal_data_manager,
+                                 base::TimeTicks form_parsed_timestamp)
     : risk_data_loader_(risk_data_loader),
       payments_client_(payments_client),
       personal_data_manager_(personal_data_manager),
       result_delegate_(nullptr),
       ui_delegate_(nullptr),
       should_unmask_card_(false),
+      form_parsed_timestamp_(form_parsed_timestamp),
       weak_ptr_factory_(this) {
   DCHECK(risk_data_loader_);
   DCHECK(payments_client_);
@@ -87,7 +97,7 @@ void FullCardRequest::OnUnmaskResponse(const UnmaskResponse& response) {
 
   if (!should_unmask_card_) {
     if (result_delegate_)
-      result_delegate_->OnFullCardRequestSucceeded(request_->card,
+      result_delegate_->OnFullCardRequestSucceeded(*this, request_->card,
                                                    response.cvc);
     if (ui_delegate_)
       ui_delegate_->OnUnmaskVerificationResult(AutofillClient::SUCCESS);
@@ -152,7 +162,7 @@ void FullCardRequest::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
 
       if (result_delegate_)
         result_delegate_->OnFullCardRequestSucceeded(
-            request_->card, request_->user_response.cvc);
+            *this, request_->card, request_->user_response.cvc);
       Reset();
       break;
     }

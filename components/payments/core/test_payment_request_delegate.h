@@ -7,10 +7,47 @@
 
 #include <string>
 
+#include "base/message_loop/message_loop.h"
+#include "components/autofill/core/browser/payments/full_card_request.h"
+#include "components/autofill/core/browser/payments/payments_client.h"
+#include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/payments/core/payment_request_delegate.h"
 #include "components/payments/core/test_address_normalizer.h"
+#include "net/url_request/url_request_test_util.h"
 
 namespace payments {
+
+class TestPaymentsClientDelegate
+    : public autofill::payments::PaymentsClientDelegate {
+ public:
+  TestPaymentsClientDelegate();
+  ~TestPaymentsClientDelegate();
+
+ private:
+  void OnDidGetRealPan(autofill::AutofillClient::PaymentsRpcResult result,
+                       const std::string& real_pan) override;
+  IdentityProvider* GetIdentityProvider() override;
+  void OnDidGetUploadDetails(
+      autofill::AutofillClient::PaymentsRpcResult result,
+      const base::string16& context_token,
+      std::unique_ptr<base::DictionaryValue> legal_message) override;
+  void OnDidUploadCard(autofill::AutofillClient::PaymentsRpcResult result,
+                       const std::string& server_id) override;
+};
+
+class TestURLRequestContextGetter : public net::URLRequestContextGetter {
+ public:
+  explicit TestURLRequestContextGetter(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  net::URLRequestContext* GetURLRequestContext() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override;
+
+ private:
+  ~TestURLRequestContextGetter() override;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+};
 
 class TestPaymentRequestDelegate : public PaymentRequestDelegate {
  public:
@@ -42,10 +79,16 @@ class TestPaymentRequestDelegate : public PaymentRequestDelegate {
   void CompleteFullCardRequest();
 
  private:
+  base::MessageLoop loop_;
+  TestPaymentsClientDelegate payments_cleint_delegate_;
   autofill::PersonalDataManager* personal_data_manager_;
   std::string locale_;
   const GURL last_committed_url_;
   TestAddressNormalizer address_normalizer_;
+  scoped_refptr<TestURLRequestContextGetter> request_context_;
+  autofill::TestAutofillClient autofill_client_;
+  autofill::payments::PaymentsClient payments_client_;
+  autofill::payments::FullCardRequest full_card_request_;
 
   bool instantaneous_full_card_request_result_ = true;
   autofill::CreditCard full_card_request_card_;

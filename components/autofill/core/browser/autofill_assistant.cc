@@ -59,8 +59,10 @@ void AutofillAssistant::OnUserDidAcceptCreditCardFill(const CreditCard& card) {
       autofill_manager_->GetAsFullCardRequestUIDelegate());
 }
 
-void AutofillAssistant::OnFullCardRequestSucceeded(const CreditCard& card,
-                                                   const base::string16& cvc) {
+void AutofillAssistant::OnFullCardRequestSucceeded(
+    const payments::FullCardRequest& /* full_card_request */,
+    const CreditCard& card,
+    const base::string16& cvc) {
   autofill_manager_->FillCreditCardForm(kNoQueryId, *credit_card_form_data_,
                                         credit_card_form_data_->fields[0], card,
                                         cvc);

@@ -231,6 +231,13 @@ class FormStructure {
   }
   UploadRequired upload_required() const { return upload_required_; }
 
+  void set_form_parsed_timestamp(const base::TimeTicks form_parsed_timestamp) {
+    form_parsed_timestamp_ = form_parsed_timestamp;
+  }
+  base::TimeTicks form_parsed_timestamp() const {
+    return form_parsed_timestamp_;
+  }
+
   bool all_fields_are_passwords() const { return all_fields_are_passwords_; }
 
   bool is_signin_upload() const { return is_signin_upload_; }
@@ -344,6 +351,9 @@ class FormStructure {
   // The unique signature for this form, composed of the target url domain,
   // the form name, and the form field names in a 64-bit hash.
   FormSignature form_signature_;
+
+  // When a form is parsed on this page.
+  base::TimeTicks form_parsed_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

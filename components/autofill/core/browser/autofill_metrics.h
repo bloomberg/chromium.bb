@@ -747,20 +747,26 @@ class AutofillMetrics {
     void LogInteractedWithForm(bool is_for_credit_card,
                                size_t local_record_type_count,
                                size_t server_record_type_count);
-    void LogSuggestionsShown(const AutofillField& field);
-    void LogSelectedMaskedServerCard();
-    void LogDidFillSuggestion(int record_type);
-    void LogTextFieldDidChange(const AutofillField& field);
+    void LogSuggestionsShown(const AutofillField& field,
+                             const base::TimeTicks& form_parsed_timestamp);
+    void LogSelectedMaskedServerCard(
+        const base::TimeTicks& form_parsed_timestamp);
+    void LogDidFillSuggestion(int record_type,
+                              const base::TimeTicks& form_parsed_timestamp);
+    void LogTextFieldDidChange(const AutofillField& field,
+                               const base::TimeTicks& form_parsed_timestamp);
     void LogFieldFillStatus(const FormStructure& form,
                             const AutofillField& field,
                             QualityMetricType metric_type);
-    void LogFieldType(FormSignature form_signature,
+    void LogFieldType(const base::TimeTicks& form_parsed_timestamp,
+                      FormSignature form_signature,
                       FieldSignature field_signature,
                       QualityMetricPredictionSource prediction_source,
                       QualityMetricType metric_type,
                       ServerFieldType predicted_type,
                       ServerFieldType actual_type);
-    void LogFormSubmitted(AutofillFormSubmittedState state);
+    void LogFormSubmitted(AutofillFormSubmittedState state,
+                          const base::TimeTicks& form_parsed_timestamp);
 
     // We initialize |url_| with the form's URL when we log the first form
     // interaction. Later, we may update |url_| with the |source_url()| for the
@@ -769,13 +775,13 @@ class AutofillMetrics {
 
    private:
     bool CanLog() const;
-    int64_t MillisecondsSinceFormParsed() const;
+    int64_t MillisecondsSinceFormParsed(
+        const base::TimeTicks& form_parsed_timestamp) const;
     void GetNewSourceID();
 
     ukm::UkmRecorder* ukm_recorder_;  // Weak reference.
     ukm::SourceId source_id_ = -1;
     GURL url_;
-    base::TimeTicks form_parsed_timestamp_;
     base::TimeTicks pinned_timestamp_;
   };
 
@@ -951,6 +957,7 @@ class AutofillMetrics {
   // state of the form.
   static void LogAutofillFormSubmittedState(
       AutofillFormSubmittedState state,
+      const base::TimeTicks& form_parsed_timestamp,
       FormInteractionsUkmLogger* form_interactions_ukm_logger);
 
   // This should be called when determining the heuristic types for a form's
@@ -1021,15 +1028,19 @@ class AutofillMetrics {
 
     void OnDidPollSuggestions(const FormFieldData& field);
 
-    void OnDidShowSuggestions(const AutofillField& field);
+    void OnDidShowSuggestions(const AutofillField& field,
+                              const base::TimeTicks& form_parsed_timestamp);
 
-    void OnDidSelectMaskedServerCardSuggestion();
+    void OnDidSelectMaskedServerCardSuggestion(
+        const base::TimeTicks& form_parsed_timestamp);
 
     // In case of masked cards, caller must make sure this gets called before
     // the card is upgraded to a full card.
-    void OnDidFillSuggestion(const CreditCard& credit_card);
+    void OnDidFillSuggestion(const CreditCard& credit_card,
+                             const base::TimeTicks& form_parsed_timestamp);
 
-    void OnDidFillSuggestion(const AutofillProfile& profile);
+    void OnDidFillSuggestion(const AutofillProfile& profile,
+                             const base::TimeTicks& form_parsed_timestamp);
 
     void OnWillSubmitForm();
 

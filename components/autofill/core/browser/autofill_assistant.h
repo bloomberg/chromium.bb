@@ -44,8 +44,10 @@ class AutofillAssistant : public payments::FullCardRequest::ResultDelegate {
   void OnUserDidAcceptCreditCardFill(const CreditCard& card);
 
   // payments::FullCardRequest::ResultDelegate:
-  void OnFullCardRequestSucceeded(const CreditCard& card,
-                                  const base::string16& cvc) override;
+  void OnFullCardRequestSucceeded(
+      const payments::FullCardRequest& full_card_request,
+      const CreditCard& card,
+      const base::string16& cvc) override;
   void OnFullCardRequestFailed() override;
 
   // Holds the FormData to be filled with a credit card.

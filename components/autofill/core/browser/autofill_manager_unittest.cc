@@ -693,6 +693,7 @@ class TestAutofillManager : public AutofillManager {
   }
 
   void AddSeenForm(std::unique_ptr<FormStructure> form) {
+    form->set_form_parsed_timestamp(base::TimeTicks::Now());
     form_structures()->push_back(std::move(form));
   }
 
@@ -7079,6 +7080,7 @@ TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
 
   std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
   form_structure->set_is_signin_upload(true);
+  form_structure->set_form_parsed_timestamp(base::TimeTicks::Now());
   form_structure->field(1)->set_possible_types({autofill::PASSWORD});
 
   std::string signature = form_structure->FormSignatureAsStr();

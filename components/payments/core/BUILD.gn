@@ -78,6 +78,7 @@ static_library("test_support") {
     "//components/autofill/core/browser:test_support",
     "//components/pref_registry",
     "//components/prefs",
+    "//net:test_support",
   ]
 }
 
@@ -109,6 +110,7 @@ source_set("unit_tests") {
     "//components/strings:components_strings_grit",
     "//components/ukm",
     "//components/ukm:test_support",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/libaddressinput:test_support",
