@@ -444,6 +444,12 @@ TEST_P(MostVisitedSitesTest, ShouldStartNoCallInConstructor) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_P(MostVisitedSitesTest, ShouldRefreshBothBackends) {
+  EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
+  EXPECT_CALL(mock_suggestions_service_, FetchSuggestionsData());
+  most_visited_sites_->Refresh();
+}
+
 TEST_P(MostVisitedSitesTest, ShouldIncludeTileForHomePage) {
   FakeHomePageClient* home_page_client = RegisterNewHomePageClient();
   home_page_client->SetHomePageEnabled(true);
@@ -781,7 +787,6 @@ TEST_P(MostVisitedSitesTest, ShouldHandleTopSitesCacheHit) {
           MostVisitedURLList{MakeMostVisitedURL("Site 1", "http://site1/")}));
 
   InSequence seq;
-  EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
   EXPECT_CALL(mock_suggestions_service_, AddCallback(_))
       .WillOnce(Invoke(&suggestions_service_callbacks_,
                        &SuggestionsService::ResponseCallbackList::Add));
@@ -801,6 +806,7 @@ TEST_P(MostVisitedSitesTest, ShouldHandleTopSitesCacheHit) {
                 OnMostVisitedURLsAvailable(ElementsAre(MatchesTile(
                     "Site 1", "http://site1/", TileSource::TOP_SITES))));
   }
+  EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
   EXPECT_CALL(mock_suggestions_service_, FetchSuggestionsData())
       .WillOnce(Return(true));
 
@@ -834,7 +840,6 @@ class MostVisitedSitesWithCacheHitTest : public MostVisitedSitesTest {
   // service has cached results when the observer is registered.
   MostVisitedSitesWithCacheHitTest() {
     InSequence seq;
-    EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
     EXPECT_CALL(mock_suggestions_service_, AddCallback(_))
         .WillOnce(Invoke(&suggestions_service_callbacks_,
                          &SuggestionsService::ResponseCallbackList::Add));
@@ -865,6 +870,7 @@ class MostVisitedSitesWithCacheHitTest : public MostVisitedSitesTest {
                       MatchesTile("Site 3", "http://site3/",
                                   TileSource::SUGGESTIONS_SERVICE))));
     }
+    EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
     EXPECT_CALL(mock_suggestions_service_, FetchSuggestionsData())
         .WillOnce(Return(true));
 
@@ -978,7 +984,6 @@ class MostVisitedSitesWithEmptyCacheTest : public MostVisitedSitesTest {
   // service doesn't have cached results when the observer is registered.
   MostVisitedSitesWithEmptyCacheTest() {
     InSequence seq;
-    EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
     EXPECT_CALL(mock_suggestions_service_, AddCallback(_))
         .WillOnce(Invoke(&suggestions_service_callbacks_,
                          &SuggestionsService::ResponseCallbackList::Add));
@@ -986,6 +991,7 @@ class MostVisitedSitesWithEmptyCacheTest : public MostVisitedSitesTest {
         .WillOnce(Return(SuggestionsProfile()));  // Empty cache.
     EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
         .WillOnce(Invoke(&top_sites_callbacks_, &TopSitesCallbackList::Add));
+    EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
     EXPECT_CALL(mock_suggestions_service_, FetchSuggestionsData())
         .WillOnce(Return(true));
 
