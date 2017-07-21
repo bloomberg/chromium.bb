@@ -1674,8 +1674,6 @@ crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
 
 crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failure ]
 
-crbug.com/744797 inspector/sources/debugger/source-frame-inline-breakpoint-decorations.html [ NeedsManualRebaseline ]
-
 crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
 
 crbug.com/399507 virtual/threaded/inspector/tracing/timeline-paint/layer-tree.html [ Skip ]
