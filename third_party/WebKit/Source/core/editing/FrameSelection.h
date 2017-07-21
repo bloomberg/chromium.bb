@@ -60,8 +60,6 @@ enum EUserTriggered { kNotUserTriggered = 0, kUserTriggered = 1 };
 
 enum RevealExtentOption { kRevealExtent, kDoNotRevealExtent };
 
-enum class SelectionDirectionalMode { kNonDirectional, kDirectional };
-
 enum class CaretVisibility;
 
 enum class HandleVisibility { kNotVisible, kVisible };
