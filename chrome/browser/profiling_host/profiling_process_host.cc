@@ -159,8 +159,12 @@ void ProfilingProcessHost::Launch() {
   base::LaunchOptions options;
 #if defined(OS_WIN)
   options.handles_to_inherit = &handle_passing_info;
+  std::string local_pipe_string = base::IntToString(
+      reinterpret_cast<int>(data_channel.PassServerHandle().release().handle));
 #elif defined(OS_POSIX)
   options.fds_to_remap = &handle_passing_info;
+  std::string local_pipe_string =
+      base::IntToString(data_channel.PassServerHandle().release().handle);
 #if defined(OS_LINUX)
   options.kill_on_parent_death = true;
 #endif
@@ -169,8 +173,7 @@ void ProfilingProcessHost::Launch() {
 #endif
 
   process_ = base::LaunchProcess(profiling_cmd, options);
-  StartMemlogSender(
-      base::IntToString(data_channel.PassServerHandle().release().handle));
+  StartMemlogSender(local_pipe_string);
 }
 
 void ProfilingProcessHost::EnsureControlChannelExists() {
