@@ -808,10 +808,10 @@ TEST_F(FullscreenAppListPresenterDelegateTest, WhitespaceQuery) {
   EXPECT_TRUE(view->search_box_view()->is_search_box_active());
   EXPECT_EQ(view->app_list_state(), app_list::AppListView::HALF);
 
-  // Delete the non whitespace character, the Searchbox should deactivate and go
-  // to PEEKING
+  // Delete the non whitespace character, the Searchbox should not deactivate
+  // but go to PEEKING
   generator.PressKey(ui::VKEY_BACK, 0);
-  EXPECT_FALSE(view->search_box_view()->is_search_box_active());
+  EXPECT_TRUE(view->search_box_view()->is_search_box_active());
   EXPECT_EQ(view->app_list_state(), app_list::AppListView::PEEKING);
 }
 
