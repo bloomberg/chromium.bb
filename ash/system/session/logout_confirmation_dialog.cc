@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/session/logout_confirmation_controller.h"
-#include "ash/system/tray/tray_constants.h"
 #include "base/location.h"
 #include "base/time/tick_clock.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -20,6 +19,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -36,10 +36,11 @@ LogoutConfirmationDialog::LogoutConfirmationDialog(
     base::TimeTicks logout_time)
     : controller_(controller), logout_time_(logout_time) {
   SetLayoutManager(new views::FillLayout());
+  SetBorder(
+      views::CreateEmptyBorder(views::LayoutProvider::Get()->GetInsetsMetric(
+          views::INSETS_DIALOG_CONTENTS)));
 
   label_ = new views::Label;
-  label_->SetBorder(views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0,
-                                             kTrayPopupPaddingHorizontal));
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_->SetMultiLine(true);
   AddChildView(label_);
