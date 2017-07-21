@@ -311,7 +311,7 @@
         </div>
 <if expr="(not chromeos and is_posix) or is_win or is_macosx">
         <template is="dom-if" if="[[!syncStatus.domain]]">
-          <div class="footer border-top-divider" slot="footer">
+          <div class="footer" slot="footer">
             <div class="settings-box first">
               <paper-checkbox id="deleteProfile" class="start"
                   checked="{{deleteProfile_}}">
