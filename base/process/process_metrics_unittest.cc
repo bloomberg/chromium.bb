@@ -402,6 +402,43 @@ TEST_F(SystemMetricsTest, TestNoNegativeCpuUsage) {
 
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
+#if defined(OS_CHROMEOS)
+TEST_F(SystemMetricsTest, ParseZramMmStat) {
+  SwapInfo swapinfo;
+
+  const char invalid_input1[] = "aaa";
+  const char invalid_input2[] = "1 2 3 4 5 6";
+  const char invalid_input3[] = "a 2 3 4 5 6 7";
+  EXPECT_FALSE(ParseZramMmStat(invalid_input1, &swapinfo));
+  EXPECT_FALSE(ParseZramMmStat(invalid_input2, &swapinfo));
+  EXPECT_FALSE(ParseZramMmStat(invalid_input3, &swapinfo));
+
+  const char valid_input1[] =
+      "17715200 5008166 566062  0 1225715712  127 183842";
+  EXPECT_TRUE(ParseZramMmStat(valid_input1, &swapinfo));
+  EXPECT_EQ(17715200ULL, swapinfo.orig_data_size);
+  EXPECT_EQ(5008166ULL, swapinfo.compr_data_size);
+  EXPECT_EQ(566062ULL, swapinfo.mem_used_total);
+}
+
+TEST_F(SystemMetricsTest, ParseZramStat) {
+  SwapInfo swapinfo;
+
+  const char invalid_input1[] = "aaa";
+  const char invalid_input2[] = "1 2 3 4 5 6 7 8 9 10";
+  const char invalid_input3[] = "a 2 3 4 5 6 7 8 9 10 11";
+  EXPECT_FALSE(ParseZramStat(invalid_input1, &swapinfo));
+  EXPECT_FALSE(ParseZramStat(invalid_input2, &swapinfo));
+  EXPECT_FALSE(ParseZramStat(invalid_input3, &swapinfo));
+
+  const char valid_input1[] =
+      "299    0    2392    0    1    0    8    0    0    0    0";
+  EXPECT_TRUE(ParseZramStat(valid_input1, &swapinfo));
+  EXPECT_EQ(299ULL, swapinfo.num_reads);
+  EXPECT_EQ(1ULL, swapinfo.num_writes);
+}
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_ANDROID)
 TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
