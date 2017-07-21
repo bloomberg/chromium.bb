@@ -30,6 +30,13 @@ CompositionMarkerListImpl::GetMarkers() const {
   return markers_;
 }
 
+DocumentMarker* CompositionMarkerListImpl::FirstMarkerIntersectingRange(
+    unsigned start_offset,
+    unsigned end_offset) const {
+  return DocumentMarkerListEditor::FirstMarkerIntersectingRange(
+      markers_, start_offset, end_offset);
+}
+
 HeapVector<Member<DocumentMarker>>
 CompositionMarkerListImpl::MarkersIntersectingRange(unsigned start_offset,
                                                     unsigned end_offset) const {

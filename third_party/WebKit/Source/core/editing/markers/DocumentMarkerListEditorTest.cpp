@@ -399,6 +399,78 @@ TEST_F(DocumentMarkerListEditorTest,
   EXPECT_EQ(20u, markers[2]->EndOffset());
 }
 
+TEST_F(DocumentMarkerListEditorTest, FirstMarkerIntersectingRange_Empty) {
+  DocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 5));
+
+  DocumentMarker* marker =
+      DocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 10, 15);
+  EXPECT_EQ(nullptr, marker);
+}
+
+TEST_F(DocumentMarkerListEditorTest,
+       FirstMarkerIntersectingRange_TouchingAfter) {
+  DocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 5));
+
+  DocumentMarker* marker =
+      DocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 5, 10);
+  EXPECT_EQ(nullptr, marker);
+}
+
+TEST_F(DocumentMarkerListEditorTest,
+       FirstMarkerIntersectingRange_TouchingBefore) {
+  DocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(5, 10));
+
+  DocumentMarker* marker =
+      DocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 0, 5);
+  EXPECT_EQ(nullptr, marker);
+}
+
+TEST_F(DocumentMarkerListEditorTest,
+       FirstMarkerIntersectingRange_IntersectingAfter) {
+  DocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(5, 10));
+
+  DocumentMarker* marker =
+      DocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 0, 6);
+  EXPECT_NE(nullptr, marker);
+
+  EXPECT_EQ(5u, marker->StartOffset());
+  EXPECT_EQ(10u, marker->EndOffset());
+}
+
+TEST_F(DocumentMarkerListEditorTest,
+       FirstMarkerIntersectingRange_IntersectingBefore) {
+  DocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(5, 10));
+
+  DocumentMarker* marker =
+      DocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 9, 15);
+  EXPECT_NE(nullptr, marker);
+
+  EXPECT_EQ(5u, marker->StartOffset());
+  EXPECT_EQ(10u, marker->EndOffset());
+}
+
+TEST_F(DocumentMarkerListEditorTest,
+       FirstMarkerIntersectingRange_MultipleMarkers) {
+  DocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 5));
+  markers.push_back(CreateMarker(5, 10));
+  markers.push_back(CreateMarker(10, 15));
+  markers.push_back(CreateMarker(15, 20));
+  markers.push_back(CreateMarker(20, 25));
+
+  DocumentMarker* marker =
+      DocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 7, 17);
+  EXPECT_NE(nullptr, marker);
+
+  EXPECT_EQ(5u, marker->StartOffset());
+  EXPECT_EQ(10u, marker->EndOffset());
+}
+
 TEST_F(DocumentMarkerListEditorTest, MarkersIntersectingRange_Empty) {
   DocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 5));
