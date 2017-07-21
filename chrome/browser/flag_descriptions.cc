@@ -1798,6 +1798,10 @@ const char kReaderModeHeuristicsAllArticles[] = "All articles";
 const char kReaderModeHeuristicsAlwaysOff[] = "Never";
 const char kReaderModeHeuristicsAlwaysOn[] = "Always";
 
+const char kReaderModeInCCTName[] = "Reader Mode in CCT";
+const char kReaderModeInCCTDescription[] =
+    "Open Reader Mode in Chrome Custom Tabs.";
+
 const char kServiceWorkerPaymentAppsName[] = "Service Worker payment apps";
 const char kServiceWorkerPaymentAppsDescription[] =
     "Enable Service Worker applications to integrate as payment apps";
