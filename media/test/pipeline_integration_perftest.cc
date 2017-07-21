@@ -63,8 +63,10 @@ TEST(PipelineIntegrationPerfTest, AudioPlaybackBenchmark) {
   RunAudioPlaybackBenchmark("sfx_s24le.wav", "clockless_playback");
   RunAudioPlaybackBenchmark("sfx_s16le.wav", "clockless_playback");
   RunAudioPlaybackBenchmark("sfx_u8.wav", "clockless_playback");
+  RunAudioPlaybackBenchmark("sfx.flac", "clockless_playback");
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   RunAudioPlaybackBenchmark("sfx.mp3", "clockless_playback");
+  RunAudioPlaybackBenchmark("sfx-flac.mp4", "clockless_playback");
 #endif
 }
 

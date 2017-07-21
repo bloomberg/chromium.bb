@@ -1578,6 +1578,22 @@ TEST_F(FFmpegDemuxerTest, UTCDateToTime_Invalid) {
   }
 }
 
+static void VerifyFlacStream(DemuxerStream* stream,
+                             int expected_bits_per_channel,
+                             ChannelLayout expected_channel_layout,
+                             int expected_samples_per_second,
+                             SampleFormat expected_sample_format) {
+  ASSERT_TRUE(stream);
+  EXPECT_EQ(DemuxerStream::AUDIO, stream->type());
+
+  const AudioDecoderConfig& audio_config = stream->audio_decoder_config();
+  EXPECT_EQ(kCodecFLAC, audio_config.codec());
+  EXPECT_EQ(expected_bits_per_channel, audio_config.bits_per_channel());
+  EXPECT_EQ(expected_channel_layout, audio_config.channel_layout());
+  EXPECT_EQ(expected_samples_per_second, audio_config.samples_per_second());
+  EXPECT_EQ(expected_sample_format, audio_config.sample_format());
+}
+
 TEST_F(FFmpegDemuxerTest, Read_Flac) {
   CreateDemuxer("sfx.flac");
   InitializeDemuxer();
@@ -1585,18 +1601,33 @@ TEST_F(FFmpegDemuxerTest, Read_Flac) {
   // Video stream should not be present.
   EXPECT_EQ(nullptr, GetStream(DemuxerStream::VIDEO));
 
-  // Audio stream should be present.
-  DemuxerStream* stream = GetStream(DemuxerStream::AUDIO);
-  ASSERT_TRUE(stream);
-  EXPECT_EQ(DemuxerStream::AUDIO, stream->type());
-
-  const AudioDecoderConfig& audio_config = stream->audio_decoder_config();
-  EXPECT_EQ(kCodecFLAC, audio_config.codec());
-  EXPECT_EQ(32, audio_config.bits_per_channel());
-  EXPECT_EQ(CHANNEL_LAYOUT_MONO, audio_config.channel_layout());
-  EXPECT_EQ(44100, audio_config.samples_per_second());
-  EXPECT_EQ(kSampleFormatS32, audio_config.sample_format());
+  VerifyFlacStream(GetStream(DemuxerStream::AUDIO), 32, CHANNEL_LAYOUT_MONO,
+                   44100, kSampleFormatS32);
 }
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+TEST_F(FFmpegDemuxerTest, Read_Flac_Mp4) {
+  CreateDemuxer("bear-flac.mp4");
+  InitializeDemuxer();
+
+  // Video stream should not be present.
+  EXPECT_EQ(nullptr, GetStream(DemuxerStream::VIDEO));
+
+  VerifyFlacStream(GetStream(DemuxerStream::AUDIO), 32, CHANNEL_LAYOUT_STEREO,
+                   44100, kSampleFormatS32);
+}
+
+TEST_F(FFmpegDemuxerTest, Read_Flac_192kHz_Mp4) {
+  CreateDemuxer("bear-flac-192kHz.mp4");
+  InitializeDemuxer();
+
+  // Video stream should not be present.
+  EXPECT_EQ(nullptr, GetStream(DemuxerStream::VIDEO));
+
+  VerifyFlacStream(GetStream(DemuxerStream::AUDIO), 32, CHANNEL_LAYOUT_STEREO,
+                   192000, kSampleFormatS32);
+}
+#endif  // USE_PROPRIETARY_CODECS
 
 // Verify that FFmpeg demuxer falls back to choosing disabled streams for
 // seeking if there's no suitable enabled stream found.
