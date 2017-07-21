@@ -99,16 +99,6 @@ IPC_MESSAGE_CONTROL5(MediaStreamHostMsg_GenerateStream,
                      url::Origin /* security origin */,
                      bool /* user_gesture */)
 
-// Request to cancel the request for a new media stream.
-IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_CancelGenerateStream,
-                     int /* render frame id */,
-                     int /* request id */)
-
-// Request to close a device that has been opened by GenerateStream.
-IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_StopStreamDevice,
-                     int /* render frame id */,
-                     std::string /*device_id*/)
-
 // Request to open the device.
 IPC_MESSAGE_CONTROL5(MediaStreamHostMsg_OpenDevice,
                      int /* render frame id */,
@@ -116,11 +106,6 @@ IPC_MESSAGE_CONTROL5(MediaStreamHostMsg_OpenDevice,
                      std::string /* device_id */,
                      content::MediaStreamType /* type */,
                      url::Origin /* security origin */)
-
-// Request to close a device.
-IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_CloseDevice,
-                     int /* render frame id */,
-                     std::string /*label*/)
 
 // Tell the browser process if the video capture is secure (i.e., all
 // connected video sinks meet the requirement of output protection.).
@@ -133,6 +118,3 @@ IPC_MESSAGE_CONTROL3(MediaStreamHostMsg_SetCapturingLinkSecured,
                      int,                      /* session_id */
                      content::MediaStreamType, /* type */
                      bool /* is_secure */)
-
-// Tell the browser process that the stream has been started successfully.
-IPC_MESSAGE_CONTROL1(MediaStreamHostMsg_StreamStarted, std::string /* label */)

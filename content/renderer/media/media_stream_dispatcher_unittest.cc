@@ -12,16 +12,17 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/common/media/media_stream.mojom.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "media/base/audio_parameters.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace content {
-namespace {
 
 const int kRouteId = 0;
 const int kAudioSessionId = 3;
@@ -30,9 +31,16 @@ const int kScreenSessionId = 7;
 const int kRequestId1 = 10;
 const int kRequestId2 = 20;
 
-const MediaStreamType kAudioType = MEDIA_DEVICE_AUDIO_CAPTURE;
-const MediaStreamType kVideoType = MEDIA_DEVICE_VIDEO_CAPTURE;
-const MediaStreamType kScreenType = MEDIA_DESKTOP_VIDEO_CAPTURE;
+class MockMojoMediaStreamDispatcherHost
+    : public mojom::MediaStreamDispatcherHost {
+ public:
+  MockMojoMediaStreamDispatcherHost() {}
+
+  MOCK_METHOD2(CancelGenerateStream, void(int32_t, int32_t));
+  MOCK_METHOD2(StopStreamDevice, void(int32_t, const std::string&));
+  MOCK_METHOD1(CloseDevice, void(const std::string&));
+  MOCK_METHOD1(StreamStarted, void(const std::string&));
+};
 
 class MockMediaStreamDispatcherEventHandler
     : public MediaStreamDispatcherEventHandler,
@@ -111,7 +119,9 @@ class MediaStreamDispatcherTest : public ::testing::Test {
   MediaStreamDispatcherTest()
       : dispatcher_(new MediaStreamDispatcherUnderTest()),
         handler_(new MockMediaStreamDispatcherEventHandler),
-        security_origin_(GURL("http://test.com")) {}
+        security_origin_(GURL("http://test.com")) {
+    dispatcher_->dispatcher_host_ = &mock_dispatcher_host_;
+  }
 
   // Generates a request for a MediaStream and returns the request id that is
   // used in IPC. Use this returned id in CompleteGenerateStream to identify
@@ -133,7 +143,7 @@ class MediaStreamDispatcherTest : public ::testing::Test {
     if (controls.audio.requested) {
       StreamDeviceInfo audio_device_info;
       audio_device_info.device.name = "Microphone";
-      audio_device_info.device.type = kAudioType;
+      audio_device_info.device.type = MEDIA_DEVICE_AUDIO_CAPTURE;
       audio_device_info.session_id = kAudioSessionId;
       audio_device_array[0] = audio_device_info;
     }
@@ -142,7 +152,7 @@ class MediaStreamDispatcherTest : public ::testing::Test {
     if (controls.video.requested) {
       StreamDeviceInfo video_device_info;
       video_device_info.device.name = "Camera";
-      video_device_info.device.type = kVideoType;
+      video_device_info.device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
       video_device_info.session_id = kVideoSessionId;
       video_device_array[0] = video_device_info;
     }
@@ -168,12 +178,11 @@ class MediaStreamDispatcherTest : public ::testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
+  MockMojoMediaStreamDispatcherHost mock_dispatcher_host_;
   std::unique_ptr<MediaStreamDispatcherUnderTest> dispatcher_;
   std::unique_ptr<MockMediaStreamDispatcherEventHandler> handler_;
   url::Origin security_origin_;
 };
-
-}  // namespace
 
 TEST_F(MediaStreamDispatcherTest, GenerateStreamAndStopDevices) {
   StreamControls controls(true, true);
@@ -214,13 +223,15 @@ TEST_F(MediaStreamDispatcherTest, BasicVideoDevice) {
       new MockMediaStreamDispatcherEventHandler);
   std::unique_ptr<MockMediaStreamDispatcherEventHandler> handler2(
       new MockMediaStreamDispatcherEventHandler);
+  MockMojoMediaStreamDispatcherHost mock_dispatcher_host;
+  dispatcher->dispatcher_host_ = &mock_dispatcher_host;
   url::Origin security_origin;
 
   StreamDeviceInfoArray video_device_array(1);
   StreamDeviceInfo video_device_info;
   video_device_info.device.name = "Camera";
   video_device_info.device.id = "device_path";
-  video_device_info.device.type = kVideoType;
+  video_device_info.device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
   video_device_info.session_id = kVideoSessionId;
   video_device_array[0] = video_device_info;
 
@@ -229,13 +240,13 @@ TEST_F(MediaStreamDispatcherTest, BasicVideoDevice) {
 
   int ipc_request_id1 = dispatcher->next_ipc_id_;
   dispatcher->OpenDevice(kRequestId1, handler1.get()->AsWeakPtr(),
-                         video_device_info.device.id, kVideoType,
-                         security_origin);
+                         video_device_info.device.id,
+                         MEDIA_DEVICE_VIDEO_CAPTURE, security_origin);
   int ipc_request_id2 = dispatcher->next_ipc_id_;
   EXPECT_NE(ipc_request_id1, ipc_request_id2);
   dispatcher->OpenDevice(kRequestId2, handler1.get()->AsWeakPtr(),
-                         video_device_info.device.id, kVideoType,
-                         security_origin);
+                         video_device_info.device.id,
+                         MEDIA_DEVICE_VIDEO_CAPTURE, security_origin);
   EXPECT_EQ(dispatcher->requests_.size(), size_t(2));
 
   // Complete the OpenDevice of request 1.
@@ -300,14 +311,14 @@ TEST_F(MediaStreamDispatcherTest, TestFailure) {
   StreamDeviceInfoArray audio_device_array(1);
   StreamDeviceInfo audio_device_info;
   audio_device_info.device.name = "Microphone";
-  audio_device_info.device.type = kAudioType;
+  audio_device_info.device.type = MEDIA_DEVICE_AUDIO_CAPTURE;
   audio_device_info.session_id = kAudioSessionId;
   audio_device_array[0] = audio_device_info;
 
   StreamDeviceInfoArray video_device_array(1);
   StreamDeviceInfo video_device_info;
   video_device_info.device.name = "Camera";
-  video_device_info.device.type = kVideoType;
+  video_device_info.device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
   video_device_info.session_id = kVideoSessionId;
   video_device_array[0] = video_device_info;
 
@@ -326,6 +337,8 @@ TEST_F(MediaStreamDispatcherTest, CancelGenerateStream) {
       new MediaStreamDispatcher(NULL));
   std::unique_ptr<MockMediaStreamDispatcherEventHandler> handler(
       new MockMediaStreamDispatcherEventHandler);
+  MockMojoMediaStreamDispatcherHost mock_dispatcher_host;
+  dispatcher->dispatcher_host_ = &mock_dispatcher_host;
   StreamControls components(true, true);
   int ipc_request_id1 = dispatcher->next_ipc_id_;
 
@@ -341,14 +354,14 @@ TEST_F(MediaStreamDispatcherTest, CancelGenerateStream) {
   // Complete the creation of stream1.
   StreamDeviceInfo audio_device_info;
   audio_device_info.device.name = "Microphone";
-  audio_device_info.device.type = kAudioType;
+  audio_device_info.device.type = MEDIA_DEVICE_AUDIO_CAPTURE;
   audio_device_info.session_id = kAudioSessionId;
   StreamDeviceInfoArray audio_device_array(1);
   audio_device_array[0] = audio_device_info;
 
   StreamDeviceInfo video_device_info;
   video_device_info.device.name = "Camera";
-  video_device_info.device.type = kVideoType;
+  video_device_info.device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
   video_device_info.session_id = kVideoSessionId;
   StreamDeviceInfoArray video_device_array(1);
   video_device_array[0] = video_device_info;
@@ -385,18 +398,20 @@ TEST_F(MediaStreamDispatcherTest, GetNonScreenCaptureDevices) {
       new MediaStreamDispatcher(nullptr));
   std::unique_ptr<MockMediaStreamDispatcherEventHandler> handler(
       new MockMediaStreamDispatcherEventHandler);
+  MockMojoMediaStreamDispatcherHost mock_dispatcher_host;
+  dispatcher->dispatcher_host_ = &mock_dispatcher_host;
   url::Origin security_origin;
 
   StreamDeviceInfo video_device_info;
   video_device_info.device.name = "Camera";
   video_device_info.device.id = "device_path";
-  video_device_info.device.type = kVideoType;
+  video_device_info.device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
   video_device_info.session_id = kVideoSessionId;
 
   StreamDeviceInfo screen_device_info;
   screen_device_info.device.name = "Screen";
   screen_device_info.device.id = "screen_capture";
-  screen_device_info.device.type = kScreenType;
+  screen_device_info.device.type = MEDIA_DESKTOP_VIDEO_CAPTURE;
   screen_device_info.session_id = kScreenSessionId;
 
   EXPECT_EQ(dispatcher->requests_.size(), 0u);
@@ -404,13 +419,13 @@ TEST_F(MediaStreamDispatcherTest, GetNonScreenCaptureDevices) {
 
   int ipc_request_id1 = dispatcher->next_ipc_id_;
   dispatcher->OpenDevice(kRequestId1, handler.get()->AsWeakPtr(),
-                         video_device_info.device.id, kVideoType,
-                         security_origin);
+                         video_device_info.device.id,
+                         MEDIA_DEVICE_VIDEO_CAPTURE, security_origin);
   int ipc_request_id2 = dispatcher->next_ipc_id_;
   EXPECT_NE(ipc_request_id1, ipc_request_id2);
   dispatcher->OpenDevice(kRequestId2, handler.get()->AsWeakPtr(),
-                         screen_device_info.device.id, kScreenType,
-                         security_origin);
+                         screen_device_info.device.id,
+                         MEDIA_DESKTOP_VIDEO_CAPTURE, security_origin);
   EXPECT_EQ(dispatcher->requests_.size(), 2u);
 
   // Complete the OpenDevice of request 1.
@@ -428,7 +443,7 @@ TEST_F(MediaStreamDispatcherTest, GetNonScreenCaptureDevices) {
   EXPECT_EQ(dispatcher->requests_.size(), 0u);
   EXPECT_EQ(dispatcher->label_stream_map_.size(), 2u);
 
-  // Only the device with |kVideoType| will be returned.
+  // Only the device with type MEDIA_DEVICE_VIDEO_CAPTURE will be returned.
   StreamDeviceInfoArray video_device_array =
       dispatcher->GetNonScreenCaptureDevices();
   EXPECT_EQ(video_device_array.size(), 1u);

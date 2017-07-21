@@ -120,7 +120,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
 
   void OnStopStreamDevice(int render_frame_id,
                           const std::string& device_id) {
-    MediaStreamDispatcherHost::OnStopStreamDevice(render_frame_id, device_id);
+    MediaStreamDispatcherHost::StopStreamDevice(render_frame_id, device_id);
   }
 
   void OnOpenDevice(int render_frame_id,
@@ -135,7 +135,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   }
 
   void OnStreamStarted(const std::string label) {
-    MediaStreamDispatcherHost::OnStreamStarted(label);
+    MediaStreamDispatcherHost::StreamStarted(label);
   }
 
   std::string label_;
