@@ -312,4 +312,45 @@ TEST_F(DocumentMarkerControllerTest, RemoveSpellingMarkersUnderWords) {
   EXPECT_EQ(DocumentMarker::kTextMatch, marker.GetType());
 }
 
+TEST_F(DocumentMarkerControllerTest, FirstMarkerIntersectingOffsetRange) {
+  SetBodyContent("<div contenteditable>123456789</div>");
+  GetDocument().UpdateStyleAndLayout();
+  Element* div = GetDocument().QuerySelector("div");
+  Text* text = ToText(div->firstChild());
+
+  // Add a spelling marker on "123"
+  MarkerController().AddSpellingMarker(
+      EphemeralRange(Position(text, 0), Position(text, 3)));
+
+  // Query for a spellcheck marker intersecting "3456"
+  const DocumentMarker* const result =
+      MarkerController().FirstMarkerIntersectingOffsetRange(
+          *text, 2, 6, DocumentMarker::MisspellingMarkers());
+
+  EXPECT_EQ(DocumentMarker::kSpelling, result->GetType());
+  EXPECT_EQ(0u, result->StartOffset());
+  EXPECT_EQ(3u, result->EndOffset());
+}
+
+TEST_F(DocumentMarkerControllerTest,
+       FirstMarkerIntersectingOffsetRange_collapsed) {
+  SetBodyContent("<div contenteditable>123456789</div>");
+  GetDocument().UpdateStyleAndLayout();
+  Element* div = GetDocument().QuerySelector("div");
+  Text* text = ToText(div->firstChild());
+
+  // Add a spelling marker on "123"
+  MarkerController().AddSpellingMarker(
+      EphemeralRange(Position(text, 0), Position(text, 3)));
+
+  // Query for a spellcheck marker containing the position between "1" and "2"
+  const DocumentMarker* const result =
+      MarkerController().FirstMarkerIntersectingOffsetRange(
+          *text, 1, 1, DocumentMarker::MisspellingMarkers());
+
+  EXPECT_EQ(DocumentMarker::kSpelling, result->GetType());
+  EXPECT_EQ(0u, result->StartOffset());
+  EXPECT_EQ(3u, result->EndOffset());
+}
+
 }  // namespace blink

@@ -94,6 +94,17 @@ class CORE_EXPORT DocumentMarkerController final
   // Position in its interior (not at an endpoint), if one exists.
   DocumentMarker* MarkerAtPosition(const Position&,
                                    DocumentMarker::MarkerTypes);
+  // Looks for a marker in the specified node of the specified type whose
+  // interior has non-empty overlap with the range [start_offset, end_offset].
+  // If the range is collapsed, this looks for a marker containing the offset of
+  // the collapsed range in its interior.
+  // If such a marker exists, this method will return one of them (no guarantees
+  // are provided as to which one). Otherwise, this method will return null.
+  DocumentMarker* FirstMarkerIntersectingOffsetRange(
+      const Text&,
+      unsigned start_offset,
+      unsigned end_offset,
+      DocumentMarker::MarkerTypes);
   DocumentMarkerVector MarkersFor(
       Node*,
       DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
