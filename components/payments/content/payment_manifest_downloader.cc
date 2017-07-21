@@ -175,7 +175,8 @@ void PaymentManifestDownloader::InitiateDownload(
 bool PaymentManifestDownloader::IsValidManifestUrl(const GURL& url) {
   return url.is_valid() &&
          (url.SchemeIs(url::kHttpsScheme) ||
-          (url.SchemeIs(url::kHttpScheme) && allow_http_for_test_));
+          (allow_http_for_test_ && url.SchemeIs(url::kHttpScheme) &&
+           url.host() == "127.0.0.1"));
 }
 
 }  // namespace payments
