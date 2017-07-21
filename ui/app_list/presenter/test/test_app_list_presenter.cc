@@ -34,5 +34,9 @@ void TestAppListPresenter::StartVoiceInteractionSession() {
   voice_session_count_++;
 }
 
+void TestAppListPresenter::SetYPosition(int y_position_in_screen) {
+  set_y_position_count_++;
+}
+
 }  // namespace test
 }  // namespace app_list
