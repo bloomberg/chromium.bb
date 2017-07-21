@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ui/arc/notification/arc_notification_content_view.h"
 #include "ui/arc/notification/arc_notification_content_view_delegate.h"
 #include "ui/arc/notification/arc_notification_item.h"
 #include "ui/base/ime/input_method.h"
@@ -14,6 +15,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -44,6 +46,18 @@ ArcNotificationView::ArcNotificationView(
         contents_view_->background()->get_color());
   }
 
+  // Creates the control_buttons_view_, which collects all control buttons into
+  // a horizontal box.
+  DCHECK(!control_buttons_view_);
+  control_buttons_view_ =
+      new message_center::NotificationControlButtonsView(this);
+  AddChildView(control_buttons_view_);
+  control_buttons_view_->ReparentToWidgetLayer();
+
+  control_buttons_view_->ShowCloseButton(!notification.pinned());
+  control_buttons_view_->ShowSettingsButton(
+      notification.delegate()->ShouldDisplaySettingsButton());
+
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
       message_center::kFocusBorderColor, gfx::Insets(0, 1, 3, 2));
 }
@@ -51,10 +65,12 @@ ArcNotificationView::ArcNotificationView(
 ArcNotificationView::~ArcNotificationView() = default;
 
 void ArcNotificationView::OnContentFocused() {
+  UpdateControlButtonsVisibility();
   SchedulePaint();
 }
 
 void ArcNotificationView::OnContentBlured() {
+  UpdateControlButtonsVisibility();
   SchedulePaint();
 }
 
@@ -66,15 +82,27 @@ void ArcNotificationView::SetDrawBackgroundAsActive(bool active) {
   message_center::MessageView::SetDrawBackgroundAsActive(active);
 }
 
+void ArcNotificationView::SetControlButtonsBackgroundColor(
+    const SkColor& bgcolor) {
+  control_buttons_view_->SetBackgroundColor(bgcolor);
+}
+
+void ArcNotificationView::UpdateWithNotification(
+    const message_center::Notification& notification) {
+  message_center::MessageView::UpdateWithNotification(notification);
+
+  control_buttons_view_->ShowCloseButton(!notification.pinned());
+  control_buttons_view_->ShowSettingsButton(
+      notification.delegate()->ShouldDisplaySettingsButton());
+}
+
 bool ArcNotificationView::IsCloseButtonFocused() const {
-  if (!contents_view_delegate_)
-    return false;
-  return contents_view_delegate_->IsCloseButtonFocused();
+  return control_buttons_view_->IsCloseButtonFocused();
 }
 
 void ArcNotificationView::RequestFocusOnCloseButton() {
-  if (contents_view_delegate_)
-    contents_view_delegate_->RequestFocusOnCloseButton();
+  control_buttons_view_->RequestFocusOnCloseButton();
+  UpdateControlButtonsVisibility();
 }
 
 const char* ArcNotificationView::GetClassName() const {
@@ -82,8 +110,17 @@ const char* ArcNotificationView::GetClassName() const {
 }
 
 void ArcNotificationView::UpdateControlButtonsVisibility() {
-  if (contents_view_delegate_)
-    contents_view_delegate_->UpdateControlButtonsVisibility();
+  if (!control_buttons_view_)
+    return;
+
+  const bool target_visibility =
+      IsMouseHovered() || (control_buttons_view_->IsCloseButtonFocused()) ||
+      (control_buttons_view_->IsSettingsButtonFocused());
+
+  if (target_visibility == control_buttons_view_->GetButtonsVisible())
+    return;
+
+  control_buttons_view_->SetButtonsVisible(target_visibility);
 }
 
 void ArcNotificationView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -108,7 +145,25 @@ gfx::Size ArcNotificationView::CalculatePreferredSize() const {
 void ArcNotificationView::Layout() {
   message_center::MessageView::Layout();
 
-  contents_view_->SetBoundsRect(GetContentsBounds());
+  const gfx::Rect contents_bounds = GetContentsBounds();
+  contents_view_->SetBoundsRect(contents_bounds);
+
+  if (control_buttons_view_) {
+    gfx::Rect control_buttons_bounds(contents_bounds);
+    int buttons_width = control_buttons_view_->GetPreferredSize().width();
+    int buttons_height = control_buttons_view_->GetPreferredSize().height();
+
+    control_buttons_bounds.set_x(control_buttons_bounds.right() -
+                                 buttons_width -
+                                 message_center::kControlButtonPadding);
+    control_buttons_bounds.set_y(control_buttons_bounds.y() +
+                                 message_center::kControlButtonPadding);
+    control_buttons_bounds.set_width(buttons_width);
+    control_buttons_bounds.set_height(buttons_height);
+    control_buttons_view_->SetBoundsRect(control_buttons_bounds);
+  }
+
+  UpdateControlButtonsVisibility();
 
   // If the content view claims focus, defer focus handling to the content view.
   if (contents_view_->IsFocusable())
@@ -138,6 +193,21 @@ void ArcNotificationView::OnPaint(gfx::Canvas* canvas) {
                                       focus_painter_.get());
 }
 
+bool ArcNotificationView::HitTestControlButtons(const gfx::Point& point) {
+  gfx::Point point_in_buttons = point;
+  views::View::ConvertPointToTarget(this, control_buttons_view_,
+                                    &point_in_buttons);
+  return control_buttons_view_->HitTestPoint(point_in_buttons);
+}
+
+void ArcNotificationView::OnMouseEntered(const ui::MouseEvent&) {
+  UpdateControlButtonsVisibility();
+}
+
+void ArcNotificationView::OnMouseExited(const ui::MouseEvent&) {
+  UpdateControlButtonsVisibility();
+}
+
 bool ArcNotificationView::OnKeyPressed(const ui::KeyEvent& event) {
   if (contents_view_) {
     ui::InputMethod* input_method = contents_view_->GetInputMethod();
@@ -155,6 +225,10 @@ bool ArcNotificationView::OnKeyPressed(const ui::KeyEvent& event) {
   }
 
   return message_center::MessageView::OnKeyPressed(event);
+}
+
+void ArcNotificationView::OnLayerBoundsChanged(const gfx::Rect& old_bounds) {
+  control_buttons_view_->AdjustLayerBounds();
 }
 
 void ArcNotificationView::ChildPreferredSizeChanged(View* child) {

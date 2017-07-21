@@ -12,6 +12,10 @@ namespace views {
 class Painter;
 }
 
+namespace message_center {
+class NotificationControlButtonsView;
+}
+
 namespace arc {
 
 class ArcNotificationContentViewDelegate;
@@ -30,6 +34,13 @@ class ArcNotificationView : public message_center::MessageView {
       const message_center::Notification& notification);
   ~ArcNotificationView() override;
 
+  bool HitTestControlButtons(const gfx::Point& point);
+  void SetControlButtonsBackgroundColor(const SkColor& bgcolor);
+
+  message_center::NotificationControlButtonsView* control_buttons_view() const {
+    return control_buttons_view_;
+  }
+
   // These method are called by the content view when focus handling is defered
   // to the content.
   void OnContentFocused();
@@ -41,6 +52,8 @@ class ArcNotificationView : public message_center::MessageView {
   void RequestFocusOnCloseButton() override;
   void UpdateControlButtonsVisibility() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void UpdateWithNotification(
+      const message_center::Notification& notification) override;
 
   // views::SlideOutController::Delegate:
   void OnSlideChanged() override;
@@ -52,7 +65,10 @@ class ArcNotificationView : public message_center::MessageView {
   bool HasFocus() const override;
   void RequestFocus() override;
   void OnPaint(gfx::Canvas* canvas) override;
+  void OnMouseEntered(const ui::MouseEvent&) override;
+  void OnMouseExited(const ui::MouseEvent&) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
+  void OnLayerBoundsChanged(const gfx::Rect& old_bounds) override;
   void ChildPreferredSizeChanged(View* child) override;
   bool HandleAccessibleAction(const ui::AXActionData& action) override;
 
@@ -63,6 +79,13 @@ class ArcNotificationView : public message_center::MessageView {
   // The view for the custom content. Owned by view hierarchy.
   views::View* contents_view_ = nullptr;
   std::unique_ptr<ArcNotificationContentViewDelegate> contents_view_delegate_;
+
+  // A control buttons on top of NotificationSurface. Needed because the
+  // aura::Window of NotificationSurface is added after hosting widget's
+  // RootView thus standard notification control buttons are always below
+  // it.
+  message_center::NotificationControlButtonsView* control_buttons_view_ =
+      nullptr;
 
   std::unique_ptr<views::Painter> focus_painter_;
 

@@ -15,17 +15,8 @@
 #include "ui/aura/window_observer.h"
 #include "ui/views/controls/native/native_view_host.h"
 
-namespace message_center {
-class NotificationControlButtonsView;
-}
-
 namespace ui {
 struct AXActionData;
-}
-
-namespace views {
-class FocusTraversable;
-class Widget;
 }
 
 namespace arc {
@@ -61,7 +52,7 @@ class ArcNotificationContentView
 
   void CreateCloseButton();
   void CreateSettingsButton();
-  void MaybeCreateFloatingControlButtons();
+  void UpdateControlButtons();
   void SetSurface(ArcNotificationSurface* surface);
   void UpdatePreferredSize();
   void UpdateControlButtonsVisibility();
@@ -70,17 +61,15 @@ class ArcNotificationContentView
   void AttachSurface();
   void ActivateToast();
   void UpdateAccessibleName();
+  bool HitTestControlButtons(const gfx::Point& point);
 
   // views::NativeViewHost
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void Layout() override;
   void OnPaint(gfx::Canvas* canvas) override;
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
   void OnFocus() override;
   void OnBlur() override;
-  views::FocusTraversable* GetFocusTraversable() override;
   bool HandleAccessibleAction(const ui::AXActionData& action) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
@@ -115,15 +104,6 @@ class ArcNotificationContentView
   // A helper to observe slide transform/animation and use surface layer copy
   // when a slide is in progress and restore the surface when it finishes.
   std::unique_ptr<SlideHelper> slide_helper_;
-
-  // A control buttons on top of NotificationSurface. Needed because the
-  // aura::Window of NotificationSurface is added after hosting widget's
-  // RootView thus standard notification control buttons are always below
-  // it.
-  std::unique_ptr<views::Widget> floating_control_buttons_widget_;
-
-  message_center::NotificationControlButtonsView* control_buttons_view_ =
-      nullptr;
 
   // Protects from call loops between Layout and OnWindowBoundsChanged.
   bool in_layout_ = false;
