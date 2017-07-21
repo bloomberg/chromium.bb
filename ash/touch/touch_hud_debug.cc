@@ -318,7 +318,7 @@ class TouchHudCanvas : public views::View {
 };
 
 TouchHudDebug::TouchHudDebug(aura::Window* initial_root)
-    : TouchObserverHUD(initial_root),
+    : TouchObserverHUD(initial_root, "TouchHudDebug"),
       mode_(FULLSCREEN),
       touch_log_(new TouchLog()),
       canvas_(NULL),
