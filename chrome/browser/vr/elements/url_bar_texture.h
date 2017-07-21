@@ -81,6 +81,7 @@ class UrlBarTexture : public UiTexture {
 
   GURL last_drawn_gurl_;
   bool has_back_button_ = true;
+  bool opaque_background_ = false;
   security_state::SecurityLevel last_drawn_security_level_;
   base::Callback<void(UiUnsupportedMode)> failure_callback_;
   gfx::RectF security_hit_region_ = gfx::RectF(0, 0, 0, 0);

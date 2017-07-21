@@ -87,7 +87,9 @@ gfx::PointF percentToMeters(const gfx::PointF& percent) {
 UrlBarTexture::UrlBarTexture(
     bool web_vr,
     const base::Callback<void(UiUnsupportedMode)>& failure_callback)
-    : has_back_button_(!web_vr), failure_callback_(failure_callback) {}
+    : has_back_button_(!web_vr),
+      opaque_background_(web_vr),
+      failure_callback_(failure_callback) {}
 
 UrlBarTexture::~UrlBarTexture() = default;
 
@@ -185,10 +187,15 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   round_rect.setRectRadii({0, 0, kHeight, kHeight}, left_corners);
   SkPaint paint;
   paint.setColor(GetLeftCornerColor());
+  if (opaque_background_)
+    paint.setAlpha(255);
   canvas->drawRRect(round_rect, paint);
 
   // URL area.
   paint.setColor(color_scheme().element_background);
+  if (opaque_background_)
+    paint.setAlpha(255);
+
   SkVector right_corners[4] = {{0, 0}, rounded_corner, rounded_corner, {0, 0}};
   round_rect.setRectRadii({kHeight, 0, kWidth, kHeight}, right_corners);
   canvas->drawRRect(round_rect, paint);
