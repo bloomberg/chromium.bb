@@ -39,7 +39,6 @@
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/gpu_support.h"
 #include "ash/high_contrast/high_contrast_controller.h"
-#include "ash/highlighter/highlighter_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/keyboard/keyboard_ui.h"
@@ -753,7 +752,6 @@ Shell::~Shell() {
   audio_a11y_controller_.reset();
   laser_pointer_controller_.reset();
   partial_magnification_controller_.reset();
-  highlighter_controller_.reset();
 
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
   // WindowTreeHostManager before resetting |window_tree_host_manager_|, since
@@ -1055,7 +1053,6 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   laser_pointer_controller_.reset(new LaserPointerController());
   partial_magnification_controller_.reset(new PartialMagnificationController());
-  highlighter_controller_.reset(new HighlighterController());
 
   magnification_controller_.reset(MagnificationController::CreateInstance());
   mru_window_tracker_ = base::MakeUnique<MruWindowTracker>();

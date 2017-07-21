@@ -46,8 +46,6 @@ class TestPaletteDelegate : public PaletteDelegate {
 
   int show_metalayer_count() const { return show_metalayer_count_; }
 
-  int hide_metalayer_count() const { return hide_metalayer_count_; }
-
   base::Closure metalayer_closed() const { return metalayer_closed_; }
 
  private:
@@ -75,7 +73,6 @@ class TestPaletteDelegate : public PaletteDelegate {
   bool should_show_palette_ = false;
   bool is_metalayer_supported_ = false;
   int show_metalayer_count_ = 0;
-  int hide_metalayer_count_ = 0;
   base::Closure metalayer_closed_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPaletteDelegate);
