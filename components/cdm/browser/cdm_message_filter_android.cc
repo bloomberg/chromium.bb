@@ -55,6 +55,7 @@ const CodecInfo<media::VideoCodec> kVideoCodecsToQuery[] = {
 };
 
 const CodecInfo<media::AudioCodec> kAudioCodecsToQuery[] = {
+    // FLAC is not supported. See https://crbug.com/747050 for details.
     // Vorbis is not supported. See http://crbug.com/710924 for details.
     {media::EME_CODEC_WEBM_OPUS, media::kCodecOpus, "video/webm"},
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)

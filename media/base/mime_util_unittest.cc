@@ -328,6 +328,16 @@ TEST(MimeUtilTest, ParseAudioCodecString) {
     EXPECT_EQ(kCodecAAC, out_codec);
   }
 
+  // Valid FLAC string when proprietary codecs are supported. FLAC-in-MP4
+  // currently requires proprietary codecs to demux mp4.
+  EXPECT_EQ(kUsePropCodecs,
+            ParseAudioCodecString("audio/mp4", "flac", &out_is_ambiguous,
+                                  &out_codec));
+  if (kUsePropCodecs) {
+    EXPECT_FALSE(out_is_ambiguous);
+    EXPECT_EQ(kCodecFLAC, out_codec);
+  }
+
   // Ambiguous AAC string.
   // TODO(chcunningha): This can probably be allowed. I think we treat all
   // MPEG4_AAC the same.

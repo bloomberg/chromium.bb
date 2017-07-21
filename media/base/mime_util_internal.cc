@@ -291,6 +291,7 @@ void MimeUtil::AddSupportedMediaFormats() {
 
   CodecSet mp4_audio_codecs(aac);
   mp4_audio_codecs.insert(MP3);
+  mp4_audio_codecs.insert(FLAC);
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
   mp4_audio_codecs.insert(AC3);
   mp4_audio_codecs.insert(EAC3);

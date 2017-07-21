@@ -196,6 +196,14 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMp4Vp9) {
   PlayVideo("bear-320x240-v_frag-vp9.mp4", GetParam());
 }
 
+IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearFlacMp4) {
+  PlayAudio("bear-flac.mp4", GetParam());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearFlac192kHzMp4) {
+  PlayAudio("bear-flac-192kHz.mp4", GetParam());
+}
+
 // Android devices usually only support baseline, main and high.
 #if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearHighBitDepthMp4) {

@@ -199,12 +199,6 @@ class MediaCanPlayTypeTest : public MediaBrowserTest {
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.4D401E, vorbis\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc3.64001F, vorbis\"'"));
 
-    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"flac\"'"));
-    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1, flac\"'"));
-    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc3, flac\"'"));
-    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.4D401E, flac\"'"));
-    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc3.64001F, flac\"'"));
-
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"opus\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1, opus\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc3, opus\"'"));
@@ -552,6 +546,7 @@ class MediaCanPlayTypeTest : public MediaBrowserTest {
               CanPlay("'" + mime + "; codecs=\"hvc1.1.6.L93.B0,mp4a.40.5\"'"));
 
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"vp09.00.10.08\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"flac\"'"));
 
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"ac-3\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"ec-3\"'"));
@@ -683,15 +678,17 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_flac) {
   EXPECT_EQ(kProbably, CanPlay("'audio/flac'"));
   EXPECT_EQ(kProbably, CanPlay("'audio/ogg; codecs=\"flac\"'"));
 
+  // See CodecSupportTest_mp4 for more flac combos.
+  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp4; codecs=\"flac\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"flac\"'"));
+
   EXPECT_EQ(kNot, CanPlay("'video/flac'"));
   EXPECT_EQ(kNot, CanPlay("'video/x-flac'"));
   EXPECT_EQ(kNot, CanPlay("'audio/x-flac'"));
   EXPECT_EQ(kNot, CanPlay("'application/x-flac'"));
   EXPECT_EQ(kNot, CanPlay("'audio/flac; codecs=\"flac\"'"));
 
-  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"flac\"'"));
   EXPECT_EQ(kNot, CanPlay("'video/webm; codecs=\"flac\"'"));
-  EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"flac\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/webm; codecs=\"flac\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/flac; codecs=\"avc1\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/flac; codecs=\"avc3\"'"));
@@ -733,6 +730,8 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp3) {
   EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"mp4a.40.2\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"mp4a.40.02\"'"));
 
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"flac\"'"));
+
   TestMPEGUnacceptableCombinations("audio/mpeg");
 
   // audio/mp3 does not allow any codecs parameter
@@ -751,6 +750,8 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp3) {
   EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"mp4a.6B\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"mp4a.40.2\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"mp4a.40.02\"'"));
+
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"flac\"'"));
 
   TestMPEGUnacceptableCombinations("audio/mp3");
   EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"mp3\"'"));
@@ -772,6 +773,8 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp3) {
   EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"mp4a.40.2\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"mp4a.40.02\"'"));
 
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"flac\"'"));
+
   TestMPEGUnacceptableCombinations("audio/x-mp3");
   EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"mp3\"'"));
 }
@@ -785,6 +788,8 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
   EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1, mp4a.40\"'"));
   EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc3, mp4a.40\"'"));
   EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1, avc3\"'"));
+  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1, flac\"'"));
+  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc3, flac\"'"));
 
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.42E01E\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.42101E\"'"));
@@ -851,9 +856,13 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
             CanPlay("'video/mp4; codecs=\"hvc1.1.6.L93.B0, mp4a.40.5\"'"));
 
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"vp09.00.10.08\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"flac\"'"));
+  EXPECT_EQ(kPropProbably,
+            CanPlay("'video/mp4; codecs=\"avc1.4D401E, flac\"'"));
+  EXPECT_EQ(kPropProbably,
+            CanPlay("'video/mp4; codecs=\"avc3.64001F, flac\"'"));
 
   TestMPEGUnacceptableCombinations("video/mp4");
-  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"flac\"'"));
   // This result is incorrect. See https://crbug.com/592889.
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"mp3\"'"));
 
@@ -925,6 +934,8 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
   EXPECT_EQ(kNot, CanPlay("'video/x-m4v; codecs=\"avc1.640028,mp4a.a6\"'"));
   EXPECT_EQ(kNot, CanPlay("'video/x-m4v; codecs=\"avc1.640028,mp4a.A6\"'"));
 
+  EXPECT_EQ(kNot, CanPlay("'video/x-m4v; codecs=\"flac\"'"));
+
   TestMPEGUnacceptableCombinations("video/x-m4v");
 
   EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp4'"));
@@ -940,6 +951,8 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
   EXPECT_EQ(kPropProbably, CanPlay("'audio/mp4; codecs=\"mp4a.40.5\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'audio/mp4; codecs=\"mp4a.40.05\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'audio/mp4; codecs=\"mp4a.40.29\"'"));
+
+  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp4; codecs=\"flac\"'"));
 
   EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"avc1\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"avc3\"'"));
@@ -964,7 +977,6 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
   EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"mp4a.A6\"'"));
 
   TestMPEGUnacceptableCombinations("audio/mp4");
-  EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"flac\"'"));
   // This result is incorrect. See https://crbug.com/592889.
   EXPECT_EQ(kPropProbably, CanPlay("'audio/mp4; codecs=\"mp3\"'"));
 
@@ -1006,6 +1018,8 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
   EXPECT_EQ(kNot, CanPlay("'audio/x-m4a; codecs=\"ec-3\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/x-m4a; codecs=\"mp4a.a6\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/x-m4a; codecs=\"mp4a.A6\"'"));
+
+  EXPECT_EQ(kNot, CanPlay("'video/x-m4a; codecs=\"flac\"'"));
 
   TestMPEGUnacceptableCombinations("audio/x-m4a");
 }
