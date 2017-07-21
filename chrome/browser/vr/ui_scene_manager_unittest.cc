@@ -18,6 +18,8 @@
 
 using cc::TargetProperty::BOUNDS;
 using cc::TargetProperty::TRANSFORM;
+using cc::TargetProperty::VISIBILITY;
+using cc::TargetProperty::OPACITY;
 
 namespace vr {
 
@@ -234,6 +236,12 @@ TEST_F(UiSceneManagerTest, WebVrAutopresentedInsecureOrigin) {
 
   // Make sure the transient elements go away.
   task_runner_->FastForwardUntilNoTasksRemain();
+  UiElement* transient_url_bar =
+      scene_->GetUiElementByDebugId(kTransientUrlBar);
+  EXPECT_TRUE(IsAnimating(transient_url_bar, {OPACITY, VISIBILITY}));
+  // Finish the transition.
+  AnimateBy(MsToDelta(1000));
+  EXPECT_FALSE(IsAnimating(transient_url_bar, {OPACITY, VISIBILITY}));
   VerifyElementsVisible("End state", std::set<UiElementDebugId>{
                                          kWebVrPermanentHttpSecurityWarning});
 }
@@ -256,6 +264,12 @@ TEST_F(UiSceneManagerTest, WebVrAutopresented) {
 
   // Make sure the transient URL bar times out.
   task_runner_->FastForwardUntilNoTasksRemain();
+  UiElement* transient_url_bar =
+      scene_->GetUiElementByDebugId(kTransientUrlBar);
+  EXPECT_TRUE(IsAnimating(transient_url_bar, {OPACITY, VISIBILITY}));
+  // Finish the transition.
+  AnimateBy(MsToDelta(1000));
+  EXPECT_FALSE(IsAnimating(transient_url_bar, {OPACITY, VISIBILITY}));
   EXPECT_FALSE(IsVisible(kTransientUrlBar));
 }
 
