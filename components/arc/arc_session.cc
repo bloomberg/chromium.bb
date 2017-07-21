@@ -153,8 +153,8 @@ class ArcSessionImpl : public ArcSession,
   // NOT_STARTED:
   //   Do nothing. Immediately transition to the STOPPED state.
   // CREATING_SOCKET:
-  //   The main task of the phase runs on BlockingPool thread. So, Stop() just
-  //   sets the flag and return. On the main task completion, a callback
+  //   Since the main task of the phase runs on TaskScheduler's thread, Stop()
+  //   just sets the flag and return. On the main task completion, a callback
   //   will run on the main (practically UI) thread, and the flag is checked
   //   at the beginning of them. This should work under the assumption that
   //   the main tasks do not block indefinitely.
@@ -166,7 +166,7 @@ class ArcSessionImpl : public ArcSession,
   //   SessionManager. Its completion will be notified via ArcInstanceStopped.
   //   Otherwise, it just turns into STOPPED state.
   // CONNECTING_MOJO:
-  //   The main task runs on BlockingPool thread, but it is blocking call.
+  //   The main task runs on TaskScheduler's thread, but it is a blocking call.
   //   So, Stop() sends a request to cancel the blocking by closing the pipe
   //   whose read side is also polled. Then, in its callback, similar to
   //   STARTING_INSTANCE, a request to stop the ARC instance is sent to
@@ -640,7 +640,7 @@ void ArcSessionImpl::Stop() {
       return;
 
     case State::CONNECTING_MOJO:
-      // Mojo connection is being waited on a BlockingPool thread.
+      // Mojo connection is being waited on TaskScheduler's thread.
       // Request to cancel it. Following stopping procedure will run
       // in its callback.
       accept_cancel_pipe_.reset();
@@ -690,7 +690,7 @@ void ArcSessionImpl::ArcInstanceStopped(
   container_instance_id_.clear();
 
   // In case that crash happens during before the Mojo channel is connected,
-  // unlock the BlockingPool thread.
+  // unlock the TaskScheduler's thread.
   accept_cancel_pipe_.reset();
 
   ArcStopReason reason;
@@ -746,8 +746,7 @@ void ArcSessionImpl::OnShutdown() {
 
   // Here, the message loop is already stopped, and the Chrome will be soon
   // shutdown. Thus, it is not necessary to take care about restarting case.
-  // If ArcSession is waiting for mojo connection, cancels it. The BlockingPool
-  // will be joined later.
+  // If ArcSession is waiting for mojo connection, cancels it.
   accept_cancel_pipe_.reset();
 
   // Stops the ARC instance to let it graceful shutdown.
