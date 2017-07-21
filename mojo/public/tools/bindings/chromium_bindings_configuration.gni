@@ -35,6 +35,7 @@ _typemap_imports = [
   "//services/ui/gpu/interfaces/typemaps.gni",
   "//services/ui/public/interfaces/cursor/typemaps.gni",
   "//services/ui/public/interfaces/ime/typemaps.gni",
+  "//services/viz/public/interfaces/compositing/typemaps.gni",
   "//skia/public/interfaces/typemaps.gni",
   "//third_party/WebKit/public/public_typemaps.gni",
   "//ui/base/mojo/typemaps.gni",
