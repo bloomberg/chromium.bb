@@ -310,6 +310,12 @@ _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
         'JavascriptEnabledDriverTest.testIssue80ClickShouldGenerateClickEvent',
         'TypingTest.testShiftSelectionDeletes',
         'VisibilityTest.testShouldModifyTheVisibilityOfAnElementDynamically',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1878
+        'CombinedInputActionsTest.testSelectingMultipleItems',
+        'CombinedInputActionsTest.testHoldingDownShiftKeyWhileClicking',
+        'BasicMouseInterfaceTest.testDoubleClick',
+        'BasicMouseInterfaceTest.testContextClick',
+        'CorrectEventFiringTest.testShouldFireMouseUpEventWhenClicking',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
