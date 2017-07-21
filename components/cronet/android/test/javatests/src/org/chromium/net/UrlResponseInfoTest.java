@@ -5,12 +5,8 @@
 package org.chromium.net;
 
 import android.support.test.filters.SmallTest;
+import android.test.AndroidTestCase;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.impl.UrlResponseInfoImpl;
 
@@ -22,12 +18,10 @@ import java.util.Map;
 /**
  * Tests for {@link UrlResponseInfo}.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
-public class UrlResponseInfoTest {
+public class UrlResponseInfoTest extends AndroidTestCase {
     /**
      * Test for public API of {@link UrlResponseInfo}.
      */
-    @Test
     @SmallTest
     @Feature({"Cronet"})
     public void testPublicAPI() throws Exception {
@@ -45,29 +39,29 @@ public class UrlResponseInfoTest {
 
         final UrlResponseInfo info = new UrlResponseInfoImpl(urlChain, httpStatusCode,
                 httpStatusText, allHeadersList, wasCached, negotiatedProtocol, proxyServer);
-        Assert.assertEquals(info.getUrlChain(), urlChain);
+        assertEquals(info.getUrlChain(), urlChain);
         try {
             info.getUrlChain().add("example.com");
-            Assert.fail("getUrlChain() returned modifyable list.");
+            fail("getUrlChain() returned modifyable list.");
         } catch (UnsupportedOperationException e) {
             // Expected.
         }
-        Assert.assertEquals(info.getHttpStatusCode(), httpStatusCode);
-        Assert.assertEquals(info.getHttpStatusText(), httpStatusText);
-        Assert.assertEquals(info.getAllHeadersAsList(), allHeadersList);
+        assertEquals(info.getHttpStatusCode(), httpStatusCode);
+        assertEquals(info.getHttpStatusText(), httpStatusText);
+        assertEquals(info.getAllHeadersAsList(), allHeadersList);
         try {
             info.getAllHeadersAsList().add(
                     new AbstractMap.SimpleImmutableEntry<String, String>("X", "Y"));
-            Assert.fail("getAllHeadersAsList() returned modifyable list.");
+            fail("getAllHeadersAsList() returned modifyable list.");
         } catch (UnsupportedOperationException e) {
             // Expected.
         }
-        Assert.assertEquals(info.getAllHeaders().size(), allHeadersList.size());
-        Assert.assertEquals(info.getAllHeaders().get(allHeadersList.get(0).getKey()).size(), 1);
-        Assert.assertEquals(info.getAllHeaders().get(allHeadersList.get(0).getKey()).get(0),
+        assertEquals(info.getAllHeaders().size(), allHeadersList.size());
+        assertEquals(info.getAllHeaders().get(allHeadersList.get(0).getKey()).size(), 1);
+        assertEquals(info.getAllHeaders().get(allHeadersList.get(0).getKey()).get(0),
                 allHeadersList.get(0).getValue());
-        Assert.assertEquals(info.wasCached(), wasCached);
-        Assert.assertEquals(info.getNegotiatedProtocol(), negotiatedProtocol);
-        Assert.assertEquals(info.getProxyServer(), proxyServer);
+        assertEquals(info.wasCached(), wasCached);
+        assertEquals(info.getNegotiatedProtocol(), negotiatedProtocol);
+        assertEquals(info.getProxyServer(), proxyServer);
     }
 }

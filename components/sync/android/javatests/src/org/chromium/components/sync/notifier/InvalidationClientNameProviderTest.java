@@ -5,28 +5,21 @@
 package org.chromium.components.sync.notifier;
 
 import android.support.test.filters.SmallTest;
+import android.test.InstrumentationTestCase;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 
 import java.util.Arrays;
 
 /** Tests for the {@link InvalidationClientNameProvider} */
-@RunWith(BaseJUnit4ClassRunner.class)
-public class InvalidationClientNameProviderTest {
+public class InvalidationClientNameProviderTest extends InstrumentationTestCase {
     private InvalidationClientNameProvider mProvider;
 
-    @Before
-    public void setUp() {
+    @Override
+    protected void setUp() {
         mProvider = new InvalidationClientNameProvider();
     }
 
-    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testFallbackClientId() {
@@ -36,7 +29,7 @@ public class InvalidationClientNameProviderTest {
         byte[] id2 = mProvider.getInvalidatorClientName();
 
         // We expect the returned IDs to be consistent in every call.
-        Assert.assertTrue("Expected returned IDs to be consistent", Arrays.equals(id1, id2));
+        assertTrue("Expected returned IDs to be consistent", Arrays.equals(id1, id2));
 
         // Even if initialize the generator late, the ID will remain consistent.
         registerHardCodedGenerator(mProvider);
@@ -46,11 +39,10 @@ public class InvalidationClientNameProviderTest {
         // getInvalidatorClientName() and never change afterwards.  We test this anyway to make sure
         // nothing will blow up if someone accidentally violates that constraint.)
         byte[] id3 = mProvider.getInvalidatorClientName();
-        Assert.assertTrue("Changing generators should not affect returned ID consistency",
+        assertTrue("Changing generators should not affect returned ID consistency",
                 Arrays.equals(id2, id3));
     }
 
-    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testPreRegisteredGenerator() {
@@ -60,7 +52,7 @@ public class InvalidationClientNameProviderTest {
         byte[] id2 = mProvider.getInvalidatorClientName();
 
         // Expect that consistent IDs are maintained when using a custom generator, too.
-        Assert.assertTrue("Custom generators should return consistent IDs", Arrays.equals(id, id2));
+        assertTrue("Custom generators should return consistent IDs", Arrays.equals(id, id2));
     }
 
     private static void registerHardCodedGenerator(InvalidationClientNameProvider provider) {

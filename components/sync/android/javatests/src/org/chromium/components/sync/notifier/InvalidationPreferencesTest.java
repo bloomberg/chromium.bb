@@ -6,15 +6,11 @@ package org.chromium.components.sync.notifier;
 
 import android.accounts.Account;
 import android.support.test.filters.SmallTest;
+import android.test.InstrumentationTestCase;
 
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.CollectionUtil;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 
@@ -26,10 +22,8 @@ import java.util.Set;
  *
  * @author dsmyers@google.com (Daniel Myers)
  */
-@RunWith(BaseJUnit4ClassRunner.class)
 @RetryOnFailure
-public class InvalidationPreferencesTest {
-    @Test
+public class InvalidationPreferencesTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Sync"})
     public void testReadMissingData() {
@@ -37,13 +31,12 @@ public class InvalidationPreferencesTest {
          * Test plan: read saved state from empty preferences. Verify that null is returned.
          */
         InvalidationPreferences invPreferences = new InvalidationPreferences();
-        Assert.assertNull(invPreferences.getSavedSyncedAccount());
-        Assert.assertNull(invPreferences.getSavedSyncedTypes());
-        Assert.assertNull(invPreferences.getSavedObjectIds());
-        Assert.assertNull(invPreferences.getInternalNotificationClientState());
+        assertNull(invPreferences.getSavedSyncedAccount());
+        assertNull(invPreferences.getSavedSyncedTypes());
+        assertNull(invPreferences.getSavedObjectIds());
+        assertNull(invPreferences.getInternalNotificationClientState());
     }
 
-    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testReadWriteAndReadData() {
@@ -68,16 +61,16 @@ public class InvalidationPreferencesTest {
         invPreferences.setInternalNotificationClientState(editContext, internalClientState);
 
         // Nothing should yet have been written.
-        Assert.assertNull(invPreferences.getSavedSyncedAccount());
-        Assert.assertNull(invPreferences.getSavedSyncedTypes());
-        Assert.assertNull(invPreferences.getSavedObjectIds());
+        assertNull(invPreferences.getSavedSyncedAccount());
+        assertNull(invPreferences.getSavedSyncedTypes());
+        assertNull(invPreferences.getSavedObjectIds());
 
         // Write the new data and verify that they are correctly read back.
         invPreferences.commit(editContext);
-        Assert.assertEquals(account, invPreferences.getSavedSyncedAccount());
-        Assert.assertEquals(syncTypes, invPreferences.getSavedSyncedTypes());
-        Assert.assertEquals(objectIds, invPreferences.getSavedObjectIds());
-        Assert.assertTrue(Arrays.equals(
+        assertEquals(account, invPreferences.getSavedSyncedAccount());
+        assertEquals(syncTypes, invPreferences.getSavedSyncedTypes());
+        assertEquals(objectIds, invPreferences.getSavedObjectIds());
+        assertTrue(Arrays.equals(
                 internalClientState, invPreferences.getInternalNotificationClientState()));
     }
 }
