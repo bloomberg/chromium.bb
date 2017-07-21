@@ -91,6 +91,10 @@ class HashMap {
                   "Cannot put raw pointers to garbage-collected classes into "
                   "an off-heap HashMap.  Use HeapHashMap<> instead.");
   }
+
+#if DUMP_HASHTABLE_STATS_PER_TABLE
+  void DumpStats() { impl_.DumpStats(); }
+#endif
   HashMap(const HashMap&) = default;
   HashMap& operator=(const HashMap&) = default;
   HashMap(HashMap&&) = default;

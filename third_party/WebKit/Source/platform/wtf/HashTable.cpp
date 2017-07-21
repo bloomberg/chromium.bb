@@ -19,7 +19,7 @@
 
 #include "platform/wtf/HashTable.h"
 
-#if DUMP_HASHTABLE_STATS
+#if DUMP_HASHTABLE_STATS || DUMP_HASHTABLE_STATS_PER_TABLE
 
 #include "platform/wtf/DataLog.h"
 #include "platform/wtf/ThreadingPrimitives.h"
@@ -62,27 +62,27 @@ void HashTableStats::recordCollisionAtCount(int count) {
     hashTableStatsMutex().unlock();
 }
 
-void HashTableStats::dumpStats() {
+void HashTableStats::DumpStats() {
   // Lock the global hash table singleton while dumping.
   bool isGlobalSingleton = this == &instance();
   if (isGlobalSingleton)
     hashTableStatsMutex().lock();
 
-  dataLogF("\nWTF::HashTable statistics\n\n");
-  dataLogF("%d accesses\n", numAccesses);
-  dataLogF("%d total collisions, average %.2f probes per access\n",
+  DataLogF("\nWTF::HashTable statistics\n\n");
+  DataLogF("%d accesses\n", numAccesses);
+  DataLogF("%d total collisions, average %.2f probes per access\n",
            numCollisions, 1.0 * (numAccesses + numCollisions) / numAccesses);
-  dataLogF("longest collision chain: %d\n", maxCollisions);
+  DataLogF("longest collision chain: %d\n", maxCollisions);
   for (int i = 1; i <= maxCollisions; i++) {
-    dataLogF(
+    DataLogF(
         "  %d lookups with exactly %d collisions (%.2f%% , %.2f%% with this "
         "many or more)\n",
         collisionGraph[i], i,
         100.0 * (collisionGraph[i] - collisionGraph[i + 1]) / numAccesses,
         100.0 * collisionGraph[i] / numAccesses);
   }
-  dataLogF("%d rehashes\n", numRehashes);
-  dataLogF("%d reinserts\n", numReinserts);
+  DataLogF("%d rehashes\n", numRehashes);
+  DataLogF("%d reinserts\n", numReinserts);
 
   if (isGlobalSingleton)
     hashTableStatsMutex().unlock();
