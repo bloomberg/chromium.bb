@@ -1912,6 +1912,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8A57, "GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT",
     },
     {
+        0x8AF0, "GL_TEXTURE_FILTERING_HINT_CHROMIUM",
+    },
+    {
         0x8B30, "GL_FRAGMENT_SHADER",
     },
     {

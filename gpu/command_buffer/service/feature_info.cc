@@ -254,6 +254,10 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
       (command_line->GetSwitchValueASCII(switches::kUseGL) ==
        gl::kGLImplementationSwiftShaderForWebGLName);
 
+  feature_flags_.is_swiftshader =
+      (command_line->GetSwitchValueASCII(switches::kUseGL) ==
+       gl::kGLImplementationSwiftShaderName);
+
   // The shader translator is needed to translate from WebGL-conformant GLES SL
   // to normal GLES SL, enforce WebGL conformance, translate from GLES SL 1.0 to
   // target context GLSL, implement emulation of OpenGL ES features on OpenGL,
@@ -1398,6 +1402,8 @@ void FeatureInfo::InitializeFeatures() {
   feature_flags_.arb_robustness = extensions.Contains("GL_ARB_robustness");
   feature_flags_.khr_robustness = extensions.Contains("GL_KHR_robustness");
   feature_flags_.ext_robustness = extensions.Contains("GL_EXT_robustness");
+  feature_flags_.chromium_texture_filtering_hint =
+      extensions.Contains("GL_CHROMIUM_texture_filtering_hint");
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
