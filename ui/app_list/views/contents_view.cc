@@ -485,16 +485,20 @@ void ContentsView::Layout() {
 }
 
 bool ContentsView::OnKeyPressed(const ui::KeyEvent& event) {
-  bool handled = app_list_pages_[GetActivePageIndex()]->OnKeyPressed(event);
-
-  if (!handled) {
-    if (event.key_code() == ui::VKEY_TAB && event.IsShiftDown()) {
-      GetSearchBoxView()->MoveTabFocus(true);
-      handled = true;
-    }
+  if (app_list_pages_[GetActivePageIndex()]->OnKeyPressed(event))
+    return true;
+  if (event.key_code() != ui::VKEY_TAB)
+    return false;
+  if (is_fullscreen_app_list_enabled_) {
+    GetSearchBoxView()->MoveTabFocus(event.IsShiftDown());
+    return true;
+  }
+  if (event.IsShiftDown()) {
+    GetSearchBoxView()->MoveTabFocus(true);
+    return true;
   }
 
-  return handled;
+  return false;
 }
 
 const char* ContentsView::GetClassName() const {
