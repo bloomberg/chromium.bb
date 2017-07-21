@@ -39,41 +39,41 @@ void MediaListDirective::Parse(const UChar* begin, const UChar* end) {
   while (position < end) {
     // _____ OR _____mime1/mime1
     // ^        ^
-    skipWhile<UChar, IsASCIISpace>(position, end);
+    SkipWhile<UChar, IsASCIISpace>(position, end);
     if (position == end)
       return;
 
     // mime1/mime1 mime2/mime2
     // ^
     begin = position;
-    if (!skipExactly<UChar, IsMediaTypeCharacter>(position, end)) {
-      skipWhile<UChar, IsNotASCIISpace>(position, end);
+    if (!SkipExactly<UChar, IsMediaTypeCharacter>(position, end)) {
+      SkipWhile<UChar, IsNotASCIISpace>(position, end);
       Policy()->ReportInvalidPluginTypes(String(begin, position - begin));
       continue;
     }
-    skipWhile<UChar, IsMediaTypeCharacter>(position, end);
+    SkipWhile<UChar, IsMediaTypeCharacter>(position, end);
 
     // mime1/mime1 mime2/mime2
     //      ^
-    if (!skipExactly<UChar>(position, end, '/')) {
-      skipWhile<UChar, IsNotASCIISpace>(position, end);
+    if (!SkipExactly<UChar>(position, end, '/')) {
+      SkipWhile<UChar, IsNotASCIISpace>(position, end);
       Policy()->ReportInvalidPluginTypes(String(begin, position - begin));
       continue;
     }
 
     // mime1/mime1 mime2/mime2
     //       ^
-    if (!skipExactly<UChar, IsMediaTypeCharacter>(position, end)) {
-      skipWhile<UChar, IsNotASCIISpace>(position, end);
+    if (!SkipExactly<UChar, IsMediaTypeCharacter>(position, end)) {
+      SkipWhile<UChar, IsNotASCIISpace>(position, end);
       Policy()->ReportInvalidPluginTypes(String(begin, position - begin));
       continue;
     }
-    skipWhile<UChar, IsMediaTypeCharacter>(position, end);
+    SkipWhile<UChar, IsMediaTypeCharacter>(position, end);
 
     // mime1/mime1 mime2/mime2 OR mime1/mime1  OR mime1/mime1/error
     //            ^                          ^               ^
     if (position < end && IsNotASCIISpace(*position)) {
-      skipWhile<UChar, IsNotASCIISpace>(position, end);
+      SkipWhile<UChar, IsNotASCIISpace>(position, end);
       Policy()->ReportInvalidPluginTypes(String(begin, position - begin));
       continue;
     }

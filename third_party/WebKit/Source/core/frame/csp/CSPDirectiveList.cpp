@@ -959,7 +959,7 @@ void CSPDirectiveList::Parse(const UChar* begin, const UChar* end) {
   const UChar* position = begin;
   while (position < end) {
     const UChar* directive_begin = position;
-    skipUntil<UChar>(position, end, ';');
+    SkipUntil<UChar>(position, end, ';');
 
     String name, value;
     if (ParseDirective(directive_begin, position, name, value)) {
@@ -968,7 +968,7 @@ void CSPDirectiveList::Parse(const UChar* begin, const UChar* end) {
     }
 
     DCHECK(position == end || *position == ';');
-    skipExactly<UChar>(position, end, ';');
+    SkipExactly<UChar>(position, end, ';');
   }
 }
 
@@ -984,18 +984,18 @@ bool CSPDirectiveList::ParseDirective(const UChar* begin,
   DCHECK(value.IsEmpty());
 
   const UChar* position = begin;
-  skipWhile<UChar, IsASCIISpace>(position, end);
+  SkipWhile<UChar, IsASCIISpace>(position, end);
 
   // Empty directive (e.g. ";;;"). Exit early.
   if (position == end)
     return false;
 
   const UChar* name_begin = position;
-  skipWhile<UChar, IsCSPDirectiveNameCharacter>(position, end);
+  SkipWhile<UChar, IsCSPDirectiveNameCharacter>(position, end);
 
   // The directive-name must be non-empty.
   if (name_begin == position) {
-    skipWhile<UChar, IsNotASCIISpace>(position, end);
+    SkipWhile<UChar, IsNotASCIISpace>(position, end);
     policy_->ReportUnsupportedDirective(
         String(name_begin, position - name_begin));
     return false;
@@ -1006,17 +1006,17 @@ bool CSPDirectiveList::ParseDirective(const UChar* begin,
   if (position == end)
     return true;
 
-  if (!skipExactly<UChar, IsASCIISpace>(position, end)) {
-    skipWhile<UChar, IsNotASCIISpace>(position, end);
+  if (!SkipExactly<UChar, IsASCIISpace>(position, end)) {
+    SkipWhile<UChar, IsNotASCIISpace>(position, end);
     policy_->ReportUnsupportedDirective(
         String(name_begin, position - name_begin));
     return false;
   }
 
-  skipWhile<UChar, IsASCIISpace>(position, end);
+  SkipWhile<UChar, IsASCIISpace>(position, end);
 
   const UChar* value_begin = position;
-  skipWhile<UChar, IsCSPDirectiveValueCharacter>(position, end);
+  SkipWhile<UChar, IsCSPDirectiveValueCharacter>(position, end);
 
   if (position != end) {
     policy_->ReportInvalidDirectiveValueCharacter(
@@ -1047,10 +1047,10 @@ void CSPDirectiveList::ParseRequireSRIFor(const String& name,
   const UChar* end = position + characters.size();
 
   while (position < end) {
-    skipWhile<UChar, IsASCIISpace>(position, end);
+    SkipWhile<UChar, IsASCIISpace>(position, end);
 
     const UChar* token_begin = position;
-    skipWhile<UChar, IsNotASCIISpace>(position, end);
+    SkipWhile<UChar, IsNotASCIISpace>(position, end);
 
     if (token_begin < position) {
       String token = String(token_begin, position - token_begin);
@@ -1106,10 +1106,10 @@ void CSPDirectiveList::ParseReportURI(const String& name, const String& value) {
   const UChar* end = position + characters.size();
 
   while (position < end) {
-    skipWhile<UChar, IsASCIISpace>(position, end);
+    SkipWhile<UChar, IsASCIISpace>(position, end);
 
     const UChar* url_begin = position;
-    skipWhile<UChar, IsNotASCIISpace>(position, end);
+    SkipWhile<UChar, IsNotASCIISpace>(position, end);
 
     if (url_begin < position) {
       String url = String(url_begin, position - url_begin);

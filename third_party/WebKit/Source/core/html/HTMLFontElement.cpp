@@ -54,7 +54,7 @@ static bool ParseFontSize(const CharacterType* characters,
   const CharacterType* end = characters + length;
 
   // Step 3
-  skipWhile<CharacterType, IsHTMLSpace<CharacterType>>(position, end);
+  SkipWhile<CharacterType, IsHTMLSpace<CharacterType>>(position, end);
 
   // Step 4
   if (position == end)
@@ -80,7 +80,7 @@ static bool ParseFontSize(const CharacterType* characters,
 
   // Step 6
   const CharacterType* digits_start = position;
-  skipWhile<CharacterType, IsASCIIDigit>(position, end);
+  SkipWhile<CharacterType, IsASCIIDigit>(position, end);
 
   // Step 7
   if (digits_start == position)

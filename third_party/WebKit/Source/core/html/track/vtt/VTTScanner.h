@@ -179,33 +179,33 @@ inline bool VTTScanner::Scan(const char (&characters)[charactersCount]) {
 template <bool characterPredicate(UChar)>
 inline void VTTScanner::SkipWhile() {
   if (is8_bit_)
-    ::skipWhile<LChar, LCharPredicateAdapter<characterPredicate>>(
+    WTF::SkipWhile<LChar, LCharPredicateAdapter<characterPredicate>>(
         data_.characters8, end_.characters8);
   else
-    ::skipWhile<UChar, characterPredicate>(data_.characters16,
-                                           end_.characters16);
+    WTF::SkipWhile<UChar, characterPredicate>(data_.characters16,
+                                              end_.characters16);
 }
 
 template <bool characterPredicate(UChar)>
 inline void VTTScanner::SkipUntil() {
   if (is8_bit_)
-    ::skipUntil<LChar, LCharPredicateAdapter<characterPredicate>>(
+    WTF::SkipUntil<LChar, LCharPredicateAdapter<characterPredicate>>(
         data_.characters8, end_.characters8);
   else
-    ::skipUntil<UChar, characterPredicate>(data_.characters16,
-                                           end_.characters16);
+    WTF::SkipUntil<UChar, characterPredicate>(data_.characters16,
+                                              end_.characters16);
 }
 
 template <bool characterPredicate(UChar)>
 inline VTTScanner::Run VTTScanner::CollectWhile() {
   if (is8_bit_) {
     const LChar* current = data_.characters8;
-    ::skipWhile<LChar, LCharPredicateAdapter<characterPredicate>>(
+    WTF::SkipWhile<LChar, LCharPredicateAdapter<characterPredicate>>(
         current, end_.characters8);
     return Run(GetPosition(), current, is8_bit_);
   }
   const UChar* current = data_.characters16;
-  ::skipWhile<UChar, characterPredicate>(current, end_.characters16);
+  WTF::SkipWhile<UChar, characterPredicate>(current, end_.characters16);
   return Run(GetPosition(), reinterpret_cast<Position>(current), is8_bit_);
 }
 
@@ -213,12 +213,12 @@ template <bool characterPredicate(UChar)>
 inline VTTScanner::Run VTTScanner::CollectUntil() {
   if (is8_bit_) {
     const LChar* current = data_.characters8;
-    ::skipUntil<LChar, LCharPredicateAdapter<characterPredicate>>(
+    WTF::SkipUntil<LChar, LCharPredicateAdapter<characterPredicate>>(
         current, end_.characters8);
     return Run(GetPosition(), current, is8_bit_);
   }
   const UChar* current = data_.characters16;
-  ::skipUntil<UChar, characterPredicate>(current, end_.characters16);
+  WTF::SkipUntil<UChar, characterPredicate>(current, end_.characters16);
   return Run(GetPosition(), reinterpret_cast<Position>(current), is8_bit_);
 }
 

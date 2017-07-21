@@ -31,8 +31,10 @@
 #ifndef ParsingUtilities_h
 #define ParsingUtilities_h
 
+namespace WTF {
+
 template <typename CharType>
-bool skipExactly(const CharType*& position,
+bool SkipExactly(const CharType*& position,
                  const CharType* end,
                  CharType delimiter) {
   if (position < end && *position == delimiter) {
@@ -43,7 +45,7 @@ bool skipExactly(const CharType*& position,
 }
 
 template <typename CharType, bool characterPredicate(CharType)>
-bool skipExactly(const CharType*& position, const CharType* end) {
+bool SkipExactly(const CharType*& position, const CharType* end) {
   if (position < end && characterPredicate(*position)) {
     ++position;
     return true;
@@ -52,7 +54,7 @@ bool skipExactly(const CharType*& position, const CharType* end) {
 }
 
 template <typename CharType>
-bool skipToken(const CharType*& position,
+bool SkipToken(const CharType*& position,
                const CharType* end,
                const char* token) {
   const CharType* current = position;
@@ -70,7 +72,7 @@ bool skipToken(const CharType*& position,
 }
 
 template <typename CharType>
-void skipUntil(const CharType*& position,
+void SkipUntil(const CharType*& position,
                const CharType* end,
                CharType delimiter) {
   while (position < end && *position != delimiter)
@@ -78,21 +80,29 @@ void skipUntil(const CharType*& position,
 }
 
 template <typename CharType, bool characterPredicate(CharType)>
-void skipUntil(const CharType*& position, const CharType* end) {
+void SkipUntil(const CharType*& position, const CharType* end) {
   while (position < end && !characterPredicate(*position))
     ++position;
 }
 
 template <typename CharType, bool characterPredicate(CharType)>
-void skipWhile(const CharType*& position, const CharType* end) {
+void SkipWhile(const CharType*& position, const CharType* end) {
   while (position < end && characterPredicate(*position))
     ++position;
 }
 
 template <typename CharType, bool characterPredicate(CharType)>
-void reverseSkipWhile(const CharType*& position, const CharType* start) {
+void ReverseSkipWhile(const CharType*& position, const CharType* start) {
   while (position >= start && characterPredicate(*position))
     --position;
 }
 
-#endif
+}  // namespace WTF
+
+using WTF::SkipExactly;
+using WTF::SkipToken;
+using WTF::SkipUntil;
+using WTF::SkipWhile;
+using WTF::ReverseSkipWhile;
+
+#endif  // ParsingUtilities_h
