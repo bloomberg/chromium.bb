@@ -288,7 +288,7 @@ static void ParseImageCandidatesFromSrcsetAttribute(
   while (position < attribute_end) {
     // 4. Splitting loop: Collect a sequence of characters that are space
     // characters or U+002C COMMA characters.
-    skipWhile<CharType, IsHTMLSpaceOrComma<CharType>>(position, attribute_end);
+    SkipWhile<CharType, IsHTMLSpaceOrComma<CharType>>(position, attribute_end);
     if (position == attribute_end) {
       // Contrary to spec language - descriptor parsing happens on each
       // candidate, so when we reach the attributeEnd, we can exit.
@@ -298,7 +298,7 @@ static void ParseImageCandidatesFromSrcsetAttribute(
 
     // 6. Collect a sequence of characters that are not space characters, and
     // let that be url.
-    skipUntil<CharType, IsHTMLSpace<CharType>>(position, attribute_end);
+    SkipUntil<CharType, IsHTMLSpace<CharType>>(position, attribute_end);
     const CharType* image_url_end = position;
 
     DescriptorParsingResult result;
@@ -307,13 +307,13 @@ static void ParseImageCandidatesFromSrcsetAttribute(
     if (IsComma(*(position - 1))) {
       // Remove all trailing U+002C COMMA characters from url.
       image_url_end = position - 1;
-      reverseSkipWhile<CharType, IsComma>(image_url_end, image_url_start);
+      ReverseSkipWhile<CharType, IsComma>(image_url_end, image_url_start);
       ++image_url_end;
       // If url is empty, then jump to the step labeled splitting loop.
       if (image_url_start == image_url_end)
         continue;
     } else {
-      skipWhile<CharType, IsHTMLSpace<CharType>>(position, attribute_end);
+      SkipWhile<CharType, IsHTMLSpace<CharType>>(position, attribute_end);
       Vector<DescriptorToken> descriptor_tokens;
       TokenizeDescriptors(attribute_start, position, attribute_end,
                           descriptor_tokens);

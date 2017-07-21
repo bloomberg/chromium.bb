@@ -39,11 +39,11 @@ template <typename CharType>
 static bool ParseZoomAndPanInternal(const CharType*& start,
                                     const CharType* end,
                                     SVGZoomAndPanType& zoom_and_pan) {
-  if (skipToken(start, end, "disable")) {
+  if (SkipToken(start, end, "disable")) {
     zoom_and_pan = kSVGZoomAndPanDisable;
     return true;
   }
-  if (skipToken(start, end, "magnify")) {
+  if (SkipToken(start, end, "magnify")) {
     zoom_and_pan = kSVGZoomAndPanMagnify;
     return true;
   }

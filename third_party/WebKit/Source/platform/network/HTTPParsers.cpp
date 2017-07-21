@@ -168,14 +168,14 @@ const UChar* ParseSuboriginName(const UChar* begin,
 
   const UChar* position = begin;
 
-  if (!skipExactly<UChar, IsASCIILower>(position, end)) {
+  if (!SkipExactly<UChar, IsASCIILower>(position, end)) {
     messages.push_back("Invalid character \'" + String(position, 1) +
                        "\' in suborigin. First character must be a lower case "
                        "alphabetic character.");
     return nullptr;
   }
 
-  skipWhile<UChar, IsASCIILowerAlphaOrDigit>(position, end);
+  SkipWhile<UChar, IsASCIILowerAlphaOrDigit>(position, end);
   if (position != end && !IsASCIISpace(*position)) {
     messages.push_back("Invalid character \'" + String(position, 1) +
                        "\' in suborigin.");
@@ -201,7 +201,7 @@ const UChar* ParseSuboriginPolicyOption(const UChar* begin,
   }
   position = position + 1;
 
-  skipWhile<UChar, IsASCIILowerAlphaOrDigitOrHyphen>(position, end);
+  SkipWhile<UChar, IsASCIILowerAlphaOrDigitOrHyphen>(position, end);
   if (position == end || IsASCIISpace(*position)) {
     messages.push_back(String("Expected \' to end policy option."));
     return nullptr;
@@ -683,7 +683,7 @@ bool ParseSuboriginHeader(const String& header,
   const UChar* position = characters.data();
   const UChar* end = position + characters.size();
 
-  skipWhile<UChar, IsASCIISpace>(position, end);
+  SkipWhile<UChar, IsASCIISpace>(position, end);
 
   String name;
   position = ParseSuboriginName(position, end, name, messages);
@@ -696,7 +696,7 @@ bool ParseSuboriginHeader(const String& header,
   suborigin->SetName(name);
 
   while (position < end) {
-    skipWhile<UChar, IsASCIISpace>(position, end);
+    SkipWhile<UChar, IsASCIISpace>(position, end);
     if (position == end)
       return true;
 

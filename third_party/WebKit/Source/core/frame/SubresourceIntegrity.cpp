@@ -262,8 +262,8 @@ SubresourceIntegrity::AlgorithmParseResult SubresourceIntegrity::ParseAlgorithm(
   const UChar* begin = position;
 
   for (auto& prefix : kSupportedPrefixes) {
-    if (skipToken<UChar>(position, end, prefix.prefix)) {
-      if (!skipExactly<UChar>(position, end, '-')) {
+    if (SkipToken<UChar>(position, end, prefix.prefix)) {
+      if (!SkipExactly<UChar>(position, end, '-')) {
         position = begin;
         continue;
       }
@@ -272,7 +272,7 @@ SubresourceIntegrity::AlgorithmParseResult SubresourceIntegrity::ParseAlgorithm(
     }
   }
 
-  skipUntil<UChar>(position, end, '-');
+  SkipUntil<UChar>(position, end, '-');
   if (position < end && *position == '-') {
     position = begin;
     return kAlgorithmUnknown;
@@ -298,7 +298,7 @@ bool SubresourceIntegrity::ParseDigest(const UChar*& position,
                                        const UChar* end,
                                        String& digest) {
   const UChar* begin = position;
-  skipWhile<UChar, IsIntegrityCharacter>(position, end);
+  SkipWhile<UChar, IsIntegrityCharacter>(position, end);
 
   if (position == begin || (position != end && *position != '?')) {
     digest = g_empty_string;
@@ -339,9 +339,9 @@ SubresourceIntegrity::ParseIntegrityAttribute(
     WTF::String digest;
     HashAlgorithm algorithm;
 
-    skipWhile<UChar, IsASCIISpace>(position, end);
+    SkipWhile<UChar, IsASCIISpace>(position, end);
     current_integrity_end = position;
-    skipUntil<UChar, IsASCIISpace>(current_integrity_end, end);
+    SkipUntil<UChar, IsASCIISpace>(current_integrity_end, end);
 
     // Algorithm parsing errors are non-fatal (the subresource should
     // still be loaded) because strong hash algorithms should be used
@@ -352,7 +352,7 @@ SubresourceIntegrity::ParseIntegrityAttribute(
     if (parse_result == kAlgorithmUnknown) {
       // Unknown hash algorithms are treated as if they're not present,
       // and thus are not marked as an error, they're just skipped.
-      skipUntil<UChar, IsASCIISpace>(position, end);
+      SkipUntil<UChar, IsASCIISpace>(position, end);
       if (execution_context) {
         LogErrorToConsole("Error parsing 'integrity' attribute ('" + attribute +
                               "'). The specified hash algorithm must be one of "
@@ -367,7 +367,7 @@ SubresourceIntegrity::ParseIntegrityAttribute(
 
     if (parse_result == kAlgorithmUnparsable) {
       error = true;
-      skipUntil<UChar, IsASCIISpace>(position, end);
+      SkipUntil<UChar, IsASCIISpace>(position, end);
       if (execution_context) {
         LogErrorToConsole("Error parsing 'integrity' attribute ('" + attribute +
                               "'). The hash algorithm must be one of 'sha256', "
@@ -385,7 +385,7 @@ SubresourceIntegrity::ParseIntegrityAttribute(
 
     if (!ParseDigest(position, current_integrity_end, digest)) {
       error = true;
-      skipUntil<UChar, IsASCIISpace>(position, end);
+      SkipUntil<UChar, IsASCIISpace>(position, end);
       if (execution_context) {
         LogErrorToConsole(
             "Error parsing 'integrity' attribute ('" + attribute +
@@ -402,9 +402,9 @@ SubresourceIntegrity::ParseIntegrityAttribute(
     // '?' character followed by unbounded VCHARs, but no actual options
     // have been defined yet. Thus, for forward compatibility, ignore any
     // options specified.
-    if (skipExactly<UChar>(position, end, '?')) {
+    if (SkipExactly<UChar>(position, end, '?')) {
       const UChar* begin = position;
-      skipWhile<UChar, IsValueCharacter>(position, end);
+      SkipWhile<UChar, IsValueCharacter>(position, end);
       if (begin != position && execution_context) {
         LogErrorToConsole(
             "Ignoring unrecogized 'integrity' attribute option '" +

@@ -241,7 +241,7 @@ static WTF::NumberParsingState ParseHTMLNonNegativeIntegerInternal(
   int sign = 1;
 
   // Step 4: Skip whitespace.
-  skipWhile<CharacterType, IsHTMLSpace<CharacterType>>(position, end);
+  SkipWhile<CharacterType, IsHTMLSpace<CharacterType>>(position, end);
 
   // Step 5: If position is past the end of input, return an error.
   if (position == end)
@@ -268,7 +268,7 @@ static WTF::NumberParsingState ParseHTMLNonNegativeIntegerInternal(
 
   // Step 8: Collect a sequence of characters ...
   const CharacterType* digits_start = position;
-  skipWhile<CharacterType, IsASCIIDigit>(position, end);
+  SkipWhile<CharacterType, IsASCIIDigit>(position, end);
 
   WTF::NumberParsingState state;
   unsigned digits_value =
@@ -344,20 +344,20 @@ static Vector<double> ParseHTMLListOfFloatingPointNumbersInternal(
     const CharacterType* position,
     const CharacterType* end) {
   Vector<double> numbers;
-  skipWhile<CharacterType, IsSpaceOrDelimiter>(position, end);
+  SkipWhile<CharacterType, IsSpaceOrDelimiter>(position, end);
 
   while (position < end) {
-    skipWhile<CharacterType, IsNotSpaceDelimiterOrNumberStart>(position, end);
+    SkipWhile<CharacterType, IsNotSpaceDelimiterOrNumberStart>(position, end);
 
     const CharacterType* unparsed_number_start = position;
-    skipUntil<CharacterType, IsSpaceOrDelimiter>(position, end);
+    SkipUntil<CharacterType, IsSpaceOrDelimiter>(position, end);
 
     size_t parsed_length = 0;
     double number = CharactersToDouble(
         unparsed_number_start, position - unparsed_number_start, parsed_length);
     numbers.push_back(CheckDoubleValue(number, parsed_length != 0, 0));
 
-    skipWhile<CharacterType, IsSpaceOrDelimiter>(position, end);
+    SkipWhile<CharacterType, IsSpaceOrDelimiter>(position, end);
   }
   return numbers;
 }
