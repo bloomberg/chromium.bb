@@ -168,7 +168,7 @@ void CoreChromeOSOptionsHandler::Observe(
 }
 
 void CoreChromeOSOptionsHandler::NotifyOwnershipChanged() {
-  for (auto it : pref_subscription_map_)
+  for (auto& it : pref_subscription_map_)
     NotifySettingsChanged(it.first);
 }
 
@@ -240,13 +240,12 @@ void CoreChromeOSOptionsHandler::ObservePref(const std::string& pref_name) {
   if (!CrosSettings::IsCrosSettings(pref_name))
     return ::options::CoreOptionsHandler::ObservePref(pref_name);
 
-  linked_ptr<CrosSettings::ObserverSubscription> subscription(
+  std::unique_ptr<CrosSettings::ObserverSubscription> subscription =
       CrosSettings::Get()->AddSettingsObserver(
           pref_name.c_str(),
           base::Bind(&CoreChromeOSOptionsHandler::NotifySettingsChanged,
-                     base::Unretained(this),
-                     pref_name)).release());
-  pref_subscription_map_.insert(make_pair(pref_name, subscription));
+                     base::Unretained(this), pref_name));
+  pref_subscription_map_.insert(make_pair(pref_name, std::move(subscription)));
 }
 
 void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
