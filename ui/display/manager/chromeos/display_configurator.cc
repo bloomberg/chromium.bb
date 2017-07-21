@@ -365,6 +365,13 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::FindMirrorMode(
     DisplayState* external_display,
     bool try_panel_fitting,
     bool preserve_aspect) const {
+  if (internal_display->display->sys_path() !=
+      external_display->display->sys_path()) {
+    // Hardware mirroring doesn't work between displays on different devices. In
+    // this case we revert to software mirroring.
+    return false;
+  }
+
   const DisplayMode* internal_native_info =
       internal_display->display->native_mode();
   const DisplayMode* external_native_info =
