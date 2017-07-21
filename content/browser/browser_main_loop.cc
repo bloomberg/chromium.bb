@@ -1373,6 +1373,9 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       // Intentionally leak AudioManager if shutdown failed.
       // We might run into various CHECK(s) in AudioManager destructor.
       ignore_result(audio_manager_.release());
+      // |user_input_monitor_| may be in use by stray streams in case
+      // AudioManager shutdown failed.
+      ignore_result(user_input_monitor_.release());
     }
   }
 
