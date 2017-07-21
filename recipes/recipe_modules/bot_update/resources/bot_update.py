@@ -1139,6 +1139,17 @@ def main():
 
   solutions_printer(git_slns)
 
+  # Creating hardlinks during a build can interact with git reset in
+  # unfortunate ways if git's index isn't refreshed beforehand. (See
+  # crbug.com/330461#c13 for an explanation.)
+  try:
+    call_gclient(['recurse', '-v', 'git', 'update-index', '--refresh'])
+  except SubprocessFailed:
+    # Failure here (and nowhere else) may have adverse effects on the
+    # compile time of the build but shouldn't affect its ability to
+    # successfully complete.
+    print 'WARNING: Failed to update git indices.'
+
   try:
     # Dun dun dun, the main part of bot_update.
     revisions, step_text, shallow = prepare(options, git_slns, active)
