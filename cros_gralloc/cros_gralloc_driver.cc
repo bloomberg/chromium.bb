@@ -67,11 +67,11 @@ int32_t cros_gralloc_driver::init()
 			drmFreeVersion(version);
 			drv_ = drv_create(fd);
 			if (drv_)
-				return CROS_GRALLOC_ERROR_NONE;
+				return 0;
 		}
 	}
 
-	return CROS_GRALLOC_ERROR_NO_RESOURCES;
+	return -ENODEV;
 }
 
 bool cros_gralloc_driver::is_supported(const struct cros_gralloc_buffer_descriptor *descriptor)
@@ -99,7 +99,7 @@ int32_t cros_gralloc_driver::allocate(const struct cros_gralloc_buffer_descripto
 			   descriptor->drv_usage);
 	if (!bo) {
 		cros_gralloc_error("Failed to create bo.");
-		return CROS_GRALLOC_ERROR_NO_RESOURCES;
+		return -ENOMEM;
 	}
 
 	/*
@@ -110,7 +110,7 @@ int32_t cros_gralloc_driver::allocate(const struct cros_gralloc_buffer_descripto
 	if (drv_num_buffers_per_bo(bo) != 1) {
 		drv_bo_destroy(bo);
 		cros_gralloc_error("Can only support one buffer per bo.");
-		return CROS_GRALLOC_ERROR_NO_RESOURCES;
+		return -EINVAL;
 	}
 
 	hnd = new cros_gralloc_handle();
@@ -146,7 +146,7 @@ int32_t cros_gralloc_driver::allocate(const struct cros_gralloc_buffer_descripto
 	buffers_.emplace(id, buffer);
 	handles_.emplace(hnd, std::make_pair(buffer, 1));
 	*out_handle = &hnd->base;
-	return CROS_GRALLOC_ERROR_NONE;
+	return 0;
 }
 
 int32_t cros_gralloc_driver::retain(buffer_handle_t handle)
@@ -157,19 +157,19 @@ int32_t cros_gralloc_driver::retain(buffer_handle_t handle)
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {
 		cros_gralloc_error("Invalid handle.");
-		return CROS_GRALLOC_ERROR_BAD_HANDLE;
+		return -EINVAL;
 	}
 
 	auto buffer = get_buffer(hnd);
 	if (buffer) {
 		handles_[hnd].second++;
 		buffer->increase_refcount();
-		return CROS_GRALLOC_ERROR_NONE;
+		return 0;
 	}
 
 	if (drmPrimeFDToHandle(drv_get_fd(drv_), hnd->fds[0], &id)) {
 		cros_gralloc_error("drmPrimeFDToHandle failed.");
-		return CROS_GRALLOC_ERROR_BAD_HANDLE;
+		return -errno;
 	}
 
 	if (buffers_.count(id)) {
@@ -194,7 +194,7 @@ int32_t cros_gralloc_driver::retain(buffer_handle_t handle)
 
 		bo = drv_bo_import(drv_, &data);
 		if (!bo)
-			return CROS_GRALLOC_ERROR_NO_RESOURCES;
+			return -EFAULT;
 
 		id = drv_bo_get_plane_handle(bo, 0).u32;
 
@@ -203,7 +203,7 @@ int32_t cros_gralloc_driver::retain(buffer_handle_t handle)
 	}
 
 	handles_.emplace(hnd, std::make_pair(buffer, 1));
-	return CROS_GRALLOC_ERROR_NONE;
+	return 0;
 }
 
 int32_t cros_gralloc_driver::release(buffer_handle_t handle)
@@ -213,13 +213,13 @@ int32_t cros_gralloc_driver::release(buffer_handle_t handle)
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {
 		cros_gralloc_error("Invalid handle.");
-		return CROS_GRALLOC_ERROR_BAD_HANDLE;
+		return -EINVAL;
 	}
 
 	auto buffer = get_buffer(hnd);
 	if (!buffer) {
 		cros_gralloc_error("Invalid Reference.");
-		return CROS_GRALLOC_ERROR_BAD_HANDLE;
+		return -EINVAL;
 	}
 
 	if (!--handles_[hnd].second)
@@ -230,7 +230,7 @@ int32_t cros_gralloc_driver::release(buffer_handle_t handle)
 		delete buffer;
 	}
 
-	return CROS_GRALLOC_ERROR_NONE;
+	return 0;
 }
 
 int32_t cros_gralloc_driver::lock(buffer_handle_t handle, int32_t acquire_fence, uint64_t flags,
@@ -241,18 +241,18 @@ int32_t cros_gralloc_driver::lock(buffer_handle_t handle, int32_t acquire_fence,
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {
 		cros_gralloc_error("Invalid handle.");
-		return CROS_GRALLOC_ERROR_BAD_HANDLE;
+		return -EINVAL;
 	}
 
 	auto buffer = get_buffer(hnd);
 	if (!buffer) {
 		cros_gralloc_error("Invalid Reference.");
-		return CROS_GRALLOC_ERROR_BAD_HANDLE;
+		return -EINVAL;
 	}
 
 	if (acquire_fence >= 0) {
 		cros_gralloc_error("Sync wait not yet supported.");
-		return CROS_GRALLOC_ERROR_UNSUPPORTED;
+		return -EINVAL;
 	}
 
 	return buffer->lock(flags, addr);
@@ -265,13 +265,13 @@ int32_t cros_gralloc_driver::unlock(buffer_handle_t handle)
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {
 		cros_gralloc_error("Invalid handle.");
-		return CROS_GRALLOC_ERROR_BAD_HANDLE;
+		return -EINVAL;
 	}
 
 	auto buffer = get_buffer(hnd);
 	if (!buffer) {
 		cros_gralloc_error("Invalid Reference.");
-		return CROS_GRALLOC_ERROR_BAD_HANDLE;
+		return -EINVAL;
 	}
 
 	return buffer->unlock();
@@ -284,17 +284,17 @@ int32_t cros_gralloc_driver::get_backing_store(buffer_handle_t handle, uint64_t 
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {
 		cros_gralloc_error("Invalid handle.");
-		return CROS_GRALLOC_ERROR_BAD_HANDLE;
+		return -EINVAL;
 	}
 
 	auto buffer = get_buffer(hnd);
 	if (!buffer) {
 		cros_gralloc_error("Invalid Reference.");
-		return CROS_GRALLOC_ERROR_BAD_HANDLE;
+		return -EINVAL;
 	}
 
 	*out_store = static_cast<uint64_t>(buffer->get_id());
-	return CROS_GRALLOC_ERROR_NONE;
+	return 0;
 }
 
 cros_gralloc_buffer *cros_gralloc_driver::get_buffer(cros_gralloc_handle_t hnd)

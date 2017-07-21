@@ -103,7 +103,7 @@ static int gralloc0_alloc(alloc_device_t *dev, int w, int h, int format, int usa
 				   "drv_format: %4.4s, drv_flags: %llu",
 				   format, usage, reinterpret_cast<char *>(&descriptor.drm_format),
 				   static_cast<unsigned long long>(descriptor.drv_usage));
-		return CROS_GRALLOC_ERROR_UNSUPPORTED;
+		return -EINVAL;
 	}
 
 	ret = mod->driver->allocate(&descriptor, handle);
@@ -113,7 +113,7 @@ static int gralloc0_alloc(alloc_device_t *dev, int w, int h, int format, int usa
 	auto hnd = cros_gralloc_convert_handle(*handle);
 	*stride = hnd->pixel_stride;
 
-	return CROS_GRALLOC_ERROR_NONE;
+	return 0;
 }
 
 static int gralloc0_free(alloc_device_t *dev, buffer_handle_t handle)
@@ -125,7 +125,7 @@ static int gralloc0_free(alloc_device_t *dev, buffer_handle_t handle)
 static int gralloc0_close(struct hw_device_t *dev)
 {
 	/* Memory is freed by managed pointers on process close. */
-	return CROS_GRALLOC_ERROR_NONE;
+	return 0;
 }
 
 static int gralloc0_open(const struct hw_module_t *mod, const char *name, struct hw_device_t **dev)
@@ -134,18 +134,18 @@ static int gralloc0_open(const struct hw_module_t *mod, const char *name, struct
 
 	if (module->alloc) {
 		*dev = &module->alloc->common;
-		return CROS_GRALLOC_ERROR_NONE;
+		return 0;
 	}
 
 	if (strcmp(name, GRALLOC_HARDWARE_GPU0)) {
 		cros_gralloc_error("Incorrect device name - %s.", name);
-		return CROS_GRALLOC_ERROR_UNSUPPORTED;
+		return -EINVAL;
 	}
 
 	module->driver = std::make_unique<cros_gralloc_driver>();
 	if (module->driver->init()) {
 		cros_gralloc_error("Failed to initialize driver.");
-		return CROS_GRALLOC_ERROR_NO_RESOURCES;
+		return -ENOMEM;
 	}
 
 	module->alloc = std::make_unique<alloc_device_t>();
@@ -158,7 +158,7 @@ static int gralloc0_open(const struct hw_module_t *mod, const char *name, struct
 	module->alloc->common.close = gralloc0_close;
 
 	*dev = &module->alloc->common;
-	return CROS_GRALLOC_ERROR_NONE;
+	return 0;
 }
 
 static int gralloc0_register_buffer(struct gralloc_module_t const *module, buffer_handle_t handle)
@@ -169,7 +169,7 @@ static int gralloc0_register_buffer(struct gralloc_module_t const *module, buffe
 		mod->driver = std::make_unique<cros_gralloc_driver>();
 		if (mod->driver->init()) {
 			cros_gralloc_error("Failed to initialize driver.");
-			return CROS_GRALLOC_ERROR_NO_RESOURCES;
+			return -ENOMEM;
 		}
 	}
 
@@ -193,12 +193,12 @@ static int gralloc0_lock(struct gralloc_module_t const *module, buffer_handle_t 
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {
 		cros_gralloc_error("Invalid handle.");
-		return CROS_GRALLOC_ERROR_BAD_HANDLE;
+		return -EINVAL;
 	}
 
 	if ((hnd->droid_format == HAL_PIXEL_FORMAT_YCbCr_420_888)) {
 		cros_gralloc_error("HAL_PIXEL_FORMAT_YCbCr_*_888 format not compatible.");
-		return CROS_GRALLOC_ERROR_BAD_HANDLE;
+		return -EINVAL;
 	}
 
 	fence = -1;
@@ -230,17 +230,17 @@ static int gralloc0_perform(struct gralloc_module_t const *module, int op, ...)
 	case GRALLOC_DRM_GET_BACKING_STORE:
 		break;
 	default:
-		return CROS_GRALLOC_ERROR_UNSUPPORTED;
+		return -EINVAL;
 	}
 
 	va_start(args, op);
 
-	ret = CROS_GRALLOC_ERROR_NONE;
+	ret = 0;
 	handle = va_arg(args, buffer_handle_t);
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {
 		cros_gralloc_error("Invalid handle.");
-		return CROS_GRALLOC_ERROR_BAD_HANDLE;
+		return -EINVAL;
 	}
 
 	switch (op) {
@@ -263,7 +263,7 @@ static int gralloc0_perform(struct gralloc_module_t const *module, int op, ...)
 		ret = mod->driver->get_backing_store(handle, out_store);
 		break;
 	default:
-		ret = CROS_GRALLOC_ERROR_UNSUPPORTED;
+		ret = -EINVAL;
 	}
 
 	va_end(args);
@@ -282,14 +282,14 @@ static int gralloc0_lock_ycbcr(struct gralloc_module_t const *module, buffer_han
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {
 		cros_gralloc_error("Invalid handle.");
-		return CROS_GRALLOC_ERROR_BAD_HANDLE;
+		return -EINVAL;
 	}
 
 	if ((hnd->droid_format != HAL_PIXEL_FORMAT_YCbCr_420_888) &&
 	    (hnd->droid_format != HAL_PIXEL_FORMAT_YV12) &&
 	    (hnd->droid_format != HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED)) {
 		cros_gralloc_error("Non-YUV format not compatible.");
-		return CROS_GRALLOC_ERROR_BAD_HANDLE;
+		return -EINVAL;
 	}
 
 	fence = -1;
@@ -318,10 +318,10 @@ static int gralloc0_lock_ycbcr(struct gralloc_module_t const *module, buffer_han
 		break;
 	default:
 		mod->driver->unlock(handle);
-		return CROS_GRALLOC_ERROR_UNSUPPORTED;
+		return -EINVAL;
 	}
 
-	return ret;
+	return 0;
 }
 
 static struct hw_module_methods_t gralloc0_module_methods = {.open = gralloc0_open };
