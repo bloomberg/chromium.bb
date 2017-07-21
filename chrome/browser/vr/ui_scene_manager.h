@@ -144,8 +144,8 @@ class UiSceneManager {
 
   int next_available_id_ = 1;
 
+  std::vector<UiElement*> background_panels_;
   std::vector<UiElement*> content_elements_;
-  std::vector<UiElement*> background_elements_;
   std::vector<UiElement*> control_elements_;
 
   base::WeakPtrFactory<UiSceneManager> weak_ptr_factory_;

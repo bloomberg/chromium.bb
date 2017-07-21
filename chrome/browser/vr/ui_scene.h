@@ -87,6 +87,12 @@ class UiScene {
   void set_reticle_rendering_enabled(bool enabled) {
     reticle_rendering_enabled_ = enabled;
   }
+  int first_foreground_draw_phase() const {
+    return first_foreground_draw_phase_;
+  }
+  void set_first_foreground_draw_phase(int phase) {
+    first_foreground_draw_phase_ = phase;
+  }
 
   void OnGLInitialized();
 
@@ -103,6 +109,7 @@ class UiScene {
   bool webvr_rendering_enabled_ = false;
   bool reticle_rendering_enabled_ = true;
   bool gl_initialized_ = false;
+  int first_foreground_draw_phase_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(UiScene);
 };

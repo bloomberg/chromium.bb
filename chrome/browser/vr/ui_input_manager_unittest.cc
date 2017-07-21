@@ -96,6 +96,7 @@ TEST_F(UiInputManagerTest, NoMouseMovesDuringClick) {
                               &out_target_point, &out_reticle_render_target);
 
   // We should have hit the content quad if our math was correct.
+  ASSERT_NE(nullptr, out_reticle_render_target);
   EXPECT_EQ(UiElementDebugId::kContentQuad,
             out_reticle_render_target->debug_id());
 

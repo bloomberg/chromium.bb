@@ -12,6 +12,7 @@
 #include "chrome/browser/vr/elements/ui_element_debug_id.h"
 #include "chrome/browser/vr/test/mock_browser_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace vr {
 
@@ -44,23 +45,27 @@ class UiSceneManagerTest : public testing::Test {
 
   void MakeManager(InCct in_cct, InWebVr in_web_vr);
   void MakeAutoPresentedManager();
-  bool IsVisible(UiElementDebugId debug_id);
+
+  bool IsVisible(UiElementDebugId debug_id) const;
 
   // Verify that only the elements in the set are visible.
   void VerifyElementsVisible(const std::string& debug_name,
-                             const std::set<UiElementDebugId>& debug_ids);
+                             const std::set<UiElementDebugId>& debug_ids) const;
 
   // Return false if not all elements in the set match the specified visibility
   // state. Other elements are ignored.
   bool VerifyVisibility(const std::set<UiElementDebugId>& debug_ids,
-                        bool visible);
+                        bool visible) const;
 
   // Advances current_time_ by delta. This is done in frame increments and
   // UiScene::OnBeginFrame is called at each increment.
   void AnimateBy(base::TimeDelta delta);
 
   // Returns true if the given properties are being animated by the element.
-  bool IsAnimating(UiElement* element, const std::vector<int>& properties);
+  bool IsAnimating(UiElement* element,
+                   const std::vector<int>& properties) const;
+
+  SkColor GetBackgroundColor() const;
 
   base::MessageLoop message_loop_;
   std::unique_ptr<MockBrowserInterface> browser_;

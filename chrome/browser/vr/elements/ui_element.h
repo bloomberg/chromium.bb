@@ -323,7 +323,7 @@ class UiElement : public cc::AnimationTarget {
 
   int gridline_count_ = 1;
 
-  int draw_phase_ = 1;
+  int draw_phase_ = -1;
 
   // This is the time as of the last call to |Animate|. It is needed when
   // reversing transitions.

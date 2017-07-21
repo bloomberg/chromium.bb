@@ -29,14 +29,14 @@ void UiSceneManagerTest::MakeAutoPresentedManager() {
       browser_.get(), scene_.get(), kNotInCct, kNotInWebVr, kAutopresented);
 }
 
-bool UiSceneManagerTest::IsVisible(UiElementDebugId debug_id) {
+bool UiSceneManagerTest::IsVisible(UiElementDebugId debug_id) const {
   UiElement* element = scene_->GetUiElementByDebugId(debug_id);
   return element ? element->visible() : false;
 }
 
 void UiSceneManagerTest::VerifyElementsVisible(
     const std::string& debug_name,
-    const std::set<UiElementDebugId>& debug_ids) {
+    const std::set<UiElementDebugId>& debug_ids) const {
   SCOPED_TRACE(debug_name);
   for (const auto& element : scene_->GetUiElements()) {
     SCOPED_TRACE(element->debug_id());
@@ -48,7 +48,7 @@ void UiSceneManagerTest::VerifyElementsVisible(
 
 bool UiSceneManagerTest::VerifyVisibility(
     const std::set<UiElementDebugId>& debug_ids,
-    bool visible) {
+    bool visible) const {
   for (const auto& element : scene_->GetUiElements()) {
     if (debug_ids.find(element->debug_id()) != debug_ids.end() &&
         element->visible() != visible) {
@@ -69,12 +69,35 @@ void UiSceneManagerTest::AnimateBy(base::TimeDelta delta) {
 }
 
 bool UiSceneManagerTest::IsAnimating(UiElement* element,
-                                     const std::vector<int>& properties) {
+                                     const std::vector<int>& properties) const {
   for (auto property : properties) {
     if (!element->animation_player().IsAnimatingProperty(property))
       return false;
   }
   return true;
+}
+
+SkColor UiSceneManagerTest::GetBackgroundColor() const {
+  UiElement* front = scene_->GetUiElementByDebugId(kBackgroundFront);
+  EXPECT_NE(nullptr, front);
+  if (!front)
+    return SK_ColorBLACK;
+
+  SkColor color = front->edge_color();
+
+  // While returning background color, ensure that all background panel elements
+  // share the same color.
+  for (auto debug_id : {kBackgroundFront, kBackgroundLeft, kBackgroundBack,
+                        kBackgroundRight, kBackgroundTop, kBackgroundBottom}) {
+    const UiElement* panel = scene_->GetUiElementByDebugId(debug_id);
+    EXPECT_NE(nullptr, panel);
+    if (!panel)
+      return SK_ColorBLACK;
+    EXPECT_EQ(panel->center_color(), color);
+    EXPECT_EQ(panel->edge_color(), color);
+  }
+
+  return color;
 }
 
 }  // namespace vr

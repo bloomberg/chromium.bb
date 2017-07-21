@@ -79,17 +79,14 @@ void UiRenderer::DrawWorldElements(const RenderInfo& render_info,
     // mode, this will need further testing if those get added
     // later.
   } else {
-    // Non-WebVR mode, enable depth testing and clear the primary buffers.
+    // Non-WebVR mode, enable depth testing and clear the primary buffers. Note
+    // also that we do not clear the color buffer. The scene's background
+    // elements are responsible for drawing a complete background.
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 
-    const SkColor backgroundColor = scene_->background_color();
-    glClearColor(SkColorGetR(backgroundColor) / 255.0,
-                 SkColorGetG(backgroundColor) / 255.0,
-                 SkColorGetB(backgroundColor) / 255.0,
-                 SkColorGetA(backgroundColor) / 255.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
   }
   std::vector<const UiElement*> elements = scene_->GetWorldElements();
   DrawUiView(render_info, controller_info, elements,
@@ -141,13 +138,13 @@ void UiRenderer::DrawElements(const gfx::Transform& view_proj_matrix,
   if (elements.empty()) {
     return;
   }
-  int initial_draw_phase = elements.front()->draw_phase();
   bool drawn_reticle = false;
   for (const auto* element : elements) {
     // If we have no element to draw the reticle on, draw it after the
     // background (the initial draw phase).
     if (!controller_info.reticle_render_target && draw_reticle &&
-        !drawn_reticle && element->draw_phase() > initial_draw_phase) {
+        !drawn_reticle &&
+        element->draw_phase() >= scene_->first_foreground_draw_phase()) {
       DrawReticle(view_proj_matrix, render_info, controller_info);
       drawn_reticle = true;
     }
@@ -164,6 +161,7 @@ void UiRenderer::DrawElements(const gfx::Transform& view_proj_matrix,
 void UiRenderer::DrawElement(const gfx::Transform& view_proj_matrix,
                              const UiElement& element,
                              const gfx::Size& content_texture_size) {
+  DCHECK_GE(element.draw_phase(), 0);
   gfx::Transform transform =
       view_proj_matrix * element.screen_space_transform();
 
