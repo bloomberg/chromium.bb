@@ -114,8 +114,13 @@ class WebLayerTreeView {
                                           bool animate) {}
 
   // Set browser controls height. If |shrinkViewport| is set to true, then Blink
-  // shrunk the viewport clip layers by the browser controls height.
-  virtual void SetBrowserControlsHeight(float height, bool shrink_viewport) {}
+  // shrunk the viewport clip layers by the top and bottom browser controls
+  // height. Top controls will translate the web page down and do not
+  // immediately scroll when hiding. The bottom controls scroll immediately and
+  // never translate the content (only clip it).
+  virtual void SetBrowserControlsHeight(float top_height,
+                                        float bottom_height,
+                                        bool shrink_viewport) {}
 
   // Flow control and scheduling ---------------------------------------
 

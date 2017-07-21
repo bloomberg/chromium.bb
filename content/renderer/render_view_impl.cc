@@ -548,6 +548,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
 #endif
       browser_controls_shrink_blink_size_(false),
       top_controls_height_(0.f),
+      bottom_controls_height_(0.f),
       webview_(nullptr),
       has_scrolled_focused_editable_node_into_rect_(false),
       page_zoom_level_(params.page_zoom_level),
@@ -2089,9 +2090,9 @@ void RenderViewImpl::OnMoveOrResizeStarted() {
 }
 
 void RenderViewImpl::ResizeWebWidget() {
-  webview()->ResizeWithBrowserControls(GetSizeForWebWidget(),
-                                       top_controls_height_,
-                                       browser_controls_shrink_blink_size_);
+  webview()->ResizeWithBrowserControls(
+      GetSizeForWebWidget(), top_controls_height_, bottom_controls_height_,
+      browser_controls_shrink_blink_size_);
 }
 
 void RenderViewImpl::OnResize(const ResizeParams& params) {
@@ -2115,6 +2116,7 @@ void RenderViewImpl::OnResize(const ResizeParams& params) {
   browser_controls_shrink_blink_size_ =
       params.browser_controls_shrink_blink_size;
   top_controls_height_ = params.top_controls_height;
+  bottom_controls_height_ = params.bottom_controls_height;
 
   RenderWidget::OnResize(params);
 

@@ -311,7 +311,8 @@ class WebView : protected WebWidget {
   // WebView size by the browser controls height.
   virtual void ResizeWithBrowserControls(
       const WebSize&,
-      float browser_controls_height,
+      float top_controls_height,
+      float bottom_controls_height,
       bool browser_controls_shrink_layout) = 0;
 
   // Auto-Resize -----------------------------------------------------------

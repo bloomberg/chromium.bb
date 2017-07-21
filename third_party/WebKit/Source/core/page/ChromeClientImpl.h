@@ -183,7 +183,9 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void ClosePagePopup(PagePopup*) override;
   DOMWindow* PagePopupWindowForTesting() const override;
 
-  void SetBrowserControlsState(float height, bool shrinks_layout) override;
+  void SetBrowserControlsState(float top_height,
+                               float bottom_height,
+                               bool shrinks_layout) override;
 
   bool ShouldOpenModalDialogDuringPageDismissal(
       LocalFrame&,

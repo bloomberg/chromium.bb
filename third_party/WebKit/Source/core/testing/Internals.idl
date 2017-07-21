@@ -55,7 +55,7 @@ enum EffectiveConnectionType {
     ShadowRoot oldestShadowRoot(Element host);
     [RaisesException] ShadowRoot youngerShadowRoot(Node root);
 
-    void setBrowserControlsState(float height, boolean shrinksLayout);
+    void setBrowserControlsState(float top_height, float bottom_height, boolean shrinksLayout);
 
     [RaisesException] DOMString shadowRootType(Node root);
     [RaisesException] boolean hasShadowInsertionPoint(Node root);

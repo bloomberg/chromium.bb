@@ -15,7 +15,8 @@ namespace blink {
 
 BrowserControls::BrowserControls(const Page& page)
     : page_(&page),
-      height_(0),
+      top_height_(0),
+      bottom_height_(0),
       shown_ratio_(0),
       baseline_content_offset_(0),
       accumulated_scroll_delta_(0),
@@ -37,10 +38,15 @@ FloatSize BrowserControls::ScrollBy(FloatSize pending_delta) {
        pending_delta.Height() < 0))
     return pending_delta;
 
-  if (height_ == 0)
+  if (top_height_ == 0 && bottom_height_ == 0)
     return pending_delta;
 
-  float old_offset = ContentOffset();
+  float height = top_height_;
+  if (!top_height_)
+    height = bottom_height_;
+
+  // If there is no top height, base calculations off bottom height.
+  float old_offset = top_height_ ? ContentOffset() : BottomContentOffset();
   float page_scale = page_->GetVisualViewport().Scale();
 
   // Update accumulated vertical scroll and apply it to browser controls
@@ -50,7 +56,7 @@ FloatSize BrowserControls::ScrollBy(FloatSize pending_delta) {
   float new_content_offset =
       baseline_content_offset_ - accumulated_scroll_delta_;
 
-  SetShownRatio(new_content_offset / height_);
+  SetShownRatio(new_content_offset / height);
 
   // Reset baseline when controls are fully visible
   if (shown_ratio_ == 1)
@@ -58,26 +64,32 @@ FloatSize BrowserControls::ScrollBy(FloatSize pending_delta) {
 
   // Clamp and use the expected content offset so that we don't return
   // spurrious remaining scrolls due to the imprecision of the shownRatio.
-  new_content_offset = std::min(new_content_offset, height_);
+  new_content_offset = std::min(new_content_offset, height);
   new_content_offset = std::max(new_content_offset, 0.f);
 
   // We negate the difference because scrolling down (positive delta) causes
   // browser controls to hide (negative offset difference).
-  FloatSize applied_delta(0, (old_offset - new_content_offset) / page_scale);
+  FloatSize applied_delta(
+      0, top_height_ ? (old_offset - new_content_offset) / page_scale : 0);
   return pending_delta - applied_delta;
 }
 
 void BrowserControls::ResetBaseline() {
   accumulated_scroll_delta_ = 0;
-  baseline_content_offset_ = ContentOffset();
+  baseline_content_offset_ =
+      top_height_ ? ContentOffset() : BottomContentOffset();
 }
 
 float BrowserControls::LayoutHeight() {
-  return shrink_viewport_ ? height_ : 0;
+  return shrink_viewport_ ? top_height_ + bottom_height_ : 0;
 }
 
 float BrowserControls::ContentOffset() {
-  return shown_ratio_ * height_;
+  return shown_ratio_ * top_height_;
+}
+
+float BrowserControls::BottomContentOffset() {
+  return shown_ratio_ * bottom_height_;
 }
 
 void BrowserControls::SetShownRatio(float shown_ratio) {
@@ -119,11 +131,16 @@ void BrowserControls::UpdateConstraintsAndState(
     SetShownRatio(1.f);
 }
 
-void BrowserControls::SetHeight(float height, bool shrink_viewport) {
-  if (height_ == height && shrink_viewport_ == shrink_viewport)
+void BrowserControls::SetHeight(float top_height,
+                                float bottom_height,
+                                bool shrink_viewport) {
+  if (top_height_ == top_height && shrink_viewport_ == shrink_viewport &&
+      bottom_height_ == bottom_height) {
     return;
+  }
 
-  height_ = height;
+  top_height_ = top_height;
+  bottom_height_ = bottom_height;
   shrink_viewport_ = shrink_viewport;
   page_->GetChromeClient().DidUpdateBrowserControls();
 }

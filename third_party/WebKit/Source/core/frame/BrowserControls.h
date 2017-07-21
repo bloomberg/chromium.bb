@@ -14,9 +14,13 @@ class Page;
 class FloatSize;
 
 // This class encapsulate data and logic required to show/hide browser controls
-// duplicating cc::BrowserControlsManager behaviour.  Browser controls'
+// duplicating cc::BrowserControlsOffsetManager behaviour.  Browser controls'
 // self-animation to completion is still handled by compositor and kicks in
-// when scrolling is complete (i.e, upon ScrollEnd or FlingEnd).
+// when scrolling is complete (i.e, upon ScrollEnd or FlingEnd). Browser
+// controls can exist at the top or bottom of the screen and potentially at the
+// same time. Bottom controls differ from top in that, if they exist alone,
+// never translate the content down and scroll immediately, regardless of the
+// controls' offset.
 class CORE_EXPORT BrowserControls final
     : public GarbageCollected<BrowserControls> {
  public:
@@ -31,10 +35,13 @@ class CORE_EXPORT BrowserControls final
   float LayoutHeight();
   // The amount that browser controls are currently shown.
   float ContentOffset();
+  float BottomContentOffset();
 
-  float Height() const { return height_; }
+  float TopHeight() const { return top_height_; }
+  float BottomHeight() const { return bottom_height_; }
+  float TotalHeight() const { return top_height_ + bottom_height_; }
   bool ShrinkViewport() const { return shrink_viewport_; }
-  void SetHeight(float height, bool shrink_viewport);
+  void SetHeight(float top_height, float bottom_height, bool shrink_viewport);
 
   float ShownRatio() const { return shown_ratio_; }
   void SetShownRatio(float);
@@ -58,7 +65,8 @@ class CORE_EXPORT BrowserControls final
   Member<const Page> page_;
 
   // The browser controls height regardless of whether it is visible or not.
-  float height_;
+  float top_height_;
+  float bottom_height_;
 
   // The browser controls shown amount (normalized from 0 to 1) since the last
   // compositor commit. This value is updated from two sources:
