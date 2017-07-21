@@ -4,4 +4,15 @@
 
 #include "core/css/properties/CSSPropertyAPIOffsetRotate.h"
 
-namespace blink {}  // namespace blink
+#include "core/css/properties/CSSPropertyOffsetRotateUtils.h"
+
+namespace blink {
+
+const CSSValue* CSSPropertyAPIOffsetRotate::parseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) {
+  return CSSPropertyOffsetRotateUtils::ConsumeOffsetRotate(range, context);
+}
+
+}  // namespace blink

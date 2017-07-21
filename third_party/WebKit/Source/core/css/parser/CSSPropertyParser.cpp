@@ -42,7 +42,6 @@
 #include "core/css/properties/CSSPropertyFontUtils.h"
 #include "core/css/properties/CSSPropertyLengthUtils.h"
 #include "core/css/properties/CSSPropertyMarginUtils.h"
-#include "core/css/properties/CSSPropertyOffsetRotateUtils.h"
 #include "core/css/properties/CSSPropertyPositionUtils.h"
 #include "core/css/properties/CSSPropertyTextDecorationLineUtils.h"
 #include "core/css/properties/CSSPropertyTransitionPropertyUtils.h"
@@ -999,11 +998,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
       DCHECK(!RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
       return CSSPropertyTextDecorationLineUtils::ConsumeTextDecorationLine(
           range_);
-    case CSSPropertyOffsetDistance:
-      return ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
-    case CSSPropertyOffsetRotate:
-      return CSSPropertyOffsetRotateUtils::ConsumeOffsetRotate(range_,
-                                                               *context_);
     case CSSPropertyWebkitTransformOriginX:
     case CSSPropertyWebkitPerspectiveOriginX:
       return CSSPropertyPositionUtils::ConsumePositionLonghand<CSSValueLeft,
@@ -1014,8 +1008,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
       return CSSPropertyPositionUtils::ConsumePositionLonghand<CSSValueTop,
                                                                CSSValueBottom>(
           range_, context_->Mode());
-    case CSSPropertyWebkitBoxFlex:
-      return ConsumeNumber(range_, kValueRangeAll);
     case CSSPropertyStrokeWidth:
     case CSSPropertyStrokeDashoffset:
     case CSSPropertyCx:
@@ -1038,9 +1030,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyBorderImageWidth:
     case CSSPropertyWebkitMaskBoxImageWidth:
       return CSSPropertyBorderImageUtils::ConsumeBorderImageWidth(range_);
-    case CSSPropertyWebkitBorderImage:
-      return CSSPropertyBorderImageUtils::ConsumeWebkitBorderImage(range_,
-                                                                   context_);
     case CSSPropertyBackgroundAttachment:
     case CSSPropertyBackgroundBlendMode:
     case CSSPropertyBackgroundClip:
