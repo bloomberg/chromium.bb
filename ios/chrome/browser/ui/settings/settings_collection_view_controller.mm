@@ -230,6 +230,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
   // YES if the user used at least once the sign-in promo view buttons.
   BOOL _signinStarted;
+  // YES if view has been dismissed.
+  BOOL _settingsHasBeenDismissed;
 }
 
 @property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
@@ -297,7 +299,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 }
 
 - (void)dealloc {
-  [self stopBrowserStateServiceObservers];
+  DCHECK(_settingsHasBeenDismissed)
+      << "-settingsWillBeDismissed must be called before -dealloc";
 }
 
 - (void)stopBrowserStateServiceObservers {
@@ -1008,7 +1011,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   _signinInteractionController = nil;
   // The sign-in is done. The sign-in promo cell or account cell can be
   // reloaded.
-  [self reloadData];
+  if (!_settingsHasBeenDismissed)
+    [self reloadData];
 }
 
 #pragma mark Material Cell Catalog
@@ -1037,6 +1041,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 #pragma mark SettingsControllerProtocol
 
 - (void)settingsWillBeDismissed {
+  DCHECK(!_settingsHasBeenDismissed);
+  _settingsHasBeenDismissed = YES;
   if (!_signinStarted && _signinPromoViewMediator) {
     PrefService* prefs = _browserState->GetPrefs();
     int displayedCount =
