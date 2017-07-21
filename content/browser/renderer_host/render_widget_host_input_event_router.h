@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include <deque>
+#include <map>
 #include <unordered_map>
 #include <vector>
 
@@ -67,6 +67,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   void RouteGestureEvent(RenderWidgetHostViewBase* root_view,
                          blink::WebGestureEvent* event,
                          const ui::LatencyInfo& latency);
+  void OnHandledTouchStartOrFirstTouchMove(uint32_t unique_touch_event_id);
   void RouteTouchEvent(RenderWidgetHostViewBase* root_view,
                        blink::WebTouchEvent *event,
                        const ui::LatencyInfo& latency);
@@ -125,7 +126,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
 
     TargetData() : target(nullptr) {}
   };
-  using TargetQueue = std::deque<TargetData>;
+  using TargetMap = std::map<uint32_t, TargetData>;
 
   void ClearAllObserverRegistrations();
 
@@ -158,7 +159,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                             const blink::WebGestureEvent& event);
 
   FrameSinkIdOwnerMap owner_map_;
-  TargetQueue touchscreen_gesture_target_queue_;
+  TargetMap touchscreen_gesture_target_map_;
   TargetData touch_target_;
   TargetData touchscreen_gesture_target_;
   TargetData touchpad_gesture_target_;
@@ -185,7 +186,9 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouter);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
-                           InputEventRouterGestureTargetQueueTest);
+                           InputEventRouterGestureTargetMapTest);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           InputEventRouterGesturePreventDefaultTargetMapTest);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            InputEventRouterTouchpadGestureTargetTest);
 };
