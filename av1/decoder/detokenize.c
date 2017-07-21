@@ -195,7 +195,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 #else
 #if CONFIG_AOM_QM
     // Apply quant matrix only for 2D transforms
-    if (IS_2D_TRANSFORM(tx_type))
+    if (IS_2D_TRANSFORM(tx_type) && iqmatrix != NULL)
       dqv = ((iqmatrix[scan[c]] * (int)dqv) + (1 << (AOM_QM_BITS - 1))) >>
             AOM_QM_BITS;
 #endif

@@ -368,12 +368,17 @@ void aom_qm_init(AV1_COMMON *cm) {
         current = 0;
         for (t = 0; t < TX_SIZES_ALL; ++t) {
           size = tx_size_2d[t];
-          cm->gqmatrix[q][c][f][t] = &wt_matrix_ref[AOMMIN(
-              NUM_QM_LEVELS - 1, f == 0 ? q + DEFAULT_QM_INTER_OFFSET : q)][c]
-                                                   [current];
-          cm->giqmatrix[q][c][f][t] = &iwt_matrix_ref[AOMMIN(
-              NUM_QM_LEVELS - 1, f == 0 ? q + DEFAULT_QM_INTER_OFFSET : q)][c]
+          if (q == NUM_QM_LEVELS - 1) {
+            cm->gqmatrix[q][c][f][t] = NULL;
+            cm->giqmatrix[q][c][f][t] = NULL;
+          } else {
+            cm->gqmatrix[q][c][f][t] = &wt_matrix_ref[AOMMIN(
+                NUM_QM_LEVELS - 1, f == 0 ? q + DEFAULT_QM_INTER_OFFSET : q)][c]
                                                      [current];
+            cm->giqmatrix[q][c][f][t] = &iwt_matrix_ref[AOMMIN(
+                NUM_QM_LEVELS - 1, f == 0 ? q + DEFAULT_QM_INTER_OFFSET : q)][c]
+                                                       [current];
+          }
           current += size;
         }
       }
