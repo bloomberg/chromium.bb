@@ -12,7 +12,7 @@ FakeSurfaceObserver::FakeSurfaceObserver(bool damage_display)
 FakeSurfaceObserver::~FakeSurfaceObserver() {}
 
 void FakeSurfaceObserver::Reset() {
-  last_ack_ = BeginFrameAck();
+  last_ack_ = viz::BeginFrameAck();
   damaged_surfaces_.clear();
   will_draw_surfaces_.clear();
   last_surface_info_ = viz::SurfaceInfo();
@@ -30,7 +30,7 @@ bool FakeSurfaceObserver::SurfaceWillDrawCalled(
 }
 
 bool FakeSurfaceObserver::OnSurfaceDamaged(const viz::SurfaceId& surface_id,
-                                           const BeginFrameAck& ack) {
+                                           const viz::BeginFrameAck& ack) {
   if (ack.has_damage)
     damaged_surfaces_.insert(surface_id);
   last_ack_ = ack;

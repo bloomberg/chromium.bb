@@ -155,6 +155,7 @@ viz_source_set("unit_tests") {
     "//base/test:test_support",
     "//cc:test_support",
     "//components/viz/common",
+    "//components/viz/test:test_support",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/ipc:gl_in_process_context",

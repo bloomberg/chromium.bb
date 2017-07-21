@@ -6,7 +6,6 @@
 #define CC_IPC_CC_PARAM_TRAITS_MACROS_H_
 
 #include "cc/base/filter_operation.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
@@ -20,6 +19,7 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/resource_format.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
@@ -165,10 +165,10 @@ IPC_STRUCT_TRAITS_BEGIN(cc::Selection<gfx::SelectionBound>)
   IPC_STRUCT_TRAITS_MEMBER(end)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS_MAX_VALUE(cc::BeginFrameArgs::BeginFrameArgsType,
-                          cc::BeginFrameArgs::BEGIN_FRAME_ARGS_TYPE_MAX - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(viz::BeginFrameArgs::BeginFrameArgsType,
+                          viz::BeginFrameArgs::BEGIN_FRAME_ARGS_TYPE_MAX - 1)
 
-IPC_STRUCT_TRAITS_BEGIN(cc::BeginFrameArgs)
+IPC_STRUCT_TRAITS_BEGIN(viz::BeginFrameArgs)
   IPC_STRUCT_TRAITS_MEMBER(frame_time)
   IPC_STRUCT_TRAITS_MEMBER(deadline)
   IPC_STRUCT_TRAITS_MEMBER(interval)

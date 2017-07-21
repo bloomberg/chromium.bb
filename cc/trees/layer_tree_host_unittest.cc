@@ -25,7 +25,6 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/video_layer.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/output/output_surface.h"
@@ -34,7 +33,6 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/ui_resource_manager.h"
-#include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
@@ -63,6 +61,8 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/swap_promise_manager.h"
 #include "cc/trees/transform_node.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -562,7 +562,7 @@ class LayerTreeHostFreeContextResourcesOnDestroy
     : public LayerTreeHostContextCacheTest {
  public:
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args) override {
     // Ensure that our initialization expectations have completed.
     Mock::VerifyAndClearExpectations(mock_main_context_support_);
     Mock::VerifyAndClearExpectations(mock_worker_context_support_);
@@ -584,7 +584,7 @@ class LayerTreeHostCacheBehaviorOnLayerTreeFrameSinkRecreated
     : public LayerTreeHostContextCacheTest {
  public:
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args) override {
     // This code is run once, to trigger recreation of our LayerTreeFrameSink.
     if (test_state_ != TestState::INIT)
       return;
@@ -2568,7 +2568,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
-                                  const BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args) override {
     if (impl->pending_tree())
       frame_count_with_pending_tree_++;
 
@@ -2982,7 +2982,7 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args) override {
     // Impl frames happen while commits are deferred.
     num_will_begin_impl_frame_++;
     switch (num_will_begin_impl_frame_) {
@@ -3161,7 +3161,7 @@ class LayerTreeHostTestCompositeImmediatelyStateTransitions
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args) override {
     EXPECT_EQ(current_state_, kStartedTest);
     current_state_ = kStartedImplFrame;
 
@@ -3173,7 +3173,7 @@ class LayerTreeHostTestCompositeImmediatelyStateTransitions
     EXPECT_EQ(current_state_, kStartedImplFrame);
     current_state_ = kStartedMainFrame;
   }
-  void BeginMainFrame(const BeginFrameArgs& args) override {
+  void BeginMainFrame(const viz::BeginFrameArgs& args) override {
     EXPECT_EQ(current_state_, kStartedMainFrame);
     EXPECT_EQ(args.frame_time, current_begin_frame_args_.frame_time);
   }
@@ -3198,7 +3198,7 @@ class LayerTreeHostTestCompositeImmediatelyStateTransitions
 
  private:
   int current_state_;
-  BeginFrameArgs current_begin_frame_args_;
+  viz::BeginFrameArgs current_begin_frame_args_;
 };
 
 SINGLE_THREAD_TEST_F(LayerTreeHostTestCompositeImmediatelyStateTransitions);
@@ -5269,7 +5269,7 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
-                                  const BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args) override {
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&LayerTreeHostTestBreakSwapPromiseForVisibility::
@@ -5817,7 +5817,7 @@ class LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args) override {
     EXPECT_EQ(will_begin_impl_frame_count_, did_finish_impl_frame_count_);
     EXPECT_FALSE(TestEnded());
     will_begin_impl_frame_count_++;
@@ -5861,8 +5861,8 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 ::testing::AssertionResult AssertFrameTimeContained(
     const char* haystack_expr,
     const char* needle_expr,
-    const std::vector<BeginFrameArgs> haystack,
-    const BeginFrameArgs needle) {
+    const std::vector<viz::BeginFrameArgs> haystack,
+    const viz::BeginFrameArgs needle) {
   auto failure = ::testing::AssertionFailure()
                  << needle.frame_time << " (" << needle_expr
                  << ") not found in " << haystack_expr;
@@ -5896,7 +5896,7 @@ class LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
-                                  const BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args) override {
     impl_frame_args_.push_back(args);
 
     will_begin_impl_frame_count_++;
@@ -5904,7 +5904,7 @@ class LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime
       PostSetNeedsCommitToMainThread();
   }
 
-  void BeginMainFrame(const BeginFrameArgs& args) override {
+  void BeginMainFrame(const viz::BeginFrameArgs& args) override {
     ASSERT_GT(impl_frame_args_.size(), 0U)
         << "BeginMainFrame called before BeginImplFrame called!";
     EXPECT_PRED_FORMAT2(AssertFrameTimeContained, impl_frame_args_, args);
@@ -5918,7 +5918,7 @@ class LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime
   }
 
  private:
-  std::vector<BeginFrameArgs> impl_frame_args_;
+  std::vector<viz::BeginFrameArgs> impl_frame_args_;
   int will_begin_impl_frame_count_;
 };
 
@@ -6169,7 +6169,7 @@ class LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer
     PostSetNeedsCommitToMainThread();
   }
 
-  void BeginMainFrame(const BeginFrameArgs& args) override {
+  void BeginMainFrame(const viz::BeginFrameArgs& args) override {
     EXPECT_EQ(nullptr, layer_tree_host()->root_layer());
 
     layer_tree_host()->ApplyScrollAndScale(&info_);
@@ -7766,7 +7766,7 @@ class LayerTreeHostTestBeginFrameAcks : public LayerTreeHostTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
-                                  const BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args) override {
     EXPECT_TRUE(args.IsValid());
     current_begin_frame_args_ = args;
   }
@@ -7784,9 +7784,10 @@ class LayerTreeHostTestBeginFrameAcks : public LayerTreeHostTest {
       return;
     compositor_frame_submitted_ = true;
 
-    EXPECT_EQ(BeginFrameAck(current_begin_frame_args_.source_id,
-                            current_begin_frame_args_.sequence_number, true),
-              frame.metadata.begin_frame_ack);
+    EXPECT_EQ(
+        viz::BeginFrameAck(current_begin_frame_args_.source_id,
+                           current_begin_frame_args_.sequence_number, true),
+        frame.metadata.begin_frame_ack);
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
@@ -7796,9 +7797,10 @@ class LayerTreeHostTestBeginFrameAcks : public LayerTreeHostTest {
 
     EXPECT_TRUE(frame_data_);
     EXPECT_TRUE(compositor_frame_submitted_);
-    EXPECT_EQ(BeginFrameAck(current_begin_frame_args_.source_id,
-                            current_begin_frame_args_.sequence_number, true),
-              frame_data_->begin_frame_ack);
+    EXPECT_EQ(
+        viz::BeginFrameAck(current_begin_frame_args_.source_id,
+                           current_begin_frame_args_.sequence_number, true),
+        frame_data_->begin_frame_ack);
     EndTest();
   }
 
@@ -7807,7 +7809,7 @@ class LayerTreeHostTestBeginFrameAcks : public LayerTreeHostTest {
  private:
   bool compositor_frame_submitted_ = false;
   bool layers_drawn_ = false;
-  BeginFrameArgs current_begin_frame_args_;
+  viz::BeginFrameArgs current_begin_frame_args_;
   LayerTreeHostImpl::FrameData* frame_data_;
 };
 

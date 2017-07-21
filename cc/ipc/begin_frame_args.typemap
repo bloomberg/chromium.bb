@@ -3,16 +3,16 @@
 # found in the LICENSE file.
 
 mojom = "//cc/ipc/begin_frame_args.mojom"
-public_headers = [ "//cc/output/begin_frame_args.h" ]
+public_headers = [ "//components/viz/common/frame_sinks/begin_frame_args.h" ]
 traits_headers = [ "//cc/ipc/begin_frame_args_struct_traits.h" ]
 deps = [
-  "//cc",
+  "//components/viz/common",
   "//mojo/common:struct_traits",
 ]
 sources = [
   "begin_frame_args_struct_traits.cc",
 ]
 type_mappings = [
-  "cc.mojom.BeginFrameArgs=cc::BeginFrameArgs",
-  "cc.mojom.BeginFrameAck=cc::BeginFrameAck",
+  "cc.mojom.BeginFrameArgs=viz::BeginFrameArgs",
+  "cc.mojom.BeginFrameAck=viz::BeginFrameAck",
 ]

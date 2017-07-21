@@ -295,7 +295,7 @@ void BrowserCompositorMac::SubmitCompositorFrame(
                                                std::move(frame));
 }
 
-void BrowserCompositorMac::OnDidNotProduceFrame(const cc::BeginFrameAck& ack) {
+void BrowserCompositorMac::OnDidNotProduceFrame(const viz::BeginFrameAck& ack) {
   delegated_frame_host_->DidNotProduceFrame(ack);
 }
 

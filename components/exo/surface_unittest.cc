@@ -6,13 +6,13 @@
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "components/exo/buffer.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -336,7 +336,7 @@ TEST_F(SurfaceTest, SendsBeginFrameAcks) {
   surface->DidReceiveCompositorFrameAck();
   EXPECT_EQ(1u, source.num_observers());
 
-  cc::BeginFrameArgs args(source.CreateBeginFrameArgs(BEGINFRAME_FROM_HERE));
+  viz::BeginFrameArgs args(source.CreateBeginFrameArgs(BEGINFRAME_FROM_HERE));
   args.frame_time = base::TimeTicks::FromInternalValue(100);
   source.TestOnBeginFrame(args);  // Runs the frame callback.
   EXPECT_EQ(args.frame_time, frame_time);
@@ -345,7 +345,7 @@ TEST_F(SurfaceTest, SendsBeginFrameAcks) {
   RunAllPendingInMessageLoop();
 
   const cc::CompositorFrame& frame = GetFrameFromSurface(surface.get());
-  cc::BeginFrameAck expected_ack(args.source_id, args.sequence_number, true);
+  viz::BeginFrameAck expected_ack(args.source_id, args.sequence_number, true);
   EXPECT_EQ(expected_ack, frame.metadata.begin_frame_ack);
 
   // TODO(eseckler): Add test for DidNotProduceFrame plumbing.

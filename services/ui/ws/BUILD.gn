@@ -217,6 +217,7 @@ static_library("test_support") {
   deps = [
     "//base",
     "//base/test:test_config",
+    "//components/viz/test:test_support",
     "//mojo/common",
     "//mojo/public/cpp/bindings:bindings",
     "//services/service_manager/public/cpp",
@@ -281,6 +282,7 @@ source_set("tests") {
     "//base/test:test_support",
     "//cc:cc",
     "//cc:test_support",
+    "//components/viz/test:test_support",
     "//gpu/ipc/client",
     "//mojo/public/cpp/bindings:bindings",
     "//services/service_manager/public/cpp",

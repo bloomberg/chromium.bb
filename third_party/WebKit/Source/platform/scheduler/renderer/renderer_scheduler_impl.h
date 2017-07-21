@@ -93,7 +93,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   std::unique_ptr<RenderWidgetSchedulingState> NewRenderWidgetSchedulingState()
       override;
-  void WillBeginFrame(const cc::BeginFrameArgs& args) override;
+  void WillBeginFrame(const viz::BeginFrameArgs& args) override;
   void BeginFrameNotExpectedSoon() override;
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override;
   void DidCommitFrameToCompositor() override;

@@ -486,10 +486,10 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
       return;
   }
 
-  BeginFrameArgs begin_frame_args(BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, BeginFrameArgs::kManualSourceId, 1,
-      frame_begin_time, base::TimeTicks(), BeginFrameArgs::DefaultInterval(),
-      BeginFrameArgs::NORMAL));
+  viz::BeginFrameArgs begin_frame_args(viz::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+      frame_begin_time, base::TimeTicks(),
+      viz::BeginFrameArgs::DefaultInterval(), viz::BeginFrameArgs::NORMAL));
 
   // Start the impl frame.
   {
@@ -525,7 +525,7 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
     layer_tree_host_impl_->Animate();
 
     LayerTreeHostImpl::FrameData frame;
-    frame.begin_frame_ack = BeginFrameAck(
+    frame.begin_frame_ack = viz::BeginFrameAck(
         begin_frame_args.source_id, begin_frame_args.sequence_number, true);
     DoComposite(&frame);
 
@@ -620,7 +620,7 @@ bool SingleThreadProxy::MainFrameWillHappenForTesting() {
   return scheduler_on_impl_thread_->MainFrameForTestingWillHappen();
 }
 
-void SingleThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {
+void SingleThreadProxy::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   DebugScopedSetImplThread impl(task_runner_provider_);
 #if DCHECK_IS_ON()
   DCHECK(!inside_impl_frame_)
@@ -631,7 +631,7 @@ void SingleThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {
 }
 
 void SingleThreadProxy::ScheduledActionSendBeginMainFrame(
-    const BeginFrameArgs& begin_frame_args) {
+    const viz::BeginFrameArgs& begin_frame_args) {
   TRACE_EVENT0("cc", "SingleThreadProxy::ScheduledActionSendBeginMainFrame");
 #if DCHECK_IS_ON()
   // Although this proxy is single-threaded, it's problematic to synchronously
@@ -660,7 +660,8 @@ void SingleThreadProxy::ScheduledActionBeginMainFrameNotExpectedUntil(
   layer_tree_host_->BeginMainFrameNotExpectedUntil(time);
 }
 
-void SingleThreadProxy::BeginMainFrame(const BeginFrameArgs& begin_frame_args) {
+void SingleThreadProxy::BeginMainFrame(
+    const viz::BeginFrameArgs& begin_frame_args) {
   if (scheduler_on_impl_thread_) {
     scheduler_on_impl_thread_->NotifyBeginMainFrameStarted(
         base::TimeTicks::Now());
@@ -714,7 +715,7 @@ void SingleThreadProxy::BeginMainFrame(const BeginFrameArgs& begin_frame_args) {
 }
 
 void SingleThreadProxy::DoBeginMainFrame(
-    const BeginFrameArgs& begin_frame_args) {
+    const viz::BeginFrameArgs& begin_frame_args) {
   // In the single-threaded case, the scale deltas should never be touched on
   // the impl layer tree. However, impl-side scroll deltas may be manipulated
   // directly via the InputHandler on the UI thread.
@@ -830,7 +831,7 @@ void SingleThreadProxy::DidFinishImplFrame() {
 #endif
 }
 
-void SingleThreadProxy::DidNotProduceFrame(const BeginFrameAck& ack) {
+void SingleThreadProxy::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
   DebugScopedSetImplThread impl(task_runner_provider_);
   layer_tree_host_impl_->DidNotProduceFrame(ack);
 }

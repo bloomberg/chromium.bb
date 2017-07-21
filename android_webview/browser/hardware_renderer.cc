@@ -183,7 +183,7 @@ void HardwareRenderer::DidReceiveCompositorFrameAck(
                               last_submitted_layer_tree_frame_sink_id_);
 }
 
-void HardwareRenderer::OnBeginFrame(const cc::BeginFrameArgs& args) {
+void HardwareRenderer::OnBeginFrame(const viz::BeginFrameArgs& args) {
   // TODO(tansell): Hook this up.
 }
 

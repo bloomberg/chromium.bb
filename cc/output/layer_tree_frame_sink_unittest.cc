@@ -28,7 +28,7 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink {
   void SubmitCompositorFrame(CompositorFrame frame) override {
     client_->DidReceiveCompositorFrameAck();
   }
-  void DidNotProduceFrame(const BeginFrameAck& ack) override {}
+  void DidNotProduceFrame(const viz::BeginFrameAck& ack) override {}
 };
 
 TEST(LayerTreeFrameSinkTest, ContextLossInformsClient) {

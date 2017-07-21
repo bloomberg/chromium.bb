@@ -348,7 +348,7 @@ void FastInkView::UpdateSurface() {
   // TODO(eseckler): FastInkView should use BeginFrames and set the ack
   // accordingly.
   frame.metadata.begin_frame_ack =
-      cc::BeginFrameAck::CreateManualAckWithDamage();
+      viz::BeginFrameAck::CreateManualAckWithDamage();
   frame.metadata.device_scale_factor =
       widget_->GetLayer()->device_scale_factor();
   cc::TextureDrawQuad* texture_quad =

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "cc/output/begin_frame_args.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -33,7 +33,7 @@ class MockRendererScheduler : public RendererScheduler {
   MOCK_METHOD0(TimerTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(NewRenderWidgetSchedulingState,
                std::unique_ptr<RenderWidgetSchedulingState>());
-  MOCK_METHOD1(WillBeginFrame, void(const cc::BeginFrameArgs&));
+  MOCK_METHOD1(WillBeginFrame, void(const viz::BeginFrameArgs&));
   MOCK_METHOD0(BeginFrameNotExpectedSoon, void());
   MOCK_METHOD1(BeginMainFrameNotExpectedUntil, void(base::TimeTicks));
   MOCK_METHOD0(DidCommitFrameToCompositor, void());

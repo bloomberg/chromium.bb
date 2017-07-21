@@ -67,7 +67,7 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  void BeginMainFrame(const BeginFrameArgs& args) override {
+  void BeginMainFrame(const viz::BeginFrameArgs& args) override {
     if (begin_frame_driven_drawing_ && !TestEnded())
       layer_tree_host()->SetNeedsCommitWithForcedRedraw();
   }

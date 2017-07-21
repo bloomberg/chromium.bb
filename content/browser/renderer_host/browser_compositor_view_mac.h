@@ -59,7 +59,7 @@ class BrowserCompositorMac : public DelegatedFrameHostClient {
       cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink);
   void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame);
-  void OnDidNotProduceFrame(const cc::BeginFrameAck& ack);
+  void OnDidNotProduceFrame(const viz::BeginFrameAck& ack);
   void SetHasTransparentBackground(bool transparent);
   void SetDisplayColorSpace(const gfx::ColorSpace& color_space);
   void UpdateVSyncParameters(const base::TimeTicks& timebase,

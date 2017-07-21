@@ -4,7 +4,7 @@
 
 #include "cc/test/mock_compositor_frame_sink_support_client.h"
 
-#include "cc/output/begin_frame_args.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "ui/gfx/geometry/rect.h"
 

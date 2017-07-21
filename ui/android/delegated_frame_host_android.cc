@@ -103,7 +103,7 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
 }
 
 void DelegatedFrameHostAndroid::DidNotProduceFrame(
-    const cc::BeginFrameAck& ack) {
+    const viz::BeginFrameAck& ack) {
   support_->DidNotProduceFrame(ack);
 }
 
@@ -181,7 +181,7 @@ void DelegatedFrameHostAndroid::DidReceiveCompositorFrameAck(
   client_->DidReceiveCompositorFrameAck();
 }
 
-void DelegatedFrameHostAndroid::OnBeginFrame(const cc::BeginFrameArgs& args) {
+void DelegatedFrameHostAndroid::OnBeginFrame(const viz::BeginFrameArgs& args) {
   begin_frame_source_.OnBeginFrame(args);
 }
 

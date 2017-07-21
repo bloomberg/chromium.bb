@@ -54,13 +54,13 @@ class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   void DetachFromClient() override;
   void SetLocalSurfaceId(const LocalSurfaceId& local_surface_id) override;
   void SubmitCompositorFrame(cc::CompositorFrame frame) override;
-  void DidNotProduceFrame(const cc::BeginFrameAck& ack) override;
+  void DidNotProduceFrame(const BeginFrameAck& ack) override;
 
  private:
   // cc::mojom::CompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
       const std::vector<cc::ReturnedResource>& resources) override;
-  void OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) override;
+  void OnBeginFrame(const BeginFrameArgs& begin_frame_args) override;
   void OnBeginFramePausedChanged(bool paused) override;
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;

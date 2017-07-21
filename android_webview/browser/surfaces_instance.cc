@@ -148,7 +148,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   cc::CompositorFrame frame;
   // We draw synchronously, so acknowledge a manual BeginFrame.
   frame.metadata.begin_frame_ack =
-      cc::BeginFrameAck::CreateManualAckWithDamage();
+      viz::BeginFrameAck::CreateManualAckWithDamage();
   frame.render_pass_list.push_back(std::move(render_pass));
   frame.metadata.device_scale_factor = 1.f;
   frame.metadata.referenced_surfaces = child_ids_;
@@ -197,7 +197,7 @@ void SurfacesInstance::SetSolidColorRootFrame() {
   frame.render_pass_list.push_back(std::move(render_pass));
   // We draw synchronously, so acknowledge a manual BeginFrame.
   frame.metadata.begin_frame_ack =
-      cc::BeginFrameAck::CreateManualAckWithDamage();
+      viz::BeginFrameAck::CreateManualAckWithDamage();
   frame.metadata.referenced_surfaces = child_ids_;
   frame.metadata.device_scale_factor = 1;
   bool result = support_->SubmitCompositorFrame(root_id_, std::move(frame));
@@ -209,7 +209,7 @@ void SurfacesInstance::DidReceiveCompositorFrameAck(
   ReclaimResources(resources);
 }
 
-void SurfacesInstance::OnBeginFrame(const cc::BeginFrameArgs& args) {}
+void SurfacesInstance::OnBeginFrame(const viz::BeginFrameArgs& args) {}
 
 void SurfacesInstance::WillDrawSurface(
     const viz::LocalSurfaceId& local_surface_id,

@@ -41,13 +41,12 @@ void PrimaryBeginFrameSource::OnBeginFrameSourceRemoved(
     current_begin_frame_source_->AddObserver(this);
 }
 
-void PrimaryBeginFrameSource::OnBeginFrame(const cc::BeginFrameArgs& args) {
+void PrimaryBeginFrameSource::OnBeginFrame(const BeginFrameArgs& args) {
   begin_frame_source_.OnBeginFrame(args);
   last_begin_frame_args_ = args;
 }
 
-const cc::BeginFrameArgs& PrimaryBeginFrameSource::LastUsedBeginFrameArgs()
-    const {
+const BeginFrameArgs& PrimaryBeginFrameSource::LastUsedBeginFrameArgs() const {
   return last_begin_frame_args_;
 }
 

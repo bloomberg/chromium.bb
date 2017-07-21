@@ -7,6 +7,8 @@ import("//components/viz/viz.gni")
 viz_static_library("test_support") {
   testonly = true
   sources = [
+    "begin_frame_args_test.cc",
+    "begin_frame_args_test.h",
     "paths.cc",
     "paths.h",
     "test_layer_tree_frame_sink.cc",
@@ -14,6 +16,7 @@ viz_static_library("test_support") {
   ]
   deps = [
     "//base",
+    "//base/test:test_support",
     "//cc",
     "//cc/surfaces",
     "//components/viz/service",

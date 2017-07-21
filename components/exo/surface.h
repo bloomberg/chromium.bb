@@ -219,7 +219,7 @@ class Surface : public ui::ContextFactoryObserver,
   }
 
   // Overridden from cc::BeginFrameObserverBase:
-  bool OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args) override;
+  bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) override;
   void OnBeginFrameSourcePausedChanged(bool paused) override {}
 
  private:
@@ -372,7 +372,7 @@ class Surface : public ui::ContextFactoryObserver,
   // The begin frame source being observed.
   cc::BeginFrameSource* begin_frame_source_ = nullptr;
   bool needs_begin_frame_ = false;
-  cc::BeginFrameAck current_begin_frame_ack_;
+  viz::BeginFrameAck current_begin_frame_ack_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };

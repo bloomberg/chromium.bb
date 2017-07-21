@@ -236,7 +236,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
       const viz::LocalSurfaceId& local_surface_id,
       cc::CompositorFrame frame) = 0;
 
-  virtual void OnDidNotProduceFrame(const cc::BeginFrameAck& ack) {}
+  virtual void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) {}
   virtual void OnSurfaceChanged(const viz::SurfaceInfo& surface_info) {}
 
   // This method exists to allow removing of displayed graphics, after a new

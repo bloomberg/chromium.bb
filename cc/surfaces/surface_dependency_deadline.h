@@ -41,8 +41,8 @@ class SurfaceDependencyDeadline : public BeginFrameObserver {
   }
 
   // BeginFrameObserver implementation.
-  void OnBeginFrame(const BeginFrameArgs& args) override;
-  const BeginFrameArgs& LastUsedBeginFrameArgs() const override;
+  void OnBeginFrame(const viz::BeginFrameArgs& args) override;
+  const viz::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
   void OnBeginFrameSourcePausedChanged(bool paused) override;
 
  private:
@@ -50,7 +50,7 @@ class SurfaceDependencyDeadline : public BeginFrameObserver {
   BeginFrameSource* begin_frame_source_ = nullptr;
   base::Optional<uint32_t> number_of_frames_to_deadline_;
 
-  BeginFrameArgs last_begin_frame_args_;
+  viz::BeginFrameArgs last_begin_frame_args_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceDependencyDeadline);
 };

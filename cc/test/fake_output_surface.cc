@@ -8,7 +8,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/resources/returned_resource.h"
-#include "cc/test/begin_frame_args_test.h"
+#include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {

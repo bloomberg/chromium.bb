@@ -25,7 +25,6 @@
 #include "cc/input/input_handler.h"
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/layers/layer_collections.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/output/layer_tree_frame_sink_client.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/quads/render_pass.h"
@@ -42,6 +41,7 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/mutator_host_client.h"
 #include "cc/trees/task_runner_provider.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
@@ -242,7 +242,7 @@ class CC_EXPORT LayerTreeHostImpl
     LayerImplList will_draw_layers;
     bool has_no_damage;
     bool may_contain_video;
-    BeginFrameAck begin_frame_ack;
+    viz::BeginFrameAck begin_frame_ack;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(FrameData);
@@ -421,9 +421,9 @@ class CC_EXPORT LayerTreeHostImpl
   ResourcePool* resource_pool() { return resource_pool_.get(); }
   ImageDecodeCache* image_decode_cache() { return image_decode_cache_.get(); }
 
-  virtual void WillBeginImplFrame(const BeginFrameArgs& args);
+  virtual void WillBeginImplFrame(const viz::BeginFrameArgs& args);
   virtual void DidFinishImplFrame();
-  void DidNotProduceFrame(const BeginFrameAck& ack);
+  void DidNotProduceFrame(const viz::BeginFrameAck& ack);
   void DidModifyTilePriorities();
 
   LayerTreeImpl* active_tree() { return active_tree_.get(); }
@@ -506,8 +506,8 @@ class CC_EXPORT LayerTreeHostImpl
   TreePriority GetTreePriority() const;
 
   // TODO(mithro): Remove this methods which exposes the internal
-  // BeginFrameArgs to external callers.
-  virtual BeginFrameArgs CurrentBeginFrameArgs() const;
+  // viz::BeginFrameArgs to external callers.
+  virtual viz::BeginFrameArgs CurrentBeginFrameArgs() const;
 
   // Expected time between two begin impl frame calls.
   base::TimeDelta CurrentBeginFrameInterval() const;

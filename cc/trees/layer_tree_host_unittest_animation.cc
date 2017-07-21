@@ -90,7 +90,7 @@ class LayerTreeHostAnimationTestSetNeedsAnimateShouldNotSetCommitRequested
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void BeginMainFrame(const BeginFrameArgs& args) override {
+  void BeginMainFrame(const viz::BeginFrameArgs& args) override {
     // We skip the first commit because its the commit that populates the
     // impl thread with a tree. After the second commit, the test is done.
     if (num_commits_ != 1)
@@ -139,7 +139,7 @@ class LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void BeginMainFrame(const BeginFrameArgs& args) override {
+  void BeginMainFrame(const viz::BeginFrameArgs& args) override {
     if (!num_begin_frames_) {
       layer_tree_host()->SetNeedsAnimate();
       num_begin_frames_++;
@@ -524,7 +524,7 @@ class LayerTreeHostAnimationTestCancelAnimateCommit
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void BeginMainFrame(const BeginFrameArgs& args) override {
+  void BeginMainFrame(const viz::BeginFrameArgs& args) override {
     num_begin_frames_++;
     // No-op animate will cancel the commit.
     if (layer_tree_host()->SourceFrameNumber() == 1) {
@@ -568,7 +568,7 @@ class LayerTreeHostAnimationTestForceRedraw
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void BeginMainFrame(const BeginFrameArgs& args) override {
+  void BeginMainFrame(const viz::BeginFrameArgs& args) override {
     if (++num_animate_ < 2)
       layer_tree_host()->SetNeedsAnimate();
   }
@@ -604,7 +604,7 @@ class LayerTreeHostAnimationTestAnimateAfterSetNeedsCommit
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void BeginMainFrame(const BeginFrameArgs& args) override {
+  void BeginMainFrame(const viz::BeginFrameArgs& args) override {
     if (++num_animate_ <= 2) {
       layer_tree_host()->SetNeedsCommit();
       layer_tree_host()->SetNeedsAnimate();
@@ -973,7 +973,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void BeginMainFrame(const BeginFrameArgs& args) override {
+  void BeginMainFrame(const viz::BeginFrameArgs& args) override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
         break;
@@ -995,7 +995,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args) override {
     host_impl->BlockNotifyReadyToActivateForTesting(
         ShouldBlockActivation(host_impl));
   }
@@ -1106,7 +1106,7 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args) override {
     if (!host_impl->pending_tree() ||
         host_impl->pending_tree()->source_frame_number() != 2)
       return;

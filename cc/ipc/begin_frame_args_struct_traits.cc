@@ -9,9 +9,9 @@
 namespace mojo {
 
 // static
-bool StructTraits<cc::mojom::BeginFrameArgsDataView, cc::BeginFrameArgs>::Read(
+bool StructTraits<cc::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs>::Read(
     cc::mojom::BeginFrameArgsDataView data,
-    cc::BeginFrameArgs* out) {
+    viz::BeginFrameArgs* out) {
   if (!data.ReadFrameTime(&out->frame_time) ||
       !data.ReadDeadline(&out->deadline) ||
       !data.ReadInterval(&out->interval)) {
@@ -20,16 +20,16 @@ bool StructTraits<cc::mojom::BeginFrameArgsDataView, cc::BeginFrameArgs>::Read(
   out->source_id = data.source_id();
   out->sequence_number = data.sequence_number();
   // TODO(eseckler): Use EnumTraits for |type|.
-  out->type = static_cast<cc::BeginFrameArgs::BeginFrameArgsType>(data.type());
+  out->type = static_cast<viz::BeginFrameArgs::BeginFrameArgsType>(data.type());
   out->on_critical_path = data.on_critical_path();
   return true;
 }
 
 // static
-bool StructTraits<cc::mojom::BeginFrameAckDataView, cc::BeginFrameAck>::Read(
+bool StructTraits<cc::mojom::BeginFrameAckDataView, viz::BeginFrameAck>::Read(
     cc::mojom::BeginFrameAckDataView data,
-    cc::BeginFrameAck* out) {
-  if (data.sequence_number() < cc::BeginFrameArgs::kStartingFrameNumber)
+    viz::BeginFrameAck* out) {
+  if (data.sequence_number() < viz::BeginFrameArgs::kStartingFrameNumber)
     return false;
   out->source_id = data.source_id();
   out->sequence_number = data.sequence_number();

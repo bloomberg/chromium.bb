@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "cc/ipc/compositor_frame_sink.mojom-blink.h"
-#include "cc/output/begin_frame_args.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
@@ -45,7 +45,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   // cc::mojom::blink::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const WTF::Vector<cc::ReturnedResource>& resources) final;
-  void OnBeginFrame(const cc::BeginFrameArgs&) final;
+  void OnBeginFrame(const viz::BeginFrameArgs&) final;
   void OnBeginFramePausedChanged(bool paused) final{};
   void ReclaimResources(
       const WTF::Vector<cc::ReturnedResource>& resources) final;
@@ -103,7 +103,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
 
   int placeholder_canvas_id_;
 
-  cc::BeginFrameAck current_begin_frame_ack_;
+  viz::BeginFrameAck current_begin_frame_ack_;
 
   void SetTransferableResourceToSharedBitmap(cc::TransferableResource&,
                                              RefPtr<StaticBitmapImage>);

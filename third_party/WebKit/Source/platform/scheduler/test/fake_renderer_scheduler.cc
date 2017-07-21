@@ -49,7 +49,7 @@ FakeRendererScheduler::NewRenderWidgetSchedulingState() {
   return nullptr;
 }
 
-void FakeRendererScheduler::WillBeginFrame(const cc::BeginFrameArgs& args) {}
+void FakeRendererScheduler::WillBeginFrame(const viz::BeginFrameArgs& args) {}
 
 void FakeRendererScheduler::BeginFrameNotExpectedSoon() {}
 

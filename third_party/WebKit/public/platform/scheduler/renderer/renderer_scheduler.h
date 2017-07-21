@@ -24,13 +24,13 @@ class BlameContext;
 }
 }
 
-namespace cc {
-struct BeginFrameArgs;
-}
-
 namespace blink {
 class WebThread;
 class WebInputEvent;
+}
+
+namespace viz {
+struct BeginFrameArgs;
 }
 
 namespace blink {
@@ -81,7 +81,7 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
 
   // Called to notify about the start of a new frame.  Must be called from the
   // main thread.
-  virtual void WillBeginFrame(const cc::BeginFrameArgs& args) = 0;
+  virtual void WillBeginFrame(const viz::BeginFrameArgs& args) = 0;
 
   // Called to notify that a previously begun frame was committed. Must be
   // called from the main thread.

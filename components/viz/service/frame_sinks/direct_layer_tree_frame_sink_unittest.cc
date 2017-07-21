@@ -10,7 +10,6 @@
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
-#include "cc/test/begin_frame_args_test.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_layer_tree_frame_sink_client.h"
 #include "cc/test/fake_output_surface.h"
@@ -25,6 +24,7 @@
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
@@ -110,7 +110,7 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
     render_pass->SetNew(1, display_rect_, damage_rect, gfx::Transform());
 
     cc::CompositorFrame frame = cc::test::MakeEmptyCompositorFrame();
-    frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, true);
+    frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, true);
     frame.render_pass_list.push_back(std::move(render_pass));
 
     layer_tree_frame_sink_->SubmitCompositorFrame(std::move(frame));

@@ -4,12 +4,12 @@
 
 #include <string>
 
-#include "cc/output/begin_frame_args.h"
-#include "cc/test/begin_frame_args_test.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace cc {
+namespace viz {
 namespace {
 
 TEST(BeginFrameArgsTest, Helpers) {
@@ -119,4 +119,4 @@ TEST(BeginFrameArgsTest, Location) {
 #endif
 
 }  // namespace
-}  // namespace cc
+}  // namespace viz

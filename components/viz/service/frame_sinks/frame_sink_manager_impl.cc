@@ -319,7 +319,7 @@ void FrameSinkManagerImpl::OnSurfaceCreated(const SurfaceInfo& surface_info) {
 }
 
 bool FrameSinkManagerImpl::OnSurfaceDamaged(const SurfaceId& surface_id,
-                                            const cc::BeginFrameAck& ack) {
+                                            const BeginFrameAck& ack) {
   return false;
 }
 
@@ -327,9 +327,9 @@ void FrameSinkManagerImpl::OnSurfaceDiscarded(const SurfaceId& surface_id) {}
 
 void FrameSinkManagerImpl::OnSurfaceDestroyed(const SurfaceId& surface_id) {}
 
-void FrameSinkManagerImpl::OnSurfaceDamageExpected(
-    const SurfaceId& surface_id,
-    const cc::BeginFrameArgs& args) {}
+void FrameSinkManagerImpl::OnSurfaceDamageExpected(const SurfaceId& surface_id,
+                                                   const BeginFrameArgs& args) {
+}
 
 void FrameSinkManagerImpl::OnSurfaceWillDraw(const SurfaceId& surface_id) {}
 

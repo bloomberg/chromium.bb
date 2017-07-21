@@ -376,14 +376,14 @@ void Display::DidReceiveTextureInUseResponses(
 void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   aggregator_->SetFullDamageForSurface(current_surface_id_);
   if (scheduler_) {
-    cc::BeginFrameAck ack;
+    BeginFrameAck ack;
     ack.has_damage = true;
     scheduler_->ProcessSurfaceDamage(current_surface_id_, ack, true);
   }
 }
 
 bool Display::SurfaceDamaged(const SurfaceId& surface_id,
-                             const cc::BeginFrameAck& ack) {
+                             const BeginFrameAck& ack) {
   bool display_damaged = false;
   if (ack.has_damage) {
     if (aggregator_ &&

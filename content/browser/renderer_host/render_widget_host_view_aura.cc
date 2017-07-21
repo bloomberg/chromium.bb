@@ -948,7 +948,7 @@ void RenderWidgetHostViewAura::SubmitCompositorFrame(
 }
 
 void RenderWidgetHostViewAura::OnDidNotProduceFrame(
-    const cc::BeginFrameAck& ack) {
+    const viz::BeginFrameAck& ack) {
   if (delegated_frame_host_)
     delegated_frame_host_->DidNotProduceFrame(ack);
 }

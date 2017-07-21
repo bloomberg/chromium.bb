@@ -13,6 +13,8 @@ viz_component("common") {
   sources = [
     "display/renderer_settings.cc",
     "display/renderer_settings.h",
+    "frame_sinks/begin_frame_args.cc",
+    "frame_sinks/begin_frame_args.h",
     "gl_helper.cc",
     "gl_helper.h",
     "gl_helper_readback_support.cc",
@@ -84,6 +86,7 @@ viz_component("common") {
 viz_source_set("unit_tests") {
   testonly = true
   sources = [
+    "frame_sinks/begin_frame_args_unittest.cc",
     "gl_helper_unittest.cc",
     "resources/buffer_to_texture_target_map_unittest.cc",
     "resources/platform_color_unittest.cc",
@@ -94,6 +97,7 @@ viz_source_set("unit_tests") {
   deps = [
     ":common",
     "//base/test:test_support",
+    "//components/viz/test:test_support",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc:gl_in_process_context",

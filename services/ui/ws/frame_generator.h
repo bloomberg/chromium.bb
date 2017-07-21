@@ -48,7 +48,7 @@ class FrameGenerator : public cc::mojom::CompositorFrameSinkClient {
   // cc::mojom::CompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
       const std::vector<cc::ReturnedResource>& resources) override;
-  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
+  void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   void OnBeginFramePausedChanged(bool paused) override {}
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;
@@ -66,8 +66,8 @@ class FrameGenerator : public cc::mojom::CompositorFrameSinkClient {
   gfx::Size pixel_size_;
 
   std::unique_ptr<cc::mojom::CompositorFrameSink> compositor_frame_sink_;
-  cc::BeginFrameArgs last_begin_frame_args_;
-  cc::BeginFrameAck current_begin_frame_ack_;
+  viz::BeginFrameArgs last_begin_frame_args_;
+  viz::BeginFrameAck current_begin_frame_ack_;
   bool high_contrast_mode_enabled_ = false;
   gfx::Size last_submitted_frame_size_;
   viz::LocalSurfaceId local_surface_id_;

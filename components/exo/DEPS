@@ -16,4 +16,8 @@ specific_include_rules = {
   "run_all_unittests\.cc": [
     "+mojo/edk/embedder/embedder.h",
   ],
+
+  "surface_unittest\.cc": [
+    "+components/viz/test",
+  ],
 }

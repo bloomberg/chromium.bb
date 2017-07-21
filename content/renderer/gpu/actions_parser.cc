@@ -8,7 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "cc/output/begin_frame_args.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 
 namespace content {
 
@@ -236,7 +236,7 @@ bool ActionsParser::ParseAction(
   // If users pause for given seconds, we convert to the number of idle frames.
   if (duration > 0) {
     num_idle = static_cast<int>(std::ceil(
-        duration / cc::BeginFrameArgs::DefaultInterval().InSecondsF()));
+        duration / viz::BeginFrameArgs::DefaultInterval().InSecondsF()));
   }
 
   SyntheticPointerActionParams action_param(pointer_action_type);

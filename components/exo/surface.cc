@@ -445,13 +445,13 @@ void Surface::Commit() {
   }
 
   if (current_begin_frame_ack_.sequence_number !=
-      cc::BeginFrameArgs::kInvalidFrameNumber) {
+      viz::BeginFrameArgs::kInvalidFrameNumber) {
     if (!current_begin_frame_ack_.has_damage) {
       layer_tree_frame_sink_holder_->frame_sink()->DidNotProduceFrame(
           current_begin_frame_ack_);
     }
     current_begin_frame_ack_.sequence_number =
-        cc::BeginFrameArgs::kInvalidFrameNumber;
+        viz::BeginFrameArgs::kInvalidFrameNumber;
     if (begin_frame_source_)
       begin_frame_source_->DidFinishFrame(this);
   }
@@ -632,9 +632,9 @@ void Surface::UpdateNeedsBeginFrame() {
     begin_frame_source_->RemoveObserver(this);
 }
 
-bool Surface::OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args) {
+bool Surface::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) {
   current_begin_frame_ack_ =
-      cc::BeginFrameAck(args.source_id, args.sequence_number, false);
+      viz::BeginFrameAck(args.source_id, args.sequence_number, false);
   while (!active_frame_callbacks_.empty()) {
     active_frame_callbacks_.front().Run(args.frame_time);
     active_frame_callbacks_.pop_front();
@@ -822,8 +822,8 @@ void Surface::UpdateSurface(bool full_damage) {
   // If we commit while we don't have an active BeginFrame, we acknowledge a
   // manual one.
   if (current_begin_frame_ack_.sequence_number ==
-      cc::BeginFrameArgs::kInvalidFrameNumber) {
-    current_begin_frame_ack_ = cc::BeginFrameAck::CreateManualAckWithDamage();
+      viz::BeginFrameArgs::kInvalidFrameNumber) {
+    current_begin_frame_ack_ = viz::BeginFrameAck::CreateManualAckWithDamage();
   } else {
     current_begin_frame_ack_.has_damage = true;
   }

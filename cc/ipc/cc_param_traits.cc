@@ -963,28 +963,28 @@ void ParamTraits<cc::YUVVideoDrawQuad>::Log(const param_type& p,
   l->append("])");
 }
 
-void ParamTraits<cc::BeginFrameAck>::GetSize(base::PickleSizer* s,
-                                             const param_type& p) {
+void ParamTraits<viz::BeginFrameAck>::GetSize(base::PickleSizer* s,
+                                              const param_type& p) {
   GetParamSize(s, p.sequence_number);
   GetParamSize(s, p.source_id);
 }
 
-void ParamTraits<cc::BeginFrameAck>::Write(base::Pickle* m,
-                                           const param_type& p) {
+void ParamTraits<viz::BeginFrameAck>::Write(base::Pickle* m,
+                                            const param_type& p) {
   m->WriteUInt64(p.sequence_number);
   m->WriteUInt32(p.source_id);
   // |has_damage| is implicit through IPC message name, so not transmitted.
 }
 
-bool ParamTraits<cc::BeginFrameAck>::Read(const base::Pickle* m,
-                                          base::PickleIterator* iter,
-                                          param_type* p) {
+bool ParamTraits<viz::BeginFrameAck>::Read(const base::Pickle* m,
+                                           base::PickleIterator* iter,
+                                           param_type* p) {
   return iter->ReadUInt64(&p->sequence_number) &&
-         p->sequence_number >= cc::BeginFrameArgs::kStartingFrameNumber &&
+         p->sequence_number >= viz::BeginFrameArgs::kStartingFrameNumber &&
          iter->ReadUInt32(&p->source_id);
 }
 
-void ParamTraits<cc::BeginFrameAck>::Log(const param_type& p, std::string* l) {
+void ParamTraits<viz::BeginFrameAck>::Log(const param_type& p, std::string* l) {
   l->append("(");
   LogParam(p.sequence_number, l);
   l->append(", ");

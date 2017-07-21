@@ -251,7 +251,7 @@ void LayerTreeHost::BeginMainFrameNotExpectedUntil(base::TimeTicks time) {
   client_->BeginMainFrameNotExpectedUntil(time);
 }
 
-void LayerTreeHost::BeginMainFrame(const BeginFrameArgs& args) {
+void LayerTreeHost::BeginMainFrame(const viz::BeginFrameArgs& args) {
   client_->BeginMainFrame(args);
 }
 

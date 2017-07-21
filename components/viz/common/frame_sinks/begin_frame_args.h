@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_BEGIN_FRAME_ARGS_H_
-#define CC_OUTPUT_BEGIN_FRAME_ARGS_H_
+#ifndef COMPONENTS_VIZ_COMMON_FRAME_SINKS_BEGIN_FRAME_ARGS_H_
+#define COMPONENTS_VIZ_COMMON_FRAME_SINKS_BEGIN_FRAME_ARGS_H_
 
 #include <stdint.h>
 #include <memory>
@@ -12,14 +12,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "cc/cc_export.h"
+#include "components/viz/common/viz_common_export.h"
 
 namespace base {
 namespace trace_event {
 class ConvertableToTraceFormat;
 class TracedValue;
-}
-}
+}  // namespace trace_event
+}  // namespace base
 
 /**
  * In debug builds we trace the creation origin of BeginFrameArgs objects. We
@@ -37,9 +37,9 @@ class TracedValue;
 #define BEGINFRAME_FROM_HERE FROM_HERE
 #endif
 
-namespace cc {
+namespace viz {
 
-struct CC_EXPORT BeginFrameArgs {
+struct VIZ_COMMON_EXPORT BeginFrameArgs {
   enum BeginFrameArgsType {
     INVALID,
     NORMAL,
@@ -117,11 +117,9 @@ struct CC_EXPORT BeginFrameArgs {
 };
 
 // Sent by a BeginFrameObserver as acknowledgment of completing a BeginFrame.
-struct CC_EXPORT BeginFrameAck {
+struct VIZ_COMMON_EXPORT BeginFrameAck {
   BeginFrameAck();
-  BeginFrameAck(uint32_t source_id,
-                uint64_t sequence_number,
-                bool has_damage);
+  BeginFrameAck(uint32_t source_id, uint64_t sequence_number, bool has_damage);
 
   // Creates a BeginFrameAck for a manual BeginFrame. Used when clients produce
   // a CompositorFrame without prior BeginFrame, e.g. for synchronous drawing.
@@ -142,6 +140,6 @@ struct CC_EXPORT BeginFrameAck {
   bool has_damage;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_BEGIN_FRAME_ARGS_H_
+#endif  // COMPONENTS_VIZ_COMMON_FRAME_SINKS_BEGIN_FRAME_ARGS_H_

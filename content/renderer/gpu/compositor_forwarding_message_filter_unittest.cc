@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/test/test_simple_task_runner.h"
-#include "cc/test/begin_frame_args_test.h"
+#include "components/viz/test/begin_frame_args_test.h"
 #include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,8 +44,8 @@ TEST(CompositorForwardingMessageFilterTest, BasicTest) {
       new base::TestSimpleTaskRunner);
   int route_id = 0;
 
-  ViewMsg_BeginFrame msg(
-      route_id, cc::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1));
+  ViewMsg_BeginFrame msg(route_id, viz::CreateBeginFrameArgsForTesting(
+                                       BEGINFRAME_FROM_HERE, 0, 1));
 
   CompositorForwardingMessageFilter::Handler plus_handler =
       base::Bind(&CompositorForwardingMessageFilterTestHandler::OnPlusMethod,

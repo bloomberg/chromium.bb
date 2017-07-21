@@ -13,7 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/output/begin_frame_args.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/task_queue_impl.h"
@@ -441,7 +441,7 @@ void RendererSchedulerImpl::RemoveTaskObserver(
   helper_.RemoveTaskObserver(task_observer);
 }
 
-void RendererSchedulerImpl::WillBeginFrame(const cc::BeginFrameArgs& args) {
+void RendererSchedulerImpl::WillBeginFrame(const viz::BeginFrameArgs& args) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "RendererSchedulerImpl::WillBeginFrame", "args", args.AsValue());
   helper_.CheckOnValidThread();

@@ -100,7 +100,7 @@ void DirectLayerTreeFrameSink::DetachFromClient() {
 void DirectLayerTreeFrameSink::SubmitCompositorFrame(
     cc::CompositorFrame frame) {
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
-  DCHECK_LE(cc::BeginFrameArgs::kStartingFrameNumber,
+  DCHECK_LE(BeginFrameArgs::kStartingFrameNumber,
             frame.metadata.begin_frame_ack.sequence_number);
 
   gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
@@ -117,10 +117,9 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(
   DCHECK(result);
 }
 
-void DirectLayerTreeFrameSink::DidNotProduceFrame(
-    const cc::BeginFrameAck& ack) {
+void DirectLayerTreeFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
   DCHECK(!ack.has_damage);
-  DCHECK_LE(cc::BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
+  DCHECK_LE(BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
   support_->DidNotProduceFrame(ack);
 }
 
@@ -147,7 +146,7 @@ void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAck(
   client_->DidReceiveCompositorFrameAck();
 }
 
-void DirectLayerTreeFrameSink::OnBeginFrame(const cc::BeginFrameArgs& args) {
+void DirectLayerTreeFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
   begin_frame_source_->OnBeginFrame(args);
 }
 

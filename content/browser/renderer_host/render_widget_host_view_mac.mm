@@ -1443,7 +1443,7 @@ void RenderWidgetHostViewMac::SubmitCompositorFrame(
 }
 
 void RenderWidgetHostViewMac::OnDidNotProduceFrame(
-    const cc::BeginFrameAck& ack) {
+    const viz::BeginFrameAck& ack) {
   browser_compositor_->OnDidNotProduceFrame(ack);
 }
 
