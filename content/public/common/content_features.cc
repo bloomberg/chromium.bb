@@ -297,11 +297,6 @@ const base::Feature kTokenBinding{"token-binding",
 const base::Feature kTopDocumentIsolation{"top-document-isolation",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Field trial param (see base::GetFieldTrialParamValueByFeature)
-// controlling the mode for selecting which subframes end in the TDI process.
-// Valid values are integers from the TopDocumentIsolationMode enum.
-const char kTopDocumentIsolationModeParam[] = "mode";
-
 // Enables touchpad and wheel scroll latching.
 const base::Feature kTouchpadAndWheelScrollLatching{
     "TouchpadAndWheelScrollLatching", base::FEATURE_DISABLED_BY_DEFAULT};

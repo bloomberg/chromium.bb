@@ -19,7 +19,6 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -56,7 +55,6 @@
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/net_benchmarking.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
-#include "chrome/browser/page_load_metrics/ads_detection.h"
 #include "chrome/browser/page_load_metrics/experiments/delay_navigation_throttle.h"
 #include "chrome/browser/page_load_metrics/metrics_navigation_throttle.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
@@ -1260,37 +1258,20 @@ void ChromeContentBrowserClient::OverrideNavigationParams(
 #endif
 }
 
-bool ChromeContentBrowserClient::ShouldIsolateFrameForTopDocumentIsolation(
-    content::NavigationHandle* navigation_handle,
-    content::SiteInstance* main_frame_site_instance) {
-  if (IsNTPSiteInstance(main_frame_site_instance))
-    return false;
+bool ChromeContentBrowserClient::
+    ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
+        const GURL& url,
+        content::SiteInstance* parent_site_instance) {
+  if (IsNTPSiteInstance(parent_site_instance))
+    return true;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (ChromeContentBrowserClientExtensionsPart::
-          IsMainFrameSiteInstanceExcludedFromTopDocumentIsolation(
-              main_frame_site_instance)) {
-    return false;
-  }
-#endif
-
-  features::TopDocumentIsolationMode tdiMode =
-      static_cast<features::TopDocumentIsolationMode>(
-          base::GetFieldTrialParamByFeatureAsInt(
-              ::features::kTopDocumentIsolation,
-              ::features::kTopDocumentIsolationModeParam,
-              static_cast<int>(
-                  features::TopDocumentIsolationMode::Unspecified)));
-  switch (tdiMode) {
-    case features::TopDocumentIsolationMode::Unspecified:
-    case features::TopDocumentIsolationMode::Ads:
-      return page_load_metrics::GetDetectedAdTypes(navigation_handle).any();
-
-    case features::TopDocumentIsolationMode::CrossSite:
-      return true;
-  }
-  NOTREACHED();
+  return ChromeContentBrowserClientExtensionsPart::
+      ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
+          url, parent_site_instance);
+#else
   return false;
+#endif
 }
 
 bool ChromeContentBrowserClient::IsSuitableHost(

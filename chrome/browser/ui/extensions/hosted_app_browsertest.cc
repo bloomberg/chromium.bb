@@ -255,17 +255,15 @@ class HostedAppVsTdiTest : public HostedAppTest {
   HostedAppVsTdiTest() {}
   ~HostedAppVsTdiTest() override {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    HostedAppTest::SetUpCommandLine(command_line);
-    content::EnableTopDocumentIsolationForTesting(command_line);
-  }
-
   void SetUpOnMainThread() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kTopDocumentIsolation);
     HostedAppTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(HostedAppVsTdiTest);
 };
 

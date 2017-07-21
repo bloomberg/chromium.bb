@@ -112,9 +112,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                 ui::PageTransition* transition,
                                 bool* is_renderer_initiated,
                                 content::Referrer* referrer) override;
-  bool ShouldIsolateFrameForTopDocumentIsolation(
-      content::NavigationHandle* navigation_handle,
-      content::SiteInstance* main_frame_site_instance) override;
+  bool ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
+      const GURL& url,
+      content::SiteInstance* parent_site_instance) override;
   bool IsSuitableHost(content::RenderProcessHost* process_host,
                       const GURL& site_url) override;
   bool MayReuseHost(content::RenderProcessHost* process_host) override;

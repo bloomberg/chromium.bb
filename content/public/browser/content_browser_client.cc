@@ -92,13 +92,11 @@ bool ContentBrowserClient::ShouldAllowOpenURL(SiteInstance* site_instance,
   return true;
 }
 
-bool ContentBrowserClient::ShouldIsolateFrameForTopDocumentIsolation(
-    NavigationHandle* navigation_handle,
-    SiteInstance* main_frame_site_instance) {
-  // In absence of customizations above //content layer, TDI mode should isolate
-  // all cross-site frames.  Additionally, isolating all cross-site frames makes
-  // it easier to test TopDocumentIsolation in content_browsertests.
-  return true;
+bool ContentBrowserClient::
+    ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
+        const GURL& url,
+        SiteInstance* parent_site_instance) {
+  return false;
 }
 
 bool ContentBrowserClient::IsSuitableHost(RenderProcessHost* process_host,

@@ -9,7 +9,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -262,16 +261,13 @@ class CONTENT_EXPORT ContentBrowserClient {
                                         bool* is_renderer_initiated,
                                         content::Referrer* referrer) {}
 
-  // Called in TopDocumentIsolation mode to let the embedder decide whether the
-  // subframe navigation tracked by |navigation_handle| should end up isolated
-  // from the main content.
-  //
-  // The subframe navigation in question is always to a URL that is cross-site
-  // from the top-level frame.  |main_frame_site_instance| is the SiteInstance
-  // of the top-level frame.
-  virtual bool ShouldIsolateFrameForTopDocumentIsolation(
-      NavigationHandle* navigation_handle,
-      SiteInstance* main_frame_site_instance);
+  // Allows the embedder to override top document isolation for specific frames.
+  // |url| is the URL being loaded in the subframe, and |parent_site_instance|
+  // is the SiteInstance of the parent frame. Called only for subframes and only
+  // when top document isolation mode is enabled.
+  virtual bool ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
+      const GURL& url,
+      SiteInstance* parent_site_instance);
 
   // Returns whether a new view for a given |site_url| can be launched in a
   // given |process_host|.

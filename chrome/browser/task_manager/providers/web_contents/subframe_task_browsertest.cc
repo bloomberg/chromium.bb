@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/task_manager/mock_web_contents_task_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -204,12 +205,8 @@ class SubframeTaskTDIBrowserTest : public InProcessBrowserTest {
   SubframeTaskTDIBrowserTest() {}
   ~SubframeTaskTDIBrowserTest() override {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    content::EnableTopDocumentIsolationForTesting(command_line);
-  }
-
   void SetUpOnMainThread() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kTopDocumentIsolation);
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     content::SetupCrossSiteRedirector(embedded_test_server());
@@ -222,6 +219,8 @@ class SubframeTaskTDIBrowserTest : public InProcessBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(SubframeTaskTDIBrowserTest);
 };
 

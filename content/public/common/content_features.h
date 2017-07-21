@@ -77,41 +77,7 @@ CONTENT_EXPORT extern const base::Feature kSkipCompositingSmallScrollers;
 CONTENT_EXPORT extern const base::Feature kSlimmingPaintInvalidation;
 CONTENT_EXPORT extern const base::Feature kTimerThrottlingForHiddenFrames;
 CONTENT_EXPORT extern const base::Feature kTokenBinding;
-
 CONTENT_EXPORT extern const base::Feature kTopDocumentIsolation;
-
-// If the kTopDocumentIsolation base::Feature is enabled, then it can be
-// configured by additional parameters (see also GetFieldTrialParamsByFeature).
-// |kTopDocumentIsolationModeParam| is the name of an optional parameter that
-// specifies TopDocumentIsolationMode.  Valid values of this parameter are
-// strings that represent numeric values of TopDocumentIsolationMode enum values
-// (e.g. "1" for TopDocumentIsolationMode::CrossSite).
-CONTENT_EXPORT extern const char kTopDocumentIsolationModeParam[];
-
-// If the kTopDocumentIsolation base::Feature is enabled, the values of this
-// enum represent the mode for selecting *which* frames to isolate.
-//
-// These values should NOT be renumbered, because 1) they can be specified in a
-// server-side trial config and 2) they can be persisted in the state of
-// chrome://flags selected by the user.
-enum class TopDocumentIsolationMode {
-  // This value indicates that kTopDocumentIsolationModeParam was not specified.
-  // Corresponds to "Enabled" state in chrome://flags (i.e. the user didn't
-  // select a more specific isolation mode).
-  Unspecified = 0,
-
-// Each of the modes below corresponds to "Enabled (<name> - <description>)"
-// state in chrome://flags.
-#define FOR_EACH_TDI_MODE(V)                                        \
-  V(CrossSite, 1,                                                   \
-    "isolate all frames from sites other than the top-level frame") \
-  V(Ads, 2, "isolate only cross-site ads detected by heuristics")
-
-#define DEFINE_TDI_MODE_ENUM_VALUE(name, value, description) name = value,
-  FOR_EACH_TDI_MODE(DEFINE_TDI_MODE_ENUM_VALUE)
-#undef DEFINE_TDI_MODE_ENUM_VALUE
-};
-
 CONTENT_EXPORT extern const base::Feature kTouchpadAndWheelScrollLatching;
 CONTENT_EXPORT extern const base::Feature kUseFeaturePolicyForPermissions;
 CONTENT_EXPORT extern const base::Feature kUseMojoAudioOutputStreamFactory;
