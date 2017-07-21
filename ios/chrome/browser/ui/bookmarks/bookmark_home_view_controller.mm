@@ -150,26 +150,15 @@ const CGFloat kMenuWidth = 264;
   if ([self.primaryMenuItem isEqual:menuItem])
     return;
 
-  // TODO(crbug.com/705339): Folder view is the only primary view now,
-  // hence we don't need to remove primary view anymore.
-  // Simplify this code that removes primary view and adds it back
-  // in subclasses, once the addition code moves here.
-  [[self primaryView] removeFromSuperview];
   self.primaryMenuItem = menuItem;
 
   [self.folderView resetFolder:self.primaryMenuItem.folder];
   [self.folderView promoStateChangedAnimated:NO];
 
-  [[self primaryView] changeOrientation:GetInterfaceOrientation()];
-  [[self primaryView] setScrollsToTop:!self.scrollToTop];
+  [self.folderView changeOrientation:GetInterfaceOrientation()];
+  [self.folderView setScrollsToTop:!self.scrollToTop];
 
   [self.menuView updatePrimaryMenuItem:self.primaryMenuItem];
-}
-
-- (UIView<BookmarkHomePrimaryView>*)primaryView {
-  if (self.primaryMenuItem.type == bookmarks::MenuItemFolder)
-    return self.folderView;
-  return nil;
 }
 
 - (void)loadWaitingView {
@@ -189,9 +178,9 @@ const CGFloat kMenuWidth = 264;
 }
 
 - (void)cachePosition {
-  if ([self primaryView]) {
+  if (self.folderView) {
     bookmark_utils_ios::CachePosition(
-        [[self primaryView] contentPositionInPortraitOrientation],
+        [self.folderView contentPositionInPortraitOrientation],
         [self primaryMenuItem]);
   }
 }
@@ -240,8 +229,7 @@ const CGFloat kMenuWidth = 264;
 #pragma mark - BookmarkPromoControllerDelegate
 
 - (void)promoStateChanged:(BOOL)promoEnabled {
-  [self.folderView
-      promoStateChangedAnimated:self.folderView == [self primaryView]];
+  [self.folderView promoStateChangedAnimated:YES];
 }
 
 #pragma mark Action sheet callbacks
@@ -512,7 +500,7 @@ const CGFloat kMenuWidth = 264;
 
   [self updateEditingStateAnimated:animated];
   if ([[self primaryMenuItem] supportsEditing])
-    [[self primaryView] setEditing:editing animated:animated];
+    [self.folderView setEditing:editing animated:animated];
 }
 
 - (void)updateEditBarShadow {
@@ -744,9 +732,9 @@ const CGFloat kMenuWidth = 264;
 
 // Returns NSIndexPath for a given cell.
 - (NSIndexPath*)indexPathForCell:(UICollectionViewCell*)cell {
-  DCHECK([self primaryView].collectionView);
+  DCHECK(self.folderView.collectionView);
   NSIndexPath* indexPath =
-      [[self primaryView].collectionView indexPathForCell:cell];
+      [self.folderView.collectionView indexPathForCell:cell];
   return indexPath;
 }
 
