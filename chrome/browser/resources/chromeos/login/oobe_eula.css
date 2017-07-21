@@ -5,6 +5,7 @@
 a {
   color: var(--google-blue-500);
   text-decoration: none;
+  width: fit-content;
 }
 
 #crosEulaFrame,
