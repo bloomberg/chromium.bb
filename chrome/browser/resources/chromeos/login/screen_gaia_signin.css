@@ -50,6 +50,7 @@
 }
 
 #signin-frame-container-v2 #signin-frame {
+  border-radius: 4px;
   height: 560px;
   position: static;
   width: 768px;
