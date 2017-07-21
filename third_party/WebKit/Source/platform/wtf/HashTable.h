@@ -32,8 +32,13 @@
 #include "platform/wtf/allocator/PartitionAllocator.h"
 #include <memory>
 
+#if !defined(DUMP_HASHTABLE_STATS)
 #define DUMP_HASHTABLE_STATS 0
+#endif
+
+#if !defined(DUMP_HASHTABLE_STATS_PER_TABLE)
 #define DUMP_HASHTABLE_STATS_PER_TABLE 0
+#endif
 
 #if DUMP_HASHTABLE_STATS
 #include "platform/wtf/Atomics.h"
@@ -54,7 +59,7 @@
   ++perTableProbeCount;                                          \
   stats_->recordCollisionAtCount(perTableProbeCount)
 #define UPDATE_ACCESS_COUNTS()                              \
-  atomicIncrement(&HashTableStats::instance().numAccesses); \
+  AtomicIncrement(&HashTableStats::instance().numAccesses); \
   int probeCount = 0;                                       \
   ++stats_->numAccesses;                                    \
   int perTableProbeCount = 0
@@ -63,7 +68,7 @@
   ++probeCount;               \
   HashTableStats::instance().recordCollisionAtCount(probeCount)
 #define UPDATE_ACCESS_COUNTS()                              \
-  atomicIncrement(&HashTableStats::instance().numAccesses); \
+  AtomicIncrement(&HashTableStats::instance().numAccesses); \
   int probeCount = 0
 #endif
 #else
@@ -99,7 +104,7 @@ template <WeakHandlingFlag weakHandlingFlag,
           typename Traits>
 struct TraceInCollectionTrait;
 
-#if DUMP_HASHTABLE_STATS
+#if DUMP_HASHTABLE_STATS || DUMP_HASHTABLE_STATS_PER_TABLE
 struct WTF_EXPORT HashTableStats {
   HashTableStats()
       : numAccesses(0),
@@ -124,7 +129,7 @@ struct WTF_EXPORT HashTableStats {
 
   void copy(const HashTableStats* other);
   void recordCollisionAtCount(int count);
-  void dumpStats();
+  void DumpStats();
 
   static HashTableStats& instance();
 
@@ -133,7 +138,7 @@ struct WTF_EXPORT HashTableStats {
 };
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
-template <typename Allocator, bool isGCType = Allocator::isGarbageCollected>
+template <typename Allocator, bool isGCType = Allocator::kIsGarbageCollected>
 class HashTableStatsPtr;
 
 template <typename Allocator>
@@ -141,15 +146,15 @@ class HashTableStatsPtr<Allocator, false> final {
   STATIC_ONLY(HashTableStatsPtr);
 
  public:
-  static std::unique_ptr<HashTableStats> create() {
-    return WTF::wrapUnique(new HashTableStats);
+  static std::unique_ptr<HashTableStats> Create() {
+    return base::MakeUnique<HashTableStats>();
   }
 
   static std::unique_ptr<HashTableStats> copy(
       const std::unique_ptr<HashTableStats>& other) {
     if (!other)
       return nullptr;
-    return WTF::wrapUnique(new HashTableStats(*other));
+    return base::MakeUnique<HashTableStats>(*other);
   }
 
   static void swap(std::unique_ptr<HashTableStats>& stats,
@@ -163,20 +168,15 @@ class HashTableStatsPtr<Allocator, true> final {
   STATIC_ONLY(HashTableStatsPtr);
 
  public:
-  static HashTableStats* create() {
-    // Resort to manually allocating this POD on the vector
-    // backing heap, as blink::GarbageCollected<> isn't in scope
-    // in WTF.
-    void* storage = reinterpret_cast<void*>(
-        Allocator::template allocateVectorBacking<unsigned char>(
-            sizeof(HashTableStats)));
-    return new (storage) HashTableStats;
+  static HashTableStats* Create() {
+    // TODO(cavalcantii): fix this.
+    return new HashTableStats;
   }
 
   static HashTableStats* copy(const HashTableStats* other) {
     if (!other)
       return nullptr;
-    HashTableStats* obj = create();
+    HashTableStats* obj = Create();
     obj->copy(other);
     return obj;
   }
@@ -907,9 +907,14 @@ class HashTable final
 #if DUMP_HASHTABLE_STATS_PER_TABLE
  public:
   mutable
-      typename std::conditional<Allocator::isGarbageCollected,
+      typename std::conditional<Allocator::kIsGarbageCollected,
                                 HashTableStats*,
                                 std::unique_ptr<HashTableStats>>::type stats_;
+  void DumpStats() {
+    if (stats_) {
+      stats_->DumpStats();
+    }
+  }
 #endif
 
   template <WeakHandlingFlag x,
@@ -1380,7 +1385,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   DCHECK(
       !IsDeletedBucket(*(LookupForWriting(Extractor::Extract(entry)).first)));
 #if DUMP_HASHTABLE_STATS
-  atomicIncrement(&HashTableStats::instance().numReinserts);
+  AtomicIncrement(&HashTableStats::instance().numReinserts);
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
   ++stats_->numReinserts;
@@ -1475,7 +1480,7 @@ void HashTable<Key,
                Allocator>::erase(const ValueType* pos) {
   RegisterModification();
 #if DUMP_HASHTABLE_STATS
-  atomicIncrement(&HashTableStats::instance().numRemoves);
+  AtomicIncrement(&HashTableStats::instance().numRemoves);
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
   ++stats_->numRemoves;
@@ -1707,12 +1712,12 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   ValueType* old_table = table_;
 
 #if DUMP_HASHTABLE_STATS
-  if (oldTableSize != 0)
-    atomicIncrement(&HashTableStats::instance().numRehashes);
+  if (old_table_size != 0)
+    AtomicIncrement(&HashTableStats::instance().numRehashes);
 #endif
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
-  if (oldTableSize != 0)
+  if (old_table_size != 0)
     ++stats_->numRehashes;
 #endif
 
@@ -1736,7 +1741,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
   if (!stats_)
-    stats_ = HashTableStatsPtr<Allocator>::create();
+    stats_ = HashTableStatsPtr<Allocator>::Create();
 #endif
 
   return new_entry;
@@ -1756,16 +1761,16 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   ValueType* old_table = table_;
 
 #if DUMP_HASHTABLE_STATS
-  if (oldTableSize != 0)
-    atomicIncrement(&HashTableStats::instance().numRehashes);
+  if (old_table_size != 0)
+    AtomicIncrement(&HashTableStats::instance().numRehashes);
 #endif
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
-  if (oldTableSize != 0)
+  if (old_table_size != 0)
     ++stats_->numRehashes;
 #endif
 
-  // The Allocator::isGarbageCollected check is not needed.  The check is just
+  // The Allocator::kIsGarbageCollected check is not needed.  The check is just
   // a static hint for a compiler to indicate that Base::expandBuffer returns
   // false if Allocator is a PartitionAllocator.
   if (Allocator::kIsGarbageCollected && new_table_size > old_table_size) {
@@ -2069,7 +2074,8 @@ void HashTable<Key,
                KeyTraits,
                Allocator>::Trace(VisitorDispatcher visitor) {
 #if DUMP_HASHTABLE_STATS_PER_TABLE
-  Allocator::markNoTracing(visitor, stats_);
+// XXX: this will simply crash.
+// Allocator::MarkNoTracing(visitor, stats_);
 #endif
 
   // If someone else already marked the backing and queued up the trace and/or
