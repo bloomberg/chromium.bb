@@ -164,7 +164,7 @@ TEST_F(BrowserThreadTest, PostTaskAndReply) {
   base::RunLoop().Run();
 }
 
-TEST_F(BrowserThreadTest, RunsTasksOnCurrentThreadDuringShutdown) {
+TEST_F(BrowserThreadTest, RunsTasksInCurrentSequencedDuringShutdown) {
   bool did_shutdown = false;
   base::RunLoop loop;
   UIThreadDestructionObserver observer(&did_shutdown, loop.QuitClosure());
