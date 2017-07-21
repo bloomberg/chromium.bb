@@ -15,6 +15,7 @@
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#import "chrome/browser/ui/cocoa/web_textfield_touch_bar_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/render_view_host.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
+#import "ui/base/cocoa/touch_bar_forward_declarations.h"
 #include "ui/gfx/geometry/rect.h"
 
 using content::WebContents;
@@ -211,6 +213,8 @@ class FullscreenObserver : public WebContentsObserver {
     fullscreenObserver_.reset(new FullscreenObserver(self));
     [self changeWebContents:contents];
     isPopup_ = popup;
+    touchBarController_.reset([[WebTextfieldTouchBarController alloc]
+        initWithTabContentsController:self]);
   }
   return self;
 }
@@ -228,6 +232,10 @@ class FullscreenObserver : public WebContentsObserver {
       [[TabContentsContainerView alloc] initWithDelegate:self]);
   [view setAutoresizingMask:NSViewHeightSizable|NSViewWidthSizable];
   [self setView:view];
+}
+
+- (NSTouchBar*)makeTouchBar {
+  return [touchBarController_ makeTouchBar];
 }
 
 - (void)ensureContentsVisibleInSuperview:(NSView*)superview {
@@ -396,6 +404,10 @@ class FullscreenObserver : public WebContentsObserver {
 
 - (BOOL)isPopup {
   return isPopup_;
+}
+
+- (WebTextfieldTouchBarController*)webTextfieldTouchBarController {
+  return touchBarController_.get();
 }
 
 @end

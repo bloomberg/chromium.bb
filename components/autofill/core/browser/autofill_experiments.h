@@ -9,6 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class PrefService;
@@ -37,6 +38,10 @@ extern const base::Feature kAutofillUpstreamUseNotRecentlyUsedAutofillProfile;
 extern const char kCreditCardSigninPromoImpressionLimitParamKey[];
 extern const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[];
 extern const char kAutofillUpstreamMaxMinutesSinceAutofillProfileUseKey[];
+
+#if defined(OS_MACOSX)
+extern const base::Feature kCreditCardAutofillTouchBar;
+#endif  // defined(OS_MACOSX)
 
 // Returns true if autofill should be enabled. See also
 // IsInAutofillSuggestionsDisabledExperiment below.
@@ -123,6 +128,11 @@ bool IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled();
 // most recent use for the adress profile to be included in the candidate set
 // for card upload. Returns 0 if the experiment is not enabled.
 base::TimeDelta GetMaxTimeSinceAutofillProfileUseForCardUpload();
+
+#if defined(OS_MACOSX)
+// Returns whether the Credit Card Autofill Touch Bar experiment is enabled.
+bool IsCreditCardAutofillTouchBarExperimentEnabled();
+#endif  // defined(OS_MACOSX)
 
 }  // namespace autofill
 

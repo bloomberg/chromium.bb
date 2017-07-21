@@ -3120,6 +3120,8 @@ split_static_library("ui") {
         "cocoa/view_resizer.h",
         "cocoa/web_contents_modal_dialog_manager_views_mac.h",
         "cocoa/web_contents_modal_dialog_manager_views_mac.mm",
+        "cocoa/web_textfield_touch_bar_controller.h",
+        "cocoa/web_textfield_touch_bar_controller.mm",
         "cocoa/window_size_autosaver.h",
         "cocoa/window_size_autosaver.mm",
 

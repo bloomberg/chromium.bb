@@ -61,6 +61,11 @@ const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[] =
 const char kAutofillUpstreamMaxMinutesSinceAutofillProfileUseKey[] =
     "max_minutes_since_autofill_profile_use";
 
+#if defined(OS_MACOSX)
+const base::Feature kCreditCardAutofillTouchBar{
+    "CreditCardAutofillTouchBar", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_MACOSX)
+
 namespace {
 
 // Returns parameter value in |kAutofillCreditCardPopupLayout| feature, or 0 if
@@ -265,5 +270,11 @@ base::TimeDelta GetMaxTimeSinceAutofillProfileUseForCardUpload() {
     return base::TimeDelta::FromMinutes(value);
   return base::TimeDelta();
 }
+
+#if defined(OS_MACOSX)
+bool IsCreditCardAutofillTouchBarExperimentEnabled() {
+  return base::FeatureList::IsEnabled(kCreditCardAutofillTouchBar);
+}
+#endif  // defined(OS_MACOSX)
 
 }  // namespace autofill

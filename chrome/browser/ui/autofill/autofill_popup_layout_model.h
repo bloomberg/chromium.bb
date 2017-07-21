@@ -120,6 +120,8 @@ class AutofillPopupLayoutModel {
   // margin isn't configured in an experiment to tweak autofill popup layout.
   unsigned int GetMargin() const;
 
+  bool is_credit_card_popup() const { return is_credit_card_popup_; }
+
  private:
   // Returns the enclosing rectangle for the element_bounds.
   const gfx::Rect RoundedElementBounds() const;

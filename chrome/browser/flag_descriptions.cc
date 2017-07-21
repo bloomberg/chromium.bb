@@ -2701,9 +2701,13 @@ const char kOneGoogleBarOnLocalNtpDescription[] =
 extern const char kMacRTLName[] = "Enable RTL";
 extern const char kMacRTLDescription[] =
     "Mirrors the UI for RTL language users";
-extern const char kMacTouchBarName[] = "Hardware TouchBar";
+extern const char kMacTouchBarName[] = "Hardware Touch Bar";
 extern const char kMacTouchBarDescription[] =
-    "Control the use of the TouchBar.";
+    "Control the use of the Touch Bar.";
+extern const char kCreditCardAutofillTouchBarName[] =
+    "Credit Card Autofill Touch Bar";
+extern const char kCreditCardAutofillTouchBarDescription[] =
+    "Shows Credit Card Autofill Suggestions on the Touch Bar.";
 #endif
 
 #if defined(OS_CHROMEOS)

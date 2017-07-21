@@ -6,9 +6,15 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 
 namespace ui {
+
+void LogTouchBarUMA(TouchBarAction command) {
+  UMA_HISTOGRAM_ENUMERATION("TouchBar.Default.Metrics", command,
+                            TOUCH_BAR_ACTION_COUNT);
+}
 
 Class NSTouchBar() {
   return NSClassFromString(@"NSTouchBar");
@@ -16,6 +22,10 @@ Class NSTouchBar() {
 
 Class NSCustomTouchBarItem() {
   return NSClassFromString(@"NSCustomTouchBarItem");
+}
+
+Class NSGroupTouchBarItem() {
+  return NSClassFromString(@"NSGroupTouchBarItem");
 }
 
 NSButton* GetBlueTouchBarButton(NSString* title, id target, SEL action) {
