@@ -67,6 +67,10 @@ class DomDistillerViewerSource::RequestViewerHandle
   void WebContentsDestroyed() override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
+  void OnInterfaceRequestFromFrame(
+      content::RenderFrameHost* render_frame_host,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
 
  private:
   // Sends JavaScript to the attached Viewer, buffering data if the viewer isn't
@@ -96,6 +100,9 @@ class DomDistillerViewerSource::RequestViewerHandle
   // feedback and opening the distiller settings. Guaranteed to outlive this
   // object.
   DistillerUIHandle* distiller_ui_handle_;
+
+  service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>
+      frame_interfaces_;
 };
 
 DomDistillerViewerSource::RequestViewerHandle::RequestViewerHandle(
@@ -111,6 +118,9 @@ DomDistillerViewerSource::RequestViewerHandle::RequestViewerHandle(
       distiller_ui_handle_(ui_handle) {
   content::WebContentsObserver::Observe(web_contents);
   distilled_page_prefs_->AddObserver(this);
+
+  frame_interfaces_.AddInterface(
+      base::Bind(&CreateDistillerJavaScriptService, distiller_ui_handle_));
 }
 
 DomDistillerViewerSource::RequestViewerHandle::~RequestViewerHandle() {
@@ -144,13 +154,6 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishNavigation(
       content::RenderFrameHost* render_frame_host =
           navigation_handle->GetRenderFrameHost();
       CHECK_EQ(0, render_frame_host->GetEnabledBindings());
-
-      // Add mojo service for JavaScript functionality. This is the receiving
-      // end of this particular service.
-      render_frame_host->GetInterfaceRegistry()->AddInterface(
-          base::Bind(&CreateDistillerJavaScriptService,
-              render_frame_host,
-              distiller_ui_handle_));
 
       // Tell the renderer that this is currently a distilled page.
       mojom::DistillerPageNotifierServicePtr page_notifier_service;
@@ -206,6 +209,14 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishLoad(
     buffer_.clear();
   }
   // No need to Cancel() here.
+}
+
+void DomDistillerViewerSource::RequestViewerHandle::OnInterfaceRequestFromFrame(
+    content::RenderFrameHost* render_frame_host,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  frame_interfaces_.TryBindInterface(interface_name, interface_pipe,
+                                     render_frame_host);
 }
 
 DomDistillerViewerSource::DomDistillerViewerSource(

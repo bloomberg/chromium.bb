@@ -81,6 +81,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle handle) {}
 
+  // Allows the delegate to filter incoming interface requests.
+  virtual void OnInterfaceRequest(
+      RenderFrameHost* render_frame_host,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) {}
+
   // Gets the last committed URL. See WebContents::GetLastCommittedURL for a
   // description of the semantics.
   virtual const GURL& GetMainFrameLastCommittedURL() const;

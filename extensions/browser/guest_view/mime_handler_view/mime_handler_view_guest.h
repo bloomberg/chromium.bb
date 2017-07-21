@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/guest_view/browser/guest_view.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
 class WebContents;
@@ -103,6 +104,10 @@ class MimeHandlerViewGuest :
 
   // content::WebContentsObserver implementation.
   void DocumentOnLoadCompletedInMainFrame() final;
+  void OnInterfaceRequestFromFrame(
+      content::RenderFrameHost* render_frame_host,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) final;
 
   std::unique_ptr<MimeHandlerViewGuestDelegate> delegate_;
   std::unique_ptr<StreamContainer> stream_;
@@ -110,6 +115,8 @@ class MimeHandlerViewGuest :
   int embedder_frame_process_id_;
   int embedder_frame_routing_id_;
   int embedder_widget_routing_id_;
+
+  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuest);
 };

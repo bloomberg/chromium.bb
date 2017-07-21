@@ -221,6 +221,8 @@ PrerenderContents::PrerenderContents(
       network_bytes_(0),
       weak_factory_(this) {
   DCHECK(prerender_manager);
+  registry_.AddInterface(base::Bind(
+      &PrerenderContents::OnPrerenderCancelerRequest, base::Unretained(this)));
 }
 
 bool PrerenderContents::Init() {
@@ -531,12 +533,15 @@ void PrerenderContents::RenderProcessGone(base::TerminationStatus status) {
   Destroy(FINAL_STATUS_RENDERER_CRASHED);
 }
 
+void PrerenderContents::OnInterfaceRequestFromFrame(
+    content::RenderFrameHost* render_frame_host,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe);
+}
+
 void PrerenderContents::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
-  render_frame_host->GetInterfaceRegistry()->AddInterface(
-      base::Bind(&PrerenderContents::OnPrerenderCancelerRequest,
-                 weak_factory_.GetWeakPtr()));
-
   // When a new RenderFrame is created for a prerendering WebContents, tell the
   // new RenderFrame it's being used for prerendering before any navigations
   // occur.  Note that this is always triggered before the first navigation, so

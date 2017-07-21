@@ -104,13 +104,10 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
   // Starting now, PaymentRequest Mojo messages sent by the renderer will
   // create PaymentRequest objects via this test's CreatePaymentRequestForTest,
   // allowing the test to inject itself as a dialog observer.
-  content::WebContents* web_contents = GetActiveWebContents();
-  service_manager::BinderRegistry* registry =
-      web_contents->GetMainFrame()->GetInterfaceRegistry();
-  registry->RemoveInterface(payments::mojom::PaymentRequest::Name_);
-  registry->AddInterface(
+  Observe(GetActiveWebContents());
+  registry_.AddInterface<payments::mojom::PaymentRequest>(
       base::Bind(&PaymentRequestBrowserTestBase::CreatePaymentRequestForTest,
-                 base::Unretained(this), web_contents));
+                 base::Unretained(this)));
 }
 
 void PaymentRequestBrowserTestBase::NavigateTo(const std::string& file_path) {
@@ -223,6 +220,13 @@ void PaymentRequestBrowserTestBase::OnSpecDoneUpdating() {
 void PaymentRequestBrowserTestBase::OnCvcPromptShown() {
   if (event_observer_)
     event_observer_->Observe(DialogEvent::CVC_PROMPT_SHOWN);
+}
+
+void PaymentRequestBrowserTestBase::OnInterfaceRequestFromFrame(
+    content::RenderFrameHost* render_frame_host,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe, render_frame_host);
 }
 
 void PaymentRequestBrowserTestBase::InvokePaymentRequestUI() {
@@ -449,8 +453,10 @@ void PaymentRequestBrowserTestBase::AddCreditCard(
 }
 
 void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
-    content::WebContents* web_contents,
-    payments::mojom::PaymentRequestRequest request) {
+    payments::mojom::PaymentRequestRequest request,
+    content::RenderFrameHost* render_frame_host) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
   DCHECK(web_contents);
   std::unique_ptr<TestChromePaymentRequestDelegate> delegate =
       base::MakeUnique<TestChromePaymentRequestDelegate>(

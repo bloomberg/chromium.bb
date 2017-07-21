@@ -4011,8 +4011,11 @@ void RenderFrameHostImpl::GetInterface(
     mojo::ScopedMessagePipeHandle interface_pipe) {
   if (!interface_registry_ ||
       !interface_registry_->TryBindInterface(interface_name, &interface_pipe)) {
-    GetContentClient()->browser()->BindInterfaceRequestFromFrame(
-        this, interface_name, std::move(interface_pipe));
+    delegate_->OnInterfaceRequest(this, interface_name, &interface_pipe);
+    if (interface_pipe->is_valid()) {
+      GetContentClient()->browser()->BindInterfaceRequestFromFrame(
+          this, interface_name, std::move(interface_pipe));
+    }
   }
 }
 
