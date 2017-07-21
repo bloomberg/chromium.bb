@@ -1,4 +1,5 @@
 include_rules = [
   "+jni",
   "+media/filters",
+  "+chromecast/internal/android/prebuilt/things",
 ]
