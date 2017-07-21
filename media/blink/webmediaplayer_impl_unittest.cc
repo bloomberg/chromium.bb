@@ -105,6 +105,7 @@ class DummyWebMediaPlayerClient : public blink::WebMediaPlayerClient {
     return blink::WebMediaPlayer::TrackId();
   }
   bool HasNativeControls() override { return false; }
+  bool IsAudioElement() override { return false; }
   blink::WebMediaPlayer::DisplayType DisplayType() const override {
     return blink::WebMediaPlayer::DisplayType::kInline;
   }
