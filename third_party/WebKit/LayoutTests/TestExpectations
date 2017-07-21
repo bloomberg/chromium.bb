@@ -3124,7 +3124,8 @@ crbug.com/626703 [ Win7 ] external/wpt/domxpath/xml_xpath_runner.html [ Timeout 
 crbug.com/626703 [ Win7 ] external/wpt/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/parsing.html [ Failure Pass ]
 crbug.com/626703 [ Win7 ] external/wpt/html/syntax/parsing/html5lib_tests16.html?run_type=uri [ Timeout Pass ]
 
-crbug.com/746128 [ Win7 ] media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
+crbug.com/746128 [ Win7 Debug ] media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
+crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 
 crbug.com/626703 [ Win7 ] external/wpt/image-decodes/image-decode-path-changes.html [ Pass Crash ]
 
