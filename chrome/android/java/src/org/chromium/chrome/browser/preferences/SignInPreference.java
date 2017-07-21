@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences;
 
+import android.accounts.Account;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.preference.Preference;
@@ -15,6 +16,7 @@ import android.view.View;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
+import org.chromium.chrome.browser.firstrun.ProfileDataCache;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
@@ -22,9 +24,12 @@ import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
+import org.chromium.chrome.browser.signin.SigninPromoController;
+import org.chromium.chrome.browser.signin.SigninPromoView;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListener;
 import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 
@@ -36,8 +41,9 @@ import org.chromium.components.sync.AndroidSyncSettings;
 public class SignInPreference extends Preference
         implements SignInAllowedObserver, ProfileDownloader.Observer,
                    AndroidSyncSettings.AndroidSyncSettingsObserver, SyncStateChangedListener {
-    private boolean mViewEnabled;
     private boolean mShowingPromo;
+    private boolean mViewEnabled;
+    private SigninPromoController mSigninPromoController;
 
     /**
      * Constructor for inflating from XML.
@@ -84,18 +90,14 @@ public class SignInPreference extends Preference
         String accountName = ChromeSigninController.get().getSignedInAccountName();
         if (SigninManager.get(getContext()).isSigninDisabledByPolicy()) {
             setupSigninDisabled();
-            mShowingPromo = false;
         } else if (accountName == null) {
-            setupNotSignedIn();
-
-            if (!mShowingPromo) {
-                // This user action should be recorded when message with sign-in prompt is shown
-                RecordUserAction.record("Signin_Impression_FromSettings");
+            if (SigninPromoController.shouldShowPromo()) {
+                setupNewPromo();
+            } else {
+                setupOldPromo();
             }
-            mShowingPromo = true;
         } else {
             setupSignedIn(accountName);
-            mShowingPromo = false;
         }
 
         setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -108,24 +110,64 @@ public class SignInPreference extends Preference
     }
 
     private void setupSigninDisabled() {
+        setLayoutResource(R.layout.account_management_account_row);
         setTitle(R.string.sign_in_to_chrome);
         setSummary(R.string.sign_in_to_chrome_disabled_summary);
         setFragment(null);
         setIcon(ManagedPreferencesUtils.getManagedByEnterpriseIconId());
         setWidgetLayoutResource(0);
         setViewEnabled(false);
+        mSigninPromoController = null;
+        mShowingPromo = false;
     }
 
-    private void setupNotSignedIn() {
+    private void setupNewPromo() {
+        setLayoutResource(R.layout.custom_preference);
+        setTitle("");
+        setSummary("");
+        setFragment(null);
+        setIcon(null);
+        setWidgetLayoutResource(R.layout.signin_promo_view);
+        setViewEnabled(true);
+
+        Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
+        String defaultAccountName = accounts.length == 0 ? null : accounts[0].name;
+
+        if (mSigninPromoController == null) {
+            ProfileDataCache profileDataCache =
+                    new ProfileDataCache(getContext(), Profile.getLastUsedProfile());
+            mSigninPromoController =
+                    new SigninPromoController(profileDataCache, SigninAccessPoint.SETTINGS);
+            mSigninPromoController.setAccountName(defaultAccountName);
+            mSigninPromoController.recordSigninPromoImpression();
+        } else {
+            mSigninPromoController.setAccountName(defaultAccountName);
+        }
+
+        mShowingPromo = true;
+
+        notifyChanged();
+    }
+
+    private void setupOldPromo() {
+        setLayoutResource(R.layout.account_management_account_row);
         setTitle(R.string.sign_in_to_chrome);
         setSummary(R.string.sign_in_to_chrome_summary);
         setFragment(null);
         setIcon(AppCompatResources.getDrawable(getContext(), R.drawable.logo_avatar_anonymous));
         setWidgetLayoutResource(0);
         setViewEnabled(true);
+        mSigninPromoController = null;
+
+        if (!mShowingPromo) {
+            RecordUserAction.record("Signin_Impression_FromSettings");
+        }
+
+        mShowingPromo = true;
     }
 
     private void setupSignedIn(String accountName) {
+        setLayoutResource(R.layout.account_management_account_row);
         String title = AccountManagementFragment.getCachedUserName(accountName);
         if (title == null) {
             Profile profile = Profile.getLastUsedProfile();
@@ -141,11 +183,11 @@ public class SignInPreference extends Preference
         setSummary(SyncPreference.getSyncStatusSummary(getContext()));
         setFragment(AccountManagementFragment.class.getName());
         setIcon(AccountManagementFragment.getUserPicture(getContext(), accountName));
-
         setWidgetLayoutResource(
                 SyncPreference.showSyncErrorIcon(getContext()) ? R.layout.sync_error_widget : 0);
-
         setViewEnabled(true);
+        mSigninPromoController = null;
+        mShowingPromo = false;
     }
 
     // This just changes visual representation. Actual enabled flag in preference stays
@@ -159,9 +201,13 @@ public class SignInPreference extends Preference
     }
 
     @Override
-    protected void onBindView(View view) {
+    protected void onBindView(final View view) {
         super.onBindView(view);
         ViewUtils.setEnabledRecursive(view, mViewEnabled);
+        if (mSigninPromoController != null) {
+            SigninPromoView signinPromoView = view.findViewById(R.id.signin_promo_view_container);
+            mSigninPromoController.setupSigninPromoView(getContext(), signinPromoView, null);
+        }
     }
 
     // ProfileSyncServiceListener implementation:
