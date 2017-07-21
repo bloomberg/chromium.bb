@@ -28,7 +28,6 @@
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/ParsingUtilities.h"
-#include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/StringToNumber.h"
 #include "platform/wtf/text/TextEncoding.h"
@@ -242,11 +241,7 @@ static WTF::NumberParsingState ParseHTMLNonNegativeIntegerInternal(
   int sign = 1;
 
   // Step 4: Skip whitespace.
-  while (position < end) {
-    if (!IsHTMLSpace<CharacterType>(*position))
-      break;
-    ++position;
-  }
+  skipWhile<CharacterType, IsHTMLSpace<CharacterType>>(position, end);
 
   // Step 5: If position is past the end of input, return an error.
   if (position == end)
@@ -272,22 +267,12 @@ static WTF::NumberParsingState ParseHTMLNonNegativeIntegerInternal(
     return WTF::NumberParsingState::kError;
 
   // Step 8: Collect a sequence of characters ...
-  StringBuilder digits;
-  while (position < end) {
-    if (!IsASCIIDigit(*position))
-      break;
-    digits.Append(*position++);
-  }
+  const CharacterType* digits_start = position;
+  skipWhile<CharacterType, IsASCIIDigit>(position, end);
 
   WTF::NumberParsingState state;
-  unsigned digits_value;
-  if (digits.Is8Bit()) {
-    digits_value =
-        CharactersToUIntStrict(digits.Characters8(), digits.length(), &state);
-  } else {
-    digits_value =
-        CharactersToUIntStrict(digits.Characters16(), digits.length(), &state);
-  }
+  unsigned digits_value =
+      CharactersToUIntStrict(digits_start, position - digits_start, &state);
   // TODO(tkent): The following code to adjust NumberParsingState is not simple
   // due to "-0" behavior difference between CharactersToUIntStrict() and
   // ParseHTMLNonNegativeIntegerInternal(). Simplify the code by updating

@@ -30,7 +30,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/ParsingUtilities.h"
 #include "platform/wtf/text/StringToNumber.h"
 
 namespace blink {
@@ -54,11 +54,7 @@ static bool ParseFontSize(const CharacterType* characters,
   const CharacterType* end = characters + length;
 
   // Step 3
-  while (position < end) {
-    if (!IsHTMLSpace<CharacterType>(*position))
-      break;
-    ++position;
-  }
+  skipWhile<CharacterType, IsHTMLSpace<CharacterType>>(position, end);
 
   // Step 4
   if (position == end)
@@ -83,28 +79,16 @@ static bool ParseFontSize(const CharacterType* characters,
   }
 
   // Step 6
-  StringBuilder digits;
-  digits.ReserveCapacity(16);
-  while (position < end) {
-    if (!IsASCIIDigit(*position))
-      break;
-    digits.Append(*position++);
-  }
+  const CharacterType* digits_start = position;
+  skipWhile<CharacterType, IsASCIIDigit>(position, end);
 
   // Step 7
-  if (digits.IsEmpty())
+  if (digits_start == position)
     return false;
 
   // Step 8
-  int value;
-
-  if (digits.Is8Bit()) {
-    value =
-        CharactersToIntStrict(digits.Characters8(), digits.length(), nullptr);
-  } else {
-    value =
-        CharactersToIntStrict(digits.Characters16(), digits.length(), nullptr);
-  }
+  int value =
+      CharactersToIntStrict(digits_start, position - digits_start, nullptr);
 
   // Step 9
   if (mode == kRelativePlus)
