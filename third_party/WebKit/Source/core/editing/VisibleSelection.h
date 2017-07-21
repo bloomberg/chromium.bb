@@ -42,12 +42,6 @@ namespace blink {
 class SelectionAdjuster;
 
 const TextAffinity kSelDefaultAffinity = TextAffinity::kDownstream;
-enum SelectionDirection {
-  kDirectionForward,
-  kDirectionBackward,
-  kDirectionRight,
-  kDirectionLeft
-};
 
 template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {

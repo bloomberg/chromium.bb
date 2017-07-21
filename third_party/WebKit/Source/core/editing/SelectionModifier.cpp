@@ -103,7 +103,7 @@ TextDirection SelectionModifier::DirectionOfSelection() const {
 }
 
 static bool IsBaseStart(const VisibleSelection& visible_selection,
-                        SelectionDirection direction) {
+                        SelectionModifyDirection direction) {
   if (visible_selection.IsDirectional()) {
     // Make base and extent match start and end so we extend the user-visible
     // selection. This only matters for cases where base and extend point to
@@ -112,16 +112,16 @@ static bool IsBaseStart(const VisibleSelection& visible_selection,
     return visible_selection.IsBaseFirst();
   }
   switch (direction) {
-    case kDirectionRight:
+    case SelectionModifyDirection::kRight:
       return DirectionOf(visible_selection) == TextDirection::kLtr;
-    case kDirectionForward:
+    case SelectionModifyDirection::kForward:
       return true;
-    case kDirectionLeft:
+    case SelectionModifyDirection::kLeft:
       return DirectionOf(visible_selection) != TextDirection::kLtr;
-    case kDirectionBackward:
+    case SelectionModifyDirection::kBackward:
       return false;
   }
-  NOTREACHED() << "We should handle " << direction;
+  NOTREACHED() << "We should handle " << static_cast<int>(direction);
   return true;
 }
 
@@ -132,7 +132,7 @@ static bool IsBaseStart(const VisibleSelection& visible_selection,
 // selection.
 static SelectionInDOMTree PrepareToExtendSeelction(
     const VisibleSelection& visible_selection,
-    SelectionDirection direction) {
+    SelectionModifyDirection direction) {
   if (visible_selection.Start().IsNull())
     return visible_selection.AsSelection();
   const bool base_is_start = IsBaseStart(visible_selection, direction);
@@ -561,7 +561,7 @@ static bool IsBoundary(TextGranularity granularity) {
 }
 
 bool SelectionModifier::Modify(SelectionModifyAlteration alter,
-                               SelectionDirection direction,
+                               SelectionModifyDirection direction,
                                TextGranularity granularity) {
   DCHECK(!GetFrame()->GetDocument()->NeedsLayoutTreeUpdate());
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
@@ -576,25 +576,25 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
   VisiblePosition original_start_position = selection_.VisibleStart();
   VisiblePosition position;
   switch (direction) {
-    case kDirectionRight:
+    case SelectionModifyDirection::kRight:
       if (alter == SelectionModifyAlteration::kMove)
         position = ModifyMovingRight(granularity);
       else
         position = ModifyExtendingRight(granularity);
       break;
-    case kDirectionForward:
+    case SelectionModifyDirection::kForward:
       if (alter == SelectionModifyAlteration::kExtend)
         position = ModifyExtendingForward(granularity);
       else
         position = ModifyMovingForward(granularity);
       break;
-    case kDirectionLeft:
+    case SelectionModifyDirection::kLeft:
       if (alter == SelectionModifyAlteration::kMove)
         position = ModifyMovingLeft(granularity);
       else
         position = ModifyExtendingLeft(granularity);
       break;
-    case kDirectionBackward:
+    case SelectionModifyDirection::kBackward:
       if (alter == SelectionModifyAlteration::kExtend)
         position = ModifyExtendingBackward(granularity);
       else
@@ -668,11 +668,11 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
                                        .Build());
       } else {
         TextDirection text_direction = DirectionOfEnclosingBlock();
-        if (direction == kDirectionForward ||
+        if (direction == SelectionModifyDirection::kForward ||
             (text_direction == TextDirection::kLtr &&
-             direction == kDirectionRight) ||
+             direction == SelectionModifyDirection::kRight) ||
             (text_direction == TextDirection::kRtl &&
-             direction == kDirectionLeft)) {
+             direction == SelectionModifyDirection::kLeft)) {
           selection_ = CreateVisibleSelection(
               SelectionInDOMTree::Builder()
                   .Collapse(selection_.IsBaseFirst()
@@ -726,8 +726,8 @@ bool SelectionModifier::ModifyWithPageGranularity(
   if (alter == SelectionModifyAlteration::kExtend) {
     selection_ = CreateVisibleSelection(PrepareToExtendSeelction(
         selection_, direction == SelectionModifyVerticalDirection::kUp
-                        ? kDirectionBackward
-                        : kDirectionForward));
+                        ? SelectionModifyDirection::kBackward
+                        : SelectionModifyDirection::kForward));
   }
 
   VisiblePosition pos;
