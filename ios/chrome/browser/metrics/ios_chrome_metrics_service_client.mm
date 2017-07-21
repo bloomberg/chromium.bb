@@ -69,7 +69,6 @@ IOSChromeMetricsServiceClient::IOSChromeMetricsServiceClient(
     : metrics_state_manager_(state_manager),
       stability_metrics_provider_(nullptr),
       profiler_metrics_provider_(nullptr),
-      drive_metrics_provider_(nullptr),
       start_time_(base::TimeTicks::Now()),
       has_uploaded_profiler_data_(false),
       weak_ptr_factory_(this) {
@@ -135,14 +134,6 @@ IOSChromeMetricsServiceClient::GetChannel() {
 
 std::string IOSChromeMetricsServiceClient::GetVersionString() {
   return metrics::GetVersionString();
-}
-
-void IOSChromeMetricsServiceClient::InitializeSystemProfileMetrics(
-    const base::Closure& done_callback) {
-  finished_init_task_callback_ = done_callback;
-  drive_metrics_provider_->GetDriveMetrics(
-      base::Bind(&IOSChromeMetricsServiceClient::OnInitTaskGotDriveMetrics,
-                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void IOSChromeMetricsServiceClient::CollectFinalMetricsForLog(
@@ -221,13 +212,8 @@ void IOSChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       base::MakeUnique<metrics::ScreenInfoMetricsProvider>());
 
-  {
-    auto drive_metrics_provider =
-        base::MakeUnique<metrics::DriveMetricsProvider>(ios::FILE_LOCAL_STATE);
-    drive_metrics_provider_ = drive_metrics_provider.get();
-    metrics_service_->RegisterMetricsProvider(
-        std::move(drive_metrics_provider));
-  }
+  metrics_service_->RegisterMetricsProvider(
+      base::MakeUnique<metrics::DriveMetricsProvider>(ios::FILE_LOCAL_STATE));
 
   {
     auto profiler_metrics_provider =
@@ -255,10 +241,6 @@ void IOSChromeMetricsServiceClient::Initialize() {
 
   metrics_service_->RegisterMetricsProvider(
       base::MakeUnique<translate::TranslateRankerMetricsProvider>());
-}
-
-void IOSChromeMetricsServiceClient::OnInitTaskGotDriveMetrics() {
-  finished_init_task_callback_.Run();
 }
 
 bool IOSChromeMetricsServiceClient::ShouldIncludeProfilerDataInLog() {

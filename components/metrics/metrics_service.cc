@@ -129,6 +129,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -640,9 +641,12 @@ void MetricsService::OpenNewLog() {
 }
 
 void MetricsService::StartInitTask() {
-  client_->InitializeSystemProfileMetrics(
-      base::Bind(&MetricsService::FinishedInitTask,
-                 self_ptr_factory_.GetWeakPtr()));
+  base::Closure barrier = base::BarrierClosure(
+      metrics_providers_.size(), base::Bind(&MetricsService::FinishedInitTask,
+                                            self_ptr_factory_.GetWeakPtr()));
+  for (auto& provider : metrics_providers_) {
+    provider->AsyncInit(barrier);
+  }
 }
 
 void MetricsService::CloseCurrentLog() {

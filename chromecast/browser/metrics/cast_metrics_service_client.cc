@@ -213,11 +213,6 @@ std::string CastMetricsServiceClient::GetVersionString() {
   return version_string;
 }
 
-void CastMetricsServiceClient::InitializeSystemProfileMetrics(
-    const base::Closure& done_callback) {
-  done_callback.Run();
-}
-
 void CastMetricsServiceClient::CollectFinalMetricsForLog(
     const base::Closure& done_callback) {
   // Asynchronously fetch metrics data from child processes. Since this method

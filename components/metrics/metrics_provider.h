@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_METRICS_METRICS_PROVIDER_H_
 #define COMPONENTS_METRICS_METRICS_PROVIDER_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 
 namespace base {
@@ -25,6 +26,11 @@ class MetricsProvider {
 
   // Called after initialiazation of MetricsService and field trials.
   virtual void Init();
+
+  // Called during service initialization to allow the provider to start any
+  // async initialization tasks.  The service will wait for the provider to
+  // call |done_callback| before generating logs for the current session.
+  virtual void AsyncInit(const base::Closure& done_callback);
 
   // Called when a new MetricsLog is created.
   virtual void OnDidCreateMetricsLog();

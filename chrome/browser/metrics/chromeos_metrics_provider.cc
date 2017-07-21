@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/barrier_closure.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -156,6 +157,12 @@ void ChromeOSMetricsProvider::Init() {
     leak_detector_controller_.reset(new metrics::LeakDetectorController);
   }
 #endif
+}
+
+void ChromeOSMetricsProvider::AsyncInit(const base::Closure& done_callback) {
+  base::Closure barrier = base::BarrierClosure(2, done_callback);
+  InitTaskGetHardwareClass(barrier);
+  InitTaskGetBluetoothAdapter(barrier);
 }
 
 void ChromeOSMetricsProvider::OnDidCreateMetricsLog() {

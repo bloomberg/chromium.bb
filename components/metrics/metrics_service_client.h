@@ -77,11 +77,6 @@ class MetricsServiceClient {
   // Called by the metrics service to record a clean shutdown.
   virtual void OnLogCleanShutdown() {}
 
-  // Gathers metrics that will be filled into the system profile protobuf,
-  // calling |done_callback| when complete.
-  virtual void InitializeSystemProfileMetrics(
-      const base::Closure& done_callback) = 0;
-
   // Called prior to a metrics log being closed, allowing the client to collect
   // extra histograms that will go in that log. Asynchronous API - the client
   // implementation should call |done_callback| when complete.

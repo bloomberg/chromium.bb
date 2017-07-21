@@ -222,8 +222,7 @@ void WatcherMetricsProviderWin::ProvideStabilityMetrics(
   RecordExitCodes(registry_path_);
 }
 
-void WatcherMetricsProviderWin::CollectPostmortemReports(
-    const base::Closure& done_callback) {
+void WatcherMetricsProviderWin::AsyncInit(const base::Closure& done_callback) {
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&WatcherMetricsProviderWin::CollectPostmortemReportsImpl,

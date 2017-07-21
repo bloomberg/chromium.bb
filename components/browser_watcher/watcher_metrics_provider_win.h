@@ -33,6 +33,7 @@ class WatcherMetricsProviderWin : public metrics::MetricsProvider {
   ~WatcherMetricsProviderWin() override;
 
   // metrics::MetricsProvider implementation.
+  void AsyncInit(const base::Closure& done_callback) override;
   void OnRecordingEnabled() override;
   void OnRecordingDisabled() override;
   // Note: this function collects metrics, some of which are related to the
@@ -47,10 +48,6 @@ class WatcherMetricsProviderWin : public metrics::MetricsProvider {
   // TODO(manzagop): proper metric version attribution on upgrade.
   void ProvideStabilityMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
-
-  // Collects postmortem reports asynchronously and calls |done_callback| when
-  // done.
-  void CollectPostmortemReports(const base::Closure& done_callback);
 
  private:
   // TODO(manzagop): avoid collecting reports for clean exits from the fast exit
