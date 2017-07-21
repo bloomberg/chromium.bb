@@ -12,6 +12,7 @@ include_rules = [
   "+components/web_contents_delegate_android",
   "+device/vr/features/features.h",
   "+sandbox/linux/seccomp-bpf/sandbox_bpf.h",
+  "+sandbox/linux/seccomp-bpf-helpers",
   "+sandbox/sandbox_features.h",
   "+third_party/gvr-android-sdk",
 ]
