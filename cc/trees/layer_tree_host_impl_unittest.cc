@@ -4880,12 +4880,10 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   child->SetDrawsContent(true);
   child->test_properties()->is_container_for_fixed_position_layers = true;
 
-  LayerImpl* child_ptr = child.get();
+  // scroll child to limit
+  SetScrollOffsetDelta(child.get(), gfx::Vector2dF(0, 100.f));
   outer_viewport_scroll_layer->test_properties()->AddChild(std::move(child));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
-
-  // Scroll child to the limit.
-  SetScrollOffsetDelta(child_ptr, gfx::Vector2dF(0, 100.f));
 
   // Scroll 25px to hide browser controls
   gfx::Vector2dF scroll_delta(0.f, 25.f);
