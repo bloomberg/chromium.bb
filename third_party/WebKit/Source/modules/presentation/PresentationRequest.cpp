@@ -16,7 +16,6 @@
 #include "core/frame/UseCounter.h"
 #include "core/loader/MixedContentChecker.h"
 #include "modules/EventTargetModules.h"
-#include "modules/presentation/ExistingPresentationConnectionCallbacks.h"
 #include "modules/presentation/PresentationAvailability.h"
 #include "modules/presentation/PresentationAvailabilityCallbacks.h"
 #include "modules/presentation/PresentationConnection.h"
@@ -171,8 +170,8 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* script_state,
   if (existing_connection) {
     client->ReconnectPresentation(
         urls_, id,
-        WTF::MakeUnique<ExistingPresentationConnectionCallbacks>(
-            resolver, existing_connection));
+        WTF::MakeUnique<PresentationConnectionCallbacks>(resolver,
+                                                         existing_connection));
   } else {
     client->ReconnectPresentation(
         urls_, id,

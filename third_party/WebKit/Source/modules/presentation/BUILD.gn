@@ -6,8 +6,6 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 blink_modules_sources("presentation") {
   sources = [
-    "ExistingPresentationConnectionCallbacks.cpp",
-    "ExistingPresentationConnectionCallbacks.h",
     "NavigatorPresentation.cpp",
     "NavigatorPresentation.h",
     "Presentation.cpp",
