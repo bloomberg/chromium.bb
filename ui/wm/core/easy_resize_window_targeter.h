@@ -37,11 +37,11 @@ class WM_CORE_EXPORT EasyResizeWindowTargeter : public aura::WindowTargeter {
   bool EventLocationInsideBounds(aura::Window* window,
                                  const ui::LocatedEvent& event) const override;
 
- private:
   // Returns true if the hit testing (EventLocationInsideBounds()) should use
   // the extended bounds.
-  bool ShouldUseExtendedBounds(const aura::Window* window) const;
+  virtual bool ShouldUseExtendedBounds(const aura::Window* window) const;
 
+ private:
   aura::Window* container_;
   gfx::Insets mouse_extend_;
   gfx::Insets touch_extend_;

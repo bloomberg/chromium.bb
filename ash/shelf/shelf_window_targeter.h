@@ -25,6 +25,9 @@ class ShelfWindowTargeter : public ::wm::EasyResizeWindowTargeter,
   ~ShelfWindowTargeter() override;
 
  private:
+  // ::wm::EasyResizeWindowTargeter:
+  bool ShouldUseExtendedBounds(const aura::Window* window) const override;
+
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
