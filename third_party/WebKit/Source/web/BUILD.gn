@@ -37,16 +37,12 @@ component("web") {
 
   sources = [
     "AssertMatchingEnums.cpp",
-    "ChromeClientImpl.cpp",
-    "ChromeClientImpl.h",
     "LocalFrameClientImpl.cpp",
     "LocalFrameClientImpl.h",
     "WebExport.h",
     "WebFactoryImpl.cpp",
     "WebFactoryImpl.h",
     "WebKit.cpp",
-    "WebLocalFrameImpl.cpp",
-    "WebLocalFrameImpl.h",
     "WebViewImpl.cpp",
     "WebViewImpl.h",
   ]

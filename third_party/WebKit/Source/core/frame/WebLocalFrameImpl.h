@@ -31,19 +31,20 @@
 #ifndef WebLocalFrameImpl_h
 #define WebLocalFrameImpl_h
 
+#include "core/CoreExport.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/exported/WebInputMethodControllerImpl.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/WebFrameWidgetBase.h"
 #include "core/frame/WebLocalFrameBase.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebFileSystemType.h"
 #include "public/web/WebLocalFrame.h"
-#include "web/WebExport.h"
 
 #include <memory>
 
@@ -81,7 +82,7 @@ template <typename T>
 class WebVector;
 
 // Implementation of WebFrame, note that this is a reference counted object.
-class WEB_EXPORT WebLocalFrameImpl final
+class CORE_EXPORT WebLocalFrameImpl final
     : NON_EXPORTED_BASE(public WebLocalFrameBase) {
  public:
   // WebFrame methods:
@@ -312,9 +313,9 @@ class WEB_EXPORT WebLocalFrameImpl final
   void ClearActiveFindMatch() override;
   void UsageCountChromeLoadTimes(const WebString& metric) override;
   WebFrameScheduler* Scheduler() const override;
-  base::SingleThreadTaskRunner* TimerTaskRunner() override;
-  base::SingleThreadTaskRunner* LoadingTaskRunner() override;
-  base::SingleThreadTaskRunner* UnthrottledTaskRunner() override;
+  SingleThreadTaskRunner* TimerTaskRunner() override;
+  SingleThreadTaskRunner* LoadingTaskRunner() override;
+  SingleThreadTaskRunner* UnthrottledTaskRunner() override;
   WebInputMethodController* GetInputMethodController() override;
 
   void ExtractSmartClipData(WebRect rect_in_viewport,
@@ -442,14 +443,13 @@ class WEB_EXPORT WebLocalFrameImpl final
 
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const WebURLRequest&,
-      base::SingleThreadTaskRunner*) override;
+      SingleThreadTaskRunner*) override;
 
   WebFrameWidgetBase* LocalRootFrameWidget() override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-
   WebLocalFrameImpl(WebTreeScopeType,
                     WebFrameClient*,
                     blink::InterfaceRegistry*);

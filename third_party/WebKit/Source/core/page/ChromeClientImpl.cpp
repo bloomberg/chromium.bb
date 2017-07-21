@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/ChromeClientImpl.h"
+#include "core/page/ChromeClientImpl.h"
 
 #include <memory>
 
@@ -49,6 +49,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebFrameWidgetImpl.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/ColorChooser.h"
@@ -73,6 +74,7 @@
 #include "platform/Cursor.h"
 #include "platform/FileChooser.h"
 #include "platform/Histogram.h"
+#include "platform/LayoutTestSupport.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/animation/CompositorAnimationHost.h"
@@ -110,7 +112,6 @@
 #include "public/web/WebUserGestureToken.h"
 #include "public/web/WebViewClient.h"
 #include "public/web/WebWindowFeatures.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -153,7 +154,6 @@ const char* DismissalTypeToString(Document::PageDismissalType dismissal_type) {
 }  // namespace
 
 class CompositorAnimationTimeline;
-
 
 ChromeClientImpl::ChromeClientImpl(WebViewBase* web_view)
     : web_view_(web_view),
@@ -210,7 +210,7 @@ void ChromeClientImpl::Focus() {
 bool ChromeClientImpl::CanTakeFocus(WebFocusType) {
   // For now the browser can always take focus if we're not running layout
   // tests.
-  return !LayoutTestMode();
+  return !LayoutTestSupport::IsRunningLayoutTest();
 }
 
 void ChromeClientImpl::TakeFocus(WebFocusType type) {
@@ -552,11 +552,12 @@ ColorChooser* ChromeClientImpl::OpenColorChooser(
   if (frame->GetDocument()->GetSettings()->GetPagePopupsSuppressed())
     return nullptr;
 
-  if (RuntimeEnabledFeatures::PagePopupEnabled())
+  if (RuntimeEnabledFeatures::PagePopupEnabled()) {
     controller =
         ColorChooserPopupUIController::Create(frame, this, chooser_client);
-  else
+  } else {
     controller = ColorChooserUIController::Create(frame, chooser_client);
+  }
   controller->OpenUI();
   return controller;
 }
@@ -806,8 +807,7 @@ void ChromeClientImpl::SetBrowserControlsState(float height,
   if (shrinks_layout)
     size.height -= height;
 
-  web_view_->ResizeWithBrowserControls(
-      size, height, shrinks_layout);
+  web_view_->ResizeWithBrowserControls(size, height, shrinks_layout);
 }
 
 bool ChromeClientImpl::ShouldOpenModalDialogDuringPageDismissal(
@@ -1002,10 +1002,11 @@ void ChromeClientImpl::ShowUnhandledTapUIIfNeeded(
     IntPoint tapped_position_in_viewport,
     Node* tapped_node,
     bool page_changed) {
-  if (web_view_->Client())
+  if (web_view_->Client()) {
     web_view_->Client()->ShowUnhandledTapUIIfNeeded(
         WebPoint(tapped_position_in_viewport), WebNode(tapped_node),
         page_changed);
+  }
 }
 
 void ChromeClientImpl::OnMouseDown(Node& mouse_down_node) {
@@ -1022,18 +1023,20 @@ void ChromeClientImpl::HandleKeyboardEventOnTextField(
     KeyboardEvent& event) {
   WebLocalFrameImpl* webframe =
       WebLocalFrameImpl::FromFrame(input_element.GetDocument().GetFrame());
-  if (webframe->AutofillClient())
+  if (webframe->AutofillClient()) {
     webframe->AutofillClient()->TextFieldDidReceiveKeyDown(
         WebInputElement(&input_element), WebKeyboardEventBuilder(event));
+  }
 }
 
 void ChromeClientImpl::DidChangeValueInTextField(
     HTMLFormControlElement& element) {
   Document& doc = element.GetDocument();
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(doc.GetFrame());
-  if (webframe->AutofillClient())
+  if (webframe->AutofillClient()) {
     webframe->AutofillClient()->TextFieldDidChange(
         WebFormControlElement(&element));
+  }
 
   UseCounter::Count(doc, doc.IsSecureContext()
                              ? WebFeature::kFieldEditInSecureContext
@@ -1045,18 +1048,20 @@ void ChromeClientImpl::DidEndEditingOnTextField(
     HTMLInputElement& input_element) {
   WebLocalFrameImpl* webframe =
       WebLocalFrameImpl::FromFrame(input_element.GetDocument().GetFrame());
-  if (webframe->AutofillClient())
+  if (webframe->AutofillClient()) {
     webframe->AutofillClient()->TextFieldDidEndEditing(
         WebInputElement(&input_element));
+  }
 }
 
 void ChromeClientImpl::OpenTextDataListChooser(HTMLInputElement& input) {
   NotifyPopupOpeningObservers();
   WebLocalFrameImpl* webframe =
       WebLocalFrameImpl::FromFrame(input.GetDocument().GetFrame());
-  if (webframe->AutofillClient())
+  if (webframe->AutofillClient()) {
     webframe->AutofillClient()->OpenTextDataListChooser(
         WebInputElement(&input));
+  }
 }
 
 void ChromeClientImpl::TextFieldDataListChanged(HTMLInputElement& input) {

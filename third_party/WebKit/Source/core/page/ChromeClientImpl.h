@@ -33,11 +33,11 @@
 #define ChromeClientImpl_h
 
 #include <memory>
+#include "core/CoreExport.h"
 #include "core/page/ChromeClient.h"
 #include "platform/graphics/TouchAction.h"
 #include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebWindowFeatures.h"
-#include "web/WebExport.h"
 
 namespace blink {
 
@@ -47,7 +47,7 @@ class WebViewBase;
 struct WebCursorInfo;
 
 // Handles window-level notifications from core on behalf of a WebView.
-class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
+class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
  public:
   static ChromeClientImpl* Create(WebViewBase*);
   ~ChromeClientImpl() override;

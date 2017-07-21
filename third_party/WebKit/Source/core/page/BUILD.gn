@@ -10,6 +10,8 @@ blink_core_sources("page") {
     "AutoscrollController.h",
     "ChromeClient.cpp",
     "ChromeClient.h",
+    "ChromeClientImpl.cpp",
+    "ChromeClientImpl.h",
     "ContextMenuClient.cpp",
     "ContextMenuClient.h",
     "ContextMenuController.cpp",
