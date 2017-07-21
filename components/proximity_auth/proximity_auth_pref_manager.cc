@@ -138,13 +138,13 @@ const base::DictionaryValue* ProximityAuthPrefManager::GetRemoteBleDevices()
 
 void ProximityAuthPrefManager::SetLastPromotionCheckTimestampMs(
     int64_t timestamp_ms) {
-  pref_service_->SetInt64(prefs::kProximityAuthLastPasswordEntryTimestampMs,
+  pref_service_->SetInt64(prefs::kProximityAuthLastPromotionCheckTimestampMs,
                           timestamp_ms);
 }
 
 int64_t ProximityAuthPrefManager::GetLastPromotionCheckTimestampMs() const {
   return pref_service_->GetInt64(
-      prefs::kProximityAuthLastPasswordEntryTimestampMs);
+      prefs::kProximityAuthLastPromotionCheckTimestampMs);
 }
 
 void ProximityAuthPrefManager::SetProximityThreshold(ProximityThreshold value) {

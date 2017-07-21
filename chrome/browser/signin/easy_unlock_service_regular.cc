@@ -25,6 +25,7 @@
 #include "chrome/browser/signin/chrome_proximity_auth_client.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -33,6 +34,7 @@
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_utils.h"
 #include "components/cryptauth/cryptauth_gcm_manager_impl.h"
+#include "components/cryptauth/local_device_data_provider.h"
 #include "components/cryptauth/remote_device_loader.h"
 #include "components/cryptauth/secure_message_delegate.h"
 #include "components/gcm_driver/gcm_profile_service.h"
@@ -40,6 +42,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "components/proximity_auth/promotion_manager.h"
 #include "components/proximity_auth/proximity_auth_pref_manager.h"
 #include "components/proximity_auth/proximity_auth_pref_names.h"
 #include "components/proximity_auth/proximity_auth_system.h"
@@ -119,6 +122,9 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
       true /* should_load_beacon_seeds */,
       base::Bind(&EasyUnlockServiceRegular::OnRemoteDevicesLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  // Don't show promotions if EasyUnlock is already enabled.
+  promotion_manager_.reset();
 }
 
 void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
@@ -169,6 +175,43 @@ void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
   // TODO(tengs): Rename this function after the easy_unlock app is replaced.
   SetRemoteDevices(*device_list);
 #endif
+}
+
+bool EasyUnlockServiceRegular::ShouldPromote() {
+#if defined(OS_CHROMEOS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) ||
+      !base::FeatureList::IsEnabled(features::kEasyUnlockPromotions)) {
+    return false;
+  }
+
+  if (!IsAllowedInternal() || IsEnabled()) {
+    return false;
+  }
+
+  return true;
+#else
+  return false;
+#endif
+}
+
+void EasyUnlockServiceRegular::StartPromotionManager() {
+  if (!ShouldPromote() ||
+      GetCryptAuthEnrollmentManager()->GetUserPublicKey().empty()) {
+    return;
+  }
+
+  cryptauth::CryptAuthService* service =
+      ChromeCryptAuthServiceFactory::GetInstance()->GetForBrowserContext(
+          profile());
+  local_device_data_provider_.reset(
+      new cryptauth::LocalDeviceDataProvider(service));
+  promotion_manager_.reset(new proximity_auth::PromotionManager(
+      local_device_data_provider_.get(), pref_manager_.get(),
+      service->CreateCryptAuthClientFactory(),
+      base::MakeUnique<base::DefaultClock>(),
+      base::ThreadTaskRunnerHandle::Get()));
+  promotion_manager_->Start();
 }
 
 EasyUnlockService::Type EasyUnlockServiceRegular::GetType() const {
@@ -478,6 +521,7 @@ void EasyUnlockServiceRegular::InitializeInternal() {
         new proximity_auth::ProximityAuthPrefManager(profile()->GetPrefs()));
     GetCryptAuthDeviceManager()->AddObserver(this);
     LoadRemoteDevices();
+    StartPromotionManager();
   }
 #endif
 }
@@ -532,6 +576,9 @@ void EasyUnlockServiceRegular::OnSyncFinished(
   if (device_change_result !=
       cryptauth::CryptAuthDeviceManager::DeviceChangeResult::CHANGED)
     return;
+
+  // The enrollment has finished when the sync is finished.
+  StartPromotionManager();
 
   LoadRemoteDevices();
 }
