@@ -2920,7 +2920,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 #pragma mark - Install OverScrollActionController method.
 - (void)setOverScrollActionControllerToStaticNativeContent:
     (StaticHtmlNativeContent*)nativeContent {
-  if (!IsIPadIdiom() && !FirstRun::IsChromeFirstRun()) {
+  if (!IsIPadIdiom()) {
     OverscrollActionsController* controller =
         [[OverscrollActionsController alloc]
             initWithScrollView:[nativeContent scrollView]];
