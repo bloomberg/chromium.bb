@@ -775,10 +775,8 @@ component("base") {
     "synchronization/read_write_lock_win.cc",
     "synchronization/spin_wait.h",
     "synchronization/waitable_event.h",
-    "synchronization/waitable_event_mac.cc",
     "synchronization/waitable_event_posix.cc",
     "synchronization/waitable_event_watcher.h",
-    "synchronization/waitable_event_watcher_mac.cc",
     "synchronization/waitable_event_watcher_posix.cc",
     "synchronization/waitable_event_watcher_win.cc",
     "synchronization/waitable_event_win.cc",
@@ -1512,8 +1510,6 @@ component("base") {
       "memory/shared_memory_posix.cc",
       "native_library_posix.cc",
       "strings/sys_string_conversions_posix.cc",
-      "synchronization/waitable_event_posix.cc",
-      "synchronization/waitable_event_watcher_posix.cc",
       "threading/platform_thread_internal_posix.cc",
     ]
 
@@ -1640,8 +1636,6 @@ component("base") {
       "power_monitor/power_monitor_device_source_ios.mm",
       "process/memory_stubs.cc",
       "strings/sys_string_conversions_mac.mm",
-      "synchronization/waitable_event_mac.cc",
-      "synchronization/waitable_event_watcher_mac.cc",
       "threading/platform_thread_mac.mm",
       "time/time_conversion_posix.cc",
       "time/time_mac.cc",
