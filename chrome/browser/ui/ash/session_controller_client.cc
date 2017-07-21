@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/theme_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -43,6 +42,7 @@
 #include "mojo/public/cpp/bindings/equals_traits.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/gfx/image/image_skia.h"
 
 using session_manager::Session;
@@ -92,7 +92,7 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
   if (session->user_info->avatar.isNull()) {
     session->user_info->avatar =
         *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_PROFILE_PICTURE_LOADING);
+            IDR_LOGIN_DEFAULT_USER);
   }
 
   if (user.IsSupervised()) {

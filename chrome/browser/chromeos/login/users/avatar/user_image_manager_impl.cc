@@ -34,7 +34,6 @@
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -42,6 +41,7 @@
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
@@ -446,7 +446,7 @@ void UserImageManagerImpl::Job::UpdateUser(
     user->SetStubImage(
         base::MakeUnique<user_manager::UserImage>(
             *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                IDR_PROFILE_PICTURE_LOADING)),
+                IDR_LOGIN_DEFAULT_USER)),
         image_index_, false);
   }
   user->SetImageURL(image_url_);
@@ -623,7 +623,7 @@ void UserImageManagerImpl::LoadUserImage() {
   user->SetImageURL(image_url);
   user->SetStubImage(base::MakeUnique<user_manager::UserImage>(
                          *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                             IDR_PROFILE_PICTURE_LOADING)),
+                             IDR_LOGIN_DEFAULT_USER)),
                      image_index, true);
   DCHECK(!image_path.empty() ||
          image_index == user_manager::User::USER_IMAGE_PROFILE);
