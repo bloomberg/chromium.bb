@@ -168,7 +168,6 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
 
 void ArcServiceLauncher::Shutdown() {
   arc_play_store_enabled_preference_handler_.reset();
-  arc_service_manager_->Shutdown();
   arc_session_manager_->Shutdown();
 }
 

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/arc/arc_service.h"
 #include "components/arc/common/obb_mounter.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/keyed_service/core/keyed_service.h"
