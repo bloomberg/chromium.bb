@@ -29,14 +29,14 @@ Now verify that the build is stable:
 
         $ fboot
 
-0. Run tests to verify the build. All the tests should pass! If they don't then find out which of the test fixtures is failing and ping #cr-fuchsia on IRC to determine if it's a known issue. 
+0. Run tests to verify the build. All the tests should pass! If they don't then find out which of the test fixtures is failing and ping #cr-fuchsia on IRC to determine if it's a known issue.
 
         $ runtests
 
 ## Build and upload the SDK
 1. Configure and build a release mode build with sdk config:
 
-        $ ./packages/gn/gen.py --release --goma -m runtime
+        $ ./packages/gn/gen.py --release --goma -m runtime,runtime_config,netstack
         $ ./packages/gn/build.py --release -j1000
 
 0. Package the sysroot and tools.
