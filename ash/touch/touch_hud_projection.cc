@@ -14,7 +14,7 @@
 namespace ash {
 
 TouchHudProjection::TouchHudProjection(aura::Window* initial_root)
-    : TouchObserverHUD(initial_root),
+    : TouchObserverHUD(initial_root, "TouchHud"),
       touch_hud_renderer_(new TouchHudRenderer(widget())) {}
 
 TouchHudProjection::~TouchHudProjection() {}

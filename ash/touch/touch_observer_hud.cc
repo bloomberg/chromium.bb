@@ -17,7 +17,8 @@
 
 namespace ash {
 
-TouchObserverHUD::TouchObserverHUD(aura::Window* initial_root)
+TouchObserverHUD::TouchObserverHUD(aura::Window* initial_root,
+                                   const std::string& widget_name)
     : display_id_(GetRootWindowSettings(initial_root)->display_id),
       root_window_(initial_root),
       widget_(NULL) {
@@ -38,6 +39,7 @@ TouchObserverHUD::TouchObserverHUD(aura::Window* initial_root)
   params.bounds = display.bounds();
   params.parent =
       Shell::GetContainer(root_window_, kShellWindowId_OverlayContainer);
+  params.name = widget_name;
   widget_->Init(params);
   widget_->SetContentsView(content);
   widget_->StackAtTop();
