@@ -1181,6 +1181,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_GEAR_BUTTON_TOOLTIP" desc="Tooltip for the gear button in the Files app.">
     Settings
   </message>
+  <message name="IDS_FILE_BROWSER_SELECTION_MENU_BUTTON_TOOLTIP" desc="Tooltip for the button to open the context menu of currently selected items in the Files app.">
+    More...
+  </message>
 
   <message name="IDS_FILE_BROWSER_TIME_TODAY" desc="File date and time in case the date is today.">
     Today <ph name="TODAY_DAYTIME">$1<ex>6:19 AM</ex></ph>
