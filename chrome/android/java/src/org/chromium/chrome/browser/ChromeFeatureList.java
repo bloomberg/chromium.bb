@@ -150,6 +150,7 @@ public abstract class ChromeFeatureList {
     public static final String ANDROID_PAY_INTEGRATION_V1 = "AndroidPayIntegrationV1";
     public static final String ANDROID_PAY_INTEGRATION_V2 = "AndroidPayIntegrationV2";
     public static final String ANDROID_PAYMENT_APPS = "AndroidPaymentApps";
+    public static final String ANDROID_SIGNIN_PROMOS = "AndroidSigninPromos";
     public static final String AUTOFILL_SCAN_CARDHOLDER_NAME = "AutofillScanCardholderName";
     public static final String CCT_BACKGROUND_TAB = "CCTBackgroundTab";
     public static final String CCT_EXTERNAL_LINK_HANDLING = "CCTExternalLinkHandling";
