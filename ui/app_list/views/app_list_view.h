@@ -94,10 +94,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // hiding the app list when a modal dialog is being shown).
   void SetAppListOverlayVisible(bool visible);
 
-  views::Widget* search_box_widget() const { return search_box_widget_; }
-
-  SearchBoxView* search_box_view() { return search_box_view_; }
-
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
@@ -108,8 +104,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   bool ShouldDescendIntoChildForEventHandling(
       gfx::NativeView child,
       const gfx::Point& location) override;
-
-  AppListMainView* app_list_main_view() { return app_list_main_view_; }
 
   // Gets the PaginationModel owned by this view's apps grid.
   PaginationModel* GetAppsPaginationModel();
@@ -122,9 +116,16 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Changes the app list state.
   void SetState(AppListState new_state);
 
+  // Kicks off the proper animation for the state change. If an animation is
+  // in progress it will be interrupted.
+  void StartAnimationForState(AppListState new_state);
+
   // Changes the app list state depending on the current |app_list_state_| and
   // whether the search box is empty.
   void SetStateFromSearchBoxView(bool search_box_is_empty);
+
+  // Called when tablet mode starts and ends.
+  void OnTabletModeChanged(bool started);
 
   bool is_fullscreen() const {
     return app_list_state_ == FULLSCREEN_ALL_APPS ||
@@ -132,9 +133,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   }
 
   AppListState app_list_state() const { return app_list_state_; }
-
-  // Called when tablet mode starts and ends.
-  void OnTabletModeChanged(bool started);
+  AppListMainView* app_list_main_view() const { return app_list_main_view_; }
+  views::Widget* search_box_widget() const { return search_box_widget_; }
+  SearchBoxView* search_box_view() const { return search_box_view_; }
 
   // Changes |app_list_state_| from |PEEKING| to |FULLSCREEN_ALL_APPS|.
   bool HandleScroll(const ui::Event* event);
@@ -166,6 +167,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Handles app list state transfers. If the drag was fast enough, ignore the
   // release position and snap to the next state.
   void EndDrag(const gfx::Point& location);
+
+  // Gets the display nearest to the parent window.
+  display::Display GetDisplayNearestView() const;
 
   // Overridden from views::BubbleDialogDelegateView:
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
@@ -221,7 +225,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   bool processing_scroll_event_series_;
   // The state of the app list, controlled via SetState().
   AppListState app_list_state_;
-
   // An observer that notifies AppListView when the display has changed.
   ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
 
