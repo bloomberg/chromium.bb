@@ -83,6 +83,13 @@ cr.define('settings', function() {
       nativeDisplayName: "norsk bokmål",
       supportsSpellcheck: true,
       supportsUI: true,
+    }, {
+      // A language where displayName and nativeDisplayName have different
+      // values. Used for testing search functionality.
+      code: "el",
+      displayName: "Greek",
+      nativeDisplayName: "Ελληνικά",
+      supportsUI: true,
     }];
 
     /** @type {!Array<!chrome.languageSettingsPrivate.InputMethod>} */
