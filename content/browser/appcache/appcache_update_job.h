@@ -36,6 +36,7 @@ FORWARD_DECLARE_TEST(AppCacheGroupTest, QueueUpdate);
 class AppCacheGroupTest;
 class AppCacheUpdateJobTest;
 class HostNotifier;
+class URLFetcher;
 
 // Application cache Update algorithm and state.
 class CONTENT_EXPORT AppCacheUpdateJob
@@ -60,7 +61,7 @@ class CONTENT_EXPORT AppCacheUpdateJob
  private:
   friend class content::AppCacheGroupTest;
   friend class content::AppCacheUpdateJobTest;
-  class URLFetcher;
+  friend class URLFetcher;
 
   // Master entries have multiple hosts, for example, the same page is opened
   // in different tabs.
@@ -108,64 +109,6 @@ class CONTENT_EXPORT AppCacheUpdateJob
     bool storage_checked;
     scoped_refptr<AppCacheResponseInfo> existing_response_info;
   };
-
-  class URLFetcher : public net::URLRequest::Delegate {
-   public:
-    enum FetchType {
-      MANIFEST_FETCH,
-      URL_FETCH,
-      MASTER_ENTRY_FETCH,
-      MANIFEST_REFETCH,
-    };
-    URLFetcher(const GURL& url,
-               FetchType fetch_type,
-               AppCacheUpdateJob* job);
-    ~URLFetcher() override;
-    void Start();
-    FetchType fetch_type() const { return fetch_type_; }
-    net::URLRequest* request() const { return request_.get(); }
-    const AppCacheEntry& existing_entry() const { return existing_entry_; }
-    const std::string& manifest_data() const { return manifest_data_; }
-    AppCacheResponseWriter* response_writer() const {
-      return response_writer_.get();
-    }
-    void set_existing_response_headers(net::HttpResponseHeaders* headers) {
-      existing_response_headers_ = headers;
-    }
-    void set_existing_entry(const AppCacheEntry& entry) {
-      existing_entry_ = entry;
-    }
-    ResultType result() const { return result_; }
-    int redirect_response_code() const { return redirect_response_code_; }
-
-   private:
-    // URLRequest::Delegate overrides
-    void OnReceivedRedirect(net::URLRequest* request,
-                            const net::RedirectInfo& redirect_info,
-                            bool* defer_redirect) override;
-    void OnResponseStarted(net::URLRequest* request, int net_error) override;
-    void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
-
-    void AddConditionalHeaders(const net::HttpResponseHeaders* headers);
-    void OnWriteComplete(int result);
-    void ReadResponseData();
-    bool ConsumeResponseData(int bytes_read);
-    void OnResponseCompleted(int net_error);
-    bool MaybeRetryRequest();
-
-    GURL url_;
-    AppCacheUpdateJob* job_;
-    FetchType fetch_type_;
-    int retry_503_attempts_;
-    scoped_refptr<net::IOBuffer> buffer_;
-    std::unique_ptr<net::URLRequest> request_;
-    AppCacheEntry existing_entry_;
-    scoped_refptr<net::HttpResponseHeaders> existing_response_headers_;
-    std::string manifest_data_;
-    ResultType result_;
-    int redirect_response_code_;
-    std::unique_ptr<AppCacheResponseWriter> response_writer_;
-  };  // class URLFetcher
 
   AppCacheResponseWriter* CreateResponseWriter();
 
