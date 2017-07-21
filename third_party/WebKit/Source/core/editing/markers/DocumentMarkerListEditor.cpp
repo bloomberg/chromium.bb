@@ -166,6 +166,26 @@ bool DocumentMarkerListEditor::ShiftMarkersContentIndependent(
   return did_shift_marker;
 }
 
+DocumentMarker* DocumentMarkerListEditor::FirstMarkerIntersectingRange(
+    const MarkerList& list,
+    unsigned start_offset,
+    unsigned end_offset) {
+  DCHECK_LE(start_offset, end_offset);
+
+  const auto& marker_it =
+      std::lower_bound(list.begin(), list.end(), start_offset,
+                       [](const DocumentMarker* marker, unsigned start_offset) {
+                         return marker->EndOffset() <= start_offset;
+                       });
+  if (marker_it == list.end())
+    return nullptr;
+
+  DocumentMarker* marker = *marker_it;
+  if (marker->StartOffset() >= end_offset)
+    return nullptr;
+  return marker;
+}
+
 HeapVector<Member<DocumentMarker>>
 DocumentMarkerListEditor::MarkersIntersectingRange(const MarkerList& list,
                                                    unsigned start_offset,

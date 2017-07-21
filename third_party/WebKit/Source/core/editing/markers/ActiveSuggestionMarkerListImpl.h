@@ -29,6 +29,8 @@ class CORE_EXPORT ActiveSuggestionMarkerListImpl final
   void Clear() final;
 
   const HeapVector<Member<DocumentMarker>>& GetMarkers() const final;
+  DocumentMarker* FirstMarkerIntersectingRange(unsigned start_offset,
+                                               unsigned end_offset) const final;
   HeapVector<Member<DocumentMarker>> MarkersIntersectingRange(
       unsigned start_offset,
       unsigned end_offset) const final;

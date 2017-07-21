@@ -33,6 +33,11 @@ class CORE_EXPORT DocumentMarkerList
 
   // Returns all markers
   virtual const HeapVector<Member<DocumentMarker>>& GetMarkers() const = 0;
+  // Returns the first marker whose interior overlaps with the range
+  // [start_offset, end_offset], or null if there is no such marker.
+  virtual DocumentMarker* FirstMarkerIntersectingRange(
+      unsigned start_offset,
+      unsigned end_offset) const = 0;
   // Returns markers that have non-empty overlap with the range
   // [start_offset, end_offset]
   virtual HeapVector<Member<DocumentMarker>> MarkersIntersectingRange(

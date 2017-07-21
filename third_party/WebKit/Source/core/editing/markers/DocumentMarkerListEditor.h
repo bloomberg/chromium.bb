@@ -46,6 +46,13 @@ class CORE_EXPORT DocumentMarkerListEditor final {
                                              unsigned old_length,
                                              unsigned new_length);
 
+  // Returns the first marker in the specified MarkerList whose interior
+  // overlaps overlap with the range [start_offset, end_offset], or null if
+  // there is no such marker.
+  static DocumentMarker* FirstMarkerIntersectingRange(const MarkerList&,
+                                                      unsigned start_offset,
+                                                      unsigned end_offset);
+
   static HeapVector<Member<DocumentMarker>> MarkersIntersectingRange(
       const MarkerList&,
       unsigned start_offset,
