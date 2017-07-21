@@ -8,26 +8,27 @@
 #include <sstream>
 
 #include "base/logging.h"
+#include "components/feedback/feedback_report.h"
 #include "net/url_request/url_fetcher.h"
 
 namespace feedback {
+
 namespace {
 
-const int kHttpPostSuccessNoContent = 204;
-const int kHttpPostFailNoConnection = -1;
-const int kHttpPostFailClientError = 400;
-const int kHttpPostFailServerError = 500;
+constexpr int kHttpPostSuccessNoContent = 204;
+constexpr int kHttpPostFailNoConnection = -1;
+constexpr int kHttpPostFailClientError = 400;
+constexpr int kHttpPostFailServerError = 500;
 
 }  // namespace
 
 FeedbackUploaderDelegate::FeedbackUploaderDelegate(
-    const std::string& post_body,
+    scoped_refptr<FeedbackReport> pending_report,
     const base::Closure& success_callback,
-    const ReportDataCallback& error_callback)
-        : post_body_(post_body),
-          success_callback_(success_callback),
-          error_callback_(error_callback) {
-}
+    const ReportFailureCallback& error_callback)
+    : pending_report_(pending_report),
+      success_callback_(success_callback),
+      error_callback_(error_callback) {}
 
 FeedbackUploaderDelegate::~FeedbackUploaderDelegate() {}
 
@@ -41,18 +42,27 @@ void FeedbackUploaderDelegate::OnURLFetchComplete(
     error_stream << "Success";
     success_callback_.Run();
   } else {
+    bool should_retry = true;
     // Process the error for debug output
     if (response_code == kHttpPostFailNoConnection) {
       error_stream << "No connection to server.";
-    } else if ((response_code > kHttpPostFailClientError) &&
+    } else if ((response_code >= kHttpPostFailClientError) &&
                (response_code < kHttpPostFailServerError)) {
+      // Client errors mean that the server failed to parse the proto that was
+      // sent, or that some requirements weren't met by the server side
+      // validation, and hence we should NOT retry sending this corrupt report
+      // and give up.
+      should_retry = false;
+
       error_stream << "Client error: HTTP response code " << response_code;
-    } else if (response_code > kHttpPostFailServerError) {
+    } else if (response_code >= kHttpPostFailServerError) {
       error_stream << "Server error: HTTP response code " << response_code;
     } else {
       error_stream << "Unknown error: HTTP response code " << response_code;
     }
-    error_callback_.Run(post_body_);
+
+    if (should_retry)
+      error_callback_.Run(pending_report_);
   }
 
   LOG(WARNING) << "FEEDBACK: Submission to feedback server ("

@@ -8,24 +8,69 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/sequenced_task_runner.h"
-#include "base/task_runner_util.h"
-#include "base/task_scheduler/post_task.h"
 #include "components/feedback/feedback_report.h"
+#include "components/feedback/feedback_switches.h"
 
 namespace feedback {
+
 namespace {
 
-const char kFeedbackPostUrl[] =
+constexpr char kFeedbackPostUrl[] =
     "https://www.google.com/tools/feedback/chrome/__submit";
 
-const int64_t kRetryDelayMinutes = 60;
-
-const base::FilePath::CharType kFeedbackReportPath[] =
+constexpr base::FilePath::CharType kFeedbackReportPath[] =
     FILE_PATH_LITERAL("Feedback Reports");
 
+// The minimum time to wait before uploading reports are retried. Exponential
+// backoff delay is applied on successive failures.
+// This value can be overriden by tests by calling
+// FeedbackUploader::SetMinimumRetryDelayForTesting().
+base::TimeDelta g_minimum_retry_delay = base::TimeDelta::FromMinutes(60);
+
+GURL GetFeedbackPostGURL() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  return GURL(command_line.HasSwitch(switches::kFeedbackServer)
+                  ? command_line.GetSwitchValueASCII(switches::kFeedbackServer)
+                  : kFeedbackPostUrl);
+}
+
 }  // namespace
+
+FeedbackUploader::FeedbackUploader(
+    const base::FilePath& path,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : feedback_reports_path_(path.Append(kFeedbackReportPath)),
+      task_runner_(task_runner),
+      retry_delay_(g_minimum_retry_delay),
+      feedback_post_url_(GetFeedbackPostGURL()) {
+  DCHECK(task_runner_);
+}
+
+FeedbackUploader::~FeedbackUploader() {}
+
+// static
+void FeedbackUploader::SetMinimumRetryDelayForTesting(base::TimeDelta delay) {
+  g_minimum_retry_delay = delay;
+}
+
+void FeedbackUploader::QueueReport(const std::string& data) {
+  QueueReportWithDelay(data, base::TimeDelta());
+}
+
+void FeedbackUploader::OnReportUploadSuccess() {
+  retry_delay_ = g_minimum_retry_delay;
+  UpdateUploadTimer();
+}
+
+void FeedbackUploader::OnReportUploadFailure(
+    scoped_refptr<FeedbackReport> report) {
+  // Implement a backoff delay by doubling the retry delay on each failure.
+  retry_delay_ *= 2;
+  report->set_upload_at(retry_delay_ + base::Time::Now());
+  reports_queue_.emplace(report);
+  UpdateUploadTimer();
+}
 
 bool FeedbackUploader::ReportsUploadTimeComparator::operator()(
     const scoped_refptr<FeedbackReport>& a,
@@ -33,77 +78,30 @@ bool FeedbackUploader::ReportsUploadTimeComparator::operator()(
   return a->upload_at() > b->upload_at();
 }
 
-FeedbackUploader::FeedbackUploader(const base::FilePath& path)
-    : report_path_(path.Append(kFeedbackReportPath)),
-      retry_delay_(base::TimeDelta::FromMinutes(kRetryDelayMinutes)),
-      url_(kFeedbackPostUrl) {
-  Init();
-}
-
-FeedbackUploader::FeedbackUploader(const base::FilePath& path,
-                                   const std::string& url)
-    : report_path_(path.Append(kFeedbackReportPath)),
-      retry_delay_(base::TimeDelta::FromMinutes(kRetryDelayMinutes)),
-      url_(url) {
-  Init();
-}
-
-FeedbackUploader::~FeedbackUploader() {}
-
-void FeedbackUploader::Init() {
-  dispatch_callback_ = base::Bind(&FeedbackUploader::DispatchReport,
-                                  AsWeakPtr());
-}
-
-void FeedbackUploader::QueueReport(const std::string& data) {
-  QueueReportWithDelay(data, base::TimeDelta());
-}
-
 void FeedbackUploader::UpdateUploadTimer() {
   if (reports_queue_.empty())
     return;
 
   scoped_refptr<FeedbackReport> report = reports_queue_.top();
-  base::Time now = base::Time::Now();
+  const base::Time now = base::Time::Now();
   if (report->upload_at() <= now) {
     reports_queue_.pop();
-    dispatch_callback_.Run(report->data());
+    DispatchReport(report);
     report->DeleteReportOnDisk();
   } else {
     // Stop the old timer and start an updated one.
-    if (upload_timer_.IsRunning())
-      upload_timer_.Stop();
+    upload_timer_.Stop();
     upload_timer_.Start(
         FROM_HERE, report->upload_at() - now, this,
         &FeedbackUploader::UpdateUploadTimer);
   }
 }
 
-void FeedbackUploader::RetryReport(const std::string& data) {
-  QueueReportWithDelay(data, retry_delay_);
-}
-
 void FeedbackUploader::QueueReportWithDelay(const std::string& data,
                                             base::TimeDelta delay) {
-  // Uses a BLOCK_SHUTDOWN file task runner because we really don't want to
-  // lose reports.
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
-
-  reports_queue_.push(new FeedbackReport(report_path_,
-                                         base::Time::Now() + delay,
-                                         data,
-                                         task_runner));
+  reports_queue_.emplace(base::MakeRefCounted<FeedbackReport>(
+      feedback_reports_path_, base::Time::Now() + delay, data, task_runner_));
   UpdateUploadTimer();
-}
-
-void FeedbackUploader::setup_for_test(
-    const ReportDataCallback& dispatch_callback,
-    const base::TimeDelta& retry_delay) {
-  dispatch_callback_ = dispatch_callback;
-  retry_delay_ = retry_delay;
 }
 
 }  // namespace feedback

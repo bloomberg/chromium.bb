@@ -60,11 +60,11 @@ void FeedbackProfileObserver::QueueUnsentReports(
     content::BrowserContext* context) {
   feedback::FeedbackUploader* uploader =
       feedback::FeedbackUploaderFactory::GetForBrowserContext(context);
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+  uploader->task_runner()->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &FeedbackReport::LoadReportsAndQueue,
-          uploader->GetFeedbackReportsPath(),
+          uploader->feedback_reports_path(),
           base::Bind(&FeedbackProfileObserver::QueueSingleReport, uploader)));
 }
 

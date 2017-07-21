@@ -10,6 +10,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "components/feedback/feedback_report.h"
 #include "components/feedback/feedback_uploader.h"
 #include "components/feedback/feedback_uploader_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -20,23 +21,28 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace feedback {
+
 namespace {
 
-const char kHistograms[] = "";
-const char kImageData[] = "";
-const char kFileData[] = "";
+constexpr char kHistograms[] = "";
+constexpr char kImageData[] = "";
+constexpr char kFileData[] = "";
 
 class MockUploader : public feedback::FeedbackUploader, public KeyedService {
  public:
-  MockUploader(content::BrowserContext* context)
-      : FeedbackUploader(context ? context->GetPath() : base::FilePath()) {}
+  MockUploader(content::BrowserContext* context,
+               scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : FeedbackUploader(context ? context->GetPath() : base::FilePath(),
+                         task_runner) {}
 
-  MOCK_METHOD1(DispatchReport, void(const std::string&));
+  MOCK_METHOD1(DispatchReport, void(scoped_refptr<FeedbackReport>));
 };
 
 std::unique_ptr<KeyedService> CreateFeedbackUploaderService(
     content::BrowserContext* context) {
-  std::unique_ptr<MockUploader> uploader(new MockUploader(context));
+  auto uploader = base::MakeUnique<MockUploader>(
+      context, FeedbackUploaderFactory::CreateUploaderTaskRunner());
   EXPECT_CALL(*uploader, DispatchReport(testing::_)).Times(1);
   return std::move(uploader);
 }
@@ -46,8 +52,6 @@ std::unique_ptr<std::string> MakeScoped(const char* str) {
 }
 
 }  // namespace
-
-namespace feedback {
 
 class FeedbackDataTest : public testing::Test {
  protected:
