@@ -140,6 +140,11 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   }
   void SetFetchDocWrittenScriptDeferIdle();
 
+  // To support script streaming, the ScriptRunner may need to access the
+  // PendingScript. This breaks the intended layering, so please use with
+  // care. (Method is virtual to support testing.)
+  virtual PendingScript* GetPendingScriptIfScriptIsAsync();
+
  protected:
   ScriptLoader(ScriptElementBase*,
                bool created_by_parser,

@@ -68,11 +68,35 @@ void ClassicPendingScript::DisposeInternal() {
 
 void ClassicPendingScript::StreamingFinished() {
   CheckState();
+  DCHECK(streamer_);  // Should only be called by ScriptStreamer.
+
+  std::unique_ptr<WTF::Closure> done(std::move(streamer_done_));
+  if (ready_state_ == kWaitingForStreaming) {
+    FinishWaitingForStreaming();
+  } else if (ready_state_ == kReadyStreaming) {
+    FinishReadyStreaming();
+  } else {
+    NOTREACHED();
+  }
+
+  if (done)
+    (*done)();
+}
+
+void ClassicPendingScript::FinishWaitingForStreaming() {
+  CheckState();
   DCHECK(GetResource());
   DCHECK_EQ(ready_state_, kWaitingForStreaming);
 
   bool error_occurred = GetResource()->ErrorOccurred() || integrity_failure_;
   AdvanceReadyState(error_occurred ? kErrorOccurred : kReady);
+}
+
+void ClassicPendingScript::FinishReadyStreaming() {
+  CheckState();
+  DCHECK(GetResource());
+  DCHECK_EQ(ready_state_, kReadyStreaming);
+  AdvanceReadyState(kReady);
 }
 
 void ClassicPendingScript::NotifyFinished(Resource* resource) {
@@ -120,7 +144,7 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
   if (streamer_)
     streamer_->NotifyFinished(resource);
   else
-    StreamingFinished();
+    FinishWaitingForStreaming();
 }
 
 void ClassicPendingScript::NotifyAppendData(ScriptResource* resource) {
@@ -141,23 +165,29 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
   DCHECK(IsReady());
 
   error_occurred = ErrorOccurred();
-  if (GetResource()) {
-    DCHECK(GetResource()->IsLoaded());
-    if (streamer_ && !streamer_->StreamingSuppressed())
-      return ClassicScript::Create(ScriptSourceCode(streamer_, GetResource()));
-    return ClassicScript::Create(ScriptSourceCode(GetResource()));
+  if (!GetResource()) {
+    return ClassicScript::Create(ScriptSourceCode(
+        GetElement()->TextFromChildren(), document_url, StartingPosition()));
   }
 
-  return ClassicScript::Create(ScriptSourceCode(
-      GetElement()->TextFromChildren(), document_url, StartingPosition()));
+  DCHECK(GetResource()->IsLoaded());
+  bool streamer_ready = (ready_state_ == kReady) && streamer_ &&
+                        !streamer_->StreamingSuppressed();
+  return ClassicScript::Create(
+      ScriptSourceCode(streamer_ready ? streamer_ : nullptr, GetResource()));
 }
 
 void ClassicPendingScript::SetStreamer(ScriptStreamer* streamer) {
+  DCHECK(streamer);
   DCHECK(!streamer_);
-  DCHECK(!IsWatchingForLoad());
+  DCHECK(!IsWatchingForLoad() || ready_state_ != kWaitingForResource);
   DCHECK(!streamer->IsFinished());
-  DCHECK_LT(ready_state_, kWaitingForStreaming);
+  DCHECK(ready_state_ == kWaitingForResource || ready_state_ == kReady);
+
   streamer_ = streamer;
+  if (streamer && ready_state_ == kReady)
+    AdvanceReadyState(kReadyStreaming);
+
   CheckState();
 }
 
@@ -172,17 +202,33 @@ bool ClassicPendingScript::ErrorOccurred() const {
 }
 
 void ClassicPendingScript::AdvanceReadyState(ReadyState new_ready_state) {
-  CHECK_GT(new_ready_state, ready_state_)
-      << "The ready state should monotonically advance.";
-
-  if (new_ready_state >= kReady) {
-    CHECK_LT(ready_state_, kReady)
-        << "The state should not advance from one completed state to another.";
+  // We will allow exactly these state transitions:
+  //
+  // kWaitingForResource -> kWaitingForStreaming -> [kReady, kErrorOccurred]
+  // kReady -> kReadyStreaming -> kReady
+  switch (ready_state_) {
+    case kWaitingForResource:
+      CHECK_EQ(new_ready_state, kWaitingForStreaming);
+      break;
+    case kWaitingForStreaming:
+      CHECK(new_ready_state == kReady || new_ready_state == kErrorOccurred);
+      break;
+    case kReady:
+      CHECK_EQ(new_ready_state, kReadyStreaming);
+      break;
+    case kReadyStreaming:
+      CHECK_EQ(new_ready_state, kReady);
+      break;
+    case kErrorOccurred:
+      NOTREACHED();
+      break;
   }
 
+  bool old_is_ready = IsReady();
   ready_state_ = new_ready_state;
 
-  if (ready_state_ >= kReady && IsWatchingForLoad())
+  // Did we transition into a 'ready' state?
+  if (IsReady() && !old_is_ready && IsWatchingForLoad())
     Client()->PendingScriptFinished(this);
 }
 
@@ -194,19 +240,76 @@ void ClassicPendingScript::OnPurgeMemory() {
   streamer_ = nullptr;
 }
 
-void ClassicPendingScript::StartStreamingIfPossible(
-    Document* document,
-    ScriptStreamer::Type streamer_type) {
-  if (!document->GetFrame())
-    return;
+bool ClassicPendingScript::StartStreamingIfPossible(
+    ScriptStreamer::Type streamer_type,
+    std::unique_ptr<WTF::Closure> done) {
+  // We can start streaming in two states: While still loading
+  // (kWaitingForResource), or after having loaded (kReady).
+  if (ready_state_ != kWaitingForResource && ready_state_ != kReady)
+    return false;
+
+  Document* document = &GetElement()->GetDocument();
+  if (!document || !document->GetFrame())
+    return false;
 
   ScriptState* script_state = ToScriptStateForMainWorld(document->GetFrame());
   if (!script_state)
-    return;
+    return false;
 
-  ScriptStreamer::StartStreaming(
-      this, streamer_type, document->GetFrame()->GetSettings(), script_state,
-      TaskRunnerHelper::Get(TaskType::kNetworking, document));
+  // To support streaming re-try, we'll clear the existing streamer if
+  // it exists; it claims to be finished; but it's finished because streaming
+  // has been suppressed.
+  if (streamer_ && streamer_->StreamingSuppressed() &&
+      streamer_->IsFinished()) {
+    DCHECK_EQ(ready_state_, kReady);
+    DCHECK(!streamer_done_);
+    streamer_.Clear();
+  }
+
+  if (streamer_)
+    return false;
+
+  // The two checks above should imply that we're not presently streaming.
+  DCHECK(!IsCurrentlyStreaming());
+
+  // Parser blocking scripts tend to do a lot of work in the 'finished'
+  // callbacks, while async + in-order scripts all do control-like activities
+  // (like posting new tasks). Use the 'control' queue only for control tasks.
+  // (More details in discussion for cl 500147.)
+  auto task_type = streamer_type == ScriptStreamer::kParsingBlocking
+                       ? TaskType::kNetworking
+                       : TaskType::kNetworkingControl;
+
+  DCHECK_EQ(ready_state_ == kReady, GetResource()->IsLoaded());
+  DCHECK(!streamer_);
+  DCHECK(!streamer_done_);
+  bool success = false;
+  if (ready_state_ == kReady) {
+    ScriptStreamer::StartStreamingLoadedScript(
+        this, streamer_type, document->GetFrame()->GetSettings(), script_state,
+        TaskRunnerHelper::Get(task_type, document));
+    success = streamer_ && !streamer_->IsStreamingFinished();
+  } else {
+    ScriptStreamer::StartStreaming(
+        this, streamer_type, document->GetFrame()->GetSettings(), script_state,
+        TaskRunnerHelper::Get(task_type, document));
+    success = streamer_;
+  }
+
+  // If we have successfully started streaming, we are required to call the
+  // callback.
+  if (success) {
+    streamer_done_ = std::move(done);
+  }
+  return success;
+}
+
+bool ClassicPendingScript::IsCurrentlyStreaming() const {
+  // We could either check our local state, or ask the streamer. Let's
+  // double-check these are consistent.
+  DCHECK_EQ(streamer_ && !streamer_->IsStreamingFinished(),
+            ready_state_ == kReadyStreaming || (streamer_ && !IsReady()));
+  return ready_state_ == kReadyStreaming || (streamer_ && !IsReady());
 }
 
 bool ClassicPendingScript::WasCanceled() const {
