@@ -192,7 +192,6 @@ URLRequestContextBuilder::URLRequestContextBuilder()
     : name_(nullptr),
       enable_brotli_(false),
       network_quality_estimator_(nullptr),
-      shared_http_user_agent_settings_(nullptr),
       data_enabled_(false),
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
       file_enabled_(false),
@@ -204,14 +203,9 @@ URLRequestContextBuilder::URLRequestContextBuilder()
       throttling_enabled_(false),
       sdch_enabled_(false),
       cookie_store_set_by_client_(false),
-      transport_security_persister_readonly_(false),
       net_log_(nullptr),
-      shared_host_resolver_(nullptr),
       pac_quick_check_enabled_(true),
-      pac_sanitize_url_policy_(ProxyService::SanitizeUrlPolicy::SAFE),
-      shared_proxy_delegate_(nullptr),
-      shared_http_auth_handler_factory_(nullptr),
-      shared_cert_verifier_(nullptr) {
+      pac_sanitize_url_policy_(ProxyService::SanitizeUrlPolicy::SAFE) {
 }
 
 URLRequestContextBuilder::~URLRequestContextBuilder() {}
@@ -243,22 +237,6 @@ void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
   }
 }
 
-void URLRequestContextBuilder::set_accept_language(
-    const std::string& accept_language) {
-  DCHECK(!shared_http_user_agent_settings_);
-  accept_language_ = accept_language;
-}
-void URLRequestContextBuilder::set_user_agent(const std::string& user_agent) {
-  DCHECK(!shared_http_user_agent_settings_);
-  user_agent_ = user_agent;
-}
-void URLRequestContextBuilder::set_shared_http_user_agent_settings(
-    HttpUserAgentSettings* shared_http_user_agent_settings) {
-  DCHECK(accept_language_.empty());
-  DCHECK(user_agent_.empty());
-  shared_http_user_agent_settings_ = shared_http_user_agent_settings;
-}
-
 void URLRequestContextBuilder::EnableHttpCache(const HttpCacheParams& params) {
   http_cache_enabled_ = true;
   http_cache_params_ = params;
@@ -287,14 +265,7 @@ void URLRequestContextBuilder::set_ct_policy_enforcer(
 
 void URLRequestContextBuilder::SetCertVerifier(
     std::unique_ptr<CertVerifier> cert_verifier) {
-  DCHECK(!shared_cert_verifier_);
   cert_verifier_ = std::move(cert_verifier);
-}
-
-void URLRequestContextBuilder::set_shared_cert_verifier(
-    CertVerifier* shared_cert_verifier) {
-  DCHECK(!cert_verifier_);
-  shared_cert_verifier_ = shared_cert_verifier;
 }
 
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -308,12 +279,6 @@ void URLRequestContextBuilder::SetInterceptors(
     std::vector<std::unique_ptr<URLRequestInterceptor>>
         url_request_interceptors) {
   url_request_interceptors_ = std::move(url_request_interceptors);
-}
-
-void URLRequestContextBuilder::set_create_intercepting_job_factory(
-    CreateInterceptingJobFactory create_intercepting_job_factory) {
-  DCHECK(!create_intercepting_job_factory_);
-  create_intercepting_job_factory_ = std::move(create_intercepting_job_factory);
 }
 
 void URLRequestContextBuilder::SetCookieAndChannelIdStores(
@@ -335,46 +300,12 @@ void URLRequestContextBuilder::SetProtocolHandler(
     const std::string& scheme,
     std::unique_ptr<URLRequestJobFactory::ProtocolHandler> protocol_handler) {
   DCHECK(protocol_handler);
-  // If a consumer sets a ProtocolHandler and then overwrites it with another,
-  // it's probably a bug.
-  DCHECK_EQ(0u, protocol_handlers_.count(scheme));
   protocol_handlers_[scheme] = std::move(protocol_handler);
-}
-
-void URLRequestContextBuilder::set_host_resolver(
-    std::unique_ptr<HostResolver> host_resolver) {
-  DCHECK(!shared_host_resolver_);
-  host_resolver_ = std::move(host_resolver);
-}
-
-void URLRequestContextBuilder::set_shared_host_resolver(
-    HostResolver* shared_host_resolver) {
-  DCHECK(!host_resolver_);
-  shared_host_resolver_ = shared_host_resolver;
-}
-
-void URLRequestContextBuilder::set_proxy_delegate(
-    std::unique_ptr<ProxyDelegate> proxy_delegate) {
-  DCHECK(!shared_proxy_delegate_);
-  proxy_delegate_ = std::move(proxy_delegate);
-}
-
-void URLRequestContextBuilder::set_shared_proxy_delegate(
-    ProxyDelegate* shared_proxy_delegate) {
-  DCHECK(!proxy_delegate_);
-  shared_proxy_delegate_ = shared_proxy_delegate;
 }
 
 void URLRequestContextBuilder::SetHttpAuthHandlerFactory(
     std::unique_ptr<HttpAuthHandlerFactory> factory) {
-  DCHECK(!shared_http_auth_handler_factory_);
   http_auth_handler_factory_ = std::move(factory);
-}
-
-void URLRequestContextBuilder::set_shared_http_auth_handler_factory(
-    HttpAuthHandlerFactory* shared_http_auth_handler_factory) {
-  DCHECK(!http_auth_handler_factory_);
-  shared_http_auth_handler_factory_ = shared_http_auth_handler_factory;
 }
 
 void URLRequestContextBuilder::SetHttpServerProperties(
@@ -391,13 +322,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   context->set_enable_brotli(enable_brotli_);
   context->set_network_quality_estimator(network_quality_estimator_);
 
-  if (shared_http_user_agent_settings_) {
-    context->set_http_user_agent_settings(shared_http_user_agent_settings_);
-  } else {
-    storage->set_http_user_agent_settings(
-        base::MakeUnique<StaticHttpUserAgentSettings>(accept_language_,
-                                                      user_agent_));
-  }
+  storage->set_http_user_agent_settings(
+      base::MakeUnique<StaticHttpUserAgentSettings>(accept_language_,
+                                                    user_agent_));
 
   if (!network_delegate_)
     network_delegate_.reset(new BasicNetworkDelegate);
@@ -411,15 +338,10 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     storage->set_net_log(base::WrapUnique(new NetLog));
   }
 
-  if (host_resolver_) {
-    DCHECK(!shared_host_resolver_);
-    storage->set_host_resolver(std::move(host_resolver_));
-  } else if (shared_host_resolver_) {
-    context->set_host_resolver(shared_host_resolver_);
-  } else {
-    storage->set_host_resolver(
-        HostResolver::CreateDefaultResolver(context->net_log()));
+  if (!host_resolver_) {
+    host_resolver_ = HostResolver::CreateDefaultResolver(context->net_log());
   }
+  storage->set_host_resolver(std::move(host_resolver_));
 
   if (ssl_config_service_) {
     // This takes a raw pointer, but |storage| will hold onto a reference to the
@@ -429,17 +351,12 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     storage->set_ssl_config_service(new SSLConfigServiceDefaults);
   }
 
-  if (http_auth_handler_factory_) {
-    DCHECK(!shared_http_auth_handler_factory_);
-    storage->set_http_auth_handler_factory(
-        std::move(http_auth_handler_factory_));
-  } else if (shared_http_auth_handler_factory_) {
-    context->set_http_auth_handler_factory(shared_http_auth_handler_factory_);
-  } else {
-    storage->set_http_auth_handler_factory(
-        HttpAuthHandlerRegistryFactory::CreateDefault(
-            context->host_resolver()));
+  if (!http_auth_handler_factory_) {
+    http_auth_handler_factory_ =
+        HttpAuthHandlerRegistryFactory::CreateDefault(context->host_resolver());
   }
+
+  storage->set_http_auth_handler_factory(std::move(http_auth_handler_factory_));
 
   if (cookie_store_set_by_client_) {
     storage->set_cookie_store(std::move(cookie_store_));
@@ -472,10 +389,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
     context->set_transport_security_persister(
         base::WrapUnique<TransportSecurityPersister>(
-            new TransportSecurityPersister(
-                context->transport_security_state(),
-                transport_security_persister_path_, task_runner,
-                transport_security_persister_readonly_)));
+            new TransportSecurityPersister(context->transport_security_state(),
+                                           transport_security_persister_path_,
+                                           task_runner, false)));
   }
 
   if (http_server_properties_) {
@@ -486,10 +402,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   if (cert_verifier_) {
-    DCHECK(!shared_cert_verifier_);
     storage->set_cert_verifier(std::move(cert_verifier_));
-  } else if (shared_cert_verifier_) {
-    context->set_cert_verifier(shared_cert_verifier_);
   } else {
     storage->set_cert_verifier(CertVerifier::CreateDefault());
   }
@@ -535,11 +448,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   SetHttpNetworkSessionComponents(context.get(), &network_session_context);
 
   if (proxy_delegate_) {
-    DCHECK(!shared_proxy_delegate_);
     network_session_context.proxy_delegate = proxy_delegate_.get();
     storage->set_proxy_delegate(std::move(proxy_delegate_));
-  } else if (shared_proxy_delegate_) {
-    network_session_context.proxy_delegate = shared_proxy_delegate_;
   }
 
   storage->set_http_network_session(base::MakeUnique<HttpNetworkSession>(
@@ -555,23 +465,10 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
                 {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
                  base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
       }
-      // TODO(mmenke): Maybe merge BackendType and HttpCacheParams::Type? The
-      // first doesn't include in memory, so may require some work.
-      BackendType backend_type = CACHE_BACKEND_DEFAULT;
-      switch (http_cache_params_.type) {
-        case HttpCacheParams::DISK:
-          backend_type = CACHE_BACKEND_DEFAULT;
-          break;
-        case HttpCacheParams::DISK_BLOCKFILE:
-          backend_type = CACHE_BACKEND_BLOCKFILE;
-          break;
-        case HttpCacheParams::DISK_SIMPLE:
-          backend_type = CACHE_BACKEND_SIMPLE;
-          break;
-        case HttpCacheParams::IN_MEMORY:
-          NOTREACHED();
-          break;
-      }
+      BackendType backend_type =
+          http_cache_params_.type == HttpCacheParams::DISK
+              ? CACHE_BACKEND_DEFAULT
+              : CACHE_BACKEND_SIMPLE;
       http_cache_backend.reset(new HttpCache::DefaultBackend(
           DISK_CACHE, backend_type, http_cache_params_.path,
           http_cache_params_.max_size, cache_thread_task_runner_));
@@ -628,10 +525,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
           std::move(top_job_factory), std::move(*i)));
     }
     url_request_interceptors_.clear();
-  }
-  if (create_intercepting_job_factory_) {
-    top_job_factory = std::move(create_intercepting_job_factory_)
-                          .Run(std::move(top_job_factory));
   }
   storage->set_job_factory(std::move(top_job_factory));
 

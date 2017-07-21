@@ -88,7 +88,6 @@ class ProxyConfigService;
 class RTTAndThroughputEstimatesObserver;
 class SSLConfigService;
 class URLRequestContext;
-class URLRequestContextBuilderMojo;
 class URLRequestContextGetter;
 
 namespace ct {
@@ -229,13 +228,6 @@ class IOThread : public content::BrowserThreadDelegate {
   // respectively.
   bool WpadQuickCheckEnabled() const;
   bool PacHttpsUrlStrippingEnabled() const;
-
-  // Configures |builder|'s ProxyService to use the specified
-  // |proxy_config_service| and sets a number of proxy-related options based on
-  // prefs, policies, and the command line.
-  void SetUpProxyConfigService(
-      net::URLRequestContextBuilderMojo* builder,
-      std::unique_ptr<net::ProxyConfigService> proxy_config_service) const;
 
  private:
   friend class test::IOThreadPeer;
