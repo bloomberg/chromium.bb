@@ -425,6 +425,9 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoArabicThaiHanLatin) {
   HarfBuzzShaper shaper(mixed_string, 8);
   RefPtr<ShapeResult> result = shaper.Shape(&font, direction);
 
+  // Check width and bounds are not too much different. ".2" is heuristic.
+  EXPECT_NEAR(result->Width(), result->Bounds().Width(), result->Width() * .2);
+
   RefPtr<ShapeResult> composite_result =
       ShapeResult::Create(&font, 0, direction);
   result->CopyRange(0, 4, composite_result.Get());
@@ -464,6 +467,9 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeAcrossRuns) {
   HarfBuzzShaper shaper(mixed_string.Characters16(), mixed_string.length());
   RefPtr<ShapeResult> result = shaper.Shape(&font, direction);
 
+  // Check width and bounds are not too much different. ".1" is heuristic.
+  EXPECT_NEAR(result->Width(), result->Bounds().Width(), result->Width() * .1);
+
   // CopyRange(5, 7) should copy 1 character from [1] and 1 from [2].
   RefPtr<ShapeResult> target = ShapeResult::Create(&font, 0, direction);
   result->CopyRange(5, 7, target.Get());
@@ -486,6 +492,9 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeSegmentGlyphBoundingBox) {
 
   RefPtr<ShapeResult> result = shaper.Shape(&font, direction);
   EXPECT_EQ(result->Bounds(), composite_result->Bounds());
+
+  // Check width and bounds are not too much different. ".1" is heuristic.
+  EXPECT_NEAR(result->Width(), result->Bounds().Width(), result->Width() * .1);
 }
 
 }  // namespace blink

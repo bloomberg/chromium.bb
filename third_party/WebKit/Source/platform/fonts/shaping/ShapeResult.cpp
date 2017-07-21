@@ -389,7 +389,7 @@ void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run_to_insert,
           : glyph_infos[start_glyph + num_glyphs - 1].cluster;
 
   float total_advance = 0.0f;
-  FloatPoint glyph_origin;
+  FloatPoint glyph_origin(width_, 0.0f);
   bool has_vertical_offsets = !HB_DIRECTION_IS_HORIZONTAL(run->direction_);
 
   // HarfBuzz returns result in visual order, no need to flip for RTL.
@@ -488,16 +488,10 @@ void ShapeResult::CopyRange(unsigned start_offset,
     left += glyph_bounding_box_.X();
   if (end_offset >= EndIndexForResult())
     right += glyph_bounding_box_.MaxX() - width_;
-  if (right >= left) {
-    FloatRect adjusted_box(left, glyph_bounding_box_.Y(), right - left,
-                           glyph_bounding_box_.Height());
-    target->glyph_bounding_box_.UniteIfNonZero(adjusted_box);
-  } else {
-    FloatRect adjusted_box(left, glyph_bounding_box_.Y(), 0,
-                           glyph_bounding_box_.Height());
-    target->glyph_bounding_box_.UniteIfNonZero(adjusted_box);
-    target->glyph_bounding_box_.ShiftMaxXEdgeTo(right);
-  }
+  FloatRect adjusted_box(left, glyph_bounding_box_.Y(),
+                         std::max(right - left, 0.0f),
+                         glyph_bounding_box_.Height());
+  target->glyph_bounding_box_.UniteIfNonZero(adjusted_box);
 
   DCHECK_EQ(index - target->num_characters_,
             std::min(end_offset, EndIndexForResult()) -
