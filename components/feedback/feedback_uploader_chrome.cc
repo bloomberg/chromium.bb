@@ -4,15 +4,10 @@
 
 #include "components/feedback/feedback_uploader_chrome.h"
 
-#include <string>
-
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/task_runner_util.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/feedback/feedback_report.h"
-#include "components/feedback/feedback_switches.h"
 #include "components/feedback/feedback_uploader_delegate.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_context.h"
@@ -29,19 +24,17 @@ const char kProtoBufMimeType[] = "application/x-protobuf";
 
 }  // namespace
 
-FeedbackUploaderChrome::FeedbackUploaderChrome(content::BrowserContext* context)
-    : FeedbackUploader(context ? context->GetPath() : base::FilePath()),
+FeedbackUploaderChrome::FeedbackUploaderChrome(
+    content::BrowserContext* context,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : FeedbackUploader(context ? context->GetPath() : base::FilePath(),
+                       task_runner),
       context_(context) {
   CHECK(context_);
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kFeedbackServer))
-    url_ = command_line.GetSwitchValueASCII(switches::kFeedbackServer);
 }
 
-void FeedbackUploaderChrome::DispatchReport(const std::string& data) {
-  GURL post_url(url_);
-
+void FeedbackUploaderChrome::DispatchReport(
+    scoped_refptr<FeedbackReport> report) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("chrome_feedback_report_app", R"(
         semantics {
@@ -74,12 +67,13 @@ void FeedbackUploaderChrome::DispatchReport(const std::string& data) {
   // Note: FeedbackUploaderDelegate deletes itself and the fetcher.
   net::URLFetcher* fetcher =
       net::URLFetcher::Create(
-          post_url, net::URLFetcher::POST,
+          feedback_post_url(), net::URLFetcher::POST,
           new FeedbackUploaderDelegate(
-              data,
-              base::Bind(&FeedbackUploaderChrome::UpdateUploadTimer,
+              report,
+              base::Bind(&FeedbackUploaderChrome::OnReportUploadSuccess,
                          AsWeakPtr()),
-              base::Bind(&FeedbackUploaderChrome::RetryReport, AsWeakPtr())),
+              base::Bind(&FeedbackUploaderChrome::OnReportUploadFailure,
+                         AsWeakPtr())),
           traffic_annotation)
           .release();
   data_use_measurement::DataUseUserData::AttachToFetcher(
@@ -88,13 +82,13 @@ void FeedbackUploaderChrome::DispatchReport(const std::string& data) {
   net::HttpRequestHeaders headers;
   // Note: It's OK to pass |is_signed_in| false if it's unknown, as it does
   // not affect transmission of experiments coming from the variations server.
-  bool is_signed_in = false;
+  const bool is_signed_in = false;
   variations::AppendVariationHeaders(fetcher->GetOriginalURL(),
                                      context_->IsOffTheRecord(), false,
                                      is_signed_in, &headers);
   fetcher->SetExtraRequestHeaders(headers.ToString());
 
-  fetcher->SetUploadData(kProtoBufMimeType, data);
+  fetcher->SetUploadData(kProtoBufMimeType, report->data());
   fetcher->SetRequestContext(
       content::BrowserContext::GetDefaultStoragePartition(context_)->
           GetURLRequestContext());

@@ -45,6 +45,7 @@ class FeedbackReport : public base::RefCounted<FeedbackReport> {
   void DeleteReportOnDisk();
 
   const base::Time& upload_at() const { return upload_at_; }
+  void set_upload_at(const base::Time& time) { upload_at_ = time; }
   const std::string& data() const { return data_; }
 
  private:

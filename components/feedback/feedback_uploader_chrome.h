@@ -18,11 +18,14 @@ namespace feedback {
 class FeedbackUploaderChrome : public FeedbackUploader,
                                public KeyedService {
  public:
-  explicit FeedbackUploaderChrome(content::BrowserContext* context);
-
-  void DispatchReport(const std::string& data) override;
+  FeedbackUploaderChrome(
+      content::BrowserContext* context,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  private:
+  // feedback::FeedbackUploader:
+  void DispatchReport(scoped_refptr<FeedbackReport> report) override;
+
   // Browser context this uploader was created for.
   content::BrowserContext* context_;
 
