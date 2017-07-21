@@ -4572,6 +4572,7 @@ test("unit_tests") {
         "../browser/ui/cocoa/app_menu/menu_tracked_root_view_unittest.mm",
         "../browser/ui/cocoa/autofill/autofill_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/autofill/autofill_pop_up_button_unittest.mm",
+        "../browser/ui/cocoa/autofill/autofill_popup_view_cocoa_unittest.mm",
         "../browser/ui/cocoa/autofill/autofill_textfield_unittest.mm",
         "../browser/ui/cocoa/autofill/autofill_tooltip_controller_unittest.mm",
         "../browser/ui/cocoa/autofill/down_arrow_popup_menu_cell_unittest.mm",

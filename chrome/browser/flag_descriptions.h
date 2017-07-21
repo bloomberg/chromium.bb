@@ -1212,6 +1212,9 @@ extern const char kMacRTLDescription[];
 extern const char kMacTouchBarName[];
 extern const char kMacTouchBarDescription[];
 
+extern const char kCreditCardAutofillTouchBarName[];
+extern const char kCreditCardAutofillTouchBarDescription[];
+
 extern const char kMacV2SandboxName[];
 extern const char kMacV2SandboxDescription[];
 
