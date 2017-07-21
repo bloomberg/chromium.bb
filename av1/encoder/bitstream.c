@@ -4557,10 +4557,10 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
 #endif  // CONFIG_SUPERTX
   FRAME_CONTEXT *const fc = cm->fc;
-  FRAME_COUNTS *counts = cpi->td.counts;
   aom_writer *header_bc;
   int i;
 #if !CONFIG_NEW_MULTISYMBOL
+  FRAME_COUNTS *counts = cpi->td.counts;
   int j;
 #endif
 
@@ -4712,7 +4712,9 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
                                 counts->comp_inter_mode[i], probwt);
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 
+#if !CONFIG_NEW_MULTISYMBOL
     av1_write_nmv_probs(cm, cm->allow_high_precision_mv, header_bc, counts->mv);
+#endif
 #if CONFIG_SUPERTX
     if (!xd->lossless[0]) update_supertx_probs(cm, probwt, header_bc);
 #endif  // CONFIG_SUPERTX

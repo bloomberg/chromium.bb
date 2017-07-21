@@ -42,15 +42,23 @@ static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
 
   assert(comp != 0);
 
-  // Sign
+// Sign
+#if CONFIG_NEW_MULTISYMBOL
+  aom_write_bit(w, sign);
+#else
   aom_write(w, sign, mvcomp->sign);
+#endif
 
   // Class
   aom_write_symbol(w, mv_class, mvcomp->class_cdf, MV_CLASSES);
 
   // Integer bits
   if (mv_class == MV_CLASS_0) {
+#if CONFIG_NEW_MULTISYMBOL
+    aom_write_symbol(w, d, mvcomp->class0_cdf, CLASS0_SIZE);
+#else
     aom_write(w, d, mvcomp->class0[0]);
+#endif
   } else {
     int i;
     const int n = mv_class + CLASS0_BITS - 1;  // number of bits
@@ -69,7 +77,13 @@ static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
 
   // High precision bit
   if (precision > MV_SUBPEL_LOW_PRECISION)
+#if CONFIG_NEW_MULTISYMBOL
+    aom_write_symbol(
+        w, hp, mv_class == MV_CLASS_0 ? mvcomp->class0_hp_cdf : mvcomp->hp_cdf,
+        2);
+#else
     aom_write(w, hp, mv_class == MV_CLASS_0 ? mvcomp->class0_hp : mvcomp->hp);
+#endif
 }
 
 static void build_nmv_component_cost_table(int *mvcost,
@@ -137,6 +151,7 @@ static void build_nmv_component_cost_table(int *mvcost,
   }
 }
 
+#if !CONFIG_NEW_MULTISYMBOL
 static void update_mv(aom_writer *w, const unsigned int ct[2], aom_prob *cur_p,
                       aom_prob upd_p) {
   (void)upd_p;
@@ -163,6 +178,7 @@ void av1_write_nmv_probs(AV1_COMMON *cm, int usehp, aom_writer *w,
     }
   }
 }
+#endif
 
 void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
                    nmv_context *mvctx, int usehp) {

@@ -1259,14 +1259,22 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
 #endif  // CONFIG_INTRABC
                              int usehp) {
   int mag, d, fr, hp;
+#if CONFIG_NEW_MULTISYMBOL
+  const int sign = aom_read_bit(r, ACCT_STR);
+#else
   const int sign = aom_read(r, mvcomp->sign, ACCT_STR);
+#endif
   const int mv_class =
       aom_read_symbol(r, mvcomp->class_cdf, MV_CLASSES, ACCT_STR);
   const int class0 = mv_class == MV_CLASS_0;
 
   // Integer part
   if (class0) {
+#if CONFIG_NEW_MULTISYMBOL
+    d = aom_read_symbol(r, mvcomp->class0_cdf, CLASS0_SIZE, ACCT_STR);
+#else
     d = aom_read(r, mvcomp->class0[0], ACCT_STR);
+#endif
     mag = 0;
   } else {
     int i;
@@ -1284,9 +1292,16 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
     fr = aom_read_symbol(r, class0 ? mvcomp->class0_fp_cdf[d] : mvcomp->fp_cdf,
                          MV_FP_SIZE, ACCT_STR);
 
-    // High precision part (if hp is not used, the default value of the hp is 1)
-    hp = usehp ? aom_read(r, class0 ? mvcomp->class0_hp : mvcomp->hp, ACCT_STR)
+// High precision part (if hp is not used, the default value of the hp is 1)
+#if CONFIG_NEW_MULTISYMBOL
+    hp = usehp ? aom_read_symbol(
+                     r, class0 ? mvcomp->class0_hp_cdf : mvcomp->hp_cdf, 2,
+                     ACCT_STR)
                : 1;
+#else
+  hp = usehp ? aom_read(r, class0 ? mvcomp->class0_hp : mvcomp->hp, ACCT_STR)
+             : 1;
+#endif
 #if CONFIG_INTRABC
   } else {
     fr = 3;

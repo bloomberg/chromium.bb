@@ -64,6 +64,11 @@ static const nmv_context default_nmv_context = {
           0 },  // fp_cdf
         160,    // class0_hp bit
         128,    // hp
+#if CONFIG_NEW_MULTISYMBOL
+        { AOM_ICDF(160 * 128), AOM_ICDF(32768), 0 },
+        { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
+        { AOM_ICDF(216 * 128), AOM_ICDF(32768), 0 },
+#endif
     },
     {
         // Horizontal component
@@ -84,6 +89,11 @@ static const nmv_context default_nmv_context = {
           0 },  // fp_cdf
         160,    // class0_hp bit
         128,    // hp
+#if CONFIG_NEW_MULTISYMBOL
+        { AOM_ICDF(160 * 128), AOM_ICDF(32768), 0 },
+        { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
+        { AOM_ICDF(216 * 128), AOM_ICDF(32768), 0 },
+#endif
     } },
 };
 
