@@ -571,7 +571,7 @@ static AtkStateSet* browser_accessibility_ref_state_set(AtkObject* atk_object) {
 // it's best to leave this out rather than break people's builds:
 #if defined(ATK_CHECK_VERSION)
 #if ATK_CHECK_VERSION(2, 16, 0)
-      atk_state_set_add_state(atk_state_set, ATK_STATE_READ_ONLY);
+      atk_state_set_add_state(state_set, ATK_STATE_READ_ONLY);
 #endif
 #endif
       break;
