@@ -74,11 +74,11 @@ public class RenderTestRule extends TestWatcher {
     private static final String[] RENDER_TEST_DEVICES = {"Nexus 5X", "Nexus 5"};
 
     /**
-     * We only want to cause the tests to fail when renders mismatch for devices that we test on
-     * both the CI and the CQ. This is temporary and will be removed once all the
-     * {@link RENDER_TEST_DEVICES} are run on the CI and CQ. https://crbug.com/731759.
+     * Before we know how flaky screenshot tests are going to be we don't want them to cause a
+     * full test failure every time they fail. If the tests prove their worth, this will be set to
+     * false/removed.
      */
-    private static final String[] FAIL_ON_MISMATCH_DEVICES = {"Nexus 5"};
+    private static final boolean REPORT_ONLY_DO_NOT_FAIL = true;
 
     /** How many pixels can be different in an image before counting the images as different. */
     private static final int PIXEL_DIFF_THRESHOLD = 0;
@@ -198,10 +198,10 @@ public class RenderTestRule extends TestWatcher {
             sb.append(TextUtils.join(", ", mMismatchIds));
         }
 
-        if (shouldFailOnMismatch()) {
-            throw new RenderTestException(sb.toString());
-        } else {
+        if (REPORT_ONLY_DO_NOT_FAIL) {
             Log.w(TAG, sb.toString());
+        } else {
+            throw new RenderTestException(sb.toString());
         }
     }
 
@@ -210,16 +210,6 @@ public class RenderTestRule extends TestWatcher {
      */
     private static boolean onRenderTestDevice() {
         for (String model : RENDER_TEST_DEVICES) {
-            if (model.equals(Build.MODEL)) return true;
-        }
-        return false;
-    }
-
-    /**
-     * Returns whether a mismatch should cause a test failure.
-     */
-    private static boolean shouldFailOnMismatch() {
-        for (String model : FAIL_ON_MISMATCH_DEVICES) {
             if (model.equals(Build.MODEL)) return true;
         }
         return false;
