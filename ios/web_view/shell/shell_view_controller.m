@@ -27,9 +27,9 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 // Text field used for navigating to URLs.
 @property(nonatomic, strong) UITextField* field;
 // Toolbar button to navigate backwards.
-@property(nonatomic, strong) UIButton* backButton;
+@property(nonatomic, strong) UIBarButtonItem* backButton;
 // Toolbar button to navigate forwards.
-@property(nonatomic, strong) UIButton* forwardButton;
+@property(nonatomic, strong) UIBarButtonItem* forwardButton;
 // Toolbar containing navigation buttons and |field|.
 @property(nonatomic, strong) UIToolbar* toolbar;
 // Handles the translation of the content displayed in |webView|.
@@ -97,60 +97,37 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
   [_field setAccessibilityLabel:kWebViewShellAddressFieldAccessibilityLabel];
 
   // Set up the toolbar buttons.
-  // Back.
-  self.backButton = [UIButton buttonWithType:UIButtonTypeCustom];
-  [_backButton setImage:[UIImage imageNamed:@"toolbar_back"]
-               forState:UIControlStateNormal];
-  [_backButton setFrame:CGRectMake(0, 0, kButtonSize, kButtonSize)];
-  UIEdgeInsets insets = UIEdgeInsetsMake(5, 5, 4, 4);
-  [_backButton setImageEdgeInsets:insets];
-  [_backButton setAutoresizingMask:UIViewAutoresizingFlexibleRightMargin];
-  [_backButton addTarget:self
-                  action:@selector(back)
-        forControlEvents:UIControlEventTouchUpInside];
+  self.backButton = [[UIBarButtonItem alloc]
+      initWithImage:[UIImage imageNamed:@"toolbar_back"]
+              style:UIBarButtonItemStylePlain
+             target:self
+             action:@selector(back)];
   [_backButton setAccessibilityLabel:kWebViewShellBackButtonAccessibilityLabel];
 
-  // Forward.
-  self.forwardButton = [UIButton buttonWithType:UIButtonTypeCustom];
-  [_forwardButton setImage:[UIImage imageNamed:@"toolbar_forward"]
-                  forState:UIControlStateNormal];
-  [_forwardButton
-      setFrame:CGRectMake(kButtonSize, 0, kButtonSize, kButtonSize)];
-  [_forwardButton setImageEdgeInsets:insets];
-  [_forwardButton setAutoresizingMask:UIViewAutoresizingFlexibleRightMargin];
-  [_forwardButton addTarget:self
-                     action:@selector(forward)
-           forControlEvents:UIControlEventTouchUpInside];
+  self.forwardButton = [[UIBarButtonItem alloc]
+      initWithImage:[UIImage imageNamed:@"toolbar_forward"]
+              style:UIBarButtonItemStylePlain
+             target:self
+             action:@selector(forward)];
   [_forwardButton
       setAccessibilityLabel:kWebViewShellForwardButtonAccessibilityLabel];
 
-  // Stop.
-  UIButton* stop = [UIButton buttonWithType:UIButtonTypeCustom];
-  [stop setImage:[UIImage imageNamed:@"toolbar_stop"]
-        forState:UIControlStateNormal];
-  [stop setFrame:CGRectMake(2 * kButtonSize, 0, kButtonSize, kButtonSize)];
-  [stop setImageEdgeInsets:insets];
-  [stop setAutoresizingMask:UIViewAutoresizingFlexibleRightMargin];
-  [stop addTarget:self
-                action:@selector(stopLoading)
-      forControlEvents:UIControlEventTouchUpInside];
+  UIBarButtonItem* stop = [[UIBarButtonItem alloc]
+      initWithImage:[UIImage imageNamed:@"toolbar_stop"]
+              style:UIBarButtonItemStylePlain
+             target:self
+             action:@selector(stopLoading)];
 
-  // Menu.
-  UIButton* menu = [UIButton buttonWithType:UIButtonTypeCustom];
-  [menu setImage:[UIImage imageNamed:@"toolbar_more_horiz"]
-        forState:UIControlStateNormal];
-  [menu setFrame:CGRectMake(3 * kButtonSize, 0, kButtonSize, kButtonSize)];
-  [menu setImageEdgeInsets:insets];
-  [menu setAutoresizingMask:UIViewAutoresizingFlexibleRightMargin];
-  [menu addTarget:self
-                action:@selector(showMenu)
-      forControlEvents:UIControlEventTouchUpInside];
+  UIBarButtonItem* menu = [[UIBarButtonItem alloc]
+      initWithImage:[UIImage imageNamed:@"toolbar_more_horiz"]
+              style:UIBarButtonItemStylePlain
+             target:self
+             action:@selector(showMenu)];
 
-  [_toolbar addSubview:_backButton];
-  [_toolbar addSubview:_forwardButton];
-  [_toolbar addSubview:stop];
-  [_toolbar addSubview:menu];
-  [_toolbar addSubview:_field];
+  [_toolbar setItems:@[
+    _backButton, _forwardButton, stop, menu,
+    [[UIBarButtonItem alloc] initWithCustomView:_field]
+  ]];
 
   [CWVWebView setUserAgentProduct:@"Dummy/1.0"];
 
