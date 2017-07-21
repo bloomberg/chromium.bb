@@ -738,8 +738,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (disconnectIfNoPaymentMethodsSupported()) return;
 
         for (Map.Entry<PaymentApp, Map<String, PaymentMethodData>> q : queryApps.entrySet()) {
-            q.getKey().getInstruments(q.getValue(), mTopLevelOrigin, mPaymentRequestOrigin,
-                    mCertificateChain, mRawTotal, this);
+            q.getKey().getInstruments(
+                    q.getValue(), mTopLevelOrigin, mPaymentRequestOrigin, mCertificateChain, this);
         }
     }
 
