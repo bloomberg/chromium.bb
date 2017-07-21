@@ -4009,6 +4009,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Autofill.AddressesSuppressedForDisuse">
+  <owner>rogerm@chromium.org</owner>
+  <summary>
+    The number of address suggestions not shown in the Autofill popup because
+    they have not been used recently enough. Note that suppression only applies
+    when the user has not typed any text into the field. If any text is in the
+    field, all matching addresses are displayed, regardless of how recently they
+    have been used.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.AddressSuggestionsCount">
   <owner>isherman@chromium.org</owner>
   <summary>
@@ -42388,10 +42399,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SuccessfulResolutionWithValidDNSName" enum="Boolean">
-  <owner>palmer@chromium.org</owner>
   <obsolete>
     Removed in 07/2017.
   </obsolete>
+  <owner>palmer@chromium.org</owner>
   <summary>
     True if a DNS name contains only characters for which
     |net::IsValidLabelCharacter| returns true. Used to see if we can deprecate
