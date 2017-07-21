@@ -94,6 +94,9 @@ WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
       is_paused_on_start_(false),
       creation_address_space_(kWebAddressSpacePublic) {
   DCHECK(IsMainThread());
+  service_manager::mojom::InterfaceProviderPtr provider;
+  mojo::MakeRequest(&provider);
+  interface_provider_.Bind(std::move(provider));
 }
 
 WebSharedWorkerImpl::~WebSharedWorkerImpl() {
@@ -208,6 +211,11 @@ void WebSharedWorkerImpl::DidFinishDocumentLoad() {
            WTF::Unretained(this)));
   // Do nothing here since onScriptLoaderFinished() might have been already
   // invoked and |this| might have been deleted at this point.
+}
+
+service_manager::InterfaceProvider*
+WebSharedWorkerImpl::GetInterfaceProvider() {
+  return &interface_provider_;
 }
 
 void WebSharedWorkerImpl::SendProtocolMessage(int session_id,

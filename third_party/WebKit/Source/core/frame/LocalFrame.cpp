@@ -762,10 +762,6 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
       text_zoom_factor_(ParentTextZoomFactor(this)),
       in_view_source_mode_(false),
       interface_registry_(interface_registry) {
-  if (FrameResourceCoordinator::IsEnabled()) {
-    frame_resource_coordinator_ =
-        FrameResourceCoordinator::Create(client->GetInterfaceProvider());
-  }
   if (IsLocalRoot()) {
     probe_sink_ = new CoreProbeSink();
     performance_monitor_ = new PerformanceMonitor(this);
@@ -1007,6 +1003,19 @@ LocalFrameClient* LocalFrame::Client() const {
 
 ContentSettingsClient* LocalFrame::GetContentSettingsClient() {
   return Client() ? &Client()->GetContentSettingsClient() : nullptr;
+}
+
+FrameResourceCoordinator* LocalFrame::GetFrameResourceCoordinator() {
+  if (!FrameResourceCoordinator::IsEnabled())
+    return nullptr;
+  if (!frame_resource_coordinator_) {
+    auto local_frame_client = Client();
+    if (!local_frame_client)
+      return nullptr;
+    frame_resource_coordinator_ = FrameResourceCoordinator::Create(
+        local_frame_client->GetInterfaceProvider());
+  }
+  return frame_resource_coordinator_;
 }
 
 PluginData* LocalFrame::GetPluginData() const {

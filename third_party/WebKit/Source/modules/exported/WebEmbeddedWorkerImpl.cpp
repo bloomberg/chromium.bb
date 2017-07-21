@@ -121,6 +121,9 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
         WTF::MakeUnique<ServiceWorkerInstalledScriptsManager>(
             std::move(installed_scripts_manager));
   }
+  service_manager::mojom::InterfaceProviderPtr provider;
+  mojo::MakeRequest(&provider);
+  interface_provider_.Bind(std::move(provider));
 }
 
 WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl() {
@@ -363,6 +366,11 @@ void WebEmbeddedWorkerImpl::DidFinishDocumentLoad() {
            WTF::Unretained(this)));
   // Do nothing here since onScriptLoaderFinished() might have been already
   // invoked and |this| might have been deleted at this point.
+}
+
+service_manager::InterfaceProvider*
+WebEmbeddedWorkerImpl::GetInterfaceProvider() {
+  return &interface_provider_;
 }
 
 void WebEmbeddedWorkerImpl::SendProtocolMessage(int session_id,
