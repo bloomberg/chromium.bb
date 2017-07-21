@@ -258,7 +258,7 @@ int put_str_with_escape(char *buffer, const char *str) {
   int i;
   int j = 0;
   for (i = 0; str[i] != '\0'; i++) {
-    if (str[i] == '"') {
+    if (str[i] == '"' || str[i] == '\\') {
       buffer[j++] = '\\';
     }
     buffer[j++] = str[i];
