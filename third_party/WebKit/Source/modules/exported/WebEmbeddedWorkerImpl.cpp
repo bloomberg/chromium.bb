@@ -114,8 +114,8 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
       waiting_for_debugger_state_(kNotWaitingForDebugger) {
   RunningWorkerInstances().insert(this);
 
-  if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled()) {
-    DCHECK(installed_scripts_manager);
+  if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled() &&
+      installed_scripts_manager) {
     installed_scripts_manager_ =
         WTF::MakeUnique<ServiceWorkerInstalledScriptsManager>(
             std::move(installed_scripts_manager));
