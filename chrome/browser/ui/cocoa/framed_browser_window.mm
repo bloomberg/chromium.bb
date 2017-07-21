@@ -198,6 +198,9 @@ const CGFloat kWindowGradientHeight = 24.0;
 }
 
 - (void)adjustTitlebarContainer:(NSView*)titlebarContainer {
+  if ([self styleMask] & NSFullScreenWindowMask)
+    return;
+
   DCHECK(chrome::ShouldUseFullSizeContentView());
   DCHECK([NSStringFromClass([titlebarContainer class])
       isEqual:@"NSTitlebarContainerView"]);
