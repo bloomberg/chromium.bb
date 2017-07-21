@@ -72,6 +72,7 @@ bool EventListenerMap::ContainsCapturing(const AtomicString& event_type) const {
         if (event_listener.Capture())
           return true;
       }
+      return false;
     }
   }
   return false;
