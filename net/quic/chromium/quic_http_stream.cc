@@ -222,10 +222,12 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     // was being called even if we didn't yet allocate raw_request_body_buf_.
     //   && (request_body_stream_->size() ||
     //       request_body_stream_->is_chunked()))
-    // Use 10 packets as the body buffer size to give enough space to
-    // help ensure we don't often send out partial packets.
-    raw_request_body_buf_ =
-        new IOBufferWithSize(static_cast<size_t>(10 * kMaxPacketSize));
+    // Set the body buffer size to be the size of the body clamped
+    // into the range [10 * kMaxPacketSize, 256 * kMaxPacketSize].
+    // With larger bodies, larger buffers reduce CPU usage.
+    raw_request_body_buf_ = new IOBufferWithSize(static_cast<size_t>(std::max(
+        10 * kMaxPacketSize,
+        std::min(request_body_stream_->size(), 256 * kMaxPacketSize))));
     // The request body buffer is empty at first.
     request_body_buf_ = new DrainableIOBuffer(raw_request_body_buf_.get(), 0);
   }
