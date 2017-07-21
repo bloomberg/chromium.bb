@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import json
 import mox
 import os
 import shutil
@@ -1527,72 +1526,34 @@ DOC = "Faux doc"
     with self.assertRaises(paygen_build_lib.ArchiveError):
       paygen._MapToArchive('baz-board', '1.2.3')
 
-class PaygenJsonTests(cros_test_lib.MockTestCase):
-  """Test cases that require mocking paygen.json fetching."""
-  def setUp(self):
-    # Clear json cache.
-    paygen_build_lib._PaygenBuild._cachedPaygenJson = None
-
-    # Mock out the json load with parsed json data.
-    paygen_json_file = os.path.join(os.path.dirname(__file__),
-                                    'testdata', 'paygen.json')
-    with open(paygen_json_file, 'r') as fp:
-      parsed_test_json = json.load(fp)
-
-    self.mockGetJson = self.PatchObject(paygen_build_lib, '_GetJson',
-                                        return_value=parsed_test_json)
-
-  def tearDown(self):
-    # Clear json cache.
-    paygen_build_lib._PaygenBuild._cachedPaygenJson = None
-
-  def testGetPaygenJsonCaching(self):
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson()
-    self.assertEqual(len(result), 1361)
-    self.mockGetJson.assert_called_once()
-
-    # Validate caching, by proving we don't refetch.
-    self.mockGetJson.reset_mock()
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson()
-    self.assertEqual(len(result), 1361)
-    self.mockGetJson.assert_not_called()
-
-  def testGetPaygenJsonBoard(self):
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson('unknown')
-    self.assertEqual(len(result), 0)
-
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson('auron_yuna')
-    self.assertEqual(len(result), 13)
-
-  def testGetPaygenJsonBoardChannel(self):
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson(
-        'auron_yuna', 'unknown')
-    self.assertEqual(len(result), 0)
-
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson(
-        'auron_yuna', 'canary')
-    self.assertEqual(len(result), 1)
-
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson(
-        'auron_yuna', 'dev')
-    self.assertEqual(len(result), 1)
-
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson(
-        'auron_yuna', 'beta')
-    self.assertEqual(len(result), 1)
-
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson(
-        'auron_yuna', 'stable')
-    self.assertEqual(len(result), 10)
-
   def testValidateBoardConfig(self):
     """Test ValidateBoardConfig."""
+    mock_return = paygen_build_lib.json.dumps(
+        {'boards':
+         [{u'omaha_config_name': u'autoupdate-ascii-memento.config',
+           u'public_codename': u'x86-mario',
+           u'hwid_match': u'IEC MARIO FISH 2330|IEC MARIO FISH 2330 DEV|'
+                          u'IEC MARIO PONY 6101|IEC MARIO PONY DVT 8784|'
+                          u'IEC MARIO PONY EVT 3495|IEC MARIO PONY TEST 6101',
+           u'is_active': True,
+           u'app_id': u'{87efface-864d-49a5-9bb3-4b050a7c227a}',
+           u'config_name': u'cr48', u'is_test_blacklist': False,
+           u'omaha_ping_hwid_match': u'IEC MARIO FISH 2330 DEV',
+           u'is_in_canary_release': True}]
+        }
+    )
+
+    self.mox.StubOutWithMock(gslib, 'Cat')
+    gslib.Cat(paygen_build_lib.BOARDS_URI).AndReturn(mock_return)
+    gslib.Cat(paygen_build_lib.BOARDS_URI).AndReturn(mock_return)
+    self.mox.ReplayAll()
+
     # Test a known board works.
     paygen_build_lib.ValidateBoardConfig('x86-mario')
 
     # Test an unknown board doesn't.
-    with self.assertRaises(paygen_build_lib.BoardNotConfigured):
-      paygen_build_lib.ValidateBoardConfig('unknown')
+    self.assertRaises(paygen_build_lib.BoardNotConfigured,
+                      paygen_build_lib.ValidateBoardConfig, 'goofy-board')
 
 
 class PaygenBuildLibTest_ImageTypes(BasePaygenBuildLibTest):

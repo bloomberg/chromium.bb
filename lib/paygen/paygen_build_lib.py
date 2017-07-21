@@ -65,9 +65,9 @@ RUN_SUITE_MIN_MSTONE = 30
 PAYGEN_LOG_TIMESTAMP_FORMAT = '%Y%m%d-%H%M%S-UTC'
 
 # Board and device information published by goldeneye.
+BOARDS_URI = 'gs://chromeos-build-release-console/boards.json'
 FSI_URI = 'gs://chromeos-build-release-console/fsis.json'
 OMAHA_URI = 'gs://chromeos-build-release-console/omaha_status.json'
-PAYGEN_URI = 'gs://chromeos-build-release-console/paygen.json'
 
 # Max number of attempts to download and parse a JSON file.
 JSON_PARSE_RETRY_COUNT = 2
@@ -397,8 +397,8 @@ class _PaygenBuild(object):
                          _FindControlFileDir(self._work_dir))
 
     # Cached goldeneye data.
-    self.cachedFsisJson = None
-    self.cachedOmahaJson = None
+    self.cachedFsisJson = {}
+    self.cachedOmahaJson = {}
 
   def _GetFsisJson(self):
     if not self.cachedFsisJson:
@@ -409,49 +409,6 @@ class _PaygenBuild(object):
     if not self.cachedOmahaJson:
       self.cachedOmahaJson = _GetJson(OMAHA_URI)
     return self.cachedOmahaJson
-
-  # Hidden class level cache value.
-  _cachedPaygenJson = None
-
-  @classmethod
-  def GetPaygenJson(cls, board=None, channel=None):
-    """Fetch the parsed Golden Eye payload generation configuration.
-
-    Args:
-      board: Board name in builder format (not release) or None for '*'
-      channel: Channel name in 'stable' format or None for '*'
-
-    Returns:
-      List of GE delta values matching specification. Sample delta value:
-
-      {
-        'board': {
-          'public_codename': 'x86-alex',
-          'is_active': true,
-          'builder_name': 'x86-alex'
-        },
-        'delta_type': 'MILESTONE',
-        'channel': 'stable',
-        'chrome_os_version': '8530.81.0',
-        'chrome_version': '53.0.2785.103',
-        'milestone': 53,
-        'generate_delta': true,
-        'delta_payload_tests': true,
-        'full_payload_tests': false
-      }
-    """
-    if not cls._cachedPaygenJson:
-      cls._cachedPaygenJson = _GetJson(PAYGEN_URI)
-
-    result = []
-
-    for delta in cls._cachedPaygenJson['delta']:
-      if ((board and delta['board']['builder_name'] != board) or
-          (channel and delta['channel'] != channel)):
-        continue
-      result.append(delta)
-
-    return result
 
   def _GetFlagURI(self, flag):
     """Find the URI of the lock file associated with this build.
@@ -1446,8 +1403,12 @@ def ValidateBoardConfig(board):
   Raises:
     BoardNotConfigured if the board is unknown.
   """
-  if not _PaygenBuild.GetPaygenJson(board):
-    raise BoardNotConfigured(board)
+  # Right now, we just validate that the board exists.
+  boards = _GetJson(BOARDS_URI)
+  for b in boards.get('boards', []):
+    if b['public_codename'] == board:
+      return
+  raise BoardNotConfigured(board)
 
 
 def CreatePayloads(build, work_dir, site_config,
