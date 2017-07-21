@@ -6,12 +6,10 @@
 
 namespace profiling {
 
-AllocationEvent::AllocationEvent(Address addr,
-                                 size_t sz,
-                                 BacktraceStorage::Key key)
-    : address_(addr), size_(sz), backtrace_key_(key) {}
+AllocationEvent::AllocationEvent(Address addr, size_t sz, const Backtrace* bt)
+    : address_(addr), size_(sz), backtrace_(bt) {}
 
 AllocationEvent::AllocationEvent(Address addr)
-    : address_(addr), size_(0), backtrace_key_() {}
+    : address_(addr), size_(0), backtrace_(nullptr) {}
 
 }  // namespace profiling

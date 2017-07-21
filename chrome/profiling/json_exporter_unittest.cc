@@ -56,16 +56,16 @@ TEST(ProfilingJsonExporter, Simple) {
   std::vector<Address> stack1;
   stack1.push_back(Address(1234));
   stack1.push_back(Address(5678));
-  BacktraceStorage::Key key1 = backtrace_storage.Insert(std::move(stack1));
+  const Backtrace* bt1 = backtrace_storage.Insert(std::move(stack1));
 
   std::vector<Address> stack2;
   stack2.push_back(Address(9012));
-  BacktraceStorage::Key key2 = backtrace_storage.Insert(std::move(stack2));
+  const Backtrace* bt2 = backtrace_storage.Insert(std::move(stack2));
 
   AllocationEventSet events;
-  events.insert(AllocationEvent(Address(0x1), 16, key1));
-  events.insert(AllocationEvent(Address(0x2), 32, key2));
-  events.insert(AllocationEvent(Address(0x3), 16, key1));
+  events.insert(AllocationEvent(Address(0x1), 16, bt1));
+  events.insert(AllocationEvent(Address(0x2), 32, bt2));
+  events.insert(AllocationEvent(Address(0x3), 16, bt1));
 
   std::ostringstream stream;
   ExportAllocationEventSetToJSON(1234, &backtrace_storage, events, stream);

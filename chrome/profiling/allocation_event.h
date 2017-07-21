@@ -16,7 +16,9 @@ namespace profiling {
 // This class is copyable and assignable.
 class AllocationEvent {
  public:
-  AllocationEvent(Address addr, size_t sz, BacktraceStorage::Key key);
+  // There must be a reference to this kept in the BacktraceStorage object on
+  // behalf of this class.
+  AllocationEvent(Address addr, size_t sz, const Backtrace* bt);
 
   // This partial initializer creates an allocation of empty size for
   // searching purposes.
@@ -25,9 +27,9 @@ class AllocationEvent {
   Address address() const { return address_; }
   size_t size() const { return size_; }
 
-  // This storage key can be used to look up the allocation stack for this
-  // allocation in the BacktraceStorage object.
-  BacktraceStorage::Key backtrace_key() const { return backtrace_key_; }
+  // The backtrace for this allocation. There must be a reference to this kept
+  // in the BacktraceStorage object on behalf of this class.
+  const Backtrace* backtrace() const { return backtrace_; }
 
   // Implements < for AllocationEvents using address only. This is not a raw
   // operator because it only implements a comparison on the one field.
@@ -50,7 +52,7 @@ class AllocationEvent {
  private:
   Address address_;
   size_t size_;
-  BacktraceStorage::Key backtrace_key_;
+  const Backtrace* backtrace_;
 };
 
 using AllocationEventSet =

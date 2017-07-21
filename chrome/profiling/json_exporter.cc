@@ -220,13 +220,11 @@ void ExportAllocationEventSetToJSON(int pid,
   //
   // The map maps backtrace keys to node IDs (computed below).
   std::map<const Backtrace*, size_t> backtraces;
-  for (const auto& event : event_set) {
-    backtraces.emplace(
-        &backtrace_storage->GetBacktraceForKey(event.backtrace_key()), 0);
-  }
+  for (const auto& event : event_set)
+    backtraces.emplace(event.backtrace(), 0);
 
   // Write each backtrace, converting the string for the stack entry to string
-  // IDs. The backtrace_key -> node ID will be filled in at this time.
+  // IDs. The backtrace -> node ID will be filled in at this time.
   //
   // As a future optimization, compute when a stack is a superset of another
   // one and share the common nodes.
@@ -248,9 +246,7 @@ void ExportAllocationEventSetToJSON(int pid,
   // Aggregate allocations. Allocations of the same size and stack get grouped.
   UniqueAllocCount alloc_counts;
   for (const auto& alloc : event_set) {
-    UniqueAlloc unique_alloc(
-        &backtrace_storage->GetBacktraceForKey(alloc.backtrace_key()),
-        alloc.size());
+    UniqueAlloc unique_alloc(alloc.backtrace(), alloc.size());
     alloc_counts[unique_alloc]++;
   }
 
