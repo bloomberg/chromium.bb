@@ -67,7 +67,7 @@ public class VrTransitionUtils {
         CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return VrShellDelegate.isInVr();
+                return VrShellDelegate.getInstanceForTesting().isVrEntryComplete();
             }
         }), timeout, POLL_CHECK_INTERVAL_SHORT_MS);
     }
@@ -111,8 +111,8 @@ public class VrTransitionUtils {
      */
     public static void enterPresentationOrFail(ContentViewCore cvc) {
         enterPresentation(cvc);
-        VrTestRule.pollJavaScriptBoolean(
-                "vrDisplay.isPresenting", POLL_TIMEOUT_LONG_MS, cvc.getWebContents());
+        Assert.assertTrue(VrTestRule.pollJavaScriptBoolean(
+                "vrDisplay.isPresenting", POLL_TIMEOUT_LONG_MS, cvc.getWebContents()));
         Assert.assertTrue(VrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
     }
 
