@@ -5,8 +5,9 @@
 #ifndef CHROME_INSTALLER_ZUCCHINI_BUFFER_VIEW_H_
 #define CHROME_INSTALLER_ZUCCHINI_BUFFER_VIEW_H_
 
-#include <cstddef>
-#include <cstdint>
+#include <stddef.h>
+#include <stdint.h>
+
 #include <type_traits>
 
 #include "base/logging.h"

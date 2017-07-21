@@ -5,7 +5,7 @@
 #ifndef CHROME_INSTALLER_ZUCCHINI_IMAGE_UTILS_H_
 #define CHROME_INSTALLER_ZUCCHINI_IMAGE_UTILS_H_
 
-#include <cstdint>
+#include <stdint.h>
 
 #include "chrome/installer/zucchini/typed_value.h"
 

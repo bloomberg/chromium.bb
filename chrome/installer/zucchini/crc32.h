@@ -5,7 +5,7 @@
 #ifndef CHROME_INSTALLER_ZUCCHINI_CRC32_H_
 #define CHROME_INSTALLER_ZUCCHINI_CRC32_H_
 
-#include <cstdint>
+#include <stdint.h>
 
 namespace zucchini {
 

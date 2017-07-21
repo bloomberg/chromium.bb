@@ -5,8 +5,6 @@
 #ifndef CHROME_INSTALLER_ZUCCHINI_TYPED_VALUE_H_
 #define CHROME_INSTALLER_ZUCCHINI_TYPED_VALUE_H_
 
-#include <cstdint>
-
 namespace zucchini {
 
 // Strong typed values, with compare and convert functions for underlying data.

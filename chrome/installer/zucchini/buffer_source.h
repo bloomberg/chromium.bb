@@ -5,12 +5,13 @@
 #ifndef CHROME_INSTALLER_ZUCCHINI_BUFFER_SOURCE_H_
 #define CHROME_INSTALLER_ZUCCHINI_BUFFER_SOURCE_H_
 
-#include <algorithm>
-#include <cstddef>
-#include <cstdint>
+#include <stddef.h>
+#include <stdint.h>
+
 #include <initializer_list>
 #include <type_traits>
 
+#include "base/logging.h"
 #include "chrome/installer/zucchini/buffer_view.h"
 
 namespace zucchini {
@@ -30,10 +31,9 @@ class BufferSource : public ConstBufferView {
   BufferSource() = default;
   explicit BufferSource(ConstBufferView buffer);
   BufferSource(const BufferSource&) = default;
-
   BufferSource& operator=(BufferSource&&) = default;
 
-  // Moves cursor forward by |n| bytes, or until end if data is exhausted.
+  // Moves the cursor forward by |n| bytes, or to the end if data is exhausted.
   // Returns a reference to *this, to allow chaining, e.g.:
   //   if (!buffer_source.Skip(1024).GetValue<uint32_t>(&value)) {
   //      ... // Handle error.
@@ -41,8 +41,8 @@ class BufferSource : public ConstBufferView {
   // Notice that Skip() defers error handling to GetValue().
   BufferSource& Skip(size_type n);
 
-  // Returns true if |value| matches data starting at cursor when reinterpreted
-  // as the integral type |T|.
+  // Returns true if |value| matches data starting at the cursor when
+  // reinterpreted as the integral type |T|.
   template <class T>
   bool CheckNextValue(const T& value) const {
     static_assert(std::is_integral<T>::value,
@@ -62,9 +62,9 @@ class BufferSource : public ConstBufferView {
   // successfull.
   bool ConsumeBytes(std::initializer_list<uint8_t> bytes);
 
-  // Tries to reinterpret data as type |T|, starting at cursor and to write the
-  // result into |value|, while moving the cursor forward by sizeof(T). Returns
-  // true if sufficient data is available, and false otherwise.
+  // Tries to reinterpret data as type |T|, starting at the cursor and to write
+  // the result into |value|, while moving the cursor forward by sizeof(T).
+  // Returns true if sufficient data is available, and false otherwise.
   template <class T>
   bool GetValue(T* value) {
     static_assert(std::is_standard_layout<T>::value,
@@ -78,7 +78,7 @@ class BufferSource : public ConstBufferView {
     return true;
   }
 
-  // Tries to reinterpret data as type |T| at cursor and to return a
+  // Tries to reinterpret data as type |T| at the cursor and to return a
   // reinterpreted pointer of type |T| pointing into the underlying data, while
   // moving the cursor forward by sizeof(T). Returns nullptr if insufficient
   // data is available.
@@ -96,7 +96,7 @@ class BufferSource : public ConstBufferView {
   }
 
   // Tries to reinterpret data as an array of type |T| with |count| elements,
-  // starting at cursor, and to return a reinterpreted pointer of type |T|
+  // starting at the cursor, and to return a reinterpreted pointer of type |T|
   // pointing into the underlying data, while advancing the cursor beyond the
   // array. Returns nullptr if insufficient data is available.
   template <class T>
@@ -112,7 +112,7 @@ class BufferSource : public ConstBufferView {
   }
 
   // If sufficient data is available, assigns |buffer| to point to a region of
-  // |size| bytes starting at cursor, while advancing the cursor beyond the
+  // |size| bytes starting at the cursor, while advancing the cursor beyond the
   // region, and returns true. Otherwise returns false.
   bool GetRegion(size_type size, ConstBufferView* buffer);
 
