@@ -1156,6 +1156,10 @@
       status: "experimental",
     },
     {
+      name: "WorkStealingInScriptRunner",
+      status: "experimental",
+    },
+    {
       name: "XSLT",
       status: "stable",
     },

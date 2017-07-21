@@ -19,11 +19,7 @@ ScriptSourceCode::ScriptSourceCode(const String& source,
 }
 
 ScriptSourceCode::ScriptSourceCode(ScriptResource* resource)
-    : source_(resource->SourceText()),
-      resource_(resource),
-      start_position_(TextPosition::MinimumPosition()) {
-  TreatNullSourceAsEmpty();
-}
+    : ScriptSourceCode(nullptr, resource) {}
 
 ScriptSourceCode::ScriptSourceCode(ScriptStreamer* streamer,
                                    ScriptResource* resource)

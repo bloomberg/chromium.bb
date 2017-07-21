@@ -67,6 +67,7 @@ enum NotStreamingReason {
   kThreadBusy,
   kV8CannotStream,
   kScriptTooSmall,
+  kNoResourceBuffer,
   kNotStreamingReasonEnd
 };
 
@@ -339,6 +340,57 @@ void ScriptStreamer::StartStreaming(ClassicPendingScript* script,
     RecordStartedStreamingHistogram(script_type, 0);
 }
 
+void ScriptStreamer::StartStreamingLoadedScript(
+    ClassicPendingScript* script,
+    Type script_type,
+    Settings* settings,
+    ScriptState* script_state,
+    RefPtr<WebTaskRunner> loading_task_runner) {
+  DCHECK(IsMainThread());
+  DCHECK(script_state->ContextIsValid());
+
+  ScriptResource* resource = script->GetResource();
+  if (!resource->Url().ProtocolIsInHTTPFamily()) {
+    RecordNotStreamingReasonHistogram(script_type, kNotHTTP);
+    return;
+  }
+  if (resource->IsCacheValidator()) {
+    RecordNotStreamingReasonHistogram(script_type, kReload);
+    // This happens e.g., during reloads. We're actually not going to load
+    // the current Resource of the ClassicPendingScript but switch to another
+    // Resource -> don't stream.
+    return;
+  }
+  if (!resource->ResourceBuffer()) {
+    // This happens for already loaded resources, e.g. if resource
+    // validation fails. In that case, the loading subsystem will discard
+    // the resource buffer.
+    RecordNotStreamingReasonHistogram(script_type, kNoResourceBuffer);
+    return;
+  }
+
+  // Decide what kind of cached data we should produce while streaming. Only
+  // produce parser cache if the non-streaming compile takes advantage of it.
+  v8::ScriptCompiler::CompileOptions compile_option =
+      v8::ScriptCompiler::kNoCompileOptions;
+  if (settings->GetV8CacheOptions() == kV8CacheOptionsParse)
+    compile_option = v8::ScriptCompiler::kProduceParserCache;
+
+  ScriptStreamer* streamer =
+      ScriptStreamer::Create(script, script_type, script_state, compile_option,
+                             std::move(loading_task_runner));
+
+  // Since the script has already loaded, we will not receive any
+  // notificatations for incoming data. So we will just emulate those right
+  // here.
+  DCHECK(resource->IsLoaded());
+  streamer->NotifyAppendData(resource);
+  if (!streamer->StreamingSuppressed()) {
+    script->SetStreamer(streamer);
+    streamer->NotifyFinished(resource);
+  }
+}
+
 bool ScriptStreamer::ConvertEncoding(
     const char* encoding_name,
     v8::ScriptCompiler::StreamedSource::Encoding* encoding) {
@@ -364,6 +416,11 @@ bool ScriptStreamer::ConvertEncoding(
 bool ScriptStreamer::IsFinished() const {
   DCHECK(IsMainThread());
   return loading_finished_ && (parsing_finished_ || streaming_suppressed_);
+}
+
+bool ScriptStreamer::IsStreamingFinished() const {
+  DCHECK(IsMainThread());
+  return parsing_finished_ || streaming_suppressed_;
 }
 
 void ScriptStreamer::StreamingCompleteOnBackgroundThread() {

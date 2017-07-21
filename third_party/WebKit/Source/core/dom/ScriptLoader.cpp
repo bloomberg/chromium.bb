@@ -620,8 +620,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     //  time the prepare a script algorithm started."
     pending_script_ = CreatePendingScript();
     async_exec_type_ = ScriptRunner::kAsync;
-    pending_script_->StartStreamingIfPossible(&element_->GetDocument(),
-                                              ScriptStreamer::kAsync);
     // TODO(hiroshige): Here |contextDocument| is used as "node document"
     // while Step 14 uses |elementDocument| as "node document". Fix this.
     context_document->GetScriptRunner()->QueueScriptForExecution(
@@ -1024,6 +1022,12 @@ bool ScriptLoader::IsScriptForEventSupported() const {
   //     then abort these steps at this point. The script is not executed.
   return DeprecatedEqualIgnoringCase(event_attribute, "onload") ||
          DeprecatedEqualIgnoringCase(event_attribute, "onload()");
+}
+
+PendingScript* ScriptLoader::GetPendingScriptIfScriptIsAsync() {
+  if (pending_script_ && async_exec_type_ == ScriptRunner::kAsync)
+    return pending_script_;
+  return nullptr;
 }
 
 }  // namespace blink
