@@ -210,8 +210,11 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
 
     // Look for an exact match based on USB ids.
     scoped_refptr<PpdProvider> ppd_provider = CreatePpdProvider(profile_);
-    ppd_provider->ResolveUsbIds(
-        device->vendor_id(), device->product_id(),
+    PpdProvider::PrinterSearchData printer_search_data;
+    printer_search_data.usb_vendor_id = device->vendor_id();
+    printer_search_data.usb_product_id = device->product_id();
+    ppd_provider->ResolvePpdReference(
+        printer_search_data,
         base::Bind(&UsbPrinterDetectorImpl::ResolveUsbIdsDone,
                    weak_ptr_factory_.GetWeakPtr(), ppd_provider,
                    base::Passed(std::move(data))));
@@ -235,12 +238,11 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
   void ResolveUsbIdsDone(scoped_refptr<PpdProvider> provider,
                          std::unique_ptr<SetUpPrinterData> data,
                          PpdProvider::CallbackResultCode result,
-                         const std::string& effective_make_and_model) {
+                         const Printer::PpdReference& ppd_reference) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (result == PpdProvider::SUCCESS) {
       // Got something based on usb ids.  Go with it.
-      data->printer->mutable_ppd_reference()->effective_make_and_model =
-          effective_make_and_model;
+      *data->printer->mutable_ppd_reference() = ppd_reference;
     } else {
       // Couldn't figure this printer out based on usb ids, fall back to
       // guessing the make/model string from what the USB system reports.

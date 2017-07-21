@@ -21,6 +21,7 @@
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/printing/ppd_cache.h"
 #include "chromeos/printing/ppd_provider.h"
+#include "chromeos/printing/printer_configuration.h"
 #include "net/url_request/test_url_request_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -167,7 +168,7 @@ class PpdProviderTest : public ::testing::Test {
 
   // Capture the result of a ResolvePrinters() call.
   void CaptureResolvePrinters(PpdProvider::CallbackResultCode code,
-                              const std::vector<std::string>& data) {
+                              const PpdProvider::ResolvedPrintersList& data) {
     captured_resolve_printers_.push_back({code, data});
   }
 
@@ -183,9 +184,9 @@ class PpdProviderTest : public ::testing::Test {
   }
 
   // Capture the result of a ResolveUsbIds() call.
-  void CaptureResolveUsbIds(PpdProvider::CallbackResultCode code,
-                            const std::string& contents) {
-    captured_resolve_usb_ids_.push_back({code, contents});
+  void CaptureResolvePpdReference(PpdProvider::CallbackResultCode code,
+                                  const Printer::PpdReference& ref) {
+    captured_resolve_ppd_references_.push_back({code, ref});
   }
 
   // Discard the result of a ResolvePpd() call.
@@ -222,8 +223,8 @@ class PpdProviderTest : public ::testing::Test {
       std::pair<PpdProvider::CallbackResultCode, std::vector<std::string>>>
       captured_resolve_manufacturers_;
 
-  std::vector<
-      std::pair<PpdProvider::CallbackResultCode, std::vector<std::string>>>
+  std::vector<std::pair<PpdProvider::CallbackResultCode,
+                        PpdProvider::ResolvedPrintersList>>
       captured_resolve_printers_;
 
   struct CapturedResolvePpdResults {
@@ -233,8 +234,8 @@ class PpdProviderTest : public ::testing::Test {
   };
   std::vector<CapturedResolvePpdResults> captured_resolve_ppd_;
 
-  std::vector<std::pair<PpdProvider::CallbackResultCode, std::string>>
-      captured_resolve_usb_ids_;
+  std::vector<std::pair<PpdProvider::CallbackResultCode, Printer::PpdReference>>
+      captured_resolve_ppd_references_;
 
   std::unique_ptr<net::TestURLRequestInterceptor> interceptor_;
 
@@ -303,39 +304,49 @@ TEST_F(PpdProviderTest, UsbResolution) {
   StartFakePpdServer();
   auto provider = CreateProvider("en");
 
+  PpdProvider::PrinterSearchData search_data;
+
   // Should get back "Some canonical reference"
-  provider->ResolveUsbIds(0x031f, 1592,
-                          base::Bind(&PpdProviderTest::CaptureResolveUsbIds,
-                                     base::Unretained(this)));
+  search_data.usb_vendor_id = 0x031f;
+  search_data.usb_product_id = 1592;
+  provider->ResolvePpdReference(
+      search_data, base::Bind(&PpdProviderTest::CaptureResolvePpdReference,
+                              base::Unretained(this)));
   // Should get back "Some other canonical reference"
-  provider->ResolveUsbIds(0x031f, 6535,
-                          base::Bind(&PpdProviderTest::CaptureResolveUsbIds,
-                                     base::Unretained(this)));
+  search_data.usb_vendor_id = 0x031f;
+  search_data.usb_product_id = 6535;
+  provider->ResolvePpdReference(
+      search_data, base::Bind(&PpdProviderTest::CaptureResolvePpdReference,
+                              base::Unretained(this)));
 
   // Extant vendor id, nonexistant device id, should get a NOT_FOUND
-  provider->ResolveUsbIds(0x031f, 8162,
-                          base::Bind(&PpdProviderTest::CaptureResolveUsbIds,
-                                     base::Unretained(this)));
+  search_data.usb_vendor_id = 0x031f;
+  search_data.usb_product_id = 8162;
+  provider->ResolvePpdReference(
+      search_data, base::Bind(&PpdProviderTest::CaptureResolvePpdReference,
+                              base::Unretained(this)));
 
   // Nonexistant vendor id, should get a NOT_FOUND in the real world, but
   // the URL interceptor we're using considers all nonexistant files to
   // be effectively CONNECTION REFUSED, so we just check for non-success
   // on this one.
-  provider->ResolveUsbIds(1234, 1782,
-                          base::Bind(&PpdProviderTest::CaptureResolveUsbIds,
-                                     base::Unretained(this)));
+  search_data.usb_vendor_id = 1234;
+  search_data.usb_product_id = 1782;
+  provider->ResolvePpdReference(
+      search_data, base::Bind(&PpdProviderTest::CaptureResolvePpdReference,
+                              base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
 
-  ASSERT_EQ(captured_resolve_usb_ids_.size(), static_cast<size_t>(4));
-  EXPECT_EQ(captured_resolve_usb_ids_[0].first, PpdProvider::SUCCESS);
-  EXPECT_EQ(captured_resolve_usb_ids_[0].second, "Some canonical reference");
-  EXPECT_EQ(captured_resolve_usb_ids_[1].first, PpdProvider::SUCCESS);
-  EXPECT_EQ(captured_resolve_usb_ids_[1].second,
+  ASSERT_EQ(captured_resolve_ppd_references_.size(), static_cast<size_t>(4));
+  EXPECT_EQ(captured_resolve_ppd_references_[0].first, PpdProvider::SUCCESS);
+  EXPECT_EQ(captured_resolve_ppd_references_[0].second.effective_make_and_model,
+            "Some canonical reference");
+  EXPECT_EQ(captured_resolve_ppd_references_[1].first, PpdProvider::SUCCESS);
+  EXPECT_EQ(captured_resolve_ppd_references_[1].second.effective_make_and_model,
             "Some other canonical reference");
-  EXPECT_EQ(captured_resolve_usb_ids_[2].first, PpdProvider::NOT_FOUND);
-  EXPECT_EQ(captured_resolve_usb_ids_[2].second, "");
-  EXPECT_FALSE(captured_resolve_usb_ids_[3].first == PpdProvider::SUCCESS);
-  EXPECT_EQ(captured_resolve_usb_ids_[3].second, "");
+  EXPECT_EQ(captured_resolve_ppd_references_[2].first, PpdProvider::NOT_FOUND);
+  EXPECT_FALSE(captured_resolve_ppd_references_[3].first ==
+               PpdProvider::SUCCESS);
 }
 
 // For convenience a null ResolveManufacturers callback target.
@@ -365,16 +376,23 @@ TEST_F(PpdProviderTest, ResolvePrinters) {
   EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_printers_[0].first);
   EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_printers_[1].first);
   EXPECT_EQ(2UL, captured_resolve_printers_[0].second.size());
-  EXPECT_EQ(std::vector<std::string>({"printer_a", "printer_b"}),
-            captured_resolve_printers_[0].second);
-  EXPECT_EQ(std::vector<std::string>({"printer_c"}),
-            captured_resolve_printers_[1].second);
 
-  // We have manufacturers and models, we should be able to get a ppd out of
-  // this.
-  Printer::PpdReference ref;
-  ASSERT_TRUE(
-      provider->GetPpdReference("manufacturer_a_en", "printer_b", &ref));
+  // First capture should get back printer_a, and printer_b, with ppd
+  // reference effective make and models of printer_a_ref and printer_b_ref.
+  const auto& capture0 = captured_resolve_printers_[0].second;
+  ASSERT_EQ(2UL, capture0.size());
+  EXPECT_EQ("printer_a", capture0[0].first);
+  EXPECT_EQ("printer_a_ref", capture0[0].second.effective_make_and_model);
+
+  EXPECT_EQ("printer_b", capture0[1].first);
+  EXPECT_EQ("printer_b_ref", capture0[1].second.effective_make_and_model);
+
+  // Second capture should get back printer_c with effective make and model of
+  // printer_c_ref
+  const auto& capture1 = captured_resolve_printers_[1].second;
+  ASSERT_EQ(1UL, capture1.size());
+  EXPECT_EQ("printer_c", capture1[0].first);
+  EXPECT_EQ("printer_c_ref", capture1[0].second.effective_make_and_model);
 }
 
 // Test that if we give a bad reference to ResolvePrinters(), we get an

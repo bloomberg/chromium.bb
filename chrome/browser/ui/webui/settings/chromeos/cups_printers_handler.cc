@@ -384,9 +384,17 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
     printer.mutable_ppd_reference()->user_supplied_ppd_url = tmp.spec();
   } else if (!ppd_manufacturer.empty() && !ppd_model.empty()) {
     RecordPpdSource(kScs);
-    // Using the manufacturer and model, get a ppd reference.
-    if (!ppd_provider_->GetPpdReference(ppd_manufacturer, ppd_model,
-                                        printer.mutable_ppd_reference())) {
+    // Pull out the ppd reference associated with the selected manufacturer and
+    // model.
+    bool found = false;
+    for (const auto& resolved_printer : resolved_printers_[ppd_manufacturer]) {
+      if (resolved_printer.first == ppd_model) {
+        *printer.mutable_ppd_reference() = resolved_printer.second;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
       LOG(ERROR) << "Failed to get ppd reference";
       OnAddPrinterError();
       return;
@@ -490,8 +498,9 @@ void CupsPrintersHandler::HandleGetCupsPrinterModels(
   }
 
   ppd_provider_->ResolvePrinters(
-      manufacturer, base::Bind(&CupsPrintersHandler::ResolvePrintersDone,
-                               weak_factory_.GetWeakPtr(), js_callback));
+      manufacturer,
+      base::Bind(&CupsPrintersHandler::ResolvePrintersDone,
+                 weak_factory_.GetWeakPtr(), manufacturer, js_callback));
 }
 
 void CupsPrintersHandler::HandleSelectPPDFile(const base::ListValue* args) {
@@ -529,12 +538,16 @@ void CupsPrintersHandler::ResolveManufacturersDone(
 }
 
 void CupsPrintersHandler::ResolvePrintersDone(
+    const std::string& manufacturer,
     const std::string& js_callback,
     PpdProvider::CallbackResultCode result_code,
-    const std::vector<std::string>& printers) {
+    const PpdProvider::ResolvedPrintersList& printers) {
   auto printers_value = base::MakeUnique<base::ListValue>();
   if (result_code == PpdProvider::SUCCESS) {
-    printers_value->AppendStrings(printers);
+    resolved_printers_[manufacturer] = printers;
+    for (const auto& printer : printers) {
+      printers_value->AppendString(printer.first);
+    }
   }
   base::DictionaryValue response;
   response.SetBoolean("success", result_code == PpdProvider::SUCCESS);
