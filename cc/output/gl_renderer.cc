@@ -85,6 +85,21 @@ Float4 UVTransform(const TextureDrawQuad* quad) {
   return xform;
 }
 
+// To prevent sampling outside the visible rect.
+Float4 UVClampRect(gfx::RectF uv_visible_rect,
+                   const gfx::Size& texture_size,
+                   SamplerType sampler) {
+  gfx::SizeF half_texel(0.5f, 0.5f);
+  if (sampler != SAMPLER_TYPE_2D_RECT) {
+    half_texel.Scale(1.f / texture_size.width(), 1.f / texture_size.height());
+  } else {
+    uv_visible_rect.Scale(texture_size.width(), texture_size.height());
+  }
+  uv_visible_rect.Inset(half_texel.width(), half_texel.height());
+  return {{uv_visible_rect.x(), uv_visible_rect.y(), uv_visible_rect.right(),
+           uv_visible_rect.bottom()}};
+}
+
 Float4 PremultipliedColor(SkColor color, float opacity) {
   const float factor = 1.0f / 255.0f;
   const float alpha = opacity * SkColorGetA(color) * factor;
@@ -2275,6 +2290,15 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
       current_program_->tex_matrix_location(), false, gl_matrix);
 
   SetShaderOpacity(quad);
+  gfx::Size texture_size = lock.size();
+  gfx::Vector2dF uv = quad->matrix.Scale2d();
+  gfx::RectF uv_visible_rect(0, 0, uv.x(), uv.y());
+  const SamplerType sampler = SamplerTypeFromTextureTarget(lock.target());
+  Float4 tex_clamp_rect = UVClampRect(uv_visible_rect, texture_size, sampler);
+  gl_->Uniform4f(current_program_->tex_clamp_rect_location(),
+                 tex_clamp_rect.data[0], tex_clamp_rect.data[1],
+                 tex_clamp_rect.data[2], tex_clamp_rect.data[3]);
+
   if (!clip_region) {
     DrawQuadGeometry(current_frame()->projection_matrix,
                      quad->shared_quad_state->quad_to_target_transform,
@@ -2345,6 +2369,16 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
                   static_cast<int>(draw_cache_.uv_xform_data.size()),
                   reinterpret_cast<float*>(&draw_cache_.uv_xform_data.front()));
 
+  if (current_program_->tex_clamp_rect_location() != -1) {
+    // Draw batching is not allowed with texture clamping.
+    DCHECK_EQ(1u, draw_cache_.matrix_data.size());
+    gl_->Uniform4f(current_program_->tex_clamp_rect_location(),
+                   draw_cache_.tex_clamp_rect_data.data[0],
+                   draw_cache_.tex_clamp_rect_data.data[1],
+                   draw_cache_.tex_clamp_rect_data.data[2],
+                   draw_cache_.tex_clamp_rect_data.data[3]);
+  }
+
   if (draw_cache_.background_color != SK_ColorTRANSPARENT) {
     Float4 background_color =
         PremultipliedColor(draw_cache_.background_color, 1.f);
@@ -2379,6 +2413,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   draw_cache_.uv_xform_data.resize(0);
   draw_cache_.vertex_opacity_data.resize(0);
   draw_cache_.matrix_data.resize(0);
+  draw_cache_.tex_clamp_rect_data = Float4();
 
   // If we had a clipped binding, prepare the shared binding for the
   // next inserts.
@@ -2406,10 +2441,13 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
                                           quad->resource_id());
   const SamplerType sampler = SamplerTypeFromTextureTarget(lock.target());
 
+  bool need_tex_clamp_rect = !quad->resource_size_in_pixels().IsEmpty() &&
+                             (quad->uv_top_left != gfx::PointF(0, 0) ||
+                              quad->uv_bottom_right != gfx::PointF(1, 1));
   ProgramKey program_key = ProgramKey::Texture(
       tex_coord_precision, sampler,
       quad->premultiplied_alpha ? PREMULTIPLIED_ALPHA : NON_PREMULTIPLIED_ALPHA,
-      quad->background_color != SK_ColorTRANSPARENT);
+      quad->background_color != SK_ColorTRANSPARENT, need_tex_clamp_rect);
   int resource_id = quad->resource_id();
 
   size_t max_quads = StaticGeometryBinding::NUM_QUADS;
@@ -2441,6 +2479,18 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
     uv_transform.data[3] *= texture_size.height();
   }
   draw_cache_.uv_xform_data.push_back(uv_transform);
+
+  if (need_tex_clamp_rect) {
+    DCHECK_EQ(1u, draw_cache_.uv_xform_data.size());
+    gfx::Size texture_size = quad->resource_size_in_pixels();
+    DCHECK(!texture_size.IsEmpty());
+    gfx::RectF uv_visible_rect(
+        quad->uv_top_left.x(), quad->uv_top_left.y(),
+        quad->uv_bottom_right.x() - quad->uv_top_left.x(),
+        quad->uv_bottom_right.y() - quad->uv_top_left.y());
+    Float4 tex_clamp_rect = UVClampRect(uv_visible_rect, texture_size, sampler);
+    draw_cache_.tex_clamp_rect_data = tex_clamp_rect;
+  }
 
   // Generate the vertex opacity
   const float opacity = quad->shared_quad_state->opacity;
@@ -2479,7 +2529,8 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
     PrepareGeometry(CLIPPED_BINDING);
     clipped_geometry_->InitializeCustomQuadWithUVs(scaled_region, uv);
     FlushTextureQuadCache(CLIPPED_BINDING);
-  } else if (gl_composited_overlay_candidate_quad_border_) {
+  } else if (gl_composited_overlay_candidate_quad_border_ ||
+             need_tex_clamp_rect) {
     FlushTextureQuadCache(SHARED_BINDING);
   }
 }

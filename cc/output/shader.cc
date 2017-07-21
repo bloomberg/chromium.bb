@@ -257,7 +257,7 @@ std::string VertexShader::GetShaderString() const {
   }
 
   // Read the index variables.
-  if (use_uniform_arrays_ ||
+  if (use_uniform_arrays_ || has_vertex_opacity_ ||
       position_source_ == POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM) {
     HDR("attribute float a_index;");
     SRC("// Compute indices for uniform arrays.");
@@ -370,9 +370,12 @@ std::string VertexShader::GetShaderString() const {
 
   // Write varying vertex opacity.
   if (has_vertex_opacity_) {
-    DCHECK(use_uniform_arrays_);
-    HDR("uniform float opacity[NUM_QUADS * 4];");
     HDR("varying float v_alpha;");
+    if (use_uniform_arrays_) {
+      HDR("uniform float opacity[NUM_QUADS * 4];");
+    } else {
+      HDR("uniform float opacity[4];");
+    }
     SRC("v_alpha = opacity[vertex_index];");
   }
 
@@ -422,6 +425,8 @@ void FragmentShader::Init(GLES2Interface* context,
     uniforms.push_back("alpha");
   if (has_background_color_)
     uniforms.push_back("background_color");
+  if (has_tex_clamp_rect_)
+    uniforms.push_back("tex_clamp_rect");
   switch (input_color_type_) {
     case INPUT_COLOR_SOURCE_RGBA_TEXTURE:
       uniforms.push_back("s_texture");
@@ -476,6 +481,8 @@ void FragmentShader::Init(GLES2Interface* context,
     alpha_location_ = locations[index++];
   if (has_background_color_)
     background_color_location_ = locations[index++];
+  if (has_tex_clamp_rect_)
+    tex_clamp_rect_location_ = locations[index++];
   switch (input_color_type_) {
     case INPUT_COLOR_SOURCE_RGBA_TEXTURE:
       sampler_location_ = locations[index++];
@@ -831,15 +838,25 @@ std::string FragmentShader::GetShaderSource() const {
         SRC("   fragmentTexTransform.xy;");
         SRC("vec4 texColor = TextureLookup(s_texture, texCoord);");
         DCHECK(!ignore_sampler_type_);
+        DCHECK(!has_tex_clamp_rect_);
       } else {
         SRC("// Texture lookup");
-        if (ignore_sampler_type_)
+        if (ignore_sampler_type_) {
           SRC("vec4 texColor = texture2D(s_texture, v_texCoord);");
-        else
-          SRC("vec4 texColor = TextureLookup(s_texture, v_texCoord);");
+          DCHECK(!has_tex_clamp_rect_);
+        } else {
+          SRC("TexCoordPrecision vec2 texCoord = v_texCoord;");
+          if (has_tex_clamp_rect_) {
+            HDR("uniform vec4 tex_clamp_rect;");
+            SRC("texCoord = max(tex_clamp_rect.xy,");
+            SRC("    min(tex_clamp_rect.zw, texCoord));");
+          }
+          SRC("vec4 texColor = TextureLookup(s_texture, texCoord);");
+        }
       }
       break;
     case INPUT_COLOR_SOURCE_YUV_TEXTURES:
+      DCHECK(!has_tex_clamp_rect_);
       // Compute the clamped texture coordinates for the YA and UV textures.
       HDR("uniform SamplerType y_texture;");
       SRC("// YUV texture lookup and conversion to RGB.");
@@ -875,6 +892,7 @@ std::string FragmentShader::GetShaderSource() const {
     case INPUT_COLOR_SOURCE_UNIFORM:
       DCHECK(!ignore_sampler_type_);
       DCHECK(!has_rgba_fragment_tex_transform_);
+      DCHECK(!has_tex_clamp_rect_);
       HDR("uniform vec4 color;");
       SRC("// Uniform color");
       SRC("vec4 texColor = color;");
