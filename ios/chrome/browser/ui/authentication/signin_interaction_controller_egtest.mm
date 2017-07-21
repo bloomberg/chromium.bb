@@ -24,7 +24,6 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
-#import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/wait_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -131,11 +130,6 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // Tests that opening the sign-in screen from the Settings and signing in works
 // correctly when there is already an identity on the device.
 - (void)testSignInOneUser {
-  // TODO(crbug.com/745798): this test fails consistently on iPad, disabled.
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iPad due to crbug.com/745798");
-  }
-
   // Set up a fake identity.
   ChromeIdentity* identity = GetFakeIdentity1();
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
@@ -161,11 +155,6 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // Tests signing in with one account, switching sync account to a second and
 // choosing to keep the browsing data separate during the switch.
 - (void)testSignInSwitchAccountsAndKeepDataSeparate {
-  // TODO(crbug.com/745798): this test fails consistently on iPad, disabled.
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iPad due to crbug.com/745798");
-  }
-
   // Set up the fake identities.
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
@@ -205,11 +194,6 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // Tests signing in with one account, switching sync account to a second and
 // choosing to import the browsing data during the switch.
 - (void)testSignInSwitchAccountsAndImportData {
-  // TODO(crbug.com/745798): this test fails consistently on iPad, disabled.
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iPad due to crbug.com/745798");
-  }
-
   // Set up the fake identities.
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
@@ -249,11 +233,6 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // Tests that switching from a managed account to a non-managed account works
 // correctly and displays the expected warnings.
 - (void)testSignInSwitchManagedAccount {
-  // TODO(crbug.com/745798): this test fails consistently on iPad, disabled.
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iPad due to crbug.com/745798");
-  }
-
   if (!experimental_flags::IsMDMIntegrationEnabled()) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with MDM integration.");
   }
@@ -303,11 +282,6 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 
 // Tests that signing out from the Settings works correctly.
 - (void)testSignInDisconnectFromChrome {
-  // TODO(crbug.com/745798): this test fails consistently on iPad, disabled.
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iPad due to crbug.com/745798");
-  }
-
   ChromeIdentity* identity = GetFakeIdentity1();
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
@@ -343,11 +317,6 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // Tests that signing out of a managed account from the Settings works
 // correctly.
 - (void)testSignInDisconnectFromChromeManaged {
-  // TODO(crbug.com/745798): this test fails consistently on iPad, disabled.
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iPad due to crbug.com/745798");
-  }
-
   if (!experimental_flags::IsMDMIntegrationEnabled()) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with MDM integration.");
   }
@@ -394,11 +363,6 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // and closing the Settings correctly leaves the user signed in without any
 // Settings shown.
 - (void)testSignInOpenSettings {
-  // TODO(crbug.com/745798): this test fails consistently on iPad, disabled.
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iPad due to crbug.com/745798");
-  }
-
   ChromeIdentity* identity = GetFakeIdentity1();
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
@@ -501,11 +465,6 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // that the authentication flow is correctly canceled and dismissed.
 // crbug.com/462202
 - (void)testSignInCancelAuthenticationFlow {
-  // TODO(crbug.com/745798): this test fails consistently on iPad, disabled.
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iPad due to crbug.com/745798");
-  }
-
   // Set up the fake identities.
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
