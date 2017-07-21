@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -73,7 +74,7 @@ class BookmarkFaviconFetcher: public content::NotificationObserver {
   bool FetchNextFavicon();
 
   // Favicon fetch callback. After all favicons are fetched executes
-  // html output on the file thread.
+  // html output with |background_io_task_runner_|.
   void OnFaviconDataAvailable(
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
@@ -97,14 +98,17 @@ class BookmarkFaviconFetcher: public content::NotificationObserver {
 
   content::NotificationRegistrar registrar_;
 
+  scoped_refptr<base::SequencedTaskRunner> background_io_task_runner_ =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND});
+
   DISALLOW_COPY_AND_ASSIGN(BookmarkFaviconFetcher);
 };
 
 namespace bookmark_html_writer {
 
 // Writes the bookmarks out in the 'bookmarks.html' format understood by
-// Firefox and IE. The results are written to the file at |path|.  The file
-// thread is used.
+// Firefox and IE. The results are written asynchronously to the file at |path|.
 // Before writing to the file favicons are fetched on the main thread.
 // TODO(sky): need a callback on failure.
 void WriteBookmarks(Profile* profile,
