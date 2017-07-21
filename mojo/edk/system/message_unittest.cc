@@ -704,6 +704,36 @@ TEST_F(MessageTest, ExtendMessagePayloadLarge) {
   }
 }
 
+TEST_F(MessageTest, CorrectPayloadBufferBoundaries) {
+  // Exercises writes to the full extent of a message's payload under various
+  // circumstances in an effort to catch any potential bugs in internal
+  // allocations or reported size from Mojo APIs.
+
+  MojoMessageHandle message;
+  void* buffer = nullptr;
+  uint32_t buffer_size = 0;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoAttachSerializedMessageBuffer(
+                                message, 0, nullptr, 0, &buffer, &buffer_size));
+  // Fill the buffer end-to-end.
+  memset(buffer, 'x', buffer_size);
+
+  // Continuously grow and fill the message buffer several more times. Should
+  // not crash.
+  uint32_t payload_size = 0;
+  constexpr uint32_t kChunkSize = 4096;
+  constexpr size_t kNumIterations = 1000;
+  for (size_t i = 0; i < kNumIterations; ++i) {
+    payload_size += kChunkSize;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              MojoExtendSerializedMessagePayload(message, payload_size, &buffer,
+                                                 &buffer_size));
+    memset(buffer, 'x', buffer_size);
+  }
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
+}
+
 }  // namespace
 }  // namespace edk
 }  // namespace mojo
