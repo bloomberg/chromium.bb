@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -386,8 +387,8 @@ void DownloadTestFlushObserver::CheckDownloadsInProgress(
 
       // Trigger next step.  We need to go past the IO thread twice, as
       // there's a self-task posting in the IO thread cancel path.
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
+      DownloadManager::GetTaskRunner()->PostTask(
+          FROM_HERE,
           base::Bind(&DownloadTestFlushObserver::PingFileThread, this, 2));
     }
   }

@@ -19,11 +19,11 @@
 namespace content {
 // SaveFile ----------------------------------------------------------------
 
-// These objects live exclusively on the file thread and handle the writing
-// operations for one save item. These objects live only for the duration that
-// the saving job is 'in progress': once the saving job has been completed or
-// canceled, the SaveFile is destroyed. One SaveFile object represents one item
-// in a save session.
+// These objects live exclusively on the download task runner and handle the
+// writing operations for one save item. These objects live only for the
+// duration that the saving job is 'in progress': once the saving job has been
+// completed or canceled, the SaveFile is destroyed. One SaveFile object
+// represents one item in a save session.
 class SaveFile {
  public:
   explicit SaveFile(const SaveFileCreateInfo* info, bool calculate_hash);

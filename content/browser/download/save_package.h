@@ -100,7 +100,7 @@ class CONTENT_EXPORT SavePackage
 
   void Finish();
 
-  // Notifications sent from the FILE thread to the UI thread.
+  // Notifications sent from the download sequence to the UI thread.
   void StartSave(const SaveFileCreateInfo* info);
   bool UpdateSaveProgress(SaveItemId save_item_id,
                           int64_t size,
@@ -386,7 +386,7 @@ class CONTENT_EXPORT SavePackage
   // Map of all saving job which are successfully saved.
   SaveItemIdMap saved_success_items_;
 
-  // Non-owning pointer for handling file writing on the FILE thread.
+  // Non-owning pointer for handling file writing on the download sequence.
   SaveFileManager* file_manager_ = nullptr;
 
   // DownloadManager owns the DownloadItem and handles history and UI.

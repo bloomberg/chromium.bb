@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/browser/download/download_task_runner.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/mhtml_extra_parts.h"
@@ -276,12 +277,12 @@ class GenerateMHTMLAndExitRendererMessageFilter : public BrowserMessageFilter {
     if (message.type() == FrameHostMsg_SerializeAsMHTMLResponse::ID) {
       // After |return false| below, this IPC message will be handled by the
       // product code as illustrated below.  (1), (2), (3) depict points in time
-      // when product code runs on UI and FILE threads.  (X), (Y), (Z) depict
-      // when we want test-injected tasks to run - for the repro, (Z) has to
-      // happen between (1) and (3).  (Y?) and (Z?) depict when test tasks can
-      // theoretically happen and ruin the repro.
+      // when product code runs on UI thread and download sequence.  (X), (Y),
+      // (Z) depict when we want test-injected tasks to run - for the repro, (Z)
+      // has to happen between (1) and (3).  (Y?) and (Z?) depict when test
+      // tasks can theoretically happen and ruin the repro.
       //
-      //     IO thread       UI thread           FILE thread
+      //     IO thread       UI thread         download sequence
       //     ---------       ---------           -----------
       //        |                |                     |
       //    WE ARE HERE          |                     |
@@ -319,13 +320,14 @@ class GenerateMHTMLAndExitRendererMessageFilter : public BrowserMessageFilter {
       // - From here post TaskX to UI thread.  (X) is guaranteed to happen
       //   before timepoint (1) (because posting of (1) happens after
       //   |return false| / before we post TaskX below).
-      // - From (X) post TaskY to FILE thread.  Because this posting is done
-      //   before (1), we can guarantee that (Y) will happen before (2).
+      // - From (X) post TaskY to download sequence.  Because this posting is
+      //   done before (1), we can guarantee that (Y) will happen before (2).
       // - From (Y) post TaskZ to UI thread.  Because this posting is done
       //   before (2), we can guarantee that (Z) will happen before (3).
       // - We cannot really guarantee that (Y) and (Z) happen *after* (1) - i.e.
       //   execution at (Y?) and (Z?) instead is possible.  In practice,
-      //   bouncing off of UI and FILE thread does mean (Z) happens after (1).
+      //   bouncing off of UI and download sequence does mean (Z) happens
+      //   after (1).
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE, base::Bind(
               &GenerateMHTMLAndExitRendererMessageFilter::TaskX,
@@ -336,10 +338,9 @@ class GenerateMHTMLAndExitRendererMessageFilter : public BrowserMessageFilter {
   };
 
   void TaskX() {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE, base::Bind(
-            &GenerateMHTMLAndExitRendererMessageFilter::TaskY,
-            base::Unretained(this)));
+    GetDownloadTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&GenerateMHTMLAndExitRendererMessageFilter::TaskY,
+                              base::Unretained(this)));
   }
 
   void TaskY() {

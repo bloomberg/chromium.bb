@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "content/browser/byte_stream.h"
@@ -120,10 +121,13 @@ DownloadFileImpl::DownloadFileImpl(
   net_log_.BeginEvent(
       net::NetLogEventType::DOWNLOAD_FILE_ACTIVE,
       download_item_net_log.source().ToEventParametersCallback());
+
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 DownloadFileImpl::~DownloadFileImpl() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_ACTIVE);
 }
 
@@ -132,7 +136,7 @@ void DownloadFileImpl::Initialize(
     const CancelRequestCallback& cancel_request_callback,
     const DownloadItem::ReceivedSlices& received_slices,
     bool is_parallelizable) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   update_timer_.reset(new base::RepeatingTimer());
   int64_t bytes_so_far = 0;
@@ -176,7 +180,7 @@ void DownloadFileImpl::AddByteStream(
     std::unique_ptr<ByteStreamReader> stream_reader,
     int64_t offset,
     int64_t length) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   source_streams_[offset] =
       base::MakeUnique<SourceStream>(offset, length, std::move(stream_reader));
@@ -196,7 +200,8 @@ void DownloadFileImpl::AddByteStream(
 DownloadInterruptReason DownloadFileImpl::WriteDataToFile(int64_t offset,
                                                           const char* data,
                                                           size_t data_len) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   WillWriteToDisk(data_len);
   return file_.WriteDataToFile(offset, data, data_len);
 }
@@ -274,7 +279,7 @@ bool DownloadFileImpl::ShouldRetryFailedRename(DownloadInterruptReason reason) {
 
 void DownloadFileImpl::RenameWithRetryInternal(
     std::unique_ptr<RenameParameters> parameters) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::FilePath new_path = parameters->new_path;
 
@@ -299,8 +304,7 @@ void DownloadFileImpl::RenameWithRetryInternal(
     --parameters->retries_left;
     if (parameters->time_of_first_failure.is_null())
       parameters->time_of_first_failure = base::TimeTicks::Now();
-    BrowserThread::PostDelayedTask(
-        BrowserThread::FILE,
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&DownloadFileImpl::RenameWithRetryInternal,
                    weak_factory_.GetWeakPtr(),
@@ -386,6 +390,7 @@ void DownloadFileImpl::WasPaused() {
 }
 
 void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(source_stream->stream_reader());
   base::TimeTicks start(base::TimeTicks::Now());
   base::TimeTicks now;
@@ -468,10 +473,9 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
   // If we're stopping to yield the thread, post a task so we come back.
   if (state == ByteStreamReader::STREAM_HAS_DATA && now - start > delta &&
       !should_terminate) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr(),
-                   source_stream));
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&DownloadFileImpl::StreamActive,
+                              weak_factory_.GetWeakPtr(), source_stream));
   }
 
   if (total_incoming_data_size)
@@ -526,7 +530,8 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
 }
 
 void DownloadFileImpl::RegisterAndActivateStream(SourceStream* source_stream) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   ByteStreamReader* stream_reader = source_stream->stream_reader();
   if (stream_reader) {
     stream_reader->RegisterCallback(base::Bind(&DownloadFileImpl::StreamActive,
@@ -616,7 +621,8 @@ bool DownloadFileImpl::IsDownloadCompleted() {
 
 void DownloadFileImpl::HandleStreamError(SourceStream* source_stream,
                                          DownloadInterruptReason reason) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   source_stream->stream_reader()->RegisterCallback(base::Closure());
   source_stream->set_finished(true);
   num_active_streams_--;

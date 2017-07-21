@@ -22,7 +22,7 @@
 // SaveFileManager on the file thread. SaveFileManager will directly
 // call SaveFile's method to persist data.
 //
-// A typical saving job operation involves multiple threads:
+// A typical saving job operation involves multiple threads and sequences:
 //
 // Updating an in progress save file
 // io_thread
@@ -32,15 +32,15 @@
 //      |----> data from    ---->|  |
 //      |      render process    |  |
 // ui_thread                     |  |
-//                      file_thread (writes to disk)
-//                              |----> stats ---->|
+//                   download_task_runner (writes to disk)
+//                               |----> stats ---->|
 //                                              ui_thread (feedback for user)
 //
 //
 // Cancel operations perform the inverse order when triggered by a user action:
 // ui_thread (user click)
 //    |----> cancel command ---->|
-//    |           |      file_thread (close file)
+//    |           |      download_task_runner (close file)
 //    |           |---------------------> cancel command ---->|
 //    |                                               io_thread (stops net IO
 // ui_thread (user close contents)                               for saving)

@@ -9,9 +9,11 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_item_impl_delegate.h"
+#include "content/browser/download/download_task_runner.h"
 #include "content/browser/download/mock_download_item_impl.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -112,6 +114,11 @@ class ParallelDownloadJobForTest : public ParallelDownloadJob {
 
 class ParallelDownloadJobTest : public testing::Test {
  public:
+  ParallelDownloadJobTest()
+      : task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI,
+            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {}
+
   void CreateParallelJob(int64_t initial_request_offset,
                          int64_t content_length,
                          const DownloadItem::ReceivedSlices& slices,
@@ -173,6 +180,7 @@ class ParallelDownloadJobTest : public testing::Test {
     file_initialized_ = true;
   }
 
+  base::test::ScopedTaskEnvironment task_environment_;
   content::TestBrowserThreadBundle browser_threads_;
   std::unique_ptr<DownloadItemImplDelegate> item_delegate_;
   std::unique_ptr<MockDownloadItemImpl> download_item_;
@@ -379,10 +387,15 @@ TEST_F(ParallelDownloadJobTest, ParallelRequestNotCreatedUntilFileInitialized) {
   EXPECT_CALL(*input_stream, RegisterCallback(_));
   EXPECT_CALL(*input_stream, Read(_, _));
   EXPECT_CALL(*(observer.get()), DestinationUpdate(_, _, _));
-  base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(file_initialized_);
   EXPECT_EQ(1u, job_->workers().size());
   DestroyParallelJob();
+
+  // The download file lives on the download sequence, and must
+  // be deleted there.
+  GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, std::move(download_file));
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace content

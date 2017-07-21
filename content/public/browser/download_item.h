@@ -297,8 +297,8 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // DO NOT USE THIS METHOD to access the target path of the DownloadItem. Use
   // GetTargetFilePath() instead. While the download is in progress, the
   // intermediate file named by GetFullPath() may be renamed or disappear
-  // completely on the FILE thread. The path may also be reset to empty when the
-  // download is interrupted.
+  // completely on the download sequence. The path may also be reset to empty
+  // when the download is interrupted.
   virtual const base::FilePath& GetFullPath() const = 0;
 
   // Target path of an in-progress download. We may be downloading to a

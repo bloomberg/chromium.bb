@@ -16,6 +16,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -34,7 +35,7 @@ namespace content {
 class CONTENT_EXPORT BaseFile {
  public:
   // May be constructed on any thread.  All other routines (including
-  // destruction) must occur on the FILE thread.
+  // destruction) must occur on the same sequence.
   BaseFile(const net::NetLogWithSource& net_log);
   ~BaseFile();
 
@@ -252,6 +253,8 @@ class CONTENT_EXPORT BaseFile {
   bool is_sparse_file_ = false;
 
   net::NetLogWithSource net_log_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(BaseFile);
 };

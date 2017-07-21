@@ -19,7 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/byte_stream.h"
@@ -38,17 +38,16 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // Takes ownership of the object pointed to by |request_handle|.
   // |net_log| will be used for logging the download file's events.
   // May be constructed on any thread.  All methods besides the constructor
-  // (including destruction) must occur on the FILE thread.
+  // (including destruction) must occur in the same sequence.
   //
   // Note that the DownloadFileImpl automatically reads from the passed in
   // stream, and sends updates and status of those reads to the
   // DownloadDestinationObserver.
-  DownloadFileImpl(
-      std::unique_ptr<DownloadSaveInfo> save_info,
-      const base::FilePath& default_downloads_directory,
-      std::unique_ptr<ByteStreamReader> stream_reader,
-      const net::NetLogWithSource& net_log,
-      base::WeakPtr<DownloadDestinationObserver> observer);
+  DownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
+                   const base::FilePath& default_downloads_directory,
+                   std::unique_ptr<ByteStreamReader> stream_reader,
+                   const net::NetLogWithSource& net_log,
+                   base::WeakPtr<DownloadDestinationObserver> observer);
 
   ~DownloadFileImpl() override;
 
@@ -243,7 +242,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
   // DownloadSaveInfo provided during construction. Since the DownloadFileImpl
   // can be created on any thread, this holds the save_info_ until it can be
-  // used to initialize file_ on the FILE thread.
+  // used to initialize file_ on the download sequence.
   std::unique_ptr<DownloadSaveInfo> save_info_;
 
   // The default directory for creating the download file.
@@ -278,6 +277,8 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   base::TimeDelta download_time_without_parallel_streams_;
 
   std::vector<DownloadItem::ReceivedSlice> received_slices_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtr<DownloadDestinationObserver> observer_;
   base::WeakPtrFactory<DownloadFileImpl> weak_factory_;

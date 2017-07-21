@@ -727,7 +727,7 @@ void TestRenameCompletionCallback(const base::Closure& closure,
 }  // namespace
 
 // Test that the retry logic works. This test assumes that DownloadFileImpl will
-// post tasks to the current message loop (acting as the FILE thread)
+// post tasks to the current message loop (acting as the download sequence)
 // asynchronously to retry the renames. We will stuff RunLoop::QuitClosures()
 // in between the retry tasks to stagger them and then allow the rename to
 // succeed.

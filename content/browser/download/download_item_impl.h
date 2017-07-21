@@ -712,7 +712,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // The following fields describe the current state of the download file.
 
   // DownloadFile associated with this download.  Note that this
-  // pointer may only be used or destroyed on the FILE thread.
+  // pointer may only be used or destroyed on the download sequence.
   // This pointer will be non-null only while the DownloadItem is in
   // the IN_PROGRESS state.
   std::unique_ptr<DownloadFile> download_file_;

@@ -14,6 +14,7 @@
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_manager_impl.h"
+#include "content/browser/download/download_task_runner.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -120,17 +121,17 @@ DownloadFileWithError::DownloadFileWithError(
                        observer),
       error_info_(error_info),
       destruction_callback_(dtor_callback) {
-  // DownloadFiles are created on the UI thread and are destroyed on the FILE
-  // thread. Schedule the ConstructionCallback on the FILE thread so that if a
-  // DownloadItem schedules a DownloadFile to be destroyed and creates another
-  // one (as happens during download resumption), then the DestructionCallback
-  // for the old DownloadFile is run before the ConstructionCallback for the
-  // next DownloadFile.
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, ctor_callback);
+  // DownloadFiles are created on the UI thread and are destroyed on the
+  // download task runner. Schedule the ConstructionCallback on the
+  // download task runner, so that if a DownloadItem schedules a
+  // DownloadFile to be destroyed and creates another one (as happens during
+  // download resumption), then the DestructionCallback for the old DownloadFile
+  // is run before the ConstructionCallback for the next DownloadFile.
+  GetDownloadTaskRunner()->PostTask(FROM_HERE, ctor_callback);
 }
 
 DownloadFileWithError::~DownloadFileWithError() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   destruction_callback_.Run();
 }
 
@@ -299,14 +300,10 @@ DownloadFile* DownloadFileWithErrorFactory::CreateFile(
     std::unique_ptr<ByteStreamReader> byte_stream,
     const net::NetLogWithSource& net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
-  return new DownloadFileWithError(std::move(save_info),
-                                   default_download_directory,
-                                   std::move(byte_stream),
-                                   net_log,
-                                   observer,
-                                   injected_error_,
-                                   construction_callback_,
-                                   destruction_callback_);
+  return new DownloadFileWithError(
+      std::move(save_info), default_download_directory, std::move(byte_stream),
+      net_log, observer, injected_error_, construction_callback_,
+      destruction_callback_);
 }
 
 bool DownloadFileWithErrorFactory::SetError(

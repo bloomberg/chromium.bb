@@ -8,9 +8,9 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/browser/download/download_task_runner.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/loader/resource_controller.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_status.h"
@@ -54,9 +54,8 @@ void SaveFileResourceHandler::OnResponseStarted(
       url_, final_url_, save_item_id_, save_package_id_, render_process_id_,
       render_frame_routing_id_, GetRequestID(), content_disposition_,
       content_length_);
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&SaveFileManager::StartSave, save_manager_, info));
+  GetDownloadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&SaveFileManager::StartSave, save_manager_, info));
   controller->Resume();
 }
 
@@ -92,8 +91,8 @@ void SaveFileResourceHandler::OnReadCompleted(
   // We are passing ownership of this buffer to the save file manager.
   scoped_refptr<net::IOBuffer> buffer;
   read_buffer_.swap(buffer);
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  GetDownloadTaskRunner()->PostTask(
+      FROM_HERE,
       base::Bind(&SaveFileManager::UpdateSaveProgress, save_manager_,
                  save_item_id_, base::RetainedRef(buffer), bytes_read));
   controller->Resume();
@@ -105,11 +104,10 @@ void SaveFileResourceHandler::OnResponseCompleted(
   if (authorization_state_ != AuthorizationState::AUTHORIZED)
     DCHECK(!status.is_success());
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&SaveFileManager::SaveFinished, save_manager_, save_item_id_,
-                 save_package_id_,
-                 status.is_success() && !status.is_io_pending()));
+  GetDownloadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&SaveFileManager::SaveFinished, save_manager_,
+                            save_item_id_, save_package_id_,
+                            status.is_success() && !status.is_io_pending()));
   read_buffer_ = nullptr;
   controller->Resume();
 }
