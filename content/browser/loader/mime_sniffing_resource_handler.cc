@@ -126,6 +126,7 @@ MimeSniffingResourceHandler::MimeSniffingResourceHandler(
       must_download_is_set_(false),
       read_buffer_size_(0),
       bytes_read_(0),
+      sniffed_(false),
       parent_read_buffer_(nullptr),
       parent_read_buffer_size_(nullptr),
       intercepting_handler_(intercepting_handler),
@@ -135,7 +136,13 @@ MimeSniffingResourceHandler::MimeSniffingResourceHandler(
       weak_ptr_factory_(this) {
 }
 
-MimeSniffingResourceHandler::~MimeSniffingResourceHandler() {}
+MimeSniffingResourceHandler::~MimeSniffingResourceHandler() {
+  if (sniffed_) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Net.MimeSniffDeterminedFromFirstRead",
+        first_sniffed_mime_type_ == response_->head.mime_type);
+  }
+}
 
 void MimeSniffingResourceHandler::OnWillStart(
     const GURL& url,
@@ -276,6 +283,10 @@ void MimeSniffingResourceHandler::OnReadCompleted(
   bool made_final_decision =
       net::SniffMimeType(read_buffer_->data(), bytes_read_, request()->url(),
                          type_hint, &new_type);
+  if (!sniffed_) {
+    first_sniffed_mime_type_ = new_type;
+    sniffed_ = true;
+  }
 
   // SniffMimeType() returns false if there is not enough data to determine
   // the mime type. However, even if it returns false, it returns a new type
