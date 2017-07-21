@@ -7,6 +7,9 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/elements/url_bar_texture.h"
 
+using cc::TargetProperty::OPACITY;
+using cc::TargetProperty::VISIBILITY;
+
 namespace vr {
 
 TransientUrlBar::TransientUrlBar(
@@ -25,6 +28,10 @@ UiTexture* TransientUrlBar::GetTexture() const {
 
 void TransientUrlBar::SetEnabled(bool enabled) {
   transience_.SetEnabled(enabled);
+  if (enabled)
+    animation_player().SetTransitionedProperties({OPACITY, VISIBILITY});
+  else
+    animation_player().SetTransitionedProperties({});
 }
 
 void TransientUrlBar::SetToolbarState(const ToolbarState& state) {
