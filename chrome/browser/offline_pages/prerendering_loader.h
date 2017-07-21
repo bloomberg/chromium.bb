@@ -81,6 +81,7 @@ class PrerenderingLoader : public PrerenderAdapter::Observer,
 
   // SnapshotController::Client implementation:
   void StartSnapshot() override;
+  void RunRenovations() override;
 
   // Returns true if the lowbar of snapshotting a page is met.
   virtual bool IsLowbarMet();

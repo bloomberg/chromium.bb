@@ -29,6 +29,7 @@ class SnapshotControllerTest : public testing::Test,
 
   // SnapshotController::Client
   void StartSnapshot() override;
+  void RunRenovations() override;
 
   // Utility methods.
   // Runs until all of the tasks that are not delayed are gone from the task
@@ -64,6 +65,10 @@ void SnapshotControllerTest::TearDown() {
 
 void SnapshotControllerTest::StartSnapshot() {
   snapshot_count_++;
+}
+
+void SnapshotControllerTest::RunRenovations() {
+  controller_->RenovationsCompleted();
 }
 
 void SnapshotControllerTest::PumpLoop() {

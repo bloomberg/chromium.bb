@@ -195,6 +195,10 @@ void PrerenderingLoader::StartSnapshot() {
   HandleLoadEvent();
 }
 
+void PrerenderingLoader::RunRenovations() {
+  snapshot_controller_->RenovationsCompleted();
+}
+
 bool PrerenderingLoader::IsLowbarMet() {
   return is_lowbar_met_;
 }

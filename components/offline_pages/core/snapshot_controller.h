@@ -56,6 +56,11 @@ class SnapshotController {
     // it is assumed that later snapshots are better then previous.
     virtual void StartSnapshot() = 0;
 
+    // Invoked when the page is sufficiently loaded for running
+    // renovations. The client should call the RenovationsCompleted()
+    // when they finish.
+    virtual void RunRenovations() = 0;
+
    protected:
     virtual ~Client() {}
   };
@@ -90,6 +95,9 @@ class SnapshotController {
   // The way for Client to report that previously started snapshot is
   // now completed (so the next one can be started).
   void PendingSnapshotCompleted();
+
+  // The Client calls this when renovations have completed.
+  void RenovationsCompleted();
 
   // Invoked from WebContentObserver::DocumentAvailableInMainFrame
   void DocumentAvailableInMainFrame();

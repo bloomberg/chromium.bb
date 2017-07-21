@@ -374,6 +374,10 @@ void RecentTabHelper::StartSnapshot() {
   snapshot_controller_->PendingSnapshotCompleted();
 }
 
+void RecentTabHelper::RunRenovations() {
+  snapshot_controller_->RenovationsCompleted();
+}
+
 void RecentTabHelper::SaveSnapshotForDownloads(bool replace_latest) {
   DCHECK_NE(PageQuality::POOR, snapshot_controller_->current_page_quality());
 
