@@ -212,7 +212,13 @@ class PersonalDataManager : public KeyedService,
   virtual const std::vector<CreditCard*>& GetCreditCards() const;
 
   // Returns the profiles to suggest to the user, ordered by frecency.
-  const std::vector<AutofillProfile*> GetProfilesToSuggest() const;
+  std::vector<AutofillProfile*> GetProfilesToSuggest() const;
+
+  // Remove profiles that haven't been used after |min_last_used| from
+  // |profiles|. The relative ordering of |profiles| is maintained.
+  static void RemoveProfilesNotUsedSinceTimestamp(
+      base::Time min_last_used,
+      std::vector<AutofillProfile*>* profiles);
 
   // Loads profiles that can suggest data for |type|. |field_contents| is the
   // part the user has already typed. |field_is_autofilled| is true if the field

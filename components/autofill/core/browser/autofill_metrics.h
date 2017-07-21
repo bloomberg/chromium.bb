@@ -929,8 +929,15 @@ class AutofillMetrics {
   static void LogHasModifiedProfileOnCreditCardFormSubmission(
       bool has_modified_profile);
 
-  // Log the number of Autofill suggestions presented to the user when filling a
-  // form.
+  // Log the number of autofill address suggestions suppressed because they have
+  // not been used for a long time. Note that these addresses are only
+  // suppressed when the user has not typed any data into the field from which
+  // autofill is triggered. Addresses matching something the user has types are
+  // always offered, regardless of how recently they have been used.
+  static void LogNumberOfAddressesSuppressedForDisuse(size_t num_profiles);
+
+  // Log the number of Autofill address suggestions presented to the user when
+  // filling a form.
   static void LogAddressSuggestionsCount(size_t num_suggestions);
 
   // Log the index of the selected Autofill suggestion in the popup.

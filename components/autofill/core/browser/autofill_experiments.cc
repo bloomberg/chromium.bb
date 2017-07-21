@@ -38,6 +38,8 @@ const base::Feature kAutofillCreditCardLastUsedDateDisplay{
 const base::Feature kAutofillOfferLocalSaveIfServerCardManuallyEntered{
     "AutofillOfferLocalSaveIfServerCardManuallyEntered",
     base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutofillSuppressDisusedAddresses{
+    "AutofillSuppressDisusedAddresses", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamRequestCvcIfMissing{
     "AutofillUpstreamRequestCvcIfMissing", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamUseAutofillProfileComparator{

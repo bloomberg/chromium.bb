@@ -859,6 +859,13 @@ void AutofillMetrics::LogHasModifiedProfileOnCreditCardFormSubmission(
 }
 
 // static
+void AutofillMetrics::LogNumberOfAddressesSuppressedForDisuse(
+    size_t num_profiles) {
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.AddressesSuppressedForDisuse",
+                            num_profiles);
+}
+
+// static
 void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) {
   UMA_HISTOGRAM_COUNTS("Autofill.AddressSuggestionsCount", num_suggestions);
 }
