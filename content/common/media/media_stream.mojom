@@ -1,0 +1,21 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+interface MediaStreamDispatcherHost {
+  // TODO(c.padhi): Migrate the rest of the messages, https://crbug.com/742682.
+
+  // Cancels the request for a new media stream.
+  CancelGenerateStream(int32 render_frame_id, int32 request_id);
+
+  // Closes a stream device that has been opened by GenerateStream.
+  StopStreamDevice(int32 render_frame_id, string device_id);
+
+  // Cancels an open request identified by |label|.
+  CloseDevice(string label);
+
+  // Tells the browser process that the stream has been started successfully.
+  StreamStarted(string label);
+};

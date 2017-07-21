@@ -28,6 +28,7 @@
 	  "cc::mojom::SharedBitmapAllocationNotifier",
           "content::mojom::FieldTrialRecorder",
           "content::mojom::FrameSinkProvider",
+          "content::mojom::MediaStreamDispatcherHost",
           "content::mojom::MemoryCoordinatorHandle",
           "content::mojom::PushMessaging",
           "content::mojom::RendererHost",

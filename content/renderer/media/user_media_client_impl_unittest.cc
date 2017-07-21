@@ -16,6 +16,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "content/child/child_process.h"
 #include "content/common/media/media_devices.h"
+#include "content/common/media/media_stream.mojom.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
@@ -113,6 +114,17 @@ const char kFakeAudioInputDeviceId2[] = "fake_audio_input 2";
 const char kFakeVideoInputDeviceId1[] = "fake_video_input 1";
 const char kFakeVideoInputDeviceId2[] = "fake_video_input 2";
 const char kFakeAudioOutputDeviceId1[] = "fake_audio_output 1";
+
+class MockMojoMediaStreamDispatcherHost
+    : public mojom::MediaStreamDispatcherHost {
+ public:
+  MockMojoMediaStreamDispatcherHost() {}
+
+  MOCK_METHOD2(CancelGenerateStream, void(int32_t, int32_t));
+  MOCK_METHOD2(StopStreamDevice, void(int32_t, const std::string&));
+  MOCK_METHOD1(CloseDevice, void(const std::string&));
+  MOCK_METHOD1(StreamStarted, void(const std::string&));
+};
 
 class MockMediaDevicesDispatcherHost
     : public ::mojom::MediaDevicesDispatcherHost {
@@ -387,6 +399,7 @@ class UserMediaClientImplTest : public ::testing::TestWithParam<bool> {
     child_process_.reset(new ChildProcess());
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
     ms_dispatcher_ = new MockMediaStreamDispatcher();
+    ms_dispatcher_->dispatcher_host_ = &mock_dispatcher_host_;
     user_media_client_impl_.reset(new UserMediaClientImplUnderTest(
         dependency_factory_.get(),
         std::unique_ptr<MediaStreamDispatcher>(ms_dispatcher_)));
@@ -508,6 +521,7 @@ class UserMediaClientImplTest : public ::testing::TestWithParam<bool> {
   base::MessageLoop message_loop_;
   std::unique_ptr<ChildProcess> child_process_;
   MockMediaStreamDispatcher* ms_dispatcher_;  // Owned by |used_media_impl_|.
+  MockMojoMediaStreamDispatcherHost mock_dispatcher_host_;
   MockMediaDevicesDispatcherHost media_devices_dispatcher_;
   mojo::Binding<::mojom::MediaDevicesDispatcherHost> binding_user_media;
   mojo::Binding<::mojom::MediaDevicesDispatcherHost> binding_event_dispatcher_;
