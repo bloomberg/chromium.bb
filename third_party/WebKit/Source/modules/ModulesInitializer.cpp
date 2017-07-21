@@ -193,7 +193,7 @@ void ModulesInitializer::Initialize() {
           session->Append(InspectorDatabaseAgent::Create(page));
           session->Append(new InspectorAccessibilityAgent(page, dom_agent));
           session->Append(InspectorDOMStorageAgent::Create(page));
-          session->Append(InspectorCacheStorageAgent::Create());
+          session->Append(InspectorCacheStorageAgent::Create(inspected_frames));
         }
       });
 
