@@ -190,7 +190,7 @@ TEST_F(FrameSelectionTest, ModifyWithUserTriggered) {
 
   EXPECT_FALSE(
       Selection().Modify(SelectionModifyAlteration::kMove, kDirectionForward,
-                         TextGranularity::kCharacter, kNotUserTriggered))
+                         TextGranularity::kCharacter, SetSelectionBy::kSystem))
       << "Selection.modify() returns false for non-user-triggered call when "
          "selection isn't modified.";
   EXPECT_EQ(end_of_text,
@@ -199,7 +199,7 @@ TEST_F(FrameSelectionTest, ModifyWithUserTriggered) {
 
   EXPECT_TRUE(Selection().Modify(SelectionModifyAlteration::kMove,
                                  kDirectionForward, TextGranularity::kCharacter,
-                                 kUserTriggered))
+                                 SetSelectionBy::kUser))
       << "Selection.modify() returns true for user-triggered call";
   EXPECT_EQ(end_of_text,
             Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start())
