@@ -1559,18 +1559,18 @@ public class Tab
         // Don't show data saver footer if Chrome Home is enabled (temporary fix for M61)
         if (FeatureUtilities.isChromeHomeEnabled()) return;
 
-        if (!tracker.shouldTriggerHelpUI(FeatureConstants.DATA_SAVER_DETAIL_FEATURE)) return;
-
-        showDataSaverInProductHelp(tracker);
+        maybeShowDataSaverInProductHelp(tracker);
     }
 
-    private void showDataSaverInProductHelp(final FeatureEngagementTracker tracker) {
+    private void maybeShowDataSaverInProductHelp(final FeatureEngagementTracker tracker) {
+        if (!tracker.shouldTriggerHelpUI(FeatureConstants.DATA_SAVER_DETAIL_FEATURE)) return;
+
         ViewAnchoredTextBubble textBubble = new ViewAnchoredTextBubble(getActivity(),
                 getActivity().getToolbarManager().getMenuButton(),
                 R.string.iph_data_saver_detail_text,
                 R.string.iph_data_saver_detail_accessibility_text);
         textBubble.setDismissOnTouchInteraction(true);
-        getActivity().getAppMenuHandler().setMenuHighlight(R.id.data_reduction_footer);
+        getActivity().getAppMenuHandler().setMenuHighlight(R.id.app_menu_footer);
         textBubble.addOnDismissListener(new OnDismissListener() {
             @Override
             public void onDismiss() {
