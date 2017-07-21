@@ -115,6 +115,7 @@ static_library("opus") {
     "src/silk/HP_variable_cutoff.c",
     "src/silk/Inlines.h",
     "src/silk/LPC_analysis_filter.c",
+    "src/silk/LPC_fit.c",
     "src/silk/LPC_inv_pred_gain.c",
     "src/silk/LP_variable_cutoff.c",
     "src/silk/MacroCount.h",
@@ -227,6 +228,7 @@ static_library("opus") {
   ]
 
   include_dirs = [
+    "src",
     "src/celt",
     "src/silk",
   ]
@@ -287,14 +289,12 @@ static_library("opus") {
       "src/silk/fixed/main_FIX.h",
       "src/silk/fixed/noise_shape_analysis_FIX.c",
       "src/silk/fixed/pitch_analysis_core_FIX.c",
-      "src/silk/fixed/prefilter_FIX.c",
       "src/silk/fixed/process_gains_FIX.c",
       "src/silk/fixed/regularize_correlations_FIX.c",
       "src/silk/fixed/residual_energy16_FIX.c",
       "src/silk/fixed/residual_energy_FIX.c",
       "src/silk/fixed/schur64_FIX.c",
       "src/silk/fixed/schur_FIX.c",
-      "src/silk/fixed/solve_LS_FIX.c",
       "src/silk/fixed/structs_FIX.h",
       "src/silk/fixed/vector_ops_FIX.c",
       "src/silk/fixed/warped_autocorrelation_FIX.c",
@@ -323,18 +323,15 @@ static_library("opus") {
       "src/silk/float/find_pred_coefs_FLP.c",
       "src/silk/float/inner_product_FLP.c",
       "src/silk/float/k2a_FLP.c",
-      "src/silk/float/levinsondurbin_FLP.c",
       "src/silk/float/main_FLP.h",
       "src/silk/float/noise_shape_analysis_FLP.c",
       "src/silk/float/pitch_analysis_core_FLP.c",
-      "src/silk/float/prefilter_FLP.c",
       "src/silk/float/process_gains_FLP.c",
       "src/silk/float/regularize_correlations_FLP.c",
       "src/silk/float/residual_energy_FLP.c",
       "src/silk/float/scale_copy_vector_FLP.c",
       "src/silk/float/scale_vector_FLP.c",
       "src/silk/float/schur_FLP.c",
-      "src/silk/float/solve_LS_FLP.c",
       "src/silk/float/sort_FLP.c",
       "src/silk/float/structs_FLP.h",
       "src/silk/float/warped_autocorrelation_FLP.c",
@@ -377,8 +374,6 @@ static_library("opus") {
         "src/silk/arm/arm_silk_map.c",
       ]
 
-      include_dirs += [ "src" ]
-
       defines += [
         "OPUS_ARM_MAY_HAVE_EDSP",
         "OPUS_ARM_MAY_HAVE_MEDIA",
@@ -392,8 +387,17 @@ static_library("opus") {
       if (arm_use_neon) {
         sources += [
           "src/celt/arm/celt_neon_intr.c",
+          "src/celt/arm/pitch_neon_intr.c",
+          "src/silk/arm/LPC_inv_pred_gain_arm.h",
+          "src/silk/arm/LPC_inv_pred_gain_neon_intr.c",
+          "src/silk/arm/NSQ_del_dec_arm.h",
+          "src/silk/arm/NSQ_del_dec_neon_intr.c",
           "src/silk/arm/NSQ_neon.c",
           "src/silk/arm/NSQ_neon.h",
+          "src/silk/arm/biquad_alt_arm.h",
+          "src/silk/arm/biquad_alt_neon_intr.c",
+          "src/silk/fixed/arm/warped_autocorrelation_FIX_arm.h",
+          "src/silk/fixed/arm/warped_autocorrelation_FIX_neon_intr.c",
         ]
 
         defines += [
@@ -460,6 +464,7 @@ test("test_opus_api") {
 test("test_opus_encode") {
   sources = [
     "src/tests/test_opus_encode.c",
+    "src/tests/opus_encode_regressions.c",
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]

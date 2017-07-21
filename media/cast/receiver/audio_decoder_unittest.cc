@@ -58,7 +58,7 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
                                 TestAudioBusFactory::kMiddleANoteFreq,
                                 0.5f));
     last_frame_id_ = FrameId::first();
-    seen_a_decoded_frame_ = false;
+    decoded_frames_seen_ = 0;
 
     if (GetParam().codec == CODEC_AUDIO_OPUS) {
       opus_encoder_memory_.reset(
@@ -159,12 +159,12 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
     EXPECT_EQ(should_be_continuous, is_continuous);
 
     // Does the audio data seem to be intact?  For Opus, we have to ignore the
-    // first frame seen at the start (and immediately after dropped packet
+    // first two frames seen at the start (and immediately after dropped packet
     // recovery) because it introduces a tiny, significant delay.
     bool examine_signal = true;
     if (GetParam().codec == CODEC_AUDIO_OPUS) {
-      examine_signal = seen_a_decoded_frame_ && should_be_continuous;
-      seen_a_decoded_frame_ = true;
+      ++decoded_frames_seen_;
+      examine_signal = (decoded_frames_seen_ > 2) && should_be_continuous;
     }
     if (examine_signal) {
       for (int ch = 0; ch < audio_bus->channels(); ++ch) {
@@ -187,7 +187,7 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
   std::unique_ptr<AudioDecoder> audio_decoder_;
   std::unique_ptr<TestAudioBusFactory> audio_bus_factory_;
   FrameId last_frame_id_;
-  bool seen_a_decoded_frame_;
+  int decoded_frames_seen_;
   std::unique_ptr<uint8_t[]> opus_encoder_memory_;
 
   base::Lock lock_;
