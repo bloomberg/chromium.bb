@@ -173,7 +173,9 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void UpdateBrowserControlsState(blink::WebBrowserControlsState constraints,
                                   blink::WebBrowserControlsState current,
                                   bool animate) override;
-  void SetBrowserControlsHeight(float height, bool shrink) override;
+  void SetBrowserControlsHeight(float top_height,
+                                float bottom_height,
+                                bool shrink) override;
   void SetBrowserControlsShownRatio(float) override;
   // TODO(ianwen): Move this method to WebLayerTreeView and implement main
   // thread scrolling.

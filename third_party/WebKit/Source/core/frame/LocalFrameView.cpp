@@ -1406,7 +1406,7 @@ FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
     if (frame_->IsMainFrame() && layout_size.Width() && viewport_width) {
       float page_scale_at_layout_width = viewport_width / layout_size.Width();
       layout_size.Expand(
-          0, browser_controls.Height() / page_scale_at_layout_width);
+          0, browser_controls.TotalHeight() / page_scale_at_layout_width);
     }
   }
 
@@ -1651,7 +1651,7 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
   ShowOverlayScrollbars();
 
   if (GetLayoutView() && frame_->IsMainFrame() &&
-      frame_->GetPage()->GetBrowserControls().Height()) {
+      frame_->GetPage()->GetBrowserControls().TotalHeight()) {
     if (GetLayoutView()->Style()->HasFixedBackgroundImage()) {
       // In the case where we don't change layout size from top control resizes,
       // we wont perform a layout. If we have a fixed background image however,

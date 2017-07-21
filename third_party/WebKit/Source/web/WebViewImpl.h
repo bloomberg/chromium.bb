@@ -170,7 +170,8 @@ class WEB_EXPORT WebViewImpl final
   void SetWindowFeatures(const WebWindowFeatures&) override;
   void SetOpenedByDOM() override;
   void ResizeWithBrowserControls(const WebSize&,
-                                 float browser_controls_height,
+                                 float top_controls_height,
+                                 float bottom_controls_height,
                                  bool browser_controls_shrink_layout) override;
   WebFrame* MainFrame() override;
   WebLocalFrame* FocusedFrame() override;
@@ -500,7 +501,8 @@ class WEB_EXPORT WebViewImpl final
   IntSize ContentsSize() const;
 
   void UpdateICBAndResizeViewport();
-  void ResizeViewWhileAnchored(float browser_controls_height,
+  void ResizeViewWhileAnchored(float top_controls_height,
+                               float bottom_controls_height,
                                bool browser_controls_shrink_layout);
 
   // Overrides the compositor visibility. See the description of

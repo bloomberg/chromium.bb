@@ -733,9 +733,11 @@ ShadowRoot* Internals::createUserAgentShadowRoot(Element* host) {
   return &host->EnsureUserAgentShadowRoot();
 }
 
-void Internals::setBrowserControlsState(float height, bool shrinks_layout) {
+void Internals::setBrowserControlsState(float top_height,
+                                        float bottom_height,
+                                        bool shrinks_layout) {
   document_->GetPage()->GetChromeClient().SetBrowserControlsState(
-      height, shrinks_layout);
+      top_height, bottom_height, shrinks_layout);
 }
 
 ShadowRoot* Internals::shadowRoot(Element* host) {

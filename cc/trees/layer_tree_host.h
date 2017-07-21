@@ -288,7 +288,9 @@ class CC_EXPORT LayerTreeHost
   void SetViewportSize(const gfx::Size& device_viewport_size);
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
 
-  void SetBrowserControlsHeight(float height, bool shrink);
+  void SetBrowserControlsHeight(float top_height,
+                                float bottom_height,
+                                bool shrink);
   void SetBrowserControlsShownRatio(float ratio);
   void SetBottomControlsHeight(float height);
 

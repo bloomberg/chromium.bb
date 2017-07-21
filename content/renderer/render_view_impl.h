@@ -728,8 +728,11 @@ class CONTENT_EXPORT RenderViewImpl
   // URL-bar.
   bool browser_controls_shrink_blink_size_;
 
-  // The height of the browser controls.
+  // The height of the browser top controls.
   float top_controls_height_;
+
+  // The height of the browser bottom controls.
+  float bottom_controls_height_;
 
   // View ----------------------------------------------------------------------
 
