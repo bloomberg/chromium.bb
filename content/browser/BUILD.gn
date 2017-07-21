@@ -352,6 +352,8 @@ source_set("browser") {
     "appcache/appcache_subresource_url_factory.h",
     "appcache/appcache_update_job.cc",
     "appcache/appcache_update_job.h",
+    "appcache/appcache_update_url_fetcher.cc",
+    "appcache/appcache_update_url_fetcher.h",
     "appcache/appcache_url_loader_job.cc",
     "appcache/appcache_url_loader_job.h",
     "appcache/appcache_url_loader_request.cc",
