@@ -127,7 +127,7 @@ TEST_F(WebStateTest, Snapshot) {
       addSubview:web_state()->GetView()];
   // The subview is added but not immediately painted, so a small delay is
   // necessary.
-  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.1));
+  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
   CGSize target_size = CGSizeMake(100.0f, 100.0f);
   web_state()->TakeSnapshot(
       base::BindBlockArc(^(const gfx::Image& snapshot) {
