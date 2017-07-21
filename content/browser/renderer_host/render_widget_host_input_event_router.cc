@@ -57,12 +57,12 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
     active_touches_ = 0;
   }
 
-  // If the target that's being destroyed is in the gesture target queue, we
+  // If the target that's being destroyed is in the gesture target map, we
   // replace it with nullptr so that we maintain the 1:1 correspondence between
-  // queue entries and the touch sequences that underly them.
-  for (size_t i = 0; i < touchscreen_gesture_target_queue_.size(); ++i) {
-    if (touchscreen_gesture_target_queue_[i].target == view)
-      touchscreen_gesture_target_queue_[i].target = nullptr;
+  // map entries and the touch sequences that underly them.
+  for (auto it : touchscreen_gesture_target_map_) {
+    if (it.second.target == view)
+      it.second.target = nullptr;
   }
 
   if (view == mouse_capture_target_.target)
@@ -390,6 +390,15 @@ unsigned CountChangedTouchPoints(const blink::WebTouchEvent& event) {
 
 }  // namespace
 
+// Any time a touch start event is handled/consumed/default prevented it is
+// removed from the gesture map, because it will never create a gesture.
+void RenderWidgetHostInputEventRouter::OnHandledTouchStartOrFirstTouchMove(
+    uint32_t unique_touch_event_id) {
+  // unique_touch_event_id of 0 implies a gesture not created by a touch.
+  DCHECK_NE(unique_touch_event_id, 0U);
+  touchscreen_gesture_target_map_.erase(unique_touch_event_id);
+}
+
 void RenderWidgetHostInputEventRouter::RouteTouchEvent(
     RenderWidgetHostViewBase* root_view,
     blink::WebTouchEvent* event,
@@ -413,7 +422,11 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
         // might be to always transform each point to the |touch_target_.target|
         // for the duration of the sequence.
         touch_target_.delta = transformed_point - original_point;
-        touchscreen_gesture_target_queue_.push_back(touch_target_);
+        DCHECK(touchscreen_gesture_target_map_.find(
+                   event->unique_touch_event_id) ==
+               touchscreen_gesture_target_map_.end());
+        touchscreen_gesture_target_map_[event->unique_touch_event_id] =
+            touch_target_;
 
         if (!touch_target_.target)
           return;
@@ -835,23 +848,45 @@ void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
     return;
   }
 
+  auto gesture_target_it =
+      touchscreen_gesture_target_map_.find(event->unique_touch_event_id);
+  bool no_matching_id =
+      gesture_target_it == touchscreen_gesture_target_map_.end();
+
+  // We use GestureTapDown to detect the start of a gesture sequence since
+  // there is no WebGestureEvent equivalent for ET_GESTURE_BEGIN. Note that
+  // this means the GestureFlingCancel that always comes between
+  // ET_GESTURE_BEGIN and GestureTapDown is sent to the previous target, in
+  // case it is still in a fling.
+  bool is_gesture_start =
+      event->GetType() == blink::WebInputEvent::kGestureTapDown;
+
   // On Android it is possible for touchscreen gesture events to arrive that
   // are not associated with touch events, because non-synthetic events can be
-  // created by ContentView. In that case the target queue will be empty.
-  if (touchscreen_gesture_target_queue_.empty()) {
+  // created by ContentView.
+  // These gesture events should always have a unique_touch_event_id of 0.
+  bool no_gesture_target =
+      event->unique_touch_event_id != 0 && no_matching_id && is_gesture_start;
+
+  if (no_gesture_target) {
+    UMA_HISTOGRAM_BOOLEAN("Event.FrameEventRouting.NoGestureTarget",
+                          no_gesture_target);
+    NOTREACHED() << "Gesture sequence start detected with no target available.";
+    // It is still safe to continue; we will recalculate the target.
+  }
+
+  // If this is a non-touch gesture or there was an no_matching_id error on
+  // gesture start, then the target must be recalculated.
+  if (event->unique_touch_event_id == 0 ||
+      (no_matching_id && is_gesture_start)) {
     gfx::Point transformed_point;
     gfx::Point original_point(event->x, event->y);
     touchscreen_gesture_target_.target =
         FindEventTarget(root_view, original_point, &transformed_point);
     touchscreen_gesture_target_.delta = transformed_point - original_point;
-  } else if (event->GetType() == blink::WebInputEvent::kGestureTapDown) {
-    // We use GestureTapDown to detect the start of a gesture sequence since
-    // there is no WebGestureEvent equivalent for ET_GESTURE_BEGIN. Note that
-    // this means the GestureFlingCancel that always comes between
-    // ET_GESTURE_BEGIN and GestureTapDown is sent to the previous target, in
-    // case it is still in a fling.
-    touchscreen_gesture_target_ = touchscreen_gesture_target_queue_.front();
-    touchscreen_gesture_target_queue_.pop_front();
+  } else if (is_gesture_start) {
+    touchscreen_gesture_target_ = gesture_target_it->second;
+    touchscreen_gesture_target_map_.erase(gesture_target_it);
 
     // Abort any scroll bubbling in progress to avoid double entry.
     if (touchscreen_gesture_target_.target &&
