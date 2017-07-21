@@ -703,8 +703,43 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {
 }
 
 // Tests that EasyResizeWindowTargeter expands the hit-test area when a
+// top-level window can be resized but not when the window is not resizable.
+TEST_F(ToplevelWindowEventHandlerTest, EasyResizerUsedForTopLevel) {
+  std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+      new TestWindowDelegate(HTCAPTION), -1, gfx::Rect(0, 0, 100, 100)));
+  std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+      new TestWindowDelegate(HTCAPTION), -2, gfx::Rect(40, 40, 100, 100)));
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     gfx::Point(5, 5));
+
+  generator.PressMoveAndReleaseTouchTo(gfx::Point(5, 5));
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+
+  // Make |w1| resizable to allow touch events to go to it (and not |w2|) thanks
+  // to EasyResizeWindowTargeter.
+  w1->SetProperty(aura::client::kResizeBehaviorKey,
+                  ui::mojom::kResizeBehaviorCanMaximize |
+                      ui::mojom::kResizeBehaviorCanMinimize |
+                      ui::mojom::kResizeBehaviorCanResize);
+  // Clicking a point within |w2| but close to |w1| should not activate |w2|.
+  const gfx::Point touch_point(105, 105);
+  generator.MoveTouch(touch_point);
+  generator.PressMoveAndReleaseTouchTo(touch_point);
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+
+  // Make |w1| not resizable to allow touch events to go to |w2| even when close
+  // to |w1|.
+  w1->SetProperty(aura::client::kResizeBehaviorKey,
+                  ui::mojom::kResizeBehaviorCanMaximize |
+                      ui::mojom::kResizeBehaviorCanMinimize);
+  // Clicking a point within |w2| should activate that window.
+  generator.PressMoveAndReleaseTouchTo(touch_point);
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+}
+
+// Tests that EasyResizeWindowTargeter expands the hit-test area when a
 // window is a transient child of a top-level window and is resizable.
-TEST_F(ToplevelWindowEventHandlerTest, EasyResizerUsed) {
+TEST_F(ToplevelWindowEventHandlerTest, EasyResizerUsedForTransient) {
   std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
       new TestWindowDelegate(HTCAPTION), -1, gfx::Rect(0, 0, 100, 100)));
   std::unique_ptr<aura::Window> w11(CreateTestWindowInShellWithDelegate(

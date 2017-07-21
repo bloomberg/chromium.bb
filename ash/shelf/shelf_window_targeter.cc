@@ -36,6 +36,11 @@ ShelfWindowTargeter::~ShelfWindowTargeter() {
   DCHECK(!shelf_);
 }
 
+bool ShelfWindowTargeter::ShouldUseExtendedBounds(
+    const aura::Window* window) const {
+  return true;
+}
+
 void ShelfWindowTargeter::OnWindowDestroying(aura::Window* window) {
   window->RemoveObserver(this);
   shelf_->RemoveObserver(this);
