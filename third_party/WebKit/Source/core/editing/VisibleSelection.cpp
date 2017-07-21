@@ -586,6 +586,20 @@ static Element* LowestEditableAncestor(Node* node) {
   return nullptr;
 }
 
+// Returns true if |position| is editable or its lowest editable root is not
+// |base_editable_ancestor|.
+template <typename Strategy>
+static bool ShouldContinueSearchEditingBoundary(
+    const PositionTemplate<Strategy>& position,
+    Element* base_editable_ancestor) {
+  if (position.IsNull())
+    return false;
+  if (IsEditablePosition(position))
+    return true;
+  return LowestEditableAncestor(position.ComputeContainerNode()) !=
+         base_editable_ancestor;
+}
+
 template <typename Strategy>
 static bool ShouldAdjustPositionToAvoidCrossingEditingBoundaries(
     const PositionTemplate<Strategy>& position,
@@ -613,10 +627,8 @@ PositionTemplate<Strategy> AdjustSelectionEndToAvoidCrossingEditingBoundaries(
     Element* shadow_ancestor = end_root ? end_root->OwnerShadowHost() : nullptr;
     if (position.IsNull() && shadow_ancestor)
       position = PositionTemplate<Strategy>::AfterNode(*shadow_ancestor);
-    while (position.IsNotNull() &&
-           !(LowestEditableAncestor(position.ComputeContainerNode()) ==
-                 base_editable_ancestor &&
-             !IsEditablePosition(position))) {
+    while (
+        ShouldContinueSearchEditingBoundary(position, base_editable_ancestor)) {
       Element* root = RootEditableElementOf(position);
       shadow_ancestor = root ? root->OwnerShadowHost() : nullptr;
       position = IsAtomicNode(position.ComputeContainerNode())
@@ -646,10 +658,8 @@ PositionTemplate<Strategy> AdjustSelectionStartToAvoidCrossingEditingBoundaries(
         start_root ? start_root->OwnerShadowHost() : nullptr;
     if (position.IsNull() && shadow_ancestor)
       position = PositionTemplate<Strategy>::BeforeNode(*shadow_ancestor);
-    while (position.IsNotNull() &&
-           !(LowestEditableAncestor(position.ComputeContainerNode()) ==
-                 base_editable_ancestor &&
-             !IsEditablePosition(position))) {
+    while (
+        ShouldContinueSearchEditingBoundary(position, base_editable_ancestor)) {
       Element* root = RootEditableElementOf(position);
       shadow_ancestor = root ? root->OwnerShadowHost() : nullptr;
       position = IsAtomicNode(position.ComputeContainerNode())
