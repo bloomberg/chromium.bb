@@ -433,8 +433,8 @@ layer at (0,0) size 800x521
           LayoutSVGText {text} at (389.25,355) size 4x10 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (389.25,355) size 4x10
               chunk 1 (middle anchor) text run 1 at (389.25,363.00) startOffset 0 endOffset 1 width 4.00: "4"
-        LayoutSVGText {text} at (50,11) size 49x49 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (50,11) size 49x49
+        LayoutSVGText {text} at (50,11) size 54x49 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (50,11) size 54x49
             chunk 1 text run 1 at (50.00,50.00) startOffset 0 endOffset 6 width 49.00: "ab\x{30C}c\x{30C}\x{30C}"
         LayoutSVGText {text} at (200,17.11) size 49x40.88 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (200,17.11) size 49x40.88
