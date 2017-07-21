@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
+#include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
 
 namespace chromeos {
 
@@ -37,7 +38,7 @@ class EncryptionMigrationScreenView {
   virtual void Hide() = 0;
   virtual void SetDelegate(Delegate* delegate) = 0;
   virtual void SetUserContext(const UserContext& user_context) = 0;
-  virtual void SetShouldResume(bool should_resume) = 0;
+  virtual void SetMode(EncryptionMigrationMode mode) = 0;
   virtual void SetContinueLoginCallback(ContinueLoginCallback callback) = 0;
   virtual void SetupInitialView() = 0;
 };

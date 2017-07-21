@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen_view.h"
 
 namespace chromeos {
@@ -34,8 +35,8 @@ class EncryptionMigrationScreen
   // Sets the UserContext for a user whose cryptohome should be migrated.
   void SetUserContext(const UserContext& user_context);
 
-  // Sets whether the migration process should resume the previous one or not.
-  void SetShouldResume(bool should_resume);
+  // Sets the migration mode.
+  void SetMode(EncryptionMigrationMode mode);
 
   // Sets a callback, which should be called when the user want to log in to the
   // session from the migration UI.

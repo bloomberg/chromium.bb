@@ -725,7 +725,7 @@ void ExistingUserController::ShowKioskAutolaunchScreen() {
 
 void ExistingUserController::ShowEncryptionMigrationScreen(
     const UserContext& user_context,
-    bool has_incomplete_migration) {
+    EncryptionMigrationMode migration_mode) {
   host_->StartWizard(OobeScreen::SCREEN_ENCRYPTION_MIGRATION);
 
   EncryptionMigrationScreen* migration_screen =
@@ -733,7 +733,7 @@ void ExistingUserController::ShowEncryptionMigrationScreen(
           host_->GetWizardController()->current_screen());
   DCHECK(migration_screen);
   migration_screen->SetUserContext(user_context);
-  migration_screen->SetShouldResume(has_incomplete_migration);
+  migration_screen->SetMode(migration_mode);
   migration_screen->SetContinueLoginCallback(base::BindOnce(
       &ExistingUserController::ContinuePerformLogin, weak_factory_.GetWeakPtr(),
       login_performer_->auth_mode()));
@@ -985,16 +985,15 @@ void ExistingUserController::OnOldEncryptionDetected(
   if (has_incomplete_migration) {
     // If migration was incomplete, continue migration without checking user
     // policy.
-    ShowEncryptionMigrationScreen(user_context, has_incomplete_migration);
+    ShowEncryptionMigrationScreen(user_context,
+                                  EncryptionMigrationMode::RESUME_MIGRATION);
     return;
   }
 
   if (user_context.GetUserType() == user_manager::USER_TYPE_ARC_KIOSK_APP) {
     // For ARC kiosk, don't check user policy.
-    // Note that migration will start immediately without asking the user - this
-    // is currently checked in EncryptionMigrationScreenHandler.
     ShowEncryptionMigrationScreen(user_context,
-                                  false /* has_incomplete_migration */);
+                                  EncryptionMigrationMode::START_MIGRATION);
     return;
   }
 
@@ -1052,17 +1051,13 @@ void ExistingUserController::OnPolicyFetchResult(
 
   switch (action) {
     case EcryptfsMigrationAction::MIGRATE:
-      // TODO(pmarko): Reusing resume may be wrong from UI perspective, in case
-      // we show a UI mentioning "resume"/"interrupted". If that's the case,
-      // introduce an enum instead of the bool parameter to choose between
-      // ask_user/continue_interrupted_migration/start_migration.
-      // Otherwise, at least rename the bool parameter to indicate that this may
-      // not only mean resuming.
-      ShowEncryptionMigrationScreen(user_context, true);
+      ShowEncryptionMigrationScreen(user_context,
+                                    EncryptionMigrationMode::START_MIGRATION);
       break;
 
     case EcryptfsMigrationAction::ASK_USER:
-      ShowEncryptionMigrationScreen(user_context, false);
+      ShowEncryptionMigrationScreen(user_context,
+                                    EncryptionMigrationMode::ASK_USER);
       break;
 
     case EcryptfsMigrationAction::WIPE:

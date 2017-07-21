@@ -25475,6 +25475,7 @@ from previous Chrome versions.
   <int value="1" label="Resume"/>
   <int value="2" label="LowStorage"/>
   <int value="3" label="ArcKiosk"/>
+  <int value="4" label="StartAutomatically"/>
 </enum>
 
 <enum name="MigrationUIMigrationResult">
