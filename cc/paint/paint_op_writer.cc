@@ -5,6 +5,7 @@
 #include "cc/paint/paint_op_writer.h"
 
 #include "cc/paint/paint_flags.h"
+#include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 
 namespace cc {
@@ -21,6 +22,16 @@ void PaintOpWriter::WriteSimple(const T& val) {
 
   memory_ += sizeof(T);
   remaining_bytes_ -= sizeof(T);
+}
+
+void PaintOpWriter::WriteFlattenable(const SkFlattenable* val) {
+  // TODO(enne): change skia API to make this a const parameter.
+  sk_sp<SkData> data(
+      SkValidatingSerializeFlattenable(const_cast<SkFlattenable*>(val)));
+
+  Write(data->size());
+  if (!data->isEmpty())
+    WriteData(data->size(), data->data());
 }
 
 void PaintOpWriter::Write(size_t data) {
@@ -60,7 +71,20 @@ void PaintOpWriter::Write(const SkPath& path) {
 }
 
 void PaintOpWriter::Write(const PaintFlags& flags) {
-  // TODO(enne): implement PaintFlags serialization: http://crbug.com/737629
+  Write(flags.text_size_);
+  WriteSimple(flags.color_);
+  Write(flags.width_);
+  Write(flags.miter_limit_);
+  WriteSimple(flags.blend_mode_);
+  WriteSimple(flags.bitfields_uint_);
+
+  // TODO(enne): WriteTypeface, http://crbug.com/737629
+  WriteFlattenable(flags.path_effect_.get());
+  // TODO(enne): WritePaintShader, http://crbug.com/737629
+  WriteFlattenable(flags.mask_filter_.get());
+  WriteFlattenable(flags.color_filter_.get());
+  WriteFlattenable(flags.draw_looper_.get());
+  WriteFlattenable(flags.image_filter_.get());
 }
 
 void PaintOpWriter::Write(const PaintImage& image, ImageDecodeCache* cache) {

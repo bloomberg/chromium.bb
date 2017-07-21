@@ -9,8 +9,13 @@
 #include "cc/test/skia_common.h"
 #include "cc/test/test_skcanvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkWriteBuffer.h"
+#include "third_party/skia/include/effects/SkBlurMaskFilter.h"
+#include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
+#include "third_party/skia/include/effects/SkLayerDrawLooper.h"
+#include "third_party/skia/include/effects/SkOffsetImageFilter.h"
 
 using testing::_;
 using testing::Property;
@@ -25,11 +30,40 @@ void Playback(PaintOpBuffer* buffer,
   buffer->Playback(canvas, nullptr, &indices);
 }
 
+void ExpectFlattenableEqual(SkFlattenable* expected, SkFlattenable* actual) {
+  sk_sp<SkData> expected_data(SkValidatingSerializeFlattenable(expected));
+  sk_sp<SkData> actual_data(SkValidatingSerializeFlattenable(actual));
+  ASSERT_EQ(expected_data->size(), actual_data->size());
+  EXPECT_TRUE(expected_data->equals(actual_data.get()));
+}
+
 void ExpectPaintFlagsEqual(const PaintFlags& expected,
                            const PaintFlags& actual) {
-  SkPaint expected_paint = expected.ToSkPaint();
-  SkPaint actual_paint = actual.ToSkPaint();
-  EXPECT_TRUE(expected_paint == actual_paint);
+  // Can't just ToSkPaint and operator== here as SkPaint does pointer
+  // comparisons on all the ref'd skia objects on the SkPaint, which
+  // is not true after serialization.
+  EXPECT_EQ(expected.getTextSize(), actual.getTextSize());
+  EXPECT_EQ(expected.getColor(), actual.getColor());
+  EXPECT_EQ(expected.getStrokeWidth(), actual.getStrokeWidth());
+  EXPECT_EQ(expected.getStrokeMiter(), actual.getStrokeMiter());
+  EXPECT_EQ(expected.getBlendMode(), actual.getBlendMode());
+  EXPECT_EQ(expected.getStrokeCap(), actual.getStrokeCap());
+  EXPECT_EQ(expected.getStrokeJoin(), actual.getStrokeJoin());
+  EXPECT_EQ(expected.getStyle(), actual.getStyle());
+  EXPECT_EQ(expected.getTextEncoding(), actual.getTextEncoding());
+  EXPECT_EQ(expected.getHinting(), actual.getHinting());
+  EXPECT_EQ(expected.getFilterQuality(), actual.getFilterQuality());
+
+  // TODO(enne): compare typeface and shader too
+  ExpectFlattenableEqual(expected.getPathEffect().get(),
+                         actual.getPathEffect().get());
+  ExpectFlattenableEqual(expected.getMaskFilter().get(),
+                         actual.getMaskFilter().get());
+  ExpectFlattenableEqual(expected.getColorFilter().get(),
+                         actual.getColorFilter().get());
+  ExpectFlattenableEqual(expected.getLooper().get(), actual.getLooper().get());
+  ExpectFlattenableEqual(expected.getImageFilter().get(),
+                         actual.getImageFilter().get());
 }
 
 }  // namespace
@@ -997,9 +1031,63 @@ std::vector<SkPath> test_paths = {
     SkPath(),
 };
 
-// TODO(enne): make this more real.
 std::vector<PaintFlags> test_flags = {
-    PaintFlags(), PaintFlags(), PaintFlags(), PaintFlags(), PaintFlags(),
+    PaintFlags(),
+    [] {
+      PaintFlags flags;
+      flags.setTextSize(82.7f);
+      flags.setColor(SK_ColorMAGENTA);
+      flags.setStrokeWidth(4.2f);
+      flags.setStrokeMiter(5.91f);
+      flags.setBlendMode(SkBlendMode::kDst);
+      flags.setStrokeCap(PaintFlags::kSquare_Cap);
+      flags.setStrokeJoin(PaintFlags::kBevel_Join);
+      flags.setStyle(PaintFlags::kStrokeAndFill_Style);
+      flags.setTextEncoding(PaintFlags::kGlyphID_TextEncoding);
+      flags.setHinting(PaintFlags::kNormal_Hinting);
+      flags.setFilterQuality(SkFilterQuality::kMedium_SkFilterQuality);
+      return flags;
+    }(),
+    [] {
+      PaintFlags flags;
+      flags.setTextSize(0.0f);
+      flags.setColor(SK_ColorCYAN);
+      flags.setAlpha(103);
+      flags.setStrokeWidth(0.32f);
+      flags.setStrokeMiter(7.98f);
+      flags.setBlendMode(SkBlendMode::kSrcOut);
+      flags.setStrokeCap(PaintFlags::kRound_Cap);
+      flags.setStrokeJoin(PaintFlags::kRound_Join);
+      flags.setStyle(PaintFlags::kFill_Style);
+      flags.setTextEncoding(PaintFlags::kUTF32_TextEncoding);
+      flags.setHinting(PaintFlags::kSlight_Hinting);
+      flags.setFilterQuality(SkFilterQuality::kHigh_SkFilterQuality);
+
+      SkScalar intervals[] = {1.f, 1.f};
+      flags.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
+      flags.setMaskFilter(
+          SkBlurMaskFilter::Make(SkBlurStyle::kOuter_SkBlurStyle, 4.3f,
+                                 test_rects[0], kHigh_SkBlurQuality));
+      flags.setColorFilter(SkColorMatrixFilter::MakeLightingFilter(
+          SK_ColorYELLOW, SK_ColorGREEN));
+
+      SkLayerDrawLooper::Builder looper_builder;
+      looper_builder.addLayer();
+      looper_builder.addLayer(2.3f, 4.5f);
+      SkLayerDrawLooper::LayerInfo layer_info;
+      layer_info.fPaintBits |= SkLayerDrawLooper::kMaskFilter_Bit;
+      layer_info.fColorMode = SkBlendMode::kDst;
+      layer_info.fOffset.set(-1.f, 5.2f);
+      looper_builder.addLayer(layer_info);
+      flags.setLooper(looper_builder.detach());
+
+      flags.setImageFilter(SkOffsetImageFilter::Make(10, 11, nullptr));
+
+      return flags;
+    }(),
+    PaintFlags(),
+    PaintFlags(),
+    PaintFlags(),
 };
 
 std::vector<SkColor> test_colors = {
@@ -1429,7 +1517,9 @@ void PushTranslateOps(PaintOpBuffer* buffer) {
     buffer->push<TranslateOp>(test_floats[i], test_floats[i + 1]);
 }
 
-void CompareFlags(const PaintFlags& original, const PaintFlags& written) {}
+void CompareFlags(const PaintFlags& original, const PaintFlags& written) {
+  ExpectPaintFlagsEqual(original, written);
+}
 
 void CompareImages(const PaintImage& original, const PaintImage& written) {}
 
@@ -1878,7 +1968,7 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
   void ResizeOutputBuffer() {
     // An arbitrary deserialization buffer size that should fit all the ops
     // in the buffer_.
-    output_size_ = (100 + sizeof(LargestPaintOp)) * buffer_.size();
+    output_size_ = (1000 + sizeof(LargestPaintOp)) * buffer_.size();
     output_.reset(static_cast<char*>(
         base::AlignedAlloc(output_size_, PaintOpBuffer::PaintOpAlign)));
   }
@@ -1984,7 +2074,7 @@ TEST_P(PaintOpSerializationTest, DeserializationFailures) {
   char* current = static_cast<char*>(output_.get());
 
   static constexpr size_t kAlign = PaintOpBuffer::PaintOpAlign;
-  static constexpr size_t kOutputOpSize = sizeof(LargestPaintOp) + 100;
+  static constexpr size_t kOutputOpSize = sizeof(LargestPaintOp) + 1000;
   std::unique_ptr<char, base::AlignedFreeDeleter> deserialize_buffer_(
       static_cast<char*>(base::AlignedAlloc(kOutputOpSize, kAlign)));
 

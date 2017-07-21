@@ -14,15 +14,19 @@ static bool affects_alpha(const SkColorFilter* cf) {
 
 namespace cc {
 
-// Match SkPaint defaults.
-PaintFlags::PaintFlags()
-    : flags_(0u),
-      cap_type_(SkPaint::kDefault_Cap),
-      join_type_(SkPaint::kDefault_Join),
-      style_(SkPaint::kFill_Style),
-      text_encoding_(SkPaint::kUTF8_TextEncoding),
-      hinting_(SkPaint::kNormal_Hinting),
-      filter_quality_(SkFilterQuality::kNone_SkFilterQuality) {}
+PaintFlags::PaintFlags() {
+  // Match SkPaint defaults.
+  bitfields_uint_ = 0u;
+  bitfields_.cap_type_ = SkPaint::kDefault_Cap;
+  bitfields_.join_type_ = SkPaint::kDefault_Join;
+  bitfields_.style_ = SkPaint::kFill_Style;
+  bitfields_.text_encoding_ = SkPaint::kUTF8_TextEncoding;
+  bitfields_.hinting_ = SkPaint::kNormal_Hinting;
+  bitfields_.filter_quality_ = SkFilterQuality::kNone_SkFilterQuality;
+
+  static_assert(sizeof(bitfields_) <= sizeof(bitfields_uint_),
+                "Too many bitfields");
+}
 
 PaintFlags::PaintFlags(const PaintFlags& flags) = default;
 
@@ -104,12 +108,11 @@ SkPaint PaintFlags::ToSkPaint() const {
   paint.setDrawLooper(draw_looper_);
   paint.setImageFilter(image_filter_);
   paint.setTextSize(text_size_);
-  paint.setTextScaleX(text_scale_x_);
   paint.setColor(color_);
   paint.setStrokeWidth(width_);
   paint.setStrokeMiter(miter_limit_);
   paint.setBlendMode(getBlendMode());
-  paint.setFlags(flags_);
+  paint.setFlags(bitfields_.flags_);
   paint.setStrokeCap(static_cast<SkPaint::Cap>(getStrokeCap()));
   paint.setStrokeJoin(static_cast<SkPaint::Join>(getStrokeJoin()));
   paint.setStyle(static_cast<SkPaint::Style>(getStyle()));

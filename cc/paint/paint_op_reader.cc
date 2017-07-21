@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "cc/paint/paint_flags.h"
+#include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
@@ -24,6 +25,26 @@ void PaintOpReader::ReadSimple(T* val) {
 
   memory_ += sizeof(T);
   remaining_bytes_ -= sizeof(T);
+}
+
+template <typename T>
+void PaintOpReader::ReadFlattenable(sk_sp<T>* val) {
+  size_t bytes = 0;
+  ReadSimple(&bytes);
+  if (remaining_bytes_ < bytes)
+    valid_ = false;
+  if (!valid_)
+    return;
+  if (bytes == 0)
+    return;
+
+  val->reset(static_cast<T*>(SkValidatingDeserializeFlattenable(
+      memory_, bytes, T::GetFlattenableType())));
+  if (!val)
+    valid_ = false;
+
+  memory_ += bytes;
+  remaining_bytes_ -= bytes;
 }
 
 void PaintOpReader::ReadData(size_t bytes, void* data) {
@@ -94,7 +115,20 @@ void PaintOpReader::Read(SkPath* path) {
 }
 
 void PaintOpReader::Read(PaintFlags* flags) {
-  // TODO(enne): implement PaintFlags serialization: http://crbug.com/737629
+  Read(&flags->text_size_);
+  ReadSimple(&flags->color_);
+  Read(&flags->width_);
+  Read(&flags->miter_limit_);
+  ReadSimple(&flags->blend_mode_);
+  ReadSimple(&flags->bitfields_uint_);
+
+  // TODO(enne): ReadTypeface, http://crbug.com/737629
+  ReadFlattenable(&flags->path_effect_);
+  // TODO(enne): ReadPaintShader, http://crbug.com/737629
+  ReadFlattenable(&flags->mask_filter_);
+  ReadFlattenable(&flags->color_filter_);
+  ReadFlattenable(&flags->draw_looper_);
+  ReadFlattenable(&flags->image_filter_);
 }
 
 void PaintOpReader::Read(PaintImage* image) {
