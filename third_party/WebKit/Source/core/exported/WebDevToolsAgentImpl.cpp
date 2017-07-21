@@ -35,6 +35,7 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "core/CoreInitializer.h"
 #include "core/CoreProbeSink.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebSettingsImpl.h"
@@ -377,7 +378,7 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
   }
 
   // Call session init callbacks registered from higher layers
-  InspectorAgent::CallSessionInitCallbacks(
+  CoreInitializer::CallModulesInspectorAgentSessionInitCallback(
       session, include_view_agents_, dom_agent, inspected_frames_.Get(),
       web_local_frame_impl_->ViewImpl()->GetPage());
 

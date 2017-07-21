@@ -157,8 +157,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   WaitingForDebuggerState waiting_for_debugger_state_;
 };
 
-extern template class WorkerClientsInitializer<WebEmbeddedWorkerImpl>;
-
 }  // namespace blink
 
 #endif  // WebEmbeddedWorkerImpl_h

@@ -168,9 +168,6 @@ class CORE_EXPORT WebSharedWorkerImpl final
   WebAddressSpace creation_address_space_;
 };
 
-extern template class CORE_EXTERN_TEMPLATE_EXPORT
-    WorkerClientsInitializer<WebSharedWorkerImpl>;
-
 }  // namespace blink
 
 #endif  // WebSharedWorkerImpl_h

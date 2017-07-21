@@ -34,7 +34,6 @@ blink_core_sources("inspector") {
     "InspectorAnimationAgent.h",
     "InspectorApplicationCacheAgent.cpp",
     "InspectorApplicationCacheAgent.h",
-    "InspectorBaseAgent.cpp",
     "InspectorBaseAgent.h",
     "InspectorCSSAgent.cpp",
     "InspectorCSSAgent.h",

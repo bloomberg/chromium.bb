@@ -31,6 +31,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/CoreInitializer.h"
 #include "core/HTMLNames.h"
 #include "core/css/MediaList.h"
 #include "core/dom/Attribute.h"
@@ -354,12 +355,6 @@ bool IsDocumentCrossOrigin(Document& document) {
   return frame && frame->IsCrossOriginSubframe();
 }
 
-std::unique_ptr<MediaControls::Factory>& MediaControlsFactory() {
-  DEFINE_STATIC_LOCAL(std::unique_ptr<MediaControls::Factory>,
-                      media_controls_factory, ());
-  return media_controls_factory;
-}
-
 void RecordPlayPromiseRejected(PlayPromiseRejectReason reason) {
   DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram,
                       ("Media.MediaElement.PlayPromiseReject",
@@ -435,13 +430,6 @@ void HTMLMediaElement::OnMediaControlsEnabledChange(Document* document) {
     if (element->GetMediaControls())
       element->GetMediaControls()->OnMediaControlsEnabledChange();
   }
-}
-
-// static
-void HTMLMediaElement::RegisterMediaControlsFactory(
-    std::unique_ptr<MediaControls::Factory> factory) {
-  DCHECK(!MediaControlsFactory());
-  MediaControlsFactory() = std::move(factory);
 }
 
 HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
@@ -3698,11 +3686,12 @@ MediaControls* HTMLMediaElement::GetMediaControls() const {
 }
 
 void HTMLMediaElement::EnsureMediaControls() {
-  if (GetMediaControls() || !MediaControlsFactory())
+  if (GetMediaControls())
     return;
 
   ShadowRoot& shadow_root = EnsureUserAgentShadowRoot();
-  media_controls_ = MediaControlsFactory()->Create(*this, shadow_root);
+  media_controls_ =
+      CoreInitializer::CallModulesMediaControlsFactory(*this, shadow_root);
 
   // The media controls should be inserted after the text track container,
   // so that they are rendered in front of captions and subtitles. This check
