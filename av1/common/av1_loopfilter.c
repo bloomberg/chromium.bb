@@ -897,6 +897,9 @@ static void filter_selectively_horiz(
   unsigned int mask;
   int count;
 #if CONFIG_LPF_DIRECT
+  // scale for u, v plane
+  width >>= ss_x;
+  height >>= ss_y;
   int idx_c = 0;
 #endif
 
@@ -926,10 +929,6 @@ static void filter_selectively_horiz(
       // actual position for current pixel
       const int row = (mi_row + idx_r) * MI_SIZE >> ss_y;
       const int col = (mi_col + idx_c) * MI_SIZE >> ss_x;
-
-      // scale for u, v plane
-      width >>= ss_x;
-      height >>= ss_y;
 
       // Next block's thresholds.
       const loop_filter_thresh *lfin = lfi_n->lfthr + *(lfl + 1);
@@ -1866,6 +1865,9 @@ static void filter_selectively_vert(
     ) {
   unsigned int mask;
 #if CONFIG_LPF_DIRECT
+  // scale for u, v plane
+  width >>= ss_x;
+  height >>= ss_y;
   int idx_c = 0;
 #endif
 
@@ -1885,10 +1887,6 @@ static void filter_selectively_vert(
     // actual position for current pixel
     const int row = (mi_row + idx_r) * MI_SIZE >> ss_y;
     const int col = (mi_col + idx_c) * MI_SIZE >> ss_x;
-
-    // scale for u, v plane
-    width >>= ss_x;
-    height >>= ss_y;
 
     // Could use asymmetric length in the future
     assert(left_filt_len == right_filt_len);
