@@ -51,6 +51,12 @@ class V8MutationCallback final : public MutationCallback {
             MutationObserver*) override;
 
   ExecutionContext* GetExecutionContext() const override {
+    // The context might have navigated away or closed because this is an async
+    // call.  Check if the context is still alive.
+    // TODO(yukishiino): Make (V8?)MutationCallback inherit from ContextClient.
+    v8::HandleScope scope(script_state_->GetIsolate());
+    if (script_state_->GetContext().IsEmpty())
+      return nullptr;
     return ExecutionContext::From(script_state_.Get());
   }
 
