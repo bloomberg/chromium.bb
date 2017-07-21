@@ -15,9 +15,10 @@
 #include "components/metrics/metrics_service_accessor.h"
 
 class BrowserProcessImpl;
-class Profile;
 class ChromeMetricsServiceClient;
 class ChromePasswordManagerClient;
+class NavigationMetricsRecorder;
+class Profile;
 
 namespace {
 class CrashesDOMHandler;
@@ -126,6 +127,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend void SyzyASANRegisterExperiment(const char*, const char*);
   friend class ChromeMetricsServiceClient;
   friend class ChromePasswordManagerClient;
+  friend class NavigationMetricsRecorder;
 
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,
                            MetricsReportingEnabled);

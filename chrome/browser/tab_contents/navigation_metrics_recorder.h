@@ -41,6 +41,8 @@ class NavigationMetricsRecorder
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
+  void RegisterSyntheticSigninIsolationTrial();
+
   rappor::RapporServiceImpl* rappor_service_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationMetricsRecorder);
