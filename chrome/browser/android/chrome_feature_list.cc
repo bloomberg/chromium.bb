@@ -84,6 +84,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kPayWithGoogleV1,
     &kPhysicalWebFeature,
     &kPhysicalWebSharing,
+    &kReaderModeInCCT,
     &kSearchEnginePromoExistingDevice,
     &kSearchEnginePromoNewDevice,
     &kSpannableInlineAutocomplete,
@@ -235,6 +236,9 @@ const base::Feature kPhysicalWebFeature{"PhysicalWeb",
 
 const base::Feature kPhysicalWebSharing{"PhysicalWebSharing",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kReaderModeInCCT{"ReaderModeInCCT",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSpannableInlineAutocomplete{
     "SpannableInlineAutocomplete", base::FEATURE_DISABLED_BY_DEFAULT};

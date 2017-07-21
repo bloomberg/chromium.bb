@@ -22841,6 +22841,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1246840031" label="OptInImeMenu:disabled"/>
   <int value="-1241747717" label="enable-android-password-link"/>
   <int value="-1235586511" label="enable-datasaver-prompt"/>
+  <int value="-1225198073" label="ReaderModeInCCT:disabled"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
   <int value="-1216837777" label="clear-data-reduction-proxy-data-savings"/>
   <int value="-1212855900" label="enable-all-bookmarks-view"/>
@@ -23641,6 +23642,7 @@ from previous Chrome versions.
   <int value="1421620678" label="simple-clear-browsing-data-support-string"/>
   <int value="1427905064" label="CreditCardAutofillTouchBar:enabled"/>
   <int value="1431050645" label="PayWithGoogleV1:disabled"/>
+  <int value="1434515920" label="ReaderModeInCCT:enabled"/>
   <int value="1435018419" label="AutofillUpstreamRequestCvcIfMissing:disabled"/>
   <int value="1441897340" label="AndroidSpellCheckerNonLowEnd:enabled"/>
   <int value="1442798825" label="enable-quic"/>
