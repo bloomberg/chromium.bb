@@ -54,6 +54,14 @@ class WebScrollbarLayer;
 
 using ScrollbarId = uint64_t;
 
+// ScrollingCoordinator is a page-level object that mediates interactions
+// between Blink and the compositor's scroll-related APIs on WebLayer and
+// WebScrollbarLayer.
+//
+// It's responsible for propagating scroll offsets, main-thread scrolling
+// reasons, touch action regions, and non-fast-scrollable regions into the
+// compositor, as well as creating and managing scrollbar layers.
+
 class CORE_EXPORT ScrollingCoordinator final
     : public GarbageCollectedFinalized<ScrollingCoordinator> {
   WTF_MAKE_NONCOPYABLE(ScrollingCoordinator);

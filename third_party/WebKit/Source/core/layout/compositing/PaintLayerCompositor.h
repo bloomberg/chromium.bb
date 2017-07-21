@@ -60,12 +60,21 @@ enum CompositingStateTransitionType {
   kRemoveFromSquashingLayer
 };
 
-// PaintLayerCompositor manages the hierarchy of
-// composited Layers. It determines which Layers
-// become compositing, and creates and maintains a hierarchy of
-// GraphicsLayers based on the Layer painting order.
+// PaintLayerCompositor maintains document-level compositing state and is the
+// entry point of the "compositing update" lifecycle stage.  There is one PLC
+// per LayoutView.
 //
-// There is one PaintLayerCompositor per LayoutView.
+// The compositing update, implemented by PaintLayerCompositor and friends,
+// decides for each PaintLayer whether it should get a CompositedLayerMapping,
+// and asks each CLM to set up its GraphicsLayers.
+//
+// When root layer scrolling is disabled, PaintLayerCompositor also directly
+// manages GraphicsLayers related to FrameView scrolling.  See VisualViewport.h
+// for a diagram of how these layers are wired.
+//
+// When root layer scrolling is enabled, PaintLayerCompositor does not create
+// any of its own GraphicsLayers.  Instead the LayoutView's CLM is wired
+// directly to the scroll layer of the visual viewport.
 //
 // In Slimming Paint v2, PaintLayerCompositor will be eventually replaced by
 // PaintArtifactCompositor.
