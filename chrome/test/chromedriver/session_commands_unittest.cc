@@ -21,6 +21,30 @@
 #include "chrome/test/chromedriver/session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+TEST(SessionCommandsTest, MergeCapabilities) {
+  base::DictionaryValue primary;
+  primary.SetString("strawberry", "velociraptor");
+  primary.SetString("pear", "unicorn");
+
+  base::DictionaryValue secondary;
+  secondary.SetString("broccoli", "giraffe");
+  secondary.SetString("celery", "hippo");
+  secondary.SetString("eggplant", "elephant");
+
+  base::DictionaryValue merged;
+
+  // key collision should return false
+  ASSERT_FALSE(MergeCapabilities(&primary, &primary, &merged));
+  // non key collision should return true
+  ASSERT_TRUE(MergeCapabilities(&primary, &secondary, &merged));
+
+  merged.Clear();
+  MergeCapabilities(&primary, &secondary, &merged);
+  primary.MergeDictionary(&secondary);
+
+  ASSERT_EQ(primary, merged);
+}
+
 TEST(SessionCommandsTest, FileUpload) {
   Session session("id");
   base::DictionaryValue params;
