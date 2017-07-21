@@ -316,8 +316,14 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
 
   // The standard keyboard does not display for the province field. Instead, tap
   // the address textfield.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Address_textField")]
+  id<GREYMatcher> matcher =
+      grey_allOf(grey_accessibilityID(@"Address_textField"),
+                 grey_interactable(), grey_sufficientlyVisible(), nil);
+  [[[EarlGrey selectElementWithMatcher:matcher]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 50)
+      onElementWithMatcher:
+          grey_accessibilityID(
+              @"kPaymentRequestEditCollectionViewAccessibilityID")]
       performAction:grey_tap()];
 
   // Assert the address textfield is focused.
