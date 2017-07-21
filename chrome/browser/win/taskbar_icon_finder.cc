@@ -120,7 +120,7 @@ void TaskbarIconFinder::RunOnComThread(
     scoped_refptr<base::SequencedTaskRunner> finder_runner,
     TaskbarIconFinder* finder) {
   // This and all methods below must be called on the automation thread.
-  DCHECK(!finder_runner->RunsTasksOnCurrentThread());
+  DCHECK(!finder_runner->RunsTasksInCurrentSequence());
 
   gfx::Rect rect;
   DoOnComThread(&rect);
