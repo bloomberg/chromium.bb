@@ -37,15 +37,15 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
     private boolean mCloseRouteWithErrorOnSend = false;
 
     /**
-     * Builder for {@link MockMediaRouteProvider}.
+     * Factory for {@link MockMediaRouteProvider}.
      */
-    public static class Builder implements MediaRouteProvider.Builder {
+    public static class Factory implements MediaRouteProvider.Factory {
         public static final MockMediaRouteProvider sProvider = new MockMediaRouteProvider();
 
         @Override
-        public MediaRouteProvider create(MediaRouteManager manager) {
+        public void addProviders(MediaRouteManager manager) {
             sProvider.mManager = manager;
-            return sProvider;
+            manager.addMediaRouteProvider(sProvider);
         }
     }
 
