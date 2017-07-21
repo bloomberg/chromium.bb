@@ -22,7 +22,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-/** Abstraction of Android's package manager to enable unit testing. */
+/** Abstraction of Android's package manager to enable testing. */
 public class PackageManagerDelegate {
     /**
      * Retrieves package information of an installed application.
