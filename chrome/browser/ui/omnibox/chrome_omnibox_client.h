@@ -13,6 +13,7 @@
 #include "components/omnibox/browser/omnibox_client.h"
 
 class ChromeOmniboxEditController;
+class GURL;
 class OmniboxEditController;
 class Profile;
 
@@ -36,8 +37,8 @@ class ChromeOmniboxClient : public OmniboxClient {
   bool IsSearchResultsPage() const override;
   bool IsLoading() const override;
   bool IsPasteAndGoEnabled() const override;
-  bool IsNewTabPage(const std::string& url) const override;
-  bool IsHomePage(const std::string& url) const override;
+  bool IsNewTabPage(const GURL& url) const override;
+  bool IsHomePage(const GURL& url) const override;
   const SessionID& GetSessionID() const override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   TemplateURLService* GetTemplateURLService() override;
