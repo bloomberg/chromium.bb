@@ -4,14 +4,17 @@
 
 #import "chrome/browser/ui/cocoa/passwords/save_pending_password_view_controller.h"
 
+#import "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_list_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "ui/base/l10n/l10n_util.h"
 
 @interface SavePendingPasswordViewController ()
 - (void)onSaveClicked:(id)sender;
 - (void)onNeverForThisSiteClicked:(id)sender;
+- (void)onEditClicked:(id)sender;
 @end
 
 @implementation SavePendingPasswordViewController
@@ -39,8 +42,14 @@
   [self.delegate viewShouldDismiss];
 }
 
+- (void)onEditClicked:(id)sender {
+  // TODO(crbug.com/734965)
+}
+
 - (NSView*)createPasswordView {
-  if (self.model->pending_password().username_value.empty())
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kEnableUsernameCorrection) &&
+      self.model->pending_password().username_value.empty())
     return nil;
   passwordItem_.reset([[PasswordsListViewController alloc]
       initWithModelAndForm:self.model
@@ -64,12 +73,26 @@
                 toView:view
                 target:self
                 action:@selector(onNeverForThisSiteClicked:)] retain]);
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kEnableUsernameCorrection)) {
+    // Edit button.
+    editButton_.reset([[self
+        addButton:l10n_util::GetNSString(IDS_PASSWORD_MANAGER_EDIT_BUTTON)
+           toView:view
+           target:self
+           action:@selector(onEditClicked:)] retain]);
+    return @[ saveButton_, neverButton_, editButton_ ];
+  }
   return @[ saveButton_, neverButton_ ];
 }
 
 @end
 
 @implementation SavePendingPasswordViewController (Testing)
+
+- (NSButton*)editButton {
+  return editButton_.get();
+}
 
 - (NSButton*)saveButton {
   return saveButton_.get();
