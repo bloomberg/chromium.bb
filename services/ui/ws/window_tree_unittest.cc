@@ -163,6 +163,11 @@ class WindowTreeTest : public testing::Test {
   WindowTree* wm_tree() {
     return window_event_targeting_helper_.window_server()->GetTreeWithId(1);
   }
+  WindowTree* last_tree() {
+    return window_event_targeting_helper_.last_binding()
+               ? window_event_targeting_helper_.last_binding()->tree()
+               : nullptr;
+  }
 
   void DispatchEventWithoutAck(const ui::Event& event) {
     std::unique_ptr<Event> tmp = ui::Event::Clone(event);
@@ -714,6 +719,26 @@ TEST_F(WindowTreeTest, Embed) {
           WindowIdToString(WindowIdFromTransportId(embed_window_id.id)).c_str(),
           embed_window->frame_sink_id().ToString().c_str()),
       SingleChangeToDescription(*wm_client()->tracker()->changes()));
+}
+
+TEST_F(WindowTreeTest, DisallowSetSystemModalForEmbedded) {
+  const ClientWindowId embed_window_id = BuildClientWindowId(wm_tree(), 1);
+  EXPECT_TRUE(
+      wm_tree()->NewWindow(embed_window_id, ServerWindow::Properties()));
+  ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id);
+  ASSERT_TRUE(embed_window);
+  const ClientWindowId wm_root_id = FirstRootId(wm_tree());
+  EXPECT_TRUE(wm_tree()->AddWindow(wm_root_id, embed_window_id));
+  ServerWindow* wm_root = FirstRoot(wm_tree());
+  ASSERT_TRUE(wm_root);
+  mojom::WindowTreeClientPtr client;
+  wm_client()->Bind(mojo::MakeRequest(&client));
+  const uint32_t embed_flags = 0;
+  ASSERT_TRUE(
+      wm_tree()->Embed(embed_window_id, std::move(client), embed_flags));
+  ASSERT_TRUE(last_tree());
+  EXPECT_FALSE(last_tree()->SetModalType(
+      ClientWindowIdForWindow(last_tree(), embed_window), MODAL_TYPE_SYSTEM));
 }
 
 // Establish client, call NewTopLevelWindow(), make sure get id, and make
