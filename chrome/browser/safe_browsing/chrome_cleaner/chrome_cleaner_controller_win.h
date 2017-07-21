@@ -5,18 +5,12 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_CHROME_CLEANER_CONTROLLER_WIN_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_CHROME_CLEANER_CONTROLLER_WIN_H_
 
-#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
-#include "base/threading/thread_checker.h"
-#include "base/time/time.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 
@@ -36,33 +30,11 @@ enum CleanupStartedHistogramValue {
 // Records a SoftwareReporter.CleanupStarted histogram.
 void RecordCleanupStartedHistogram(CleanupStartedHistogramValue value);
 
-// Delegate class that provides services to the ChromeCleanerController class
-// and can be overridden by tests via
-// SetChromeCleanerControllerDelegateForTesting().
-class ChromeCleanerControllerDelegate {
- public:
-  using FetchedCallback = base::OnceCallback<void(base::FilePath)>;
-
-  ChromeCleanerControllerDelegate();
-  virtual ~ChromeCleanerControllerDelegate();
-
-  // Fetches and verifies the Chrome Cleaner binary and passes the name of the
-  // executable to |fetched_callback|. The file name will have the ".exe"
-  // extension. If the operation fails, the file name passed to
-  // |fecthed_callback| will be empty.
-  virtual void FetchAndVerifyChromeCleaner(FetchedCallback fetched_callback);
-  virtual bool IsMetricsAndCrashReportingEnabled();
-
-  // Auxiliary methods for tagging and resetting open profiles.
-  virtual void TagForResetting(Profile* profile);
-  virtual void ResetTaggedProfiles(std::vector<Profile*> profiles,
-                                   base::OnceClosure continuation);
-};
-
-// Controller class that keeps track of the execution of the Chrome Cleaner and
-// the various states through which the execution will transition. Observers can
-// register themselves to be notified of state changes. Intended to be used by
-// the Chrome Cleaner webui page and the Chrome Cleaner prompt dialog.
+// Interface for the Chrome Cleaner controller class that keeps track of the
+// execution of the Chrome Cleaner and the various states through which the
+// execution will transition. Observers can register themselves to be notified
+// of state changes. Intended to be used by the Chrome Cleaner webui page and
+// the Chrome Cleaner prompt dialog.
 //
 // This class lives on, and all its members should be called only on, the UI
 // thread.
@@ -133,28 +105,28 @@ class ChromeCleanerController {
   static ChromeCleanerController* GetInstance();
 
   // Returns whether the Cleanup card in settings should be displayed.
-  bool ShouldShowCleanupInSettingsUI();
+  virtual bool ShouldShowCleanupInSettingsUI() = 0;
 
   // Returns whether Cleanup is powered by a partner company.
-  bool IsPoweredByPartner();
+  virtual bool IsPoweredByPartner() = 0;
 
-  State state() const { return state_; }
-  IdleReason idle_reason() const { return idle_reason_; }
+  virtual State state() const = 0;
+  virtual IdleReason idle_reason() const = 0;
 
   // Called by Chrome Cleaner's UI when the user changes Cleaner logs upload
   // permissions. Observers are notified if |logs_enabled| is different from the
   // current permission state.
-  void SetLogsEnabled(bool logs_enabled);
-  bool logs_enabled() const { return logs_enabled_; }
+  virtual void SetLogsEnabled(bool logs_enabled) = 0;
+  virtual bool logs_enabled() const = 0;
 
   // Called by the Chrome Cleaner's UI when the user dismisses the card while
   // in the kIdle state. Does nothing if the current state is not |kIdle|.
-  void ResetIdleState();
+  virtual void ResetIdleState() = 0;
 
   // |AddObserver()| immediately notifies |observer| of the controller's state
   // by calling the corresponding |On*()| function.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Downloads the Chrome Cleaner binary, executes it and waits for the Cleaner
   // to communicate with Chrome about harmful software found on the
@@ -171,7 +143,7 @@ class ChromeCleanerController {
   // state. This gracefully handles cases where multiple user responses are
   // received, for example if a user manages to click on a "Scan" button
   // multiple times.
-  void Scan(const SwReporterInvocation& reporter_invocation);
+  virtual void Scan(const SwReporterInvocation& reporter_invocation) = 0;
 
   // Sends the user's response, as to whether or not they want the Chrome
   // Cleaner to remove harmful software that was found, to the Chrome Cleaner
@@ -182,7 +154,8 @@ class ChromeCleanerController {
   // in the kInfected state. This gracefully handles cases where multiple user
   // responses are received, for example if a user manages to click on a
   // "Cleanup" button multiple times.
-  void ReplyWithUserResponse(Profile* profile, UserResponse user_response);
+  virtual void ReplyWithUserResponse(Profile* profile,
+                                     UserResponse user_response) = 0;
 
   // If the controller is in the kRebootRequired state, initiates a reboot of
   // the computer. Call this after obtaining permission from the user to
@@ -193,79 +166,13 @@ class ChromeCleanerController {
   //
   // Note that there are no guarantees that the reboot will in fact happen even
   // if the system calls to initiate a reboot return success.
-  void Reboot();
+  virtual void Reboot() = 0;
 
-  static void ResetInstanceForTesting();
-  // Passing in a nullptr as |delegate| resets the delegate to a default
-  // production version.
-  void SetDelegateForTesting(ChromeCleanerControllerDelegate* delegate);
+ protected:
+  ChromeCleanerController();
+  virtual ~ChromeCleanerController();
 
  private:
-  ChromeCleanerController();
-  ~ChromeCleanerController();
-
-  void NotifyObserver(Observer* observer) const;
-  void SetStateAndNotifyObservers(State state);
-  // Used to invalidate weak pointers and reset accumulated data that is no
-  // longer needed when entering the kIdle or kRebootRequired states.
-  void ResetCleanerDataAndInvalidateWeakPtrs();
-
-  // Callback that is called when the Chrome Cleaner binary has been fetched and
-  // verified. An empty |executable_path| signals failure. A non-empty
-  // |executable_path| must have the '.exe' file extension.
-  void OnChromeCleanerFetchedAndVerified(base::FilePath executable_path);
-
-  // Callback that checks if the weak pointer |controller| is still valid, and
-  // if so will call OnPromptuser(). If |controller| is no longer valid, will
-  // immediately send a Mojo response denying the cleanup operation.
-  //
-  // The other Mojo callbacks below do not need corresponding "weak" callbacks,
-  // because for those cases nothing needs to be done if the weak pointer
-  // referencing the controller instance is no longer valid (Chrome's Callback
-  // objects become no-ops if the bound weak pointer is not valid).
-  static void WeakOnPromptUser(
-      const base::WeakPtr<ChromeCleanerController>& controller,
-      std::unique_ptr<std::set<base::FilePath>> files_to_delete,
-      chrome_cleaner::mojom::ChromePrompt::PromptUserCallback
-          prompt_user_callback);
-
-  void OnPromptUser(std::unique_ptr<std::set<base::FilePath>> files_to_delete,
-                    chrome_cleaner::mojom::ChromePrompt::PromptUserCallback
-                        prompt_user_callback);
-  void OnConnectionClosed();
-  void OnCleanerProcessDone(ChromeCleanerRunner::ProcessStatus process_status);
-  void InitiateReboot();
-
-  // Invoked once settings reset is done for tagged profiles.
-  void OnSettingsResetCompleted();
-
-  std::unique_ptr<ChromeCleanerControllerDelegate> real_delegate_;
-  // Pointer to either real_delegate_ or one set by tests.
-  ChromeCleanerControllerDelegate* delegate_;
-
-  State state_ = State::kIdle;
-  // The logs permission checkboxes in the Chrome Cleaner dialog and webui page
-  // are opt out.
-  bool logs_enabled_ = true;
-  // Whether Cleanup is powered by an external partner.
-  bool powered_by_partner_ = false;
-  IdleReason idle_reason_ = IdleReason::kInitial;
-  std::unique_ptr<SwReporterInvocation> reporter_invocation_;
-  std::unique_ptr<std::set<base::FilePath>> files_to_delete_;
-  // The Mojo callback that should be called to send a response to the Chrome
-  // Cleaner process. This must be posted to run on the IO thread.
-  chrome_cleaner::mojom::ChromePrompt::PromptUserCallback prompt_user_callback_;
-
-  // For metrics reporting.
-  base::Time time_scanning_started_;
-  base::Time time_cleanup_started_;
-
-  base::ObserverList<Observer> observer_list_;
-
-  THREAD_CHECKER(thread_checker_);
-
-  base::WeakPtrFactory<ChromeCleanerController> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeCleanerController);
 };
 

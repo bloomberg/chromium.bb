@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_impl_win.h"
 
 #include <string>
 #include <tuple>
@@ -107,13 +107,13 @@ class ChromeCleanerControllerSimpleTest
     metrics_enabled_ = metrics_status == MetricsStatus::kEnabled;
 
     SetChromeCleanerRunnerTestDelegateForTesting(this);
-    ChromeCleanerController::ResetInstanceForTesting();
-    ChromeCleanerController::GetInstance()->SetDelegateForTesting(this);
+    ChromeCleanerControllerImpl::ResetInstanceForTesting();
+    ChromeCleanerControllerImpl::GetInstance()->SetDelegateForTesting(this);
     scoped_feature_list_.InitAndEnableFeature(kInBrowserCleanerUIFeature);
   }
 
   void TearDown() override {
-    ChromeCleanerController::GetInstance()->SetDelegateForTesting(nullptr);
+    ChromeCleanerControllerImpl::GetInstance()->SetDelegateForTesting(nullptr);
     SetChromeCleanerRunnerTestDelegateForTesting(nullptr);
   }
 
@@ -173,7 +173,8 @@ SwReporterInvocation GetInvocationWithPromptTrigger() {
 }
 
 TEST_P(ChromeCleanerControllerSimpleTest, FlagsPassedToCleanerProcess) {
-  ChromeCleanerController* controller = ChromeCleanerController::GetInstance();
+  ChromeCleanerControllerImpl* controller =
+      ChromeCleanerControllerImpl::GetInstance();
   ASSERT_TRUE(controller);
 
   EXPECT_CALL(mock_observer_, OnIdle(_)).Times(1);
@@ -246,8 +247,8 @@ class ChromeCleanerControllerTest
             ? PromptAcceptance::DENIED
             : UserResponseToPromptAcceptance(user_response_));
 
-    ChromeCleanerController::ResetInstanceForTesting();
-    controller_ = ChromeCleanerController::GetInstance();
+    ChromeCleanerControllerImpl::ResetInstanceForTesting();
+    controller_ = ChromeCleanerControllerImpl::GetInstance();
     ASSERT_TRUE(controller_);
 
     scoped_feature_list_.InitAndEnableFeature(kInBrowserCleanerUIFeature);
@@ -414,7 +415,7 @@ class ChromeCleanerControllerTest
   MockChromeCleanerProcess::Options cleaner_process_options_;
 
   StrictMock<MockChromeCleanerControllerObserver> mock_observer_;
-  ChromeCleanerController* controller_;
+  ChromeCleanerControllerImpl* controller_;
   ChromeCleanerRunner::ProcessStatus cleaner_process_status_;
 
   std::vector<Profile*> profiles_tagged_;

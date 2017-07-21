@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_impl_win.h"
 
 #include <windows.h>
 
+#include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -49,7 +51,7 @@ using ::content::BrowserThread;
 
 // The global singleton instance. Exposed outside of GetInstance() so that it
 // can be reset by tests.
-ChromeCleanerController* g_controller = nullptr;
+ChromeCleanerControllerImpl* g_controller = nullptr;
 
 // TODO(alito): Move these shared exit codes to the chrome_cleaner component.
 // https://crbug.com/727956
@@ -178,16 +180,26 @@ void ChromeCleanerControllerDelegate::ResetTaggedProfiles(
 }
 
 // static
-ChromeCleanerController* ChromeCleanerController::GetInstance() {
+ChromeCleanerControllerImpl* ChromeCleanerControllerImpl::GetInstance() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!g_controller)
-    g_controller = new ChromeCleanerController();
+    g_controller = new ChromeCleanerControllerImpl();
 
   return g_controller;
 }
 
-bool ChromeCleanerController::ShouldShowCleanupInSettingsUI() {
+// static
+ChromeCleanerController* ChromeCleanerController::GetInstance() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return ChromeCleanerControllerImpl::GetInstance();
+}
+
+ChromeCleanerController::ChromeCleanerController() = default;
+
+ChromeCleanerController::~ChromeCleanerController() = default;
+
+bool ChromeCleanerControllerImpl::ShouldShowCleanupInSettingsUI() {
   return state_ == State::kInfected || state_ == State::kCleaning ||
          state_ == State::kRebootRequired ||
          (state_ == State::kIdle &&
@@ -195,7 +207,7 @@ bool ChromeCleanerController::ShouldShowCleanupInSettingsUI() {
            idle_reason_ == IdleReason::kConnectionLost));
 }
 
-bool ChromeCleanerController::IsPoweredByPartner() {
+bool ChromeCleanerControllerImpl::IsPoweredByPartner() {
   // |reporter_invocation_| is not expected to hold a value for the entire
   // lifecycle of the ChromeCleanerController instance. To be consistent, use
   // a cached return value if the |reporter_invocation_| has been cleaned up.
@@ -212,7 +224,16 @@ bool ChromeCleanerController::IsPoweredByPartner() {
   return powered_by_partner_;
 }
 
-void ChromeCleanerController::SetLogsEnabled(bool logs_enabled) {
+ChromeCleanerController::State ChromeCleanerControllerImpl::state() const {
+  return state_;
+}
+
+ChromeCleanerController::IdleReason ChromeCleanerControllerImpl::idle_reason()
+    const {
+  return idle_reason_;
+}
+
+void ChromeCleanerControllerImpl::SetLogsEnabled(bool logs_enabled) {
   if (logs_enabled_ == logs_enabled)
     return;
 
@@ -221,7 +242,11 @@ void ChromeCleanerController::SetLogsEnabled(bool logs_enabled) {
     observer.OnLogsEnabledChanged(logs_enabled_);
 }
 
-void ChromeCleanerController::ResetIdleState() {
+bool ChromeCleanerControllerImpl::logs_enabled() const {
+  return logs_enabled_;
+}
+
+void ChromeCleanerControllerImpl::ResetIdleState() {
   if (state() != State::kIdle || idle_reason() == IdleReason::kInitial)
     return;
 
@@ -233,7 +258,7 @@ void ChromeCleanerController::ResetIdleState() {
     NotifyObserver(&observer);
 }
 
-void ChromeCleanerController::SetDelegateForTesting(
+void ChromeCleanerControllerImpl::SetDelegateForTesting(
     ChromeCleanerControllerDelegate* delegate) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   delegate_ = delegate ? delegate : real_delegate_.get();
@@ -241,7 +266,7 @@ void ChromeCleanerController::SetDelegateForTesting(
 }
 
 // static
-void ChromeCleanerController::ResetInstanceForTesting() {
+void ChromeCleanerControllerImpl::ResetInstanceForTesting() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (g_controller) {
@@ -250,18 +275,18 @@ void ChromeCleanerController::ResetInstanceForTesting() {
   }
 }
 
-void ChromeCleanerController::AddObserver(Observer* observer) {
+void ChromeCleanerControllerImpl::AddObserver(Observer* observer) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   observer_list_.AddObserver(observer);
   NotifyObserver(observer);
 }
 
-void ChromeCleanerController::RemoveObserver(Observer* observer) {
+void ChromeCleanerControllerImpl::RemoveObserver(Observer* observer) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   observer_list_.RemoveObserver(observer);
 }
 
-void ChromeCleanerController::Scan(
+void ChromeCleanerControllerImpl::Scan(
     const SwReporterInvocation& reporter_invocation) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(reporter_invocation.BehaviourIsSupported(
@@ -277,11 +302,11 @@ void ChromeCleanerController::Scan(
   // base::Unretained is safe because the ChromeCleanerController instance is
   // guaranteed to outlive the UI thread.
   delegate_->FetchAndVerifyChromeCleaner(base::BindOnce(
-      &ChromeCleanerController::OnChromeCleanerFetchedAndVerified,
+      &ChromeCleanerControllerImpl::OnChromeCleanerFetchedAndVerified,
       base::Unretained(this)));
 }
 
-void ChromeCleanerController::ReplyWithUserResponse(
+void ChromeCleanerControllerImpl::ReplyWithUserResponse(
     Profile* profile,
     UserResponse user_response) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -329,7 +354,7 @@ void ChromeCleanerController::ReplyWithUserResponse(
   SetStateAndNotifyObservers(new_state);
 }
 
-void ChromeCleanerController::Reboot() {
+void ChromeCleanerControllerImpl::Reboot() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (state() != State::kRebootRequired)
@@ -339,16 +364,16 @@ void ChromeCleanerController::Reboot() {
   InitiateReboot();
 }
 
-ChromeCleanerController::ChromeCleanerController()
+ChromeCleanerControllerImpl::ChromeCleanerControllerImpl()
     : real_delegate_(base::MakeUnique<ChromeCleanerControllerDelegate>()),
       delegate_(real_delegate_.get()),
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-ChromeCleanerController::~ChromeCleanerController() = default;
+ChromeCleanerControllerImpl::~ChromeCleanerControllerImpl() = default;
 
-void ChromeCleanerController::NotifyObserver(Observer* observer) const {
+void ChromeCleanerControllerImpl::NotifyObserver(Observer* observer) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   switch (state_) {
@@ -370,7 +395,7 @@ void ChromeCleanerController::NotifyObserver(Observer* observer) const {
   }
 }
 
-void ChromeCleanerController::SetStateAndNotifyObservers(State state) {
+void ChromeCleanerControllerImpl::SetStateAndNotifyObservers(State state) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_NE(state_, state);
 
@@ -383,7 +408,7 @@ void ChromeCleanerController::SetStateAndNotifyObservers(State state) {
     NotifyObserver(&observer);
 }
 
-void ChromeCleanerController::ResetCleanerDataAndInvalidateWeakPtrs() {
+void ChromeCleanerControllerImpl::ResetCleanerDataAndInvalidateWeakPtrs() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   weak_factory_.InvalidateWeakPtrs();
@@ -392,7 +417,7 @@ void ChromeCleanerController::ResetCleanerDataAndInvalidateWeakPtrs() {
   prompt_user_callback_.Reset();
 }
 
-void ChromeCleanerController::OnChromeCleanerFetchedAndVerified(
+void ChromeCleanerControllerImpl::OnChromeCleanerFetchedAndVerified(
     base::FilePath executable_path) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(State::kScanning, state());
@@ -415,11 +440,11 @@ void ChromeCleanerController::OnChromeCleanerFetchedAndVerified(
 
   ChromeCleanerRunner::RunChromeCleanerAndReplyWithExitCode(
       executable_path, *reporter_invocation_, metrics_status,
-      base::Bind(&ChromeCleanerController::WeakOnPromptUser,
+      base::Bind(&ChromeCleanerControllerImpl::WeakOnPromptUser,
                  weak_factory_.GetWeakPtr()),
-      base::Bind(&ChromeCleanerController::OnConnectionClosed,
+      base::Bind(&ChromeCleanerControllerImpl::OnConnectionClosed,
                  weak_factory_.GetWeakPtr()),
-      base::Bind(&ChromeCleanerController::OnCleanerProcessDone,
+      base::Bind(&ChromeCleanerControllerImpl::OnCleanerProcessDone,
                  weak_factory_.GetWeakPtr()),
       // Our callbacks should be dispatched to the UI thread only.
       base::ThreadTaskRunnerHandle::Get());
@@ -428,8 +453,8 @@ void ChromeCleanerController::OnChromeCleanerFetchedAndVerified(
 }
 
 // static
-void ChromeCleanerController::WeakOnPromptUser(
-    const base::WeakPtr<ChromeCleanerController>& controller,
+void ChromeCleanerControllerImpl::WeakOnPromptUser(
+    const base::WeakPtr<ChromeCleanerControllerImpl>& controller,
     std::unique_ptr<std::set<base::FilePath>> files_to_delete,
     ChromePrompt::PromptUserCallback prompt_user_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -446,7 +471,7 @@ void ChromeCleanerController::WeakOnPromptUser(
                            std::move(prompt_user_callback));
 }
 
-void ChromeCleanerController::OnPromptUser(
+void ChromeCleanerControllerImpl::OnPromptUser(
     std::unique_ptr<std::set<base::FilePath>> files_to_delete,
     ChromePrompt::PromptUserCallback prompt_user_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -476,7 +501,7 @@ void ChromeCleanerController::OnPromptUser(
   SetStateAndNotifyObservers(State::kInfected);
 }
 
-void ChromeCleanerController::OnConnectionClosed() {
+void ChromeCleanerControllerImpl::OnConnectionClosed() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_NE(State::kIdle, state());
   DCHECK_NE(State::kRebootRequired, state());
@@ -504,7 +529,7 @@ void ChromeCleanerController::OnConnectionClosed() {
   RecordIPCDisconnectedHistogram(IPC_DISCONNECTED_SUCCESS);
 }
 
-void ChromeCleanerController::OnCleanerProcessDone(
+void ChromeCleanerControllerImpl::OnCleanerProcessDone(
     ChromeCleanerRunner::ProcessStatus process_status) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -547,7 +572,7 @@ void ChromeCleanerController::OnCleanerProcessDone(
           g_browser_process->profile_manager()->GetLoadedProfiles(),
           // OnSettingsResetCompleted() will take care of transitioning to the
           // kIdle state with IdleReason kCleaningSucceeded.
-          base::BindOnce(&ChromeCleanerController::OnSettingsResetCompleted,
+          base::BindOnce(&ChromeCleanerControllerImpl::OnSettingsResetCompleted,
                          base::Unretained(this)));
       ResetCleanerDataAndInvalidateWeakPtrs();
       return;
@@ -559,7 +584,7 @@ void ChromeCleanerController::OnCleanerProcessDone(
   SetStateAndNotifyObservers(State::kIdle);
 }
 
-void ChromeCleanerController::InitiateReboot() {
+void ChromeCleanerControllerImpl::InitiateReboot() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   installer::ScopedTokenPrivilege scoped_se_shutdown_privilege(
@@ -573,7 +598,7 @@ void ChromeCleanerController::InitiateReboot() {
   }
 }
 
-void ChromeCleanerController::OnSettingsResetCompleted() {
+void ChromeCleanerControllerImpl::OnSettingsResetCompleted() {
   idle_reason_ = IdleReason::kCleaningSucceeded;
   SetStateAndNotifyObservers(State::kIdle);
 }

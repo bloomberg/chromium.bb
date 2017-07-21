@@ -28,6 +28,7 @@ enum PromptDialogResponseHistogramValue {
   PROMPT_DIALOG_RESPONSE_DETAILS = 1,
   PROMPT_DIALOG_RESPONSE_CANCELLED = 2,
   PROMPT_DIALOG_RESPONSE_DISMISSED = 3,
+  PROMPT_DIALOG_RESPONSE_CLOSED_WITHOUT_USER_INTERACTION = 4,
 
   PROMPT_DIALOG_RESPONSE_MAX,
 };
@@ -103,6 +104,12 @@ void ChromeCleanerDialogControllerImpl::Close() {
   OnInteractionDone();
 }
 
+void ChromeCleanerDialogControllerImpl::ClosedWithoutUserInteraction() {
+  RecordPromptDialogResponseHistogram(
+      PROMPT_DIALOG_RESPONSE_CLOSED_WITHOUT_USER_INTERACTION);
+  OnInteractionDone();
+}
+
 void ChromeCleanerDialogControllerImpl::DetailsButtonClicked(
     bool logs_enabled) {
   RecordPromptDialogResponseHistogram(PROMPT_DIALOG_RESPONSE_DETAILS);
@@ -133,10 +140,10 @@ void ChromeCleanerDialogControllerImpl::OnIdle(
 void ChromeCleanerDialogControllerImpl::OnScanning() {
   // This notification is received when the object is first added as an observer
   // of cleaner_controller_.
-  //
+  DCHECK(!dialog_shown_);
+
   // TODO(alito): Close the dialog in case it has been kept open until the next
   // time the prompt is going to be shown. http://crbug.com/734689
-  DCHECK(!dialog_shown_);
 }
 
 void ChromeCleanerDialogControllerImpl::OnInfected(
@@ -154,7 +161,7 @@ void ChromeCleanerDialogControllerImpl::OnInfected(
     return;
   }
 
-  chrome::ShowChromeCleanerPrompt(browser_, this);
+  chrome::ShowChromeCleanerPrompt(browser_, this, cleaner_controller_);
   RecordPromptShownHistogram();
   dialog_shown_ = true;
 }

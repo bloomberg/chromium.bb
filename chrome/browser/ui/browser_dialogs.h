@@ -48,6 +48,7 @@ class PaymentRequestDialog;
 }
 
 namespace safe_browsing {
+class ChromeCleanerController;
 class ChromeCleanerDialogController;
 }
 
@@ -257,7 +258,8 @@ void RecordDialogCreation(DialogIdentifier identifier);
 // detected on the system.
 void ShowChromeCleanerPrompt(
     Browser* browser,
-    safe_browsing::ChromeCleanerDialogController* controller);
+    safe_browsing::ChromeCleanerDialogController* dialog_controller,
+    safe_browsing::ChromeCleanerController* cleaner_controller);
 
 #endif  // OS_WIN
 
