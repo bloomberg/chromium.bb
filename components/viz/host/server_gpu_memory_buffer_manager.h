@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/viz/host/viz_host_export.h"
@@ -92,7 +92,8 @@ class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
   std::unordered_set<int> pending_buffers_;
 
   const gpu::GpuMemoryBufferConfigurationSet native_configurations_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::WeakPtr<ServerGpuMemoryBufferManager> weak_ptr_;
   base::WeakPtrFactory<ServerGpuMemoryBufferManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerGpuMemoryBufferManager);

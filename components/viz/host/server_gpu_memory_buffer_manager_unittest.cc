@@ -160,6 +160,28 @@ class ServerGpuMemoryBufferManagerTest : public ::testing::Test {
   ServerGpuMemoryBufferManagerTest() = default;
   ~ServerGpuMemoryBufferManagerTest() override = default;
 
+  std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBufferSync(
+      ServerGpuMemoryBufferManager* manager) {
+    base::Thread diff_thread("TestThread");
+    diff_thread.Start();
+    std::unique_ptr<gfx::GpuMemoryBuffer> buffer;
+    base::RunLoop run_loop;
+    diff_thread.task_runner()->PostTask(
+        FROM_HERE, base::Bind(
+                       [](ServerGpuMemoryBufferManager* manager,
+                          std::unique_ptr<gfx::GpuMemoryBuffer>* out_buffer,
+                          const base::Closure& callback) {
+                         *out_buffer = manager->CreateGpuMemoryBuffer(
+                             gfx::Size(64, 64), gfx::BufferFormat::YVU_420,
+                             gfx::BufferUsage::GPU_READ,
+                             gpu::kNullSurfaceHandle);
+                         callback.Run();
+                       },
+                       manager, &buffer, run_loop.QuitClosure()));
+    run_loop.Run();
+    return buffer;
+  }
+
   // ::testing::Test:
   void SetUp() override {
     gfx::ClientNativePixmapFactory::ResetInstance();
@@ -265,24 +287,25 @@ TEST_F(ServerGpuMemoryBufferManagerTest, GpuMemoryBufferDestroyed) {
   gfx::ClientNativePixmapFactory::ResetInstance();
   TestGpuService gpu_service;
   ServerGpuMemoryBufferManager manager(&gpu_service, 1);
-  base::Thread diff_thread("TestThread");
-  ASSERT_TRUE(diff_thread.Start());
-  std::unique_ptr<gfx::GpuMemoryBuffer> buffer;
-  base::RunLoop run_loop;
-  ASSERT_TRUE(diff_thread.task_runner()->PostTask(
-      FROM_HERE, base::Bind(
-                     [](ServerGpuMemoryBufferManager* manager,
-                        std::unique_ptr<gfx::GpuMemoryBuffer>* out_buffer,
-                        const base::Closure& callback) {
-                       *out_buffer = manager->CreateGpuMemoryBuffer(
-                           gfx::Size(64, 64), gfx::BufferFormat::YVU_420,
-                           gfx::BufferUsage::GPU_READ, gpu::kNullSurfaceHandle);
-                       callback.Run();
-                     },
-                     &manager, &buffer, run_loop.QuitClosure())));
-  run_loop.Run();
+  auto buffer = AllocateGpuMemoryBufferSync(&manager);
   EXPECT_TRUE(buffer);
   buffer.reset();
+}
+
+TEST_F(ServerGpuMemoryBufferManagerTest,
+       GpuMemoryBufferDestroyedOnDifferentThread) {
+  gfx::ClientNativePixmapFactory::ResetInstance();
+  TestGpuService gpu_service;
+  ServerGpuMemoryBufferManager manager(&gpu_service, 1);
+  auto buffer = AllocateGpuMemoryBufferSync(&manager);
+  EXPECT_TRUE(buffer);
+  // Destroy the buffer in a different thread.
+  base::Thread diff_thread("DestroyThread");
+  ASSERT_TRUE(diff_thread.Start());
+  diff_thread.task_runner()->PostTask(
+      FROM_HERE, base::Bind([](std::unique_ptr<gfx::GpuMemoryBuffer> buffer) {},
+                            base::Passed(&buffer)));
+  diff_thread.Stop();
 }
 
 }  // namespace viz
