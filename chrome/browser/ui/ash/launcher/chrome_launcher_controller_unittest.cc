@@ -3924,6 +3924,29 @@ INSTANTIATE_TEST_CASE_P(,
                         ChromeLauncherControllerArcDefaultAppsTest,
                         ::testing::Bool());
 
+class ChromeLauncherControllerPlayStoreAvailabilityTest
+    : public ChromeLauncherControllerTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  ChromeLauncherControllerPlayStoreAvailabilityTest() = default;
+  ~ChromeLauncherControllerPlayStoreAvailabilityTest() override = default;
+
+ protected:
+  void SetUp() override {
+    if (GetParam())
+      arc::SetArcAlwaysStartForTesting(false);
+    ArcDefaultAppList::UseTestAppsDirectory();
+    ChromeLauncherControllerTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerPlayStoreAvailabilityTest);
+};
+
+INSTANTIATE_TEST_CASE_P(,
+                        ChromeLauncherControllerPlayStoreAvailabilityTest,
+                        ::testing::Bool());
+
 }  // namespace
 
 TEST_P(ChromeLauncherControllerOrientationTest,
@@ -4134,6 +4157,24 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {
   EXPECT_TRUE(launcher_controller_->IsAppPinned(arc::kPlayStoreAppId));
   EXPECT_TRUE(launcher_controller_->GetArcDeferredLauncher()->HasApp(
       arc::kPlayStoreAppId));
+}
+
+// Tests that the Play Store is not visible in AOSP image and visible in default
+// images.
+TEST_P(ChromeLauncherControllerPlayStoreAvailabilityTest, Visible) {
+  extension_service_->AddExtension(arc_support_host_.get());
+  arc_test_.SetUp(profile());
+
+  InitLauncherController();
+  StartPrefSyncService(syncer::SyncDataList());
+
+  ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
+  EXPECT_EQ(arc::IsPlayStoreAvailable(),
+            prefs->IsRegistered(arc::kPlayStoreAppId));
+  // If the Play Store available, it is pinned by default.
+  EXPECT_EQ(arc::IsPlayStoreAvailable(),
+            launcher_controller_->IsAppPinned(arc::kPlayStoreAppId));
+  arc_test_.TearDown();
 }
 
 // Checks the case when several app items have the same ordinal position (which

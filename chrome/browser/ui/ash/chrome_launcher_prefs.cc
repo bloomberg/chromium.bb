@@ -632,9 +632,10 @@ std::vector<ash::ShelfID> GetPinnedAppsFromPrefs(
     // Return default apps in case profile is not synced yet.
     sync_preferences::PrefServiceSyncable* const pref_service_syncable =
         PrefServiceSyncableFromProfile(helper->profile());
-    if (!pref_service_syncable->IsSyncing())
+    if (!pref_service_syncable->IsSyncing()) {
       return AppIdsToShelfIDs(
           GetPinnedAppsFromPrefsLegacy(prefs, helper, true));
+    }
 
     // We need to import legacy pins model and convert it to sync based
     // model.
