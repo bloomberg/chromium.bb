@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_VR_TAB_HELPER_H_
 
 #include "base/macros.h"
+#include "chrome/browser/vr/ui_suppressed_element.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace vr {
@@ -21,6 +22,9 @@ class VrTabHelper : public content::WebContentsUserData<VrTabHelper> {
   void SetIsInVr(bool is_in_vr);
 
   static bool IsInVr(content::WebContents* contents);
+
+  // Used for logging.
+  static void UISuppressed(vr::UiSuppressedElement element);
 
  private:
   explicit VrTabHelper(content::WebContents* contents);

@@ -117,8 +117,10 @@ void TabWebContentsDelegateAndroid::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
     const FileChooserParams& params) {
   if (vr::VrTabHelper::IsInVr(
-          WebContents::FromRenderFrameHost(render_frame_host)))
+          WebContents::FromRenderFrameHost(render_frame_host))) {
+    vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kFileChooser);
     return;
+  }
   FileSelectHelper::RunFileChooser(render_frame_host, params);
 }
 
@@ -126,8 +128,10 @@ std::unique_ptr<BluetoothChooser>
 TabWebContentsDelegateAndroid::RunBluetoothChooser(
     content::RenderFrameHost* frame,
     const BluetoothChooser::EventHandler& event_handler) {
-  if (vr::VrTabHelper::IsInVr(WebContents::FromRenderFrameHost(frame)))
+  if (vr::VrTabHelper::IsInVr(WebContents::FromRenderFrameHost(frame))) {
+    vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kBluetoothChooser);
     return nullptr;
+  }
   return base::MakeUnique<BluetoothChooserAndroid>(frame, event_handler);
 }
 
@@ -258,6 +262,7 @@ content::JavaScriptDialogManager*
 TabWebContentsDelegateAndroid::GetJavaScriptDialogManager(
     WebContents* source) {
   if (vr::VrTabHelper::IsInVr(source)) {
+    vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kJavascriptDialog);
     return nullptr;
   }
   return app_modal::JavaScriptDialogManager::GetInstance();
@@ -270,6 +275,7 @@ void TabWebContentsDelegateAndroid::RequestMediaAccessPermission(
   if (vr::VrTabHelper::IsInVr(web_contents)) {
     callback.Run(content::MediaStreamDevices(),
                  content::MEDIA_DEVICE_NOT_SUPPORTED, nullptr);
+    vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kMediaPermission);
     return;
   }
   MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(

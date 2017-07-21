@@ -6,6 +6,11 @@
 
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/web_preferences.h"
+#include "device/vr/features/features.h"
+
+#if BUILDFLAG(ENABLE_VR)
+#include "chrome/browser/android/vr_shell/vr_metrics_util.h"
+#endif
 
 using content::WebContents;
 using content::WebPreferences;
@@ -40,6 +45,13 @@ bool VrTabHelper::IsInVr(content::WebContents* contents) {
     vr_tab_helper = VrTabHelper::FromWebContents(contents);
   }
   return vr_tab_helper->is_in_vr();
+}
+
+/* static */
+void VrTabHelper::UISuppressed(vr::UiSuppressedElement element) {
+#if BUILDFLAG(ENABLE_VR)
+  vr_shell::VrMetricsUtil::LogUiSuppression(element);
+#endif  // ENABLE_VR
 }
 
 }  // namespace vr

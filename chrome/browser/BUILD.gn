@@ -1415,6 +1415,7 @@ split_static_library("browser") {
     "usb/web_usb_histograms.h",
     "usb/web_usb_permission_provider.cc",
     "usb/web_usb_permission_provider.h",
+    "vr/ui_suppressed_element.h",
     "vr/vr_tab_helper.cc",
     "vr/vr_tab_helper.h",
     "web_data_service_factory.cc",

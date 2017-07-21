@@ -8,6 +8,7 @@
 #include "base/macros.h"
 
 #include "chrome/browser/android/vr_shell/vr_core_info.h"
+#include "chrome/browser/vr/ui_suppressed_element.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace vr_shell {
@@ -24,6 +25,8 @@ class VrMetricsUtil {
   static void LogGvrVersionForVrViewerType(gvr::ViewerType viewer_type,
                                            const VrCoreInfo& vr_core_info);
   static void LogVrViewerType(gvr::ViewerType viewer_type);
+
+  static void LogUiSuppression(vr::UiSuppressedElement element);
 
  private:
   static ViewerType GetVrViewerType(gvr::ViewerType viewer_type);
