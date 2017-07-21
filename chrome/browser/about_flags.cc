@@ -1390,16 +1390,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kMediaDocumentDownloadButton)},
 #endif  // OS_ANDROID
 #if BUILDFLAG(ENABLE_PLUGINS)
-    {"prefer-html-over-flash", flag_descriptions::kPreferHtmlOverPluginsName,
-     flag_descriptions::kPreferHtmlOverPluginsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kPreferHtmlOverPlugins)},
     {"allow-nacl-socket-api", flag_descriptions::kAllowNaclSocketApiName,
      flag_descriptions::kAllowNaclSocketApiDescription, kOsDesktop,
      SINGLE_VALUE_TYPE_AND_VALUE(switches::kAllowNaClSocketAPI, "*")},
-    {"run-all-flash-in-allow-mode",
-     flag_descriptions::kRunAllFlashInAllowModeName,
-     flag_descriptions::kRunAllFlashInAllowModeDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kRunAllFlashInAllowMode)},
 #endif  // ENABLE_PLUGINS
 #if defined(OS_CHROMEOS)
     {"mus", flag_descriptions::kUseMusName,

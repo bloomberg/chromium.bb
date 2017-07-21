@@ -938,10 +938,6 @@ const char kPinchScaleName[] = "Pinch scale";
 const char kPinchScaleDescription[] =
     "Enables experimental support for scale using pinch.";
 
-const char kPreferHtmlOverPluginsName[] = "Prefer HTML over Flash";
-const char kPreferHtmlOverPluginsDescription[] =
-    "Prefer HTML content by hiding Flash from the list of plugins.";
-
 const char kPrintPdfAsImageName[] = "Print Pdf as Image";
 const char kPrintPdfAsImageDescription[] =
     "If enabled, an option to print PDF files as images will be available in "
@@ -997,12 +993,6 @@ const char kResourceLoadSchedulerName[] = "Use the resource load scheduler";
 const char kResourceLoadSchedulerDescription[] =
     "Uses the resource load scheduler in blink to schedule and throttle "
     "resource load requests.";
-
-const char kRunAllFlashInAllowModeName[] =
-    R"*(Run all Flash content when Flash setting is set to "allow")*";
-const char kRunAllFlashInAllowModeDescription[] =
-    R"*(For sites that have been set to "allow" Flash content, run all )*"
-    R"*(content including any that has been deemed unimportant.)*";
 
 const char kSafeSearchUrlReportingName[] = "SafeSearch URLs reporting.";
 const char kSafeSearchUrlReportingDescription[] =

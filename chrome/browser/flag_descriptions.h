@@ -591,9 +591,6 @@ extern const char kPermissionsBlacklistDescription[];
 extern const char kPinchScaleName[];
 extern const char kPinchScaleDescription[];
 
-extern const char kPreferHtmlOverPluginsName[];
-extern const char kPreferHtmlOverPluginsDescription[];
-
 extern const char kPrintPdfAsImageName[];
 extern const char kPrintPdfAsImageDescription[];
 
@@ -623,9 +620,6 @@ extern const char kResetAppListInstallStateDescription[];
 
 extern const char kResourceLoadSchedulerName[];
 extern const char kResourceLoadSchedulerDescription[];
-
-extern const char kRunAllFlashInAllowModeName[];
-extern const char kRunAllFlashInAllowModeDescription[];
 
 extern const char kSafeSearchUrlReportingName[];
 extern const char kSafeSearchUrlReportingDescription[];
