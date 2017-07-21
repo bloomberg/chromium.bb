@@ -4,13 +4,14 @@
 
 from webkitpy.common.net.git_cl import GitCL
 
+# pylint: disable=unused-argument
 
-# TODO(qyearsley): Use this class in wpt_expectations_updater_unittest and rebaseline_cl_unittest.
 class MockGitCL(object):
 
-    def __init__(self, host, results=None):
+    def __init__(self, host, results=None, issue_number='1234'):
         self._host = host
         self._results = results or {}
+        self._issue_number = issue_number
         self.calls = []
 
     def run(self, args):
@@ -25,7 +26,7 @@ class MockGitCL(object):
         self.run(command)
 
     def get_issue_number(self):
-        return '1234'
+        return self._issue_number
 
     def try_job_results(self, **_):
         return self._results
@@ -33,7 +34,7 @@ class MockGitCL(object):
     def wait_for_try_jobs(self, **_):
         return self._results
 
-    def latest_try_jobs(self, **_):
+    def latest_try_jobs(self, builder_names=None):
         return self.filter_latest(self._results)
 
     @staticmethod

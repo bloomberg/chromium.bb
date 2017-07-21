@@ -5,10 +5,10 @@
 import json
 import optparse
 
-from webkitpy.common.net.buildbot import Build
-from webkitpy.common.net.git_cl import GitCL
-from webkitpy.common.net.git_cl import TryJobStatus
 from webkitpy.common.checkout.git_mock import MockGit
+from webkitpy.common.net.buildbot import Build
+from webkitpy.common.net.git_cl import TryJobStatus
+from webkitpy.common.net.git_cl_mock import MockGitCL
 from webkitpy.common.net.layout_test_results import LayoutTestResults
 from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.layout_tests.builder_list import BuilderList
@@ -30,11 +30,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             Build('MOCK Try Linux', 6000): TryJobStatus('COMPLETED', 'FAILURE'),
         }
 
-        # TODO(qyearsley): Add a MockGitCL class to reduce repetition below.
-        git_cl = GitCL(self.tool)
-        git_cl.get_issue_number = lambda: '11112222'
-        git_cl.latest_try_jobs = lambda _: builds
-        self.command.git_cl = lambda: git_cl
+        self.command.git_cl = MockGitCL(self.tool, builds)
 
         git = MockGit(filesystem=self.tool.filesystem, executive=self.tool.executive)
         git.changed_files = lambda **_: [
@@ -101,7 +97,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 self.mac_port.layout_tests_dir(), test)
             self._write(path, 'contents')
 
-        self.mac_port.host.filesystem.write_text_file('/test.checkout/LayoutTests/external/wpt/MANIFEST.json', '{}')
+        self.mac_port.host.filesystem.write_text_file(
+            '/test.checkout/LayoutTests/external/wpt/MANIFEST.json', '{}')
 
     def tearDown(self):
         BaseTestCase.tearDown(self)
@@ -137,9 +134,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
 
     def test_execute_with_no_issue_number_aborts(self):
         # If the user hasn't uploaded a CL, an error message is printed.
-        git_cl = GitCL(self.tool)
-        git_cl.get_issue_number = lambda: 'None'
-        self.command.git_cl = lambda: git_cl
+        self.command.git_cl = MockGitCL(self.tool, issue_number='None')
         exit_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(exit_code, 1)
         self.assertLog(['ERROR: No issue number for current branch.\n'])
@@ -160,10 +155,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
     def test_execute_no_try_jobs_started_triggers_jobs(self):
         # If there are no try jobs started yet, by default the tool will
         # trigger new try jobs.
-        git_cl = GitCL(self.tool)
-        git_cl.get_issue_number = lambda: '11112222'
-        git_cl.latest_try_jobs = lambda _: {}
-        self.command.git_cl = lambda: git_cl
+        self.command.git_cl = MockGitCL(self.tool, {})
         exit_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(exit_code, 1)
         self.assertLog([
@@ -179,10 +171,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
     def test_execute_no_try_jobs_started_and_no_trigger_jobs(self):
         # If there are no try jobs started yet and --no-trigger-jobs is passed,
         # then we just abort immediately.
-        git_cl = GitCL(self.tool)
-        git_cl.get_issue_number = lambda: '11112222'
-        git_cl.latest_try_jobs = lambda _: {}
-        self.command.git_cl = lambda: git_cl
+        self.command.git_cl = MockGitCL(self.tool, {})
         exit_code = self.command.execute(
             self.command_options(trigger_jobs=False), [], self.tool)
         self.assertEqual(exit_code, 1)
@@ -196,10 +185,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             Build('MOCK Try Win', 5000): TryJobStatus('COMPLETED', 'FAILURE'),
             Build('MOCK Try Mac', 4000): TryJobStatus('COMPLETED', 'FAILURE'),
         }
-        git_cl = GitCL(self.tool)
-        git_cl.get_issue_number = lambda: '11112222'
-        git_cl.latest_try_jobs = lambda _: builds
-        self.command.git_cl = lambda: git_cl
+        self.command.git_cl = MockGitCL(self.tool, builds)
         exit_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(exit_code, 1)
         self.assertLog([
@@ -218,10 +204,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             Build('MOCK Try Mac', 4000): TryJobStatus('STARTED'),
             Build('MOCK Try Linux', 6000): TryJobStatus('SCHEDULED'),
         }
-        git_cl = GitCL(self.tool)
-        git_cl.get_issue_number = lambda: '11112222'
-        git_cl.latest_try_jobs = lambda _: builds
-        self.command.git_cl = lambda: git_cl
+        self.command.git_cl = MockGitCL(self.tool, builds)
         exit_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(exit_code, 1)
         self.assertLog([
@@ -246,10 +229,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             Build('MOCK Try Mac', 4000): TryJobStatus('COMPLETED', 'FAILURE'),
             Build('MOCK Try Linux', 6000): TryJobStatus('COMPLETED', 'CANCELED'),
         }
-        git_cl = GitCL(self.tool)
-        git_cl.get_issue_number = lambda: '11112222'
-        git_cl.latest_try_jobs = lambda _: builds
-        self.command.git_cl = lambda: git_cl
+        self.command.git_cl = MockGitCL(self.tool, builds)
         exit_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(exit_code, 1)
         self.assertLog([
@@ -269,10 +249,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             Build('MOCK Try Mac', 4000): TryJobStatus('COMPLETED', 'SUCCESS'),
             Build('MOCK Try Linux', 6000): TryJobStatus('COMPLETED', 'SUCCESS'),
         }
-        git_cl = GitCL(self.tool)
-        git_cl.get_issue_number = lambda: '11112222'
-        git_cl.latest_try_jobs = lambda _: builds
-        self.command.git_cl = lambda: git_cl
+        self.command.git_cl = MockGitCL(self.tool, builds)
         exit_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(exit_code, 0)
         self.assertLog([
@@ -289,10 +266,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             Build('MOCK Try Win', 5000): TryJobStatus('COMPLETED', 'FAILURE'),
             Build('MOCK Try Mac', 4000): TryJobStatus('COMPLETED', 'FAILURE'),
         }
-        git_cl = GitCL(self.tool)
-        git_cl.get_issue_number = lambda: '11112222'
-        git_cl.latest_try_jobs = lambda _: builds
-        self.command.git_cl = lambda: git_cl
+        self.command.git_cl = MockGitCL(self.tool, builds)
         exit_code = self.command.execute(
             self.command_options(trigger_jobs=False), [], self.tool)
         self.assertEqual(exit_code, 1)
@@ -399,7 +373,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         # the given builders.
         self.command.trigger_try_jobs(['MOCK Try Linux', 'MOCK Try Win'])
         self.assertEqual(
-            self.tool.executive.calls,
+            self.command.git_cl.calls,
             [['git', 'cl', 'try', '-m', 'tryserver.blink',
               '-b', 'MOCK Try Linux', '-b', 'MOCK Try Win']])
         self.assertLog([

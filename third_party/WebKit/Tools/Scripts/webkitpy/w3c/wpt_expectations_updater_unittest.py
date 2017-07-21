@@ -9,6 +9,7 @@ from webkitpy.common.host_mock import MockHost
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.buildbot_mock import MockBuildBot
 from webkitpy.common.net.git_cl import TryJobStatus
+from webkitpy.common.net.git_cl_mock import MockGitCL
 from webkitpy.common.net.layout_test_results import LayoutTestResult, LayoutTestResults
 from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.layout_tests.builder_list import BuilderList
@@ -89,14 +90,14 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
         # Set up fake try job results.
         updater = WPTExpectationsUpdater(host)
-        updater.get_latest_try_jobs = lambda: {
+        updater.git_cl = MockGitCL(updater.host, {
             Build('MOCK Try Mac10.10', 333): TryJobStatus('COMPLETED', 'FAILURE'),
             Build('MOCK Try Mac10.11', 111): TryJobStatus('COMPLETED', 'SUCCESS'),
             Build('MOCK Try Trusty', 222): TryJobStatus('COMPLETED', 'SUCCESS'),
             Build('MOCK Try Precise', 333): TryJobStatus('COMPLETED', 'SUCCESS'),
             Build('MOCK Try Win10', 444): TryJobStatus('COMPLETED', 'SUCCESS'),
             Build('MOCK Try Win7', 555): TryJobStatus('COMPLETED', 'SUCCESS'),
-        }
+        })
 
         # Set up failing results for one try bot. It shouldn't matter what
         # results are for the other builders since we shouldn't need to even
@@ -567,16 +568,14 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         self.assertEqual(results, results_copy)
 
     def test_run_no_issue_number(self):
-        # TODO(qyearsley): For testing: Consider making a MockGitCL class
-        # and use that class to set fake return values when using git cl.
         updater = WPTExpectationsUpdater(self.mock_host())
-        updater.get_issue_number = lambda: 'None'
+        updater.git_cl = MockGitCL(updater.host, issue_number='None')
         self.assertEqual(1, updater.run(args=[]))
         self.assertLog(['ERROR: No issue on current branch.\n'])
 
     def test_run_no_try_results(self):
         updater = WPTExpectationsUpdater(self.mock_host())
-        updater.get_latest_try_jobs = lambda: []
+        updater.git_cl = MockGitCL(updater.host, {})
         self.assertEqual(1, updater.run(args=[]))
         self.assertLog(['ERROR: No try job information was collected.\n'])
 
