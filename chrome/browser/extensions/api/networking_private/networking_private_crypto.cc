@@ -92,9 +92,10 @@ bool VerifyCredentialsAtTime(
   cast_crypto::CastDeviceCertPolicy unused_policy;
 
   std::unique_ptr<cast_crypto::CertVerificationContext> verification_context;
-  if (!cast_crypto::VerifyDeviceCert(certs, time, &verification_context,
-                                     &unused_policy, nullptr,
-                                     cast_crypto::CRLPolicy::CRL_OPTIONAL)) {
+  if (cast_crypto::CastCertError::OK !=
+      cast_crypto::VerifyDeviceCert(certs, time, &verification_context,
+                                    &unused_policy, nullptr,
+                                    cast_crypto::CRLPolicy::CRL_OPTIONAL)) {
     LOG(ERROR) << kErrorPrefix << "Failed verifying cast device cert";
     return false;
   }

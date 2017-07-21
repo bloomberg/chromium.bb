@@ -73,7 +73,7 @@ TEST_F(CastAuthUtilTest, VerifyBadCA) {
   MangleString(auth_response.mutable_intermediate_certificate(0));
   AuthResult result = VerifyCredentials(auth_response, signed_data);
   EXPECT_FALSE(result.success());
-  EXPECT_EQ(AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA, result.error_type);
+  EXPECT_EQ(AuthResult::ERROR_CERT_PARSING_FAILED, result.error_type);
 }
 
 TEST_F(CastAuthUtilTest, VerifyBadClientAuthCert) {
@@ -83,7 +83,7 @@ TEST_F(CastAuthUtilTest, VerifyBadClientAuthCert) {
   AuthResult result = VerifyCredentials(auth_response, signed_data);
   EXPECT_FALSE(result.success());
   // TODO(eroman): Not quite right of an error.
-  EXPECT_EQ(AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA, result.error_type);
+  EXPECT_EQ(AuthResult::ERROR_CERT_PARSING_FAILED, result.error_type);
 }
 
 TEST_F(CastAuthUtilTest, VerifyBadSignature) {

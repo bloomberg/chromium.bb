@@ -38,6 +38,27 @@ enum class CRLPolicy {
   CRL_REQUIRED,
 };
 
+enum class CastCertError {
+  OK,
+  // Certificates were not provided for verification.
+  ERR_CERTS_MISSING,
+  // The certificates provided could not be parsed.
+  ERR_CERTS_PARSE,
+  // Key usage is missing or is not set to Digital Signature.
+  // This error could also be thrown if the CN is missing.
+  ERR_CERTS_RESTRICTIONS,
+  // The current date is before the notBefore date or after the notAfter date.
+  ERR_CERTS_DATE_INVALID,
+  // The certificate failed to chain to a trusted root.
+  ERR_CERTS_VERIFY_GENERIC,
+  // The CRL is missing or failed to verify.
+  ERR_CRL_INVALID,
+  // One of the certificates in the chain is revoked.
+  ERR_CERTS_REVOKED,
+  // An internal coding error.
+  ERR_UNEXPECTED,
+};
+
 // An object of this type is returned by the VerifyDeviceCert function, and can
 // be used for additional certificate-related operations, using the verified
 // certificate.
@@ -84,27 +105,29 @@ class CertVerificationContext {
 //
 // Outputs:
 //
-// Returns true on success, false on failure. On success the output
-// parameters are filled with more details:
+// Returns CastCertError::OK on success. Otherwise, the corresponding
+// CastCertError. On success, the output parameters are filled with more
+// details:
 //
 //   * |context| is filled with an object that can be used to verify signatures
 //     using the device certificate's public key, as well as to extract other
 //     properties from the device certificate (Common Name).
 //   * |policy| is filled with an indication of the device certificate's policy
 //     (i.e. is it for audio-only devices or is it unrestricted?)
-bool VerifyDeviceCert(const std::vector<std::string>& certs,
-                      const base::Time& time,
-                      std::unique_ptr<CertVerificationContext>* context,
-                      CastDeviceCertPolicy* policy,
-                      const CastCRL* crl,
-                      CRLPolicy crl_policy) WARN_UNUSED_RESULT;
+CastCertError VerifyDeviceCert(
+    const std::vector<std::string>& certs,
+    const base::Time& time,
+    std::unique_ptr<CertVerificationContext>* context,
+    CastDeviceCertPolicy* policy,
+    const CastCRL* crl,
+    CRLPolicy crl_policy) WARN_UNUSED_RESULT;
 
 // This is an overloaded version of VerifyDeviceCert that allows
 // the input of a custom TrustStore.
 //
 // For production use pass |trust_store| as nullptr to use the production trust
 // store.
-bool VerifyDeviceCertUsingCustomTrustStore(
+CastCertError VerifyDeviceCertUsingCustomTrustStore(
     const std::vector<std::string>& certs,
     const base::Time& time,
     std::unique_ptr<CertVerificationContext>* context,

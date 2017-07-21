@@ -136,6 +136,12 @@ enum CertVerificationStatus {
   CERT_STATUS_INVALID_CRL,
   CERT_STATUS_VERIFICATION_FAILED,
   CERT_STATUS_REVOKED,
+  CERT_STATUS_MISSING_CRL,
+  CERT_STATUS_PARSE_FAILED,
+  CERT_STATUS_DATE_INVALID,
+  CERT_STATUS_RESTRICTIONS_FAILED,
+  CERT_STATUS_MISSING_CERTS,
+  CERT_STATUS_UNEXPECTED_FAILED,
   CERT_STATUS_COUNT,
 };
 
@@ -157,6 +163,56 @@ void RecordCertificateEvent(CertVerificationStatus event) {
 // Record nonce verification histogram events.
 void RecordNonceEvent(NonceVerificationStatus event) {
   UMA_HISTOGRAM_ENUMERATION("Cast.Channel.Nonce", event, NONCE_COUNT);
+}
+
+// Maps CastCertError to AuthResult.
+// If crl_required is set to false, all revocation related errors are ignored.
+AuthResult MapToAuthResult(cast_certificate::CastCertError error,
+                           bool crl_required) {
+  switch (error) {
+    case cast_certificate::CastCertError::ERR_CERTS_MISSING:
+      RecordCertificateEvent(CERT_STATUS_MISSING_CERTS);
+      return AuthResult("Failed to locate certificates.",
+                        AuthResult::ERROR_PEER_CERT_EMPTY);
+    case cast_certificate::CastCertError::ERR_CERTS_PARSE:
+      RecordCertificateEvent(CERT_STATUS_PARSE_FAILED);
+      return AuthResult("Failed to parse certificates.",
+                        AuthResult::ERROR_CERT_PARSING_FAILED);
+    case cast_certificate::CastCertError::ERR_CERTS_DATE_INVALID:
+      RecordCertificateEvent(CERT_STATUS_DATE_INVALID);
+      return AuthResult("Failed date validity check.",
+                        AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA);
+    case cast_certificate::CastCertError::ERR_CERTS_VERIFY_GENERIC:
+      RecordCertificateEvent(CERT_STATUS_VERIFICATION_FAILED);
+      return AuthResult("Failed with a generic certificate verification error.",
+                        AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA);
+    case cast_certificate::CastCertError::ERR_CERTS_RESTRICTIONS:
+      RecordCertificateEvent(CERT_STATUS_RESTRICTIONS_FAILED);
+      return AuthResult("Failed certificate restrictions.",
+                        AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA);
+    case cast_certificate::CastCertError::ERR_CRL_INVALID:
+      // Histogram events are recorded during CRL verification.
+      // This error is only encountered if |crl_required| is true.
+      DCHECK(crl_required);
+      return AuthResult("Failed to provide a valid CRL.",
+                        AuthResult::ERROR_CRL_INVALID);
+    case cast_certificate::CastCertError::ERR_CERTS_REVOKED:
+      RecordCertificateEvent(CERT_STATUS_REVOKED);
+      // Revocation check is the last step of Cast certificate verification.
+      // If this error is encountered, the rest of certificate verification has
+      // succeeded.
+      if (!crl_required)
+        return AuthResult();
+      return AuthResult("Failed certificate revocation check.",
+                        AuthResult::ERROR_CERT_REVOKED);
+    case cast_certificate::CastCertError::ERR_UNEXPECTED:
+      RecordCertificateEvent(CERT_STATUS_UNEXPECTED_FAILED);
+      return AuthResult("Failed verifying cast device certificate.",
+                        AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA);
+    case cast_certificate::CastCertError::OK:
+      return AuthResult();
+  }
+  return AuthResult();
 }
 
 }  // namespace
@@ -304,48 +360,30 @@ AuthResult VerifyCredentialsImpl(const AuthResponse& response,
                     response.intermediate_certificate().end());
 
   // Parse the CRL.
-  std::unique_ptr<cast_crypto::CastCRL> crl =
-      cast_crypto::ParseAndVerifyCRLUsingCustomTrustStore(
-          response.crl(), verification_time, crl_trust_store);
-  if (!crl) {
-    // CRL is invalid.
-    RecordCertificateEvent(CERT_STATUS_INVALID_CRL);
-    if (crl_policy == cast_crypto::CRLPolicy::CRL_REQUIRED) {
-      return AuthResult("Failed verifying Cast CRL.",
-                        AuthResult::ERROR_CRL_INVALID);
+  std::unique_ptr<cast_crypto::CastCRL> crl;
+  if (response.crl().empty()) {
+    RecordCertificateEvent(CERT_STATUS_MISSING_CRL);
+  } else {
+    crl = cast_crypto::ParseAndVerifyCRLUsingCustomTrustStore(
+        response.crl(), verification_time, crl_trust_store);
+    if (!crl) {
+      RecordCertificateEvent(CERT_STATUS_INVALID_CRL);
     }
   }
 
+  // Perform certificate verification.
   cast_crypto::CastDeviceCertPolicy device_policy;
-  bool verification_success =
+  cast_crypto::CastCertError verify_result =
       cast_crypto::VerifyDeviceCertUsingCustomTrustStore(
           cert_chain, verification_time, &verification_context, &device_policy,
           crl.get(), crl_policy, cast_trust_store);
-  if (!verification_success) {
-    // TODO(ryanchung): Once this feature is completely rolled-out, remove the
-    // reverification step and use error reporting to get verification errors
-    // for metrics.
-    bool verification_no_crl_success =
-        cast_crypto::VerifyDeviceCertUsingCustomTrustStore(
-            cert_chain, verification_time, &verification_context,
-            &device_policy, nullptr, cast_crypto::CRLPolicy::CRL_OPTIONAL,
-            cast_trust_store);
-    if (!verification_no_crl_success) {
-      // TODO(eroman): The error information was lost; this error is ambiguous.
-      RecordCertificateEvent(CERT_STATUS_VERIFICATION_FAILED);
-      return AuthResult("Failed verifying cast device certificate",
-                        AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA);
-    }
-    if (crl) {
-      // If CRL was not present, it should've been recorded as such.
-      RecordCertificateEvent(CERT_STATUS_REVOKED);
-    }
-    if (crl_policy == cast_crypto::CRLPolicy::CRL_REQUIRED) {
-      // Device is revoked.
-      return AuthResult("Failed certificate revocation check.",
-                        AuthResult::ERROR_CERT_REVOKED);
-    }
-  }
+
+  // Handle and report errors.
+  AuthResult result = MapToAuthResult(
+      verify_result, crl_policy == cast_crypto::CRLPolicy::CRL_REQUIRED);
+  if (!result.success())
+    return result;
+
   // The certificate is verified at this point.
   RecordCertificateEvent(CERT_STATUS_OK);
   if (!verification_context->VerifySignatureOverData(response.signature(),
