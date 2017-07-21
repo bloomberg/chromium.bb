@@ -67,8 +67,8 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
     factory_binding_ =
         base::MakeUnique<mojo::Binding<video_capture::mojom::DeviceFactory>>(
             &mock_device_factory_, mojo::MakeRequest(&device_factory_));
-    launcher_ =
-        base::MakeUnique<ServiceVideoCaptureDeviceLauncher>(&device_factory_);
+    launcher_ = base::MakeUnique<ServiceVideoCaptureDeviceLauncher>(
+        &device_factory_, base::BindOnce(&base::DoNothing));
   }
 
   void TearDown() override {}

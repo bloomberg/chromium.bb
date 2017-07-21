@@ -45,7 +45,9 @@ ServiceVideoCaptureProvider::ServiceVideoCaptureProvider()
 ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
     std::unique_ptr<ServiceConnector> service_connector)
     : service_connector_(std::move(service_connector)),
-      has_created_device_launcher_(false) {
+      usage_count_(0),
+      has_created_device_launcher_(false),
+      weak_ptr_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -54,28 +56,30 @@ ServiceVideoCaptureProvider::~ServiceVideoCaptureProvider() {
   UninitializeInternal(ReasonForUninitialize::kShutdown);
 }
 
-void ServiceVideoCaptureProvider::Uninitialize() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  UninitializeInternal(ReasonForUninitialize::kClientRequest);
-}
-
 void ServiceVideoCaptureProvider::GetDeviceInfosAsync(
     GetDeviceInfosCallback result_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  IncreaseUsageCount();
   LazyConnectToService();
   // Use a ScopedCallbackRunner to make sure that |result_callback| gets
   // invoked with an empty result in case that the service drops the request.
   device_factory_->GetDeviceInfos(media::ScopedCallbackRunner(
-      std::move(result_callback),
+      base::BindOnce(&ServiceVideoCaptureProvider::OnDeviceInfosReceived,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(result_callback)),
       std::vector<media::VideoCaptureDeviceInfo>()));
 }
 
 std::unique_ptr<VideoCaptureDeviceLauncher>
 ServiceVideoCaptureProvider::CreateDeviceLauncher() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  IncreaseUsageCount();
   LazyConnectToService();
   has_created_device_launcher_ = true;
-  return base::MakeUnique<ServiceVideoCaptureDeviceLauncher>(&device_factory_);
+  return base::MakeUnique<ServiceVideoCaptureDeviceLauncher>(
+      &device_factory_,
+      base::BindOnce(&ServiceVideoCaptureProvider::DecreaseUsageCount,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ServiceVideoCaptureProvider::LazyConnectToService() {
@@ -106,6 +110,14 @@ void ServiceVideoCaptureProvider::LazyConnectToService() {
                  base::Unretained(this)));
 }
 
+void ServiceVideoCaptureProvider::OnDeviceInfosReceived(
+    GetDeviceInfosCallback result_callback,
+    const std::vector<media::VideoCaptureDeviceInfo>& infos) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::ResetAndReturn(&result_callback).Run(infos);
+  DecreaseUsageCount();
+}
+
 void ServiceVideoCaptureProvider::OnLostConnectionToDeviceFactory() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This may indicate that the video capture service has crashed. Uninitialize
@@ -114,8 +126,22 @@ void ServiceVideoCaptureProvider::OnLostConnectionToDeviceFactory() {
   UninitializeInternal(ReasonForUninitialize::kConnectionLost);
 }
 
+void ServiceVideoCaptureProvider::IncreaseUsageCount() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  usage_count_++;
+}
+
+void ServiceVideoCaptureProvider::DecreaseUsageCount() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  usage_count_--;
+  DCHECK_GE(usage_count_, 0);
+  if (usage_count_ == 0)
+    UninitializeInternal(ReasonForUninitialize::kUnused);
+}
+
 void ServiceVideoCaptureProvider::UninitializeInternal(
     ReasonForUninitialize reason) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!device_factory_.is_bound()) {
     return;
   }
@@ -123,7 +149,7 @@ void ServiceVideoCaptureProvider::UninitializeInternal(
                                               time_of_last_connect_);
   switch (reason) {
     case ReasonForUninitialize::kShutdown:
-    case ReasonForUninitialize::kClientRequest:
+    case ReasonForUninitialize::kUnused:
       if (has_created_device_launcher_) {
         video_capture::uma::LogVideoCaptureServiceEvent(
             video_capture::uma::

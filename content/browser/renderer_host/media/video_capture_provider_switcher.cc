@@ -69,11 +69,6 @@ VideoCaptureProviderSwitcher::VideoCaptureProviderSwitcher(
 
 VideoCaptureProviderSwitcher::~VideoCaptureProviderSwitcher() = default;
 
-void VideoCaptureProviderSwitcher::Uninitialize() {
-  media_device_capture_provider_->Uninitialize();
-  other_types_capture_provider_->Uninitialize();
-}
-
 void VideoCaptureProviderSwitcher::GetDeviceInfosAsync(
     GetDeviceInfosCallback result_callback) {
   media_device_capture_provider_->GetDeviceInfosAsync(

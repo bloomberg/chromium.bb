@@ -58,14 +58,17 @@ void ConcludeLaunchDeviceWithFailure(
 }  // anonymous namespace
 
 ServiceVideoCaptureDeviceLauncher::ServiceVideoCaptureDeviceLauncher(
-    video_capture::mojom::DeviceFactoryPtr* device_factory)
+    video_capture::mojom::DeviceFactoryPtr* device_factory,
+    base::OnceClosure destruction_cb)
     : device_factory_(device_factory),
+      destruction_cb_(std::move(destruction_cb)),
       state_(State::READY_TO_LAUNCH),
       callbacks_(nullptr) {}
 
 ServiceVideoCaptureDeviceLauncher::~ServiceVideoCaptureDeviceLauncher() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(state_ == State::READY_TO_LAUNCH);
+  base::ResetAndReturn(&destruction_cb_).Run();
 }
 
 void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(

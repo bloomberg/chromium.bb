@@ -13,6 +13,9 @@
 namespace content {
 
 // Implementation of VideoCaptureProvider that uses the "video_capture" service.
+// Connects to the service lazily on demand and disconnects from the service as
+// soon as all previously handed out VideoCaptureDeviceLauncher instances have
+// been released and no more answers to GetDeviceInfosAsync() calls are pending.
 class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
  public:
   class ServiceConnector {
@@ -31,19 +34,19 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
       std::unique_ptr<ServiceConnector> service_connector);
   ~ServiceVideoCaptureProvider() override;
 
-  void Uninitialize() override;
+  // VideoCaptureProvider implementation.
   void GetDeviceInfosAsync(GetDeviceInfosCallback result_callback) override;
   std::unique_ptr<VideoCaptureDeviceLauncher> CreateDeviceLauncher() override;
 
  private:
-  enum class ReasonForUninitialize {
-    kShutdown,
-    kClientRequest,
-    kConnectionLost
-  };
+  enum class ReasonForUninitialize { kShutdown, kUnused, kConnectionLost };
 
   void LazyConnectToService();
+  void OnDeviceInfosReceived(GetDeviceInfosCallback result_callback,
+                             const std::vector<media::VideoCaptureDeviceInfo>&);
   void OnLostConnectionToDeviceFactory();
+  void IncreaseUsageCount();
+  void DecreaseUsageCount();
   void UninitializeInternal(ReasonForUninitialize reason);
 
   std::unique_ptr<ServiceConnector> service_connector_;
@@ -51,11 +54,15 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
   // service-side binding for |device_factory_|.
   video_capture::mojom::DeviceFactoryProviderPtr device_factory_provider_;
   video_capture::mojom::DeviceFactoryPtr device_factory_;
+  // Used for automatically uninitializing when no longer in use.
+  int usage_count_;
   SEQUENCE_CHECKER(sequence_checker_);
 
   bool has_created_device_launcher_;
   base::TimeTicks time_of_last_connect_;
   base::TimeTicks time_of_last_uninitialize_;
+
+  base::WeakPtrFactory<ServiceVideoCaptureProvider> weak_ptr_factory_;
 };
 
 }  // namespace content

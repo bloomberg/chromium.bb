@@ -77,8 +77,6 @@ class CONTENT_EXPORT VideoCaptureProvider {
 
   virtual ~VideoCaptureProvider() {}
 
-  virtual void Uninitialize() = 0;
-
   // The passed-in |result_callback| must guarantee that the called
   // instance stays alive until |result_callback| is invoked.
   virtual void GetDeviceInfosAsync(GetDeviceInfosCallback result_callback) = 0;
