@@ -49,6 +49,7 @@ TEST_P(PaintInvalidationTest, RecalcOverflowInvalidatesBackground) {
       "    margin: 0px;"
       "  }"
       "  #container {"
+      "    will-change: transform;"
       "    width: 100%;"
       "    height: 100%;"
       "  }"

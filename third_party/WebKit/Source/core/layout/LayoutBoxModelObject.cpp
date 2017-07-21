@@ -88,28 +88,6 @@ LayoutBoxModelObject* FindFirstStickyBetween(LayoutObject* from,
 }
 }  // namespace
 
-class FloatStateForStyleChange {
- public:
-  static void SetWasFloating(LayoutBoxModelObject* box_model_object,
-                             bool was_floating) {
-    was_floating_ = was_floating;
-    box_model_object_ = box_model_object;
-  }
-
-  static bool WasFloating(LayoutBoxModelObject* box_model_object) {
-    DCHECK_EQ(box_model_object, box_model_object_);
-    return was_floating_;
-  }
-
- private:
-  // Used to store state between styleWillChange and styleDidChange
-  static bool was_floating_;
-  static LayoutBoxModelObject* box_model_object_;
-};
-
-bool FloatStateForStyleChange::was_floating_ = false;
-LayoutBoxModelObject* FloatStateForStyleChange::box_model_object_ = nullptr;
-
 // The HashMap for storing continuation pointers.
 // The continuation chain is a singly linked list. As such, the HashMap's value
 // is the next pointer associated with the key.
@@ -284,8 +262,6 @@ void LayoutBoxModelObject::StyleWillChange(StyleDifference diff,
         .InvalidatePaintIncludingNonCompositingDescendants();
   }
 
-  FloatStateForStyleChange::SetWasFloating(this, IsFloating());
-
   if (HasLayer() && diff.CssClipChanged())
     Layer()->ClearClipRects();
 
@@ -298,8 +274,6 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
   bool had_transform_related_property = HasTransformRelatedProperty();
   bool had_layer = HasLayer();
   bool layer_was_self_painting = had_layer && Layer()->IsSelfPaintingLayer();
-  bool was_floating_before_style_changed =
-      FloatStateForStyleChange::WasFloating(this);
   bool was_horizontal_writing_mode = IsHorizontalWritingMode();
 
   LayoutObject::StyleDidChange(diff, old_style);
@@ -329,14 +303,15 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
   PaintLayerType type = LayerTypeRequired();
   if (type != kNoPaintLayer) {
     if (!Layer()) {
-      if (was_floating_before_style_changed && IsFloating())
+      // In order to update this object properly, we need to lay it out again.
+      // However, if we have never laid it out, don't mark it for layout. If
+      // this is a new object, it may not yet have been inserted into the tree,
+      // and if we mark it for layout then, we risk upsetting the tree
+      // insertion machinery.
+      if (EverHadLayout())
         SetChildNeedsLayout();
+
       CreateLayerAfterStyleChange();
-      if (Parent() && !NeedsLayout()) {
-        Layer()->UpdateSize();
-        // FIXME: We should call a specialized versions of this function.
-        Layer()->UpdateLayerPositionsAfterLayout();
-      }
     }
   } else if (Layer() && Layer()->Parent()) {
     PaintLayer* parent_layer = Layer()->Parent();
@@ -348,7 +323,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     Layer()->UpdateClipPath(old_style, StyleRef());
     // Calls DestroyLayer() which clears the layer.
     Layer()->RemoveOnlyThisLayerAfterStyleChange();
-    if (was_floating_before_style_changed && IsFloating())
+    if (EverHadLayout())
       SetChildNeedsLayout();
     if (had_transform_related_property) {
       SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
