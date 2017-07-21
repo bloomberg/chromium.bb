@@ -15,6 +15,7 @@
 #include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "components/webdata/common/web_data_results.h"
 #include "components/webdata/common/web_data_service_base.h"
@@ -23,10 +24,6 @@
 
 class WebDataServiceConsumer;
 class WebDataRequestManager;
-
-namespace base {
-class SequencedTaskRunner;
-}
 
 //////////////////////////////////////////////////////////////////////////////
 //
