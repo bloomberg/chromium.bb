@@ -9,11 +9,14 @@
 #include "ash/login/ui/lock_window.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/chromeos_switches.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
@@ -26,6 +29,13 @@ views::View* BuildContentsView(LoginDataDispatcher* data_dispatcher) {
     return new LockDebugView(data_dispatcher);
   }
   return new LockContentsView(data_dispatcher);
+}
+
+ui::Layer* GetWallpaperLayerForWindow(aura::Window* window) {
+  return RootWindowController::ForWindow(window)
+      ->wallpaper_widget_controller()
+      ->widget()
+      ->GetLayer();
 }
 
 // Global lock screen instance. There can only ever be on lock screen at a
@@ -67,22 +77,38 @@ void LockScreen::Show() {
   window->set_data_dispatcher(std::move(data_dispatcher));
   window->Show();
 
+  for (aura::Window* window : Shell::GetAllRootWindows()) {
+    ui::Layer* layer = GetWallpaperLayerForWindow(window);
+    instance_->initial_blur_[layer] = layer->layer_blur();
+  }
   instance_->ToggleBlur();
 }
 
 void LockScreen::Destroy() {
   CHECK_EQ(instance_, this);
+
+  for (aura::Window* window : Shell::GetAllRootWindows()) {
+    ui::Layer* layer = GetWallpaperLayerForWindow(window);
+    auto it = initial_blur_.find(layer);
+    if (it != initial_blur_.end())
+      layer->SetLayerBlur(it->second);
+  }
   window_->Close();
   delete instance_;
   instance_ = nullptr;
 }
 
 void LockScreen::ToggleBlur() {
-  if (instance_->window_->GetLayer()->background_blur() == 0) {
-    // TODO(jdufault): Use correct blur amount.
-    instance_->window_->GetLayer()->SetBackgroundBlur(20);
-  } else {
-    instance_->window_->GetLayer()->SetBackgroundBlur(0);
+  // TODO(jdufault): Use correct blur amount.
+  float target_blur = 20.0f;
+
+  for (aura::Window* window : Shell::GetAllRootWindows()) {
+    ui::Layer* layer = GetWallpaperLayerForWindow(window);
+    if (layer->layer_blur() == target_blur) {
+      layer->SetLayerBlur(0.0f);
+    } else {
+      layer->SetLayerBlur(target_blur);
+    }
   }
 }
 

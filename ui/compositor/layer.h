@@ -198,6 +198,10 @@ class COMPOSITOR_EXPORT Layer
   float background_blur() const { return background_blur_sigma_; }
   void SetBackgroundBlur(float blur_sigma);
 
+  // Blur pixels of this layer by 3 * this amount.
+  float layer_blur() const { return layer_blur_sigma_; }
+  void SetLayerBlur(float blur_sigma);
+
   // Saturate all pixels of this layer by this amount.
   // This effect will get "combined" with the inverted,
   // brightness and grayscale setting.
@@ -511,6 +515,7 @@ class COMPOSITOR_EXPORT Layer
   float layer_brightness_;
   float layer_grayscale_;
   bool layer_inverted_;
+  float layer_blur_sigma_;
 
   // The global color temperature value (0.0f ~ 1.0f). Used to calculate the
   // layer blue and green colors scales. 0.0f is least warm (default), and 1.0f

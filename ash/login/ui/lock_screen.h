@@ -5,10 +5,16 @@
 #ifndef ASH_LOGIN_UI_LOCK_SCREEN_H_
 #define ASH_LOGIN_UI_LOCK_SCREEN_H_
 
+#include <unordered_map>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
 
 class AccountId;
+
+namespace ui {
+class Layer;
+}
 
 namespace ash {
 
@@ -39,6 +45,9 @@ class LockScreen {
 
   // Unowned pointer to the window which hosts the lock screen.
   LockWindow* window_ = nullptr;
+
+  // The wallpaper bluriness before entering lock_screen.
+  std::unordered_map<ui::Layer*, float> initial_blur_;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreen);
 };
