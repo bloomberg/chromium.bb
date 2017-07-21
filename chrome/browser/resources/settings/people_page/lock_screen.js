@@ -14,6 +14,18 @@
  * </settings-lock-screen>
  */
 
+/**
+ * Possible values of the proximity threshould displayed to the user.
+ * This should be kept in sync with the enum defined here:
+ * components/proximity_auth/proximity_monitor_impl.cc
+ */
+settings.EasyUnlockProximityThreshold = {
+  VERY_CLOSE: 0,
+  CLOSE: 1,
+  FAR: 2,
+  VERY_FAR: 3,
+};
+
 Polymer({
   is: 'settings-lock-screen',
 
@@ -104,6 +116,36 @@ Polymer({
       value: function() {
         return loadTimeData.getBoolean('easyUnlockEnabled');
       },
+    },
+
+    /**
+     * Returns the proximity threshold mapping to be displayed in the
+     * threshold selector dropdown menu.
+     */
+    easyUnlockProximityThresholdMapping_: {
+      type: Array,
+      value: function() {
+        return [
+          {
+            value: settings.EasyUnlockProximityThreshold.VERY_CLOSE,
+            name:
+                loadTimeData.getString('easyUnlockProximityThresholdVeryClose')
+          },
+          {
+            value: settings.EasyUnlockProximityThreshold.CLOSE,
+            name: loadTimeData.getString('easyUnlockProximityThresholdClose')
+          },
+          {
+            value: settings.EasyUnlockProximityThreshold.FAR,
+            name: loadTimeData.getString('easyUnlockProximityThresholdFar')
+          },
+          {
+            value: settings.EasyUnlockProximityThreshold.VERY_FAR,
+            name: loadTimeData.getString('easyUnlockProximityThresholdVeryFar')
+          }
+        ];
+      },
+      readOnly: true,
     },
 
     /** @private */

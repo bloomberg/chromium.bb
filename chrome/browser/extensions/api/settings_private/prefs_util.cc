@@ -18,6 +18,7 @@
 #include "components/drive/drive_pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/proximity_auth/proximity_auth_pref_names.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/search_engines/default_search_manager.h"
@@ -226,6 +227,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kEnableQuickUnlockFingerprint] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[proximity_auth::prefs::kEasyUnlockProximityThreshold] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
 
   // Accessibility.
   (*s_whitelist)[::prefs::kAccessibilitySpokenFeedbackEnabled] =

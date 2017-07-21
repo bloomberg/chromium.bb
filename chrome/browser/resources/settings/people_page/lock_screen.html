@@ -48,6 +48,10 @@
       #pinPasswordSecondaryActionDiv {
         margin: auto;
       }
+
+      .easy-unlock-nested-settings {
+        @apply(--settings-list-frame-padding);
+      }
     </style>
 
     <div>
@@ -72,7 +76,7 @@
                 </div>
               </paper-radio-button>
               <paper-radio-button name="pin+password"
-                  class="list-item underbar">
+                  class="list-item">
                 <div id="pinPasswordDiv" class="start">
                   $i18n{lockScreenPinOrPassword}
                 </div>
@@ -125,7 +129,7 @@
       </template>
 
       <template is="dom-if" if="[[easyUnlockAllowed_]]">
-        <div id="easyUnlock" class="settings-box two-line continuation">
+        <div id="easyUnlock" class="settings-box two-line">
           <div class="start">
             <div>$i18n{easyUnlockSectionTitle}</div>
             <div class="secondary">
@@ -151,6 +155,17 @@
             </paper-button>
           </template>
         </div>
+        <iron-collapse opened="[[easyUnlockEnabled_]]">
+          <div class="settings-box continuation easy-unlock-nested-settings">
+            <div class="start">
+              $i18n{easyUnlockProximityThresholdLabel}
+            </div>
+            <settings-dropdown-menu
+              pref="{{prefs.easy_unlock.proximity_threshold}}"
+              menu-options="[[easyUnlockProximityThresholdMapping_]]">
+            </settings-dropdown-menu>
+          </div>
+        </iron-collapse>
       </template>
 
       <template is="dom-if" if="[[showPasswordPromptDialog_]]" restamp>
