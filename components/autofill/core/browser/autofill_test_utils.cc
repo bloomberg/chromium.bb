@@ -334,7 +334,7 @@ void SetCreditCardInfo(CreditCard* credit_card,
 
 void DisableSystemServices(PrefService* prefs) {
   // Use a mock Keychain rather than the OS one to store credit card data.
-  OSCryptMocker::SetUpWithSingleton();
+  OSCryptMocker::SetUp();
 }
 
 void ReenableSystemServices() {

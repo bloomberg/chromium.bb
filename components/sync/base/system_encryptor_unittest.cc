@@ -22,7 +22,7 @@ class SystemEncryptorTest : public testing::Test {
 TEST_F(SystemEncryptorTest, EncryptDecrypt) {
   // SystemEncryptor ends up needing access to the keychain on OS X,
   // so use the mock keychain to prevent prompts.
-  ::OSCryptMocker::SetUpWithSingleton();
+  ::OSCryptMocker::SetUp();
   std::string ciphertext;
   EXPECT_TRUE(encryptor_.EncryptString(kPlaintext, &ciphertext));
   EXPECT_NE(kPlaintext, ciphertext);

@@ -310,7 +310,7 @@ class PersonalDataManagerTestBase {
 class PersonalDataManagerTest : public PersonalDataManagerTestBase,
                                 public testing::Test {
   void SetUp() override {
-    OSCryptMocker::SetUpWithSingleton();
+    OSCryptMocker::SetUp();
     prefs_ = test::PrefServiceForTesting();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath path = temp_dir_.GetPath().AppendASCII("TestWebDB");
@@ -356,7 +356,7 @@ class PersonalDataManagerTest : public PersonalDataManagerTestBase,
     account_tracker_.reset();
     signin_client_.reset();
 
-    test::DisableSystemServices(prefs_.get());
+    test::ReenableSystemServices();
     OSCryptMocker::TearDown();
   }
 };
@@ -4731,7 +4731,7 @@ class SaveImportedProfileTest
   ~SaveImportedProfileTest() override {}
 
   void SetUp() override {
-    OSCryptMocker::SetUpWithSingleton();
+    OSCryptMocker::SetUp();
     prefs_ = test::PrefServiceForTesting();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath path = temp_dir_.GetPath().AppendASCII("TestWebDB");

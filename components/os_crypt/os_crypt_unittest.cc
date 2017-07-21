@@ -26,7 +26,7 @@ namespace {
 
 class OSCryptTest : public testing::Test {
  public:
-  OSCryptTest() { OSCryptMocker::SetUpWithSingleton(); }
+  OSCryptTest() { OSCryptMocker::SetUp(); }
 
   ~OSCryptTest() override { OSCryptMocker::TearDown(); }
 
@@ -150,16 +150,7 @@ TEST_F(OSCryptTest, DecryptError) {
 
 class OSCryptConcurrencyTest : public testing::Test {
  public:
-  OSCryptConcurrencyTest() {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-    // Mock the key storage, but not the process of getting the passwords.
-    UseMockKeyStorageForTesting(
-        []() -> KeyStorageLinux* { return OSCryptMockerLinux::GetInstance(); },
-        nullptr);
-#else
-    OSCryptMocker::SetUpWithSingleton();
-#endif
-  }
+  OSCryptConcurrencyTest() { OSCryptMocker::SetUp(); }
 
   ~OSCryptConcurrencyTest() override { OSCryptMocker::TearDown(); };
 
