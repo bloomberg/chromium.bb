@@ -59,16 +59,26 @@ TEST_F(MetalayerToolTest, ViewOnlyCreatedWhenMetalayerIsSupported) {
   tool_->OnViewDestroyed();
 }
 
-// Verifies that enabling the tool triggers the metalayer in the delegate.
-// Invoking the callback passed to the delegate disables the tool.
-TEST_F(MetalayerToolTest, EnablingMetalayerCallsDelegateAndDisablesTool) {
-  // Showing a metalayer calls the palette delegate to show
-  // the metalayer and hides the palette.
+// Verifies that enabling/disabling the metalayer tool invokes the delegate.
+TEST_F(MetalayerToolTest, EnablingDisablingMetalayerCallsDelegate) {
+  // Enabling the metalayer tool calls the delegate to show the metalayer.
+  // It should also hide the palette.
   EXPECT_CALL(*palette_tool_delegate_.get(), HidePalette());
   tool_->OnEnable();
   EXPECT_EQ(1, test_palette_delegate()->show_metalayer_count());
+  EXPECT_EQ(0, test_palette_delegate()->hide_metalayer_count());
   testing::Mock::VerifyAndClearExpectations(palette_tool_delegate_.get());
 
+  // Enabling the metalayer tool calls the delegate to hide the metalayer.
+  tool_->OnDisable();
+  EXPECT_EQ(1, test_palette_delegate()->show_metalayer_count());
+  EXPECT_EQ(1, test_palette_delegate()->hide_metalayer_count());
+  testing::Mock::VerifyAndClearExpectations(palette_tool_delegate_.get());
+}
+
+// Verifies that invoking the callback passed to the delegate disables the tool.
+TEST_F(MetalayerToolTest, MetalayerCallbackDisablesPaletteTool) {
+  tool_->OnEnable();
   // Calling the associated callback (metalayer closed) will disable the tool.
   EXPECT_CALL(*palette_tool_delegate_.get(),
               DisableTool(PaletteToolId::METALAYER));
