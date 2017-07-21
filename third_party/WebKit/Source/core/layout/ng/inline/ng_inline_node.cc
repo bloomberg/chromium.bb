@@ -360,23 +360,28 @@ void NGInlineNode::PrepareLayout() {
   ShapeText();
 }
 
-NGOffsetMappingResult NGInlineNode::BuildOffsetMapping() const {
+const NGOffsetMappingResult& NGInlineNode::ComputeOffsetMappingIfNeeded() {
   DCHECK(!GetLayoutBlockFlow()->GetDocument().NeedsLayoutTreeUpdate());
 
-  // TODO(xiaochengh): BuildOffsetMapping() discards the NGInlineItems and
-  // text content built by |builder|, because they are already there in
-  // NGInlineNodeData. For efficiency, we should make |builder| not construct
-  // items and text content.
-  Vector<NGInlineItem> items;
-  NGInlineItemsBuilderForOffsetMapping builder(&items);
-  CollectInlinesInternal(GetLayoutBlockFlow(), &builder);
-  builder.ToString();
+  if (!Data().offset_mapping_) {
+    // TODO(xiaochengh): ComputeOffsetMappingIfNeeded() discards the
+    // NGInlineItems and text content built by |builder|, because they are
+    // already there in NGInlineNodeData. For efficiency, we should make
+    // |builder| not construct items and text content.
+    Vector<NGInlineItem> items;
+    NGInlineItemsBuilderForOffsetMapping builder(&items);
+    CollectInlinesInternal(GetLayoutBlockFlow(), &builder);
+    builder.ToString();
 
-  NGOffsetMappingBuilder& mapping_builder =
-      builder.GetConcatenatedOffsetMappingBuilder();
-  mapping_builder.Composite(builder.GetOffsetMappingBuilder());
+    NGOffsetMappingBuilder& mapping_builder =
+        builder.GetConcatenatedOffsetMappingBuilder();
+    mapping_builder.Composite(builder.GetOffsetMappingBuilder());
 
-  return mapping_builder.Build();
+    MutableData().offset_mapping_ =
+        WTF::MakeUnique<NGOffsetMappingResult>(mapping_builder.Build());
+  }
+
+  return *Data().offset_mapping_;
 }
 
 // Depth-first-scan of all LayoutInline and LayoutText nodes that make up this
