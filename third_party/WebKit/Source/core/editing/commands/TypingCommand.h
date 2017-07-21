@@ -101,6 +101,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
     composition_type_ = type;
   }
   void AdjustSelectionAfterIncrementalInsertion(LocalFrame*,
+                                                const size_t selection_start,
                                                 const size_t text_length);
 
   ETypingCommand CommandTypeOfOpenCommand() const { return command_type_; }
