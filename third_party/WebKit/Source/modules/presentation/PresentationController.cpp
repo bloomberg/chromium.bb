@@ -6,7 +6,9 @@
 
 #include <memory>
 #include "core/dom/Document.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "modules/presentation/PresentationConnection.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebString.h"
@@ -93,6 +95,7 @@ WebPresentationConnection* PresentationController::DidStartDefaultPresentation(
   if (!presentation_ || !presentation_->defaultRequest())
     return nullptr;
 
+  PresentationRequest::RecordStartOriginTypeAccess(*GetExecutionContext());
   return PresentationConnection::Take(this, presentation_info,
                                       presentation_->defaultRequest());
 }

@@ -531,6 +531,14 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
       return DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
           "requestMIDIAccess", "midi", M63);
 
+    case WebFeature::kPresentationRequestStartInsecureOrigin:
+    case WebFeature::kPresentationReceiverInsecureOrigin:
+      return String(
+          "Using the Presentation API on insecure origins is "
+          "deprecated and will be removed in M68. You should consider "
+          "switching your application to a secure origin, such as HTTPS. See "
+          "https://goo.gl/rStTGz for more details.");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return String();

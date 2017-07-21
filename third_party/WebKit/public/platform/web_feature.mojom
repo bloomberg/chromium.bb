@@ -1598,6 +1598,8 @@ enum WebFeature {
   kMediaSourceKeyframeTimeGreaterThanDependant = 2060,
   kMediaSourceMuxedSequenceMode = 2061,
   kPrepareModuleScript = 2062,
+  kPresentationRequestStartSecureOrigin = 2063,
+  kPresentationRequestStartInsecureOrigin = 2064,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

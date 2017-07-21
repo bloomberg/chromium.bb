@@ -12,6 +12,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/loader/MixedContentChecker.h"
@@ -119,8 +120,22 @@ bool PresentationRequest::HasPendingActivity() const {
                                        ScriptPromisePropertyBase::kPending;
 }
 
+// static
+void PresentationRequest::RecordStartOriginTypeAccess(
+    ExecutionContext& execution_context) {
+  if (execution_context.IsSecureContext()) {
+    UseCounter::Count(&execution_context,
+                      WebFeature::kPresentationRequestStartSecureOrigin);
+  } else {
+    Deprecation::CountDeprecation(
+        &execution_context,
+        WebFeature::kPresentationRequestStartInsecureOrigin);
+  }
+}
+
 ScriptPromise PresentationRequest::start(ScriptState* script_state) {
-  Settings* context_settings = GetSettings(GetExecutionContext());
+  ExecutionContext* execution_context = GetExecutionContext();
+  Settings* context_settings = GetSettings(execution_context);
   bool is_user_gesture_required =
       !context_settings ||
       context_settings->GetPresentationRequiresUserGesture();
@@ -134,7 +149,7 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state) {
             "PresentationRequest::start() requires user gesture."));
 
   WebPresentationClient* client =
-      PresentationController::ClientFromContext(GetExecutionContext());
+      PresentationController::ClientFromContext(execution_context);
   if (!client)
     return ScriptPromise::RejectWithDOMException(
         script_state,
@@ -142,6 +157,7 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state) {
             kInvalidStateError,
             "The PresentationRequest is no longer associated to a frame."));
 
+  RecordStartOriginTypeAccess(*execution_context);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   client->StartPresentation(
       urls_, WTF::MakeUnique<PresentationConnectionCallbacks>(resolver, this));
@@ -215,17 +231,17 @@ DEFINE_TRACE(PresentationRequest) {
 PresentationRequest::PresentationRequest(ExecutionContext* execution_context,
                                          const Vector<KURL>& urls)
     : ContextClient(execution_context), urls_(urls) {
-  RecordOriginTypeAccess(execution_context);
+  RecordConstructorOriginTypeAccess(*execution_context);
 }
 
-void PresentationRequest::RecordOriginTypeAccess(
-    ExecutionContext* execution_context) const {
-  DCHECK(execution_context);
-  if (execution_context->IsSecureContext()) {
-    UseCounter::Count(execution_context,
+// static
+void PresentationRequest::RecordConstructorOriginTypeAccess(
+    ExecutionContext& execution_context) {
+  if (execution_context.IsSecureContext()) {
+    UseCounter::Count(&execution_context,
                       WebFeature::kPresentationRequestSecureOrigin);
   } else {
-    UseCounter::Count(execution_context,
+    UseCounter::Count(&execution_context,
                       WebFeature::kPresentationRequestInsecureOrigin);
   }
 }
