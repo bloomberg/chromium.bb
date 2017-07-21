@@ -59,8 +59,9 @@ class SelectionPaintRange {
     LayoutObject* operator*() const;
 
    private:
-    const SelectionPaintRange* range_;
     LayoutObject* current_;
+    const LayoutObject* included_end_;
+    const LayoutObject* stop_;
   };
   Iterator begin() const { return Iterator(this); };
   Iterator end() const { return Iterator(nullptr); };
@@ -85,7 +86,6 @@ class SelectionPaintRange {
   int start_offset_ = -1;
   LayoutObject* end_layout_object_ = nullptr;
   int end_offset_ = -1;
-  LayoutObject* traverse_stop_ = nullptr;
 };
 
 class LayoutSelection final : public GarbageCollected<LayoutSelection> {

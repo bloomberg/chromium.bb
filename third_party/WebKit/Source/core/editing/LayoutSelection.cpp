@@ -42,9 +42,6 @@ SelectionPaintRange::SelectionPaintRange(LayoutObject* start_layout_object,
       end_offset_(end_offset) {
   DCHECK(start_layout_object_);
   DCHECK(end_layout_object_);
-  traverse_stop_ = end_layout_object_->ChildAt(end_offset);
-  if (!traverse_stop_)
-    traverse_stop_ = end_layout_object_->NextInPreOrderAfterChildren();
   if (start_layout_object_ != end_layout_object_)
     return;
   DCHECK_LT(start_offset_, end_offset_);
@@ -82,8 +79,12 @@ SelectionPaintRange::Iterator::Iterator(const SelectionPaintRange* range) {
     current_ = nullptr;
     return;
   }
-  range_ = range;
   current_ = range->StartLayoutObject();
+  included_end_ = range->EndLayoutObject();
+  stop_ = range->EndLayoutObject()->ChildAt(range->EndOffset());
+  if (stop_)
+    return;
+  stop_ = range->EndLayoutObject()->NextInPreOrderAfterChildren();
 }
 
 LayoutObject* SelectionPaintRange::Iterator::operator*() const {
@@ -93,10 +94,9 @@ LayoutObject* SelectionPaintRange::Iterator::operator*() const {
 
 SelectionPaintRange::Iterator& SelectionPaintRange::Iterator::operator++() {
   DCHECK(current_);
-  for (current_ = current_->NextInPreOrder();
-       current_ && current_ != range_->traverse_stop_;
+  for (current_ = current_->NextInPreOrder(); current_ && current_ != stop_;
        current_ = current_->NextInPreOrder()) {
-    if (current_->CanBeSelectionLeaf())
+    if (current_ == included_end_ || current_->CanBeSelectionLeaf())
       return *this;
   }
 
