@@ -1416,7 +1416,7 @@ void OutOfProcessInstance::PreviewDocumentLoadComplete() {
   preview_document_load_state_ = LOAD_STATE_COMPLETE;
 
   int dest_page_index = preview_pages_info_.front().second;
-  DCHECK_GE(dest_page_index, 0);
+  DCHECK_GT(dest_page_index, 0);
   DCHECK(preview_engine_);
   engine_->AppendPage(preview_engine_.get(), dest_page_index);
 
@@ -1624,16 +1624,17 @@ void OutOfProcessInstance::ProcessPreviewPageInfo(const std::string& url,
     return;
   }
 
+  // Print Preview JS will send the loadPreviewPage message for every page,
+  // including the first page in the print preview, which has already been
+  // loaded when handing the resetPrintPreviewMode message. Just ignore it.
+  if (dest_page_index == 0)
+    return;
+
   int src_page_index = ExtractPrintPreviewPageIndex(url);
   if (src_page_index < 0) {
     NOTREACHED();
     return;
   }
-
-  // Print Preview JS will call loadPreviewPage() for every page, including
-  // page 0. Just ignore it.
-  if (src_page_index == 0)
-    return;
 
   preview_pages_info_.push(std::make_pair(url, dest_page_index));
   LoadAvailablePreviewPage();
