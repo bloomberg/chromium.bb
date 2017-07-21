@@ -1014,14 +1014,7 @@ void DocumentThreadableLoader::DidTimeout(TimerBase* timer) {
   // is stopped. So, |m_client| is always non-nullptr here.
   DCHECK(client_);
 
-  // Using values from net/base/net_error_list.h ERR_TIMED_OUT, Same as existing
-  // FIXME above - this error should be coming from LocalFrameClient to be
-  // identifiable.
-  static const int kTimeoutError = -7;
-  ResourceError error("net", kTimeoutError, GetResource()->Url(), String());
-  error.SetIsTimeout(true);
-
-  DispatchDidFail(error);
+  DispatchDidFail(ResourceError::TimeoutError(GetResource()->Url()));
 }
 
 void DocumentThreadableLoader::LoadFallbackRequestForServiceWorker() {

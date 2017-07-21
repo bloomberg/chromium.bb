@@ -63,6 +63,7 @@ class PLATFORM_EXPORT ResourceError final {
       const String& localized_description);
 
   static ResourceError CacheMissError(const KURL&);
+  static ResourceError TimeoutError(const KURL&);
 
   ResourceError() = default;
 
@@ -94,8 +95,7 @@ class PLATFORM_EXPORT ResourceError final {
   }
   bool IsAccessCheck() const { return is_access_check_; }
 
-  void SetIsTimeout(bool is_timeout) { is_timeout_ = is_timeout; }
-  bool IsTimeout() const { return is_timeout_; }
+  bool IsTimeout() const;
   void SetStaleCopyInCache(bool stale_copy_in_cache) {
     stale_copy_in_cache_ = stale_copy_in_cache;
   }
@@ -130,7 +130,6 @@ class PLATFORM_EXPORT ResourceError final {
   String localized_description_;
   bool is_null_ = true;
   bool is_access_check_ = false;
-  bool is_timeout_ = false;
   bool stale_copy_in_cache_ = false;
   bool was_ignored_by_handler_ = false;
   bool should_collapse_initiator_ = false;
