@@ -32003,6 +32003,7 @@ from previous Chrome versions.
   <int value="8" label="Compositor"/>
   <int value="9" label="Idle"/>
   <int value="10" label="Test"/>
+  <int value="11" label="FrameLoadingControl"/>
 </enum>
 
 <enum name="RendererType">

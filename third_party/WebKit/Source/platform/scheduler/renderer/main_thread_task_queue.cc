@@ -36,6 +36,8 @@ const char* MainThreadTaskQueue::NameForQueueType(
       return "idle_tq";
     case MainThreadTaskQueue::QueueType::TEST:
       return "test_tq";
+    case MainThreadTaskQueue::QueueType::FRAME_LOADING_CONTROL:
+      return "frame_loading_control_tq";
     case MainThreadTaskQueue::QueueType::COUNT:
       NOTREACHED();
       return nullptr;
@@ -54,6 +56,7 @@ MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
       return QueueClass::NONE;
     case QueueType::DEFAULT_LOADING:
     case QueueType::FRAME_LOADING:
+    case QueueType::FRAME_LOADING_CONTROL:
       return QueueClass::LOADING;
     case QueueType::DEFAULT_TIMER:
     case QueueType::FRAME_TIMER:
@@ -82,6 +85,7 @@ MainThreadTaskQueue::MainThreadTaskQueue(
       can_be_blocked_(params.can_be_blocked),
       can_be_throttled_(params.can_be_throttled),
       can_be_suspended_(params.can_be_suspended),
+      used_for_control_tasks_(params.used_for_control_tasks),
       renderer_scheduler_(renderer_scheduler) {
   GetTaskQueueImpl()->SetOnTaskCompletedHandler(base::Bind(
       &MainThreadTaskQueue::OnTaskCompleted, base::Unretained(this)));

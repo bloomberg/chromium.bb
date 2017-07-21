@@ -47,6 +47,7 @@ class WebFrameSchedulerImpl : public WebFrameScheduler {
   void SetSuspended(bool frame_suspended) override;
   void SetCrossOrigin(bool cross_origin) override;
   RefPtr<WebTaskRunner> LoadingTaskRunner() override;
+  RefPtr<WebTaskRunner> LoadingControlTaskRunner() override;
   RefPtr<WebTaskRunner> TimerTaskRunner() override;
   RefPtr<WebTaskRunner> SuspendableTaskRunner() override;
   RefPtr<WebTaskRunner> UnthrottledTaskRunner() override;
@@ -93,15 +94,19 @@ class WebFrameSchedulerImpl : public WebFrameScheduler {
   base::WeakPtr<WebFrameSchedulerImpl> AsWeakPtr();
 
   scoped_refptr<TaskQueue> loading_task_queue_;
+  scoped_refptr<TaskQueue> loading_control_task_queue_;
   scoped_refptr<TaskQueue> timer_task_queue_;
   scoped_refptr<TaskQueue> unthrottled_task_queue_;
   scoped_refptr<TaskQueue> suspendable_task_queue_;
   scoped_refptr<TaskQueue> unthrottled_but_blockable_task_queue_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter> loading_queue_enabled_voter_;
+  std::unique_ptr<TaskQueue::QueueEnabledVoter>
+      loading_control_queue_enabled_voter_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter> timer_queue_enabled_voter_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter>
       suspendable_queue_enabled_voter_;
   RefPtr<WebTaskRunnerImpl> loading_web_task_runner_;
+  RefPtr<WebTaskRunnerImpl> loading_control_web_task_runner_;
   RefPtr<WebTaskRunnerImpl> timer_web_task_runner_;
   RefPtr<WebTaskRunnerImpl> unthrottled_web_task_runner_;
   RefPtr<WebTaskRunnerImpl> suspendable_web_task_runner_;

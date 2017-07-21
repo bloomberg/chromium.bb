@@ -37,6 +37,8 @@ enum class TaskType : unsigned {
   // This task source is used for features that trigger in response to network
   // activity.
   kNetworking,
+  // This task source is used for control messages between kNetworking tasks.
+  kNetworkingControl,
   // This task source is used to queue calls to history.back() and similar APIs.
   kHistoryTraversal,
 

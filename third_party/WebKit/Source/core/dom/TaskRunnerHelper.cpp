@@ -27,6 +27,9 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, LocalFrame* frame) {
     case TaskType::kNetworking:
       return frame ? frame->FrameScheduler()->LoadingTaskRunner()
                    : Platform::Current()->CurrentThread()->GetWebTaskRunner();
+    case TaskType::kNetworkingControl:
+      return frame ? frame->FrameScheduler()->LoadingControlTaskRunner()
+                   : Platform::Current()->CurrentThread()->GetWebTaskRunner();
     // Throttling following tasks may break existing web pages, so tentatively
     // these are unthrottled.
     // TODO(nhiroki): Throttle them again after we're convinced that it's safe
@@ -110,6 +113,7 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type,
     case TaskType::kDOMManipulation:
     case TaskType::kUserInteraction:
     case TaskType::kNetworking:
+    case TaskType::kNetworkingControl:
     case TaskType::kHistoryTraversal:
     case TaskType::kEmbed:
     case TaskType::kMediaElementEvent:

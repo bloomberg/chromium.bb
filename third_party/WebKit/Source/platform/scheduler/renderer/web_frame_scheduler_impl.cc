@@ -54,6 +54,11 @@ WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
     loading_task_queue_->SetBlameContext(nullptr);
   }
 
+  if (loading_control_task_queue_) {
+    loading_control_task_queue_->UnregisterTaskQueue();
+    loading_control_task_queue_->SetBlameContext(nullptr);
+  }
+
   if (timer_task_queue_) {
     RemoveTimerQueueFromBackgroundCPUTimeBudgetPool();
     timer_task_queue_->UnregisterTaskQueue();
@@ -155,6 +160,21 @@ RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::LoadingTaskRunner() {
     loading_web_task_runner_ = WebTaskRunnerImpl::Create(loading_task_queue_);
   }
   return loading_web_task_runner_;
+}
+
+RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::LoadingControlTaskRunner() {
+  DCHECK(parent_web_view_scheduler_);
+  if (!loading_control_web_task_runner_) {
+    loading_control_task_queue_ = renderer_scheduler_->NewLoadingTaskQueue(
+        MainThreadTaskQueue::QueueType::FRAME_LOADING_CONTROL);
+    loading_control_task_queue_->SetBlameContext(blame_context_);
+    loading_control_queue_enabled_voter_ =
+        loading_control_task_queue_->CreateQueueEnabledVoter();
+    loading_control_queue_enabled_voter_->SetQueueEnabled(!frame_suspended_);
+    loading_control_web_task_runner_ =
+        WebTaskRunnerImpl::Create(loading_control_task_queue_);
+  }
+  return loading_control_web_task_runner_;
 }
 
 RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::TimerTaskRunner() {
@@ -296,6 +316,11 @@ void WebFrameSchedulerImpl::AsValueInto(
     state->SetString("loading_task_queue",
                      trace_helper::PointerToString(loading_task_queue_.get()));
   }
+  if (loading_control_task_queue_) {
+    state->SetString(
+        "loading_control_task_queue",
+        trace_helper::PointerToString(loading_control_task_queue_.get()));
+  }
   if (timer_task_queue_)
     state->SetString("timer_task_queue",
                      trace_helper::PointerToString(timer_task_queue_.get()));
@@ -342,6 +367,8 @@ void WebFrameSchedulerImpl::SetSuspended(bool frame_suspended) {
   frame_suspended_ = frame_suspended;
   if (loading_queue_enabled_voter_)
     loading_queue_enabled_voter_->SetQueueEnabled(!frame_suspended);
+  if (loading_control_queue_enabled_voter_)
+    loading_control_queue_enabled_voter_->SetQueueEnabled(!frame_suspended);
   if (timer_queue_enabled_voter_)
     timer_queue_enabled_voter_->SetQueueEnabled(!frame_suspended);
   if (suspendable_queue_enabled_voter_)
