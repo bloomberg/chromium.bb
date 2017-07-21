@@ -53,8 +53,6 @@ void TestPaletteDelegate::ShowMetalayer(const base::Closure& closed) {
   metalayer_closed_ = closed;
 }
 
-void TestPaletteDelegate::HideMetalayer() {
-  ++hide_metalayer_count_;
-}
+void TestPaletteDelegate::HideMetalayer() {}
 
 }  // namespace ash
