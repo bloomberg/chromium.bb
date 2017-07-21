@@ -89,11 +89,11 @@ define('media_router_bindings', [
       'icon_url': route.iconUrl,
       'is_local': route.isLocal,
       'custom_controller_path': route.customControllerPath,
+      'for_display': route.forDisplay,
+      'is_incognito': route.offTheRecord,
+      'is_offscreen_presentation': route.isOffscreenPresentation,
       // Begin newly added properties, followed by the milestone they were
       // added.  The guard should be safe to remove N+2 milestones later.
-      'for_display': route.forDisplay,                               // M47
-      'is_incognito': !!route.offTheRecord,                          // M50
-      'is_offscreen_presentation': !!route.isOffscreenPresentation,  // M56
       'supports_media_route_controller':
           !!route.supportsMediaRouteController  // M61
     });
@@ -619,10 +619,6 @@ define('media_router_bindings', [
    * @param {!MediaRouterHandlers} handlers
    */
   MediaRouteProvider.prototype.setHandlers = function(handlers) {
-    // TODO(mfoltz): Remove when component that supports this method is
-    // rolled out to all Chrome channels in M56.
-    if (!handlers['onBeforeInvokeHandler'])
-      handlers['onBeforeInvokeHandler'] = () => {};
     this.handlers_ = handlers;
     var requiredHandlers = [
       'stopObservingMediaRoutes',
