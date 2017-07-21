@@ -46,7 +46,7 @@ var prefsGeolocation = {
     images: [],
     javascript: [],
     mic: [],
-    midiDevices: [],
+    midi_devices: [],
     notifications: [],
     plugins: [],
     protectedContent: [],
@@ -180,7 +180,7 @@ var prefsVarious = {
     images: [],
     javascript: [],
     mic: [],
-    midiDevices: [],
+    midi_devices: [],
     notifications: [
       {
         embeddingOrigin: '',

@@ -26,7 +26,7 @@ var prefsEmpty = {
     geolocation: {},
     javascript: {},
     mic: {},
-    midiDevices: {},
+    midi_devices: {},
     notifications: {},
     plugins: {},
     images: {},
@@ -42,7 +42,7 @@ var prefsEmpty = {
     geolocation: [],
     javascript: [],
     mic: [],
-    midiDevices: [],
+    midi_devices: [],
     notifications: [],
     plugins: [],
     images: [],
@@ -203,7 +203,7 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
     } else if (contentType == settings.ContentSettingsTypes.MIC) {
       pref = this.prefs_.defaults.mic;
     } else if (contentType == settings.ContentSettingsTypes.MIDI_DEVICES) {
-      pref = this.prefs_.defaults.midiDevices;
+      pref = this.prefs_.defaults.midi_devices;
     } else if (contentType == settings.ContentSettingsTypes.NOTIFICATIONS) {
       pref = this.prefs_.defaults.notifications;
     } else if (contentType == settings.ContentSettingsTypes.PDF_DOCUMENTS) {
@@ -247,7 +247,7 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
     else if (contentType == settings.ContentSettingsTypes.MIC)
       pref = this.prefs_.exceptions.mic;
     else if (contentType == settings.ContentSettingsTypes.MIDI_DEVICES)
-      pref = this.prefs_.exceptions.midiDevices;
+      pref = this.prefs_.exceptions.midi_devices;
     else if (contentType == settings.ContentSettingsTypes.NOTIFICATIONS)
       pref = this.prefs_.exceptions.notifications;
     else if (contentType == settings.ContentSettingsTypes.PDF_DOCUMENTS)
@@ -309,6 +309,8 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
         contentType = 'camera';
       } else if (contentType == settings.ContentSettingsTypes.MIC) {
         contentType = 'mic';
+      } else if (contentType == settings.ContentSettingsTypes.MIDI_DEVICES) {
+        contentType = 'midi_devices';
       } else if (contentType == settings.ContentSettingsTypes.BACKGROUND_SYNC) {
         contentType = 'background_sync';
       } else if (
