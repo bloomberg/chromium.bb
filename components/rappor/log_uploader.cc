@@ -127,7 +127,7 @@ void LogUploader::StartScheduledUpload() {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "Users can enable or disable this feature by stopping "
             "'Automatically send usage statistics and crash reports to Google'"

@@ -685,7 +685,7 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "This feature cannot be disabled. It is only activated if the user "

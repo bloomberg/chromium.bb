@@ -67,7 +67,7 @@ PrefetchRequestFetcher::PrefetchRequestFetcher(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "Users can enable or disable the offline prefetch by toggling"
             "chrome://flags#offline-prefetch in Chromium on Android."

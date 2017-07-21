@@ -37,7 +37,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
         destination: WEBSITE
       }
       policy {
-        cookies_allowed: false
+        cookies_allowed: NO
         setting: "This feature cannot be disabled in settings."
         policy_exception_justification:
           "Not implemented, considered not useful as this feature does not "

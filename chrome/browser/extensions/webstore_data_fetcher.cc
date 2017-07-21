@@ -70,7 +70,7 @@ void WebstoreDataFetcher::Start() {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings. It will only be "
             "triggered if the user uses extensions."

@@ -721,7 +721,7 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "It's not possible to disable this feature from settings."

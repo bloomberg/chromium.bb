@@ -147,7 +147,7 @@ void DownloadFeedbackImpl::Start(const base::Closure& finish_callback) {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "Safe Browsing Cookie Store"
           setting:
             "Users can enable or disable this feature by stopping sending "

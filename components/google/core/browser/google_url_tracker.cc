@@ -178,7 +178,7 @@ void GoogleURLTracker::StartFetchIfDesirable() {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "To disable this check, users can change the default search engine "

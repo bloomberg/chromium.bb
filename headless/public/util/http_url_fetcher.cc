@@ -33,7 +33,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
           destination: OTHER
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store:
             "Various, but cookies stores are deleted when session ends."
           setting:

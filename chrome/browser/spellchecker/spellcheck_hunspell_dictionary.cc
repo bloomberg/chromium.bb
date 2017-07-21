@@ -264,7 +264,7 @@ void SpellcheckHunspellDictionary::DownloadDictionary(GURL url) {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "You can prevent downloading dictionaries by not selecting 'Use "
             "this language for spell checking.' in Chrome's settings under "

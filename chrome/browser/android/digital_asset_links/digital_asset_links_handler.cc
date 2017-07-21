@@ -126,7 +126,7 @@ bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationship(
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting: "Not user controlled. But the verification is a trusted API"
                    "that doesn't use user data"

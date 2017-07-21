@@ -311,7 +311,7 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
             destination: GOOGLE_OWNED_SERVICE
           }
           policy {
-            cookies_allowed: true
+            cookies_allowed: YES
             cookies_store: "Safe browsing cookie store"
             setting:
               "Users can enable or disable this feature by toggling 'Protect "
@@ -387,7 +387,7 @@ void ClientSideDetectionService::StartClientReportMalwareRequest(
             destination: GOOGLE_OWNED_SERVICE
           }
           policy {
-            cookies_allowed: true
+            cookies_allowed: YES
             cookies_store: "Safe browsing cookie store"
             setting:
               "Users can enable or disable this feature by toggling 'Protect "

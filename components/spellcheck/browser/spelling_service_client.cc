@@ -124,7 +124,7 @@ bool SpellingServiceClient::RequestTextCheck(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "Users can enable or disable this feature via 'Use a web service "
             "to help resolve spelling errors.' in Chromium's settings under "

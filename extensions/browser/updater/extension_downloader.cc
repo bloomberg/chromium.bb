@@ -499,7 +499,7 @@ void ExtensionDownloader::CreateManifestFetcher() {
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled. It is only enabled when the user "
             "has installed extentions."
@@ -827,7 +827,7 @@ void ExtensionDownloader::CreateExtensionFetcher() {
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "This feature cannot be disabled. It is only enabled when the user "

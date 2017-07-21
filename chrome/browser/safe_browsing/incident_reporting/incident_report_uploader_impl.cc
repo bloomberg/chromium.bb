@@ -40,7 +40,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
       destination: GOOGLE_OWNED_SERVICE
     }
     policy {
-      cookies_allowed: true
+      cookies_allowed: YES
       cookies_store: "Safe Browsing cookie store"
       setting:
         "Users can control this feature via the 'Automatically report details "

@@ -123,7 +123,7 @@ void CachedImageFetcher::FetchImageFromNetwork(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting: "Currently not available, but in progress: crbug.com/703684"
         chrome_policy {
           NTPContentSuggestionsEnabled {

@@ -333,7 +333,7 @@ void TraceCrashServiceUploader::CreateAndStartURLFetcher(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "You can enable or disable this feature via 'Automatically send "
             "usage statistics and crash reports to Google' in Chromium's "

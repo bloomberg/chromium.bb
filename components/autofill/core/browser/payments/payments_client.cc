@@ -466,7 +466,7 @@ void PaymentsClient::InitializeUrlFetcher() {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "Users can enable or disable this feature in Chromium settings by "
             "toggling 'Credit cards and addresses using Google Payments', "

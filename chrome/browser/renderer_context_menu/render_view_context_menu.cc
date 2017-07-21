@@ -2223,7 +2223,7 @@ void RenderViewContextMenu::ExecSaveLinkAs() {
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "This feature cannot be disabled by settings. The request is made "

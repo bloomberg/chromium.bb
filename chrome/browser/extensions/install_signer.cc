@@ -391,7 +391,7 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "This feature cannot be disabled, but it is only activated if "

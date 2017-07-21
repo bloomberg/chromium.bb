@@ -679,7 +679,7 @@ int ResourceDispatcher::StartAsync(
         destination: OTHER
       }
       policy {
-        cookies_allowed: true
+        cookies_allowed: YES
         cookies_store: "user"
         setting: "These requests cannot be disabled in settings."
         policy_exception_justification:

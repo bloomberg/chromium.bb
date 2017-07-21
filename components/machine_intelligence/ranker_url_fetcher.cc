@@ -67,7 +67,7 @@ bool RankerURLFetcher::Request(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "NA"
         })");

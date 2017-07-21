@@ -145,7 +145,7 @@ void PaymentManifestDownloader::InitiateDownload(
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings. Users can uninstall/"
             "disable all payment apps to stop this feature."

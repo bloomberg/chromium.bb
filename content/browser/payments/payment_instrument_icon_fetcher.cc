@@ -35,7 +35,7 @@ net::NetworkTrafficAnnotationTag g_traffic_annotation =
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings. Users can refuse to "
             "install web payment apps."

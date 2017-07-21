@@ -65,7 +65,7 @@ void ResetReportUploader::DispatchReport(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting: "None, the user needs to actively send the data."
           policy_exception_justification:
             "None, considered not useful because the user needs to actively "

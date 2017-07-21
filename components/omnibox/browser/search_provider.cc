@@ -918,7 +918,7 @@ std::unique_ptr<net::URLFetcher> SearchProvider::CreateSuggestFetcher(
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "Users can control this feature via the 'Use a prediction service "

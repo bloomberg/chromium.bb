@@ -531,7 +531,7 @@ void GaiaAuthFetcher::StartRevokeOAuth2Token(const std::string& auth_token) {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if the user "
             "signs out of Chrome, this request would not be made."
@@ -606,7 +606,7 @@ void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchange(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "This feature cannot be disabled in settings, but if the user "
@@ -652,7 +652,7 @@ void GaiaAuthFetcher::StartAuthCodeForOAuth2TokenExchangeWithDeviceId(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if the user "
             "signs out of Chrome, this request would not be made."
@@ -684,7 +684,7 @@ void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid) {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if the user "
             "signs out of Chrome, this request would not be made."
@@ -732,7 +732,7 @@ void GaiaAuthFetcher::StartMergeSession(const std::string& uber_token,
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "This feature cannot be disabled in settings, but if the user "
@@ -775,7 +775,7 @@ void GaiaAuthFetcher::StartTokenFetchForUberAuthExchange(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "This feature cannot be disabled in settings, but if the user "
@@ -817,7 +817,7 @@ void GaiaAuthFetcher::StartOAuthLogin(const std::string& access_token,
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "This feature cannot be disabled in settings, but if the user "
@@ -852,7 +852,7 @@ void GaiaAuthFetcher::StartListAccounts() {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "This feature cannot be disabled in settings, but if the user "
@@ -888,7 +888,7 @@ void GaiaAuthFetcher::StartLogOut() {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "This feature cannot be disabled in settings, but if the user "
@@ -921,7 +921,7 @@ void GaiaAuthFetcher::StartGetCheckConnectionInfo() {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if the user "
             "signs out of Chrome, this request would not be made."

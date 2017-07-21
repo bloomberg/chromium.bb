@@ -54,7 +54,7 @@ void UserInfoFetcher::Start(const std::string& access_token) {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be controlled by Chrome settings, but users "
             "can sign out of Chrome to disable it."

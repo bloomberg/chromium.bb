@@ -109,7 +109,7 @@ void ChromeMetadataSource::Download(const std::string& key,
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings. It can only be "
             "prevented if user does not edit the address in Android 'Web "

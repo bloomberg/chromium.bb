@@ -149,7 +149,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "Users can control this feature via either of the 'Protect you and "
             "your device from dangerous sites' setting under 'Privacy', or "

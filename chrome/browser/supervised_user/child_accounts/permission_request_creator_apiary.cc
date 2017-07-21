@@ -197,7 +197,7 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings and is only enabled "
             "for child accounts. If sign-in is restricted to accounts from a "

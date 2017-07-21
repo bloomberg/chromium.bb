@@ -225,7 +225,7 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting: "This feature cannot be disabled in settings."
           chrome_policy {

@@ -113,7 +113,7 @@ static std::unique_ptr<URLFetcher> CreateFetcher(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if user signs "
             "out of Chrome, this request would not be made."

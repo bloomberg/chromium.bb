@@ -102,7 +102,7 @@ void WriteFromUrlOperation::Download(const base::Closure& continuation) {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "This feature cannot be disabled by settings, it can only be used "

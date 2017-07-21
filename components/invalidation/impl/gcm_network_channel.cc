@@ -249,7 +249,7 @@ void GCMNetworkChannel::OnGetTokenComplete(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting: "This feature cannot be disabled."
           policy_exception_justification:
             "Not implemented. Disabling InvalidationService might break "

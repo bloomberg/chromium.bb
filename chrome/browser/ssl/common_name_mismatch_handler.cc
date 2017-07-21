@@ -60,7 +60,7 @@ void CommonNameMismatchHandler::CheckSuggestedUrl(
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "Users can disable this feature by command line flag "
             "'--disable-feature=SSLCommonNameMismatchHandling'."

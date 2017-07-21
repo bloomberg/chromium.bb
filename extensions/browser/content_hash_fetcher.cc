@@ -265,7 +265,7 @@ void ContentHashFetcherJob::DoneCheckingForVerifiedContents(bool found) {
             destination: GOOGLE_OWNED_SERVICE
           }
           policy {
-            cookies_allowed: false
+            cookies_allowed: NO
             setting:
               "This feature cannot be directly disabled; it is enabled if any "
               "extension from the webstore is installed in the browser."

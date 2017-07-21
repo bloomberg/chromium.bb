@@ -80,7 +80,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "This feature cannot be disabled in settings, but it is only "

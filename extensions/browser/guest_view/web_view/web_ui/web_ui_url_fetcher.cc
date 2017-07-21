@@ -39,7 +39,7 @@ void WebUIURLFetcher::Start() {
           destination: LOCAL
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting: "It is not possible to disable this feature from settings."
           policy_exception_justification:
             "Not Implemented, considered not useful as the request doesn't "
