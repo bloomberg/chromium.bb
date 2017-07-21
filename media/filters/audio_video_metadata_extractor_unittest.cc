@@ -54,6 +54,8 @@ TEST(AudioVideoMetadataExtractorTest, InvalidFile) {
 }
 
 TEST(AudioVideoMetadataExtractorTest, AudioOGG) {
+  // TODO(tommycli): Actual duration is 0.1, but |extractor| converts this
+  // internally to an integer. See https://crbug.com/747480.
   std::unique_ptr<AudioVideoMetadataExtractor> extractor =
       GetExtractor("9ch.ogg", true, true, 0, -1, -1);
   EXPECT_EQ("Processed by SoX", extractor->comment());
@@ -72,6 +74,8 @@ TEST(AudioVideoMetadataExtractorTest, AudioOGG) {
 }
 
 TEST(AudioVideoMetadataExtractorTest, AudioWAV) {
+  // TODO(tommycli): Actual duration is 0.288413, but |extractor| converts this
+  // internally to an integer. See https://crbug.com/747480.
   std::unique_ptr<AudioVideoMetadataExtractor> extractor =
       GetExtractor("sfx_u8.wav", true, true, 0, -1, -1);
   EXPECT_EQ("Lavf54.37.100", extractor->encoder());
@@ -92,7 +96,32 @@ TEST(AudioVideoMetadataExtractorTest, AudioWAV) {
   EXPECT_EQ(0u, extractor->attached_images_bytes().size());
 }
 
+TEST(AudioVideoMetadataExtractorTest, AudioFLAC) {
+  // TODO(tommycli): Actual duration is 0.288413, but |extractor| converts this
+  // internally to an integer. See https://crbug.com/747480.
+  std::unique_ptr<AudioVideoMetadataExtractor> extractor =
+      GetExtractor("sfx.flac", true, true, 0, -1, -1);
+  EXPECT_EQ("Lavf55.43.100", extractor->encoder());
+  EXPECT_EQ("Amadeus Pro", extractor->encoded_by());
+
+  EXPECT_EQ("flac", extractor->stream_infos()[0].type);
+  EXPECT_EQ(2u, extractor->stream_infos().size());
+
+  EXPECT_EQ(2u, extractor->stream_infos()[0].tags.size());
+  EXPECT_EQ("Lavf55.43.100",
+            GetTagValue(extractor->stream_infos()[0].tags, "ENCODER"));
+  EXPECT_EQ("Amadeus Pro",
+            GetTagValue(extractor->stream_infos()[0].tags, "ENCODED_BY"));
+
+  EXPECT_EQ("flac", extractor->stream_infos()[1].type);
+  EXPECT_EQ(0u, extractor->stream_infos()[1].tags.size());
+
+  EXPECT_EQ(0u, extractor->attached_images_bytes().size());
+}
+
 TEST(AudioVideoMetadataExtractorTest, VideoWebM) {
+  // TODO(tommycli): Actual duration is 2.744, but |extractor| converts this
+  // internally to an integer. See https://crbug.com/747480.
   std::unique_ptr<AudioVideoMetadataExtractor> extractor =
       GetExtractor("bear-320x240-multitrack.webm", true, true, 2, 320, 240);
   EXPECT_EQ("Lavf53.9.0", extractor->encoder());
@@ -126,6 +155,8 @@ TEST(AudioVideoMetadataExtractorTest, VideoWebM) {
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 TEST(AudioVideoMetadataExtractorTest, AndroidRotatedMP4Video) {
+  // TODO(tommycli): Actual duration is 0.196, but |extractor| converts this
+  // internally to an integer. See https://crbug.com/747480.
   std::unique_ptr<AudioVideoMetadataExtractor> extractor =
       GetExtractor("90rotation.mp4", true, true, 0, 1920, 1080);
 
@@ -165,6 +196,8 @@ TEST(AudioVideoMetadataExtractorTest, AndroidRotatedMP4Video) {
 }
 
 TEST(AudioVideoMetadataExtractorTest, AudioMP3) {
+  // TODO(tommycli): Actual duration is 1.01878, but |extractor| converts this
+  // internally to an integer. See https://crbug.com/747480.
   std::unique_ptr<AudioVideoMetadataExtractor> extractor =
       GetExtractor("id3_png_test.mp3", true, true, 1, -1, -1);
 
@@ -209,6 +242,35 @@ TEST(AudioVideoMetadataExtractorTest, AudioMP3) {
                 extractor->attached_images_bytes()[0].size() - 8, 8));
   EXPECT_EQ("\xF3\xED\x8F\xC7\xC7\x98\xB9V|p\xC0u!\xB5\x82\xCF\x95\xF0\xCD\xCE",
             base::SHA1HashString(extractor->attached_images_bytes()[0]));
+}
+
+TEST(AudioVideoMetadataExtractorTest, AudioFLACInMp4) {
+  // TODO(tommycli): Actual duration is 0.289, but |extractor| converts this
+  // internally to an integer. See https://crbug.com/747480.
+  std::unique_ptr<AudioVideoMetadataExtractor> extractor =
+      GetExtractor("sfx-flac.mp4", true, true, 0, -1, -1);
+  EXPECT_EQ("Lavf57.75.100", extractor->encoder());
+
+  EXPECT_EQ("mov,mp4,m4a,3gp,3g2,mj2", extractor->stream_infos()[0].type);
+  EXPECT_EQ(2u, extractor->stream_infos().size());
+
+  EXPECT_EQ(4u, extractor->stream_infos()[0].tags.size());
+  EXPECT_EQ("isom",
+            GetTagValue(extractor->stream_infos()[0].tags, "major_brand"));
+  EXPECT_EQ("512",
+            GetTagValue(extractor->stream_infos()[0].tags, "minor_version"));
+  EXPECT_EQ("isomiso2mp41", GetTagValue(extractor->stream_infos()[0].tags,
+                                        "compatible_brands"));
+  EXPECT_EQ("Lavf57.75.100",
+            GetTagValue(extractor->stream_infos()[0].tags, "encoder"));
+
+  EXPECT_EQ("flac", extractor->stream_infos()[1].type);
+  EXPECT_EQ(2u, extractor->stream_infos()[1].tags.size());
+  EXPECT_EQ("SoundHandler",
+            GetTagValue(extractor->stream_infos()[1].tags, "handler_name"));
+  EXPECT_EQ("und", GetTagValue(extractor->stream_infos()[1].tags, "language"));
+
+  EXPECT_EQ(0u, extractor->attached_images_bytes().size());
 }
 #endif
 
