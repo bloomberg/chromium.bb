@@ -8,15 +8,16 @@
 
 #keyboard-icon,
 #mouse-icon {
-  height: 40px;
-  width: 40px;
+  --iron-icon-height: 32px;
+  --iron-icon-width: 32px;
+  padding-right: 8px;
 }
 
 #keyboard-tick,
 #mouse-tick {
   -webkit-margin-start: -28px;
   position: relative;
-  top: 4px; /* icon is 40x40, tick is 32x32, 4 = (40-32)/2 */
+  top: 4px;
 }
 
 #hid-keyboard-pincode {
