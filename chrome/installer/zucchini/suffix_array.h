@@ -6,7 +6,6 @@
 #define CHROME_INSTALLER_ZUCCHINI_SUFFIX_ARRAY_H_
 
 #include <algorithm>
-#include <cassert>
 #include <iterator>
 #include <numeric>
 #include <vector>

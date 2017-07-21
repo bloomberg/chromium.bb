@@ -5,7 +5,8 @@
 #ifndef CHROME_INSTALLER_ZUCCHINI_PATCH_UTILS_H_
 #define CHROME_INSTALLER_ZUCCHINI_PATCH_UTILS_H_
 
-#include <cstdint>
+#include <stdint.h>
+
 #include <type_traits>
 
 #include "base/logging.h"

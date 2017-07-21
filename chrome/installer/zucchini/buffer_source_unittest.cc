@@ -4,19 +4,20 @@
 
 #include "chrome/installer/zucchini/buffer_source.h"
 
-#include <cstdint>
+#include <stdint.h>
+
 #include <iterator>
 #include <vector>
 
-#include "base/test/gtest_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace zucchini {
 
 using vec = std::vector<uint8_t>;
 
-static constexpr size_t kLen = 10;
-constexpr const uint8_t bytes[kLen] = {0x10, 0x32, 0x54, 0x76, 0x98,
-                                       0xBA, 0xDC, 0xFE, 0x10, 0x00};
+constexpr size_t kLen = 10;
+constexpr uint8_t bytes[kLen] = {0x10, 0x32, 0x54, 0x76, 0x98,
+                                 0xBA, 0xDC, 0xFE, 0x10, 0x00};
 
 class BufferSourceTest : public testing::Test {
  protected:
