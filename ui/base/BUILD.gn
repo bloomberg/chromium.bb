@@ -788,7 +788,6 @@ test("ui_base_unittests") {
     "material_design/material_design_controller_unittest.cc",
     "models/tree_node_iterator_unittest.cc",
     "resource/data_pack_literal.cc",
-    "resource/data_pack_literal.h",
     "resource/data_pack_unittest.cc",
     "resource/resource_bundle_unittest.cc",
     "resource/scale_factor_unittest.cc",
