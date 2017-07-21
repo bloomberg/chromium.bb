@@ -4879,6 +4879,11 @@ bool WebGLRenderingContextBase::CanUseTexImageByGPU(GLenum format,
     return false;
 #endif
 
+  // TODO(kbr): continued bugs are seen on Linux with AMD's drivers handling
+  // uploads to R8UI textures. crbug.com/710673
+  if (format == GL_RED_INTEGER)
+    return false;
+
 #if defined(OS_ANDROID)
   // TODO(kbr): bugs were seen on Android devices with NVIDIA GPUs
   // when copying hardware-accelerated video textures to
