@@ -37,10 +37,6 @@ InProcessVideoCaptureProvider::CreateInstance(
       std::move(video_capture_system), std::move(device_task_runner));
 }
 
-void InProcessVideoCaptureProvider::Uninitialize() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
 void InProcessVideoCaptureProvider::GetDeviceInfosAsync(
     GetDeviceInfosCallback result_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

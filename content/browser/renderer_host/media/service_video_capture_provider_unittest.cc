@@ -73,6 +73,24 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
     mock_service_connector_ = mock_service_connector.get();
     provider_ = base::MakeUnique<ServiceVideoCaptureProvider>(
         std::move(mock_service_connector));
+
+    ON_CALL(*mock_service_connector_, BindFactoryProvider(_))
+        .WillByDefault(
+            Invoke([this](video_capture::mojom::DeviceFactoryProviderPtr*
+                              device_factory_provider) {
+              if (factory_provider_binding_.is_bound())
+                factory_provider_binding_.Close();
+              factory_provider_binding_.Bind(
+                  mojo::MakeRequest(device_factory_provider));
+            }));
+    ON_CALL(mock_device_factory_provider_, DoConnectToDeviceFactory(_))
+        .WillByDefault(
+            Invoke([this](video_capture::mojom::DeviceFactoryRequest& request) {
+              if (device_factory_binding_.is_bound())
+                device_factory_binding_.Close();
+              device_factory_binding_.Bind(std::move(request));
+              wait_for_connection_to_service_.Quit();
+            }));
   }
 
   void TearDown() override {}
@@ -89,6 +107,7 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
   base::MockCallback<
       video_capture::mojom::DeviceFactory::GetDeviceInfosCallback>
       service_cb_;
+  base::RunLoop wait_for_connection_to_service_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceVideoCaptureProviderTest);
@@ -101,17 +120,6 @@ TEST_F(ServiceVideoCaptureProviderTest,
        GetDeviceInfosAsyncInvokesCallbackWhenLosingConnection) {
   base::RunLoop run_loop;
 
-  EXPECT_CALL(*mock_service_connector_, BindFactoryProvider(_))
-      .WillOnce(Invoke([this](video_capture::mojom::DeviceFactoryProviderPtr*
-                                  device_factory_provider) {
-        factory_provider_binding_.Bind(
-            mojo::MakeRequest(device_factory_provider));
-      }));
-  EXPECT_CALL(mock_device_factory_provider_, DoConnectToDeviceFactory(_))
-      .WillOnce(
-          Invoke([this](video_capture::mojom::DeviceFactoryRequest& request) {
-            device_factory_binding_.Bind(std::move(request));
-          }));
   video_capture::mojom::DeviceFactory::GetDeviceInfosCallback
       callback_to_be_called_by_service;
   base::RunLoop wait_for_call_to_arrive_at_service;
@@ -143,6 +151,199 @@ TEST_F(ServiceVideoCaptureProviderTest,
   factory_provider_binding_.Close();
 
   wait_for_callback_from_service.Run();
+}
+
+// Tests that |ServiceVideoCaptureProvider| closes the connection to the service
+// after successfully processing a single request to GetDeviceInfos().
+TEST_F(ServiceVideoCaptureProviderTest,
+       ClosesServiceConnectionAfterGetDeviceInfos) {
+  // Setup part 1
+  video_capture::mojom::DeviceFactory::GetDeviceInfosCallback
+      callback_to_be_called_by_service;
+  base::RunLoop wait_for_call_to_arrive_at_service;
+  EXPECT_CALL(mock_device_factory_, DoGetDeviceInfos(_))
+      .WillOnce(Invoke(
+          [&callback_to_be_called_by_service,
+           &wait_for_call_to_arrive_at_service](
+              video_capture::mojom::DeviceFactory::GetDeviceInfosCallback&
+                  callback) {
+            // Hold on to the callback so we can drop it later.
+            callback_to_be_called_by_service = std::move(callback);
+            wait_for_call_to_arrive_at_service.Quit();
+          }));
+
+  // Exercise part 1: Make request to the service
+  provider_->GetDeviceInfosAsync(results_cb_.Get());
+  wait_for_call_to_arrive_at_service.Run();
+
+  // Setup part 2: Now that the connection to the service is established, we can
+  // listen for disconnects.
+  base::RunLoop wait_for_connection_to_device_factory_to_close;
+  base::RunLoop wait_for_connection_to_device_factory_provider_to_close;
+  device_factory_binding_.set_connection_error_handler(
+      base::BindOnce([](base::RunLoop* run_loop) { run_loop->Quit(); },
+                     &wait_for_connection_to_device_factory_to_close));
+  factory_provider_binding_.set_connection_error_handler(
+      base::BindOnce([](base::RunLoop* run_loop) { run_loop->Quit(); },
+                     &wait_for_connection_to_device_factory_provider_to_close));
+
+  // Exercise part 2: The service responds
+  std::vector<media::VideoCaptureDeviceInfo> arbitrarily_empty_results;
+  base::ResetAndReturn(&callback_to_be_called_by_service)
+      .Run(arbitrarily_empty_results);
+
+  // Verification: Expect |provider_| to close the connection to the service.
+  wait_for_connection_to_device_factory_to_close.Run();
+  wait_for_connection_to_device_factory_provider_to_close.Run();
+}
+
+// Tests that |ServiceVideoCaptureProvider| does not close the connection to the
+// service while at least one previously handed out VideoCaptureDeviceLauncher
+// instance is still alive. Then confirms that it closes the connection as soon
+// as the last VideoCaptureDeviceLauncher instance is released.
+TEST_F(ServiceVideoCaptureProviderTest,
+       KeepsServiceConnectionWhileDeviceLauncherAlive) {
+  ON_CALL(mock_device_factory_, DoGetDeviceInfos(_))
+      .WillByDefault(Invoke([](video_capture::mojom::DeviceFactory::
+                                   GetDeviceInfosCallback& callback) {
+        std::vector<media::VideoCaptureDeviceInfo> arbitrarily_empty_results;
+        base::ResetAndReturn(&callback).Run(arbitrarily_empty_results);
+      }));
+
+  // Exercise part 1: Create a device launcher and hold on to it.
+  auto device_launcher_1 = provider_->CreateDeviceLauncher();
+  wait_for_connection_to_service_.Run();
+
+  // Monitor if connection gets closed
+  bool connection_has_been_closed = false;
+  device_factory_binding_.set_connection_error_handler(base::BindOnce(
+      [](bool* connection_has_been_closed) {
+        *connection_has_been_closed = true;
+      },
+      &connection_has_been_closed));
+  factory_provider_binding_.set_connection_error_handler(base::BindOnce(
+      [](bool* connection_has_been_closed) {
+        *connection_has_been_closed = true;
+      },
+      &connection_has_been_closed));
+
+  // Exercise part 2: Make a few GetDeviceInfosAsync requests
+  base::RunLoop wait_for_get_device_infos_response_1;
+  base::RunLoop wait_for_get_device_infos_response_2;
+  provider_->GetDeviceInfosAsync(base::BindOnce(
+      [](base::RunLoop* run_loop,
+         const std::vector<media::VideoCaptureDeviceInfo>&) {
+        run_loop->Quit();
+      },
+      &wait_for_get_device_infos_response_1));
+  provider_->GetDeviceInfosAsync(base::BindOnce(
+      [](base::RunLoop* run_loop,
+         const std::vector<media::VideoCaptureDeviceInfo>&) {
+        run_loop->Quit();
+      },
+      &wait_for_get_device_infos_response_2));
+  wait_for_get_device_infos_response_1.Run();
+  {
+    base::RunLoop give_provider_chance_to_disconnect;
+    give_provider_chance_to_disconnect.RunUntilIdle();
+  }
+  ASSERT_FALSE(connection_has_been_closed);
+  wait_for_get_device_infos_response_2.Run();
+  {
+    base::RunLoop give_provider_chance_to_disconnect;
+    give_provider_chance_to_disconnect.RunUntilIdle();
+  }
+  ASSERT_FALSE(connection_has_been_closed);
+
+  // Exercise part 3: Create and release another device launcher
+  auto device_launcher_2 = provider_->CreateDeviceLauncher();
+  device_launcher_2.reset();
+  {
+    base::RunLoop give_provider_chance_to_disconnect;
+    give_provider_chance_to_disconnect.RunUntilIdle();
+  }
+  ASSERT_FALSE(connection_has_been_closed);
+
+  // Exercise part 3: Release the initial device launcher.
+  device_launcher_1.reset();
+  {
+    base::RunLoop give_provider_chance_to_disconnect;
+    give_provider_chance_to_disconnect.RunUntilIdle();
+  }
+  ASSERT_TRUE(connection_has_been_closed);
+}
+
+// Tests that |ServiceVideoCaptureProvider| does not close the connection to the
+// service while at least one answer to a GetDeviceInfos() request is still
+// pending. Confirms that it closes the connection as soon as the last pending
+// request is answered.
+TEST_F(ServiceVideoCaptureProviderTest,
+       DoesNotCloseServiceConnectionWhileGetDeviceInfoResponsePending) {
+  // When GetDeviceInfos gets called, hold on to the callbacks, but do not
+  // yet invoke them.
+  std::vector<video_capture::mojom::DeviceFactory::GetDeviceInfosCallback>
+      callbacks_to_be_called_by_service;
+  ON_CALL(mock_device_factory_, DoGetDeviceInfos(_))
+      .WillByDefault(Invoke(
+          [&callbacks_to_be_called_by_service](
+              video_capture::mojom::DeviceFactory::GetDeviceInfosCallback&
+                  callback) {
+            callbacks_to_be_called_by_service.push_back(std::move(callback));
+          }));
+
+  // Make initial call to GetDeviceInfosAsync(). The service does not yet
+  // respond.
+  provider_->GetDeviceInfosAsync(
+      base::BindOnce([](const std::vector<media::VideoCaptureDeviceInfo>&) {}));
+  // Make an additional call to GetDeviceInfosAsync().
+  provider_->GetDeviceInfosAsync(
+      base::BindOnce([](const std::vector<media::VideoCaptureDeviceInfo>&) {}));
+  {
+    base::RunLoop give_mojo_chance_to_process;
+    give_mojo_chance_to_process.RunUntilIdle();
+  }
+  ASSERT_EQ(2u, callbacks_to_be_called_by_service.size());
+
+  // Monitor if connection gets closed
+  bool connection_has_been_closed = false;
+  device_factory_binding_.set_connection_error_handler(base::BindOnce(
+      [](bool* connection_has_been_closed) {
+        *connection_has_been_closed = true;
+      },
+      &connection_has_been_closed));
+  factory_provider_binding_.set_connection_error_handler(base::BindOnce(
+      [](bool* connection_has_been_closed) {
+        *connection_has_been_closed = true;
+      },
+      &connection_has_been_closed));
+
+  // The service now responds to the first request.
+  std::vector<media::VideoCaptureDeviceInfo> arbitrarily_empty_results;
+  base::ResetAndReturn(&callbacks_to_be_called_by_service[0])
+      .Run(arbitrarily_empty_results);
+  {
+    base::RunLoop give_provider_chance_to_disconnect;
+    give_provider_chance_to_disconnect.RunUntilIdle();
+  }
+  ASSERT_FALSE(connection_has_been_closed);
+
+  // Create and release a device launcher
+  auto device_launcher = provider_->CreateDeviceLauncher();
+  device_launcher.reset();
+  {
+    base::RunLoop give_provider_chance_to_disconnect;
+    give_provider_chance_to_disconnect.RunUntilIdle();
+  }
+  ASSERT_FALSE(connection_has_been_closed);
+
+  // The service now responds to the second request.
+  base::ResetAndReturn(&callbacks_to_be_called_by_service[1])
+      .Run(arbitrarily_empty_results);
+  {
+    base::RunLoop give_provider_chance_to_disconnect;
+    give_provider_chance_to_disconnect.RunUntilIdle();
+  }
+  ASSERT_TRUE(connection_has_been_closed);
 }
 
 }  // namespace content
