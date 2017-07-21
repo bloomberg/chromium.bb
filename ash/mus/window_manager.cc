@@ -31,7 +31,6 @@
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/wm/ash_focus_rules.h"
-#include "ash/wm/container_finder.h"
 #include "ash/wm/window_state.h"
 #include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -320,14 +319,13 @@ void WindowManager::OnWmSetModalType(aura::Window* window, ui::ModalType type) {
     return;
 
   window->SetProperty(aura::client::kModalKey, type);
-  if (type != ui::MODAL_TYPE_SYSTEM && old_type != ui::MODAL_TYPE_SYSTEM)
-    return;
-
-  aura::Window* new_parent = wm::GetDefaultParent(window, window->bounds());
-  DCHECK(new_parent);
-  if (window->parent())
-    window->parent()->RemoveChild(window);
-  new_parent->AddChild(window);
+  // Assume the client has positioned the window in the right container and
+  // don't attempt to change the parent. This is currently true for Chrome
+  // code, but likely there should be checks. Adding checks is complicated by
+  // the fact that assumptions in GetSystemModalContainer() are not always
+  // valid for Chrome code. In particular Chrome code may create system modal
+  // dialogs without a transient parent that Chrome wants shown on the lock
+  // screen.
 }
 
 void WindowManager::OnWmSetCanFocus(aura::Window* window, bool can_focus) {

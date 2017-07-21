@@ -6,10 +6,17 @@
 #include <memory>
 #include <vector>
 
+#include "ash/mus/window_manager.h"
+#include "ash/mus/window_manager_application.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/session/test_session_controller_client.h"
+#include "ash/shell.h"
+#include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "components/session_manager/session_manager_types.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -56,30 +63,34 @@ class WindowTreeClientDelegate : public aura::WindowTreeClientDelegate {
   }
 
   base::RunLoop run_loop_;
-  wm::WMState wm_state_;
+  ::wm::WMState wm_state_;
   aura::PropertyConverter property_converter_;
   std::unique_ptr<aura::WindowTreeHostMus> window_tree_host_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientDelegate);
 };
 
-// NOTE: this isn't named WindowManagerTest because gtest complains about tests
-// with the same name (there is already a WindowManagerTest in ash).
-class MusWindowManagerTest : public service_manager::test::ServiceTest {
+class WindowManagerServiceTest : public service_manager::test::ServiceTest {
  public:
-  MusWindowManagerTest()
+  WindowManagerServiceTest()
       : service_manager::test::ServiceTest("mash_unittests") {}
-  ~MusWindowManagerTest() override {}
+  ~WindowManagerServiceTest() override {}
+
+  void TearDown() override {
+    // Unset the screen installed by the test.
+    display::Screen::SetScreenInstance(nullptr);
+    service_manager::test::ServiceTest::TearDown();
+  }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MusWindowManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(WindowManagerServiceTest);
 };
 
 void OnEmbed(bool success) {
   ASSERT_TRUE(success);
 }
 
-TEST_F(MusWindowManagerTest, OpenWindow) {
+TEST_F(WindowManagerServiceTest, OpenWindow) {
   display::ScreenBase screen;
   screen.display_list().AddDisplay(
       display::Display(1, gfx::Rect(0, 0, 200, 200)),
@@ -118,6 +129,24 @@ TEST_F(MusWindowManagerTest, OpenWindow) {
   window_tree_delegate.WaitForEmbed();
   ASSERT_TRUE(!child_client.GetRoots().empty());
   window_tree_delegate.DestroyWindowTreeHost();
+}
+
+using WindowManagerTest = AshTestBase;
+
+TEST_F(WindowManagerTest, SystemModalLockIsntReparented) {
+  ash_test_helper()->test_session_controller_client()->SetSessionState(
+      session_manager::SessionState::LOCKED);
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  aura::Window* system_modal_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(), kShellWindowId_LockSystemModalContainer);
+  system_modal_container->AddChild(window.get());
+  aura::WindowManagerDelegate* window_manager_delegate =
+      ash_test_helper()->window_manager_app()->window_manager();
+  window_manager_delegate->OnWmSetModalType(window.get(),
+                                            ui::MODAL_TYPE_SYSTEM);
+  ASSERT_TRUE(window->parent());
+  // Setting to system modal should not reparent.
+  EXPECT_EQ(kShellWindowId_LockSystemModalContainer, window->parent()->id());
 }
 
 }  // namespace mus
