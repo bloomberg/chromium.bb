@@ -54,7 +54,8 @@ class LayoutTextCombine final : public LayoutText {
               LayoutUnit x_position,
               TextDirection,
               HashSet<const SimpleFontData*>* fallback_fonts = nullptr,
-              FloatRect* glyph_bounds = nullptr) const override;
+              FloatRect* glyph_bounds = nullptr,
+              float expansion = 0) const override;
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void SetTextInternal(RefPtr<StringImpl>) override;
   void UpdateIsCombined();

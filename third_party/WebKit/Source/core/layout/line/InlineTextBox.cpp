@@ -442,7 +442,7 @@ LayoutUnit InlineTextBox::PlaceEllipsisBox(bool flow_is_ltr,
         ltr == flow_is_ltr ? start_ : start_ + offset,
         ltr == flow_is_ltr ? offset : len_ - offset, TextPos(),
         flow_is_ltr ? TextDirection::kLtr : TextDirection::kRtl,
-        IsFirstLineStyle()));
+        IsFirstLineStyle(), nullptr, nullptr, Expansion()));
 
     // The ellipsis needs to be placed just after the last visible character.
     // Where "after" is defined by the flow directionality, not the inline
