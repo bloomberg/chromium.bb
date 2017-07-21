@@ -221,6 +221,12 @@ ios_framework_bundle("earl_grey") {
     "src/EarlGrey/Synchronization/GREYUIThreadExecutor.m",
     "src/EarlGrey/Synchronization/GREYUIWebViewIdlingResource.h",
     "src/EarlGrey/Synchronization/GREYUIWebViewIdlingResource.m",
+    "src/EarlGrey/Traversal/GREYTraversal.h",
+    "src/EarlGrey/Traversal/GREYTraversal.m",
+    "src/EarlGrey/Traversal/GREYTraversalBFS.h",
+    "src/EarlGrey/Traversal/GREYTraversalBFS.m",
+    "src/EarlGrey/Traversal/GREYTraversalDFS.h",
+    "src/EarlGrey/Traversal/GREYTraversalDFS.m",
   ]
   public_headers = [
     "src/EarlGrey/EarlGrey.h",
@@ -265,6 +271,7 @@ ios_framework_bundle("earl_grey") {
     "src/EarlGrey/Synchronization/GREYSyncAPI.h",
     "src/EarlGrey/Synchronization/GREYCondition.h",
     "src/EarlGrey/Synchronization/GREYUIThreadExecutor.h",
+    "src/EarlGrey/Traversal/GREYTraversal.h",
   ]
   deps = [
     "//build/config/ios:xctest",
