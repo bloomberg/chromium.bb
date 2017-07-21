@@ -5,10 +5,12 @@ include_rules = [
   "+source/platform/scheduler/base",
   "+source/platform/scheduler/child",
   "+cc",
+  "+components/viz/common",
 ]
 
 specific_include_rules = {
   ".*test\.cc": [
     "+cc/test",
+    "+components/viz/test",
   ],
 }

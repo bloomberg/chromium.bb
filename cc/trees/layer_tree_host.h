@@ -412,7 +412,7 @@ class CC_EXPORT LayerTreeHost
   // LayerTreeHostInProcess interface to Proxy.
   void WillBeginMainFrame();
   void DidBeginMainFrame();
-  void BeginMainFrame(const BeginFrameArgs& args);
+  void BeginMainFrame(const viz::BeginFrameArgs& args);
   void BeginMainFrameNotExpectedSoon();
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time);
   void AnimateLayers(base::TimeTicks monotonic_frame_begin_time);

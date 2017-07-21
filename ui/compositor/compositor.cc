@@ -27,11 +27,11 @@
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/output/latency_info_swap_promise.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/resource_format.h"
 #include "components/viz/common/resources/resource_settings.h"
@@ -392,7 +392,7 @@ void Compositor::SetDisplayVSyncParameters(base::TimeTicks timebase,
   }
   if (interval.is_zero()) {
     // TODO(brianderson): We should not be receiving 0 intervals.
-    interval = cc::BeginFrameArgs::DefaultInterval();
+    interval = viz::BeginFrameArgs::DefaultInterval();
   }
   DCHECK_GT(interval.InMillisecondsF(), 0);
   refresh_rate_ =
@@ -460,7 +460,7 @@ bool Compositor::HasAnimationObserver(
   return animation_observer_list_.HasObserver(observer);
 }
 
-void Compositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
+void Compositor::BeginMainFrame(const viz::BeginFrameArgs& args) {
   DCHECK(!IsLocked());
   for (auto& observer : animation_observer_list_)
     observer.OnAnimationStep(args.frame_time);

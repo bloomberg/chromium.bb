@@ -85,11 +85,11 @@ void FrameGenerator::ReclaimResources(
 void FrameGenerator::DidReceiveCompositorFrameAck(
     const std::vector<cc::ReturnedResource>& resources) {}
 
-void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) {
+void FrameGenerator::OnBeginFrame(const viz::BeginFrameArgs& begin_frame_args) {
   DCHECK(compositor_frame_sink_);
-  current_begin_frame_ack_ = cc::BeginFrameAck(
+  current_begin_frame_ack_ = viz::BeginFrameAck(
       begin_frame_args.source_id, begin_frame_args.sequence_number, false);
-  if (begin_frame_args.type == cc::BeginFrameArgs::MISSED) {
+  if (begin_frame_args.type == viz::BeginFrameArgs::MISSED) {
     compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack_);
     return;
   }

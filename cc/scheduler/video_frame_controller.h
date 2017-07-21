@@ -6,7 +6,7 @@
 #define CC_SCHEDULER_VIDEO_FRAME_CONTROLLER_H_
 
 #include "cc/cc_export.h"
-#include "cc/output/begin_frame_args.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 
 namespace cc {
 
@@ -24,7 +24,7 @@ class CC_EXPORT VideoFrameControllerClient {
 // TODO(sunnyps): Consider making this a BeginFrameObserver some day.
 class CC_EXPORT VideoFrameController {
  public:
-  virtual void OnBeginFrame(const BeginFrameArgs& args) = 0;
+  virtual void OnBeginFrame(const viz::BeginFrameArgs& args) = 0;
 
   // Called upon completion of LayerTreeHostImpl::DidDrawAllLayers(), regardless
   // of whether the controller issued a SetNeedsRedraw().  May be used to

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/containers/flat_set.h"
-#include "cc/test/begin_frame_args_test.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_surface_observer.h"
@@ -11,6 +10,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -125,10 +125,10 @@ class SurfaceSynchronizationTest : public testing::Test {
   }
 
   void SendNextBeginFrame() {
-    // Creep the time forward so that any cc::BeginFrameArgs is not equal to the
+    // Creep the time forward so that any BeginFrameArgs is not equal to the
     // last one otherwise we violate the BeginFrameSource contract.
-    now_src_->Advance(cc::BeginFrameArgs::DefaultInterval());
-    cc::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
+    now_src_->Advance(BeginFrameArgs::DefaultInterval());
+    BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
         BEGINFRAME_FROM_HERE, now_src_.get());
     begin_frame_source_->TestOnBeginFrame(args);
   }

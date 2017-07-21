@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_BEGIN_FRAME_ARGS_TEST_H_
-#define CC_TEST_BEGIN_FRAME_ARGS_TEST_H_
+#ifndef COMPONENTS_VIZ_TEST_BEGIN_FRAME_ARGS_TEST_H_
+#define COMPONENTS_VIZ_TEST_BEGIN_FRAME_ARGS_TEST_H_
 
 #include <stdint.h>
 
@@ -11,21 +11,22 @@
 
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
-#include "cc/output/begin_frame_args.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 
-namespace cc {
+namespace viz {
 
 // Functions for quickly creating BeginFrameArgs
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
     uint32_t source_id,
     uint64_t sequence_number);
+
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
     uint32_t source_id,
     uint64_t sequence_number,
     base::TimeTicks frame_time);
+
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
     uint32_t source_id,
@@ -33,6 +34,7 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
     int64_t frame_time,
     int64_t deadline,
     int64_t interval);
+
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
     uint32_t source_id,
@@ -69,6 +71,6 @@ bool operator==(const BeginFrameAck& lhs, const BeginFrameAck& rhs);
 ::std::ostream& operator<<(::std::ostream& os, const BeginFrameAck& ack);
 void PrintTo(const BeginFrameAck& ack, ::std::ostream* os);
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_TEST_BEGIN_FRAME_ARGS_TEST_H_
+#endif  // COMPONENTS_VIZ_TEST_BEGIN_FRAME_ARGS_TEST_H_

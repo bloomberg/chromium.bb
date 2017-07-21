@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/begin_frame_args_test.h"
+#include "components/viz/test/begin_frame_args_test.h"
 
 #include <stdint.h>
 
 #include "base/time/time.h"
-#include "cc/output/begin_frame_args.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 
-namespace cc {
+namespace viz {
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
@@ -109,4 +109,4 @@ void PrintTo(const BeginFrameAck& ack, ::std::ostream* os) {
       << ", " << ack.has_damage << ")";
 }
 
-}  // namespace cc
+}  // namespace viz

@@ -328,9 +328,9 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
 }
 
 void SynchronousLayerTreeFrameSink::DidNotProduceFrame(
-    const cc::BeginFrameAck& ack) {
+    const viz::BeginFrameAck& ack) {
   DCHECK(!ack.has_damage);
-  DCHECK_LE(cc::BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
+  DCHECK_LE(viz::BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
   Send(new ViewHostMsg_DidNotProduceFrame(routing_id_, ack));
 }
 
@@ -491,7 +491,7 @@ void SynchronousLayerTreeFrameSink::DidReceiveCompositorFrameAck(
 }
 
 void SynchronousLayerTreeFrameSink::OnBeginFrame(
-    const cc::BeginFrameArgs& args) {}
+    const viz::BeginFrameArgs& args) {}
 
 void SynchronousLayerTreeFrameSink::ReclaimResources(
     const std::vector<cc::ReturnedResource>& resources) {

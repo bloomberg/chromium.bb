@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "components/viz/service/frame_sinks/frame_evictor.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -108,7 +108,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // viz::CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<cc::ReturnedResource>& resources) override;
-  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
+  void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;
   void WillDrawSurface(const viz::LocalSurfaceId& id,
@@ -170,7 +170,7 @@ class CONTENT_EXPORT DelegatedFrameHost
                                          gfx::Point* transformed_point);
 
   void SetNeedsBeginFrames(bool needs_begin_frames);
-  void DidNotProduceFrame(const cc::BeginFrameAck& ack);
+  void DidNotProduceFrame(const viz::BeginFrameAck& ack);
 
   // Exposed for tests.
   viz::SurfaceId SurfaceIdForTesting() const {

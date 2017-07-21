@@ -53,7 +53,7 @@ void HitTestAggregator::SubmitHitTestRegionList(
 }
 
 bool HitTestAggregator::OnSurfaceDamaged(const SurfaceId& surface_id,
-                                         const cc::BeginFrameAck& ack) {
+                                         const BeginFrameAck& ack) {
   return false;
 }
 

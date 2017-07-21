@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/begin_frame_args.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 
 #include "base/trace_event/trace_event_argument.h"
 
-namespace cc {
+namespace viz {
 
 const char* BeginFrameArgs::TypeToString(BeginFrameArgsType type) {
   switch (type) {
@@ -127,4 +127,4 @@ BeginFrameAck BeginFrameAck::CreateManualAckWithDamage() {
                        BeginFrameArgs::kStartingFrameNumber, true);
 }
 
-}  // namespace cc
+}  // namespace viz

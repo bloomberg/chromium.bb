@@ -10,8 +10,8 @@
 #include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 
 namespace base {
 class SimpleTestTickClock;
@@ -40,13 +40,14 @@ class FakeExternalBeginFrameSource : public BeginFrameSource {
   void DidFinishFrame(BeginFrameObserver* obs) override;
   bool IsThrottled() const override;
 
-  BeginFrameArgs CreateBeginFrameArgs(
-      BeginFrameArgs::CreationLocation location);
-  BeginFrameArgs CreateBeginFrameArgs(BeginFrameArgs::CreationLocation location,
-                                      base::SimpleTestTickClock* now_src);
+  viz::BeginFrameArgs CreateBeginFrameArgs(
+      viz::BeginFrameArgs::CreationLocation location);
+  viz::BeginFrameArgs CreateBeginFrameArgs(
+      viz::BeginFrameArgs::CreationLocation location,
+      base::SimpleTestTickClock* now_src);
   uint64_t next_begin_frame_number() const { return next_begin_frame_number_; }
 
-  void TestOnBeginFrame(const BeginFrameArgs& args);
+  void TestOnBeginFrame(const viz::BeginFrameArgs& args);
 
   size_t num_observers() const { return observers_.size(); }
 
@@ -57,10 +58,10 @@ class FakeExternalBeginFrameSource : public BeginFrameSource {
   const double milliseconds_per_frame_;
   Client* client_ = nullptr;
   bool paused_ = false;
-  BeginFrameArgs current_args_;
-  uint64_t next_begin_frame_number_ = BeginFrameArgs::kStartingFrameNumber;
+  viz::BeginFrameArgs current_args_;
+  uint64_t next_begin_frame_number_ = viz::BeginFrameArgs::kStartingFrameNumber;
   std::set<BeginFrameObserver*> observers_;
-  base::CancelableCallback<void(const BeginFrameArgs&)> begin_frame_task_;
+  base::CancelableCallback<void(const viz::BeginFrameArgs&)> begin_frame_task_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

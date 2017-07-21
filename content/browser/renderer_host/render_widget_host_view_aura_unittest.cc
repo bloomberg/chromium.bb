@@ -23,19 +23,19 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/surface.h"
-#include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_surface_observer.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/test/begin_frame_args_test.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
@@ -2402,7 +2402,7 @@ cc::CompositorFrame MakeDelegatedFrame(float scale_factor,
                                        gfx::Rect damage) {
   cc::CompositorFrame frame;
   frame.metadata.device_scale_factor = scale_factor;
-  frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, true);
+  frame.metadata.begin_frame_ack = viz::BeginFrameAck(0, 1, true);
 
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetNew(1, gfx::Rect(size), damage, gfx::Transform());
@@ -3458,7 +3458,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
 
   {
     // Ack from CompositorFrame is forwarded.
-    cc::BeginFrameAck ack(source_id, 5, true);
+    viz::BeginFrameAck ack(source_id, 5, true);
     cc::CompositorFrame frame = MakeDelegatedFrame(1.f, frame_size, view_rect);
     frame.metadata.begin_frame_ack = ack;
     view_->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -3468,7 +3468,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
 
   {
     // Explicit ack through OnDidNotProduceFrame is forwarded.
-    cc::BeginFrameAck ack(source_id, 6, false);
+    viz::BeginFrameAck ack(source_id, 6, false);
     view_->OnDidNotProduceFrame(ack);
     EXPECT_EQ(ack, observer.last_ack());
   }
@@ -3684,7 +3684,7 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, PresentTime) {
   // Start our fake clock from a non-zero, but not an even multiple of the
   // interval, value to differentiate it from our initialization state.
   const base::TimeDelta kDefaultInterval =
-      cc::BeginFrameArgs::DefaultInterval();
+      viz::BeginFrameArgs::DefaultInterval();
   tick_clock_->Advance(kDefaultInterval / 3);
 
   // Swap the first frame without any vsync information.

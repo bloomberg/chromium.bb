@@ -7,9 +7,9 @@
 #include <stddef.h>
 
 #include "cc/animation/animation_host.h"
-#include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "components/viz/test/begin_frame_args_test.h"
 
 namespace cc {
 
@@ -49,8 +49,8 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
 
   // Start an impl frame so tests have a valid frame_time to work with.
   base::TimeTicks time_ticks = base::TimeTicks::FromInternalValue(1);
-  WillBeginImplFrame(
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1, time_ticks));
+  WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE,
+                                                         0, 1, time_ticks));
 }
 
 FakeLayerTreeHostImpl::~FakeLayerTreeHostImpl() {
@@ -69,12 +69,13 @@ void FakeLayerTreeHostImpl::NotifyTileStateChanged(const Tile* tile) {
   notify_tile_state_changed_called_ = true;
 }
 
-BeginFrameArgs FakeLayerTreeHostImpl::CurrentBeginFrameArgs() const {
+viz::BeginFrameArgs FakeLayerTreeHostImpl::CurrentBeginFrameArgs() const {
   return current_begin_frame_tracker_.DangerousMethodCurrentOrLast();
 }
 
 void FakeLayerTreeHostImpl::AdvanceToNextFrame(base::TimeDelta advance_by) {
-  BeginFrameArgs next_begin_frame_args = current_begin_frame_tracker_.Current();
+  viz::BeginFrameArgs next_begin_frame_args =
+      current_begin_frame_tracker_.Current();
   next_begin_frame_args.frame_time += advance_by;
   DidFinishImplFrame();
   WillBeginImplFrame(next_begin_frame_args);

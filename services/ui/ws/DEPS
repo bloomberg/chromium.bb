@@ -16,4 +16,7 @@ specific_include_rules = {
   "gpu_host_unittest.cc": [
     "+services/ui/gpu"
   ],
+  ".*_(unit|pixel|perf)test.*\.cc": [
+    "+components/viz/test",
+  ],
 }

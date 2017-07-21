@@ -14,7 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/output/begin_frame_args.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 
 namespace cc {
 
@@ -25,7 +25,7 @@ DelayBasedTimeSource::DelayBasedTimeSource(
     : client_(nullptr),
       active_(false),
       timebase_(base::TimeTicks()),
-      interval_(BeginFrameArgs::DefaultInterval()),
+      interval_(viz::BeginFrameArgs::DefaultInterval()),
       last_tick_time_(base::TimeTicks() - interval_),
       next_tick_time_(base::TimeTicks()),
       task_runner_(task_runner),

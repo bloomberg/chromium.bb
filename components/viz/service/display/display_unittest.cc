@@ -65,7 +65,7 @@ class TestDisplayScheduler : public DisplayScheduler {
   }
 
   void ProcessSurfaceDamage(const SurfaceId& surface_id,
-                            const cc::BeginFrameAck& ack,
+                            const BeginFrameAck& ack,
                             bool display_damaged) override {
     if (display_damaged) {
       damaged = true;

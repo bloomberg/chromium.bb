@@ -485,7 +485,7 @@ void ProxyImpl::NotifyImageDecodeRequestFinished() {
   SetNeedsCommitOnImplThread();
 }
 
-void ProxyImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
+void ProxyImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   DCHECK(IsImplThread());
   layer_tree_host_impl_->WillBeginImplFrame(args);
 }
@@ -495,12 +495,13 @@ void ProxyImpl::DidFinishImplFrame() {
   layer_tree_host_impl_->DidFinishImplFrame();
 }
 
-void ProxyImpl::DidNotProduceFrame(const BeginFrameAck& ack) {
+void ProxyImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
   DCHECK(IsImplThread());
   layer_tree_host_impl_->DidNotProduceFrame(ack);
 }
 
-void ProxyImpl::ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) {
+void ProxyImpl::ScheduledActionSendBeginMainFrame(
+    const viz::BeginFrameArgs& args) {
   DCHECK(IsImplThread());
   unsigned int begin_frame_id = nextBeginFrameId++;
   benchmark_instrumentation::ScopedBeginFrameTask begin_frame_task(

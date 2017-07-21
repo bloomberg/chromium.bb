@@ -142,7 +142,7 @@ void DisplayOutputSurface::OnVSyncParametersUpdated(base::TimeTicks timebase,
   // TODO(brianderson): We should not be receiving 0 intervals.
   synthetic_begin_frame_source_->OnUpdateVSyncParameters(
       timebase,
-      interval.is_zero() ? cc::BeginFrameArgs::DefaultInterval() : interval);
+      interval.is_zero() ? BeginFrameArgs::DefaultInterval() : interval);
 }
 
 }  // namespace viz

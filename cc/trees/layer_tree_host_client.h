@@ -14,15 +14,18 @@ namespace gfx {
 class Vector2dF;
 }
 
-namespace cc {
+namespace viz {
 struct BeginFrameArgs;
+}
+
+namespace cc {
 
 class LayerTreeHostClient {
  public:
   virtual void WillBeginMainFrame() = 0;
   // Marks finishing compositing-related tasks on the main thread. In threaded
   // mode, this corresponds to DidCommit().
-  virtual void BeginMainFrame(const BeginFrameArgs& args) = 0;
+  virtual void BeginMainFrame(const viz::BeginFrameArgs& args) = 0;
   virtual void BeginMainFrameNotExpectedSoon() = 0;
   virtual void BeginMainFrameNotExpectedUntil(base::TimeTicks time) = 0;
   virtual void DidBeginMainFrame() = 0;

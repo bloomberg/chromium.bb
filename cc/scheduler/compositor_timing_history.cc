@@ -469,7 +469,7 @@ void CompositorTimingHistory::DidCreateAndInitializeLayerTreeFrameSink() {
 void CompositorTimingHistory::WillBeginImplFrame(
     bool new_active_tree_is_likely,
     base::TimeTicks frame_time,
-    BeginFrameArgs::BeginFrameArgsType frame_type,
+    viz::BeginFrameArgs::BeginFrameArgsType frame_type,
     base::TimeTicks now) {
   // The check for whether a BeginMainFrame was sent anytime between two
   // BeginImplFrames protects us from not detecting a fast main thread that
@@ -491,7 +491,7 @@ void CompositorTimingHistory::WillBeginImplFrame(
     }
   }
 
-  if (frame_type == BeginFrameArgs::NORMAL)
+  if (frame_type == viz::BeginFrameArgs::NORMAL)
     uma_reporter_->AddBeginImplFrameLatency(now - frame_time);
 
   did_send_begin_main_frame_ = false;

@@ -143,8 +143,8 @@ struct CC_IPC_EXPORT ParamTraits<cc::YUVVideoDrawQuad> {
 };
 
 template <>
-struct CC_IPC_EXPORT ParamTraits<cc::BeginFrameAck> {
-  typedef cc::BeginFrameAck param_type;
+struct CC_IPC_EXPORT ParamTraits<viz::BeginFrameAck> {
+  typedef viz::BeginFrameAck param_type;
   static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,

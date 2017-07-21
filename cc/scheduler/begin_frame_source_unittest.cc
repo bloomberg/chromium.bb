@@ -8,9 +8,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
-#include "cc/test/begin_frame_args_test.h"
 #include "cc/test/begin_frame_source_test.h"
 #include "cc/test/scheduler_test_common.h"
+#include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,10 +57,10 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
 };
 
 const int64_t BackToBackBeginFrameSourceTest::kDeadline =
-    BeginFrameArgs::DefaultInterval().ToInternalValue();
+    viz::BeginFrameArgs::DefaultInterval().ToInternalValue();
 
 const int64_t BackToBackBeginFrameSourceTest::kInterval =
-    BeginFrameArgs::DefaultInterval().ToInternalValue();
+    viz::BeginFrameArgs::DefaultInterval().ToInternalValue();
 
 TEST_F(BackToBackBeginFrameSourceTest, AddObserverSendsBeginFrame) {
   EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
@@ -556,7 +556,7 @@ TEST_F(ExternalBeginFrameSourceTest, OnBeginFrameChecksBeginFrameContinuity) {
   EXPECT_CALL((*client_), OnNeedsBeginFrames(true)).Times(1);
   source_->AddObserver(obs_.get());
 
-  BeginFrameArgs args = CreateBeginFrameArgsForTesting(
+  viz::BeginFrameArgs args = viz::CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, 0, 2, base::TimeTicks::FromInternalValue(10000));
   EXPECT_BEGIN_FRAME_ARGS_USED(*obs_, args);
   source_->OnBeginFrame(args);

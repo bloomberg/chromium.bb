@@ -57,7 +57,7 @@ class GpuRootCompositorFrameSink
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
-  void DidNotProduceFrame(const cc::BeginFrameAck& begin_frame_ack) override;
+  void DidNotProduceFrame(const BeginFrameAck& begin_frame_ack) override;
 
   // cc::mojom::CompositorFrameSinkPrivate:
   void ClaimTemporaryReference(const SurfaceId& surface_id) override;
@@ -74,7 +74,7 @@ class GpuRootCompositorFrameSink
   // CompositorFrameSinkSupportClient:
   void DidReceiveCompositorFrameAck(
       const std::vector<cc::ReturnedResource>& resources) override;
-  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
+  void OnBeginFrame(const BeginFrameArgs& args) override;
   void OnBeginFramePausedChanged(bool paused) override;
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;

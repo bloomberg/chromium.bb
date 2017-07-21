@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/begin_frame_tracker.h"
 #include "cc/scheduler/delay_based_time_source.h"
@@ -21,6 +20,7 @@
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/scheduler/scheduler_state_machine.h"
 #include "cc/tiles/tile_priority.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 
 namespace base {
 namespace trace_event {
@@ -35,9 +35,9 @@ class CompositorTimingHistory;
 
 class SchedulerClient {
  public:
-  virtual void WillBeginImplFrame(const BeginFrameArgs& args) = 0;
+  virtual void WillBeginImplFrame(const viz::BeginFrameArgs& args) = 0;
   virtual void ScheduledActionSendBeginMainFrame(
-      const BeginFrameArgs& args) = 0;
+      const viz::BeginFrameArgs& args) = 0;
   virtual DrawResult ScheduledActionDrawIfPossible() = 0;
   virtual DrawResult ScheduledActionDrawForced() = 0;
   virtual void ScheduledActionCommit() = 0;
@@ -47,7 +47,7 @@ class SchedulerClient {
   virtual void ScheduledActionInvalidateLayerTreeFrameSink() = 0;
   virtual void ScheduledActionPerformImplSideInvalidation() = 0;
   virtual void DidFinishImplFrame() = 0;
-  virtual void DidNotProduceFrame(const BeginFrameAck& ack) = 0;
+  virtual void DidNotProduceFrame(const viz::BeginFrameAck& ack) = 0;
   virtual void SendBeginMainFrameNotExpectedSoon() = 0;
   virtual void ScheduledActionBeginMainFrameNotExpectedUntil(
       base::TimeTicks time) = 0;
@@ -71,7 +71,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   // BeginFrameObserverBase
   void OnBeginFrameSourcePausedChanged(bool paused) override;
-  bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override;
+  bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) override;
 
   void OnDrawForLayerTreeFrameSink(bool resourceless_software_draw);
 
@@ -161,7 +161,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
     return begin_frame_source_;
   }
 
-  BeginFrameAck CurrentBeginFrameAckForActiveTree() const;
+  viz::BeginFrameAck CurrentBeginFrameAckForActiveTree() const;
 
  protected:
   // Virtual for testing.
@@ -187,7 +187,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   base::TimeTicks deadline_scheduled_at_;
 
   BeginFrameTracker begin_impl_frame_tracker_;
-  BeginFrameArgs begin_main_frame_args_;
+  viz::BeginFrameArgs begin_main_frame_args_;
 
   base::Closure begin_impl_frame_deadline_closure_;
   base::CancelableClosure begin_impl_frame_deadline_task_;
@@ -210,22 +210,23 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void DrawForced();
   void ProcessScheduledActions();
   void UpdateCompositorTimingHistoryRecordingEnabled();
-  bool ShouldRecoverMainLatency(const BeginFrameArgs& args,
+  bool ShouldRecoverMainLatency(const viz::BeginFrameArgs& args,
                                 bool can_activate_before_deadline) const;
-  bool ShouldRecoverImplLatency(const BeginFrameArgs& args,
+  bool ShouldRecoverImplLatency(const viz::BeginFrameArgs& args,
                                 bool can_activate_before_deadline) const;
   bool CanBeginMainFrameAndActivateBeforeDeadline(
-      const BeginFrameArgs& args,
+      const viz::BeginFrameArgs& args,
       base::TimeDelta bmf_to_activate_estimate,
       base::TimeTicks now) const;
   void AdvanceCommitStateIfPossible();
   bool IsBeginMainFrameSentOrStarted() const;
-  void BeginImplFrameWithDeadline(const BeginFrameArgs& args);
-  void BeginImplFrameSynchronous(const BeginFrameArgs& args);
-  void BeginImplFrame(const BeginFrameArgs& args, base::TimeTicks now);
+  void BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args);
+  void BeginImplFrameSynchronous(const viz::BeginFrameArgs& args);
+  void BeginImplFrame(const viz::BeginFrameArgs& args, base::TimeTicks now);
   void FinishImplFrame();
   enum BeginFrameResult { kBeginFrameSkipped, kBeginFrameFinished };
-  void SendBeginFrameAck(const BeginFrameArgs& args, BeginFrameResult result);
+  void SendBeginFrameAck(const viz::BeginFrameArgs& args,
+                         BeginFrameResult result);
   void OnBeginImplFrameDeadline();
   void PollToAdvanceCommitState();
 

@@ -38,7 +38,7 @@ void CompositorFrameSinkClientBinding::SubmitCompositorFrame(
 }
 
 void CompositorFrameSinkClientBinding::DidNotProduceFrame(
-    const cc::BeginFrameAck& ack) {
+    const viz::BeginFrameAck& ack) {
   compositor_frame_sink_->DidNotProduceFrame(ack);
 }
 

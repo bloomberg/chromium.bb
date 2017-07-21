@@ -151,6 +151,7 @@ source_set("unit_tests") {
     "//cc/surfaces:surfaces",
     "//components/user_manager",
     "//components/viz/service",
+    "//components/viz/test:test_support",
     "//device/gamepad:test_helpers",
     "//gpu/command_buffer/client:gles2_interface",
     "//skia",

@@ -154,8 +154,8 @@ TEST_F(FrameSinkManagerTest, PrimaryBeginFrameSource) {
   manager_.RegisterBeginFrameSource(external_source2.get(),
                                     root2.frame_sink_id());
 
-  cc::BeginFrameArgs args =
-      cc::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+  BeginFrameArgs args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
 
   // Ticking |external_source2| does not propagate to |begin_frame_source|.
   {

@@ -7,16 +7,14 @@
 
 #include "cc/resources/returned_resource.h"
 
-namespace cc {
-struct BeginFrameArgs;
-}  // namespace cc
-
 namespace gfx {
 class Rect;
 }
 
 namespace viz {
+
 class LocalSurfaceId;
+struct BeginFrameArgs;
 
 class CompositorFrameSinkSupportClient {
  public:
@@ -31,7 +29,7 @@ class CompositorFrameSinkSupportClient {
       const std::vector<cc::ReturnedResource>& resources) = 0;
 
   // Notification for the client to generate a CompositorFrame.
-  virtual void OnBeginFrame(const cc::BeginFrameArgs& args) = 0;
+  virtual void OnBeginFrame(const BeginFrameArgs& args) = 0;
 
   // Returns resources sent to SubmitCompositorFrame to be reused or freed.
   virtual void ReclaimResources(

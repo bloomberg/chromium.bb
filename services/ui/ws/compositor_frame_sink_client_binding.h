@@ -32,7 +32,7 @@ class CompositorFrameSinkClientBinding : public cc::mojom::CompositorFrameSink {
   void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
-  void DidNotProduceFrame(const cc::BeginFrameAck& ack) override;
+  void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
 
   mojo::Binding<cc::mojom::CompositorFrameSinkClient> binding_;
   cc::mojom::DisplayPrivateAssociatedPtr display_private_;

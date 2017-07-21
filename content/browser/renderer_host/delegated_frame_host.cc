@@ -223,7 +223,7 @@ void DelegatedFrameHost::SetNeedsBeginFrames(bool needs_begin_frames) {
   support_->SetNeedsBeginFrame(needs_begin_frames);
 }
 
-void DelegatedFrameHost::DidNotProduceFrame(const cc::BeginFrameAck& ack) {
+void DelegatedFrameHost::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
   DCHECK(!ack.has_damage);
   support_->DidNotProduceFrame(ack);
 }
@@ -388,7 +388,7 @@ void DelegatedFrameHost::SubmitCompositorFrame(
   DCHECK(!resize_lock_ || !client_->IsAutoResizeEnabled());
 #endif
   float frame_device_scale_factor = frame.metadata.device_scale_factor;
-  cc::BeginFrameAck ack(frame.metadata.begin_frame_ack);
+  viz::BeginFrameAck ack(frame.metadata.begin_frame_ack);
 
   DCHECK(!frame.render_pass_list.empty());
 
@@ -513,7 +513,7 @@ void DelegatedFrameHost::OnBeginFramePausedChanged(bool paused) {
     renderer_compositor_frame_sink_->OnBeginFramePausedChanged(paused);
 }
 
-void DelegatedFrameHost::OnBeginFrame(const cc::BeginFrameArgs& args) {
+void DelegatedFrameHost::OnBeginFrame(const viz::BeginFrameArgs& args) {
   if (renderer_compositor_frame_sink_)
     renderer_compositor_frame_sink_->OnBeginFrame(args);
   client_->OnBeginFrame();

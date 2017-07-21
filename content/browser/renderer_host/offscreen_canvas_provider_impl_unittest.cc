@@ -82,7 +82,7 @@ class StubCompositorFrameSinkClient
   // cc::mojom::CompositorFrameSinkClient:
   void DidReceiveCompositorFrameAck(
       const std::vector<cc::ReturnedResource>& resources) override {}
-  void OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) override {}
+  void OnBeginFrame(const viz::BeginFrameArgs& begin_frame_args) override {}
   void OnBeginFramePausedChanged(bool paused) override {}
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override {}
@@ -96,9 +96,9 @@ class StubCompositorFrameSinkClient
 cc::CompositorFrame MakeCompositorFrame() {
   cc::CompositorFrame frame;
   frame.metadata.begin_frame_ack.source_id =
-      cc::BeginFrameArgs::kManualSourceId;
+      viz::BeginFrameArgs::kManualSourceId;
   frame.metadata.begin_frame_ack.sequence_number =
-      cc::BeginFrameArgs::kStartingFrameNumber;
+      viz::BeginFrameArgs::kStartingFrameNumber;
   frame.metadata.device_scale_factor = 1.0f;
 
   auto render_pass = cc::RenderPass::Create();

@@ -11,8 +11,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "jni/WindowAndroid_jni.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/android/window_android_observer.h"
@@ -31,7 +31,7 @@ class WindowAndroid::WindowBeginFrameSource : public cc::BeginFrameSource {
         observers_(
             base::ObserverList<cc::BeginFrameObserver>::NOTIFY_EXISTING_ONLY),
         observer_count_(0),
-        next_sequence_number_(cc::BeginFrameArgs::kStartingFrameNumber),
+        next_sequence_number_(viz::BeginFrameArgs::kStartingFrameNumber),
         paused_(false) {}
   ~WindowBeginFrameSource() override {}
 
@@ -48,7 +48,7 @@ class WindowAndroid::WindowBeginFrameSource : public cc::BeginFrameSource {
   WindowAndroid* const window_;
   base::ObserverList<cc::BeginFrameObserver> observers_;
   int observer_count_;
-  cc::BeginFrameArgs last_begin_frame_args_;
+  viz::BeginFrameArgs last_begin_frame_args_;
   uint64_t next_sequence_number_;
   bool paused_;
 };
@@ -65,13 +65,13 @@ void WindowAndroid::WindowBeginFrameSource::AddObserver(
 
   // Send a MISSED BeginFrame if possible and necessary.
   if (last_begin_frame_args_.IsValid()) {
-    cc::BeginFrameArgs last_args = obs->LastUsedBeginFrameArgs();
+    viz::BeginFrameArgs last_args = obs->LastUsedBeginFrameArgs();
     if (!last_args.IsValid() ||
         last_args.frame_time < last_begin_frame_args_.frame_time) {
       DCHECK(last_args.sequence_number <
                  last_begin_frame_args_.sequence_number ||
              last_args.source_id != last_begin_frame_args_.source_id);
-      last_begin_frame_args_.type = cc::BeginFrameArgs::MISSED;
+      last_begin_frame_args_.type = viz::BeginFrameArgs::MISSED;
       // TODO(crbug.com/602485): A deadline doesn't make too much sense
       // for a missed BeginFrame (the intention rather is 'immediately'),
       // but currently the retro frame logic is very strict in discarding
@@ -99,9 +99,9 @@ void WindowAndroid::WindowBeginFrameSource::OnVSync(
     base::TimeDelta vsync_period) {
   // frame time is in the past, so give the next vsync period as the deadline.
   base::TimeTicks deadline = frame_time + vsync_period;
-  last_begin_frame_args_ = cc::BeginFrameArgs::Create(
+  last_begin_frame_args_ = viz::BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, source_id(), next_sequence_number_, frame_time,
-      deadline, vsync_period, cc::BeginFrameArgs::NORMAL);
+      deadline, vsync_period, viz::BeginFrameArgs::NORMAL);
   DCHECK(last_begin_frame_args_.IsValid());
   next_sequence_number_++;
 

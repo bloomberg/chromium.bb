@@ -11,7 +11,7 @@
 
 #include "cc/cc_export.h"
 #include "cc/input/selection.h"
-#include "cc/output/begin_frame_args.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -108,8 +108,8 @@ class CC_EXPORT CompositorFrameMetadata {
   // become available in all renderer processes. See https://crbug.com/695579.
   uint32_t content_source_id = 0;
 
-  // BeginFrameAck for the BeginFrame that this CompositorFrame answers.
-  BeginFrameAck begin_frame_ack;
+  // viz::BeginFrameAck for the BeginFrame that this CompositorFrame answers.
+  viz::BeginFrameAck begin_frame_ack;
 
   // Once the display compositor processes a frame containing a non-zero frame
   // token, the token is sent to embedder of the frame. This is helpful when

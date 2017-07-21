@@ -4,8 +4,8 @@
 
 #include "cc/test/begin_frame_source_test.h"
 
-#include "cc/test/begin_frame_args_test.h"
 #include "cc/test/mock_helper.h"
+#include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,8 +17,8 @@ TEST(MockBeginFrameObserverTest, FailOnMissingCalls) {
     EXPECT_BEGIN_FRAME_USED(obs, 0, 1, 100, 200, 300);
     EXPECT_BEGIN_FRAME_USED(obs, 0, 2, 400, 600, 300);
 
-    obs.OnBeginFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2,
-                                                    400, 600, 300));
+    obs.OnBeginFrame(viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE,
+                                                         0, 2, 400, 600, 300));
   });
 }
 
@@ -28,12 +28,12 @@ TEST(MockBeginFrameObserverTest, FailOnMultipleCalls) {
     EXPECT_BEGIN_FRAME_USED(obs, 0, 1, 100, 200, 300);
     EXPECT_BEGIN_FRAME_USED(obs, 0, 2, 400, 600, 300);
 
-    obs.OnBeginFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1,
-                                                    100, 200, 300));
-    obs.OnBeginFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1,
-                                                    100, 200, 300));
-    obs.OnBeginFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2,
-                                                    400, 600, 300));
+    obs.OnBeginFrame(viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE,
+                                                         0, 1, 100, 200, 300));
+    obs.OnBeginFrame(viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE,
+                                                         0, 1, 100, 200, 300));
+    obs.OnBeginFrame(viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE,
+                                                         0, 2, 400, 600, 300));
   });
 }
 
@@ -43,10 +43,10 @@ TEST(MockBeginFrameObserverTest, FailOnWrongCallOrder) {
     EXPECT_BEGIN_FRAME_USED(obs, 0, 1, 100, 200, 300);
     EXPECT_BEGIN_FRAME_USED(obs, 0, 2, 400, 600, 300);
 
-    obs.OnBeginFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2,
-                                                    400, 600, 300));
-    obs.OnBeginFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1,
-                                                    100, 200, 300));
+    obs.OnBeginFrame(viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE,
+                                                         0, 2, 400, 600, 300));
+    obs.OnBeginFrame(viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE,
+                                                         0, 1, 100, 200, 300));
   });
 }
 
@@ -59,24 +59,24 @@ TEST(MockBeginFrameObserverTest, ExpectOnBeginFrame) {
   EXPECT_EQ(obs.LastUsedBeginFrameArgs(),
             MockBeginFrameObserver::kDefaultBeginFrameArgs);
 
-  obs.OnBeginFrame(CreateBeginFrameArgsForTesting(
+  obs.OnBeginFrame(viz::CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, 0, 1, 100, 200,
       300));  // One call to LastUsedBeginFrameArgs
   EXPECT_EQ(obs.LastUsedBeginFrameArgs(),
-            CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1, 100, 200,
-                                           300));
+            viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1, 100,
+                                                200, 300));
 
-  obs.OnBeginFrame(CreateBeginFrameArgsForTesting(
+  obs.OnBeginFrame(viz::CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, 0, 2, 400, 600,
       300));  // Multiple calls to LastUsedBeginFrameArgs
   EXPECT_EQ(obs.LastUsedBeginFrameArgs(),
-            CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2, 400, 600,
-                                           300));
+            viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2, 400,
+                                                600, 300));
   EXPECT_EQ(obs.LastUsedBeginFrameArgs(),
-            CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2, 400, 600,
-                                           300));
+            viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2, 400,
+                                                600, 300));
 
-  obs.OnBeginFrame(CreateBeginFrameArgsForTesting(
+  obs.OnBeginFrame(viz::CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, 0, 3, 700, 900,
       300));  // No calls to LastUsedBeginFrameArgs
 }
@@ -92,32 +92,32 @@ TEST(MockBeginFrameObserverTest, ExpectOnBeginFrameStatus) {
             MockBeginFrameObserver::kDefaultBeginFrameArgs);
 
   // Used
-  obs.OnBeginFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1,
-                                                  100, 200, 300));
+  obs.OnBeginFrame(viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0,
+                                                       1, 100, 200, 300));
   EXPECT_EQ(obs.LastUsedBeginFrameArgs(),
-            CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1, 100, 200,
-                                           300));
+            viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1, 100,
+                                                200, 300));
 
   // Dropped
-  obs.OnBeginFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2,
-                                                  400, 600, 300));
+  obs.OnBeginFrame(viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0,
+                                                       2, 400, 600, 300));
   EXPECT_EQ(obs.LastUsedBeginFrameArgs(),
-            CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1, 100, 200,
-                                           300));
+            viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1, 100,
+                                                200, 300));
 
   // Dropped
-  obs.OnBeginFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 3,
-                                                  450, 650, 300));
+  obs.OnBeginFrame(viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0,
+                                                       3, 450, 650, 300));
   EXPECT_EQ(obs.LastUsedBeginFrameArgs(),
-            CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1, 100, 200,
-                                           300));
+            viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1, 100,
+                                                200, 300));
 
   // Used
-  obs.OnBeginFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 4,
-                                                  700, 900, 300));
+  obs.OnBeginFrame(viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0,
+                                                       4, 700, 900, 300));
   EXPECT_EQ(obs.LastUsedBeginFrameArgs(),
-            CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 4, 700, 900,
-                                           300));
+            viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 4, 700,
+                                                900, 300));
 }
 
 }  // namespace

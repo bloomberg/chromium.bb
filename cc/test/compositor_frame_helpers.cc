@@ -19,9 +19,10 @@ CompositorFrame MakeCompositorFrame() {
 
 CompositorFrame MakeEmptyCompositorFrame() {
   CompositorFrame frame;
-  frame.metadata.begin_frame_ack.source_id = BeginFrameArgs::kManualSourceId;
+  frame.metadata.begin_frame_ack.source_id =
+      viz::BeginFrameArgs::kManualSourceId;
   frame.metadata.begin_frame_ack.sequence_number =
-      BeginFrameArgs::kStartingFrameNumber;
+      viz::BeginFrameArgs::kStartingFrameNumber;
   frame.metadata.begin_frame_ack.has_damage = true;
   frame.metadata.device_scale_factor = 1;
   return frame;
@@ -32,7 +33,7 @@ CompositorFrame MakeCompositorFrame(
     std::vector<viz::SurfaceId> referenced_surfaces,
     std::vector<TransferableResource> resource_list) {
   CompositorFrame compositor_frame = test::MakeCompositorFrame();
-  compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, true);
+  compositor_frame.metadata.begin_frame_ack = viz::BeginFrameAck(0, 1, true);
   compositor_frame.metadata.activation_dependencies =
       std::move(activation_dependencies);
   compositor_frame.metadata.referenced_surfaces =

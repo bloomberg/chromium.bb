@@ -1942,9 +1942,9 @@ void RenderWidgetHostImpl::OnRequestMove(const gfx::Rect& pos) {
   }
 }
 
-void RenderWidgetHostImpl::DidNotProduceFrame(const cc::BeginFrameAck& ack) {
+void RenderWidgetHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
   // |has_damage| is not transmitted.
-  cc::BeginFrameAck modified_ack = ack;
+  viz::BeginFrameAck modified_ack = ack;
   modified_ack.has_damage = false;
 
   if (view_)

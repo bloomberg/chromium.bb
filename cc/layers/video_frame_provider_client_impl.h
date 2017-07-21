@@ -46,7 +46,7 @@ class CC_EXPORT VideoFrameProviderClientImpl
   bool HasCurrentFrame();
 
   // VideoFrameController implementation.
-  void OnBeginFrame(const BeginFrameArgs& args) override;
+  void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   void DidDrawFrame() override;
 
   // VideoFrameProvider::Client implementation.

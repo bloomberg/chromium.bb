@@ -48,10 +48,10 @@ class VIZ_SERVICE_EXPORT HitTestAggregator : public cc::SurfaceObserver {
   void OnSurfaceCreated(const SurfaceInfo& surface_info) override {}
   void OnSurfaceDestroyed(const SurfaceId& surface_id) override {}
   bool OnSurfaceDamaged(const SurfaceId& surface_id,
-                        const cc::BeginFrameAck& ack) override;
+                        const BeginFrameAck& ack) override;
   void OnSurfaceDiscarded(const SurfaceId& surface_id) override;
   void OnSurfaceDamageExpected(const SurfaceId& surface_id,
-                               const cc::BeginFrameArgs& args) override {}
+                               const BeginFrameArgs& args) override {}
 
   // Called when a surface has been aggregated and added to the
   // display frame.  HitTestRegionList objects are held but ignored until

@@ -7,9 +7,9 @@
 #include <stddef.h>
 
 #include "base/trace_event/trace_event.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/scheduler.h"
-#include "cc/test/begin_frame_args_test.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Macro to compare two enum values and get nice output.
@@ -165,7 +165,7 @@ class StateMachine : public SchedulerStateMachine {
 
  protected:
   DrawResult draw_result_for_test_;
-  uint64_t next_begin_frame_number_ = BeginFrameArgs::kStartingFrameNumber;
+  uint64_t next_begin_frame_number_ = viz::BeginFrameArgs::kStartingFrameNumber;
 };
 
 void PerformAction(StateMachine* sm, SchedulerStateMachine::Action action) {

@@ -6,8 +6,8 @@
 #define CC_TEST_FAKE_SURFACE_OBSERVER_H_
 
 #include "base/containers/flat_set.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/surfaces/surface_observer.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 
@@ -20,7 +20,7 @@ class FakeSurfaceObserver : public SurfaceObserver {
   explicit FakeSurfaceObserver(bool damage_display = true);
   virtual ~FakeSurfaceObserver();
 
-  const BeginFrameAck& last_ack() const { return last_ack_; }
+  const viz::BeginFrameAck& last_ack() const { return last_ack_; }
 
   bool IsSurfaceDamaged(const viz::SurfaceId& surface_id) const;
 
@@ -39,16 +39,16 @@ class FakeSurfaceObserver : public SurfaceObserver {
  private:
   // SurfaceObserver implementation:
   bool OnSurfaceDamaged(const viz::SurfaceId& surface_id,
-                        const BeginFrameAck& ack) override;
+                        const viz::BeginFrameAck& ack) override;
   void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
   void OnSurfaceDiscarded(const viz::SurfaceId& surface_id) override {}
   void OnSurfaceDestroyed(const viz::SurfaceId& surface_id) override {}
   void OnSurfaceDamageExpected(const viz::SurfaceId& surface_id,
-                               const BeginFrameArgs& args) override {}
+                               const viz::BeginFrameArgs& args) override {}
   void OnSurfaceWillDraw(const viz::SurfaceId& surface_id) override;
 
   bool damage_display_;
-  BeginFrameAck last_ack_;
+  viz::BeginFrameAck last_ack_;
   base::flat_set<viz::SurfaceId> damaged_surfaces_;
   base::flat_set<viz::SurfaceId> will_draw_surfaces_;
   viz::SurfaceId last_created_surface_id_;

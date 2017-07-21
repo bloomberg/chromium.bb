@@ -74,7 +74,7 @@ class CompositorExternalBeginFrameSource
 
   void OnMessageReceived(const IPC::Message& message);
   void OnSetBeginFrameSourcePaused(bool paused);
-  void OnBeginFrame(const cc::BeginFrameArgs& args);
+  void OnBeginFrame(const viz::BeginFrameArgs& args);
   bool Send(IPC::Message* message);
 
   // Shared helper implementation.

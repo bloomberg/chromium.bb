@@ -420,7 +420,7 @@ Surface* SurfaceManager::GetSurfaceForId(const viz::SurfaceId& surface_id) {
 }
 
 bool SurfaceManager::SurfaceModified(const viz::SurfaceId& surface_id,
-                                     const BeginFrameAck& ack) {
+                                     const viz::BeginFrameAck& ack) {
   CHECK(thread_checker_.CalledOnValidThread());
   bool changed = false;
   for (auto& observer : observer_list_)
@@ -464,7 +464,7 @@ void SurfaceManager::SurfaceDiscarded(Surface* surface) {
 }
 
 void SurfaceManager::SurfaceDamageExpected(const viz::SurfaceId& surface_id,
-                                           const BeginFrameArgs& args) {
+                                           const viz::BeginFrameArgs& args) {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (auto& observer : observer_list_)
     observer.OnSurfaceDamageExpected(surface_id, args);

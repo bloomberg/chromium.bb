@@ -6,8 +6,8 @@
 
 #include "base/memory/shared_memory_handle.h"
 #include "base/optional.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/input/input_event_ack_state.h"

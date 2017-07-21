@@ -14,8 +14,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/delay_based_time_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 
 namespace cc {
 
@@ -37,13 +37,13 @@ class CC_EXPORT BeginFrameObserver {
   //
   // The observer is required call BeginFrameSource::DidFinishFrame() as soon as
   // it has completed handling the BeginFrame.
-  virtual void OnBeginFrame(const BeginFrameArgs& args) = 0;
+  virtual void OnBeginFrame(const viz::BeginFrameArgs& args) = 0;
 
-  // Returns the last BeginFrameArgs used by the observer. This method's return
-  // value is affected by the OnBeginFrame method!
+  // Returns the last viz::BeginFrameArgs used by the observer. This method's
+  // return value is affected by the OnBeginFrame method!
   //
   //  - Before the first call of OnBeginFrame, this method should return a
-  //    BeginFrameArgs on which IsValid() returns false.
+  //    viz::BeginFrameArgs on which IsValid() returns false.
   //
   //  - If the |args| passed to OnBeginFrame is (or *will be*) used, then
   //    LastUsedBeginFrameArgs return value should become the |args| given to
@@ -55,7 +55,7 @@ class CC_EXPORT BeginFrameObserver {
   // These requirements are designed to allow chaining and nesting of
   // BeginFrameObservers which filter the incoming BeginFrame messages while
   // preventing "double dropping" and other bad side effects.
-  virtual const BeginFrameArgs& LastUsedBeginFrameArgs() const = 0;
+  virtual const viz::BeginFrameArgs& LastUsedBeginFrameArgs() const = 0;
 
   virtual void OnBeginFrameSourcePausedChanged(bool paused) = 0;
 };
@@ -79,16 +79,16 @@ class CC_EXPORT BeginFrameObserverBase : public BeginFrameObserver {
   // Traces |args| and DCHECK |args| satisfies pre-conditions then calls
   // OnBeginFrameDerivedImpl and updates the last_begin_frame_args_ value on
   // true.
-  void OnBeginFrame(const BeginFrameArgs& args) override;
-  const BeginFrameArgs& LastUsedBeginFrameArgs() const override;
+  void OnBeginFrame(const viz::BeginFrameArgs& args) override;
+  const viz::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
 
  protected:
   // Return true if the given argument is (or will be) used.
-  virtual bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) = 0;
+  virtual bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) = 0;
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
-  BeginFrameArgs last_begin_frame_args_;
+  viz::BeginFrameArgs last_begin_frame_args_;
   int64_t dropped_begin_frame_args_ = 0;
 
  private:
@@ -192,7 +192,7 @@ class CC_EXPORT BackToBackBeginFrameSource : public SyntheticBeginFrameSource,
 };
 
 // A frame source which is locked to an external parameters provides from a
-// vsync source and generates BeginFrameArgs for it.
+// vsync source and generates viz::BeginFrameArgs for it.
 class CC_EXPORT DelayBasedBeginFrameSource : public SyntheticBeginFrameSource,
                                              public DelayBasedTimeSourceClient {
  public:
@@ -215,14 +215,15 @@ class CC_EXPORT DelayBasedBeginFrameSource : public SyntheticBeginFrameSource,
   void OnTimerTick() override;
 
  private:
-  BeginFrameArgs CreateBeginFrameArgs(base::TimeTicks frame_time,
-                                      BeginFrameArgs::BeginFrameArgsType type);
+  viz::BeginFrameArgs CreateBeginFrameArgs(
+      base::TimeTicks frame_time,
+      viz::BeginFrameArgs::BeginFrameArgsType type);
 
   std::unique_ptr<DelayBasedTimeSource> time_source_;
   std::unordered_set<BeginFrameObserver*> observers_;
   base::TimeTicks last_timebase_;
   base::TimeDelta authoritative_interval_;
-  BeginFrameArgs current_begin_frame_args_;
+  viz::BeginFrameArgs current_begin_frame_args_;
   uint64_t next_sequence_number_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayBasedBeginFrameSource);
@@ -252,10 +253,10 @@ class CC_EXPORT ExternalBeginFrameSource : public BeginFrameSource {
   void AsValueInto(base::trace_event::TracedValue* state) const override;
 
   void OnSetBeginFrameSourcePaused(bool paused);
-  void OnBeginFrame(const BeginFrameArgs& args);
+  void OnBeginFrame(const viz::BeginFrameArgs& args);
 
  protected:
-  BeginFrameArgs last_begin_frame_args_;
+  viz::BeginFrameArgs last_begin_frame_args_;
   std::unordered_set<BeginFrameObserver*> observers_;
   ExternalBeginFrameSourceClient* client_;
   bool paused_ = false;

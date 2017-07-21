@@ -13,8 +13,8 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "cc/ipc/cc_param_traits.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
@@ -592,8 +592,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ForceRedraw,
 IPC_MESSAGE_ROUTED1(ViewMsg_SetBeginFramePaused, bool /* paused */)
 
 // Sent by the browser when the renderer should generate a new frame.
-IPC_MESSAGE_ROUTED1(ViewMsg_BeginFrame,
-                    cc::BeginFrameArgs /* args */)
+IPC_MESSAGE_ROUTED1(ViewMsg_BeginFrame, viz::BeginFrameArgs /* args */)
 
 // Sent by the browser to deliver a compositor proto to the renderer.
 IPC_MESSAGE_ROUTED1(ViewMsg_HandleCompositorProto,
@@ -797,7 +796,8 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_FrameSwapMessages,
 
 // Sent if the BeginFrame did not cause a SwapCompositorFrame (e.g. because no
 // updates were required or because it was aborted in the renderer).
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidNotProduceFrame, cc::BeginFrameAck /* ack */)
+IPC_MESSAGE_ROUTED1(ViewHostMsg_DidNotProduceFrame,
+                    viz::BeginFrameAck /* ack */)
 
 // Send back a string to be recorded by UserMetrics.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,

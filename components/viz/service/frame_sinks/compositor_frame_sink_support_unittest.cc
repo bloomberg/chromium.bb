@@ -9,7 +9,6 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/test/begin_frame_args_test.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_surface_observer.h"
@@ -19,6 +18,7 @@
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,7 +65,7 @@ class FakeCompositorFrameSinkSupportClient
     InsertResources(resources);
   }
 
-  void OnBeginFrame(const cc::BeginFrameArgs& args) override {}
+  void OnBeginFrame(const BeginFrameArgs& args) override {}
 
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override {
@@ -865,25 +865,25 @@ TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
   support_->SetNeedsBeginFrame(true);
 
   // Issue a BeginFrame.
-  cc::BeginFrameArgs args =
-      cc::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+  BeginFrameArgs args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
   begin_frame_source_.TestOnBeginFrame(args);
 
   // Check that the support and SurfaceManager forward the BeginFrameAck
   // attached to a CompositorFrame to the SurfaceObserver.
-  cc::BeginFrameAck ack(0, 1, true);
+  BeginFrameAck ack(0, 1, true);
   auto frame = cc::test::MakeCompositorFrame();
   frame.metadata.begin_frame_ack = ack;
   support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
   EXPECT_EQ(ack, surface_observer_.last_ack());
 
   // Issue another BeginFrame.
-  args = cc::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2);
+  args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2);
   begin_frame_source_.TestOnBeginFrame(args);
 
   // Check that the support and SurfaceManager forward a DidNotProduceFrame ack
   // to the SurfaceObserver.
-  cc::BeginFrameAck ack2(0, 2, false);
+  BeginFrameAck ack2(0, 2, false);
   support_->DidNotProduceFrame(ack2);
   EXPECT_EQ(ack2, surface_observer_.last_ack());
 

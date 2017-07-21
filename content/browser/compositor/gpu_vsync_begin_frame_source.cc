@@ -11,7 +11,7 @@ GpuVSyncBeginFrameSource::GpuVSyncBeginFrameSource(
     : cc::ExternalBeginFrameSource(this),
       vsync_control_(vsync_control),
       needs_begin_frames_(false),
-      next_sequence_number_(cc::BeginFrameArgs::kStartingFrameNumber) {
+      next_sequence_number_(viz::BeginFrameArgs::kStartingFrameNumber) {
   DCHECK(vsync_control);
 }
 
@@ -29,9 +29,9 @@ void GpuVSyncBeginFrameSource::OnVSync(base::TimeTicks timestamp,
                (now - timestamp).ToInternalValue());
 
   next_sequence_number_++;
-  OnBeginFrame(cc::BeginFrameArgs::Create(
+  OnBeginFrame(viz::BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, source_id(), next_sequence_number_, timestamp,
-      deadline, interval, cc::BeginFrameArgs::NORMAL));
+      deadline, interval, viz::BeginFrameArgs::NORMAL));
 }
 
 void GpuVSyncBeginFrameSource::OnNeedsBeginFrames(bool needs_begin_frames) {

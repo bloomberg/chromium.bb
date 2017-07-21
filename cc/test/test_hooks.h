@@ -26,7 +26,7 @@ class TestHooks : public AnimationDelegate {
       std::unique_ptr<RasterBufferProvider>* raster_buffer_provider,
       std::unique_ptr<ResourcePool>* resource_pool);
   virtual void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                          const BeginFrameArgs& args) {}
+                                          const viz::BeginFrameArgs& args) {}
   virtual void DidFinishImplFrameOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void DidSendBeginMainFrameOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
@@ -92,7 +92,7 @@ class TestHooks : public AnimationDelegate {
       float scale,
       float top_controls_delta) {}
   virtual void BeginMainFrameNotExpectedSoon() {}
-  virtual void BeginMainFrame(const BeginFrameArgs& args) {}
+  virtual void BeginMainFrame(const viz::BeginFrameArgs& args) {}
   virtual void WillBeginMainFrame() {}
   virtual void DidBeginMainFrame() {}
   virtual void UpdateLayerTreeHost() {}

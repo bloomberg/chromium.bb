@@ -55,7 +55,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   bool BindToClient(cc::LayerTreeFrameSinkClient* client) override;
   void DetachFromClient() override;
   void SubmitCompositorFrame(cc::CompositorFrame frame) override;
-  void DidNotProduceFrame(const cc::BeginFrameAck& ack) override;
+  void DidNotProduceFrame(const BeginFrameAck& ack) override;
 
   // DisplayClient implementation.
   void DisplayOutputSurfaceLost() override;
@@ -70,7 +70,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   // CompositorFrameSinkSupportClient implementation:
   void DidReceiveCompositorFrameAck(
       const std::vector<cc::ReturnedResource>& resources) override;
-  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
+  void OnBeginFrame(const BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;
   void WillDrawSurface(const LocalSurfaceId& local_surface_id,

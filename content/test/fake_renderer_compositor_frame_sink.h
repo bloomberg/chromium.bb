@@ -28,7 +28,7 @@ class FakeRendererCompositorFrameSink
   // cc::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<cc::ReturnedResource>& resources) override;
-  void OnBeginFrame(const cc::BeginFrameArgs& args) override {}
+  void OnBeginFrame(const viz::BeginFrameArgs& args) override {}
   void OnBeginFramePausedChanged(bool paused) override {}
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;

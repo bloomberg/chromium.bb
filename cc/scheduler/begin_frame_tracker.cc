@@ -16,7 +16,7 @@ BeginFrameTracker::BeginFrameTracker(const tracked_objects::Location& location)
 BeginFrameTracker::~BeginFrameTracker() {
 }
 
-void BeginFrameTracker::Start(BeginFrameArgs new_args) {
+void BeginFrameTracker::Start(viz::BeginFrameArgs new_args) {
   // Trace the frame time being passed between BeginFrameTrackers.
   TRACE_EVENT_FLOW_STEP0(
       TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"), "BeginFrameArgs",
@@ -28,7 +28,7 @@ void BeginFrameTracker::Start(BeginFrameArgs new_args) {
       location_string_.c_str(), new_args.frame_time.ToInternalValue(),
       "new args", new_args.AsValue(), "current args", current_args_.AsValue());
 
-  // Check the new BeginFrameArgs are valid and monotonically increasing.
+  // Check the new viz::BeginFrameArgs are valid and monotonically increasing.
   DCHECK(new_args.IsValid());
   DCHECK_LE(current_args_.frame_time, new_args.frame_time);
 
@@ -40,14 +40,14 @@ void BeginFrameTracker::Start(BeginFrameArgs new_args) {
 
   // TODO(mithro): Add UMA tracking of delta between current_updated_at_ time
   // and the new_args.frame_time argument. This will give us how long after a
-  // BeginFrameArgs message was created before we started processing it.
+  // viz::BeginFrameArgs message was created before we started processing it.
 }
 
-const BeginFrameArgs& BeginFrameTracker::Current() const {
+const viz::BeginFrameArgs& BeginFrameTracker::Current() const {
   DCHECK(!HasFinished())
-      << "Tried to use BeginFrameArgs after marking the frame finished.";
+      << "Tried to use viz::BeginFrameArgs after marking the frame finished.";
   DCHECK(current_args_.IsValid())
-      << "Tried to use BeginFrameArgs before starting a frame!";
+      << "Tried to use viz::BeginFrameArgs before starting a frame!";
   return current_args_;
 }
 
@@ -59,11 +59,11 @@ void BeginFrameTracker::Finish() {
       location_string_.c_str(), current_args_.frame_time.ToInternalValue());
 }
 
-const BeginFrameArgs& BeginFrameTracker::Last() const {
+const viz::BeginFrameArgs& BeginFrameTracker::Last() const {
   DCHECK(current_args_.IsValid())
-      << "Tried to use last BeginFrameArgs before starting a frame!";
+      << "Tried to use last viz::BeginFrameArgs before starting a frame!";
   DCHECK(HasFinished())
-      << "Tried to use last BeginFrameArgs before the frame is finished.";
+      << "Tried to use last viz::BeginFrameArgs before the frame is finished.";
   return current_args_;
 }
 
@@ -72,7 +72,7 @@ base::TimeDelta BeginFrameTracker::Interval() const {
   // Normal interval will be ~16ms, 200Hz (5ms) screens are the fastest
   // easily available so anything less than that is likely an error.
   if (interval < base::TimeDelta::FromMilliseconds(1)) {
-    interval = BeginFrameArgs::DefaultInterval();
+    interval = viz::BeginFrameArgs::DefaultInterval();
   }
   return interval;
 }
@@ -112,7 +112,8 @@ void BeginFrameTracker::AsValueInto(
   state->EndDictionary();
 }
 
-const BeginFrameArgs& BeginFrameTracker::DangerousMethodCurrentOrLast() const {
+const viz::BeginFrameArgs& BeginFrameTracker::DangerousMethodCurrentOrLast()
+    const {
   if (!HasFinished()) {
     return Current();
   } else {

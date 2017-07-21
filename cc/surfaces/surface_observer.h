@@ -8,12 +8,11 @@
 namespace viz {
 class SurfaceId;
 class SurfaceInfo;
+struct BeginFrameAck;
+struct BeginFrameArgs;
 }
 
 namespace cc {
-
-struct BeginFrameAck;
-struct BeginFrameArgs;
 
 class SurfaceObserver {
  public:
@@ -31,7 +30,7 @@ class SurfaceObserver {
   // |ack.sequence_number| is only valid if called in response to a BeginFrame.
   // Should return true if this causes a Display to be damaged.
   virtual bool OnSurfaceDamaged(const viz::SurfaceId& surface_id,
-                                const BeginFrameAck& ack) = 0;
+                                const viz::BeginFrameAck& ack) = 0;
 
   // Called when a surface is garbage-collected.
   virtual void OnSurfaceDiscarded(const viz::SurfaceId& surface_id) = 0;
@@ -39,7 +38,7 @@ class SurfaceObserver {
   // Runs when a Surface's CompositorFrame producer has received a BeginFrame
   // and, thus, is expected to produce damage soon.
   virtual void OnSurfaceDamageExpected(const viz::SurfaceId& surface_id,
-                                       const BeginFrameArgs& args) = 0;
+                                       const viz::BeginFrameArgs& args) = 0;
 
   // Runs when a surface has been added to the aggregated CompositorFrame.
   virtual void OnSurfaceWillDraw(const viz::SurfaceId& surface_id) = 0;

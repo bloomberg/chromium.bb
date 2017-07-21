@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "cc/base/completion_event.h"
-#include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/skia_common.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 
 namespace cc {
@@ -53,7 +53,7 @@ class LayerTreeHostCheckerImagingTest : public LayerTreeTest {
 
 class LayerTreeHostCheckerImagingTestMergeWithMainFrame
     : public LayerTreeHostCheckerImagingTest {
-  void BeginMainFrame(const BeginFrameArgs& args) override {
+  void BeginMainFrame(const viz::BeginFrameArgs& args) override {
     if (layer_tree_host()->SourceFrameNumber() == 1) {
       // The first commit has happened, invalidate a tile outside the region
       // for the image to ensure that the final invalidation on the pending
