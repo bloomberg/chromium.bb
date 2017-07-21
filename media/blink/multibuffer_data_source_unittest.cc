@@ -187,14 +187,12 @@ class MockMultibufferDataSource : public MultibufferDataSource {
       UrlData::CORSMode cors_mode,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       linked_ptr<UrlIndex> url_index,
-      WebLocalFrame* frame,
       BufferedDataSourceHost* host)
       : MultibufferDataSource(
             url,
             cors_mode,
             task_runner,
             url_index,
-            frame,
             &media_log_,
             host,
             base::Bind(&MockMultibufferDataSource::set_downloading,
@@ -242,8 +240,7 @@ class MultibufferDataSourceTest : public testing::Test {
                           size_t file_size = kFileSize) {
     GURL gurl(url);
     data_source_.reset(new MockMultibufferDataSource(
-        gurl, cors_mode, message_loop_.task_runner(), url_index_,
-        view_->MainFrame()->ToWebLocalFrame(), &host_));
+        gurl, cors_mode, message_loop_.task_runner(), url_index_, &host_));
     data_source_->SetPreload(preload_);
 
     response_generator_.reset(new TestResponseGenerator(gurl, file_size));
@@ -1019,9 +1016,9 @@ TEST_F(MultibufferDataSourceTest, Http_ShareData) {
   EXPECT_TRUE(data_source_->downloading());
 
   StrictMock<MockBufferedDataSourceHost> host2;
-  MockMultibufferDataSource source2(
-      GURL(kHttpUrl), UrlData::CORS_UNSPECIFIED, message_loop_.task_runner(),
-      url_index_, view_->MainFrame()->ToWebLocalFrame(), &host2);
+  MockMultibufferDataSource source2(GURL(kHttpUrl), UrlData::CORS_UNSPECIFIED,
+                                    message_loop_.task_runner(), url_index_,
+                                    &host2);
   source2.SetPreload(preload_);
 
   EXPECT_CALL(*this, OnInitialize(true));
@@ -1313,7 +1310,7 @@ TEST_F(MultibufferDataSourceTest, SeekPastEOF) {
   GURL gurl(kHttpUrl);
   data_source_.reset(new MockMultibufferDataSource(
       gurl, UrlData::CORS_UNSPECIFIED, message_loop_.task_runner(), url_index_,
-      view_->MainFrame()->ToWebLocalFrame(), &host_));
+      &host_));
   data_source_->SetPreload(preload_);
 
   response_generator_.reset(new TestResponseGenerator(gurl, kDataSize + 1));
@@ -1594,7 +1591,7 @@ TEST_F(MultibufferDataSourceTest, Http_CheckLoadingTransition) {
   GURL gurl(kHttpUrl);
   data_source_.reset(new MockMultibufferDataSource(
       gurl, UrlData::CORS_UNSPECIFIED, message_loop_.task_runner(), url_index_,
-      view_->MainFrame()->ToWebLocalFrame(), &host_));
+      &host_));
   data_source_->SetPreload(preload_);
 
   response_generator_.reset(new TestResponseGenerator(gurl, kDataSize * 1));

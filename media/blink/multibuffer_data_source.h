@@ -61,7 +61,6 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
       UrlData::CORSMode cors_mode,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       linked_ptr<UrlIndex> url_index,
-      blink::WebFrame* frame,
       MediaLog* media_log,
       BufferedDataSourceHost* host,
       const DownloadingCB& downloading_cb);
@@ -189,9 +188,6 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
 
   // Shared cache.
   linked_ptr<UrlIndex> url_index_;
-
-  // A webframe for loading.
-  blink::WebFrame* frame_;
 
   // A resource reader for the media resource.
   std::unique_ptr<MultiBufferReader> reader_;

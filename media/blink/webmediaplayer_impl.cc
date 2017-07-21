@@ -511,7 +511,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   } else {
     data_source_.reset(new MultibufferDataSource(
         url, static_cast<UrlData::CORSMode>(cors_mode), main_task_runner_,
-        url_index_, frame_, media_log_.get(), &buffered_data_source_host_,
+        url_index_, media_log_.get(), &buffered_data_source_host_,
         base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
     data_source_->SetPreload(preload_);
     data_source_->Initialize(
