@@ -46,8 +46,7 @@
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (!command_line->HasSwitch(switches::kTestType))
       [self setHasShadow:YES];
-    [self setBackgroundColor:skia::SkColorToCalibratedNSColor(
-        chrome_style::GetBackgroundColor())];
+    [self setBackgroundColor:[NSColor windowBackgroundColor]];
     [self setOpaque:NO];
     [self setReleasedWhenClosed:NO];
   }

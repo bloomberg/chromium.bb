@@ -18,7 +18,6 @@
 namespace chrome_style {
 
 int GetCloseButtonSize();  // Size of close button.
-SkColor GetBackgroundColor();  // Dialog background color.
 SkColor GetLinkColor();  // Dialog link color.
 
 const int kTitleTopPadding = 15; // Padding above the title.
