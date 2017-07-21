@@ -744,11 +744,12 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
 
   SelectionModifier selection_modifier(*frame, EndingSelection());
   selection_modifier.Modify(SelectionModifyAlteration::kExtend,
-                            kDirectionBackward, granularity);
+                            SelectionModifyDirection::kBackward, granularity);
   if (kill_ring && selection_modifier.Selection().IsCaret() &&
       granularity != TextGranularity::kCharacter) {
     selection_modifier.Modify(SelectionModifyAlteration::kExtend,
-                              kDirectionBackward, TextGranularity::kCharacter);
+                              SelectionModifyDirection::kBackward,
+                              TextGranularity::kCharacter);
   }
 
   const VisiblePosition& visible_start(EndingSelection().VisibleStart());
@@ -803,7 +804,7 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
     // Extend the selection backward into the last cell, then deletion will
     // handle the move.
     selection_modifier.Modify(SelectionModifyAlteration::kExtend,
-                              kDirectionBackward, granularity);
+                              SelectionModifyDirection::kBackward, granularity);
     // If the caret is just after a table, select the table and don't delete
     // anything.
   } else if (Element* table = TableElementJustBefore(visible_start)) {
@@ -916,11 +917,12 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
   // root editable element or at the start of a document.
   SelectionModifier selection_modifier(*frame, EndingSelection());
   selection_modifier.Modify(SelectionModifyAlteration::kExtend,
-                            kDirectionForward, granularity);
+                            SelectionModifyDirection::kForward, granularity);
   if (kill_ring && selection_modifier.Selection().IsCaret() &&
       granularity != TextGranularity::kCharacter) {
     selection_modifier.Modify(SelectionModifyAlteration::kExtend,
-                              kDirectionForward, TextGranularity::kCharacter);
+                              SelectionModifyDirection::kForward,
+                              TextGranularity::kCharacter);
   }
 
   Position downstream_end = MostForwardCaretPosition(EndingSelection().End());
@@ -959,7 +961,8 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
       selection_modifier.Selection().IsCaret() &&
       IsEndOfParagraph(selection_modifier.Selection().VisibleEnd())) {
     selection_modifier.Modify(SelectionModifyAlteration::kExtend,
-                              kDirectionForward, TextGranularity::kCharacter);
+                              SelectionModifyDirection::kForward,
+                              TextGranularity::kCharacter);
   }
 
   const VisibleSelection& selection_to_delete = selection_modifier.Selection();

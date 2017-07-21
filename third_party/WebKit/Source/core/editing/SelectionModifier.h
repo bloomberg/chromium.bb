@@ -38,6 +38,7 @@ class LocalFrame;
 
 enum class SelectionModifyAlteration { kMove, kExtend };
 enum class SelectionModifyVerticalDirection { kUp, kDown };
+enum class SelectionModifyDirection { kBackward, kForward, kLeft, kRight };
 
 class SelectionModifier {
   STACK_ALLOCATED();
@@ -54,7 +55,9 @@ class SelectionModifier {
   }
   const VisibleSelection& Selection() const { return selection_; }
 
-  bool Modify(SelectionModifyAlteration, SelectionDirection, TextGranularity);
+  bool Modify(SelectionModifyAlteration,
+              SelectionModifyDirection,
+              TextGranularity);
   bool ModifyWithPageGranularity(SelectionModifyAlteration,
                                  unsigned vertical_distance,
                                  SelectionModifyVerticalDirection);

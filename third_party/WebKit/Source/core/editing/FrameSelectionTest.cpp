@@ -172,7 +172,8 @@ TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree) {
           .Extend(
               ToPositionInDOMTree(PositionInFlatTree(GetDocument().body(), 2)))
           .Build());
-  Selection().Modify(SelectionModifyAlteration::kExtend, kDirectionForward,
+  Selection().Modify(SelectionModifyAlteration::kExtend,
+                     SelectionModifyDirection::kForward,
                      TextGranularity::kWord);
   EXPECT_EQ(Position(two, 0), VisibleSelectionInDOMTree().Start());
   EXPECT_EQ(Position(two, 3), VisibleSelectionInDOMTree().End());
@@ -188,18 +189,18 @@ TEST_F(FrameSelectionTest, ModifyWithUserTriggered) {
   Selection().SetSelection(
       SelectionInDOMTree::Builder().Collapse(end_of_text).Build());
 
-  EXPECT_FALSE(
-      Selection().Modify(SelectionModifyAlteration::kMove, kDirectionForward,
-                         TextGranularity::kCharacter, SetSelectionBy::kSystem))
+  EXPECT_FALSE(Selection().Modify(
+      SelectionModifyAlteration::kMove, SelectionModifyDirection::kForward,
+      TextGranularity::kCharacter, SetSelectionBy::kSystem))
       << "Selection.modify() returns false for non-user-triggered call when "
          "selection isn't modified.";
   EXPECT_EQ(end_of_text,
             Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start())
       << "Selection isn't modified";
 
-  EXPECT_TRUE(Selection().Modify(SelectionModifyAlteration::kMove,
-                                 kDirectionForward, TextGranularity::kCharacter,
-                                 SetSelectionBy::kUser))
+  EXPECT_TRUE(Selection().Modify(
+      SelectionModifyAlteration::kMove, SelectionModifyDirection::kForward,
+      TextGranularity::kCharacter, SetSelectionBy::kUser))
       << "Selection.modify() returns true for user-triggered call";
   EXPECT_EQ(end_of_text,
             Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start())
