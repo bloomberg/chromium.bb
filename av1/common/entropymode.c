@@ -1136,10 +1136,10 @@ static const aom_prob default_intra_inter_p[INTRA_INTER_CONTEXTS] = {
 #if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob
     default_intra_inter_cdf[INTRA_INTER_CONTEXTS][CDF_SIZE(2)] = {
-      { AOM_ICDF(1152), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(13056), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(23936), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(28800), AOM_ICDF(32768), 0 }
+      { AOM_ICDF(768), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(12416), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(19328), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(26240), AOM_ICDF(32768), 0 }
     };
 #endif
 
