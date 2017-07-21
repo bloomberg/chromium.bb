@@ -579,7 +579,7 @@ class RemovePasswordsTester {
             ->GetForProfile(testing_profile, ServiceAccessType::EXPLICIT_ACCESS)
             .get());
 
-    OSCryptMocker::SetUpWithSingleton();
+    OSCryptMocker::SetUp();
   }
 
   ~RemovePasswordsTester() { OSCryptMocker::TearDown(); }

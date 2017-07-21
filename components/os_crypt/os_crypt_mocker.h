@@ -12,7 +12,7 @@
 class OSCryptMocker {
  public:
   // Inject mocking into OSCrypt.
-  static void SetUpWithSingleton();
+  static void SetUp();
 
   // Restore OSCrypt to its real behaviour.
   static void TearDown();

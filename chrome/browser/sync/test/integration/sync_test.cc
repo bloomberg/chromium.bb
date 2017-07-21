@@ -266,7 +266,7 @@ void SyncTest::SetUp() {
     LOG(FATAL) << "Cannot run sync tests without GAIA credentials.";
 
   // Mock the Mac Keychain service.  The real Keychain can block on user input.
-  OSCryptMocker::SetUpWithSingleton();
+  OSCryptMocker::SetUp();
 
   // Start up a sync test server if one is needed and setup mock gaia responses.
   // Note: This must be done prior to the call to SetupClients() because we want

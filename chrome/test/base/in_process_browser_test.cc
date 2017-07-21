@@ -240,7 +240,7 @@ void InProcessBrowserTest::SetUp() {
   // Always use a mocked password storage if OS encryption is used (which is
   // when anything sensitive gets stored, including Cookies). Without this on
   // Mac, many tests will hang waiting for a user to approve KeyChain access.
-  OSCryptMocker::SetUpWithSingleton();
+  OSCryptMocker::SetUp();
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalService::set_state_for_testing(

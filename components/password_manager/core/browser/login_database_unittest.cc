@@ -142,7 +142,7 @@ class LoginDatabaseTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_ = temp_dir_.GetPath().AppendASCII("TestMetadataStoreMacDatabase");
-    OSCryptMocker::SetUpWithSingleton();
+    OSCryptMocker::SetUp();
 
     db_.reset(new LoginDatabase(file_));
     ASSERT_TRUE(db_->Init());
@@ -1697,7 +1697,7 @@ class LoginDatabaseMigrationTest : public testing::TestWithParam<int> {
                                   .AppendASCII("data")
                                   .AppendASCII("password_manager");
     database_path_ = temp_dir_.GetPath().AppendASCII("test.db");
-    OSCryptMocker::SetUpWithSingleton();
+    OSCryptMocker::SetUp();
   }
 
   void TearDown() override { OSCryptMocker::TearDown(); }

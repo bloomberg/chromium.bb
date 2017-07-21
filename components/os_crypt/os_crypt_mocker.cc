@@ -11,11 +11,11 @@
 #endif
 
 // static
-void OSCryptMocker::SetUpWithSingleton() {
+void OSCryptMocker::SetUp() {
 #if defined(OS_MACOSX)
   OSCrypt::UseMockKeychain(true);
 #elif defined(USE_LIBSECRET) || defined(USE_KEYRING) || defined(USE_KWALLET)
-  OSCryptMockerLinux::SetUpWithSingleton();
+  OSCryptMockerLinux::SetUp();
 #endif
 }
 
