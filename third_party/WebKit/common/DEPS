@@ -1,0 +1,14 @@
+include_rules = [
+    # In general this directory should not depend on any of components/,
+    # content/ or other third_party/WebKit directories.
+    "-components",
+    "-content",
+    "-third_party/WebKit",
+
+    # It is allowed to depend on common chromium stuff (and itself).
+    "+base",
+    "+third_party/WebKit/common",
+    "+build",
+    "+testing/gmock/include/gmock",
+    "+testing/gtest/include/gtest",
+]

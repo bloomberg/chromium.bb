@@ -6,6 +6,7 @@ include_rules = [
     "+services/service_manager/public/cpp/interface_provider.h",
     "+testing/gmock/include/gmock",
     "+testing/gtest/include/gtest",
+    "+third_party/WebKit/common",
     "+v8",
 ]
 
