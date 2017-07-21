@@ -731,6 +731,7 @@ android_library("cronet_javatests") {
     "//net/android:net_java",
     "//net/android:net_java_test_support",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/junit",
   ]
 
   run_findbugs_override = true

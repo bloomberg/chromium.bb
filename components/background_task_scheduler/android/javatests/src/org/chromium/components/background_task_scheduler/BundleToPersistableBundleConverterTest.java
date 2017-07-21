@@ -9,8 +9,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
 
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 
 import java.util.ArrayList;
@@ -20,9 +24,11 @@ import java.util.Set;
 /**
  * Tests for {@link BundleToPersistableBundleConverter}.
  */
+@RunWith(BaseJUnit4ClassRunner.class)
 @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
-public class BundleToPersistableBundleConverterTest extends InstrumentationTestCase {
+public class BundleToPersistableBundleConverterTest {
+    @Test
     @SmallTest
     public void testAllValidConversions() {
         Bundle bundle = new Bundle();
@@ -41,19 +47,21 @@ public class BundleToPersistableBundleConverterTest extends InstrumentationTestC
                 BundleToPersistableBundleConverter.convert(bundle);
         PersistableBundle pBundle = result.getPersistableBundle();
 
-        assertFalse(result.hasErrors());
-        assertEquals(bundle.getString("s"), pBundle.getString("s"));
-        assertTrue(Arrays.equals(bundle.getStringArray("sa"), pBundle.getStringArray("sa")));
-        assertEquals(bundle.getBoolean("b"), pBundle.getBoolean("b"));
-        assertTrue(Arrays.equals(bundle.getBooleanArray("ba"), pBundle.getBooleanArray("ba")));
-        assertEquals(bundle.getInt("i"), pBundle.getInt("i"));
-        assertTrue(Arrays.equals(bundle.getIntArray("ia"), pBundle.getIntArray("ia")));
-        assertEquals(bundle.getLong("l"), pBundle.getLong("l"));
-        assertTrue(Arrays.equals(bundle.getLongArray("la"), pBundle.getLongArray("la")));
-        assertEquals(bundle.getDouble("d"), pBundle.getDouble("d"));
-        assertTrue(Arrays.equals(bundle.getDoubleArray("da"), pBundle.getDoubleArray("da")));
+        Assert.assertFalse(result.hasErrors());
+        Assert.assertEquals(bundle.getString("s"), pBundle.getString("s"));
+        Assert.assertTrue(Arrays.equals(bundle.getStringArray("sa"), pBundle.getStringArray("sa")));
+        Assert.assertEquals(bundle.getBoolean("b"), pBundle.getBoolean("b"));
+        Assert.assertTrue(
+                Arrays.equals(bundle.getBooleanArray("ba"), pBundle.getBooleanArray("ba")));
+        Assert.assertEquals(bundle.getInt("i"), pBundle.getInt("i"));
+        Assert.assertTrue(Arrays.equals(bundle.getIntArray("ia"), pBundle.getIntArray("ia")));
+        Assert.assertEquals(bundle.getLong("l"), pBundle.getLong("l"));
+        Assert.assertTrue(Arrays.equals(bundle.getLongArray("la"), pBundle.getLongArray("la")));
+        Assert.assertEquals(bundle.getDouble("d"), pBundle.getDouble("d"), 0);
+        Assert.assertTrue(Arrays.equals(bundle.getDoubleArray("da"), pBundle.getDoubleArray("da")));
     }
 
+    @Test
     @SmallTest
     public void testSomeBadConversions() {
         Bundle bundle = new Bundle();
@@ -68,15 +76,16 @@ public class BundleToPersistableBundleConverterTest extends InstrumentationTestC
         BundleToPersistableBundleConverter.Result result =
                 BundleToPersistableBundleConverter.convert(bundle);
 
-        assertTrue(result.hasErrors());
+        Assert.assertTrue(result.hasErrors());
         Set<String> failedKeys = result.getFailedKeys();
-        assertEquals(3, failedKeys.size());
-        assertTrue(failedKeys.contains("byte"));
-        assertTrue(failedKeys.contains("float"));
-        assertTrue(failedKeys.contains("arrayList"));
-        assertEquals(bundle.getString("s"), result.getPersistableBundle().getString("s"));
+        Assert.assertEquals(3, failedKeys.size());
+        Assert.assertTrue(failedKeys.contains("byte"));
+        Assert.assertTrue(failedKeys.contains("float"));
+        Assert.assertTrue(failedKeys.contains("arrayList"));
+        Assert.assertEquals(bundle.getString("s"), result.getPersistableBundle().getString("s"));
     }
 
+    @Test
     @SmallTest
     public void testNullValue() {
         Bundle bundle = new Bundle();
@@ -87,9 +96,12 @@ public class BundleToPersistableBundleConverterTest extends InstrumentationTestC
         BundleToPersistableBundleConverter.Result result =
                 BundleToPersistableBundleConverter.convert(bundle);
 
-        assertFalse(result.hasErrors());
-        assertEquals(bundle.getString("foo"), result.getPersistableBundle().getString("foo"));
-        assertEquals(bundle.getString("bar"), result.getPersistableBundle().getString("bar"));
-        assertEquals(bundle.getString("qux"), result.getPersistableBundle().getString("qux"));
+        Assert.assertFalse(result.hasErrors());
+        Assert.assertEquals(
+                bundle.getString("foo"), result.getPersistableBundle().getString("foo"));
+        Assert.assertEquals(
+                bundle.getString("bar"), result.getPersistableBundle().getString("bar"));
+        Assert.assertEquals(
+                bundle.getString("qux"), result.getPersistableBundle().getString("qux"));
     }
 }

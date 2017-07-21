@@ -4,11 +4,18 @@
 
 package org.chromium.components.crash.browser;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
@@ -19,21 +26,21 @@ import java.io.IOException;
 /**
  * Unittests for {@link CrashDumpManager}.
  */
-public class CrashDumpManagerTest extends InstrumentationTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class CrashDumpManagerTest {
     File mTempDir;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        ContextUtils.initApplicationContextForTests(
-                getInstrumentation().getTargetContext().getApplicationContext());
+    @Before
+    public void setUp() throws Exception {
+        ContextUtils.initApplicationContextForTests(InstrumentationRegistry.getInstrumentation()
+                                                            .getTargetContext()
+                                                            .getApplicationContext());
         mTempDir = ContextUtils.getApplicationContext().getCacheDir();
         assert mTempDir.exists();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    @After
+    public void tearDown() throws Exception {
         File[] files = mTempDir.listFiles();
         if (files == null) return;
 
@@ -42,16 +49,18 @@ public class CrashDumpManagerTest extends InstrumentationTestCase {
         }
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     @DisabledTest // Flaky, crbug.com/725379.
     public void testUploadMinidump_NoCallback() throws IOException {
         File minidump = new File(mTempDir, "mini.dmp");
-        assertTrue(minidump.createNewFile());
+        Assert.assertTrue(minidump.createNewFile());
 
         CrashDumpManager.tryToUploadMinidump(minidump.getAbsolutePath());
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     @DisabledTest // Flaky, crbug.com/725379.
@@ -59,7 +68,7 @@ public class CrashDumpManagerTest extends InstrumentationTestCase {
         registerUploadCallback(new CrashDumpManager.UploadMinidumpCallback() {
             @Override
             public void tryToUploadMinidump(File minidump) {
-                fail("The callback should not be called when the minidump path is null.");
+                Assert.fail("The callback should not be called when the minidump path is null.");
             }
         });
 
@@ -68,12 +77,14 @@ public class CrashDumpManagerTest extends InstrumentationTestCase {
 
     // @SmallTest
     // @Feature({"Android-AppBase"})
+    @Test
     @DisabledTest // Flaky, crbug.com/725379.
     public void testUploadMinidump_FileDoesntExist() {
         registerUploadCallback(new CrashDumpManager.UploadMinidumpCallback() {
             @Override
             public void tryToUploadMinidump(File minidump) {
-                fail("The callback should not be called when the minidump file doesn't exist.");
+                Assert.fail(
+                        "The callback should not be called when the minidump file doesn't exist.");
             }
         });
 
@@ -81,34 +92,37 @@ public class CrashDumpManagerTest extends InstrumentationTestCase {
                 mTempDir.getAbsolutePath() + "/some/file/that/doesnt/exist");
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     @DisabledTest // Flaky, crbug.com/725379.
     public void testUploadMinidump_MinidumpPathIsDirectory() throws IOException {
         File directory = new File(mTempDir, "a_directory");
-        assertTrue(directory.mkdir());
+        Assert.assertTrue(directory.mkdir());
 
         registerUploadCallback(new CrashDumpManager.UploadMinidumpCallback() {
             @Override
             public void tryToUploadMinidump(File minidump) {
-                fail("The callback should not be called when the minidump path is not a file.");
+                Assert.fail(
+                        "The callback should not be called when the minidump path is not a file.");
             }
         });
 
         CrashDumpManager.tryToUploadMinidump(directory.getAbsolutePath());
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     @DisabledTest // Flaky, crbug.com/725379.
     public void testUploadMinidump_MinidumpPathIsValid() throws IOException {
         final File minidump = new File(mTempDir, "mini.dmp");
-        assertTrue(minidump.createNewFile());
+        Assert.assertTrue(minidump.createNewFile());
 
         registerUploadCallback(new CrashDumpManager.UploadMinidumpCallback() {
             @Override
             public void tryToUploadMinidump(File actualMinidump) {
-                assertEquals("Should call the callback with the correct filename.", minidump,
+                Assert.assertEquals("Should call the callback with the correct filename.", minidump,
                         actualMinidump);
             }
         });

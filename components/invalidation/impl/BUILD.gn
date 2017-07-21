@@ -235,6 +235,7 @@ if (is_android) {
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/cacheinvalidation:cacheinvalidation_javalib",
       "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
+      "//third_party/junit",
     ]
     java_files = [
       "android/javatests/src/org/chromium/components/invalidation/InvalidationClientServiceTest.java",
