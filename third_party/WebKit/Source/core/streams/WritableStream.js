@@ -113,8 +113,41 @@
         templateErrorCannotActionOnStateStream(action, stateNames[state]));
   }
 
+  // TODO(ricea): Share these with ReadableStream.
+  function internalError() {
+    throw new RangeError('WritableStream Internal Error');
+  }
+
+  function rejectPromise(p, reason) {
+    if (!v8.isPromise(p)) {
+      internalError();
+    }
+    v8.rejectPromise(p, reason);
+  }
+
+  function resolvePromise(p, value) {
+    if (!v8.isPromise(p)) {
+      internalError();
+    }
+    v8.resolvePromise(p, value);
+  }
+
+  function markPromiseAsHandled(p) {
+    if (!v8.isPromise(p)) {
+      internalError();
+    }
+    v8.markPromiseAsHandled(p);
+  }
+
+  function promiseState(p) {
+    if (!v8.isPromise(p)) {
+      internalError();
+    }
+    return v8.promiseState(p);
+  }
+
   function rejectPromises(queue, e) {
-    queue.forEach(promise => v8.rejectPromise(promise, e));
+    queue.forEach(promise => rejectPromise(promise, e));
   }
 
   class WritableStream {
@@ -279,7 +312,7 @@
     stream[_pendingAbortRequest] = undefined;
 
     if (abortRequest.wasAlreadyErroring === true) {
-      v8.rejectPromise(abortRequest.promise, storedError);
+      rejectPromise(abortRequest.promise, storedError);
       WritableStreamRejectCloseAndClosedPromiseIfNeeded(stream);
       return;
     }
@@ -290,11 +323,11 @@
     thenPromise(
         promise,
         () => {
-          v8.resolvePromise(abortRequest.promise, undefined);
+          resolvePromise(abortRequest.promise, undefined);
           WritableStreamRejectCloseAndClosedPromiseIfNeeded(stream);
         },
         reason => {
-          v8.rejectPromise(abortRequest.promise, reason);
+          rejectPromise(abortRequest.promise, reason);
           WritableStreamRejectCloseAndClosedPromiseIfNeeded(stream);
         });
   }
@@ -302,14 +335,14 @@
   function WritableStreamFinishInFlightWrite(stream) {
     // assert(stream[_inFlightWriteRequest] !== undefined,
     //        '_stream_.[[inFlightWriteRequest]] is not *undefined*.');
-    v8.resolvePromise(stream[_inFlightWriteRequest], undefined);
+    resolvePromise(stream[_inFlightWriteRequest], undefined);
     stream[_inFlightWriteRequest] = undefined;
   }
 
   function WritableStreamFinishInFlightWriteWithError(stream, error) {
     // assert(stream[_inFlightWriteRequest] !== undefined,
     //        '_stream_.[[inFlightWriteRequest]] is not *undefined*.');
-    v8.rejectPromise(stream[_inFlightWriteRequest], error);
+    rejectPromise(stream[_inFlightWriteRequest], error);
     stream[_inFlightWriteRequest] = undefined;
 
     let state = stream[_stateAndFlags] & STATE_MASK;
@@ -322,7 +355,7 @@
   function WritableStreamFinishInFlightClose(stream) {
     // assert(stream[_inFlightCloseRequest] !== undefined,
     //        '_stream_.[[inFlightCloseRequest]] is not *undefined*.');
-    v8.resolvePromise(stream[_inFlightCloseRequest], undefined);
+    resolvePromise(stream[_inFlightCloseRequest], undefined);
     stream[_inFlightCloseRequest] = undefined;
 
     const state = stream[_stateAndFlags] & STATE_MASK;
@@ -332,7 +365,7 @@
     if (state === ERRORING) {
       stream[_storedError] = undefined;
       if (stream[_pendingAbortRequest] !== undefined) {
-        v8.resolvePromise(stream[_pendingAbortRequest].promise, undefined);
+        resolvePromise(stream[_pendingAbortRequest].promise, undefined);
         stream[_pendingAbortRequest] = undefined;
       }
     }
@@ -340,7 +373,7 @@
     stream[_stateAndFlags] = (stream[_stateAndFlags] & ~STATE_MASK) | CLOSED;
     const writer = stream[_writer];
     if (writer !== undefined) {
-      v8.resolvePromise(writer[_closedPromise], undefined);
+      resolvePromise(writer[_closedPromise], undefined);
     }
 
     // assert(stream[_pendingAbortRequest] === undefined,
@@ -352,7 +385,7 @@
   function WritableStreamFinishInFlightCloseWithError(stream, error) {
     // assert(stream[_inFlightCloseRequest] !== undefined,
     //        '_stream_.[[inFlightCloseRequest]] is not *undefined*.');
-    v8.rejectPromise(stream[_inFlightCloseRequest], error);
+    rejectPromise(stream[_inFlightCloseRequest], error);
     stream[_inFlightCloseRequest] = undefined;
 
     const state = stream[_stateAndFlags] & STATE_MASK;
@@ -360,7 +393,7 @@
     //        '_stream_.[[state]] is `"writable"` or `"erroring"`');
 
     if (stream[_pendingAbortRequest] !== undefined) {
-      v8.rejectPromise(stream[_pendingAbortRequest].promise, error);
+      rejectPromise(stream[_pendingAbortRequest].promise, error);
       stream[_pendingAbortRequest] = undefined;
     }
 
@@ -402,14 +435,14 @@
     if (stream[_closeRequest] !== undefined) {
       // assert(stream[_inFlightCloseRequest] === undefined,
       //        '_stream_.[[inFlightCloseRequest]] is *undefined*');
-      v8.rejectPromise(stream[_closeRequest], stream[_storedError]);
+      rejectPromise(stream[_closeRequest], stream[_storedError]);
       stream[_closeRequest] = undefined;
     }
 
     const writer = stream[_writer];
     if (writer !== undefined) {
-      v8.rejectPromise(writer[_closedPromise], stream[_storedError]);
-      v8.markPromiseAsHandled(writer[_closedPromise]);
+      rejectPromise(writer[_closedPromise], stream[_storedError]);
+      markPromiseAsHandled(writer[_closedPromise]);
     }
   }
 
@@ -425,7 +458,7 @@
         writer[_readyPromise] = v8.createPromise();
       } else {
         // assert(!backpressure, '_backpressure_ is *false*.');
-        v8.resolvePromise(writer[_readyPromise], undefined);
+        resolvePromise(writer[_readyPromise], undefined);
       }
     }
     if (backpressure) {
@@ -483,7 +516,7 @@
         case ERRORING:
         {
           this[_readyPromise] = Promise_reject(stream[_storedError]);
-          v8.markPromiseAsHandled(this[_readyPromise]);
+          markPromiseAsHandled(this[_readyPromise]);
           this[_closedPromise] = v8.createPromise();
           break;
         }
@@ -500,9 +533,9 @@
           // assert(state === ERRORED, '_state_ is `"errored"`.');
           const storedError = stream[_storedError];
           this[_readyPromise] = Promise_reject(storedError);
-          v8.markPromiseAsHandled(this[_readyPromise]);
+          markPromiseAsHandled(this[_readyPromise]);
           this[_closedPromise] = Promise_reject(storedError);
-          v8.markPromiseAsHandled(this[_closedPromise]);
+          markPromiseAsHandled(this[_closedPromise]);
           break;
         }
       }
@@ -611,7 +644,7 @@
 
     if ((stream[_stateAndFlags] & BACKPRESSURE_FLAG) &&
         state === WRITABLE) {
-      v8.resolvePromise(writer[_readyPromise], undefined);
+      resolvePromise(writer[_readyPromise], undefined);
     }
     WritableStreamDefaultControllerClose(stream[_writableStreamController]);
     return promise;
@@ -636,23 +669,23 @@
 
   function WritableStreamDefaultWriterEnsureClosedPromiseRejected(
       writer, error) {
-    if (v8.promiseState(writer[_closedPromise]) === v8.kPROMISE_PENDING) {
-      v8.rejectPromise(writer[_closedPromise], error);
+    if (promiseState(writer[_closedPromise]) === v8.kPROMISE_PENDING) {
+      rejectPromise(writer[_closedPromise], error);
     } else {
       writer[_closedPromise] = Promise_reject(error);
     }
-    v8.markPromiseAsHandled(writer[_closedPromise]);
+    markPromiseAsHandled(writer[_closedPromise]);
   }
 
 
   function WritableStreamDefaultWriterEnsureReadyPromiseRejected(
       writer, error) {
-    if (v8.promiseState(writer[_readyPromise]) === v8.kPROMISE_PENDING) {
-      v8.rejectPromise(writer[_readyPromise], error);
+    if (promiseState(writer[_readyPromise]) === v8.kPROMISE_PENDING) {
+      rejectPromise(writer[_readyPromise], error);
     } else {
       writer[_readyPromise] = Promise_reject(error);
     }
-    v8.markPromiseAsHandled(writer[_readyPromise]);
+    markPromiseAsHandled(writer[_readyPromise]);
   }
 
   function WritableStreamDefaultWriterGetDesiredSize(writer) {
