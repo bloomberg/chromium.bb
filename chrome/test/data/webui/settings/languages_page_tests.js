@@ -184,6 +184,34 @@ cr.define('languages_page_tests', function() {
 
         return dialogClosedResolver.promise;
       });
+
+      // Test that searching languages works whether the displayed or native
+      // language name is queried.
+      test('search languages', function() {
+        var searchInput = dialog.$$('settings-subpage-search');
+
+        var getItems = function() {
+          return dialog.$.dialog.querySelectorAll('.list-item:not([hidden])');
+        };
+
+        // Expecting a few languages to be displayed when no query exists.
+        assertGE(getItems().length, 1);
+
+        // Issue query that matches the |displayedName|.
+        searchInput.setValue('greek');
+        Polymer.dom.flush();
+        assertEquals(1, getItems().length);
+
+        // Issue query that matches the |nativeDisplayedName|.
+        searchInput.setValue('Ελληνικά');
+        Polymer.dom.flush();
+        assertEquals(1, getItems().length);
+
+        // Issue query that does not match any language.
+        searchInput.setValue('egaugnal');
+        Polymer.dom.flush();
+        assertEquals(0, getItems().length);
+      });
     });
 
     suite(TestNames.LanguageMenu, function() {

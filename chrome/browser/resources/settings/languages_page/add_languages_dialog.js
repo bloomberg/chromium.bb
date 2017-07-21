@@ -63,6 +63,8 @@ Polymer({
    * @private
    */
   getLanguages_: function() {
+    var filterValue =
+        this.filterValue_ ? this.filterValue_.toLowerCase() : null;
     return this.languages.supported.filter(function(language) {
       var isAvailableLanguage =
           !this.languageHelper.isLanguageEnabled(language.code);
@@ -70,11 +72,11 @@ Polymer({
       if (!isAvailableLanguage)
         return false;
 
-      if (!this.filterValue_)
-        return isAvailableLanguage;
+      if (filterValue === null)
+        return true;
 
-      return language.displayName.toLowerCase().includes(
-          this.filterValue_.toLowerCase());
+      return language.displayName.toLowerCase().includes(filterValue) ||
+          language.nativeDisplayName.toLowerCase().includes(filterValue);
     }.bind(this));
   },
 
