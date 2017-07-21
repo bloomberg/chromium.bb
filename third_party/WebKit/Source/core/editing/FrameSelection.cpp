@@ -700,6 +700,10 @@ void FrameSelection::SelectAll(SetSelectionBy set_selection_by) {
   }
 }
 
+void FrameSelection::SelectAll() {
+  SelectAll(SetSelectionBy::kSystem);
+}
+
 void FrameSelection::NotifyAccessibilityForSelectionChange() {
   if (GetSelectionInDOMTree().IsNone())
     return;
