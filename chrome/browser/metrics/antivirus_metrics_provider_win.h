@@ -33,13 +33,9 @@ class AntiVirusMetricsProvider : public metrics::MetricsProvider {
   ~AntiVirusMetricsProvider() override;
 
   // metrics::MetricsDataProvider:
+  void AsyncInit(const base::Closure& done_callback) override;
   void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
-
-  // Fetches AntiVirus data asynchronously and calls |done_callback| when
-  // done. Should be called before ProvideSystemProfileMetrics to ensure that
-  // data is ready to be collected.
-  void GetAntiVirusMetrics(const base::Closure& done_callback);
 
  private:
   // This enum is reported via a histogram so new values should always be added

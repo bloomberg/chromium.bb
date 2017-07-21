@@ -116,8 +116,7 @@ PluginMetricsProvider::~PluginMetricsProvider() {
   BrowserChildProcessObserver::Remove(this);
 }
 
-void PluginMetricsProvider::GetPluginInformation(
-    const base::Closure& done_callback) {
+void PluginMetricsProvider::AsyncInit(const base::Closure& done_callback) {
   content::PluginService::GetInstance()->GetPlugins(
       base::Bind(&PluginMetricsProvider::OnGotPlugins,
                  weak_ptr_factory_.GetWeakPtr(),

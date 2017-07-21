@@ -160,8 +160,7 @@ void AntiVirusMetricsProvider::ProvideSystemProfileMetrics(
   }
 }
 
-void AntiVirusMetricsProvider::GetAntiVirusMetrics(
-    const base::Closure& done_callback) {
+void AntiVirusMetricsProvider::AsyncInit(const base::Closure& done_callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BACKGROUND,

@@ -15,6 +15,10 @@ MetricsProvider::~MetricsProvider() {
 void MetricsProvider::Init() {
 }
 
+void MetricsProvider::AsyncInit(const base::Closure& done_callback) {
+  done_callback.Run();
+}
+
 void MetricsProvider::OnDidCreateMetricsLog() {
 }
 

@@ -31,7 +31,6 @@ class ChromeBrowserState;
 }
 
 namespace metrics {
-class DriveMetricsProvider;
 class MetricsService;
 class MetricsStateManager;
 class ProfilerMetricsProvider;
@@ -68,8 +67,6 @@ class IOSChromeMetricsServiceClient
   bool GetBrand(std::string* brand_code) override;
   metrics::SystemProfileProto::Channel GetChannel() override;
   std::string GetVersionString() override;
-  void InitializeSystemProfileMetrics(
-      const base::Closure& done_callback) override;
   void CollectFinalMetricsForLog(const base::Closure& done_callback) override;
   std::unique_ptr<metrics::MetricsLogUploader> CreateUploader(
       base::StringPiece server_url,
@@ -99,10 +96,6 @@ class IOSChromeMetricsServiceClient
 
   // Completes the two-phase initialization of IOSChromeMetricsServiceClient.
   void Initialize();
-
-  // Called after the drive metrics init task has been completed that continues
-  // the init task by loading profiler data.
-  void OnInitTaskGotDriveMetrics();
 
   // Returns true iff profiler data should be included in the next metrics log.
   // NOTE: This method is probabilistic and also updates internal state as a
@@ -156,10 +149,6 @@ class IOSChromeMetricsServiceClient
   // The ProfilerMetricsProvider instance that was registered with
   // MetricsService. Has the same lifetime as |metrics_service_|.
   metrics::ProfilerMetricsProvider* profiler_metrics_provider_;
-
-  // The DriveMetricsProvider instance that was registered with MetricsService.
-  // Has the same lifetime as |metrics_service_|.
-  metrics::DriveMetricsProvider* drive_metrics_provider_;
 
   // Callback that is called when initial metrics gathering is complete.
   base::Closure finished_init_task_callback_;

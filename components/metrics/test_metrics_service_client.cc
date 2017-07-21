@@ -54,11 +54,6 @@ std::string TestMetricsServiceClient::GetVersionString() {
   return version_string_;
 }
 
-void TestMetricsServiceClient::InitializeSystemProfileMetrics(
-    const base::Closure& done_callback) {
-  done_callback.Run();
-}
-
 void TestMetricsServiceClient::CollectFinalMetricsForLog(
     const base::Closure& done_callback) {
   done_callback.Run();

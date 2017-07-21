@@ -35,11 +35,8 @@ class PluginMetricsProvider : public metrics::MetricsProvider,
   explicit PluginMetricsProvider(PrefService* local_state);
   ~PluginMetricsProvider() override;
 
-  // Fetches plugin information data asynchronously and calls |done_callback|
-  // when done.
-  void GetPluginInformation(const base::Closure& done_callback);
-
   // metrics::MetricsDataProvider:
+  void AsyncInit(const base::Closure& done_callback) override;
   void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
   void ProvideStabilityMetrics(

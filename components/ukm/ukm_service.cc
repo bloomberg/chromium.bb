@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
@@ -215,8 +216,13 @@ void UkmService::StartInitTask() {
   DVLOG(1) << "UkmService::StartInitTask";
   client_id_ = LoadOrGenerateClientId(pref_service_);
   session_id_ = LoadSessionId(pref_service_);
-  client_->InitializeSystemProfileMetrics(base::Bind(
-      &UkmService::FinishedInitTask, self_ptr_factory_.GetWeakPtr()));
+
+  base::Closure barrier = base::BarrierClosure(
+      metrics_providers_.size(), base::Bind(&UkmService::FinishedInitTask,
+                                            self_ptr_factory_.GetWeakPtr()));
+  for (auto& provider : metrics_providers_) {
+    provider->AsyncInit(barrier);
+  }
 }
 
 void UkmService::FinishedInitTask() {

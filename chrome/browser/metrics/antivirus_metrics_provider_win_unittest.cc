@@ -112,7 +112,7 @@ TEST_P(AntiVirusMetricsProviderTest, DISABLED_GetMetricsFullName) {
   // Make sure the I/O is happening on a valid thread by disallowing it on the
   // main thread.
   bool previous_value = base::ThreadRestrictions::SetIOAllowed(false);
-  provider_->GetAntiVirusMetrics(
+  provider_->AsyncInit(
       base::Bind(&AntiVirusMetricsProviderTest::GetMetricsCallback,
                  weak_ptr_factory_.GetWeakPtr()));
   scoped_task_environment_.RunUntilIdle();

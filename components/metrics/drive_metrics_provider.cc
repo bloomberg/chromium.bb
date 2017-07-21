@@ -32,7 +32,7 @@ void DriveMetricsProvider::ProvideSystemProfileMetrics(
                    hardware->mutable_user_data_drive());
 }
 
-void DriveMetricsProvider::GetDriveMetrics(const base::Closure& done_callback) {
+void DriveMetricsProvider::AsyncInit(const base::Closure& done_callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
