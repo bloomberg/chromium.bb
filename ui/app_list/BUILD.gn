@@ -74,6 +74,7 @@ component("app_list") {
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
+    "//cc/paint",
     "//components/keyed_service/core",
     "//components/sync",
     "//components/wallpaper",
