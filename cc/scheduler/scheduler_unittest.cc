@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/test/fake_delay_based_time_source.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "cc/test/scheduler_test_common.h"
@@ -262,13 +263,13 @@ class SchedulerTest : public testing::Test {
   TestScheduler* CreateScheduler(BeginFrameSourceType bfs_type) {
     BeginFrameSource* frame_source = nullptr;
     unthrottled_frame_source_.reset(new BackToBackBeginFrameSource(
-        base::MakeUnique<TestDelayBasedTimeSource>(now_src_.get(),
+        base::MakeUnique<FakeDelayBasedTimeSource>(now_src_.get(),
                                                    task_runner_.get())));
     fake_external_begin_frame_source_.reset(
         new FakeExternalBeginFrameSource(0.f, false));
     fake_external_begin_frame_source_->SetClient(client_.get());
     synthetic_frame_source_.reset(new DelayBasedBeginFrameSource(
-        base::MakeUnique<TestDelayBasedTimeSource>(now_src_.get(),
+        base::MakeUnique<FakeDelayBasedTimeSource>(now_src_.get(),
                                                    task_runner_.get())));
     switch (bfs_type) {
       case EXTERNAL_BFS:

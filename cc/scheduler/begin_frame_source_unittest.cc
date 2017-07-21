@@ -9,7 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "cc/test/begin_frame_source_test.h"
-#include "cc/test/scheduler_test_common.h"
+#include "cc/test/fake_delay_based_time_source.h"
+#include "cc/test/ordered_simple_task_runner.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,8 +41,8 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
     now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
     task_runner_ =
         make_scoped_refptr(new OrderedSimpleTaskRunner(now_src_.get(), false));
-    std::unique_ptr<TestDelayBasedTimeSource> time_source(
-        new TestDelayBasedTimeSource(now_src_.get(), task_runner_.get()));
+    std::unique_ptr<FakeDelayBasedTimeSource> time_source(
+        new FakeDelayBasedTimeSource(now_src_.get(), task_runner_.get()));
     delay_based_time_source_ = time_source.get();
     source_.reset(new BackToBackBeginFrameSource(std::move(time_source)));
     obs_ = base::WrapUnique(new ::testing::NiceMock<MockBeginFrameObserver>);
@@ -53,7 +54,7 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
   std::unique_ptr<BackToBackBeginFrameSource> source_;
   std::unique_ptr<MockBeginFrameObserver> obs_;
-  TestDelayBasedTimeSource* delay_based_time_source_;  // Owned by |now_src_|.
+  FakeDelayBasedTimeSource* delay_based_time_source_;  // Owned by |now_src_|.
 };
 
 const int64_t BackToBackBeginFrameSourceTest::kDeadline =
@@ -337,7 +338,7 @@ class DelayBasedBeginFrameSourceTest : public ::testing::Test {
     task_runner_ =
         make_scoped_refptr(new OrderedSimpleTaskRunner(now_src_.get(), false));
     std::unique_ptr<DelayBasedTimeSource> time_source(
-        new TestDelayBasedTimeSource(now_src_.get(), task_runner_.get()));
+        new FakeDelayBasedTimeSource(now_src_.get(), task_runner_.get()));
     time_source->SetTimebaseAndInterval(
         base::TimeTicks(), base::TimeDelta::FromMicroseconds(10000));
     source_.reset(new DelayBasedBeginFrameSource(std::move(time_source)));
