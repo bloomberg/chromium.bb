@@ -280,6 +280,7 @@ void TypingCommand::InsertText(Document& document,
 
 void TypingCommand::AdjustSelectionAfterIncrementalInsertion(
     LocalFrame* frame,
+    const size_t selection_start,
     const size_t text_length) {
   if (!IsIncrementalInsertion())
     return;
@@ -293,9 +294,9 @@ void TypingCommand::AdjustSelectionAfterIncrementalInsertion(
                          .RootEditableElement();
   DCHECK(element);
 
-  const size_t end = selection_start_ + text_length;
+  const size_t end = selection_start + text_length;
   const size_t start =
-      CompositionType() == kTextCompositionUpdate ? selection_start_ : end;
+      CompositionType() == kTextCompositionUpdate ? selection_start : end;
   const SelectionInDOMTree& selection =
       CreateSelection(start, end, EndingSelection().IsDirectional(), element);
 
@@ -545,6 +546,7 @@ void TypingCommand::InsertText(const String& text,
     InsertTextRunWithoutNewlines(text, select_inserted_text, editing_state);
     return;
   }
+  size_t selection_start = selection_start_;
   // FIXME: Need to implement selectInsertedText for cases where more than one
   // insert is involved. This requires support from insertTextRunWithoutNewlines
   // and insertParagraphSeparator for extending an existing selection; at the
@@ -562,8 +564,9 @@ void TypingCommand::InsertText(const String& text,
       if (editing_state->IsAborted())
         return;
 
-      AdjustSelectionAfterIncrementalInsertion(GetDocument().GetFrame(),
-                                               insertion_length);
+      AdjustSelectionAfterIncrementalInsertion(
+          GetDocument().GetFrame(), selection_start, insertion_length);
+      selection_start += insertion_length;
     }
 
     InsertParagraphSeparator(editing_state);
@@ -571,6 +574,7 @@ void TypingCommand::InsertText(const String& text,
       return;
 
     offset = newline + 1;
+    ++selection_start;
   }
 
   if (!offset) {
@@ -579,7 +583,7 @@ void TypingCommand::InsertText(const String& text,
       return;
 
     AdjustSelectionAfterIncrementalInsertion(GetDocument().GetFrame(),
-                                             text.length());
+                                             selection_start, text.length());
     return;
   }
 
@@ -591,7 +595,7 @@ void TypingCommand::InsertText(const String& text,
       return;
 
     AdjustSelectionAfterIncrementalInsertion(GetDocument().GetFrame(),
-                                             insertion_length);
+                                             selection_start, insertion_length);
   }
 }
 

@@ -391,12 +391,13 @@ TEST_F(InputMethodControllerTest, InsertTextWithNewLineIncrementally) {
       InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
 
   Vector<CompositionUnderline> underlines;
-  underlines.push_back(CompositionUnderline(0, 11, Color(255, 0, 0), false, 0));
-  Controller().SetComposition("foo", underlines, 0, 2);
-  EXPECT_STREQ("foo", div->innerHTML().Utf8().data());
+  Controller().CommitText("a", underlines, 0);
+  Controller().SetComposition("bcd", underlines, 0, 2);
+  EXPECT_STREQ("abcd", div->innerHTML().Utf8().data());
 
-  Controller().CommitText(String("hello\nworld"), underlines, 0);
-  EXPECT_STREQ("hello<div>world</div>", div->innerHTML().Utf8().data());
+  Controller().CommitText(String("bcd\nefgh\nijkl"), underlines, 0);
+  EXPECT_STREQ("abcd<div>efgh</div><div>ijkl</div>",
+               div->innerHTML().Utf8().data());
 }
 
 TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText) {
