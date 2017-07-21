@@ -14,19 +14,19 @@ namespace cc {
 class CC_ANIMATION_EXPORT AnimationDelegate {
  public:
   virtual void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                                      TargetProperty::Type target_property,
+                                      int target_property,
                                       int group) = 0;
   virtual void NotifyAnimationFinished(base::TimeTicks monotonic_time,
-                                       TargetProperty::Type target_property,
+                                       int target_property,
                                        int group) = 0;
 
   virtual void NotifyAnimationAborted(base::TimeTicks monotonic_time,
-                                      TargetProperty::Type target_property,
+                                      int target_property,
                                       int group) = 0;
 
   virtual void NotifyAnimationTakeover(
       base::TimeTicks monotonic_time,
-      TargetProperty::Type target_property,
+      int target_property,
       double animation_start_time,
       std::unique_ptr<AnimationCurve> curve) = 0;
 

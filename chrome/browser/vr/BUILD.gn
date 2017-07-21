@@ -85,6 +85,7 @@ static_library("vr_common") {
     "gltf_asset.h",
     "gltf_parser.cc",
     "gltf_parser.h",
+    "target_property.h",
     "toolbar_helper.cc",
     "toolbar_helper.h",
     "toolbar_state.cc",

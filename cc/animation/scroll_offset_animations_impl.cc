@@ -148,7 +148,7 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationAbort(bool needs_completion) {
 
 void ScrollOffsetAnimationsImpl::NotifyAnimationFinished(
     base::TimeTicks monotonic_time,
-    TargetProperty::Type target_property,
+    int target_property,
     int group) {
   DCHECK_EQ(target_property, TargetProperty::SCROLL_OFFSET);
   DCHECK(animation_host_->mutator_host_client());

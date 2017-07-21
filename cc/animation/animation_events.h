@@ -24,7 +24,7 @@ struct CC_ANIMATION_EXPORT AnimationEvent {
   AnimationEvent(Type type,
                  ElementId element_id,
                  int group_id,
-                 TargetProperty::Type target_property,
+                 int target_property,
                  base::TimeTicks monotonic_time);
 
   AnimationEvent(const AnimationEvent& other);
@@ -35,7 +35,7 @@ struct CC_ANIMATION_EXPORT AnimationEvent {
   Type type;
   ElementId element_id;
   int group_id;
-  TargetProperty::Type target_property;
+  int target_property;
   base::TimeTicks monotonic_time;
   bool is_impl_only;
   float opacity;

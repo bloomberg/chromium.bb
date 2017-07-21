@@ -254,15 +254,15 @@ class UiElement : public cc::AnimationTarget {
       const gfx::Point3F& world_point) const;
 
   // cc::AnimationTarget
-  void NotifyClientOpacityAnimated(float opacity,
-                                   cc::Animation* animation) override;
+  void NotifyClientFloatAnimated(float opacity,
+                                 cc::Animation* animation) override;
   void NotifyClientTransformOperationsAnimated(
       const cc::TransformOperations& operations,
       cc::Animation* animation) override;
-  void NotifyClientBoundsAnimated(const gfx::SizeF& size,
-                                  cc::Animation* animation) override;
-  void NotifyClientVisibilityAnimated(bool visible,
-                                      cc::Animation* animation) override;
+  void NotifyClientSizeAnimated(const gfx::SizeF& size,
+                                cc::Animation* animation) override;
+  void NotifyClientBooleanAnimated(bool visible,
+                                   cc::Animation* animation) override;
 
   // Handles positioning adjustments for children. This will be overridden by
   // UiElements providing custom layout modes. See the documentation of the

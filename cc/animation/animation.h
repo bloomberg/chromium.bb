@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_export.h"
-#include "cc/trees/target_property.h"
 
 namespace cc {
 
@@ -53,13 +52,13 @@ class CC_ANIMATION_EXPORT Animation {
       std::unique_ptr<AnimationCurve> curve,
       int animation_id,
       int group_id,
-      TargetProperty::Type target_property);
+      int target_property_id);
 
   virtual ~Animation();
 
   int id() const { return id_; }
   int group() const { return group_; }
-  TargetProperty::Type target_property() const { return target_property_; }
+  int target_property_id() const { return target_property_id_; }
 
   RunState run_state() const { return run_state_; }
   void SetRunState(RunState run_state, base::TimeTicks monotonic_time);
@@ -163,7 +162,7 @@ class CC_ANIMATION_EXPORT Animation {
   Animation(std::unique_ptr<AnimationCurve> curve,
             int animation_id,
             int group_id,
-            TargetProperty::Type target_property);
+            int target_property_id);
 
   base::TimeDelta ConvertToActiveTime(base::TimeTicks monotonic_time) const;
 
@@ -178,7 +177,7 @@ class CC_ANIMATION_EXPORT Animation {
   // all animations in the group have finished animating.
   int group_;
 
-  TargetProperty::Type target_property_;
+  int target_property_id_;
   RunState run_state_;
   double iterations_;
   double iteration_start_;

@@ -66,7 +66,7 @@ void CompositorAnimationPlayer::AbortAnimation(int animation_id) {
 
 void CompositorAnimationPlayer::NotifyAnimationStarted(
     base::TimeTicks monotonic_time,
-    cc::TargetProperty::Type target_property,
+    int target_property,
     int group) {
   if (delegate_)
     delegate_->NotifyAnimationStarted(
@@ -75,7 +75,7 @@ void CompositorAnimationPlayer::NotifyAnimationStarted(
 
 void CompositorAnimationPlayer::NotifyAnimationFinished(
     base::TimeTicks monotonic_time,
-    cc::TargetProperty::Type target_property,
+    int target_property,
     int group) {
   if (delegate_)
     delegate_->NotifyAnimationFinished(
@@ -84,7 +84,7 @@ void CompositorAnimationPlayer::NotifyAnimationFinished(
 
 void CompositorAnimationPlayer::NotifyAnimationAborted(
     base::TimeTicks monotonic_time,
-    cc::TargetProperty::Type target_property,
+    int target_property,
     int group) {
   if (delegate_)
     delegate_->NotifyAnimationAborted(
@@ -93,7 +93,7 @@ void CompositorAnimationPlayer::NotifyAnimationAborted(
 
 void CompositorAnimationPlayer::NotifyAnimationTakeover(
     base::TimeTicks monotonic_time,
-    cc::TargetProperty::Type,
+    int target_property,
     double animation_start_time,
     std::unique_ptr<cc::AnimationCurve> curve) {
   if (delegate_) {

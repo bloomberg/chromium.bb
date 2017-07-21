@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_VR_TRANSITION_H_
 #define CHROME_BROWSER_VR_TRANSITION_H_
 
+#include <set>
+
 #include "base/time/time.h"
-#include "cc/trees/target_property.h"
 
 namespace vr {
 
@@ -15,7 +16,7 @@ struct Transition {
   ~Transition();
 
   base::TimeDelta duration;
-  cc::TargetProperties target_properties;
+  std::set<int> target_properties;
 };
 
 }  // namespace vr

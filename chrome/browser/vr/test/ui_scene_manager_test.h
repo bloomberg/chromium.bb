@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "cc/trees/target_property.h"
 #include "chrome/browser/vr/elements/ui_element_debug_id.h"
 #include "chrome/browser/vr/test/mock_browser_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,8 +60,7 @@ class UiSceneManagerTest : public testing::Test {
   void AnimateBy(base::TimeDelta delta);
 
   // Returns true if the given properties are being animated by the element.
-  bool IsAnimating(UiElement* element,
-                   const std::vector<cc::TargetProperty::Type>& properties);
+  bool IsAnimating(UiElement* element, const std::vector<int>& properties);
 
   base::MessageLoop message_loop_;
   std::unique_ptr<MockBrowserInterface> browser_;

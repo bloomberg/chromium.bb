@@ -23,16 +23,17 @@
 #include "chrome/browser/vr/elements/ui_element_transform_operations.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
 #include "chrome/browser/vr/elements/url_bar.h"
+#include "chrome/browser/vr/target_property.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/gfx/transform_util.h"
 
-using cc::TargetProperty::BOUNDS;
-using cc::TargetProperty::TRANSFORM;
-
 namespace vr {
+
+using TargetProperty::BOUNDS;
+using TargetProperty::TRANSFORM;
 
 namespace {
 

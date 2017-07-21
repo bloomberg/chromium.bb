@@ -25,16 +25,14 @@ class TransformOperations;
 class CC_ANIMATION_EXPORT AnimationTarget {
  public:
   virtual ~AnimationTarget() {}
-  virtual void NotifyClientOpacityAnimated(float opacity,
-                                           Animation* animation) {}
+  virtual void NotifyClientFloatAnimated(float opacity, Animation* animation) {}
   virtual void NotifyClientFilterAnimated(const FilterOperations& filter,
                                           Animation* animation) {}
-  virtual void NotifyClientBoundsAnimated(const gfx::SizeF& size,
-                                          Animation* animation) {}
-  virtual void NotifyClientBackgroundColorAnimated(SkColor color,
-                                                   Animation* animation) {}
-  virtual void NotifyClientVisibilityAnimated(bool visibility,
-                                              Animation* animation) {}
+  virtual void NotifyClientSizeAnimated(const gfx::SizeF& size,
+                                        Animation* animation) {}
+  virtual void NotifyClientColorAnimated(SkColor color, Animation* animation) {}
+  virtual void NotifyClientBooleanAnimated(bool visibility,
+                                           Animation* animation) {}
   virtual void NotifyClientTransformOperationsAnimated(
       const TransformOperations& operations,
       Animation* animation) {}
