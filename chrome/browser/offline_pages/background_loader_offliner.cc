@@ -469,6 +469,11 @@ void BackgroundLoaderOffliner::StartSnapshot() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+void BackgroundLoaderOffliner::RunRenovations() {
+  // TODO(collinbaker): run renovations from here.
+  snapshot_controller_->RenovationsCompleted();
+}
+
 void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
                                            int64_t offline_id) {
   if (!pending_request_)
