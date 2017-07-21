@@ -67,7 +67,7 @@ void Recorder::AddMetadata(std::unique_ptr<base::DictionaryValue> metadata) {
 }
 
 void Recorder::OnConnectionError() {
-  if (!background_task_runner_->RunsTasksOnCurrentThread()) {
+  if (!background_task_runner_->RunsTasksInCurrentSequence()) {
     background_task_runner_->PostTask(
         FROM_HERE, base::BindRepeating(&Recorder::OnConnectionError,
                                        base::Unretained(this)));
