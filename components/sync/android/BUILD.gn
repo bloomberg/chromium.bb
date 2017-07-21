@@ -46,6 +46,7 @@ android_library("sync_javatests") {
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
     "//third_party/jsr-305:jsr_305_javalib",
+    "//third_party/junit",
   ]
   java_files = [
     "javatests/src/org/chromium/components/sync/AndroidSyncSettingsTest.java",
