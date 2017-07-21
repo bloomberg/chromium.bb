@@ -22,6 +22,7 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/system/tray/tray_popup_item_style.h"
+#include "ash/system/tray/tray_popup_utils.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -85,6 +86,8 @@ class TitleView : public views::View, public views::ButtonListener {
     // TODO(tdanderson|jdufault): Use TriView to handle the layout of the title.
     // See crbug.com/614453.
     auto* box_layout = new views::BoxLayout(views::BoxLayout::kHorizontal);
+    box_layout->set_cross_axis_alignment(
+        views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
     SetLayoutManager(box_layout);
 
     auto* title_label =
@@ -102,6 +105,7 @@ class TitleView : public views::View, public views::ButtonListener {
                              kSystemMenuSettingsIcon, IDS_ASH_PALETTE_SETTINGS);
 
     AddChildView(help_button_);
+    AddChildView(TrayPopupUtils::CreateVerticalSeparator());
     AddChildView(settings_button_);
   }
 
