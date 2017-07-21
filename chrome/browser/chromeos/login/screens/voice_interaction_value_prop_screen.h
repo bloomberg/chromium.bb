@@ -30,8 +30,8 @@ class VoiceInteractionValuePropScreen : public BaseScreen {
   void OnUserAction(const std::string& action_id) override;
 
  private:
-  void OnNoThanksPressed();
-  void OnContinuePressed();
+  void OnSkipPressed();
+  void OnNextPressed();
 
   VoiceInteractionValuePropScreenView* view_;
 

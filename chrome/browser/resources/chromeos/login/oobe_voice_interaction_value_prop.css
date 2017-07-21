@@ -10,11 +10,8 @@
 }
 
 .value-prop-loading #retry-button,
-.value-prop-loading #skip-button,
 .value-prop-loaded #retry-button,
-.value-prop-loaded #skip-button,
-.value-prop-error #continue-button,
-.value-prop-error #no-thanks-button {
+.value-prop-error #next-button {
   display: none;
 }
 
@@ -33,9 +30,8 @@
 }
 
 .value-prop-loading #retry-button,
-.value-prop-loading #skip-button,
-.value-prop-loading #continue-button,
-.value-prop-loading #no-thanks-button {
+.value-prop-loading #next-button,
+.value-prop-loading #skip-button {
   pointer-events: none;
 }
 
@@ -69,14 +65,10 @@ paper-progress {
   color: rgb(66, 133, 244);
 }
 
-#no-thanks-button {
-  color: rgb(66, 133, 244);
-}
-
 #retry-button {
   -webkit-margin-end: 18px;
 }
 
-#continue-button {
+#next-button {
   -webkit-margin-end: 18px;
 }
