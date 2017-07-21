@@ -86,6 +86,7 @@
       'target_name': 'lock_screen',
       'dependencies': [
         '../compiled_resources2.gyp:route',
+        '../controls/compiled_resources2.gyp:settings_dropdown_menu',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',

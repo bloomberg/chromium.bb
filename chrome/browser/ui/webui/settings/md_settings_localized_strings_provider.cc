@@ -904,6 +904,16 @@ void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
       {"easyUnlockTurnOffErrorMessage",
        IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_ERROR_MESSAGE},
       {"easyUnlockTurnOffRetryButton", IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_RETRY},
+      {"easyUnlockProximityThresholdLabel",
+       IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_LABEL},
+      {"easyUnlockProximityThresholdVeryClose",
+       IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_VERY_CLOSE},
+      {"easyUnlockProximityThresholdClose",
+       IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_CLOSE},
+      {"easyUnlockProximityThresholdFar",
+       IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_FAR},
+      {"easyUnlockProximityThresholdVeryFar",
+       IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_VERY_FAR},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -926,6 +936,10 @@ void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
       "easyUnlockTurnOffDescription",
       l10n_util::GetStringFUTF16(IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_DESCRIPTION,
                                  device_name));
+  html_source->AddString(
+      "easyUnlockProximityThresholdLabel",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_LABEL, device_name));
 
   html_source->AddString("easyUnlockLearnMoreURL",
                          chrome::kEasyUnlockLearnMoreUrl);
