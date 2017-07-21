@@ -1179,7 +1179,7 @@ Press any key to continue exploring.
     Sort options
   </message>
   <message name="IDS_FILE_BROWSER_GEAR_BUTTON_TOOLTIP" desc="Tooltip for the gear button in the Files app.">
-    Settings
+    More...
   </message>
   <message name="IDS_FILE_BROWSER_SELECTION_MENU_BUTTON_TOOLTIP" desc="Tooltip for the button to open the context menu of currently selected items in the Files app.">
     More...
