@@ -224,4 +224,19 @@ TEST_F(ContextMenuJsTest, LinkOfImageWithCalloutNone) {
   EXPECT_NSEQ(expected_result, result);
 }
 
+// Tests that the GetElementFromPoint script reports "never" as the referrer
+// policy for pages that have an unsupported policy in a meta tag.
+TEST_F(ContextMenuJsTest, UnsupportedReferrerPolicy) {
+  // A page with an unsupported referrer meta tag and a 400x400 image.
+  static const char kInvalidReferrerTag[] =
+      "<meta name=\"referrer\" content=\"unsupported-value\">"
+      "<img width=400 height=400 src='foo'></img>";
+
+  // Load the invalid meta tag
+  LoadHtml(kInvalidReferrerTag);
+  id result = ExecuteGetElementFromPointJavaScript(20, 20);
+  ASSERT_TRUE([result isKindOfClass:[NSDictionary class]]);
+  EXPECT_NSEQ(@"never", result[kContextMenuElementReferrerPolicy]);
+}
+
 }  // namespace web

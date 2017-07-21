@@ -279,10 +279,21 @@ goog.provide('__crWeb.contextMenu');
       }
     }
 
+    // Search for referrer meta tag.  WKWebView only supports a subset of values
+    // for referrer meta tags.  If it parses a referrer meta tag with an
+    // unsupported value, it will default to 'never'.
     var metaTags = document.getElementsByTagName('meta');
     for (var i = 0; i < metaTags.length; ++i) {
       if (metaTags[i].name.toLowerCase() == 'referrer') {
-        return metaTags[i].content.toLowerCase();
+        var referrerPolicy = metaTags[i].content.toLowerCase();
+        if (referrerPolicy == 'no-referrer' ||
+            referrerPolicy == 'orgin' ||
+            referrerPolicy == 'no-referrer-when-downgrade' ||
+            referrerPolicy == 'unsafe-url') {
+          return referrerPolicy;
+        } else {
+          return 'never';
+        }
       }
     }
     return 'default';
