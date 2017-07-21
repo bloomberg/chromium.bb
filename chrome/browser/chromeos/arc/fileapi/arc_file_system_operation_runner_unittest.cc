@@ -123,6 +123,7 @@ TEST_F(ArcFileSystemOperationRunnerTest, DeferAndRun) {
   EXPECT_EQ(7, counter);
 }
 
+// TODO(nya,hidehiko): Check if we should keep this test.
 TEST_F(ArcFileSystemOperationRunnerTest, DeferAndDiscard) {
   int counter = 0;
   CallSetShouldDefer(true);
@@ -130,7 +131,7 @@ TEST_F(ArcFileSystemOperationRunnerTest, DeferAndDiscard) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, counter);
 
-  arc_service_manager_.reset();
+  runner_.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, counter);
 }

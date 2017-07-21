@@ -56,13 +56,7 @@ ArcAudioBridge::ArcAudioBridge(content::BrowserContext* context,
 ArcAudioBridge::~ArcAudioBridge() {
   if (cras_audio_handler_)
     cras_audio_handler_->RemoveAudioObserver(this);
-
-  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
-  // BrowserContextKeyedService is not nested.
-  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
-  // so do not touch it.
-  if (ArcServiceManager::Get())
-    arc_bridge_service_->audio()->RemoveObserver(this);
+  arc_bridge_service_->audio()->RemoveObserver(this);
 }
 
 void ArcAudioBridge::OnInstanceReady() {

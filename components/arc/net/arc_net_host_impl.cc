@@ -329,13 +329,7 @@ ArcNetHostImpl::~ArcNetHostImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (observing_network_state_)
     GetStateHandler()->RemoveObserver(this, FROM_HERE);
-
-  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
-  // BrowserContextKeyedService is not nested.
-  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
-  // so do not touch it.
-  if (ArcServiceManager::Get())
-    arc_bridge_service_->net()->RemoveObserver(this);
+  arc_bridge_service_->net()->RemoveObserver(this);
 }
 
 void ArcNetHostImpl::OnInstanceReady() {
