@@ -3049,8 +3049,10 @@ PassRefPtr<ComputedStyle> LayoutObject::GetUncachedSelectionStyle() const {
   if (ShadowRoot* root = GetNode()->ContainingShadowRoot()) {
     if (root->GetType() == ShadowRootType::kUserAgent) {
       if (Element* shadow_host = GetNode()->OwnerShadowHost()) {
-        return shadow_host->GetLayoutObject()->GetUncachedPseudoStyle(
-            PseudoStyleRequest(kPseudoIdSelection));
+        if (LayoutObject* obj = shadow_host->GetLayoutObject()) {
+          return obj->GetUncachedPseudoStyle(
+              PseudoStyleRequest(kPseudoIdSelection));
+        }
       }
     }
   }
