@@ -514,7 +514,7 @@ void ArcSessionImpl::OnInstanceStarted(
   // Stop().
   base::ScopedFD cancel_fd;
   if (!CreatePipe(&cancel_fd, &accept_cancel_pipe_)) {
-    OnStopped(ArcStopReason::GENERIC_BOOT_FAILURE);
+    StopArcInstance();
     return;
   }
 
