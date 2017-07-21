@@ -241,7 +241,7 @@ namespace keyboard {
 class CallbackAnimationObserver : public ui::LayerAnimationObserver {
  public:
   CallbackAnimationObserver(const scoped_refptr<ui::LayerAnimator>& animator,
-                            base::Callback<void(void)> callback);
+                            base::OnceCallback<void(void)> callback);
   ~CallbackAnimationObserver() override;
 
  private:
@@ -251,16 +251,15 @@ class CallbackAnimationObserver : public ui::LayerAnimationObserver {
   void OnLayerAnimationScheduled(ui::LayerAnimationSequence* seq) override {}
 
   scoped_refptr<ui::LayerAnimator> animator_;
-  base::Callback<void(void)> callback_;
+  base::OnceCallback<void(void)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackAnimationObserver);
 };
 
 CallbackAnimationObserver::CallbackAnimationObserver(
     const scoped_refptr<ui::LayerAnimator>& animator,
-    base::Callback<void(void)> callback)
-    : animator_(animator), callback_(callback) {
-}
+    base::OnceCallback<void(void)> callback)
+    : animator_(animator), callback_(std::move(callback)) {}
 
 CallbackAnimationObserver::~CallbackAnimationObserver() {
   animator_->RemoveObserver(this);
@@ -271,7 +270,8 @@ void CallbackAnimationObserver::OnLayerAnimationEnded(
   if (animator_->is_animating())
     return;
   animator_->RemoveObserver(this);
-  callback_.Run();
+  DCHECK(!callback_.is_null());
+  std::move(callback_).Run();
 }
 
 void CallbackAnimationObserver::OnLayerAnimationAborted(
@@ -435,8 +435,8 @@ void KeyboardController::HideKeyboard(HideReason reason) {
   ui::LayerAnimator* container_animator = container_->layer()->GetAnimator();
   animation_observer_.reset(new CallbackAnimationObserver(
       container_animator,
-      base::Bind(&KeyboardController::HideAnimationFinished,
-                 base::Unretained(this))));
+      base::BindOnce(&KeyboardController::HideAnimationFinished,
+                     base::Unretained(this))));
   container_animator->AddObserver(animation_observer_.get());
 
   ui::ScopedLayerAnimationSettings settings(container_animator);
@@ -567,9 +567,9 @@ void KeyboardController::OnTextInputStateChanged(
       keyboard_visible_ = false;
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&KeyboardController::HideKeyboard,
-                     weak_factory_will_hide_.GetWeakPtr(),
-                     HIDE_REASON_AUTOMATIC),
+          base::BindOnce(&KeyboardController::HideKeyboard,
+                         weak_factory_will_hide_.GetWeakPtr(),
+                         HIDE_REASON_AUTOMATIC),
           base::TimeDelta::FromMilliseconds(kHideKeyboardDelayMs));
       if (state_ == KeyboardControllerState::LOADING_EXTENSION) {
         show_on_resize_ = false;
@@ -709,8 +709,8 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
   } else {
     animation_observer_.reset(new CallbackAnimationObserver(
         container_animator,
-        base::Bind(&KeyboardController::ShowAnimationFinished,
-                   base::Unretained(this))));
+        base::BindOnce(&KeyboardController::ShowAnimationFinished,
+                       base::Unretained(this))));
     container_animator->AddObserver(animation_observer_.get());
   }
 
