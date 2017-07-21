@@ -126,6 +126,7 @@ struct ClampedAddFastOp {
   }
 };
 
+#if defined(__clang__)  // Not supported on GCC.
 // This is the fastest negation on Intel, and a decent fallback on arm.
 __attribute__((always_inline)) inline int8_t ClampedNegate(uint8_t value) {
   uint8_t carry;
@@ -169,6 +170,7 @@ __attribute__((always_inline)) inline int64_t ClampedNegate(uint64_t value) {
 __attribute__((always_inline)) inline int64_t ClampedNegate(int64_t value) {
   return ClampedNegate(static_cast<uint64_t>(value));
 }
+#endif
 
 template <typename T, typename U>
 struct ClampedSubFastOp {
@@ -180,6 +182,7 @@ struct ClampedSubFastOp {
       return ClampedSubFastAsmOp<T, U>::template Do<V>(x, y);
     }
 
+#if defined(__clang__)  // Not supported on GCC.
     // Fast path for generic clamped negation.
     if (std::is_same<T, U>::value && std::is_same<U, V>::value &&
         IsCompileTimeConstant(x) && x == 0 && !IsCompileTimeConstant(y)) {
@@ -190,6 +193,7 @@ struct ClampedSubFastOp {
               IntegerBitsPlusSign<T>::value, std::is_signed<T>::value>::type>(
               y));
     }
+#endif
 
     V result;
     return !__builtin_sub_overflow(x, y, &result)
