@@ -711,8 +711,11 @@ ALWAYS_INLINE bool BreakingContext::ShouldMidWordBreak(
   // However, doing so can hit the performance when a "word" is really long,
   // such as minimized JS, because the next line will re-shape the rest of the
   // word in the current architecture.
-  // This function is a heuristic optimization to stop at 2em overflow.
-  float overflow_allowance = 2 * font.GetFontDescription().ComputedSize();
+  // This function is a heuristic optimization to stop at 4em overflow.
+  // The longest common ligature is Emoji ZWJ sequence, which ligates 4 Emoji
+  // into 1 at maximum as of v5.0. This sequence requires 3em overflow, and 1em
+  // for a rainy day fund.
+  float overflow_allowance = 4 * font.GetFontDescription().ComputedSize();
 
   width_from_last_breaking_opportunity += char_width;
   bool mid_word_break_is_before_surrogate_pair =
