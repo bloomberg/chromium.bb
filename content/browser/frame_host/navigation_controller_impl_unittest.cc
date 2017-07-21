@@ -45,6 +45,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/test_render_frame_host.h"
@@ -1268,6 +1269,7 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   int entry_id = controller.GetPendingEntry()->GetUniqueID();
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(entry_id, true, kExistingURL);
+  main_test_rfh()->OnMessageReceived(FrameHostMsg_DidStopLoading(0));
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
@@ -1279,19 +1281,23 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
 
   // Now make a pending new navigation, initiated by the renderer.
   const GURL kNewURL("http://foo/bee");
-  main_test_rfh()->SimulateNavigationStart(kNewURL);
+  auto navigation =
+      NavigationSimulator::CreateRendererInitiated(kNewURL, main_test_rfh());
+  navigation->Start();
   EXPECT_EQ(0U, notifications.size());
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(1, delegate->navigation_state_change_count());
+  // The delegate should have been notified twice: once for the loading state
+  // change, and once for the url change.
+  EXPECT_EQ(2, delegate->navigation_state_change_count());
 
   // The visible entry should be the last committed URL, not the pending one.
   EXPECT_EQ(kExistingURL, controller.GetVisibleEntry()->GetURL());
 
   // Now the navigation redirects.
   const GURL kRedirectURL("http://foo/see");
-  main_test_rfh()->SimulateRedirect(kRedirectURL);
+  navigation->Redirect(kRedirectURL);
 
   // We don't want to change the NavigationEntry's url, in case it cancels.
   // Prevents regression of http://crbug.com/77786.
@@ -1299,14 +1305,16 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
 
   // It may abort before committing, if it's a download or due to a stop or
   // a new navigation from the user.
-  main_test_rfh()->SimulateNavigationError(kRedirectURL, net::ERR_ABORTED);
+  navigation->Fail(net::ERR_ABORTED);
 
   // Because the pending entry is renderer initiated and not visible, we
   // clear it when it fails.
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_FALSE(controller.GetPendingEntry());
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(2, delegate->navigation_state_change_count());
+  // The delegate should have been notified twice: once for the loading state
+  // change, and once for the url change.
+  EXPECT_EQ(4, delegate->navigation_state_change_count());
 
   // The visible entry should be the last committed URL, not the pending one,
   // so that no spoof is possible.
