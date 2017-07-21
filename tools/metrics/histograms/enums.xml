@@ -38733,6 +38733,13 @@ from previous Chrome versions.
   <int value="6" label="L2TP/IPSec Username/Password"/>
 </enum>
 
+<enum name="VRSuppressedElement">
+  <int value="0" label="File chooser was suppressed in VR"/>
+  <int value="1" label="Bluetooth picker was suppressed in VR"/>
+  <int value="2" label="JS dialog was suppressed in VR"/>
+  <int value="3" label="Media permission was suppressed in VR"/>
+</enum>
+
 <enum name="VRUnsupportedMode">
   <int value="0" label="Unhandled code point in URL"/>
   <int value="1" label="Could not elide URL"/>

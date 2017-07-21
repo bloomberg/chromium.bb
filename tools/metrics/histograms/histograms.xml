@@ -84361,6 +84361,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="VR.Shell.EncounteredSuppressedUI" enum="VRSuppressedElement">
+  <owner>asimjour@chromium.org</owner>
+  <summary>
+    We must suppress monocularly rendered ui elements in VR. This tracks which
+    ui element suppressions are encountered in practice.
+  </summary>
+</histogram>
+
 <histogram name="VR.Shell.EncounteredUnsupportedMode" enum="VRUnsupportedMode">
   <owner>vollick@chromium.org</owner>
   <summary>
