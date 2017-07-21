@@ -475,7 +475,8 @@ TEST(PaintOpBufferTest, DiscardableImagesTracking_DrawImageRect) {
 TEST(PaintOpBufferTest, DiscardableImagesTracking_OpWithFlags) {
   PaintOpBuffer buffer;
   PaintFlags flags;
-  sk_sp<SkImage> image = CreateDiscardableImage(gfx::Size(100, 100));
+  auto image = PaintImage(PaintImage::GetNextId(),
+                          CreateDiscardableImage(gfx::Size(100, 100)));
   flags.setShader(PaintShader::MakeImage(std::move(image),
                                          SkShader::kClamp_TileMode,
                                          SkShader::kClamp_TileMode, nullptr));

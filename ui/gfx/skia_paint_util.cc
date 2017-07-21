@@ -38,8 +38,9 @@ sk_sp<cc::PaintShader> CreateImageRepShaderForScale(
   shader_scale.setScaleY(local_matrix.getScaleY() / scale);
 
   return cc::PaintShader::MakeImage(
-      SkImage::MakeFromBitmap(image_rep.sk_bitmap()), tile_mode, tile_mode,
-      &shader_scale);
+      cc::PaintImage(cc::PaintImage::kNonLazyStableId,
+                     SkImage::MakeFromBitmap(image_rep.sk_bitmap())),
+      tile_mode, tile_mode, &shader_scale);
 }
 
 sk_sp<cc::PaintShader> CreateGradientShader(int start_point,

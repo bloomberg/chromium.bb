@@ -6,8 +6,7 @@
 #define ImagePattern_h
 
 #include "platform/graphics/Pattern.h"
-
-class SkImage;
+#include "platform/graphics/paint/PaintImage.h"
 
 namespace blink {
 
@@ -27,7 +26,7 @@ class PLATFORM_EXPORT ImagePattern final : public Pattern {
   ImagePattern(PassRefPtr<Image>, RepeatMode);
   SkMatrix previous_local_matrix_;
 
-  sk_sp<SkImage> tile_image_;
+  PaintImage tile_image_;
 };
 
 }  // namespace blink
