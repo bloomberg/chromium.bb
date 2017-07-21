@@ -10,7 +10,6 @@
 
     <org.chromium.chrome.browser.contextmenu.TabularContextMenuViewPager
         android:id="@+id/custom_pager"
-        android:background="@drawable/white_with_rounded_corners"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
