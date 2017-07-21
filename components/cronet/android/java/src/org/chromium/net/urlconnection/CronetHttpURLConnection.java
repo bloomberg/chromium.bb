@@ -239,7 +239,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
             if (superFixedContentLengthLong != -1) {
                 contentLength = superFixedContentLengthLong;
             }
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+        } catch (Exception e) {
             // Ignored.
         }
         return contentLength;
