@@ -20,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
@@ -216,7 +217,7 @@ class ExistingUserController
 
   // Shows "filesystem encryption migration" screen.
   void ShowEncryptionMigrationScreen(const UserContext& user_context,
-                                     bool has_incomplete_migration);
+                                     EncryptionMigrationMode migration_mode);
 
   // Shows "critical TPM error" screen.
   void ShowTPMError();

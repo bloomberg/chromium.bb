@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -34,7 +35,7 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   void Hide() override;
   void SetDelegate(Delegate* delegate) override;
   void SetUserContext(const UserContext& user_context) override;
-  void SetShouldResume(bool should_resume) override;
+  void SetMode(EncryptionMigrationMode mode) override;
   void SetContinueLoginCallback(ContinueLoginCallback callback) override;
   void SetupInitialView() override;
 
@@ -99,6 +100,12 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   // Records UMA about visible screen after delay.
   void OnDelayedRecordVisibleScreen(UIState state);
 
+  // True if |mode_| suggests that we are resuming an incomplete migration.
+  bool IsResumingIncompleteMigration();
+
+  // True if |mode_| suggests that migration should start immediately.
+  bool IsStartImmediately();
+
   device::mojom::WakeLock* GetWakeLock();
 
   Delegate* delegate_ = nullptr;
@@ -114,8 +121,9 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   // The callback which is used to log in to the session from the migration UI.
   ContinueLoginCallback continue_login_callback_;
 
-  // True if the system should resume the previous incomplete migration.
-  bool should_resume_ = false;
+  // The migration mode (ask user / start migration automatically / resume
+  // incomplete migratoin).
+  EncryptionMigrationMode mode_ = EncryptionMigrationMode::ASK_USER;
 
   // The current battery level.
   base::Optional<double> current_battery_percent_;
