@@ -13,6 +13,9 @@
 #import "remoting/ios/app/app_delegate.h"
 #import "remoting/ios/app/remoting_theme.h"
 
+#include "remoting/base/string_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+
 static const CGFloat kTopPadding = 6.f;
 
 @implementation HostSetupFooterView
@@ -29,8 +32,9 @@ static const CGFloat kTopPadding = 6.f;
 
   MDCRaisedButton* raisedButton = [[MDCRaisedButton alloc] init];
 
-  [raisedButton setTitle:@"Email link and instructions"
-                forState:UIControlStateNormal];
+  [raisedButton
+      setTitle:l10n_util::GetNSString(IDS_EMAIL_LINKS_AND_INSTRUCTIONS)
+      forState:UIControlStateNormal];
   raisedButton.customTitleColor = RemotingTheme.buttonTextColor;
   [raisedButton setBackgroundColor:RemotingTheme.buttonBackgroundColor
                           forState:UIControlStateNormal];
