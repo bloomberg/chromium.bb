@@ -99,6 +99,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/rect.h"
@@ -384,6 +385,12 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& wallpaper_bounds)
 
   display::Screen::GetScreen()->AddObserver(this);
 
+  // TODO(crbug.com/747267): Add Mash case. Not strictly needed since callee in
+  // observer method is NOP in Mash, but good for symmetry and to avoid leaking
+  // implementation details about OobeUI.
+  if (!ash_util::IsRunningInMash())
+    ui::DeviceDataManager::GetInstance()->AddObserver(this);
+
   // We need to listen to CLOSE_ALL_BROWSERS_REQUEST but not APP_TERMINATING
   // because/ APP_TERMINATING will never be fired as long as this keeps
   // ref-count. CLOSE_ALL_BROWSERS_REQUEST is safe here because there will be no
@@ -493,6 +500,12 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
+
+  // TODO(crbug.com/747267): Add Mash case. Not strictly needed since callee in
+  // observer method is NOP in Mash, but good for symmetry and to avoid leaking
+  // implementation details about OobeUI.
+  if (!ash_util::IsRunningInMash())
+    ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
 
   if (login_view_ && login_window_)
     login_window_->RemoveRemovalsObserver(this);
@@ -1015,6 +1028,13 @@ void LoginDisplayHostImpl::OnDisplayMetricsChanged(
     if (changed_metrics & DISPLAY_METRIC_PRIMARY)
       GetOobeUI()->OnDisplayConfigurationChanged();
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LoginDisplayHostImpl, ui::InputDeviceEventObserver
+void LoginDisplayHostImpl::OnTouchscreenDeviceConfigurationChanged() {
+  if (GetOobeUI())
+    GetOobeUI()->OnDisplayConfigurationChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

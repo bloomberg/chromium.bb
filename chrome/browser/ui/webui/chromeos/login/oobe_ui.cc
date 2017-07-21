@@ -226,17 +226,12 @@ std::string GetDisplayType(const GURL& url) {
   return path;
 }
 
-bool IsKeyboardConnected() {
-  const std::vector<ui::InputDevice>& keyboards =
-      ui::InputDeviceManager::GetInstance()->GetKeyboardDevices();
-  for (const ui::InputDevice& keyboard : keyboards) {
-    if (keyboard.type == ui::INPUT_DEVICE_INTERNAL ||
-        keyboard.type == ui::INPUT_DEVICE_EXTERNAL) {
-      return true;
-    }
-  }
-
-  return false;
+bool IsRemoraRequisitioned() {
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetDeviceCloudPolicyManager();
+  return policy_manager && policy_manager->IsRemoraRequisition();
 }
 
 }  // namespace
@@ -376,7 +371,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   // TODO(felixe): Display iteration and primary display selection not supported
   // in Mash. See http://crbug.com/720917.
-  if (!ash_util::IsRunningInMash() && !IsKeyboardConnected())
+  if (!ash_util::IsRunningInMash() && IsRemoraRequisitioned())
     oobe_display_chooser_ = base::MakeUnique<OobeDisplayChooser>();
 }
 
