@@ -1374,6 +1374,11 @@ gfx::ColorSpace LayerTreeHostImpl::GetRasterColorSpace() const {
   else if (active_tree_)
     result = active_tree_->raster_color_space();
 
+  // If we are likely to software composite the resource, use sRGB because
+  // software compositing is unable to perform color conversion.
+  if (!layer_tree_frame_sink_ || !layer_tree_frame_sink_->context_provider())
+    result = gfx::ColorSpace::CreateSRGB();
+
   // Always specify a color space if color correct rasterization is requested
   // (not specifying a color space indicates that no color conversion is
   // required).
