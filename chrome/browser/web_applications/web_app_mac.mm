@@ -372,17 +372,20 @@ NSImageRep* OverlayImageRep(NSImage* background, NSImageRep* overlay) {
 
 // Helper function to extract the single NSImageRep held in a resource bundle
 // image.
-NSImageRep* ImageRepForGFXImage(const gfx::Image& image) {
+base::scoped_nsobject<NSImageRep> ImageRepForGFXImage(const gfx::Image& image) {
   NSArray* image_reps = [image.AsNSImage() representations];
   DCHECK_EQ(1u, [image_reps count]);
-  return [image_reps objectAtIndex:0];
+  return base::scoped_nsobject<NSImageRep>([image_reps objectAtIndex:0],
+                                           base::scoped_policy::RETAIN);
 }
 
-using ResourceIDToImage = std::map<int, gfx::Image>;
+using ResourceIDToImage = std::map<int, base::scoped_nsobject<NSImageRep>>;
 
-// Generates a map of gfx::Image used by SetWorkspaceIconOnFILEThread and
-// passes it to |io_task|. Since ui::ResourceBundle can be call only on UI
-// thread, this function also needs to run on UI thread.
+// Generates a map of NSImageReps used by SetWorkspaceIconOnFILEThread and
+// passes it to |io_task|. Since ui::ResourceBundle can only be used on UI
+// thread, this function also needs to run on UI thread, and the gfx::Images
+// need to be converted to NSImageReps on the UI thread due to non-thread-safety
+// of gfx::Image.
 void GetImageResourcesOnUIThread(
     base::OnceCallback<void(std::unique_ptr<ResourceIDToImage>)> io_task) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -394,8 +397,10 @@ void GetImageResourcesOnUIThread(
   // These resource ID should match to the ones used by
   // SetWorkspaceIconOnFILEThread below.
   for (int id : {IDR_APPS_FOLDER_16, IDR_APPS_FOLDER_32,
-                 IDR_APPS_FOLDER_OVERLAY_128, IDR_APPS_FOLDER_OVERLAY_512})
-    (*result)[id] = resource_bundle.GetNativeImageNamed(id);
+                 IDR_APPS_FOLDER_OVERLAY_128, IDR_APPS_FOLDER_OVERLAY_512}) {
+    gfx::Image image = resource_bundle.GetNativeImageNamed(id);
+    (*result)[id] = ImageRepForGFXImage(image);
+  }
 
   base::PostTaskWithTraits(
       FROM_HERE,
@@ -415,9 +420,9 @@ void SetWorkspaceIconOnFILEThread(const base::FilePath& apps_directory,
   // border is a much larger component of the small icons.
   // See http://crbug.com/305373 for details.
   for (int id : {IDR_APPS_FOLDER_16, IDR_APPS_FOLDER_32}) {
-    auto found = images->find(id);
+    const auto& found = images->find(id);
     DCHECK(found != images->end());
-    [folder_icon_image addRepresentation:ImageRepForGFXImage(found->second)];
+    [folder_icon_image addRepresentation:found->second];
   }
 
   // Brand larger folder assets with an embossed app launcher logo to
@@ -426,10 +431,9 @@ void SetWorkspaceIconOnFILEThread(const base::FilePath& apps_directory,
   // without this.
   NSImage* base_image = [NSImage imageNamed:NSImageNameFolder];
   for (int id : {IDR_APPS_FOLDER_OVERLAY_128, IDR_APPS_FOLDER_OVERLAY_512}) {
-    auto found = images->find(id);
+    const auto& found = images->find(id);
     DCHECK(found != images->end());
-    NSImageRep* with_overlay =
-        OverlayImageRep(base_image, ImageRepForGFXImage(found->second));
+    NSImageRep* with_overlay = OverlayImageRep(base_image, found->second);
     DCHECK(with_overlay);
     if (with_overlay)
       [folder_icon_image addRepresentation:with_overlay];
@@ -438,9 +442,6 @@ void SetWorkspaceIconOnFILEThread(const base::FilePath& apps_directory,
       setIcon:folder_icon_image
       forFile:base::mac::FilePathToNSString(apps_directory)
       options:0];
-
-  content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE,
-                                     images.release());
 }
 
 // Adds a localized strings file for the Chrome Apps directory using the current
