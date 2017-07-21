@@ -28,6 +28,7 @@ service_test("services_unittests") {
       "//services/preferences:tests",
       "//services/resource_coordinator:tests",
       "//services/shape_detection:tests",
+      "//services/viz/public/interfaces/compositing:tests",
     ]
   }
 
