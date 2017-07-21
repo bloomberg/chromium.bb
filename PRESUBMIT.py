@@ -370,6 +370,21 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
+      r'/(Time(|Delta|Ticks)|ThreadTicks)::FromInternalValue|ToInternalValue',
+      (
+        'base::TimeXXX::FromInternalValue() and ToInternalValue() are',
+        'deprecated (http://crbug.com/634507). Please avoid converting away',
+        'from the Time types in Chromium code, especially if any math is',
+        'being done on time values. For interfacing with platform/library',
+        'APIs, use FromMicroseconds() or InMicroseconds(), or one of the other',
+        'type converter methods instead. For faking TimeXXX values (for unit',
+        'testing only), use TimeXXX() + TimeDelta::FromMicroseconds(N). For',
+        'other use cases, please contact base/time/OWNERS.',
+      ),
+      False,
+      (),
+    ),
+    (
       'CallJavascriptFunctionUnsafe',
       (
         "Don't use CallJavascriptFunctionUnsafe() in new code. Instead, use",
