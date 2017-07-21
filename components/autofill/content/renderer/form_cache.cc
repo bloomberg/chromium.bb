@@ -315,23 +315,27 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form) {
         0, std::min(field_data.label.length(), kMaxLabelSize));
 
     const FormFieldDataPredictions& field = form.fields[i];
-    std::vector<base::string16> replacements;
 
-    base::string16 overall_type = base::UTF8ToUTF16(field.overall_type);
+    std::string title;
+    title += "overall type: ";
+    title += field.overall_type;
+    title += " server type: $2 ";
+    title += field.server_type;
+    title += " heuristic type: $3";
+    title += field.heuristic_type;
+    title += " label: $4";
+    title += base::UTF16ToUTF8(truncated_label);
+    title += " parseable name: $5";
+    title += field.overall_type;
+    title += " field signature: $6";
+    title += field.overall_type;
+    title += " form signature: $7";
+    title += field.overall_type;
 
-    replacements.push_back(overall_type);
-    replacements.push_back(base::UTF8ToUTF16(field.server_type));
-    replacements.push_back(base::UTF8ToUTF16(field.heuristic_type));
-    replacements.push_back(truncated_label);
-    replacements.push_back(base::UTF8ToUTF16(field.parseable_name));
-    replacements.push_back(base::UTF8ToUTF16(field.signature));
-    replacements.push_back(base::UTF8ToUTF16(form.signature));
-    const base::string16 title = l10n_util::GetStringFUTF16(
-        IDS_AUTOFILL_SHOW_PREDICTIONS_TITLE, replacements, nullptr);
-    element.SetAttribute("title", WebString::FromUTF16(title));
+    element.SetAttribute("title", WebString::FromUTF8(title));
 
     element.SetAttribute("autofill-prediction",
-                         WebString::FromUTF16(overall_type));
+                         WebString::FromUTF8(field.overall_type));
   }
 
   return true;
