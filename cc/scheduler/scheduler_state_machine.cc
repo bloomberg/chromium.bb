@@ -760,7 +760,6 @@ void SchedulerStateMachine::DidDrawInternal(DrawResult draw_result) {
   switch (draw_result) {
     case INVALID_RESULT:
     case DRAW_ABORTED_CANT_DRAW:
-    case DRAW_ABORTED_CONTEXT_LOST:
       NOTREACHED() << "Invalid return DrawResult:" << draw_result;
       break;
     case DRAW_ABORTED_DRAINING_PIPELINE:
