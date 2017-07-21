@@ -576,24 +576,24 @@ template <typename T, size_t inlineCapacity>
 struct VectorTraits<blink::HeapVector<T, inlineCapacity>>
     : VectorTraitsBase<blink::HeapVector<T, inlineCapacity>> {
   STATIC_ONLY(VectorTraits);
-  static const bool kNeedsDestruction = VectorTraits<T>::needsDestruction;
+  static const bool kNeedsDestruction = VectorTraits<T>::kNeedsDestruction;
   static const bool kCanInitializeWithMemset =
-      VectorTraits<T>::canInitializeWithMemset;
+      VectorTraits<T>::kCanInitializeWithMemset;
   static const bool kCanClearUnusedSlotsWithMemset =
-      VectorTraits<T>::canClearUnusedSlotsWithMemset;
-  static const bool kCanMoveWithMemcpy = VectorTraits<T>::canMoveWithMemcpy;
+      VectorTraits<T>::kCanClearUnusedSlotsWithMemset;
+  static const bool kCanMoveWithMemcpy = VectorTraits<T>::kCanMoveWithMemcpy;
 };
 
 template <typename T, size_t inlineCapacity>
 struct VectorTraits<blink::HeapDeque<T, inlineCapacity>>
     : VectorTraitsBase<blink::HeapDeque<T, inlineCapacity>> {
   STATIC_ONLY(VectorTraits);
-  static const bool kNeedsDestruction = VectorTraits<T>::needsDestruction;
+  static const bool kNeedsDestruction = VectorTraits<T>::kNeedsDestruction;
   static const bool kCanInitializeWithMemset =
-      VectorTraits<T>::canInitializeWithMemset;
+      VectorTraits<T>::kCanInitializeWithMemset;
   static const bool kCanClearUnusedSlotsWithMemset =
-      VectorTraits<T>::canClearUnusedSlotsWithMemset;
-  static const bool kCanMoveWithMemcpy = VectorTraits<T>::canMoveWithMemcpy;
+      VectorTraits<T>::kCanClearUnusedSlotsWithMemset;
+  static const bool kCanMoveWithMemcpy = VectorTraits<T>::kCanMoveWithMemcpy;
 };
 
 template <typename T>
