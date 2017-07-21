@@ -21,7 +21,9 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/payments/content/payment_request.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 
@@ -31,6 +33,7 @@ class CreditCard;
 }  // namespace autofill
 
 namespace content {
+class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
@@ -56,7 +59,8 @@ class PersonalDataLoadedObserverMock
 class PaymentRequestBrowserTestBase
     : public InProcessBrowserTest,
       public PaymentRequest::ObserverForTest,
-      public PaymentRequestDialogView::ObserverForTest {
+      public PaymentRequestDialogView::ObserverForTest,
+      public content::WebContentsObserver {
  public:
   // Various events that can be waited on by the DialogEventObserver.
   enum DialogEvent : int {
@@ -118,6 +122,12 @@ class PaymentRequestBrowserTestBase
   void OnSpecDoneUpdating() override;
   void OnCvcPromptShown() override;
 
+  // content::WebContentsObserver implementation.
+  void OnInterfaceRequestFromFrame(
+      content::RenderFrameHost* render_frame_host,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
+
   // Will call JavaScript to invoke the PaymentRequest dialog and verify that
   // it's open.
   void InvokePaymentRequestUI();
@@ -156,8 +166,8 @@ class PaymentRequestBrowserTestBase
   void AddCreditCard(const autofill::CreditCard& card);
 
   void CreatePaymentRequestForTest(
-      content::WebContents* web_contents,
-      payments::mojom::PaymentRequestRequest request);
+      payments::mojom::PaymentRequestRequest request,
+      content::RenderFrameHost* render_frame_host);
 
   // Click on a view from within the dialog and waits for an observed event
   // to be observed.
@@ -273,6 +283,8 @@ class PaymentRequestBrowserTestBase
   TestChromePaymentRequestDelegate* delegate_;
   bool is_incognito_;
   bool is_valid_ssl_;
+
+  service_manager::BinderRegistryWithArgs<content::RenderFrameHost*> registry_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestBrowserTestBase);
 };

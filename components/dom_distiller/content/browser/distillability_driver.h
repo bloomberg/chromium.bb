@@ -11,6 +11,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace dom_distiller {
 
@@ -26,25 +27,21 @@ class DistillabilityDriver
   void SetDelegate(const base::Callback<void(bool, bool)>& delegate);
 
   // content::WebContentsObserver implementation.
-  void ReadyToCommitNavigation(
-      content::NavigationHandle* navigation_handle) override;
-  void RenderFrameHostChanged(
-      content::RenderFrameHost* old_host,
-      content::RenderFrameHost* new_host) override;
+  void OnInterfaceRequestFromFrame(
+      content::RenderFrameHost* render_frame_host,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
 
  private:
   explicit DistillabilityDriver(content::WebContents* web_contents);
   friend class content::WebContentsUserData<DistillabilityDriver>;
   friend class DistillabilityServiceImpl;
 
-  void SetupMojoService(content::RenderFrameHost* frame_host);
   void OnDistillability(bool distillable, bool is_last);
-
-  void SetNeedsMojoSetup();
 
   base::Callback<void(bool, bool)> m_delegate_;
 
-  bool mojo_needs_setup_;
+  service_manager::BinderRegistry frame_interfaces_;
 
   base::WeakPtrFactory<DistillabilityDriver> weak_factory_;
 

@@ -250,11 +250,8 @@ void HeadlessWebContentsImpl::CreateMojoService(
 
 void HeadlessWebContentsImpl::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
-  service_manager::BinderRegistry* interface_registry =
-      render_frame_host->GetInterfaceRegistry();
-
   for (const MojoService& service : mojo_services_) {
-    interface_registry->AddInterface(
+    registry_.AddInterface(
         service.service_name,
         base::Bind(&HeadlessWebContentsImpl::CreateMojoService,
                    base::Unretained(this), service.service_factory),
@@ -266,6 +263,13 @@ void HeadlessWebContentsImpl::RenderFrameCreated(
                                        render_frame_host->GetFrameTreeNodeId());
   if (headless_tab_socket_)
     headless_tab_socket_->RenderFrameCreated(render_frame_host);
+}
+
+void HeadlessWebContentsImpl::OnInterfaceRequestFromFrame(
+    content::RenderFrameHost* render_frame_host,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 void HeadlessWebContentsImpl::RenderFrameDeleted(

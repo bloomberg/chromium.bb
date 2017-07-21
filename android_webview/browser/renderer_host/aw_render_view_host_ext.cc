@@ -150,7 +150,7 @@ void AwRenderViewHostExt::ClearImageRequests() {
 
 void AwRenderViewHostExt::RenderFrameCreated(
     content::RenderFrameHost* frame_host) {
-  frame_host->GetInterfaceRegistry()->AddInterface(
+  registry_.AddInterface(
       base::Bind(&web_restrictions::WebRestrictionsMojoImplementation::Create,
                  AwBrowserContext::GetDefault()->GetWebRestrictionProvider()));
 }
@@ -187,6 +187,13 @@ bool AwRenderViewHostExt::OnMessageReceived(
   IPC_END_MESSAGE_MAP()
 
   return handled ? true : WebContentsObserver::OnMessageReceived(message);
+}
+
+void AwRenderViewHostExt::OnInterfaceRequestFromFrame(
+    content::RenderFrameHost* render_frame_host,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 void AwRenderViewHostExt::OnDocumentHasImagesResponse(
