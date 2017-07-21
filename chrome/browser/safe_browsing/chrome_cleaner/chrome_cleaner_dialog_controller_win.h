@@ -13,8 +13,8 @@ namespace safe_browsing {
 // be called by the Chrome Cleaner UI in response to user actions.
 //
 // Implementations manage their own lifetimes and delete themselves once the
-// Cleaner dialog has been dismissed and either of |Accept()|, |Cancel()| or
-// |Close()| have been called.
+// Cleaner dialog has been dismissed and either of |Accept()|, |Cancel()|,
+// |Close()| or |ClosedWithoutUserInteraction()| have been called.
 class ChromeCleanerDialogController {
  public:
   // Called by the Cleaner dialog when the dialog has been shown. Used for
@@ -34,6 +34,12 @@ class ChromeCleanerDialogController {
   // eventually delete itself and no member functions should be called after
   // that.
   virtual void Close() = 0;
+  // Called by the Cleaner dialog when the dialog is closed, without user
+  // interaction, when the ChromeCleanerController leaves the kInfected
+  // state. This can happen due to errors when communicating with the Chrome
+  // Cleaner process or if the user interacts with the Chrome Cleaner webui page
+  // in a different browser window.
+  virtual void ClosedWithoutUserInteraction() = 0;
   // Called when the details button is clicked, after which the dialog will
   // close. After a call to |DetailsButtonClicked()|, the controller will
   // eventually delete itself and no member functions should be called after

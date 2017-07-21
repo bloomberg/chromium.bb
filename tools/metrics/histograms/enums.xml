@@ -34741,9 +34741,10 @@ from previous Chrome versions.
 
 <enum name="SoftwareReporterPromptDialogResponse">
   <int value="0" label="Accepted"/>
-  <int value="2" label="Details"/>
-  <int value="3" label="Cancelled"/>
-  <int value="4" label="Dismissed"/>
+  <int value="1" label="Details"/>
+  <int value="2" label="Cancelled"/>
+  <int value="3" label="Dismissed"/>
+  <int value="4" label="Closed without user interaction"/>
 </enum>
 
 <enum name="SpareWebContentsStatus">
