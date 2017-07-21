@@ -82,7 +82,8 @@ class ProxyConfigService;
 class ReportingService;
 class ReportSender;
 class SSLConfigService;
-class URLRequestContextBuilder;
+class TransportSecurityPersister;
+class URLRequestContextStorage;
 class URLRequestJobFactoryImpl;
 }  // namespace net
 
@@ -121,15 +122,8 @@ class ProfileIOData {
   // Utility to install additional WebUI handlers into the |job_factory|.
   // Ownership of the handlers is transfered from |protocol_handlers|
   // to the |job_factory|.
-  // TODO(mmenke): Remove this, once only AddProtocolHandlersToBuilder is used.
   static void InstallProtocolHandlers(
       net::URLRequestJobFactoryImpl* job_factory,
-      content::ProtocolHandlerMap* protocol_handlers);
-
-  // Utility to install additional WebUI handlers into |builder|. Ownership of
-  // the handlers is transfered from |protocol_handlers| to |builder|.
-  static void AddProtocolHandlersToBuilder(
-      net::URLRequestContextBuilder* builder,
       content::ProtocolHandlerMap* protocol_handlers);
 
   // Sets a global CertVerifier to use when initializing all profiles.
@@ -349,6 +343,7 @@ class ProfileIOData {
   explicit ProfileIOData(Profile::ProfileType profile_type);
 
   void InitializeOnUIThread(Profile* profile);
+  void ApplyProfileParamsToContext(net::URLRequestContext* context) const;
 
   // Does common setup of the URLRequestJobFactories. Adds default
   // ProtocolHandlers to |job_factory|, adds URLRequestInterceptors in front of
@@ -357,29 +352,12 @@ class ProfileIOData {
   // |protocol_handler_interceptor| is configured to intercept URLRequests
   //     before all other URLRequestInterceptors, if non-null.
   // |host_resolver| is needed to set up the FtpProtocolHandler.
-  //
-  // TODO(mmenke): Remove this once all URLRequestContexts are set up using
-  // URLRequestContextBuilders.
   std::unique_ptr<net::URLRequestJobFactory> SetUpJobFactoryDefaults(
       std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory,
       content::URLRequestInterceptorScopedVector request_interceptors,
       std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       net::NetworkDelegate* network_delegate,
-      net::HostResolver* host_resolver) const;
-
-  // Does common setup of the URLRequestJobFactories. Adds default
-  // ProtocolHandlers to |builder|, and adds URLRequestInterceptors in front of
-  // them as needed.
-  //
-  // |protocol_handler_interceptor| is configured to intercept URLRequests
-  //     before all other URLRequestInterceptors, if non-null.
-  // |host_resolver| is needed to set up the FtpProtocolHandler.
-  void SetUpJobFactoryDefaultsForBuilder(
-      net::URLRequestContextBuilder* builder,
-      content::URLRequestInterceptorScopedVector request_interceptors,
-      std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-          protocol_handler_interceptor,
       net::HostResolver* host_resolver) const;
 
   // Called when the Profile is destroyed. |context_getters| must include all
@@ -402,6 +380,13 @@ class ProfileIOData {
     return main_request_context_.get();
   }
 
+  // Storage for |main_request_context_|, to allow objects created by subclasses
+  // to live until the ProfileIOData destructor is invoked, so it can safely
+  // cancel URLRequests.
+  net::URLRequestContextStorage* main_request_context_storage() const {
+    return main_request_context_storage_.get();
+  }
+
   bool initialized() const {
     return initialized_;
   }
@@ -410,6 +395,9 @@ class ProfileIOData {
   // using it still, before we destroy the member variables that those
   // URLRequests may be accessing.
   void DestroyResourceContext();
+
+  std::unique_ptr<net::HttpNetworkSession> CreateHttpNetworkSession(
+      const ProfileParams& profile_params) const;
 
   // Creates main network transaction factory.
   std::unique_ptr<net::HttpCache> CreateMainHttpFactory(
@@ -460,20 +448,13 @@ class ProfileIOData {
       IOThread* io_thread,
       std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate) const;
 
-  // Does the initialization of the URLRequestContextBuilder for a ProfileIOData
-  // subclass. Subclasseses should use the static helper functions above to
-  // implement this.
+  // Does the actual initialization of the ProfileIOData subtype. Subtypes
+  // should use the static helper functions above to implement this.
   virtual void InitializeInternal(
-      net::URLRequestContextBuilder* builder,
       ProfileParams* profile_params,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
       const = 0;
-
-  // Called after the main URLRequestContext has been initialized, just after
-  // InitializeInternal().
-  virtual void OnMainRequestContextCreated(
-      ProfileParams* profile_params) const = 0;
 
   // Initializes the RequestContext for extensions.
   virtual void InitializeExtensionsRequestContext(
@@ -583,11 +564,19 @@ class ProfileIOData {
   mutable std::unique_ptr<chromeos::CertificateProvider> certificate_provider_;
 #endif
 
+  // Owns the subset of URLRequestContext's elements that are created by
+  // subclasses of ProfileImplIOData, to ensure proper destruction ordering.
+  // TODO(mmenke):  Move ownship of net objects owned by the ProfileIOData
+  // itself to this class, to improve destruction ordering.
+  mutable std::unique_ptr<net::URLRequestContextStorage>
+      main_request_context_storage_;
   mutable std::unique_ptr<net::URLRequestContext> main_request_context_;
 
   // Pointed to by the TransportSecurityState (owned by
   // URLRequestContextStorage), and must be disconnected from it before it's
   // destroyed.
+  mutable std::unique_ptr<net::TransportSecurityPersister>
+      transport_security_persister_;
   mutable std::unique_ptr<net::ReportSender> certificate_report_sender_;
   mutable std::unique_ptr<certificate_transparency::CTPolicyManager>
       ct_policy_manager_;

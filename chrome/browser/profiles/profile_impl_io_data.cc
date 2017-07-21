@@ -69,7 +69,7 @@
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
 #include "net/ssl/channel_id_service.h"
-#include "net/url_request/url_request_context_builder.h"
+#include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -80,9 +80,7 @@
 
 namespace {
 
-// Returns the URLRequestContextBuilder::HttpCacheParams::Type that the disk
-// cache should use.
-net::URLRequestContextBuilder::HttpCacheParams::Type ChooseCacheType() {
+net::BackendType ChooseCacheBackendType() {
 #if !defined(OS_ANDROID)
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -90,46 +88,27 @@ net::URLRequestContextBuilder::HttpCacheParams::Type ChooseCacheType() {
     const std::string opt_value =
         command_line.GetSwitchValueASCII(switches::kUseSimpleCacheBackend);
     if (base::LowerCaseEqualsASCII(opt_value, "off"))
-      return net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE;
+      return net::CACHE_BACKEND_BLOCKFILE;
     if (opt_value.empty() || base::LowerCaseEqualsASCII(opt_value, "on"))
-      return net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
+      return net::CACHE_BACKEND_SIMPLE;
   }
   const std::string experiment_name =
       base::FieldTrialList::FindFullName("SimpleCacheTrial");
   if (base::StartsWith(experiment_name, "Disable",
                        base::CompareCase::INSENSITIVE_ASCII)) {
-    return net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE;
+    return net::CACHE_BACKEND_BLOCKFILE;
   }
   if (base::StartsWith(experiment_name, "ExperimentYes",
                        base::CompareCase::INSENSITIVE_ASCII)) {
-    return net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
+    return net::CACHE_BACKEND_SIMPLE;
   }
 #endif  // #if !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-  return net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
+  return net::CACHE_BACKEND_SIMPLE;
 #else
-  return net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE;
+  return net::CACHE_BACKEND_BLOCKFILE;
 #endif
-}
-
-// Returns the BackendType that the disk cache should use.
-// TODO(mmenke): Once all URLRequestContexts are set up using
-// URLRequestContextBuilders, and the media URLRequestContext is take care of
-// (In one way or another), this should be removed.
-net::BackendType ChooseCacheBackendType() {
-  switch (ChooseCacheType()) {
-    case net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE:
-      return net::CACHE_BACKEND_BLOCKFILE;
-    case net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE:
-      return net::CACHE_BACKEND_SIMPLE;
-    case net::URLRequestContextBuilder::HttpCacheParams::DISK:
-      return net::CACHE_BACKEND_DEFAULT;
-    case net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY:
-      NOTREACHED();
-      break;
-  }
-  return net::CACHE_BACKEND_DEFAULT;
 }
 
 }  // namespace
@@ -481,20 +460,23 @@ ProfileImplIOData::ConfigureNetworkDelegate(
 }
 
 void ProfileImplIOData::InitializeInternal(
-    net::URLRequestContextBuilder* builder,
     ProfileParams* profile_params,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) const {
+  net::URLRequestContext* main_context = main_request_context();
+  net::URLRequestContextStorage* main_context_storage =
+      main_request_context_storage();
+
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
 
   if (lazy_params_->http_server_properties_manager) {
     lazy_params_->http_server_properties_manager->InitializeOnNetworkSequence();
-    builder->SetHttpServerProperties(
+    main_context_storage->set_http_server_properties(
         std::move(lazy_params_->http_server_properties_manager));
   }
 
-  builder->set_network_quality_estimator(
+  main_context->set_network_quality_estimator(
       io_thread_globals->network_quality_estimator.get());
 
   // Create a single task runner to use with the CookieStore and ChannelIDStore.
@@ -509,7 +491,7 @@ void ProfileImplIOData::InitializeInternal(
       new QuotaPolicyChannelIDStore(lazy_params_->channel_id_path,
                                     cookie_background_task_runner,
                                     lazy_params_->special_storage_policy.get());
-  std::unique_ptr<net::ChannelIDService> channel_id_service(
+  main_context_storage->set_channel_id_service(
       base::MakeUnique<net::ChannelIDService>(
           new net::DefaultChannelIDStore(channel_id_db.get())));
 
@@ -521,25 +503,27 @@ void ProfileImplIOData::InitializeInternal(
       lazy_params_->special_storage_policy.get(),
       profile_params->cookie_monster_delegate.get());
   cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
-  cookie_config.channel_id_service = channel_id_service.get();
+  cookie_config.channel_id_service = main_context->channel_id_service();
   cookie_config.background_task_runner = cookie_background_task_runner;
-  std::unique_ptr<net::CookieStore> cookie_store(
+  main_context_storage->set_cookie_store(
       content::CreateCookieStore(cookie_config));
 
-  cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
+  main_context->cookie_store()->SetChannelIDServiceID(
+      main_context->channel_id_service()->GetUniqueID());
 
-  builder->SetCookieAndChannelIdStores(std::move(cookie_store),
-                                       std::move(channel_id_service));
+  std::unique_ptr<net::HttpCache::BackendFactory> main_backend(
+      new net::HttpCache::DefaultBackend(
+          net::DISK_CACHE, ChooseCacheBackendType(), lazy_params_->cache_path,
+          lazy_params_->cache_max_size,
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE)));
+  main_context_storage->set_http_network_session(
+      CreateHttpNetworkSession(*profile_params));
+  main_context_storage->set_http_transaction_factory(CreateMainHttpFactory(
+      main_context_storage->http_network_session(), std::move(main_backend)));
 
-  net::URLRequestContextBuilder::HttpCacheParams cache_params;
-  cache_params.type = ChooseCacheType();
-  cache_params.path = lazy_params_->cache_path;
-  cache_params.max_size = lazy_params_->cache_max_size;
-  builder->EnableHttpCache(cache_params);
-  builder->SetCacheThreadTaskRunner(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE));
-
-  AddProtocolHandlersToBuilder(builder, protocol_handlers);
+  std::unique_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
+      new net::URLRequestJobFactoryImpl());
+  InstallProtocolHandlers(main_job_factory.get(), protocol_handlers);
 
   // Install the Offline Page Interceptor.
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -555,27 +539,24 @@ void ProfileImplIOData::InitializeInternal(
       data_reduction_proxy_io_data()->CreateInterceptor());
   data_reduction_proxy_io_data()->SetDataUseAscriber(
       io_thread_globals->data_use_ascriber.get());
-  SetUpJobFactoryDefaultsForBuilder(
-      builder, std::move(request_interceptors),
+  main_context_storage->set_job_factory(SetUpJobFactoryDefaults(
+      std::move(main_job_factory), std::move(request_interceptors),
       std::move(profile_params->protocol_handler_interceptor),
-      io_thread_globals->system_request_context->host_resolver());
-
-  builder->set_reporting_policy(MaybeCreateReportingPolicy());
-}
-
-void ProfileImplIOData::OnMainRequestContextCreated(
-    ProfileParams* profile_params) const {
-  DCHECK(lazy_params_);
+      main_context->network_delegate(),
+      io_thread_globals->system_request_context->host_resolver()));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   InitializeExtensionsRequestContext(profile_params);
 #endif
 
+  main_context_storage->set_reporting_service(
+      MaybeCreateReportingService(main_context));
+
   // Create a media request context based on the main context, but using a
   // media cache.  It shares the same job factory as the main context.
   StoragePartitionDescriptor details(profile_path_, false);
-  media_request_context_.reset(InitializeMediaRequestContext(
-      main_request_context(), details, "main_media"));
+  media_request_context_.reset(
+      InitializeMediaRequestContext(main_context, details, "main_media"));
   lazy_params_.reset();
 }
 
@@ -663,12 +644,13 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
   // main_request_context_storage() objects and the argumet to this method,
   // |main_context|.  Remove |main_context| as an argument, and just use
   // main_context() instead.
-  net::HttpNetworkSession* network_session =
-      main_context->http_transaction_factory()->GetSession();
-  net::HttpNetworkSession::Context session_context = network_session->context();
+  net::HttpNetworkSession::Context session_context =
+      main_request_context_storage()->http_network_session()->context();
   session_context.channel_id_service = channel_id_service.get();
   std::unique_ptr<net::HttpNetworkSession> http_network_session(
-      new net::HttpNetworkSession(network_session->params(), session_context));
+      new net::HttpNetworkSession(
+          main_request_context_storage()->http_network_session()->params(),
+          session_context));
   std::unique_ptr<net::HttpCache> app_http_cache =
       CreateMainHttpFactory(http_network_session.get(), std::move(app_backend));
 
@@ -790,20 +772,11 @@ chrome_browser_net::Predictor* ProfileImplIOData::GetPredictor() {
 std::unique_ptr<net::ReportingService>
 ProfileImplIOData::MaybeCreateReportingService(
     net::URLRequestContext* url_request_context) const {
-  std::unique_ptr<net::ReportingPolicy> reporting_policy(
-      MaybeCreateReportingPolicy());
-  if (!reporting_policy)
+  if (!base::FeatureList::IsEnabled(features::kReporting))
     return std::unique_ptr<net::ReportingService>();
 
-  return net::ReportingService::Create(*reporting_policy, url_request_context);
-}
-
-std::unique_ptr<net::ReportingPolicy>
-ProfileImplIOData::MaybeCreateReportingPolicy() {
-  if (!base::FeatureList::IsEnabled(features::kReporting))
-    return std::unique_ptr<net::ReportingPolicy>();
-
-  return base::MakeUnique<net::ReportingPolicy>();
+  return net::ReportingService::Create(net::ReportingPolicy(),
+                                       url_request_context);
 }
 
 void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(

@@ -26,9 +26,6 @@ class DomainReliabilityMonitor;
 namespace net {
 class CookieStore;
 class HttpServerPropertiesManager;
-struct ReportingPolicy;
-class ReportingService;
-class URLRequestContextBuilder;
 }  // namespace net
 
 namespace storage {
@@ -164,13 +161,11 @@ class ProfileImplIOData : public ProfileIOData {
       std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate)
       const override;
 
-  void InitializeInternal(net::URLRequestContextBuilder* builder,
-                          ProfileParams* profile_params,
-                          content::ProtocolHandlerMap* protocol_handlers,
-                          content::URLRequestInterceptorScopedVector
-                              request_interceptors) const override;
-  void OnMainRequestContextCreated(
-      ProfileParams* profile_params) const override;
+  void InitializeInternal(
+      ProfileParams* profile_params,
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::URLRequestInterceptorScopedVector request_interceptors)
+      const override;
   void InitializeExtensionsRequestContext(
       ProfileParams* profile_params) const override;
   net::URLRequestContext* InitializeAppRequestContext(
@@ -199,16 +194,8 @@ class ProfileImplIOData : public ProfileIOData {
       const StoragePartitionDescriptor& partition_descriptor) const override;
   chrome_browser_net::Predictor* GetPredictor() override;
 
-  // Returns a net::ReportingService, if reporting should be enabled. Otherwise,
-  // returns nullptr.
-  // TODO(mmenke): Remove once URLRequestContextBuilders are always used to
-  // create URLRequestContexts.
   std::unique_ptr<net::ReportingService> MaybeCreateReportingService(
       net::URLRequestContext* url_request_context) const;
-
-  // Returns a net::ReportingPolicy, if reporting should be enabled. Otherwise,
-  // returns nullptr.
-  static std::unique_ptr<net::ReportingPolicy> MaybeCreateReportingPolicy();
 
   // Deletes all network related data since |time|. It deletes transport
   // security state since |time| and also deletes HttpServerProperties data.

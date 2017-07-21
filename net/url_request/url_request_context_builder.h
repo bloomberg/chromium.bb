@@ -23,7 +23,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -55,7 +54,6 @@ class CookieStore;
 class CTPolicyEnforcer;
 class CTVerifier;
 class HttpAuthHandlerFactory;
-class HttpUserAgentSettings;
 class HttpServerProperties;
 class NetworkQualityEstimator;
 class ProxyConfigService;
@@ -81,18 +79,12 @@ class URLRequestInterceptor;
 // Builder may be used to create only a single URLRequestContext.
 class NET_EXPORT URLRequestContextBuilder {
  public:
-  using CreateInterceptingJobFactory =
-      base::OnceCallback<std::unique_ptr<net::URLRequestJobFactory>(
-          std::unique_ptr<net::URLRequestJobFactory> inner_job_factory)>;
-
   struct NET_EXPORT HttpCacheParams {
     enum Type {
       // In-memory cache.
       IN_MEMORY,
       // Disk cache using "default" backend.
       DISK,
-      // Disk cache using "blockfile" backend (BackendImpl).
-      DISK_BLOCKFILE,
       // Disk cache using "simple" backend (SimpleBackendImpl).
       DISK_SIMPLE,
     };
@@ -174,17 +166,12 @@ class NET_EXPORT URLRequestContextBuilder {
   // Call these functions to specify hard-coded Accept-Language
   // or User-Agent header values for all requests that don't
   // have the headers already set.
-  void set_accept_language(const std::string& accept_language);
-  void set_user_agent(const std::string& user_agent);
-  // Makes the created URLRequestContext use a shared HttpUserAgentSettings
-  // object. Not compatible with set_accept_language() / set_user_agent(). The
-  // consumer must ensure the HttpUserAgentSettings outlives the
-  // URLRequestContext returned by the builder.
-  //
-  // TODO(mmenke): Take ownership of the object instead. See:
-  // https://crbug.com/743251
-  void set_shared_http_user_agent_settings(
-      HttpUserAgentSettings* shared_http_user_agent_settings);
+  void set_accept_language(const std::string& accept_language) {
+    accept_language_ = accept_language;
+  }
+  void set_user_agent(const std::string& user_agent) {
+    user_agent_ = user_agent;
+  }
 
   // Control support for data:// requests. By default it's disabled.
   void set_data_enabled(bool enable) {
@@ -218,14 +205,9 @@ class NET_EXPORT URLRequestContextBuilder {
   void set_net_log(NetLog* net_log) { net_log_ = net_log; }
 
   // By default host_resolver is constructed with CreateDefaultResolver.
-  void set_host_resolver(std::unique_ptr<HostResolver> host_resolver);
-  // Allows sharing the HostResolver with other URLRequestContexts. Should not
-  // be used if set_host_resolver() is used. The consumer must ensure the
-  // HostResolver outlives the URLRequestContext returned by the builder.
-  //
-  // TODO(mmenke): Figure out the cost/benefits of not supporting sharing
-  // HostResolvers between URLRequestContexts. See: https://crbug.com/743251.
-  void set_shared_host_resolver(HostResolver* host_resolver);
+  void set_host_resolver(std::unique_ptr<HostResolver> host_resolver) {
+    host_resolver_ = std::move(host_resolver);
+  }
 
   // Uses BasicNetworkDelegate by default. Note that calling Build will unset
   // any custom delegate in builder, so this must be called each time before
@@ -234,31 +216,20 @@ class NET_EXPORT URLRequestContextBuilder {
     network_delegate_ = std::move(delegate);
   }
 
-  // Sets the ProxyDelegate.
-  void set_proxy_delegate(std::unique_ptr<ProxyDelegate> proxy_delegate);
-  // Allows sharing the PreoxyDelegates with other URLRequestContexts. Should
-  // not be used if set_proxy_delegate() is used. The consumer must ensure the
-  // ProxyDelegate outlives the URLRequestContext returned by the builder.
-  //
-  // TODO(mmenke): Remove this (And update consumers). See:
-  // https://crbug.com/743251.
-  void set_shared_proxy_delegate(ProxyDelegate* shared_proxy_delegate);
+  // Temporarily stores a ProxyDelegate. Ownership is transferred to
+  // UrlRequestContextStorage during Build.
+  void set_proxy_delegate(std::unique_ptr<ProxyDelegate> delegate) {
+    proxy_delegate_ = std::move(delegate);
+  }
 
   // Sets a specific HttpAuthHandlerFactory to be used by the URLRequestContext
   // rather than the default |HttpAuthHandlerRegistryFactory|. The builder
   // takes ownership of the factory and will eventually transfer it to the new
-  // URLRequestContext.
+  // URLRequestContext. Note that since Build will transfer ownership, the
+  // custom factory will be unset and this must be called before the next Build
+  // to set another custom one.
   void SetHttpAuthHandlerFactory(
       std::unique_ptr<HttpAuthHandlerFactory> factory);
-  // Makes the created URLRequestContext use a shared HttpAuthHandlerFactory
-  // object. Not compatible with SetHttpAuthHandlerFactory(). The consumer must
-  // ensure the HttpAuthHandlerFactory outlives the URLRequestContext returned
-  // by the builder.
-  //
-  // TODO(mmenke): Evaluate if sharing is really needed. See:
-  // https://crbug.com/743251.
-  void set_shared_http_auth_handler_factory(
-      HttpAuthHandlerFactory* shared_http_auth_handler_factory);
 
   // By default HttpCache is enabled with a default constructed HttpCacheParams.
   void EnableHttpCache(const HttpCacheParams& params);
@@ -275,17 +246,6 @@ class NET_EXPORT URLRequestContextBuilder {
     transport_security_persister_path_ = transport_security_persister_path;
   }
 
-  // Sets whether the TransportSecurityPersister only reads persisted
-  // information, or also writes it. By default, it both reads and writes.
-  //
-  // TODO(mmenke): Consider removing this in favor of the above method. See:
-  // https://crbug.com/743251.
-  void set_transport_security_persister_readonly(
-      bool transport_security_persister_readonly) {
-    transport_security_persister_readonly_ =
-        transport_security_persister_readonly;
-  }
-
   void SetSpdyAndQuicEnabled(bool spdy_enabled,
                              bool quic_enabled);
 
@@ -299,14 +259,6 @@ class NET_EXPORT URLRequestContextBuilder {
 
   void SetCertVerifier(std::unique_ptr<CertVerifier> cert_verifier);
 
-  // Makes the created URLRequestContext use a shared CertVerifier object.
-  // Should not be used it SetCertVerifier() is used. The consumer must ensure
-  // the CertVerifier outlives the URLRequestContext returned by the builder.
-  //
-  // TODO(mmenke): Figure out if consumers can use SetCertVerifier instead. See:
-  // https://crbug.com/743251.
-  void set_shared_cert_verifier(CertVerifier* shared_cert_verifier);
-
 #if BUILDFLAG(ENABLE_REPORTING)
   void set_reporting_policy(
       std::unique_ptr<net::ReportingPolicy> reporting_policy);
@@ -314,13 +266,6 @@ class NET_EXPORT URLRequestContextBuilder {
 
   void SetInterceptors(std::vector<std::unique_ptr<URLRequestInterceptor>>
                            url_request_interceptors);
-
-  // Sets a callback that is passed ownership of the URLRequestJobFactory, and
-  // can wrap it in another URLRequestJobFactory. URLRequestInterceptors can't
-  // handle intercepting unsupported protocols, while this case.
-  // TODO(mmenke): Remove this, once it's no longer needed.
-  void set_create_intercepting_job_factory(
-      CreateInterceptingJobFactory create_intercepting_job_factory);
 
   // Override the default in-memory cookie store and channel id service.
   // If both |cookie_store| and |channel_id_service| are NULL, CookieStore and
@@ -377,8 +322,6 @@ class NET_EXPORT URLRequestContextBuilder {
 
   std::string accept_language_;
   std::string user_agent_;
-  HttpUserAgentSettings* shared_http_user_agent_settings_;
-
   // Include support for data:// requests.
   bool data_enabled_;
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
@@ -398,10 +341,8 @@ class NET_EXPORT URLRequestContextBuilder {
   HttpCacheParams http_cache_params_;
   HttpNetworkSession::Params http_network_session_params_;
   base::FilePath transport_security_persister_path_;
-  bool transport_security_persister_readonly_;
   NetLog* net_log_;
   std::unique_ptr<HostResolver> host_resolver_;
-  net::HostResolver* shared_host_resolver_;
   std::unique_ptr<ChannelIDService> channel_id_service_;
   std::unique_ptr<ProxyConfigService> proxy_config_service_;
   bool pac_quick_check_enabled_;
@@ -410,19 +351,15 @@ class NET_EXPORT URLRequestContextBuilder {
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
   std::unique_ptr<NetworkDelegate> network_delegate_;
   std::unique_ptr<ProxyDelegate> proxy_delegate_;
-  ProxyDelegate* shared_proxy_delegate_;
   std::unique_ptr<CookieStore> cookie_store_;
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
-  HttpAuthHandlerFactory* shared_http_auth_handler_factory_;
   std::unique_ptr<CertVerifier> cert_verifier_;
-  CertVerifier* shared_cert_verifier_;
   std::unique_ptr<CTVerifier> ct_verifier_;
   std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer_;
 #if BUILDFLAG(ENABLE_REPORTING)
   std::unique_ptr<net::ReportingPolicy> reporting_policy_;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
   std::vector<std::unique_ptr<URLRequestInterceptor>> url_request_interceptors_;
-  CreateInterceptingJobFactory create_intercepting_job_factory_;
   std::unique_ptr<HttpServerProperties> http_server_properties_;
   std::map<std::string, std::unique_ptr<URLRequestJobFactory::ProtocolHandler>>
       protocol_handlers_;
