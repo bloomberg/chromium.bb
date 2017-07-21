@@ -175,10 +175,6 @@ extern const base::Feature kPushMessagingBackgroundMode;
 extern const base::Feature kRuntimeMemoryLeakDetector;
 #endif  // defined(OS_CHROMEOS)
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-extern const base::Feature kRunAllFlashInAllowMode;
-#endif
-
 extern const base::Feature kSafeSearchUrlReporting;
 
 extern const base::Feature kSimplifiedFullscreenUI;
