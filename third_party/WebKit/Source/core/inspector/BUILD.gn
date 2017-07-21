@@ -50,6 +50,8 @@ blink_core_sources("inspector") {
     "InspectorHighlight.h",
     "InspectorHistory.cpp",
     "InspectorHistory.h",
+    "InspectorIOAgent.cpp",
+    "InspectorIOAgent.h",
     "InspectorInputAgent.cpp",
     "InspectorInputAgent.h",
     "InspectorLayerTreeAgent.cpp",
