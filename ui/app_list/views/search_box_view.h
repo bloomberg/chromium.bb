@@ -124,6 +124,9 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   // Used only in the tests to get the current search icon.
   views::ImageView* get_search_icon_for_test() { return search_icon_; }
 
+  // Used only in the tests to get the current focused view.
+  SearchBoxFocus get_focused_view_for_test() const { return focused_view_; }
+
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 

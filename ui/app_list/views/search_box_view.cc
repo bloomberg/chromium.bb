@@ -289,9 +289,11 @@ bool SearchBoxView::MoveTabFocus(bool move_backwards) {
       break;
     case FOCUS_SEARCH_BOX:
       if (move_backwards) {
-        focused_view_ = back_button_ && back_button_->visible()
-                            ? FOCUS_BACK_BUTTON
-                            : FOCUS_SEARCH_BOX;
+        focused_view_ =
+            back_button_ && back_button_->visible()
+                ? FOCUS_BACK_BUTTON
+                : (is_fullscreen_app_list_enabled_ ? FOCUS_CONTENTS_VIEW
+                                                   : FOCUS_SEARCH_BOX);
       } else {
         focused_view_ = speech_button_ && speech_button_->visible()
                             ? FOCUS_MIC_BUTTON
@@ -311,6 +313,12 @@ bool SearchBoxView::MoveTabFocus(bool move_backwards) {
                             : (close_button_ && close_button_->visible()
                                    ? FOCUS_CLOSE_BUTTON
                                    : FOCUS_SEARCH_BOX);
+      } else {
+        focused_view_ =
+            !is_fullscreen_app_list_enabled_
+                ? FOCUS_CONTENTS_VIEW
+                : (back_button_ && back_button_->visible() ? FOCUS_BACK_BUTTON
+                                                           : FOCUS_SEARCH_BOX);
       }
       break;
     default:
@@ -398,6 +406,8 @@ void SearchBoxView::SetSearchBoxActive(bool active) {
   if (speech_button_)
     speech_button_->SetVisible(!active);
   close_button_->SetVisible(active);
+  if (focused_view_ != FOCUS_CONTENTS_VIEW)
+    ResetTabFocus(false);
   content_container_->Layout();
 }
 
