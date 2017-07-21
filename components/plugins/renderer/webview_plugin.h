@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
@@ -182,9 +183,11 @@ class WebViewPlugin : public blink::WebPlugin,
     // WebFrameClient methods:
     void DidClearWindowObject() override;
     void FrameDetached(blink::WebLocalFrame*, DetachType) override;
+    service_manager::InterfaceProvider* GetInterfaceProvider() override;
 
    private:
     WebViewPlugin* plugin_;
+    service_manager::InterfaceProvider interface_provider_;
 
     // Owned by us, deleted via |close()|.
     blink::WebView* web_view_;
