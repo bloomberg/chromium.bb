@@ -18,6 +18,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 @interface AppToolbarButton ()
 - (void)commonInit;
@@ -64,8 +65,13 @@
 - (void)drawRect:(NSRect)frame {
   [super drawRect:frame];
 
-  if (animatedIcon_)
+  if (animatedIcon_) {
+    gfx::ScopedNSGraphicsContextSaveGState save_graphics_state;
+    NSAffineTransform* transform = [NSAffineTransform transform];
+    [transform translateXBy:-0.5 yBy:0];
+    [transform concat];
     animatedIcon_->PaintIcon(frame);
+  }
 }
 
 - (void)commonInit {
