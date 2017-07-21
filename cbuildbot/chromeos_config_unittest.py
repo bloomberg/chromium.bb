@@ -1187,6 +1187,51 @@ class TemplateTest(ChromeosConfigTestBase):
             self.assertFalse(name, msg)
 
 
+class BoardConfigsTest(ChromeosConfigTestBase):
+  """Tests for the per-board templates."""
+  def setUp(self):
+    ge_build_config = config_lib.LoadGEBuildConfigFromFile()
+    boards_dict = chromeos_config.GetBoardTypeToBoardsDict(ge_build_config)
+
+    self.external_board_configs = chromeos_config.CreateBoardConfigs(
+        self.site_config, boards_dict, ge_build_config)
+
+    self.internal_board_configs = chromeos_config.CreateInternalBoardConfigs(
+        self.site_config, boards_dict, ge_build_config)
+
+  def testBoardConfigsSuperset(self):
+    """Ensure all external boards are listed as internal, also."""
+    for board in self.external_board_configs.keys():
+      self.assertIn(board, self.internal_board_configs)
+
+  def verifyNoTests(self, board_configs_iter):
+    """Defining tests in board specific templates doesn't work as expected."""
+    for board, template in board_configs_iter:
+      self.assertFalse(
+          'vm_tests' in template and template.vm_tests,
+          'Per-board template for %s defining vm_tests' % board)
+      self.assertFalse(
+          'vm_tests_override' in template and template.vm_tests_override,
+          'Per-board template for %s defining vm_tests_override' % board)
+      self.assertFalse(
+          'gce_tests' in template and template.gce_tests,
+          'Per-board template for %s defining gce_tests' % board)
+      self.assertFalse(
+          'hw_tests' in template and template.hw_tests,
+          'Per-board template for %s defining hw_tests' % board)
+      self.assertFalse(
+          'hw_tests_override' in template and template.hw_tests_override,
+          'Per-board template for %s defining hw_tests_override' % board)
+
+  def testExternalsDontDefineTests(self):
+    """Verify no external boards define tests at the board level."""
+    self.verifyNoTests(self.external_board_configs.items())
+
+  def testInternalsDontDefineTests(self):
+    """Verify no internal boards define tests at the board level."""
+    self.verifyNoTests(self.internal_board_configs.items())
+
+
 class SiteInterfaceTest(ChromeosConfigTestBase):
   """Test enforcing site parameters for a chromeos SiteConfig."""
 
