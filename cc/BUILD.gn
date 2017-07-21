@@ -505,6 +505,8 @@ cc_static_library("test_support") {
     "test/fake_compositor_frame_sink_support_client.h",
     "test/fake_content_layer_client.cc",
     "test/fake_content_layer_client.h",
+    "test/fake_delay_based_time_source.cc",
+    "test/fake_delay_based_time_source.h",
     "test/fake_external_begin_frame_source.cc",
     "test/fake_external_begin_frame_source.h",
     "test/fake_impl_task_runner_provider.h",
