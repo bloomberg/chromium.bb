@@ -597,32 +597,6 @@ void PresentationServiceDelegateImpl::Terminate(
   RemovePresentation(rfh_id, presentation_id);
 }
 
-void PresentationServiceDelegateImpl::SendMessage(
-    int render_process_id,
-    int render_frame_id,
-    const content::PresentationInfo& presentation_info,
-    content::PresentationConnectionMessage message,
-    SendMessageCallback send_message_cb) {
-  auto route_id =
-      GetRouteId(RenderFrameHostId(render_process_id, render_frame_id),
-                 presentation_info.presentation_id);
-  if (route_id.empty()) {
-    DVLOG(1) << "No active route for  " << presentation_info.presentation_id;
-    std::move(send_message_cb).Run(false);
-    return;
-  }
-
-  if (message.is_binary()) {
-    router_->SendRouteBinaryMessage(
-        route_id,
-        base::MakeUnique<std::vector<uint8_t>>(std::move(message.data.value())),
-        std::move(send_message_cb));
-  } else {
-    router_->SendRouteMessage(route_id, message.message.value(),
-                              std::move(send_message_cb));
-  }
-}
-
 void PresentationServiceDelegateImpl::ListenForConnectionStateChange(
     int render_process_id,
     int render_frame_id,
