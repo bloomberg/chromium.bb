@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"  // For CHECK macros.
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
@@ -189,13 +190,39 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   session->driver_log.reset(
       new WebDriverLog(WebDriverLog::kDriverType, Log::kAll));
   const base::DictionaryValue* desired_caps;
+  base::DictionaryValue merged_caps;
+
   bool w3c_capability = false;
   if (params.GetDictionary("capabilities.alwaysMatch", &desired_caps) &&
       (desired_caps->GetBoolean("goog:chromeOptions.w3c", &w3c_capability) ||
        desired_caps->GetBoolean("chromeOptions.w3c", &w3c_capability)) &&
       w3c_capability) {
-    // TODO(johnchen): Handle capabilities.firstMatch.
     session->w3c_compliant = true;
+    // TODO(johnchen): Handle capabilities.firstMatch. Currently, we're just
+    // merging, not validating or matching as per the spec.
+    const base::ListValue* first_match_list;
+    std::unique_ptr<base::ListValue> tmp_list;
+    if (!(params.GetList("capabilities.firstMatch", &first_match_list))) {
+      // if no firstMatch, make first_match_list a list with an empty dictionary
+      tmp_list = std::unique_ptr<base::ListValue>(new base::ListValue());
+      std::unique_ptr<base::DictionaryValue> inner(new base::DictionaryValue());
+      tmp_list->Append(std::move(inner));
+      first_match_list = tmp_list.get();
+    }
+    for (size_t i = 0; i < first_match_list->GetSize(); ++i) {
+      const base::DictionaryValue* first_match;
+      if (!first_match_list->GetDictionary(i, &first_match)) {
+        continue;
+      }
+      if (!MergeCapabilities(desired_caps, first_match, &merged_caps)) {
+        return Status(kSessionNotCreatedException, "Invalid capabilities");
+      }
+      if (MatchCapabilities(&merged_caps)) {
+        // If a match is found, we want to use these matched setcapabilities.
+        desired_caps = &merged_caps;
+        break;
+      }
+    }
   } else if (params.GetDictionary("capabilities.desiredCapabilities",
                                   &desired_caps) &&
              (desired_caps->GetBoolean("goog:chromeOptions.w3c",
@@ -260,6 +287,28 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
 
 }  // namespace
 
+bool MergeCapabilities(const base::DictionaryValue* always_match,
+                       const base::DictionaryValue* first_match,
+                       base::DictionaryValue* merged) {
+  CHECK(always_match);
+  CHECK(first_match);
+  CHECK(merged);
+  merged->Clear();
+
+  for (base::DictionaryValue::Iterator it(*first_match); !it.IsAtEnd();
+       it.Advance()) {
+    if (always_match->HasKey(it.key())) {
+      // firstMatch cannot have the same |keys| as alwaysMatch.
+      return false;
+    }
+  }
+
+  // merge the capabilities together since guarenteed no key collisions
+  merged->MergeDictionary(always_match);
+  merged->MergeDictionary(first_match);
+  return true;
+}
+
 bool MatchCapabilities(base::DictionaryValue* capabilities) {
   // attempt to match the capabilities requested to the actual capabilities
   // reject if they don't match
@@ -270,7 +319,6 @@ bool MatchCapabilities(base::DictionaryValue* capabilities) {
       return false;
     }
   }
-
   return true;
 }
 
