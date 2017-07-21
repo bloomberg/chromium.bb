@@ -29,7 +29,8 @@
             },
             {
                 "domain": "IO",
-                "async": ["read"]
+                "async": ["read"],
+                "exclude": ["resolveBlob"]
             },
             {
                 "domain": "Memory",

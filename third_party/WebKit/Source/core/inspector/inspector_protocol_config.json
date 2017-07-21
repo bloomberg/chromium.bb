@@ -62,7 +62,7 @@
             },
             {
                 "domain": "IO",
-                "include": []
+                "include": ["resolveBlob"]
             },
             {
                 "domain": "Security",

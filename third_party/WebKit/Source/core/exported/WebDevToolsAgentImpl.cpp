@@ -53,6 +53,7 @@
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 #include "core/inspector/InspectorDOMSnapshotAgent.h"
 #include "core/inspector/InspectorEmulationAgent.h"
+#include "core/inspector/InspectorIOAgent.h"
 #include "core/inspector/InspectorInputAgent.h"
 #include "core/inspector/InspectorLayerTreeAgent.h"
 #include "core/inspector/InspectorLogAgent.h"
@@ -365,6 +366,8 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
                                 session->V8Session(), dom_agent);
   overlay_agents_.Set(session_id, overlay_agent);
   session->Append(overlay_agent);
+
+  session->Append(new InspectorIOAgent(isolate, session->V8Session()));
 
   tracing_agent->SetLayerTreeId(layer_tree_id_);
   network_agent->SetHostId(host_id);
