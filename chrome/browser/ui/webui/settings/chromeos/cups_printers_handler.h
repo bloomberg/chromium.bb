@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_CUPS_PRINTERS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_CUPS_PRINTERS_HANDLER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -90,9 +91,10 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void ResolveManufacturersDone(const std::string& js_callback,
                                 PpdProvider::CallbackResultCode result_code,
                                 const std::vector<std::string>& available);
-  void ResolvePrintersDone(const std::string& js_callback,
+  void ResolvePrintersDone(const std::string& manufacturer,
+                           const std::string& js_callback,
                            PpdProvider::CallbackResultCode result_code,
-                           const std::vector<std::string>& available);
+                           const PpdProvider::ResolvedPrintersList& printers);
 
   // ui::SelectFileDialog::Listener override:
   void FileSelected(const base::FilePath& path,
@@ -118,6 +120,10 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   std::unique_ptr<CombiningPrinterDetector> printer_detector_;
   scoped_refptr<PpdProvider> ppd_provider_;
   std::unique_ptr<PrinterConfigurer> printer_configurer_;
+
+  // Cached list of {printer name, PpdReference} pairs for each manufacturer
+  // that has been resolved in the lifetime of this object.
+  std::map<std::string, PpdProvider::ResolvedPrintersList> resolved_printers_;
 
   Profile* profile_;
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;

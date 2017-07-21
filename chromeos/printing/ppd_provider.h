@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -55,6 +56,25 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
     std::string ppd_server_root = "https://www.gstatic.com/chromeos_printing";
   };
 
+  // Everything we might know about a printer when looking for a
+  // driver for it.  All of the default values for fields in this struct
+  // mean we *don't* have that piece of information.
+  //
+  // Fields are listed in search order preference -- we use earlier
+  // fields first to attempt to find a match.
+  struct PrinterSearchData {
+    PrinterSearchData();
+    PrinterSearchData(const PrinterSearchData& other);
+    ~PrinterSearchData();
+
+    // Make-and-model string guesses.
+    std::vector<std::string> make_and_model;
+
+    // 16-bit usb identifiers.
+    int usb_vendor_id = 0;
+    int usb_product_id = 0;
+  };
+
   // Result of a ResolvePpd() call.
   // If the result code is SUCCESS, then:
   //    string holds the contents of a PPD (that may or may not be gzipped).
@@ -71,17 +91,25 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   using ResolveManufacturersCallback =
       base::Callback<void(CallbackResultCode, const std::vector<std::string>&)>;
 
-  // Result of a ResolvePrinters() call.  If the result code is SUCCESS, then
-  // the vector contains a sorted list of all printer models from the given
-  // manufacturer for which we have a driver.
-  using ResolvePrintersCallback =
-      base::Callback<void(CallbackResultCode, const std::vector<std::string>&)>;
+  // A list of printer names paired with the PpdReference that should be used
+  // for that printer.
+  using ResolvedPrintersList =
+      std::vector<std::pair<std::string, Printer::PpdReference>>;
 
-  // Result of a ResolveUsbIds call.  If the result code is SUCCESS, then the
-  // second argument contains the effective make and model of the printer.
-  // NOT_FOUND means we don't know about this Usb device.
-  using ResolveUsbIdsCallback =
-      base::Callback<void(CallbackResultCode, const std::string&)>;
+  // Result of a ResolvePrinters() call.  If the result code is SUCCESS, then
+  // the vector contains a sorted list <model_name, PpdReference> tuples of all
+  // printer models from the given manufacturer for which we have a driver,
+  // sorted by model_name.
+  using ResolvePrintersCallback =
+      base::Callback<void(CallbackResultCode, const ResolvedPrintersList&)>;
+
+  // Result of a ResolvePpdReference call.  If the result code is
+  // SUCCESS, then the second argument contains the a PpdReference
+  // that we have high confidence can be used to obtain a driver for
+  // the printer.  NOT_FOUND means we couldn't confidently figure out
+  // a driver for the printer.
+  using ResolvePpdReferenceCallback =
+      base::Callback<void(CallbackResultCode, const Printer::PpdReference&)>;
 
   // Create and return a new PpdProvider with the given cache and options.
   // A references to |url_context_getter| is taken.
@@ -97,33 +125,20 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   // |cb| will be called on the invoking thread, and will be sequenced.
   virtual void ResolveManufacturers(const ResolveManufacturersCallback& cb) = 0;
 
-  // Get all models from a given manufacturer, localized in the default browser
-  // locale or the closest available fallback.  |manufacturer| must be a value
-  // returned from a successful ResolveManufacturers() call performed from this
-  // PpdProvider instance.
+  // Get all models from a given manufacturer, localized in the
+  // default browser locale or the closest available fallback.
+  // |manufacturer| must be a value returned from a successful
+  // ResolveManufacturers() call performed from this PpdProvider
+  // instance.
   //
   // |cb| will be called on the invoking thread, and will be sequenced.
   virtual void ResolvePrinters(const std::string& manufacturer,
                                const ResolvePrintersCallback& cb) = 0;
 
-  // Given a usb vendor/device id, attempt to get an effective make and model
-  // string for the given printer.
-  virtual void ResolveUsbIds(int vendor_id,
-                             int device_id,
-                             const ResolveUsbIdsCallback& cb) = 0;
-
-  // Given a |manufacturer| from ResolveManufacturers() and a |printer| from
-  // a ResolvePrinters() call for that manufacturer, fill in |reference|
-  // with the information needed to resolve the Ppd for this printer.  Returns
-  // true on success and overwrites the contents of |reference|.  On failure,
-  // |reference| is unchanged.
-  //
-  // Note that, unlike the other functions in this class, |reference| can be
-  // saved and given to ResolvePpd() in a different PpdProvider instance without
-  // first resolving manufactuerers or printers.
-  virtual bool GetPpdReference(const std::string& manufacturer,
-                               const std::string& printer,
-                               Printer::PpdReference* reference) const = 0;
+  // Attempt to find a PpdReference for the given printer.  You should supply
+  // as much information in search_data as you can.
+  virtual void ResolvePpdReference(const PrinterSearchData& search_data,
+                                   const ResolvePpdReferenceCallback& cb) = 0;
 
   // Given a PpdReference, attempt to get the PPD for printing.
   //
