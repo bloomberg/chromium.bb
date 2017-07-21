@@ -29,9 +29,17 @@ class MediaDrmStorageBridge {
  public:
   static bool RegisterMediaDrmStorageBridge(JNIEnv* env);
 
-  MediaDrmStorageBridge(const url::Origin& origin,
-                        const CreateStorageCB& create_storage_cb);
+  MediaDrmStorageBridge();
   ~MediaDrmStorageBridge();
+
+  // Bind origin to |this|. Once storage is initialized, |on_init| will be
+  // called and it will have a random generated origin id for later usage. If
+  // this function isn't called, all the other functions will fail.
+  void Initialize(const url::Origin& origin,
+                  const CreateStorageCB& create_storage_cb,
+                  base::OnceClosure init_cb);
+
+  std::string origin_id() const { return origin_id_; }
 
   // The following OnXXX functions are called by Java. The functions will post
   // task on message loop immediately to avoid reentrancy issues.
@@ -73,12 +81,10 @@ class MediaDrmStorageBridge {
       const std::string& session_id,
       std::unique_ptr<MediaDrmStorage::SessionData> session_data);
 
-  MediaDrmStorage* GetStorageImpl();
-
-  CreateStorageCB create_storage_cb_;
   std::unique_ptr<MediaDrmStorage> impl_;
 
-  const url::Origin origin_;
+  // Randomly generated ID for origin.
+  std::string origin_id_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

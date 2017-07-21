@@ -53,6 +53,9 @@ class MediaDrmCredentialManager {
   // returned asynchronously in OnResetCredentialsCompleted() function.
   void ResetCredentialsInternal(SecurityLevel security_level);
 
+  void OnMediaDrmCreated(const ResetCredentialsCB& reset_credentials_cb,
+                         scoped_refptr<media::MediaDrmBridge> media_drm_bridge);
+
   // The MediaDrmBridge object used to perform the credential reset.
   scoped_refptr<media::MediaDrmBridge> media_drm_bridge_;
 

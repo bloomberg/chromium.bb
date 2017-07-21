@@ -94,19 +94,24 @@ void MediaDrmCredentialManager::ResetCredentialsInternal(
       base::Bind(&content::CreateProvisionFetcher,
                  g_browser_process->system_request_context());
 
-  ResetCredentialsCB reset_credentials_cb =
-      base::Bind(&MediaDrmCredentialManager::OnResetCredentialsCompleted,
-                 base::Unretained(this), security_level);
+  media::MediaDrmBridge::CreateWithoutSessionSupport(
+      kWidevineKeySystem, security_level, create_fetcher_cb,
+      base::BindOnce(
+          &MediaDrmCredentialManager::OnMediaDrmCreated, base::Unretained(this),
+          base::Bind(&MediaDrmCredentialManager::OnResetCredentialsCompleted,
+                     base::Unretained(this), security_level)));
+}
 
-  media_drm_bridge_ = media::MediaDrmBridge::CreateWithoutSessionSupport(
-      kWidevineKeySystem, security_level, create_fetcher_cb);
-
+void MediaDrmCredentialManager::OnMediaDrmCreated(
+    const ResetCredentialsCB& reset_credentials_cb,
+    scoped_refptr<media::MediaDrmBridge> cdm) {
   // No need to reset credentials for unsupported |security_level|.
-  if (!media_drm_bridge_) {
+  if (!cdm) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(reset_credentials_cb, true));
     return;
   }
 
+  media_drm_bridge_ = std::move(cdm);
   media_drm_bridge_->ResetDeviceCredentials(reset_credentials_cb);
 }
