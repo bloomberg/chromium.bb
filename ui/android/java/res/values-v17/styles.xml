@@ -6,7 +6,7 @@
      found in the LICENSE file.
 -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <style name="DropdownPopupWindow" parent="@android:style/Widget.ListPopupWindow">
         <item name="android:popupBackground">@drawable/dropdown_popup_background</item>
     </style>
@@ -39,7 +39,8 @@
         <item name="android:background">?android:attr/selectableItemBackground</item>
     </style>
 
-    <style name="RobotoMediumStyle">
+    <!-- Used by Chrome and Content -->
+    <style name="RobotoMediumStyle" tools:ignore="UnusedResources">
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:textStyle">bold</item>
     </style>
