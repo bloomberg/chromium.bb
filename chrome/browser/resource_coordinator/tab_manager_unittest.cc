@@ -797,4 +797,44 @@ TEST_F(TabManagerTest, OnDelayedTabSelected) {
   EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
 }
 
+TEST_F(TabManagerTest, TimeoutWhenLoadingBackgroundTabs) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+  base::SimpleTestTickClock test_clock;
+  tab_manager->set_test_tick_clock(&test_clock);
+
+  MaybeThrottleNavigations(tab_manager);
+  tab_manager->GetWebContentsData(contents1_)
+      ->DidStartNavigation(nav_handle1_.get());
+
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents1_));
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents3_));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle1_.get()));
+  EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
+  EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
+
+  // Simulate timout when loading the 1st tab. TabManager should start loading
+  // the 2nd tab.
+  test_clock.Advance(base::TimeDelta::FromMinutes(1));
+  EXPECT_TRUE(tab_manager->TriggerForceLoadTimerForTest());
+
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents1_));
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents3_));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle1_.get()));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
+  EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
+
+  // Simulate timout again. TabManager should start loading the 3rd tab.
+  test_clock.Advance(base::TimeDelta::FromMinutes(1));
+  EXPECT_TRUE(tab_manager->TriggerForceLoadTimerForTest());
+
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents1_));
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents3_));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle1_.get()));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
+}
+
 }  // namespace resource_coordinator

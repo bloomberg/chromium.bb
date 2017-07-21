@@ -225,6 +225,7 @@ class TabManager : public TabStripModelObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnDidStopLoading);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnWebContentsDestroyed);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnDelayedTabSelected);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TimeoutWhenLoadingBackgroundTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTest,
                            HistogramsSessionRestoreSwitchToTab);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
@@ -397,6 +398,10 @@ class TabManager : public TabStripModelObserver,
   bool ShouldDelayNavigation(
       content::NavigationHandle* navigation_handle) const;
 
+  // Start |force_load_timer_| to load the next background tab if the timer
+  // expires before the current tab loading is finished.
+  void StartForceLoadTimer();
+
   // Start loading the next background tab if needed.
   void LoadNextBackgroundTabIfNeeded();
 
@@ -417,6 +422,9 @@ class TabManager : public TabStripModelObserver,
   // Check if the navigation is delayed. Use only in tests.
   bool IsNavigationDelayedForTest(
       const content::NavigationHandle* navigation_handle) const;
+
+  // Trigger |force_load_timer_| to fire. Use only in tests.
+  bool TriggerForceLoadTimerForTest();
 
   // Timer to periodically update the stats of the renderers.
   base::RepeatingTimer update_timer_;
@@ -486,6 +494,9 @@ class TabManager : public TabStripModelObserver,
 
   class TabManagerSessionRestoreObserver;
   std::unique_ptr<TabManagerSessionRestoreObserver> session_restore_observer_;
+
+  // When the timer fires, it forces loading the next background tab if needed.
+  std::unique_ptr<base::OneShotTimer> force_load_timer_;
 
   // The list of navigations that are delayed.
   std::vector<BackgroundTabNavigationThrottle*> pending_navigations_;
