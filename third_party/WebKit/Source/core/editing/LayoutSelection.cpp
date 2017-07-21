@@ -328,11 +328,7 @@ static void UpdateLayoutObjectState(const SelectionMarkingRange& new_range,
     LayoutObject* obj = pair.key;
     SelectionState new_selection_state = obj->GetSelectionState();
     SelectionState old_selection_state = pair.value;
-    if (new_selection_state != old_selection_state ||
-        (new_range.StartLayoutObject() == obj &&
-         new_range.StartOffset() != old_range.StartOffset()) ||
-        (new_range.EndLayoutObject() == obj &&
-         new_range.EndOffset() != old_range.EndOffset())) {
+    if (new_selection_state != old_selection_state) {
       obj->SetShouldInvalidateSelection();
       new_selected_map.object_map.erase(obj);
     }
