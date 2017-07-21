@@ -76,6 +76,8 @@
 #include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
 
+using blink::WebURLRequest;
+
 namespace content {
 
 namespace {
@@ -94,7 +96,7 @@ class WebServiceWorkerNetworkProviderImpl
 
   // Blink calls this method for each request starting with the main script,
   // we tag them with the provider id.
-  void WillSendRequest(blink::WebURLRequest& request) override {
+  void WillSendRequest(WebURLRequest& request) override {
     std::unique_ptr<RequestExtraData> extra_data(new RequestExtraData);
     extra_data->set_service_worker_provider_id(provider_->provider_id());
     extra_data->set_originated_from_service_worker(true);
@@ -109,7 +111,8 @@ class WebServiceWorkerNetworkProviderImpl
       base::SingleThreadTaskRunner* task_runner) override {
     RenderThreadImpl* child_thread = RenderThreadImpl::current();
     if (child_thread && provider_->script_loader_factory() &&
-        ServiceWorkerUtils::IsServicificationEnabled()) {
+        ServiceWorkerUtils::IsServicificationEnabled() &&
+        IsScriptRequest(request)) {
       return base::MakeUnique<WebURLLoaderImpl>(
           child_thread->resource_dispatcher(), task_runner,
           provider_->script_loader_factory());
@@ -120,6 +123,13 @@ class WebServiceWorkerNetworkProviderImpl
   int GetProviderID() const override { return provider_->provider_id(); }
 
  private:
+  static bool IsScriptRequest(const WebURLRequest& request) {
+    auto request_context = request.GetRequestContext();
+    return request_context == WebURLRequest::kRequestContextServiceWorker ||
+           request_context == WebURLRequest::kRequestContextScript ||
+           request_context == WebURLRequest::kRequestContextImport;
+  }
+
   std::unique_ptr<ServiceWorkerNetworkProvider> provider_;
 };
 
@@ -151,31 +161,28 @@ ServiceWorkerStatusCode EventResultToStatus(
   return SERVICE_WORKER_ERROR_FAILED;
 }
 
-blink::WebURLRequest::FetchRequestMode GetBlinkFetchRequestMode(
+WebURLRequest::FetchRequestMode GetBlinkFetchRequestMode(
     FetchRequestMode mode) {
-  return static_cast<blink::WebURLRequest::FetchRequestMode>(mode);
+  return static_cast<WebURLRequest::FetchRequestMode>(mode);
 }
 
-blink::WebURLRequest::FetchCredentialsMode GetBlinkFetchCredentialsMode(
+WebURLRequest::FetchCredentialsMode GetBlinkFetchCredentialsMode(
     FetchCredentialsMode credentials_mode) {
-  return static_cast<blink::WebURLRequest::FetchCredentialsMode>(
-      credentials_mode);
+  return static_cast<WebURLRequest::FetchCredentialsMode>(credentials_mode);
 }
 
-blink::WebURLRequest::FetchRedirectMode GetBlinkFetchRedirectMode(
+WebURLRequest::FetchRedirectMode GetBlinkFetchRedirectMode(
     FetchRedirectMode redirect_mode) {
-  return static_cast<blink::WebURLRequest::FetchRedirectMode>(redirect_mode);
+  return static_cast<WebURLRequest::FetchRedirectMode>(redirect_mode);
 }
 
-blink::WebURLRequest::RequestContext GetBlinkRequestContext(
+WebURLRequest::RequestContext GetBlinkRequestContext(
     RequestContextType request_context_type) {
-  return static_cast<blink::WebURLRequest::RequestContext>(
-      request_context_type);
+  return static_cast<WebURLRequest::RequestContext>(request_context_type);
 }
 
-blink::WebURLRequest::FrameType GetBlinkFrameType(
-    RequestContextFrameType frame_type) {
-  return static_cast<blink::WebURLRequest::FrameType>(frame_type);
+WebURLRequest::FrameType GetBlinkFrameType(RequestContextFrameType frame_type) {
+  return static_cast<WebURLRequest::FrameType>(frame_type);
 }
 
 blink::WebServiceWorkerClientInfo
