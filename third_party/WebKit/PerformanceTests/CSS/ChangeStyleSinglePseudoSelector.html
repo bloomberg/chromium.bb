@@ -7,7 +7,7 @@
 <body>
 </body>
     <script>
-        createRegularDOMTree();
+        createDOMTree(document.body, 3, 3);
         PerfTestRunner.measureTime({
             description: "Measures the performance of a solo pseudo selector.",
             run: function() {
