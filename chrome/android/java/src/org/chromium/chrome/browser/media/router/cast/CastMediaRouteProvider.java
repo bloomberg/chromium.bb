@@ -53,16 +53,6 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
     private CreateRouteRequest mPendingCreateRouteRequest;
     private Handler mHandler = new Handler();
 
-    /**
-     * Builder class for {@link CastMediaRouteProvider}.
-     */
-    public static class Builder implements MediaRouteProvider.Builder {
-        @Override
-        public MediaRouteProvider create(MediaRouteManager manager) {
-            return CastMediaRouteProvider.create(manager);
-        }
-    }
-
     private static class OnSinksReceivedRunnable implements Runnable {
 
         private final WeakReference<MediaRouteManager> mRouteManager;
@@ -86,9 +76,8 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
     }
 
     /**
-     * @return Initialized {@link CastMediaRouteProvider} object or null if it's not supported.
+     * @return Initialized {@link CastMediaRouteProvider} object.
      */
-    @Nullable
     public static CastMediaRouteProvider create(MediaRouteManager manager) {
         MediaRouter androidMediaRouter = ChromeMediaRouter.getAndroidMediaRouter();
 
