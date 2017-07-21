@@ -987,9 +987,9 @@ void RenderFrameHostManager::RenderProcessGone(SiteInstanceImpl* instance) {
 
 void RenderFrameHostManager::CancelPendingIfNecessary(
     RenderFrameHostImpl* render_frame_host) {
-  if (render_frame_host == pending_render_frame_host_.get()) {
+  if (render_frame_host == pending_render_frame_host_.get())
     CancelPending();
-  } else if (render_frame_host == speculative_render_frame_host_.get()) {
+  else if (render_frame_host == speculative_render_frame_host_.get()) {
     // TODO(nasko, clamy): This should just clean up the speculative RFH
     // without canceling the request.  See https://crbug.com/636119.
     if (frame_tree_node_->navigation_request() &&
@@ -1434,20 +1434,18 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
       SiteIsolationPolicy::IsTopDocumentIsolationEnabled() &&
       !SiteInstanceImpl::DoesSiteRequireDedicatedProcess(browser_context,
                                                          dest_url)) {
-    RenderFrameHostImpl* main_frame =
-        frame_tree_node_->frame_tree()->root()->current_frame_host();
     if (GetContentClient()
             ->browser()
-            ->ShouldIsolateFrameForTopDocumentIsolation(
-                transfer_navigation_handle_.get(),
-                main_frame->GetSiteInstance())) {
-      // This is a cross-site subframe of a non-isolated origin, so place this
-      // frame in the default subframe site instance.
-      return SiteInstanceDescriptor(
-          browser_context, dest_url,
-          SiteInstanceRelation::RELATED_DEFAULT_SUBFRAME);
+            ->ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
+                dest_url, current_instance)) {
+      return SiteInstanceDescriptor(render_frame_host_->GetSiteInstance());
     }
-    return SiteInstanceDescriptor(render_frame_host_->GetSiteInstance());
+
+    // This is a cross-site subframe of a non-isolated origin, so place this
+    // frame in the default subframe site instance.
+    return SiteInstanceDescriptor(
+        browser_context, dest_url,
+        SiteInstanceRelation::RELATED_DEFAULT_SUBFRAME);
   }
 
   // Keep subframes in the parent's SiteInstance unless a dedicated process is

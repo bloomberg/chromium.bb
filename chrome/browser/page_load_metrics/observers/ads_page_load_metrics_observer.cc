@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/page_load_metrics/ads_detection.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -24,28 +23,63 @@ const base::Feature kAdsFeature{"AdsMetrics", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #define ADS_HISTOGRAM(suffix, hist_macro, ad_type, value)                  \
   switch (ad_type) {                                                       \
-    case page_load_metrics::AD_TYPE_GOOGLE:                                \
+    case AdsPageLoadMetricsObserver::AD_TYPE_GOOGLE:                       \
       hist_macro("PageLoad.Clients.Ads.Google." suffix, value);            \
       break;                                                               \
-    case page_load_metrics::AD_TYPE_SUBRESOURCE_FILTER:                    \
+    case AdsPageLoadMetricsObserver::AD_TYPE_SUBRESOURCE_FILTER:           \
       hist_macro("PageLoad.Clients.Ads.SubresourceFilter." suffix, value); \
       break;                                                               \
-    case page_load_metrics::AD_TYPE_ALL:                                   \
+    case AdsPageLoadMetricsObserver::AD_TYPE_ALL:                          \
       hist_macro("PageLoad.Clients.Ads.All." suffix, value);               \
       break;                                                               \
   }
 
-void RecordParentExistsForSubFrame(bool parent_exists,
-                                   const page_load_metrics::AdTypes& ad_types) {
+bool DetectGoogleAd(content::NavigationHandle* navigation_handle) {
+  // Because sub-resource filtering isn't always enabled, and doesn't work
+  // well in monitoring mode (no CSS enforcement), it's difficult to identify
+  // ads. Google ads are prevalent and easy to track, so we'll start by
+  // tracking those. Note that the frame name can be very large, so be careful
+  // to avoid full string searches if possible.
+  // TODO(jkarlin): Track other ad networks that are easy to identify.
+
+  // In case the navigation aborted, look up the RFH by the Frame Tree Node
+  // ID. It returns the committed frame host or the initial frame host for the
+  // frame if no committed host exists. Using a previous host is fine because
+  // once a frame has an ad we always consider it to have an ad.
+  // We use the unsafe method of FindFrameByFrameTreeNodeId because we're not
+  // concerned with which process the frame lives on (we're just measuring
+  // bytes and not granting security priveleges).
+  content::RenderFrameHost* current_frame_host =
+      navigation_handle->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
+          navigation_handle->GetFrameTreeNodeId());
+  if (current_frame_host) {
+    const std::string& frame_name = current_frame_host->GetFrameName();
+    if (base::StartsWith(frame_name, "google_ads_iframe",
+                         base::CompareCase::SENSITIVE) ||
+        base::StartsWith(frame_name, "google_ads_frame",
+                         base::CompareCase::SENSITIVE)) {
+      return true;
+    }
+  }
+
+  const GURL& url = navigation_handle->GetURL();
+  return url.host_piece() == "tpc.googlesyndication.com" &&
+         base::StartsWith(url.path_piece(), "/safeframe",
+                          base::CompareCase::SENSITIVE);
+}
+
+void RecordParentExistsForSubFrame(
+    bool parent_exists,
+    const AdsPageLoadMetricsObserver::AdTypes& ad_types) {
   ADS_HISTOGRAM("ParentExistsForSubFrame", UMA_HISTOGRAM_BOOLEAN,
-                page_load_metrics::AD_TYPE_ALL, parent_exists);
+                AdsPageLoadMetricsObserver::AD_TYPE_ALL, parent_exists);
 }
 
 }  // namespace
 
 AdsPageLoadMetricsObserver::AdFrameData::AdFrameData(
     FrameTreeNodeId frame_tree_node_id,
-    page_load_metrics::AdTypes ad_types)
+    AdTypes ad_types)
     : frame_bytes(0u),
       frame_bytes_uncached(0u),
       frame_tree_node_id(frame_tree_node_id),
@@ -103,8 +137,7 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
   content::RenderFrameHost* parent_frame_host =
       navigation_handle->GetParentFrame();
 
-  page_load_metrics::AdTypes ad_types =
-      page_load_metrics::GetDetectedAdTypes(navigation_handle);
+  AdTypes ad_types = DetectAds(navigation_handle);
 
   const auto& id_and_data = ad_frames_data_.find(frame_tree_node_id);
   if (id_and_data != ad_frames_data_.end()) {
@@ -116,16 +149,14 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
       if (frame_tree_node_id == id_and_data->second->frame_tree_node_id) {
         // This is the top-most frame in the ad.
         ADS_HISTOGRAM("Navigations.AdFrameRenavigatedToAd",
-                      UMA_HISTOGRAM_BOOLEAN, page_load_metrics::AD_TYPE_ALL,
-                      ad_types.any());
+                      UMA_HISTOGRAM_BOOLEAN, AD_TYPE_ALL, ad_types.any());
       }
       return;
     }
     // This frame was previously not an ad, process it as usual. If it had
     // any child frames that were ads, those will still be recorded.
     ADS_HISTOGRAM("Navigations.NonAdFrameRenavigatedToAd",
-                  UMA_HISTOGRAM_BOOLEAN, page_load_metrics::AD_TYPE_ALL,
-                  ad_types.any());
+                  UMA_HISTOGRAM_BOOLEAN, AD_TYPE_ALL, ad_types.any());
   }
 
   // Determine who the parent frame's ad ancestor is.
@@ -182,13 +213,31 @@ void AdsPageLoadMetricsObserver::OnSubframeNavigationEvaluated(
   // and therefore would provide bad histogram data. Note that WOULD_DISALLOW
   // is only seen in dry runs.
   if (load_policy == subresource_filter::LoadPolicy::WOULD_DISALLOW) {
-    SetDetectedAdType(navigation_handle,
-                      page_load_metrics::AD_TYPE_SUBRESOURCE_FILTER);
+    unfinished_subresource_ad_frames_.insert(
+        navigation_handle->GetFrameTreeNodeId());
   }
 }
 
 void AdsPageLoadMetricsObserver::OnSubresourceFilterGoingAway() {
   subresource_observer_.RemoveAll();
+}
+
+bool AdsPageLoadMetricsObserver::DetectSubresourceFilterAd(
+    FrameTreeNodeId frame_tree_node_id) {
+  return unfinished_subresource_ad_frames_.erase(frame_tree_node_id);
+}
+
+AdsPageLoadMetricsObserver::AdTypes AdsPageLoadMetricsObserver::DetectAds(
+    content::NavigationHandle* navigation_handle) {
+  AdTypes ad_types;
+
+  if (DetectGoogleAd(navigation_handle))
+    ad_types.set(AD_TYPE_GOOGLE);
+
+  if (DetectSubresourceFilterAd(navigation_handle->GetFrameTreeNodeId()))
+    ad_types.set(AD_TYPE_SUBRESOURCE_FILTER);
+
+  return ad_types;
 }
 
 void AdsPageLoadMetricsObserver::ProcessLoadedResource(
@@ -243,9 +292,9 @@ void AdsPageLoadMetricsObserver::ProcessLoadedResource(
 }
 
 void AdsPageLoadMetricsObserver::RecordHistograms() {
-  RecordHistogramsForType(page_load_metrics::AD_TYPE_GOOGLE);
-  RecordHistogramsForType(page_load_metrics::AD_TYPE_SUBRESOURCE_FILTER);
-  RecordHistogramsForType(page_load_metrics::AD_TYPE_ALL);
+  RecordHistogramsForType(AD_TYPE_GOOGLE);
+  RecordHistogramsForType(AD_TYPE_SUBRESOURCE_FILTER);
+  RecordHistogramsForType(AD_TYPE_ALL);
 }
 
 void AdsPageLoadMetricsObserver::RecordHistogramsForType(int ad_type) {
@@ -261,8 +310,7 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForType(int ad_type) {
       continue;
 
     // If this isn't the type of ad we're looking for, move on to the next.
-    if (ad_type != page_load_metrics::AD_TYPE_ALL &&
-        !ad_frame_data.ad_types.test(ad_type))
+    if (ad_type != AD_TYPE_ALL && !ad_frame_data.ad_types.test(ad_type))
       continue;
 
     non_zero_ad_frames += 1;

@@ -4,9 +4,6 @@
 
 #include "content/public/test/test_utils.h"
 
-#include <map>
-#include <set>
-#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -30,7 +27,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/test/test_launcher.h"
@@ -232,14 +228,6 @@ void EnableFeatureWithParam(const base::Feature& feature,
   std::map<std::string, std::string> param_values = {{param_name, param_value}};
   variations::testing::VariationParamsManager::AppendVariationParams(
       kFakeTrialName, kFakeTrialGroupName, param_values, command_line);
-}
-
-void EnableTopDocumentIsolationForTesting(base::CommandLine* command_line) {
-  EnableFeatureWithParam(
-      features::kTopDocumentIsolation, features::kTopDocumentIsolationModeParam,
-      std::to_string(
-          static_cast<int>(features::TopDocumentIsolationMode::CrossSite)),
-      command_line);
 }
 
 #if defined(OS_ANDROID)

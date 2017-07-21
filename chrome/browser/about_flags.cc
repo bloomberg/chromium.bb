@@ -1106,20 +1106,6 @@ const FeatureEntry::Choice kAsyncImageDecodingChoices[] = {
      cc::switches::kDisableCheckerImaging, ""},
 };
 
-#define DEFINE_TDI_MODE_FEATURE_PARAM(name, value, description)               \
-  const FeatureEntry::FeatureParam kTopDocumentIsolationVariations_##name[] = \
-      {{features::kTopDocumentIsolationModeParam, #value}};
-FOR_EACH_TDI_MODE(DEFINE_TDI_MODE_FEATURE_PARAM)
-#undef DEFINE_TDI_MODE_FEATURE_PARAM
-
-const FeatureEntry::FeatureVariation kTopDocumentIsolationVariations[] = {
-#define DEFINE_TDI_MODE_VARIATION(name, value, description)                 \
-  {"(" #name " - " description ")", kTopDocumentIsolationVariations_##name, \
-   arraysize(kTopDocumentIsolationVariations_##name), nullptr},
-    FOR_EACH_TDI_MODE(DEFINE_TDI_MODE_VARIATION)
-#undef DEFINE_TDI_MODE_VARIATION
-};
-
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -1976,9 +1962,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-top-document-isolation",
      flag_descriptions::kTopDocumentIsolationName,
      flag_descriptions::kTopDocumentIsolationDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kTopDocumentIsolation,
-                                    kTopDocumentIsolationVariations,
-                                    "TopDocumentIsolation")},
+     FEATURE_VALUE_TYPE(features::kTopDocumentIsolation)},
     {"enable-use-zoom-for-dsf", flag_descriptions::kEnableUseZoomForDsfName,
      flag_descriptions::kEnableUseZoomForDsfDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableUseZoomForDSFChoices)},

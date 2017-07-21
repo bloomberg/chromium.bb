@@ -6,10 +6,7 @@
 
 #include <stddef.h>
 
-#include <memory>
 #include <set>
-#include <string>
-#include <vector>
 
 #include "base/command_line.h"
 #include "base/debug/alias.h"
@@ -687,14 +684,14 @@ ChromeContentBrowserClientExtensionsPart::GetVpnServiceProxy(
 
 // static
 bool ChromeContentBrowserClientExtensionsPart::
-    IsMainFrameSiteInstanceExcludedFromTopDocumentIsolation(
-        content::SiteInstance* main_frame_site_instance) {
-  // Disable TDI if the main frame's SiteInstance is a hosted app.
-  // See also https://crbug.com/679011.
+    ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
+        const GURL& subframe_url,
+        content::SiteInstance* parent_site_instance) {
   const Extension* extension =
-      ExtensionRegistry::Get(main_frame_site_instance->GetBrowserContext())
+      ExtensionRegistry::Get(parent_site_instance->GetBrowserContext())
           ->enabled_extensions()
-          .GetExtensionOrAppByURL(main_frame_site_instance->GetSiteURL());
+          .GetExtensionOrAppByURL(parent_site_instance->GetSiteURL());
+
   return extension && extension->is_hosted_app();
 }
 
