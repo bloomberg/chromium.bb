@@ -672,6 +672,7 @@ HttpHandler::PrepareStandardResponse(
     case kInvalidSelector:
     case kXPathLookupError:
     case kNoAlertOpen:
+    case kInvalidArgument:
     case kNoSuchExecutionContext:
       response.reset(new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
       break;
