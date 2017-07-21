@@ -85,7 +85,7 @@
 // The client is expected to be set whenever the WebLocalFrameImpl is attached
 // to the DOM.
 
-#include "web/WebLocalFrameImpl.h"
+#include "core/frame/WebLocalFrameImpl.h"
 
 #include <algorithm>
 #include <memory>
@@ -234,7 +234,6 @@
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/WebTreeScopeType.h"
-#include "skia/ext/platform_canvas.h"
 
 namespace blink {
 
@@ -776,9 +775,10 @@ void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
     GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
         world_id, sources, &script_results);
     WebVector<v8::Local<v8::Value>> v8_results(script_results.size());
-    for (unsigned i = 0; i < script_results.size(); i++)
+    for (unsigned i = 0; i < script_results.size(); i++) {
       v8_results[i] =
           v8::Local<v8::Value>::New(ToIsolate(GetFrame()), script_results[i]);
+    }
     results->Swap(v8_results);
   } else {
     v8::HandleScope handle_scope(ToIsolate(GetFrame()));
@@ -844,8 +844,8 @@ v8::Local<v8::Object> WebLocalFrameImpl::GlobalProxy() const {
 
 bool WebFrame::ScriptCanAccess(WebFrame* target) {
   return BindingSecurity::ShouldAllowAccessToFrame(
-      CurrentDOMWindow(MainThreadIsolate()), ToCoreFrame(*target),
-      BindingSecurity::ErrorReportOption::kDoNotReport);
+      CurrentDOMWindow(V8PerIsolateData::MainThreadIsolate()),
+      ToCoreFrame(*target), BindingSecurity::ErrorReportOption::kDoNotReport);
 }
 
 void WebLocalFrameImpl::Reload(WebFrameLoadType load_type) {
@@ -1740,9 +1740,10 @@ void WebLocalFrameImpl::CreateFrameView() {
     GetFrame()->View()->SetInitialViewportSize(
         web_view->GetPageScaleConstraintsSet().InitialViewportSize());
   }
-  if (web_view->ShouldAutoResize() && GetFrame()->IsLocalRoot())
+  if (web_view->ShouldAutoResize() && GetFrame()->IsLocalRoot()) {
     GetFrame()->View()->EnableAutoSizeMode(web_view->MinAutoSize(),
                                            web_view->MaxAutoSize());
+  }
 
   GetFrame()->View()->SetInputEventsScaleForEmulation(
       input_events_scale_factor_for_emulation_);
@@ -1819,9 +1820,10 @@ void WebLocalFrameImpl::SetCanHaveScrollbars(bool can_have_scrollbars) {
 void WebLocalFrameImpl::SetInputEventsScaleForEmulation(
     float content_scale_factor) {
   input_events_scale_factor_for_emulation_ = content_scale_factor;
-  if (GetFrame()->View())
+  if (GetFrame()->View()) {
     GetFrame()->View()->SetInputEventsScaleForEmulation(
         input_events_scale_factor_for_emulation_);
+  }
 }
 
 void WebLocalFrameImpl::LoadJavaScriptURL(const KURL& url) {
@@ -1855,9 +1857,10 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const KURL& url) {
   if (result.IsEmpty() || !result->IsString())
     return;
   String script_result = ToCoreString(v8::Local<v8::String>::Cast(result));
-  if (!GetFrame()->GetNavigationScheduler().LocationChangePending())
+  if (!GetFrame()->GetNavigationScheduler().LocationChangePending()) {
     GetFrame()->Loader().ReplaceDocumentWhileExecutingJavaScriptURL(
         script_result, owner_document);
+  }
 }
 
 HitTestResult WebLocalFrameImpl::HitTestResultForVisualViewportPos(
@@ -2337,7 +2340,7 @@ WebFrameWidgetBase* WebLocalFrameImpl::FrameWidget() const {
 
 std::unique_ptr<WebURLLoader> WebLocalFrameImpl::CreateURLLoader(
     const WebURLRequest& request,
-    base::SingleThreadTaskRunner* task_runner) {
+    SingleThreadTaskRunner* task_runner) {
   return client_->CreateURLLoader(request, task_runner);
 }
 
@@ -2426,21 +2429,21 @@ WebFrameScheduler* WebLocalFrameImpl::Scheduler() const {
   return GetFrame()->FrameScheduler();
 }
 
-base::SingleThreadTaskRunner* WebLocalFrameImpl::TimerTaskRunner() {
+SingleThreadTaskRunner* WebLocalFrameImpl::TimerTaskRunner() {
   return GetFrame()
       ->FrameScheduler()
       ->TimerTaskRunner()
       ->ToSingleThreadTaskRunner();
 }
 
-base::SingleThreadTaskRunner* WebLocalFrameImpl::LoadingTaskRunner() {
+SingleThreadTaskRunner* WebLocalFrameImpl::LoadingTaskRunner() {
   return GetFrame()
       ->FrameScheduler()
       ->LoadingTaskRunner()
       ->ToSingleThreadTaskRunner();
 }
 
-base::SingleThreadTaskRunner* WebLocalFrameImpl::UnthrottledTaskRunner() {
+SingleThreadTaskRunner* WebLocalFrameImpl::UnthrottledTaskRunner() {
   return GetFrame()
       ->FrameScheduler()
       ->UnthrottledTaskRunner()

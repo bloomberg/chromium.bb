@@ -36,6 +36,7 @@
 #include "core/html/forms/DateTimeChooser.h"
 #include "core/html/forms/DateTimeChooserClient.h"
 #include "core/loader/FrameLoadRequest.h"
+#include "core/page/ChromeClientImpl.h"
 #include "core/page/Page.h"
 #include "core/page/ScopedPageSuspender.h"
 #include "platform/Language.h"
@@ -45,7 +46,6 @@
 #include "public/web/WebView.h"
 #include "public/web/WebViewClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/ChromeClientImpl.h"
 
 namespace blink {
 
