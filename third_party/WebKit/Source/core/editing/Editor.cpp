@@ -354,6 +354,8 @@ bool Editor::CanCopy() const {
   if (ImageElementFromImageDocument(GetFrame().GetDocument()))
     return true;
   FrameSelection& selection = GetFrame().Selection();
+  if (!selection.IsAvailable())
+    return false;
   return selection.ComputeVisibleSelectionInDOMTreeDeprecated().IsRange() &&
          !IsInPasswordFieldWithUnrevealedPassword(
              GetFrame().Selection().ComputeVisibleSelectionInDOMTree().Start());
