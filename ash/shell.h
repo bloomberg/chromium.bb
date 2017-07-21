@@ -102,6 +102,7 @@ class FirstRunHelper;
 class FocusCycler;
 class GPUSupport;
 class HighContrastController;
+class HighlighterController;
 class ImeController;
 class ImmersiveContextAsh;
 class ImmersiveHandlerFactoryAsh;
@@ -387,6 +388,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   PartialMagnificationController* partial_magnification_controller() {
     return partial_magnification_controller_.get();
+  }
+  HighlighterController* highlighter_controller() {
+    return highlighter_controller_.get();
   }
   ScreenshotController* screenshot_controller() {
     return screenshot_controller_.get();
@@ -795,6 +799,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<LaserPointerController> laser_pointer_controller_;
   std::unique_ptr<PartialMagnificationController>
       partial_magnification_controller_;
+  std::unique_ptr<HighlighterController> highlighter_controller_;
 
   // The split view controller for Chrome OS in tablet mode.
   std::unique_ptr<SplitViewController> split_view_controller_;
