@@ -25,6 +25,7 @@ enum SinkIconType {
   CAST_AUDIO,
   MEETING,
   HANGOUT,
+  EDUCATION,
   GENERIC
 };
 

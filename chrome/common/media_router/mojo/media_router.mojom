@@ -14,10 +14,11 @@ import "url/mojo/url.mojom";
 
 enum SinkIconType {
   CAST,
-  CAST_AUDIO,
   CAST_AUDIO_GROUP,
+  CAST_AUDIO,
   MEETING,
   HANGOUT,
+  EDUCATION,
   GENERIC
 };
 

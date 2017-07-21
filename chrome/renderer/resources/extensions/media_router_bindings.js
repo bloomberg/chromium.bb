@@ -56,16 +56,18 @@ define('media_router_bindings', [
     switch (type) {
       case 'cast':
         return mediaRouterMojom.SinkIconType.CAST;
-      case 'cast_audio':
-        return mediaRouterMojom.SinkIconType.CAST_AUDIO;
       case 'cast_audio_group':
         return mediaRouterMojom.SinkIconType.CAST_AUDIO_GROUP;
-      case 'generic':
-        return mediaRouterMojom.SinkIconType.GENERIC;
-      case 'hangout':
-        return mediaRouterMojom.SinkIconType.HANGOUT;
+      case 'cast_audio':
+        return mediaRouterMojom.SinkIconType.CAST_AUDIO;
       case 'meeting':
         return mediaRouterMojom.SinkIconType.MEETING;
+      case 'hangout':
+        return mediaRouterMojom.SinkIconType.HANGOUT;
+      case 'education':
+        return mediaRouterMojom.SinkIconType.EDUCATION;
+      case 'generic':
+        return mediaRouterMojom.SinkIconType.GENERIC;
       default:
         console.error('Unknown sink icon type : ' + type);
         return mediaRouterMojom.SinkIconType.GENERIC;

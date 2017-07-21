@@ -949,16 +949,18 @@ Polymer({
     switch (sink.iconType) {
       case media_router.SinkIconType.CAST:
         return 'media-router:chromecast';
-      case media_router.SinkIconType.CAST_AUDIO:
-        return 'media-router:speaker';
       case media_router.SinkIconType.CAST_AUDIO_GROUP:
         return 'media-router:speaker-group';
-      case media_router.SinkIconType.GENERIC:
-        return 'media-router:tv';
-      case media_router.SinkIconType.HANGOUT:
-        return 'media-router:hangout';
+      case media_router.SinkIconType.CAST_AUDIO:
+        return 'media-router:speaker';
       case media_router.SinkIconType.MEETING:
         return 'media-router:meeting';
+      case media_router.SinkIconType.HANGOUT:
+        return 'media-router:hangout';
+      case media_router.SinkIconType.EDUCATION:
+        return 'media-router:education';
+      case media_router.SinkIconType.GENERIC:
+        return 'media-router:tv';
       default:
         return 'media-router:tv';
     }
