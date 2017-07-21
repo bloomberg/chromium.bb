@@ -51,7 +51,7 @@ MATCHER_P(HasMember, name, "") {
 // bare pointer rather than an std::unique_ptr.
 void RunResponseCallback(dbus::ObjectProxy::ResponseCallback callback,
                          std::unique_ptr<dbus::Response> response) {
-  callback.Run(response.get());
+  std::move(callback).Run(response.get());
 }
 
 }  // namespace
@@ -98,7 +98,7 @@ class BiodClientTest : public testing::Test {
                             std::unique_ptr<dbus::Response> response) {
     ASSERT_FALSE(pending_method_calls_.count(method_name));
     pending_method_calls_[method_name] = std::move(response);
-    EXPECT_CALL(*proxy_.get(), CallMethod(HasMember(method_name), _, _))
+    EXPECT_CALL(*proxy_.get(), DoCallMethod(HasMember(method_name), _, _))
         .WillOnce(Invoke(this, &BiodClientTest::OnCallMethod));
   }
 
@@ -187,15 +187,15 @@ class BiodClientTest : public testing::Test {
   // Handles calls to |proxy_|'s CallMethod().
   void OnCallMethod(dbus::MethodCall* method_call,
                     int timeout_ms,
-                    const dbus::ObjectProxy::ResponseCallback& callback) {
+                    dbus::ObjectProxy::ResponseCallback* callback) {
     auto it = pending_method_calls_.find(method_call->GetMember());
     ASSERT_TRUE(it != pending_method_calls_.end());
     auto pending_response = std::move(it->second);
     pending_method_calls_.erase(it);
 
     message_loop_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&RunResponseCallback, callback,
-                              base::Passed(&pending_response)));
+        FROM_HERE, base::BindOnce(&RunResponseCallback, std::move(*callback),
+                                  base::Passed(&pending_response)));
   }
 
   DISALLOW_COPY_AND_ASSIGN(BiodClientTest);

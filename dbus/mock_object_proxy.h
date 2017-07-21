@@ -29,13 +29,30 @@ class MockObjectProxy : public ObjectProxy {
   MOCK_METHOD2(CallMethodAndBlock,
                std::unique_ptr<Response>(MethodCall* method_call,
                                          int timeout_ms));
-  MOCK_METHOD3(CallMethod, void(MethodCall* method_call,
-                                int timeout_ms,
-                                ResponseCallback callback));
-  MOCK_METHOD4(CallMethodWithErrorCallback, void(MethodCall* method_call,
-                                                 int timeout_ms,
-                                                 ResponseCallback callback,
-                                                 ErrorCallback error_callback));
+
+  // This method is not mockable because it takes a move-only argument. To work
+  // around this, CallMethod() implementation here calls DoCallMethod() which is
+  // mockable.
+  void CallMethod(MethodCall* method_call,
+                  int timeout_ms,
+                  ResponseCallback callback) override;
+  MOCK_METHOD3(DoCallMethod,
+               void(MethodCall* method_call,
+                    int timeout_ms,
+                    ResponseCallback* callback));
+
+  // This method is not mockable because it takes a move-only argument. To work
+  // around this, CallMethodWithErrorCallback() implementation here calls
+  // DoCallMethodWithErrorCallback() which is mockable.
+  void CallMethodWithErrorCallback(MethodCall* method_call,
+                                   int timeout_ms,
+                                   ResponseCallback callback,
+                                   ErrorCallback error_callback) override;
+  MOCK_METHOD4(DoCallMethodWithErrorCallback,
+               void(MethodCall* method_call,
+                    int timeout_ms,
+                    ResponseCallback* callback,
+                    ErrorCallback* error_callback));
   MOCK_METHOD4(ConnectToSignal,
                void(const std::string& interface_name,
                     const std::string& signal_name,

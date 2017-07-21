@@ -267,13 +267,13 @@ class CrasAudioClientTest : public testing::Test {
 
     // Set an expectation so mock_cras_proxy's CallMethod() will use
     // OnCallMethod() to return responses.
-    EXPECT_CALL(*mock_cras_proxy_.get(), CallMethod(_, _, _))
+    EXPECT_CALL(*mock_cras_proxy_.get(), DoCallMethod(_, _, _))
         .WillRepeatedly(Invoke(this, &CrasAudioClientTest::OnCallMethod));
 
     // Set an expectation so mock_cras_proxy's CallMethodWithErrorCallback()
     // will use OnCallMethodWithErrorCallback() to return responses.
     EXPECT_CALL(*mock_cras_proxy_.get(),
-                CallMethodWithErrorCallback(_, _, _, _))
+                DoCallMethodWithErrorCallback(_, _, _, _))
         .WillRepeatedly(
             Invoke(this, &CrasAudioClientTest::OnCallMethodWithErrorCallback));
 
@@ -532,13 +532,13 @@ class CrasAudioClientTest : public testing::Test {
   // Used to implement the mock cras proxy.
   void OnCallMethod(dbus::MethodCall* method_call,
                     int timeout_ms,
-                    const dbus::ObjectProxy::ResponseCallback& response) {
+                    dbus::ObjectProxy::ResponseCallback* response) {
     EXPECT_EQ(interface_name_, method_call->GetInterface());
     EXPECT_EQ(expected_method_name_, method_call->GetMember());
     dbus::MessageReader reader(method_call);
     argument_checker_.Run(&reader);
     message_loop_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(response, response_));
+        FROM_HERE, base::BindOnce(std::move(*response), response_));
   }
 
   // Checks the content of the method call and returns the response.
@@ -546,8 +546,8 @@ class CrasAudioClientTest : public testing::Test {
   void OnCallMethodWithErrorCallback(
       dbus::MethodCall* method_call,
       int timeout_ms,
-      const dbus::ObjectProxy::ResponseCallback& response_callback,
-      const dbus::ObjectProxy::ErrorCallback& error_callback) {
+      dbus::ObjectProxy::ResponseCallback* response_callback,
+      dbus::ObjectProxy::ErrorCallback* error_callback) {
     OnCallMethod(method_call, timeout_ms, response_callback);
   }
 };

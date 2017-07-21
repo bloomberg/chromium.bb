@@ -100,7 +100,7 @@ class GsmSMSClientTest : public testing::Test {
   // Handles Delete method call.
   void OnDelete(dbus::MethodCall* method_call,
                 int timeout_ms,
-                const dbus::ObjectProxy::ResponseCallback& callback) {
+                dbus::ObjectProxy::ResponseCallback* callback) {
     EXPECT_EQ(modemmanager::kModemManagerSMSInterface,
               method_call->GetInterface());
     EXPECT_EQ(modemmanager::kSMSDeleteFunction, method_call->GetMember());
@@ -110,14 +110,14 @@ class GsmSMSClientTest : public testing::Test {
     EXPECT_EQ(expected_index_, index);
     EXPECT_FALSE(reader.HasMoreData());
 
-    message_loop_.task_runner()->PostTask(FROM_HERE,
-                                          base::Bind(callback, response_));
+    message_loop_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(*callback), response_));
   }
 
   // Handles Get method call.
   void OnGet(dbus::MethodCall* method_call,
              int timeout_ms,
-             const dbus::ObjectProxy::ResponseCallback& callback) {
+             dbus::ObjectProxy::ResponseCallback* callback) {
     EXPECT_EQ(modemmanager::kModemManagerSMSInterface,
               method_call->GetInterface());
     EXPECT_EQ(modemmanager::kSMSGetFunction, method_call->GetMember());
@@ -127,22 +127,22 @@ class GsmSMSClientTest : public testing::Test {
     EXPECT_EQ(expected_index_, index);
     EXPECT_FALSE(reader.HasMoreData());
 
-    message_loop_.task_runner()->PostTask(FROM_HERE,
-                                          base::Bind(callback, response_));
+    message_loop_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(*callback), response_));
   }
 
   // Handles List method call.
   void OnList(dbus::MethodCall* method_call,
               int timeout_ms,
-              const dbus::ObjectProxy::ResponseCallback& callback) {
+              dbus::ObjectProxy::ResponseCallback* callback) {
     EXPECT_EQ(modemmanager::kModemManagerSMSInterface,
               method_call->GetInterface());
     EXPECT_EQ(modemmanager::kSMSListFunction, method_call->GetMember());
     dbus::MessageReader reader(method_call);
     EXPECT_FALSE(reader.HasMoreData());
 
-    message_loop_.task_runner()->PostTask(FROM_HERE,
-                                          base::Bind(callback, response_));
+    message_loop_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(*callback), response_));
   }
 
   // Checks the results of Get and List.
@@ -214,7 +214,7 @@ TEST_F(GsmSMSClientTest, Delete) {
   // Set expectations.
   const uint32_t kIndex = 42;
   expected_index_ = kIndex;
-  EXPECT_CALL(*mock_proxy_.get(), CallMethod(_, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), DoCallMethod(_, _, _))
       .WillOnce(Invoke(this, &GsmSMSClientTest::OnDelete));
   base::MockCallback<GsmSMSClient::DeleteCallback> callback;
   EXPECT_CALL(callback, Run()).Times(1);
@@ -233,7 +233,7 @@ TEST_F(GsmSMSClientTest, Get) {
   // Set expectations.
   const uint32_t kIndex = 42;
   expected_index_ = kIndex;
-  EXPECT_CALL(*mock_proxy_.get(), CallMethod(_, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), DoCallMethod(_, _, _))
       .WillOnce(Invoke(this, &GsmSMSClientTest::OnGet));
   base::MockCallback<GsmSMSClient::GetCallback> callback;
   EXPECT_CALL(callback, Run(_))
@@ -269,7 +269,7 @@ TEST_F(GsmSMSClientTest, Get) {
 
 TEST_F(GsmSMSClientTest, List) {
   // Set expectations.
-  EXPECT_CALL(*mock_proxy_.get(), CallMethod(_, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), DoCallMethod(_, _, _))
       .WillOnce(Invoke(this, &GsmSMSClientTest::OnList));
   base::MockCallback<GsmSMSClient::ListCallback> callback;
   EXPECT_CALL(callback, Run(_))

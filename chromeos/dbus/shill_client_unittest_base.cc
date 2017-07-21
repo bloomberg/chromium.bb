@@ -106,14 +106,14 @@ void ShillClientUnittestBase::SetUp() {
 
   // Set an expectation so mock_proxy's CallMethod() will use OnCallMethod()
   // to return responses.
-  EXPECT_CALL(*mock_proxy_.get(), CallMethod(_, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), DoCallMethod(_, _, _))
       .WillRepeatedly(Invoke(this, &ShillClientUnittestBase::OnCallMethod));
 
   // Set an expectation so mock_proxy's CallMethodWithErrorCallback() will use
   // OnCallMethodWithErrorCallback() to return responses.
-  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), DoCallMethodWithErrorCallback(_, _, _, _))
       .WillRepeatedly(Invoke(
-           this, &ShillClientUnittestBase::OnCallMethodWithErrorCallback));
+          this, &ShillClientUnittestBase::OnCallMethodWithErrorCallback));
 
   // Set an expectation so mock_proxy's ConnectToSignal() will use
   // OnConnectToPropertyChanged() to run the callback.
@@ -422,20 +422,20 @@ void ShillClientUnittestBase::OnConnectToPropertyChanged(
 void ShillClientUnittestBase::OnCallMethod(
     dbus::MethodCall* method_call,
     int timeout_ms,
-    const dbus::ObjectProxy::ResponseCallback& response_callback) {
+    dbus::ObjectProxy::ResponseCallback* response_callback) {
   EXPECT_EQ(interface_name_, method_call->GetInterface());
   EXPECT_EQ(expected_method_name_, method_call->GetMember());
   dbus::MessageReader reader(method_call);
   argument_checker_.Run(&reader);
   message_loop_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(response_callback, response_));
+      FROM_HERE, base::BindOnce(std::move(*response_callback), response_));
 }
 
 void ShillClientUnittestBase::OnCallMethodWithErrorCallback(
     dbus::MethodCall* method_call,
     int timeout_ms,
-    const dbus::ObjectProxy::ResponseCallback& response_callback,
-    const dbus::ObjectProxy::ErrorCallback& error_callback) {
+    dbus::ObjectProxy::ResponseCallback* response_callback,
+    dbus::ObjectProxy::ErrorCallback* error_callback) {
   OnCallMethod(method_call, timeout_ms, response_callback);
 }
 
