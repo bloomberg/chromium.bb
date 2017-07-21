@@ -14,7 +14,7 @@
 var OobeDefaultImage;
 
 /** @const */ var OOBE_DEFAULT_AVATAR_IMAGE_URL =
-    'chrome://theme/IDR_PROFILE_PICTURE_LOADING';
+    'chrome://theme/IDR_LOGIN_DEFAULT_USER';
 
 /**
  * @fileoverview

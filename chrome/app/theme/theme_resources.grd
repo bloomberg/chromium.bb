@@ -426,9 +426,6 @@
         <structure type="chrome_scaled_image" name="IDR_AVATAR_NATIVE_BUTTON_PRESSED_TOP_LEFT" file="win/avatar_button/win8/sign_in_button_pressed_top_left.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_NATIVE_BUTTON_PRESSED_TOP_RIGHT" file="win/avatar_button/win8/sign_in_button_pressed_top_right.png" />
       </if>  <!-- toolkit_views and not is_macosx -->
-      <if expr="enable_app_list">
-        <structure type="chrome_scaled_image" name="IDR_PROFILE_PICTURE_LOADING" file="profile_loading.png" />
-      </if>
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_RESET_WARNING" file="cros/reset_warning.png" />
       </if>

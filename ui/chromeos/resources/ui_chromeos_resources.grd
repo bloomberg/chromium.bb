@@ -20,7 +20,7 @@
       <structure type="chrome_scaled_image" name="IDR_ARC_DUAL_ICON_BADGE" file="arc/dual-icon-badge.png" />
 
       <!-- Default user profile images. -->
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER" file="default_user_images/avatar_beaker.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER" file="default_user_images/avatar_anonymous.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_1" file="default_user_images/avatar_bee.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_2" file="default_user_images/avatar_briefcase.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_3" file="default_user_images/avatar_circles.png" />

@@ -64,7 +64,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/theme_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/login/login_state.h"
@@ -87,6 +86,7 @@
 #include "content/public/browser/notification_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/wm/core/wm_core_switches.h"
 
@@ -761,7 +761,7 @@ void ChromeUserManagerImpl::GuestUserLoggedIn() {
   active_user_->SetStubImage(
       base::MakeUnique<user_manager::UserImage>(
           *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-              IDR_PROFILE_PICTURE_LOADING)),
+              IDR_LOGIN_DEFAULT_USER)),
       user_manager::User::USER_IMAGE_INVALID, false);
 
   // Initializes wallpaper after active_user_ is set.
@@ -866,7 +866,7 @@ void ChromeUserManagerImpl::KioskAppLoggedIn(user_manager::User* user) {
   active_user_->SetStubImage(
       base::MakeUnique<user_manager::UserImage>(
           *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-              IDR_PROFILE_PICTURE_LOADING)),
+              IDR_LOGIN_DEFAULT_USER)),
       user_manager::User::USER_IMAGE_INVALID, false);
 
   const AccountId& kiosk_app_account_id = user->GetAccountId();
@@ -920,7 +920,7 @@ void ChromeUserManagerImpl::ArcKioskAppLoggedIn(user_manager::User* user) {
   active_user_->SetStubImage(
       base::MakeUnique<user_manager::UserImage>(
           *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-              IDR_PROFILE_PICTURE_LOADING)),
+              IDR_LOGIN_DEFAULT_USER)),
       user_manager::User::USER_IMAGE_INVALID, false);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -939,7 +939,7 @@ void ChromeUserManagerImpl::DemoAccountLoggedIn() {
   active_user_->SetStubImage(
       base::MakeUnique<user_manager::UserImage>(
           *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-              IDR_PROFILE_PICTURE_LOADING)),
+              IDR_LOGIN_DEFAULT_USER)),
       user_manager::User::USER_IMAGE_INVALID, false);
   WallpaperManager::Get()->SetUserWallpaperNow(user_manager::DemoAccountId());
 

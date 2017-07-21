@@ -48,7 +48,7 @@ Polymer({
      */
     profileImageUrl_: {
       type: String,
-      value: 'chrome://theme/IDR_PROFILE_PICTURE_LOADING',
+      value: 'chrome://theme/IDR_LOGIN_DEFAULT_USER',
     },
 
     /**

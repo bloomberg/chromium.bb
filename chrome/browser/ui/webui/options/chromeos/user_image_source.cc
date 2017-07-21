@@ -9,7 +9,6 @@
 #include "base/strings/string_split.h"
 #include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
@@ -57,7 +56,7 @@ scoped_refptr<base::RefCountedMemory> GetUserImageInternal(
       return user->image_bytes();
     if (user->image_is_stub()) {
       return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
-          IDR_PROFILE_PICTURE_LOADING, ui::SCALE_FACTOR_100P);
+          IDR_LOGIN_DEFAULT_USER, ui::SCALE_FACTOR_100P);
     }
     if (user->HasDefaultImage()) {
       return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(

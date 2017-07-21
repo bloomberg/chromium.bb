@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -49,6 +48,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/user_activity/user_activity_detector.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 
 namespace chromeos {
 
@@ -450,7 +450,7 @@ void UserSelectionScreen::FillUserMojoStruct(
   if (user_info->basic_user_info->avatar.isNull()) {
     user_info->basic_user_info->avatar =
         *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_PROFILE_PICTURE_LOADING);
+            IDR_LOGIN_DEFAULT_USER);
   }
   user_info->auth_type = auth_type;
   user_info->is_signed_in = user->is_logged_in();
