@@ -17,8 +17,6 @@
 #include "media/blink/multibuffer_reader.h"
 #include "net/base/net_errors.h"
 
-using blink::WebFrame;
-
 namespace {
 
 // Minimum preload buffer.
@@ -108,7 +106,6 @@ MultibufferDataSource::MultibufferDataSource(
     UrlData::CORSMode cors_mode,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     linked_ptr<UrlIndex> url_index,
-    WebFrame* frame,
     MediaLog* media_log,
     BufferedDataSourceHost* host,
     const DownloadingCB& downloading_cb)
@@ -119,7 +116,6 @@ MultibufferDataSource::MultibufferDataSource(
       failed_(false),
       render_task_runner_(task_runner),
       url_index_(url_index),
-      frame_(frame),
       stop_signal_received_(false),
       media_has_played_(false),
       single_origin_(true),
