@@ -398,6 +398,32 @@ DocumentMarker* DocumentMarkerController::MarkerAtPosition(
   return nullptr;
 }
 
+DocumentMarker* DocumentMarkerController::FirstMarkerIntersectingOffsetRange(
+    const Text& node,
+    unsigned start_offset,
+    unsigned end_offset,
+    DocumentMarker::MarkerTypes types) {
+  if (!PossiblyHasMarkers(types))
+    return nullptr;
+
+  MarkerLists* const markers = markers_.at(&node);
+  if (!markers)
+    return nullptr;
+
+  for (DocumentMarker::MarkerType type : types) {
+    const DocumentMarkerList* const list = ListForType(markers, type);
+    if (!list)
+      continue;
+
+    DocumentMarker* found_marker =
+        list->FirstMarkerIntersectingRange(start_offset, end_offset);
+    if (found_marker)
+      return found_marker;
+  }
+
+  return nullptr;
+}
+
 DocumentMarkerVector DocumentMarkerController::MarkersFor(
     Node* node,
     DocumentMarker::MarkerTypes marker_types) {
