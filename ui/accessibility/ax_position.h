@@ -343,31 +343,34 @@ class AXPosition {
 
     AXPositionInstance copy = Clone();
     DCHECK(copy);
-    DCHECK_NE(copy->text_offset_, INVALID_OFFSET);
-    // If the anchor node has no text inside it then the child index should be
-    // set to |BEFORE_TEXT|, hence the check if |MaxTextOffset| is greater than
-    // 0.
-    if (copy->MaxTextOffset() > 0 &&
-        copy->text_offset_ >= copy->MaxTextOffset()) {
-      copy->child_index_ = copy->AnchorChildCount();
-    } else {
-      DCHECK_GE(copy->text_offset_, 0);
+    DCHECK_GE(copy->text_offset_, 0);
+    if (!copy->AnchorChildCount() &&
+        copy->text_offset_ != copy->MaxTextOffset()) {
       copy->child_index_ = BEFORE_TEXT;
-
-      int current_offset = 0;
-      for (int i = 0; i < copy->AnchorChildCount(); ++i) {
-        AXPositionInstance child = copy->CreateChildPositionAt(i);
-        DCHECK(child);
-        int child_length = child->MaxTextOffsetInParent();
-        if (copy->text_offset_ >= current_offset &&
-            copy->text_offset_ < (current_offset + child_length)) {
-          copy->child_index_ = i;
-          break;
-        }
-
-        current_offset += child_length;
-      }
+    } else {
+      copy->child_index_ = 0;
     }
+
+    // Blink doesn't always remove all deleted whitespace at the end of a
+    // textarea even though it will have adjusted its value attribute, because
+    // the extra layout objects are invisible. Therefore, we will stop at the
+    // last child that we can reach with the current text offset and ignore any
+    // remaining children.
+    int current_offset = 0;
+    for (int i = 0; i < copy->AnchorChildCount(); ++i) {
+      AXPositionInstance child = copy->CreateChildPositionAt(i);
+      DCHECK(child);
+      int child_length = child->MaxTextOffsetInParent();
+      if (copy->text_offset_ >= current_offset &&
+          copy->text_offset_ < (current_offset + child_length)) {
+        copy->child_index_ = i;
+        break;
+      }
+
+      current_offset += child_length;
+    }
+    if (current_offset >= copy->MaxTextOffset())
+      copy->child_index_ = copy->AnchorChildCount();
 
     copy->kind_ = AXPositionKind::TREE_POSITION;
     return copy;
@@ -422,34 +425,22 @@ class AXPosition {
     if (IsNullPosition() || !AnchorChildCount())
       return AsTextPosition();
 
-    AXPositionInstance child_position;
     AXPositionInstance tree_position = AsTreePosition();
-    // If we get an "after children" position, we should return an "after
-    // children" position on the last child and recurse.
-    if (tree_position->AtEndOfAnchor()) {
-      child_position =
-          tree_position->CreateChildPositionAt(AnchorChildCount() - 1);
-      // Affinity needs to be maintained, because we are not moving the position
-      // but simply changing the anchor to the deepest leaf.
-      child_position->affinity_ = affinity_;
-      return child_position->CreatePositionAtEndOfAnchor()
-          ->AsLeafTextPosition();
-    }
-
     // Adjust the text offset.
     // No need to check for "before text" positions here because they are only
     // present on leaf anchor nodes.
     int adjusted_offset = AsTextPosition()->text_offset_;
-    for (int i = 0; i < tree_position->child_index_; ++i) {
+    AXPositionInstance child_position = tree_position->CreateChildPositionAt(0);
+    DCHECK(child_position);
+    for (int i = 1; i <= tree_position->child_index_ &&
+                    i < tree_position->AnchorChildCount();
+         ++i) {
+      adjusted_offset -= child_position->MaxTextOffsetInParent();
       child_position = tree_position->CreateChildPositionAt(i);
       DCHECK(child_position);
-      adjusted_offset -= child_position->MaxTextOffsetInParent();
     }
-    DCHECK_GE(adjusted_offset, 0);
 
-    child_position =
-        tree_position->CreateChildPositionAt(tree_position->child_index_)
-            ->AsTextPosition();
+    child_position = child_position->AsTextPosition();
     child_position->text_offset_ = adjusted_offset;
     // Affinity needs to be maintained, because we are not moving the position
     // but simply changing the anchor to the deepest leaf.
