@@ -1084,6 +1084,18 @@ class RiskyJsTest(unittest.TestCase):
         mock_input_api, MockOutputApi())
     self.assertEqual(0, len(warnings))
 
+  def testConstLetWarningIos9Code(self):
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [
+      MockAffectedFile('components/blah.js', [" const foo = 'bar';"]),
+      MockAffectedFile('ui/webui/resources/blah.js', [" let foo = 3;"]),
+    ]
+    warnings = PRESUBMIT._CheckForRiskyJsFeatures(
+        mock_input_api, mock_output_api)
+    self.assertEqual(2, len(warnings))
+
 class RelativeIncludesTest(unittest.TestCase):
   def testThirdPartyNotWebKitIgnored(self):
     mock_input_api = MockInputApi()

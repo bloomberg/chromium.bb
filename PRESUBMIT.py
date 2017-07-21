@@ -23,8 +23,6 @@ _EXCLUDED_PATHS = (
     r".+[\\\/]pnacl_shim\.c$",
     r"^gpu[\\\/]config[\\\/].*_list_json\.cc$",
     r"^chrome[\\\/]browser[\\\/]resources[\\\/]pdf[\\\/]index.js",
-    r".*vulcanized.html$",
-    r".*crisper.js$",
     r"tools[\\\/]md_browser[\\\/].*\.css$",
     # Test pages for WebRTC telemetry tests.
     r"tools[\\\/]perf[\\\/]page_sets[\\\/]webrtc_cases.*",
@@ -2009,27 +2007,64 @@ def _CheckNoDeprecatedJs(input_api, output_api):
               (fpath.LocalPath(), lnum, deprecated, replacement)))
   return results
 
+def _CheckForRiskyJsArrowFunction(line_number, line):
+  if ' => ' in line:
+    return "line %d, is using an => (arrow) function\n %s\n" % (
+        line_number, line)
+  return ''
+
+def _CheckForRiskyJsConstLet(input_api, line_number, line):
+  if input_api.re.match('^\s*(const|let)\s', line):
+    return "line %d, is using const/let keyword\n %s\n" % (
+        line_number, line)
+  return ''
 
 def _CheckForRiskyJsFeatures(input_api, output_api):
   maybe_ios_js = (r"^(ios|components|ui\/webui\/resources)\/.+\.js$", )
   file_filter = lambda f: input_api.FilterSourceFile(f, white_list=maybe_ios_js)
 
-  arrow_lines = []
+  results = []
   for f in input_api.AffectedFiles(file_filter=file_filter):
+    arrow_error_lines = []
+    const_let_error_lines = []
     for lnum, line in f.ChangedContents():
-      if ' => ' in line:
-        arrow_lines.append((f.LocalPath(), lnum))
+      arrow_error_lines += filter(None, [
+        _CheckForRiskyJsArrowFunction(lnum, line),
+      ])
 
-  if not arrow_lines:
-    return []
+      const_let_error_lines += filter(None, [
+        _CheckForRiskyJsConstLet(input_api, lnum, line),
+      ])
 
-  return [output_api.PresubmitPromptWarning("""
-Use of => operator detected in:
+    if arrow_error_lines:
+      arrow_error_lines = map(
+          lambda e: "%s:%s" % (f.LocalPath(), e), arrow_error_lines)
+      results.append(
+          output_api.PresubmitPromptWarning('\n'.join(arrow_error_lines + [
+"""
+Use of => (arrow) operator detected in:
 %s
 Please ensure your code does not run on iOS9 (=> (arrow) does not work there).
 https://chromium.googlesource.com/chromium/src/+/master/docs/es6_chromium.md#Arrow-Functions
-""" % "\n".join("  %s:%d\n" % line for line in arrow_lines))]
+""" % f.LocalPath()
+          ])))
 
+    if const_let_error_lines:
+      const_let_error_lines = map(
+          lambda e: "%s:%s" % (f.LocalPath(), e), const_let_error_lines)
+      results.append(
+          output_api.PresubmitPromptWarning('\n'.join(const_let_error_lines + [
+"""
+Use of const/let keywords detected in:
+%s
+Please ensure your code does not run on iOS9 because const/let is not fully
+supported.
+https://chromium.googlesource.com/chromium/src/+/master/docs/es6_chromium.md#let-Block_Scoped-Variables
+https://chromium.googlesource.com/chromium/src/+/master/docs/es6_chromium.md#const-Block_Scoped-Constants
+""" % f.LocalPath()
+          ])))
+
+  return results
 
 def _CheckForRelativeIncludes(input_api, output_api):
   # Need to set the sys.path so PRESUBMIT_test.py runs properly
