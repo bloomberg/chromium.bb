@@ -124,6 +124,9 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   // that the controls are currently visible.
   virtual bool HasNativeControls() = 0;
 
+  // Returns true iff the client represents an HTML <audio> element.
+  virtual bool IsAudioElement() = 0;
+
   // Returns the current display type of the media element.
   virtual WebMediaPlayer::DisplayType DisplayType() const = 0;
 

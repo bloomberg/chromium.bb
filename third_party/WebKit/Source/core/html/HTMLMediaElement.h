@@ -414,6 +414,7 @@ class CORE_EXPORT HTMLMediaElement
   bool IsAutoplayingMuted() final;
   void ActivateViewportIntersectionMonitoring(bool) final;
   bool HasNativeControls() final;
+  bool IsAudioElement() final;
   WebMediaPlayer::DisplayType DisplayType() const override;
   WebRemotePlaybackClient* RemotePlaybackClient() final {
     return remote_playback_client_;
