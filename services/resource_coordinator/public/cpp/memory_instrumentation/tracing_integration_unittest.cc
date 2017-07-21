@@ -26,7 +26,6 @@
 
 using base::trace_event::MemoryAllocatorDump;
 using base::trace_event::MemoryDumpArgs;
-using base::trace_event::MemoryDumpCallbackResult;
 using base::trace_event::MemoryDumpLevelOfDetail;
 using base::trace_event::MemoryDumpManager;
 using base::trace_event::MemoryDumpProvider;
@@ -183,22 +182,20 @@ class MemoryTracingIntegrationTest : public testing::Test {
   bool RequestProcessDumpAndWait(
       MemoryDumpType dump_type,
       MemoryDumpLevelOfDetail level_of_detail,
-      base::Optional<MemoryDumpCallbackResult>* result = nullptr) {
+      base::Optional<mojom::RawProcessMemoryDumpPtr>* result = nullptr) {
     base::RunLoop run_loop;
     bool success = false;
     MemoryDumpRequestArgs request_args{kTestGuid, dump_type, level_of_detail};
     ClientProcessImpl::RequestProcessMemoryDumpCallback callback = base::Bind(
         [](bool* curried_success, base::Closure curried_quit_closure,
-           base::Optional<MemoryDumpCallbackResult>* curried_result,
+           base::Optional<mojom::RawProcessMemoryDumpPtr>* curried_result,
            bool success, uint64_t dump_guid,
            mojom::RawProcessMemoryDumpPtr result) {
           EXPECT_EQ(kTestGuid, dump_guid);
           *curried_success = success;
           if (curried_result) {
-            *curried_result = MemoryDumpCallbackResult();
-            (*curried_result)->os_dump = result->os_dump;
-            (*curried_result)->chrome_dump = result->chrome_dump;
             EXPECT_TRUE(result->extra_processes_dumps.empty());
+            *curried_result = std::move(result);
           }
           curried_quit_closure.Run();
         },
@@ -581,7 +578,7 @@ TEST_F(MemoryTracingIntegrationTest, TestSummaryComputation) {
       }));
 
   EnableMemoryInfraTracing();
-  base::Optional<MemoryDumpCallbackResult> result;
+  base::Optional<mojom::RawProcessMemoryDumpPtr> result;
   EXPECT_TRUE(RequestProcessDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
                                         MemoryDumpLevelOfDetail::LIGHT,
                                         &result));
@@ -590,20 +587,20 @@ TEST_F(MemoryTracingIntegrationTest, TestSummaryComputation) {
   ASSERT_TRUE(result);
 
   // For malloc we only count the root "malloc" not children "malloc/*".
-  EXPECT_EQ(1u, result->chrome_dump.malloc_total_kb);
+  EXPECT_EQ(1u, (*result)->chrome_dump->malloc_total_kb);
 
   // For blink_gc we only count the root "blink_gc" not children "blink_gc/*".
-  EXPECT_EQ(2u, result->chrome_dump.blink_gc_total_kb);
+  EXPECT_EQ(2u, (*result)->chrome_dump->blink_gc_total_kb);
 
   // For v8 we count the children ("v8/*") as the root total is not given.
-  EXPECT_EQ(3u, result->chrome_dump.v8_total_kb);
+  EXPECT_EQ(3u, (*result)->chrome_dump->v8_total_kb);
 
   // partition_alloc has partition_alloc/allocated_objects/* which is a subset
   // of partition_alloc/partitions/* so we only count the latter.
-  EXPECT_EQ(4u, result->chrome_dump.partition_alloc_total_kb);
+  EXPECT_EQ(4u, (*result)->chrome_dump->partition_alloc_total_kb);
 
   // resident_set_kb should read from process_totals.
-  EXPECT_EQ(5u, result->os_dump.resident_set_kb);
+  EXPECT_EQ(5u, (*result)->os_dump->resident_set_kb);
 };
 
 TEST_F(MemoryTracingIntegrationTest, DumpOnBehalfOfOtherProcess) {

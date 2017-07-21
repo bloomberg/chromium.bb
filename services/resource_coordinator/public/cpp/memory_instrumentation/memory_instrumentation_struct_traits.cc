@@ -127,28 +127,4 @@ bool StructTraits<
   return true;
 }
 
-// static
-bool StructTraits<memory_instrumentation::mojom::ChromeMemDumpDataView,
-                  base::trace_event::MemoryDumpCallbackResult::ChromeMemDump>::
-    Read(memory_instrumentation::mojom::ChromeMemDumpDataView input,
-         base::trace_event::MemoryDumpCallbackResult::ChromeMemDump* out) {
-  out->malloc_total_kb = input.malloc_total_kb();
-  out->command_buffer_total_kb = input.command_buffer_total_kb();
-  out->partition_alloc_total_kb = input.partition_alloc_total_kb();
-  out->blink_gc_total_kb = input.blink_gc_total_kb();
-  out->v8_total_kb = input.v8_total_kb();
-  return true;
-}
-
-// static
-bool StructTraits<memory_instrumentation::mojom::RawOSMemDumpDataView,
-                  base::trace_event::MemoryDumpCallbackResult::OSMemDump>::
-    Read(memory_instrumentation::mojom::RawOSMemDumpDataView input,
-         base::trace_event::MemoryDumpCallbackResult::OSMemDump* out) {
-  out->resident_set_kb = input.resident_set_kb();
-  if (!input.ReadPlatformPrivateFootprint(&out->platform_private_footprint))
-    return false;
-  return true;
-}
-
 }  // namespace mojo
