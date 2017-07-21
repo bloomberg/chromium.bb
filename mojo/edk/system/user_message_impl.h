@@ -111,7 +111,7 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
     return user_payload_size_;
   }
 
-  size_t user_payload_buffer_size() const;
+  size_t user_payload_capacity() const;
 
   size_t num_handles() const;
 

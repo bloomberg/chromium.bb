@@ -505,8 +505,7 @@ MojoResult Core::AttachSerializedMessageBuffer(MojoMessageHandle message_handle,
     return rv;
 
   *buffer = message->user_payload();
-  *buffer_size =
-      base::checked_cast<uint32_t>(message->user_payload_buffer_size());
+  *buffer_size = base::checked_cast<uint32_t>(message->user_payload_capacity());
   return MOJO_RESULT_OK;
 }
 
@@ -525,7 +524,7 @@ MojoResult Core::ExtendSerializedMessagePayload(
 
   *new_buffer = message->user_payload();
   *new_buffer_size =
-      base::checked_cast<uint32_t>(message->user_payload_buffer_size());
+      base::checked_cast<uint32_t>(message->user_payload_capacity());
   return MOJO_RESULT_OK;
 }
 

@@ -265,7 +265,7 @@ void Channel::Message::ExtendPayload(size_t new_payload_size) {
     size_t new_capacity =
         std::max(capacity_without_header * 2, new_payload_size) + header_size;
     void* new_data = base::AlignedAlloc(new_capacity, kChannelMessageAlignment);
-    memcpy(new_data, data_, size_);
+    memcpy(new_data, data_, capacity_);
     base::AlignedFree(data_);
     data_ = static_cast<char*>(new_data);
     capacity_ = new_capacity;

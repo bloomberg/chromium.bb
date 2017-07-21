@@ -288,9 +288,14 @@ uintptr_t UserMessageImpl::ReleaseContext() {
   return context;
 }
 
-size_t UserMessageImpl::user_payload_buffer_size() const {
+size_t UserMessageImpl::user_payload_capacity() const {
   DCHECK(IsSerialized());
-  return channel_message_->capacity();
+  const size_t user_payload_offset =
+      static_cast<uint8_t*>(user_payload_) -
+      static_cast<const uint8_t*>(channel_message_->payload());
+  const size_t message_capacity = channel_message_->capacity();
+  DCHECK(user_payload_offset < message_capacity);
+  return message_capacity - user_payload_offset;
 }
 
 size_t UserMessageImpl::num_handles() const {
