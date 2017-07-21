@@ -538,15 +538,15 @@ public class VrShellDelegate
             public void doFrame(long frameTimeNanos) {
                 if (mNativeVrShellDelegate == 0) return;
                 Choreographer.getInstance().postFrameCallback(this);
-                ++mVSyncCount;
                 if (mVSyncTimebaseNanos == 0) {
                     updateVSyncInterval(frameTimeNanos, mVSyncIntervalNanos);
                     return;
                 }
-                if (mVSyncCount < MIN_FRAME_COUNT) return;
+                ++mVSyncCount;
                 long elapsed = frameTimeNanos - mVSyncTimebaseNanos;
                 // If you're hitting the assert below, you probably added the callback twice.
                 assert elapsed != 0;
+                if (mVSyncCount < MIN_FRAME_COUNT) return;
                 long vSyncIntervalNanos = elapsed / mVSyncCount;
                 if (vSyncIntervalNanos < mMinVSyncIntervalNanos) {
                     // We may run slow, but we should never run fast. If the VSync interval is too
@@ -1585,6 +1585,11 @@ public class VrShellDelegate
     public boolean isClearActivatePending() {
         assert mNativeVrShellDelegate != 0;
         return nativeIsClearActivatePending(mNativeVrShellDelegate);
+    }
+
+    @VisibleForTesting
+    public boolean isVrEntryComplete() {
+        return mInVr && !mProbablyInDon;
     }
 
     /**
