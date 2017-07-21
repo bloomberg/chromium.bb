@@ -1383,6 +1383,9 @@ crbug.com/660185 [ Mac ] fast/forms/datalist/input-appearance-range-with-transfo
 
 crbug.com/658304 [ Win Linux ] fast/forms/select/input-select-after-resize.html [ Crash Timeout Pass ]
 
+crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
+crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
+
 # We render the expectation incorrectly for these five tests
 crbug.com/310004 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-canvas-vert-001.xhtml [ Failure ]
 crbug.com/310004 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-iframe-vert-001.xhtml [ Failure ]
