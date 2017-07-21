@@ -93,52 +93,6 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT StructTraits<
       base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint* out);
 };
 
-template <>
-struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
-    StructTraits<memory_instrumentation::mojom::ChromeMemDumpDataView,
-                 base::trace_event::MemoryDumpCallbackResult::ChromeMemDump> {
-  static uint32_t malloc_total_kb(
-      const base::trace_event::MemoryDumpCallbackResult::ChromeMemDump& args) {
-    return args.malloc_total_kb;
-  }
-  static uint32_t command_buffer_total_kb(
-      const base::trace_event::MemoryDumpCallbackResult::ChromeMemDump& args) {
-    return args.command_buffer_total_kb;
-  }
-  static uint32_t partition_alloc_total_kb(
-      const base::trace_event::MemoryDumpCallbackResult::ChromeMemDump& args) {
-    return args.partition_alloc_total_kb;
-  }
-  static uint32_t blink_gc_total_kb(
-      const base::trace_event::MemoryDumpCallbackResult::ChromeMemDump& args) {
-    return args.blink_gc_total_kb;
-  }
-  static uint32_t v8_total_kb(
-      const base::trace_event::MemoryDumpCallbackResult::ChromeMemDump& args) {
-    return args.v8_total_kb;
-  }
-  static bool Read(
-      memory_instrumentation::mojom::ChromeMemDumpDataView input,
-      base::trace_event::MemoryDumpCallbackResult::ChromeMemDump* out);
-};
-
-template <>
-struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
-    StructTraits<memory_instrumentation::mojom::RawOSMemDumpDataView,
-                 base::trace_event::MemoryDumpCallbackResult::OSMemDump> {
-  static uint32_t resident_set_kb(
-      const base::trace_event::MemoryDumpCallbackResult::OSMemDump& args) {
-    return args.resident_set_kb;
-  }
-  static base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint
-  platform_private_footprint(
-      const base::trace_event::MemoryDumpCallbackResult::OSMemDump& args) {
-    return args.platform_private_footprint;
-  }
-  static bool Read(memory_instrumentation::mojom::RawOSMemDumpDataView input,
-                   base::trace_event::MemoryDumpCallbackResult::OSMemDump* out);
-};
-
 }  // namespace mojo
 
 #endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_INSTRUMENTATION_MEMORY_INSTRUMENTATION_STRUCT_TRAITS_H_

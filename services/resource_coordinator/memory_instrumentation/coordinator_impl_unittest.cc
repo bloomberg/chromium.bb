@@ -34,7 +34,6 @@ using ::testing::Field;
 using ::testing::Eq;
 using ::testing::AllOf;
 
-using OSMemDump = base::trace_event::MemoryDumpCallbackResult::OSMemDump;
 using RequestGlobalMemoryDumpCallback =
     memory_instrumentation::CoordinatorImpl::RequestGlobalMemoryDumpCallback;
 using memory_instrumentation::mojom::GlobalMemoryDumpPtr;
@@ -116,8 +115,8 @@ class MockClientProcess : public mojom::ClientProcess {
     ON_CALL(*this, RequestOSMemoryDump(_, _))
         .WillByDefault(Invoke([](const std::vector<base::ProcessId> pids,
                                  const RequestOSMemoryDumpCallback& callback) {
-          std::unordered_map<base::ProcessId, OSMemDump> results;
-          callback.Run(true, results);
+          std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
+          callback.Run(true, std::move(results));
         }));
   }
 
@@ -274,8 +273,10 @@ TEST_F(CoordinatorImplTest, GlobalMemoryDumpStruct) {
                     const MockClientProcess::RequestProcessMemoryDumpCallback&
                         callback) {
             auto dump = mojom::RawProcessMemoryDump::New();
-            dump->chrome_dump.malloc_total_kb = 1;
-            dump->os_dump.resident_set_kb = 1;
+            dump->chrome_dump = mojom::ChromeMemDump::New();
+            dump->os_dump = mojom::RawOSMemDump::New();
+            dump->chrome_dump->malloc_total_kb = 1;
+            dump->os_dump->resident_set_kb = 1;
             callback.Run(true, args.dump_guid, std::move(dump));
 
           }));
@@ -285,8 +286,10 @@ TEST_F(CoordinatorImplTest, GlobalMemoryDumpStruct) {
                     const MockClientProcess::RequestProcessMemoryDumpCallback&
                         callback) {
             auto dump = mojom::RawProcessMemoryDump::New();
-            dump->chrome_dump.malloc_total_kb = 2;
-            dump->os_dump.resident_set_kb = 2;
+            dump->chrome_dump = mojom::ChromeMemDump::New();
+            dump->os_dump = mojom::RawOSMemDump::New();
+            dump->chrome_dump->malloc_total_kb = 2;
+            dump->os_dump->resident_set_kb = 2;
             callback.Run(true, args.dump_guid, std::move(dump));
           }));
 
@@ -330,7 +333,9 @@ TEST_F(CoordinatorImplTest, OsDumps) {
                     const MockClientProcess::RequestProcessMemoryDumpCallback&
                         callback) {
             auto dump = mojom::RawProcessMemoryDump::New();
-            dump->chrome_dump.malloc_total_kb = 1;
+            dump->chrome_dump = mojom::ChromeMemDump::New();
+            dump->os_dump = mojom::RawOSMemDump::New();
+            dump->chrome_dump->malloc_total_kb = 1;
             callback.Run(args.dump_guid, true, std::move(dump));
           }));
   EXPECT_CALL(renderer_client, RequestProcessMemoryDump(_, _))
@@ -339,7 +344,9 @@ TEST_F(CoordinatorImplTest, OsDumps) {
                     const MockClientProcess::RequestProcessMemoryDumpCallback&
                         callback) {
             auto dump = mojom::RawProcessMemoryDump::New();
-            dump->chrome_dump.malloc_total_kb = 2;
+            dump->chrome_dump = mojom::ChromeMemDump::New();
+            dump->os_dump = mojom::RawOSMemDump::New();
+            dump->chrome_dump->malloc_total_kb = 2;
             callback.Run(args.dump_guid, true, std::move(dump));
           }));
 #if defined(OS_LINUX)
@@ -348,10 +355,12 @@ TEST_F(CoordinatorImplTest, OsDumps) {
       .WillOnce(Invoke(
           [](const std::vector<base::ProcessId>& pids,
              const MockClientProcess::RequestOSMemoryDumpCallback& callback) {
-            std::unordered_map<base::ProcessId, OSMemDump> results;
-            results[1].resident_set_kb = 1;
-            results[2].resident_set_kb = 2;
-            callback.Run(true, results);
+            std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
+            results[1] = mojom::RawOSMemDump::New();
+            results[1]->resident_set_kb = 1;
+            results[2] = mojom::RawOSMemDump::New();
+            results[2]->resident_set_kb = 2;
+            callback.Run(true, std::move(results));
           }));
   EXPECT_CALL(renderer_client, RequestOSMemoryDump(_, _)).Times(0);
 #else
@@ -359,17 +368,19 @@ TEST_F(CoordinatorImplTest, OsDumps) {
       .WillOnce(Invoke(
           [](const std::vector<base::ProcessId>& pids,
              const MockClientProcess::RequestOSMemoryDumpCallback& callback) {
-            std::unordered_map<base::ProcessId, OSMemDump> results;
-            results[1].resident_set_kb = 1;
-            callback.Run(true, results);
+            std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
+            results[1] = mojom::RawOSMemDump::New();
+            results[1]->resident_set_kb = 1;
+            callback.Run(true, std::move(results));
           }));
   EXPECT_CALL(renderer_client, RequestOSMemoryDump(Contains(2), _))
       .WillOnce(Invoke(
           [](const std::vector<base::ProcessId>& pids,
              const MockClientProcess::RequestOSMemoryDumpCallback& callback) {
-            std::unordered_map<base::ProcessId, OSMemDump> results;
-            results[2].resident_set_kb = 2;
-            callback.Run(true, results);
+            std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
+            results[2] = mojom::RawOSMemDump::New();
+            results[2]->resident_set_kb = 2;
+            callback.Run(true, std::move(results));
           }));
 #endif  // defined(OS_LINUX)
 

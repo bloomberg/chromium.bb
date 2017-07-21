@@ -177,7 +177,6 @@ class URLRequestQuicPerfTest : public ::testing::Test {
   std::unique_ptr<QuicSimpleServer> quic_server_;
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<TestURLRequestContext> context_;
-  std::vector<base::trace_event::MemoryDumpCallbackResult> results_;
   QuicHttpResponseCache response_cache_;
   MockCertVerifier cert_verifier_;
 };

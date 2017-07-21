@@ -59,9 +59,8 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   ~CoordinatorImpl() override;
 
  private:
-  using OSMemDumpMap = std::unordered_map<
-      base::ProcessId,
-      base::trace_event::MemoryDumpCallbackResult::OSMemDump>;
+  using OSMemDumpMap =
+      std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr>;
   friend std::default_delete<CoordinatorImpl>;  // For testing
   friend class CoordinatorImplTest;             // For testing
 
@@ -128,7 +127,8 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   // Callback of RequestOSMemoryDump.
   void OnOSMemoryDumpResponse(mojom::ClientProcess*,
                               bool success,
-                              const OSMemDumpMap&);
+                              OSMemDumpMap);
+
   void RemovePendingResponse(mojom::ClientProcess*,
                              QueuedMemoryDumpRequest::PendingResponse::Type);
 

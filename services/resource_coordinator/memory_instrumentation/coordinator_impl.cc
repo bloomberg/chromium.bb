@@ -28,11 +28,11 @@
 #include "base/mac/mac_util.h"
 #endif
 
+namespace memory_instrumentation {
+
 namespace {
 
 memory_instrumentation::CoordinatorImpl* g_coordinator_impl;
-
-using OSMemDump = base::trace_event::MemoryDumpCallbackResult::OSMemDump;
 
 // Returns the private memory footprint calcualted from given |os_dump|.
 //
@@ -40,7 +40,7 @@ using OSMemDump = base::trace_event::MemoryDumpCallbackResult::OSMemDump;
 // - Linux/Android: https://crbug.com/707019 .
 // - Mac OS: https://crbug.com/707021 .
 // - Win: https://crbug.com/707022 .
-uint32_t CalculatePrivateFootprintKb(const OSMemDump& os_dump) {
+uint32_t CalculatePrivateFootprintKb(const mojom::RawOSMemDump& os_dump) {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   uint64_t rss_anon_bytes = os_dump.platform_private_footprint.rss_anon_bytes;
   uint64_t vm_swap_bytes = os_dump.platform_private_footprint.vm_swap_bytes;
@@ -66,9 +66,8 @@ uint32_t CalculatePrivateFootprintKb(const OSMemDump& os_dump) {
 }
 
 memory_instrumentation::mojom::OSMemDumpPtr CreatePublicOSDump(
-    const OSMemDump& internal_os_dump) {
-  memory_instrumentation::mojom::OSMemDumpPtr os_dump =
-      memory_instrumentation::mojom::OSMemDump::New();
+    const mojom::RawOSMemDump& internal_os_dump) {
+  mojom::OSMemDumpPtr os_dump = mojom::OSMemDump::New();
 
   os_dump->resident_set_kb = internal_os_dump.resident_set_kb;
   os_dump->private_footprint_kb = CalculatePrivateFootprintKb(internal_os_dump);
@@ -77,7 +76,6 @@ memory_instrumentation::mojom::OSMemDumpPtr CreatePublicOSDump(
 
 }  // namespace
 
-namespace memory_instrumentation {
 
 // static
 CoordinatorImpl* CoordinatorImpl::GetInstance() {
@@ -276,8 +274,8 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
   }
   if (browser_client) {
     request->pending_responses.insert({browser_client, ResponseType::kOSDump});
-    auto callback = base::Bind(&CoordinatorImpl::OnOSMemoryDumpResponse,
-                               base::Unretained(this), browser_client);
+    const auto callback = base::Bind(&CoordinatorImpl::OnOSMemoryDumpResponse,
+                                     base::Unretained(this), browser_client);
     browser_client->RequestOSMemoryDump(pids, callback);
   }
 #endif  // defined(OS_LINUX)
@@ -325,7 +323,7 @@ void CoordinatorImpl::OnProcessMemoryDumpResponse(
 
 void CoordinatorImpl::OnOSMemoryDumpResponse(mojom::ClientProcess* client,
                                              bool success,
-                                             const OSMemDumpMap& os_dumps) {
+                                             OSMemDumpMap os_dumps) {
   using ResponseType = QueuedMemoryDumpRequest::PendingResponse::Type;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   QueuedMemoryDumpRequest* request = GetCurrentRequest();
@@ -341,7 +339,7 @@ void CoordinatorImpl::OnOSMemoryDumpResponse(mojom::ClientProcess* client,
     return;
   }
 
-  request->responses[client].os_dumps = os_dumps;
+  request->responses[client].os_dumps = std::move(os_dumps);
 
   if (!success) {
     request->failed_memory_dump_count++;
@@ -380,7 +378,7 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
   // details for the child processes to get around sandbox restrictions on
   // opening /proc pseudo files.
 
-  std::map<base::ProcessId, OSMemDump> os_dumps;
+  std::map<base::ProcessId, mojom::RawOSMemDumpPtr> os_dumps;
   for (auto& response : request->responses) {
     const base::ProcessId pid = response.second.process_id;
     const mojom::RawProcessMemoryDumpPtr& dump_ptr = response.second.dump_ptr;
@@ -389,27 +387,28 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
     // replying.
     if (!dump_ptr)
       continue;
+    mojom::RawOSMemDumpPtr dump = std::move(response.second.dump_ptr->os_dump);
 
     // TODO(hjd): We should have a better way to tell if os_dump is filled.
     // TODO(hjd): Remove this if when we collect OS dumps separately.
-    if (dump_ptr->os_dump.resident_set_kb > 0) {
+    if (dump && dump->resident_set_kb > 0) {
       DCHECK_EQ(0u, os_dumps.count(pid));
-      os_dumps[pid] = dump_ptr->os_dump;
+      os_dumps[pid] = std::move(dump);
     }
 
     // TODO(hjd): Remove this for loop when we collect OS dumps separately.
     for (auto& extra : dump_ptr->extra_processes_dumps) {
       const base::ProcessId extra_pid = extra.first;
-      const OSMemDump extra_dump = extra.second;
+      mojom::RawOSMemDumpPtr extra_dump = std::move(extra.second);
       DCHECK_EQ(0u, os_dumps.count(extra_pid));
-      os_dumps[extra_pid] = extra_dump;
+      os_dumps[extra_pid] = std::move(extra_dump);
     }
 
     for (auto& kv : response.second.os_dumps) {
       const base::ProcessId pid = kv.first;
-      const OSMemDump dump = kv.second;
+      mojom::RawOSMemDumpPtr dump = std::move(kv.second);
       DCHECK_EQ(0u, os_dumps.count(pid));
-      os_dumps[pid] = dump;
+      os_dumps[pid] = std::move(dump);
     }
   }
 
@@ -420,14 +419,14 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
 
     // The dump might be nullptr if the client crashed / disconnected before
     // replying.
-    if (!response.second.dump_ptr)
+    if (!response.second.dump_ptr || !os_dumps[pid])
       continue;
 
     mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[pid];
     pmd = mojom::ProcessMemoryDump::New();
     pmd->process_type = response.second.process_type;
-    pmd->chrome_dump = response.second.dump_ptr->chrome_dump;
-    pmd->os_dump = CreatePublicOSDump(os_dumps[pid]);
+    pmd->chrome_dump = std::move(response.second.dump_ptr->chrome_dump);
+    pmd->os_dump = CreatePublicOSDump(*os_dumps[pid]);
   }
 
   mojom::GlobalMemoryDumpPtr global_dump(mojom::GlobalMemoryDump::New());
@@ -438,7 +437,7 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
     // TODO(hjd): We should have a better way to tell if a chrome_dump is
     // filled.
     mojom::ProcessMemoryDumpPtr& pmd = pair.second;
-    if (!pmd || !pmd->chrome_dump.malloc_total_kb)
+    if (!pmd || !pmd->chrome_dump->malloc_total_kb)
       continue;
     global_dump->process_dumps.push_back(std::move(pmd));
   }

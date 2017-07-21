@@ -41,7 +41,8 @@ void PopulateBrowserMetrics(GlobalMemoryDumpPtr& global_dump,
   ProcessMemoryDumpPtr pmd(
       memory_instrumentation::mojom::ProcessMemoryDump::New());
   pmd->process_type = ProcessType::BROWSER;
-  pmd->chrome_dump.malloc_total_kb = metrics_mb["Malloc"] * 1024;
+  pmd->chrome_dump = memory_instrumentation::mojom::ChromeMemDump::New();
+  pmd->chrome_dump->malloc_total_kb = metrics_mb["Malloc"] * 1024;
   OSMemDumpPtr os_dump(memory_instrumentation::mojom::OSMemDump::New(
       metrics_mb["Resident"] * 1024,
       metrics_mb["PrivateMemoryFootprint"] * 1024));
@@ -65,11 +66,12 @@ void PopulateRendererMetrics(GlobalMemoryDumpPtr& global_dump,
   ProcessMemoryDumpPtr pmd(
       memory_instrumentation::mojom::ProcessMemoryDump::New());
   pmd->process_type = ProcessType::RENDERER;
-  pmd->chrome_dump.malloc_total_kb = metrics_mb["Malloc"] * 1024;
-  pmd->chrome_dump.partition_alloc_total_kb =
+  pmd->chrome_dump = memory_instrumentation::mojom::ChromeMemDump::New();
+  pmd->chrome_dump->malloc_total_kb = metrics_mb["Malloc"] * 1024;
+  pmd->chrome_dump->partition_alloc_total_kb =
       metrics_mb["PartitionAlloc"] * 1024;
-  pmd->chrome_dump.blink_gc_total_kb = metrics_mb["BlinkGC"] * 1024;
-  pmd->chrome_dump.v8_total_kb = metrics_mb["V8"] * 1024;
+  pmd->chrome_dump->blink_gc_total_kb = metrics_mb["BlinkGC"] * 1024;
+  pmd->chrome_dump->v8_total_kb = metrics_mb["V8"] * 1024;
   OSMemDumpPtr os_dump(memory_instrumentation::mojom::OSMemDump::New(
       metrics_mb["Resident"] * 1024,
       metrics_mb["PrivateMemoryFootprint"] * 1024));
@@ -96,8 +98,10 @@ void PopulateGpuMetrics(GlobalMemoryDumpPtr& global_dump,
   ProcessMemoryDumpPtr pmd(
       memory_instrumentation::mojom::ProcessMemoryDump::New());
   pmd->process_type = ProcessType::GPU;
-  pmd->chrome_dump.malloc_total_kb = metrics_mb["Malloc"] * 1024;
-  pmd->chrome_dump.command_buffer_total_kb = metrics_mb["CommandBuffer"] * 1024;
+  pmd->chrome_dump = memory_instrumentation::mojom::ChromeMemDump::New();
+  pmd->chrome_dump->malloc_total_kb = metrics_mb["Malloc"] * 1024;
+  pmd->chrome_dump->command_buffer_total_kb =
+      metrics_mb["CommandBuffer"] * 1024;
   OSMemDumpPtr os_dump(memory_instrumentation::mojom::OSMemDump::New(
       metrics_mb["Resident"] * 1024,
       metrics_mb["PrivateMemoryFootprint"] * 1024));
