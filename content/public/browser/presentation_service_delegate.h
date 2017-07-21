@@ -178,18 +178,6 @@ class CONTENT_EXPORT ControllerPresentationServiceDelegate
                          int render_frame_id,
                          const std::string& presentation_id) = 0;
 
-  // Sends a message (string or binary data) to a presentation.
-  // |render_process_id|, |render_frame_id|: ID of originating frame.
-  // |presentation_info|: The presentation to send the message to.
-  // |message|: The message to send. The embedder takes ownership of |message|.
-  //            Must not be null.
-  // |send_message_cb|: Invoked after handling the send message request.
-  virtual void SendMessage(int render_process_id,
-                           int render_frame_id,
-                           const content::PresentationInfo& presentation_info,
-                           PresentationConnectionMessage message,
-                           SendMessageCallback send_message_cb) = 0;
-
   // Continuously listen for state changes for a PresentationConnection in a
   // frame.
   // |render_process_id|, |render_frame_id|: ID of frame.

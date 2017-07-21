@@ -27,7 +27,6 @@
 namespace content {
 class PresentationScreenAvailabilityListener;
 class WebContents;
-struct PresentationConnectionMessage;
 struct PresentationInfo;
 }  // namespace content
 
@@ -115,11 +114,6 @@ class PresentationServiceDelegateImpl
   void Terminate(int render_process_id,
                  int render_frame_id,
                  const std::string& presentation_id) override;
-  void SendMessage(int render_process_id,
-                   int render_frame_id,
-                   const content::PresentationInfo& presentation_info,
-                   content::PresentationConnectionMessage message,
-                   SendMessageCallback send_message_cb) override;
   void ListenForConnectionStateChange(
       int render_process_id,
       int render_frame_id,
