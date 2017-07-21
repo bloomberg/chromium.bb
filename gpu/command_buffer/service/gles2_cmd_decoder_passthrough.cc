@@ -300,6 +300,11 @@ bool GLES2DecoderPassthroughImpl::Initialize(
     InitializeGLDebugLogging();
   }
 
+  if (feature_info_->feature_flags().chromium_texture_filtering_hint &&
+      feature_info_->feature_flags().is_swiftshader) {
+    glHint(GL_TEXTURE_FILTERING_HINT_CHROMIUM, GL_NICEST);
+  }
+
   has_robustness_extension_ = feature_info_->feature_flags().khr_robustness ||
                               feature_info_->feature_flags().ext_robustness;
 

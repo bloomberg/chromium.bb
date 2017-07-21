@@ -3685,6 +3685,11 @@ bool GLES2DecoderImpl::Initialize(
     InitializeGLDebugLogging();
   }
 
+  if (feature_info_->feature_flags().chromium_texture_filtering_hint &&
+      feature_info_->feature_flags().is_swiftshader) {
+    glHint(GL_TEXTURE_FILTERING_HINT_CHROMIUM, GL_NICEST);
+  }
+
   return true;
 }
 
