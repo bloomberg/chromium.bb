@@ -18,6 +18,7 @@ enum StatusCode {
   kElementNotVisible = 11,
   kInvalidElementState = 12,
   kUnknownError = 13,
+  kInvalidArgument = 14,
   kJavaScriptError = 17,
   kXPathLookupError = 19,
   kTimeout = 21,
