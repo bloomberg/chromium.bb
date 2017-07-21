@@ -22,9 +22,6 @@ class CONTENT_EXPORT OverscrollControllerDelegate {
   OverscrollControllerDelegate() {}
   virtual ~OverscrollControllerDelegate() {}
 
-  // Get the size of the view corresponding to the delegate.
-  virtual gfx::Size GetVisibleSize() const = 0;
-
   // Get the size of the display containing the view corresponding to the
   // delegate.
   virtual gfx::Size GetDisplaySize() const = 0;

@@ -1029,14 +1029,6 @@ void WebContentsViewAura::TakeFocus(bool reverse) {
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, OverscrollControllerDelegate implementation:
 
-gfx::Size WebContentsViewAura::GetVisibleSize() const {
-  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
-  if (!rwhv || !rwhv->IsShowing())
-    return gfx::Size();
-
-  return rwhv->GetViewBounds().size();
-}
-
 gfx::Size WebContentsViewAura::GetDisplaySize() const {
   RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (!rwhv)

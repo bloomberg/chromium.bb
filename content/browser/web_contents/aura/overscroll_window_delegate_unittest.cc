@@ -29,7 +29,6 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
         overscroll_started_(false),
         mode_changed_(false),
         current_mode_(OVERSCROLL_NONE),
-        current_source_(OverscrollSource::NONE),
         touch_start_threshold_(content::GetOverscrollConfig(
             content::OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN)),
         touch_complete_threshold_(content::GetOverscrollConfig(
@@ -42,7 +41,6 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
     overscroll_started_ = false;
     mode_changed_ = false;
     current_mode_ = OVERSCROLL_NONE;
-    current_source_ = OverscrollSource::NONE;
     window_.reset(CreateNormalWindow(
         0, root_window(), new OverscrollWindowDelegate(this, gfx::Image())));
     window_->SetBounds(gfx::Rect(0, 0, kTestWindowWidth, kTestWindowWidth));
@@ -60,10 +58,7 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
   float touch_start_threshold() { return touch_start_threshold_; }
 
   float touch_complete_threshold() {
-    const int width = current_source_ == OverscrollSource::TOUCHPAD
-                          ? kTestDisplayWidth
-                          : kTestWindowWidth;
-    return width * touch_complete_threshold_;
+    return kTestDisplayWidth * touch_complete_threshold_;
   }
 
  protected:
@@ -82,10 +77,6 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
 
  private:
   // OverscrollControllerDelegate:
-  gfx::Size GetVisibleSize() const override {
-    return gfx::Size(kTestWindowWidth, kTestWindowWidth);
-  }
-
   gfx::Size GetDisplaySize() const override {
     return gfx::Size(kTestDisplayWidth, kTestDisplayWidth);
   }
@@ -103,7 +94,6 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
                               OverscrollSource source) override {
     mode_changed_ = true;
     current_mode_ = new_mode;
-    current_source_ = source;
     if (current_mode_ != OVERSCROLL_NONE)
       overscroll_started_ = true;
   }
@@ -120,7 +110,6 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
   bool overscroll_started_;
   bool mode_changed_;
   OverscrollMode current_mode_;
-  OverscrollSource current_source_;
 
   // Config defined constants.
   const float touch_start_threshold_;

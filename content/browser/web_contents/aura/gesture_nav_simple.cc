@@ -367,10 +367,6 @@ void GestureNavSimple::OnAffordanceAnimationEnded() {
   affordance_.reset();
 }
 
-gfx::Size GestureNavSimple::GetVisibleSize() const {
-  return web_contents_->GetNativeView()->bounds().size();
-}
-
 gfx::Size GestureNavSimple::GetDisplaySize() const {
   return display::Screen::GetScreen()
       ->GetDisplayNearestView(web_contents_->GetNativeView())
@@ -413,9 +409,7 @@ void GestureNavSimple::OnOverscrollModeChange(OverscrollMode old_mode,
       source == OverscrollSource::TOUCHPAD
           ? OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHPAD
           : OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN);
-  const int width = source == OverscrollSource::TOUCHPAD
-                        ? GetDisplaySize().width()
-                        : GetVisibleSize().width();
+  const int width = GetDisplaySize().width();
   completion_threshold_ =
       width * GetOverscrollConfig(OVERSCROLL_CONFIG_HORIZ_THRESHOLD_COMPLETE) -
       start_threshold;

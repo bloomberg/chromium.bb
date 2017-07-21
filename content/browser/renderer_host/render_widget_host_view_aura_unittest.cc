@@ -161,10 +161,6 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
 
  private:
   // Overridden from OverscrollControllerDelegate:
-  gfx::Size GetVisibleSize() const override {
-    return view_->IsShowing() ? view_->GetViewBounds().size() : gfx::Size();
-  }
-
   gfx::Size GetDisplaySize() const override {
     return display::Screen::GetScreen()
         ->GetDisplayNearestView(view_->GetNativeView())
