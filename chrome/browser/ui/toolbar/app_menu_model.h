@@ -186,7 +186,7 @@ class AppMenuModel : public ui::SimpleMenuModel,
   void LogMenuMetrics(int command_id);
 
   // Helper function to record the menu action in a UMA histogram.
-  void LogMenuAction(int action_id);
+  void LogMenuAction(AppMenuAction action_id);
 
   // Time menu has been open. Used by LogMenuMetrics() to record the time
   // to action when the user selects a menu item.

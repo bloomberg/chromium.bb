@@ -28,7 +28,7 @@ namespace {
 // to the user. This was added for crbug/265352 to quantify how often this
 // bug shows up in the wild. The logged histogram count should be interpreted
 // as a ratio of the number of active sync users.
-enum {
+enum ErrorState {
   SYNC_SIGN_IN_NEEDS_UPDATE = 1,
   SYNC_SERVICE_UNAVAILABLE,
   SYNC_NEEDS_PASSPHRASE,
@@ -142,7 +142,7 @@ bool displaySyncErrors(ios::ChromeBrowserState* browser_state, Tab* tab) {
     return false;
 
   // Logs when an infobar is shown to user. See crbug/265352.
-  int loggedErrorState = 0;
+  ErrorState loggedErrorState = SYNC_ERROR_COUNT;
   switch (errorState) {
     case SyncSetupService::kNoSyncServiceError:
     case SyncSetupService::kSyncServiceCouldNotConnect:

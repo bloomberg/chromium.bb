@@ -1116,7 +1116,8 @@ void DownloadItemImpl::UpdateValidatorsOnResumption(
   }
   if (content_disposition_ != new_create_info.content_disposition)
     origin_state |= ORIGIN_STATE_ON_RESUMPTION_CONTENT_DISPOSITION_CHANGED;
-  RecordOriginStateOnResumption(is_partial, origin_state);
+  RecordOriginStateOnResumption(
+      is_partial, static_cast<OriginStateOnResumption>(origin_state));
 
   request_info_.url_chain.insert(request_info_.url_chain.end(), chain_iter,
                                  new_create_info.url_chain.end());

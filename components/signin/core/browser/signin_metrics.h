@@ -53,7 +53,7 @@ enum ProfileSignout {
 };
 
 // Enum values used for use with "AutoLogin.Reverse" histograms.
-enum {
+enum AccessPointAction {
   // The infobar was shown to the user.
   HISTOGRAM_SHOWN,
   // The user pressed the accept button to perform the suggested action.
@@ -82,7 +82,7 @@ enum {
 
 // Enum values used with the "Signin.OneClickConfirmation" histogram, which
 // tracks the actions used in the OneClickConfirmation bubble.
-enum {
+enum ConfirmationUsage {
   HISTOGRAM_CONFIRM_SHOWN,
   HISTOGRAM_CONFIRM_OK,
   HISTOGRAM_CONFIRM_RETURN,
@@ -353,7 +353,7 @@ void LogExternalCcResultFetches(
 // Track when the current authentication error changed.
 void LogAuthError(GoogleServiceAuthError::State auth_error);
 
-void LogSigninConfirmHistogramValue(int action);
+void LogSigninConfirmHistogramValue(ConfirmationUsage action);
 
 void LogXDevicePromoEligible(CrossDevicePromoEligibility metric);
 

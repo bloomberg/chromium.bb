@@ -583,7 +583,7 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
   }
 }
 
-void AppMenuModel::LogMenuAction(int action_id) {
+void AppMenuModel::LogMenuAction(AppMenuAction action_id) {
   UMA_HISTOGRAM_ENUMERATION("WrenchMenu.MenuAction", action_id,
                             LIMIT_MENU_ACTION);
 }

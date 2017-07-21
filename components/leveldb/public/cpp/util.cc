@@ -46,7 +46,8 @@ leveldb::Status DatabaseErrorToStatus(mojom::DatabaseError e,
   return leveldb::Status::InvalidArgument(msg, msg2);
 }
 
-int GetLevelDBStatusUMAValue(mojom::DatabaseError status) {
+leveldb_env::LevelDBStatusValue GetLevelDBStatusUMAValue(
+    mojom::DatabaseError status) {
   switch (status) {
     case mojom::DatabaseError::OK:
       return leveldb_env::LEVELDB_STATUS_OK;

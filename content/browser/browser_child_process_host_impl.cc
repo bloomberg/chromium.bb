@@ -312,7 +312,7 @@ void BrowserChildProcessHostImpl::BindInterface(
 }
 
 void BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
-    int process_type) {
+    ProcessType process_type) {
   UMA_HISTOGRAM_ENUMERATION("ChildProcess.BadMessgeTerminated", process_type,
                             PROCESS_TYPE_MAX);
 }
@@ -369,7 +369,7 @@ void BrowserChildProcessHostImpl::OnBadMessageReceived(
 
 void BrowserChildProcessHostImpl::TerminateOnBadMessageReceived(
     const std::string& error) {
-  HistogramBadMessageTerminated(data_.process_type);
+  HistogramBadMessageTerminated(static_cast<ProcessType>(data_.process_type));
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableKillAfterBadIPC)) {
     return;
@@ -584,7 +584,8 @@ void BrowserChildProcessHostImpl::OnMojoError(
   }
   if (!process)
     return;
-  HistogramBadMessageTerminated(process->data_.process_type);
+  HistogramBadMessageTerminated(
+      static_cast<ProcessType>(process->data_.process_type));
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableKillAfterBadIPC)) {
     return;

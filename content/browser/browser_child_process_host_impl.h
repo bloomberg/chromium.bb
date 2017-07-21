@@ -101,7 +101,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // Adds an IPC message filter.
   void AddFilter(BrowserMessageFilter* filter);
 
-  static void HistogramBadMessageTerminated(int process_type);
+  static void HistogramBadMessageTerminated(ProcessType process_type);
 
   BrowserChildProcessHostDelegate* delegate() const { return delegate_; }
 

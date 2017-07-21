@@ -337,7 +337,7 @@ enum OriginStateOnResumption {
 // request. |state| is a combination of values from OriginStateOnResumption
 // enum.
 void RecordOriginStateOnResumption(bool is_partial,
-                                   int state);
+                                   OriginStateOnResumption state);
 
 void RecordDownloadConnectionSecurity(const GURL& download_url,
                                       const std::vector<GURL>& url_chain);

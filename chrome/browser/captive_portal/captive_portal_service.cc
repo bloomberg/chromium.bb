@@ -92,7 +92,7 @@ void RecordRepeatHistograms(CaptivePortalResult result,
   result_duration_histogram->AddTime(result_duration);
 }
 
-int GetHistogramEntryForDetectionResult(
+CaptivePortalDetectionResult GetHistogramEntryForDetectionResult(
     const captive_portal::CaptivePortalDetector::Results& results) {
   bool is_https = results.landing_url.SchemeIs("https");
   bool is_ip = results.landing_url.HostIsIPAddress();
@@ -119,7 +119,7 @@ int GetHistogramEntryForDetectionResult(
           DETECTION_RESULT_BEHIND_CAPTIVE_PORTAL;
     default:
       NOTREACHED();
-      return -1;
+      return DETECTION_RESULT_COUNT;
   }
 }
 

@@ -880,7 +880,7 @@ class HostResolverImpl::ProcTask
       RESOLVE_SPECULATIVE_FAIL,
       RESOLVE_MAX,  // Bounding value.
     };
-    int category = RESOLVE_MAX;  // Illegal value for later DCHECK only.
+    Category category = RESOLVE_MAX;  // Illegal value for later DCHECK only.
 
     base::TimeDelta duration = base::TimeTicks::Now() - start_time;
     if (error == OK) {

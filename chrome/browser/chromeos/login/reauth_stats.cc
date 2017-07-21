@@ -22,9 +22,13 @@ void RecordReauthReason(const AccountId& account_id, ReauthReason reason) {
 }
 
 void SendReauthReason(const AccountId& account_id) {
-  int reauth_reason;
-  if (user_manager::known_user::FindReauthReason(account_id, &reauth_reason) &&
-      static_cast<ReauthReason>(reauth_reason) != ReauthReason::NONE) {
+  int reauth_reason_int;
+  if (!user_manager::known_user::FindReauthReason(account_id,
+                                                  &reauth_reason_int)) {
+    return;
+  }
+  ReauthReason reauth_reason = static_cast<ReauthReason>(reauth_reason_int);
+  if (reauth_reason != ReauthReason::NONE) {
     UMA_HISTOGRAM_ENUMERATION("Login.ReauthReason", reauth_reason,
                               NUM_REAUTH_FLOW_REASONS);
     user_manager::known_user::UpdateReauthReason(

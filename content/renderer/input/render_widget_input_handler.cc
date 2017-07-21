@@ -120,7 +120,7 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
                                  WebInputEvent::DispatchType dispatch_type,
                                  double event_timestamp,
                                  const ui::LatencyInfo& latency_info) {
-  enum {
+  enum ListenerEnum {
     PASSIVE_LISTENER_UMA_ENUM_PASSIVE,
     PASSIVE_LISTENER_UMA_ENUM_UNCANCELABLE,
     PASSIVE_LISTENER_UMA_ENUM_SUPPRESSED,
@@ -131,7 +131,7 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
     PASSIVE_LISTENER_UMA_ENUM_COUNT
   };
 
-  int enum_value;
+  ListenerEnum enum_value;
   switch (dispatch_type) {
     case WebInputEvent::kListenersForcedNonBlockingDueToFling:
       enum_value = PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING;
