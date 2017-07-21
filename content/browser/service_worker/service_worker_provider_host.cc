@@ -98,13 +98,51 @@ void RemoveProviderHost(base::WeakPtr<ServiceWorkerContextCore> context,
   context->RemoveProviderHost(process_id, provider_id);
 }
 
-// Used by a Service Worker for script loading (for all script loading for now,
-// but to be used only during installation once script streaming lands).
-// For now this is just a proxy loader for the network loader.
+// Wraps associated request for another associated request.
+// TODO(kinuko): This should be able to go away once URLLoader becomes
+// independent.
+class AssociatedURLLoaderRelay final : public mojom::URLLoader {
+ public:
+  static void CreateLoaderAndStart(
+      mojom::URLLoaderFactory* factory,
+      mojom::URLLoaderAssociatedRequest request,
+      int routing_id,
+      int request_id,
+      uint32_t options,
+      const ResourceRequest& resource_request,
+      mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+    mojom::URLLoaderAssociatedPtr associated_ptr;
+    mojom::URLLoaderAssociatedRequest associated_request =
+        mojo::MakeRequest(&associated_ptr);
+    factory->CreateLoaderAndStart(std::move(associated_request), routing_id,
+                                  request_id, options, resource_request,
+                                  std::move(client), traffic_annotation);
+    mojo::MakeStrongAssociatedBinding(
+        base::MakeUnique<AssociatedURLLoaderRelay>(std::move(associated_ptr)),
+        std::move(request));
+  }
+
+  explicit AssociatedURLLoaderRelay(
+      mojom::URLLoaderAssociatedPtr associated_ptr)
+      : associated_ptr_(std::move(associated_ptr)) {}
+  ~AssociatedURLLoaderRelay() override {}
+  void FollowRedirect() override { associated_ptr_->FollowRedirect(); }
+  void SetPriority(net::RequestPriority priority,
+                   int intra_priority_value) override {
+    associated_ptr_->SetPriority(priority, intra_priority_value);
+  }
+
+ private:
+  mojom::URLLoaderAssociatedPtr associated_ptr_;
+  DISALLOW_COPY_AND_ASSIGN(AssociatedURLLoaderRelay);
+};
+
+// Used by a Service Worker for script loading only during the installation
+// time. For now this is just a proxy loader for the network loader.
 // Eventually this should replace the existing URLRequestJob-based request
 // interception for script loading, namely ServiceWorkerWriteToCacheJob.
-// TODO(kinuko): Implement this. Hook up the existing code in
-// ServiceWorkerContextRequestHandler.
+// TODO(kinuko): Implement this.
 class ScriptURLLoader : public mojom::URLLoader, public mojom::URLLoaderClient {
  public:
   ScriptURLLoader(
@@ -224,6 +262,18 @@ class ScriptURLLoaderFactory : public mojom::URLLoaderFactory {
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
+    if (!ShouldHandleScriptRequest(resource_request)) {
+      // If the request should not be handled by ScriptURLLoader, just
+      // fallback to the network. This needs a relaying as we use different
+      // associated message pipes.
+      // TODO(kinuko): Record the reason like what we do with netlog in
+      // ServiceWorkerContextRequestHandler.
+      AssociatedURLLoaderRelay::CreateLoaderAndStart(
+          loader_factory_getter_->GetNetworkFactory()->get(),
+          std::move(request), routing_id, request_id, options, resource_request,
+          std::move(client), traffic_annotation);
+      return;
+    }
     mojo::MakeStrongAssociatedBinding(
         base::MakeUnique<ScriptURLLoader>(
             routing_id, request_id, options, resource_request,
@@ -240,6 +290,53 @@ class ScriptURLLoaderFactory : public mojom::URLLoaderFactory {
   }
 
  private:
+  bool ShouldHandleScriptRequest(const ResourceRequest& resource_request) {
+    if (!context_ || !provider_host_)
+      return false;
+
+    // We only use the script cache for main script loading and
+    // importScripts(), even if a cached script is xhr'd, we don't
+    // retrieve it from the script cache.
+    if (resource_request.resource_type != RESOURCE_TYPE_SERVICE_WORKER &&
+        resource_request.resource_type != RESOURCE_TYPE_SCRIPT) {
+      // TODO: Record bad message, we shouldn't come here for other
+      // request types.
+      return false;
+    }
+
+    scoped_refptr<ServiceWorkerVersion> version =
+        provider_host_->running_hosted_version();
+
+    // This could happen if browser-side has set the status to redundant but
+    // the worker has not yet stopped. The worker is already doomed so just
+    // reject the request. Handle it specially here because otherwise it'd be
+    // unclear whether "REDUNDANT" should count as installed or not installed
+    // when making decisions about how to handle the request and logging UMA.
+    if (!version || version->status() == ServiceWorkerVersion::REDUNDANT)
+      return false;
+
+    // TODO: Make sure we don't handle the redirected request.
+
+    // For installed worker we fallback to the network for now.
+    if (ServiceWorkerVersion::IsInstalled(version->status())) {
+      DCHECK(ServiceWorkerUtils::IsScriptStreamingEnabled());
+      return false;
+    }
+
+    // TODO: Make sure we come here only for new / unknown scripts
+    // once script streaming manager in the renderer side stops sending
+    // resource requests for the known script URLs, i.e. add DCHECK for
+    // version->script_cache_map()->LookupResourceId(url) ==
+    // kInvalidServiceWorkerResourceId.
+    //
+    // Currently this could be false for the installing worker that imports
+    // the same script twice (e.g. importScripts('dupe.js');
+    // importScripts('dupe.js');).
+
+    // Request should be served by ScriptURLLoader.
+    return true;
+  }
+
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
