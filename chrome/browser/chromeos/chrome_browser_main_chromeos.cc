@@ -728,10 +728,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     WizardController::SetZeroDelays();
   }
 
-  // Enable/disable native CUPS integration
-  printing::PrintBackend::SetNativeCupsEnabled(
-      !parsed_command_line().HasSwitch(::switches::kDisableNativeCups));
-
   power_prefs_.reset(new PowerPrefs(PowerPolicyController::Get()));
 
   arc_kiosk_app_manager_.reset(new ArcKioskAppManager());

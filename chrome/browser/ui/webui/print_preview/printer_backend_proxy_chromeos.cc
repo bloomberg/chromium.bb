@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/print_preview/printer_capabilities.h"
-#include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/printing/ppd_provider.h"
@@ -99,12 +97,8 @@ class PrinterBackendProxyChromeos : public PrinterBackendProxy {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     PrinterList printer_list;
-
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableNativeCups)) {
-      AddPrintersToList(prefs_->GetConfiguredPrinters(), &printer_list);
-      AddPrintersToList(prefs_->GetEnterprisePrinters(), &printer_list);
-    }
+    AddPrintersToList(prefs_->GetConfiguredPrinters(), &printer_list);
+    AddPrintersToList(prefs_->GetEnterprisePrinters(), &printer_list);
 
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      base::Bind(cb, printer_list));

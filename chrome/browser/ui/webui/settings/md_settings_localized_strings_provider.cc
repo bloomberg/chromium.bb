@@ -1593,9 +1593,6 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
                          chrome::kCloudPrintLearnMoreURL);
 
 #if defined(OS_CHROMEOS)
-  html_source->AddBoolean("showCupsPrintingFeatures",
-                          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                              ::switches::kDisableNativeCups));
   html_source->AddString("printingCUPSPrintLearnMoreUrl",
                          chrome::kCupsPrintLearnMoreURL);
 #endif

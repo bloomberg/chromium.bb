@@ -2300,11 +2300,6 @@ const char kUseWinrtMidiApiDescription[] =
 
 #if defined(OS_CHROMEOS)
 
-const char kDisableNativeCupsName[] = "Native CUPS";
-
-const char kDisableNativeCupsDescription[] =
-    "Disable the use of the native CUPS printing backend.";
-
 const char kEnableAndroidWallpapersAppName[] = "Android Wallpapers App";
 
 const char kEnableAndroidWallpapersAppDescription[] =

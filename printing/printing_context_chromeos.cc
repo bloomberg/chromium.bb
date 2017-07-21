@@ -24,7 +24,6 @@
 #include "printing/metafile.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
-#include "printing/printing_context_no_system_dialog.h"
 #include "printing/units.h"
 
 namespace printing {
@@ -150,10 +149,7 @@ void SetPrintableArea(PrintSettings* settings,
 
 // static
 std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
-  if (PrintBackend::GetNativeCupsEnabled())
-    return base::MakeUnique<PrintingContextChromeos>(delegate);
-
-  return base::MakeUnique<PrintingContextNoSystemDialog>(delegate);
+  return base::MakeUnique<PrintingContextChromeos>(delegate);
 }
 
 PrintingContextChromeos::PrintingContextChromeos(Delegate* delegate)
