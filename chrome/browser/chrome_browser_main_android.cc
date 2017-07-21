@@ -7,7 +7,6 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/task_scheduler/post_task.h"
@@ -29,16 +28,6 @@
 #include "net/base/network_change_notifier.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_paths.h"
-
-namespace {
-
-void DeleteFileTask(
-    const base::FilePath& file_path) {
-  if (base::PathExists(file_path))
-    base::DeleteFile(file_path, false);
-}
-
-} // namespace
 
 ChromeBrowserMainPartsAndroid::ChromeBrowserMainPartsAndroid(
     const content::MainFunctionParams& parameters)
@@ -89,16 +78,6 @@ int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
 
 void ChromeBrowserMainPartsAndroid::PostProfileInit() {
   ChromeBrowserMainParts::PostProfileInit();
-
-  // Previously we stored information related to salient images for bookmarks
-  // in a local file. We replaced the salient images with favicons. As part
-  // of the clean up, the local file needs to be deleted. See crbug.com/499415.
-  base::FilePath bookmark_image_file_path =
-      profile()->GetPath().Append("BookmarkImageAndUrlStore.db");
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DeleteFileTask, bookmark_image_file_path),
-      base::TimeDelta::FromMinutes(1));
 
   // Idempotent.  Needs to be called once on startup.  If
   // InitializeClipboardAndroidFromLocalState() is called multiple times (e.g.,
