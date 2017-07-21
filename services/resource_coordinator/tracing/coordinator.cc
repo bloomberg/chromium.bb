@@ -154,7 +154,7 @@ void Coordinator::StopAndFlushInternal() {
 }
 
 void Coordinator::OnRecorderDataChange(const std::string& label) {
-  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
 
   // Bail out if we are in the middle of writing events for another label to the
   // stream, since we do not want to interleave chunks for different fields. For
@@ -202,7 +202,7 @@ void Coordinator::OnRecorderDataChange(const std::string& label) {
 }
 
 bool Coordinator::StreamEventsForCurrentLabel() {
-  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   bool waiting_for_agents = false;
   bool data_is_array = (*recorders_[streaming_label_].begin())->data_is_array();
   for (const auto& recorder : recorders_[streaming_label_]) {
@@ -230,7 +230,7 @@ bool Coordinator::StreamEventsForCurrentLabel() {
 }
 
 void Coordinator::StreamMetadata() {
-  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
 
   base::DictionaryValue metadata;
   for (const auto& key_value : recorders_) {
