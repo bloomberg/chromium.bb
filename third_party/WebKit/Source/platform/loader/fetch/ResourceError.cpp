@@ -70,6 +70,10 @@ ResourceError ResourceError::CacheMissError(const KURL& url) {
   return WebURLError(url, false, net::ERR_CACHE_MISS);
 }
 
+ResourceError ResourceError::TimeoutError(const KURL& url) {
+  return WebURLError(url, false, net::ERR_TIMED_OUT);
+}
+
 ResourceError ResourceError::Copy() const {
   ResourceError error_copy;
   error_copy.domain_ = domain_.IsolatedCopy();
@@ -78,7 +82,6 @@ ResourceError ResourceError::Copy() const {
   error_copy.localized_description_ = localized_description_.IsolatedCopy();
   error_copy.is_null_ = is_null_;
   error_copy.is_access_check_ = is_access_check_;
-  error_copy.is_timeout_ = is_timeout_;
   error_copy.was_ignored_by_handler_ = was_ignored_by_handler_;
   return error_copy;
 }
@@ -105,9 +108,6 @@ bool ResourceError::Compare(const ResourceError& a, const ResourceError& b) {
   if (a.IsAccessCheck() != b.IsAccessCheck())
     return false;
 
-  if (a.IsTimeout() != b.IsTimeout())
-    return false;
-
   if (a.StaleCopyInCache() != b.StaleCopyInCache())
     return false;
 
@@ -132,6 +132,11 @@ void ResourceError::InitializeWebURLError(WebURLError* error,
     error->localized_description =
         WebString::FromASCII(net::ErrorToString(reason));
   }
+}
+
+bool ResourceError::IsTimeout() const {
+  return domain_ == String(net::kErrorDomain) &&
+         error_code_ == net::ERR_TIMED_OUT;
 }
 
 bool ResourceError::IsCancellation() const {
