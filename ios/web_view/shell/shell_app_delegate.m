@@ -22,6 +22,7 @@
 
   self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
   self.window.backgroundColor = [UIColor whiteColor];
+  self.window.tintColor = [UIColor darkGrayColor];
 
   ShellViewController* controller = [[ShellViewController alloc] init];
   // Gives a restoration identifier so that state restoration works.
