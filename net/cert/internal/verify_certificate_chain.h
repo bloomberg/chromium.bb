@@ -212,8 +212,8 @@ NET_EXPORT void VerifyCertificateChain(
     CertPathErrors* errors);
 
 // TODO(crbug.com/634443): Move exported errors to a central location?
-extern CertErrorId kValidityFailedNotAfter;
-extern CertErrorId kValidityFailedNotBefore;
+NET_EXPORT extern CertErrorId kValidityFailedNotAfter;
+NET_EXPORT extern CertErrorId kValidityFailedNotBefore;
 NET_EXPORT extern CertErrorId kCertIsDistrusted;
 
 }  // namespace net

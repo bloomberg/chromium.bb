@@ -3976,6 +3976,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="InvalidCrl"/>
   <int value="2" label="CertVerificationFailed"/>
   <int value="3" label="CertRevoked"/>
+  <int value="4" label="CrlMissing"/>
+  <int value="5" label="CertParsingFailed"/>
+  <int value="6" label="CertDateInvalid"/>
+  <int value="7" label="CertRestrictionsFailed"/>
+  <int value="8" label="CertsMissing"/>
+  <int value="9" label="CertUnexpectedFailed"/>
 </enum>
 
 <enum name="CastNonceStatus">
