@@ -33,10 +33,9 @@ class PLATFORM_EXPORT ActiveScriptWrappableBase : public GarbageCollectedMixin {
                                           ScriptWrappableVisitor*);
 
  protected:
-  virtual bool IsContextDestroyed(ActiveScriptWrappableBase*) const = 0;
-  virtual bool DispatchHasPendingActivity(ActiveScriptWrappableBase*) const = 0;
-  virtual ScriptWrappable* ToScriptWrappable(
-      ActiveScriptWrappableBase*) const = 0;
+  virtual bool IsContextDestroyed() const = 0;
+  virtual bool DispatchHasPendingActivity() const = 0;
+  virtual ScriptWrappable* ToScriptWrappable() = 0;
 };
 
 template <typename T>
@@ -47,21 +46,17 @@ class ActiveScriptWrappable : public ActiveScriptWrappableBase {
   ActiveScriptWrappable() {}
 
  protected:
-  bool IsContextDestroyed(ActiveScriptWrappableBase* object) const final {
-    return !(static_cast<T*>(object)->T::GetExecutionContext)() ||
-           (static_cast<T*>(object)->T::GetExecutionContext)()
-               ->IsContextDestroyed();
+  bool IsContextDestroyed() const final {
+    const auto* execution_context =
+        static_cast<const T*>(this)->GetExecutionContext();
+    return !execution_context || execution_context->IsContextDestroyed();
   }
 
-  bool DispatchHasPendingActivity(
-      ActiveScriptWrappableBase* object) const final {
-    return static_cast<T*>(object)->HasPendingActivity();
+  bool DispatchHasPendingActivity() const final {
+    return static_cast<const T*>(this)->HasPendingActivity();
   }
 
-  ScriptWrappable* ToScriptWrappable(
-      ActiveScriptWrappableBase* object) const final {
-    return static_cast<T*>(object);
-  }
+  ScriptWrappable* ToScriptWrappable() final { return static_cast<T*>(this); }
 };
 
 }  // namespace blink
