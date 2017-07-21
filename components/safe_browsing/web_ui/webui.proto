@@ -1,0 +1,53 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This file includes Safe Browsing WebUI protocol buffer.
+
+syntax = "proto2";
+
+package safe_browsing;
+
+option optimize_for = LITE_RUNTIME;
+
+// Describes the state of the database manager.
+message DatabaseManagerInfo {
+  // Describes the status of the last update request sent to SafeBrowsing.
+  message UpdateInfo {
+    // Network status code for the last update request sent to SafeBrowsing.
+    optional int32 network_status_code = 1;
+
+    // Time when the last update request was sent to SafeBrowsing.
+    optional int64 last_update_time_micros = 2;
+  }
+
+  optional UpdateInfo update_info = 1;
+
+  // Describes the state of the database.
+  message DatabaseInfo {
+    // Was the last update applied successfully?
+    optional bool update_successful = 1;
+
+    // Sum of the store sizes in the database.
+    optional int64 database_size_bytes = 2;
+
+    // Describes the state of a store in the database.
+    message StoreInfo {
+      // The store file name.
+      optional string file_name = 1;
+
+      // The store file size.
+      optional int64 file_size_bytes = 2;
+
+      // The status of applying the updates fetched from the server to the
+      // store. The values of update_status corresponds to the enum
+      // ApplyUpdateResult in V4Store.
+      optional int32 update_status = 3;
+    }
+
+    // Information about each of the stores managed by the database.
+    repeated StoreInfo store_info = 3;
+  }
+
+  optional DatabaseInfo database_info = 2;
+}
