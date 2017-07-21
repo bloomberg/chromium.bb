@@ -128,11 +128,6 @@ class PRINTING_EXPORT PrintBackend
   // retain ownership.
   static void SetPrintBackendForTesting(PrintBackend* print_backend);
 
-  // Returns the value of the native cups flag
-  static bool GetNativeCupsEnabled();
-
-  static void SetNativeCupsEnabled(bool enabled);
-
  protected:
   friend class base::RefCountedThreadSafe<PrintBackend>;
   virtual ~PrintBackend();

@@ -12,19 +12,6 @@ Polymer({
       notify: true,
     },
 
-    // <if expr="chromeos">
-    /**
-     * Whether to show CUPS printers settings.
-     * @private {boolean}
-     */
-    showCupsPrintingFeatures_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('showCupsPrintingFeatures');
-      },
-    },
-    // </if>
-
     /** @type {!Array<!CupsPrinterInfo>} */
     cupsPrinters: {
       type: Array,

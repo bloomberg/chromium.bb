@@ -2535,9 +2535,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(
          chromeos::switches::kDisableSystemTimezoneAutomaticDetectionPolicy)},
-    {"disable-native-cups", flag_descriptions::kDisableNativeCupsName,
-     flag_descriptions::kDisableNativeCupsDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(switches::kDisableNativeCups)},
     {"enable-cros-component", flag_descriptions::kCrOSComponentName,
      flag_descriptions::kCrOSComponentDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kCrOSComponent)},

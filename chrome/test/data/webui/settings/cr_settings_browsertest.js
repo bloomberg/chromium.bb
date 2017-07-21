@@ -1623,11 +1623,6 @@ CrSettingsPrintingPageTest.prototype = {
       'chrome://md-settings/printing_page/cups_add_printer_dialog.html',
 
   /** @override */
-  commandLineSwitches: [{
-    switchName: 'enable-native-cups',
-  }],
-
-  /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     ROOT_PATH + 'ui/webui/resources/js/assert.js',
     'test_util.js',

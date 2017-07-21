@@ -881,9 +881,6 @@ const char kDisableLoggingRedirect[] = "disable-logging-redirect";
 // Disables apps on the login screen. By default, they are allowed and can be
 // installed through policy.
 const char kDisableLoginScreenApps[] = "disable-login-screen-apps";
-
-// Disables native cups integration
-const char kDisableNativeCups[] = "disable-native-cups";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_ASH)
