@@ -50,7 +50,9 @@ void TrayInfoLabel::Update(int message_id) {
   const TrayPopupItemStyle style(font_style);
   style.SetupLabel(label_);
 
-  label_->SetText(l10n_util::GetStringUTF16(message_id));
+  base::string16 text = l10n_util::GetStringUTF16(message_id);
+  label_->SetText(text);
+  SetAccessibleName(text);
 }
 
 bool TrayInfoLabel::PerformAction(const ui::Event& event) {
@@ -62,9 +64,9 @@ bool TrayInfoLabel::PerformAction(const ui::Event& event) {
 }
 
 void TrayInfoLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  if (IsClickable())
-    node_data->role = ui::AX_ROLE_BUTTON;
-  else
+  ActionableView::GetAccessibleNodeData(node_data);
+
+  if (!IsClickable())
     node_data->role = ui::AX_ROLE_LABEL_TEXT;
 }
 
