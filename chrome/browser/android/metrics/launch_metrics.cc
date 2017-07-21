@@ -99,8 +99,8 @@ static void RecordLaunch(JNIEnv* env,
   rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
                                           rappor_metric_source, url);
 
-  int action = standalone ? HOME_SCREEN_LAUNCH_STANDALONE
-                          : HOME_SCREEN_LAUNCH_SHORTCUT;
+  HomeScreenLaunch action =
+      standalone ? HOME_SCREEN_LAUNCH_STANDALONE : HOME_SCREEN_LAUNCH_SHORTCUT;
   std::string rappor_metric_action = standalone ? "Launch.HomeScreen.Standalone"
                                                 : "Launch.HomeScreen.Shortcut";
 

@@ -924,7 +924,7 @@ void RecordSavePackageEvent(SavePackageEvent event) {
 }
 
 void RecordOriginStateOnResumption(bool is_partial,
-                                   int state) {
+                                   OriginStateOnResumption state) {
   if (is_partial)
     UMA_HISTOGRAM_ENUMERATION("Download.OriginStateOnPartialResumption", state,
                               ORIGIN_STATE_ON_RESUMPTION_MAX);

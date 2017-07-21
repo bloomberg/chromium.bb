@@ -230,7 +230,7 @@ typedef NS_ENUM(NSInteger, ContextMenuHistogram) {
   NUM_ACTIONS = 23,
 };
 
-void Record(NSInteger action, bool is_image, bool is_link) {
+void Record(ContextMenuHistogram action, bool is_image, bool is_link) {
   if (is_image) {
     if (is_link) {
       UMA_HISTOGRAM_ENUMERATION("ContextMenu.SelectedOption.ImageLink", action,

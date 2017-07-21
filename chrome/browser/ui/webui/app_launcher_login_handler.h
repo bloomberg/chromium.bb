@@ -54,7 +54,7 @@ class AppLauncherLoginHandler : public content::WebUIMessageHandler {
   void HandleShowSyncLoginUI(const base::ListValue* args);
 
   // Records actions in SyncPromo.NTPPromo histogram.
-  void RecordInHistogram(int type);
+  void RecordInHistogram(NTPSignInPromoBuckets type);
 
   // Called from JS when the sync promo NTP bubble has been displayed. |args| is
   // the list of arguments passed from JS and should be an empty list.

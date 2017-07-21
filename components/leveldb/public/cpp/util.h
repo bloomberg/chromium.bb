@@ -6,6 +6,7 @@
 #define COMPONENTS_LEVELDB_PUBLIC_CPP_UTIL_H_
 
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
+#include "third_party/leveldatabase/env_chromium.h"
 
 namespace leveldb {
 
@@ -23,7 +24,8 @@ leveldb::Status DatabaseErrorToStatus(mojom::DatabaseError e,
                                       const Slice& msg2);
 
 // Returns an UMA value for a mojom::DatabaseError.
-int GetLevelDBStatusUMAValue(mojom::DatabaseError status);
+leveldb_env::LevelDBStatusValue GetLevelDBStatusUMAValue(
+    mojom::DatabaseError status);
 
 // Builds a Slice pointing to the data inside |a|. This is not a type-converter
 // as it is not a copy operation; the returned Slice points into |a| and must
