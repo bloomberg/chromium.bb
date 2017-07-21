@@ -98,6 +98,7 @@ const char kCheckLiveness[] = "CheckLiveness";
 const char kGetKioskAppRequiredPlatforVersion[] =
     "GetKioskAppRequiredPlatformVersion";
 const char kLockScreen[] = "LockScreen";
+// TODO(lannm): Remove Display methods once removed from LibCrosService.
 const char kSetDisplayPower[] = "SetDisplayPower";
 const char kSetDisplaySoftwareDimming[] = "SetDisplaySoftwareDimming";
 const char kTakeDisplayOwnership[] = "TakeDisplayOwnership";
@@ -129,6 +130,15 @@ const char kKioskAppServiceInterface[] =
 // Methods
 const char kKioskAppServiceGetRequiredPlatformVersionMethod[] =
     "GetRequiredPlatformVersion";
+
+const char kDisplayServiceName[] = "org.chromium.DisplayService";
+const char kDisplayServicePath[] = "/org/chromium/DisplayService";
+const char kDisplayServiceInterface[] = "org.chromium.DisplayServiceInterface";
+// Methods
+const char kDisplayServiceSetPowerMethod[] = "SetPower";
+const char kDisplayServiceSetSoftwareDimmingMethod[] = "SetSoftwareDimming";
+const char kDisplayServiceTakeOwnershipMethod[] = "TakeOwnership";
+const char kDisplayServiceReleaseOwnershipMethod[] = "ReleaseOwnership";
 
 }  // namespace chromeos
 
