@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "build/build_config.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -17,7 +18,10 @@
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+const double kTestEngagementScore = 29;
 
 class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -35,12 +39,14 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
         request_camera_("cam",
                         PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA,
                         PermissionRequestGestureType::NO_GESTURE),
-        iframe_request_same_domain_("iframe",
-                                    PermissionRequestType::UNKNOWN,
-                                    GURL("http://www.google.com/some/url")),
-        iframe_request_other_domain_("iframe",
-                                     PermissionRequestType::UNKNOWN,
-                                     GURL("http://www.youtube.com")),
+        iframe_request_same_domain_(
+            "iframe",
+            PermissionRequestType::PERMISSION_NOTIFICATIONS,
+            GURL("http://www.google.com/some/url")),
+        iframe_request_other_domain_(
+            "iframe",
+            PermissionRequestType::PERMISSION_GEOLOCATION,
+            GURL("http://www.youtube.com")),
         iframe_request_mic_other_domain_(
             "iframe",
             PermissionRequestType::PERMISSION_MEDIASTREAM_MIC,
@@ -50,7 +56,11 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     SetContents(CreateTestWebContents());
-    NavigateAndCommit(GURL("http://www.google.com"));
+    url_ = GURL("http://www.google.com");
+    NavigateAndCommit(url_);
+
+    SiteEngagementService::Get(profile())->ResetBaseScoreForURL(
+        url_, kTestEngagementScore);
 
     PermissionRequestManager::CreateForWebContents(web_contents());
     manager_ = PermissionRequestManager::FromWebContents(web_contents());
@@ -95,6 +105,7 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
+  GURL url_;
   MockPermissionRequest request1_;
   MockPermissionRequest request2_;
   MockPermissionRequest request_mic_;
@@ -515,6 +526,7 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleAcceptedGestureBubble) {
       PermissionUmaUtil::kPermissionsPromptShownNoGesture, 0);
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptRequestsPerPrompt, 1, 1);
+  histograms.ExpectTotalCount("Permissions.Engagement.Accepted.Quota", 0);
 
   Accept();
   histograms.ExpectUniqueSample(
@@ -530,6 +542,8 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleAcceptedGestureBubble) {
       1);
   histograms.ExpectTotalCount(
       PermissionUmaUtil::kPermissionsPromptAcceptedNoGesture, 0);
+  histograms.ExpectUniqueSample("Permissions.Engagement.Accepted.Quota",
+                                kTestEngagementScore, 1);
 }
 
 TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedNoGestureBubble) {
@@ -545,6 +559,8 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedNoGestureBubble) {
       PermissionUmaUtil::kPermissionsPromptShownNoGesture,
       static_cast<base::HistogramBase::Sample>(PermissionRequestType::DOWNLOAD),
       1);
+  histograms.ExpectTotalCount("Permissions.Engagement.Denied.MultipleDownload",
+                              0);
   // No need to test the other UMA for showing prompts again, they were tested
   // in UMAForSimpleAcceptedBubble.
 
@@ -562,6 +578,9 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedNoGestureBubble) {
       1);
   histograms.ExpectTotalCount(
       PermissionUmaUtil::kPermissionsPromptDeniedGesture, 0);
+  histograms.ExpectUniqueSample(
+      "Permissions.Engagement.Denied.MultipleDownload", kTestEngagementScore,
+      1);
 }
 
 // This code path (calling Accept on a non-merged bubble, with no accepted
@@ -611,6 +630,8 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedAcceptedBubble) {
       PermissionUmaUtil::kPermissionsPromptShownGesture, 0);
   histograms.ExpectTotalCount(
       PermissionUmaUtil::kPermissionsPromptShownNoGesture, 0);
+  histograms.ExpectTotalCount(
+      "Permissions.Engagement.Accepted.AudioAndVideoCapture", 0);
 
   Accept();
 
@@ -628,6 +649,9 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedAcceptedBubble) {
       static_cast<base::HistogramBase::Sample>(
           PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA),
       1);
+  histograms.ExpectUniqueSample(
+      "Permissions.Engagement.Accepted.AudioAndVideoCapture",
+      kTestEngagementScore, 1);
 }
 
 TEST_F(PermissionRequestManagerTest, UMAForMergedDeniedBubble) {
@@ -637,6 +661,8 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedDeniedBubble) {
   manager_->AddRequest(&request_camera_);
   manager_->DisplayPendingRequests();
   WaitForBubbleToBeShown();
+  histograms.ExpectTotalCount(
+      "Permissions.Engagement.Denied.AudioAndVideoCapture", 0);
   // No need to test UMA for showing prompts again, they were tested in
   // UMAForMergedAcceptedBubble.
 
@@ -656,4 +682,31 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedDeniedBubble) {
       static_cast<base::HistogramBase::Sample>(
           PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA),
       1);
+  histograms.ExpectUniqueSample(
+      "Permissions.Engagement.Denied.AudioAndVideoCapture",
+      kTestEngagementScore, 1);
+}
+
+TEST_F(PermissionRequestManagerTest, UMAForIgnores) {
+  base::HistogramTester histograms;
+
+  manager_->AddRequest(&request1_);
+  manager_->DisplayPendingRequests();
+  WaitForBubbleToBeShown();
+  histograms.ExpectTotalCount("Permissions.Engagement.Ignored.Quota", 0);
+
+  GURL youtube("http://www.youtube.com/");
+  NavigateAndCommit(youtube);
+  histograms.ExpectUniqueSample("Permissions.Engagement.Ignored.Quota",
+                                kTestEngagementScore, 1);
+
+  MockPermissionRequest youtube_request(
+      "request2", PermissionRequestType::PERMISSION_GEOLOCATION, youtube);
+  manager_->AddRequest(&youtube_request);
+  manager_->DisplayPendingRequests();
+  WaitForBubbleToBeShown();
+
+  NavigateAndCommit(GURL("http://www.google.com/"));
+  histograms.ExpectUniqueSample("Permissions.Engagement.Ignored.Geolocation", 0,
+                                1);
 }

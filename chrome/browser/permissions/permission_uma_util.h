@@ -15,6 +15,10 @@
 #include "chrome/browser/permissions/permission_util.h"
 #include "content/public/browser/permission_type.h"
 
+namespace content {
+class WebContents;
+}
+
 enum class PermissionRequestGestureType;
 class GURL;
 class PermissionRequest;
@@ -158,13 +162,10 @@ class PermissionUmaUtil {
   static void PermissionPromptShown(
       const std::vector<PermissionRequest*>& requests);
 
-  // The following two functions can be combined with the PermissionPromptShown
-  // metrics to calculate accept, deny and ignore rates.
-  static void PermissionPromptAccepted(
-      const std::vector<PermissionRequest*>& requests);
-
-  static void PermissionPromptDenied(
-      const std::vector<PermissionRequest*>& requests);
+  static void PermissionPromptResolved(
+      const std::vector<PermissionRequest*>& requests,
+      const content::WebContents* web_contents,
+      PermissionAction permission_action);
 
   // Records the request type and gesture type for a shown, accepted, and denied
   // prompt. Defined separately as Android must call this method explicitly

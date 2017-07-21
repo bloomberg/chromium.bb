@@ -54173,6 +54173,43 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Permissions.Engagement.Accepted" units="%">
+  <owner>dominickn@chromium.org</owner>
+  <owner>kcarattini@chromium.org</owner>
+  <owner>timloh@chromium.org</owner>
+  <summary>
+    Tracks the engagement score for sites where permission prompts are accepted.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.Engagement.Denied" units="%">
+  <owner>dominickn@chromium.org</owner>
+  <owner>kcarattini@chromium.org</owner>
+  <owner>timloh@chromium.org</owner>
+  <summary>
+    Tracks the engagement score for sites where permission prompts are denied.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.Engagement.Dismissed" units="%">
+  <owner>dominickn@chromium.org</owner>
+  <owner>kcarattini@chromium.org</owner>
+  <owner>timloh@chromium.org</owner>
+  <summary>
+    Tracks the engagement score for sites where permission prompts are
+    dismissed.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.Engagement.Ignored" units="%">
+  <owner>dominickn@chromium.org</owner>
+  <owner>kcarattini@chromium.org</owner>
+  <owner>timloh@chromium.org</owner>
+  <summary>
+    Tracks the engagement score for sites where permission prompts are ignored.
+  </summary>
+</histogram>
+
 <histogram name="Permissions.Prompt.Accepted" enum="PermissionRequestType">
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
@@ -96530,6 +96567,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Permissions.Prompt.Accepted"/>
   <affected-histogram name="Permissions.Prompt.Denied"/>
   <affected-histogram name="Permissions.Prompt.Shown"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PermissionRequestTypes" separator=".">
+  <suffix name="MidiSysEx" label="Midi SysEx permission"/>
+  <suffix name="PushMessaging" label="Push messaging permission"/>
+  <suffix name="Notifications" label="Notification permission"/>
+  <suffix name="Geolocation" label="Geolocation permission"/>
+  <suffix name="ProtectedMedia" label="Protected media permission"/>
+  <suffix name="AudioCapture" label="Microphone permission"/>
+  <suffix name="VideoCapture" label="Camera permission"/>
+  <suffix name="AudioAndVideoCapture" label="Mic+Camera permission"/>
+  <suffix name="Flash" label="Flash permission"/>
+  <suffix name="RegisterProtocolHandler"
+      label="registerProtocolHandler permission"/>
+  <suffix name="Quota" label="Quota permission"/>
+  <suffix name="MultipleDownload" label="Multiple downloads permission"/>
+  <affected-histogram name="Permissions.Engagement.Accepted"/>
+  <affected-histogram name="Permissions.Engagement.Denied"/>
+  <affected-histogram name="Permissions.Engagement.Dismissed"/>
+  <affected-histogram name="Permissions.Engagement.Ignored"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PermissionTypes" separator=".">

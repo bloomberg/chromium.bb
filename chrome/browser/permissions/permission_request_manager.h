@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+enum class PermissionAction;
 class PermissionRequest;
 
 namespace safe_browsing {
@@ -157,7 +158,7 @@ class PermissionRequestManager
 
   // Delete the view object, finalize requests, asynchronously show a queued
   // request if present.
-  void FinalizeBubble();
+  void FinalizeBubble(PermissionAction permission_action);
 
   // Cancel all pending or active requests and destroy the PermissionPrompt if
   // one exists. This is called if the WebContents is destroyed or navigates its
