@@ -448,8 +448,9 @@ void BookmarkFaviconFetcher::ExecuteWriter() {
   // for the duration of the write), as such we make a copy of the
   // BookmarkModel using BookmarkCodec then write from that.
   BookmarkCodec codec;
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+
+  background_io_task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &Writer::DoWrite,
           new Writer(codec.Encode(
