@@ -1336,6 +1336,7 @@ WL_EXPORT void
 weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 			  struct weston_surface *surface)
 {
+	struct weston_seat *seat = keyboard->seat;
 	struct wl_resource *resource;
 	struct wl_display *display = keyboard->seat->compositor->wl_display;
 	uint32_t serial;
@@ -1367,6 +1368,11 @@ weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 					    surface,
 					    serial);
 		keyboard->focus_serial = serial;
+	}
+
+	if (seat->saved_kbd_focus) {
+		wl_list_remove(&seat->saved_kbd_focus_listener.link);
+		seat->saved_kbd_focus = NULL;
 	}
 
 	wl_list_remove(&keyboard->focus_resource_listener.link);
@@ -2060,11 +2066,8 @@ notify_keyboard_focus_in(struct weston_seat *seat, struct wl_array *keys,
 	}
 
 	surface = seat->saved_kbd_focus;
-
 	if (surface) {
-		wl_list_remove(&seat->saved_kbd_focus_listener.link);
 		weston_keyboard_set_focus(keyboard, surface);
-		seat->saved_kbd_focus = NULL;
 	}
 }
 
@@ -2074,6 +2077,7 @@ notify_keyboard_focus_out(struct weston_seat *seat)
 	struct weston_compositor *compositor = seat->compositor;
 	struct weston_keyboard *keyboard = weston_seat_get_keyboard(seat);
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
+	struct weston_surface *focus = keyboard->focus;
 	uint32_t *k, serial;
 
 	serial = wl_display_next_serial(compositor->wl_display);
@@ -2085,18 +2089,18 @@ notify_keyboard_focus_out(struct weston_seat *seat)
 
 	seat->modifier_state = 0;
 
-	if (keyboard->focus) {
-		seat->saved_kbd_focus = keyboard->focus;
-		seat->saved_kbd_focus_listener.notify =
-			destroy_device_saved_kbd_focus;
-		wl_signal_add(&keyboard->focus->destroy_signal,
-			      &seat->saved_kbd_focus_listener);
-	}
-
 	weston_keyboard_set_focus(keyboard, NULL);
 	weston_keyboard_cancel_grab(keyboard);
 	if (pointer)
 		weston_pointer_cancel_grab(pointer);
+
+	if (focus) {
+		seat->saved_kbd_focus = focus;
+		seat->saved_kbd_focus_listener.notify =
+			destroy_device_saved_kbd_focus;
+		wl_signal_add(&focus->destroy_signal,
+			      &seat->saved_kbd_focus_listener);
+	}
 }
 
 WL_EXPORT void
