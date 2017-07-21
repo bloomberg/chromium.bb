@@ -10,6 +10,39 @@
 
 namespace WTF {
 
+// Copyable and immutable object representing number parsing flags.
+class NumberParsingOptions {
+ public:
+  static constexpr unsigned kNone = 0;
+  static constexpr unsigned kAcceptTrailingGarbage = 1;
+  static constexpr unsigned kAcceptLeadingPlus = 1 << 1;
+  static constexpr unsigned kAcceptLeadingTrailingWhitespace = 1 << 2;
+  // TODO(tkent): Add kAcceptMinusZeroForUnsigned
+
+  // Legacy 'Strict' behavior.
+  static constexpr unsigned kStrict =
+      kAcceptLeadingPlus | kAcceptLeadingTrailingWhitespace;
+  // Legacy non-'Strict' behavior.
+  static constexpr unsigned kLoose = kStrict | kAcceptTrailingGarbage;
+
+  // This constructor allows implicit conversion from unsigned.
+  NumberParsingOptions(unsigned options) : options_(options) {}
+
+  bool AcceptTrailingGarbage() const {
+    return options_ & kAcceptTrailingGarbage;
+  }
+  bool AcceptLeadingPlus() const { return options_ & kAcceptLeadingPlus; }
+  bool AcceptWhitespace() const {
+    return options_ & kAcceptLeadingTrailingWhitespace;
+  }
+
+ private:
+  unsigned options_;
+};
+
+// TODO(tkent): Merge CharactersToFooStrict and CharactersToFoo by adding
+// NumberParsingOptions argument.
+
 // string -> int.
 WTF_EXPORT int CharactersToIntStrict(const LChar*, size_t, bool* ok);
 WTF_EXPORT int CharactersToIntStrict(const UChar*, size_t, bool* ok);
