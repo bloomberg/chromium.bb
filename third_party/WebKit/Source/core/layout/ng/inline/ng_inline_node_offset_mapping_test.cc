@@ -35,8 +35,12 @@ class NGInlineNodeOffsetMappingTest : public RenderingTest {
     style_ = layout_object_->Style();
   }
 
-  NGOffsetMappingResult BuildOffsetMapping() {
-    return NGInlineNode(layout_block_flow_).BuildOffsetMapping();
+  const NGOffsetMappingResult& GetOffsetMapping() {
+    return NGInlineNode(layout_block_flow_).ComputeOffsetMappingIfNeeded();
+  }
+
+  bool IsOffsetMappingStored() const {
+    return layout_block_flow_->GetNGInlineNodeData().offset_mapping_.get();
   }
 
   const LayoutText* GetLayoutTextUnder(const char* parent_id) {
@@ -64,9 +68,16 @@ class NGInlineNodeOffsetMappingTest : public RenderingTest {
   EXPECT_EQ(start, ranges.at(owner).first);   \
   EXPECT_EQ(end, ranges.at(owner).second)
 
+TEST_F(NGInlineNodeOffsetMappingTest, StoredResult) {
+  SetupHtml("t", "<div id=t>foo</div>");
+  EXPECT_FALSE(IsOffsetMappingStored());
+  GetOffsetMapping();
+  EXPECT_TRUE(IsOffsetMappingStored());
+}
+
 TEST_F(NGInlineNodeOffsetMappingTest, OneTextNode) {
   SetupHtml("t", "<div id=t>foo</div>");
-  const NGOffsetMappingResult& result = BuildOffsetMapping();
+  const NGOffsetMappingResult& result = GetOffsetMapping();
 
   ASSERT_EQ(1u, result.units.size());
   TEST_UNIT(result.units[0], NGOffsetMappingUnitType::kIdentity, layout_object_,
@@ -80,7 +91,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, TwoTextNodes) {
   SetupHtml("t", "<div id=t>foo<span id=s>bar</span></div>");
   const LayoutText* foo = ToLayoutText(layout_object_);
   const LayoutText* bar = GetLayoutTextUnder("s");
-  const NGOffsetMappingResult& result = BuildOffsetMapping();
+  const NGOffsetMappingResult& result = GetOffsetMapping();
 
   ASSERT_EQ(2u, result.units.size());
   TEST_UNIT(result.units[0], NGOffsetMappingUnitType::kIdentity, foo, 0u, 3u,
@@ -98,7 +109,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, BRBetweenTextNodes) {
   const LayoutText* foo = ToLayoutText(layout_object_);
   const LayoutText* br = ToLayoutText(foo->NextSibling());
   const LayoutText* bar = ToLayoutText(br->NextSibling());
-  const NGOffsetMappingResult& result = BuildOffsetMapping();
+  const NGOffsetMappingResult& result = GetOffsetMapping();
 
   ASSERT_EQ(3u, result.units.size());
   TEST_UNIT(result.units[0], NGOffsetMappingUnitType::kIdentity, foo, 0u, 3u,
@@ -116,7 +127,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, BRBetweenTextNodes) {
 
 TEST_F(NGInlineNodeOffsetMappingTest, OneTextNodeWithCollapsedSpace) {
   SetupHtml("t", "<div id=t>foo  bar</div>");
-  const NGOffsetMappingResult& result = BuildOffsetMapping();
+  const NGOffsetMappingResult& result = GetOffsetMapping();
 
   ASSERT_EQ(3u, result.units.size());
   TEST_UNIT(result.units[0], NGOffsetMappingUnitType::kIdentity, layout_object_,
@@ -140,7 +151,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, FullyCollapsedWhiteSpaceNode) {
   const LayoutText* foo = GetLayoutTextUnder("s1");
   const LayoutText* bar = GetLayoutTextUnder("s2");
   const LayoutText* space = ToLayoutText(layout_object_->NextSibling());
-  const NGOffsetMappingResult& result = BuildOffsetMapping();
+  const NGOffsetMappingResult& result = GetOffsetMapping();
 
   ASSERT_EQ(3u, result.units.size());
   TEST_UNIT(result.units[0], NGOffsetMappingUnitType::kIdentity, foo, 0u, 4u,
@@ -160,7 +171,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, ReplacedElement) {
   SetupHtml("t", "<div id=t>foo <img> bar</div>");
   const LayoutText* foo = ToLayoutText(layout_object_);
   const LayoutText* bar = ToLayoutText(foo->NextSibling()->NextSibling());
-  const NGOffsetMappingResult& result = BuildOffsetMapping();
+  const NGOffsetMappingResult& result = GetOffsetMapping();
 
   ASSERT_EQ(2u, result.units.size());
   TEST_UNIT(result.units[0], NGOffsetMappingUnitType::kIdentity, foo, 0u, 4u,
@@ -185,7 +196,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, FirstLetter) {
                        ->GetFirstLetterPseudoElement()
                        ->GetLayoutObject()
                        ->SlowFirstChild());
-  const NGOffsetMappingResult& result = BuildOffsetMapping();
+  const NGOffsetMappingResult& result = GetOffsetMapping();
 
   ASSERT_EQ(2u, result.units.size());
   TEST_UNIT(result.units[0], NGOffsetMappingUnitType::kIdentity, first_letter,
@@ -210,7 +221,7 @@ TEST_F(NGInlineNodeOffsetMappingTest, FirstLetterWithLeadingSpace) {
                        ->GetFirstLetterPseudoElement()
                        ->GetLayoutObject()
                        ->SlowFirstChild());
-  const NGOffsetMappingResult& result = BuildOffsetMapping();
+  const NGOffsetMappingResult& result = GetOffsetMapping();
 
   ASSERT_EQ(3u, result.units.size());
   TEST_UNIT(result.units[0], NGOffsetMappingUnitType::kCollapsed, first_letter,

@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/inline/ng_inline_item.h"
+#include "core/layout/ng/inline/ng_offset_mapping_result.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -25,11 +26,15 @@ struct CORE_EXPORT NGInlineNodeData {
 
   friend class NGInlineNode;
   friend class NGInlineNodeForTest;
+  friend class NGInlineNodeOffsetMappingTest;
 
   // Text content for all inline items represented by a single NGInlineNode.
   // Encoded either as UTF-16 or latin-1 depending on the content.
   String text_content_;
   Vector<NGInlineItem> items_;
+
+  // The DOM to text content offset mapping of this inline node.
+  std::unique_ptr<NGOffsetMappingResult> offset_mapping_;
 
   // next_sibling_ is only valid after NGInlineNode::PrepareLayout is called.
   // Calling NGInlineNode::NextSibling will trigger this.
