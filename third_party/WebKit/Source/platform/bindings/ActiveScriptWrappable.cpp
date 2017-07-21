@@ -23,15 +23,13 @@ void ActiveScriptWrappableBase::TraceActiveScriptWrappables(
     v8::Isolate* isolate,
     ScriptWrappableVisitor* visitor) {
   V8PerIsolateData* isolate_data = V8PerIsolateData::From(isolate);
-  auto active_script_wrappables = isolate_data->ActiveScriptWrappables();
-  if (!active_script_wrappables) {
+  const auto* active_script_wrappables = isolate_data->ActiveScriptWrappables();
+  if (!active_script_wrappables)
     return;
-  }
 
   for (auto active_wrappable : *active_script_wrappables) {
-    if (!active_wrappable->DispatchHasPendingActivity(active_wrappable)) {
+    if (!active_wrappable->DispatchHasPendingActivity())
       continue;
-    }
 
     // A wrapper isn't kept alive after its ExecutionContext becomes
     // detached, even if hasPendingActivity() returns |true|. This measure
@@ -46,13 +44,11 @@ void ActiveScriptWrappableBase::TraceActiveScriptWrappables(
     // |isContextDestroyed()|.
     //
     // TODO(haraken): Implement correct lifetime using traceWrapper.
-    if (active_wrappable->IsContextDestroyed(active_wrappable)) {
+    if (active_wrappable->IsContextDestroyed())
       continue;
-    }
 
-    auto script_wrappable =
-        active_wrappable->ToScriptWrappable(active_wrappable);
-    auto wrapper_type_info =
+    ScriptWrappable* script_wrappable = active_wrappable->ToScriptWrappable();
+    auto* wrapper_type_info =
         const_cast<WrapperTypeInfo*>(script_wrappable->GetWrapperTypeInfo());
     visitor->RegisterV8Reference(
         std::make_pair(wrapper_type_info, script_wrappable));
