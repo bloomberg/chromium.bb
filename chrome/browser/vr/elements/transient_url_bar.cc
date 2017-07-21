@@ -6,11 +6,12 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/elements/url_bar_texture.h"
-
-using cc::TargetProperty::OPACITY;
-using cc::TargetProperty::VISIBILITY;
+#include "chrome/browser/vr/target_property.h"
 
 namespace vr {
+
+using TargetProperty::OPACITY;
+using TargetProperty::VISIBILITY;
 
 TransientUrlBar::TransientUrlBar(
     int preferred_width,

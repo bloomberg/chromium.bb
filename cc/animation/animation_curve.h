@@ -32,13 +32,15 @@ class TransformOperations;
 class CC_ANIMATION_EXPORT AnimationCurve {
  public:
   enum CurveType {
-    COLOR,
+    COLOR = 0,
     FLOAT,
     TRANSFORM,
     FILTER,
     SCROLL_OFFSET,
     SIZE,
     BOOLEAN,
+    // This must be last
+    LAST_CURVE_TYPE = BOOLEAN,
   };
 
   virtual ~AnimationCurve() {}

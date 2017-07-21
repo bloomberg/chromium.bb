@@ -7,8 +7,6 @@
 
 #include <bitset>
 
-#include "cc/cc_export.h"
-
 namespace cc {
 
 namespace TargetProperty {
@@ -25,8 +23,6 @@ enum Type {
   FIRST_TARGET_PROPERTY = TRANSFORM,
   LAST_TARGET_PROPERTY = VISIBILITY,
 };
-
-CC_EXPORT const char* GetName(TargetProperty::Type property);
 
 }  // namespace TargetProperty
 

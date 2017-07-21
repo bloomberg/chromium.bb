@@ -283,7 +283,7 @@ class TestAnimationDelegateThatDestroysPlayer : public TestAnimationDelegate {
   TestAnimationDelegateThatDestroysPlayer() {}
 
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              TargetProperty::Type target_property,
+                              int target_property,
                               int group) override {
     TestAnimationDelegate::NotifyAnimationStarted(monotonic_time,
                                                   target_property, group);

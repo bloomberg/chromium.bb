@@ -316,7 +316,7 @@ TestAnimationDelegate::TestAnimationDelegate()
 
 void TestAnimationDelegate::NotifyAnimationStarted(
     base::TimeTicks monotonic_time,
-    TargetProperty::Type target_property,
+    int target_property,
     int group) {
   started_ = true;
   start_time_ = monotonic_time;
@@ -324,21 +324,21 @@ void TestAnimationDelegate::NotifyAnimationStarted(
 
 void TestAnimationDelegate::NotifyAnimationFinished(
     base::TimeTicks monotonic_time,
-    TargetProperty::Type target_property,
+    int target_property,
     int group) {
   finished_ = true;
 }
 
 void TestAnimationDelegate::NotifyAnimationAborted(
     base::TimeTicks monotonic_time,
-    TargetProperty::Type target_property,
+    int target_property,
     int group) {
   aborted_ = true;
 }
 
 void TestAnimationDelegate::NotifyAnimationTakeover(
     base::TimeTicks monotonic_time,
-    TargetProperty::Type target_property,
+    int target_property,
     double animation_start_time,
     std::unique_ptr<AnimationCurve> curve) {
   takeover_ = true;

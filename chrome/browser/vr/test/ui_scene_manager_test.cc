@@ -68,9 +68,8 @@ void UiSceneManagerTest::AnimateBy(base::TimeDelta delta) {
   scene_->OnBeginFrame(current_time_);
 }
 
-bool UiSceneManagerTest::IsAnimating(
-    UiElement* element,
-    const std::vector<cc::TargetProperty::Type>& properties) {
+bool UiSceneManagerTest::IsAnimating(UiElement* element,
+                                     const std::vector<int>& properties) {
   for (auto property : properties) {
     if (!element->animation_player().IsAnimatingProperty(property))
       return false;

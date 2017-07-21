@@ -178,7 +178,7 @@ class LayerTreeHostAnimationTestAddAnimation
   }
 
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              TargetProperty::Type target_property,
+                              int target_property,
                               int group) override {
     EXPECT_LT(base::TimeTicks(), monotonic_time);
 
@@ -263,7 +263,7 @@ class LayerTreeHostAnimationTestAnimationsGetDeleted
   }
 
   void NotifyAnimationFinished(base::TimeTicks monotonic_time,
-                               TargetProperty::Type target_property,
+                               int target_property,
                                int group) override {
     // Animations on the impl-side ElementAnimations only get deleted during
     // a commit, so we need to schedule a commit.
@@ -363,7 +363,7 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
   }
 
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              TargetProperty::Type target_property,
+                              int target_property,
                               int group) override {
     Animation* animation = player_child_->GetAnimation(TargetProperty::OPACITY);
     main_start_time_ = animation->start_time();
@@ -412,7 +412,7 @@ class LayerTreeHostAnimationTestAnimationFinishedEvents
   }
 
   void NotifyAnimationFinished(base::TimeTicks monotonic_time,
-                               TargetProperty::Type target_property,
+                               int target_property,
                                int group) override {
     Animation* animation = player_->GetAnimation(TargetProperty::OPACITY);
     if (animation)
@@ -690,7 +690,7 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
   }
 
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              TargetProperty::Type target_property,
+                              int target_property,
                               int group) override {
     if (TestEnded())
       return;
@@ -816,7 +816,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationTakeover
   }
 
   void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
-                               TargetProperty::Type target_property,
+                               int target_property,
                                double animation_start_time,
                                std::unique_ptr<AnimationCurve> curve) override {
     EndTest();
@@ -1749,7 +1749,7 @@ class LayerTreeHostAnimationTestNotifyAnimationFinished
   }
 
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              TargetProperty::Type target_property,
+                              int target_property,
                               int group) override {
     called_animation_started_ = true;
     layer_tree_host()->AnimateLayers(base::TimeTicks::FromInternalValue(
@@ -1758,7 +1758,7 @@ class LayerTreeHostAnimationTestNotifyAnimationFinished
   }
 
   void NotifyAnimationFinished(base::TimeTicks monotonic_time,
-                               TargetProperty::Type target_property,
+                               int target_property,
                                int group) override {
     called_animation_finished_ = true;
     EndTest();

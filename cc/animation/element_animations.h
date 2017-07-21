@@ -148,8 +148,7 @@ class CC_ANIMATION_EXPORT ElementAnimations
   void UpdateClientAnimationState();
   void SetNeedsUpdateImplClientState();
 
-  void NotifyClientOpacityAnimated(float opacity,
-                                   Animation* animation) override;
+  void NotifyClientFloatAnimated(float opacity, Animation* animation) override;
   void NotifyClientFilterAnimated(const FilterOperations& filter,
                                   Animation* animation) override;
   void NotifyClientTransformOperationsAnimated(

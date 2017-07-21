@@ -919,11 +919,12 @@ LayerAnimatorCollection* LayerAnimator::GetLayerAnimatorCollection() {
   return delegate_ ? delegate_->GetLayerAnimatorCollection() : NULL;
 }
 
-void LayerAnimator::NotifyAnimationStarted(
-    base::TimeTicks monotonic_time,
-    cc::TargetProperty::Type target_property,
-    int group) {
-  OnThreadedAnimationStarted(monotonic_time, target_property, group);
+void LayerAnimator::NotifyAnimationStarted(base::TimeTicks monotonic_time,
+                                           int target_property,
+                                           int group) {
+  OnThreadedAnimationStarted(
+      monotonic_time, static_cast<cc::TargetProperty::Type>(target_property),
+      group);
 }
 
 LayerAnimator::RunningAnimation::RunningAnimation(

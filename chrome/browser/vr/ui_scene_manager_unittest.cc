@@ -9,6 +9,7 @@
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_debug_id.h"
+#include "chrome/browser/vr/target_property.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/mock_browser_interface.h"
 #include "chrome/browser/vr/test/ui_scene_manager_test.h"
@@ -16,12 +17,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using cc::TargetProperty::BOUNDS;
-using cc::TargetProperty::TRANSFORM;
-using cc::TargetProperty::VISIBILITY;
-using cc::TargetProperty::OPACITY;
-
 namespace vr {
+
+using TargetProperty::BOUNDS;
+using TargetProperty::TRANSFORM;
+using TargetProperty::VISIBILITY;
+using TargetProperty::OPACITY;
 
 namespace {
 std::set<UiElementDebugId> kElementsVisibleInBrowsing = {

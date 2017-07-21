@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/test/animation_test_common.h"
+#include "cc/trees/target_property.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

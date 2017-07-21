@@ -17,6 +17,7 @@
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/filter_operations.h"
+#include "cc/base/math_util.h"
 #include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/box_f.h"
 
@@ -296,8 +297,10 @@ void ElementAnimations::SetNeedsUpdateImplClientState() {
   SetNeedsPushProperties();
 }
 
-void ElementAnimations::NotifyClientOpacityAnimated(float opacity,
-                                                    Animation* animation) {
+void ElementAnimations::NotifyClientFloatAnimated(float opacity,
+                                                  Animation* animation) {
+  DCHECK(animation->target_property_id() == TargetProperty::OPACITY);
+  opacity = MathUtil::ClampToRange(opacity, 0.0f, 1.0f);
   if (AnimationAffectsActiveElements(animation))
     OnOpacityAnimated(ElementListType::ACTIVE, opacity);
   if (AnimationAffectsPendingElements(animation))
