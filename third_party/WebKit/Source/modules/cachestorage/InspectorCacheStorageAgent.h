@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InspectorCacheStorageAgent_h
-#define InspectorCacheStorageAgent_h
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_MODULES_CACHESTORAGE_INSPECTORCACHESTORAGEAGENT_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_MODULES_CACHESTORAGE_INSPECTORCACHESTORAGEAGENT_H_
+
+#include <memory>
 
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/CacheStorage.h"
@@ -12,17 +14,18 @@
 
 namespace blink {
 
+class InspectedFrames;
+
 class MODULES_EXPORT InspectorCacheStorageAgent final
     : public InspectorBaseAgent<protocol::CacheStorage::Metainfo> {
   WTF_MAKE_NONCOPYABLE(InspectorCacheStorageAgent);
 
  public:
-  static InspectorCacheStorageAgent* Create() {
-    return new InspectorCacheStorageAgent();
+  static InspectorCacheStorageAgent* Create(InspectedFrames* frames) {
+    return new InspectorCacheStorageAgent(frames);
   }
 
   ~InspectorCacheStorageAgent() override;
-
   DECLARE_VIRTUAL_TRACE();
 
   void requestCacheNames(const String& security_origin,
@@ -36,11 +39,17 @@ class MODULES_EXPORT InspectorCacheStorageAgent final
   void deleteEntry(const String& cache_id,
                    const String& request,
                    std::unique_ptr<DeleteEntryCallback>) override;
+  void requestCachedResponse(
+      const String& cache_id,
+      const String& request_url,
+      std::unique_ptr<RequestCachedResponseCallback>) override;
 
  private:
-  explicit InspectorCacheStorageAgent();
+  explicit InspectorCacheStorageAgent(InspectedFrames*);
+
+  Member<InspectedFrames> frames_;
 };
 
 }  // namespace blink
 
-#endif  // InspectorCacheStorageAgent_h
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_MODULES_CACHESTORAGE_INSPECTORCACHESTORAGEAGENT_H_
