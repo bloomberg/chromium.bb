@@ -84,7 +84,6 @@ class CONTENT_EXPORT OverscrollWindowAnimation
   }
 
   // OverscrollControllerDelegate:
-  gfx::Size GetVisibleSize() const override;
   gfx::Size GetDisplaySize() const override;
   bool OnOverscrollUpdate(float delta_x, float delta_y) override;
   void OnOverscrollComplete(OverscrollMode overscroll_mode) override;
@@ -111,6 +110,9 @@ class CONTENT_EXPORT OverscrollWindowAnimation
   // does not own it.
   ui::Layer* GetFrontLayer() const;
   ui::Layer* GetBackLayer() const;
+
+  // Returns the size of the content window.
+  gfx::Size GetContentSize() const;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;

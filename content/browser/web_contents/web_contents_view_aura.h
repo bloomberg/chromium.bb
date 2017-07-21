@@ -153,7 +153,6 @@ class CONTENT_EXPORT WebContentsViewAura
 #endif
 
   // Overridden from OverscrollControllerDelegate:
-  gfx::Size GetVisibleSize() const override;
   gfx::Size GetDisplaySize() const override;
   bool OnOverscrollUpdate(float delta_x, float delta_y) override;
   void OnOverscrollComplete(OverscrollMode overscroll_mode) override;
