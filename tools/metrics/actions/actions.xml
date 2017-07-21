@@ -17399,6 +17399,46 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Tray_SwipeToClose_Successful">
+  <owner>omrilio@chromium.org</owner>
+  <owner>minch@chromium.org</owner>
+  <description>
+    Records when the user swipes on the tray bubble (ImeTrayBubble,
+    SystemTrayBubble, WebNotificationTrayBubble, PaletteTrayBubble) in an
+    attempt to close it and succeeded ultimately.
+  </description>
+</action>
+
+<action name="Tray_SwipeToClose_Unsuccessful">
+  <owner>omrilio@chromium.org</owner>
+  <owner>minch@chromium.org</owner>
+  <description>
+    Records when the user swipes on the status area tray bubble (ImeTrayBubble,
+    SystemTrayBubble, WebNotificationBubble, PaletteTrayBubble) in an attempt to
+    close it but failed ultimately.
+  </description>
+</action>
+
+<action name="Tray_SwipeToOpen_Successful">
+  <owner>omrilio@chromium.org</owner>
+  <owner>minch@chromium.org</owner>
+  <description>
+    Records when the user swipes on the status area tray (ImeTray, SystemTray,
+    WebNotificationTray, PaletteTray) in an attempt to open the associated
+    bubble and succeeded ultimately.
+  </description>
+</action>
+
+<action name="Tray_SwipeToOpen_Unsuccessful">
+  <owner>omrilio@chromium.org</owner>
+  <owner>minch@chromium.org</owner>
+  <description>
+    Records when the user swipes on the status area tray (ImeTray, SystemTray,
+    WebNotificationTray, PaletteTray) in an attempt to open the associated
+    bubble but failed ultimately.
+  </description>
+</action>
+
 <action name="Underline">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
