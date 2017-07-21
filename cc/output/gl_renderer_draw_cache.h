@@ -44,6 +44,9 @@ struct TexturedQuadDrawCache {
   std::vector<float> vertex_opacity_data;
   std::vector<Float16> matrix_data;
 
+  // Don't batch if tex clamp rect is given.
+  Float4 tex_clamp_rect_data;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TexturedQuadDrawCache);
 };

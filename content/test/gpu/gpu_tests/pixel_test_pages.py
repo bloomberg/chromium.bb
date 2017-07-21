@@ -141,13 +141,13 @@ def DefaultPages(base_name):
       'pixel_video_mp4.html',
       base_name + '_Video_MP4',
       test_rect=[0, 0, 300, 300],
-      revision=4),
+      revision=5),
 
     PixelTestPage(
       'pixel_video_vp9.html',
       base_name + '_Video_VP9',
       test_rect=[0, 0, 300, 300],
-      revision=4),
+      revision=5),
   ]
 
 
@@ -501,13 +501,13 @@ def DirectCompositionPages(base_name):
       'pixel_video_mp4.html',
       base_name + '_DirectComposition_Video_MP4',
       test_rect=[0, 0, 300, 300],
-      revision=3,
+      revision=4,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_video_vp9.html',
       base_name + '_DirectComposition_Video_VP9',
       test_rect=[0, 0, 300, 300],
-      revision=4,
+      revision=5,
       browser_args=browser_args),
   ]

@@ -218,14 +218,22 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
       return;
     }
 
-    TestShader(
-        ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA, false));
-    TestShader(
-        ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA, true));
+    TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
+                                   false, true));
+    TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
+                                   false, false));
+    TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
+                                   true, true));
+    TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
+                                   true, false));
     TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
-                                   false));
-    TestShader(
-        ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA, true));
+                                   false, true));
+    TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
+                                   false, false));
+    TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
+                                   true, true));
+    TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
+                                   true, false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, false));
     TestShader(ProgramKey::Tile(precision, sampler, USE_AA, NO_SWIZZLE, false));
