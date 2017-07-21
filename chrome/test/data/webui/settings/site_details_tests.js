@@ -41,6 +41,9 @@ suite('SiteDetails', function() {
         mic: {
           setting: settings.ContentSetting.ASK,
         },
+        midi_devices: {
+          setting: settings.ContentSetting.ASK,
+        },
         notifications: {
           setting: settings.ContentSetting.ASK,
         },
@@ -104,6 +107,14 @@ suite('SiteDetails', function() {
           },
         ],
         mic: [
+          {
+            embeddingOrigin: 'https://foo.com:443',
+            origin: 'https://foo.com:443',
+            setting: settings.ContentSetting.ALLOW,
+            source: 'preference',
+          },
+        ],
+        midi_devices: [
           {
             embeddingOrigin: 'https://foo.com:443',
             origin: 'https://foo.com:443',
