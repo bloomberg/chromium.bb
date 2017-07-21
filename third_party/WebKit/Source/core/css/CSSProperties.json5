@@ -1797,6 +1797,7 @@
     {
       name: "offset-distance",
       api_class: true,
+      api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
       field_template: "<length>",
@@ -1831,6 +1832,7 @@
     {
       name: "offset-rotate",
       api_class: "CSSPropertyAPIOffsetRotate",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertOffsetRotate",
       interpolable: true,
       field_template: "external",
@@ -2855,6 +2857,7 @@
     {
       name: "-webkit-border-image",
       api_class: true,
+      api_methods: ["parseSingleValue"],
       custom_value: true,
     },
     {
@@ -2898,6 +2901,7 @@
     {
       name: "-webkit-box-flex",
       api_class: true,
+      api_methods: ["parseSingleValue"],
       type_name: "float",
       field_template: "primitive",
       default_value: "0.0f",

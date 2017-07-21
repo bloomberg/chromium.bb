@@ -4,4 +4,15 @@
 
 #include "core/css/properties/CSSPropertyAPIWebkitBorderImage.h"
 
-namespace blink {}  // namespace blink
+#include "core/css/properties/CSSPropertyBorderImageUtils.h"
+
+namespace blink {
+
+const CSSValue* CSSPropertyAPIWebkitBorderImage::parseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) {
+  return CSSPropertyBorderImageUtils::ConsumeWebkitBorderImage(range, &context);
+}
+
+}  // namespace blink
