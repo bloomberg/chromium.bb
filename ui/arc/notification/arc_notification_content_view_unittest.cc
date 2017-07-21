@@ -242,8 +242,7 @@ class ArcNotificationContentViewTest : public views::ViewsTestBase {
 
   void PressCloseButton() {
     DummyEvent dummy_event;
-    auto* control_buttons_view =
-        GetArcNotificationContentView()->control_buttons_view_;
+    auto* control_buttons_view = notification_view_->control_buttons_view_;
     message_center::PaddedButton* close_button =
         control_buttons_view->close_button_for_testing();
     ASSERT_NE(nullptr, close_button);
