@@ -28,22 +28,18 @@
         </div>
       </div>
       <div class="bottom-buttons flex layout horizontal">
-        <oobe-text-button id="skip-button" android on-tap="onNoThanksTap_"
+        <oobe-text-button id="skip-button" android on-tap="onSkipTap_"
             disabled="[[valuePropButtonsDisabled]]">
          <div i18n-content="voiceInteractionValuePropSkipButton"></div>
-        </oobe-text-button>
-        <oobe-text-button id="no-thanks-button" android on-tap="onNoThanksTap_"
-            disabled="[[valuePropButtonsDisabled]]">
-        <div i18n-content="voiceInteractionValuePropNoThanksButton"></div>
         </oobe-text-button>
         <div class="flex"></div>
         <oobe-text-button id="retry-button" inverse android on-tap="onRetryTap_"
             disabled="[[valuePropButtonsDisabled]]">
          <div i18n-content="voiceInteractionValuePropRetryButton"></div>
         </oobe-text-button>
-        <oobe-text-button id="continue-button" inverse android
-            on-tap="onContinueTap_" disabled="[[valuePropButtonsDisabled]]">
-         <div i18n-content="voiceInteractionValuePropContinueButton"></div>
+        <oobe-text-button id="next-button" inverse android
+            on-tap="onNextTap_" disabled="[[valuePropButtonsDisabled]]">
+         <div i18n-content="voiceInteractionValuePropNextButton"></div>
         </oobe-text-button>
       </div>
     </oobe-dialog>

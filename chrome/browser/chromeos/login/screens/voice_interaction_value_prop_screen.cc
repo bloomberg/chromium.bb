@@ -16,8 +16,8 @@
 namespace chromeos {
 namespace {
 
-constexpr const char kUserActionNoThanksPressed[] = "no-thanks-pressed";
-constexpr const char kUserActionContinuePressed[] = "continue-pressed";
+constexpr const char kUserActionSkipPressed[] = "skip-pressed";
+constexpr const char kUserActionNextPressed[] = "next-pressed";
 
 }  // namespace
 
@@ -64,15 +64,15 @@ void VoiceInteractionValuePropScreen::OnViewDestroyed(
 
 void VoiceInteractionValuePropScreen::OnUserAction(
     const std::string& action_id) {
-  if (action_id == kUserActionNoThanksPressed)
-    OnNoThanksPressed();
-  else if (action_id == kUserActionContinuePressed)
-    OnContinuePressed();
+  if (action_id == kUserActionSkipPressed)
+    OnSkipPressed();
+  else if (action_id == kUserActionNextPressed)
+    OnNextPressed();
   else
     BaseScreen::OnUserAction(action_id);
 }
 
-void VoiceInteractionValuePropScreen::OnNoThanksPressed() {
+void VoiceInteractionValuePropScreen::OnSkipPressed() {
   arc::ArcPaiStarter* pai_starter =
       arc::ArcSessionManager::Get()->pai_starter();
   if (pai_starter)
@@ -80,7 +80,7 @@ void VoiceInteractionValuePropScreen::OnNoThanksPressed() {
   Finish(ScreenExitCode::VOICE_INTERACTION_VALUE_PROP_SKIPPED);
 }
 
-void VoiceInteractionValuePropScreen::OnContinuePressed() {
+void VoiceInteractionValuePropScreen::OnNextPressed() {
   // Note! Release lock for PAI will be called at
   // ArcVoiceInteractionArcHomeService::OnVoiceInteractionOobeSetupComplete.
   ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(

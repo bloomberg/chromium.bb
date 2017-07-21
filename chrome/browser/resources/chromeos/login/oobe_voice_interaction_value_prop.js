@@ -79,14 +79,13 @@ Polymer({
   initialized_: false,
 
   /**
-   * On-tap event handler for no thanks button.
+   * On-tap event handler for skip button.
    *
    * @private
    */
-  onNoThanksTap_: function() {
+  onSkipTap_: function() {
     chrome.send(
-        'login.VoiceInteractionValuePropScreen.userActed',
-        ['no-thanks-pressed']);
+        'login.VoiceInteractionValuePropScreen.userActed', ['skip-pressed']);
   },
 
   /**
@@ -99,14 +98,13 @@ Polymer({
   },
 
   /**
-   * On-tap event handler for continue button.
+   * On-tap event handler for next button.
    *
    * @private
    */
-  onContinueTap_: function() {
+  onNextTap_: function() {
     chrome.send(
-        'login.VoiceInteractionValuePropScreen.userActed',
-        ['continue-pressed']);
+        'login.VoiceInteractionValuePropScreen.userActed', ['next-pressed']);
   },
 
   /**
