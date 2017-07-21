@@ -9,11 +9,6 @@ import("//build/util/process_version.gni")
 import("//remoting/build/config/remoting_build.gni")
 import("//remoting/credits/credits.gni")
 
-# TODO(yuweih): Temporary flag. Remove once it rolls into downstream.
-declare_args() {
-  supports_app_initializer = true
-}
-
 _remoting_ios_app_source_dir = get_path_info("./", "abspath")
 
 # Arguments
