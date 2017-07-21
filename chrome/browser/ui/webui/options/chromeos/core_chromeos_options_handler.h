@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 #include "content/public/browser/notification_observer.h"
@@ -63,9 +62,8 @@ class CoreChromeOSOptionsHandler : public ::options::CoreOptionsHandler,
   // in case it has been shown before ownership has been fully established.
   void NotifyOwnershipChanged();
 
-  typedef std::map<std::string, linked_ptr<CrosSettings::ObserverSubscription> >
-      SubscriptionMap;
-  SubscriptionMap pref_subscription_map_;
+  std::map<std::string, std::unique_ptr<CrosSettings::ObserverSubscription>>
+      pref_subscription_map_;
 
   content::NotificationRegistrar notification_registrar_;
 
