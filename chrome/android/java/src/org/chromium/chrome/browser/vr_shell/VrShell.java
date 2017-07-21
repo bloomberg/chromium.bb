@@ -64,4 +64,10 @@ public interface VrShell {
      * Requests to exit VR.
      */
     void requestToExitVr(@UiUnsupportedMode int reason);
+
+    /**
+     * Gives VrShell a chance to clean up any view-dependent state before removing
+     * VrShell from the view hierarchy.
+     */
+    void onBeforeWindowDetached();
 }
