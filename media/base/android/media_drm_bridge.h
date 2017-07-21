@@ -68,6 +68,8 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
       base::Callback<void(JavaObjectPtr media_crypto,
                           bool requires_secure_video_codec)>;
 
+  using CreatedCB = base::OnceCallback<void(scoped_refptr<MediaDrmBridge>)>;
+
   // Checks whether MediaDRM is available and usable, including for decoding.
   // All other static methods check IsAvailable() or equivalent internally.
   // There is no need to check IsAvailable() explicitly before calling them.
@@ -93,7 +95,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   // Returns a MediaDrmBridge instance if |key_system| and |security_level| are
   // supported, and nullptr otherwise. The default security level will be used
   // if |security_level| is SECURITY_LEVEL_DEFAULT.
-  static scoped_refptr<MediaDrmBridge> Create(
+  static void Create(
       const std::string& key_system,
       const GURL& security_origin,
       SecurityLevel security_level,
@@ -102,16 +104,18 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
-      const SessionExpirationUpdateCB& session_expiration_update_cb);
+      const SessionExpirationUpdateCB& session_expiration_update_cb,
+      CreatedCB created_cb);
 
   // Same as Create() except that no session callbacks are provided. This is
   // used when we need to use MediaDrmBridge without creating any sessions.
   // TODO(yucliu): Pass |security_origin| here to clear per-origin certs and
   // licenses.
-  static scoped_refptr<MediaDrmBridge> CreateWithoutSessionSupport(
+  static void CreateWithoutSessionSupport(
       const std::string& key_system,
       SecurityLevel security_level,
-      const CreateFetcherCB& create_fetcher_cb);
+      const CreateFetcherCB& create_fetcher_cb,
+      CreatedCB created_cb);
 
   // ContentDecryptionModule implementation.
   void SetServerCertificate(
@@ -246,26 +250,25 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   // For DeleteSoon() in DeleteOnCorrectThread().
   friend class base::DeleteHelper<MediaDrmBridge>;
 
-  static scoped_refptr<MediaDrmBridge> CreateInternal(
-      const std::string& key_system,
-      const GURL& security_origin,
+  static void CreateInternal(
+      const std::vector<uint8_t>& scheme_uuid,
       SecurityLevel security_level,
+      std::unique_ptr<MediaDrmStorageBridge> storage,
       const CreateFetcherCB& create_fetcher_cb,
-      const CreateStorageCB& create_storage_cb,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
-      const SessionExpirationUpdateCB& session_expiration_update_cb);
+      const SessionExpirationUpdateCB& session_expiration_update_cb,
+      CreatedCB bound_cdm_created_cb);
 
   // Constructs a MediaDrmBridge for |scheme_uuid| and |security_level|. The
   // default security level will be used if |security_level| is
   // SECURITY_LEVEL_DEFAULT. Sessions should not be created if session callbacks
   // are null.
   MediaDrmBridge(const std::vector<uint8_t>& scheme_uuid,
-                 const GURL& security_origin,
                  SecurityLevel security_level,
+                 std::unique_ptr<MediaDrmStorageBridge> storage,
                  const CreateFetcherCB& create_fetcher_cb,
-                 const CreateStorageCB& create_storage_cb,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
                  const SessionKeysChangeCB& session_keys_change_cb,
@@ -293,7 +296,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   std::vector<uint8_t> scheme_uuid_;
 
   // Persistent storage for session ID map.
-  MediaDrmStorageBridge storage_;
+  std::unique_ptr<MediaDrmStorageBridge> storage_;
 
   // Java MediaDrm instance.
   base::android::ScopedJavaGlobalRef<jobject> j_media_drm_;
