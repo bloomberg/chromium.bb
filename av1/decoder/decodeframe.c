@@ -2003,8 +2003,8 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       mu_blocks_high = AOMMIN(max_blocks_high, mu_blocks_high);
 
       for (row = 0; row < max_blocks_high; row += mu_blocks_high) {
+        const int unit_height = AOMMIN(mu_blocks_high + row, max_blocks_high);
         for (col = 0; col < max_blocks_wide; col += mu_blocks_wide) {
-          const int unit_height = AOMMIN(mu_blocks_high + row, max_blocks_high);
           const int unit_width = AOMMIN(mu_blocks_wide + col, max_blocks_wide);
 
           for (blk_row = row; blk_row < unit_height; blk_row += stepr)

@@ -2628,9 +2628,9 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
         const int bkw = tx_size_wide_unit[max_tx_size];
         const int bkh = tx_size_high_unit[max_tx_size];
         for (row = 0; row < num_4x4_h; row += mu_blocks_high) {
+          const int unit_height = AOMMIN(mu_blocks_high + row, num_4x4_h);
           for (col = 0; col < num_4x4_w; col += mu_blocks_wide) {
             int blk_row, blk_col;
-            const int unit_height = AOMMIN(mu_blocks_high + row, num_4x4_h);
             const int unit_width = AOMMIN(mu_blocks_wide + col, num_4x4_w);
             for (blk_row = row; blk_row < unit_height; blk_row += bkh) {
               for (blk_col = col; blk_col < unit_width; blk_col += bkw) {

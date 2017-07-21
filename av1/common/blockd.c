@@ -156,9 +156,9 @@ void av1_foreach_transformed_block_in_plane(
   // Keep track of the row and column of the blocks we use so that we know
   // if we are in the unrestricted motion border.
   for (r = 0; r < max_blocks_high; r += mu_blocks_high) {
+    const int unit_height = AOMMIN(mu_blocks_high + r, max_blocks_high);
     // Skip visiting the sub blocks that are wholly within the UMV.
     for (c = 0; c < max_blocks_wide; c += mu_blocks_wide) {
-      const int unit_height = AOMMIN(mu_blocks_high + r, max_blocks_high);
       const int unit_width = AOMMIN(mu_blocks_wide + c, max_blocks_wide);
       for (blk_row = r; blk_row < unit_height; blk_row += txh_unit) {
         for (blk_col = c; blk_col < unit_width; blk_col += txw_unit) {
