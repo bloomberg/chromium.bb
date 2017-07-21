@@ -162,6 +162,7 @@ bool AutofillPaymentInstrument::IsValidForModifier(
 }
 
 void AutofillPaymentInstrument::OnFullCardRequestSucceeded(
+    const autofill::payments::FullCardRequest& /* full_card_request */,
     const autofill::CreditCard& card,
     const base::string16& cvc) {
   DCHECK(delegate_);

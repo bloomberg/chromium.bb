@@ -60,8 +60,10 @@ class FakeResultDelegate
   FakeResultDelegate() : weak_ptr_factory_(this) {}
   ~FakeResultDelegate() override {}
 
-  void OnFullCardRequestSucceeded(const autofill::CreditCard& card,
-                                  const base::string16& cvc) override {}
+  void OnFullCardRequestSucceeded(
+      const autofill::payments::FullCardRequest& /* full_card_request */,
+      const autofill::CreditCard& card,
+      const base::string16& cvc) override {}
 
   void OnFullCardRequestFailed() override {}
 

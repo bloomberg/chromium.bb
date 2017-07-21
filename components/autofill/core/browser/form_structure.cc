@@ -680,6 +680,9 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form,
 
   UpdateAutofillCount();
 
+  // Update form parsed timestamp
+  set_form_parsed_timestamp(cached_form.form_parsed_timestamp());
+
   // The form signature should match between query and upload requests to the
   // server. On many websites, form elements are dynamically added, removed, or
   // rearranged via JavaScript between page load and form submission, so we
@@ -803,7 +806,7 @@ void FormStructure::LogQualityMetrics(
     if (form_interactions_ukm_logger->url() != source_url())
       form_interactions_ukm_logger->UpdateSourceURL(source_url());
     AutofillMetrics::LogAutofillFormSubmittedState(
-        state, form_interactions_ukm_logger);
+        state, form_parsed_timestamp_, form_interactions_ukm_logger);
   }
 }
 
