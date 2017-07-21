@@ -255,7 +255,7 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
     return self.collectionView.contentOffset.y;
 
   // In short landscape mode and portrait mode, there are 2 cells per row.
-  if ([self wideLandscapeMode])
+  if (![self wideLandscapeMode])
     return self.collectionView.contentOffset.y;
 
   // In wide landscape mode, there are 3 cells per row.

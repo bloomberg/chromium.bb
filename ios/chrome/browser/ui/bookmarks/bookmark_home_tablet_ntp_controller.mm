@@ -57,10 +57,9 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 @interface BookmarkHomeTabletNTPController ()<BookmarkMenuViewDelegate>
 
 // When the view is first shown on the screen, this property represents the
-// cached value of the y of the content offset of the primary view. This
+// cached value of the y of the content offset of the folder view. This
 // property is set to nil after it is used.
-@property(nonatomic, strong)
-    NSNumber* cachedContentPosition;  // FIXME: INACTIVE
+@property(nonatomic, strong) NSNumber* cachedContentPosition;
 
 #pragma mark Private methods
 
@@ -99,6 +98,16 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
+
+  // Store the content scroll position.
+  CGFloat contentPosition =
+      [[self folderView] contentPositionInPortraitOrientation];
+  // If we have the cached position, use it instead.
+  if (self.cachedContentPosition) {
+    contentPosition = [self.cachedContentPosition floatValue];
+    self.cachedContentPosition = nil;
+  }
+
   if (!self.folderView && ![self primaryMenuItem] && self.bookmarks->loaded()) {
     BookmarkMenuItem* item = nil;
     CGFloat position = 0;
@@ -132,6 +141,14 @@ const CGFloat kNavigationBarTopMargin = 8.0;
   [self updateNavigationBarWithDuration:0 orientation:orient];
   if (![self shouldPresentMenuInSlideInPanel])
     [self updateMenuViewLayout];
+
+  // Restore the content scroll position if it was reset to zero. This could
+  // happen when folderView is newly created (restore from cached); its frame
+  // height has changed; or it was re-attached to the view hierarchy.
+  if (contentPosition > 0 &&
+      [[self folderView] contentPositionInPortraitOrientation] == 0) {
+    [[self folderView] applyContentPosition:contentPosition];
+  }
 }
 
 - (void)viewDidLoad {

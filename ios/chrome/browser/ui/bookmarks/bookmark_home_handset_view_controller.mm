@@ -130,15 +130,20 @@ using bookmarks::BookmarkNode;
   [super viewWillAppear:animated];
   UIInterfaceOrientation orient = GetInterfaceOrientation();
   [self updateUIForInterfaceOrientation:orient duration:0];
-  if (self.cachedContentPosition) {
-    [self.folderView
-        applyContentPosition:[self.cachedContentPosition floatValue]];
-    self.cachedContentPosition = nil;
-  }
 }
 
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
+
+  // Store the content scroll position.
+  CGFloat contentPosition =
+      [[self folderView] contentPositionInPortraitOrientation];
+  // If we have the cached position, use it instead.
+  if (self.cachedContentPosition) {
+    contentPosition = [self.cachedContentPosition floatValue];
+    self.cachedContentPosition = nil;
+  }
+
   // Invalidate the layout of the collection view, as its frame might have
   // changed. Normally, this can be done automatically when the collection view
   // layout returns YES to -shouldInvalidateLayoutForBoundsChange:.
@@ -151,6 +156,14 @@ using bookmarks::BookmarkNode;
   self.navigationBar.frame = [self navigationBarFrame];
   self.editingBar.frame = [self navigationBarFrame];
   [self.panelView setFrame:[self frameForPanelView]];
+
+  // Restore the content scroll position if it was reset to zero. This could
+  // happen when folderView is newly created (restore from cached) or its frame
+  // height has changed.
+  if (contentPosition > 0 &&
+      [[self folderView] contentPositionInPortraitOrientation] == 0) {
+    [[self folderView] applyContentPosition:contentPosition];
+  }
 }
 
 - (BOOL)prefersStatusBarHidden {
