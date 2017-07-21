@@ -103,11 +103,6 @@ class CORE_EXPORT HTMLMediaElement
   // for the given document.
   static void OnMediaControlsEnabledChange(Document*);
 
-  // Called by the module implementing the media controls to notify of the
-  // factory to use. It should only be called once at process initialisation.
-  static void RegisterMediaControlsFactory(
-      std::unique_ptr<MediaControls::Factory>);
-
   DECLARE_VIRTUAL_TRACE();
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();

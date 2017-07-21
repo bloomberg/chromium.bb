@@ -252,13 +252,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   bool IsInert() const { return is_inert_; }
 
-  using FrameInitCallback = void (*)(LocalFrame*);
-  // Allows for the registration of a callback that is invoked whenever a new
-  // LocalFrame is initialized. Callbacks are executed in the order that they
-  // were added using registerInitializationCallback, and there are no checks
-  // for adding a callback multiple times.
-  static void RegisterInitializationCallback(FrameInitCallback);
-
   // If the frame hosts a PluginDocument, this method returns the
   // WebPluginContainerImpl that hosts the plugin. If the provided node is a
   // plugin, then it returns its WebPluginContainerImpl. Otherwise, uses the

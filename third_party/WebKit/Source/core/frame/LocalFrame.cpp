@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "bindings/core/v8/ScriptController.h"
+#include "core/CoreInitializer.h"
 #include "core/CoreProbeSink.h"
 #include "core/dom/ChildFrameDisconnector.h"
 #include "core/dom/DocumentType.h"
@@ -117,13 +118,6 @@ inline float ParentTextZoomFactor(LocalFrame* frame) {
   return ToLocalFrame(parent)->TextZoomFactor();
 }
 
-using FrameInitCallbackVector = WTF::Vector<LocalFrame::FrameInitCallback>;
-FrameInitCallbackVector& GetInitializationVector() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(FrameInitCallbackVector,
-                                  initialization_vector, ());
-  return initialization_vector;
-}
-
 }  // namespace
 
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
@@ -141,10 +135,7 @@ LocalFrame* LocalFrame::Create(LocalFrameClient* client,
 }
 
 void LocalFrame::Init() {
-  DCHECK(!GetInitializationVector().IsEmpty());
-  for (auto& initilization_callback : GetInitializationVector()) {
-    initilization_callback(this);
-  }
+  CoreInitializer::CallModulesLocalFrameInit(*this);
 
   loader_.Init();
 }
@@ -733,10 +724,6 @@ String LocalFrame::GetLayerTreeAsTextForTesting(unsigned flags) const {
 
 bool LocalFrame::ShouldThrottleRendering() const {
   return View() && View()->ShouldThrottleRendering();
-}
-
-void LocalFrame::RegisterInitializationCallback(FrameInitCallback callback) {
-  GetInitializationVector().push_back(callback);
 }
 
 inline LocalFrame::LocalFrame(LocalFrameClient* client,

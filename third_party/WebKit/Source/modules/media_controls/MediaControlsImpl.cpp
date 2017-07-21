@@ -256,12 +256,6 @@ class MediaControlsImpl::MediaElementMutationCallback
   Member<MutationObserver> observer_;
 };
 
-MediaControls* MediaControlsImpl::Factory::Create(
-    HTMLMediaElement& media_element,
-    ShadowRoot& shadow_root) {
-  return MediaControlsImpl::Create(media_element, shadow_root);
-}
-
 MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
     : HTMLDivElement(media_element.GetDocument()),
       MediaControls(media_element),

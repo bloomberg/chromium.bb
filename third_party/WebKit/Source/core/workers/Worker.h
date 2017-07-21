@@ -31,9 +31,6 @@ class CORE_EXPORT Worker final : public InProcessWorkerBase {
   const AtomicString& InterfaceName() const override;
 };
 
-extern template class CORE_EXTERN_TEMPLATE_EXPORT
-    WorkerClientsInitializer<Worker>;
-
 }  // namespace blink
 
 #endif  // Worker_h

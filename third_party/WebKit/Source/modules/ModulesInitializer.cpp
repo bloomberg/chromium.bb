@@ -66,8 +66,6 @@
 namespace blink {
 
 void ModulesInitializer::Initialize() {
-  DCHECK(!IsInitialized());
-
   // Strings must be initialized before calling CoreInitializer::init().
   const unsigned kModulesStaticStringsCount =
       EventNames::EventModulesNamesCount +
@@ -111,22 +109,23 @@ void ModulesInitializer::Initialize() {
       WTF::MakeUnique<WebGL2RenderingContext::Factory>());
 
   // Mojo Interfaces registered with LocalFrame
-  LocalFrame::RegisterInitializationCallback([](LocalFrame* frame) {
-    if (frame && frame->IsMainFrame()) {
-      frame->GetInterfaceRegistry()->AddInterface(WTF::Bind(
-          &CopylessPasteServer::BindMojoRequest, WrapWeakPersistent(frame)));
+  local_frame_init_callback_ = [](LocalFrame& frame) {
+    // CoreInitializer::RegisterLocalFrameInitCallback([](LocalFrame& frame) {
+    if (frame.IsMainFrame()) {
+      frame.GetInterfaceRegistry()->AddInterface(WTF::Bind(
+          &CopylessPasteServer::BindMojoRequest, WrapWeakPersistent(&frame)));
     }
-    frame->GetInterfaceRegistry()->AddInterface(
-        WTF::Bind(&InstallationServiceImpl::Create, WrapWeakPersistent(frame)));
+    frame.GetInterfaceRegistry()->AddInterface(WTF::Bind(
+        &InstallationServiceImpl::Create, WrapWeakPersistent(&frame)));
     // TODO(dominickn): This interface should be document-scoped rather than
     // frame-scoped, as the resulting banner event is dispatched to
     // frame()->document().
-    frame->GetInterfaceRegistry()->AddInterface(WTF::Bind(
-        &AppBannerController::BindMojoRequest, WrapWeakPersistent(frame)));
-  });
+    frame.GetInterfaceRegistry()->AddInterface(WTF::Bind(
+        &AppBannerController::BindMojoRequest, WrapWeakPersistent(&frame)));
+  };
 
   // Supplements installed on a frame using ChromeClient
-  ChromeClient::RegisterSupplementInstallCallback([](LocalFrame& frame) {
+  chrome_client_install_supplements_callback_ = [](LocalFrame& frame) {
     WebLocalFrameBase* web_frame = WebLocalFrameBase::FromFrame(&frame);
     WebFrameClient* client = web_frame->Client();
     DCHECK(client);
@@ -148,41 +147,29 @@ void ModulesInitializer::Initialize() {
                                        new AudioOutputDeviceClientImpl(frame));
     }
     InstalledAppController::ProvideTo(frame, client->GetRelatedAppsFetcher());
-  });
+  };
 
-  // DedicatedWorker callbacks for modules initialization.
-  WorkerClientsInitializer<Worker>::Register(
-      [](WorkerClients* worker_clients) {
-        ProvideLocalFileSystemToWorker(worker_clients,
+  worker_clients_local_file_system_callback_ =
+      [](WorkerClients& worker_clients) {
+        ProvideLocalFileSystemToWorker(&worker_clients,
                                        LocalFileSystemClient::Create());
-        ProvideIndexedDBClientToWorker(
-            worker_clients, IndexedDBClientImpl::Create(*worker_clients));
-      });
+      };
 
-  // SharedWorker callbacks for modules initialization.
-  WorkerClientsInitializer<WebSharedWorkerImpl>::Register(
-      [](WorkerClients* worker_clients) {
-        ProvideLocalFileSystemToWorker(worker_clients,
-                                       LocalFileSystemClient::Create());
-        ProvideIndexedDBClientToWorker(
-            worker_clients, IndexedDBClientImpl::Create(*worker_clients));
-      });
+  worker_clients_indexed_db_callback_ = [](WorkerClients& worker_clients) {
+    ProvideIndexedDBClientToWorker(&worker_clients,
+                                   IndexedDBClientImpl::Create(worker_clients));
+  };
 
-  // ServiceWorker callbacks for modules initialization.
-  WorkerClientsInitializer<WebEmbeddedWorkerImpl>::Register(
-      [](WorkerClients* worker_clients) {
-        ProvideIndexedDBClientToWorker(
-            worker_clients, IndexedDBClientImpl::Create(*worker_clients));
-      });
-
-  HTMLMediaElement::RegisterMediaControlsFactory(
-      WTF::MakeUnique<MediaControlsImpl::Factory>());
+  media_controls_factory_ = [](HTMLMediaElement& media_element,
+                               ShadowRoot& shadow_root) -> MediaControls* {
+    return MediaControlsImpl::Create(media_element, shadow_root);
+  };
 
   // Session Initializers for Inspector Agents in modules/
   // These methods typically create agents and append them to a session.
   // TODO(nverne): remove this and restore to WebDevToolsAgentImpl once that
   // class is a controller/ crbug:731490
-  InspectorAgent::RegisterSessionInitCallback(
+  inspector_agent_session_init_callback_ =
       [](InspectorSession* session, bool allow_view_agents,
          InspectorDOMAgent* dom_agent, InspectedFrames* inspected_frames,
          Page* page) {
@@ -195,9 +182,7 @@ void ModulesInitializer::Initialize() {
           session->Append(InspectorDOMStorageAgent::Create(page));
           session->Append(InspectorCacheStorageAgent::Create(inspected_frames));
         }
-      });
-
-  DCHECK(IsInitialized());
+      };
 }
 
 }  // namespace blink

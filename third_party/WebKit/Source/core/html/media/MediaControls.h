@@ -14,21 +14,11 @@ namespace blink {
 class HTMLDivElement;
 class HTMLMediaElement;
 class LayoutObject;
-class ShadowRoot;
 
 // MediaControls is an interface to abstract the HTMLMediaElement controls. The
 // implementation will be used using a Factory (see below).
 class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
  public:
-  // Factory class that HTMLMediaElement uses to create the MediaControls
-  // instance. MediaControls implementations are expected to implement a factory
-  // class and provide an implementation of it to HTMLMediaElement via
-  // `::registerMediaControlsFactory()`.
-  class Factory {
-   public:
-    virtual MediaControls* Create(HTMLMediaElement&, ShadowRoot&) = 0;
-  };
-
   MediaControls(HTMLMediaElement&);
   virtual ~MediaControls() = default;
 
