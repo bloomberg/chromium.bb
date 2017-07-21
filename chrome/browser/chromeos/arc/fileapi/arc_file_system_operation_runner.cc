@@ -101,16 +101,12 @@ ArcFileSystemOperationRunner::ArcFileSystemOperationRunner(
 ArcFileSystemOperationRunner::~ArcFileSystemOperationRunner() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // ArcSessionManager may not exist in unit tests.
   auto* arc_session_manager = ArcSessionManager::Get();
   if (arc_session_manager)
     arc_session_manager->RemoveObserver(this);
 
-  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
-  // BrowserContextKeyedService is not nested.
-  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
-  // so do not touch it.
-  if (ArcServiceManager::Get())
-    arc_bridge_service_->file_system()->RemoveObserver(this);
+  arc_bridge_service_->file_system()->RemoveObserver(this);
   // On destruction, deferred operations are discarded.
 }
 

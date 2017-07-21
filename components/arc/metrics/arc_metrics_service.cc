@@ -85,15 +85,8 @@ ArcMetricsService::ArcMetricsService(content::BrowserContext* context,
 
 ArcMetricsService::~ArcMetricsService() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
-  // BrowserContextKeyedService is not nested.
-  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
-  // so do not touch it.
-  if (ArcServiceManager::Get()) {
-    arc_bridge_service_->process()->RemoveObserver(&process_observer_);
-    arc_bridge_service_->metrics()->RemoveObserver(this);
-  }
+  arc_bridge_service_->process()->RemoveObserver(&process_observer_);
+  arc_bridge_service_->metrics()->RemoveObserver(this);
 }
 
 void ArcMetricsService::OnInstanceReady() {

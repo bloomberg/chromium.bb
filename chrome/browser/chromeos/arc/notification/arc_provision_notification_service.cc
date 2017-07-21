@@ -114,13 +114,7 @@ ArcProvisionNotificationService::~ArcProvisionNotificationService() {
   // Make sure no notification is left being shown.
   delegate_->RemoveManagedProvisionNotification();
 
-  // TODO(hidehiko): Currently, the lifetime of ArcSessionManager and
-  // BrowserContextKeyedService is not nested.
-  // If ArcSessionManager::Get() returns nullptr, it is already destructed,
-  // so do not touch it.
-  auto* arc_session_manager = ArcSessionManager::Get();
-  if (arc_session_manager)
-    arc_session_manager->RemoveObserver(this);
+  ArcSessionManager::Get()->RemoveObserver(this);
 }
 
 // static

@@ -57,12 +57,7 @@ ArcObbMounterBridge::ArcObbMounterBridge(content::BrowserContext* context,
 }
 
 ArcObbMounterBridge::~ArcObbMounterBridge() {
-  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
-  // BrowserContextKeyedService is not nested.
-  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
-  // so do not touch it.
-  if (ArcServiceManager::Get())
-    arc_bridge_service_->obb_mounter()->RemoveObserver(this);
+  arc_bridge_service_->obb_mounter()->RemoveObserver(this);
 }
 
 void ArcObbMounterBridge::OnInstanceReady() {

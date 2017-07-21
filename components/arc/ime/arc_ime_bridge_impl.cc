@@ -81,12 +81,7 @@ ArcImeBridgeImpl::ArcImeBridgeImpl(Delegate* delegate,
 }
 
 ArcImeBridgeImpl::~ArcImeBridgeImpl() {
-  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
-  // BrowserContextKeyedService is not nested.
-  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
-  // so do not touch it.
-  if (ArcServiceManager::Get())
-    bridge_service_->ime()->RemoveObserver(this);
+  bridge_service_->ime()->RemoveObserver(this);
 }
 
 void ArcImeBridgeImpl::OnInstanceReady() {
