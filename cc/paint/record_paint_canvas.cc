@@ -56,7 +56,7 @@ int RecordPaintCanvas::saveLayer(const SkRect* bounds,
     // matrices affect transparent flags on SkCanvas layers, but it's not clear
     // whether those are actually needed and we could just skip ToSkPaint here.
     buffer_->push<SaveLayerOp>(bounds, flags);
-    const SkPaint& paint = ToSkPaint(*flags);
+    SkPaint paint = flags->ToSkPaint();
     return GetCanvas()->saveLayer(bounds, &paint);
   }
   buffer_->push<SaveLayerOp>(bounds, flags);
@@ -309,7 +309,9 @@ void RecordPaintCanvas::drawPosText(const void* text,
                                     size_t byte_length,
                                     const SkPoint pos[],
                                     const PaintFlags& flags) {
-  size_t count = ToSkPaint(flags).countText(text, byte_length);
+  // TODO(enne): implement countText in PaintFlags??
+  SkPaint paint = flags.ToSkPaint();
+  size_t count = paint.countText(text, byte_length);
   buffer_->push_with_array<DrawPosTextOp>(text, byte_length, pos, count, flags);
 }
 

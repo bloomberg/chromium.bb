@@ -15,6 +15,7 @@ source_set("autoclick") {
 
   deps = [
     "//base",
+    "//cc/paint",
     "//skia",
     "//ui/aura",
     "//ui/compositor",
