@@ -37,12 +37,12 @@ namespace vr {
 namespace {
 
 static constexpr int kWarningTimeoutSeconds = 30;
-static constexpr float kWarningDistance = 0.7;
+static constexpr float kWarningDistance = 1.0;
 static constexpr float kWarningAngleRadians = 16.3 * M_PI / 180.0;
-static constexpr float kPermanentWarningHeight = 0.070f;
-static constexpr float kPermanentWarningWidth = 0.224f;
-static constexpr float kTransientWarningHeight = 0.160;
-static constexpr float kTransientWarningWidth = 0.512;
+static constexpr float kPermanentWarningHeightDMM = 0.049f;
+static constexpr float kPermanentWarningWidthDMM = 0.1568f;
+static constexpr float kTransientWarningHeightDMM = 0.160;
+static constexpr float kTransientWarningWidthDMM = 0.512;
 
 static constexpr float kExitWarningDistance = 0.6;
 static constexpr float kExitWarningHeight = 0.160;
@@ -80,7 +80,7 @@ static constexpr float kIndicatorGap = 0.05;
 static constexpr float kIndicatorVerticalOffset = 0.1;
 static constexpr float kIndicatorDistanceOffset = 0.1;
 
-static constexpr float kTransientUrlBarDistance = 1.4;
+static constexpr float kTransientUrlBarDistance = 1.0;
 static constexpr float kTransientUrlBarWidth =
     kUrlBarWidthDMM * kTransientUrlBarDistance;
 static constexpr float kTransientUrlBarHeight =
@@ -183,7 +183,7 @@ void UiSceneManager::CreateSecurityWarnings() {
   element->set_debug_id(kWebVrPermanentHttpSecurityWarning);
   element->set_id(AllocateId());
   element->set_fill(vr::Fill::NONE);
-  element->SetSize(kPermanentWarningWidth, kPermanentWarningHeight);
+  element->SetSize(kPermanentWarningWidthDMM, kPermanentWarningHeightDMM);
   element->SetTranslate(0, kWarningDistance * sin(kWarningAngleRadians),
                         -kWarningDistance * cos(kWarningAngleRadians));
   element->SetRotate(1, 0, 0, kWarningAngleRadians);
@@ -201,8 +201,9 @@ void UiSceneManager::CreateSecurityWarnings() {
   element->set_debug_id(kWebVrTransientHttpSecurityWarning);
   element->set_id(AllocateId());
   element->set_fill(vr::Fill::NONE);
-  element->SetSize(kTransientWarningWidth, kTransientWarningHeight);
+  element->SetSize(kTransientWarningWidthDMM, kTransientWarningHeightDMM);
   element->SetTranslate(0, 0, -kWarningDistance);
+  element->SetScale(kWarningDistance, kWarningDistance, 1);
   element->SetVisible(false);
   element->set_hit_testable(false);
   element->set_lock_to_fov(true);
