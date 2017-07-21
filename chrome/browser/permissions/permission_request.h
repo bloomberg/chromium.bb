@@ -112,7 +112,7 @@ class PermissionRequest {
   virtual bool ShouldShowPersistenceToggle() const;
 
   // Used to record UMA metrics for permission requests.
-  virtual PermissionRequestType GetPermissionRequestType() const;
+  virtual PermissionRequestType GetPermissionRequestType() const = 0;
 
   // Used to record UMA for whether requests are associated with a user gesture.
   // To keep things simple this metric is only recorded for the most popular
