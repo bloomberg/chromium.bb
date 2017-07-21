@@ -64,6 +64,11 @@ class CC_PAINT_EXPORT PaintImage {
   size_t frame_count() const { return frame_count_; }
   bool is_multipart() const { return is_multipart_; }
 
+  // Returns a PaintImage that has the same fields as this PaintImage, except
+  // with a replaced sk_image_. This can be used to swap out a specific SkImage
+  // in an otherwise unchanged PaintImage.
+  PaintImage CloneWithSkImage(sk_sp<SkImage> new_image) const;
+
  private:
   Id id_ = kUnknownStableId;
   sk_sp<SkImage> sk_image_;

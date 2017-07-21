@@ -42,4 +42,10 @@ PaintImage::Id PaintImage::GetNextId() {
   return s_next_id_.GetNext();
 }
 
+PaintImage PaintImage::CloneWithSkImage(sk_sp<SkImage> new_image) const {
+  PaintImage result(*this);
+  result.sk_image_ = std::move(new_image);
+  return result;
+}
+
 }  // namespace cc

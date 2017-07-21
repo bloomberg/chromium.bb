@@ -579,8 +579,8 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInShader) {
                                              std::max(y * 0.5f, kMinScale));
         PaintFlags flags;
         flags.setShader(PaintShader::MakeImage(
-            discardable_image[y][x], SkShader::kClamp_TileMode,
-            SkShader::kClamp_TileMode, &scale));
+            PaintImage(y * 4 + x, discardable_image[y][x]),
+            SkShader::kClamp_TileMode, SkShader::kClamp_TileMode, &scale));
         content_layer_client.add_draw_rect(
             gfx::Rect(x * 512 + 6, y * 512 + 6, 500, 500), flags);
       }

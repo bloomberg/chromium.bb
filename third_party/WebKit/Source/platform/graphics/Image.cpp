@@ -241,7 +241,7 @@ sk_sp<PaintShader> CreatePatternShader(const PaintImage& image,
                                        SkShader::TileMode tmx,
                                        SkShader::TileMode tmy) {
   if (spacing.IsZero()) {
-    return PaintShader::MakeImage(image.sk_image(), tmx, tmy, &shader_matrix);
+    return PaintShader::MakeImage(image, tmx, tmy, &shader_matrix);
   }
 
   // Arbitrary tiling is currently only supported for SkPictureShader, so we use
@@ -363,13 +363,13 @@ PaintImage Image::PaintImageForCurrentFrame() {
 bool Image::ApplyShader(PaintFlags& flags, const SkMatrix& local_matrix) {
   // Default shader impl: attempt to build a shader based on the current frame
   // SkImage.
-  sk_sp<SkImage> image = ImageForCurrentFrame();
+  PaintImage image = PaintImageForCurrentFrame();
   if (!image)
     return false;
 
-  flags.setShader(
-      PaintShader::MakeImage(std::move(image), SkShader::kRepeat_TileMode,
-                             SkShader::kRepeat_TileMode, &local_matrix));
+  flags.setShader(PaintShader::MakeImage(image, SkShader::kRepeat_TileMode,
+                                         SkShader::kRepeat_TileMode,
+                                         &local_matrix));
   if (!flags.HasShader())
     return false;
 
