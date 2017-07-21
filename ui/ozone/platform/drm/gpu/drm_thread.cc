@@ -117,17 +117,16 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
   uint32_t flags = 0;
   switch (usage) {
     case gfx::BufferUsage::GPU_READ:
-      flags = GBM_BO_USE_TEXTURING;
       break;
     case gfx::BufferUsage::SCANOUT:
-      flags = GBM_BO_USE_RENDERING | GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING;
+      flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
       break;
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
-      flags = GBM_BO_USE_LINEAR | GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING;
+      flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_LINEAR;
       break;
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
-      flags = GBM_BO_USE_LINEAR | GBM_BO_USE_TEXTURING;
+      flags = GBM_BO_USE_LINEAR;
       break;
   }
 
