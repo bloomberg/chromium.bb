@@ -15,6 +15,7 @@
  @private
   base::scoped_nsobject<NSButton> saveButton_;
   base::scoped_nsobject<NSButton> neverButton_;
+  base::scoped_nsobject<NSButton> editButton_;
   base::scoped_nsobject<PasswordsListViewController> passwordItem_;
 }
 
@@ -25,6 +26,7 @@
 @interface SavePendingPasswordViewController (Testing)
 @property(readonly) NSButton* saveButton;
 @property(readonly) NSButton* neverButton;
+@property(readonly) NSButton* editButton;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PASSWORDS_SAVE_PENDING_PASSWORD_VIEW_CONTROLLER_H_

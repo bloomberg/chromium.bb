@@ -7,17 +7,18 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #import "chrome/browser/ui/cocoa/bubble_combobox.h"
 #include "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
 #import "chrome/browser/ui/cocoa/passwords/save_pending_password_view_controller.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
-
 // Gmock matcher
 using testing::_;
 
@@ -54,6 +55,23 @@ TEST_F(SavePendingPasswordViewControllerTest,
   [controller().saveButton performClick:nil];
 
   EXPECT_TRUE([delegate() dismissed]);
+}
+
+TEST_F(SavePendingPasswordViewControllerTest,
+       EditButtonExistsWhenUsernameCorrectionEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kEnableUsernameCorrection);
+  SetUpSavePendingState(false);
+  EXPECT_TRUE(controller().editButton);
+  [controller().editButton performClick:nil];
+  EXPECT_FALSE([delegate() dismissed]);
+}
+
+TEST_F(SavePendingPasswordViewControllerTest,
+       EditButtonShouldNotExistByDefault) {
+  SetUpSavePendingState(false);
+  EXPECT_FALSE(controller().editButton);
 }
 
 TEST_F(SavePendingPasswordViewControllerTest,

@@ -53,12 +53,12 @@
 - (void)loadView {
   base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
 
-  // -----------------------------------
-  // |  Title                        x |
-  // |  username   password            |
-  // |  Smart Lock  welcome (optional) |
-  // |            [Button1] [Button2]  |
-  // -----------------------------------
+  // -----------------------------------------
+  // |  Title                              x |
+  // |  username   password                  |
+  // |  Smart Lock  welcome (optional)       |
+  // |  ([Button3])     [Button1] [Button2]  |
+  // -----------------------------------------
 
   // The title text depends on whether the user is signed in and therefore syncs
   // their password
@@ -68,6 +68,9 @@
   // The bubble should be wide enough to fit the title row, the username and
   // password row, and the buttons row on one line each, but not smaller than
   // kDesiredBubbleWidth.
+
+  // The button 3 is optional and only rendered when child class returns 3
+  // buttons.
 
   // Create the elements and add them to the view.
 
@@ -116,6 +119,14 @@
   for (NSButton* button in buttons) {
     curX -= kRelatedControlHorizontalPadding + NSWidth([button frame]);
     [button setFrameOrigin:NSMakePoint(curX, curY)];
+  }
+
+  // Add the third button to the left if it was sent.
+  if ([buttons count] == 3) {
+    curX = kFramePadding - (NSWidth([buttons[2] frame]) -
+                            ([buttons[2] intrinsicContentSize]).width) /
+                               2;
+    [buttons[2] setFrameOrigin:NSMakePoint(curX, curY)];
   }
 
   curX = kFramePadding;
