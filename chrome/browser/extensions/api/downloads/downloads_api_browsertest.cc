@@ -48,6 +48,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_download_request_handler.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/notification_types.h"
 #include "net/base/data_url.h"
@@ -1002,8 +1003,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   // be able to query the file icon.
   download_item->Cancel(true);
   ASSERT_FALSE(download_item->GetTargetFilePath().empty());
-  // Let cleanup complete on the FILE thread.
-  content::RunAllPendingInMessageLoop(BrowserThread::FILE);
+  // Let cleanup complete on blocking threads.
+  content::RunAllBlockingPoolTasksUntilIdle();
   // Check the path passed to the icon extractor post-cancellation.
   EXPECT_TRUE(RunFunctionAndReturnString(MockedGetFileIconFunction(
           download_item->GetTargetFilePath(), IconLoader::NORMAL, "foo"),

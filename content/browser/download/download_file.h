@@ -22,9 +22,9 @@ namespace content {
 
 class ByteStreamReader;
 
-// These objects live exclusively on the file thread and handle the writing
-// operations for one download. These objects live only for the duration that
-// the download is 'in progress': once the download has been completed or
+// These objects live exclusively on the download sequence and handle the
+// writing operations for one download. These objects live only for the duration
+// that the download is 'in progress': once the download has been completed or
 // cancelled, the DownloadFile is destroyed.
 class CONTENT_EXPORT DownloadFile {
  public:
@@ -43,7 +43,7 @@ class CONTENT_EXPORT DownloadFile {
       RenameCompletionCallback;
 
   // Used to drop the request, when the byte stream reader should be closed on
-  // FILE thread.
+  // download sequence.
   typedef base::Callback<void(int64_t offset)> CancelRequestCallback;
 
   virtual ~DownloadFile() {}

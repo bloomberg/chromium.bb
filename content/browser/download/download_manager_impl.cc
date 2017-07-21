@@ -29,6 +29,7 @@
 #include "content/browser/download/download_item_factory.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/download/download_task_runner.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -360,10 +361,9 @@ void DownloadManagerImpl::StartDownloadWithId(
       info->request_handle->CancelRequest(true);
       if (!on_started.is_null())
         on_started.Run(nullptr, DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
-      // The ByteStreamReader lives and dies on the FILE thread.
+      // The ByteStreamReader lives and dies on the download sequence.
       if (info->result == DOWNLOAD_INTERRUPT_REASON_NONE)
-        BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE,
-                                  stream.release());
+        GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, stream.release());
       return;
     }
     download = item_iterator->second.get();

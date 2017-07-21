@@ -34,7 +34,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/sequenced_task_runner_helpers.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
@@ -54,6 +54,10 @@ struct DownloadCreateInfo;
 class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
  public:
   ~DownloadManager() override {}
+
+  // Returns the task runner that's used for all download-related blocking
+  // tasks, such as file IO.
+  static scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
 
   // Sets/Gets the delegate for this DownloadManager. The delegate has to live
   // past its Shutdown method being called (by the DownloadManager).

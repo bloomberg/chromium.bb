@@ -16,6 +16,7 @@
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
+#include "content/browser/download/download_task_runner.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -70,8 +71,7 @@ static void StartOnUIThread(
       started_cb.Run(nullptr, DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
 
     if (stream)
-      BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE,
-                                stream.release());
+      GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, stream.release());
     return;
   }
 

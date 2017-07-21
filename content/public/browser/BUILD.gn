@@ -104,6 +104,7 @@ source_set("browser_sources") {
     "download_interrupt_reason_values.h",
     "download_interrupt_reasons.h",
     "download_item.h",
+    "download_manager.cc",
     "download_manager.h",
     "download_manager_delegate.cc",
     "download_manager_delegate.h",
