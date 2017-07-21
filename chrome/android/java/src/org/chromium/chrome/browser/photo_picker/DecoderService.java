@@ -14,6 +14,9 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 
 import org.chromium.base.Log;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.library_loader.ProcessInitException;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -33,8 +36,20 @@ public class DecoderService extends Service {
     // A tag for logging error messages.
     private static final String TAG = "ImageDecoder";
 
+    // Whether the native library and the sandbox have been initialized.
+    private boolean mNativeLibraryAndSandboxInitialized;
+
     @Override
     public void onCreate() {
+        try {
+            LibraryLoader.get(LibraryProcessType.PROCESS_CHILD).ensureInitialized();
+            nativeInitializePhotoPickerSandbox();
+
+            mNativeLibraryAndSandboxInitialized = true;
+        } catch (ProcessInitException e) {
+            Log.e(TAG, "Unable to initialize the native library and sandbox", e);
+        }
+
         super.onCreate();
     }
 
@@ -58,6 +73,12 @@ public class DecoderService extends Service {
                 bundle = new Bundle();
                 bundle.putString(KEY_FILE_PATH, filePath);
                 bundle.putBoolean(KEY_SUCCESS, false);
+
+                if (!mNativeLibraryAndSandboxInitialized) {
+                    Log.e(TAG, "Decode failed %s (size: %d): no sandbox", filePath, size);
+                    sendReply(callback, bundle); // Sends SUCCESS == false;
+                    return;
+                }
 
                 FileDescriptor fd = pfd.getFileDescriptor();
 
@@ -107,4 +128,8 @@ public class DecoderService extends Service {
             }
         }
     };
+
+    // Initializes the seccomp-bpf sandbox when it's supported by the device. Records the sandbox
+    // status to the Android.SeccompStatus.PhotoPickerSandbox histogram.
+    private static native void nativeInitializePhotoPickerSandbox();
 }

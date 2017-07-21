@@ -1126,6 +1126,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.SeccompStatus.PhotoPickerSandbox"
+    enum="AndroidSeccompSandboxStatus">
+  <owner>peter@chromium.org</owner>
+  <owner>rsesek@chromium.org</owner>
+  <summary>
+    Reports the status of the seccomp-bpf sandbox in photo picker decoding
+    processes. Anything other than &quot;Sandbox Engaged&quot; indicates the
+    sandbox is not turned on. See https://crbug.com/477049.
+  </summary>
+</histogram>
+
 <histogram name="Android.SeccompStatus.Prctl" enum="AndroidSeccompStatus">
   <owner>rsesek@chromium.org</owner>
   <summary>
