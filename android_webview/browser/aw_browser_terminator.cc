@@ -71,6 +71,7 @@ void OnRenderProcessGoneDetail(int child_process_id,
   for (auto* delegate : delegates) {
     if (!delegate->OnRenderProcessGoneDetail(child_process_pid, crashed)) {
       if (crashed) {
+        crash_reporter::SuppressDumpGeneration();
         // Keeps this log unchanged, CTS test uses it to detect crash.
         LOG(FATAL) << "Render process (" << child_process_pid << ")'s crash"
                    << " wasn't handled by all associated  webviews, triggering"
@@ -128,7 +129,6 @@ void AwBrowserTerminator::ProcessTerminationStatus(
   if (pipe->Peek() >= sizeof(int)) {
     int exit_code;
     pipe->Receive(&exit_code, sizeof(exit_code));
-    crash_reporter::SuppressDumpGeneration();
     LOG(ERROR) << "Renderer process (" << pid << ") crash detected (code "
                << exit_code << ").";
     crashed = true;
