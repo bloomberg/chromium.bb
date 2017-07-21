@@ -177,31 +177,9 @@ class CompleteHandler {
 
 class TestCastSocketBase : public CastSocketImpl {
  public:
-  TestCastSocketBase(const net::IPEndPoint& ip_endpoint,
-                     int64_t timeout_ms,
-                     Logger* logger,
-                     uint64_t device_capabilities)
-      : TestCastSocketBase(ip_endpoint,
-                           timeout_ms,
-                           logger,
-                           new net::TestNetLog(),
-                           device_capabilities) {}
-
-  TestCastSocketBase(const net::IPEndPoint& ip_endpoint,
-                     int64_t timeout_ms,
-                     Logger* logger,
-                     net::TestNetLog* capturing_net_log,
-                     uint64_t device_capabilities)
-      : CastSocketImpl(ip_endpoint,
-                       capturing_net_log,
-                       base::TimeDelta::FromMilliseconds(timeout_ms),
-                       base::TimeDelta(),
-                       base::TimeDelta(),
-                       logger,
-                       device_capabilities,
-                       AuthContext::Create()),
-        capturing_net_log_(capturing_net_log),
-        ip_(ip_endpoint),
+  TestCastSocketBase(const CastSocketOpenParams& open_params, Logger* logger)
+      : CastSocketImpl(open_params, logger, AuthContext::Create()),
+        ip_(open_params.ip_endpoint),
         extract_cert_result_(true),
         verify_challenge_result_(true),
         verify_challenge_disallow_(false),
@@ -239,7 +217,6 @@ class TestCastSocketBase : public CastSocketImpl {
 
   base::Timer* GetTimer() override { return mock_timer_.get(); }
 
-  std::unique_ptr<net::TestNetLog> capturing_net_log_;
   net::IPEndPoint ip_;
   // Simulated result of peer cert extraction.
   bool extract_cert_result_;
@@ -255,14 +232,17 @@ class TestCastSocketBase : public CastSocketImpl {
 class MockTestCastSocket : public TestCastSocketBase {
  public:
   static std::unique_ptr<MockTestCastSocket> CreateSecure(
-      Logger* logger,
-      uint64_t device_capabilities = cast_channel::CastDeviceCapability::NONE) {
+      const CastSocketOpenParams& open_params,
+      Logger* logger) {
     return std::unique_ptr<MockTestCastSocket>(
-        new MockTestCastSocket(CreateIPEndPointForTest(), kDistantTimeoutMillis,
-                               logger, device_capabilities));
+        new MockTestCastSocket(open_params, logger));
   }
 
   using TestCastSocketBase::TestCastSocketBase;
+
+  MockTestCastSocket(const CastSocketOpenParams& open_params, Logger* logger)
+      : TestCastSocketBase(open_params, logger),
+        mock_net_log_(open_params.net_log) {}
 
   ~MockTestCastSocket() override {}
 
@@ -324,9 +304,10 @@ class MockTestCastSocket : public TestCastSocketBase {
     ssl_data_.reset(new net::StaticSocketDataProvider(
         reads_.data(), reads_.size(), writes_.data(), writes_.size()));
     ssl_data_->set_connect_data(*ssl_connect_data_);
+
     // NOTE: net::MockTCPClientSocket inherits from net::SSLClientSocket !!
     return std::unique_ptr<net::SSLClientSocket>(new net::MockTCPClientSocket(
-        net::AddressList(), capturing_net_log_.get(), ssl_data_.get()));
+        net::AddressList(), mock_net_log_, ssl_data_.get()));
   }
 
   // Simulated connect data
@@ -339,6 +320,7 @@ class MockTestCastSocket : public TestCastSocketBase {
   // If true, makes TCP connection process stall. For timeout testing.
   bool tcp_unresponsive_ = false;
   MockCastTransport* mock_transport_ = nullptr;
+  net::NetLog* mock_net_log_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MockTestCastSocket);
 };
@@ -346,11 +328,10 @@ class MockTestCastSocket : public TestCastSocketBase {
 class SslTestCastSocket : public TestCastSocketBase {
  public:
   static std::unique_ptr<SslTestCastSocket> CreateSecure(
-      Logger* logger,
-      uint64_t device_capabilities = cast_channel::CastDeviceCapability::NONE) {
+      const CastSocketOpenParams& open_params,
+      Logger* logger) {
     return std::unique_ptr<SslTestCastSocket>(
-        new SslTestCastSocket(CreateIPEndPointForTest(), kDistantTimeoutMillis,
-                              logger, device_capabilities));
+        new SslTestCastSocket(open_params, logger));
   }
 
   using TestCastSocketBase::TestCastSocketBase;
@@ -372,7 +353,12 @@ class CastSocketTestBase : public testing::Test {
   CastSocketTestBase()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         logger_(new Logger()),
-        observer_(new MockCastSocketObserver()) {}
+        observer_(new MockCastSocketObserver()),
+        capturing_net_log_(new net::TestNetLog()),
+        socket_open_params_(
+            CreateIPEndPointForTest(),
+            capturing_net_log_.get(),
+            base::TimeDelta::FromMilliseconds(kDistantTimeoutMillis)) {}
   ~CastSocketTestBase() override {}
 
   void SetUp() override { EXPECT_CALL(*observer_, OnMessage(_, _)).Times(0); }
@@ -387,6 +373,8 @@ class CastSocketTestBase : public testing::Test {
   Logger* logger_;
   CompleteHandler handler_;
   std::unique_ptr<MockCastSocketObserver> observer_;
+  std::unique_ptr<net::TestNetLog> capturing_net_log_;
+  CastSocketOpenParams socket_open_params_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastSocketTestBase);
@@ -405,7 +393,7 @@ class MockCastSocketTest : public CastSocketTestBase {
   }
 
   void CreateCastSocketSecure() {
-    socket_ = MockTestCastSocket::CreateSecure(logger_);
+    socket_ = MockTestCastSocket::CreateSecure(socket_open_params_, logger_);
   }
 
   void HandleAuthHandshake() {
@@ -444,7 +432,7 @@ class SslCastSocketTest : public CastSocketTestBase {
   }
 
   void CreateSockets() {
-    socket_ = SslTestCastSocket::CreateSecure(logger_);
+    socket_ = SslTestCastSocket::CreateSecure(socket_open_params_, logger_);
 
     server_cert_ =
         net::ImportCertFromFile(GetTestCertsDirectory(), "self_signed.pem");
