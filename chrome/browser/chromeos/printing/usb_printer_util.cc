@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "device/usb/public/cpp/filter_utils.h"
 #include "device/usb/public/interfaces/device_manager.mojom.h"
@@ -160,24 +161,26 @@ std::unique_ptr<Printer> UsbDeviceToPrinter(const device::UsbDevice& device) {
   printer->set_make_and_model(
       base::JoinString({printer->manufacturer(), printer->model()}, " "));
 
-  // TODO(crbug.com/740727): i18n for display names.
   // Construct the display name by however much of the manufacturer/model
   // information that we have available.
-  std::vector<std::string> display_name_parts;
-  if (!printer->manufacturer().empty()) {
-    display_name_parts.push_back(printer->manufacturer());
-  }
-  if (!printer->model().empty()) {
-    display_name_parts.push_back(printer->model());
-  }
-  if (display_name_parts.empty()) {
-    // If we have neither manufacturer nor model, just display the name as
-    // unknown.
-    display_name_parts.push_back("Unknown Printer");
+  if (printer->manufacturer().empty() && printer->model().empty()) {
+    printer->set_display_name(
+        l10n_util::GetStringUTF8(IDS_USB_PRINTER_UNKNOWN_DISPLAY_NAME));
+  } else if (!printer->manufacturer().empty() && !printer->model().empty()) {
+    printer->set_display_name(
+        l10n_util::GetStringFUTF8(IDS_USB_PRINTER_DISPLAY_NAME,
+                                  base::UTF8ToUTF16(printer->manufacturer()),
+                                  base::UTF8ToUTF16(printer->model())));
+  } else {
+    // Exactly one string is present.
+    std::string non_empty = !printer->manufacturer().empty()
+                                ? printer->manufacturer()
+                                : printer->model();
+    printer->set_display_name(
+        l10n_util::GetStringFUTF8(IDS_USB_PRINTER_DISPLAY_NAME_MAKE_OR_MODEL,
+                                  base::UTF8ToUTF16(non_empty)));
   }
 
-  display_name_parts.push_back("(USB)");
-  printer->set_display_name(base::JoinString(display_name_parts, " "));
   printer->set_description(printer->display_name());
   printer->set_uri(UsbPrinterUri(device));
   printer->set_id(UsbPrinterId(device));
