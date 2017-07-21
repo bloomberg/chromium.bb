@@ -34,8 +34,10 @@ class CC_PAINT_EXPORT PaintFlags {
     kStrokeAndFill_Style = SkPaint::kStrokeAndFill_Style,
   };
   bool nothingToDraw() const;
-  ALWAYS_INLINE Style getStyle() const { return static_cast<Style>(style_); }
-  ALWAYS_INLINE void setStyle(Style style) { style_ = style; }
+  ALWAYS_INLINE Style getStyle() const {
+    return static_cast<Style>(bitfields_.style_);
+  }
+  ALWAYS_INLINE void setStyle(Style style) { bitfields_.style_ = style; }
   ALWAYS_INLINE SkColor getColor() const { return color_; }
   ALWAYS_INLINE void setColor(SkColor color) { color_ = color; }
   ALWAYS_INLINE uint8_t getAlpha() const { return SkColorGetA(color_); }
@@ -50,25 +52,25 @@ class CC_PAINT_EXPORT PaintFlags {
     return static_cast<SkBlendMode>(blend_mode_);
   }
   ALWAYS_INLINE bool isAntiAlias() const {
-    return !!(flags_ & SkPaint::kAntiAlias_Flag);
+    return !!(bitfields_.flags_ & SkPaint::kAntiAlias_Flag);
   }
   ALWAYS_INLINE void setAntiAlias(bool aa) {
     SetInternalFlag(aa, SkPaint::kAntiAlias_Flag);
   }
   ALWAYS_INLINE bool isVerticalText() const {
-    return !!(flags_ & SkPaint::kVerticalText_Flag);
+    return !!(bitfields_.flags_ & SkPaint::kVerticalText_Flag);
   }
   ALWAYS_INLINE void setVerticalText(bool vertical) {
     SetInternalFlag(vertical, SkPaint::kVerticalText_Flag);
   }
   ALWAYS_INLINE bool isSubpixelText() const {
-    return !!(flags_ & SkPaint::kSubpixelText_Flag);
+    return !!(bitfields_.flags_ & SkPaint::kSubpixelText_Flag);
   }
   ALWAYS_INLINE void setSubpixelText(bool subpixel_text) {
     SetInternalFlag(subpixel_text, SkPaint::kSubpixelText_Flag);
   }
   ALWAYS_INLINE bool isLCDRenderText() const {
-    return !!(flags_ & SkPaint::kLCDRenderText_Flag);
+    return !!(bitfields_.flags_ & SkPaint::kLCDRenderText_Flag);
   }
   ALWAYS_INLINE void setLCDRenderText(bool lcd_text) {
     SetInternalFlag(lcd_text, SkPaint::kLCDRenderText_Flag);
@@ -80,17 +82,19 @@ class CC_PAINT_EXPORT PaintFlags {
     kFull_Hinting = SkPaint::kFull_Hinting
   };
   ALWAYS_INLINE Hinting getHinting() const {
-    return static_cast<Hinting>(hinting_);
+    return static_cast<Hinting>(bitfields_.hinting_);
   }
-  ALWAYS_INLINE void setHinting(Hinting hinting) { hinting_ = hinting; }
+  ALWAYS_INLINE void setHinting(Hinting hinting) {
+    bitfields_.hinting_ = hinting;
+  }
   ALWAYS_INLINE bool isAutohinted() const {
-    return !!(flags_ & SkPaint::kAutoHinting_Flag);
+    return !!(bitfields_.flags_ & SkPaint::kAutoHinting_Flag);
   }
   ALWAYS_INLINE void setAutohinted(bool use_auto_hinter) {
     SetInternalFlag(use_auto_hinter, SkPaint::kAutoHinting_Flag);
   }
   ALWAYS_INLINE bool isDither() const {
-    return !!(flags_ & SkPaint::kDither_Flag);
+    return !!(bitfields_.flags_ & SkPaint::kDither_Flag);
   }
   ALWAYS_INLINE void setDither(bool dither) {
     SetInternalFlag(dither, SkPaint::kDither_Flag);
@@ -102,18 +106,18 @@ class CC_PAINT_EXPORT PaintFlags {
     kGlyphID_TextEncoding = SkPaint::kGlyphID_TextEncoding
   };
   ALWAYS_INLINE TextEncoding getTextEncoding() const {
-    return static_cast<TextEncoding>(text_encoding_);
+    return static_cast<TextEncoding>(bitfields_.text_encoding_);
   }
   ALWAYS_INLINE void setTextEncoding(TextEncoding encoding) {
-    text_encoding_ = encoding;
+    bitfields_.text_encoding_ = encoding;
   }
   ALWAYS_INLINE SkScalar getTextSize() const { return text_size_; }
   ALWAYS_INLINE void setTextSize(SkScalar text_size) { text_size_ = text_size; }
   ALWAYS_INLINE void setFilterQuality(SkFilterQuality quality) {
-    filter_quality_ = quality;
+    bitfields_.filter_quality_ = quality;
   }
   ALWAYS_INLINE SkFilterQuality getFilterQuality() const {
-    return static_cast<SkFilterQuality>(filter_quality_);
+    return static_cast<SkFilterQuality>(bitfields_.filter_quality_);
   }
   ALWAYS_INLINE SkScalar getStrokeWidth() const { return width_; }
   ALWAYS_INLINE void setStrokeWidth(SkScalar width) { width_ = width; }
@@ -128,8 +132,10 @@ class CC_PAINT_EXPORT PaintFlags {
     kLast_Cap = kSquare_Cap,
     kDefault_Cap = kButt_Cap
   };
-  ALWAYS_INLINE Cap getStrokeCap() const { return static_cast<Cap>(cap_type_); }
-  ALWAYS_INLINE void setStrokeCap(Cap cap) { cap_type_ = cap; }
+  ALWAYS_INLINE Cap getStrokeCap() const {
+    return static_cast<Cap>(bitfields_.cap_type_);
+  }
+  ALWAYS_INLINE void setStrokeCap(Cap cap) { bitfields_.cap_type_ = cap; }
   enum Join {
     kMiter_Join = SkPaint::kMiter_Join,
     kRound_Join = SkPaint::kRound_Join,
@@ -138,9 +144,9 @@ class CC_PAINT_EXPORT PaintFlags {
     kDefault_Join = kMiter_Join
   };
   ALWAYS_INLINE Join getStrokeJoin() const {
-    return static_cast<Join>(join_type_);
+    return static_cast<Join>(bitfields_.join_type_);
   }
-  ALWAYS_INLINE void setStrokeJoin(Join join) { join_type_ = join; }
+  ALWAYS_INLINE void setStrokeJoin(Join join) { bitfields_.join_type_ = join; }
 
   ALWAYS_INLINE const sk_sp<SkTypeface>& getTypeface() const {
     return typeface_;
@@ -215,9 +221,9 @@ class CC_PAINT_EXPORT PaintFlags {
 
   ALWAYS_INLINE void SetInternalFlag(bool value, uint32_t mask) {
     if (value)
-      flags_ |= mask;
+      bitfields_.flags_ |= mask;
     else
-      flags_ &= ~mask;
+      bitfields_.flags_ &= ~mask;
   }
 
   sk_sp<SkTypeface> typeface_;
@@ -231,20 +237,25 @@ class CC_PAINT_EXPORT PaintFlags {
   // Match(ish) SkPaint defaults.  SkPaintDefaults is not public, so this
   // just uses these values and ignores any SkUserConfig overrides.
   float text_size_ = 12.f;
-  float text_scale_x_ = 1.f;
-  float text_skew_x_ = 0.f;
   SkColor color_ = SK_ColorBLACK;
   float width_ = 0.f;
   float miter_limit_ = 4.f;
   uint32_t blend_mode_ = static_cast<uint32_t>(SkBlendMode::kSrcOver);
 
-  uint32_t flags_ : 16;
-  uint32_t cap_type_ : 2;
-  uint32_t join_type_ : 2;
-  uint32_t style_ : 2;
-  uint32_t text_encoding_ : 2;
-  uint32_t hinting_ : 2;
-  uint32_t filter_quality_ : 2;
+  struct PaintFlagsBitfields {
+    uint32_t flags_ : 16;
+    uint32_t cap_type_ : 2;
+    uint32_t join_type_ : 2;
+    uint32_t style_ : 2;
+    uint32_t text_encoding_ : 2;
+    uint32_t hinting_ : 2;
+    uint32_t filter_quality_ : 2;
+  };
+
+  union {
+    PaintFlagsBitfields bitfields_;
+    uint32_t bitfields_uint_;
+  };
 };
 
 }  // namespace cc
