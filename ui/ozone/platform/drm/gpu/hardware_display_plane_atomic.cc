@@ -113,7 +113,7 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(
       drmModeAtomicAddProperty(property_set, plane_id_, src_x_prop_.id,
                                src_rect.x()) &&
       drmModeAtomicAddProperty(property_set, plane_id_, src_y_prop_.id,
-                               src_rect.x()) &&
+                               src_rect.y()) &&
       drmModeAtomicAddProperty(property_set, plane_id_, src_w_prop_.id,
                                src_rect.width()) &&
       drmModeAtomicAddProperty(property_set, plane_id_, src_h_prop_.id,
