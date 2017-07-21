@@ -27,6 +27,7 @@
 #include "base/scoped_native_library.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/version.h"
 #include "base/win/pe_image.h"
@@ -379,8 +380,15 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   UMA_HISTOGRAM_BOOLEAN("Windows.Tablet", base::win::IsTabletDevice(nullptr));
 
   // Set up a task to verify installed modules in the current process.
+  // TODO(gab): Use base::PostTaskWithTraits() directly when we're convinced
+  // BACKGROUND work doesn't interfere with startup (i.e.
+  // https://crbug.com/726937).
+  // TODO(robertshield): remove this altogether, https://crbug.com/747557.
   content::BrowserThread::PostAfterStartupTask(
-      FROM_HERE, content::BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::CreateTaskRunnerWithTraits(
+          {base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
       base::Bind(&VerifyInstallation));
 
   InitializeChromeElf();
