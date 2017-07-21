@@ -4,6 +4,7 @@ include_rules = [
   "+components/policy/android/java",
   "+components/policy/android/javatests",
   "+components/safe_browsing_db/android/java",
+  "+components/variations/android/java",
   "+content/public/android/java",
   "+content/public/test/android/javatests",
   "+device/geolocation/android/java",
