@@ -293,7 +293,7 @@ void IndexedDBInternalsUI::OnDownloadDataReady(
           destination: LOCAL
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled by settings, but it's only "
             "triggered by navigating to the specified URL."

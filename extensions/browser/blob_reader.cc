@@ -54,7 +54,7 @@ BlobReader::BlobReader(content::BrowserContext* browser_context,
           destination: LOCAL
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting: "This feature cannot be disabled by settings."
           policy_exception_justification:
             "Not implemented. This is a local data fetch request and has no "

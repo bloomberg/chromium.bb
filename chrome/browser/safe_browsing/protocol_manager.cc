@@ -95,7 +95,7 @@ constexpr net::NetworkTrafficAnnotationTag
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "Safe Browsing cookie store"
           setting:
             "Users can disable Safe Browsing by unchecking 'Protect you and "
@@ -270,7 +270,7 @@ void SafeBrowsingProtocolManager::GetFullHash(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "Safe Browsing cookie store"
           setting:
             "Users can disable Safe Browsing by unchecking 'Protect you and "
@@ -668,7 +668,7 @@ bool SafeBrowsingProtocolManager::IssueBackupUpdateRequest(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "Safe Browsing cookie store"
           setting:
             "Users can disable Safe Browsing by unchecking 'Protect you and "

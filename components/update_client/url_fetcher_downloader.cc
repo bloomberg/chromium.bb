@@ -79,7 +79,7 @@ void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting: "This feature cannot be disabled."
           chrome_policy {
             ComponentUpdatesEnabled {

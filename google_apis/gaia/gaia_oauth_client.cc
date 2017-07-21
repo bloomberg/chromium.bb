@@ -141,7 +141,7 @@ void GaiaOAuthClient::Core::GetTokensFromAuthCode(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if the user "
             "signs out of Chrome, this request would not be made."
@@ -194,7 +194,7 @@ void GaiaOAuthClient::Core::RefreshToken(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if the user "
             "signs out of Chrome, this request would not be made."
@@ -253,7 +253,7 @@ void GaiaOAuthClient::Core::GetUserInfoImpl(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if the user "
             "signs out of Chrome, this request would not be made."
@@ -313,7 +313,7 @@ void GaiaOAuthClient::Core::GetTokenInfo(const std::string& qualifier,
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled in settings, but if the user "
             "signs out of Chrome, this request would not be made."

@@ -45,7 +45,7 @@ void AssetLinkRetriever::Start(net::URLRequestContextGetter* context_getter) {
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting: "No setting"
           policy_exception_justification:
             "The file is considered to be a resource of the page loaded."

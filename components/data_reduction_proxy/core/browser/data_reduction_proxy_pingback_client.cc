@@ -215,7 +215,7 @@ void DataReductionProxyPingbackClient::CreateFetcherForDataAndStart() {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "Users can control Data Saver on Android via 'Data Saver' setting. "
             "Data Saver is not available on iOS, and on desktop it is enabled "

@@ -189,7 +189,7 @@ class RequestImpl : public WebHistoryService::Request,
             destination: GOOGLE_OWNED_SERVICE
           }
           policy {
-            cookies_allowed: false
+            cookies_allowed: NO
             setting:
               "To disable this feature, users can either sign out or disable "
               "history sync via unchecking 'History' setting under 'Advanced "

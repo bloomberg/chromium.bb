@@ -78,7 +78,7 @@ bool TranslateURLFetcher::Request(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "Users can enable/disable this feature by toggling 'Offer to "
             "translate pages that aren't in a language you read.' in Chrome "

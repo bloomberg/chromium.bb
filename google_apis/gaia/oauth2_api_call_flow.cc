@@ -83,7 +83,7 @@ std::unique_ptr<URLFetcher> OAuth2ApiCallFlow::CreateURLFetcher(
       CompleteNetworkTrafficAnnotation("oauth2_api_call_flow",
                                        GetNetworkTrafficAnnotationTag(), R"(
           policy {
-            cookies_allowed: false
+            cookies_allowed: NO
           })");
   std::unique_ptr<URLFetcher> result = net::URLFetcher::Create(
       0, CreateApiCallUrl(), request_type, this, traffic_annotation);

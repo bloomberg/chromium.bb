@@ -360,7 +360,7 @@ SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "The user must allow the browser to access the microphone in a "
             "permission prompt. This is set per site (hostname pattern). In "
@@ -454,7 +454,7 @@ SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "The user must allow the browser to access the microphone in a "
             "permission prompt. This is set per site (hostname pattern). In "

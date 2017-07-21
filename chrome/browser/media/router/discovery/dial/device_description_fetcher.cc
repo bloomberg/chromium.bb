@@ -67,7 +67,7 @@ void DeviceDescriptionFetcher::Start() {
             "A device in the local network."
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled by settings and can only be "
             "disabled by media-router flag."

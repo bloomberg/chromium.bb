@@ -62,7 +62,7 @@ void ThumbnailSource::StartDataRequest(
         destination: GOOGLE_OWNED_SERVICE
       }
       policy {
-        cookies_allowed: false
+        cookies_allowed: NO
         setting:
           "Users can disable this feature by signing out of Chrome, or "
           "disabling Sync or History Sync in Chrome settings under 'Advanced "

@@ -423,7 +423,7 @@ void ZeroSuggestProvider::Run(const GURL& suggest_url) {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "Users can control this feature via the 'Use a prediction service "

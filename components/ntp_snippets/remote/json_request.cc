@@ -371,7 +371,7 @@ std::unique_ptr<net::URLFetcher> JsonRequest::Builder::BuildURLFetcher(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled by settings now (but is requested "
             "to be implemented in crbug.com/695129)."

@@ -49,7 +49,7 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
           destination: OTHER
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting: "User triggered requests cannot be disabled."
           policy_exception_justification: "Not implemented, it's good to do so."
         })");
@@ -68,7 +68,7 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
           destination: OTHER
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting: "User triggered requests cannot be disabled."
           policy_exception_justification: "Not implemented, it's good to do so."
         })");

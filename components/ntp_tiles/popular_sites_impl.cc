@@ -347,7 +347,7 @@ void PopularSitesImpl::FetchPopularSites() {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting: "This feature cannot be disabled in settings."
           policy_exception_justification:
             "Not implemented, considered not useful."

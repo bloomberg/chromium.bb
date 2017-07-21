@@ -3270,7 +3270,7 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "This feature cannot be disabled by settings, but it's is only "

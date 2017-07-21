@@ -93,7 +93,7 @@ void DoodleFetcherImpl::FetchDoodle(FinishedCallback callback) {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "Choosing a non-Google search engine in Chromium settings under "

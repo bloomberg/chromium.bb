@@ -2577,7 +2577,7 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
           destination: LOCAL
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting: "This feature cannot be disabled by settings."
           policy_exception_justification: "Not implemented."
         })");

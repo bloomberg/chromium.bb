@@ -65,7 +65,7 @@ void FeedbackUploaderChrome::DispatchReport(const std::string& data) {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature cannot be disabled by settings and is only activated "
             "by direct user request."

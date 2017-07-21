@@ -464,7 +464,7 @@ void WebRtcLogUploader::UploadCompressedLog(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature can be disabled by unchecking 'Report additional "
             "diagnostics to help improve Hangouts.' in Hangouts settings."

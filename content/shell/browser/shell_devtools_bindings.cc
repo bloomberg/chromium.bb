@@ -243,7 +243,7 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
               destination: OTHER
             }
             policy {
-              cookies_allowed: true
+              cookies_allowed: YES
               cookies_store: "user"
               setting:
                 "It's not possible to disable this feature from settings."

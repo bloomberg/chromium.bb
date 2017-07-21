@@ -281,7 +281,7 @@ void OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::GotAccessToken(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "Users can control this feature via selecting a non-Google default "
             "search engine in Chrome settings under 'Search Engine'."

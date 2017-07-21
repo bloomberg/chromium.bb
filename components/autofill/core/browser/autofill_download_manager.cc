@@ -50,7 +50,7 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "You can enable or disable this feature via 'Enable autofill to "
             "fill out web forms in a single click.' in Chromium's settings "
@@ -84,7 +84,7 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
         destination: GOOGLE_OWNED_SERVICE
       }
       policy {
-        cookies_allowed: false
+        cookies_allowed: NO
         setting:
           "You can enable or disable this feature via 'Enable autofill to "
           "fill out web forms in a single click.' in Chromium's settings "

@@ -227,7 +227,7 @@ void LogoTracker::FetchLogo() {
           destination: OTHER
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "Choosing a non-Google search engine in Chromium settings under "

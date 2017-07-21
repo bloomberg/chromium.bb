@@ -140,7 +140,7 @@ bool NetworkLocationRequest::MakeRequest(const base::string16& access_token,
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "Users can control this feature via the Location setting under "
             "'Privacy', 'Content Settings...'."

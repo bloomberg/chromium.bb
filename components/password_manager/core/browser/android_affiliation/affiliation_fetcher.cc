@@ -114,7 +114,7 @@ void AffiliationFetcher::StartRequest() {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "Users can enable or disable this feature either by stoping "
             "syncing passwords to Google (via unchecking 'Passwords' in "

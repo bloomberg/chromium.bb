@@ -291,7 +291,7 @@ void RenderFrameMessageFilter::DownloadUrl(int render_view_id,
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting: "This feature cannot be disabled by settings."
           chrome_policy {

@@ -255,7 +255,7 @@ void CaptivePortalService::DetectCaptivePortalInternal() {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "Users can enable/disable this feature by toggling 'Use a web "
             "service to resolve network errors' in Chromium settings under "

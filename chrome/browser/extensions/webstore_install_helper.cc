@@ -73,7 +73,7 @@ void WebstoreInstallHelper::Start() {
             destination: GOOGLE_OWNED_SERVICE
           }
           policy {
-            cookies_allowed: false
+            cookies_allowed: NO
             setting:
               "There's no direct Chromium's setting to disable this, but you "
               "could uninstall all extensions and not install (or begin the "

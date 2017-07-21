@@ -84,7 +84,7 @@ void BlacklistStateFetcher::SendRequest(const std::string& id) {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "Safe Browsing cookies store"
           setting:
             "Users can enable or disable this feature by toggling 'Protect you "

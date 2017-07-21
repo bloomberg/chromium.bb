@@ -273,7 +273,7 @@ void ChromeAutocompleteProviderClient::PrefetchImage(const GURL& url) {
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "You can enable or disable this feature via 'Use a prediction "

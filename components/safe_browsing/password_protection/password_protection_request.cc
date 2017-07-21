@@ -195,7 +195,7 @@ void PasswordProtectionRequest::SendRequest() {
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "Safe Browsing Cookie Store"
           setting:
             "Users can control this feature via 'Protect you and your device "
