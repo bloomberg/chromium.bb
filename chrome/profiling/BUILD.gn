@@ -51,6 +51,7 @@ if (enable_oop_heap_profiling) {
   source_set("unit_tests") {
     testonly = true
     sources = [
+      "backtrace_storage_unittest.cc",
       "json_exporter_unittest.cc",
     ]
     deps = [

@@ -12,33 +12,26 @@ BacktraceStorage::BacktraceStorage() {}
 
 BacktraceStorage::~BacktraceStorage() {}
 
-BacktraceStorage::Key BacktraceStorage::Insert(std::vector<Address>&& bt) {
+const Backtrace* BacktraceStorage::Insert(std::vector<Address>&& bt) {
   base::AutoLock lock(lock_);
 
-  BacktraceStorage::Key key =
-      backtraces_.insert(Backtrace(std::move(bt))).first;
-  key->AddRef();
-  return key;
+  auto iter = backtraces_.insert(Backtrace(std::move(bt))).first;
+  iter->AddRef();
+  return &*iter;
 }
 
-void BacktraceStorage::Free(const Key& key) {
+void BacktraceStorage::Free(const Backtrace* bt) {
   base::AutoLock lock(lock_);
-  if (!key->Release())
-    backtraces_.erase(key);
+  if (!bt->Release())
+    backtraces_.erase(backtraces_.find(*bt));
 }
 
-void BacktraceStorage::Free(const std::vector<Key>& keys) {
+void BacktraceStorage::Free(const std::vector<const Backtrace*>& bts) {
   base::AutoLock lock(lock_);
-  for (size_t i = 0; i < keys.size(); i++) {
-    if (!keys[i]->Release())
-      backtraces_.erase(keys[i]);
+  for (size_t i = 0; i < bts.size(); i++) {
+    if (!bts[i]->Release())
+      backtraces_.erase(backtraces_.find(*bts[i]));
   }
-}
-
-const Backtrace& BacktraceStorage::GetBacktraceForKey(const Key& key) const {
-  // Since the caller should own a reference to the key and the container has
-  // stable iterators, we can access without a lock.
-  return *key;
 }
 
 }  // namespace profiling

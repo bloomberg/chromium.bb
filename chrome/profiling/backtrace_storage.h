@@ -15,12 +15,16 @@
 
 namespace profiling {
 
+// Backtraces are stored effectively as atoms, and this class is the backing
+// store for the atoms. When you insert a backtrace, it will get de-duped with
+// existing ones, one refcount added, and returned. When you're done with a
+// backtrace, call Free() which will release the refcount. This may or may not
+// release the underlying Backtrace itself, depending on whether other refs are
+// held.
+//
 // This class is threadsafe.
 class BacktraceStorage {
  public:
-  using Container = std::unordered_set<Backtrace>;
-  using Key = Container::iterator;
-
   BacktraceStorage();
   ~BacktraceStorage();
 
@@ -30,17 +34,15 @@ class BacktraceStorage {
   //
   // The returned key will have a reference count associated with it, call
   // Free when the key is no longer needed.
-  Key Insert(std::vector<Address>&& bt);
+  const Backtrace* Insert(std::vector<Address>&& bt);
 
   // Frees one reference to a backtrace.
-  void Free(const Key& key);
-  void Free(const std::vector<Key>& keys);
-
-  // Returns the backtrace associated with the given key. Assumes the caller
-  // holds a key to it that will keep the backtrace in scope.
-  const Backtrace& GetBacktraceForKey(const Key& key) const;
+  void Free(const Backtrace* bt);
+  void Free(const std::vector<const Backtrace*>& bts);
 
  private:
+  using Container = std::unordered_set<Backtrace>;
+
   mutable base::Lock lock_;
 
   // List of live backtraces for de-duping. Protected by the lock_.
