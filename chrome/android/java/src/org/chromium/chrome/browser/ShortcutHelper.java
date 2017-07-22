@@ -83,6 +83,10 @@ public class ShortcutHelper {
             "org.chromium.chrome.browser.webapp_shortcut_version";
     public static final String REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB =
             "REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB";
+    // Whether the webapp should navigate to the URL in {@link EXTRA_URL} if the webapp is already
+    // open. Applies to webapps and WebAPKs. Value contains "webapk" for backward compatibility.
+    public static final String EXTRA_FORCE_NAVIGATION =
+            "org.chromium.chrome.browser.webapk_force_navigation";
 
     // When a new field is added to the intent, this version should be incremented so that it will
     // be correctly populated into the WebappRegistry/WebappDataStorage.

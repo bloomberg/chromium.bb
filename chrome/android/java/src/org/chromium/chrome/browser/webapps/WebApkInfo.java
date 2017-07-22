@@ -35,7 +35,6 @@ public class WebApkInfo extends WebappInfo {
 
     private static final String TAG = "WebApkInfo";
 
-    private boolean mForceNavigation;
     private Icon mBadgeIcon;
     private String mWebApkPackageName;
     private int mShellApkVersion;
@@ -63,10 +62,10 @@ public class WebApkInfo extends WebappInfo {
         int source = sourceFromIntent(intent);
 
         // Force navigation if the extra is not specified to avoid breaking deep linking for old
-        // WebAPKs which don't specify the {@link WebApkConstants#EXTRA_WEBAPK_FORCE_NAVIGATION}
-        // intent extra.
+        // WebAPKs which don't specify the {@link ShortcutHelper#EXTRA_FORCE_NAVIGATION} intent
+        // extra.
         boolean forceNavigation = IntentUtils.safeGetBooleanExtra(
-                intent, WebApkConstants.EXTRA_WEBAPK_FORCE_NAVIGATION, true);
+                intent, ShortcutHelper.EXTRA_FORCE_NAVIGATION, true);
 
         return create(webApkPackageName, url, source, forceNavigation);
     }
@@ -135,10 +134,11 @@ public class WebApkInfo extends WebappInfo {
         int badgeIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.BADGE_ICON_ID, 0);
         Bitmap badgeIcon = decodeImageResource(res, badgeIconId);
 
-        return create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url, forceNavigation,
-                scope, new Icon(primaryIcon), new Icon(badgeIcon), name, shortName, displayMode,
+        return create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url, scope,
+                new Icon(primaryIcon), new Icon(badgeIcon), name, shortName, displayMode,
                 orientation, source, themeColor, backgroundColor, webApkPackageName,
-                shellApkVersion, manifestUrl, manifestStartUrl, iconUrlToMurmur2HashMap);
+                shellApkVersion, manifestUrl, manifestStartUrl, iconUrlToMurmur2HashMap,
+                forceNavigation);
     }
 
     /**
@@ -146,8 +146,6 @@ public class WebApkInfo extends WebappInfo {
      *
      * @param id                      ID for the WebAPK.
      * @param url                     URL that the WebAPK should navigate to when launched.
-     * @param forceNavigation         Whether the WebAPK should navigate to {@link url} if the
-     *                                WebAPK is already open.
      * @param scope                   Scope for the WebAPK.
      * @param primaryIcon             Primary icon to show for the WebAPK.
      * @param badgeIcon               Badge icon to use for notifications.
@@ -166,12 +164,14 @@ public class WebApkInfo extends WebappInfo {
      *                                WebAPK is launched from a deep link.
      * @param iconUrlToMurmur2HashMap Map of the WebAPK's icon URLs to Murmur2 hashes of the
      *                                icon untransformed bytes.
+     * @param forceNavigation         Whether the WebAPK should navigate to {@link url} if the
+     *                                WebAPK is already open.
      */
-    public static WebApkInfo create(String id, String url, boolean forceNavigation, String scope,
-            Icon primaryIcon, Icon badgeIcon, String name, String shortName, int displayMode,
-            int orientation, int source, long themeColor, long backgroundColor,
-            String webApkPackageName, int shellApkVersion, String manifestUrl,
-            String manifestStartUrl, Map<String, String> iconUrlToMurmur2HashMap) {
+    public static WebApkInfo create(String id, String url, String scope, Icon primaryIcon,
+            Icon badgeIcon, String name, String shortName, int displayMode, int orientation,
+            int source, long themeColor, long backgroundColor, String webApkPackageName,
+            int shellApkVersion, String manifestUrl, String manifestStartUrl,
+            Map<String, String> iconUrlToMurmur2HashMap, boolean forceNavigation) {
         if (id == null || url == null || manifestStartUrl == null || webApkPackageName == null) {
             Log.e(TAG,
                     "Incomplete data provided: " + id + ", " + url + ", " + manifestStartUrl + ", "
@@ -186,21 +186,19 @@ public class WebApkInfo extends WebappInfo {
             scope = ShortcutHelper.getScopeFromUrl(manifestStartUrl);
         }
 
-        return new WebApkInfo(id, url, forceNavigation, scope, primaryIcon, badgeIcon, name,
-                shortName, displayMode, orientation, source, themeColor, backgroundColor,
-                webApkPackageName, shellApkVersion, manifestUrl, manifestStartUrl,
-                iconUrlToMurmur2HashMap);
+        return new WebApkInfo(id, url, scope, primaryIcon, badgeIcon, name, shortName, displayMode,
+                orientation, source, themeColor, backgroundColor, webApkPackageName,
+                shellApkVersion, manifestUrl, manifestStartUrl, iconUrlToMurmur2HashMap,
+                forceNavigation);
     }
 
-    protected WebApkInfo(String id, String url, boolean forceNavigation, String scope,
-            Icon primaryIcon, Icon badgeIcon, String name, String shortName, int displayMode,
-            int orientation, int source, long themeColor, long backgroundColor,
-            String webApkPackageName, int shellApkVersion, String manifestUrl,
-            String manifestStartUrl, Map<String, String> iconUrlToMurmur2HashMap) {
+    protected WebApkInfo(String id, String url, String scope, Icon primaryIcon, Icon badgeIcon,
+            String name, String shortName, int displayMode, int orientation, int source,
+            long themeColor, long backgroundColor, String webApkPackageName, int shellApkVersion,
+            String manifestUrl, String manifestStartUrl,
+            Map<String, String> iconUrlToMurmur2HashMap, boolean forceNavigation) {
         super(id, url, scope, primaryIcon, name, shortName, displayMode, orientation, source,
-                themeColor,
-                backgroundColor, false);
-        mForceNavigation = forceNavigation;
+                themeColor, backgroundColor, false /* isIconGenerated */, forceNavigation);
         mBadgeIcon = badgeIcon;
         mWebApkPackageName = webApkPackageName;
         mShellApkVersion = shellApkVersion;
@@ -210,11 +208,6 @@ public class WebApkInfo extends WebappInfo {
     }
 
     protected WebApkInfo() {}
-
-    @Override
-    public boolean shouldForceNavigation() {
-        return mForceNavigation;
-    }
 
     /**
      * Returns the badge icon in Bitmap form.
@@ -250,7 +243,7 @@ public class WebApkInfo extends WebappInfo {
         intent.putExtra(ShortcutHelper.EXTRA_URL, uri().toString());
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, source());
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackageName());
-        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_FORCE_NAVIGATION, mForceNavigation);
+        intent.putExtra(ShortcutHelper.EXTRA_FORCE_NAVIGATION, shouldForceNavigation());
     }
 
     /**

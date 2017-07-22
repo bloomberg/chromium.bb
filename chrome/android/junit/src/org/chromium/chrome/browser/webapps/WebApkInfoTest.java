@@ -118,7 +118,7 @@ public class WebApkInfoTest {
 
         Intent intent = new Intent();
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
-        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_FORCE_NAVIGATION, true);
+        intent.putExtra(ShortcutHelper.EXTRA_FORCE_NAVIGATION, true);
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
 
@@ -256,7 +256,7 @@ public class WebApkInfoTest {
 
     /**
      * Prior to SHELL_APK_VERSION 2, WebAPKs did not specify
-     * {@link WebApkConstants.EXTRA_WEBAPK_FORCE_NAVIGATION} in the intent. Test that
+     * {@link ShortcutHelper#EXTRA_FORCE_NAVIGATION} in the intent. Test that
      * {@link WebApkInfo#shouldForceNavigation()} defaults to true when the intent extra is not
      * specified.
      */

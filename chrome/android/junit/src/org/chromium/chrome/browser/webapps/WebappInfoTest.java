@@ -33,7 +33,8 @@ public class WebappInfoTest {
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false /* isIconGenerated */,
+                false /* forceNavigation */);
         Assert.assertNotNull(info);
     }
 
@@ -47,7 +48,8 @@ public class WebappInfoTest {
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false /* isIconGenerated */,
+                false /* forceNavigation */);
         Assert.assertNotNull(info);
     }
 
@@ -130,7 +132,8 @@ public class WebappInfoTest {
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.FULLSCREEN, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false /* isIconGenerated */,
+                false /* forceNavigation */);
         Assert.assertEquals(WebDisplayMode.FULLSCREEN, info.displayMode());
         Assert.assertEquals(ScreenOrientationValues.DEFAULT, info.orientation());
         Assert.assertEquals(ShortcutSource.UNKNOWN, info.source());
@@ -145,9 +148,10 @@ public class WebappInfoTest {
         long themeColor = 0xFF00FF00L;
         long backgroundColor = 0xFF0000FFL;
 
-        WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
-                WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
-                themeColor, backgroundColor, false);
+        WebappInfo info =
+                WebappInfo.create(id, url, null, null, name, shortName, WebDisplayMode.STANDALONE,
+                        ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN, themeColor,
+                        backgroundColor, false /* isIconGenerated */, false /* forceNavigation */);
         Assert.assertEquals(themeColor, info.themeColor());
         Assert.assertEquals(backgroundColor, info.backgroundColor());
     }
@@ -162,7 +166,8 @@ public class WebappInfoTest {
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false /* isIconGenerated */,
+                false /* forceNavigation */);
         Assert.assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.themeColor());
         Assert.assertEquals(
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.backgroundColor());
@@ -269,6 +274,18 @@ public class WebappInfoTest {
 
             Assert.assertFalse(name, WebappInfo.create(intent).isIconGenerated());
         }
+    }
+
+    /**
+     * Test that {@link WebappInfo#shouldForceNavigation()} defaults to false when the
+     * {@link ShortcutHelper#EXTRA_FORCE_NAVIGATION} intent extra is not specified.
+     */
+    @Test
+    public void testForceNavigationNotSpecified() {
+        Intent intent = new Intent();
+        intent.putExtra(ShortcutHelper.EXTRA_ID, "webapp_id");
+        intent.putExtra(ShortcutHelper.EXTRA_URL, "about:blank");
+        Assert.assertFalse(WebappInfo.create(intent).shouldForceNavigation());
     }
 
     /**

@@ -118,6 +118,7 @@ public class ServiceTabLauncher {
             // webapp's scope, so it is valid.
             intent.putExtra(ShortcutHelper.EXTRA_URL, url);
             intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
+            intent.putExtra(ShortcutHelper.EXTRA_FORCE_NAVIGATION, true);
             tabDelegate.createNewStandaloneFrame(intent);
         }
     }

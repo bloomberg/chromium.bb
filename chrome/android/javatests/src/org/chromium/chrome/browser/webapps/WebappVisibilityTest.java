@@ -124,12 +124,12 @@ public class WebappVisibilityTest {
         WebappInfo info;
         if (type == Type.WEBAPP) {
             delegate = new WebappBrowserControlsDelegate(null, new Tab(0, false, null));
-            info = WebappInfo.create(
-                    "", webappStartUrlOrScopeUrl, null, null, null, null, 0, 0, 0, 0, 0, false);
+            info = WebappInfo.create("", webappStartUrlOrScopeUrl, null, null, null, null, 0,
+                    0, 0, 0, 0, false /* isIconGenerated */, false /* forceNavigation */);
         } else {
             delegate = new WebApkBrowserControlsDelegate(null, new Tab(0, false, null));
-            info = WebApkInfo.create("", "", false /* forceNavigation */, webappStartUrlOrScopeUrl,
-                    null, null, null, null, 0, 0, 0, 0, 0, "", 0, null, "", null);
+            info = WebApkInfo.create("", "", webappStartUrlOrScopeUrl, null, null, null, null, 0, 0,
+                    0, 0, 0, "", 0, null, "", null, false /* forceNavigation */);
         }
         return delegate.shouldShowBrowserControls(info, url, securityLevel);
     }

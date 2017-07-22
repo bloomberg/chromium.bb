@@ -32,7 +32,7 @@ public class WebApkNavigationClient {
 
         intent.setPackage(webApkPackageName);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_FORCE_NAVIGATION, forceNavigation);
+        intent.putExtra(WebApkConstants.EXTRA_FORCE_NAVIGATION, forceNavigation);
         return intent;
     }
 }

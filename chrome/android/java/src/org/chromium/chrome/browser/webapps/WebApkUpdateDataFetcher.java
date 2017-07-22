@@ -116,12 +116,11 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
             iconUrlToMurmur2HashMap.put(iconUrl, murmur2Hash);
         }
 
-        WebApkInfo info = WebApkInfo.create(mOldInfo.id(), mOldInfo.uri().toString(),
-                mOldInfo.shouldForceNavigation(), scopeUrl, new WebApkInfo.Icon(primaryIconBitmap),
-                new WebApkInfo.Icon(badgeIconBitmap), name, shortName, displayMode, orientation,
-                mOldInfo.source(), themeColor, backgroundColor, mOldInfo.webApkPackageName(),
-                mOldInfo.shellApkVersion(), mOldInfo.manifestUrl(), manifestStartUrl,
-                iconUrlToMurmur2HashMap);
+        WebApkInfo info = WebApkInfo.create(mOldInfo.id(), mOldInfo.uri().toString(), scopeUrl,
+                new WebApkInfo.Icon(primaryIconBitmap), new WebApkInfo.Icon(badgeIconBitmap), name,
+                shortName, displayMode, orientation, mOldInfo.source(), themeColor, backgroundColor,
+                mOldInfo.webApkPackageName(), mOldInfo.shellApkVersion(), mOldInfo.manifestUrl(),
+                manifestStartUrl, iconUrlToMurmur2HashMap, mOldInfo.shouldForceNavigation());
         mObserver.onGotManifestData(info, primaryIconUrl, badgeIconUrl);
     }
 
