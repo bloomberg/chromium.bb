@@ -7,6 +7,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/host/hit_test/hit_test_query.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
@@ -75,8 +76,6 @@ class HitTestAggregatorTest : public testing::Test {
   void SetUp() override {}
   void TearDown() override { aggregator_.Reset(); }
 
-  TestHitTestAggregator aggregator_;
-
   // Creates a hit test data element with 8 children recursively to
   // the specified depth.  SurfaceIds are generated in sequential order and
   // the method returns the next unused id.
@@ -106,6 +105,9 @@ class HitTestAggregatorTest : public testing::Test {
     aggregator_.SubmitHitTestRegionList(std::move(hit_test_region_list));
     return id;
   }
+
+  TestHitTestAggregator aggregator_;
+  HitTestQuery hit_test_query_;
 };
 
 // TODO(gklassen): Add tests for 3D use cases as suggested by and with
@@ -155,6 +157,30 @@ TEST_F(HitTestAggregatorTest, OneSurface) {
   EXPECT_EQ(display_surface_id.frame_sink_id(), region->frame_sink_id);
   EXPECT_EQ(gfx::Rect(0, 0, 1024, 768), region->rect);
   EXPECT_EQ(0, region->child_count);
+
+  hit_test_query_.set_aggregated_hit_test_region_list(regions, 1);
+
+  // All points are in e's coordinate system when we reach this case.
+  gfx::Point point1(1, 1);
+  gfx::Point point2(1024, 768);
+  gfx::Point point3(0, 0);
+
+  Target target1 = hit_test_query_.FindTargetForLocation(point1);
+  EXPECT_EQ(display_surface_id.frame_sink_id(), target1.frame_sink_id);
+  EXPECT_EQ(point1, target1.location_in_target);
+  EXPECT_EQ(mojom::kHitTestMine, target1.flags);
+
+  // point2 is on the bounds of e so no target found.
+  Target target2 = hit_test_query_.FindTargetForLocation(point2);
+  EXPECT_EQ(FrameSinkId(), target2.frame_sink_id);
+  EXPECT_EQ(gfx::Point(), target2.location_in_target);
+  EXPECT_FALSE(target2.flags);
+
+  // There's a valid Target for point3, see Rect::Contains.
+  Target target3 = hit_test_query_.FindTargetForLocation(point3);
+  EXPECT_EQ(display_surface_id.frame_sink_id(), target3.frame_sink_id);
+  EXPECT_EQ(point3, target3.location_in_target);
+  EXPECT_EQ(mojom::kHitTestMine, target3.flags);
 }
 
 // One opaque embedder with two regions.
@@ -177,10 +203,12 @@ TEST_F(HitTestAggregatorTest, OneEmbedderTwoRegions) {
   e_hit_test_data->bounds.SetRect(0, 0, 1024, 768);
 
   auto e_hit_test_region_r1 = mojom::HitTestRegion::New();
+  e_hit_test_region_r1->surface_id = e_surface_id;
   e_hit_test_region_r1->flags = mojom::kHitTestMine;
   e_hit_test_region_r1->rect.SetRect(100, 100, 200, 400);
 
   auto e_hit_test_region_r2 = mojom::HitTestRegion::New();
+  e_hit_test_region_r2->surface_id = e_surface_id;
   e_hit_test_region_r2->flags = mojom::kHitTestMine;
   e_hit_test_region_r2->rect.SetRect(400, 100, 300, 400);
 
@@ -229,6 +257,34 @@ TEST_F(HitTestAggregatorTest, OneEmbedderTwoRegions) {
   EXPECT_EQ(mojom::kHitTestMine, region->flags);
   EXPECT_EQ(gfx::Rect(400, 100, 300, 400), region->rect);
   EXPECT_EQ(0, region->child_count);
+
+  hit_test_query_.set_aggregated_hit_test_region_list(regions, 3);
+
+  // All points are in e's coordinate system when we reach this case.
+  gfx::Point point1(99, 200);
+  gfx::Point point2(150, 150);
+  gfx::Point point3(400, 400);
+  gfx::Point point4(1200, 350);
+
+  Target target1 = hit_test_query_.FindTargetForLocation(point1);
+  EXPECT_EQ(e_surface_id.frame_sink_id(), target1.frame_sink_id);
+  EXPECT_EQ(point1, target1.location_in_target);
+  EXPECT_EQ(mojom::kHitTestMine, target1.flags);
+
+  Target target2 = hit_test_query_.FindTargetForLocation(point2);
+  EXPECT_EQ(e_surface_id.frame_sink_id(), target2.frame_sink_id);
+  EXPECT_EQ(gfx::Point(50, 50), target2.location_in_target);
+  EXPECT_EQ(mojom::kHitTestMine, target2.flags);
+
+  Target target3 = hit_test_query_.FindTargetForLocation(point3);
+  EXPECT_EQ(e_surface_id.frame_sink_id(), target3.frame_sink_id);
+  EXPECT_EQ(gfx::Point(0, 300), target3.location_in_target);
+  EXPECT_EQ(mojom::kHitTestMine, target3.flags);
+
+  Target target4 = hit_test_query_.FindTargetForLocation(point4);
+  EXPECT_EQ(FrameSinkId(), target4.frame_sink_id);
+  EXPECT_EQ(gfx::Point(), target4.location_in_target);
+  EXPECT_FALSE(target4.flags);
 }
 
 // One embedder with two children.
@@ -330,6 +386,35 @@ TEST_F(HitTestAggregatorTest, OneEmbedderTwoChildren) {
   EXPECT_EQ(c2_surface_id.frame_sink_id(), region->frame_sink_id);
   EXPECT_EQ(gfx::Rect(400, 100, 400, 300), region->rect);
   EXPECT_EQ(0, region->child_count);
+
+  hit_test_query_.set_aggregated_hit_test_region_list(regions, 3);
+
+  // All points are in e's coordinate system when we reach this case.
+  // They all go to e since c1 and c2 cannot receive events.
+  gfx::Point point1(99, 200);
+  gfx::Point point2(150, 150);
+  gfx::Point point3(400, 400);
+  gfx::Point point4(1200, 350);
+
+  Target target1 = hit_test_query_.FindTargetForLocation(point1);
+  EXPECT_EQ(e_surface_id.frame_sink_id(), target1.frame_sink_id);
+  EXPECT_EQ(point1, target1.location_in_target);
+  EXPECT_EQ(mojom::kHitTestMine, target1.flags);
+
+  Target target2 = hit_test_query_.FindTargetForLocation(point2);
+  EXPECT_EQ(e_surface_id.frame_sink_id(), target2.frame_sink_id);
+  EXPECT_EQ(point2, target2.location_in_target);
+  EXPECT_EQ(mojom::kHitTestMine, target2.flags);
+
+  Target target3 = hit_test_query_.FindTargetForLocation(point3);
+  EXPECT_EQ(e_surface_id.frame_sink_id(), target3.frame_sink_id);
+  EXPECT_EQ(point3, target3.location_in_target);
+  EXPECT_EQ(mojom::kHitTestMine, target3.flags);
+
+  Target target4 = hit_test_query_.FindTargetForLocation(point4);
+  EXPECT_EQ(FrameSinkId(), target4.frame_sink_id);
+  EXPECT_EQ(gfx::Point(), target4.location_in_target);
+  EXPECT_FALSE(target4.flags);
 }
 
 // Occluded child frame (OOPIF).
@@ -424,6 +509,28 @@ TEST_F(HitTestAggregatorTest, OccludedChildFrame) {
   EXPECT_EQ(c_surface_id.frame_sink_id(), region->frame_sink_id);
   EXPECT_EQ(gfx::Rect(100, 100, 200, 500), region->rect);
   EXPECT_EQ(0, region->child_count);
+
+  hit_test_query_.set_aggregated_hit_test_region_list(regions, 3);
+
+  // All points are in e's coordinate system when we reach this case.
+  gfx::Point point1(99, 200);
+  gfx::Point point2(150, 150);
+  gfx::Point point3(250, 250);
+
+  Target target1 = hit_test_query_.FindTargetForLocation(point1);
+  EXPECT_EQ(e_surface_id.frame_sink_id(), target1.frame_sink_id);
+  EXPECT_EQ(point1, target1.location_in_target);
+  EXPECT_EQ(mojom::kHitTestMine, target1.flags);
+
+  Target target2 = hit_test_query_.FindTargetForLocation(point2);
+  EXPECT_EQ(c_surface_id.frame_sink_id(), target2.frame_sink_id);
+  EXPECT_EQ(gfx::Point(50, 50), target2.location_in_target);
+  EXPECT_EQ(mojom::kHitTestChildSurface | mojom::kHitTestMine, target2.flags);
+
+  Target target3 = hit_test_query_.FindTargetForLocation(point3);
+  EXPECT_EQ(e_surface_id.frame_sink_id(), target3.frame_sink_id);
+  EXPECT_EQ(gfx::Point(50, 50), target3.location_in_target);
+  EXPECT_EQ(mojom::kHitTestMine, target3.flags);
 }
 
 // Foreground child frame (OOPIF).
@@ -519,6 +626,34 @@ TEST_F(HitTestAggregatorTest, ForegroundChildFrame) {
   EXPECT_EQ(e_surface_id.frame_sink_id(), region->frame_sink_id);
   EXPECT_EQ(gfx::Rect(200, 200, 300, 200), region->rect);
   EXPECT_EQ(0, region->child_count);
+
+  hit_test_query_.set_aggregated_hit_test_region_list(regions, 3);
+
+  // All points are in e's coordinate system when we reach this case.
+  gfx::Point point1(99, 200);
+  gfx::Point point2(150, 150);
+  gfx::Point point3(250, 250);
+  gfx::Point point4(350, 300);
+
+  Target target1 = hit_test_query_.FindTargetForLocation(point1);
+  EXPECT_EQ(e_surface_id.frame_sink_id(), target1.frame_sink_id);
+  EXPECT_EQ(point1, target1.location_in_target);
+  EXPECT_EQ(mojom::kHitTestMine, target1.flags);
+
+  Target target2 = hit_test_query_.FindTargetForLocation(point2);
+  EXPECT_EQ(c_surface_id.frame_sink_id(), target2.frame_sink_id);
+  EXPECT_EQ(gfx::Point(50, 50), target2.location_in_target);
+  EXPECT_EQ(mojom::kHitTestChildSurface | mojom::kHitTestMine, target2.flags);
+
+  Target target3 = hit_test_query_.FindTargetForLocation(point3);
+  EXPECT_EQ(c_surface_id.frame_sink_id(), target3.frame_sink_id);
+  EXPECT_EQ(gfx::Point(150, 150), target3.location_in_target);
+  EXPECT_EQ(mojom::kHitTestChildSurface | mojom::kHitTestMine, target3.flags);
+
+  Target target4 = hit_test_query_.FindTargetForLocation(point4);
+  EXPECT_EQ(e_surface_id.frame_sink_id(), target4.frame_sink_id);
+  EXPECT_EQ(gfx::Point(150, 100), target4.location_in_target);
+  EXPECT_EQ(mojom::kHitTestMine, target4.flags);
 }
 
 // One embedder with a clipped child with a tab and transparent background.
@@ -549,7 +684,7 @@ TEST_F(HitTestAggregatorTest, ClippedChildWithTabAndTransparentBackground) {
   auto e_hit_test_region_c = mojom::HitTestRegion::New();
   e_hit_test_region_c->flags = mojom::kHitTestChildSurface;
   e_hit_test_region_c->surface_id = c_surface_id;
-  e_hit_test_region_c->rect.SetRect(200, 100, 1600, 800);
+  e_hit_test_region_c->rect.SetRect(300, 100, 1600, 800);
   e_hit_test_region_c->transform.Translate(200, 100);
 
   e_hit_test_data->regions.push_back(std::move(e_hit_test_region_c));
@@ -638,7 +773,7 @@ TEST_F(HitTestAggregatorTest, ClippedChildWithTabAndTransparentBackground) {
   region = &regions[1];
   EXPECT_EQ(region->flags, mojom::kHitTestChildSurface | mojom::kHitTestIgnore);
   EXPECT_EQ(c_surface_id.frame_sink_id(), region->frame_sink_id);
-  EXPECT_EQ(gfx::Rect(200, 100, 1600, 800), region->rect);
+  EXPECT_EQ(gfx::Rect(300, 100, 1600, 800), region->rect);
   EXPECT_EQ(2, region->child_count);
 
   gfx::Point point(300, 300);
@@ -656,6 +791,34 @@ TEST_F(HitTestAggregatorTest, ClippedChildWithTabAndTransparentBackground) {
   EXPECT_EQ(b_surface_id.frame_sink_id(), region->frame_sink_id);
   EXPECT_EQ(gfx::Rect(0, 100, 800, 600), region->rect);
   EXPECT_EQ(0, region->child_count);
+
+  hit_test_query_.set_aggregated_hit_test_region_list(regions, 4);
+
+  // All points are in e's coordinate system when we reach this case.
+  gfx::Point point1(1, 1);
+  gfx::Point point2(100, 50);
+  gfx::Point point3(400, 70);
+  gfx::Point point4(200, 200);
+
+  Target target1 = hit_test_query_.FindTargetForLocation(point1);
+  EXPECT_EQ(e_surface_id.frame_sink_id(), target1.frame_sink_id);
+  EXPECT_EQ(point1, target1.location_in_target);
+  EXPECT_EQ(mojom::kHitTestMine, target1.flags);
+
+  Target target2 = hit_test_query_.FindTargetForLocation(point2);
+  EXPECT_EQ(a_surface_id.frame_sink_id(), target2.frame_sink_id);
+  EXPECT_EQ(gfx::Point(0, 50), target2.location_in_target);
+  EXPECT_EQ(mojom::kHitTestChildSurface | mojom::kHitTestMine, target2.flags);
+
+  Target target3 = hit_test_query_.FindTargetForLocation(point3);
+  EXPECT_EQ(e_surface_id.frame_sink_id(), target3.frame_sink_id);
+  EXPECT_EQ(point3, target3.location_in_target);
+  EXPECT_EQ(mojom::kHitTestMine, target3.flags);
+
+  Target target4 = hit_test_query_.FindTargetForLocation(point4);
+  EXPECT_EQ(b_surface_id.frame_sink_id(), target4.frame_sink_id);
+  EXPECT_EQ(gfx::Point(100, 100), target4.location_in_target);
+  EXPECT_EQ(mojom::kHitTestChildSurface | mojom::kHitTestMine, target4.flags);
 }
 
 // Three children deep.
@@ -790,6 +953,34 @@ TEST_F(HitTestAggregatorTest, ThreeChildrenDeep) {
   EXPECT_EQ(c3_surface_id.frame_sink_id(), region->frame_sink_id);
   EXPECT_EQ(gfx::Rect(100, 100, 300, 300), region->rect);
   EXPECT_EQ(0, region->child_count);
+
+  hit_test_query_.set_aggregated_hit_test_region_list(regions, 4);
+
+  // All points are in e's coordinate system when we reach this case.
+  gfx::Point point1(1, 1);
+  gfx::Point point2(100, 150);
+  gfx::Point point3(250, 450);
+  gfx::Point point4(450, 550);
+
+  Target target1 = hit_test_query_.FindTargetForLocation(point1);
+  EXPECT_EQ(e_surface_id.frame_sink_id(), target1.frame_sink_id);
+  EXPECT_EQ(point1, target1.location_in_target);
+  EXPECT_EQ(mojom::kHitTestMine, target1.flags);
+
+  Target target2 = hit_test_query_.FindTargetForLocation(point2);
+  EXPECT_EQ(c3_surface_id.frame_sink_id(), target2.frame_sink_id);
+  EXPECT_EQ(gfx::Point(0, 50), target2.location_in_target);
+  EXPECT_EQ(mojom::kHitTestChildSurface | mojom::kHitTestMine, target2.flags);
+
+  Target target3 = hit_test_query_.FindTargetForLocation(point3);
+  EXPECT_EQ(c2_surface_id.frame_sink_id(), target3.frame_sink_id);
+  EXPECT_EQ(gfx::Point(50, 250), target3.location_in_target);
+  EXPECT_EQ(mojom::kHitTestChildSurface | mojom::kHitTestMine, target3.flags);
+
+  Target target4 = hit_test_query_.FindTargetForLocation(point4);
+  EXPECT_EQ(c1_surface_id.frame_sink_id(), target4.frame_sink_id);
+  EXPECT_EQ(gfx::Point(150, 250), target4.location_in_target);
+  EXPECT_EQ(mojom::kHitTestChildSurface | mojom::kHitTestMine, target4.flags);
 }
 
 // Missing / late child.

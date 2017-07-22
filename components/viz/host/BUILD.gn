@@ -49,6 +49,7 @@ viz_source_set("unit_tests") {
     "//base/test:test_support",
     "//cc/ipc:interfaces",
     "//cc/surfaces",
+    "//components/viz/host/hit_test:unit_tests",
     "//gpu/ipc/host",
     "//mojo/public/cpp/bindings",
     "//services/ui/gpu/interfaces",

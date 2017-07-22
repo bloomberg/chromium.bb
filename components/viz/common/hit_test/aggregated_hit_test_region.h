@@ -15,7 +15,7 @@ namespace viz {
 
 // A AggregatedHitTestRegion element with child_count of kEndOfList indicates
 // the last element and end of the list.
-constexpr int kEndOfList = -1;
+constexpr int32_t kEndOfList = -1;
 
 // An array of AggregatedHitTestRegion elements is used to define the
 // aggregated hit-test data for the Display.
@@ -41,7 +41,7 @@ struct AggregatedHitTestRegion {
   // The number of children including their children below this entry.
   // If this element is not matched then child_count elements can be skipped
   // to move to the next entry.
-  int child_count;
+  int32_t child_count;
 };
 
 }  // namespace viz
