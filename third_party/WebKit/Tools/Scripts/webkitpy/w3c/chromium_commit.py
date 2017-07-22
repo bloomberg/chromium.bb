@@ -39,6 +39,9 @@ class ChromiumCommit(object):
         self.sha = sha
         self.position = position
 
+    def __str__(self):
+        return '{} "{}"'.format(self.short_sha, self.subject())
+
     @property
     def short_sha(self):
         return self.sha[0:10]

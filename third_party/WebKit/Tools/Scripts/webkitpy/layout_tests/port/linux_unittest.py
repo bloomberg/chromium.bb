@@ -147,7 +147,7 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
                 ['Xvfb', ':99', '-screen', '0', '1280x800x24', '-ac', '-dpi', '96'],
                 ['xdpyinfo'],
             ])
-        self.assertEqual(port.host.executive.full_calls[1].env.get('TMPDIR'), '/tmp')
+        self.assertEqual(port.host.executive.full_calls[1].kwargs['env'].get('TMPDIR'), '/tmp')
         env = port.setup_environ_for_server()
         self.assertEqual(env['DISPLAY'], ':99')
 
