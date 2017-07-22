@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_MESSAGING_MESSAGE_PROPERTY_PROVIDER_H_
-#define CHROME_BROWSER_EXTENSIONS_API_MESSAGING_MESSAGE_PROPERTY_PROVIDER_H_
+#ifndef EXTENSIONS_BROWSER_API_MESSAGING_MESSAGE_PROPERTY_PROVIDER_H_
+#define EXTENSIONS_BROWSER_API_MESSAGING_MESSAGE_PROPERTY_PROVIDER_H_
 
 #include <string>
 
@@ -49,15 +49,14 @@ class MessagePropertyProvider {
       const std::string& host,
       const ChannelIDCallback& reply);
 
-  static void GotChannelID(
-      scoped_refptr<base::TaskRunner> original_task_runner,
-      struct GetChannelIDOutput* output,
-      const ChannelIDCallback& reply,
-      int status);
+  static void GotChannelID(scoped_refptr<base::TaskRunner> original_task_runner,
+                           struct GetChannelIDOutput* output,
+                           const ChannelIDCallback& reply,
+                           int status);
 
   DISALLOW_COPY_AND_ASSIGN(MessagePropertyProvider);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_MESSAGING_MESSAGE_PROPERTY_PROVIDER_H_
+#endif  // EXTENSIONS_BROWSER_API_MESSAGING_MESSAGE_PROPERTY_PROVIDER_H_
