@@ -11,6 +11,8 @@ async_test(function(t) {
 
     video.onclick = t.unreached_func();
     video.ondblclick = t.unreached_func();
+    video.onpointerdown = t.unreached_func();
+    video.onpointerup = t.unreached_func();
     video.onmousedown = t.unreached_func();
     video.onmouseup = t.unreached_func();
     video.onkeydown = t.unreached_func();
@@ -46,6 +48,7 @@ async_test(function(t) {
         // Click to begin a drag.
         eventSender.mouseDown();
         video.onmousemove = t.unreached_func();
+        video.onpointermove = t.unreached_func();
 
         // Check that the timeline also captures mousemove if the
         // slider is being dragged.

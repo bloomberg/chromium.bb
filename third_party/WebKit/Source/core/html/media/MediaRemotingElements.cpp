@@ -5,7 +5,7 @@
 #include "core/html/media/MediaRemotingElements.h"
 
 #include "core/dom/ShadowRoot.h"
-#include "core/events/MouseEvent.h"
+#include "core/events/PointerEvent.h"
 #include "core/geometry/DOMRect.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/input/EventHandler.h"
@@ -18,10 +18,10 @@ using namespace HTMLNames;
 
 // ----------------------------
 
-class MediaRemotingExitButtonElement::MouseEventsListener final
+class MediaRemotingExitButtonElement::PointerEventsListener final
     : public EventListener {
  public:
-  explicit MouseEventsListener(MediaRemotingExitButtonElement& element)
+  explicit PointerEventsListener(MediaRemotingExitButtonElement& element)
       : EventListener(kCPPEventListenerType), element_(element) {}
 
   bool operator==(const EventListener& other) const override {
@@ -37,10 +37,10 @@ class MediaRemotingExitButtonElement::MouseEventsListener final
   void handleEvent(ExecutionContext* context, Event* event) override {
     DCHECK_EQ(event->type(), EventTypeNames::click);
 
-    MouseEvent* mouse_event = ToMouseEvent(event);
+    PointerEvent* pointer_event = ToPointerEvent(event);
     DOMRect* client_rect = element_->getBoundingClientRect();
-    const double x = mouse_event->x();
-    const double y = mouse_event->y();
+    const double x = pointer_event->x();
+    const double y = pointer_event->y();
     if (x < client_rect->left() || x > client_rect->right() ||
         y < client_rect->top() || y > client_rect->bottom())
       return;
@@ -56,7 +56,7 @@ class MediaRemotingExitButtonElement::MouseEventsListener final
 MediaRemotingExitButtonElement::MediaRemotingExitButtonElement(
     MediaRemotingInterstitial& interstitial)
     : HTMLDivElement(interstitial.GetDocument()), interstitial_(interstitial) {
-  listener_ = new MouseEventsListener(*this);
+  listener_ = new PointerEventsListener(*this);
   SetShadowPseudoId(AtomicString("-internal-media-remoting-disable-button"));
   setInnerText(interstitial.GetVideoElement().GetLocale().QueryString(
                    WebLocalizedString::kMediaRemotingDisableText),
