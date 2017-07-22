@@ -18,8 +18,8 @@ rm -rf node_modules
 
 npm install --no-bin-links --only=prod
 
-# Apply local patch to vulcanize.
-patch -d node_modules/vulcanize/ -p1 < chromium_vulcanize.patch
+# Apply local patch to polymer-bundler.
+patch -d node_modules/polymer-bundler/ -p1 < chromium_polymer_bundler.patch
 
 rsync -c --delete -r -q --exclude-from="npm_exclude.txt" \
       --prune-empty-dirs "node_modules/" "node_modules_filtered/"

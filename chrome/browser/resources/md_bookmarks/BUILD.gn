@@ -4,11 +4,11 @@ vulcanized_unbuilt = "vulcanized.unbuilt.html"
 
 vulcanize("vulcanize") {
   host = "bookmarks"
-  html_in_file = "bookmarks.html"
-  html_out_file = vulcanized_unbuilt
+  html_in_files = [ "bookmarks.html" ]
+  html_out_files = [ vulcanized_unbuilt ]
 
   input = rebase_path(".", root_build_dir)
-  js_out_file = "crisper.js"
+  js_out_files = [ "crisper.js" ]
 
   deps = []
 }

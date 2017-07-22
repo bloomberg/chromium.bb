@@ -5,8 +5,8 @@
   "dependencies": {
     "crisper": "2.0.2",
     "eslint": "3.19.0",
+    "polymer-bundler": "3.0.1",
     "polymer-css-build": "0.1.2",
-    "uglify-es": "3.0.15",
-    "vulcanize": "1.15.4"
+    "uglify-es": "3.0.15"
   }
 }

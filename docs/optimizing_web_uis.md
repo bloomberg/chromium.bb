@@ -27,7 +27,7 @@ continue (i.e. script execution may be paused).
 ```
 
 To reduce this latency, Chrome uses a tool created by the Polymer project named
-[vulcanize](https://github.com/Polymer/polymer-bundler/tree/1.x).  It processes
+[polymer-bundler](https://github.com/Polymer/polymer-bundler).  It processes
 a page starting from a URL entry point and inlines resources the first time
 they're encountered.  This greatly decreases latency due to HTML imports.
 
