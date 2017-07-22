@@ -19,7 +19,7 @@ TransientUrlBar::TransientUrlBar(
     const base::Callback<void(UiUnsupportedMode)>& failure_callback)
     : TexturedElement(preferred_width),
       texture_(base::MakeUnique<UrlBarTexture>(true, failure_callback)),
-      transience_(this, timeout) {}
+      transience_(this, 1.0f, timeout) {}
 
 TransientUrlBar::~TransientUrlBar() = default;
 
