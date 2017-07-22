@@ -25,8 +25,7 @@ using base::TimeDelta;
 using base::TimeTicks;
 
 static base::TimeTicks TicksFromSecondsF(double seconds) {
-  return base::TimeTicks::FromInternalValue(seconds *
-                                            base::Time::kMicrosecondsPerSecond);
+  return base::TimeTicks() + base::TimeDelta::FromSecondsD(seconds);
 }
 
 // An ElementAnimations cannot be ticked at 0.0, since an animation

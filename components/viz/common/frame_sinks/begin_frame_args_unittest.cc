@@ -12,6 +12,10 @@
 namespace viz {
 namespace {
 
+constexpr base::TimeDelta k1Usec = base::TimeDelta::FromMicroseconds(1);
+constexpr base::TimeDelta k2Usec = base::TimeDelta::FromMicroseconds(2);
+constexpr base::TimeDelta k3Usec = base::TimeDelta::FromMicroseconds(3);
+
 TEST(BeginFrameArgsTest, Helpers) {
   // Quick create methods work
   BeginFrameArgs args0 =
@@ -27,9 +31,9 @@ TEST(BeginFrameArgsTest, Helpers) {
   EXPECT_TRUE(args2.IsValid()) << args2;
   EXPECT_EQ(123u, args2.source_id);
   EXPECT_EQ(10u, args2.sequence_number);
-  EXPECT_EQ(1, args2.frame_time.ToInternalValue());
-  EXPECT_EQ(2, args2.deadline.ToInternalValue());
-  EXPECT_EQ(3, args2.interval.ToInternalValue());
+  EXPECT_EQ(k1Usec, args2.frame_time.since_origin());
+  EXPECT_EQ(k2Usec, args2.deadline.since_origin());
+  EXPECT_EQ(k3Usec, args2.interval);
   EXPECT_EQ(BeginFrameArgs::NORMAL, args2.type);
 
   BeginFrameArgs args4 = CreateBeginFrameArgsForTesting(
@@ -37,9 +41,9 @@ TEST(BeginFrameArgsTest, Helpers) {
   EXPECT_TRUE(args4.IsValid()) << args4;
   EXPECT_EQ(234u, args4.source_id);
   EXPECT_EQ(20u, args4.sequence_number);
-  EXPECT_EQ(1, args4.frame_time.ToInternalValue());
-  EXPECT_EQ(2, args4.deadline.ToInternalValue());
-  EXPECT_EQ(3, args4.interval.ToInternalValue());
+  EXPECT_EQ(k1Usec, args4.frame_time.since_origin());
+  EXPECT_EQ(k2Usec, args4.deadline.since_origin());
+  EXPECT_EQ(k3Usec, args4.interval);
   EXPECT_EQ(BeginFrameArgs::MISSED, args4.type);
 
   // operator==
@@ -97,15 +101,14 @@ TEST(BeginFrameArgsTest, Create) {
   EXPECT_TRUE(args1.on_critical_path);
 
   BeginFrameArgs args2 = BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 123, 10, base::TimeTicks::FromInternalValue(1),
-      base::TimeTicks::FromInternalValue(2),
-      base::TimeDelta::FromInternalValue(3), BeginFrameArgs::NORMAL);
+      BEGINFRAME_FROM_HERE, 123, 10, base::TimeTicks() + k1Usec,
+      base::TimeTicks() + k2Usec, k3Usec, BeginFrameArgs::NORMAL);
   EXPECT_TRUE(args2.IsValid()) << args2;
   EXPECT_EQ(123u, args2.source_id) << args2;
   EXPECT_EQ(10u, args2.sequence_number) << args2;
-  EXPECT_EQ(1, args2.frame_time.ToInternalValue()) << args2;
-  EXPECT_EQ(2, args2.deadline.ToInternalValue()) << args2;
-  EXPECT_EQ(3, args2.interval.ToInternalValue()) << args2;
+  EXPECT_EQ(k1Usec, args2.frame_time.since_origin()) << args2;
+  EXPECT_EQ(k2Usec, args2.deadline.since_origin()) << args2;
+  EXPECT_EQ(k3Usec, args2.interval) << args2;
   EXPECT_EQ(BeginFrameArgs::NORMAL, args2.type) << args2;
 }
 

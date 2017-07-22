@@ -2573,7 +2573,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
       frame_count_with_pending_tree_++;
 
     if (frame_count_with_pending_tree_ == 1) {
-      EXPECT_EQ(first_frame_time_.ToInternalValue(), 0);
+      EXPECT_EQ(base::TimeTicks(), first_frame_time_);
       first_frame_time_ = impl->CurrentBeginFrameArgs().frame_time;
     } else if (frame_count_with_pending_tree_ == 2) {
       impl->BlockNotifyReadyToActivateForTesting(false);
@@ -2582,9 +2582,8 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     EXPECT_GT(frame_count_with_pending_tree_, 1);
-    EXPECT_NE(first_frame_time_.ToInternalValue(), 0);
-    EXPECT_NE(first_frame_time_.ToInternalValue(),
-              impl->CurrentBeginFrameArgs().frame_time.ToInternalValue());
+    EXPECT_NE(base::TimeTicks(), first_frame_time_);
+    EXPECT_NE(first_frame_time_, impl->CurrentBeginFrameArgs().frame_time);
     EndTest();
   }
 

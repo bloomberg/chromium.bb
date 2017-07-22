@@ -375,12 +375,16 @@ TEST_F(OrderedSimpleTaskRunnerTest, EmptyTaskList) {
   ASSERT_EQ(base::TimeTicks(), now_src_->NowTicks());
 
   RUN_AND_CHECK_RESULT(
-      EXPECT_FALSE, RunUntilTime(base::TimeTicks::FromInternalValue(100)), "");
-  EXPECT_EQ(base::TimeTicks::FromInternalValue(100), now_src_->NowTicks());
+      EXPECT_FALSE,
+      RunUntilTime(base::TimeTicks() + base::TimeDelta::FromMicroseconds(100)),
+      "");
+  EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromMicroseconds(100),
+            now_src_->NowTicks());
 
   RUN_AND_CHECK_RESULT(
-      EXPECT_FALSE, RunForPeriod(base::TimeDelta::FromInternalValue(100)), "");
-  EXPECT_EQ(base::TimeTicks::FromInternalValue(200), now_src_->NowTicks());
+      EXPECT_FALSE, RunForPeriod(base::TimeDelta::FromMicroseconds(100)), "");
+  EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromMicroseconds(200),
+            now_src_->NowTicks());
 
   base::Callback<bool(void)> return_true = base::Bind(&ReturnTrue);
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunTasksWhile(return_true), "");

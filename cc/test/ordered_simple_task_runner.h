@@ -72,8 +72,6 @@ class OrderedSimpleTaskRunner : public base::SingleThreadTaskRunner {
 
   bool RunsTasksInCurrentSequence() const override;
 
-  static base::TimeTicks AbsoluteMaxNow();
-
   // Set a maximum number of tasks to run at once. Useful as a timeout to
   // prevent infinite task loops.
   static const size_t kAbsoluteMaxTasks;

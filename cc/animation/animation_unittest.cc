@@ -16,8 +16,7 @@ namespace {
 using base::TimeDelta;
 
 static base::TimeTicks TicksFromSecondsF(double seconds) {
-  return base::TimeTicks::FromInternalValue(seconds *
-                                            base::Time::kMicrosecondsPerSecond);
+  return base::TimeTicks() + base::TimeDelta::FromSecondsD(seconds);
 }
 
 std::unique_ptr<Animation> CreateAnimation(double iterations,
