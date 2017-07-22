@@ -156,8 +156,8 @@ public class MainActivity extends Activity {
             if (source == WebApkConstants.SHORTCUT_SOURCE_UNKNOWN) {
                 source = WebApkConstants.SHORTCUT_SOURCE_EXTERNAL_INTENT;
             }
-            forceNavigation = getIntent().getBooleanExtra(
-                    WebApkConstants.EXTRA_WEBAPK_FORCE_NAVIGATION, true);
+            forceNavigation =
+                    getIntent().getBooleanExtra(WebApkConstants.EXTRA_FORCE_NAVIGATION, true);
         }
 
         // The override URL is non null when the WebAPK is launched from a deep link. The WebAPK
@@ -168,7 +168,7 @@ public class MainActivity extends Activity {
         intent.putExtra(WebApkConstants.EXTRA_URL, mStartUrl)
                 .putExtra(WebApkConstants.EXTRA_SOURCE, source)
                 .putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, getPackageName())
-                .putExtra(WebApkConstants.EXTRA_WEBAPK_FORCE_NAVIGATION, forceNavigation);
+                .putExtra(WebApkConstants.EXTRA_FORCE_NAVIGATION, forceNavigation);
 
         try {
             startActivity(intent);
