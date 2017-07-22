@@ -1726,7 +1726,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     TRACE_EVENT0("cc", "DrawLayers.UpdateHudTexture");
     active_tree_->hud_layer()->UpdateHudTexture(
         draw_mode, resource_provider_.get(),
-        layer_tree_frame_sink_->context_provider());
+        layer_tree_frame_sink_->context_provider(), frame->render_passes);
   }
 
   CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();

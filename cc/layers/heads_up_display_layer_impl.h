@@ -45,7 +45,8 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
                    AppendQuadsData* append_quads_data) override;
   void UpdateHudTexture(DrawMode draw_mode,
                         ResourceProvider* resource_provider,
-                        viz::ContextProvider* context_provider);
+                        viz::ContextProvider* context_provider,
+                        const RenderPassList& list);
 
   void ReleaseResources() override;
 
@@ -54,6 +55,9 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   bool IsAnimatingHUDContents() const { return fade_step_ > 0; }
 
   void SetHUDTypeface(sk_sp<SkTypeface> typeface);
+
+  // This evicts hud quad appended during render pass preparation.
+  void EvictHudQuad(const RenderPassList& list);
 
   // LayerImpl overrides.
   void PushPropertiesTo(LayerImpl* layer) override;
