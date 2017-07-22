@@ -8,7 +8,6 @@
 #include "core/InputTypeNames.h"
 #include "core/events/Event.h"
 #include "core/events/KeyboardEvent.h"
-#include "core/events/MouseEvent.h"
 #include "core/events/PointerEvent.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/TimeRanges.h"
@@ -64,19 +63,8 @@ const char* MediaControlTimelineElement::GetNameForHistograms() const {
 }
 
 void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
-  if (event->IsMouseEvent() &&
-      ToMouseEvent(event)->button() !=
-          static_cast<short>(WebPointerProperties::Button::kLeft))
-    return;
-
   if (!isConnected() || !GetDocument().IsActive())
     return;
-
-  // TODO(crbug.com/706504): These should listen for pointerdown/up.
-  if (event->type() == EventTypeNames::mousedown)
-    GetMediaControls().BeginScrubbing();
-  if (event->type() == EventTypeNames::mouseup)
-    GetMediaControls().EndScrubbing();
 
   // Only respond to main button of primary pointer(s).
   if (event->IsPointerEvent() && ToPointerEvent(event)->isPrimary() &&

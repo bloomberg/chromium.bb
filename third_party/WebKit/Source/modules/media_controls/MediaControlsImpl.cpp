@@ -33,7 +33,7 @@
 #include "core/dom/MutationRecord.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/KeyboardEvent.h"
-#include "core/events/MouseEvent.h"
+#include "core/events/PointerEvent.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/fullscreen/Fullscreen.h"
@@ -815,7 +815,7 @@ void MediaControlsImpl::DefaultEventHandler(Event* event) {
     return;
   }
 
-  if (event->type() == EventTypeNames::mouseover) {
+  if (event->type() == EventTypeNames::pointerover) {
     if (!ContainsRelatedTarget(event)) {
       is_mouse_over_controls_ = true;
       if (!MediaElement().paused()) {
@@ -827,7 +827,7 @@ void MediaControlsImpl::DefaultEventHandler(Event* event) {
     return;
   }
 
-  if (event->type() == EventTypeNames::mouseout) {
+  if (event->type() == EventTypeNames::pointerout) {
     if (!ContainsRelatedTarget(event)) {
       is_mouse_over_controls_ = false;
       StopHideMediaControlsTimer();
@@ -835,7 +835,7 @@ void MediaControlsImpl::DefaultEventHandler(Event* event) {
     return;
   }
 
-  if (event->type() == EventTypeNames::mousemove) {
+  if (event->type() == EventTypeNames::pointermove) {
     // When we get a mouse move, show the media controls, and start a timer
     // that will hide the media controls after a 3 seconds without a mouse move.
     MakeOpaque();
@@ -904,9 +904,9 @@ void MediaControlsImpl::ResetHideMediaControlsTimer() {
 }
 
 bool MediaControlsImpl::ContainsRelatedTarget(Event* event) {
-  if (!event->IsMouseEvent())
+  if (!event->IsPointerEvent())
     return false;
-  EventTarget* related_target = ToMouseEvent(event)->relatedTarget();
+  EventTarget* related_target = ToPointerEvent(event)->relatedTarget();
   if (!related_target)
     return false;
   return contains(related_target->ToNode());
