@@ -346,6 +346,7 @@ void AutofillControllerTest::SetUpForSuggestions(NSString* data) {
   EXPECT_EQ(0U, personal_data_manager->GetProfiles().size());
   personal_data_manager->SaveImportedProfile(profile);
   EXPECT_EQ(1U, personal_data_manager->GetProfiles().size());
+
   LoadHtml(data);
   WaitForBackgroundTasks();
 }
@@ -385,7 +386,6 @@ TEST_F(AutofillControllerTest, ProfileSuggestionsTwoAnonymousForms) {
 // into a test data manager.
 TEST_F(AutofillControllerTest, ProfileSuggestionsFromSelectField) {
   SetUpForSuggestions(kProfileFormHtml);
-  WaitForBackgroundTasks();
   ui::test::uiview_utils::ForceViewRendering(web_state()->GetView());
   ExecuteJavaScript(@"document.forms[0].state.focus()");
   WaitForSuggestionRetrieval();
@@ -544,6 +544,7 @@ TEST_F(AutofillControllerTest, KeyValueFocusChange) {
 // been loaded into a test data manager.
 TEST_F(AutofillControllerTest, NoKeyValueSuggestionsWithoutTyping) {
   SetUpKeyValueData();
+
   // Focus element.
   ExecuteJavaScript(@"document.forms[0].greeting.focus()");
   WaitForSuggestionRetrieval();
