@@ -302,6 +302,11 @@ class CC_EXPORT SoftwareImageDecodeCache
                                      DecodeTaskType type,
                                      scoped_refptr<TileTask>* task);
 
+  void CacheDecodedImages(const ImageKey& key,
+                          std::unique_ptr<DecodedImage> decoded_image);
+  void CleanupDecodedImagesCache(const ImageKey& key,
+                                 ImageMRUCache::iterator it);
+
   std::unordered_map<ImageKey, scoped_refptr<TileTask>, ImageKeyHash>
       pending_in_raster_image_tasks_;
   std::unordered_map<ImageKey, scoped_refptr<TileTask>, ImageKeyHash>
@@ -316,6 +321,10 @@ class CC_EXPORT SoftwareImageDecodeCache
   // Decoded images and ref counts (predecode path).
   ImageMRUCache decoded_images_;
   std::unordered_map<ImageKey, int, ImageKeyHash> decoded_images_ref_counts_;
+
+  // Decoded ImageKey vector and Skimage uniqueID.
+  std::unordered_map<uint32_t, std::vector<ImageKey>>
+      decoded_images_unique_ids_;
 
   // Decoded image and ref counts (at-raster decode path).
   ImageMRUCache at_raster_decoded_images_;
