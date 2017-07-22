@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('downloads', function() {
-  var Item = Polymer({
+  const Item = Polymer({
     is: 'downloads-item',
 
     properties: {
@@ -89,7 +89,7 @@ cr.define('downloads', function() {
 
     /** @private */
     computeClass_: function() {
-      var classes = [];
+      const classes = [];
 
       if (this.isActive_)
         classes.push('is-active');
@@ -114,8 +114,8 @@ cr.define('downloads', function() {
       if (!this.data.by_ext_id || !this.data.by_ext_name)
         return '';
 
-      var url = 'chrome://extensions#' + this.data.by_ext_id;
-      var name = this.data.by_ext_name;
+      const url = 'chrome://extensions#' + this.data.by_ext_id;
+      const name = this.data.by_ext_name;
       return loadTimeData.getStringF('controlledByUrl', url, HTMLEscape(name));
     },
 
@@ -134,11 +134,11 @@ cr.define('downloads', function() {
 
     /** @private */
     computeDescription_: function() {
-      var data = this.data;
+      const data = this.data;
 
       switch (data.state) {
         case downloads.States.DANGEROUS:
-          var fileName = data.file_name;
+          const fileName = data.file_name;
           switch (data.danger_type) {
             case downloads.DangerType.DANGEROUS_FILE:
               return loadTimeData.getString('dangerFileDesc');
@@ -201,8 +201,8 @@ cr.define('downloads', function() {
 
     /** @private */
     computeRemoveStyle_: function() {
-      var canDelete = loadTimeData.getBoolean('allowDeletingHistory');
-      var hideRemove = this.isDangerous_ || this.showCancel_ || !canDelete;
+      const canDelete = loadTimeData.getBoolean('allowDeletingHistory');
+      const hideRemove = this.isDangerous_ || this.showCancel_ || !canDelete;
       return hideRemove ? 'visibility: hidden' : '';
     },
 
@@ -254,8 +254,8 @@ cr.define('downloads', function() {
         this.$.url.removeAttribute('href');
       } else {
         this.$.url.href = assert(this.data.url);
-        var filePath = encodeURIComponent(this.data.file_path);
-        var scaleFactor = '?scale=' + window.devicePixelRatio + 'x';
+        const filePath = encodeURIComponent(this.data.file_path);
+        const scaleFactor = '?scale=' + window.devicePixelRatio + 'x';
         this.$['file-icon'].src = 'chrome://fileicon/' + filePath + scaleFactor;
       }
     },

@@ -4,7 +4,7 @@
 
 suite('item tests', function() {
   /** @type {!downloads.Item} */
-  var item;
+  let item;
 
   setup(function() {
     item = document.createElement('downloads-item');

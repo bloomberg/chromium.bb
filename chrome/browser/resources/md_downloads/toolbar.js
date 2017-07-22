@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('downloads', function() {
-  var Toolbar = Polymer({
+  const Toolbar = Polymer({
     is: 'downloads-toolbar',
 
     properties: {
@@ -61,7 +61,7 @@ cr.define('downloads', function() {
      * @private
      */
     onSearchChanged_: function(event) {
-      var actionService = downloads.ActionService.getInstance();
+      const actionService = downloads.ActionService.getInstance();
       if (actionService.search(/** @type {string} */ (event.detail)))
         this.spinnerActive = actionService.isSearching();
       this.updateClearAll_();

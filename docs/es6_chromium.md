@@ -281,16 +281,6 @@ this document.
 
 ---
 
-# Banned Features
-
-The following features are banned for Chromium development.
-
-# Features To Be Discussed
-
-The following features are currently disallowed. See the top of this page on
-how to propose moving a feature from this list into the allowed or banned
-sections.
-
 ## let (Block-Scoped Variables)
 
 `let` declares a variable within the scope of a block.  This differs from `var`,
@@ -330,7 +320,11 @@ function f() {
 
 **Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-let-and-const-declarations)
 
-**Discussion Notes / Link to Thread:**
+**Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/msg/chromium-dev/MJhTok8Usr8/XCrkisaBBQAJ)
+
+**Note**: `let` is [not fully supported](https://caniuse.com/#feat=let) in iOS9.
+Don't use it in code that runs on Chrome for iOS, until support for iOS9 is
+dropped.
 
 ---
 
@@ -358,9 +352,23 @@ frobber.isFrobbing = false;  // Works.
 
 **See also:** [Object.freeze()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze)
 
-**Discussion Notes / Link to Thread:**
+**Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/msg/chromium-dev/MJhTok8Usr8/XCrkisaBBQAJ)
+
+**Note**: `const` [not fully supported](https://caniuse.com/#feat=let) in iOS9.
+Don't use it in code that runs on Chrome for iOS, until support for iOS9 is
+dropped.
 
 ---
+
+# Banned Features
+
+The following features are banned for Chromium development.
+
+# Features To Be Discussed
+
+The following features are currently disallowed. See the top of this page on
+how to propose moving a feature from this list into the allowed or banned
+sections.
 
 ## Block Scope Functions
 
