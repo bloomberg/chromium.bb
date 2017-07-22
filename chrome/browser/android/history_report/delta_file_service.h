@@ -52,8 +52,7 @@ class DeltaFileService {
   std::string Dump();
 
  private:
-
-  base::SequencedWorkerPool::SequenceToken worker_pool_token_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<DeltaFileBackend> delta_file_backend_;
 
   DISALLOW_COPY_AND_ASSIGN(DeltaFileService);
