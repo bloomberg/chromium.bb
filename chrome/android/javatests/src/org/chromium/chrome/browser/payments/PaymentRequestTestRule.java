@@ -58,6 +58,10 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     public static final String ENABLE_WEB_PAYMENTS_MODIFIERS =
             "enable-features=" + ChromeFeatureList.WEB_PAYMENTS_MODIFIERS;
 
+    /** Command line flag to enable experimental web platform features in tests. */
+    public static final String ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES =
+            "enable-experimental-web-platform-features";
+
     private final PaymentRequestTestCommon mTestCommon;
     private final MainActivityStartCallback mCallback;
 

@@ -19,6 +19,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.NormalizedAddressRequestDelegate;
@@ -878,7 +879,35 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         // Makes a copy to ensure it is modifiable.
         Set<String> methodNames = new HashSet<>(instrument.getInstrumentMethodNames());
         methodNames.retainAll(mModifiers.keySet());
-        return methodNames.isEmpty() ? null : mModifiers.get(methodNames.iterator().next());
+        if (methodNames.isEmpty()) return null;
+
+        // Non-AutofillPaymentInstrument has no extra data to check.
+        if (!instrument.isAutofillInstrument()) {
+            return mModifiers.get(methodNames.iterator().next());
+        }
+
+        // Checks extra data to match card type and issuer network.
+        int cardType = ((AutofillPaymentInstrument) instrument).getCard().getCardType();
+        String cardIssuerNetwork =
+                ((AutofillPaymentInstrument) instrument).getCard().getBasicCardIssuerNetwork();
+        for (String methodName : methodNames) {
+            PaymentDetailsModifier modifier = mModifiers.get(methodName);
+
+            Set<Integer> targetCardTypes =
+                    AutofillPaymentApp.convertBasicCardToTypes(modifier.methodData);
+            targetCardTypes.remove(CardType.UNKNOWN);
+            if (targetCardTypes.size() > 0 && !targetCardTypes.contains(cardType)) continue;
+
+            Set<String> targetCardNetworks =
+                    AutofillPaymentApp.convertBasicCardToNetworks(modifier.methodData);
+            if (targetCardNetworks != null && !targetCardNetworks.contains(cardIssuerNetwork)) {
+                continue;
+            }
+
+            return modifier;
+        }
+
+        return null;
     }
 
     /**
