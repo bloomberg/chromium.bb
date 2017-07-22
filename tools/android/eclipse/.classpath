@@ -296,6 +296,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="out/Debug/lib.java/third_party/android_media/android_media_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/third_party/android_protobuf/protobuf_nano_javalib.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/third_party/android_swipe_refresh/android_swipe_refresh_java.jar"/>
+    <classpathentry kind="lib" path="out/Debug/lib.java/third_party/android_tools/android_support_design_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/third_party/cacheinvalidation/cacheinvalidation_javalib.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/third_party/cacheinvalidation/cacheinvalidation_proto_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/third_party/cardboard-java/cardboard-java.jar"/>
