@@ -144,13 +144,13 @@ void ClientUsageTracker::UpdateUsageCache(const GURL& origin, int64_t delta) {
     if (!IsUsageCacheEnabledForOrigin(origin))
       return;
 
+    // Constrain |delta| to avoid negative usage values.
+    // TODO(michaeln): crbug/463729
+    delta = std::max(delta, -cached_usage_by_host_[host][origin]);
     cached_usage_by_host_[host][origin] += delta;
-    if (IsStorageUnlimited(origin))
-      global_unlimited_usage_ += delta;
-    else
-      global_limited_usage_ += delta;
-    DCHECK_GE(cached_usage_by_host_[host][origin], 0);
-    DCHECK_GE(global_limited_usage_, 0);
+    UpdateGlobalUsageValue(IsStorageUnlimited(origin) ? &global_unlimited_usage_
+                                                      : &global_limited_usage_,
+                           delta);
 
     // Notify the usage monitor that usage has changed. The storage monitor may
     // be NULL during tests.
@@ -372,13 +372,10 @@ void ClientUsageTracker::AddCachedOrigin(const GURL& origin,
   int64_t delta = new_usage - *usage;
   *usage = new_usage;
   if (delta) {
-    if (IsStorageUnlimited(origin))
-      global_unlimited_usage_ += delta;
-    else
-      global_limited_usage_ += delta;
+    UpdateGlobalUsageValue(IsStorageUnlimited(origin) ? &global_unlimited_usage_
+                                                      : &global_limited_usage_,
+                           delta);
   }
-  DCHECK_GE(*usage, 0);
-  DCHECK_GE(global_limited_usage_, 0);
 }
 
 void ClientUsageTracker::AddCachedHost(const std::string& host) {
@@ -467,6 +464,26 @@ void ClientUsageTracker::OnCleared() {
       non_cached_limited_origins_by_host_[host].insert(origin);
   }
   non_cached_unlimited_origins_by_host_.clear();
+}
+
+void ClientUsageTracker::UpdateGlobalUsageValue(int64_t* usage_value,
+                                                int64_t delta) {
+  *usage_value += delta;
+  if (*usage_value >= 0)
+    return;
+
+  // If we have a negative global usage value, recalculate them.
+  // TODO(michaeln): There are book keeping bugs, crbug/463729
+  global_limited_usage_ = 0;
+  global_unlimited_usage_ = 0;
+  for (const auto& host_and_usage_map : cached_usage_by_host_) {
+    for (const auto& origin_and_usage : host_and_usage_map.second) {
+      if (IsStorageUnlimited(origin_and_usage.first))
+        global_unlimited_usage_ += origin_and_usage.second;
+      else
+        global_limited_usage_ += origin_and_usage.second;
+    }
+  }
 }
 
 bool ClientUsageTracker::IsStorageUnlimited(const GURL& origin) const {

@@ -111,6 +111,8 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   void OnRevoked(const GURL& origin, int change_flags) override;
   void OnCleared() override;
 
+  void UpdateGlobalUsageValue(int64_t* usage_value, int64_t delta);
+
   bool IsStorageUnlimited(const GURL& origin) const;
 
   UsageTracker* tracker_;
