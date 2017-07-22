@@ -24,9 +24,8 @@ Response InspectorIOAgent::resolveBlob(const String& object_id, String* uuid) {
   v8::Local<v8::Context> context;
   std::unique_ptr<v8_inspector::StringBuffer> error;
   if (!v8_session_->unwrapObject(&error, ToV8InspectorStringView(object_id),
-                                 &value, &context, nullptr)) {
+                                 &value, &context, nullptr))
     return Response::Error(ToCoreString(std::move(error)));
-  }
 
   if (!V8Blob::hasInstance(value, isolate_))
     return Response::Error("Object id doesn't reference a Blob");
