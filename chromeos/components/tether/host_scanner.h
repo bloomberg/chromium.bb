@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_COMPONENTS_TETHER_HOST_SCANNER_H_
 #define CHROMEOS_COMPONENTS_TETHER_HOST_SCANNER_H_
 
+#include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -55,6 +57,8 @@ class HostScanner : public HostScannerOperation::Observer {
 
   // Returns true if a scan has occurred recently within a timespan, determined
   // by HostScanCache::kNumMinutesBeforeCacheEntryExpires.
+  // TODO(hansberry): Remove this in your upcoming CL since it's no longer
+  // necessary.
   virtual bool HasRecentlyScanned();
 
   // Starts a host scan if there is no current scan. If a scan is active, this
@@ -87,7 +91,8 @@ class HostScanner : public HostScannerOperation::Observer {
   void OnTetherHostsFetched(const cryptauth::RemoteDeviceList& tether_hosts);
   void SetCacheEntry(
       const HostScannerOperation::ScannedDeviceInfo& scanned_device_info);
-
+  void OnFinalScanResultReceived(
+      std::vector<HostScannerOperation::ScannedDeviceInfo>& final_scan_results);
   void RecordHostScanResult(HostScanResultEventType event_type);
 
   TetherHostFetcher* tether_host_fetcher_;
@@ -101,6 +106,7 @@ class HostScanner : public HostScannerOperation::Observer {
 
   bool is_fetching_hosts_;
   std::unique_ptr<HostScannerOperation> host_scanner_operation_;
+  std::unordered_set<std::string> tether_guids_in_cache_before_scan_;
   base::Time previous_scan_time_;
 
   base::ObserverList<Observer> observer_list_;

@@ -34,7 +34,8 @@ MasterHostScanCache::MasterHostScanCache(
 MasterHostScanCache::~MasterHostScanCache() {
   DCHECK(ActiveHost::ActiveHostStatus::DISCONNECTED ==
          active_host_->GetActiveHostStatus());
-  ClearCacheExceptForActiveHost();
+  for (const auto& tether_guid : GetTetherGuidsInCache())
+    RemoveHostScanResult(tether_guid);
 }
 
 void MasterHostScanCache::SetHostScanResult(const HostScanCacheEntry& entry) {
@@ -104,39 +105,13 @@ bool MasterHostScanCache::RemoveHostScanResult(
          removed_from_timer_map;
 }
 
-void MasterHostScanCache::ClearCacheExceptForActiveHost() {
-  // Create a list of all Tether network GUIDs serving as keys to
-  // |tether_guid_to_timer_map_|.
-  std::vector<std::string> tether_network_guids;
-  tether_network_guids.reserve(tether_guid_to_timer_map_.size());
-  for (auto& it : tether_guid_to_timer_map_)
-    tether_network_guids.push_back(it.first);
-
-  std::string active_host_tether_guid = active_host_->GetTetherNetworkGuid();
-  if (active_host_tether_guid.empty()) {
-    PA_LOG(INFO) << "Clearing all " << tether_guid_to_timer_map_.size() << " "
-                 << "entries from the cache.";
-  } else {
-    PA_LOG(INFO) << "Clearing " << (tether_guid_to_timer_map_.size() - 1) << " "
-                 << "of the " << tether_guid_to_timer_map_.size() << " "
-                 << "entries from the cache. Not removing the entry "
-                 << "corresponding to the Tether network with GUID \""
-                 << active_host_tether_guid << "\" because it represents the "
-                 << "active host.";
-  }
-
-  // Iterate through the keys, removing all scan results not corresponding to
-  // the active host. Iteration is done via a list of pre-computed keys instead
-  // if iterating through the map because RemoteHostScanResult() will remove
-  // key/value pairs from the map, which would invalidate the map iterator.
-  for (auto& tether_network_guid : tether_network_guids) {
-    if (active_host_->GetTetherNetworkGuid() == tether_network_guid) {
-      // Do not remove the active host from the cache.
-      continue;
-    }
-
-    RemoveHostScanResult(tether_network_guid);
-  }
+std::unordered_set<std::string> MasterHostScanCache::GetTetherGuidsInCache() {
+  std::unordered_set<std::string> tether_guids;
+  for (const auto& entry : tether_guid_to_timer_map_)
+    tether_guids.insert(entry.first);
+  DCHECK(tether_guids == persistent_host_scan_cache_->GetTetherGuidsInCache() &&
+         tether_guids == network_host_scan_cache_->GetTetherGuidsInCache());
+  return tether_guids;
 }
 
 bool MasterHostScanCache::ExistsInCache(

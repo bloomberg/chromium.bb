@@ -172,10 +172,12 @@ bool PersistentHostScanCacheImpl::ExistsInCache(
   return entries.find(tether_network_guid) != entries.end();
 }
 
-void PersistentHostScanCacheImpl::ClearCacheExceptForActiveHost() {
-  // This function will be removed in a future CL, so it is not implemented
-  // here.
-  NOTIMPLEMENTED();
+std::unordered_set<std::string>
+PersistentHostScanCacheImpl::GetTetherGuidsInCache() {
+  std::unordered_set<std::string> tether_guids;
+  for (const auto& entry : GetStoredCacheEntries())
+    tether_guids.insert(entry.first);
+  return tether_guids;
 }
 
 bool PersistentHostScanCacheImpl::DoesHostRequireSetup(

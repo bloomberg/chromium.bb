@@ -51,6 +51,8 @@ class PersistentHostScanCacheImplTest : public testing::Test {
     EXPECT_EQ(expected_size, entries.size());
     EXPECT_EQ(expected_size, expected_cache_->size());
     EXPECT_EQ(expected_cache_->cache(), entries);
+    EXPECT_EQ(expected_cache_->GetTetherGuidsInCache(),
+              host_scan_cache_->GetTetherGuidsInCache());
   }
 
   const std::unordered_map<std::string, HostScanCacheEntry> test_entries_;

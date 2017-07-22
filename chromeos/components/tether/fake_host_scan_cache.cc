@@ -32,20 +32,14 @@ void FakeHostScanCache::SetHostScanResult(const HostScanCacheEntry& entry) {
 
 bool FakeHostScanCache::RemoveHostScanResult(
     const std::string& tether_network_guid) {
-  if (tether_network_guid == active_host_tether_network_guid())
-    return false;
-
   return cache_.erase(tether_network_guid) > 0;
 }
 
-void FakeHostScanCache::ClearCacheExceptForActiveHost() {
-  auto it = cache_.begin();
-  while (it != cache_.end()) {
-    if (it->first == active_host_tether_network_guid_)
-      it++;
-    else
-      it = cache_.erase(it);
-  }
+std::unordered_set<std::string> FakeHostScanCache::GetTetherGuidsInCache() {
+  std::unordered_set<std::string> tether_guids;
+  for (const auto& entry : cache_)
+    tether_guids.insert(entry.first);
+  return tether_guids;
 }
 
 bool FakeHostScanCache::ExistsInCache(const std::string& tether_network_guid) {

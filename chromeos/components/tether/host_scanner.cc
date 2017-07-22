@@ -70,6 +70,9 @@ void HostScanner::OnTetherHostsFetched(
     const cryptauth::RemoteDeviceList& tether_hosts) {
   is_fetching_hosts_ = false;
 
+  tether_guids_in_cache_before_scan_ =
+      host_scan_cache_->GetTetherGuidsInCache();
+
   host_scanner_operation_ = HostScannerOperation::Factory::NewInstance(
       tether_hosts, connection_manager_, host_scan_device_prioritizer_,
       tether_host_response_recorder_);
@@ -81,48 +84,30 @@ void HostScanner::OnTetherAvailabilityResponse(
     std::vector<HostScannerOperation::ScannedDeviceInfo>&
         scanned_device_list_so_far,
     bool is_final_scan_result) {
-  if (scanned_device_list_so_far.empty()) {
-    // If a new scan is just starting up, remove existing cache entries; if they
-    // are still within range to communicate with the current device, they will
-    // show up in a subsequent OnTetherAvailabilityResponse() invocation.
-    host_scan_cache_->ClearCacheExceptForActiveHost();
-  } else {
-    // Add all results received so far to the cache.
-    for (auto& scanned_device_info : scanned_device_list_so_far) {
-      SetCacheEntry(scanned_device_info);
-    }
+  // Ensure all results received so far are in the cache (setting entries which
+  // already exist is a no-op).
+  for (const auto& scanned_device_info : scanned_device_list_so_far) {
+    SetCacheEntry(scanned_device_info);
+  }
 
-    if (scanned_device_list_so_far.size() == 1) {
-      const cryptauth::RemoteDevice& remote_device =
-          scanned_device_list_so_far.at(0).remote_device;
-      int32_t signal_strength;
-      NormalizeDeviceStatus(scanned_device_list_so_far.at(0).device_status,
-                            nullptr /* carrier */,
-                            nullptr /* battery_percentage */, &signal_strength);
-      notification_presenter_->NotifyPotentialHotspotNearby(remote_device,
-                                                            signal_strength);
-    } else {
-      notification_presenter_->NotifyMultiplePotentialHotspotsNearby();
-    }
+  if (scanned_device_list_so_far.size() == 1u) {
+    const cryptauth::RemoteDevice& remote_device =
+        scanned_device_list_so_far.at(0).remote_device;
+    int32_t signal_strength;
+    NormalizeDeviceStatus(scanned_device_list_so_far.at(0).device_status,
+                          nullptr /* carrier */,
+                          nullptr /* battery_percentage */, &signal_strength);
+    notification_presenter_->NotifyPotentialHotspotNearby(remote_device,
+                                                          signal_strength);
+  } else if (scanned_device_list_so_far.size() > 1u) {
+    // Note: If a single-device notification was previously displayed, calling
+    // NotifyMultiplePotentialHotspotsNearby() will reuse the existing
+    // notification.
+    notification_presenter_->NotifyMultiplePotentialHotspotsNearby();
   }
 
   if (is_final_scan_result) {
-    if (scanned_device_list_so_far.empty()) {
-      RecordHostScanResult(HostScanResultEventType::NOTIFICATION_NOT_SHOWN);
-    } else if (scanned_device_list_so_far.size() == 1) {
-      RecordHostScanResult(
-          HostScanResultEventType::NOTIFICATION_SHOWN_SINGLE_HOST);
-    } else {
-      RecordHostScanResult(
-          HostScanResultEventType::NOTIFICATION_SHOWN_MULTIPLE_HOSTS);
-    }
-
-    // If the final scan result has been received, the operation is finished.
-    // Delete it.
-    host_scanner_operation_->RemoveObserver(this);
-    host_scanner_operation_.reset();
-    NotifyScanFinished();
-    previous_scan_time_ = clock_->Now();
+    OnFinalScanResultReceived(scanned_device_list_so_far);
   }
 }
 
@@ -163,6 +148,46 @@ void HostScanner::SetCacheEntry(
            .SetSignalStrength(signal_strength)
            .SetSetupRequired(scanned_device_info.setup_required)
            .Build());
+}
+
+void HostScanner::OnFinalScanResultReceived(
+    std::vector<HostScannerOperation::ScannedDeviceInfo>& final_scan_results) {
+  // Search through all GUIDs that were in the cache before the scan began. If
+  // any of those GUIDs are not present in the final scan results, remove them
+  // from the cache.
+  for (const auto& tether_guid_in_cache : tether_guids_in_cache_before_scan_) {
+    bool is_guid_in_final_scan_results = false;
+
+    for (const auto& scan_result : final_scan_results) {
+      if (device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
+              scan_result.remote_device.GetDeviceId()) ==
+          tether_guid_in_cache) {
+        is_guid_in_final_scan_results = true;
+        break;
+      }
+    }
+
+    if (!is_guid_in_final_scan_results)
+      host_scan_cache_->RemoveHostScanResult(tether_guid_in_cache);
+  }
+
+  if (final_scan_results.empty()) {
+    RecordHostScanResult(HostScanResultEventType::NOTIFICATION_NOT_SHOWN);
+  } else if (final_scan_results.size() == 1u) {
+    RecordHostScanResult(
+        HostScanResultEventType::NOTIFICATION_SHOWN_SINGLE_HOST);
+  } else {
+    RecordHostScanResult(
+        HostScanResultEventType::NOTIFICATION_SHOWN_MULTIPLE_HOSTS);
+  }
+
+  // If the final scan result has been received, the operation is finished.
+  // Delete it.
+  host_scanner_operation_->RemoveObserver(this);
+  host_scanner_operation_.reset();
+
+  NotifyScanFinished();
+  previous_scan_time_ = clock_->Now();
 }
 
 void HostScanner::RecordHostScanResult(HostScanResultEventType event_type) {

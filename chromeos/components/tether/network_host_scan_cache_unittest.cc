@@ -100,6 +100,9 @@ class NetworkHostScanCacheTest : public NetworkStateTest {
   // in NetworkStateHandler.
   void VerifyCacheMatchesNetworkStack(size_t expected_size) {
     EXPECT_EQ(expected_size, expected_cache_->size());
+    EXPECT_EQ(expected_cache_->GetTetherGuidsInCache(),
+              host_scan_cache_->GetTetherGuidsInCache());
+
     for (auto& it : expected_cache_->cache()) {
       const std::string tether_network_guid = it.first;
       const HostScanCacheEntry& entry = it.second;
