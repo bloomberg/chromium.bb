@@ -95,7 +95,7 @@ class DevToolsStreamEndpoint : public TraceDataEndpoint {
  public:
   explicit DevToolsStreamEndpoint(
       base::WeakPtr<TracingHandler> handler,
-      const scoped_refptr<DevToolsIOContext::Stream>& stream)
+      const scoped_refptr<DevToolsIOContext::RWStream>& stream)
       : stream_(stream), tracing_handler_(handler) {}
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
@@ -111,7 +111,7 @@ class DevToolsStreamEndpoint : public TraceDataEndpoint {
  private:
   ~DevToolsStreamEndpoint() override {}
 
-  scoped_refptr<DevToolsIOContext::Stream> stream_;
+  scoped_refptr<DevToolsIOContext::RWStream> stream_;
   base::WeakPtr<TracingHandler> tracing_handler_;
 };
 

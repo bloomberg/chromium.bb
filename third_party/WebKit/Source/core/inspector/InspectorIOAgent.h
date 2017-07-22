@@ -31,6 +31,8 @@ class CORE_EXPORT InspectorIOAgent final
  private:
   ~InspectorIOAgent() override;
 
+  void Restore() override {}
+
   // Called from the front-end.
   protocol::Response resolveBlob(const String& object_id,
                                  String* uuid) override;

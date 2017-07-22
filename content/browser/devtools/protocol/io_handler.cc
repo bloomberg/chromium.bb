@@ -12,7 +12,11 @@
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/devtools/devtools_io_context.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -20,8 +24,9 @@ namespace protocol {
 
 IOHandler::IOHandler(DevToolsIOContext* io_context)
     : DevToolsDomainHandler(IO::Metainfo::domainName),
-      io_context_(io_context)
-    , weak_factory_(this) {}
+      io_context_(io_context),
+      host_(nullptr),
+      weak_factory_(this) {}
 
 IOHandler::~IOHandler() {}
 
@@ -30,15 +35,37 @@ void IOHandler::Wire(UberDispatcher* dispatcher) {
   IO::Dispatcher::wire(dispatcher, this);
 }
 
+void IOHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
+  host_ = host;
+}
+
 void IOHandler::Read(
     const std::string& handle,
     Maybe<int> offset,
     Maybe<int> max_size,
     std::unique_ptr<ReadCallback> callback) {
   static const size_t kDefaultChunkSize = 10 * 1024 * 1024;
+  static const char kBlobPrefix[] = "blob:";
 
-  scoped_refptr<DevToolsIOContext::Stream> stream =
+  scoped_refptr<DevToolsIOContext::ROStream> stream =
       io_context_->GetByHandle(handle);
+  if (!stream &&
+      StartsWith(handle, kBlobPrefix, base::CompareCase::SENSITIVE)) {
+    std::string uuid = handle.substr(strlen(kBlobPrefix));
+    BrowserContext* browser_context =
+        host_ ? host_->GetSiteInstance()->GetBrowserContext() : nullptr;
+    if (browser_context) {
+      ChromeBlobStorageContext* blob_context =
+          ChromeBlobStorageContext::GetFor(browser_context);
+      StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
+          browser_context, host_->GetSiteInstance());
+      if (storage_partition) {
+        stream = io_context_->OpenBlob(blob_context, storage_partition, handle,
+                                       uuid);
+      }
+    }
+  }
+
   if (!stream) {
     callback->sendFailure(Response::InvalidParams("Invalid stream handle"));
     return;
@@ -51,13 +78,14 @@ void IOHandler::Read(
 
 void IOHandler::ReadComplete(std::unique_ptr<ReadCallback> callback,
                              std::unique_ptr<std::string> data,
+                             bool base64_encoded,
                              int status) {
-  if (status == DevToolsIOContext::Stream::StatusFailure) {
+  if (status == DevToolsIOContext::ROStream::StatusFailure) {
     callback->sendFailure(Response::Error("Read failed"));
     return;
   }
-  bool eof = status == DevToolsIOContext::Stream::StatusEOF;
-  callback->sendSuccess(std::move(*data), eof);
+  bool eof = status == DevToolsIOContext::ROStream::StatusEOF;
+  callback->sendSuccess(base64_encoded, std::move(*data), eof);
 }
 
 Response IOHandler::Close(const std::string& handle) {

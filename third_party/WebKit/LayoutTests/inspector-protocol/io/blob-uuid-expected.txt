@@ -1,4 +1,4 @@
-Tests IO.resolveBlob method
+
 Blobs:
 uuid_a: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 uuid_b: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
