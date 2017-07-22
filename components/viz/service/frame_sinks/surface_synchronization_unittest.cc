@@ -79,29 +79,39 @@ class SurfaceSynchronizationTest : public testing::Test {
         surface_observer_(false) {}
   ~SurfaceSynchronizationTest() override {}
 
-  CompositorFrameSinkSupport& display_support() { return *supports_[0]; }
+  CompositorFrameSinkSupport& display_support() {
+    return *supports_[kDisplayFrameSink];
+  }
   cc::Surface* display_surface() {
     return display_support().GetCurrentSurfaceForTesting();
   }
 
-  CompositorFrameSinkSupport& parent_support() { return *supports_[1]; }
+  CompositorFrameSinkSupport& parent_support() {
+    return *supports_[kParentFrameSink];
+  }
   cc::Surface* parent_surface() {
     return parent_support().GetCurrentSurfaceForTesting();
   }
 
-  CompositorFrameSinkSupport& child_support1() { return *supports_[2]; }
+  CompositorFrameSinkSupport& child_support1() {
+    return *supports_[kChildFrameSink1];
+  }
   cc::Surface* child_surface1() {
     return child_support1().GetCurrentSurfaceForTesting();
   }
 
-  CompositorFrameSinkSupport& child_support2() { return *supports_[3]; }
+  CompositorFrameSinkSupport& child_support2() {
+    return *supports_[kChildFrameSink2];
+  }
   cc::Surface* child_surface2() {
     return child_support2().GetCurrentSurfaceForTesting();
   }
 
-  CompositorFrameSinkSupport& support(int index) { return *supports_[index]; }
-  cc::Surface* surface(int index) {
-    return support(index).GetCurrentSurfaceForTesting();
+  void DestroyFrameSink(const FrameSinkId& frame_sink_id) {
+    auto it = supports_.find(frame_sink_id);
+    if (it == supports_.end())
+      return;
+    supports_.erase(it);
   }
 
   FrameSinkManagerImpl& frame_sink_manager() { return frame_sink_manager_; }
@@ -144,18 +154,21 @@ class SurfaceSynchronizationTest : public testing::Test {
     begin_frame_source_->SetClient(&begin_frame_source_client_);
     now_src_ = base::MakeUnique<base::SimpleTestTickClock>();
     frame_sink_manager_.surface_manager()->AddObserver(&surface_observer_);
-    supports_.push_back(CompositorFrameSinkSupport::Create(
+    supports_[kDisplayFrameSink] = CompositorFrameSinkSupport::Create(
         &support_client_, &frame_sink_manager_, kDisplayFrameSink, kIsRoot,
-        kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints));
-    supports_.push_back(CompositorFrameSinkSupport::Create(
+        kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+
+    supports_[kParentFrameSink] = CompositorFrameSinkSupport::Create(
         &support_client_, &frame_sink_manager_, kParentFrameSink, kIsChildRoot,
-        kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints));
-    supports_.push_back(CompositorFrameSinkSupport::Create(
+        kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+
+    supports_[kChildFrameSink1] = CompositorFrameSinkSupport::Create(
         &support_client_, &frame_sink_manager_, kChildFrameSink1, kIsChildRoot,
-        kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints));
-    supports_.push_back(CompositorFrameSinkSupport::Create(
+        kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+
+    supports_[kChildFrameSink2] = CompositorFrameSinkSupport::Create(
         &support_client_, &frame_sink_manager_, kChildFrameSink2, kIsChildRoot,
-        kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints));
+        kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
 
     // Normally, the BeginFrameSource would be registered by the Display. We
     // register it here so that BeginFrames are received by the display support,
@@ -195,7 +208,10 @@ class SurfaceSynchronizationTest : public testing::Test {
   FakeExternalBeginFrameSourceClient begin_frame_source_client_;
   std::unique_ptr<cc::FakeExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
-  std::vector<std::unique_ptr<CompositorFrameSinkSupport>> supports_;
+  std::unordered_map<FrameSinkId,
+                     std::unique_ptr<CompositorFrameSinkSupport>,
+                     FrameSinkIdHash>
+      supports_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceSynchronizationTest);
 };
@@ -1599,6 +1615,70 @@ TEST_F(SurfaceSynchronizationTest, MultiLevelDeadlineInheritance) {
   EXPECT_FALSE(child_surface1()->HasPendingFrame());
   EXPECT_TRUE(child_surface1()->HasActiveFrame());
   EXPECT_FALSE(child_surface1()->has_deadline());
+}
+
+// This test verifies that no crash occurs if a CompositorFrame activates AFTER
+// its FrameSink has been destroyed.
+TEST_F(SurfaceSynchronizationTest, FrameActivationAfterFrameSinkDestruction) {
+  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+
+  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
+                                         MakeCompositorFrame());
+
+  EXPECT_FALSE(parent_surface()->has_deadline());
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_FALSE(parent_surface()->HasPendingFrame());
+
+  // Submit a CompositorFrame that refers to to |parent_id|.
+  display_support().SubmitCompositorFrame(
+      display_id.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), {parent_id},
+                          std::vector<cc::TransferableResource>()));
+
+  EXPECT_FALSE(display_surface()->has_deadline());
+  EXPECT_FALSE(display_surface()->HasPendingFrame());
+  EXPECT_TRUE(display_surface()->HasActiveFrame());
+  EXPECT_THAT(GetChildReferences(display_id), UnorderedElementsAre(parent_id));
+
+  // Submit a new CompositorFrame to the parent CompositorFrameSink. It should
+  // now have a pending and active CompositorFrame.
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(),
+      MakeCompositorFrame({child_id}, empty_surface_ids(),
+                          std::vector<cc::TransferableResource>()));
+
+  EXPECT_TRUE(parent_surface()->has_deadline());
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_TRUE(parent_surface()->HasPendingFrame());
+
+  // Destroy the parent CompositorFrameSink. The parent_surface will be kept
+  // alive by the display.
+  DestroyFrameSink(kParentFrameSink);
+
+  cc::Surface* parent_surface = GetSurfaceForId(parent_id);
+  ASSERT_NE(nullptr, parent_surface);
+
+  EXPECT_TRUE(parent_surface->has_deadline());
+  EXPECT_TRUE(parent_surface->HasActiveFrame());
+  EXPECT_TRUE(parent_surface->HasPendingFrame());
+
+  // Advance BeginFrames to trigger a deadline. This activates the
+  // cc::CompositorFrame submitted above.
+  for (int i = 0; i < 4; ++i)
+    SendNextBeginFrame();
+
+  // The parent surface stays alive through the display.
+  parent_surface = GetSurfaceForId(parent_id);
+  EXPECT_NE(nullptr, parent_surface);
+
+  // Submitting a new CompositorFrame to the display should free the parent.
+  display_support().SubmitCompositorFrame(display_id.local_surface_id(),
+                                          MakeCompositorFrame());
+
+  parent_surface = GetSurfaceForId(parent_id);
+  EXPECT_EQ(nullptr, parent_surface);
 }
 
 }  // namespace test

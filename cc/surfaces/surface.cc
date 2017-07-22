@@ -230,11 +230,9 @@ void Surface::ActivatePendingFrame() {
 }
 
 // A frame is activated if all its Surface ID dependences are active or a
-// deadline has hit and the frame was forcibly activated by the display
-// compositor.
+// deadline has hit and the frame was forcibly activated.
 void Surface::ActivateFrame(FrameData frame_data) {
   deadline_.Cancel();
-  DCHECK(surface_client_);
 
   // Save root pass copy requests.
   std::vector<std::unique_ptr<CopyOutputRequest>> old_copy_requests;
@@ -260,7 +258,13 @@ void Surface::ActivateFrame(FrameData frame_data) {
 
   UnrefFrameResourcesAndRunDrawCallback(std::move(previous_frame_data));
 
-  surface_client_->OnSurfaceActivated(this);
+  // TODO(fsamuel): If |surface_client_| is not available then we will not
+  // immediately generate a display frame once the CompositorFrame here
+  // activates. This isn't a major issue though because this would only
+  // happen if the client that generated the surface has went away and so
+  // we likely don't care to preserve the surface for long anyway.
+  if (surface_client_)
+    surface_client_->OnSurfaceActivated(this);
 }
 
 void Surface::UpdateActivationDependencies(
