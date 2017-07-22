@@ -7,7 +7,7 @@ cr.define('downloads', function() {
    * Explains why a download is in DANGEROUS state.
    * @enum {string}
    */
-  var DangerType = {
+  const DangerType = {
     NOT_DANGEROUS: 'NOT_DANGEROUS',
     DANGEROUS_FILE: 'DANGEROUS_FILE',
     DANGEROUS_URL: 'DANGEROUS_URL',
@@ -22,7 +22,7 @@ cr.define('downloads', function() {
    * DownloadsDOMHandler::CreateDownloadItemValue
    * @enum {string}
    */
-  var States = {
+  const States = {
     IN_PROGRESS: 'IN_PROGRESS',
     CANCELLED: 'CANCELLED',
     COMPLETE: 'COMPLETE',

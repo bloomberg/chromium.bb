@@ -61,7 +61,7 @@ cr.define('downloads', function() {
 
     /** @param {string} url URL of a file to download. */
     download: function(url) {
-      var a = document.createElement('a');
+      const a = document.createElement('a');
       a.href = url;
       a.setAttribute('download', '');
       a.click();
@@ -113,10 +113,10 @@ cr.define('downloads', function() {
      * @return {boolean} Whether |searchText| resulted in new search terms.
      */
     search: function(searchText) {
-      var searchTerms = ActionService.splitTerms(searchText);
-      var sameTerms = searchTerms.length == this.searchTerms_.length;
+      const searchTerms = ActionService.splitTerms(searchText);
+      let sameTerms = searchTerms.length == this.searchTerms_.length;
 
-      for (var i = 0; sameTerms && i < searchTerms.length; ++i) {
+      for (let i = 0; sameTerms && i < searchTerms.length; ++i) {
         if (searchTerms[i] != this.searchTerms_[i])
           sameTerms = false;
       }

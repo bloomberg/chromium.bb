@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('downloads', function() {
-  var Manager = Polymer({
+  const Manager = Polymer({
     is: 'downloads-manager',
 
     properties: {
@@ -151,7 +151,7 @@ cr.define('downloads', function() {
 
     /** @private */
     onListScroll_: function() {
-      var list = this.$['downloads-list'];
+      const list = this.$['downloads-list'];
       if (list.scrollHeight - list.scrollTop - list.offsetHeight <= 100) {
         // Approaching the end of the scrollback. Attempt to load more items.
         downloads.ActionService.getInstance().loadMore();
@@ -193,12 +193,12 @@ cr.define('downloads', function() {
      * @private
      */
     updateHideDates_: function(start, end) {
-      for (var i = start; i <= end; ++i) {
-        var current = this.items_[i];
+      for (let i = start; i <= end; ++i) {
+        const current = this.items_[i];
         if (!current)
           continue;
-        var prev = this.items_[i - 1];
-        var hideDate = !!prev && prev.date_string == current.date_string;
+        const prev = this.items_[i - 1];
+        const hideDate = !!prev && prev.date_string == current.date_string;
         this.set('items_.' + i + '.hideDate', hideDate);
       }
     },
@@ -211,7 +211,7 @@ cr.define('downloads', function() {
     updateItem_: function(index, data) {
       this.set('items_.' + index, data);
       this.updateHideDates_(index, index);
-      var list = /** @type {!IronListElement} */ (this.$['downloads-list']);
+      const list = /** @type {!IronListElement} */ (this.$['downloads-list']);
       list.updateSizeForItem(index);
     },
   });

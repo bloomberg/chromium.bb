@@ -27,7 +27,7 @@ ActionServiceUnitTest.prototype = {
 };
 
 TEST_F('ActionServiceUnitTest', 'splitTerms', function() {
-  var ActionService = downloads.ActionService;
+  const ActionService = downloads.ActionService;
   assertEquals(str([]), str(ActionService.splitTerms('')));
   assertEquals(str([]), str(ActionService.splitTerms('  ')));
   assertEquals(str(['a']), str(ActionService.splitTerms('a')));
@@ -52,7 +52,7 @@ TEST_F('ActionServiceUnitTest', 'searchWithSimilarTerms', function() {
     loadMore: function() { /* No chrome.send() for you! */ },
   };
 
-  var actionService = new TestActionService();
+  const actionService = new TestActionService();
 
   assertTrue(actionService.search('a'));
   assertFalse(actionService.search('a '));  // Same term + space should no-op.

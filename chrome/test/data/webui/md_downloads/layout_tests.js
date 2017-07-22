@@ -4,7 +4,7 @@
 
 suite('layout tests', function() {
   /** @type {!downloads.Manager} */
-  var manager;
+  let manager;
 
   setup(function() {
     PolymerTest.clearBody();
@@ -22,7 +22,7 @@ suite('layout tests', function() {
 
     Polymer.dom.flush();
 
-    var item = manager.$$('downloads-item');
+    const item = manager.$$('downloads-item');
     assertLT(item.$$('#url').offsetWidth, item.offsetWidth);
     assertEquals(300, item.$$('#url').textContent.length);
   });

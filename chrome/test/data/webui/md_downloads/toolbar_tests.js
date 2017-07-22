@@ -4,7 +4,7 @@
 
 suite('toolbar tests', function() {
   /** @type {!downloads.Toolbar} */
-  var toolbar;
+  let toolbar;
 
   setup(function() {
     /**
