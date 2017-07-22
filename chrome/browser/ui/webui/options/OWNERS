@@ -1,7 +1,5 @@
 # This UI is deprecated. See chrome/browser/ui/webui/settings/ instead.
-set noparent
-
-dbeam@chromium.org
+michaelpg@chromium.org
 stevenjb@chromium.org
 
 per-file sync_setup_handler*=atwilson@chromium.org
