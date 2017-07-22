@@ -158,7 +158,8 @@ PolymerTest.loadScript = function(src) {
  */
 PolymerTest.clearBody = function() {
   // Save the div where vulcanize inlines content before clearing the page.
-  var vulcanizeDiv = document.querySelector('body > div[hidden][by-vulcanize]');
+  var vulcanizeDiv = document.querySelector(
+      'body > div[hidden][by-polymer-bundler]');
   document.body.innerHTML = '';
   if (vulcanizeDiv)
     document.body.appendChild(vulcanizeDiv);

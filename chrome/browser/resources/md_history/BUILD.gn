@@ -5,31 +5,24 @@ lazy_load_unbuilt = "lazy_load.vulcanized.unbuilt.html"
 
 vulcanize("vulcanize_app") {
   host = "history"
-  html_in_file = "app.html"
-  html_out_file = app_unbuilt
-
-  input = rebase_path(".", root_build_dir)
-  js_out_file = "app.crisper.js"
-
-  excludes = [
-    "chrome://resources/html/util.html",
-    "chrome://history/constants.html",
+  html_in_files = [
+    "app.html",
+    "lazy_load.html",
+  ]
+  html_out_files = [
+    app_unbuilt,
+    lazy_load_unbuilt,
   ]
 
-  deps = []
-}
-
-vulcanize("vulcanize_lazy_load") {
-  host = "history"
-  html_in_file = "lazy_load.html"
-  html_out_file = lazy_load_unbuilt
-
   input = rebase_path(".", root_build_dir)
-  js_out_file = "lazy_load.crisper.js"
+  js_out_files = [
+    "app.crisper.js",
+    "lazy_load.crisper.js",
+  ]
+
   excludes = [
     "chrome://resources/html/util.html",
     "chrome://history/constants.html",
-    "chrome://history/app.html",
   ]
 
   deps = []
@@ -46,6 +39,5 @@ polymer_css_build("build") {
   ]
   deps = [
     ":vulcanize_app",
-    ":vulcanize_lazy_load",
   ]
 }
