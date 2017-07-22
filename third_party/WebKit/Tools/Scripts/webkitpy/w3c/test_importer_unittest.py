@@ -7,65 +7,16 @@ from webkitpy.common.host_mock import MockHost
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.git_cl import TryJobStatus
 from webkitpy.common.net.git_cl_mock import MockGitCL
+from webkitpy.common.system.executive_mock import MockCall
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.w3c.chromium_commit_mock import MockChromiumCommit
+from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.test_importer import TestImporter
-from webkitpy.w3c.wpt_github import PullRequest
 from webkitpy.w3c.wpt_github_mock import MockWPTGitHub
 
 
 class TestImporterTest(LoggingTestCase):
-
-    def test_main_abort_on_exportable_commit_if_open_pr_found(self):
-        host = MockHost()
-        host.filesystem.write_text_file(
-            '/tmp/creds.json', '{"GH_USER": "x", "GH_TOKEN": "y"}')
-        wpt_github = MockWPTGitHub(pull_requests=[
-            PullRequest('Title', 5, 'Commit body\nChange-Id: Iba5eba11', 'open', []),
-        ])
-        importer = TestImporter(host, wpt_github=wpt_github)
-        importer.exportable_but_not_exported_commits = lambda _: [
-            MockChromiumCommit(host, subject='Fake PR subject', change_id='Iba5eba11')
-        ]
-        importer.checkout_is_okay = lambda: True
-        return_code = importer.main(['--credentials-json=/tmp/creds.json'])
-        self.assertEqual(return_code, 0)
-        self.assertLog([
-            'INFO: Cloning GitHub w3c/web-platform-tests into /tmp/wpt\n',
-            'INFO: There were exportable but not-yet-exported commits:\n',
-            'INFO: Commit: https://fake-chromium-commit-viewer.org/+/14fd77e88e\n',
-            'INFO: Subject: Fake PR subject\n',
-            'INFO: PR: https://github.com/w3c/web-platform-tests/pull/5\n',
-            'INFO: Modified files in wpt directory in this commit:\n',
-            'INFO:   third_party/WebKit/LayoutTests/external/wpt/one.html\n',
-            'INFO:   third_party/WebKit/LayoutTests/external/wpt/two.html\n',
-            'INFO: Aborting import to prevent clobbering commits.\n',
-        ])
-
-    def test_main_abort_on_exportable_commit_if_no_pr_found(self):
-        host = MockHost()
-        host.filesystem.write_text_file(
-            '/tmp/creds.json', '{"GH_USER": "x", "GH_TOKEN": "y"}')
-        wpt_github = MockWPTGitHub(pull_requests=[])
-        importer = TestImporter(host, wpt_github=wpt_github)
-        importer.exportable_but_not_exported_commits = lambda _: [
-            MockChromiumCommit(host, subject='Fake PR subject', position='refs/heads/master@{#431}')
-        ]
-        importer.checkout_is_okay = lambda: True
-        return_code = importer.main(['--credentials-json=/tmp/creds.json'])
-        self.assertEqual(return_code, 0)
-        self.assertLog([
-            'INFO: Cloning GitHub w3c/web-platform-tests into /tmp/wpt\n',
-            'INFO: There were exportable but not-yet-exported commits:\n',
-            'INFO: Commit: https://fake-chromium-commit-viewer.org/+/fa2de685c0\n',
-            'INFO: Subject: Fake PR subject\n',
-            'WARNING: No pull request found.\n',
-            'INFO: Modified files in wpt directory in this commit:\n',
-            'INFO:   third_party/WebKit/LayoutTests/external/wpt/one.html\n',
-            'INFO:   third_party/WebKit/LayoutTests/external/wpt/two.html\n',
-            'INFO: Aborting import to prevent clobbering commits.\n',
-        ])
 
     def test_update_expectations_for_cl_no_results(self):
         host = MockHost()
@@ -151,6 +102,52 @@ class TestImporterTest(LoggingTestCase):
             ['git', 'cl', 'try'],
             ['git', 'cl', 'set-close'],
         ])
+
+    def test_apply_exportable_commits_locally(self):
+        host = MockHost()
+        importer = TestImporter(host, wpt_github=MockWPTGitHub(pull_requests=[]))
+        fake_commit = MockChromiumCommit(
+            host, subject='My fake commit',
+            patch=(
+                'Fake patch contents...\n'
+                '--- a/third_party/WebKit/LayoutTests/external/wpt/css/css-ui-3/outline-004.html\n'
+                '+++ b/third_party/WebKit/LayoutTests/external/wpt/css/css-ui-3/outline-004.html\n'
+                '@@ -20,7 +20,7 @@\n'
+                '...'))
+        importer.exportable_but_not_exported_commits = lambda _: [fake_commit]
+        applied = importer.apply_exportable_commits_locally(LocalWPT(host))
+        self.assertEqual(applied, [fake_commit])
+        self.assertEqual(host.executive.full_calls, [
+            MockCall(
+                ['git', 'apply', '-'],
+                {
+                    'input': (
+                        'Fake patch contents...\n'
+                        '--- a/css/css-ui-3/outline-004.html\n'
+                        '+++ b/css/css-ui-3/outline-004.html\n'
+                        '@@ -20,7 +20,7 @@\n'
+                        '...'),
+                    'cwd': '/tmp/wpt',
+                    'env': None
+                }),
+            MockCall(
+                ['git', 'add', '.'],
+                kwargs={'input': None, 'cwd': '/tmp/wpt', 'env': None}),
+            MockCall(
+                ['git', 'commit', '--all', '-F', '-'],
+                kwargs={'cwd': '/tmp/wpt', 'env': None})
+        ])
+
+    def test_apply_exportable_commits_locally_returns_none_on_failure(self):
+        host = MockHost()
+        wpt_github = MockWPTGitHub(pull_requests=[])
+        importer = TestImporter(host, wpt_github=wpt_github)
+        commit = MockChromiumCommit(host, subject='My fake commit')
+        importer.exportable_but_not_exported_commits = lambda _: [commit]
+        local_wpt = LocalWPT(host)
+        local_wpt.apply_patch = lambda _: None  # Failure to apply patch.
+        applied = importer.apply_exportable_commits_locally(local_wpt)
+        self.assertIsNone(applied)
 
     def test_update_all_test_expectations_files(self):
         host = MockHost()

@@ -15,7 +15,7 @@ import argparse
 import logging
 
 from webkitpy.common.net.buildbot import current_build_link
-from webkitpy.common.net.git_cl import GitCL, TryJobStatus
+from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
 from webkitpy.layout_tests.port.base import Port
@@ -69,24 +69,6 @@ class TestImporter(object):
 
         local_wpt.fetch()
 
-        if not options.ignore_exportable_commits:
-            commits = self.exportable_but_not_exported_commits(local_wpt)
-            if commits:
-                _log.info('There were exportable but not-yet-exported commits:')
-                for commit in commits:
-                    _log.info('Commit: %s', commit.url())
-                    _log.info('Subject: %s', commit.subject().strip())
-                    pull_request = self.wpt_github.pr_for_chromium_commit(commit)
-                    if pull_request:
-                        _log.info('PR: https://github.com/w3c/web-platform-tests/pull/%d', pull_request.number)
-                    else:
-                        _log.warning('No pull request found.')
-                    _log.info('Modified files in wpt directory in this commit:')
-                    for path in commit.filtered_changed_files():
-                        _log.info('  %s', path)
-                _log.info('Aborting import to prevent clobbering commits.')
-                return 0
-
         if options.revision is not None:
             _log.info('Checking out %s', options.revision)
             self.run(['git', 'checkout', options.revision], cwd=local_wpt.path)
@@ -94,6 +76,17 @@ class TestImporter(object):
         _log.info('Noting the revision we are importing.')
         _, show_ref_output = self.run(['git', 'show-ref', 'origin/master'], cwd=local_wpt.path)
         import_commit = 'wpt@%s' % show_ref_output.split()[0]
+
+        commit_message = self._commit_message(chromium_commit, import_commit)
+
+        if not options.ignore_exportable_commits:
+            commits = self.apply_exportable_commits_locally(local_wpt)
+            if commits is None:
+                _log.error('Could not apply some exportable commits cleanly.')
+                _log.error('Aborting import to prevent clobbering commits.')
+                return 1
+            commit_message = self._commit_message(
+                chromium_commit, import_commit, locally_applied_commits=commits)
 
         dest_path = self.finder.path_from_layout_tests('external', 'wpt')
 
@@ -122,7 +115,7 @@ class TestImporter(object):
             _log.info('Done: no changes to import.')
             return 0
 
-        commit_message = self._commit_message(chromium_commit, import_commit)
+        self.run(['git', 'commit', '--all', '-F', '-'], stdin=commit_message)
         self._commit_changes(commit_message)
         _log.info('Changes imported and committed.')
 
@@ -231,6 +224,44 @@ class TestImporter(object):
             _log.warning('Checkout has local commits before import.')
         return True
 
+    def apply_exportable_commits_locally(self, local_wpt):
+        """Applies exportable Chromium changes to the local WPT repo.
+
+        The purpose of this is to avoid clobbering changes that were made in
+        Chromium but not yet merged upstream. By applying these changes to the
+        local copy of web-platform-tests before copying files over, we make
+        it so that the resulting change in Chromium doesn't undo the
+        previous Chromium change.
+
+        Args:
+            A LocalWPT instance for our local copy of WPT.
+
+        Returns:
+            A list of commits applied (could be empty), or None if any
+            of the patches could not be applied cleanly.
+        """
+        commits = self.exportable_but_not_exported_commits(local_wpt)
+        for commit in commits:
+            _log.info('Applying exportable commit locally:')
+            _log.info(commit.url())
+            _log.info('Subject: %s', commit.subject().strip())
+            # TODO(qyearsley): We probably don't need to know about
+            # corresponding PRs at all anymore, although this information
+            # could still be useful for reference.
+            pull_request = self.wpt_github.pr_for_chromium_commit(commit)
+            if pull_request:
+                _log.info('PR: https://github.com/w3c/web-platform-tests/pull/%d', pull_request.number)
+            else:
+                _log.warning('No pull request found.')
+            applied = local_wpt.apply_patch(commit.format_patch())
+            if not applied:
+                return None
+            self.run(
+                ['git', 'commit', '--all', '-F', '-'],
+                stdin='Applying patch %s' % commit.sha,
+                cwd=local_wpt.path)
+        return commits
+
     def exportable_but_not_exported_commits(self, local_wpt):
         """Returns a list of commits that would be clobbered by importer."""
         return exportable_commits_over_last_n_commits(self.host, local_wpt, self.wpt_github)
@@ -271,11 +302,15 @@ class TestImporter(object):
         return_code, _ = self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)
         return return_code == 1
 
-    def _commit_message(self, chromium_commit, import_commit):
-        return ('Import %s\n\n'
-                'Using wpt-import in Chromium %s.\n\n'
-                'No-Export: true' %
-                (import_commit, chromium_commit))
+    def _commit_message(self, chromium_commit_sha, import_commit_sha,
+                        locally_applied_commits=None):
+        message = 'Import {}\n\nUsing wpt-import in Chromium {}.\n'.format(
+            import_commit_sha, chromium_commit_sha)
+        if locally_applied_commits is not None:
+            message += 'With Chromium commits locally applied on WPT:\n'
+            message += '\n'.join(str(commit) for commit in locally_applied_commits)
+        message += '\nNo-Export: true'
+        return message
 
     def _delete_orphaned_baselines(self, dest_path):
         _log.info('Deleting any orphaned baselines.')
