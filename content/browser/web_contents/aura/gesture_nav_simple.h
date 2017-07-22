@@ -43,6 +43,10 @@ class GestureNavSimple : public OverscrollControllerDelegate {
   std::unique_ptr<Affordance> affordance_;
   float completion_threshold_;
 
+  // When an overscroll is active, represents the maximum overscroll delta we
+  // expect in OnOverscrollUpdate().
+  float max_delta_;
+
   DISALLOW_COPY_AND_ASSIGN(GestureNavSimple);
 };
 

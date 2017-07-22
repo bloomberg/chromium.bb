@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "cc/paint/paint_flags.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -60,10 +61,19 @@ const gfx::Tween::Type kBurstAnimationTweenType = gfx::Tween::EASE_IN;
 constexpr auto kRippleBurstAnimationDuration =
     base::TimeDelta::FromMilliseconds(160);
 
-// Offset of the affordance when it is at the maximum distance with content
-// border. Since the affordance is initially out of content bounds, this is the
-// offset of the farther side of the affordance (which equals 128 + 18).
-const int kMaxAffordanceOffset = 146;
+// Offset of the affordance when it is at the activation threshold. Since the
+// affordance is initially out of content bounds, this is the offset of the
+// farther side of the affordance (which equals 128 + 18).
+const int kAffordanceActivationOffset = 146;
+
+// Extra offset of the affordance when it is dragged past the activation
+// threshold.
+const int kAffordanceExtraOffset = 72;
+const gfx::Tween::Type kExtraDragTweenType = gfx::Tween::Type::EASE_OUT;
+
+constexpr float kExtraAffordanceRatio =
+    static_cast<float>(kAffordanceExtraOffset) /
+    static_cast<float>(kAffordanceActivationOffset);
 
 // Parameters defining animation when the affordance is aborted.
 const gfx::Tween::Type kAbortAnimationTweenType = gfx::Tween::EASE_IN;
@@ -89,10 +99,13 @@ class Affordance : public ui::LayerDelegate, public gfx::AnimationDelegate {
  public:
   Affordance(GestureNavSimple* owner,
              OverscrollMode mode,
-             const gfx::Rect& content_bounds);
+             const gfx::Rect& content_bounds,
+             float max_drag_progress);
   ~Affordance() override;
 
-  // Sets progress of affordance drag as a value between 0 and 1.
+  // Sets drag progress. 0 means no progress. 1 means full progress. Values more
+  // than 1 are also allowed for when the user drags beyond the completion
+  // threshold.
   void SetDragProgress(float progress);
 
   // Aborts the affordance and animates it back. This will delete |this|
@@ -117,6 +130,11 @@ class Affordance : public ui::LayerDelegate, public gfx::AnimationDelegate {
   void SetAbortProgress(float progress);
   void SetCompleteProgress(float progress);
 
+  // Helper function that returns the affordance progress according to the
+  // current values of different progress values (drag progress and abort
+  // progress). 1 means the affordance is at the activation threshold.
+  float GetAffordanceProgress() const;
+
   // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
@@ -130,6 +148,10 @@ class Affordance : public ui::LayerDelegate, public gfx::AnimationDelegate {
   GestureNavSimple* const owner_;
 
   const OverscrollMode mode_;
+
+  // Maximum value for drag progress that can be reached if the user drags
+  // entire width of the page/screen.
+  const float max_drag_progress_;
 
   // Root layer of the affordance. This is used to clip the affordance to the
   // content bounds.
@@ -154,9 +176,11 @@ class Affordance : public ui::LayerDelegate, public gfx::AnimationDelegate {
 
 Affordance::Affordance(GestureNavSimple* owner,
                        OverscrollMode mode,
-                       const gfx::Rect& content_bounds)
+                       const gfx::Rect& content_bounds,
+                       float max_drag_progress)
     : owner_(owner),
       mode_(mode),
+      max_drag_progress_(max_drag_progress),
       root_layer_(base::MakeUnique<ui::Layer>(ui::LAYER_NOT_DRAWN)),
       painted_layer_(base::MakeUnique<ui::Layer>(ui::LAYER_TEXTURED)),
       image_(gfx::CreateVectorIcon(mode == OVERSCROLL_EAST
@@ -188,7 +212,6 @@ Affordance::~Affordance() {}
 void Affordance::SetDragProgress(float progress) {
   DCHECK_EQ(State::DRAGGING, state_);
   DCHECK_LE(0.f, progress);
-  DCHECK_GE(1.f, progress);
 
   if (drag_progress_ == progress)
     return;
@@ -203,26 +226,26 @@ void Affordance::Abort() {
 
   state_ = State::ABORTING;
 
-  animation_.reset(
-      new gfx::LinearAnimation(drag_progress_ * kAbortAnimationDuration,
-                               gfx::LinearAnimation::kDefaultFrameRate, this));
+  animation_ = base::MakeUnique<gfx::LinearAnimation>(
+      GetAffordanceProgress() * kAbortAnimationDuration,
+      gfx::LinearAnimation::kDefaultFrameRate, this);
   animation_->Start();
 }
 
 void Affordance::Complete() {
   DCHECK_EQ(State::DRAGGING, state_);
-  DCHECK_EQ(1.f, drag_progress_);
+  DCHECK_LE(1.f, drag_progress_);
 
   state_ = State::COMPLETING;
 
-  animation_.reset(
-      new gfx::LinearAnimation(kRippleBurstAnimationDuration,
-                               gfx::LinearAnimation::kDefaultFrameRate, this));
+  animation_ = base::MakeUnique<gfx::LinearAnimation>(
+      kRippleBurstAnimationDuration, gfx::LinearAnimation::kDefaultFrameRate,
+      this);
   animation_->Start();
 }
 
 void Affordance::UpdateTransform() {
-  float offset = (1 - abort_progress_) * drag_progress_ * kMaxAffordanceOffset;
+  float offset = GetAffordanceProgress() * kAffordanceActivationOffset;
   gfx::Transform transform;
   transform.Translate(mode_ == OVERSCROLL_EAST ? offset : -offset, 0);
   painted_layer_->SetTransform(transform);
@@ -254,12 +277,33 @@ void Affordance::SetCompleteProgress(float progress) {
     return;
   complete_progress_ = progress;
 
-  painted_layer_->SetOpacity(1 - complete_progress_);
+  painted_layer_->SetOpacity(gfx::Tween::CalculateValue(
+      kBurstAnimationTweenType, 1 - complete_progress_));
   SchedulePaint();
 }
 
+float Affordance::GetAffordanceProgress() const {
+  // Apply tween on the drag progress.
+  float affordance_progress = drag_progress_;
+  if (drag_progress_ >= 1.f) {
+    float extra_progress = max_drag_progress_ == 1.f
+                               ? 1.f
+                               : std::min(1.f, (drag_progress_ - 1.f) /
+                                                   (max_drag_progress_ - 1.f));
+    affordance_progress =
+        1 + gfx::Tween::CalculateValue(kExtraDragTweenType, extra_progress) *
+                kExtraAffordanceRatio;
+  }
+
+  // Apply abort progress, if any.
+  affordance_progress *=
+      1 - gfx::Tween::CalculateValue(kAbortAnimationTweenType, abort_progress_);
+
+  return affordance_progress;
+}
+
 void Affordance::OnPaintLayer(const ui::PaintContext& context) {
-  DCHECK(drag_progress_ == 1.f || state_ != State::COMPLETING);
+  DCHECK(drag_progress_ >= 1.f || state_ != State::COMPLETING);
   DCHECK(abort_progress_ == 0.f || state_ == State::ABORTING);
   DCHECK(complete_progress_ == 0.f || state_ == State::COMPLETING);
 
@@ -267,7 +311,7 @@ void Affordance::OnPaintLayer(const ui::PaintContext& context) {
   gfx::Canvas* canvas = recorder.canvas();
 
   gfx::PointF center_point(kMaxRippleBurstRadius, kMaxRippleBurstRadius);
-  float progress = (1 - abort_progress_) * drag_progress_;
+  float progress = std::min(1.f, GetAffordanceProgress());
 
   // Draw the ripple.
   cc::PaintFlags ripple_flags;
@@ -276,9 +320,10 @@ void Affordance::OnPaintLayer(const ui::PaintContext& context) {
   ripple_flags.setColor(kRippleColor);
   float ripple_radius;
   if (state_ == State::COMPLETING) {
-    ripple_radius =
-        kMaxRippleRadius +
-        complete_progress_ * (kMaxRippleBurstRadius - kMaxRippleRadius);
+    const float burst_progress = gfx::Tween::CalculateValue(
+        kBurstAnimationTweenType, complete_progress_);
+    ripple_radius = kMaxRippleRadius +
+                    burst_progress * (kMaxRippleBurstRadius - kMaxRippleRadius);
   } else {
     ripple_radius =
         kBackgroundRadius + progress * (kMaxRippleRadius - kBackgroundRadius);
@@ -333,12 +378,10 @@ void Affordance::AnimationProgressed(const gfx::Animation* animation) {
       NOTREACHED();
       break;
     case State::ABORTING:
-      SetAbortProgress(gfx::Tween::CalculateValue(
-          kAbortAnimationTweenType, animation->GetCurrentValue()));
+      SetAbortProgress(animation->GetCurrentValue());
       break;
     case State::COMPLETING:
-      SetCompleteProgress(gfx::Tween::CalculateValue(
-          kBurstAnimationTweenType, animation->GetCurrentValue()));
+      SetCompleteProgress(animation->GetCurrentValue());
       break;
   }
 }
@@ -349,7 +392,8 @@ void Affordance::AnimationCanceled(const gfx::Animation* animation) {
 
 GestureNavSimple::GestureNavSimple(WebContentsImpl* web_contents)
     : web_contents_(web_contents),
-      completion_threshold_(0.f) {}
+      completion_threshold_(0.f),
+      max_delta_(0.f) {}
 
 GestureNavSimple::~GestureNavSimple() {}
 
@@ -364,7 +408,7 @@ void GestureNavSimple::CompleteGestureAnimation() {
 }
 
 void GestureNavSimple::OnAffordanceAnimationEnded() {
-  affordance_.reset();
+  affordance_ = nullptr;
 }
 
 gfx::Size GestureNavSimple::GetDisplaySize() const {
@@ -376,8 +420,9 @@ gfx::Size GestureNavSimple::GetDisplaySize() const {
 bool GestureNavSimple::OnOverscrollUpdate(float delta_x, float delta_y) {
   if (!affordance_ || affordance_->IsFinishing())
     return false;
-  affordance_->SetDragProgress(
-      std::min(1.f, std::abs(delta_x) / completion_threshold_));
+  float delta = std::abs(delta_x);
+  DCHECK_LE(delta, max_delta_);
+  affordance_->SetDragProgress(delta / completion_threshold_);
   return true;
 }
 
@@ -413,9 +458,14 @@ void GestureNavSimple::OnOverscrollModeChange(OverscrollMode old_mode,
   completion_threshold_ =
       width * GetOverscrollConfig(OVERSCROLL_CONFIG_HORIZ_THRESHOLD_COMPLETE) -
       start_threshold;
+  DCHECK_LE(0, completion_threshold_);
+
+  max_delta_ = width - start_threshold;
+  DCHECK_LE(0, max_delta_);
 
   aura::Window* window = web_contents_->GetNativeView();
-  affordance_ = base::MakeUnique<Affordance>(this, new_mode, window->bounds());
+  affordance_ = base::MakeUnique<Affordance>(
+      this, new_mode, window->bounds(), max_delta_ / completion_threshold_);
 
   // Adding the affordance as a child of the content window is not sufficient,
   // because it is possible for a new layer to be parented on top of the
@@ -430,7 +480,7 @@ void GestureNavSimple::OnOverscrollModeChange(OverscrollMode old_mode,
 
 base::Optional<float> GestureNavSimple::GetMaxOverscrollDelta() const {
   if (affordance_)
-    return completion_threshold_;
+    return max_delta_;
   return base::nullopt;
 }
 
