@@ -17,9 +17,27 @@ namespace cc {
 
 class TimingFunction;
 
+// ScrollOffsetAnimationCurve computes scroll offset as a function of time
+// during a scroll offset animation.
+//
+// Scroll offset animations can run either in Blink or on a cc AnimationPlayer,
+// in response to user input or programmatic scroll operations.  For more
+// information about scheduling and servicing scroll animations, see
+// blink::ScrollAnimator and blink::ProgrammaticScrollAnimator.
+
 class CC_ANIMATION_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
  public:
-  enum class DurationBehavior { DELTA_BASED, CONSTANT, INVERSE_DELTA };
+  // Indicates how the animation duration should be computed.
+  enum class DurationBehavior {
+    // Duration proportional to scroll delta; used for programmatic scrolls.
+    DELTA_BASED,
+    // Constant duration; used for keyboard scrolls.
+    CONSTANT,
+    // Duration inversely proportional to scroll delta within certain bounds.
+    // Used for mouse wheels, makes fast wheel flings feel "snappy" while
+    // preserving smoothness of slow wheel movements.
+    INVERSE_DELTA
+  };
   static std::unique_ptr<ScrollOffsetAnimationCurve> Create(
       const gfx::ScrollOffset& target_value,
       std::unique_ptr<TimingFunction> timing_function,
@@ -36,7 +54,16 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
   bool HasSetInitialValue() const;
   gfx::ScrollOffset GetValue(base::TimeDelta t) const;
   gfx::ScrollOffset target_value() const { return target_value_; }
+
+  // Updates the current curve to aim at a new target, starting at time t
+  // relative to the start of the animation.  The duration is recomputed based
+  // on the DurationBehavior the curve was constructed with.  The timing
+  // function is an ease-in-out cubic bezier modified to preserve velocity at t.
   void UpdateTarget(double t, const gfx::ScrollOffset& new_target);
+
+  // Shifts the entire curve by a delta without affecting its shape or timing.
+  // Used for scroll anchoring adjustments that happen during scroll animations
+  // (see blink::ScrollAnimator::AdjustAnimationAndSetScrollOffset).
   void ApplyAdjustment(const gfx::Vector2dF& adjustment);
 
   // AnimationCurve implementation

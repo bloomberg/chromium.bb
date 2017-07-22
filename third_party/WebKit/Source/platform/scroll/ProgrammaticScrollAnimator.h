@@ -17,8 +17,13 @@ class ScrollableArea;
 class CompositorAnimationTimeline;
 class CompositorScrollOffsetAnimationCurve;
 
-// Animator for fixed-destination scrolls, such as those triggered by
-// CSSOM View scroll APIs.
+// ProgrammaticScrollAnimator manages scroll offset animations ("smooth
+// scrolls") triggered by web APIs such as "scroll-behavior: smooth" which are
+// standardized by the CSSOM View Module (https://www.w3.org/TR/cssom-view-1/).
+//
+// For scroll animations triggered by user input, see ScrollAnimator and
+// ScrollAnimatorMac.
+
 class ProgrammaticScrollAnimator : public ScrollAnimatorCompositorCoordinator {
   WTF_MAKE_NONCOPYABLE(ProgrammaticScrollAnimator);
 

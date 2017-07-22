@@ -42,6 +42,61 @@ namespace blink {
 
 class CompositorAnimationTimeline;
 
+// ScrollAnimator is the Blink-side implementation of user-input scroll offset
+// animations ("smooth scrolling") on all platforms except for Mac.
+//
+// See http://bit.ly/smoothscrolling for general info about user-input smooth
+// scrolling.  For the Mac implementation, see ScrollAnimatorMac.  For
+// programmatic (CSSOM) smooth scrolls, see ProgrammaticScrollAnimator.
+//
+// When Blink receives an input event that should start or update a scroll
+// animation, it calls ScrollAnimator::UserScroll.  This will construct an
+// animation curve object which can report the desired scroll offset as a
+// function of elapsed time.  See cc/animation/scroll_offset_animation_curve.h
+// for more info about the animation curve logic (including velocity-matched
+// target updating).
+//
+// Having established an animation curve, the logic for servicing the animation
+// is highly dependent on compositing.  There are four scenarios to consider:
+//
+// (1) Scroll animation running on the compositor, scheduled by the compositor
+//     (LayerTreeHostImpl::ScrollAnimated) in response to a scroll wheel input
+//     event handled by the compositor thread.  Blink doesn't know about these.
+//
+// (2) Scroll animation running on the compositor, scheduled by Blink.  For
+//     example, a keyboard scroll of a composited scroller.
+//
+// (3) Scroll animation of a composited scroller, running on the main thread due
+//     to main-thread scrolling reasons (for example, non-composited fixed-
+//     position elements that need to be repainted on scroll).
+//
+// (4) Scroll animation of a non-composited scroller, running on the main
+//     thread.
+//
+// In scenarios (1) and (2) the animation is created as a cc::Animation with
+// TargetProperty::SCROLL_OFFSET and added to a cc::AnimationPlayer that is
+// serviced on the compositor thread (in cc::AnimationHost::TickAnimations).
+// This lets the animation play smoothly even if the main thread is janked.
+//
+// In scenarios (3) and (4), we schedule the animation ticks on the main thread
+// using ScrollableArea::ScheduleAnimation, and update the scroll offset during
+// ScrollAnimator::TickAnimation.
+//
+// There is a special main-thread scrolling reason kHandlingScrollFromMainThread
+// set in scenarios (2) and (3) for the duration of the scroll, to prevent
+// interference from events that would otherwise trigger scenario (1).
+//
+// There is a complicated handoff from (1) to (3) in the event that a main-
+// thread scrolling reason is added in the middle of an animation.  This is
+// handled by TakeOverCompositorAnimation, which aborts the animation in cc and
+// sends an AnimationEvent::TAKEOVER back to the main thread containing a copy
+// of the curve.  That calls back into NotifyAnimationTakeover which starts a
+// new animation on main to play the "remainder" of the curve.
+//
+// The logic for Blink-side scheduling of compositor-serviced scroll offset
+// animations is shared with ProgrammaticScrollAnimator, and lives mostly in the
+// common base class ScrollAnimatorCompositorCoordinator.
+
 class PLATFORM_EXPORT ScrollAnimator : public ScrollAnimatorBase {
  public:
   explicit ScrollAnimator(ScrollableArea*,
