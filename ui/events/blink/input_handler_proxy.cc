@@ -187,7 +187,7 @@ void ReportInputEventLatencyUma(const WebInputEvent& event,
 
   ui::LatencyInfo::LatencyMap::const_iterator it =
       latency_info.latency_components().find(std::make_pair(
-          ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0));
+          ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, static_cast<int64_t>(0)));
 
   if (it == latency_info.latency_components().end())
     return;

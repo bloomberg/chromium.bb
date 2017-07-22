@@ -134,7 +134,7 @@ void TargetAutoAttacher::UpdateFrames() {
 }
 
 void TargetAutoAttacher::AgentHostClosed(DevToolsAgentHost* host) {
-  auto_attached_hosts_.erase(host);
+  auto_attached_hosts_.erase(make_scoped_refptr(host));
 }
 
 void TargetAutoAttacher::ReattachServiceWorkers(bool waiting_for_debugger) {
@@ -166,17 +166,15 @@ void TargetAutoAttacher::ReattachTargetsOfType(const Hosts& new_hosts,
                                                const std::string& type,
                                                bool waiting_for_debugger) {
   Hosts old_hosts = auto_attached_hosts_;
-  for (auto& it : old_hosts) {
-    DevToolsAgentHost* host = it.get();
+  for (auto& host : old_hosts) {
     if (host->GetType() == type && new_hosts.find(host) == new_hosts.end()) {
       auto_attached_hosts_.erase(host);
-      detach_callback_.Run(host);
+      detach_callback_.Run(host.get());
     }
   }
-  for (auto& it : new_hosts) {
-    DevToolsAgentHost* host = it.get();
+  for (auto& host : new_hosts) {
     if (old_hosts.find(host) == old_hosts.end()) {
-      attach_callback_.Run(host, waiting_for_debugger);
+      attach_callback_.Run(host.get(), waiting_for_debugger);
       auto_attached_hosts_.insert(host);
     }
   }

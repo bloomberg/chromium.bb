@@ -58,7 +58,8 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
 
  private:
   // A collection of callbacks used to release resources.
-  using ResourceReleaseCallbackMap = base::flat_map<int, cc::ReleaseCallback>;
+  using ResourceReleaseCallbackMap =
+      base::flat_map<cc::ResourceId, cc::ReleaseCallback>;
   ResourceReleaseCallbackMap release_callbacks_;
 
   Surface* surface_;

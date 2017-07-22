@@ -11,6 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/base/resource_id.h"
 #include "ui/views/view.h"
 
 namespace aura {
@@ -74,7 +75,7 @@ class FastInkView : public views::View {
   bool pending_draw_surface_ = false;
   std::unique_ptr<FastInkLayerTreeFrameSinkHolder> frame_sink_holder_;
   int next_resource_id_ = 1;
-  base::flat_map<int, std::unique_ptr<FastInkResource>> resources_;
+  base::flat_map<cc::ResourceId, std::unique_ptr<FastInkResource>> resources_;
   std::vector<std::unique_ptr<FastInkResource>> returned_resources_;
   base::WeakPtrFactory<FastInkView> weak_ptr_factory_;
 

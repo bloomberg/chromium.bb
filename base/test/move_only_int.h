@@ -30,6 +30,14 @@ class MoveOnlyInt {
     return !operator==(lhs, rhs);
   }
 
+  friend bool operator<(const MoveOnlyInt& lhs, int rhs) {
+    return lhs.data_ < rhs;
+  }
+
+  friend bool operator<(int lhs, const MoveOnlyInt& rhs) {
+    return lhs < rhs.data_;
+  }
+
   friend bool operator<(const MoveOnlyInt& lhs, const MoveOnlyInt& rhs) {
     return lhs.data_ < rhs.data_;
   }
