@@ -1691,5 +1691,42 @@ TEST(SoftwareImageDecodeCacheTest, ClearCache) {
   EXPECT_EQ(0u, cache.GetNumCacheEntriesForTesting());
 }
 
+TEST(SoftwareImageDecodeCacheTest, RemoveUnusedImage) {
+  TestSoftwareImageDecodeCache cache;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  std::vector<uint32_t> unique_ids(10);
+
+  for (int i = 0; i < 10; ++i) {
+    sk_sp<SkImage> image = CreateImage(100, 100);
+    unique_ids[i] = image->uniqueID();
+    DrawImage draw_image(
+        CreatePaintImage(image),
+        SkIRect::MakeWH(image->width(), image->height()), quality,
+        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+        DefaultColorSpace());
+    DecodedDrawImage decoded_draw_image =
+        cache.GetDecodedImageForDraw(draw_image);
+    scoped_refptr<TileTask> task;
+    bool need_unref = cache.GetTaskForImageAndRef(
+        draw_image, ImageDecodeCache::TracingInfo(), &task);
+    EXPECT_TRUE(need_unref);
+    EXPECT_TRUE(task);
+    TestTileTaskRunner::ProcessTask(task.get());
+    cache.DrawWithImageFinished(draw_image, decoded_draw_image);
+    cache.UnrefImage(draw_image);
+  }
+
+  // We should now have data image in our cache.
+  EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), 10u);
+
+  // Remove unused ids.
+  for (uint32_t i = 0; i < 10; ++i) {
+    cache.NotifyImageUnused(unique_ids[i]);
+    EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), (10 - i - 1));
+  }
+}
+
 }  // namespace
 }  // namespace cc
