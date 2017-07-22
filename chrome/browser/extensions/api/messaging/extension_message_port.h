@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/api/messaging/message_port.h"
+#include "extensions/browser/api/messaging/message_port.h"
 #include "extensions/common/api/messaging/port_id.h"
 
 class GURL;

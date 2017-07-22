@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/messaging/message_property_provider.h"
+#include "extensions/browser/api/messaging/message_property_provider.h"
 
 #include <stdint.h>
 
@@ -65,14 +65,11 @@ void MessagePropertyProvider::GetChannelIDOnIOThread(
     const ChannelIDCallback& reply) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   net::ChannelIDService* channel_id_service =
-      request_context_getter->GetURLRequestContext()->
-          channel_id_service();
+      request_context_getter->GetURLRequestContext()->channel_id_service();
   GetChannelIDOutput* output = new GetChannelIDOutput();
   net::CompletionCallback net_completion_callback =
-      base::Bind(&MessagePropertyProvider::GotChannelID,
-                 original_task_runner,
-                 base::Owned(output),
-                 reply);
+      base::Bind(&MessagePropertyProvider::GotChannelID, original_task_runner,
+                 base::Owned(output), reply);
   int status = channel_id_service->GetChannelID(
       host, &output->channel_id_key, net_completion_callback, &output->request);
   if (status == net::ERR_IO_PENDING)

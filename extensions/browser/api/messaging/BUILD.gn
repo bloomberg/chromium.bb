@@ -9,6 +9,10 @@ assert(enable_extensions,
 
 source_set("messaging") {
   sources = [
+    "message_port.cc",
+    "message_port.h",
+    "message_property_provider.cc",
+    "message_property_provider.h",
     "native_message_host.cc",
     "native_message_host.h",
     "native_messaging_channel.h",
@@ -16,6 +20,7 @@ source_set("messaging") {
 
   deps = [
     "//extensions/common/api",
+    "//net",
   ]
 
   public_deps = [
