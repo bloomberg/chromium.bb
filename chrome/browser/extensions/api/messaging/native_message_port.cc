@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/api/messaging/message.h"
 
 namespace extensions {
 
@@ -83,10 +84,10 @@ void NativeMessagePort::Core::CloseChannel(const std::string& error_message) {
 }
 
 NativeMessagePort::NativeMessagePort(
-    base::WeakPtr<MessageService> message_service,
+    base::WeakPtr<ChannelDelegate> channel_delegate,
     const PortId& port_id,
     std::unique_ptr<NativeMessageHost> native_message_host)
-    : weak_message_service_(message_service),
+    : weak_channel_delegate_(channel_delegate),
       host_task_runner_(native_message_host->task_runner()),
       port_id_(port_id),
       weak_factory_(this) {
@@ -116,16 +117,16 @@ void NativeMessagePort::DispatchOnMessage(const Message& message) {
 
 void NativeMessagePort::PostMessageFromNativeHost(const std::string& message) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (weak_message_service_) {
-    weak_message_service_->PostMessage(
+  if (weak_channel_delegate_) {
+    weak_channel_delegate_->PostMessage(
         port_id_, Message(message, false /* user_gesture */));
   }
 }
 
 void NativeMessagePort::CloseChannel(const std::string& error_message) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (weak_message_service_) {
-    weak_message_service_->CloseChannel(port_id_, error_message);
+  if (weak_channel_delegate_) {
+    weak_channel_delegate_->CloseChannel(port_id_, error_message);
   }
 }
 

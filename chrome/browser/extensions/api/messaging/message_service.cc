@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/messaging/extension_message_port.h"
 #include "chrome/browser/extensions/api/messaging/incognito_connectability.h"
+#include "chrome/browser/extensions/api/messaging/message_port.h"
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -178,13 +179,6 @@ static content::RenderProcessHost* GetExtensionProcess(
 }
 
 }  // namespace
-
-void MessageService::MessagePort::RemoveCommonFrames(const MessagePort& port) {}
-
-bool MessageService::MessagePort::HasFrame(
-    content::RenderFrameHost* rfh) const {
-  return false;
-}
 
 MessageService::MessageService(BrowserContext* context)
     : lazy_background_task_queue_(

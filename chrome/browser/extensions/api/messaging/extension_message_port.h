@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_MESSAGING_EXTENSION_MESSAGE_PORT_H_
 #define CHROME_BROWSER_EXTENSIONS_API_MESSAGING_EXTENSION_MESSAGE_PORT_H_
 
+#include <set>
+
 #include "base/macros.h"
-#include "chrome/browser/extensions/api/messaging/message_service.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/api/messaging/message_port.h"
 #include "extensions/common/api/messaging/port_id.h"
 
 class GURL;
@@ -22,21 +25,22 @@ class Message;
 }  // namespace IPC
 
 namespace extensions {
+class ExtensionHost;
 
 // A port that manages communication with an extension.
 // The port's lifetime will end when either all receivers close the port, or
 // when the opener / receiver explicitly closes the channel.
-class ExtensionMessagePort : public MessageService::MessagePort {
+class ExtensionMessagePort : public MessagePort {
  public:
   // Create a port that is tied to frame(s) in a single tab.
-  ExtensionMessagePort(base::WeakPtr<MessageService> message_service,
+  ExtensionMessagePort(base::WeakPtr<ChannelDelegate> channel_delegate,
                        const PortId& port_id,
                        const std::string& extension_id,
                        content::RenderFrameHost* rfh,
                        bool include_child_frames);
   // Create a port that is tied to all frames of an extension, possibly spanning
   // multiple tabs, including the invisible background page, popups, etc.
-  ExtensionMessagePort(base::WeakPtr<MessageService> message_service,
+  ExtensionMessagePort(base::WeakPtr<ChannelDelegate> channel_delegate,
                        const PortId& port_id,
                        const std::string& extension_id,
                        content::RenderProcessHost* extension_process);
@@ -48,7 +52,7 @@ class ExtensionMessagePort : public MessageService::MessagePort {
   // ports because the frame may be navigated before the port was initialized.
   void RevalidatePort();
 
-  // MessageService::MessagePort:
+  // MessagePort:
   void RemoveCommonFrames(const MessagePort& port) override;
   bool HasFrame(content::RenderFrameHost* rfh) const override;
   bool IsValidPort() override;
@@ -84,7 +88,7 @@ class ExtensionMessagePort : public MessageService::MessagePort {
   // Send a IPC message to the renderer for all registered frames.
   void SendToPort(std::unique_ptr<IPC::Message> msg);
 
-  base::WeakPtr<MessageService> weak_message_service_;
+  base::WeakPtr<ChannelDelegate> weak_channel_delegate_;
 
   const PortId port_id_;
   std::string extension_id_;

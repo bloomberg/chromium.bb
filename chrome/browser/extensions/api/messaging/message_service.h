@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/messaging/message_port.h"
 #include "chrome/browser/extensions/api/messaging/message_property_provider.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -52,66 +53,13 @@ class LazyBackgroundTaskQueue;
 // Terminology:
 // channel: connection between two ports
 // port: One sender or receiver tied to one or more RenderFrameHost instances.
-class MessageService : public BrowserContextKeyedAPI {
+class MessageService : public BrowserContextKeyedAPI,
+                       public MessagePort::ChannelDelegate {
  public:
   // A messaging channel. Note that the opening port can be the same as the
   // receiver, if an extension background page wants to talk to its tab (for
   // example).
   struct MessageChannel;
-
-  // One side of the communication handled by extensions::MessageService.
-  class MessagePort {
-   public:
-    virtual ~MessagePort() {}
-
-    // Called right before a channel is created for this MessagePort and |port|.
-    // This allows us to ensure that the ports have no RenderFrameHost instances
-    // in common.
-    virtual void RemoveCommonFrames(const MessagePort& port);
-
-    // Check whether the given RenderFrameHost is associated with this port.
-    virtual bool HasFrame(content::RenderFrameHost* rfh) const;
-
-    // Called right before a port is connected to a channel. If false, the port
-    // is not used and the channel is closed.
-    virtual bool IsValidPort() = 0;
-
-    // Notify the port that the channel has been opened.
-    virtual void DispatchOnConnect(
-        const std::string& channel_name,
-        std::unique_ptr<base::DictionaryValue> source_tab,
-        int source_frame_id,
-        int guest_process_id,
-        int guest_render_frame_routing_id,
-        const std::string& source_extension_id,
-        const std::string& target_extension_id,
-        const GURL& source_url,
-        const std::string& tls_channel_id) {}
-
-    // Notify the port that the channel has been closed. If |error_message| is
-    // non-empty, it indicates an error occurred while opening the connection.
-    virtual void DispatchOnDisconnect(const std::string& error_message) {}
-
-    // Dispatch a message to this end of the communication.
-    virtual void DispatchOnMessage(const Message& message) = 0;
-
-    // Mark the port as opened by the specific frame.
-    virtual void OpenPort(int process_id, int routing_id) {}
-
-    // Close the port for the given frame.
-    virtual void ClosePort(int process_id, int routing_id) {}
-
-    // MessagePorts that target extensions will need to adjust their keepalive
-    // counts for their lazy background page.
-    virtual void IncrementLazyKeepaliveCount() {}
-    virtual void DecrementLazyKeepaliveCount() {}
-
-   protected:
-    MessagePort() {}
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(MessagePort);
-  };
 
   enum PolicyPermission {
     DISALLOW,           // The host is not allowed.
@@ -128,6 +76,11 @@ class MessageService : public BrowserContextKeyedAPI {
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<MessageService>* GetFactoryInstance();
+
+  // MessagePort::ChannelDelegate implementation.
+  void CloseChannel(const PortId& port_id,
+                    const std::string& error_message) override;
+  void PostMessage(const PortId& port_id, const Message& message) override;
 
   // Convenience method to get the MessageService for a browser context.
   static MessageService* Get(content::BrowserContext* context);
@@ -170,14 +123,6 @@ class MessageService : public BrowserContextKeyedAPI {
                  int process_id,
                  int routing_id,
                  bool force_close);
-
-  // Closes the message channel associated with the given port, and notifies
-  // the other side.
-  void CloseChannel(const PortId& port_id, const std::string& error_message);
-
-  // Enqueues a message on a pending channel, or sends a message to the given
-  // port if the channel isn't pending.
-  void PostMessage(const PortId& port_id, const Message& message);
 
  private:
   friend class MockMessageService;

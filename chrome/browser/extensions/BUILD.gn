@@ -270,6 +270,8 @@ static_library("extensions") {
     "api/messaging/extension_message_port.h",
     "api/messaging/incognito_connectability.cc",
     "api/messaging/incognito_connectability.h",
+    "api/messaging/message_port.cc",
+    "api/messaging/message_port.h",
     "api/messaging/message_property_provider.cc",
     "api/messaging/message_property_provider.h",
     "api/messaging/message_service.cc",
