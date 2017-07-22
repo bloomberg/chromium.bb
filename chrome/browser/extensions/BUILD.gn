@@ -276,6 +276,8 @@ static_library("extensions") {
     "api/messaging/message_property_provider.h",
     "api/messaging/message_service.cc",
     "api/messaging/message_service.h",
+    "api/messaging/messaging_delegate.cc",
+    "api/messaging/messaging_delegate.h",
     "api/messaging/native_message_port.cc",
     "api/messaging/native_message_port.h",
     "api/messaging/native_messaging_host_manifest.cc",
