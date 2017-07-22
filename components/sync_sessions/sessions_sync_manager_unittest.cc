@@ -745,6 +745,20 @@ class SessionsSyncManagerTest : public testing::Test {
     NavigateTab(delegate, url, base::Time::Now(), transition);
   }
 
+  void ReloadTab(TestSyncedTabDelegate* delegate, base::Time time) {
+    sessions::SerializedNavigationEntry old_entry;
+    delegate->GetSerializedNavigationAtIndex(delegate->GetCurrentEntryIndex(),
+                                             &old_entry);
+
+    auto new_entry =
+        base::MakeUnique<sessions::SerializedNavigationEntry>(old_entry);
+    SerializedNavigationEntryTestHelper::SetTimestamp(time, new_entry.get());
+
+    delegate->reset();
+    delegate->AppendEntry(std::move(new_entry));
+    router_->NotifyNav(delegate);
+  }
+
   void ResetWindows() {
     window_getter_.ClearSyncedWindowDelegates();
     windows_.clear();
@@ -2619,6 +2633,82 @@ TEST_F(SessionsSyncManagerTest, TrackTasksOnLocalTabModified) {
   // navigation(1) is a subtask of navigation(0).
   EXPECT_EQ(tab.navigation(1).ancestor_task_id_size(), 1);
   EXPECT_EQ(tab.navigation(1).ancestor_task_id(0), tab.navigation(0).task_id());
+}
+
+void CaptureGlobalIdChange(int64_t* old_ptr,
+                           int64_t* new_ptr,
+                           int64_t old_id,
+                           int64_t new_id) {
+  *old_ptr = old_id;
+  *new_ptr = new_id;
+}
+
+// Tests that subscribers to AddGlobalIdChangeObserver are notified when a
+// global_id is noticed to have been changed.
+TEST_F(SessionsSyncManagerTest, AddGlobalIdChangeObserver) {
+  TestSyncedWindowDelegate* window = AddWindow();
+  SessionID::id_type window_id = window->GetSessionId();
+  SyncChangeList out;
+  InitWithSyncDataTakeOutput(SyncDataList(), &out);
+
+  int64_t old_id = -1;
+  int64_t new_id = -1;
+  manager()->AddGlobalIdChangeObserver(
+      base::Bind(&CaptureGlobalIdChange, &old_id, &new_id));
+
+  TestSyncedTabDelegate* tab = AddTab(window_id, kFoo1, kTime1);
+  EXPECT_EQ(-1, old_id);
+  EXPECT_EQ(-1, new_id);
+
+  ReloadTab(tab, kTime2);
+  EXPECT_EQ(kTime1.ToInternalValue(), old_id);
+  EXPECT_EQ(kTime2.ToInternalValue(), new_id);
+}
+
+// Tests that GetLatestGlobalId returns correct mappings for updated global_ids.
+TEST_F(SessionsSyncManagerTest, GetLatestGlobalId) {
+  TestSyncedWindowDelegate* window = AddWindow();
+  SessionID::id_type window_id = window->GetSessionId();
+  SyncChangeList out;
+  InitWithSyncDataTakeOutput(SyncDataList(), &out);
+
+  TestSyncedTabDelegate* tab = AddTab(window_id, kFoo1, kTime1);
+  ReloadTab(tab, kTime2);
+  ReloadTab(tab, kTime3);
+
+  EXPECT_EQ(kTime3.ToInternalValue(),
+            manager()->GetLatestGlobalId(kTime1.ToInternalValue()));
+  EXPECT_EQ(kTime3.ToInternalValue(),
+            manager()->GetLatestGlobalId(kTime2.ToInternalValue()));
+  EXPECT_EQ(kTime3.ToInternalValue(),
+            manager()->GetLatestGlobalId(kTime3.ToInternalValue()));
+  // kTime4 is not mapped, so itself should be returned.
+  EXPECT_EQ(kTime4.ToInternalValue(),
+            manager()->GetLatestGlobalId(kTime4.ToInternalValue()));
+}
+
+// Tests that the global_id mapping is eventually dropped after we reach out
+// threshold for the amount to remember.
+TEST_F(SessionsSyncManagerTest, GlobalIdMapperCleanup) {
+  TestSyncedWindowDelegate* window = AddWindow();
+  SessionID::id_type window_id = window->GetSessionId();
+  SyncChangeList out;
+  InitWithSyncDataTakeOutput(SyncDataList(), &out);
+
+  base::Time current_time = kTime1;
+  TestSyncedTabDelegate* tab = AddTab(window_id, kFoo1, current_time);
+
+  for (int i = 0; i < 105; i++) {
+    current_time =
+        base::Time::FromInternalValue(current_time.ToInternalValue() + 1);
+    ReloadTab(tab, current_time);
+  }
+
+  // Threshold is 100, kTime1 should be dropped, kTime1+10 should not.
+  EXPECT_EQ(kTime1.ToInternalValue(),
+            manager()->GetLatestGlobalId(kTime1.ToInternalValue()));
+  EXPECT_EQ(current_time.ToInternalValue(),
+            manager()->GetLatestGlobalId(10 + kTime1.ToInternalValue()));
 }
 
 }  // namespace sync_sessions
