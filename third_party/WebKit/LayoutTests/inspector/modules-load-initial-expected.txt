@@ -4,6 +4,7 @@ Loaded modules:
     bindings
     common
     components
+    console_counters
     console_model
     dom_extension
     emulation
