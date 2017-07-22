@@ -7,7 +7,6 @@
 #include <sstream>
 
 #include "base/time/time.h"
-#include "cc/base/time_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/test/test_utils.h"
 
@@ -39,7 +38,7 @@ TEST(InverseTransformCurveAdapterTest, InversesTransform) {
   static const int kSteps = 1000;
   double step = 1.0 / kSteps;
   for (int i = 0; i <= kSteps; ++i) {
-    base::TimeDelta time_step = cc::TimeUtil::Scale(duration, i * step);
+    base::TimeDelta time_step = duration * (i * step);
     std::ostringstream message;
     message << "Step " << i << " of " << kSteps;
     SCOPED_TRACE(message.str());

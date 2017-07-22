@@ -10,7 +10,6 @@
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/animation/animation_curve.h"
-#include "cc/base/time_util.h"
 
 namespace {
 
@@ -143,8 +142,7 @@ bool Animation::IsFinishedAt(base::TimeTicks monotonic_time) const {
     return false;
 
   return run_state_ == RUNNING && iterations_ >= 0 &&
-         TimeUtil::Scale(curve_->Duration(),
-                         iterations_ / std::abs(playback_rate_)) <=
+         (curve_->Duration() * (iterations_ / std::abs(playback_rate_))) <=
              (monotonic_time + time_offset_ - start_time_ - total_paused_time_);
 }
 
@@ -155,23 +153,20 @@ bool Animation::InEffect(base::TimeTicks monotonic_time) const {
 
 base::TimeDelta Animation::ConvertToActiveTime(
     base::TimeTicks monotonic_time) const {
-  base::TimeTicks trimmed = monotonic_time + time_offset_;
-
-  // If we're paused, time is 'stuck' at the pause time.
-  if (run_state_ == PAUSED)
-    trimmed = pause_time_;
-
-  // Returned time should always be relative to the start time and should
-  // subtract all time spent paused.
-  trimmed -= (start_time_ - base::TimeTicks()) + total_paused_time_;
-
   // If we're just starting or we're waiting on receiving a start time,
   // time is 'stuck' at the initial state.
   if ((run_state_ == STARTING && !has_set_start_time()) ||
-      needs_synchronized_start_time())
-    trimmed = base::TimeTicks() + time_offset_;
+      needs_synchronized_start_time()) {
+    return time_offset_;
+  }
 
-  return (trimmed - base::TimeTicks());
+  // Compute active time. If we're paused, time is 'stuck' at the pause time.
+  base::TimeTicks active_time =
+      (run_state_ == PAUSED) ? pause_time_ : (monotonic_time + time_offset_);
+
+  // Returned time should always be relative to the start time and should
+  // subtract all time spent paused.
+  return active_time - start_time_ - total_paused_time_;
 }
 
 base::TimeDelta Animation::TrimTimeToCurrentIteration(
@@ -181,8 +176,7 @@ base::TimeDelta Animation::TrimTimeToCurrentIteration(
   DCHECK_GE(iteration_start_, 0);
 
   base::TimeDelta active_time = ConvertToActiveTime(monotonic_time);
-  base::TimeDelta start_offset =
-      TimeUtil::Scale(curve_->Duration(), iteration_start_);
+  base::TimeDelta start_offset = curve_->Duration() * iteration_start_;
 
   // Return start offset if we are before the start of the animation
   if (active_time < base::TimeDelta())
@@ -195,10 +189,9 @@ base::TimeDelta Animation::TrimTimeToCurrentIteration(
   if (curve_->Duration() <= base::TimeDelta())
     return base::TimeDelta();
 
-  base::TimeDelta repeated_duration =
-      TimeUtil::Scale(curve_->Duration(), iterations_);
+  base::TimeDelta repeated_duration = curve_->Duration() * iterations_;
   base::TimeDelta active_duration =
-      TimeUtil::Scale(repeated_duration, 1.0 / std::abs(playback_rate_));
+      repeated_duration / std::abs(playback_rate_);
 
   // Check if we are past active duration
   if (iterations_ > 0 && active_time >= active_duration)
@@ -206,13 +199,12 @@ base::TimeDelta Animation::TrimTimeToCurrentIteration(
 
   // Calculate the scaled active time
   base::TimeDelta scaled_active_time;
-  if (playback_rate_ < 0)
+  if (playback_rate_ < 0) {
     scaled_active_time =
-        TimeUtil::Scale((active_time - active_duration), playback_rate_) +
-        start_offset;
-  else
-    scaled_active_time =
-        TimeUtil::Scale(active_time, playback_rate_) + start_offset;
+        ((active_time - active_duration) * playback_rate_) + start_offset;
+  } else {
+    scaled_active_time = (active_time * playback_rate_) + start_offset;
+  }
 
   // Calculate the iteration time
   base::TimeDelta iteration_time;
@@ -220,7 +212,7 @@ base::TimeDelta Animation::TrimTimeToCurrentIteration(
       fmod(iterations_ + iteration_start_, 1) == 0)
     iteration_time = curve_->Duration();
   else
-    iteration_time = TimeUtil::Mod(scaled_active_time, curve_->Duration());
+    iteration_time = scaled_active_time % curve_->Duration();
 
   // Calculate the current iteration
   int iteration;

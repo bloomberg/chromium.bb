@@ -18,7 +18,6 @@
 #include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/completion_event.h"
-#include "cc/base/time_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/test/animation_test_common.h"
@@ -322,7 +321,7 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
     float end_opacity = curve->GetValue(curve->Duration());
     float linearly_interpolated_opacity =
         0.25f * end_opacity + 0.75f * start_opacity;
-    base::TimeDelta time = TimeUtil::Scale(curve->Duration(), 0.25f);
+    base::TimeDelta time = curve->Duration() * 0.25f;
     // If the linear timing function associated with this animation was not
     // picked up, then the linearly interpolated opacity would be different
     // because of the default ease timing function.
@@ -1371,10 +1370,10 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
 
     Animation* root_anim =
         player_impl_->GetAnimation(TargetProperty::TRANSFORM);
-    EXPECT_GT((root_anim->start_time() - base::TimeTicks()).InSecondsF(), 0);
+    EXPECT_LT(base::TimeTicks(), root_anim->start_time());
 
     Animation* anim = player_child_impl_->GetAnimation(TargetProperty::OPACITY);
-    EXPECT_GT((anim->start_time() - base::TimeTicks()).InSecondsF(), 0);
+    EXPECT_LT(base::TimeTicks(), anim->start_time());
 
     EndTest();
   }
@@ -1752,8 +1751,7 @@ class LayerTreeHostAnimationTestNotifyAnimationFinished
                               int target_property,
                               int group) override {
     called_animation_started_ = true;
-    layer_tree_host()->AnimateLayers(base::TimeTicks::FromInternalValue(
-        std::numeric_limits<int64_t>::max()));
+    layer_tree_host()->AnimateLayers(base::TimeTicks::Max());
     PostSetNeedsCommitToMainThread();
   }
 

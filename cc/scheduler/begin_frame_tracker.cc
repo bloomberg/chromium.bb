@@ -9,9 +9,8 @@ namespace cc {
 BeginFrameTracker::BeginFrameTracker(const tracked_objects::Location& location)
     : location_(location),
       location_string_(location.ToString()),
-      current_updated_at_(),
-      current_args_(),
-      current_finished_at_(base::TimeTicks::FromInternalValue(-1)) {}
+      current_finished_at_(base::TimeTicks() +
+                           base::TimeDelta::FromMicroseconds(-1)) {}
 
 BeginFrameTracker::~BeginFrameTracker() {
 }
@@ -20,13 +19,14 @@ void BeginFrameTracker::Start(viz::BeginFrameArgs new_args) {
   // Trace the frame time being passed between BeginFrameTrackers.
   TRACE_EVENT_FLOW_STEP0(
       TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"), "BeginFrameArgs",
-      new_args.frame_time.ToInternalValue(), location_string_);
+      new_args.frame_time.since_origin().InMicroseconds(), location_string_);
 
   // Trace this specific begin frame tracker Start/Finish times.
   TRACE_EVENT_COPY_ASYNC_BEGIN2(
       TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"),
-      location_string_.c_str(), new_args.frame_time.ToInternalValue(),
-      "new args", new_args.AsValue(), "current args", current_args_.AsValue());
+      location_string_.c_str(),
+      new_args.frame_time.since_origin().InMicroseconds(), "new args",
+      new_args.AsValue(), "current args", current_args_.AsValue());
 
   // Check the new viz::BeginFrameArgs are valid and monotonically increasing.
   DCHECK(new_args.IsValid());
@@ -56,7 +56,8 @@ void BeginFrameTracker::Finish() {
   current_finished_at_ = base::TimeTicks::Now();
   TRACE_EVENT_COPY_ASYNC_END0(
       TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"),
-      location_string_.c_str(), current_args_.frame_time.ToInternalValue());
+      location_string_.c_str(),
+      current_args_.frame_time.since_origin().InMicroseconds());
 }
 
 const viz::BeginFrameArgs& BeginFrameTracker::Last() const {
@@ -81,10 +82,9 @@ void BeginFrameTracker::AsValueInto(
     base::TimeTicks now,
     base::trace_event::TracedValue* state) const {
   state->SetDouble("updated_at_ms",
-                   (current_updated_at_ - base::TimeTicks()).InMillisecondsF());
-  state->SetDouble(
-      "finished_at_ms",
-      (current_finished_at_ - base::TimeTicks()).InMillisecondsF());
+                   current_updated_at_.since_origin().InMillisecondsF());
+  state->SetDouble("finished_at_ms",
+                   current_finished_at_.since_origin().InMillisecondsF());
   if (HasFinished()) {
     state->SetString("state", "FINISHED");
     state->BeginDictionary("current_args_");
@@ -104,11 +104,9 @@ void BeginFrameTracker::AsValueInto(
   state->SetDouble("2_frame_time_to_now", (now - frame_time).InMillisecondsF());
   state->SetDouble("3_frame_time_to_deadline",
                    (deadline - frame_time).InMillisecondsF());
-  state->SetDouble("4_now", (now - base::TimeTicks()).InMillisecondsF());
-  state->SetDouble("5_frame_time",
-                   (frame_time - base::TimeTicks()).InMillisecondsF());
-  state->SetDouble("6_deadline",
-                   (deadline - base::TimeTicks()).InMillisecondsF());
+  state->SetDouble("4_now", now.since_origin().InMillisecondsF());
+  state->SetDouble("5_frame_time", frame_time.since_origin().InMillisecondsF());
+  state->SetDouble("6_deadline", deadline.since_origin().InMillisecondsF());
   state->EndDictionary();
 }
 

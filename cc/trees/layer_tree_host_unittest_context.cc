@@ -45,6 +45,11 @@ using media::VideoFrame;
 namespace cc {
 namespace {
 
+// Returns a fake TimeTicks based on the given microsecond offset.
+base::TimeTicks TicksFromMicroseconds(int64_t micros) {
+  return base::TimeTicks() + base::TimeDelta::FromMicroseconds(micros);
+}
+
 // These tests deal with losing the 3d graphics context.
 class LayerTreeHostContextTest : public LayerTreeTest {
  public:
@@ -460,8 +465,8 @@ class MultipleCompositeDoesNotCreateLayerTreeFrameSink
   }
 
   void BeginTest() override {
-    layer_tree_host()->Composite(base::TimeTicks::FromInternalValue(1));
-    layer_tree_host()->Composite(base::TimeTicks::FromInternalValue(2));
+    layer_tree_host()->Composite(TicksFromMicroseconds(1));
+    layer_tree_host()->Composite(TicksFromMicroseconds(2));
   }
 
   void DidInitializeLayerTreeFrameSink() override { EXPECT_TRUE(false); }
@@ -504,12 +509,12 @@ class FailedCreateDoesNotCreateExtraLayerTreeFrameSink
 
   void BeginTest() override {
     // First composite tries to create a surface.
-    layer_tree_host()->Composite(base::TimeTicks::FromInternalValue(1));
+    layer_tree_host()->Composite(TicksFromMicroseconds(1));
     EXPECT_EQ(num_requests_, 2);
     EXPECT_TRUE(has_failed_);
 
     // Second composite should not request or fail.
-    layer_tree_host()->Composite(base::TimeTicks::FromInternalValue(2));
+    layer_tree_host()->Composite(TicksFromMicroseconds(2));
     EXPECT_EQ(num_requests_, 2);
     EndTest();
   }
@@ -557,7 +562,7 @@ class LayerTreeHostContextTestCommitAfterDelayedLayerTreeFrameSink
   }
 
   void BeginTest() override {
-    layer_tree_host()->Composite(base::TimeTicks::FromInternalValue(1));
+    layer_tree_host()->Composite(TicksFromMicroseconds(1));
   }
 
   void ScheduleComposite() override {
@@ -592,7 +597,7 @@ class LayerTreeHostContextTestAvoidUnnecessaryComposite
 
   void BeginTest() override {
     in_composite_ = true;
-    layer_tree_host()->Composite(base::TimeTicks::FromInternalValue(1));
+    layer_tree_host()->Composite(TicksFromMicroseconds(1));
     in_composite_ = false;
   }
 

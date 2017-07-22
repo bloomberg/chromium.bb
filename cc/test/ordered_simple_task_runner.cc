@@ -85,7 +85,7 @@ TestOrderablePendingTask::AsValue() const {
 void TestOrderablePendingTask::AsValueInto(
     base::trace_event::TracedValue* state) const {
   state->SetInteger("id", base::saturated_cast<int>(task_id_));
-  state->SetInteger("run_at", GetTimeToRun().ToInternalValue());
+  state->SetInteger("run_at", GetTimeToRun().since_origin().InMicroseconds());
   state->SetString("posted_from", location.ToString());
 }
 
@@ -99,12 +99,6 @@ OrderedSimpleTaskRunner::OrderedSimpleTaskRunner(
 }
 
 OrderedSimpleTaskRunner::~OrderedSimpleTaskRunner() {}
-
-// static
-base::TimeTicks OrderedSimpleTaskRunner::AbsoluteMaxNow() {
-  return base::TimeTicks::FromInternalValue(
-      std::numeric_limits<int64_t>::max());
-}
 
 // base::TestSimpleTaskRunner implementation
 bool OrderedSimpleTaskRunner::PostDelayedTask(
@@ -150,7 +144,7 @@ base::TimeTicks OrderedSimpleTaskRunner::NextTaskTime() {
   RemoveCancelledTasks();
 
   if (pending_tasks_.size() <= 0) {
-    return AbsoluteMaxNow();
+    return base::TimeTicks::Max();
   }
 
   return pending_tasks_.begin()->GetTimeToRun();
@@ -161,7 +155,7 @@ base::TimeDelta OrderedSimpleTaskRunner::DelayToNextTaskTime() {
   RemoveCancelledTasks();
 
   if (pending_tasks_.size() <= 0) {
-    return AbsoluteMaxNow() - base::TimeTicks();
+    return base::TimeTicks::Max().since_origin();
   }
 
   base::TimeDelta delay = NextTaskTime() - now_src_->NowTicks();
@@ -310,8 +304,8 @@ void OrderedSimpleTaskRunner::AsValueInto(
   state->EndArray();
 
   state->BeginDictionary("now_src");
-  state->SetDouble("now_in_ms", (now_src_->NowTicks() - base::TimeTicks())
-                                    .InMillisecondsF());
+  state->SetDouble("now_in_ms",
+                   now_src_->NowTicks().since_origin().InMillisecondsF());
   state->EndDictionary();
 
   state->SetBoolean("advance_now", advance_now_);

@@ -84,8 +84,8 @@ void BeginFrameArgs::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetString("subtype", TypeToString(type));
   state->SetInteger("source_id", source_id);
   state->SetInteger("sequence_number", sequence_number);
-  state->SetDouble("frame_time_us", frame_time.ToInternalValue());
-  state->SetDouble("deadline_us", deadline.ToInternalValue());
+  state->SetDouble("frame_time_us", frame_time.since_origin().InMicroseconds());
+  state->SetDouble("deadline_us", deadline.since_origin().InMicroseconds());
   state->SetDouble("interval_us", interval.InMicroseconds());
 #ifndef NDEBUG
   state->SetString("created_from", created_from.ToString());

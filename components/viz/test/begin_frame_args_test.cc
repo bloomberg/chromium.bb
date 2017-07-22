@@ -38,11 +38,11 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
     int64_t frame_time,
     int64_t deadline,
     int64_t interval) {
-  return BeginFrameArgs::Create(location, source_id, sequence_number,
-                                base::TimeTicks::FromInternalValue(frame_time),
-                                base::TimeTicks::FromInternalValue(deadline),
-                                base::TimeDelta::FromInternalValue(interval),
-                                BeginFrameArgs::NORMAL);
+  return BeginFrameArgs::Create(
+      location, source_id, sequence_number,
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(frame_time),
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(deadline),
+      base::TimeDelta::FromMicroseconds(interval), BeginFrameArgs::NORMAL);
 }
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(
@@ -53,11 +53,11 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
     int64_t deadline,
     int64_t interval,
     BeginFrameArgs::BeginFrameArgsType type) {
-  return BeginFrameArgs::Create(location, source_id, sequence_number,
-                                base::TimeTicks::FromInternalValue(frame_time),
-                                base::TimeTicks::FromInternalValue(deadline),
-                                base::TimeDelta::FromInternalValue(interval),
-                                type);
+  return BeginFrameArgs::Create(
+      location, source_id, sequence_number,
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(frame_time),
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(deadline),
+      base::TimeDelta::FromMicroseconds(interval), type);
 }
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(
@@ -88,8 +88,8 @@ bool operator==(const BeginFrameArgs& lhs, const BeginFrameArgs& rhs) {
 void PrintTo(const BeginFrameArgs& args, ::std::ostream* os) {
   *os << "BeginFrameArgs(" << BeginFrameArgs::TypeToString(args.type) << ", "
       << args.source_id << ", " << args.sequence_number << ", "
-      << args.frame_time.ToInternalValue() << ", "
-      << args.deadline.ToInternalValue() << ", "
+      << args.frame_time.since_origin().InMicroseconds() << ", "
+      << args.deadline.since_origin().InMicroseconds() << ", "
       << args.interval.InMicroseconds() << "us)";
 }
 

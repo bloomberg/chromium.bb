@@ -277,7 +277,7 @@ bool Scheduler::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) {
   // Trace this begin frame time through the Chrome stack
   TRACE_EVENT_FLOW_BEGIN0(
       TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"),
-      "viz::BeginFrameArgs", args.frame_time.ToInternalValue());
+      "viz::BeginFrameArgs", args.frame_time.since_origin().InMicroseconds());
 
   if (settings_.using_synchronous_renderer_compositor) {
     BeginImplFrameSynchronous(args);
@@ -720,13 +720,11 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
                    SchedulerStateMachine::BeginImplFrameDeadlineModeToString(
                        begin_impl_frame_deadline_mode_));
 
-  state->SetDouble("deadline_ms",
-                   (deadline_ - base::TimeTicks()).InMillisecondsF());
-  state->SetDouble(
-      "deadline_scheduled_at_ms",
-      (deadline_scheduled_at_ - base::TimeTicks()).InMillisecondsF());
+  state->SetDouble("deadline_ms", deadline_.since_origin().InMillisecondsF());
+  state->SetDouble("deadline_scheduled_at_ms",
+                   deadline_scheduled_at_.since_origin().InMillisecondsF());
 
-  state->SetDouble("now_ms", (Now() - base::TimeTicks()).InMillisecondsF());
+  state->SetDouble("now_ms", Now().since_origin().InMillisecondsF());
   state->SetDouble("now_to_deadline_ms", (deadline_ - Now()).InMillisecondsF());
   state->SetDouble("now_to_deadline_scheduled_at_ms",
                    (deadline_scheduled_at_ - Now()).InMillisecondsF());

@@ -9877,8 +9877,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
   EXPECT_TRUE(node->has_potential_opacity_animation);
 
   animation_ptr->set_time_offset(base::TimeDelta::FromMilliseconds(0));
-  host()->AnimateLayers(
-      base::TimeTicks::FromInternalValue(std::numeric_limits<int64_t>::max()));
+  host()->AnimateLayers(base::TimeTicks::Max());
   node = tree.Node(animated->effect_tree_index());
   EXPECT_TRUE(node->is_currently_animating_opacity);
   EXPECT_TRUE(node->has_potential_opacity_animation);
@@ -9935,8 +9934,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationsTrackingTest) {
   EXPECT_TRUE(node->has_potential_animation);
 
   animation_ptr->set_time_offset(base::TimeDelta::FromMilliseconds(0));
-  host()->AnimateLayers(
-      base::TimeTicks::FromInternalValue(std::numeric_limits<int64_t>::max()));
+  host()->AnimateLayers(base::TimeTicks::Max());
   node = tree.Node(animated->transform_tree_index());
   EXPECT_TRUE(node->is_currently_animating);
   EXPECT_TRUE(node->has_potential_animation);

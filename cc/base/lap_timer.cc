@@ -15,8 +15,8 @@ namespace {
 // current platform.
 base::TimeDelta Now() {
   return base::ThreadTicks::IsSupported()
-             ? base::ThreadTicks::Now() - base::ThreadTicks()
-             : base::TimeTicks::Now() - base::TimeTicks();
+             ? base::ThreadTicks::Now().since_origin()
+             : base::TimeTicks::Now().since_origin();
 }
 
 // Default values.
