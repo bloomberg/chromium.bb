@@ -18,57 +18,42 @@ TEST(TransienceManager, Visibility) {
   base::ScopedMockTimeMessageLoopTaskRunner task_runner_;
 
   UiElement element;
-  float opacity_when_enabled = 0.8;
-  element.SetOpacity(0.0f);
 
-  TransienceManager transience(&element, opacity_when_enabled,
-                               base::TimeDelta::FromSeconds(10));
-  EXPECT_EQ(false, element.visible());
-  EXPECT_EQ(0.0f, element.opacity());
+  TransienceManager transience(&element, base::TimeDelta::FromSeconds(10));
+  EXPECT_EQ(element.visible(), false);
 
   transience.KickVisibilityIfEnabled();
-  EXPECT_EQ(false, element.visible());
-  EXPECT_EQ(0.0f, element.opacity());
+  EXPECT_EQ(element.visible(), false);
 
   // Enable and disable, making sure the element appears and disappears.
   transience.SetEnabled(true);
-  EXPECT_EQ(true, element.visible());
-  EXPECT_EQ(opacity_when_enabled, element.opacity());
+  EXPECT_EQ(element.visible(), true);
   transience.SetEnabled(false);
-  EXPECT_EQ(false, element.visible());
-  EXPECT_EQ(0.0f, element.opacity());
+  EXPECT_EQ(element.visible(), false);
 
   // Enable, and ensure that the element transiently disappears.
   transience.SetEnabled(true);
-  EXPECT_EQ(true, element.visible());
-  EXPECT_EQ(opacity_when_enabled, element.opacity());
+  EXPECT_EQ(element.visible(), true);
   task_runner_->FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(false, element.visible());
-  EXPECT_EQ(0.0f, element.opacity());
+  EXPECT_EQ(element.visible(), false);
 
   // Kick visibility, and ensure that the element transiently disappears.
   transience.KickVisibilityIfEnabled();
-  EXPECT_EQ(true, element.visible());
-  EXPECT_EQ(opacity_when_enabled, element.opacity());
+  EXPECT_EQ(element.visible(), true);
   task_runner_->FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(false, element.visible());
-  EXPECT_EQ(0.0f, element.opacity());
+  EXPECT_EQ(element.visible(), false);
 
   // Kick visibility, and ensure that ending visibility hides the element.
   transience.KickVisibilityIfEnabled();
-  EXPECT_EQ(true, element.visible());
-  EXPECT_EQ(opacity_when_enabled, element.opacity());
+  EXPECT_EQ(element.visible(), true);
   transience.EndVisibilityIfEnabled();
-  EXPECT_EQ(false, element.visible());
-  EXPECT_EQ(0.0f, element.opacity());
+  EXPECT_EQ(element.visible(), false);
 
   // Kick visibility, and ensure that disabling hides the element.
   transience.KickVisibilityIfEnabled();
-  EXPECT_EQ(true, element.visible());
-  EXPECT_EQ(opacity_when_enabled, element.opacity());
+  EXPECT_EQ(element.visible(), true);
   transience.SetEnabled(false);
-  EXPECT_EQ(false, element.visible());
-  EXPECT_EQ(0.0f, element.opacity());
+  EXPECT_EQ(element.visible(), false);
 }
 
 }  // namespace vr
