@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("compositing") {
+mojom("interfaces") {
   sources = [
     "resource_settings.mojom",
   ]
@@ -22,7 +22,7 @@ source_set("tests") {
   ]
 
   deps = [
-    ":compositing",
+    ":interfaces",
     "//base/test:test_support",
     "//media/capture/mojo:capture_types",
     "//services/service_manager/public/cpp",
