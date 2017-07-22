@@ -38,6 +38,13 @@ void PresentationConnectionCallbacks::OnSuccess(
     return;
   }
 
+  // Reconnect to existing connection.
+  if (connection_ &&
+      connection_->GetState() == WebPresentationConnectionState::kClosed) {
+    connection_->DidChangeState(WebPresentationConnectionState::kConnecting);
+  }
+
+  // Create a new connection.
   if (!connection_ && request_) {
     connection_ = PresentationConnection::Take(resolver_.Get(),
                                                presentation_info, request_);
