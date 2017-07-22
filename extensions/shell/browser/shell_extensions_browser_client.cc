@@ -17,7 +17,7 @@
 #include "extensions/browser/api/generated_api_registration.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
-#include "extensions/browser/mojo/service_registration.h"
+#include "extensions/browser/mojo/interface_registration.h"
 #include "extensions/browser/null_app_sorting.h"
 #include "extensions/browser/updater/null_extension_cache.h"
 #include "extensions/browser/url_request_util.h"
@@ -191,10 +191,12 @@ void ShellExtensionsBrowserClient::RegisterExtensionFunctions(
   shell::api::ShellGeneratedFunctionRegistry::RegisterAll(registry);
 }
 
-void ShellExtensionsBrowserClient::RegisterMojoServices(
+void ShellExtensionsBrowserClient::RegisterExtensionInterfaces(
+    service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
+        registry,
     content::RenderFrameHost* render_frame_host,
     const Extension* extension) const {
-  RegisterServicesForFrame(render_frame_host, extension);
+  RegisterInterfacesForExtension(registry, render_frame_host, extension);
 }
 
 std::unique_ptr<RuntimeAPIDelegate>

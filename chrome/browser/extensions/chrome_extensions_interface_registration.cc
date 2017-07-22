@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/chrome_mojo_service_registration.h"
+#include "chrome/browser/extensions/chrome_extensions_interface_registration.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -17,20 +17,20 @@
 
 namespace extensions {
 
-void RegisterChromeServicesForFrame(content::RenderFrameHost* render_frame_host,
-                                    const Extension* extension) {
-  DCHECK(render_frame_host);
+void RegisterChromeInterfacesForExtension(
+    service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
+        registry,
+    content::RenderFrameHost* render_frame_host,
+    const Extension* extension) {
   DCHECK(extension);
-
   content::BrowserContext* context =
       render_frame_host->GetProcess()->GetBrowserContext();
-  if (media_router::MediaRouterEnabled(context)) {
-    if (extension->permissions_data()->HasAPIPermission(
-            APIPermission::kMediaRouterPrivate)) {
-      render_frame_host->GetInterfaceRegistry()->AddInterface(
-          base::Bind(media_router::MediaRouterMojoImpl::BindToRequest,
-                     base::RetainedRef(extension), context));
-    }
+  if (media_router::MediaRouterEnabled(context) &&
+      extension->permissions_data()->HasAPIPermission(
+          APIPermission::kMediaRouterPrivate)) {
+    registry->AddInterface(
+        base::Bind(&media_router::MediaRouterMojoImpl::BindToRequest,
+                   base::RetainedRef(extension), context));
   }
 }
 

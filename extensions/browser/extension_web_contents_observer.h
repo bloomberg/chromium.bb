@@ -11,9 +11,11 @@
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_function_dispatcher.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
 class BrowserContext;
+class RenderFrameHost;
 class RenderViewHost;
 class WebContents;
 }
@@ -89,6 +91,11 @@ class ExtensionWebContentsObserver
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
+  void OnInterfaceRequestFromFrame(
+      content::RenderFrameHost* render_frame_host,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
+
   // Subclasses should call this first before doing their own message handling.
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
@@ -124,6 +131,8 @@ class ExtensionWebContentsObserver
   content::BrowserContext* browser_context_;
 
   ExtensionFunctionDispatcher dispatcher_;
+
+  service_manager::BinderRegistryWithArgs<content::RenderFrameHost*> registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebContentsObserver);
 };

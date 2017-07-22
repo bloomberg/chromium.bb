@@ -34,6 +34,7 @@
 
 namespace content {
 class BrowserContext;
+class RenderFrameHost;
 }
 
 namespace extensions {
@@ -62,11 +63,13 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // Called by the Mojo module registry.
   // |extension|: The component extension, used for querying
   //     suspension state.
-  // |context|: The BrowserContext which owns the extension process.
   // |request|: The Mojo connection request used for binding.
+  // |source|: The RenderFrameHost hosting the frame that originated the
+  //     request.
   static void BindToRequest(const extensions::Extension* extension,
                             content::BrowserContext* context,
-                            mojom::MediaRouterRequest request);
+                            mojom::MediaRouterRequest request,
+                            content::RenderFrameHost* source);
 
   // MediaRouter implementation.
   // Execution of the requests is delegated to the Do* methods, which can be

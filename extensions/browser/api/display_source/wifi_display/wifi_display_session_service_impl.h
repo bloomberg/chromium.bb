@@ -13,6 +13,7 @@
 
 namespace content {
 class BrowserContext;
+class RenderFrameHost;
 }  // namespace content
 
 namespace extensions {
@@ -24,8 +25,9 @@ class WiFiDisplaySessionServiceImpl
       public DisplaySourceConnectionDelegate::Observer {
  public:
   ~WiFiDisplaySessionServiceImpl() override;
-  static void BindToRequest(content::BrowserContext* context,
-                            mojom::WiFiDisplaySessionServiceRequest request);
+  static void BindToRequest(content::BrowserContext* browser_context,
+                            mojom::WiFiDisplaySessionServiceRequest request,
+                            content::RenderFrameHost* render_frame_host);
 
  private:
   // WiFiDisplaySessionService overrides.

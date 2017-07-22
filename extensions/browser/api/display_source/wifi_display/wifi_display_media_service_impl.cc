@@ -51,7 +51,8 @@ void WiFiDisplayMediaServiceImpl::Create(
 
 // static
 void WiFiDisplayMediaServiceImpl::BindToRequest(
-    mojom::WiFiDisplayMediaServiceRequest request) {
+    mojom::WiFiDisplayMediaServiceRequest request,
+    content::RenderFrameHost* render_frame_host) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(WiFiDisplayMediaServiceImpl::Create,
                                      base::Passed(std::move(request))));

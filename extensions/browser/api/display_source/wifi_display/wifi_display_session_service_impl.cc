@@ -37,7 +37,8 @@ WiFiDisplaySessionServiceImpl::~WiFiDisplaySessionServiceImpl() {
 // static
 void WiFiDisplaySessionServiceImpl::BindToRequest(
     content::BrowserContext* browser_context,
-    WiFiDisplaySessionServiceRequest request) {
+    WiFiDisplaySessionServiceRequest request,
+    content::RenderFrameHost* render_frame_host) {
   DisplaySourceConnectionDelegate* delegate =
       DisplaySourceConnectionDelegateFactory::GetForBrowserContext(
           browser_context);
