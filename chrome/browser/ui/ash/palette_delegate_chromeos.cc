@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/ash/palette_delegate_chromeos.h"
 
 #include "ash/accelerators/accelerator_controller_delegate_classic.h"
+#include "ash/highlighter/highlighter_controller.h"
+#include "ash/highlighter/highlighter_selection_observer.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_port_classic.h"
@@ -26,36 +28,26 @@
 
 namespace chromeos {
 
-class VoiceInteractionScreenshotDelegate : public ash::ScreenshotDelegate {
+class VoiceInteractionSelectionObserver
+    : public ash::HighlighterSelectionObserver {
  public:
-  explicit VoiceInteractionScreenshotDelegate(Profile* profile)
+  explicit VoiceInteractionSelectionObserver(Profile* profile)
       : profile_(profile) {}
-  ~VoiceInteractionScreenshotDelegate() override = default;
+  ~VoiceInteractionSelectionObserver() override = default;
 
  private:
-  void HandleTakeScreenshotForAllRootWindows() override { NOTIMPLEMENTED(); }
-
-  void HandleTakePartialScreenshot(aura::Window* window,
-                                   const gfx::Rect& rect) override {
+  void HandleSelection(const gfx::Rect& rect) override {
     auto* framework =
         arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(
             profile_);
     if (!framework)
       return;
-    double device_scale_factor = window->layer()->device_scale_factor();
-    framework->StartSessionFromUserInteraction(
-        gfx::ScaleToEnclosingRect(rect, device_scale_factor));
+    framework->StartSessionFromUserInteraction(rect);
   }
-
-  void HandleTakeWindowScreenshot(aura::Window* window) override {
-    NOTIMPLEMENTED();
-  }
-
-  bool CanTakeScreenshot() override { return true; }
 
   Profile* const profile_;  // Owned by ProfileManager.
 
-  DISALLOW_COPY_AND_ASSIGN(VoiceInteractionScreenshotDelegate);
+  DISALLOW_COPY_AND_ASSIGN(VoiceInteractionSelectionObserver);
 };
 
 PaletteDelegateChromeOS::PaletteDelegateChromeOS() : weak_factory_(this) {
@@ -174,22 +166,9 @@ void PaletteDelegateChromeOS::TakeScreenshot() {
 
 void PaletteDelegateChromeOS::TakePartialScreenshot(const base::Closure& done) {
   auto* screenshot_controller = ash::Shell::Get()->screenshot_controller();
-
-  ash::ScreenshotDelegate* screenshot_delegate;
-  if (IsMetalayerSupported()) {
-    // This is an experimental mode. It will be either taken out or grow
-    // into a separate tool next to "Capture region".
-    if (!voice_interaction_screenshot_delegate_) {
-      voice_interaction_screenshot_delegate_ =
-          base::MakeUnique<VoiceInteractionScreenshotDelegate>(profile_);
-    }
-    screenshot_delegate = voice_interaction_screenshot_delegate_.get();
-  } else {
-    screenshot_delegate = ash::ShellPortClassic::Get()
-                              ->accelerator_controller_delegate()
-                              ->screenshot_delegate();
-  }
-
+  auto* screenshot_delegate = ash::ShellPortClassic::Get()
+                                  ->accelerator_controller_delegate()
+                                  ->screenshot_delegate();
   screenshot_controller->set_pen_events_only(true);
   screenshot_controller->StartPartialScreenshotSession(
       screenshot_delegate, false /* draw_overlay_immediately */);
@@ -217,6 +196,13 @@ void PaletteDelegateChromeOS::ShowMetalayer(const base::Closure& closed) {
     return;
   }
   service->ShowMetalayer(closed);
+
+  if (!highlighter_selection_observer) {
+    highlighter_selection_observer =
+        base::MakeUnique<VoiceInteractionSelectionObserver>(profile_);
+  }
+  ash::Shell::Get()->highlighter_controller()->EnableHighlighter(
+      highlighter_selection_observer.get());
 }
 
 void PaletteDelegateChromeOS::HideMetalayer() {
@@ -225,6 +211,8 @@ void PaletteDelegateChromeOS::HideMetalayer() {
   if (!service)
     return;
   service->HideMetalayer();
+
+  ash::Shell::Get()->highlighter_controller()->DisableHighlighter();
 }
 
 }  // namespace chromeos
