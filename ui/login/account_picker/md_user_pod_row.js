@@ -4552,6 +4552,41 @@ cr.define('login', function() {
             this.focusPod();
           break;
       }
+      if (this.canStartPassword(e.key)) {
+        if (!this.focusedPod_ && this.mainPod_) {
+          // If no pod is being focused, and a valid password beginning key is
+          // entered, move focus to the input field of the main pod. The key
+          // will be treated as the first character of the password.
+          // Please note: when the focus is on the header bar (excluding the
+          // status tray area), this will also move focus to the main pod. This
+          // should be fine because entering a valid password character often
+          // indicates that the user wants to log in.
+          this.focusPod(this.mainPod_);
+        } else if (this.focusedPod_) {
+          // If there's a focused pod but its input field is not focused (e.g.
+          // when dropdown menu is shown), move focus to the input field which
+          // will process the key as the password start. This is a no-op for
+          // small pods, or if the input field is already focused.
+          this.focusedPod_.focusInput();
+        }
+      }
+    },
+
+    /**
+     * Returns true if the key can be the first character of a valid password.
+     * @param {string} key The character to check.
+     * @return {boolean}
+     */
+    canStartPassword: function(key) {
+      // Any ASCII characters except the whitespace can be the beginning of a
+      // password per the guideline: https://support.google.com/a/answer/33386.
+      // However we'll limit to only alphanumeric and some special characters
+      // that we are sure won't conflict with other keyboard events.
+      // TODO(wzang): This should ideally be kept in sync with the requirements
+      // set by the backend.
+      if (key.length != 1)
+        return false;
+      return key.charCodeAt(0) > 32 && key.charCodeAt(0) < 127;
     },
 
     /**
