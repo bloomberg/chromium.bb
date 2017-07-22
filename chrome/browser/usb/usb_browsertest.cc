@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
+#include "base/supports_user_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -62,8 +63,8 @@ class FakeChooserView : public ChooserController::View {
 
 class FakeChooserService : public device::mojom::UsbChooserService {
  public:
-  static void Create(RenderFrameHost* render_frame_host,
-                     device::mojom::UsbChooserServiceRequest request) {
+  static void Create(device::mojom::UsbChooserServiceRequest request,
+                     RenderFrameHost* render_frame_host) {
     mojo::MakeStrongBinding(
         base::MakeUnique<FakeChooserService>(render_frame_host),
         std::move(request));
@@ -87,6 +88,39 @@ class FakeChooserService : public device::mojom::UsbChooserService {
   RenderFrameHost* const render_frame_host_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeChooserService);
+};
+
+const char kUSBBrowserTest_ActiveTabObserverKey[] =
+    "usb_browsertest_active_tab_observer";
+
+class ActiveTabObserver : public content::WebContentsObserver,
+                          public base::SupportsUserData::Data {
+ public:
+  static void Set(content::WebContents* contents) {
+    auto observer = base::MakeUnique<ActiveTabObserver>(contents);
+    contents->SetUserData(kUSBBrowserTest_ActiveTabObserverKey,
+                          std::move(observer));
+  }
+
+  explicit ActiveTabObserver(content::WebContents* contents)
+      : content::WebContentsObserver(contents) {
+    registry_.AddInterface(base::Bind(&FakeChooserService::Create));
+  }
+  ~ActiveTabObserver() override = default;
+
+ private:
+  // content::WebContentsObserver:
+  void OnInterfaceRequestFromFrame(
+      content::RenderFrameHost* render_frame_host,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override {
+    registry_.TryBindInterface(interface_name, interface_pipe,
+                               render_frame_host);
+  }
+
+  service_manager::BinderRegistryWithArgs<content::RenderFrameHost*> registry_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActiveTabObserver);
 };
 
 class WebUsbTest : public InProcessBrowserTest {
@@ -115,8 +149,8 @@ class WebUsbTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
     EXPECT_THAT(render_frame_host->GetLastCommittedOrigin().Serialize(),
                 testing::StartsWith("http://localhost:"));
-    render_frame_host->GetInterfaceRegistry()->AddInterface(
-        base::Bind(&FakeChooserService::Create, render_frame_host));
+    ActiveTabObserver::Set(
+        browser()->tab_strip_model()->GetActiveWebContents());
   }
 
   void AddMockDevice(const std::string& serial_number) {

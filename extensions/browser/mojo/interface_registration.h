@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_MOJO_SERVICE_REGISTRATION_H_
 #define EXTENSIONS_BROWSER_MOJO_SERVICE_REGISTRATION_H_
 
+#include "services/service_manager/public/cpp/binder_registry.h"
+
 namespace content {
 class RenderFrameHost;
 }
@@ -13,8 +15,10 @@ namespace extensions {
 
 class Extension;
 
-void RegisterServicesForFrame(content::RenderFrameHost* render_frame_host,
-                              const Extension* extension);
+void RegisterInterfacesForExtension(service_manager::BinderRegistryWithArgs<
+                                        content::RenderFrameHost*>* registry,
+                                    content::RenderFrameHost* render_frame_host,
+                                    const Extension* extension);
 
 }  // namespace extensions
 

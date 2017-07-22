@@ -743,10 +743,6 @@ RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {
   return render_view_host_;
 }
 
-service_manager::BinderRegistry* RenderFrameHostImpl::GetInterfaceRegistry() {
-  return interface_registry_.get();
-}
-
 service_manager::InterfaceProvider* RenderFrameHostImpl::GetRemoteInterfaces() {
   return remote_interfaces_.get();
 }
@@ -2847,8 +2843,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 #if !defined(OS_ANDROID)
   // The default (no-op) implementation of InstalledAppProvider. On Android, the
   // real implementation is provided in Java.
-  GetInterfaceRegistry()->AddInterface(
-      base::Bind(&InstalledAppProviderImplDefault::Create));
+  registry_->AddInterface(base::Bind(&InstalledAppProviderImplDefault::Create));
 #endif  // !defined(OS_ANDROID)
 
   if (geolocation_context) {
@@ -2861,17 +2856,16 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     // latter is triggered by receiving a message that the pipe was closed from
     // the renderer side. Hence, supply the reference to this object as a weak
     // pointer.
-    GetInterfaceRegistry()->AddInterface(
-        base::Bind(&device::GeolocationContext::Bind,
-                   base::Unretained(geolocation_context)));
+    registry_->AddInterface(base::Bind(&device::GeolocationContext::Bind,
+                                       base::Unretained(geolocation_context)));
   }
 
-  GetInterfaceRegistry()->AddInterface<device::mojom::WakeLock>(base::Bind(
+  registry_->AddInterface<device::mojom::WakeLock>(base::Bind(
       &RenderFrameHostImpl::BindWakeLockRequest, base::Unretained(this)));
 
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebNfc)) {
-    GetInterfaceRegistry()->AddInterface<device::mojom::NFC>(base::Bind(
+    registry_->AddInterface<device::mojom::NFC>(base::Bind(
         &RenderFrameHostImpl::BindNFCRequest, base::Unretained(this)));
   }
 #endif
@@ -2879,56 +2873,54 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   if (!permission_service_context_)
     permission_service_context_.reset(new PermissionServiceContext(this));
 
-  GetInterfaceRegistry()->AddInterface(
+  registry_->AddInterface(
       base::Bind(&PermissionServiceContext::CreateService,
                  base::Unretained(permission_service_context_.get())));
 
-  GetInterfaceRegistry()->AddInterface(base::Bind(
+  registry_->AddInterface(base::Bind(
       &PresentationServiceImpl::CreateMojoService, base::Unretained(this)));
 
-  GetInterfaceRegistry()->AddInterface(
+  registry_->AddInterface(
       base::Bind(&MediaSessionServiceImpl::Create, base::Unretained(this)));
 
 #if defined(OS_ANDROID)
   // Creates a MojoRendererService, passing it a MediaPlayerRender.
-  GetInterfaceRegistry()->AddInterface<media::mojom::Renderer>(
+  registry_->AddInterface<media::mojom::Renderer>(
       base::Bind(&content::CreateMediaPlayerRenderer, GetProcess()->GetID(),
                  GetRoutingID()));
 #endif  // defined(OS_ANDROID)
 
-  GetInterfaceRegistry()->AddInterface(base::Bind(
+  registry_->AddInterface(base::Bind(
       base::IgnoreResult(&RenderFrameHostImpl::CreateWebBluetoothService),
       base::Unretained(this)));
 
-  GetInterfaceRegistry()->AddInterface<media::mojom::InterfaceFactory>(
+  registry_->AddInterface<media::mojom::InterfaceFactory>(
       base::Bind(&RenderFrameHostImpl::BindMediaInterfaceFactoryRequest,
                  base::Unretained(this)));
 
   // This is to support usage of WebSockets in cases in which there is an
   // associated RenderFrame. This is important for showing the correct security
   // state of the page and also honoring user override of bad certificates.
-  GetInterfaceRegistry()->AddInterface(
-      base::Bind(&WebSocketManager::CreateWebSocket,
-                 process_->GetID(),
-                 routing_id_));
+  registry_->AddInterface(base::Bind(&WebSocketManager::CreateWebSocket,
+                                     process_->GetID(), routing_id_));
 
 #if BUILDFLAG(ENABLE_VR)
-  GetInterfaceRegistry()->AddInterface<device::mojom::VRService>(base::Bind(
+  registry_->AddInterface<device::mojom::VRService>(base::Bind(
       &device::VRServiceImpl::Create, GetProcess()->GetID(), GetRoutingID()));
 #else
-  GetInterfaceRegistry()->AddInterface<device::mojom::VRService>(
+  registry_->AddInterface<device::mojom::VRService>(
       base::Bind(&IgnoreInterfaceRequest<device::mojom::VRService>));
 #endif
 
   if (RendererAudioOutputStreamFactoryContextImpl::UseMojoFactories()) {
-    GetInterfaceRegistry()->AddInterface(base::BindRepeating(
+    registry_->AddInterface(base::BindRepeating(
         &RenderFrameHostImpl::CreateAudioOutputStreamFactory,
         base::Unretained(this)));
   }
 
   if (resource_coordinator::IsResourceCoordinatorEnabled()) {
-    GetInterfaceRegistry()->AddInterface(base::Bind(
-        &CreateResourceCoordinatorFrameInterface, base::Unretained(this)));
+    registry_->AddInterface(base::Bind(&CreateResourceCoordinatorFrameInterface,
+                                       base::Unretained(this)));
   }
 
 #if BUILDFLAG(ENABLE_WEBRTC)
@@ -2940,46 +2932,45 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     // as a raw pointer here is safe.
     MediaStreamManager* media_stream_manager =
         BrowserMainLoop::GetInstance()->media_stream_manager();
-    GetInterfaceRegistry()->AddInterface(
+    registry_->AddInterface(
         base::Bind(&MediaDevicesDispatcherHost::Create, GetProcess()->GetID(),
-                   GetRoutingID(), GetProcess()
-                                       ->GetBrowserContext()
-                                       ->GetMediaDeviceIDSalt(),
+                   GetRoutingID(),
+                   GetProcess()->GetBrowserContext()->GetMediaDeviceIDSalt(),
                    base::Unretained(media_stream_manager)),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
 #endif
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  GetInterfaceRegistry()->AddInterface(base::Bind(
-      &RemoterFactoryImpl::Bind, GetProcess()->GetID(), GetRoutingID()));
+  registry_->AddInterface(base::Bind(&RemoterFactoryImpl::Bind,
+                                     GetProcess()->GetID(), GetRoutingID()));
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
-  GetInterfaceRegistry()->AddInterface(base::Bind(
-      &KeyboardLockServiceImpl::CreateMojoService));
+  registry_->AddInterface(
+      base::Bind(&KeyboardLockServiceImpl::CreateMojoService));
 
-  GetInterfaceRegistry()->AddInterface(base::Bind(&ImageCaptureImpl::Create));
+  registry_->AddInterface(base::Bind(&ImageCaptureImpl::Create));
 
-  GetInterfaceRegistry()->AddInterface(
+  registry_->AddInterface(
       base::Bind(&ForwardRequest<shape_detection::mojom::BarcodeDetection>,
                  shape_detection::mojom::kServiceName));
-  GetInterfaceRegistry()->AddInterface(
+  registry_->AddInterface(
       base::Bind(&ForwardRequest<shape_detection::mojom::FaceDetectionProvider>,
                  shape_detection::mojom::kServiceName));
-  GetInterfaceRegistry()->AddInterface(
+  registry_->AddInterface(
       base::Bind(&ForwardRequest<shape_detection::mojom::TextDetection>,
                  shape_detection::mojom::kServiceName));
 
-  GetInterfaceRegistry()->AddInterface(
+  registry_->AddInterface(
       base::Bind(&CreatePaymentManager, base::Unretained(this)));
 
   if (base::FeatureList::IsEnabled(features::kWebAuth)) {
-    GetInterfaceRegistry()->AddInterface(
+    registry_->AddInterface(
         base::Bind(&AuthenticatorImpl::Create, base::Unretained(this)));
   }
 
   if (base::FeatureList::IsEnabled(features::kGenericSensor)) {
-    GetInterfaceRegistry()->AddInterface(
+    registry_->AddInterface(
         base::Bind(&ForwardRequest<device::mojom::SensorProvider>,
                    device::mojom::kServiceName));
   }
@@ -3340,11 +3331,11 @@ void RenderFrameHostImpl::FailedNavigation(
 }
 
 void RenderFrameHostImpl::SetUpMojoIfNeeded() {
-  if (interface_registry_.get())
+  if (registry_.get())
     return;
 
   associated_registry_ = base::MakeUnique<AssociatedInterfaceRegistryImpl>();
-  interface_registry_ = base::MakeUnique<service_manager::BinderRegistry>();
+  registry_ = base::MakeUnique<service_manager::BinderRegistry>();
 
   auto make_binding = [](RenderFrameHostImpl* impl,
                          mojom::FrameHostAssociatedRequest request) {
@@ -3375,7 +3366,7 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
 }
 
 void RenderFrameHostImpl::InvalidateMojoConnection() {
-  interface_registry_.reset();
+  registry_.reset();
 
   frame_.reset();
   frame_host_interface_broker_binding_.Close();
@@ -4009,8 +4000,8 @@ void RenderFrameHostImpl::BindNFCRequest(device::mojom::NFCRequest request) {
 void RenderFrameHostImpl::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  if (!interface_registry_ ||
-      !interface_registry_->TryBindInterface(interface_name, &interface_pipe)) {
+  if (!registry_ ||
+      !registry_->TryBindInterface(interface_name, &interface_pipe)) {
     delegate_->OnInterfaceRequest(this, interface_name, &interface_pipe);
     if (interface_pipe->is_valid()) {
       GetContentClient()->browser()->BindInterfaceRequestFromFrame(

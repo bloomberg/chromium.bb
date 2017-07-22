@@ -51,6 +51,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/http/http_response_headers.h"
 #include "services/device/public/interfaces/wake_lock_context.mojom.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "third_party/WebKit/public/platform/WebSuddenTerminationDisablerType.h"
@@ -175,7 +176,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CopyImageAt(int x, int y) override;
   void SaveImageAt(int x, int y) override;
   RenderViewHost* GetRenderViewHost() override;
-  service_manager::BinderRegistry* GetInterfaceRegistry() override;
   service_manager::InterfaceProvider* GetRemoteInterfaces() override;
   AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;
   blink::WebPageVisibilityState GetVisibilityState() override;
@@ -1111,7 +1111,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   std::unique_ptr<AssociatedInterfaceRegistryImpl> associated_registry_;
 
-  std::unique_ptr<service_manager::BinderRegistry> interface_registry_;
+  std::unique_ptr<service_manager::BinderRegistry> registry_;
   std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
 
   std::list<std::unique_ptr<WebBluetoothServiceImpl>> web_bluetooth_services_;

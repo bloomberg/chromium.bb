@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/mojo/service_registration.h"
+#include "extensions/browser/mojo/interface_registration.h"
 
 #include <string>
 
@@ -45,12 +45,12 @@ bool ExtensionHasPermission(const Extension* extension,
 
 }  // namespace
 
-void RegisterServicesForFrame(content::RenderFrameHost* render_frame_host,
-                              const Extension* extension) {
+void RegisterInterfacesForExtension(service_manager::BinderRegistryWithArgs<
+                                        content::RenderFrameHost*>* registry,
+                                    content::RenderFrameHost* render_frame_host,
+                                    const Extension* extension) {
   DCHECK(extension);
 
-  service_manager::BinderRegistry* registry =
-      render_frame_host->GetInterfaceRegistry();
   registry->AddInterface(
       base::Bind(KeepAliveImpl::Create,
                  render_frame_host->GetProcess()->GetBrowserContext(),

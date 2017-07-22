@@ -16,7 +16,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/mojo/service_registration.h"
+#include "extensions/browser/mojo/interface_registration.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/view_type_utils.h"
@@ -75,8 +75,8 @@ void ExtensionWebContentsObserver::InitializeRenderFrame(
   render_frame_host->Send(new ExtensionMsg_NotifyRenderViewType(
       render_frame_host->GetRoutingID(), GetViewType(web_contents())));
 
-  ExtensionsBrowserClient::Get()->RegisterMojoServices(render_frame_host,
-                                                       frame_extension);
+  ExtensionsBrowserClient::Get()->RegisterExtensionInterfaces(
+      &registry_, render_frame_host, frame_extension);
   ProcessManager::Get(browser_context_)
       ->RegisterRenderFrameHost(web_contents(), render_frame_host,
                                 frame_extension);
@@ -153,6 +153,13 @@ void ExtensionWebContentsObserver::DidFinishNavigation(
     pm->RegisterRenderFrameHost(web_contents(), render_frame_host,
                                 frame_extension);
   }
+}
+
+void ExtensionWebContentsObserver::OnInterfaceRequestFromFrame(
+    content::RenderFrameHost* render_frame_host,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe, render_frame_host);
 }
 
 bool ExtensionWebContentsObserver::OnMessageReceived(

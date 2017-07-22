@@ -32,6 +32,8 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/presentation_connection_message.h"
 #include "extensions/common/extension.h"
 
@@ -89,10 +91,10 @@ MediaRouterMojoImpl::~MediaRouterMojoImpl() {
 }
 
 // static
-void MediaRouterMojoImpl::BindToRequest(
-    const extensions::Extension* extension,
-    content::BrowserContext* context,
-    mojom::MediaRouterRequest request) {
+void MediaRouterMojoImpl::BindToRequest(const extensions::Extension* extension,
+                                        content::BrowserContext* context,
+                                        mojom::MediaRouterRequest request,
+                                        content::RenderFrameHost* source) {
   MediaRouterMojoImpl* impl = static_cast<MediaRouterMojoImpl*>(
       MediaRouterFactory::GetApiForBrowserContext(context));
   DCHECK(impl);
