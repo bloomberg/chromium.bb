@@ -21,8 +21,8 @@ class PaymentRequestModifiersTest : public PaymentRequestBrowserTestBase {
  protected:
   PaymentRequestModifiersTest()
       : PaymentRequestBrowserTestBase(
-            "/payment_request_bobpay_and_basic_card_with_basic_card_modifiers_"
-            "test.html") {}
+            "/payment_request_bobpay_and_basic_card_with_modifiers_test.html") {
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PaymentRequestBrowserTestBase::SetUpCommandLine(command_line);
