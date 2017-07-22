@@ -77,8 +77,7 @@ HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(LayerTreeImpl* tree_impl,
       internal_contents_scale_(1.f),
       fps_graph_(60.0, 80.0),
       paint_time_graph_(16.0, 48.0),
-      fade_step_(0) {
-}
+      fade_step_(0) {}
 
 HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl() {}
 
@@ -161,7 +160,8 @@ void HeadsUpDisplayLayerImpl::AppendQuads(
 void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     DrawMode draw_mode,
     ResourceProvider* resource_provider,
-    viz::ContextProvider* context_provider) {
+    viz::ContextProvider* context_provider,
+    const RenderPassList& list) {
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE || !resources_.back()->id())
     return;
 
@@ -180,6 +180,10 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     ResourceProvider::ScopedSkSurfaceProvider scoped_surface(
         context_provider, &lock, using_worker_context, use_distance_field_text,
         can_use_lcd_text, msaa_sample_count);
+    if (!scoped_surface.sk_surface()) {
+      EvictHudQuad(list);
+      return;
+    }
     SkCanvas* gpu_raster_canvas = scoped_surface.sk_surface()->getCanvas();
     TRACE_EVENT_END0("cc", "CreateHudCanvas");
 
@@ -818,6 +822,25 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
                     DebugColors::PaintRectFillColor(fade_step_),
                     DebugColors::PaintRectBorderWidth(),
                     "");
+    }
+  }
+}
+
+void HeadsUpDisplayLayerImpl::EvictHudQuad(const RenderPassList& list) {
+  ResourceId evict_resource_id = resources_.back()->id();
+  // This iterates over the render pass list of quads to evict the hud quad
+  // appended during render pass preparation. We need this eviction when we
+  // have a context loss during SkSurface creation in UpdateHudTexture, and
+  // we early out without updating the Hud contents.
+  for (const auto& render_pass : list) {
+    for (auto it = render_pass->quad_list.begin();
+         it != render_pass->quad_list.end(); ++it) {
+      for (ResourceId resource_id : it->resources) {
+        if (resource_id == evict_resource_id) {
+          render_pass->quad_list.EraseAndInvalidateAllPointers(it);
+          return;
+        }
+      }
     }
   }
 }

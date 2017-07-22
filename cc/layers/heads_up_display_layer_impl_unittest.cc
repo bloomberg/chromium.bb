@@ -25,12 +25,15 @@ void CheckDrawLayer(HeadsUpDisplayLayerImpl* layer,
   bool will_draw = layer->WillDraw(draw_mode, resource_provider);
   if (will_draw)
     layer->AppendQuads(render_pass.get(), &data);
-  layer->UpdateHudTexture(draw_mode, resource_provider, context_provider);
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(render_pass));
+  layer->UpdateHudTexture(draw_mode, resource_provider, context_provider,
+                          pass_list);
   if (will_draw)
     layer->DidDraw(resource_provider);
 
   size_t expected_quad_list_size = will_draw ? 1 : 0;
-  EXPECT_EQ(expected_quad_list_size, render_pass->quad_list.size());
+  EXPECT_EQ(expected_quad_list_size, pass_list.back()->quad_list.size());
   EXPECT_EQ(0u, data.num_missing_tiles);
   EXPECT_EQ(0u, data.num_incomplete_tiles);
 }
