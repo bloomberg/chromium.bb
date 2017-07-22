@@ -1,6 +1,3 @@
 # This UI is deprecated. See chrome/browser/resources/settings/about_page
 # instead.
-
-set noparent
-dbeam@chromium.org
 dpapad@chromium.org
