@@ -713,15 +713,15 @@ static int upsampled_pref_error(
       if (mask)
         aom_highbd_comp_mask_upsampled_pred(
             pred16, second_pred, w, h, subpel_x_q3, subpel_y_q3, y, y_stride,
-            mask, mask_stride, invert_mask, xd->cur_buf->bit_depth);
+            mask, mask_stride, invert_mask, xd->bd);
       else
 #endif
         aom_highbd_comp_avg_upsampled_pred(pred16, second_pred, w, h,
                                            subpel_x_q3, subpel_y_q3, y,
-                                           y_stride, xd->cur_buf->bit_depth);
+                                           y_stride, xd->bd);
     } else {
       aom_highbd_upsampled_pred(pred16, w, h, subpel_x_q3, subpel_y_q3, y,
-                                y_stride, xd->cur_buf->bit_depth);
+                                y_stride, xd->bd);
     }
 
     besterr = vfp->vf(CONVERT_TO_BYTEPTR(pred16), w, src, src_stride, sse);
@@ -2712,7 +2712,7 @@ static int upsampled_obmc_pref_error(const MACROBLOCKD *xd, const int32_t *mask,
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     DECLARE_ALIGNED(16, uint16_t, pred16[MAX_SB_SQUARE]);
     aom_highbd_upsampled_pred(pred16, w, h, subpel_x_q3, subpel_y_q3, y,
-                              y_stride, xd->cur_buf->bit_depth);
+                              y_stride, xd->bd);
 
     besterr = vfp->ovf(CONVERT_TO_BYTEPTR(pred16), w, wsrc, mask, sse);
   } else {
