@@ -827,7 +827,7 @@ void SurfaceAggregator::PropagateCopyRequestPasses() {
   std::vector<cc::RenderPassId> copy_requests_to_iterate(
       copy_request_passes_.begin(), copy_request_passes_.end());
   while (!copy_requests_to_iterate.empty()) {
-    int first = copy_requests_to_iterate.back();
+    cc::RenderPassId first = copy_requests_to_iterate.back();
     copy_requests_to_iterate.pop_back();
     auto it = render_pass_dependencies_.find(first);
     if (it == render_pass_dependencies_.end())

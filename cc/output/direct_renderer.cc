@@ -192,7 +192,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
     render_passes_in_frame[pass->id] = RenderPassTextureSize(pass.get());
   }
 
-  std::vector<int> passes_to_delete;
+  std::vector<RenderPassId> passes_to_delete;
   for (const auto& pair : render_pass_textures_) {
     auto it = render_passes_in_frame.find(pair.first);
     if (it == render_passes_in_frame.end()) {
@@ -637,7 +637,8 @@ bool DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   return false;
 }
 
-bool DirectRenderer::HasAllocatedResourcesForTesting(int render_pass_id) const {
+bool DirectRenderer::HasAllocatedResourcesForTesting(
+    RenderPassId render_pass_id) const {
   auto iter = render_pass_textures_.find(render_pass_id);
   return iter != render_pass_textures_.end() && iter->second->id();
 }

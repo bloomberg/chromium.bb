@@ -313,9 +313,10 @@ TEST_F(CheckerImageTrackerTest, CancelsScheduledDecodes) {
 
   // Only the first image in the queue should have been decoded.
   EXPECT_EQ(image_controller_.decodes_requested().size(), 1U);
-  EXPECT_EQ(image_controller_.decodes_requested().count(
-                checkerable_image1.image()->uniqueID()),
-            1U);
+  EXPECT_EQ(
+      image_controller_.decodes_requested().count(
+          static_cast<PaintImage::Id>(checkerable_image1.image()->uniqueID())),
+      1U);
 
   // Rebuild the queue before the tracker is notified of decode completion,
   // removing the second image and adding a new one.
@@ -332,17 +333,19 @@ TEST_F(CheckerImageTrackerTest, CancelsScheduledDecodes) {
   // We still have only one decode because the tracker keeps only one decode
   // pending at a time.
   EXPECT_EQ(image_controller_.decodes_requested().size(), 1U);
-  EXPECT_EQ(image_controller_.decodes_requested().count(
-                checkerable_image1.image()->uniqueID()),
-            1U);
+  EXPECT_EQ(
+      image_controller_.decodes_requested().count(
+          static_cast<PaintImage::Id>(checkerable_image1.image()->uniqueID())),
+      1U);
 
   // Trigger completion for all decodes. Only 2 images should have been decoded
   // since the second image was cancelled.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(image_controller_.decodes_requested().size(), 2U);
-  EXPECT_EQ(image_controller_.decodes_requested().count(
-                checkerable_image3.image()->uniqueID()),
-            1U);
+  EXPECT_EQ(
+      image_controller_.decodes_requested().count(
+          static_cast<PaintImage::Id>(checkerable_image3.image()->uniqueID())),
+      1U);
   EXPECT_EQ(image_controller_.num_of_locked_images(), 2);
 }
 
