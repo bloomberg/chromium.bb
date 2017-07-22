@@ -287,6 +287,10 @@ void AutofillWebDataService::GetAutofillBackend(
       FROM_HERE, base::Bind(callback, base::RetainedRef(autofill_backend_)));
 }
 
+base::SingleThreadTaskRunner* AutofillWebDataService::GetDBTaskRunner() {
+  return db_thread_.get();
+}
+
 AutofillWebDataService::~AutofillWebDataService() {
 }
 

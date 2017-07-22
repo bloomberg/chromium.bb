@@ -157,6 +157,8 @@ void IOSChromeSyncClient::Initialize() {
   web_data_service_ =
       ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
           browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
+  db_thread_ =
+      web_data_service_ ? web_data_service_->GetDBTaskRunner() : nullptr;
   password_store_ = IOSChromePasswordStoreFactory::GetForBrowserState(
       browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
 
@@ -175,8 +177,7 @@ void IOSChromeSyncClient::Initialize() {
         ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
         *base::CommandLine::ForCurrentProcess(),
         prefs::kSavingBrowserHistoryDisabled, sync_service_url,
-        web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
-        web::WebThread::GetTaskRunnerForThread(web::WebThread::DB),
+        web::WebThread::GetTaskRunnerForThread(web::WebThread::UI), db_thread_,
         token_service, url_request_context_getter, web_data_service_,
         password_store_));
   }
@@ -381,9 +382,7 @@ IOSChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   switch (group) {
     case syncer::GROUP_DB:
-      return new syncer::SequencedModelWorker(
-          web::WebThread::GetTaskRunnerForThread(web::WebThread::DB),
-          syncer::GROUP_DB);
+      return new syncer::SequencedModelWorker(db_thread_, syncer::GROUP_DB);
     case syncer::GROUP_FILE:
       // Not supported on iOS.
       return nullptr;

@@ -124,6 +124,10 @@ class AutofillWebDataService : public AutofillWebData,
   void GetAutofillBackend(
       const base::Callback<void(AutofillWebDataBackend*)>& callback);
 
+  // Returns a task runner that can be used to schedule tasks on the "DB"
+  // sequence.
+  base::SingleThreadTaskRunner* GetDBTaskRunner();
+
  protected:
   ~AutofillWebDataService() override;
 

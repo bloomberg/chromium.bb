@@ -605,10 +605,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       clear_autofill_origin_urls_.Start();
       web_data_service->RemoveOriginURLsModifiedBetween(
           delete_begin_, delete_end_);
-      // The above calls are done on the UI thread but do their work on the DB
-      // thread. So wait for it.
-      BrowserThread::PostTaskAndReply(
-          BrowserThread::DB, FROM_HERE, base::BindOnce(&base::DoNothing),
+      // Ask for a call back when the above call is finished.
+      web_data_service->GetDBTaskRunner()->PostTaskAndReply(
+          FROM_HERE, base::BindOnce(&base::DoNothing),
           clear_autofill_origin_urls_.GetCompletionCallback());
 
       autofill::PersonalDataManager* data_manager =
@@ -852,11 +851,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           delete_end_);
       web_data_service->RemoveAutofillDataModifiedBetween(
           delete_begin_, delete_end_);
-      // The above calls are done on the UI thread but do their work on the DB
-      // thread. So wait for it.
-      BrowserThread::PostTaskAndReply(BrowserThread::DB, FROM_HERE,
-                                      base::BindOnce(&base::DoNothing),
-                                      clear_form_.GetCompletionCallback());
+      // Ask for a call back when the above calls are finished.
+      web_data_service->GetDBTaskRunner()->PostTaskAndReply(
+          FROM_HERE, base::BindOnce(&base::DoNothing),
+          clear_form_.GetCompletionCallback());
 
       autofill::PersonalDataManager* data_manager =
           autofill::PersonalDataManagerFactory::GetForProfile(profile_);

@@ -67,11 +67,12 @@ void RunOnDBThreadAndSignal(base::Closure task,
   done_event->Signal();
 }
 
-void RunOnDBThreadAndBlock(base::Closure task) {
+void RunOnDBThreadAndBlock(scoped_refptr<AutofillWebDataService> wds,
+                           base::Closure task) {
   WaitableEvent done_event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-                          BindOnce(&RunOnDBThreadAndSignal, task, &done_event));
+  wds->GetDBTaskRunner()->PostTask(
+      FROM_HERE, BindOnce(&RunOnDBThreadAndSignal, task, &done_event));
   done_event.Wait();
 }
 
@@ -89,7 +90,7 @@ void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
   void(AutofillWebDataService::*add_observer_func)(
       AutofillWebDataServiceObserverOnDBThread*) =
       &AutofillWebDataService::AddObserver;
-  RunOnDBThreadAndBlock(Bind(add_observer_func, wds, &mock_observer));
+  RunOnDBThreadAndBlock(wds, Bind(add_observer_func, wds, &mock_observer));
 
   wds->RemoveFormValueForElementName(key.name(), key.value());
   done_event.Wait();
@@ -97,34 +98,34 @@ void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
   void(AutofillWebDataService::*remove_observer_func)(
       AutofillWebDataServiceObserverOnDBThread*) =
       &AutofillWebDataService::RemoveObserver;
-  RunOnDBThreadAndBlock(Bind(remove_observer_func, wds, &mock_observer));
+  RunOnDBThreadAndBlock(wds, Bind(remove_observer_func, wds, &mock_observer));
 }
 
 void GetAllAutofillEntriesOnDBThread(AutofillWebDataService* wds,
                                      std::vector<AutofillEntry>* entries) {
-  DCHECK_CURRENTLY_ON(BrowserThread::DB);
+  DCHECK(wds->GetDBTaskRunner()->RunsTasksInCurrentSequence());
   AutofillTable::FromWebDatabase(
       wds->GetDatabase())->GetAllAutofillEntries(entries);
 }
 
 std::vector<AutofillEntry> GetAllAutofillEntries(AutofillWebDataService* wds) {
   std::vector<AutofillEntry> entries;
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RunOnDBThreadAndBlock(Bind(&GetAllAutofillEntriesOnDBThread,
-                             Unretained(wds),
-                             &entries));
+  RunOnDBThreadAndBlock(
+      wds, Bind(&GetAllAutofillEntriesOnDBThread, Unretained(wds), &entries));
   return entries;
 }
 
 // UI thread returns from the update operations on the DB thread and schedules
 // the sync. This function blocks until after this scheduled sync is complete by
 // scheduling additional empty task on DB Thread. Call after AddKeys/RemoveKey.
-void BlockForPendingDBThreadTasks() {
+void BlockForPendingDBThreadTasks(int profile) {
   // The order of the notifications is undefined, so sync change sometimes is
   // posted after the notification for observer_helper. Post new task to db
   // thread that guaranteed to be after sync and would be blocking until
   // completion.
-  RunOnDBThreadAndBlock(base::Closure());
+  scoped_refptr<AutofillWebDataService> wds =
+      autofill_helper::GetWebDataService(profile);
+  RunOnDBThreadAndBlock(wds, base::Closure());
 }
 
 bool ProfilesMatchImpl(
@@ -249,21 +250,21 @@ void AddKeys(int profile, const std::set<AutofillKey>& keys) {
   void(AutofillWebDataService::*add_observer_func)(
       AutofillWebDataServiceObserverOnDBThread*) =
       &AutofillWebDataService::AddObserver;
-  RunOnDBThreadAndBlock(Bind(add_observer_func, wds, &mock_observer));
+  RunOnDBThreadAndBlock(wds, Bind(add_observer_func, wds, &mock_observer));
 
   wds->AddFormFields(form_fields);
   done_event.Wait();
-  BlockForPendingDBThreadTasks();
+  BlockForPendingDBThreadTasks(profile);
 
   void(AutofillWebDataService::*remove_observer_func)(
       AutofillWebDataServiceObserverOnDBThread*) =
       &AutofillWebDataService::RemoveObserver;
-  RunOnDBThreadAndBlock(Bind(remove_observer_func, wds, &mock_observer));
+  RunOnDBThreadAndBlock(wds, Bind(remove_observer_func, wds, &mock_observer));
 }
 
 void RemoveKey(int profile, const AutofillKey& key) {
   RemoveKeyDontBlockForSync(profile, key);
-  BlockForPendingDBThreadTasks();
+  BlockForPendingDBThreadTasks(profile);
 }
 
 void RemoveKeys(int profile) {
@@ -271,7 +272,7 @@ void RemoveKeys(int profile) {
   for (const AutofillEntry& entry : keys) {
     RemoveKeyDontBlockForSync(profile, entry.key());
   }
-  BlockForPendingDBThreadTasks();
+  BlockForPendingDBThreadTasks(profile);
 }
 
 std::set<AutofillEntry> GetAllKeys(int profile) {
@@ -336,15 +337,14 @@ std::vector<AutofillProfile*> GetAllAutoFillProfiles(int profile) {
   // asynchronous and there's no way to pass a callback that's run when our
   // Refresh() call finishes. A PersonalDataManagerObserver won't completely fix
   // the problem either since there could be multiple outstanding modifications
-  // scheduled, and we cannot ensure that we have the latest view. Instead post
-  // a task to the DB thread and wait for it run. This will ensure that our
-  // Refresh() was executed first, as long as the DB thread is sequenced. It is
-  // possible for another write to sneak in between our Refresh() and the task
-  // that is blocked for, causing the web_profiles() read to return even more
-  // current data, but this shouldn't cause problems. While PersonalDataManager
-  // will cancel outstanding queries, this is only instigated on the UI thread,
-  // which we are about to block, which means we are safe.
-  BlockForPendingDBThreadTasks();
+  // scheduled, and we cannot ensure that we have the latest view. Instead
+  // explicitly wait for our Refresh to have executed. It is possible for
+  // another write to sneak in between our Refresh() and the task that is
+  // blocked for, causing the web_profiles() read to return even more current
+  // data, but this shouldn't cause problems. While PersonalDataManager will
+  // cancel outstanding queries, this is only instigated on the UI thread, which
+  // we are about to block, which means we are safe.
+  BlockForPendingDBThreadTasks(profile);
 
   return pdm->web_profiles();
 }
@@ -399,7 +399,7 @@ bool AutofillProfileChecker::Wait() {
   // Similar to GetAllAutoFillProfiles() we need to make sure we are not reading
   // before any locally instigated async writes. This is run exactly one time
   // before the first IsExitConditionSatisfied() is called.
-  BlockForPendingDBThreadTasks();
+  BlockForPendingDBThreadTasks(profile_a_);
   return StatusChangeChecker::Wait();
 }
 

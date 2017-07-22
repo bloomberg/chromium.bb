@@ -120,20 +120,18 @@ class WebDataServiceTest : public testing::Test {
   void TearDown() override {
     wds_->ShutdownOnUIThread();
     wdbs_->ShutdownDatabase();
+    WaitForDatabaseThread();
     wds_ = NULL;
     wdbs_ = NULL;
-    WaitForDatabaseThread();
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-    base::RunLoop().Run();
+    base::RunLoop().RunUntilIdle();
     db_thread_.Stop();
   }
 
   void WaitForDatabaseThread() {
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-    db_thread_.task_runner()->PostTask(
+    wds_->GetDBTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
     done.Wait();
@@ -168,7 +166,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
     void(AutofillWebDataService::*add_observer_func)(
         AutofillWebDataServiceObserverOnDBThread*) =
         &AutofillWebDataService::AddObserver;
-    db_thread_.task_runner()->PostTask(
+    wds_->GetDBTaskRunner()->PostTask(
         FROM_HERE, base::Bind(add_observer_func, wds_, &observer_));
     WaitForDatabaseThread();
   }
@@ -177,9 +175,8 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
     void(AutofillWebDataService::*remove_observer_func)(
         AutofillWebDataServiceObserverOnDBThread*) =
         &AutofillWebDataService::RemoveObserver;
-    db_thread_.task_runner()->PostTask(
+    wds_->GetDBTaskRunner()->PostTask(
         FROM_HERE, base::Bind(remove_observer_func, wds_, &observer_));
-    WaitForDatabaseThread();
 
     WebDataServiceTest::TearDown();
   }
