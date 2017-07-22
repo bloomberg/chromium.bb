@@ -517,26 +517,6 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
     GetHpackEncoder()->SetIndexingPolicy(std::move(policy));
   }
 
-  // Returns the (minimum) size of frames (sans variable-length portions).
-  size_t GetFrameHeaderSize() const;
-  size_t GetDataFrameMinimumSize() const;
-  size_t GetHeadersMinimumSize() const;
-  size_t GetPrioritySize() const;
-  size_t GetRstStreamSize() const;
-  size_t GetSettingsMinimumSize() const;
-  size_t GetPushPromiseMinimumSize() const;
-  size_t GetPingSize() const;
-  size_t GetGoAwayMinimumSize() const;
-  size_t GetWindowUpdateSize() const;
-  size_t GetContinuationMinimumSize() const;
-  size_t GetAltSvcMinimumSize() const;
-
-  // Convenience function for above.
-  size_t GetMinimumSizeOfFrame(SpdyFrameType frame_type) const;
-
-  // Returns the minimum size a frame can be (data or control).
-  size_t GetFrameMinimumSize() const;
-
   // Returns the maximum size a frame can be (data or control).
   size_t GetFrameMaximumSize() const;
 

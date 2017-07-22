@@ -2857,8 +2857,7 @@ TEST_F(SpdySessionTest, ReadDataWithoutYielding) {
   // Build buffer of size kYieldAfterBytesRead / 4
   // (-spdy_data_frame_size).
   ASSERT_EQ(32 * 1024, kYieldAfterBytesRead);
-  const int kPayloadSize =
-      kYieldAfterBytesRead / 4 - framer.GetFrameHeaderSize();
+  const int kPayloadSize = kYieldAfterBytesRead / 4 - kFrameHeaderSize;
   TestDataStream test_stream;
   scoped_refptr<IOBuffer> payload(new IOBuffer(kPayloadSize));
   char* payload_data = payload->data();
@@ -3071,8 +3070,7 @@ TEST_F(SpdySessionTest, TestYieldingDuringReadData) {
   // Build buffer of size kYieldAfterBytesRead / 4
   // (-spdy_data_frame_size).
   ASSERT_EQ(32 * 1024, kYieldAfterBytesRead);
-  const int kPayloadSize =
-      kYieldAfterBytesRead / 4 - framer.GetFrameHeaderSize();
+  const int kPayloadSize = kYieldAfterBytesRead / 4 - kFrameHeaderSize;
   TestDataStream test_stream;
   scoped_refptr<IOBuffer> payload(new IOBuffer(kPayloadSize));
   char* payload_data = payload->data();
@@ -3167,8 +3165,7 @@ TEST_F(SpdySessionTest, TestYieldingDuringAsyncReadData) {
   // (-spdy_data_frame_size).
   ASSERT_EQ(32 * 1024, kYieldAfterBytesRead);
   TestDataStream test_stream;
-  const int kEightKPayloadSize =
-      kYieldAfterBytesRead / 4 - framer.GetFrameHeaderSize();
+  const int kEightKPayloadSize = kYieldAfterBytesRead / 4 - kFrameHeaderSize;
   scoped_refptr<IOBuffer> eightk_payload(new IOBuffer(kEightKPayloadSize));
   char* eightk_payload_data = eightk_payload->data();
   test_stream.GetBytes(eightk_payload_data, kEightKPayloadSize);

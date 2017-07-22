@@ -733,8 +733,8 @@ SpdyStringPiece GetSerializedHeaders(const SpdySerializedFrame& frame,
   uint8_t flags;
   reader.ReadUInt8(&flags);
 
-  return SpdyStringPiece(frame.data() + framer.GetHeadersMinimumSize(),
-                         frame.size() - framer.GetHeadersMinimumSize());
+  return SpdyStringPiece(frame.data() + kHeadersFrameMinimumSize,
+                         frame.size() - kHeadersFrameMinimumSize);
 }
 
 enum Output { USE, NOT_USE };
@@ -1536,8 +1536,7 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
         framer.SerializeDataFrameHeaderWithPaddingLengthField(data_header_ir);
     CompareCharArraysWithHexError(
         kDescription, reinterpret_cast<const unsigned char*>(frame.data()),
-        framer.GetDataFrameMinimumSize(), kH2FrameData,
-        framer.GetDataFrameMinimumSize());
+        kDataFrameMinimumSize, kH2FrameData, kDataFrameMinimumSize);
   }
 
   {
@@ -1587,8 +1586,7 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     frame = framer.SerializeDataFrameHeaderWithPaddingLengthField(data_ir);
     CompareCharArraysWithHexError(
         kDescription, reinterpret_cast<const unsigned char*>(frame.data()),
-        framer.GetDataFrameMinimumSize(), kH2FrameData,
-        framer.GetDataFrameMinimumSize());
+        kDataFrameMinimumSize, kH2FrameData, kDataFrameMinimumSize);
   }
 
   {
@@ -1641,8 +1639,7 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     frame = framer.SerializeDataFrameHeaderWithPaddingLengthField(data_ir);
     CompareCharArraysWithHexError(
         kDescription, reinterpret_cast<const unsigned char*>(frame.data()),
-        framer.GetDataFrameMinimumSize(), kH2FrameData,
-        framer.GetDataFrameMinimumSize());
+        kDataFrameMinimumSize, kH2FrameData, kDataFrameMinimumSize);
   }
 
   {
@@ -1690,8 +1687,7 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     frame = framer.SerializeDataFrameHeaderWithPaddingLengthField(data_ir);
     CompareCharArraysWithHexError(
         kDescription, reinterpret_cast<const unsigned char*>(frame.data()),
-        framer.GetDataFrameMinimumSize(), kH2FrameData,
-        framer.GetDataFrameMinimumSize());
+        kDataFrameMinimumSize, kH2FrameData, kDataFrameMinimumSize);
   }
 
   {
@@ -3003,9 +2999,9 @@ TEST_P(SpdyFramerTest, ControlFrameSizesAreValidated) {
 
   // HTTP/2 GOAWAY frames are only bound by a minimal length, since they may
   // carry opaque data. Verify that minimal length is tested.
-  ASSERT_GT(framer.GetGoAwayMinimumSize(), kFrameHeaderSize);
+  ASSERT_GT(kGoawayFrameMinimumSize, kFrameHeaderSize);
   const size_t less_than_min_length =
-      framer.GetGoAwayMinimumSize() - kFrameHeaderSize - 1;
+      kGoawayFrameMinimumSize - kFrameHeaderSize - 1;
   ASSERT_LE(less_than_min_length, std::numeric_limits<unsigned char>::max());
   const unsigned char kH2Len = static_cast<unsigned char>(less_than_min_length);
   const unsigned char kH2FrameData[] = {
@@ -3043,8 +3039,7 @@ TEST_P(SpdyFramerTest, ReadZeroLenSettingsFrame) {
   SetFrameLength(&control_frame, 0);
   TestSpdyVisitor visitor(SpdyFramer::DISABLE_COMPRESSION);
   visitor.SimulateInFramer(
-      reinterpret_cast<unsigned char*>(control_frame.data()),
-      framer.GetFrameHeaderSize());
+      reinterpret_cast<unsigned char*>(control_frame.data()), kFrameHeaderSize);
   // Zero-len settings frames are permitted as of HTTP/2.
   EXPECT_EQ(0, visitor.error_count_);
 }
@@ -3070,7 +3065,7 @@ TEST_P(SpdyFramerTest, ReadBogusLenSettingsFrame) {
   TestSpdyVisitor visitor(SpdyFramer::DISABLE_COMPRESSION);
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame.data()),
-      framer.GetFrameHeaderSize() + kNewLength);
+      kFrameHeaderSize + kNewLength);
   // Should generate an error, since its not possible to have a
   // settings frame of length kNewLength.
   EXPECT_EQ(1, visitor.error_count_);
@@ -3255,11 +3250,11 @@ TEST_P(SpdyFramerTest, ProcessDataFrameWithPadding) {
   // Send the frame header.
   EXPECT_CALL(visitor,
               OnDataFrameHeader(1, kPaddingLen + strlen(data_payload), false));
-  CHECK_EQ(framer.GetDataFrameMinimumSize(),
-           framer.ProcessInput(frame.data(), framer.GetDataFrameMinimumSize()));
+  CHECK_EQ(kDataFrameMinimumSize,
+           framer.ProcessInput(frame.data(), kDataFrameMinimumSize));
   CHECK_EQ(framer.state(), SpdyFramer::SPDY_READ_DATA_FRAME_PADDING_LENGTH);
   CHECK_EQ(framer.spdy_framer_error(), SpdyFramer::SPDY_NO_ERROR);
-  bytes_consumed += framer.GetDataFrameMinimumSize();
+  bytes_consumed += kDataFrameMinimumSize;
 
   // Send the padding length field.
   EXPECT_CALL(visitor, OnStreamPadding(1, 1));
@@ -3839,18 +3834,21 @@ TEST_P(SpdyFramerTest, ReadGarbageHPACKEncoding) {
 }
 
 TEST_P(SpdyFramerTest, SizesTest) {
+  EXPECT_EQ(9u, kFrameHeaderSize);
+  EXPECT_EQ(9u, kDataFrameMinimumSize);
+  EXPECT_EQ(9u, kHeadersFrameMinimumSize);
+  EXPECT_EQ(14u, kPriorityFrameSize);
+  EXPECT_EQ(13u, kRstStreamFrameSize);
+  EXPECT_EQ(9u, kSettingsFrameMinimumSize);
+  EXPECT_EQ(13u, kPushPromiseFrameMinimumSize);
+  EXPECT_EQ(17u, kPingFrameSize);
+  EXPECT_EQ(17u, kGoawayFrameMinimumSize);
+  EXPECT_EQ(13u, kWindowUpdateFrameSize);
+  EXPECT_EQ(9u, kContinuationFrameMinimumSize);
+  EXPECT_EQ(11u, kGetAltSvcFrameMinimumSize);
+  EXPECT_EQ(9u, kFrameMinimumSize);
+
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
-  EXPECT_EQ(9u, framer.GetDataFrameMinimumSize());
-  EXPECT_EQ(9u, framer.GetFrameHeaderSize());
-  EXPECT_EQ(13u, framer.GetRstStreamSize());
-  EXPECT_EQ(9u, framer.GetSettingsMinimumSize());
-  EXPECT_EQ(17u, framer.GetPingSize());
-  EXPECT_EQ(17u, framer.GetGoAwayMinimumSize());
-  EXPECT_EQ(9u, framer.GetHeadersMinimumSize());
-  EXPECT_EQ(13u, framer.GetWindowUpdateSize());
-  EXPECT_EQ(13u, framer.GetPushPromiseMinimumSize());
-  EXPECT_EQ(11u, framer.GetAltSvcMinimumSize());
-  EXPECT_EQ(9u, framer.GetFrameMinimumSize());
   EXPECT_EQ(16393u, framer.GetFrameMaximumSize());
   EXPECT_EQ(16384u, framer.GetDataFrameMaximumPayload());
 }

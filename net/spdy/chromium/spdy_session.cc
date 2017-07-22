@@ -2043,8 +2043,7 @@ int SpdySession::DoWrite() {
     }
     in_flight_write_frame_type_ = frame_type;
     in_flight_write_frame_size_ = in_flight_write_->GetRemainingSize();
-    DCHECK_GE(in_flight_write_frame_size_,
-              buffered_spdy_framer_->GetFrameMinimumSize());
+    DCHECK_GE(in_flight_write_frame_size_, kFrameMinimumSize);
     in_flight_write_stream_ = stream;
   }
 
@@ -2739,8 +2738,7 @@ void SpdySession::OnDataFrameHeader(SpdyStreamId stream_id,
   CHECK_EQ(stream->stream_id(), stream_id);
 
   DCHECK(buffered_spdy_framer_);
-  size_t header_len = buffered_spdy_framer_->GetDataFrameMinimumSize();
-  stream->AddRawReceivedBytes(header_len);
+  stream->AddRawReceivedBytes(kDataFrameMinimumSize);
 }
 
 void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
@@ -3063,8 +3061,7 @@ void SpdySession::OnSendCompressedFrame(SpdyStreamId stream_id,
   }
 
   DCHECK(buffered_spdy_framer_.get());
-  size_t compressed_len =
-      frame_len - buffered_spdy_framer_->GetFrameMinimumSize();
+  size_t compressed_len = frame_len - kFrameMinimumSize;
 
   if (payload_len) {
     // Make sure we avoid early decimal truncation.

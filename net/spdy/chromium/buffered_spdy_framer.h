@@ -212,18 +212,6 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
 
   SpdyPriority GetHighestPriority() const;
 
-  size_t GetDataFrameMinimumSize() const {
-    return spdy_framer_.GetDataFrameMinimumSize();
-  }
-
-  size_t GetFrameHeaderSize() const {
-    return spdy_framer_.GetFrameHeaderSize();
-  }
-
-  size_t GetFrameMinimumSize() const {
-    return spdy_framer_.GetFrameMinimumSize();
-  }
-
   size_t GetFrameMaximumSize() const {
     return spdy_framer_.GetFrameMaximumSize();
   }

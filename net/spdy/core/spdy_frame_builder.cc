@@ -81,7 +81,7 @@ bool SpdyFrameBuilder::BeginNewFrame(const SpdyFramer& framer,
   success &= WriteUInt8(raw_frame_type);
   success &= WriteUInt8(flags);
   success &= WriteUInt32(stream_id);
-  DCHECK_EQ(framer.GetDataFrameMinimumSize(), length_);
+  DCHECK_EQ(kDataFrameMinimumSize, length_);
   return success;
 }
 
@@ -124,7 +124,7 @@ bool SpdyFrameBuilder::BeginNewFrameInternal(const SpdyFramer& framer,
   success &= WriteUInt8(raw_frame_type);
   success &= WriteUInt8(flags);
   success &= WriteUInt32(stream_id);
-  DCHECK_EQ(framer.GetDataFrameMinimumSize(), length_);
+  DCHECK_EQ(kDataFrameMinimumSize, length_);
   return success;
 }
 
