@@ -183,16 +183,12 @@ class MockBufferedDataSourceHost : public BufferedDataSourceHost {
 class MockMultibufferDataSource : public MultibufferDataSource {
  public:
   MockMultibufferDataSource(
-      const GURL& url,
-      UrlData::CORSMode cors_mode,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      linked_ptr<UrlIndex> url_index,
+      scoped_refptr<UrlData> url_data,
       BufferedDataSourceHost* host)
       : MultibufferDataSource(
-            url,
-            cors_mode,
             task_runner,
-            url_index,
+            std::move(url_data),
             &media_log_,
             host,
             base::Bind(&MockMultibufferDataSource::set_downloading,
@@ -240,7 +236,8 @@ class MultibufferDataSourceTest : public testing::Test {
                           size_t file_size = kFileSize) {
     GURL gurl(url);
     data_source_.reset(new MockMultibufferDataSource(
-        gurl, cors_mode, message_loop_.task_runner(), url_index_, &host_));
+        message_loop_.task_runner(), url_index_->GetByUrl(gurl, cors_mode),
+        &host_));
     data_source_->SetPreload(preload_);
 
     response_generator_.reset(new TestResponseGenerator(gurl, file_size));
@@ -1016,9 +1013,9 @@ TEST_F(MultibufferDataSourceTest, Http_ShareData) {
   EXPECT_TRUE(data_source_->downloading());
 
   StrictMock<MockBufferedDataSourceHost> host2;
-  MockMultibufferDataSource source2(GURL(kHttpUrl), UrlData::CORS_UNSPECIFIED,
-                                    message_loop_.task_runner(), url_index_,
-                                    &host2);
+  MockMultibufferDataSource source2(
+      message_loop_.task_runner(),
+      url_index_->GetByUrl(GURL(kHttpUrl), UrlData::CORS_UNSPECIFIED), &host2);
   source2.SetPreload(preload_);
 
   EXPECT_CALL(*this, OnInitialize(true));
@@ -1309,8 +1306,8 @@ TEST_F(MultibufferDataSourceTest,
 TEST_F(MultibufferDataSourceTest, SeekPastEOF) {
   GURL gurl(kHttpUrl);
   data_source_.reset(new MockMultibufferDataSource(
-      gurl, UrlData::CORS_UNSPECIFIED, message_loop_.task_runner(), url_index_,
-      &host_));
+      message_loop_.task_runner(),
+      url_index_->GetByUrl(gurl, UrlData::CORS_UNSPECIFIED), &host_));
   data_source_->SetPreload(preload_);
 
   response_generator_.reset(new TestResponseGenerator(gurl, kDataSize + 1));
@@ -1590,8 +1587,8 @@ TEST_F(MultibufferDataSourceTest, CheckBufferSizeForSmallFiles) {
 TEST_F(MultibufferDataSourceTest, Http_CheckLoadingTransition) {
   GURL gurl(kHttpUrl);
   data_source_.reset(new MockMultibufferDataSource(
-      gurl, UrlData::CORS_UNSPECIFIED, message_loop_.task_runner(), url_index_,
-      &host_));
+      message_loop_.task_runner(),
+      url_index_->GetByUrl(gurl, UrlData::CORS_UNSPECIFIED), &host_));
   data_source_->SetPreload(preload_);
 
   response_generator_.reset(new TestResponseGenerator(gurl, kDataSize * 1));

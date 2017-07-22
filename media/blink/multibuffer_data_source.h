@@ -57,10 +57,8 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // will be reported to |host|. |downloading_cb| will be called whenever the
   // downloading/paused state of the source changes.
   MultibufferDataSource(
-      const GURL& url,
-      UrlData::CORSMode cors_mode,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      linked_ptr<UrlIndex> url_index,
+      scoped_refptr<UrlData> url_data,
       MediaLog* media_log,
       BufferedDataSourceHost* host,
       const DownloadingCB& downloading_cb);
@@ -161,12 +159,6 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // Update |reader_|'s preload and buffer settings.
   void UpdateBufferSizes();
 
-  // crossorigin attribute on the corresponding HTML media element, if any.
-  UrlData::CORSMode cors_mode_;
-
-  // URL of the resource requested.
-  scoped_refptr<UrlData> url_data_;
-
   // The total size of the resource. Set during StartCallback() if the size is
   // known, otherwise it will remain kPositionNotSpecified until the size is
   // determined by reaching EOF.
@@ -186,8 +178,8 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // The task runner of the render thread.
   const scoped_refptr<base::SingleThreadTaskRunner> render_task_runner_;
 
-  // Shared cache.
-  linked_ptr<UrlIndex> url_index_;
+  // URL of the resource requested.
+  scoped_refptr<UrlData> url_data_;
 
   // A resource reader for the media resource.
   std::unique_ptr<MultiBufferReader> reader_;

@@ -102,20 +102,17 @@ void MultibufferDataSource::ReadOperation::Run(
 }
 
 MultibufferDataSource::MultibufferDataSource(
-    const GURL& url,
-    UrlData::CORSMode cors_mode,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    linked_ptr<UrlIndex> url_index,
+    scoped_refptr<UrlData> url_data,
     MediaLog* media_log,
     BufferedDataSourceHost* host,
     const DownloadingCB& downloading_cb)
-    : cors_mode_(cors_mode),
-      total_bytes_(kPositionNotSpecified),
+    : total_bytes_(kPositionNotSpecified),
       streaming_(false),
       loading_(false),
       failed_(false),
       render_task_runner_(task_runner),
-      url_index_(url_index),
+      url_data_(std::move(url_data)),
       stop_signal_received_(false),
       media_has_played_(false),
       single_origin_(true),
@@ -131,9 +128,8 @@ MultibufferDataSource::MultibufferDataSource(
   DCHECK(host_);
   DCHECK(!downloading_cb_.is_null());
   DCHECK(render_task_runner_->BelongsToCurrentThread());
-  url_data_ = url_index_->GetByUrl(url, cors_mode_);
-  url_data_->Use();
   DCHECK(url_data_);
+  url_data_->Use();
   url_data_->OnRedirect(
       base::Bind(&MultibufferDataSource::OnRedirect, weak_ptr_));
 }
@@ -252,7 +248,7 @@ bool MultibufferDataSource::HasSingleOrigin() {
 }
 
 bool MultibufferDataSource::DidPassCORSAccessCheck() const {
-  if (cors_mode_ == UrlData::CORS_UNSPECIFIED)
+  if (url_data_->cors_mode() == UrlData::CORS_UNSPECIFIED)
     return false;
   // If init_cb is set, we initialization is not finished yet.
   if (!init_cb_.is_null())
