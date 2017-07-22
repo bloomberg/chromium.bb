@@ -1,5 +1,10 @@
 include_rules = [
-  "+components/viz/common",
   "+cc/surfaces/surface_observer.h",
   "+services/viz/hit_test/public/interfaces",
 ]
+
+specific_include_rules = {
+  "hit_test_aggregator_unittest.cc": [
+    "+components/viz/host/hit_test/hit_test_query.h",
+  ]
+}

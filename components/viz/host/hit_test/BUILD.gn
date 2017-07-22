@@ -1,0 +1,36 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//components/viz/viz.gni")
+import("//testing/test.gni")
+
+viz_source_set("hit_test") {
+  sources = [
+    "hit_test_query.cc",
+    "hit_test_query.h",
+  ]
+
+  public_deps = [
+    "//components/viz/common",
+    "//services/viz/hit_test/public/interfaces",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
+}
+
+viz_source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "hit_test_query_unittest.cc",
+  ]
+
+  deps = [
+    ":hit_test",
+    "//base",
+    "//base/test:test_support",
+    "//cc:test_support",
+    "//testing/gtest",
+  ]
+}
