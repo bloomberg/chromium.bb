@@ -303,15 +303,17 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   }
 
   if (state_.should_display_url) {
+    float url_x = left_edge;
     if (!url_render_text_ || last_drawn_gurl_ != state_.gurl ||
-        last_drawn_security_level_ != state_.security_level) {
-      float url_x = left_edge;
+        last_drawn_security_level_ != state_.security_level ||
+        last_drawn_url_x_position_ != url_x) {
       float url_width = kWidth - url_x - kUrlRightMargin;
       gfx::Rect text_bounds(ToPixels(url_x), 0, ToPixels(url_width),
                             ToPixels(kHeight));
       RenderUrl(texture_size, text_bounds);
       last_drawn_gurl_ = state_.gurl;
       last_drawn_security_level_ = state_.security_level;
+      last_drawn_url_x_position_ = url_x;
     }
     url_render_text_->Draw(&gfx_canvas);
   }
