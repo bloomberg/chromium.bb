@@ -88,8 +88,6 @@ void FakeRendererScheduler::AddPendingNavigation(NavigatingFrameType type) {}
 
 void FakeRendererScheduler::RemovePendingNavigation(NavigatingFrameType type) {}
 
-void FakeRendererScheduler::OnNavigate() {}
-
 bool FakeRendererScheduler::ShouldYieldForHighPriorityWork() {
   return false;
 }

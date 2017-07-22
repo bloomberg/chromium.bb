@@ -1100,7 +1100,7 @@ TEST_F(RendererSchedulerImplTest, Navigation_ResetsTaskCostEstimations) {
   DoMainFrame();
   // A navigation occurs which creates a new Document thus resetting the task
   // cost estimations.
-  scheduler_->OnNavigate();
+  scheduler_->DidStartProvisionalLoad(true);
   SimulateMainThreadGestureStart(TouchEventPolicy::SEND_TOUCH_START,
                                  blink::WebInputEvent::kGestureScrollUpdate);
 
@@ -1271,7 +1271,7 @@ TEST_F(RendererSchedulerImplTest, DISABLED_LoadingUseCase) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 T1 L1 D2 C2 T2 L2");
 
-  scheduler_->OnNavigate();
+  scheduler_->DidStartProvisionalLoad(true);
   EnableIdleTasks();
   RunUntilIdle();
 
@@ -3046,7 +3046,7 @@ TEST_F(RendererSchedulerImplTest,
 // TODO(alexclarke): Reenable once we've reinstaed the Loading UseCase.
 TEST_F(RendererSchedulerImplTest,
        DISABLED_EstimateLongestJankFreeTaskDuration_UseCase_) {
-  scheduler_->OnNavigate();
+  scheduler_->DidStartProvisionalLoad(true);
   EXPECT_EQ(UseCase::LOADING, ForceUpdatePolicyAndGetCurrentUseCase());
   EXPECT_EQ(rails_response_time(),
             scheduler_->EstimateLongestJankFreeTaskDuration());
@@ -3675,7 +3675,7 @@ TEST_F(RendererSchedulerImplTest, TestLoadRAILMode) {
   EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_ANIMATION));
   EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_LOAD));
 
-  scheduler_->OnNavigate();
+  scheduler_->DidStartProvisionalLoad(true);
   EXPECT_EQ(v8::PERFORMANCE_LOAD, GetRAILMode());
   EXPECT_EQ(UseCase::LOADING, ForceUpdatePolicyAndGetCurrentUseCase());
   scheduler_->OnFirstMeaningfulPaint();
@@ -3690,7 +3690,7 @@ TEST_F(RendererSchedulerImplTest, InputTerminatesLoadRAILMode) {
   EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_ANIMATION));
   EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_LOAD));
 
-  scheduler_->OnNavigate();
+  scheduler_->DidStartProvisionalLoad(true);
   EXPECT_EQ(v8::PERFORMANCE_LOAD, GetRAILMode());
   EXPECT_EQ(UseCase::LOADING, ForceUpdatePolicyAndGetCurrentUseCase());
   scheduler_->DidHandleInputEventOnCompositorThread(

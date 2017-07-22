@@ -191,7 +191,6 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
-#include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebColorSuggestion.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -1711,10 +1710,6 @@ void RenderFrameImpl::OnNavigate(
     const CommonNavigationParams& common_params,
     const StartNavigationParams& start_params,
     const RequestNavigationParams& request_params) {
-  RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
-  // Can be NULL in tests.
-  if (render_thread_impl)
-    render_thread_impl->GetRendererScheduler()->OnNavigate();
   DCHECK(!IsBrowserSideNavigationEnabled());
   TRACE_EVENT2("navigation,rail", "RenderFrameImpl::OnNavigate", "id",
                routing_id_, "url", common_params.url.possibly_invalid_spec());
@@ -5146,12 +5141,6 @@ void RenderFrameImpl::OnCommitNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params) {
   CHECK(IsBrowserSideNavigationEnabled());
-
-  RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
-  // Can be NULL in tests.
-  if (render_thread_impl &&
-      !FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type))
-    render_thread_impl->GetRendererScheduler()->OnNavigate();
 
   // This will override the url requested by the WebURLLoader, as well as
   // provide it with the response to the request.

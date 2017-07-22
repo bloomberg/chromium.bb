@@ -1738,13 +1738,6 @@ RendererSchedulerImpl::CreateMaxQueueingTimeMetric() {
       "RendererScheduler.MaxQueueingTime", 1, 10000, 50);
 }
 
-void RendererSchedulerImpl::OnNavigate() {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-               "RendererSchedulerImpl::OnNavigate");
-  base::AutoLock lock(any_thread_lock_);
-  ResetForNavigationLocked();
-}
-
 void RendererSchedulerImpl::DidStartProvisionalLoad(bool is_main_frame) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "RendererSchedulerImpl::DidStartProvisionalLoad");
