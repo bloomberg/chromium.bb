@@ -85,7 +85,7 @@ void U2fHidDevice::Transition(std::unique_ptr<U2fApduCommand> command,
 void U2fHidDevice::Connect(const HidService::ConnectCallback& callback) {
   HidService* hid_service = DeviceClient::Get()->GetHidService();
 
-  hid_service->Connect(device_info_->device_id(), callback);
+  hid_service->Connect(device_info_->device_guid(), callback);
 }
 
 void U2fHidDevice::OnConnect(std::unique_ptr<U2fApduCommand> command,
@@ -332,7 +332,7 @@ void U2fHidDevice::OnTimeout(const DeviceCallback& callback) {
 
 std::string U2fHidDevice::GetId() {
   std::ostringstream id("hid:", std::ios::ate);
-  id << device_info_->device_id();
+  id << device_info_->device_guid();
   return id.str();
 }
 

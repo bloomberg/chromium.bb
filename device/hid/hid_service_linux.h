@@ -23,7 +23,7 @@ class HidServiceLinux : public HidService {
   ~HidServiceLinux() override;
 
   // HidService:
-  void Connect(const HidDeviceId& device_id,
+  void Connect(const std::string& device_id,
                const ConnectCallback& callback) override;
 
  private:

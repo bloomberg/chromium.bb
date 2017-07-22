@@ -34,7 +34,7 @@ class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {
   HidServiceWin();
   ~HidServiceWin() override;
 
-  void Connect(const HidDeviceId& device_id,
+  void Connect(const std::string& device_id,
                const ConnectCallback& callback) override;
 
  private:

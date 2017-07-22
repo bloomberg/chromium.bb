@@ -99,7 +99,7 @@ class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
     const char* device_path = udev_device_get_syspath(device.get());
     if (!device_path)
       return;
-    HidDeviceId device_id = device_path;
+    HidPlatformDeviceId platform_device_id = device_path;
 
     const char* subsystem = udev_device_get_subsystem(device.get());
     if (!subsystem || strcmp(subsystem, kHidrawSubsystem) != 0)
@@ -156,7 +156,7 @@ class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
       return;
 
     scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfoLinux(
-        device_id, device_node, vendor_id, product_id, product_name,
+        platform_device_id, device_node, vendor_id, product_id, product_name,
         serial_number,
         kHIDBusTypeUSB,  // TODO(reillyg): Detect Bluetooth. crbug.com/443335
         std::vector<uint8_t>(report_descriptor_str.begin(),
@@ -200,11 +200,11 @@ HidServiceLinux::~HidServiceLinux() {
   blocking_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
 }
 
-void HidServiceLinux::Connect(const HidDeviceId& device_id,
+void HidServiceLinux::Connect(const std::string& device_guid,
                               const ConnectCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const auto& map_entry = devices().find(device_id);
+  const auto& map_entry = devices().find(device_guid);
   if (map_entry == devices().end()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, nullptr));

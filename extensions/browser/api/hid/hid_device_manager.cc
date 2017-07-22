@@ -25,7 +25,6 @@
 namespace hid = extensions::api::hid;
 
 using device::HidDeviceFilter;
-using device::HidDeviceId;
 using device::HidDeviceInfo;
 using device::HidService;
 
@@ -140,7 +139,7 @@ std::unique_ptr<base::ListValue> HidDeviceManager::GetApiDevicesFromList(
   DCHECK(thread_checker_.CalledOnValidThread());
   std::unique_ptr<base::ListValue> device_list(new base::ListValue());
   for (const auto& device : devices) {
-    const auto device_entry = resource_ids_.find(device->device_id());
+    const auto device_entry = resource_ids_.find(device->device_guid());
     DCHECK(device_entry != resource_ids_.end());
 
     hid::HidDeviceInfo device_info;
@@ -217,9 +216,9 @@ void HidDeviceManager::OnDeviceAdded(scoped_refptr<HidDeviceInfo> device_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_LT(next_resource_id_, std::numeric_limits<int>::max());
   int new_id = next_resource_id_++;
-  DCHECK(!base::ContainsKey(resource_ids_, device_info->device_id()));
-  resource_ids_[device_info->device_id()] = new_id;
-  device_ids_[new_id] = device_info->device_id();
+  DCHECK(!base::ContainsKey(resource_ids_, device_info->device_guid()));
+  resource_ids_[device_info->device_guid()] = new_id;
+  device_ids_[new_id] = device_info->device_guid();
 
   // Don't generate events during the initial enumeration.
   if (enumeration_ready_ && event_router_) {
@@ -239,7 +238,7 @@ void HidDeviceManager::OnDeviceAdded(scoped_refptr<HidDeviceInfo> device_info) {
 void HidDeviceManager::OnDeviceRemoved(
     scoped_refptr<HidDeviceInfo> device_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const auto& resource_entry = resource_ids_.find(device_info->device_id());
+  const auto& resource_entry = resource_ids_.find(device_info->device_guid());
   DCHECK(resource_entry != resource_ids_.end());
   int resource_id = resource_entry->second;
   const auto& device_entry = device_ids_.find(resource_id);
@@ -282,10 +281,10 @@ std::unique_ptr<base::ListValue> HidDeviceManager::CreateApiDeviceList(
   std::unique_ptr<base::ListValue> api_devices(new base::ListValue());
   for (const ResourceIdToDeviceIdMap::value_type& map_entry : device_ids_) {
     int resource_id = map_entry.first;
-    const HidDeviceId& device_id = map_entry.second;
+    const std::string& device_guid = map_entry.second;
 
     scoped_refptr<HidDeviceInfo> device_info =
-        hid_service->GetDeviceInfo(device_id);
+        hid_service->GetDeviceInfo(device_guid);
     if (!device_info) {
       continue;
     }

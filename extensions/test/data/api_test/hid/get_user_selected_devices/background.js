@@ -12,6 +12,7 @@ chrome.test.runWithUserGesture(function() {
       chrome.test.assertNoLastError();
       chrome.test.assertEq(1, devices.length);
       device_from_user = devices[0];
+      chrome.test.assertEq(device_from_user.serialNumber, "A");
       chrome.hid.connect(device_from_user.deviceId, function(connection) {
         chrome.test.assertNoLastError();
         chrome.hid.disconnect(connection.connectionId);
