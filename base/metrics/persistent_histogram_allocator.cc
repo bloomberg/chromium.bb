@@ -679,11 +679,11 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
     DCHECK_EQ(histogram_type, histogram->GetHistogramType());
     histogram->SetFlags(histogram_flags);
     RecordCreateHistogramResult(CREATE_HISTOGRAM_SUCCESS);
+    histogram->ValidateHistogramContents(true, 0);
   } else {
     RecordCreateHistogramResult(CREATE_HISTOGRAM_UNKNOWN_TYPE);
   }
 
-  histogram->ValidateHistogramContents();
   return histogram;
 }
 
