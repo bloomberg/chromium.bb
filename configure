@@ -295,6 +295,7 @@ EXPERIMENT_LIST="
     daala_dct8
     daala_dct16
     daala_dct32
+    daala_dct64
     cb4x4
     chroma_2x2
     chroma_sub8x8
@@ -576,10 +577,14 @@ post_process_cmdline() {
     if enabled daala_dct4; then
       enable_feature dct_only
     fi
+    if enabled daala_dct64; then
+      enable_feature tx64x64
+    fi
     if enabled daala_dct4 ||
 	    enabled daala_dct8 ||
 	    enabled daala_dct16 ||
-	    enabled daala_dct32; then
+	    enabled daala_dct32 ||
+	    enabled daala_dct64; then
       disable_feature mmx
       disable_feature rect_tx
       disable_feature var_tx

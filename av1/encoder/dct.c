@@ -22,7 +22,7 @@
 #include "av1/common/av1_fwd_txfm1d_cfg.h"
 #include "av1/common/idct.h"
 #if CONFIG_DAALA_DCT4 || CONFIG_DAALA_DCT8 || CONFIG_DAALA_DCT16 || \
-    CONFIG_DAALA_DCT32
+    CONFIG_DAALA_DCT32 || CONFIG_DAALA_DCT64
 #include "av1/common/daala_tx.h"
 #endif
 
@@ -782,6 +782,16 @@ static void fdct32(const tran_low_t *input, tran_low_t *output) {
 #endif
 
 #ifndef AV1_DCT_GTEST
+#if CONFIG_TX64X64 && CONFIG_DAALA_DCT64
+static void fdct64(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  od_coeff x[64];
+  od_coeff y[64];
+  for (i = 0; i < 64; i++) x[i] = (od_coeff)input[i];
+  od_bin_fdct64(y, x, 1);
+  for (i = 0; i < 64; i++) output[i] = (tran_low_t)y[i];
+}
+#endif
 
 static void fadst4(const tran_low_t *input, tran_low_t *output) {
   tran_high_t x0, x1, x2, x3;
@@ -2530,6 +2540,37 @@ void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
 }
 
 #if CONFIG_TX64X64
+#if CONFIG_DAALA_DCT64
+#if CONFIG_EXT_TX
+static void fidtx64(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  for (i = 0; i < 64; ++i) output[i] = input[i];
+}
+
+// For use in lieu of ADST
+static void fhalfright64(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  tran_low_t inputhalf[32];
+  // No scaling within; Daala transforms are all orthonormal
+  for (i = 0; i < 32; ++i) {
+    output[32 + i] = input[i];
+  }
+  for (i = 0; i < 32; ++i) {
+    inputhalf[i] = input[i + 32];
+  }
+  fdct32(inputhalf, output);
+  // Note overall scaling factor is 2 times unitary
+}
+#endif  // CONFIG_EXT_TX
+
+static void fdct64_col(const tran_low_t *input, tran_low_t *output) {
+  fdct64(input, output);
+}
+
+static void fdct64_row(const tran_low_t *input, tran_low_t *output) {
+  fdct64(input, output);
+}
+#else
 #if CONFIG_EXT_TX
 static void fidtx64(const tran_low_t *input, tran_low_t *output) {
   int i;
@@ -2568,6 +2609,7 @@ static void fdct64_row(const tran_low_t *input, tran_low_t *output) {
   av1_fdct64_new(in, out, fwd_cos_bit_row_dct_64, fwd_stage_range_row_dct_64);
   for (i = 0; i < 64; ++i) output[i] = (tran_low_t)out[i];
 }
+#endif
 
 void av1_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
                     TxfmParam *txfm_param) {
@@ -2609,10 +2651,18 @@ void av1_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
 
   // Columns
   for (i = 0; i < 64; ++i) {
+#if CONFIG_DAALA_DCT64
+    for (j = 0; j < 64; ++j) temp_in[j] = input[j * stride + i] * 16;
+    ht.cols(temp_in, temp_out);
+    for (j = 0; j < 64; ++j)
+      out[j * 64 + i] = (temp_out[j] + 1 + (temp_out[j] > 0)) >> 3;
+
+#else
     for (j = 0; j < 64; ++j) temp_in[j] = input[j * stride + i];
     ht.cols(temp_in, temp_out);
     for (j = 0; j < 64; ++j)
       out[j * 64 + i] = (temp_out[j] + 1 + (temp_out[j] > 0)) >> 2;
+#endif
   }
 
   // Rows
@@ -2620,8 +2670,12 @@ void av1_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
     for (j = 0; j < 64; ++j) temp_in[j] = out[j + i * 64];
     ht.rows(temp_in, temp_out);
     for (j = 0; j < 64; ++j)
+#if CONFIG_DAALA_DCT64
+      output[j + i * 64] = temp_out[j];
+#else
       output[j + i * 64] =
           (tran_low_t)((temp_out[j] + 1 + (temp_out[j] < 0)) >> 2);
+#endif
   }
 }
 #endif  // CONFIG_TX64X64

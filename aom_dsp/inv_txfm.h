@@ -68,6 +68,9 @@ void aom_idct4_c(const tran_low_t *input, tran_low_t *output);
 void aom_idct8_c(const tran_low_t *input, tran_low_t *output);
 void aom_idct16_c(const tran_low_t *input, tran_low_t *output);
 void aom_idct32_c(const tran_low_t *input, tran_low_t *output);
+#if CONFIG_TX64X64 && CONFIG_DAALA_DCT64
+void aom_idct64_c(const tran_low_t *input, tran_low_t *output);
+#endif
 void aom_iadst4_c(const tran_low_t *input, tran_low_t *output);
 void aom_iadst8_c(const tran_low_t *input, tran_low_t *output);
 void aom_iadst16_c(const tran_low_t *input, tran_low_t *output);
