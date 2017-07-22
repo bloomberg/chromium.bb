@@ -112,8 +112,10 @@ public class WebappActivity extends SingleTabActivity {
             Log.e(TAG, "Failed to parse new Intent: " + intent);
             ApiCompatibilityUtils.finishAndRemoveTask(this);
         } else if (newWebappInfo.shouldForceNavigation() && mIsInitialized) {
-            getActivityTab().loadUrl(new LoadUrlParams(
-                    newWebappInfo.uri().toString(), PageTransition.AUTO_TOPLEVEL));
+            LoadUrlParams params =
+                    new LoadUrlParams(newWebappInfo.uri().toString(), PageTransition.AUTO_TOPLEVEL);
+            params.setShouldClearHistoryList(true);
+            getActivityTab().loadUrl(params);
         }
     }
 
