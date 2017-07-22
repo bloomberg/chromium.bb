@@ -184,8 +184,8 @@ TEST_F(DevicePermissionsManagerTest, DisconnectDevice) {
 
   device_client_.usb_service()->RemoveDevice(device0_);
   device_client_.usb_service()->RemoveDevice(device1_);
-  device_client_.hid_service()->RemoveDevice(device4_->device_id());
-  device_client_.hid_service()->RemoveDevice(device5_->device_id());
+  device_client_.hid_service()->RemoveDevice(device4_->platform_device_id());
+  device_client_.hid_service()->RemoveDevice(device5_->platform_device_id());
 
   // Device 0 will be accessible when it is reconnected because it can be
   // recognized by its serial number.

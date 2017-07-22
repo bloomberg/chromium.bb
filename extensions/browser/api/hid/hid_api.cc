@@ -181,7 +181,7 @@ ExtensionFunction::ResponseAction HidConnectFunction::Run() {
   CHECK(hid_service);
 
   hid_service->Connect(
-      device_info->device_id(),
+      device_info->device_guid(),
       base::Bind(&HidConnectFunction::OnConnectComplete, this));
   return RespondLater();
 }

@@ -19,12 +19,12 @@ class MockHidService : public HidService {
 
   // Public wrappers around protected functions needed for tests.
   void AddDevice(scoped_refptr<HidDeviceInfo> info);
-  void RemoveDevice(const HidDeviceId& device_id);
+  void RemoveDevice(const HidPlatformDeviceId& platform_device_id);
   void FirstEnumerationComplete();
-  const std::map<HidDeviceId, scoped_refptr<HidDeviceInfo>>& devices() const;
+  const std::map<std::string, scoped_refptr<HidDeviceInfo>>& devices() const;
 
   MOCK_METHOD2(Connect,
-               void(const HidDeviceId& device_id,
+               void(const std::string& device_guid,
                     const ConnectCallback& callback));
 };
 

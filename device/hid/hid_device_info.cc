@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
 #include "device/hid/hid_device_info.h"
+
+#include "base/guid.h"
+#include "build/build_config.h"
 #include "device/hid/hid_report_descriptor.h"
 
 namespace device {
 
-#if !defined(OS_MACOSX)
-const char kInvalidHidDeviceId[] = "";
-#endif
-
-HidDeviceInfo::HidDeviceInfo(const HidDeviceId& device_id,
+HidDeviceInfo::HidDeviceInfo(const HidPlatformDeviceId& platform_device_id,
                              uint16_t vendor_id,
                              uint16_t product_id,
                              const std::string& product_name,
                              const std::string& serial_number,
                              HidBusType bus_type,
                              const std::vector<uint8_t> report_descriptor)
-    : device_id_(device_id),
+    : guid_(base::GenerateGUID()),
+      platform_device_id_(platform_device_id),
       vendor_id_(vendor_id),
       product_id_(product_id),
       product_name_(product_name),
@@ -32,7 +31,7 @@ HidDeviceInfo::HidDeviceInfo(const HidDeviceId& device_id,
       &max_output_report_size_, &max_feature_report_size_);
 }
 
-HidDeviceInfo::HidDeviceInfo(const HidDeviceId& device_id,
+HidDeviceInfo::HidDeviceInfo(const HidPlatformDeviceId& platform_device_id,
                              uint16_t vendor_id,
                              uint16_t product_id,
                              const std::string& product_name,
@@ -42,7 +41,8 @@ HidDeviceInfo::HidDeviceInfo(const HidDeviceId& device_id,
                              size_t max_input_report_size,
                              size_t max_output_report_size,
                              size_t max_feature_report_size)
-    : device_id_(device_id),
+    : guid_(base::GenerateGUID()),
+      platform_device_id_(platform_device_id),
       vendor_id_(vendor_id),
       product_id_(product_id),
       product_name_(product_name),

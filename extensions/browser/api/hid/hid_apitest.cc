@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "device/base/mock_device_client.h"
@@ -24,8 +25,8 @@
 
 using base::ThreadTaskRunnerHandle;
 using device::HidCollectionInfo;
-using device::HidDeviceId;
 using device::HidDeviceInfo;
+using device::HidPlatformDeviceId;
 using device::HidUsageAndPage;
 using device::MockDeviceClient;
 using net::IOBuffer;
@@ -144,13 +145,21 @@ class TestDevicePermissionsPrompt
 
  private:
   void OnDevicesChanged() {
-    for (size_t i = 0; i < prompt()->GetDeviceCount(); ++i) {
-      prompt()->GrantDevicePermission(i);
-      if (!prompt()->multiple()) {
-        break;
+    if (prompt()->multiple()) {
+      for (size_t i = 0; i < prompt()->GetDeviceCount(); ++i) {
+        prompt()->GrantDevicePermission(i);
+      }
+      prompt()->Dismissed();
+    } else {
+      for (size_t i = 0; i < prompt()->GetDeviceCount(); ++i) {
+        // Always choose the device whose serial number is "A".
+        if (prompt()->GetDeviceSerialNumber(i) == base::UTF8ToUTF16("A")) {
+          prompt()->GrantDevicePermission(i);
+          prompt()->Dismissed();
+          return;
+        }
       }
     }
-    prompt()->Dismissed();
   }
 };
 
@@ -179,10 +188,10 @@ class HidApiTest : public ShellApiTest {
         base::Bind(&HidApiTest::LazyFirstEnumeration, base::Unretained(this)));
   }
 
-  void Connect(const HidDeviceId& device_id,
+  void Connect(const std::string& device_guid,
                const device::HidService::ConnectCallback& callback) {
     const auto& devices = device_client_->hid_service()->devices();
-    const auto& device_entry = devices.find(device_id);
+    const auto& device_entry = devices.find(device_guid);
     scoped_refptr<MockHidConnection> connection;
     if (device_entry != devices.end()) {
       connection = new MockHidConnection(device_entry->second);
@@ -193,16 +202,17 @@ class HidApiTest : public ShellApiTest {
   }
 
   void LazyFirstEnumeration() {
-    AddDevice(kTestDeviceIds[0], 0x18D1, 0x58F0, false);
-    AddDevice(kTestDeviceIds[1], 0x18D1, 0x58F0, true);
-    AddDevice(kTestDeviceIds[2], 0x18D1, 0x58F1, false);
+    AddDevice(kTestDeviceIds[0], 0x18D1, 0x58F0, false, "A");
+    AddDevice(kTestDeviceIds[1], 0x18D1, 0x58F0, true, "B");
+    AddDevice(kTestDeviceIds[2], 0x18D1, 0x58F1, false, "C");
     device_client_->hid_service()->FirstEnumerationComplete();
   }
 
-  void AddDevice(const HidDeviceId& device_id,
+  void AddDevice(const HidPlatformDeviceId& platform_device_id,
                  int vendor_id,
                  int product_id,
-                 bool report_id) {
+                 bool report_id,
+                 std::string serial_number) {
     std::vector<uint8_t> report_descriptor;
     if (report_id) {
       report_descriptor.insert(
@@ -212,9 +222,9 @@ class HidApiTest : public ShellApiTest {
       report_descriptor.insert(report_descriptor.begin(), kReportDescriptor,
                                kReportDescriptor + sizeof(kReportDescriptor));
     }
-    device_client_->hid_service()->AddDevice(
-        new HidDeviceInfo(device_id, vendor_id, product_id, "Test Device", "A",
-                          device::kHIDBusTypeUSB, report_descriptor));
+    device_client_->hid_service()->AddDevice(new HidDeviceInfo(
+        platform_device_id, vendor_id, product_id, "Test Device", serial_number,
+        device::kHIDBusTypeUSB, report_descriptor));
   }
 
  protected:
@@ -235,8 +245,8 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceAdded) {
 
   // Add a blocked device first so that the test will fail if a notification is
   // received.
-  AddDevice(kTestDeviceIds[3], 0x18D1, 0x58F1, false);
-  AddDevice(kTestDeviceIds[4], 0x18D1, 0x58F0, false);
+  AddDevice(kTestDeviceIds[3], 0x18D1, 0x58F1, false, "A");
+  AddDevice(kTestDeviceIds[4], 0x18D1, 0x58F0, false, "A");
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
   EXPECT_EQ("success", result_listener.message());
 }
@@ -270,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, GetUserSelectedDevices) {
   ASSERT_TRUE(remove_listener.WaitUntilSatisfied());
 
   ExtensionTestMessageListener add_listener("added", false);
-  AddDevice(kTestDeviceIds[0], 0x18D1, 0x58F0, true);
+  AddDevice(kTestDeviceIds[0], 0x18D1, 0x58F0, true, "A");
   ASSERT_TRUE(add_listener.WaitUntilSatisfied());
 }
 
