@@ -1874,7 +1874,6 @@ crbug.com/626703 virtual/mojo-loading/http/tests/inspector/indexeddb/database-re
 crbug.com/626703 virtual/mojo-loading/http/tests/inspector/network/network-columns-visible.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/inspector/network/network-filters.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/inspector/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
-crbug.com/626703 virtual/rootlayerscrolls/fast/scrolling/scrollbar-prevent-default.html [ Pass Failure ]
 crbug.com/626703 virtual/threaded/inspector/tracing/timeline-js/timeline-runtime-stats.html [ Pass Failure ]
 crbug.com/626703 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 
