@@ -44,7 +44,6 @@ class FakeRendererScheduler : public RendererScheduler {
   void ResumeRenderer() override;
   void AddPendingNavigation(NavigatingFrameType type) override;
   void RemovePendingNavigation(NavigatingFrameType type) override;
-  void OnNavigate() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
   bool ShouldYieldForHighPriorityWork() override;
