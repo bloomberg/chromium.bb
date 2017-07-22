@@ -45,7 +45,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/extensions/api/messaging/message_service.h"
+#include "chrome/browser/extensions/api/messaging/messaging_delegate.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
@@ -4116,11 +4116,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlacklistSelective) {
                blacklist.CreateDeepCopy(), nullptr);
   UpdateProviderPolicy(policies);
 
-  PrefService* prefs = browser()->profile()->GetPrefs();
-  EXPECT_FALSE(extensions::MessageService::IsNativeMessagingHostAllowed(
-      prefs, "host.name"));
-  EXPECT_TRUE(extensions::MessageService::IsNativeMessagingHostAllowed(
-      prefs, "other.host.name"));
+  EXPECT_EQ(extensions::MessagingDelegate::PolicyPermission::DISALLOW,
+            extensions::MessagingDelegate::IsNativeMessagingHostAllowed(
+                browser()->profile(), "host.name"));
+  EXPECT_EQ(extensions::MessagingDelegate::PolicyPermission::ALLOW_ALL,
+            extensions::MessagingDelegate::IsNativeMessagingHostAllowed(
+                browser()->profile(), "other.host.name"));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlacklistWildcard) {
@@ -4132,11 +4133,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlacklistWildcard) {
                blacklist.CreateDeepCopy(), nullptr);
   UpdateProviderPolicy(policies);
 
-  PrefService* prefs = browser()->profile()->GetPrefs();
-  EXPECT_FALSE(extensions::MessageService::IsNativeMessagingHostAllowed(
-      prefs, "host.name"));
-  EXPECT_FALSE(extensions::MessageService::IsNativeMessagingHostAllowed(
-      prefs, "other.host.name"));
+  EXPECT_EQ(extensions::MessagingDelegate::PolicyPermission::DISALLOW,
+            extensions::MessagingDelegate::IsNativeMessagingHostAllowed(
+                browser()->profile(), "host.name"));
+  EXPECT_EQ(extensions::MessagingDelegate::PolicyPermission::DISALLOW,
+            extensions::MessagingDelegate::IsNativeMessagingHostAllowed(
+                browser()->profile(), "other.host.name"));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingWhitelist) {
@@ -4153,11 +4155,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingWhitelist) {
                whitelist.CreateDeepCopy(), nullptr);
   UpdateProviderPolicy(policies);
 
-  PrefService* prefs = browser()->profile()->GetPrefs();
-  EXPECT_TRUE(extensions::MessageService::IsNativeMessagingHostAllowed(
-      prefs, "host.name"));
-  EXPECT_FALSE(extensions::MessageService::IsNativeMessagingHostAllowed(
-      prefs, "other.host.name"));
+  EXPECT_EQ(extensions::MessagingDelegate::PolicyPermission::ALLOW_ALL,
+            extensions::MessagingDelegate::IsNativeMessagingHostAllowed(
+                browser()->profile(), "host.name"));
+  EXPECT_EQ(extensions::MessagingDelegate::PolicyPermission::DISALLOW,
+            extensions::MessagingDelegate::IsNativeMessagingHostAllowed(
+                browser()->profile(), "other.host.name"));
 }
 
 #endif  // !defined(CHROME_OS)

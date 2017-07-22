@@ -14,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/values.h"
 #include "chrome/browser/extensions/api/messaging/message_port.h"
 #include "chrome/browser/extensions/api/messaging/message_property_provider.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
@@ -60,16 +59,6 @@ class MessageService : public BrowserContextKeyedAPI,
   // receiver, if an extension background page wants to talk to its tab (for
   // example).
   struct MessageChannel;
-
-  enum PolicyPermission {
-    DISALLOW,           // The host is not allowed.
-    ALLOW_SYSTEM_ONLY,  // Allowed only when installed on system level.
-    ALLOW_ALL,          // Allowed when installed on system or user level.
-  };
-
-  static PolicyPermission IsNativeMessagingHostAllowed(
-      const PrefService* pref_service,
-      const std::string& native_host_name);
 
   explicit MessageService(content::BrowserContext* context);
   ~MessageService() override;

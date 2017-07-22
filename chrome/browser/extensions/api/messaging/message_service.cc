@@ -15,18 +15,13 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/messaging/extension_message_port.h"
-#include "chrome/browser/extensions/api/messaging/incognito_connectability.h"
 #include "chrome/browser/extensions/api/messaging/message_port.h"
+#include "chrome/browser/extensions/api/messaging/messaging_delegate.h"
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"
-#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_util.h"
-#include "components/guest_view/common/guest_view_constants.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -47,7 +42,6 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/lazy_background_task_queue.h"
-#include "extensions/browser/pref_names.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -55,7 +49,6 @@
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "net/base/completion_callback.h"
 #include "url/gurl.h"
 
 using content::BrowserContext;
@@ -64,46 +57,6 @@ using content::SiteInstance;
 using content::WebContents;
 
 namespace extensions {
-
-MessageService::PolicyPermission MessageService::IsNativeMessagingHostAllowed(
-    const PrefService* pref_service,
-    const std::string& native_host_name) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  PolicyPermission allow_result = ALLOW_ALL;
-  if (pref_service->IsManagedPreference(
-          pref_names::kNativeMessagingUserLevelHosts)) {
-    if (!pref_service->GetBoolean(pref_names::kNativeMessagingUserLevelHosts))
-      allow_result = ALLOW_SYSTEM_ONLY;
-  }
-
-  // All native messaging hosts are allowed if there is no blacklist.
-  if (!pref_service->IsManagedPreference(pref_names::kNativeMessagingBlacklist))
-    return allow_result;
-  const base::ListValue* blacklist =
-      pref_service->GetList(pref_names::kNativeMessagingBlacklist);
-  if (!blacklist)
-    return allow_result;
-
-  // Check if the name or the wildcard is in the blacklist.
-  base::Value name_value(native_host_name);
-  base::Value wildcard_value("*");
-  if (blacklist->Find(name_value) == blacklist->end() &&
-      blacklist->Find(wildcard_value) == blacklist->end()) {
-    return allow_result;
-  }
-
-  // The native messaging host is blacklisted. Check the whitelist.
-  if (pref_service->IsManagedPreference(
-          pref_names::kNativeMessagingWhitelist)) {
-    const base::ListValue* whitelist =
-        pref_service->GetList(pref_names::kNativeMessagingWhitelist);
-    if (whitelist && whitelist->Find(name_value) != whitelist->end())
-      return allow_result;
-  }
-
-  return DISALLOW;
-}
 
 const char kReceivingEndDoesntExistError[] =
     "Could not establish connection. Receiving end does not exist.";
@@ -281,26 +234,25 @@ void MessageService::OpenChannelToExtension(
     }
   }
 
-  WebContents* source_contents = tab_util::GetWebContentsByFrameID(
-      source_process_id, source_routing_id);
+  WebContents* source_contents = nullptr;
+  content::RenderFrameHost* source_render_frame_host =
+      content::RenderFrameHost::FromID(source_process_id, source_routing_id);
+  if (source_render_frame_host) {
+    source_contents =
+        WebContents::FromRenderFrameHost(source_render_frame_host);
+  }
 
+  int source_frame_id = -1;
   bool include_guest_process_info = false;
 
-  // Include info about the opener's tab (if it was a tab).
-  std::unique_ptr<base::DictionaryValue> source_tab;
-  int source_frame_id = -1;
-  if (source_contents && ExtensionTabUtil::GetTabId(source_contents) >= 0) {
-    // Only the tab id is useful to platform apps for internal use. The
-    // unnecessary bits will be stripped out in
-    // MessagingBindings::DispatchOnConnect().
-    source_tab.reset(ExtensionTabUtil::CreateTabObject(source_contents)
-                         ->ToValue()
-                         .release());
+  // Get information about the opener's tab, if applicable.
+  std::unique_ptr<base::DictionaryValue> source_tab =
+      MessagingDelegate::MaybeGetTabInfo(source_contents);
 
-    content::RenderFrameHost* rfh =
-        content::RenderFrameHost::FromID(source_process_id, source_routing_id);
-    if (rfh)
-      source_frame_id = ExtensionApiFrameIdMap::GetFrameId(rfh);
+  if (source_tab.get()) {
+    DCHECK(source_render_frame_host);
+    source_frame_id =
+        ExtensionApiFrameIdMap::GetFrameId(source_render_frame_host);
   } else {
     // Check to see if it was a WebView making the request.
     // Sending messages from WebViews to extensions breaks webview isolation,
@@ -355,10 +307,10 @@ void MessageService::OpenChannelToExtension(
     }
 
     // This check may show a dialog.
-    IncognitoConnectability::Get(context)
-        ->Query(target_extension, source_contents, source_url,
-                base::Bind(&MessageService::OnOpenChannelAllowed,
-                           weak_factory_.GetWeakPtr(), base::Passed(&params)));
+    MessagingDelegate::QueryIncognitoConnectability(
+        context, target_extension, source_contents, source_url,
+        base::Bind(&MessageService::OnOpenChannelAllowed,
+                   weak_factory_.GetWeakPtr(), base::Passed(&params)));
     return;
   }
 
@@ -401,19 +353,16 @@ void MessageService::OpenChannelToNativeApp(
     return;
   }
 
-  PrefService* pref_service =
-      Profile::FromBrowserContext(source->GetProcess()->GetBrowserContext())->
-          GetPrefs();
-
   // Verify that the host is not blocked by policies.
-  PolicyPermission policy_permission =
-      IsNativeMessagingHostAllowed(pref_service, native_app_name);
-  if (policy_permission == DISALLOW) {
+  MessagingDelegate::PolicyPermission policy_permission =
+      MessagingDelegate::IsNativeMessagingHostAllowed(
+          source->GetProcess()->GetBrowserContext(), native_app_name);
+  if (policy_permission == MessagingDelegate::PolicyPermission::DISALLOW) {
     DispatchOnDisconnect(source, receiver_port_id, kProhibitedByPoliciesError);
     return;
   }
 
-  std::unique_ptr<MessageChannel> channel(new MessageChannel());
+  std::unique_ptr<MessageChannel> channel = base::MakeUnique<MessageChannel>();
   channel->opener.reset(
       new ExtensionMessagePort(weak_factory_.GetWeakPtr(), source_port_id,
                                extension->id(), source, false));
@@ -427,7 +376,8 @@ void MessageService::OpenChannelToNativeApp(
   std::string error = kReceivingEndDoesntExistError;
   std::unique_ptr<NativeMessageHost> native_host = NativeMessageHost::Create(
       native_view, extension->id(), native_app_name,
-      policy_permission == ALLOW_ALL, &error);
+      policy_permission == MessagingDelegate::PolicyPermission::ALLOW_ALL,
+      &error);
 
   // Abandon the channel.
   if (!native_host.get()) {
