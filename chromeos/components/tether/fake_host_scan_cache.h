@@ -7,6 +7,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "base/macros.h"
 #include "chromeos/components/tether/host_scan_cache.h"
@@ -21,16 +22,6 @@ class FakeHostScanCache : virtual public HostScanCache {
   FakeHostScanCache();
   ~FakeHostScanCache() override;
 
-  // Getter and setter for the active host Tether network GUID. This value is
-  // used to implement the ClearCacheExceptForActiveHost() function.
-  std::string& active_host_tether_network_guid() {
-    return active_host_tether_network_guid_;
-  }
-  void set_active_host_tether_network_guid(
-      const std::string& active_host_tether_network_guid) {
-    active_host_tether_network_guid_ = active_host_tether_network_guid;
-  }
-
   // Getters for contents of the cache.
   const HostScanCacheEntry* GetCacheEntry(
       const std::string& tether_network_guid);
@@ -44,11 +35,10 @@ class FakeHostScanCache : virtual public HostScanCache {
   void SetHostScanResult(const HostScanCacheEntry& entry) override;
   bool RemoveHostScanResult(const std::string& tether_network_guid) override;
   bool ExistsInCache(const std::string& tether_network_guid) override;
-  void ClearCacheExceptForActiveHost() override;
+  std::unordered_set<std::string> GetTetherGuidsInCache() override;
   bool DoesHostRequireSetup(const std::string& tether_network_guid) override;
 
  private:
-  std::string active_host_tether_network_guid_;
   std::unordered_map<std::string, HostScanCacheEntry> cache_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeHostScanCache);

@@ -6,7 +6,9 @@
 #define CHROMEOS_COMPONENTS_TETHER_MASTER_HOST_SCAN_CACHE_H_
 
 #include <memory>
+#include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -53,7 +55,7 @@ class MasterHostScanCache : public HostScanCache {
   void SetHostScanResult(const HostScanCacheEntry& entry) override;
   bool RemoveHostScanResult(const std::string& tether_network_guid) override;
   bool ExistsInCache(const std::string& tether_network_guid) override;
-  void ClearCacheExceptForActiveHost() override;
+  std::unordered_set<std::string> GetTetherGuidsInCache() override;
   bool DoesHostRequireSetup(const std::string& tether_network_guid) override;
 
  private:

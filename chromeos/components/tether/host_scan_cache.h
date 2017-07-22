@@ -5,6 +5,9 @@
 #ifndef CHROMEOS_COMPONENTS_TETHER_HOST_SCAN_CACHE_H_
 #define CHROMEOS_COMPONENTS_TETHER_HOST_SCAN_CACHE_H_
 
+#include <string>
+#include <unordered_set>
+
 #include "base/macros.h"
 #include "chromeos/components/tether/host_scan_cache_entry.h"
 
@@ -33,16 +36,8 @@ class HostScanCache {
   // in the cache.
   virtual bool ExistsInCache(const std::string& tether_network_guid) = 0;
 
-  // Removes all scan results from the cache unless they correspond to the
-  // active host; the active host must always remain in the cache while
-  // connecting/connected to ensure the UI is up to date.
-  // TODO(khorimoto): Remove this function. Currently, scan results are cleared
-  // when a new scan starts and are filled back in as the scan completes. This
-  // allows for a situation to occur where the UI removes a network then adds
-  // it back at some time later, which is undesirable as a user. Instead,
-  // existing scan results should remain in the cache until a scan concludes and
-  // no updated scan results for those existing results exist.
-  virtual void ClearCacheExceptForActiveHost() = 0;
+  // Returns a set of all Tether network GUIDs that are present in the cache.
+  virtual std::unordered_set<std::string> GetTetherGuidsInCache() = 0;
 
   // Returns whether the scan result corresponding to |tether_network_guid|
   // requires first-time setup (i.e., user interaction) to allow tethering.

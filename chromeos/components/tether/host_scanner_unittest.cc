@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -185,7 +186,7 @@ class HostScannerTest : public testing::Test {
   }
 
   void SetUp() override {
-    scanned_device_infos_so_far_.clear();
+    scanned_device_infos_from_current_scan_.clear();
 
     fake_tether_host_fetcher_ = base::MakeUnique<FakeTetherHostFetcher>(
         test_devices_, false /* synchronously_reply_with_results */);
@@ -232,7 +233,7 @@ class HostScannerTest : public testing::Test {
       size_t test_device_index,
       bool is_final_scan_result) {
     bool already_in_list = false;
-    for (auto& scanned_device_info : scanned_device_infos_so_far_) {
+    for (auto& scanned_device_info : scanned_device_infos_from_current_scan_) {
       if (scanned_device_info.remote_device.GetDeviceId() ==
           test_devices_[test_device_index].GetDeviceId()) {
         already_in_list = true;
@@ -241,18 +242,18 @@ class HostScannerTest : public testing::Test {
     }
 
     if (!already_in_list) {
-      scanned_device_infos_so_far_.push_back(
+      scanned_device_infos_from_current_scan_.push_back(
           test_scanned_device_infos[test_device_index]);
     }
 
     int previous_scan_finished_count = test_observer_->scan_finished_count();
-    fake_operation.SendScannedDeviceListUpdate(scanned_device_infos_so_far_,
-                                               is_final_scan_result);
+    fake_operation.SendScannedDeviceListUpdate(
+        scanned_device_infos_from_current_scan_, is_final_scan_result);
     VerifyScanResultsMatchCache();
     EXPECT_EQ(previous_scan_finished_count + (is_final_scan_result ? 1 : 0),
               test_observer_->scan_finished_count());
 
-    if (scanned_device_infos_so_far_.size() == 1) {
+    if (scanned_device_infos_from_current_scan_.size() == 1) {
       EXPECT_EQ(FakeNotificationPresenter::PotentialHotspotNotificationState::
                     SINGLE_HOTSPOT_NEARBY_SHOWN,
                 fake_notification_presenter_->potential_hotspot_state());
@@ -265,10 +266,10 @@ class HostScannerTest : public testing::Test {
     if (is_final_scan_result) {
       HostScanner::HostScanResultEventType expected_event_type =
           HostScanner::HostScanResultEventType::NOTIFICATION_NOT_SHOWN;
-      if (scanned_device_infos_so_far_.size() == 1) {
+      if (scanned_device_infos_from_current_scan_.size() == 1) {
         expected_event_type = HostScanner::HostScanResultEventType::
             NOTIFICATION_SHOWN_SINGLE_HOST;
-      } else if (scanned_device_infos_so_far_.size() > 1) {
+      } else if (scanned_device_infos_from_current_scan_.size() > 1) {
         expected_event_type = HostScanner::HostScanResultEventType::
             NOTIFICATION_SHOWN_MULTIPLE_HOSTS;
       }
@@ -278,9 +279,24 @@ class HostScannerTest : public testing::Test {
   }
 
   void VerifyScanResultsMatchCache() {
-    ASSERT_EQ(scanned_device_infos_so_far_.size(),
-              fake_host_scan_cache_->size());
-    for (auto& scanned_device_info : scanned_device_infos_so_far_) {
+    std::vector<HostScannerOperation::ScannedDeviceInfo> combined_device_infos =
+        scanned_device_infos_from_current_scan_;
+    for (const auto& previous_scan_result :
+         scanned_device_infos_from_previous_scans_) {
+      bool already_in_combined = false;
+      for (const auto& combined_device_info : combined_device_infos) {
+        if (previous_scan_result.remote_device.GetDeviceId() ==
+            combined_device_info.remote_device.GetDeviceId()) {
+          already_in_combined = true;
+          break;
+        }
+      }
+      if (!already_in_combined)
+        combined_device_infos.push_back(previous_scan_result);
+    }
+
+    ASSERT_EQ(combined_device_infos.size(), fake_host_scan_cache_->size());
+    for (auto& scanned_device_info : combined_device_infos) {
       std::string tether_network_guid =
           device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
               scanned_device_info.remote_device.GetDeviceId());
@@ -320,6 +336,14 @@ class HostScannerTest : public testing::Test {
     EXPECT_EQ(scanned_device_info.setup_required, entry.setup_required);
   }
 
+  // Clears scan results from |scanned_device_infos_from_current_scan_| and
+  // transfers them to |scanned_device_infos_from_previous_scans_|.
+  void ClearCurrentScanResults() {
+    scanned_device_infos_from_previous_scans_ =
+        scanned_device_infos_from_current_scan_;
+    scanned_device_infos_from_current_scan_.clear();
+  }
+
   const std::vector<cryptauth::RemoteDevice> test_devices_;
   const std::vector<HostScannerOperation::ScannedDeviceInfo>
       test_scanned_device_infos;
@@ -342,7 +366,9 @@ class HostScannerTest : public testing::Test {
       fake_host_scanner_operation_factory_;
 
   std::vector<HostScannerOperation::ScannedDeviceInfo>
-      scanned_device_infos_so_far_;
+      scanned_device_infos_from_current_scan_;
+  std::vector<HostScannerOperation::ScannedDeviceInfo>
+      scanned_device_infos_from_previous_scans_;
 
   std::unique_ptr<HostScanner> host_scanner_;
 
@@ -423,9 +449,10 @@ TEST_F(HostScannerTest, TestScan_ResultsFromSomeDevices) {
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   fake_host_scanner_operation_factory_->created_operations()[0]
-      ->SendScannedDeviceListUpdate(scanned_device_infos_so_far_,
+      ->SendScannedDeviceListUpdate(scanned_device_infos_from_current_scan_,
                                     true /* is_final_scan_result */);
-  EXPECT_EQ(scanned_device_infos_so_far_.size(), fake_host_scan_cache_->size());
+  EXPECT_EQ(scanned_device_infos_from_current_scan_.size(),
+            fake_host_scan_cache_->size());
   EXPECT_FALSE(host_scanner_->IsScanActive());
 }
 
@@ -468,13 +495,15 @@ TEST_F(HostScannerTest, TestScan_MultipleScanCallsDuringOperation) {
 
   // The scanned devices so far should be the same (i.e., they should not have
   // been affected by the extra call to StartScan()).
-  EXPECT_EQ(scanned_device_infos_so_far_.size(), fake_host_scan_cache_->size());
+  EXPECT_EQ(scanned_device_infos_from_current_scan_.size(),
+            fake_host_scan_cache_->size());
 
   // Finally, finish the scan.
   fake_host_scanner_operation_factory_->created_operations()[0]
-      ->SendScannedDeviceListUpdate(scanned_device_infos_so_far_,
+      ->SendScannedDeviceListUpdate(scanned_device_infos_from_current_scan_,
                                     true /* is_final_scan_result */);
-  EXPECT_EQ(scanned_device_infos_so_far_.size(), fake_host_scan_cache_->size());
+  EXPECT_EQ(scanned_device_infos_from_current_scan_.size(),
+            fake_host_scan_cache_->size());
   EXPECT_FALSE(host_scanner_->IsScanActive());
 }
 
@@ -489,7 +518,7 @@ TEST_F(HostScannerTest, TestScan_MultipleCompleteScanSessions) {
             fake_host_scanner_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
-  // Receive updates from devices 0-3.
+  // Receive updates from devices 0-2.
   ReceiveScanResultAndVerifySuccess(
       *fake_host_scanner_operation_factory_->created_operations()[0],
       0u /* test_device_index */, false /* is_final_scan_result */);
@@ -502,24 +531,17 @@ TEST_F(HostScannerTest, TestScan_MultipleCompleteScanSessions) {
       *fake_host_scanner_operation_factory_->created_operations()[0],
       2u /* test_device_index */, false /* is_final_scan_result */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
-  ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
-      3u /* test_device_index */, false /* is_final_scan_result */);
-  EXPECT_TRUE(host_scanner_->IsScanActive());
 
   // Finish the first scan.
   fake_host_scanner_operation_factory_->created_operations()[0]
-      ->SendScannedDeviceListUpdate(scanned_device_infos_so_far_,
+      ->SendScannedDeviceListUpdate(scanned_device_infos_from_current_scan_,
                                     true /* is_final_scan_result */);
-  EXPECT_EQ(scanned_device_infos_so_far_.size(), fake_host_scan_cache_->size());
+  EXPECT_EQ(scanned_device_infos_from_current_scan_.size(),
+            fake_host_scan_cache_->size());
   EXPECT_FALSE(host_scanner_->IsScanActive());
 
-  // Simulate device 0 connecting; it is now considered the active host.
-  fake_host_scan_cache_->set_active_host_tether_network_guid(
-      device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
-          test_devices_[0].GetDeviceId()));
-
   // Now, start the second scan session.
+  ClearCurrentScanResults();
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
@@ -529,15 +551,12 @@ TEST_F(HostScannerTest, TestScan_MultipleCompleteScanSessions) {
             fake_host_scanner_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
-  // The cache should have been cleared except for the active host. Since the
-  // active host is device 0, clear |scanned_device_list_so_far_| from device 1
-  // onward and verify that the cache is equivalent.
-  scanned_device_infos_so_far_.erase(scanned_device_infos_so_far_.begin() + 1,
-                                     scanned_device_infos_so_far_.end());
+  // The cache should be unaffected by the start of a new scan.
   VerifyScanResultsMatchCache();
 
-  // Receive results from devices 0 and 2. This simulates devices 1 and 3 being
-  // out of range during the second scan.
+  // Receive results from devices 0, 2 and 3. Results from device 1 should still
+  // be present in the cache even though no results have been received from that
+  // device during this scan session.
   ReceiveScanResultAndVerifySuccess(
       *fake_host_scanner_operation_factory_->created_operations()[1],
       0u /* test_device_index */, false /* is_final_scan_result */);
@@ -545,14 +564,21 @@ TEST_F(HostScannerTest, TestScan_MultipleCompleteScanSessions) {
   ReceiveScanResultAndVerifySuccess(
       *fake_host_scanner_operation_factory_->created_operations()[1],
       2u /* test_device_index */, false /* is_final_scan_result */);
+  ReceiveScanResultAndVerifySuccess(
+      *fake_host_scanner_operation_factory_->created_operations()[1],
+      3u /* test_device_index */, false /* is_final_scan_result */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
+  VerifyScanResultsMatchCache();
 
-  // Finish the second scan.
+  // Finish the second scan. Since results were not received from device 1,
+  // previous results from evice 1 should now be removed from the cache.
   fake_host_scanner_operation_factory_->created_operations()[1]
-      ->SendScannedDeviceListUpdate(scanned_device_infos_so_far_,
+      ->SendScannedDeviceListUpdate(scanned_device_infos_from_current_scan_,
                                     true /* is_final_scan_result */);
-  EXPECT_EQ(scanned_device_infos_so_far_.size(), fake_host_scan_cache_->size());
   EXPECT_FALSE(host_scanner_->IsScanActive());
+
+  ClearCurrentScanResults();
+  VerifyScanResultsMatchCache();
 }
 
 TEST_F(HostScannerTest, HasRecentlyScanned) {

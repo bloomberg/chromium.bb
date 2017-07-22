@@ -141,8 +141,6 @@ class MasterHostScanCacheTest : public testing::Test {
 
     // If the device whose correlated timer has fired is not the active host, it
     // is expected to be removed from the cache.
-    EXPECT_EQ(fake_active_host_->GetTetherNetworkGuid(),
-              expected_cache_->active_host_tether_network_guid());
     if (fake_active_host_->GetTetherNetworkGuid() != tether_network_guid) {
       expected_cache_->RemoveHostScanResult(tether_network_guid);
     }
@@ -157,7 +155,6 @@ class MasterHostScanCacheTest : public testing::Test {
               tether_network_guid),
           tether_network_guid, "wifiNetworkGuid");
     }
-    expected_cache_->set_active_host_tether_network_guid(tether_network_guid);
   }
 
   void SetHostScanResult(const HostScanCacheEntry& entry) {
@@ -169,12 +166,8 @@ class MasterHostScanCacheTest : public testing::Test {
 
   void RemoveHostScanResult(const std::string& tether_network_guid) {
     host_scan_cache_->RemoveHostScanResult(tether_network_guid);
-    expected_cache_->RemoveHostScanResult(tether_network_guid);
-  }
-
-  void ClearCacheExceptForActiveHost() {
-    host_scan_cache_->ClearCacheExceptForActiveHost();
-    expected_cache_->ClearCacheExceptForActiveHost();
+    if (fake_active_host_->GetTetherNetworkGuid() != tether_network_guid)
+      expected_cache_->RemoveHostScanResult(tether_network_guid);
   }
 
   // Verifies that the information present in |expected_cache_| mirrors what
@@ -183,6 +176,8 @@ class MasterHostScanCacheTest : public testing::Test {
     EXPECT_EQ(expected_size, expected_cache_->size());
     EXPECT_EQ(expected_size, fake_network_host_scan_cache_->size());
     EXPECT_EQ(expected_size, fake_persistent_host_scan_cache_->size());
+    EXPECT_EQ(expected_cache_->GetTetherGuidsInCache(),
+              host_scan_cache_->GetTetherGuidsInCache());
 
     for (auto& it : expected_cache_->cache()) {
       const std::string tether_network_guid = it.first;
@@ -286,22 +281,12 @@ TEST_F(MasterHostScanCacheTest, TestSetScanResultThenUpdateAndRemove) {
   VerifyCacheContainsExpectedContents(0 /* expected_size */);
 }
 
-TEST_F(MasterHostScanCacheTest, TestSetScanResult_SetActiveHost_ThenClear) {
+TEST_F(MasterHostScanCacheTest, TestSetScanResult_SetActiveHost) {
   SetHostScanResult(test_entries_.at(host_scan_test_util::kTetherGuid0));
   VerifyCacheContainsExpectedContents(1u /* expected_size */);
 
-  SetHostScanResult(test_entries_.at(host_scan_test_util::kTetherGuid1));
-  VerifyCacheContainsExpectedContents(2u /* expected_size */);
-
-  SetHostScanResult(test_entries_.at(host_scan_test_util::kTetherGuid2));
-  VerifyCacheContainsExpectedContents(3u /* expected_size */);
-
   // Now, set the active host to be the device 0.
   SetActiveHost(host_scan_test_util::kTetherGuid0);
-
-  // Clear the cache except for the active host.
-  ClearCacheExceptForActiveHost();
-  VerifyCacheContainsExpectedContents(1u /* expected_size */);
 
   // Attempt to remove the active host. This operation should fail since
   // removing the active host from the cache is not allowed.

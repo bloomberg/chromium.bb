@@ -6,6 +6,7 @@
 
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/tether_host_response_recorder.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/proximity_auth/logging/logging.h"
 
@@ -65,10 +66,15 @@ bool NetworkHostScanCache::ExistsInCache(
          nullptr;
 }
 
-void NetworkHostScanCache::ClearCacheExceptForActiveHost() {
-  // This function will be removed in a future CL, so it is not implemented
-  // here.
-  NOTIMPLEMENTED();
+std::unordered_set<std::string> NetworkHostScanCache::GetTetherGuidsInCache() {
+  NetworkStateHandler::NetworkStateList tether_network_list;
+  network_state_handler_->GetVisibleNetworkListByType(
+      NetworkTypePattern::Tether(), &tether_network_list);
+
+  std::unordered_set<std::string> tether_guids;
+  for (auto* const network : tether_network_list)
+    tether_guids.insert(network->guid());
+  return tether_guids;
 }
 
 bool NetworkHostScanCache::DoesHostRequireSetup(
