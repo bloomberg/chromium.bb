@@ -18,7 +18,7 @@ class AnimationDelegate;
 class ANIMATION_EXPORT LinearAnimation : public Animation {
  public:
   // Default frame rate (hz).
-  static const int kDefaultFrameRate = 60;
+  static const int kDefaultFrameRate;
 
   // Initializes everything except the duration.
   //

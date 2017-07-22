@@ -21,6 +21,8 @@ static base::TimeDelta CalculateInterval(int frame_rate) {
   return base::TimeDelta::FromMicroseconds(timer_interval);
 }
 
+const int LinearAnimation::kDefaultFrameRate = 60;
+
 LinearAnimation::LinearAnimation(AnimationDelegate* delegate, int frame_rate)
     : LinearAnimation({}, frame_rate, delegate) {}
 
