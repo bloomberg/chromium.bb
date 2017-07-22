@@ -26415,6 +26415,9 @@ from previous Chrome versions.
     Specific content decoding filter.  See   net::Filter::FilterType for more
     details
   </summary>
+  <obsolete>
+    Now only NetFilterType2 is used.
+  </obsolete>
   <int value="0" label="Brotli"/>
   <int value="1" label="Deflate"/>
   <int value="2" label="GZIP"/>

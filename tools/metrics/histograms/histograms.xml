@@ -36756,13 +36756,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.ContentDecodingFailed.FilterType" enum="NetFilterType">
+  <obsolete>
+    Obsoleted in favor of Net.ContentDecodingFailed2.FilterType below.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>
     For each CONTENT_DECODING_FAILED, record the filter that failed.
   </summary>
 </histogram>
 
+<histogram name="Net.ContentDecodingFailed2" enum="NetFilterType2">
+  <owner>xunjieli@chromium.org</owner>
+  <summary>
+    For each CONTENT_DECODING_FAILED, record the filter that failed.
+  </summary>
+</histogram>
+
 <histogram name="Net.ContentDecodingFailed2.FilterType" enum="NetFilterType2">
+  <obsolete>
+    Obsoleted in favor of Net.ContentDecodingFailed2 above.
+  </obsolete>
   <owner>xunjieli@chromium.org</owner>
   <summary>
     For each CONTENT_DECODING_FAILED, record the filter that failed.
