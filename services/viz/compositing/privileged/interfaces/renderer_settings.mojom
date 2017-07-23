@@ -1,0 +1,23 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module viz.mojom;
+
+import "services/viz/public/interfaces/compositing/resource_settings.mojom";
+
+struct RendererSettings {
+  ResourceSettings resource_settings;
+  bool allow_antialiasing;
+  bool force_antialiasing;
+  bool force_blending_with_shaders;
+  bool partial_swap_enabled;
+  bool finish_rendering_on_resize;
+  bool should_clear_root_render_pass;
+  bool release_overlay_resources_after_gpu_query;
+  bool gl_composited_overlay_candidate_quad_border;
+  bool show_overdraw_feedback;
+  bool enable_color_correct_rendering;
+  int32 highp_threshold_min;
+  bool disallow_non_exact_resource_reuse;
+};
