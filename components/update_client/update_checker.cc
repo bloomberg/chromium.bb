@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/update_client/component.h"
@@ -25,6 +26,7 @@
 #include "components/update_client/protocol_builder.h"
 #include "components/update_client/protocol_parser.h"
 #include "components/update_client/request_sender.h"
+#include "components/update_client/task_traits.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/updater_state.h"
 #include "components/update_client/utils.h"
@@ -52,7 +54,7 @@ class UpdateCheckerImpl : public UpdateChecker {
   ~UpdateCheckerImpl() override;
 
   // Overrides for UpdateChecker.
-  bool CheckForUpdates(
+  void CheckForUpdates(
       const std::vector<std::string>& ids_checked,
       const IdToComponentPtrMap& components,
       const std::string& additional_attributes,
@@ -95,7 +97,7 @@ UpdateCheckerImpl::~UpdateCheckerImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-bool UpdateCheckerImpl::CheckForUpdates(
+void UpdateCheckerImpl::CheckForUpdates(
     const std::vector<std::string>& ids_checked,
     const IdToComponentPtrMap& components,
     const std::string& additional_attributes,
@@ -106,13 +108,13 @@ bool UpdateCheckerImpl::CheckForUpdates(
   ids_checked_ = ids_checked;
   update_check_callback_ = update_check_callback;
 
-  return config_->GetSequencedTaskRunner()->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&UpdateCheckerImpl::ReadUpdaterStateAttributes,
-                 base::Unretained(this)),
-      base::Bind(&UpdateCheckerImpl::CheckForUpdatesHelper,
-                 base::Unretained(this), base::ConstRef(components),
-                 additional_attributes, enabled_component_updates));
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, kTaskTraits,
+      base::BindOnce(&UpdateCheckerImpl::ReadUpdaterStateAttributes,
+                     base::Unretained(this)),
+      base::BindOnce(&UpdateCheckerImpl::CheckForUpdatesHelper,
+                     base::Unretained(this), base::ConstRef(components),
+                     additional_attributes, enabled_component_updates));
 }
 
 // This function runs on the blocking pool task runner.
@@ -195,7 +197,7 @@ void UpdateCheckerImpl::UpdateCheckSucceeded(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(update_check_callback_, 0, retry_after_sec));
+      FROM_HERE, base::BindOnce(update_check_callback_, 0, retry_after_sec));
 }
 
 void UpdateCheckerImpl::UpdateCheckFailed(const IdToComponentPtrMap& components,
@@ -210,7 +212,8 @@ void UpdateCheckerImpl::UpdateCheckFailed(const IdToComponentPtrMap& components,
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(update_check_callback_, error, retry_after_sec));
+      FROM_HERE,
+      base::BindOnce(update_check_callback_, error, retry_after_sec));
 }
 
 }  // namespace

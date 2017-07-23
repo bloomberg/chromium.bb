@@ -17,6 +17,8 @@
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -62,7 +64,9 @@ void DefaultComponentInstaller::Register(
     ComponentUpdateService* cus,
     const base::Closure& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  task_runner_ = cus->GetSequencedTaskRunner();
+  task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   if (!installer_traits_) {
     LOG(ERROR) << "A DefaultComponentInstaller has been created but "

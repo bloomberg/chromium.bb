@@ -186,13 +186,14 @@ ComponentUpdaterTest::ComponentUpdaterTest()
           base::test::ScopedTaskEnvironment::MainThreadType::UI) {
   quit_closure_ = runloop_.QuitClosure();
 
-  config_ = new TestConfigurator(
+  config_ = base::MakeRefCounted<TestConfigurator>(
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
       base::ThreadTaskRunnerHandle::Get());
 
-  update_client_ = new MockUpdateClient();
+  update_client_ = base::MakeRefCounted<MockUpdateClient>();
   EXPECT_CALL(update_client(), AddObserver(_)).Times(1);
-  component_updater_.reset(new CrxUpdateService(config_, update_client_));
+  component_updater_ =
+      base::MakeUnique<CrxUpdateService>(config_, update_client_);
 }
 
 ComponentUpdaterTest::~ComponentUpdaterTest() {
@@ -305,7 +306,8 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
       ++cnt;
       if (cnt >= max_cnt_) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::Bind(&LoopHandler::Quit, base::Unretained(this)));
+            FROM_HERE,
+            base::BindOnce(&LoopHandler::Quit, base::Unretained(this)));
       }
     }
 

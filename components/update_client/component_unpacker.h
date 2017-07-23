@@ -16,7 +16,6 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
 #include "components/update_client/out_of_process_patcher.h"
 #include "components/update_client/update_client_errors.h"
 
@@ -84,12 +83,10 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
   // Constructs an unpacker for a specific component unpacking operation.
   // |pk_hash| is the expected/ public key SHA256 hash. |path| is the current
   // location of the CRX.
-  ComponentUnpacker(
-      const std::vector<uint8_t>& pk_hash,
-      const base::FilePath& path,
-      const scoped_refptr<CrxInstaller>& installer,
-      const scoped_refptr<OutOfProcessPatcher>& oop_patcher,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+  ComponentUnpacker(const std::vector<uint8_t>& pk_hash,
+                    const base::FilePath& path,
+                    const scoped_refptr<CrxInstaller>& installer,
+                    const scoped_refptr<OutOfProcessPatcher>& oop_patcher);
 
   // Begins the actual unpacking of the files. May invoke a patcher and the
   // component installer if the package is a differential update.
@@ -135,7 +132,6 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
   scoped_refptr<OutOfProcessPatcher> oop_patcher_;
   UnpackerError error_;
   int extended_error_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentUnpacker);
 };

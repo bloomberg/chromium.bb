@@ -37,6 +37,7 @@ static_library("update_client") {
     "task.h",
     "task_send_uninstall_ping.cc",
     "task_send_uninstall_ping.h",
+    "task_traits.h",
     "task_update.cc",
     "task_update.h",
     "update_checker.cc",

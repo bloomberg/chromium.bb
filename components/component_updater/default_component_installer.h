@@ -171,8 +171,7 @@ class DefaultComponentInstaller : public update_client::CrxInstaller {
   std::unique_ptr<ComponentInstallerTraits> installer_traits_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  // Used to post responses back to the main thread. Initialized on the main
-  // loop but accessed from the task runner.
+  // Posts responses back to the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   base::ThreadChecker thread_checker_;

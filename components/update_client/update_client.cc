@@ -18,8 +18,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -131,7 +129,7 @@ void UpdateClientImpl::Update(const std::vector<std::string>& ids,
 void UpdateClientImpl::RunTask(std::unique_ptr<Task> task) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&Task::Run, base::Unretained(task.get())));
+      FROM_HERE, base::BindOnce(&Task::Run, base::Unretained(task.get())));
   tasks_.insert(task.release());
 }
 
@@ -141,8 +139,8 @@ void UpdateClientImpl::OnTaskComplete(const Callback& callback,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(task);
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, error));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, error));
 
   // Remove the task from the set of the running tasks. Only tasks handled by
   // the update engine can be in this data structure.

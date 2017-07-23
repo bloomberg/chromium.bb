@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
@@ -74,10 +75,6 @@ std::string JsonToString(const base::DictionaryValue& dict) {
 class MockComponentUpdateService : public ComponentUpdateService,
                                    public OnDemandUpdater {
  public:
-  MockComponentUpdateService(
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-      : task_runner_(task_runner), on_demand_update_called_(false) {}
-
   ~MockComponentUpdateService() override {}
 
   bool on_demand_update_called() const { return on_demand_update_called_; }
@@ -129,10 +126,6 @@ class MockComponentUpdateService : public ComponentUpdateService,
     ADD_FAILURE();
   }
 
-  scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() override {
-    return task_runner_;
-  }
-
   bool GetComponentDetails(const std::string& component_id,
                            CrxUpdateItem* item) const override {
     ADD_FAILURE();
@@ -158,10 +151,9 @@ class MockComponentUpdateService : public ComponentUpdateService,
   }
 
  private:
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<CrxComponent> component_;
   base::Closure registration_callback_;
-  bool on_demand_update_called_;
+  bool on_demand_update_called_ = false;
 };
 
 class WhitelistLoadObserver {
@@ -203,8 +195,7 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
   SupervisedUserWhitelistInstallerTest()
       : testing_profile_manager_(TestingBrowserProcess::GetGlobal()),
         user_data_dir_override_(chrome::DIR_USER_DATA),
-        manifest_(base::MakeUnique<base::DictionaryValue>()),
-        component_update_service_(base::ThreadTaskRunnerHandle::Get()) {}
+        manifest_(base::MakeUnique<base::DictionaryValue>()) {}
 
   ~SupervisedUserWhitelistInstallerTest() override {}
 
@@ -285,6 +276,7 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
   void RegisterExistingComponents() {
     local_state_.Set(prefs::kRegisteredSupervisedUserWhitelists, pref_);
     installer_->RegisterComponents();
+    scoped_task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -297,6 +289,7 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
     EXPECT_EQ(version, component->version.GetString());
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestingProfileManager testing_profile_manager_;
   base::ScopedPathOverride user_data_dir_override_;
   safe_json::TestingJsonParser::ScopedFactoryOverride json_parser_override_;
@@ -310,7 +303,6 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
   base::FilePath large_icon_path_;
   std::unique_ptr<base::DictionaryValue> manifest_;
   base::DictionaryValue pref_;
-  content::TestBrowserThreadBundle thread_bundle_;
   MockComponentUpdateService component_update_service_;
 };
 
@@ -416,6 +408,7 @@ TEST_F(SupervisedUserWhitelistInstallerTest,
   {
     base::RunLoop run_loop;
     installer_->UnregisterWhitelist(kClientId, kCrxId);
+    scoped_task_environment_.RunUntilIdle();
     run_loop.RunUntilIdle();
   }
   EXPECT_TRUE(component_update_service_.registered_component());
@@ -429,6 +422,7 @@ TEST_F(SupervisedUserWhitelistInstallerTest,
     // This does the same thing in our case as calling UnregisterWhitelist(),
     // but it exercises a different code path.
     profile_attributes_storage()->RemoveProfile(GetProfilePath(kOtherClientId));
+    scoped_task_environment_.RunUntilIdle();
     run_loop.RunUntilIdle();
   }
   EXPECT_FALSE(component_update_service_.registered_component());

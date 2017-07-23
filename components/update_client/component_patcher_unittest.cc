@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/update_client/component_patcher.h"
 #include "components/update_client/component_patcher_operation.h"
@@ -63,12 +62,14 @@ base::FilePath test_file(const char* file) {
 
 namespace update_client {
 
-ComponentPatcherOperationTest::ComponentPatcherOperationTest() {
+ComponentPatcherOperationTest::ComponentPatcherOperationTest()
+    : scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::IO) {
   EXPECT_TRUE(unpack_dir_.CreateUniqueTempDir());
   EXPECT_TRUE(input_dir_.CreateUniqueTempDir());
   EXPECT_TRUE(installed_dir_.CreateUniqueTempDir());
-  installer_ = new ReadOnlyTestInstaller(installed_dir_.GetPath());
-  task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  installer_ =
+      base::MakeRefCounted<ReadOnlyTestInstaller>(installed_dir_.GetPath());
 }
 
 ComponentPatcherOperationTest::~ComponentPatcherOperationTest() {
@@ -90,9 +91,8 @@ TEST_F(ComponentPatcherOperationTest, CheckCreateOperation) {
   TestCallback callback;
   scoped_refptr<DeltaUpdateOp> op = new DeltaUpdateOpCreate();
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(), NULL,
-          base::Bind(&TestCallback::Set, base::Unretained(&callback)),
-          task_runner_);
-  base::RunLoop().RunUntilIdle();
+          base::Bind(&TestCallback::Set, base::Unretained(&callback)));
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);
   EXPECT_EQ(UnpackerError::kNone, callback.error_);
@@ -119,9 +119,8 @@ TEST_F(ComponentPatcherOperationTest, CheckCopyOperation) {
   scoped_refptr<DeltaUpdateOp> op = new DeltaUpdateOpCopy();
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
           installer_.get(),
-          base::Bind(&TestCallback::Set, base::Unretained(&callback)),
-          task_runner_);
-  base::RunLoop().RunUntilIdle();
+          base::Bind(&TestCallback::Set, base::Unretained(&callback)));
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);
   EXPECT_EQ(UnpackerError::kNone, callback.error_);
@@ -153,9 +152,8 @@ TEST_F(ComponentPatcherOperationTest, CheckCourgetteOperation) {
       CreateDeltaUpdateOp("courgette", NULL /* out_of_process_patcher */);
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
           installer_.get(),
-          base::Bind(&TestCallback::Set, base::Unretained(&callback)),
-          task_runner_);
-  base::RunLoop().RunUntilIdle();
+          base::Bind(&TestCallback::Set, base::Unretained(&callback)));
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);
   EXPECT_EQ(UnpackerError::kNone, callback.error_);
@@ -187,9 +185,8 @@ TEST_F(ComponentPatcherOperationTest, CheckBsdiffOperation) {
       CreateDeltaUpdateOp("bsdiff", NULL /* out_of_process_patcher */);
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
           installer_.get(),
-          base::Bind(&TestCallback::Set, base::Unretained(&callback)),
-          task_runner_);
-  base::RunLoop().RunUntilIdle();
+          base::Bind(&TestCallback::Set, base::Unretained(&callback)));
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);
   EXPECT_EQ(UnpackerError::kNone, callback.error_);

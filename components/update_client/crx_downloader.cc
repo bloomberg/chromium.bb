@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -18,6 +19,7 @@
 #if defined(OS_WIN)
 #include "components/update_client/background_downloader_win.h"
 #endif
+#include "components/update_client/task_traits.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/url_fetcher_downloader.h"
 #include "components/update_client/utils.h"
@@ -41,13 +43,13 @@ CrxDownloader::DownloadMetrics::DownloadMetrics()
 std::unique_ptr<CrxDownloader> CrxDownloader::Create(
     bool is_background_download,
     net::URLRequestContextGetter* context_getter) {
-  std::unique_ptr<CrxDownloader> url_fetcher_downloader(
-      std::unique_ptr<CrxDownloader>(new UrlFetcherDownloader(
-          std::unique_ptr<CrxDownloader>(), context_getter)));
+  std::unique_ptr<CrxDownloader> url_fetcher_downloader =
+      base::MakeUnique<UrlFetcherDownloader>(nullptr, context_getter);
+
 #if defined(OS_WIN)
   if (is_background_download) {
-    return std::unique_ptr<CrxDownloader>(new BackgroundDownloader(
-        std::move(url_fetcher_downloader), context_getter));
+    return base::MakeUnique<BackgroundDownloader>(
+        std::move(url_fetcher_downloader));
   }
 #endif
 
@@ -105,7 +107,7 @@ void CrxDownloader::StartDownload(const std::vector<GURL>& urls,
     Result result;
     result.error = static_cast<int>(error);
     main_task_runner()->PostTask(FROM_HERE,
-                                 base::Bind(download_callback, result));
+                                 base::BindOnce(download_callback, result));
     return;
   }
 
@@ -125,16 +127,14 @@ void CrxDownloader::OnDownloadComplete(
 
   if (!result.error)
     base::PostTaskWithTraits(
-        FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::BACKGROUND,
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-        base::Bind(&CrxDownloader::VerifyResponse, base::Unretained(this),
-                   is_handled, result, download_metrics));
+        FROM_HERE, kTaskTraits,
+        base::BindOnce(&CrxDownloader::VerifyResponse, base::Unretained(this),
+                       is_handled, result, download_metrics));
   else
     main_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&CrxDownloader::HandleDownloadError, base::Unretained(this),
-                   is_handled, result, download_metrics));
+        FROM_HERE, base::BindOnce(&CrxDownloader::HandleDownloadError,
+                                  base::Unretained(this), is_handled, result,
+                                  download_metrics));
 }
 
 void CrxDownloader::OnDownloadProgress(const Result& result) {
@@ -158,7 +158,7 @@ void CrxDownloader::VerifyResponse(bool is_handled,
   if (VerifyFileHash256(result.response, expected_hash_)) {
     download_metrics_.push_back(download_metrics);
     main_task_runner()->PostTask(FROM_HERE,
-                                 base::Bind(download_callback_, result));
+                                 base::BindOnce(download_callback_, result));
     return;
   }
 
@@ -171,9 +171,9 @@ void CrxDownloader::VerifyResponse(bool is_handled,
   result.response.clear();
 
   main_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&CrxDownloader::HandleDownloadError, base::Unretained(this),
-                 is_handled, result, download_metrics));
+      FROM_HERE, base::BindOnce(&CrxDownloader::HandleDownloadError,
+                                base::Unretained(this), is_handled, result,
+                                download_metrics));
 }
 
 void CrxDownloader::HandleDownloadError(
@@ -212,7 +212,7 @@ void CrxDownloader::HandleDownloadError(
   // The download ends here since there is no url nor downloader to handle this
   // download request further.
   main_task_runner()->PostTask(FROM_HERE,
-                               base::Bind(download_callback_, result));
+                               base::BindOnce(download_callback_, result));
 }
 
 }  // namespace update_client

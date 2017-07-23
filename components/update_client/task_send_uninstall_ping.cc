@@ -6,7 +6,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "components/update_client/update_client.h"
@@ -56,7 +55,7 @@ void TaskSendUninstallPing::TaskComplete(Error error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback_, this, error));
+      FROM_HERE, base::BindOnce(callback_, this, error));
 }
 
 }  // namespace update_client

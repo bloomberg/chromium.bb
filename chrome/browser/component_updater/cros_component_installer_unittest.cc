@@ -4,14 +4,16 @@
 
 #include "chrome/browser/component_updater/cros_component_installer.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/component_updater/mock_component_updater_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -22,9 +24,6 @@ class CrOSMockComponentUpdateService
  public:
   CrOSMockComponentUpdateService() {}
   ~CrOSMockComponentUpdateService() override {}
-  scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() override {
-    return base::ThreadTaskRunnerHandle::Get();
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrOSMockComponentUpdateService);
@@ -35,8 +34,14 @@ class CrOSComponentInstallerTest : public PlatformTest {
   CrOSComponentInstallerTest() {}
   void SetUp() override { PlatformTest::SetUp(); }
 
+ protected:
+  void RunUntilIdle() {
+    scoped_task_environment_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
+  }
+
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   DISALLOW_COPY_AND_ASSIGN(CrOSComponentInstallerTest);
 };
 
@@ -63,7 +68,7 @@ TEST_F(CrOSComponentInstallerTest, RegisterComponentSuccess) {
   EXPECT_CALL(cus, RegisterComponent(testing::_)).Times(1);
   component_updater::CrOSComponent::InstallComponent(
       &cus, "epson-inkjet-printer-escpr", base::Bind(load_callback));
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 }
 
 TEST_F(CrOSComponentInstallerTest, RegisterComponentFail) {
@@ -71,7 +76,7 @@ TEST_F(CrOSComponentInstallerTest, RegisterComponentFail) {
   EXPECT_CALL(cus, RegisterComponent(testing::_)).Times(0);
   component_updater::CrOSComponent::InstallComponent(
       &cus, "a-component-not-exist", base::Bind(load_callback));
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 }
 
 TEST_F(CrOSComponentInstallerTest, ComponentReadyCorrectManifest) {
@@ -84,7 +89,7 @@ TEST_F(CrOSComponentInstallerTest, ComponentReadyCorrectManifest) {
       base::MakeUnique<base::DictionaryValue>();
   manifest->SetString("min_env_version", "2.1");
   traits.ComponentReady(version, path, std::move(manifest));
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 }
 
 TEST_F(CrOSComponentInstallerTest, ComponentReadyWrongManifest) {
@@ -96,7 +101,7 @@ TEST_F(CrOSComponentInstallerTest, ComponentReadyWrongManifest) {
   std::unique_ptr<base::DictionaryValue> manifest =
       base::MakeUnique<base::DictionaryValue>();
   traits.ComponentReady(version, path, std::move(manifest));
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 }
 
 TEST_F(CrOSComponentInstallerTest, IsCompatibleOrNot) {
