@@ -50,10 +50,6 @@ target(link_target_type, "service") {
 
   configs += [ "//media/gpu:gpu_config" ]
 
-  if (is_chromeos && current_cpu != "arm") {
-    configs += [ "//third_party/libva:libva_config" ]
-  }
-
   if (is_win) {
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   }

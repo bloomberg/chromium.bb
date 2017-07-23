@@ -9,6 +9,8 @@
 #include <memory>
 #include <utility>
 
+#include <va/va.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -19,7 +21,6 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/shared_memory_region.h"
-#include "third_party/libva/va/va_enc_h264.h"
 
 #define DVLOGF(level) DVLOG(level) << __func__ << "(): "
 

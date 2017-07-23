@@ -26,6 +26,7 @@
 #include "build/build_config.h"
 #include "media/base/test_data_util.h"
 #include "media/filters/jpeg_parser.h"
+#include "media/gpu/features.h"
 #include "media/gpu/video_accelerator_unittest_helpers.h"
 #include "media/video/jpeg_decode_accelerator.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -36,10 +37,11 @@
 #include "media/gpu/v4l2_device.h"
 #include "media/gpu/v4l2_jpeg_decode_accelerator.h"
 #endif
-#if defined(ARCH_CPU_X86_FAMILY)
+#endif
+
+#if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi_jpeg_decode_accelerator.h"
 #include "media/gpu/vaapi_wrapper.h"
-#endif
 #endif
 
 namespace media {
@@ -133,7 +135,7 @@ JpegClient::JpegClient(const std::vector<TestImageFile*>& test_image_files,
 JpegClient::~JpegClient() {}
 
 void JpegClient::CreateJpegDecoder() {
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#if BUILDFLAG(USE_VAAPI)
   decoder_.reset(
       new VaapiJpegDecodeAccelerator(base::ThreadTaskRunnerHandle::Get()));
 #elif defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
@@ -599,7 +601,7 @@ int main(int argc, char** argv) {
     LOG(ERROR) << "Unexpected switch: " << it->first << ":" << it->second;
     return -EINVAL;
   }
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#if BUILDFLAG(USE_VAAPI)
   media::VaapiWrapper::PreSandboxInitialization();
 #endif
 

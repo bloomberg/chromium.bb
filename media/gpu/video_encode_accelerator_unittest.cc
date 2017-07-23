@@ -48,13 +48,14 @@
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/h264_parser.h"
 #include "media/filters/ivf_parser.h"
+#include "media/gpu/features.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/video_accelerator_unittest_helpers.h"
 #include "media/video/fake_video_encode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi_wrapper.h"
 #elif defined(OS_WIN)
 #include "media/gpu/media_foundation_video_encode_accelerator_win.h"
@@ -2323,7 +2324,7 @@ int main(int argc, char** argv) {
     LOG(FATAL) << "--measure_latency requires --run_at_fps enabled to work.";
   }
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#if BUILDFLAG(USE_VAAPI)
   media::VaapiWrapper::PreSandboxInitialization();
 #elif defined(OS_WIN)
   media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
