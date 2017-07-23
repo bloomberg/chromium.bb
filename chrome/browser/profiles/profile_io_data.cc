@@ -39,6 +39,8 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/net/loading_predictor_observer.h"
+#include "chrome/browser/net/profile_network_context_service.h"
+#include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 #include "chrome/browser/policy/policy_helpers.h"
@@ -390,6 +392,10 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   params->io_thread = g_browser_process->io_thread();
 
+  ProfileNetworkContextServiceFactory::GetForContext(profile)
+      ->SetUpProfileIODataMainContext(&params->main_network_context_request,
+                                      &params->main_network_context_params);
+
   params->cookie_settings = CookieSettingsFactory::GetForProfile(profile);
   params->host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile);
@@ -615,9 +621,10 @@ ProfileIOData::ProfileParams::~ProfileParams() {}
 ProfileIOData::ProfileIOData(Profile::ProfileType profile_type)
     : initialized_(false),
 #if defined(OS_CHROMEOS)
-      policy_cert_verifier_(NULL),
+      policy_cert_verifier_(nullptr),
       use_system_key_slot_(false),
 #endif
+      main_request_context_(nullptr),
       resource_context_(new ResourceContext(this)),
       profile_type_(profile_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -810,7 +817,7 @@ content::ResourceContext* ProfileIOData::GetResourceContext() const {
 
 net::URLRequestContext* ProfileIOData::GetMainRequestContext() const {
   DCHECK(initialized_);
-  return main_request_context_.get();
+  return main_request_context_;
 }
 
 net::URLRequestContext* ProfileIOData::GetMediaRequestContext() const {
@@ -1015,15 +1022,16 @@ void ProfileIOData::Init(
   extensions_request_context_->set_name("extensions");
 
   // Create the main request context.
-  net::URLRequestContextBuilderMojo builder;
-  builder.set_name("main");
+  std::unique_ptr<net::URLRequestContextBuilderMojo> builder =
+      base::MakeUnique<net::URLRequestContextBuilderMojo>();
+  builder->set_name("main");
 
-  builder.set_net_log(io_thread->net_log());
-  builder.set_shared_http_user_agent_settings(
+  builder->set_net_log(io_thread->net_log());
+  builder->set_shared_http_user_agent_settings(
       chrome_http_user_agent_settings_.get());
-  builder.set_ssl_config_service(profile_params_->ssl_config_service);
+  builder->set_ssl_config_service(profile_params_->ssl_config_service);
 
-  builder.set_enable_brotli(io_thread_globals->enable_brotli);
+  builder->set_enable_brotli(io_thread_globals->enable_brotli);
 
   std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate(
       new ChromeNetworkDelegate(
@@ -1062,19 +1070,19 @@ void ProfileIOData::Init(
       ConfigureNetworkDelegate(profile_params_->io_thread,
                                std::move(chrome_network_delegate));
 
-  builder.set_shared_host_resolver(
+  builder->set_shared_host_resolver(
       io_thread_globals->system_request_context->host_resolver());
 
-  builder.set_shared_http_auth_handler_factory(
+  builder->set_shared_http_auth_handler_factory(
       io_thread_globals->system_request_context->http_auth_handler_factory());
 
   io_thread->SetUpProxyConfigService(
-      &builder, std::move(profile_params_->proxy_config_service));
+      builder.get(), std::move(profile_params_->proxy_config_service));
 
-  builder.set_network_delegate(std::move(network_delegate));
+  builder->set_network_delegate(std::move(network_delegate));
 
-  builder.set_transport_security_persister_path(profile_params_->path);
-  builder.set_transport_security_persister_readonly(IsOffTheRecord());
+  builder->set_transport_security_persister_path(profile_params_->path);
+  builder->set_transport_security_persister_readonly(IsOffTheRecord());
 
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;
@@ -1098,7 +1106,7 @@ void ProfileIOData::Init(
 #endif
 
   if (g_cert_verifier_for_testing) {
-    builder.set_shared_cert_verifier(g_cert_verifier_for_testing);
+    builder->set_shared_cert_verifier(g_cert_verifier_for_testing);
   } else {
 #if defined(OS_CHROMEOS)
     crypto::ScopedPK11Slot public_slot =
@@ -1114,9 +1122,9 @@ void ProfileIOData::Init(
       cert_verifier_ = base::MakeUnique<net::CachingCertVerifier>(
           base::MakeUnique<net::MultiThreadedCertVerifier>(verify_proc.get()));
     }
-    builder.set_shared_cert_verifier(cert_verifier_.get());
+    builder->set_shared_cert_verifier(cert_verifier_.get());
 #else
-    builder.set_shared_cert_verifier(
+    builder->set_shared_cert_verifier(
         io_thread_globals->system_request_context->cert_verifier());
 #endif
   }
@@ -1135,24 +1143,28 @@ void ProfileIOData::Init(
       io_thread_globals->ct_logs, io_thread->net_log()));
   ct_verifier->SetObserver(ct_tree_tracker_.get());
 
-  builder.set_ct_verifier(std::move(ct_verifier));
+  builder->set_ct_verifier(std::move(ct_verifier));
 
   io_thread->RegisterSTHObserver(ct_tree_tracker_.get());
   ct_tree_tracker_unregistration_ =
       base::Bind(&IOThread::UnregisterSTHObserver, base::Unretained(io_thread),
                  ct_tree_tracker_.get());
 
-  builder.set_http_network_session_params(
+  builder->set_http_network_session_params(
       profile_params_->io_thread->NetworkSessionParams());
   if (data_reduction_proxy_io_data_.get()) {
-    builder.set_shared_proxy_delegate(
+    builder->set_shared_proxy_delegate(
         data_reduction_proxy_io_data_->proxy_delegate());
   }
 
-  InitializeInternal(&builder, profile_params_.get(), protocol_handlers,
+  InitializeInternal(builder.get(), profile_params_.get(), protocol_handlers,
                      std::move(request_interceptors));
 
-  main_request_context_ = builder.Build();
+  main_network_context_ =
+      io_thread_globals->network_service->CreateNetworkContextWithBuilder(
+          std::move(profile_params_->main_network_context_request),
+          std::move(profile_params_->main_network_context_params),
+          std::move(builder), &main_request_context_);
 
   // Attach some things to the URLRequestContextBuilder's
   // TransportSecurityState.  Since no requests have been made yet, safe to do
@@ -1187,12 +1199,11 @@ void ProfileIOData::Init(
             "thus there is no Chrome-wide policy to disable it."
         })");
   certificate_report_sender_.reset(
-      new net::ReportSender(main_request_context_.get(), traffic_annotation));
+      new net::ReportSender(main_request_context_, traffic_annotation));
   main_request_context_->transport_security_state()->SetReportSender(
       certificate_report_sender_.get());
 
-  expect_ct_reporter_.reset(
-      new ChromeExpectCTReporter(main_request_context_.get()));
+  expect_ct_reporter_.reset(new ChromeExpectCTReporter(main_request_context_));
   main_request_context_->transport_security_state()->SetExpectCTReporter(
       expect_ct_reporter_.get());
 
@@ -1201,7 +1212,7 @@ void ProfileIOData::Init(
 
   resource_context_->host_resolver_ =
       io_thread_globals->system_request_context->host_resolver();
-  resource_context_->request_context_ = main_request_context_.get();
+  resource_context_->request_context_ = main_request_context_;
 
   OnMainRequestContextCreated(profile_params_.get());
 

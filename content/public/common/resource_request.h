@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
-#include "content/public/common/appcache_info.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
@@ -88,7 +87,7 @@ struct CONTENT_EXPORT ResourceRequest {
 
   // Indicates which frame (or worker context) the request is being loaded into,
   // or kAppCacheNoHostId.
-  int appcache_host_id = kAppCacheNoHostId;
+  int appcache_host_id;
 
   // True if corresponding AppCache group should be resetted.
   bool should_reset_appcache = false;

@@ -30,7 +30,6 @@
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/local_storage_usage_info.h"
-#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -514,13 +513,9 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
       ChromeBlobStorageContext::GetFor(context);
 
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-    mojom::NetworkContextParamsPtr context_params =
-        mojom::NetworkContextParams::New();
-    // TODO: fill this
-    // context_params->cache_dir =
-    // context_params->cookie_path =
-    GetNetworkService()->CreateNetworkContext(
-        MakeRequest(&partition->network_context_), std::move(context_params));
+    partition->network_context_ =
+        GetContentClient()->browser()->CreateNetworkContext(
+            context, in_memory, relative_partition_path);
 
     BlobURLLoaderFactory::BlobContextGetter blob_getter =
         base::BindOnce(&BlobStorageContextGetter, blob_context);
@@ -554,6 +549,11 @@ net::URLRequestContextGetter* StoragePartitionImpl::GetURLRequestContext() {
 net::URLRequestContextGetter*
 StoragePartitionImpl::GetMediaURLRequestContext() {
   return media_url_request_context_.get();
+}
+
+mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
+  DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+  return network_context_.get();
 }
 
 storage::QuotaManager* StoragePartitionImpl::GetQuotaManager() {

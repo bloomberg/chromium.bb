@@ -234,7 +234,7 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
                                 traffic_annotation) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (request.url.host_piece() == kChromeUINetworkViewCacheHost) {
-      storage_partition_->network_context()->HandleViewCacheRequest(
+      storage_partition_->GetNetworkContext()->HandleViewCacheRequest(
           request.url, std::move(client));
       return;
     }

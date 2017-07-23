@@ -4,9 +4,13 @@
 
 #include "content/public/common/resource_request.h"
 
+#include "content/public/common/appcache_info.h"
+
 namespace content {
 
-ResourceRequest::ResourceRequest() {}
+// kAppCacheNoHostId can't be used in the header, because appcache_info.h
+// includes a webkit file with a Status enum, and X11 #defines Status.
+ResourceRequest::ResourceRequest() : appcache_host_id(kAppCacheNoHostId) {}
 ResourceRequest::ResourceRequest(const ResourceRequest& request) = default;
 ResourceRequest::~ResourceRequest() {}
 

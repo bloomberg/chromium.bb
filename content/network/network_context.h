@@ -26,6 +26,19 @@ namespace content {
 class NetworkServiceImpl;
 class URLLoaderImpl;
 
+// A NetworkContext creates and manages access to a URLRequestContext.
+//
+// When the network service is enabled, NetworkContexts are created through
+// NetworkService's mojo interface and are owned jointly by the NetworkService
+// and the NetworkContextPtr used to talk to them, and the NetworkContext is
+// destroyed when either one is torn down.
+//
+// When the network service is disabled, NetworkContexts may be created through
+// NetworkServiceImpl::CreateNetworkContextWithBuilder, and take in a
+// URLRequestContextBuilder to seed construction of the NetworkContext's
+// URLRequestContext. When that happens, the consumer takes ownership of the
+// NetworkContext directly, has direct access to its URLRequestContext, and is
+// responsible for destroying it before the NetworkService.
 class NetworkContext : public mojom::NetworkContext {
  public:
   NetworkContext(NetworkServiceImpl* network_service,

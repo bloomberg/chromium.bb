@@ -2008,7 +2008,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
     NOTREACHED();
     return;
   }
-  storage_partition_impl_->network_context()->CreateURLLoaderFactory(
+  storage_partition_impl_->GetNetworkContext()->CreateURLLoaderFactory(
       std::move(request), id_);
 }
 
