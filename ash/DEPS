@@ -50,6 +50,26 @@ include_rules = [
   # Ozone does not run in process in mus/mash.
   "-ui/events/ozone",
   "-ui/ozone",
+
+  # ui/events/devices is tied with ozone, which is controlled by mus, and
+  # shouldn't be used by ash.
+  "-ui/events/devices",
+
+  # Enums and supporting classes or observers that are safe (should be moved to
+  # services/ui/public/cpp). http://crbug.com/747544.
+  "+ui/events/devices/device_hotplug_event_observer.h",
+  "+ui/events/devices/input_device.h",
+  "+ui/events/devices/input_device_event_observer.h",
+  "+ui/events/devices/stylus_state.h",
+  "+ui/events/devices/touchscreen_device.h",
+
+  # TODO: This is temporary, ash should not use these. http://crbug.com/747415.
+  "+ui/events/devices/device_data_manager.h",
+  "+ui/events/devices/input_device_manager.h",
+
+  # X11 support isn't used in production and will go away soon.
+  # http://crbug.com/671355.
+  "+ui/events/devices/x11",
 ]
 
 specific_include_rules = {

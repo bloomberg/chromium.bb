@@ -22,7 +22,6 @@
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "base/i18n/time_formatting.h"
 #include "ui/display/display.h"
-#include "ui/events/devices/input_device_manager.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
 
 namespace ash {
