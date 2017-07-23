@@ -45,13 +45,42 @@ class CORE_EXPORT NGLineBreaker {
   RefPtr<NGInlineBreakToken> CreateBreakToken() const;
 
  private:
+  // This struct holds information for the current line.
+  struct LineData {
+    STACK_ALLOCATED();
+
+    // The current position from inline_start. Unlike NGInlineLayoutAlgorithm
+    // that computes position in visual order, this position in logical order.
+    LayoutUnit position;
+
+    // The current opportunity.
+    WTF::Optional<NGLayoutOpportunity> opportunity;
+
+    // We don't create "certain zero-height line boxes".
+    // https://drafts.csswg.org/css2/visuren.html#phantom-line-box
+    // Such line boxes do not prevent two margins being "adjoining", and thus
+    // collapsing.
+    // https://drafts.csswg.org/css2/box.html#collapsing-margins
+    bool should_create_line_box = false;
+
+    // Set when the line ended with a forced break. Used to setup the states for
+    // the next line.
+    bool is_after_forced_break = false;
+
+    bool HasAvailableWidth() const { return opportunity.has_value(); }
+    LayoutUnit AvailableWidth() const { return opportunity->InlineSize(); }
+    bool CanFit() const { return position <= AvailableWidth(); }
+    bool CanFit(LayoutUnit extra) const {
+      return position + extra <= AvailableWidth();
+    }
+  };
+
   void BreakLine(NGLineInfo*);
 
-  bool HasAvailableWidth() const { return opportunity_.has_value(); }
-  LayoutUnit AvailableWidth() const {
-    return opportunity_.value().InlineSize();
-  }
+  void PrepareNextLine(NGLineInfo*);
+
   void UpdateAvailableWidth();
+
   void ComputeLineLocation(NGLineInfo*) const;
 
   enum class LineBreakState {
@@ -94,31 +123,23 @@ class CORE_EXPORT NGLineBreaker {
 
   bool IsFirstFormattedLine() const;
 
+  LineData line_;
   NGInlineNode node_;
   NGConstraintSpace* constraint_space_;
   NGFragmentBuilder* container_builder_;
   Vector<RefPtr<NGUnpositionedFloat>>* unpositioned_floats_;
-  const AtomicString locale_;
-  unsigned item_index_;
-  unsigned offset_;
-  LayoutUnit position_;
-  WTF::Optional<NGLayoutOpportunity> opportunity_;
+  unsigned item_index_ = 0;
+  unsigned offset_ = 0;
   NGLogicalOffset content_offset_;
   LazyLineBreakIterator break_iterator_;
   HarfBuzzShaper shaper_;
   ShapeResultSpacing<String> spacing_;
 
-  bool auto_wrap_;
-  bool break_if_overflow_;
+  // True when current box allows line wrapping.
+  bool auto_wrap_ = false;
 
-  // We don't create "certain zero-height line boxes".
-  // https://drafts.csswg.org/css2/visuren.html#phantom-line-box
-  // Such line boxes do not prevent two margins being "adjoining", and thus
-  // collapsing.
-  // https://drafts.csswg.org/css2/box.html#collapsing-margins
-  bool should_create_line_box_;
-
-  bool is_after_forced_break_;
+  // True when current box has 'word-break/word-wrap: break-word'.
+  bool break_if_overflow_ = false;
 };
 
 }  // namespace blink
