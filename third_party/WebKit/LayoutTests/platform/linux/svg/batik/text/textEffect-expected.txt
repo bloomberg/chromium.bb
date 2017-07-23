@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (0,0) size 450x500
-    LayoutSVGContainer {g} at (45.97,15) size 361.56x388
+    LayoutSVGContainer {g} at (45.97,15) size 362.56x388
       LayoutSVGText {text} at (136.50,15) size 178x18 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (136.50,15) size 178x18
           chunk 1 (middle anchor) text run 1 at (136.50,30.00) startOffset 0 endOffset 27 width 177.00: "Gradient and filter on text"
@@ -21,25 +21,25 @@ layer at (0,0) size 450x500
         LayoutSVGResourceFilter {filter} [id="dropShadow"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feGaussianBlur stdDeviation="2.00, 2.00"]
             [SourceGraphic]
-      LayoutSVGText {text} at (45.97,112) size 148.03x60 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (45.97,112) size 148.03x60
+      LayoutSVGText {text} at (45.97,112) size 149.03x60 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (45.97,112) size 149.03x60
           chunk 1 (middle anchor) text run 1 at (45.98,160.00) startOffset 0 endOffset 5 width 148.04: "BATIK"
-      LayoutSVGText {text} at (252.45,112) size 155.08x61 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (252.45,112) size 155.08x61
+      LayoutSVGText {text} at (252.45,112) size 156.08x61 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (252.45,112) size 156.08x61
           chunk 1 (middle anchor) text run 1 at (252.46,160.00) startOffset 0 endOffset 5 width 155.09: "BATIK"
-      LayoutSVGText {text} at (45.97,212) size 148.03x60 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (45.97,212) size 148.03x60
+      LayoutSVGText {text} at (45.97,212) size 149.03x60 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (45.97,212) size 149.03x60
           chunk 1 (middle anchor) text run 1 at (45.98,260.00) startOffset 0 endOffset 5 width 148.04: "BATIK"
-      LayoutSVGText {text} at (252.45,212) size 155.08x61 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (252.45,212) size 155.08x61
+      LayoutSVGText {text} at (252.45,212) size 156.08x61 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (252.45,212) size 156.08x61
           chunk 1 (middle anchor) text run 1 at (252.46,260.00) startOffset 0 endOffset 5 width 155.09: "BATIK"
-      LayoutSVGText {text} at (45.97,312) size 148.03x60 contains 1 chunk(s)
-        [filter="dropShadow"] LayoutSVGResourceFilter {filter} at (31.17,306) size 177.64x72
-        LayoutSVGInlineText {#text} at (45.97,312) size 148.03x60
+      LayoutSVGText {text} at (45.97,312) size 149.03x60 contains 1 chunk(s)
+        [filter="dropShadow"] LayoutSVGResourceFilter {filter} at (31.07,306) size 178.84x72
+        LayoutSVGInlineText {#text} at (45.97,312) size 149.03x60
           chunk 1 (middle anchor) text run 1 at (45.98,360.00) startOffset 0 endOffset 5 width 148.04: "BATIK"
-      LayoutSVGText {text} at (252.45,312) size 155.08x61 contains 1 chunk(s)
-        [filter="dropShadow"] LayoutSVGResourceFilter {filter} at (236.95,305.90) size 186.09x73.20
-        LayoutSVGInlineText {#text} at (252.45,312) size 155.08x61
+      LayoutSVGText {text} at (252.45,312) size 156.08x61 contains 1 chunk(s)
+        [filter="dropShadow"] LayoutSVGResourceFilter {filter} at (236.85,305.90) size 187.29x73.20
+        LayoutSVGInlineText {#text} at (252.45,312) size 156.08x61
           chunk 1 (middle anchor) text run 1 at (252.46,360.00) startOffset 0 endOffset 5 width 155.09: "BATIK"
       LayoutSVGText {text} at (87.50,388) size 65x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (87.50,388) size 65x15

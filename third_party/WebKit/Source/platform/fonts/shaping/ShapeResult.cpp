@@ -416,10 +416,18 @@ void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run_to_insert,
     total_advance += advance;
     has_vertical_offsets |= (offset_y != 0);
 
+    // SetGlyphAndPositions() above sets to draw glyphs at |glyph_origin +
+    // offset_{x,y}|. Move glyph_bounds to that point.
+    // Then move the current point by |advance| from |glyph_origin|.
+    // All positions in hb_glyph_position_t are relative to the current point.
+    // https://behdad.github.io/harfbuzz/harfbuzz-Buffers.html#hb-glyph-position-t-struct
     FloatRect glyph_bounds = current_font_data->BoundsForGlyph(glyph);
-    glyph_bounds.Move(glyph_origin.X(), glyph_origin.Y());
-    glyph_bounding_box_.Unite(glyph_bounds);
-    glyph_origin += FloatSize(advance + offset_x, offset_y);
+    if (!glyph_bounds.IsEmpty()) {
+      glyph_bounds.Move(glyph_origin.X() + offset_x,
+                        glyph_origin.Y() + offset_y);
+      glyph_bounding_box_.Unite(glyph_bounds);
+    }
+    glyph_origin.SetX(glyph_origin.X() + advance);
   }
 
   run->width_ = std::max(0.0f, total_advance);

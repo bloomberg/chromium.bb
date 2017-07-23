@@ -29,8 +29,8 @@ layer at (0,0) size 800x600
                 chunk 1 text run 1 at (5.00,22.00) startOffset 0 endOffset 66 width 438.10: "This is a transformed textbox with a very, very, very long content"
             LayoutSVGPath {line} at (0,8.50) size 0x16.50 [stroke={[type=SOLID] [color=#FF0000] [stroke width=1.50]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=25.00] [x2=0.00] [y2=8.50]
     LayoutSVGContainer {g} at (100,34.64) size 840x330.19
-      LayoutSVGText {text} at (100,214.64) size 64.98x19.19 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (100,214.64) size 64.98x19.19
+      LayoutSVGText {text} at (100,214.64) size 65.50x19.19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (100,214.64) size 65.50x19.19
           chunk 1 text run 1 at (100.00,230.00) startOffset 0 endOffset 10 width 64.23: "ResultText"
       LayoutSVGText {text} at (170,34.64) size 311.03x19.19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (170,34.64) size 311.03x19.19

@@ -15,20 +15,20 @@ layer at (0,0) size 450x500
           LayoutSVGGradientStop {stop} [offset=0.50] [color=#FFA500]
           LayoutSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
         LayoutSVGResourceClipper {clipPath} [id="clip"] [clipPathUnits=userSpaceOnUse]
-          LayoutSVGText {text} at (100,152) size 148.03x60 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (100,152) size 148.03x60
+          LayoutSVGText {text} at (100,152) size 149.03x60 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (100,152) size 149.03x60
               chunk 1 text run 1 at (100.00,200.00) startOffset 0 endOffset 5 width 148.04: "BATIK"
         LayoutSVGResourceClipper {clipPath} [id="svgClip"] [clipPathUnits=userSpaceOnUse]
-          LayoutSVGText {text} at (100,252) size 148.03x60 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (100,252) size 148.03x60
+          LayoutSVGText {text} at (100,252) size 149.03x60 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (100,252) size 149.03x60
               chunk 1 text run 1 at (100.00,300.00) startOffset 0 endOffset 5 width 148.04: "BATIK"
       LayoutSVGRect {rect} at (100,160) size 200x45 [fill={[type=LINEAR-GRADIENT] [id="grad"]}] [x=100.00] [y=160.00] [width=200.00] [height=45.00]
-        [clipPath="clip"] LayoutSVGResourceClipper {clipPath} at (100,152) size 148.03x60
+        [clipPath="clip"] LayoutSVGResourceClipper {clipPath} at (100,152) size 149.03x60
       LayoutSVGText {text} at (300,188) size 65x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (300,188) size 65x15
           chunk 1 text run 1 at (300.00,200.00) startOffset 0 endOffset 13 width 65.00: "(System font)"
       LayoutSVGRect {rect} at (100,260) size 200x45 [fill={[type=LINEAR-GRADIENT] [id="grad"]}] [x=100.00] [y=260.00] [width=200.00] [height=45.00]
-        [clipPath="svgClip"] LayoutSVGResourceClipper {clipPath} at (100,252) size 148.03x60
+        [clipPath="svgClip"] LayoutSVGResourceClipper {clipPath} at (100,252) size 149.03x60
       LayoutSVGText {text} at (300,288) size 55x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (300,288) size 55x15
           chunk 1 text run 1 at (300.00,300.00) startOffset 0 endOffset 10 width 55.00: "(SVG font)"

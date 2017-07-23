@@ -6,11 +6,11 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (112.72,47) size 347.27x45.59 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (112.72,47) size 347.27x45.59
           chunk 1 (end anchor) text run 1 at (112.72,80.00) startOffset 0 endOffset 37 width 347.28 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
-      LayoutSVGText {text} at (43,123.81) size 417x44.58 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (43,123.81) size 417x44.58
+      LayoutSVGText {text} at (43,126.22) size 417x42.17 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (43,126.22) size 417x42.17
           chunk 1 (end anchor) text run 1 at (43.00,160.00) startOffset 0 endOffset 37 width 417.00 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
-      LayoutSVGText {text} at (113.19,209.84) size 346.80x37.34 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (113.19,209.84) size 346.80x37.34
+      LayoutSVGText {text} at (113.19,211.64) size 346.80x35.55 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (113.19,211.64) size 346.80x35.55
           chunk 1 (end anchor) text run 1 at (113.20,240.00) startOffset 0 endOffset 37 width 346.80 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
     LayoutSVGText {text} at (10,304) size 265.80x45.59 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 265.80x45.59

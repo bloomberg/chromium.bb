@@ -3,15 +3,15 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (45,46.13) size 417x200.88
-      LayoutSVGText {text} at (113,46.13) size 349x40.88 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (113,46.13) size 349x40.88
+    LayoutSVGContainer {g} at (45,49.13) size 417x197.88
+      LayoutSVGText {text} at (113,49.13) size 349x37.88 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (113,49.13) size 349x37.88
           chunk 1 text run 1 at (113.00,80.00) startOffset 0 endOffset 37 width 347.00 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
-      LayoutSVGText {text} at (45,121.75) size 416x47.25 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (45,121.75) size 416x47.25
+      LayoutSVGText {text} at (45,123.75) size 416x45.25 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (45,123.75) size 416x45.25
           chunk 1 text run 1 at (45.00,160.00) startOffset 0 endOffset 37 width 415.00 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
-      LayoutSVGText {text} at (113,206.13) size 349x40.88 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (113,206.13) size 349x40.88
+      LayoutSVGText {text} at (113,209.13) size 349x37.88 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (113,209.13) size 349x37.88
           chunk 1 text run 1 at (113.00,240.00) startOffset 0 endOffset 37 width 347.00 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
     LayoutSVGContainer {g} at (10,311) size 231x36
       LayoutSVGText {text} at (10,311) size 231x36 contains 1 chunk(s)

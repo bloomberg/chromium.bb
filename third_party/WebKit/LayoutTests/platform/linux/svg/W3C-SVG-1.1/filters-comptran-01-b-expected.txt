@@ -43,8 +43,8 @@ layer at (0,0) size 480x360
           LayoutSVGRect {rect} at (1,1) size 628x418 [stroke={[type=SOLID] [color=#0000FF]}] [x=1.00] [y=1.00] [width=628.00] [height=418.00]
           LayoutSVGRect {rect} at (10,10) size 580x40 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=10.00] [y=10.00] [width=580.00] [height=40.00]
             [filter="Identity"] LayoutSVGResourceFilter {filter} at (10,10) size 580x40
-          LayoutSVGText {text} at (10,50.61) size 198.58x35 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (10,50.61) size 198.58x35
+          LayoutSVGText {text} at (10,50.61) size 198.50x35 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (10,50.61) size 198.50x35
               chunk 1 text run 1 at (10.00,80.00) startOffset 0 endOffset 14 width 198.51: "type: identity"
           LayoutSVGRect {rect} at (10,110) size 580x40 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=10.00] [y=110.00] [width=580.00] [height=40.00]
             [filter="Table"] LayoutSVGResourceFilter {filter} at (10,110) size 580x40

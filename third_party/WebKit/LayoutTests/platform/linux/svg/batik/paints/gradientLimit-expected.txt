@@ -2,8 +2,8 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (0,0) size 450x500
-    LayoutSVGText {text} at (158.88,30) size 132.33x18 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (158.88,30) size 132.33x18
+    LayoutSVGText {text} at (158.88,30) size 133.22x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (158.88,30) size 133.22x18
         chunk 1 (middle anchor) text run 1 at (158.89,45.00) startOffset 0 endOffset 19 width 132.23: "Gradient Limit Test"
     LayoutSVGContainer {g} at (14.08,80) size 431.42x173
       LayoutSVGContainer {g} at (14.08,80) size 121.83x73
