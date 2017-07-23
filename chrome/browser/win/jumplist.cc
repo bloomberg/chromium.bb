@@ -76,10 +76,10 @@ constexpr base::TimeDelta kDelayForJumplistUpdate =
 constexpr base::TimeDelta kTimeOutForJumplistBeginUpdate =
     base::TimeDelta::FromMilliseconds(500);
 
-// The maximum allowed time for updating both "most visited" and "recently
-// closed" categories via JumpListUpdater::AddCustomCategory.
+// The maximum allowed time for adding most visited pages custom category via
+// JumpListUpdater::AddCustomCategory.
 constexpr base::TimeDelta kTimeOutForAddCustomCategory =
-    base::TimeDelta::FromMilliseconds(500);
+    base::TimeDelta::FromMilliseconds(320);
 
 // The maximum allowed time for JumpListUpdater::CommitUpdate.
 constexpr base::TimeDelta kTimeOutForJumplistCommitUpdate =
@@ -120,9 +120,10 @@ bool CreateIconFile(const gfx::ImageSkia& image_skia,
     std::vector<float> supported_scales = image_skia.GetSupportedScales();
     for (auto& scale : supported_scales) {
       gfx::ImageSkiaRep image_skia_rep = image_skia.GetRepresentation(scale);
-      if (!image_skia_rep.is_null())
+      if (!image_skia_rep.is_null()) {
         image_family.Add(
             gfx::Image::CreateFrom1xBitmap(image_skia_rep.sk_bitmap()));
+      }
     }
   }
 
@@ -718,16 +719,18 @@ void JumpList::CreateNewJumpListAndNotifyOS(
 
   base::ElapsedTimer begin_update_timer;
 
-  if (!jumplist_updater.BeginUpdate())
-    return;
+  bool begin_success = jumplist_updater.BeginUpdate();
 
-  // Discard this JumpList update if JumpListUpdater::BeginUpdate takes longer
-  // than the maximum allowed time, as it's very likely the following update
-  // steps will also take a long time.
+  // If JumpListUpdater::BeginUpdate takes longer than the maximum allowed time,
+  // abort the current update as it's very likely the following steps will also
+  // take a long time, and skip the next |kUpdatesToSkipUnderHeavyLoad| updates.
   if (begin_update_timer.Elapsed() >= kTimeOutForJumplistBeginUpdate) {
     update_transaction->update_timeout = true;
     return;
   }
+
+  if (!begin_success)
+    return;
 
   // Record the desired number of icons created in this JumpList update.
   int icons_created = 0;
@@ -755,11 +758,31 @@ void JumpList::CreateNewJumpListAndNotifyOS(
   // Update the "Most Visited" category of the JumpList if it exists.
   // This update request is applied into the JumpList when we commit this
   // transaction.
-  if (!jumplist_updater.AddCustomCategory(
-          l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED),
-          most_visited_pages, kMostVisitedItems)) {
+  bool add_category_success = jumplist_updater.AddCustomCategory(
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED), most_visited_pages,
+      kMostVisitedItems);
+
+  // If AddCustomCategory takes longer than the maximum allowed time, abort the
+  // current update and skip the next |kUpdatesToSkipUnderHeavyLoad| updates.
+  //
+  // We only time adding custom category for most visited pages because
+  // 1. If processing the first category times out or fails, there is no need to
+  //    process the second category. In this case, we are not able to time both
+  //    categories. Then we need to select one category from the two.
+  // 2. Most visited category is selected because it always has 5 items except
+  //    for a new Chrome user who has not closed 5 distinct websites yet. In
+  //    comparison, the number of items in recently closed category is much less
+  //    stable. It has 3 items only after an user closes 3 websites in one
+  //    session. This means the runtime of AddCustomCategory API should be fixed
+  //    for most visited category, but not for recently closed category. So a
+  //    fixed timeout threshold is only valid for most visited category.
+  if (add_custom_category_timer.Elapsed() >= kTimeOutForAddCustomCategory) {
+    update_transaction->update_timeout = true;
     return;
   }
+
+  if (!add_category_success)
+    return;
 
   base::TimeDelta most_visited_category_time =
       add_custom_category_timer.Elapsed();
