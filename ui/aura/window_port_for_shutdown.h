@@ -39,6 +39,7 @@ class WindowPortForShutdown : public WindowPort {
   viz::SurfaceId GetSurfaceId() const override;
   void OnWindowAddedToRootWindow() override;
   void OnWillRemoveWindowFromRootWindow() override;
+  void OnEventTargetingPolicyChanged() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowPortForShutdown);

@@ -45,6 +45,7 @@ class AURA_EXPORT WindowPortLocal : public WindowPort {
   viz::SurfaceId GetSurfaceId() const override;
   void OnWindowAddedToRootWindow() override;
   void OnWillRemoveWindowFromRootWindow() override;
+  void OnEventTargetingPolicyChanged() override;
 
  private:
   void OnSurfaceChanged(const viz::SurfaceId& surface_id,

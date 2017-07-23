@@ -554,6 +554,14 @@ viz::SurfaceId WindowPortMus::GetSurfaceId() const {
   return viz::SurfaceId();
 }
 
+void WindowPortMus::OnWindowAddedToRootWindow() {}
+
+void WindowPortMus::OnWillRemoveWindowFromRootWindow() {}
+
+void WindowPortMus::OnEventTargetingPolicyChanged() {
+  SetEventTargetingPolicy(window_->event_targeting_policy());
+}
+
 void WindowPortMus::UpdatePrimarySurfaceInfo() {
   if (window_mus_type() != WindowMusType::TOP_LEVEL_IN_WM &&
       window_mus_type() != WindowMusType::EMBED_IN_OWNER &&

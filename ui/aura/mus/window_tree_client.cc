@@ -737,6 +737,11 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
       base::MakeUnique<CrashInFlightChange>(window, ChangeType::NEW_WINDOW));
   tree_->NewWindow(change_id, window->server_id(),
                    std::move(transport_properties));
+  if (window->GetWindow()->event_targeting_policy() !=
+      ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS) {
+    SetEventTargetingPolicy(window,
+                            window->GetWindow()->event_targeting_policy());
+  }
   if (window->window_mus_type() == WindowMusType::DISPLAY_MANUALLY_CREATED) {
     WindowTreeHostMus* window_tree_host = GetWindowTreeHostMus(window);
     std::unique_ptr<DisplayInitParams> display_init_params =

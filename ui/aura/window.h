@@ -45,6 +45,9 @@ class Transform;
 
 namespace ui {
 class Layer;
+namespace mojom {
+enum class EventTargetingPolicy;
+}
 }
 
 namespace aura {
@@ -241,8 +244,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void RemoveObserver(WindowObserver* observer);
   bool HasObserver(const WindowObserver* observer) const;
 
-  void set_ignore_events(bool ignore_events) { ignore_events_ = ignore_events; }
-  bool ignore_events() const { return ignore_events_; }
+  void SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy policy);
+  ui::mojom::EventTargetingPolicy event_targeting_policy() const {
+    return event_targeting_policy_;
+  }
 
   // Returns true if the |point_in_root| in root window's coordinate falls
   // within this window's bounds. Returns false if the window is detached
@@ -480,7 +485,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   std::unique_ptr<ui::EventTargeter> targeter_;
 
   // Makes the window pass all events through to any windows behind it.
-  bool ignore_events_;
+  ui::mojom::EventTargetingPolicy event_targeting_policy_;
 
   base::ObserverList<WindowObserver, true> observers_;
 

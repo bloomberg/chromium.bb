@@ -125,6 +125,8 @@ void WindowPortLocal::OnWillRemoveWindowFromRootWindow() {
     window_->layer()->GetCompositor()->RemoveFrameSink(frame_sink_id_);
 }
 
+void WindowPortLocal::OnEventTargetingPolicyChanged() {}
+
 void WindowPortLocal::OnSurfaceChanged(const viz::SurfaceId& surface_id,
                                        const gfx::Size& surface_size) {
   DCHECK_EQ(surface_id.frame_sink_id(), frame_sink_id_);

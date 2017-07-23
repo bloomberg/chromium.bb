@@ -22,6 +22,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/exo/surface.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
@@ -1698,7 +1699,8 @@ void ShellSurface::UpdateShadow() {
       shadow_overlay_ = base::MakeUnique<aura::Window>(nullptr);
       shadow_overlay_->set_owned_by_parent(false);
       DCHECK(!shadow_overlay_->owned_by_parent());
-      shadow_overlay_->set_ignore_events(true);
+      shadow_overlay_->SetEventTargetingPolicy(
+          ui::mojom::EventTargetingPolicy::NONE);
       shadow_overlay_->Init(ui::LAYER_NOT_DRAWN);
       shadow_overlay_->layer()->Add(shadow->layer());
       window->AddChild(shadow_overlay());

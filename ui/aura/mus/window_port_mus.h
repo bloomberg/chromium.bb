@@ -271,8 +271,9 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
                          std::unique_ptr<ui::PropertyData> data) override;
   std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink() override;
   viz::SurfaceId GetSurfaceId() const override;
-  void OnWindowAddedToRootWindow() override {}
-  void OnWillRemoveWindowFromRootWindow() override {}
+  void OnWindowAddedToRootWindow() override;
+  void OnWillRemoveWindowFromRootWindow() override;
+  void OnEventTargetingPolicyChanged() override;
 
   void UpdatePrimarySurfaceInfo();
   void UpdateClientSurfaceEmbedder();

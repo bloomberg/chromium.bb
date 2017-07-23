@@ -64,4 +64,6 @@ void WindowPortForShutdown::OnWindowAddedToRootWindow() {}
 
 void WindowPortForShutdown::OnWillRemoveWindowFromRootWindow() {}
 
+void WindowPortForShutdown::OnEventTargetingPolicyChanged() {}
+
 }  // namespace aura
