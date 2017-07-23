@@ -8,11 +8,12 @@
 #ifndef MEDIA_GPU_VA_SURFACE_H_
 #define MEDIA_GPU_VA_SURFACE_H_
 
+#include <va/va.h>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/gpu/media_gpu_export.h"
-#include "third_party/libva/va/va.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {

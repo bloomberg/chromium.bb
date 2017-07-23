@@ -103,10 +103,6 @@ target(link_target_type, "gpu_sources") {
     ]
   }
 
-  if (is_chromeos && current_cpu != "arm") {
-    configs += [ "//third_party/libva:libva_config" ]
-  }
-
   if (use_x11) {
     deps += [ "//ui/events/platform/x11" ]
   }

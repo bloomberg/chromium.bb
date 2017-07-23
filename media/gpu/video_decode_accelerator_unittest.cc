@@ -61,6 +61,7 @@
 #include "media/base/test_data_util.h"
 #include "media/filters/h264_parser.h"
 #include "media/gpu/fake_video_decode_accelerator.h"
+#include "media/gpu/features.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/gpu/rendering_helper.h"
 #include "media/gpu/video_accelerator_unittest_helpers.h"
@@ -71,19 +72,17 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "media/gpu/dxva_video_decode_accelerator_win.h"
-#elif defined(OS_CHROMEOS)
-#if defined(USE_V4L2_CODEC)
+#else
+#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
 #include "media/gpu/v4l2_device.h"
 #include "media/gpu/v4l2_slice_video_decode_accelerator.h"
 #include "media/gpu/v4l2_video_decode_accelerator.h"
 #endif
-#if defined(ARCH_CPU_X86_FAMILY)
+#if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi_video_decode_accelerator.h"
 #include "media/gpu/vaapi_wrapper.h"
-#endif  // defined(ARCH_CPU_X86_FAMILY)
-#else
-#error The VideoAccelerator tests are not supported on this platform.
-#endif  // OS_WIN
+#endif  // BUILDFLAG(USE_VAAPI)
+#endif  // defined(OS_WIN)
 
 #if defined(USE_OZONE)
 #include "ui/gfx/native_pixmap.h"
@@ -1854,7 +1853,7 @@ class VDATestSuite : public base::TestSuite {
     ui::OzonePlatform::InitializeForUI();
 #endif
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#if BUILDFLAG(USE_VAAPI)
     media::VaapiWrapper::PreSandboxInitialization();
 #elif defined(OS_WIN)
     media::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
