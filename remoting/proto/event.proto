@@ -49,8 +49,10 @@ message MouseEvent {
     BUTTON_MAX = 4;
   }
 
-  // Mouse position information. When using WebRTC-based protocol the
-  // coordinates are in DIPs. Otherwise they are in host's physical pixels.
+  // Mouse absolute position information. When using WebRTC-based protocol the
+  // coordinates are in DIPs. Otherwise they are in host's physical pixels. In
+  // both coordinates systems, the top-left monitor on the system always starts
+  // from (0, 0).
   optional int32 x = 1;
   optional int32 y = 2;
 
@@ -85,8 +87,9 @@ message TouchEventPoint {
   // The ID for the touch point.
   optional uint32 id = 1;
 
-  // The position of the touch point.
-  // These values on-the-wire are host coordinates.
+  // The absolute position of the touch point. These values on-the-wire are host
+  // physical pixel coordinates: the top-left monitor on the system always
+  // starts from (0, 0).
   optional float x = 2;
   optional float y = 3;
 
