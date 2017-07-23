@@ -12,16 +12,8 @@
 class PrefProxyConfigTracker;
 class PrefService;
 
-namespace base {
-class CommandLine;
-}
-
 namespace net {
-class NetLog;
-class NetworkDelegate;
 class ProxyConfigService;
-class ProxyService;
-class URLRequestContext;
 }
 
 class ProxyServiceFactory {
@@ -44,16 +36,6 @@ class ProxyServiceFactory {
   // (ChromeOS only).
   static PrefProxyConfigTracker* CreatePrefProxyConfigTrackerOfLocalState(
       PrefService* local_state_prefs);
-
-  // Create a proxy service according to the options on command line.
-  static std::unique_ptr<net::ProxyService> CreateProxyService(
-      net::NetLog* net_log,
-      net::URLRequestContext* context,
-      net::NetworkDelegate* network_delegate,
-      std::unique_ptr<net::ProxyConfigService> proxy_config_service,
-      const base::CommandLine& command_line,
-      bool quick_check_enabled,
-      bool pac_https_url_stripping_enabled);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ProxyServiceFactory);

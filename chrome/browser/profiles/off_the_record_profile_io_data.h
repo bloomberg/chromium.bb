@@ -23,6 +23,7 @@ class Profile;
 namespace net {
 class CookieStore;
 class URLRequestContext;
+class URLRequestContextBuilder;
 }  // namespace net
 
 // OffTheRecordProfile owns a OffTheRecordProfileIOData::Handle, which holds a
@@ -107,11 +108,13 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   explicit OffTheRecordProfileIOData(Profile::ProfileType profile_type);
   ~OffTheRecordProfileIOData() override;
 
-  void InitializeInternal(
-      ProfileParams* profile_params,
-      content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors)
-      const override;
+  void InitializeInternal(net::URLRequestContextBuilder* builder,
+                          ProfileParams* profile_params,
+                          content::ProtocolHandlerMap* protocol_handlers,
+                          content::URLRequestInterceptorScopedVector
+                              request_interceptors) const override;
+  void OnMainRequestContextCreated(
+      ProfileParams* profile_params) const override;
   void InitializeExtensionsRequestContext(
       ProfileParams* profile_params) const override;
   net::URLRequestContext* InitializeAppRequestContext(

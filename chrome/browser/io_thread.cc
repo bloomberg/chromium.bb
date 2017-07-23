@@ -782,9 +782,37 @@ bool IOThread::PacHttpsUrlStrippingEnabled() const {
   return pac_https_url_stripping_enabled_.GetValue();
 }
 
-void IOThread::ConstructSystemRequestContext() {
+void IOThread::SetUpProxyConfigService(
+    net::URLRequestContextBuilderMojo* builder,
+    std::unique_ptr<net::ProxyConfigService> proxy_config_service) const {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+
+  // TODO(eroman): Figure out why this doesn't work in single-process mode.
+  // Should be possible now that a private isolate is used.
+  // http://crbug.com/474654
+  if (!command_line.HasSwitch(switches::kWinHttpProxyResolver)) {
+    if (command_line.HasSwitch(switches::kSingleProcess)) {
+      LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
+    } else {
+      builder->set_mojo_proxy_resolver_factory(
+          ChromeMojoProxyResolverFactory::GetInstance());
+#if defined(OS_CHROMEOS)
+      builder->set_dhcp_fetcher_factory(
+          base::MakeUnique<chromeos::DhcpProxyScriptFetcherFactoryChromeos>());
+#endif
+    }
+  }
+
+  builder->set_pac_quick_check_enabled(WpadQuickCheckEnabled());
+  builder->set_pac_sanitize_url_policy(
+      PacHttpsUrlStrippingEnabled()
+          ? net::ProxyService::SanitizeUrlPolicy::SAFE
+          : net::ProxyService::SanitizeUrlPolicy::UNSAFE);
+  builder->set_proxy_config_service(std::move(proxy_config_service));
+}
+
+void IOThread::ConstructSystemRequestContext() {
   std::unique_ptr<net::URLRequestContextBuilderMojo> builder =
       base::MakeUnique<net::URLRequestContextBuilderMojo>();
 
@@ -823,6 +851,8 @@ void IOThread::ConstructSystemRequestContext() {
 #else
   cert_verifier = net::CertVerifier::CreateDefault();
 #endif
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   builder->SetCertVerifier(
       content::IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
           command_line, switches::kUserDataDir, std::move(cert_verifier)));
@@ -840,28 +870,8 @@ void IOThread::ConstructSystemRequestContext() {
 
   builder->set_ct_verifier(std::move(ct_verifier));
 
-  // TODO(eroman): Figure out why this doesn't work in single-process mode.
-  // Should be possible now that a private isolate is used.
-  // http://crbug.com/474654
-  if (!command_line.HasSwitch(switches::kWinHttpProxyResolver)) {
-    if (command_line.HasSwitch(switches::kSingleProcess)) {
-      LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
-    } else {
-      builder->set_mojo_proxy_resolver_factory(
-          ChromeMojoProxyResolverFactory::GetInstance());
-    }
-  }
-
-  builder->set_pac_quick_check_enabled(WpadQuickCheckEnabled());
-  builder->set_pac_sanitize_url_policy(
-      PacHttpsUrlStrippingEnabled()
-          ? net::ProxyService::SanitizeUrlPolicy::SAFE
-          : net::ProxyService::SanitizeUrlPolicy::UNSAFE);
-#if defined(OS_CHROMEOS)
-  builder->set_dhcp_fetcher_factory(
-      base::MakeUnique<chromeos::DhcpProxyScriptFetcherFactoryChromeos>());
-#endif
-  builder->set_proxy_config_service(std::move(system_proxy_config_service_));
+  SetUpProxyConfigService(builder.get(),
+                          std::move(system_proxy_config_service_));
 
   builder->set_http_network_session_params(session_params_);
 

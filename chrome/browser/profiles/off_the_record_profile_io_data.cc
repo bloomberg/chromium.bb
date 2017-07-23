@@ -35,7 +35,8 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
-#include "net/url_request/url_request_context_storage.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "storage/browser/database/database_tracker.h"
 
@@ -192,45 +193,40 @@ OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {
 }
 
 void OffTheRecordProfileIOData::InitializeInternal(
+    net::URLRequestContextBuilder* builder,
     ProfileParams* profile_params,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) const {
-  net::URLRequestContext* main_context = main_request_context();
-  net::URLRequestContextStorage* main_context_storage =
-      main_request_context_storage();
-
-  // For incognito, we use the default non-persistent HttpServerPropertiesImpl.
-  main_context_storage->set_http_server_properties(
-      base::MakeUnique<net::HttpServerPropertiesImpl>());
-
   // For incognito, we use a non-persistent channel ID store.
-  main_context_storage->set_channel_id_service(
+  std::unique_ptr<net::ChannelIDService> channel_id_service(
       base::MakeUnique<net::ChannelIDService>(
           new net::DefaultChannelIDStore(nullptr)));
 
   using content::CookieStoreConfig;
-  main_context_storage->set_cookie_store(CreateCookieStore(CookieStoreConfig(
-      base::FilePath(), CookieStoreConfig::EPHEMERAL_SESSION_COOKIES, NULL,
-      profile_params->cookie_monster_delegate.get())));
+  std::unique_ptr<net::CookieStore> cookie_store(
+      CreateCookieStore(CookieStoreConfig(
+          base::FilePath(), CookieStoreConfig::EPHEMERAL_SESSION_COOKIES, NULL,
+          profile_params->cookie_monster_delegate.get())));
+  cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
 
-  main_context->cookie_store()->SetChannelIDServiceID(
-      main_context->channel_id_service()->GetUniqueID());
+  builder->SetCookieAndChannelIdStores(std::move(cookie_store),
+                                       std::move(channel_id_service));
 
-  main_context_storage->set_http_network_session(
-      CreateHttpNetworkSession(*profile_params));
-  main_context_storage->set_http_transaction_factory(
-      CreateMainHttpFactory(main_context_storage->http_network_session(),
-                            net::HttpCache::DefaultBackend::InMemory(0)));
+  // Create an in memory cache using the default size.
+  net::URLRequestContextBuilder::HttpCacheParams cache_params;
+  cache_params.type = net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY;
+  builder->EnableHttpCache(cache_params);
 
-  std::unique_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
-      new net::URLRequestJobFactoryImpl());
-
-  InstallProtocolHandlers(main_job_factory.get(), protocol_handlers);
-  main_context_storage->set_job_factory(SetUpJobFactoryDefaults(
-      std::move(main_job_factory), std::move(request_interceptors),
+  AddProtocolHandlersToBuilder(builder, protocol_handlers);
+  SetUpJobFactoryDefaultsForBuilder(
+      builder, std::move(request_interceptors),
       std::move(profile_params->protocol_handler_interceptor),
-      main_context->network_delegate(), main_context->host_resolver()));
+      profile_params->io_thread->globals()
+          ->system_request_context->host_resolver());
+}
 
+void OffTheRecordProfileIOData::OnMainRequestContextCreated(
+    ProfileParams* profile_params) const {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   InitializeExtensionsRequestContext(profile_params);
 #endif
@@ -272,13 +268,12 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
   context->SetCookieStore(std::move(cookie_store));
 
   // Build a new HttpNetworkSession that uses the new ChannelIDService.
-  net::HttpNetworkSession::Context session_context =
-      main_request_context_storage()->http_network_session()->context();
+  net::HttpNetworkSession* network_session =
+      main_request_context()->http_transaction_factory()->GetSession();
+  net::HttpNetworkSession::Context session_context = network_session->context();
   session_context.channel_id_service = channel_id_service.get();
   std::unique_ptr<net::HttpNetworkSession> http_network_session(
-      new net::HttpNetworkSession(
-          main_request_context_storage()->http_network_session()->params(),
-          session_context));
+      new net::HttpNetworkSession(network_session->params(), session_context));
 
   // Use a separate in-memory cache for the app.
   std::unique_ptr<net::HttpCache> app_http_cache = CreateMainHttpFactory(
