@@ -1523,10 +1523,10 @@ ProfileManager::ProfileInfo* ProfileManager::RegisterProfile(
     Profile* profile,
     bool created) {
   TRACE_EVENT0("browser", "ProfileManager::RegisterProfile");
-  ProfileInfo* info = new ProfileInfo(profile, created);
-  profiles_info_.insert(
-      std::make_pair(profile->GetPath(), linked_ptr<ProfileInfo>(info)));
-  return info;
+  auto info = base::MakeUnique<ProfileInfo>(profile, created);
+  ProfileInfo* info_raw = info.get();
+  profiles_info_.insert(std::make_pair(profile->GetPath(), std::move(info)));
+  return info_raw;
 }
 
 ProfileManager::ProfileInfo* ProfileManager::GetProfileInfoByPath(
