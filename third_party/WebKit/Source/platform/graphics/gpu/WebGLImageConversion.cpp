@@ -505,7 +505,7 @@ void Unpack<WebGLImageConversion::kDataFormatRGBA4444, uint16_t, uint8_t>(
   SIMD::UnpackOneRowOfRGBA4444LittleToRGBA8(source, destination,
                                             pixels_per_row);
 #endif
-#if HAVE(ARM_NEON_INTRINSICS)
+#if WTF_CPU_ARM_NEON
   SIMD::UnpackOneRowOfRGBA4444ToRGBA8(source, destination, pixels_per_row);
 #endif
 #if HAVE(MIPS_MSA_INTRINSICS)
@@ -916,7 +916,7 @@ void Pack<WebGLImageConversion::kDataFormatRGBA4444,
           uint16_t>(const uint8_t* source,
                     uint16_t* destination,
                     unsigned pixels_per_row) {
-#if HAVE(ARM_NEON_INTRINSICS)
+#if WTF_CPU_ARM_NEON
   SIMD::PackOneRowOfRGBA8ToUnsignedShort4444(source, destination,
                                              pixels_per_row);
 #endif
@@ -984,7 +984,7 @@ void Pack<WebGLImageConversion::kDataFormatRGBA5551,
           uint16_t>(const uint8_t* source,
                     uint16_t* destination,
                     unsigned pixels_per_row) {
-#if HAVE(ARM_NEON_INTRINSICS)
+#if WTF_CPU_ARM_NEON
   SIMD::PackOneRowOfRGBA8ToUnsignedShort5551(source, destination,
                                              pixels_per_row);
 #endif
@@ -1052,7 +1052,7 @@ void Pack<WebGLImageConversion::kDataFormatRGB565,
           uint16_t>(const uint8_t* source,
                     uint16_t* destination,
                     unsigned pixels_per_row) {
-#if HAVE(ARM_NEON_INTRINSICS)
+#if WTF_CPU_ARM_NEON
   SIMD::PackOneRowOfRGBA8ToUnsignedShort565(source, destination,
                                             pixels_per_row);
 #endif
