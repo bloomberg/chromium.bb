@@ -439,6 +439,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
     dbus::MessageWriter writer(&method_call);
 
     login_manager::StartArcInstanceRequest request;
+    // TODO(yusukes): Make this default-enabled and remove the code.
+    request.set_create_server_socket(true);
     switch (startup_mode) {
       case ArcStartupMode::FULL:
         request.set_account_id(cryptohome_id.id());
@@ -855,15 +857,22 @@ class SessionManagerClientImpl : public SessionManagerClient {
     DCHECK(response);
     dbus::MessageReader reader(response);
     std::string container_instance_id;
-    if (!reader.PopString(&container_instance_id)) {
+    base::ScopedFD server_socket;
+
+    if (!reader.PopString(&container_instance_id) ||
+        !reader.PopFileDescriptor(&server_socket)) {
       LOG(ERROR) << "Invalid response: " << response->ToString();
-      if (!callback.is_null())
-        callback.Run(StartArcInstanceResult::UNKNOWN_ERROR, std::string());
+      if (!callback.is_null()) {
+        callback.Run(StartArcInstanceResult::UNKNOWN_ERROR, std::string(),
+                     base::ScopedFD());
+      }
       return;
     }
 
-    if (!callback.is_null())
-      callback.Run(StartArcInstanceResult::SUCCESS, container_instance_id);
+    if (!callback.is_null()) {
+      callback.Run(StartArcInstanceResult::SUCCESS, container_instance_id,
+                   std::move(server_socket));
+    }
   }
 
   void OnStartArcInstanceFailed(const StartArcInstanceCallback& callback,
@@ -875,7 +884,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
                                    login_manager::dbus_error::kLowFreeDisk
                        ? StartArcInstanceResult::LOW_FREE_DISK_SPACE
                        : StartArcInstanceResult::UNKNOWN_ERROR,
-                   std::string());
+                   std::string(), base::ScopedFD());
     }
   }
 
@@ -1093,7 +1102,8 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
                         bool disable_boot_completed_broadcast,
                         bool enable_vendor_privileged,
                         const StartArcInstanceCallback& callback) override {
-    callback.Run(StartArcInstanceResult::UNKNOWN_ERROR, std::string());
+    callback.Run(StartArcInstanceResult::UNKNOWN_ERROR, std::string(),
+                 base::ScopedFD());
   }
 
   void SetArcCpuRestriction(
