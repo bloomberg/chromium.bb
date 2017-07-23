@@ -65,7 +65,6 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/mus/window_mus.h"
-#include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -254,7 +253,7 @@ aura::Window* CreateContainer(int window_id,
       new aura::Window(nullptr, aura::client::WINDOW_TYPE_UNKNOWN);
   window->Init(ui::LAYER_NOT_DRAWN);
   if (Shell::GetAshConfig() != Config::CLASSIC) {
-    aura::WindowPortMus::Get(window)->SetEventTargetingPolicy(
+    window->SetEventTargetingPolicy(
         ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   }
   window->set_id(window_id);

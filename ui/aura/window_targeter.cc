@@ -4,6 +4,7 @@
 
 #include "ui/aura/window_targeter.h"
 
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -116,8 +117,12 @@ bool WindowTargeter::SubtreeCanAcceptEvent(
     const ui::LocatedEvent& event) const {
   if (!window->IsVisible())
     return false;
-  if (window->ignore_events())
+  if (window->event_targeting_policy() ==
+          ui::mojom::EventTargetingPolicy::NONE ||
+      window->event_targeting_policy() ==
+          ui::mojom::EventTargetingPolicy::TARGET_ONLY) {
     return false;
+  }
   client::EventClient* client = client::GetEventClient(window->GetRootWindow());
   if (client && !client->CanProcessEventsWithinSubtree(window))
     return false;

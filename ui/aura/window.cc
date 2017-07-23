@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "cc/output/layer_tree_frame_sink.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
@@ -64,7 +65,8 @@ Window::Window(WindowDelegate* delegate,
       visible_(false),
       id_(kInitialId),
       transparent_(false),
-      ignore_events_(false),
+      event_targeting_policy_(
+          ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS),
       // Don't notify newly added observers during notification. This causes
       // problems for code that adds an observer as part of an observer
       // notification (such as the workspace code).
@@ -482,6 +484,15 @@ bool Window::HasObserver(const WindowObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 
+void Window::SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy policy) {
+  if (event_targeting_policy_ == policy)
+    return;
+
+  event_targeting_policy_ = policy;
+  if (port_)
+    port_->OnEventTargetingPolicyChanged();
+}
+
 bool Window::ContainsPointInRoot(const gfx::Point& point_in_root) const {
   const Window* root_window = GetRootWindow();
   if (!root_window)
@@ -745,8 +756,10 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
     Window* child = *it;
 
     if (for_event_handling) {
-      if (child->ignore_events_)
+      if (child->event_targeting_policy_ ==
+          ui::mojom::EventTargetingPolicy::NONE) {
         continue;
+      }
 
       // The client may not allow events to be processed by certain subtrees.
       client::EventClient* client = client::GetEventClient(GetRootWindow());
@@ -764,8 +777,23 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
     Window* match = child->GetWindowForPoint(point_in_child_coords,
                                              return_tightest,
                                              for_event_handling);
-    if (match)
-      return match;
+    if (!match)
+      continue;
+
+    switch (child->event_targeting_policy_) {
+      case ui::mojom::EventTargetingPolicy::TARGET_ONLY:
+        if (child->delegate_)
+          return child;
+        break;
+      case ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS:
+        return match;
+      case ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY:
+        if (match != child)
+          return match;
+        break;
+      case ui::mojom::EventTargetingPolicy::NONE:
+        NOTREACHED();  // This case is handled early on.
+    }
   }
 
   return delegate_ ? this : nullptr;

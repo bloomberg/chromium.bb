@@ -90,6 +90,8 @@ class AURA_EXPORT WindowPort {
   virtual void OnWindowAddedToRootWindow() = 0;
   virtual void OnWillRemoveWindowFromRootWindow() = 0;
 
+  virtual void OnEventTargetingPolicyChanged() = 0;
+
  protected:
   // Returns the WindowPort associated with a Window.
   static WindowPort* Get(Window* window);

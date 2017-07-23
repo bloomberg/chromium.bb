@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -226,7 +227,10 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     SetRestoreBounds(window_, window_bounds);
   else
     SetBounds(window_bounds);
-  window_->set_ignore_events(!params.accept_events);
+  window_->SetEventTargetingPolicy(
+      params.accept_events
+          ? ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS
+          : ui::mojom::EventTargetingPolicy::NONE);
   DCHECK(GetWidget()->GetRootView());
   if (params.type != Widget::InitParams::TYPE_TOOLTIP)
     tooltip_manager_.reset(new views::TooltipManagerAura(GetWidget()));
