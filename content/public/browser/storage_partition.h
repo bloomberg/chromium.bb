@@ -54,6 +54,10 @@ class HostZoomMap;
 class ZoomLevelDelegate;
 #endif  // !defined(OS_ANDROID)
 
+namespace mojom {
+class NetworkContext;
+}
+
 // Defines what persistent state a child process can access.
 //
 // The StoragePartition defines the view each child process has of the
@@ -65,6 +69,9 @@ class CONTENT_EXPORT StoragePartition {
   virtual base::FilePath GetPath() = 0;
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
   virtual net::URLRequestContextGetter* GetMediaURLRequestContext() = 0;
+  // Returns the NetworkContext associated with this storage partition. Must
+  // only be called when the network service is enabled.
+  virtual mojom::NetworkContext* GetNetworkContext() = 0;
   virtual storage::QuotaManager* GetQuotaManager() = 0;
   virtual AppCacheService* GetAppCacheService() = 0;
   virtual storage::FileSystemContext* GetFileSystemContext() = 0;

@@ -14,7 +14,7 @@ URLLoaderFactoryGetter::URLLoaderFactoryGetter() {}
 
 void URLLoaderFactoryGetter::Initialize(StoragePartitionImpl* partition) {
   mojom::URLLoaderFactoryPtr network_factory;
-  partition->network_context()->CreateURLLoaderFactory(
+  partition->GetNetworkContext()->CreateURLLoaderFactory(
       MakeRequest(&network_factory), 0);
 
   mojom::URLLoaderFactoryPtr blob_factory;

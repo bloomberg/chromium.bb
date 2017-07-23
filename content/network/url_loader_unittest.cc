@@ -9,6 +9,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/network/network_context.h"
 #include "content/network/url_loader_impl.h"
+#include "content/public/common/appcache_info.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "mojo/public/c/system/data_pipe.h"

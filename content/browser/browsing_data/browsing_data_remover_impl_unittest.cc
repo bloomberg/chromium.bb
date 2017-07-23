@@ -139,6 +139,7 @@ class TestStoragePartition : public StoragePartition {
   net::URLRequestContextGetter* GetMediaURLRequestContext() override {
     return nullptr;
   }
+  mojom::NetworkContext* GetNetworkContext() override { return nullptr; }
   storage::QuotaManager* GetQuotaManager() override { return nullptr; }
   AppCacheService* GetAppCacheService() override { return nullptr; }
   storage::FileSystemContext* GetFileSystemContext() override {

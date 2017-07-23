@@ -6,6 +6,7 @@ include_rules = [
   "+content/common/loader_util.h",
   "+content/common/net_adapters.h",
   "+content/network",
+  "+content/public/common/appcache_info.h",
   "+content/public/common/content_client.h",
   "+content/public/common/content_switches.h",
   "+content/public/common/network_service.mojom.h",

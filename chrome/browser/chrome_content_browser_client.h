@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/network_service.mojom.h"
 #include "extensions/features/features.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
@@ -320,6 +321,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<content::MemoryCoordinatorDelegate>
   GetMemoryCoordinatorDelegate() override;
   ::rappor::RapporService* GetRapporService() override;
+  content::mojom::NetworkContextPtr CreateNetworkContext(
+      content::BrowserContext* context,
+      bool in_memory,
+      const base::FilePath& relative_partition_path) override;
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   void CreateMediaRemoter(content::RenderFrameHost* render_frame_host,

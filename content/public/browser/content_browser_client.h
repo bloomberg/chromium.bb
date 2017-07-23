@@ -22,6 +22,7 @@
 #include "content/public/common/associated_interface_registry.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/media_stream_request.h"
+#include "content/public/common/network_service.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/sandbox_type.h"
 #include "content/public/common/socket_permission_request.h"
@@ -142,6 +143,10 @@ struct MainFunctionParams;
 struct OpenURLParams;
 struct Referrer;
 struct WebPreferences;
+
+namespace mojom {
+class NetworkContext;
+}
 
 // Embedder API (or SPI) for participating in browser logic, to be implemented
 // by the client of the content browser. See ChromeContentBrowserClient for the
@@ -825,6 +830,15 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called on the IO thread.
   virtual std::vector<std::unique_ptr<URLLoaderThrottle>>
   CreateURLLoaderThrottles(const base::Callback<WebContents*()>& wc_getter);
+
+  // Creates the main NetworkContext for a BrowserContext's StoragePartition.
+  // Only called when the network service is enabled. If |in_memory| is true,
+  // |relative_partition_path| is still a path that uniquely identifies the
+  // storage partition, though nothing should be written to it.
+  virtual mojom::NetworkContextPtr CreateNetworkContext(
+      BrowserContext* context,
+      bool in_memory,
+      const base::FilePath& relative_partition_path);
 };
 
 }  // namespace content

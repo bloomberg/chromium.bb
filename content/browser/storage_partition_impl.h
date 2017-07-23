@@ -73,6 +73,7 @@ class CONTENT_EXPORT  StoragePartitionImpl
   base::FilePath GetPath() override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
   net::URLRequestContextGetter* GetMediaURLRequestContext() override;
+  mojom::NetworkContext* GetNetworkContext() override;
   storage::QuotaManager* GetQuotaManager() override;
   ChromeAppCacheService* GetAppCacheService() override;
   storage::FileSystemContext* GetFileSystemContext() override;
@@ -126,10 +127,6 @@ class CONTENT_EXPORT  StoragePartitionImpl
   void OpenLocalStorage(
       const url::Origin& origin,
       mojo::InterfaceRequest<mojom::LevelDBWrapper> request) override;
-
-  // Returns the NetworkContext associated with this storage partition. Only
-  // used when the network service is enabled.
-  mojom::NetworkContext* network_context() { return network_context_.get(); }
 
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter() {
     return url_loader_factory_getter_;
@@ -256,6 +253,10 @@ class CONTENT_EXPORT  StoragePartitionImpl
   scoped_refptr<BlobRegistryWrapper> blob_registry_;
 
   mojo::BindingSet<mojom::StoragePartitionService> bindings_;
+
+  // When the network service is enabled, this is the NetworkContext used to
+  // make requests for the StoragePartition. When it's disabled, this is
+  // nullptr.
   mojom::NetworkContextPtr network_context_;
 
   // Raw pointer that should always be valid. The BrowserContext owns the
