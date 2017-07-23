@@ -67,8 +67,8 @@ layer at (0,0) size 480x360
         LayoutSVGContainer {g} at (0,0) size 150x412.50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(15.00,230.00)}]
           LayoutSVGRect {rect} at (0,0) size 150x150 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
             [filter="over"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
-          LayoutSVGText {text} at (10,340) size 133.55x72.50 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (10,340) size 133.55x72.50
+          LayoutSVGText {text} at (10,340) size 134.03x72.50 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (10,340) size 134.03x72.50
               chunk 1 text run 1 at (10.00,400.00) startOffset 0 endOffset 4 width 131.53: "over"
         LayoutSVGContainer {g} at (0,0) size 150x150 [transform={m=((1.00,0.00)(0.00,1.00)) t=(15.00,430.00)}]
           LayoutSVGRect {rect} at (0,0) size 150x150 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
@@ -103,8 +103,8 @@ layer at (0,0) size 480x360
         LayoutSVGContainer {g} at (0,0) size 150x412.50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(735.00,230.00)}]
           LayoutSVGRect {rect} at (0,0) size 150x150 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
             [filter="xor"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
-          LayoutSVGText {text} at (10,340) size 98.94x72.50 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (10,340) size 98.94x72.50
+          LayoutSVGText {text} at (10,340) size 99.30x72.50 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (10,340) size 99.30x72.50
               chunk 1 text run 1 at (10.00,400.00) startOffset 0 endOffset 3 width 96.80: "xor"
         LayoutSVGContainer {g} at (0,0) size 150x150 [transform={m=((1.00,0.00)(0.00,1.00)) t=(735.00,430.00)}]
           LayoutSVGRect {rect} at (0,0) size 150x150 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]

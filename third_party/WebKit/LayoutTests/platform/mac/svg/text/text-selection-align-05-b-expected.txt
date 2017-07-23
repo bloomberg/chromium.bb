@@ -6,31 +6,31 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (5,4) size 464.25x44.41 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (5,4) size 464.25x44.41
           chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 29 width 464.25: "Test 'text-anchor' (vertical)"
-      LayoutSVGContainer {g} at (142.91,49.20) size 133.59x268.78
-        LayoutSVGContainer {g} at (-17.09,-100.80) size 133.59x268.78 [transform={m=((1.00,0.00)(0.00,1.00)) t=(160.00,150.00)}]
-          LayoutSVGContainer {g} at (-17.09,-3) size 33.59x170.98
+      LayoutSVGContainer {g} at (122.16,38.69) size 154.34x279.30
+        LayoutSVGContainer {g} at (-37.84,-111.31) size 154.34x279.30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(160.00,150.00)}]
+          LayoutSVGContainer {g} at (-37.84,-6.56) size 54.34x174.55
             LayoutSVGEllipse {circle} at (-3,-3) size 6x6 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [r=3.00]
-            LayoutSVGText {text} at (-17.09,0) size 33.59x167.98 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (-17.09,0) size 33.59x167.98
+            LayoutSVGText {text} at (-37.84,-6.56) size 54.34x174.55 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (-37.84,-6.56) size 54.34x174.55
                 chunk 1 (vertical) text run 1 at (-10.50,0.00) startOffset 0 endOffset 1 height 33.60: "s"
                 chunk 1 (vertical) text run 2 at (-10.50,33.60) startOffset 1 endOffset 2 height 33.60: "t"
                 chunk 1 (vertical) text run 3 at (-10.50,67.20) startOffset 2 endOffset 3 height 33.60: "a"
                 chunk 1 (vertical) text run 4 at (-10.50,100.80) startOffset 3 endOffset 4 height 33.60: "r"
                 chunk 1 (vertical) text run 5 at (-10.50,134.40) startOffset 4 endOffset 5 height 33.60: "t"
-          LayoutSVGContainer {g} at (-17.09,-100.80) size 33.59x201.58 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,0.00)}]
+          LayoutSVGContainer {g} at (-37.84,-111.31) size 54.34x212.09 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,0.00)}]
             LayoutSVGEllipse {circle} at (-3,-3) size 6x6 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [r=3.00]
-            LayoutSVGText {text} at (-17.09,-100.80) size 33.59x201.58 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (-17.09,-100.80) size 33.59x201.58
+            LayoutSVGText {text} at (-37.84,-111.31) size 54.34x212.09 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (-37.84,-111.31) size 54.34x212.09
                 chunk 1 (middle anchor, vertical) text run 1 at (-10.50,-100.80) startOffset 0 endOffset 1 height 33.60: "m"
                 chunk 1 (middle anchor, vertical) text run 2 at (-10.50,-67.20) startOffset 1 endOffset 2 height 33.60: "i"
                 chunk 1 (middle anchor, vertical) text run 3 at (-10.50,-33.60) startOffset 2 endOffset 3 height 33.60: "d"
                 chunk 1 (middle anchor, vertical) text run 4 at (-10.50,-0.00) startOffset 3 endOffset 4 height 33.60: "d"
                 chunk 1 (middle anchor, vertical) text run 5 at (-10.50,33.60) startOffset 4 endOffset 5 height 33.60: "l"
                 chunk 1 (middle anchor, vertical) text run 6 at (-10.50,67.20) startOffset 5 endOffset 6 height 33.60: "e"
-          LayoutSVGContainer {g} at (-17.09,-100.80) size 33.59x103.80 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,0.00)}]
+          LayoutSVGContainer {g} at (-37.84,-108.03) size 54.34x111.03 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,0.00)}]
             LayoutSVGEllipse {circle} at (-3,-3) size 6x6 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [r=3.00]
-            LayoutSVGText {text} at (-17.09,-100.80) size 33.59x100.80 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (-17.09,-100.80) size 33.59x100.80
+            LayoutSVGText {text} at (-37.84,-108.03) size 54.34x108.03 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (-37.84,-108.03) size 54.34x108.03
                 chunk 1 (end anchor, vertical) text run 1 at (-10.50,-100.80) startOffset 0 endOffset 1 height 33.60: "e"
                 chunk 1 (end anchor, vertical) text run 2 at (-10.50,-67.20) startOffset 1 endOffset 2 height 33.60: "n"
                 chunk 1 (end anchor, vertical) text run 3 at (-10.50,-33.60) startOffset 2 endOffset 3 height 33.60: "d"

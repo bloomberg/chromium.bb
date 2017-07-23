@@ -3,42 +3,42 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (51,10) size 387x428
-      LayoutSVGContainer {g} at (51,10) size 387x428
-        LayoutSVGText {text} at (51,10) size 27x296.02 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (51,10) size 27x296.02
+    LayoutSVGContainer {g} at (49.91,10) size 388.09x428
+      LayoutSVGContainer {g} at (49.91,10) size 388.09x428
+        LayoutSVGText {text} at (49.91,10) size 28.09x293.02 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (49.91,10) size 28.09x293.02
             chunk 1 (vertical) text run 1 at (65.00,10.00) startOffset 0 endOffset 1 height 16.00: "T"
-            chunk 1 (vertical) text run 2 at (65.00,18.51) startOffset 1 endOffset 2 height 16.00: "e"
+            chunk 1 (vertical) text run 2 at (65.00,18.02) startOffset 1 endOffset 2 height 16.00: "e"
             chunk 1 (vertical) text run 3 at (65.00,24.02) startOffset 2 endOffset 3 height 16.00: "x"
             chunk 1 (vertical) text run 4 at (65.00,31.02) startOffset 3 endOffset 4 height 16.00: "t"
             chunk 1 (vertical) text run 5 at (65.00,35.02) startOffset 4 endOffset 5 height 16.00: " "
             chunk 1 (vertical) text run 6 at (65.00,39.02) startOffset 5 endOffset 6 height 16.00: "\""
-            chunk 1 (vertical) text run 7 at (65.00,45.02) startOffset 6 endOffset 7 height 16.00: "\x{6211}"
-            chunk 1 (vertical) text run 8 at (65.00,61.02) startOffset 7 endOffset 8 height 16.00: "\x{80FD}"
-            chunk 1 (vertical) text run 9 at (65.00,77.02) startOffset 8 endOffset 9 height 16.00: "\x{541E}"
-            chunk 1 (vertical) text run 10 at (65.00,93.02) startOffset 9 endOffset 10 height 16.00: "\x{4E0B}"
-            chunk 1 (vertical) text run 11 at (65.00,109.02) startOffset 10 endOffset 11 height 16.00: "\x{73BB}"
-            chunk 1 (vertical) text run 12 at (65.00,125.02) startOffset 11 endOffset 12 height 16.00: "\x{7483}"
-            chunk 1 (vertical) text run 13 at (65.00,141.02) startOffset 12 endOffset 13 height 16.00: "\x{800C}"
-            chunk 1 (vertical) text run 14 at (65.00,157.02) startOffset 13 endOffset 14 height 16.00: "\x{4E0D}"
-            chunk 1 (vertical) text run 15 at (65.00,173.02) startOffset 14 endOffset 15 height 16.00: "\x{4F24}"
-            chunk 1 (vertical) text run 16 at (65.00,189.02) startOffset 15 endOffset 16 height 16.00: "\x{8EAB}"
-            chunk 1 (vertical) text run 17 at (65.00,205.02) startOffset 16 endOffset 17 height 16.00: "\x{4F53}"
-            chunk 1 (vertical) text run 18 at (65.00,221.02) startOffset 17 endOffset 18 height 16.00: "\x{3002}"
-            chunk 1 (vertical) text run 19 at (65.00,237.02) startOffset 18 endOffset 19 height 16.00: "\""
-            chunk 1 (vertical) text run 20 at (65.00,243.02) startOffset 19 endOffset 20 height 16.00: " "
-            chunk 1 (vertical) text run 21 at (65.00,247.02) startOffset 20 endOffset 21 height 16.00: "i"
-            chunk 1 (vertical) text run 22 at (65.00,251.02) startOffset 21 endOffset 22 height 16.00: "n"
-            chunk 1 (vertical) text run 23 at (65.00,258.02) startOffset 22 endOffset 23 height 16.00: " "
-            chunk 1 (vertical) text run 24 at (65.00,262.02) startOffset 23 endOffset 24 height 16.00: "C"
-            chunk 1 (vertical) text run 25 at (65.00,271.02) startOffset 24 endOffset 25 height 16.00: "h"
-            chunk 1 (vertical) text run 26 at (65.00,278.02) startOffset 25 endOffset 26 height 16.00: "i"
-            chunk 1 (vertical) text run 27 at (65.00,282.02) startOffset 26 endOffset 27 height 16.00: "n"
-            chunk 1 (vertical) text run 28 at (65.00,289.02) startOffset 27 endOffset 28 height 16.00: "e"
-            chunk 1 (vertical) text run 29 at (65.00,295.02) startOffset 28 endOffset 29 height 16.00: "s"
-            chunk 1 (vertical) text run 30 at (65.00,300.02) startOffset 29 endOffset 30 height 16.00: "e"
-        LayoutSVGText {text} at (212.50,10) size 25x428 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (212.50,10) size 25x428
+            chunk 1 (vertical) text run 7 at (65.00,44.02) startOffset 6 endOffset 7 height 16.00: "\x{6211}"
+            chunk 1 (vertical) text run 8 at (65.00,60.02) startOffset 7 endOffset 8 height 16.00: "\x{80FD}"
+            chunk 1 (vertical) text run 9 at (65.00,76.02) startOffset 8 endOffset 9 height 16.00: "\x{541E}"
+            chunk 1 (vertical) text run 10 at (65.00,92.02) startOffset 9 endOffset 10 height 16.00: "\x{4E0B}"
+            chunk 1 (vertical) text run 11 at (65.00,108.02) startOffset 10 endOffset 11 height 16.00: "\x{73BB}"
+            chunk 1 (vertical) text run 12 at (65.00,124.02) startOffset 11 endOffset 12 height 16.00: "\x{7483}"
+            chunk 1 (vertical) text run 13 at (65.00,140.02) startOffset 12 endOffset 13 height 16.00: "\x{800C}"
+            chunk 1 (vertical) text run 14 at (65.00,156.02) startOffset 13 endOffset 14 height 16.00: "\x{4E0D}"
+            chunk 1 (vertical) text run 15 at (65.00,172.02) startOffset 14 endOffset 15 height 16.00: "\x{4F24}"
+            chunk 1 (vertical) text run 16 at (65.00,188.02) startOffset 15 endOffset 16 height 16.00: "\x{8EAB}"
+            chunk 1 (vertical) text run 17 at (65.00,204.02) startOffset 16 endOffset 17 height 16.00: "\x{4F53}"
+            chunk 1 (vertical) text run 18 at (65.00,220.02) startOffset 17 endOffset 18 height 16.00: "\x{3002}"
+            chunk 1 (vertical) text run 19 at (65.00,236.02) startOffset 18 endOffset 19 height 16.00: "\""
+            chunk 1 (vertical) text run 20 at (65.00,241.02) startOffset 19 endOffset 20 height 16.00: " "
+            chunk 1 (vertical) text run 21 at (65.00,245.02) startOffset 20 endOffset 21 height 16.00: "i"
+            chunk 1 (vertical) text run 22 at (65.00,248.02) startOffset 21 endOffset 22 height 16.00: "n"
+            chunk 1 (vertical) text run 23 at (65.00,255.02) startOffset 22 endOffset 23 height 16.00: " "
+            chunk 1 (vertical) text run 24 at (65.00,259.02) startOffset 23 endOffset 24 height 16.00: "C"
+            chunk 1 (vertical) text run 25 at (65.00,268.02) startOffset 24 endOffset 25 height 16.00: "h"
+            chunk 1 (vertical) text run 26 at (65.00,275.02) startOffset 25 endOffset 26 height 16.00: "i"
+            chunk 1 (vertical) text run 27 at (65.00,278.02) startOffset 26 endOffset 27 height 16.00: "n"
+            chunk 1 (vertical) text run 28 at (65.00,285.02) startOffset 27 endOffset 28 height 16.00: "e"
+            chunk 1 (vertical) text run 29 at (65.00,291.02) startOffset 28 endOffset 29 height 16.00: "s"
+            chunk 1 (vertical) text run 30 at (65.00,297.02) startOffset 29 endOffset 30 height 16.00: "e"
+        LayoutSVGText {text} at (212.14,10) size 25.36x428 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (212.14,10) size 25.36x428
             chunk 1 (vertical) text run 1 at (225.50,10.00) startOffset 0 endOffset 1 height 15.00: "J"
             chunk 1 (vertical) text run 2 at (225.50,15.00) startOffset 1 endOffset 2 height 15.00: "a"
             chunk 1 (vertical) text run 3 at (225.50,21.00) startOffset 2 endOffset 3 height 15.00: "p"
@@ -46,8 +46,8 @@ layer at (0,0) size 480x360
             chunk 1 (vertical) text run 5 at (225.50,34.00) startOffset 4 endOffset 5 height 15.00: "n"
             chunk 1 (vertical) text run 6 at (225.50,41.00) startOffset 5 endOffset 6 height 15.00: "e"
             chunk 1 (vertical) text run 7 at (225.50,47.00) startOffset 6 endOffset 7 height 15.00: "s"
-            chunk 1 (vertical) text run 8 at (225.50,52.00) startOffset 7 endOffset 8 height 15.00: "e"
-            chunk 1 (vertical) text run 9 at (225.50,58.00) startOffset 8 endOffset 9 height 15.00: ":"
+            chunk 1 (vertical) text run 8 at (225.50,53.00) startOffset 7 endOffset 8 height 15.00: "e"
+            chunk 1 (vertical) text run 9 at (225.50,59.00) startOffset 8 endOffset 9 height 15.00: ":"
             chunk 1 (vertical) text run 10 at (225.50,62.00) startOffset 9 endOffset 10 height 15.00: " "
             chunk 1 (vertical) text run 11 at (225.50,65.00) startOffset 10 endOffset 11 height 15.00: "\x{79C1}"
             chunk 1 (vertical) text run 12 at (225.50,80.00) startOffset 11 endOffset 12 height 15.00: "\x{306F}"
@@ -111,32 +111,32 @@ layer at (0,0) size 480x360
             chunk 1 (vertical) text run 33 at (366.00,397.00) startOffset 32 endOffset 33 height 12.00: "\x{305B}"
             chunk 1 (vertical) text run 34 at (366.00,409.00) startOffset 33 endOffset 34 height 12.00: "\x{3093}"
             chunk 1 (vertical) text run 35 at (366.00,421.00) startOffset 34 endOffset 35 height 12.00: "\x{3002}"
-        LayoutSVGText {text} at (78,80) size 60x154 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (78,80) size 60x154
+        LayoutSVGText {text} at (78.50,80) size 59.50x149 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (78.50,80) size 59.50x149
             chunk 1 (vertical) text run 1 at (110.00,80.00) startOffset 0 endOffset 1 height 36.00: "x"
-            chunk 1 (vertical) text run 2 at (110.00,96.00) startOffset 1 endOffset 2 height 36.00: "t"
-            chunk 1 (vertical) text run 3 at (110.00,105.00) startOffset 2 endOffset 3 height 36.00: " "
-            chunk 1 (vertical) text run 4 at (110.00,113.00) startOffset 3 endOffset 4 height 36.00: "\""
-            chunk 1 (vertical) text run 5 at (110.00,126.00) startOffset 4 endOffset 5 height 36.00: "\x{6211}"
-            chunk 1 (vertical) text run 6 at (110.00,162.00) startOffset 5 endOffset 6 height 36.00: "\x{80FD}"
-            chunk 1 (vertical) text run 7 at (110.00,198.00) startOffset 6 endOffset 7 height 36.00: "\x{541E}"
-        LayoutSVGText {text} at (232.50,80) size 68x126 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (232.50,80) size 68x126
+            chunk 1 (vertical) text run 2 at (110.00,95.00) startOffset 1 endOffset 2 height 36.00: "t"
+            chunk 1 (vertical) text run 3 at (110.00,104.00) startOffset 2 endOffset 3 height 36.00: " "
+            chunk 1 (vertical) text run 4 at (110.00,112.00) startOffset 3 endOffset 4 height 36.00: "\""
+            chunk 1 (vertical) text run 5 at (110.00,125.00) startOffset 4 endOffset 5 height 36.00: "\x{6211}"
+            chunk 1 (vertical) text run 6 at (110.00,161.00) startOffset 5 endOffset 6 height 36.00: "\x{80FD}"
+            chunk 1 (vertical) text run 7 at (110.00,197.00) startOffset 6 endOffset 7 height 36.00: "\x{541E}"
+        LayoutSVGText {text} at (233.25,80) size 67.25x125 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (233.25,80) size 67.25x125
             chunk 1 (vertical) text run 1 at (268.50,80.00) startOffset 0 endOffset 1 height 41.00: "s"
             chunk 1 (vertical) text run 2 at (268.50,94.00) startOffset 1 endOffset 2 height 41.00: "e"
             chunk 1 (vertical) text run 3 at (268.50,110.00) startOffset 2 endOffset 3 height 41.00: ":"
-            chunk 1 (vertical) text run 4 at (268.50,120.00) startOffset 3 endOffset 4 height 41.00: " "
-            chunk 1 (vertical) text run 5 at (268.50,129.00) startOffset 4 endOffset 5 height 41.00: "\x{79C1}"
-            chunk 1 (vertical) text run 6 at (268.50,170.00) startOffset 5 endOffset 6 height 41.00: "\x{306F}"
-        LayoutSVGText {text} at (378,74.77) size 60x218.23 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (378,74.77) size 60x218.23
+            chunk 1 (vertical) text run 4 at (268.50,119.00) startOffset 3 endOffset 4 height 41.00: " "
+            chunk 1 (vertical) text run 5 at (268.50,128.00) startOffset 4 endOffset 5 height 41.00: "\x{79C1}"
+            chunk 1 (vertical) text run 6 at (268.50,169.00) startOffset 5 endOffset 6 height 41.00: "\x{306F}"
+        LayoutSVGText {text} at (379,74.77) size 59x217.23 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (379,74.77) size 59x217.23
             chunk 1 (vertical) text run 1 at (410.00,80.00) startOffset 0 endOffset 1 height 36.00: "s"
             chunk 1 (vertical) text run 2 at (410.00,116.00) startOffset 1 endOffset 2 height 36.00: "e"
             chunk 1 (vertical) text run 3 at (410.00,152.00) startOffset 2 endOffset 3 height 36.00: ":"
             chunk 1 (vertical) text run 4 at (410.00,188.00) startOffset 3 endOffset 4 height 36.00: " "
             chunk 1 (vertical) text run 5 at (410.00,224.00) startOffset 4 endOffset 5 height 36.00: "\x{79C1}"
             chunk 1 (vertical) text run 6 at (410.00,260.00) startOffset 5 endOffset 6 height 36.00: "\x{306F}"
-    LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 264x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 264.00: "$Revision: 1.6 $"
+    LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 261x46
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.6 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

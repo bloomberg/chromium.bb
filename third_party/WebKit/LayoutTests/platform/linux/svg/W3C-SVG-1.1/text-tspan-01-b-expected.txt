@@ -59,7 +59,7 @@ layer at (0,0) size 480x360
               chunk 1 text run 1 at (166.25,200.00) startOffset 0 endOffset 2 width 13.00: "d "
           LayoutSVGInlineText {#text} at (0,0) size 0x0
           LayoutSVGTSpan {tspan} at (35,185) size 144.25x48.50
-            LayoutSVGInlineText {#text} at (63.13,215.50) size 86.41x18
+            LayoutSVGInlineText {#text} at (63.13,215.50) size 85.81x18
               chunk 1 text run 1 at (63.13,230.50) startOffset 0 endOffset 1 width 4.00: "f"
               chunk 1 text run 1 at (81.88,230.50) startOffset 0 endOffset 1 width 9.00: "u"
               chunk 1 text run 1 at (100.63,230.50) startOffset 0 endOffset 1 width 8.00: "z"

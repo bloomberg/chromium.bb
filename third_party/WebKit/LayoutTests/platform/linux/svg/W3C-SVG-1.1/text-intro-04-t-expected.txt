@@ -11,8 +11,8 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (10,45) size 292x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (10,45) size 292x19
             chunk 1 text run 1 at (10.00,60.00) startOffset 0 endOffset 42 width 292.00: "Polish: Mog\x{119} je\x{15B}\x{107} szk\x{142}o, i mi nie szkodzi."
-        LayoutSVGText {text} at (10,75) size 344.22x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,75) size 344.22x19
+        LayoutSVGText {text} at (10,75) size 343.69x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,75) size 343.69x19
             chunk 1 text run 1 at (10.00,90.00) startOffset 0 endOffset 47 width 343.70: "Russian: \x{42F} \x{43C}\x{43E}\x{433}\x{443} \x{435}\x{441}\x{442}\x{44C} \x{441}\x{442}\x{435}\x{43A}\x{43B}\x{43E}, \x{44D}\x{442}\x{43E} \x{43C}\x{43D}\x{435} \x{43D}\x{435} \x{432}\x{440}\x{435}\x{434}\x{438}\x{442}."
         LayoutSVGText {text} at (10,107) size 393.48x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (10,107) size 393.48x17

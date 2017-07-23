@@ -128,8 +128,8 @@ layer at (0,0) size 450x500
           LayoutSVGText {text} at (-54,-30) size 108x36 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (-54,-30) size 108x36
               chunk 1 (middle anchor) text run 1 at (-54.00,0.00) startOffset 0 endOffset 6 width 108.00: "sample"
-        LayoutSVGText {text} at (-19.33,3) size 39x15 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-19.33,3) size 39x15
+        LayoutSVGText {text} at (-19.33,3) size 39.66x15 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-19.33,3) size 39.66x15
             chunk 1 (middle anchor) text run 1 at (-19.33,15.00) startOffset 0 endOffset 7 width 38.67: "Verdana"
       LayoutSVGContainer {g} at (-49,-28) size 98x46 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,360.00)}]
         LayoutSVGContainer {use} at (-49,-28) size 98x35

@@ -10,8 +10,8 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (25,50) size 252x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (25,50) size 252x18
             chunk 1 text run 1 at (25.00,65.00) startOffset 0 endOffset 37 width 252.00: "Here is a stand-alone 'text' element."
-        LayoutSVGText {text} at (25,75) size 295.55x18 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (25,75) size 295.55x18
+        LayoutSVGText {text} at (25,75) size 295.11x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (25,75) size 295.11x18
             chunk 1 text run 1 at (25.00,90.00) startOffset 0 endOffset 43 width 295.12: "Here is a second 'text' element just below."
         LayoutSVGText {text} at (25,100) size 338x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (25,100) size 338x18

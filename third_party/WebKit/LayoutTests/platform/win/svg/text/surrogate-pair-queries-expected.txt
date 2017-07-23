@@ -302,14 +302,14 @@ layer at (0,0) size 800x521
         LayoutSVGText {text} at (350,18) size 70x40 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (350,18) size 70x40
             chunk 1 text run 1 at (350.00,50.00) startOffset 0 endOffset 4 width 70.00: "\x{D83C}\x{DFB6}\x{D83C}\x{DFB6}"
-        LayoutSVGText {text} at (50,86) size 57x49 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (50,86) size 57x49
+        LayoutSVGText {text} at (50,86) size 52x49 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (50,86) size 52x49
             chunk 1 text run 1 at (50.00,125.00) startOffset 0 endOffset 6 width 52.00: "\x{D801}\x{DC37}\x{30C} v\x{30C}"
-        LayoutSVGText {text} at (200,93) size 56x40 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (200,93) size 56x40
+        LayoutSVGText {text} at (200,93) size 51x40 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (200,93) size 51x40
             chunk 1 text run 1 at (200.00,125.00) startOffset 0 endOffset 6 width 51.00: "\x{D801}\x{DC37}\x{30C} v\x{30C}"
-        LayoutSVGText {text} at (350,93) size 59x40 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (350,93) size 59x40
+        LayoutSVGText {text} at (350,93) size 53x40 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (350,93) size 53x40
             chunk 1 text run 1 at (350.00,125.00) startOffset 0 endOffset 6 width 53.00: "\x{D801}\x{DC37}\x{30C} v\x{30C}"
         LayoutSVGText {text} at (54,211) size 96x49 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (54,211) size 96x49

@@ -2,15 +2,15 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (38.33,110) size 257.67x127.38
+    LayoutSVGContainer {g} at (38.33,110) size 257.67x127.39
       LayoutSVGText {text} at (38.33,151) size 191.66x11.39 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (38.33,151) size 191.66x11.39
           chunk 1 (end anchor) text run 1 at (38.33,160.00) startOffset 0 endOffset 42 width 191.67: "Making the world wide web truly world wide"
       LayoutSVGText {text} at (83.13,186) size 146.86x11.39 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (83.13,186) size 146.86x11.39
           chunk 1 (end anchor) text run 1 at (83.13,195.00) startOffset 0 endOffset 31 width 146.87 RTL: "\x{5DC}\x{5D9}\x{5E6}\x{5D5}\x{5E8} \x{5DE}\x{5D4}\x{5E8}\x{5E9}\x{5EA} \x{5E8}\x{5E9}\x{5EA} \x{5DB}\x{5DC}\x{5DC} \x{5E2}\x{5D5}\x{5DC}\x{5DE}\x{5D9}\x{5EA} \x{5D1}\x{5D0}\x{5DE}\x{5EA}"
-      LayoutSVGText {text} at (115.81,223.11) size 114.33x14.27 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (115.81,223.11) size 114.33x14.27
+      LayoutSVGText {text} at (115.81,223.97) size 114.17x13.42 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (115.81,223.97) size 114.17x13.42
           chunk 1 (end anchor) text run 1 at (115.82,235.00) startOffset 0 endOffset 38 width 114.18 RTL: "\x{62C}\x{639}\x{644} \x{634}\x{628}\x{643}\x{629} \x{627}\x{644}\x{648}\x{64A}\x{628} \x{627}\x{644}\x{639}\x{627}\x{644}\x{645}\x{64A}\x{651}\x{629} \x{639}\x{627}\x{644}\x{645}\x{64A}\x{651}\x{629} \x{62D}\x{642}\x{64B}\x{651}\x{627}"
       LayoutSVGImage {image} at (168,110) size 128x26
     LayoutSVGContainer {g} at (10,334.61) size 43.02x6.59

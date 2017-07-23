@@ -451,14 +451,14 @@ layer at (0,0) size 800x521
           LayoutSVGText {text} at (-5,-5) size 10x12 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (-5,-5) size 10x12
               chunk 1 (middle anchor) text run 1 at (-5.00,5.00) startOffset 0 endOffset 2 width 10.00: "32"
-        LayoutSVGText {text} at (25,-6) size 565x71 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (25,-6) size 565x71
+        LayoutSVGText {text} at (25,-19.13) size 565x84.13 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (25,-19.13) size 565x84.13
             chunk 1 text run 1 at (25.00,50.00) startOffset 0 endOffset 26 width 565.00: "\x{F6}h \x{443}\x{30C}eah! fi ffi abcffidef"
-        LayoutSVGText {text} at (25,105) size 475.73x57 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (25,105) size 475.73x57
+        LayoutSVGText {text} at (25,93.88) size 476.19x68.13 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (25,93.88) size 476.19x68.13
             chunk 1 text run 1 at (25.00,150.00) startOffset 0 endOffset 26 width 471.19: "\x{F6}h \x{443}\x{30C}eah! fi ffi abcffidef"
-        LayoutSVGText {text} at (25,204) size 488.73x57 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (25,204) size 488.73x57
+        LayoutSVGText {text} at (25,189.88) size 489.19x71.13 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (25,189.88) size 489.19x71.13
             chunk 1 text run 1 at (25.00,250.00) startOffset 0 endOffset 26 width 487.19: "\x{F6}h \x{443}\x{30C}eah! fi ffi abcffidef"
         LayoutSVGContainer {use} at (25,200) size 475x250
           LayoutSVGPath {path} at (25,200) size 475x250 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#00000000]}] [data="M 25 400 C 300 400 200 200 500 450"]

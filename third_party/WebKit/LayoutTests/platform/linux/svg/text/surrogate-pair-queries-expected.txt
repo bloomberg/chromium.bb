@@ -302,37 +302,37 @@ layer at (0,0) size 800x521
         LayoutSVGText {text} at (350,18) size 52x40 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (350,18) size 52x40
             chunk 1 text run 1 at (350.00,50.00) startOffset 0 endOffset 4 width 52.00: "\x{D83C}\x{DFB6}\x{D83C}\x{DFB6}"
-        LayoutSVGText {text} at (50,86) size 61x49 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (50,86) size 61x49
+        LayoutSVGText {text} at (50,66.81) size 45x68.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (50,66.81) size 45x68.19
             chunk 1 text run 1 at (50.00,125.00) startOffset 0 endOffset 6 width 45.00: "\x{D801}\x{DC37}\x{30C} v\x{30C}"
-        LayoutSVGText {text} at (200,93) size 76x40 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (200,93) size 76x40
+        LayoutSVGText {text} at (200,78.81) size 54x54.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (200,78.81) size 54x54.19
             chunk 1 text run 1 at (200.00,125.00) startOffset 0 endOffset 6 width 54.00: "\x{D801}\x{DC37}\x{30C} v\x{30C}"
-        LayoutSVGText {text} at (350,93) size 76x40 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (350,93) size 76x40
+        LayoutSVGText {text} at (350,78.81) size 54x54.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (350,78.81) size 54x54.19
             chunk 1 text run 1 at (350.00,125.00) startOffset 0 endOffset 6 width 54.00: "\x{D801}\x{DC37}\x{30C} v\x{30C}"
-        LayoutSVGText {text} at (96,211) size 54x49 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (96,211) size 54x49
+        LayoutSVGText {text} at (96,191.81) size 54x68.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (96,191.81) size 54x68.19
             chunk 1 text run 1 at (96.00,250.00) startOffset 0 endOffset 2 width 18.00 RTL: "\x{D83C}\x{DFB6}"
             chunk 1 text run 1 at (114.00,250.00) startOffset 0 endOffset 3 width 18.00: "\x{D801}\x{DC37}\x{30C}"
             chunk 1 text run 1 at (132.00,250.00) startOffset 0 endOffset 2 width 18.00 RTL: "\x{D83C}\x{DFB6}"
-        LayoutSVGText {text} at (219,218) size 81x40 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (219,218) size 81x40
+        LayoutSVGText {text} at (219,203.81) size 81x54.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (219,203.81) size 81x54.19
             chunk 1 text run 1 at (219.00,250.00) startOffset 0 endOffset 2 width 27.00 RTL: "\x{D83C}\x{DFB6}"
             chunk 1 text run 1 at (246.00,250.00) startOffset 0 endOffset 3 width 27.00: "\x{D801}\x{DC37}\x{30C}"
             chunk 1 text run 1 at (273.00,250.00) startOffset 0 endOffset 2 width 27.00 RTL: "\x{D83C}\x{DFB6}"
-        LayoutSVGText {text} at (372,218) size 78x40 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (372,218) size 78x40
+        LayoutSVGText {text} at (372,203.81) size 78x54.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (372,203.81) size 78x54.19
             chunk 1 text run 1 at (372.00,250.00) startOffset 0 endOffset 2 width 26.00 RTL: "\x{D83C}\x{DFB6}"
             chunk 1 text run 1 at (398.00,250.00) startOffset 0 endOffset 3 width 26.00: "\x{D801}\x{DC37}\x{30C}"
             chunk 1 text run 1 at (424.00,250.00) startOffset 0 endOffset 2 width 26.00 RTL: "\x{D83C}\x{DFB6}"
-        LayoutSVGText {text} at (96,311) size 54x49 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (96,311) size 54x49
+        LayoutSVGText {text} at (96,291.81) size 54x68.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (96,291.81) size 54x68.19
             chunk 1 text run 1 at (96.00,350.00) startOffset 0 endOffset 7 width 54.00 RTL override: "\x{D83C}\x{DFB6}\x{D801}\x{DC37}\x{30C}\x{D83C}\x{DFB6}"
-        LayoutSVGText {text} at (219,318) size 81x40 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (219,318) size 81x40
+        LayoutSVGText {text} at (219,303.81) size 81x54.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (219,303.81) size 81x54.19
             chunk 1 text run 1 at (219.00,350.00) startOffset 0 endOffset 7 width 81.00 RTL override: "\x{D83C}\x{DFB6}\x{D801}\x{DC37}\x{30C}\x{D83C}\x{DFB6}"
-        LayoutSVGText {text} at (372,318) size 78x40 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (372,318) size 78x40
+        LayoutSVGText {text} at (372,303.81) size 78x54.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (372,303.81) size 78x54.19
             chunk 1 text run 1 at (372.00,350.00) startOffset 0 endOffset 7 width 78.00 RTL override: "\x{D83C}\x{DFB6}\x{D801}\x{DC37}\x{30C}\x{D83C}\x{DFB6}"
       LayoutText {#text} at (0,0) size 0x0
