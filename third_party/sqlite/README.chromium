@@ -25,8 +25,27 @@ code changes.
 To this end, the repository contains a reference copy of the SQLite source code
 as of the last import, plus a series of patches which can be applied to
 re-create the current trunk code.  These patches are generated and processed by
-git, with the intention of re-creating a changelist series so that importers can
-use their regular revision-control knowledge to manage import merges.
+git, with the intention of re-creating a commit series so that importers can use
+their regular revision-control knowledge to manage import merges.
+
+The directory structure is as follows. Files common to all third_party projects
+(BUILD.GN, OWNERS, LICENSE) are omitted.
+
+* sqlite-src-*/ - Upstream source code, without any modifications. The number
+                  after src- is a release version or a snapshot number (which is
+                  a commit time). See https://www.sqlite.org/cgi/src/timeline
+* patches/ - Our patches to the currently used release, formatted by git using
+             the UNIX mailbox format. The patches can be applied with git am,
+             and created with git format-patch.
+* src/ - The currently used source code, with our patches applied.
+* amalgamation/ - The supported method of using SQLite is via an amalgamation
+                  build, which merges all the code in one .c file and one .h
+                  file. See https://www.sqlite.org/amalgamation.html
+* amalgamation/config.h - Linux build configuration
+* google_generate_amalgamation.sh - Script that generates the amalgamation
+* sqlite.h - The header used by the rest of Chromium to include SQLite. This
+             forwards to amalgamation/sqlite3.h
+* fuzz/ - Google OSS-Fuzz (ClusterFuzz) testing for Chromium's SQLite build
 
 ---
 
