@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
 #include "components/update_client/component_patcher.h"
 #include "components/update_client/component_unpacker.h"
 
@@ -41,13 +40,10 @@ class DeltaUpdateOp : public base::RefCountedThreadSafe<DeltaUpdateOp> {
            const base::FilePath& input_dir,
            const base::FilePath& unpack_dir,
            const scoped_refptr<CrxInstaller>& installer,
-           const ComponentPatcher::Callback& callback,
-           const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+           const ComponentPatcher::Callback& callback);
 
  protected:
   virtual ~DeltaUpdateOp();
-
-  scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
 
   std::string output_sha256_;
   base::FilePath output_abs_path_;
@@ -76,7 +72,6 @@ class DeltaUpdateOp : public base::RefCountedThreadSafe<DeltaUpdateOp> {
   void DoneRunning(UnpackerError error, int extended_error);
 
   ComponentPatcher::Callback callback_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DeltaUpdateOp);
 };

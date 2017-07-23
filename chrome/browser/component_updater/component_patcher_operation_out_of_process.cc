@@ -12,9 +12,9 @@
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/update_client/component_patcher_operation.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace component_updater {
@@ -25,15 +25,12 @@ ChromeOutOfProcessPatcher::~ChromeOutOfProcessPatcher() = default;
 
 void ChromeOutOfProcessPatcher::Patch(
     const std::string& operation,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     const base::FilePath& input_path,
     const base::FilePath& patch_path,
     const base::FilePath& output_path,
     const base::Callback<void(int result)>& callback) {
-  DCHECK(task_runner);
   DCHECK(!callback.is_null());
 
-  task_runner_ = task_runner;
   callback_ = callback;
 
   base::File input_file(input_path,
@@ -46,7 +43,8 @@ void ChromeOutOfProcessPatcher::Patch(
 
   if (!input_file.IsValid() || !patch_file.IsValid() ||
       !output_file.IsValid()) {
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(callback_, -1));
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback_, -1));
     return;
   }
 
@@ -75,7 +73,8 @@ void ChromeOutOfProcessPatcher::Patch(
 
 void ChromeOutOfProcessPatcher::PatchDone(int result) {
   utility_process_mojo_client_.reset();  // Terminate the utility process.
-  task_runner_->PostTask(FROM_HERE, base::BindOnce(callback_, result));
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback_, result));
 }
 
 }  // namespace component_updater

@@ -32,7 +32,6 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "components/update_client/component_unpacker.h"
 
@@ -67,8 +66,7 @@ class ComponentPatcher : public base::RefCountedThreadSafe<ComponentPatcher> {
   ComponentPatcher(const base::FilePath& input_dir,
                    const base::FilePath& unpack_dir,
                    scoped_refptr<CrxInstaller> installer,
-                   scoped_refptr<OutOfProcessPatcher> out_of_process_patcher,
-                   scoped_refptr<base::SequencedTaskRunner> task_runner);
+                   scoped_refptr<OutOfProcessPatcher> out_of_process_patcher);
 
   // Starts patching files. This member function returns immediately, after
   // posting a task to do the patching. When patching has been completed,
@@ -97,7 +95,6 @@ class ComponentPatcher : public base::RefCountedThreadSafe<ComponentPatcher> {
   std::unique_ptr<base::ListValue> commands_;
   base::ListValue::const_iterator next_command_;
   scoped_refptr<DeltaUpdateOp> current_operation_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentPatcher);
 };

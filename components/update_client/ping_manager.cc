@@ -16,7 +16,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/sequenced_task_runner.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/protocol_builder.h"
 #include "components/update_client/request_sender.h"

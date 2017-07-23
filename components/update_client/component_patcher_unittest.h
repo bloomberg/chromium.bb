@@ -9,8 +9,9 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
+#include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff/bsdiff.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,14 +29,11 @@ class ComponentPatcherOperationTest : public testing::Test {
   ~ComponentPatcherOperationTest() override;
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir input_dir_;
   base::ScopedTempDir installed_dir_;
   base::ScopedTempDir unpack_dir_;
   scoped_refptr<ReadOnlyTestInstaller> installer_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
- private:
-  base::MessageLoopForIO loop_;
 };
 
 }  // namespace update_client

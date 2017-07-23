@@ -12,7 +12,6 @@
 
 namespace base {
 class FilePath;
-class SequencedTaskRunner;
 }
 
 namespace update_client {
@@ -23,7 +22,6 @@ class OutOfProcessPatcher
  public:
   virtual void Patch(
       const std::string& operation,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       const base::FilePath& input_abs_path,
       const base::FilePath& patch_abs_path,
       const base::FilePath& output_abs_path,

@@ -19,10 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -59,9 +56,7 @@ ComponentInfo::~ComponentInfo() {}
 CrxUpdateService::CrxUpdateService(
     const scoped_refptr<Configurator>& config,
     const scoped_refptr<UpdateClient>& update_client)
-    : config_(config),
-      update_client_(update_client),
-      blocking_task_runner_(config->GetSequencedTaskRunner()) {
+    : config_(config), update_client_(update_client) {
   AddObserver(this);
 }
 
@@ -250,7 +245,7 @@ void CrxUpdateService::OnDemandUpdate(const std::string& id,
     if (!callback.is_null()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(callback, update_client::Error::INVALID_ARGUMENT));
+          base::BindOnce(callback, update_client::Error::INVALID_ARGUMENT));
     }
     return;
   }
@@ -325,12 +320,6 @@ bool CrxUpdateService::CheckForUpdates() {
   return true;
 }
 
-scoped_refptr<base::SequencedTaskRunner>
-CrxUpdateService::GetSequencedTaskRunner() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return blocking_task_runner_;
-}
-
 bool CrxUpdateService::GetComponentDetails(const std::string& id,
                                            CrxUpdateItem* item) const {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -383,8 +372,8 @@ void CrxUpdateService::OnUpdateComplete(Callback callback,
   }
 
   if (!callback.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, error));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback, error));
   }
 }
 

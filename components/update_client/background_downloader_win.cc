@@ -30,6 +30,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/win/scoped_co_mem.h"
+#include "components/update_client/task_traits.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
 #include "url/gurl.h"
@@ -398,13 +399,10 @@ void CleanupJob(const ComPtr<IBackgroundCopyJob>& job) {
 }  // namespace
 
 BackgroundDownloader::BackgroundDownloader(
-    std::unique_ptr<CrxDownloader> successor,
-    net::URLRequestContextGetter* context_getter)
+    std::unique_ptr<CrxDownloader> successor)
     : CrxDownloader(std::move(successor)),
       com_task_runner_(base::CreateCOMSTATaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      context_getter_(context_getter),
+          kTaskTraitsBackgroundDownloader)),
       git_cookie_bits_manager_(0),
       git_cookie_job_(0) {}
 
@@ -422,15 +420,15 @@ void BackgroundDownloader::StartTimer() {
 void BackgroundDownloader::OnTimer() {
   DCHECK(thread_checker_.CalledOnValidThread());
   com_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&BackgroundDownloader::OnDownloading, base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloading,
+                                base::Unretained(this)));
 }
 
 void BackgroundDownloader::DoStartDownload(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  com_task_runner_->PostTask(FROM_HERE,
-                             base::Bind(&BackgroundDownloader::BeginDownload,
-                                        base::Unretained(this), url));
+  com_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&BackgroundDownloader::BeginDownload,
+                                base::Unretained(this), url));
 }
 
 // Called one time when this class is asked to do a download.
@@ -447,9 +445,9 @@ void BackgroundDownloader::BeginDownload(const GURL& url) {
   }
 
   ResetInterfacePointers();
-  main_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&BackgroundDownloader::StartTimer, base::Unretained(this)));
+  main_task_runner()->PostTask(FROM_HERE,
+                               base::BindOnce(&BackgroundDownloader::StartTimer,
+                                              base::Unretained(this)));
 }
 
 // Creates or opens an existing BITS job to download the |url|, and handles
@@ -538,9 +536,9 @@ void BackgroundDownloader::OnDownloading() {
     return;
 
   ResetInterfacePointers();
-  main_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&BackgroundDownloader::StartTimer, base::Unretained(this)));
+  main_task_runner()->PostTask(FROM_HERE,
+                               base::BindOnce(&BackgroundDownloader::StartTimer,
+                                              base::Unretained(this)));
 }
 
 // Completes the BITS download, picks up the file path of the response, and
@@ -584,9 +582,9 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
   result.downloaded_bytes = downloaded_bytes;
   result.total_bytes = total_bytes;
   main_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&BackgroundDownloader::OnDownloadComplete,
-                 base::Unretained(this), is_handled, result, download_metrics));
+      FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloadComplete,
+                                base::Unretained(this), is_handled, result,
+                                download_metrics));
 
   // Once the task is posted to the the main thread, this object may be deleted
   // by its owner. It is not safe to access members of this object on this task
@@ -674,8 +672,8 @@ bool BackgroundDownloader::OnStateTransferring() {
   result.total_bytes = total_bytes;
 
   main_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&BackgroundDownloader::OnDownloadProgress,
-                            base::Unretained(this), result));
+      FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloadProgress,
+                                base::Unretained(this), result));
   return false;
 }
 

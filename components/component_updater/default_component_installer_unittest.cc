@@ -202,7 +202,7 @@ void DefaultComponentInstallerTest::RunThreads() {
 void DefaultComponentInstallerTest::Unpack(const base::FilePath& crx_path) {
   auto component_unpacker = base::MakeRefCounted<ComponentUnpacker>(
       std::vector<uint8_t>(std::begin(kSha256Hash), std::end(kSha256Hash)),
-      crx_path, nullptr, nullptr, config_->GetSequencedTaskRunner());
+      crx_path, nullptr, nullptr);
   component_unpacker->Unpack(base::Bind(
       &DefaultComponentInstallerTest::UnpackComplete, base::Unretained(this)));
   RunThreads();

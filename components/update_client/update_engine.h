@@ -28,7 +28,6 @@
 
 namespace base {
 class TimeTicks;
-class SequencedTaskRunner;
 }  // namespace base
 
 namespace update_client {
@@ -151,9 +150,6 @@ struct UpdateContext {
 
   // Called when the all updates associated with this context have completed.
   const UpdateEngine::Callback callback;
-
-  // Runs tasks in a blocking thread pool.
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner;
 
   // Creates instances of CrxDownloader;
   CrxDownloader::Factory crx_downloader_factory;

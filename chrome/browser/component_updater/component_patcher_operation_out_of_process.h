@@ -28,7 +28,6 @@ class ChromeOutOfProcessPatcher : public update_client::OutOfProcessPatcher {
 
   // update_client::OutOfProcessPatcher:
   void Patch(const std::string& operation,
-             const scoped_refptr<base::SequencedTaskRunner>& task_runner,
              const base::FilePath& input_path,
              const base::FilePath& patch_path,
              const base::FilePath& output_path,

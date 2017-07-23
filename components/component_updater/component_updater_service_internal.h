@@ -12,8 +12,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/component_updater/timer.h"
 
@@ -53,7 +51,6 @@ class CrxUpdateService : public ComponentUpdateService,
   OnDemandUpdater& GetOnDemandUpdater() override;
   void MaybeThrottle(const std::string& id,
                      const base::Closure& callback) override;
-  scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() override;
   bool GetComponentDetails(const std::string& id,
                            CrxUpdateItem* item) const override;
 
@@ -120,8 +117,6 @@ class CrxUpdateService : public ComponentUpdateService,
   // for that media type. Only the most recently-registered component is
   // tracked. May include the IDs of un-registered components.
   std::map<std::string, std::string> component_ids_by_mime_type_;
-
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxUpdateService);
 };

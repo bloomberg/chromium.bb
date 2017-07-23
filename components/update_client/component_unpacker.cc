@@ -19,6 +19,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/update_client/component_patcher.h"
@@ -54,16 +55,14 @@ ComponentUnpacker::ComponentUnpacker(
     const std::vector<uint8_t>& pk_hash,
     const base::FilePath& path,
     const scoped_refptr<CrxInstaller>& installer,
-    const scoped_refptr<OutOfProcessPatcher>& oop_patcher,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+    const scoped_refptr<OutOfProcessPatcher>& oop_patcher)
     : pk_hash_(pk_hash),
       path_(path),
       is_delta_(false),
       installer_(installer),
       oop_patcher_(oop_patcher),
       error_(UnpackerError::kNone),
-      extended_error_(0),
-      task_runner_(task_runner) {}
+      extended_error_(0) {}
 
 ComponentUnpacker::~ComponentUnpacker() {}
 
@@ -125,18 +124,18 @@ bool ComponentUnpacker::BeginPatching() {
       error_ = UnpackerError::kUnzipPathError;
       return false;
     }
-    patcher_ = new ComponentPatcher(unpack_diff_path_, unpack_path_, installer_,
-                                    oop_patcher_, task_runner_);
-    task_runner_->PostTask(
+    patcher_ = base::MakeRefCounted<ComponentPatcher>(
+        unpack_diff_path_, unpack_path_, installer_, oop_patcher_);
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&ComponentPatcher::Start, patcher_,
-                   base::Bind(&ComponentUnpacker::EndPatching,
-                              scoped_refptr<ComponentUnpacker>(this))));
+        base::BindOnce(&ComponentPatcher::Start, patcher_,
+                       base::Bind(&ComponentUnpacker::EndPatching,
+                                  scoped_refptr<ComponentUnpacker>(this))));
   } else {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&ComponentUnpacker::EndPatching,
-                                      scoped_refptr<ComponentUnpacker>(this),
-                                      UnpackerError::kNone, 0));
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&ComponentUnpacker::EndPatching,
+                                  scoped_refptr<ComponentUnpacker>(this),
+                                  UnpackerError::kNone, 0));
   }
   return true;
 }
@@ -161,7 +160,8 @@ void ComponentUnpacker::EndUnpacking() {
   if (error_ == UnpackerError::kNone)
     result.unpack_path = unpack_path_;
 
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback_, result));
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback_, result));
 }
 
 }  // namespace update_client

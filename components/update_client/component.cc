@@ -14,11 +14,13 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/update_client/action_runner.h"
 #include "components/update_client/component_unpacker.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/protocol_builder.h"
+#include "components/update_client/task_traits.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/update_engine.h"
@@ -64,14 +66,10 @@ using InstallOnBlockingTaskRunnerCompleteCallback =
     base::Callback<void(int error_category, int error_code, int extra_code1)>;
 
 CrxInstaller::Result DoInstallOnBlockingTaskRunner(
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     const base::FilePath& unpack_path,
     const std::string& fingerprint,
     const scoped_refptr<CrxInstaller>& installer,
     InstallOnBlockingTaskRunnerCompleteCallback callback) {
-  DCHECK(blocking_task_runner->RunsTasksInCurrentSequence());
-
   if (static_cast<int>(fingerprint.size()) !=
       base::WriteFile(
           unpack_path.Append(FILE_PATH_LITERAL("manifest.fingerprint")),
@@ -88,70 +86,60 @@ CrxInstaller::Result DoInstallOnBlockingTaskRunner(
 
 void InstallOnBlockingTaskRunner(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     const base::FilePath& unpack_path,
     const std::string& fingerprint,
     const scoped_refptr<CrxInstaller>& installer,
     InstallOnBlockingTaskRunnerCompleteCallback callback) {
-  DCHECK(blocking_task_runner->RunsTasksInCurrentSequence());
-
   DCHECK(base::DirectoryExists(unpack_path));
-  const auto result = DoInstallOnBlockingTaskRunner(
-      main_task_runner, blocking_task_runner, unpack_path, fingerprint,
-      installer, callback);
+  const auto result = DoInstallOnBlockingTaskRunner(unpack_path, fingerprint,
+                                                    installer, callback);
   base::DeleteFile(unpack_path, true);
 
   const ErrorCategory error_category =
       result.error ? ErrorCategory::kInstallError : ErrorCategory::kErrorNone;
   main_task_runner->PostTask(
       FROM_HERE,
-      base::Bind(callback, static_cast<int>(error_category),
-                 static_cast<int>(result.error), result.extended_error));
+      base::BindOnce(callback, static_cast<int>(error_category),
+                     static_cast<int>(result.error), result.extended_error));
 }
 
 void UnpackCompleteOnBlockingTaskRunner(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     const base::FilePath& crx_path,
     const std::string& fingerprint,
     const scoped_refptr<CrxInstaller>& installer,
     InstallOnBlockingTaskRunnerCompleteCallback callback,
     const ComponentUnpacker::Result& result) {
-  DCHECK(blocking_task_runner->RunsTasksInCurrentSequence());
-
   update_client::DeleteFileAndEmptyParentDirectory(crx_path);
 
   if (result.error != UnpackerError::kNone) {
     main_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(callback, static_cast<int>(ErrorCategory::kUnpackError),
-                   static_cast<int>(result.error), result.extended_error));
+        base::BindOnce(callback, static_cast<int>(ErrorCategory::kUnpackError),
+                       static_cast<int>(result.error), result.extended_error));
     return;
   }
 
-  blocking_task_runner->PostTask(
-      FROM_HERE, base::Bind(&InstallOnBlockingTaskRunner, main_task_runner,
-                            blocking_task_runner, result.unpack_path,
-                            fingerprint, installer, callback));
+  base::PostTaskWithTraits(
+      FROM_HERE, kTaskTraits,
+      base::BindOnce(&InstallOnBlockingTaskRunner, main_task_runner,
+                     result.unpack_path, fingerprint, installer, callback));
 }
 
 void StartInstallOnBlockingTaskRunner(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     const std::vector<uint8_t>& pk_hash,
     const base::FilePath& crx_path,
     const std::string& fingerprint,
     const scoped_refptr<CrxInstaller>& installer,
     const scoped_refptr<OutOfProcessPatcher>& oop_patcher,
     InstallOnBlockingTaskRunnerCompleteCallback callback) {
-  DCHECK(blocking_task_runner->RunsTasksInCurrentSequence());
-
   auto unpacker = base::MakeRefCounted<ComponentUnpacker>(
-      pk_hash, crx_path, installer, oop_patcher, blocking_task_runner);
+      pk_hash, crx_path, installer, oop_patcher);
 
   unpacker->Unpack(base::Bind(&UnpackCompleteOnBlockingTaskRunner,
-                              main_task_runner, blocking_task_runner, crx_path,
-                              fingerprint, installer, callback));
+                              main_task_runner, crx_path, fingerprint,
+                              installer, callback));
 }
 
 }  // namespace
@@ -296,7 +284,7 @@ void Component::State::TransitionState(std::unique_ptr<State> next_state) {
     is_final_ = true;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback(), base::Passed(&next_state)));
+      FROM_HERE, base::BindOnce(callback(), base::Passed(&next_state)));
 }
 
 Component::StateNew::StateNew(Component* component)
@@ -583,16 +571,16 @@ void Component::StateUpdatingDiff::DoHandle() {
 
   component.NotifyObservers(Events::COMPONENT_UPDATE_READY);
 
-  update_context.blocking_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&update_client::StartInstallOnBlockingTaskRunner,
-                 base::ThreadTaskRunnerHandle::Get(),
-                 update_context.blocking_task_runner,
-                 component.crx_component_.pk_hash, component.crx_path_,
-                 component.next_fp_, component.crx_component_.installer,
-                 update_context.config->CreateOutOfProcessPatcher(),
-                 base::Bind(&Component::StateUpdatingDiff::InstallComplete,
-                            base::Unretained(this))));
+  base::CreateSequencedTaskRunnerWithTraits(kTaskTraits)
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(
+                     &update_client::StartInstallOnBlockingTaskRunner,
+                     base::ThreadTaskRunnerHandle::Get(),
+                     component.crx_component_.pk_hash, component.crx_path_,
+                     component.next_fp_, component.crx_component_.installer,
+                     update_context.config->CreateOutOfProcessPatcher(),
+                     base::Bind(&Component::StateUpdatingDiff::InstallComplete,
+                                base::Unretained(this))));
 }
 
 void Component::StateUpdatingDiff::InstallComplete(int error_category,
@@ -642,16 +630,16 @@ void Component::StateUpdating::DoHandle() {
 
   component.NotifyObservers(Events::COMPONENT_UPDATE_READY);
 
-  update_context.blocking_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&update_client::StartInstallOnBlockingTaskRunner,
-                 base::ThreadTaskRunnerHandle::Get(),
-                 update_context.blocking_task_runner,
-                 component.crx_component_.pk_hash, component.crx_path_,
-                 component.next_fp_, component.crx_component_.installer,
-                 update_context.config->CreateOutOfProcessPatcher(),
-                 base::Bind(&Component::StateUpdating::InstallComplete,
-                            base::Unretained(this))));
+  base::CreateSequencedTaskRunnerWithTraits(kTaskTraits)
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&update_client::StartInstallOnBlockingTaskRunner,
+                         base::ThreadTaskRunnerHandle::Get(),
+                         component.crx_component_.pk_hash, component.crx_path_,
+                         component.next_fp_, component.crx_component_.installer,
+                         update_context.config->CreateOutOfProcessPatcher(),
+                         base::Bind(&Component::StateUpdating::InstallComplete,
+                                    base::Unretained(this))));
 }
 
 void Component::StateUpdating::InstallComplete(int error_category,
@@ -733,8 +721,7 @@ void Component::StateRun::DoHandle() {
 
   const auto& component = State::component();
   action_runner_ = base::MakeUnique<ActionRunner>(
-      component, component.update_context_.blocking_task_runner,
-      component.update_context_.config->GetRunActionKeyHash());
+      component, component.update_context_.config->GetRunActionKeyHash());
 
   action_runner_->Run(
       base::Bind(&StateRun::ActionRunComplete, base::Unretained(this)));

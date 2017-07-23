@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/client_update_protocol/ecdsa.h"
@@ -111,9 +110,9 @@ void RequestSender::SendInternal() {
       SendProtocolRequest(url, request_body_, this, config_->RequestContext());
   if (!url_fetcher_.get())
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&RequestSender::SendInternalComplete, base::Unretained(this),
-                   -1, std::string(), std::string(), 0));
+        FROM_HERE, base::BindOnce(&RequestSender::SendInternalComplete,
+                                  base::Unretained(this), -1, std::string(),
+                                  std::string(), 0));
 }
 
 void RequestSender::SendInternalComplete(int error,
@@ -123,8 +122,8 @@ void RequestSender::SendInternalComplete(int error,
   if (!error) {
     if (!use_signing_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(request_sender_callback_, 0, response_body,
-                                retry_after_sec));
+          FROM_HERE, base::BindOnce(request_sender_callback_, 0, response_body,
+                                    retry_after_sec));
       return;
     }
 
@@ -132,8 +131,8 @@ void RequestSender::SendInternalComplete(int error,
     DCHECK(signer_.get());
     if (signer_->ValidateResponse(response_body, response_etag)) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(request_sender_callback_, 0, response_body,
-                                retry_after_sec));
+          FROM_HERE, base::BindOnce(request_sender_callback_, 0, response_body,
+                                    retry_after_sec));
       return;
     }
 
@@ -146,8 +145,8 @@ void RequestSender::SendInternalComplete(int error,
   // should not send further request until the cooldown has expired.
   if (retry_after_sec <= 0 && ++cur_url_ != urls_.end() &&
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&RequestSender::SendInternal, base::Unretained(this)))) {
+          FROM_HERE, base::BindOnce(&RequestSender::SendInternal,
+                                    base::Unretained(this)))) {
     return;
   }
 
@@ -174,16 +173,17 @@ void RequestSender::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&RequestSender::SendInternalComplete,
-                            base::Unretained(this), fetch_error, response_body,
-                            GetStringHeaderValue(source, kHeaderEtag),
-                            static_cast<int>(retry_after_sec)));
+      FROM_HERE,
+      base::BindOnce(&RequestSender::SendInternalComplete,
+                     base::Unretained(this), fetch_error, response_body,
+                     GetStringHeaderValue(source, kHeaderEtag),
+                     static_cast<int>(retry_after_sec)));
 }
 
 void RequestSender::HandleSendError(int error, int retry_after_sec) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(request_sender_callback_, error, std::string(),
-                            retry_after_sec));
+      FROM_HERE, base::BindOnce(request_sender_callback_, error, std::string(),
+                                retry_after_sec));
 }
 
 std::string RequestSender::GetKey(const char* key_bytes_base64) {

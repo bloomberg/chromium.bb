@@ -22,10 +22,6 @@
 class ComponentsUI;
 class PluginObserver;
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace policy {
 class ComponentUpdaterPolicyTest;
 }
@@ -128,9 +124,6 @@ class ComponentUpdateService {
   // is called while still on cooldown, |callback| will be called immediately.
   virtual void MaybeThrottle(const std::string& id,
                              const base::Closure& callback) = 0;
-
-  // Returns a task runner suitable for use by component installers.
-  virtual scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() = 0;
 
   virtual ~ComponentUpdateService() {}
 
