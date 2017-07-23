@@ -2317,6 +2317,8 @@ crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-creden
 crbug.com/435547 virtual/mojo-loading/http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
 
 crbug.com/747502 paint/roundedrects/input-with-rounded-rect-and-shadow.html [ NeedsManualRebaseline ]
+crbug.com/747502 fast/borders/border-radius-with-box-shadow.html [ NeedsManualRebaseline ]
+crbug.com/747502 paint/roundedrects/circle-with-shadow.html [ NeedsManualRebaseline ]
 
 crbug.com/697971 [ Mac10.12 ] fast/text/flexbox-selection-nested.html [ Skip ]
 crbug.com/697971 [ Mac10.12 ] fast/text/flexbox-selection.html [ Skip ]
