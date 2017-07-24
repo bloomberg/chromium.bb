@@ -6,11 +6,19 @@
 // proper PAM session. It will generally be run as root and drop privileges to
 // the specified user before running the me2me session script.
 
+// Usage: user-session start [--foreground] [user]
+//
+// Options:
+//   --foreground  - Don't daemonize.
+//   user          - Create a session for the specified user. Required when
+//                   running as root, not allowed when running as a normal user.
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <grp.h>
+#include <limits.h>
 #include <pwd.h>
 #include <unistd.h>
 
@@ -29,9 +37,9 @@
 
 #include <security/pam_appl.h>
 
-#include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -41,30 +49,20 @@
 namespace {
 
 const char kPamName[] = "chrome-remote-desktop";
-
-const char kHelpSwitchName[] = "help";
-const char kQuestionSwitchName[] = "?";
-const char kUserSwitchName[] = "user";
-const char kScriptSwitchName[] = "me2me-script";
-const char kForegroundSwitchName[] = "foreground";
+const char kScriptName[] = "chrome-remote-desktop";
+const char kForegroundFlag[] = "--foreground";
 
 // This template will be formatted by strftime and then used by mkstemp
 const char kLogFileTemplate[] =
     "/tmp/chrome_remote_desktop_%Y%m%d_%H%M%S_XXXXXX";
 
 const char kUsageMessage[] =
-    "Usage: %s [options]\n"
-    "\n"
-    "Options:\n"
-    "  --help, -?               - Print this message.\n"
-    "  --user=<user>            - Create session as the specified user. "
-                                 "(Must run as root.)\n"
-    "  --me2me-script=<script>  - Location of the me2me python script "
-                                 "(required)\n"
-    "  --foreground             - Don't daemonize.\n";
+    "This program is not intended to be run by end users. To configure Chrome\n"
+    "Remote Desktop, please install the app from the Chrome Web Store:\n"
+    "https://chrome.google.com/remotedesktop\n";
 
-void PrintUsage(const base::FilePath& program_name) {
-  std::printf(kUsageMessage, program_name.MaybeAsASCII().c_str());
+void PrintUsage() {
+  std::fputs(kUsageMessage, stderr);
 }
 
 // Shell-escapes a single argument in a way that is compatible with various
@@ -243,15 +241,66 @@ class PamHandle {
   DISALLOW_COPY_AND_ASSIGN(PamHandle);
 };
 
+std::string FindScriptPath() {
+  base::FilePath path;
+  bool result = base::ReadSymbolicLink(base::FilePath("/proc/self/exe"), &path);
+  PCHECK(result) << "Failed to determine binary location";
+  CHECK(path.IsAbsolute()) << "Retrieved binary location not absolute";
+
+  return path.DirName().Append(kScriptName).value();
+}
+
+// Execs the me2me script.
+// This function is called after forking and dropping privileges. It never
+// returns.
+void ExecMe2MeScript(base::EnvironmentMap environment,
+                     const struct passwd* pwinfo) {
+  // By convention, a login shell is signified by preceeding the shell name in
+  // argv[0] with a '-'.
+  std::string shell_name =
+      '-' + base::FilePath(pwinfo->pw_shell).BaseName().value();
+
+  base::Optional<std::string> escaped_script_path =
+      ShellEscapeArgument(FindScriptPath());
+  CHECK(escaped_script_path) << "Could not escape script path";
+
+  std::string shell_arg =
+      *escaped_script_path + " --start --foreground --keep-parent-env";
+
+  environment["USER"] = pwinfo->pw_name;
+  environment["LOGNAME"] = pwinfo->pw_name;
+  environment["HOME"] = pwinfo->pw_dir;
+  environment["SHELL"] = pwinfo->pw_shell;
+  if (!environment.count("PATH")) {
+    environment["PATH"] = "/bin:/usr/bin";
+  }
+
+  std::vector<std::string> env_strings;
+  for (const auto& env_var : environment) {
+    env_strings.emplace_back(env_var.first + "=" + env_var.second);
+  }
+
+  std::vector<const char*> arg_ptrs = {shell_name.c_str(), "-c",
+                                       shell_arg.c_str(), nullptr};
+  std::vector<const char*> env_ptrs;
+  env_ptrs.reserve(env_strings.size() + 1);
+  for (const auto& env_string : env_strings) {
+    env_ptrs.push_back(env_string.c_str());
+  }
+  env_ptrs.push_back(nullptr);
+
+  execve(pwinfo->pw_shell, const_cast<char* const*>(arg_ptrs.data()),
+         const_cast<char* const*>(env_ptrs.data()));
+  PLOG(FATAL) << "Failed to exec login shell " << pwinfo->pw_shell;
+}
+
 // Runs the me2me script in a PAM session. Exits the program on failure.
 // If chown_log is true, the owner and group of the file associated with stdout
-// will be changed to the target user.
-void ExecuteSession(std::string user, base::StringPiece script_path,
-                    bool chown_log) {
-  //////////////////////////////////////////////////////////////////////////////
-  // Set up the PAM session
-  //////////////////////////////////////////////////////////////////////////////
-
+// will be changed to the target user. If match_uid is specified, this function
+// will fail if the final user id does not match the one provided.
+void ExecuteSession(std::string user,
+                    bool chown_log,
+                    base::Optional<uid_t> match_uid) {
   PamHandle pam_handle(kPamName, user.c_str(), &kPamConversation);
   CHECK(pam_handle.IsInitialized()) << "Failed to initialize PAM";
 
@@ -285,101 +334,57 @@ void ExecuteSession(std::string user, base::StringPiece script_path,
   // The above may have remapped the user.
   user =  pam_handle.GetUser().value_or(std::move(user));
 
-  base::Optional<base::EnvironmentMap> pam_environment =
-      pam_handle.GetEnvironment();
-  CHECK(pam_environment) << "Failed to get environment from PAM";
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Prepare to execute remoting session process
-  //////////////////////////////////////////////////////////////////////////////
-
-  // Callback to be run in child process after fork and before exec.
-  // chdir is called manually instead of using LaunchOptions.current_directory
-  // because it should take place after setuid. (This both makes sure the user
-  // has the proper permissions and also apparently avoids some obscure errors
-  // that can occur when accessing some network filesystems as the wrong user.)
-  class PreExecDelegate : public base::LaunchOptions::PreExecDelegate {
-   public:
-    void RunAsyncSafe() override {
-      // Use RAW_CHECK to avoid allocating post-fork.
-      RAW_CHECK(setuid(pwinfo_->pw_uid) == 0);
-      RAW_CHECK(chdir(pwinfo_->pw_dir) == 0);
-    }
-
-    PreExecDelegate(struct passwd* pwinfo) : pwinfo_(pwinfo) {}
-
-   private:
-    struct passwd* pwinfo_;
-  };
-
   // Fetch pwinfo again, as it may have been invalidated or the user name might
   // have been remapped.
   pwinfo = getpwnam(user.c_str());
   PCHECK(pwinfo != nullptr) << "getpwnam failed";
+
+  if (match_uid && pwinfo->pw_uid != *match_uid) {
+    LOG(FATAL) << "PAM remapped username to one with a different user ID.";
+  }
 
   if (chown_log) {
     int result = fchown(STDOUT_FILENO, pwinfo->pw_uid, pwinfo->pw_gid);
     PLOG_IF(WARNING, result != 0) << "Failed to change log file owner";
   }
 
-  PreExecDelegate pre_exec_delegate(pwinfo);
+  pid_t child_pid = fork();
+  PCHECK(child_pid >= 0) << "fork failed";
+  if (child_pid == 0) {
+    PCHECK(setuid(pwinfo->pw_uid) == 0) << "setuid failed";
+    PCHECK(chdir(pwinfo->pw_dir) == 0) << "chdir to $HOME failed";
+    base::Optional<base::EnvironmentMap> pam_environment =
+        pam_handle.GetEnvironment();
+    CHECK(pam_environment) << "Failed to get environment from PAM";
+    ExecMe2MeScript(std::move(*pam_environment), pwinfo);  // Never returns
+  } else {
+    // waitpid will return if the child is ptraced, so loop until the process
+    // actually exits.
+    int status;
+    do {
+      pid_t wait_result = waitpid(child_pid, &status, 0);
 
-  base::LaunchOptions launch_options;
+      // Die if wait fails so we don't close the PAM session while the child is
+      // still running.
+      PCHECK(wait_result >= 0) << "wait failed";
+    } while (!WIFEXITED(status) && !WIFSIGNALED(status));
 
-  // Required to allow suid binaries to function in the session.
-  launch_options.allow_new_privs = true;
+    if (WIFEXITED(status)) {
+      if (WEXITSTATUS(status) == EXIT_SUCCESS) {
+        LOG(INFO) << "Child exited successfully";
+      } else {
+        LOG(WARNING) << "Child exited with status " << WEXITSTATUS(status);
+      }
+    } else if (WIFSIGNALED(status)) {
+      LOG(WARNING) << "Child terminated by signal " << WTERMSIG(status);
+    }
 
-  launch_options.kill_on_parent_death = true;
-
-  launch_options.clear_environ = true;
-  launch_options.environ = std::move(*pam_environment);
-  launch_options.environ["USER"] = pwinfo->pw_name;
-  launch_options.environ["LOGNAME"] = pwinfo->pw_name;
-  launch_options.environ["HOME"] = pwinfo->pw_dir;
-  launch_options.environ["SHELL"] = pwinfo->pw_shell;
-  if (!launch_options.environ.count("PATH")) {
-    launch_options.environ["PATH"] = "/bin:/usr/bin";
+    // Best effort PAM cleanup
+    if (pam_handle.CloseSession(0) != PAM_SUCCESS) {
+      LOG(WARNING) << "Failed to close PAM session";
+    }
+    ignore_result(pam_handle.SetCredentials(PAM_DELETE_CRED));
   }
-
-  launch_options.pre_exec_delegate = &pre_exec_delegate;
-
-  // By convention, a login shell is signified by preceeding the shell name in
-  // argv[0] with a '-'.
-  base::CommandLine command_line(base::FilePath(
-      '-' + base::FilePath(pwinfo->pw_shell).BaseName().value()));
-
-  base::Optional<std::string> escaped_script_path =
-      ShellEscapeArgument(script_path);
-
-  CHECK(escaped_script_path) << "Could not escape script path";
-
-  command_line.AppendSwitch("-c");
-  command_line.AppendArg(*escaped_script_path +
-                         " --start --foreground --keep-parent-env");
-
-  // Tell LaunchProcess where to find the executable, since argv[0] doesn't
-  // point to it.
-  launch_options.real_path = base::FilePath(pwinfo->pw_shell);
-
-  //////////////////////////////////////////////////////////////////////////////
-  // We're ready to execute the remoting session
-  //////////////////////////////////////////////////////////////////////////////
-
-  base::Process child = base::LaunchProcess(command_line, launch_options);
-
-  if (child.IsValid()) {
-    int exit_code = 0;
-    // Die if wait fails so we don't close the PAM session while the child is
-    // still running.
-    CHECK(child.WaitForExit(&exit_code)) << "Failed to wait for child process";
-    LOG_IF(WARNING, exit_code != 0) << "Child did not exit normally";
-  }
-
-  // Best effort PAM cleanup
-  if (pam_handle.CloseSession(0) != PAM_SUCCESS) {
-    LOG(WARNING) << "Failed to close PAM session";
-  }
-  ignore_result(pam_handle.SetCredentials(PAM_DELETE_CRED));
 }
 
 // Opens a temp file for logging. Exits the program on failure.
@@ -400,6 +405,33 @@ int OpenLogFile() {
   return fd;
 }
 
+// Find the username for the current user. If either USER or LOGNAME is set to
+// a user matching our real user id, we return that. Otherwise, we use getpwuid
+// to attempt a reverse lookup. Note: It's possible for multiple usernames to
+// share the same user id (e.g., to allow a user to have logins with different
+// home directories or group membership, but be considered the same user as far
+// as file permissions are concerned). Consulting USER/LOGNAME allows us to pick
+// the correct entry in these circumstances.
+std::string FindCurrentUsername() {
+  uid_t real_uid = getuid();
+  struct passwd* pwinfo;
+  for (const char* var : {"USER", "LOGNAME"}) {
+    const char* value = getenv(var);
+    if (value) {
+      pwinfo = getpwnam(value);
+      // USER and LOGNAME can be overridden, so make sure the value is valid
+      // and matches the UID of the invoking user.
+      if (pwinfo && pwinfo->pw_uid == real_uid) {
+        return pwinfo->pw_name;
+      }
+    }
+  }
+  errno = 0;
+  pwinfo = getpwuid(real_uid);
+  PCHECK(pwinfo) << "getpwuid failed";
+  return pwinfo->pw_name;
+}
+
 // Daemonizes the process. Output is redirected to a file. Exits the program on
 // failure.
 //
@@ -411,7 +443,6 @@ int OpenLogFile() {
 // it turns out to be desired, it can be implemented by setting up a pipe and
 // passing a file descriptor to the Python script.
 void Daemonize() {
-
   int log_fd = OpenLogFile();
   int devnull_fd = open("/dev/null", O_RDONLY);
   PCHECK(devnull_fd != -1);
@@ -456,34 +487,54 @@ void Daemonize() {
 }  // namespace
 
 int main(int argc, char** argv) {
-  base::CommandLine::Init(argc, argv);
-
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(kHelpSwitchName) ||
-      command_line->HasSwitch(kQuestionSwitchName)) {
-    PrintUsage(command_line->GetProgram());
-    std::exit(EXIT_SUCCESS);
-  }
-
-  base::FilePath script_path =
-      command_line->GetSwitchValuePath(kScriptSwitchName);
-  std::string user = command_line->GetSwitchValueNative(kUserSwitchName);
-  bool foreground = command_line->HasSwitch(kForegroundSwitchName);
-
-  if (script_path.empty()) {
-    std::fputs("The path to the me2me python script is required.\n", stderr);
+  if (argc < 2 || strcmp(argv[1], "start") != 0) {
+    PrintUsage();
     std::exit(EXIT_FAILURE);
   }
 
-  if (user.empty()) {
-    std::fputs("The target user must be specified.\n", stderr);
+  // Skip initial args
+  argc -= 2;
+  argv += 2;
+
+  bool foreground = false;
+  if (argc >= 1 && strcmp(argv[0], kForegroundFlag) == 0) {
+    foreground = true;
+    argc -= 1;
+    argv += 1;
+  }
+
+  if (argc > 1) {
+    std::fputs("Too many command-line arguments.\n", stderr);
     std::exit(EXIT_FAILURE);
+  }
+
+  uid_t real_uid = getuid();
+  std::string user;
+
+  // Note: This logic is security sensitive. It is imperative that a non-root
+  // user is not allowed to specify an arbitrary target user.
+  if (argc == 0) {
+    if (real_uid == 0) {
+      std::fputs("Target user must be specified when run as root.\n", stderr);
+      std::exit(EXIT_FAILURE);
+    }
+    user = FindCurrentUsername();
+  } else {
+    if (real_uid != 0) {
+      std::fputs("Target user may not be specified by non-root users.\n",
+                 stderr);
+      std::exit(EXIT_FAILURE);
+    }
+    user = argv[0];
   }
 
   if (!foreground) {
     Daemonize();
   }
 
-  ExecuteSession(std::move(user), script_path.value(), !foreground);
+  // Daemonizing redirects stdout to a log file, which we want to be owned by
+  // the target user.
+  bool chown_stdout = !foreground;
+  ExecuteSession(std::move(user), chown_stdout,
+                 real_uid != 0 ? base::make_optional(real_uid) : base::nullopt);
 }
