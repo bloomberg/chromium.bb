@@ -99,7 +99,8 @@ bool StructTraits<content_settings::mojom::RendererContentSettingRulesDataView,
          RendererContentSettingRules* out) {
   return data.ReadImageRules(&out->image_rules) &&
          data.ReadScriptRules(&out->script_rules) &&
-         data.ReadAutoplayRules(&out->autoplay_rules);
+         data.ReadAutoplayRules(&out->autoplay_rules) &&
+         data.ReadClientHintsRules(&out->client_hints_rules);
 }
 
 }  // namespace mojo

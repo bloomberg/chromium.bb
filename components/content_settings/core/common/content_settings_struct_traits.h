@@ -136,6 +136,11 @@ struct StructTraits<
     return r.autoplay_rules;
   }
 
+  static const std::vector<ContentSettingPatternSource>& client_hints_rules(
+      const RendererContentSettingRules& r) {
+    return r.client_hints_rules;
+  }
+
   static bool Read(
       content_settings::mojom::RendererContentSettingRulesDataView data,
       RendererContentSettingRules* out);

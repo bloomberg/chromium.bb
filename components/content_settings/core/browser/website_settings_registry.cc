@@ -178,6 +178,11 @@ void WebsiteSettingsRegistry::Init() {
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
            DESKTOP | PLATFORM_ANDROID,
            WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
+  Register(CONTENT_SETTINGS_TYPE_CLIENT_HINTS, "client-hints", nullptr,
+           WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::LOSSY,
+           WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
+           DESKTOP | PLATFORM_ANDROID,
+           WebsiteSettingsInfo::DONT_INHERIT_IN_INCOGNITO);
 }
 
 }  // namespace content_settings
