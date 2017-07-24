@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser.infobar;
 
+import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO;
+
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -55,7 +58,9 @@ public class ReaderModeInfoBar extends InfoBar {
         prompt.setGravity(Gravity.CENTER_VERTICAL);
         prompt.setOnClickListener(mNavigateListener);
 
-        layout.findViewById(R.id.infobar_icon).setOnClickListener(mNavigateListener);
+        ImageView iconView = layout.findViewById(R.id.infobar_icon);
+        iconView.setOnClickListener(mNavigateListener);
+        iconView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
         final int messagePadding = getContext().getResources().getDimensionPixelOffset(
                 R.dimen.reader_mode_infobar_text_padding);
         prompt.setPadding(0, messagePadding, 0, messagePadding);
