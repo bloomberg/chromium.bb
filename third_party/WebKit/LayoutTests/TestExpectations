@@ -2838,6 +2838,8 @@ crbug.com/678499 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/
 
 crbug.com/680050 inspector/sources/debugger-ui/watch-expressions-panel-switch.html [ Pass Timeout ]
 
+crbug.com/747751 http/tests/inspector/application-panel/resources-panel-resource-preview.html [ Failure Pass ]
+
 crbug.com/689781 http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
 crbug.com/689781 virtual/mojo-loading/http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
 
