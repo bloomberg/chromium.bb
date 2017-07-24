@@ -122,6 +122,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandle : public TouchSelectionDraggable {
 
   const gfx::PointF& focus_bottom() const { return focus_bottom_; }
   TouchHandleOrientation orientation() const { return orientation_; }
+  float alpha() const { return alpha_; }
 
  private:
   gfx::PointF ComputeHandleOrigin() const;

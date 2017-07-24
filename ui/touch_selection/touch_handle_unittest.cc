@@ -337,8 +337,11 @@ TEST_F(TouchHandleTest, Enabled) {
 
   // Disabling mid-animation should cancel the animation.
   handle.SetEnabled(true);
-  UpdateHandleVisibility(handle, false, TouchHandle::ANIMATION_SMOOTH);
-  EXPECT_TRUE(drawable().visible);
+  UpdateHandleVisibility(handle, true, TouchHandle::ANIMATION_SMOOTH);
+  EXPECT_TRUE(drawable().enabled);
+  EXPECT_EQ(0.f, drawable().alpha);
+  // Since alpha value is 0, visibility of drawable will be false.
+  EXPECT_FALSE(drawable().visible);
   EXPECT_TRUE(GetAndResetNeedsAnimate());
   handle.SetEnabled(false);
   EXPECT_FALSE(drawable().enabled);

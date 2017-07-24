@@ -876,15 +876,20 @@ TEST_F(TouchSelectionControllerTest, TemporarilyHidden) {
   EXPECT_FALSE(test_controller.GetStartVisible());
   EXPECT_FALSE(test_controller.GetEndVisible());
 
+  EXPECT_EQ(0.f, test_controller.GetStartAlpha());
+  EXPECT_EQ(0.f, test_controller.GetEndAlpha());
+
   visible = false;
   ChangeInsertion(insertion_rect, visible);
   EXPECT_FALSE(GetAndResetNeedsAnimate());
   EXPECT_FALSE(test_controller.GetStartVisible());
+  EXPECT_EQ(0.f, test_controller.GetStartAlpha());
 
   visible = true;
   ChangeInsertion(insertion_rect, visible);
   EXPECT_FALSE(GetAndResetNeedsAnimate());
   EXPECT_FALSE(test_controller.GetStartVisible());
+  EXPECT_EQ(0.f, test_controller.GetStartAlpha());
 
   controller().SetTemporarilyHidden(false);
   EXPECT_TRUE(GetAndResetNeedsAnimate());
@@ -935,6 +940,8 @@ TEST_F(TouchSelectionControllerTest, LongPressDrag) {
   // drag gesture are pending.
   EXPECT_FALSE(test_controller.GetStartVisible());
   EXPECT_FALSE(test_controller.GetEndVisible());
+  EXPECT_EQ(0.f, test_controller.GetStartAlpha());
+  EXPECT_EQ(0.f, test_controller.GetEndAlpha());
 
   // The selection coordinates should reflect the drag movement.
   gfx::PointF fixed_offset = start_rect.CenterPoint();
@@ -970,6 +977,8 @@ TEST_F(TouchSelectionControllerTest, LongPressDrag) {
   // The handles should still be hidden.
   EXPECT_FALSE(test_controller.GetStartVisible());
   EXPECT_FALSE(test_controller.GetEndVisible());
+  EXPECT_EQ(0.f, test_controller.GetStartAlpha());
+  EXPECT_EQ(0.f, test_controller.GetEndAlpha());
 
   // Releasing the touch sequence should end the drag and show the handles.
   EXPECT_FALSE(controller().WillHandleTouchEvent(event.ReleasePoint()));
@@ -1002,6 +1011,9 @@ TEST_F(TouchSelectionControllerTest, LongPressNoDrag) {
   EXPECT_FALSE(test_controller.GetStartVisible());
   EXPECT_FALSE(test_controller.GetEndVisible());
 
+  EXPECT_EQ(0.f, test_controller.GetStartAlpha());
+  EXPECT_EQ(0.f, test_controller.GetEndAlpha());
+
   // If no drag movement occurs, the handles should reappear after the touch
   // is released.
   EXPECT_FALSE(controller().WillHandleTouchEvent(event.ReleasePoint()));
@@ -1031,6 +1043,9 @@ TEST_F(TouchSelectionControllerTest, NoLongPressDragIfDisabled) {
   EXPECT_TRUE(test_controller.GetStartVisible());
   EXPECT_TRUE(test_controller.GetEndVisible());
 
+  EXPECT_EQ(1.f, test_controller.GetStartAlpha());
+  EXPECT_EQ(1.f, test_controller.GetEndAlpha());
+
   // Subsequent motion of the same touch sequence after longpress shouldn't
   // trigger drag selection.
   EXPECT_FALSE(controller().WillHandleTouchEvent(event.MovePoint(0, 0, 0)));
@@ -1045,6 +1060,9 @@ TEST_F(TouchSelectionControllerTest, NoLongPressDragIfDisabled) {
   EXPECT_THAT(GetAndResetEvents(), IsEmpty());
   EXPECT_TRUE(test_controller.GetStartVisible());
   EXPECT_TRUE(test_controller.GetEndVisible());
+
+  EXPECT_EQ(1.f, test_controller.GetStartAlpha());
+  EXPECT_EQ(1.f, test_controller.GetEndAlpha());
 }
 
 TEST_F(TouchSelectionControllerTest, RectBetweenBounds) {
