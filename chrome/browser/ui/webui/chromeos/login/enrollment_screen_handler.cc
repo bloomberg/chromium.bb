@@ -398,7 +398,7 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
                IDS_AD_MACHINE_NAME_INPUT_LABEL);
   builder->Add("oauthEnrollAdDomainJoinWelcomeMessage",
                IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE);
-  builder->Add("adLoginUsername", IDS_AD_ENROLLMENT_LOGIN_USER);
+  builder->Add("adEnrollmentLoginUsername", IDS_AD_ENROLLMENT_LOGIN_USER);
   builder->Add("adLoginInvalidUsername", IDS_AD_INVALID_USERNAME);
   builder->Add("adLoginPassword", IDS_AD_LOGIN_PASSWORD);
   builder->Add("adLoginInvalidPassword", IDS_AD_INVALID_PASSWORD);

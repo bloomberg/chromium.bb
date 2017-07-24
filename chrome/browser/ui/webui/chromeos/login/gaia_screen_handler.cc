@@ -438,7 +438,7 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_SAML_INTERSTITIAL_NEXT_BUTTON_TEXT);
 
   builder->Add("adAuthWelcomeMessage", IDS_AD_DOMAIN_AUTH_WELCOME_MESSAGE);
-  builder->Add("adLoginUsername", IDS_AD_AUTH_LOGIN_USER);
+  builder->Add("adAuthLoginUsername", IDS_AD_AUTH_LOGIN_USER);
   builder->Add("adLoginPassword", IDS_AD_LOGIN_PASSWORD);
 }
 

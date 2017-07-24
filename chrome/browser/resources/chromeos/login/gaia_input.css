@@ -32,5 +32,6 @@ paper-input-container > label > span {
 
 #domainLabel {
   direction: ltr;
+  padding-top: 2px;
   width: auto;
 }

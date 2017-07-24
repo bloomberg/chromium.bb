@@ -37,6 +37,10 @@ Polymer({
      */
     userRealm: String,
     /**
+     * Label for the user input.
+     */
+    userNameLabel: String,
+    /**
      * Welcome message on top of the UI.
      */
     adWelcomeMessage: String,
