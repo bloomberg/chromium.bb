@@ -793,6 +793,7 @@ SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
   DCHECK(base::ContainsKey(initial_settings_, SETTINGS_HEADER_TABLE_SIZE));
   DCHECK(base::ContainsKey(initial_settings_, SETTINGS_MAX_CONCURRENT_STREAMS));
   DCHECK(base::ContainsKey(initial_settings_, SETTINGS_INITIAL_WINDOW_SIZE));
+  DCHECK(base::ContainsKey(initial_settings_, SETTINGS_MAX_HEADER_LIST_SIZE));
 
   // TODO(mbelshe): consider randomization of the stream_hi_water_mark.
 }
@@ -883,13 +884,11 @@ void SpdySession::InitializeWithSocket(
   session_send_window_size_ = kDefaultInitialWindowSize;
   session_recv_window_size_ = kDefaultInitialWindowSize;
 
-  buffered_spdy_framer_ = base::MakeUnique<BufferedSpdyFramer>(net_log_);
+  buffered_spdy_framer_ = base::MakeUnique<BufferedSpdyFramer>(
+      initial_settings_.find(SETTINGS_MAX_HEADER_LIST_SIZE)->second, net_log_);
   buffered_spdy_framer_->set_visitor(this);
   buffered_spdy_framer_->set_debug_visitor(this);
   buffered_spdy_framer_->UpdateHeaderDecoderTableSize(max_header_table_size_);
-  // Do not bother decoding response headers more than a factor over the limit.
-  buffered_spdy_framer_->set_max_decode_buffer_size_bytes(2 *
-                                                          kMaxHeaderListSize);
 
   net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_INITIALIZED,
                     base::Bind(&NetLogSpdyInitializedCallback,

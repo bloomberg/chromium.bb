@@ -5674,6 +5674,7 @@ TEST_F(SpdyNetworkTransactionTest, WindowUpdateSent) {
   initial_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       kSpdyMaxConcurrentPushedStreams;
   initial_settings[SETTINGS_INITIAL_WINDOW_SIZE] = stream_max_recv_window_size;
+  initial_settings[SETTINGS_MAX_HEADER_LIST_SIZE] = kSpdyMaxHeaderListSize;
   SpdySerializedFrame initial_settings_frame(
       spdy_util_.ConstructSpdySettings(initial_settings));
 
