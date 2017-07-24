@@ -217,10 +217,10 @@ Polymer({
    */
   setProxyAsync_: function(proxy) {
     // Set this.proxy_ after dom-repeat has been stamped.
-    this.async(function() {
+    this.async(() => {
       this.proxy_ = proxy;
       this.proxyModified_ = false;
-    }.bind(this));
+    });
   },
 
   /** @private */

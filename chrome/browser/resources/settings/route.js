@@ -429,9 +429,9 @@ cr.define('settings', function() {
       this.currentRoute = route;
       this.currentQueryParameters_ = queryParameters;
       this.wasLastRouteChangePopstate_ = isPopstate;
-      routeObservers.forEach(function(observer) {
+      routeObservers.forEach(observer => {
         observer.currentRouteChanged(this.currentRoute, oldRoute);
-      }.bind(this));
+      });
     }
 
     /** @return {!settings.Route} */
@@ -460,9 +460,9 @@ cr.define('settings', function() {
       var canonicalPath = path.replace(CANONICAL_PATH_REGEX, '$1$2');
 
       // TODO(tommycli): Use Object.values once Closure compilation supports it.
-      var matchingKey = Object.keys(this.routes_).find(function(key) {
-        return this.routes_[key].path == canonicalPath;
-      }.bind(this));
+      var matchingKey =
+          Object.keys(this.routes_)
+              .find(key => this.routes_[key].path == canonicalPath);
 
       return !!matchingKey ? this.routes_[matchingKey] : null;
     }

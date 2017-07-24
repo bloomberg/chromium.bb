@@ -88,11 +88,11 @@ Polymer({
      [R.SITE_SETTINGS_USB_DEVICES, 'usb-devices'],
      [R.SITE_SETTINGS_PDF_DOCUMENTS, 'pdf-documents'],
      [R.SITE_SETTINGS_PROTECTED_CONTENT, 'protected-content'],
-    ].forEach(function(pair) {
+    ].forEach(pair => {
       var route = pair[0];
       var id = pair[1];
       this.focusConfig.set(route.path, '* /deep/ #' + id + ' .subpage-arrow');
-    }.bind(this));
+    });
   },
 
   /** @override */
@@ -146,11 +146,11 @@ Polymer({
    */
   updateDefaultValueLabel_: function(category) {
     this.browserProxy.getDefaultValueForContentType(category).then(
-        function(defaultValue) {
+        defaultValue => {
           this.set(
               'default_.' + Polymer.CaseMap.dashToCamelCase(category),
               defaultValue.setting);
-        }.bind(this));
+        });
   },
 
   /**

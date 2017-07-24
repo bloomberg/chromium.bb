@@ -65,7 +65,7 @@ Polymer({
   getLanguages_: function() {
     var filterValue =
         this.filterValue_ ? this.filterValue_.toLowerCase() : null;
-    return this.languages.supported.filter(function(language) {
+    return this.languages.supported.filter(language => {
       var isAvailableLanguage =
           !this.languageHelper.isLanguageEnabled(language.code);
 
@@ -77,7 +77,7 @@ Polymer({
 
       return language.displayName.toLowerCase().includes(filterValue) ||
           language.nativeDisplayName.toLowerCase().includes(filterValue);
-    }.bind(this));
+    });
   },
 
   /**
@@ -134,8 +134,8 @@ Polymer({
    */
   onActionButtonTap_: function() {
     this.$.dialog.close();
-    this.languagesToAdd_.forEach(function(languageCode) {
+    this.languagesToAdd_.forEach(languageCode => {
       this.languageHelper.enableLanguage(languageCode);
-    }.bind(this));
+    });
   },
 });

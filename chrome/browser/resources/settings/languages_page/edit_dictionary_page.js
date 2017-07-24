@@ -42,9 +42,9 @@ Polymer({
         /** @type {!LanguageSettingsPrivate} */
         (chrome.languageSettingsPrivate);
 
-    this.languageSettingsPrivate.getSpellcheckWords(function(words) {
+    this.languageSettingsPrivate.getSpellcheckWords(words => {
       this.words_ = words;
-    }.bind(this));
+    });
 
     this.languageSettingsPrivate.onCustomDictionaryChanged.addListener(
         this.onCustomDictionaryChanged_.bind(this));

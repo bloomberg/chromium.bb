@@ -139,9 +139,9 @@ Polymer({
 
     chrome.management.getAll(this.onGetAllExtensions_.bind(this));
 
-    this.networkingPrivate.getGlobalPolicy(function(policy) {
+    this.networkingPrivate.getGlobalPolicy(policy => {
       this.globalPolicy_ = policy;
-    }.bind(this));
+    });
   },
 
   /** @override */

@@ -142,15 +142,15 @@ var SettingsSectionElement = Polymer({
         this.animateCard_('fixed', startTop, endTop, startHeight, endHeight);
     animation.finished
         .then(
-            function() {
+            () => {
               this.classList.add('expanded');
-            }.bind(this),
+            },
             function() {})
-        .then(function() {
+        .then(() => {
           // Unset these changes whether the animation finished or canceled.
           this.classList.remove('expanding');
           this.style.height = '';
-        }.bind(this));
+        });
     return animation;
   },
 
@@ -223,15 +223,15 @@ var SettingsSectionElement = Polymer({
 
     animation.finished
         .then(
-            function() {
+            () => {
               this.classList.remove('expanded');
-            }.bind(this),
+            },
             function() {})
-        .then(function() {
+        .then(() => {
           // The card now determines the section's height automatically.
           this.style.height = '';
           this.classList.remove('collapsing');
-        }.bind(this));
+        });
     return animation;
   },
 

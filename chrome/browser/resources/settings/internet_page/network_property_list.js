@@ -109,12 +109,12 @@ Polymer({
    * @private
    */
   computeFilter_: function(prefix, propertyDict, editFieldTypes) {
-    return function(key) {
+    return key => {
       if (editFieldTypes.hasOwnProperty(key))
         return true;
       var value = this.getPropertyValue_(key, prefix, propertyDict);
       return value !== undefined && value !== '';
-    }.bind(this);
+    };
   },
 
   /**

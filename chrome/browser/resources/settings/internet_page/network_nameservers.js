@@ -115,9 +115,9 @@ Polymer({
     }
     this.nameservers_ = nameservers;
     // Set nameserversType_ after dom-repeat has been stamped.
-    this.async(function() {
+    this.async(() => {
       this.nameserversType_ = nameserversType;
-    }.bind(this));
+    });
   },
 
   /**

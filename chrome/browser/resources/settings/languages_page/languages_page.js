@@ -96,10 +96,10 @@ Polymer({
     this.showAddLanguagesDialog_ = true;
     this.async(function() {
       var dialog = this.$$('settings-add-languages-dialog');
-      dialog.addEventListener('close', function() {
+      dialog.addEventListener('close', () => {
         this.showAddLanguagesDialog_ = false;
         cr.ui.focusWithoutInk(assert(this.$.addLanguages));
-      }.bind(this));
+      });
     });
   },
 

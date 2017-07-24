@@ -37,9 +37,9 @@ Polymer({
    * @private
    */
   fetchUsbDevices_: function() {
-    this.browserProxy.fetchUsbDevices().then(function(deviceList) {
+    this.browserProxy.fetchUsbDevices().then(deviceList => {
       this.devices_ = deviceList;
-    }.bind(this));
+    });
   },
 
   /**

@@ -140,10 +140,10 @@ Polymer({
 
     this.apnSelectList_ = result;
     // Set selectedApn_ after dom-repeat has been stamped.
-    this.async(function() {
+    this.async(() => {
       this.selectedApn_ =
           (activeApn && activeApn.AccessPointName) || otherApn.AccessPointName;
-    }.bind(this));
+    });
   },
 
   /**

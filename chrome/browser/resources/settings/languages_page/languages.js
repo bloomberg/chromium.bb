@@ -180,39 +180,39 @@ Polymer({
     promises[0] = CrSettingsPrefs.initialized;
 
     // Get the language list.
-    promises[1] = new Promise(function(resolve) {
+    promises[1] = new Promise(resolve => {
       this.languageSettingsPrivate_.getLanguageList(resolve);
-    }.bind(this));
+    });
 
     // Get the translate target language.
-    promises[2] = new Promise(function(resolve) {
+    promises[2] = new Promise(resolve => {
       this.languageSettingsPrivate_.getTranslateTargetLanguage(resolve);
-    }.bind(this));
+    });
 
     if (cr.isChromeOS) {
-      promises[3] = new Promise(function(resolve) {
+      promises[3] = new Promise(resolve => {
         this.languageSettingsPrivate_.getInputMethodLists(function(lists) {
           resolve(lists.componentExtensionImes.concat(
               lists.thirdPartyExtensionImes));
         });
-      }.bind(this));
+      });
 
-      promises[4] = new Promise(function(resolve) {
+      promises[4] = new Promise(resolve => {
         this.inputMethodPrivate_.getCurrentInputMethod(resolve);
-      }.bind(this));
+      });
     }
 
     if (cr.isWindows || cr.isChromeOS) {
       // Fetch the starting UI language, which affects which actions should be
       // enabled.
       promises.push(this.browserProxy_.getProspectiveUILanguage().then(
-          function(prospectiveUILanguage) {
+          prospectiveUILanguage => {
             this.originalProspectiveUILanguage_ =
                 prospectiveUILanguage || window.navigator.language;
-          }.bind(this)));
+          }));
     }
 
-    Promise.all(promises).then(function(results) {
+    Promise.all(promises).then(results => {
       if (!this.isConnected) {
         // Return early if this element was detached from the DOM before this
         // async callback executes (can happen during testing).
@@ -223,7 +223,7 @@ Polymer({
       // which only exist for ChromeOS.
       this.createModel_(results[1], results[2], results[3], results[4]);
       this.resolver_.resolve();
-    }.bind(this));
+    });
 
     if (cr.isChromeOS) {
       this.boundOnInputMethodChanged_ = this.onInputMethodChanged_.bind(this);
@@ -444,9 +444,7 @@ Polymer({
 
     // Return only supported input methods.
     return enabledInputMethodIds
-        .map(function(id) {
-          return this.supportedInputMethodMap_.get(id);
-        }.bind(this))
+        .map(id => this.supportedInputMethodMap_.get(id))
         .filter(function(inputMethod) {
           return !!inputMethod;
         });
@@ -565,11 +563,9 @@ Polymer({
       var inputMethods = this.languageInputMethods_.get(languageCode) || [];
       for (var i = 0; i < inputMethods.length; i++) {
         var inputMethod = inputMethods[i];
-        var supportsOtherEnabledLanguages =
-            inputMethod.languageCodes.some(function(otherLanguageCode) {
-              return otherLanguageCode != languageCode &&
-                  this.isLanguageEnabled(otherLanguageCode);
-            }.bind(this));
+        var supportsOtherEnabledLanguages = inputMethod.languageCodes.some(
+            otherLanguageCode => otherLanguageCode != languageCode &&
+                this.isLanguageEnabled(otherLanguageCode));
         if (!supportsOtherEnabledLanguages)
           this.removeInputMethod(inputMethod.id);
       }

@@ -39,13 +39,12 @@ Polymer({
   onOkTap_: function() {
     this.browserProxy_.importPersonalCertificatePasswordSelected(this.password_)
         .then(
-            function() {
+            () => {
               /** @type {!CrDialogElement} */ (this.$.dialog).close();
-            }.bind(this),
-            /** @param {!CertificatesError} error */
-            function(error) {
+            },
+            error => {
               /** @type {!CrDialogElement} */ (this.$.dialog).close();
               this.fire('certificates-error', {error: error, anchor: null});
-            }.bind(this));
+            });
   },
 });

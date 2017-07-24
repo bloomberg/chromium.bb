@@ -55,10 +55,10 @@ Polymer({
   /** @override */
   ready: function() {
     // Omnibox search engine
-    var updateSearchEngines = function(searchEngines) {
+    var updateSearchEngines = searchEngines => {
       this.set('searchEngines_', searchEngines.defaults);
       this.requestHotwordInfoUpdate_();
-    }.bind(this);
+    };
     this.browserProxy_.getSearchEnginesList().then(updateSearchEngines);
     cr.addWebUIListener('search-engines-changed', updateSearchEngines);
 
@@ -70,9 +70,9 @@ Polymer({
     cr.addWebUIListener(
         'google-now-availability-changed',
         this.googleNowAvailabilityUpdate_.bind(this));
-    this.browserProxy_.getGoogleNowAvailability().then(function(available) {
+    this.browserProxy_.getGoogleNowAvailability().then(available => {
       this.googleNowAvailabilityUpdate_(available);
-    }.bind(this));
+    });
 
     this.focusConfig_ = new Map();
     if (settings.routes.SEARCH_ENGINES) {
@@ -111,9 +111,9 @@ Polymer({
 
   /** @private */
   requestHotwordInfoUpdate_: function() {
-    this.browserProxy_.getHotwordInfo().then(function(hotwordInfo) {
+    this.browserProxy_.getHotwordInfo().then(hotwordInfo => {
       this.hotwordInfoUpdate_(hotwordInfo);
-    }.bind(this));
+    });
   },
 
   /**

@@ -51,7 +51,7 @@ Polymer({
   /** @override */
   attached: function() {
     this.countryInfo = settings.address.CountryDetailManagerImpl.getInstance();
-    this.countryInfo.getCountryList().then(function(countryList) {
+    this.countryInfo.getCountryList().then(countryList => {
       this.countries_ = countryList;
 
       this.title_ =
@@ -64,13 +64,13 @@ Polymer({
       this.email_ =
           this.address.emailAddresses ? this.address.emailAddresses[0] : '';
 
-      this.async(function() {
+      this.async(() => {
         if (this.countryCode_ == this.address.countryCode)
           this.updateAddressWrapper_();
         else
           this.countryCode_ = this.address.countryCode;
-      }.bind(this));
-    }.bind(this));
+      });
+    });
 
     // Open is called on the dialog after the address wrapper has been updated.
   },
@@ -91,12 +91,10 @@ Polymer({
   updateAddressWrapper_: function() {
     // Default to the last country used if no country code is provided.
     var countryCode = this.countryCode_ || this.countries_[0].countryCode;
-    this.countryInfo.getAddressFormat(countryCode).then(function(format) {
-      this.addressWrapper_ = format.components.map(function(component) {
-        return component.row.map(function(c) {
-          return new settings.address.AddressComponentUI(this.address, c);
-        }.bind(this));
-      }.bind(this));
+    this.countryInfo.getAddressFormat(countryCode).then(format => {
+      this.addressWrapper_ = format.components.map(
+          component => component.row.map(
+              c => new settings.address.AddressComponentUI(this.address, c)));
 
       // Flush dom before resize and savability updates.
       Polymer.dom.flush();
@@ -108,7 +106,7 @@ Polymer({
       var dialog = /** @type {HTMLDialogElement} */ (this.$.dialog);
       if (!dialog.open)
         dialog.showModal();
-    }.bind(this));
+    });
   },
 
   updateCanSave_: function() {

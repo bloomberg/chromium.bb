@@ -34,13 +34,13 @@ Polymer({
 
   /** @override */
   created: function() {
-    chrome.usersPrivate.isCurrentUserOwner(function(isOwner) {
+    chrome.usersPrivate.isCurrentUserOwner(isOwner => {
       this.isOwner_ = isOwner;
-    }.bind(this));
+    });
 
-    chrome.usersPrivate.isWhitelistManaged(function(isWhitelistManaged) {
+    chrome.usersPrivate.isWhitelistManaged(isWhitelistManaged => {
       this.isWhitelistManaged_ = isWhitelistManaged;
-    }.bind(this));
+    });
   },
 
   /**

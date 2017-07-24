@@ -117,7 +117,7 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.addEventListener(settings.CertificateActionEvent, function(event) {
+    this.addEventListener(settings.CertificateActionEvent, event => {
       this.dialogModel_ = event.detail.subnode;
       this.dialogModelCertificateType_ = event.detail.certificateType;
 
@@ -148,16 +148,16 @@ Polymer({
       }
 
       event.stopPropagation();
-    }.bind(this));
+    });
 
-    this.addEventListener('certificates-error', function(event) {
+    this.addEventListener('certificates-error', event => {
       var detail = /** @type {!CertificatesErrorEventDetail} */ (event.detail);
       this.errorDialogModel_ = detail.error;
       this.openDialog_(
           'settings-certificates-error-dialog', 'showErrorDialog_',
           detail.anchor);
       event.stopPropagation();
-    }.bind(this));
+    });
   },
 
   /**
@@ -179,12 +179,12 @@ Polymer({
     if (anchor)
       this.activeDialogAnchor_ = anchor;
     this.set(domIfBooleanName, true);
-    this.async(function() {
+    this.async(() => {
       var dialog = this.$$(dialogTagName);
-      dialog.addEventListener('close', function() {
+      dialog.addEventListener('close', () => {
         this.set(domIfBooleanName, false);
         cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
-      }.bind(this));
-    }.bind(this));
+      });
+    });
   },
 });

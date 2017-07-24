@@ -215,10 +215,10 @@ Polymer({
 
     dialog.open(this.categorySubtype);
 
-    dialog.addEventListener('close', function() {
+    dialog.addEventListener('close', () => {
       cr.ui.focusWithoutInk(assert(this.$.addSite));
       dialog.remove();
-    }.bind(this));
+    });
   },
 
   /**
@@ -226,11 +226,10 @@ Polymer({
    * @private
    */
   populateList_: function() {
-    this.browserProxy_.getExceptionList(this.category)
-        .then(function(exceptionList) {
-          this.processExceptions_([exceptionList]);
-          this.closeActionMenu_();
-        }.bind(this));
+    this.browserProxy_.getExceptionList(this.category).then(exceptionList => {
+      this.processExceptions_([exceptionList]);
+      this.closeActionMenu_();
+    });
   },
 
   /**

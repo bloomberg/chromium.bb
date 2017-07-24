@@ -107,10 +107,10 @@ Polymer({
       window.removeEventListener('resize', this.boundScroll_);
       this.boundScroll_ = null;
     } else if (this.overscroll_ && !this.boundScroll_) {
-      this.boundScroll_ = function() {
+      this.boundScroll_ = () => {
         if (!this.ignoreScroll_)
           this.setOverscroll_(0);
-      }.bind(this);
+      };
       this.offsetParent.addEventListener('scroll', this.boundScroll_);
       window.addEventListener('resize', this.boundScroll_);
     }
@@ -184,11 +184,11 @@ Polymer({
     this.updateOverscrollForPage_();
 
     // Wait for any other changes, then calculate the overflow padding again.
-    setTimeout(function() {
+    setTimeout(() => {
       // Ensure any dom-if reflects the current properties.
       Polymer.dom.flush();
       this.updateOverscrollForPage_();
-    }.bind(this));
+    });
   },
 
   /**
@@ -259,11 +259,11 @@ Polymer({
     this.inSearchMode_ = true;
     this.toolbarSpinnerActive = true;
 
-    return new Promise(function(resolve, reject) {
-      setTimeout(function() {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
         var whenSearchDone =
             assert(this.getPage_(settings.routes.BASIC)).searchContents(query);
-        whenSearchDone.then(function(result) {
+        whenSearchDone.then(result => {
           resolve();
           if (result.canceled) {
             // Nothing to do here. A previous search request was canceled
@@ -285,8 +285,8 @@ Polymer({
                   loadTimeData.getStringF('searchResults', query)
             });
           }
-        }.bind(this));
-      }.bind(this), 0);
-    }.bind(this));
+        });
+      }, 0);
+    });
   },
 });

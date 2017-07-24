@@ -93,10 +93,10 @@ var MainPageBehaviorImpl = {
     // to render before scrolling to or expanding the section.
     if (!oldRoute) {
       this.fire('hide-container');
-      setTimeout(function() {
+      setTimeout(() => {
         this.fire('show-container');
         this.tryTransitionToSection_(scrollToSection, true);
-      }.bind(this));
+      });
     } else if (this.scrollHeight == 0) {
       setTimeout(this.tryTransitionToSection_.bind(this, scrollToSection));
     } else {
@@ -176,9 +176,9 @@ var MainPageBehaviorImpl = {
     // again after the promise resolves.
     if (promise) {
       promise.then(this.tryTransitionToSection_.bind(this, scrollToSection))
-          .then(function() {
+          .then(() => {
             this.fire('show-container');
-          }.bind(this));
+          });
     }
   },
 
@@ -259,19 +259,19 @@ var MainPageBehaviorImpl = {
 
     return this.currentAnimation_.finished
         .then(
-            function() {
+            () => {
               this.finishedExpanding_(section);
-            }.bind(this),
-            function() {
+            },
+            () => {
               // The animation was canceled; restore the section and scroll
               // position.
               section.setFrozen(false);
               this.scroller.scrollTop = this.origScrollTop_;
-            }.bind(this))
-        .then(function() {
+            })
+        .then(() => {
           this.fire('freeze-scroll', false);
           this.currentAnimation_ = null;
-        }.bind(this));
+        });
   },
 
   /** @private */
@@ -324,9 +324,9 @@ var MainPageBehaviorImpl = {
     }
 
     // Play the actual collapse animation.
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
       // Wait for the other sections to show up so we can scroll properly.
-      setTimeout(function() {
+      setTimeout(() => {
         var newSection = settings.getCurrentRoute().section &&
             this.getSection(settings.getCurrentRoute().section);
 
@@ -342,21 +342,21 @@ var MainPageBehaviorImpl = {
             /** @type {!HTMLElement} */ (this.scroller));
 
         this.currentAnimation_.finished
-            .catch(function() {
+            .catch(() => {
               // The collapse was canceled, so the page is showing a subpage
               // still.
               this.fire('subpage-expand');
-            }.bind(this))
-            .then(function() {
+            })
+            .then(() => {
               // Clean up after the animation succeeds or cancels.
               section.setFrozen(false);
               section.classList.remove('collapsing');
               this.fire('freeze-scroll', false);
               this.currentAnimation_ = null;
               resolve();
-            }.bind(this));
-      }.bind(this));
-    }.bind(this));
+            });
+      });
+    });
   },
 
   /**

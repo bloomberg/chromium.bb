@@ -107,11 +107,9 @@ Polymer({
   onExportTap_: function(event) {
     this.closePopupMenu_();
     if (this.certificateType == CertificateType.PERSONAL) {
-      this.browserProxy_.exportPersonalCertificate(this.model.id)
-          .then(function() {
-            this.dispatchCertificateActionEvent_(
-                CertificateAction.EXPORT_PERSONAL);
-          }.bind(this), this.onRejected_.bind(this));
+      this.browserProxy_.exportPersonalCertificate(this.model.id).then(() => {
+        this.dispatchCertificateActionEvent_(CertificateAction.EXPORT_PERSONAL);
+      }, this.onRejected_.bind(this));
     } else {
       this.browserProxy_.exportCertificate(this.model.id);
     }

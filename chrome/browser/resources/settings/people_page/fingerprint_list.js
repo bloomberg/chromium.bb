@@ -126,10 +126,10 @@ Polymer({
    * @private
    */
   onFingerprintDeleteTapped_: function(e) {
-    this.browserProxy_.removeEnrollment(e.model.index).then(function(success) {
+    this.browserProxy_.removeEnrollment(e.model.index).then(success => {
       if (success)
         this.updateFingerprintsList_();
-    }.bind(this));
+    });
   },
 
   /**
@@ -138,10 +138,10 @@ Polymer({
    */
   onFingerprintLabelChanged_: function(e) {
     this.browserProxy_.changeEnrollmentLabel(e.model.index, e.model.item)
-        .then(function(success) {
+        .then(success => {
           if (success)
             this.updateFingerprintsList_();
-        }.bind(this));
+        });
   },
 
   /**

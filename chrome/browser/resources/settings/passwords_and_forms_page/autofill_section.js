@@ -213,14 +213,14 @@ Polymer({
   attached: function() {
     // Create listener functions.
     /** @type {function(!Array<!AutofillManager.AddressEntry>)} */
-    var setAddressesListener = function(list) {
+    var setAddressesListener = list => {
       this.addresses = list;
-    }.bind(this);
+    };
 
     /** @type {function(!Array<!AutofillManager.CreditCardEntry>)} */
-    var setCreditCardsListener = function(list) {
+    var setCreditCardsListener = list => {
       this.creditCards = list;
-    }.bind(this);
+    };
 
     // Remember the bound reference in order to detach.
     this.setAddressesListener_ = setAddressesListener;

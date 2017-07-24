@@ -48,14 +48,13 @@ Polymer({
   onOkTap_: function() {
     this.browserProxy_.exportPersonalCertificatePasswordSelected(this.password_)
         .then(
-            function() {
+            () => {
               this.$.dialog.close();
-            }.bind(this),
-            /** @param {!CertificatesError} error */
-            function(error) {
+            },
+            error => {
               this.$.dialog.close();
               this.fire('certificates-error', {error: error, anchor: null});
-            }.bind(this));
+            });
   },
 
   /** @private */

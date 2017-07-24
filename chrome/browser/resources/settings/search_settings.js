@@ -304,9 +304,9 @@ cr.define('settings', function() {
       assert(!this.node.if);
       this.node.if = true;
 
-      return new Promise(function(resolve, reject) {
+      return new Promise((resolve, reject) => {
         var parent = this.node.parentNode;
-        parent.async(function() {
+        parent.async(() => {
           var renderedNode =
               parent.querySelector('[route-path="' + routePath + '"]');
           // Register a SearchAndHighlightTask for the part of the DOM that was
@@ -314,8 +314,8 @@ cr.define('settings', function() {
           this.request.queue_.addSearchAndHighlightTask(
               new SearchAndHighlightTask(this.request, assert(renderedNode)));
           resolve();
-        }.bind(this));
-      }.bind(this));
+        });
+      });
     }
   }
 
@@ -452,16 +452,16 @@ cr.define('settings', function() {
         }
 
         this.running_ = true;
-        window.requestIdleCallback(function() {
+        window.requestIdleCallback(() => {
           if (!this.request_.canceled) {
-            task.exec().then(function() {
+            task.exec().then(() => {
               this.running_ = false;
               this.consumePending_();
-            }.bind(this));
+            });
           }
           // Nothing to do otherwise. Since the request corresponding to this
           // queue was canceled, the queue is disposed along with the request.
-        }.bind(this));
+        });
         return;
       }
     }
@@ -496,9 +496,9 @@ cr.define('settings', function() {
 
       /** @private {!TaskQueue} */
       this.queue_ = new TaskQueue(this);
-      this.queue_.onEmpty(function() {
+      this.queue_.onEmpty(() => {
         this.resolver.resolve(this);
-      }.bind(this));
+      });
     }
 
     /**
@@ -588,11 +588,11 @@ cr.define('settings', function() {
       var request = new SearchRequest(text, page);
       this.activeRequests_.add(request);
       request.start();
-      return request.resolver.promise.then(function() {
+      return request.resolver.promise.then(() => {
         // Stop tracking requests that finished.
         this.activeRequests_.delete(request);
         return request;
-      }.bind(this));
+      });
     }
   }
   cr.addSingletonGetter(SearchManagerImpl);

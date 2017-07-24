@@ -39,9 +39,8 @@ Polymer({
      * @param {string} localizedMessageId
      * @return {string}
      */
-    var getString = function(localizedMessageId) {
-      return loadTimeData.getStringF(localizedMessageId, this.model.name);
-    }.bind(this);
+    var getString = localizedMessageId =>
+        loadTimeData.getStringF(localizedMessageId, this.model.name);
 
     switch (this.certificateType) {
       case CertificateType.PERSONAL:
@@ -84,13 +83,12 @@ Polymer({
   onOkTap_: function() {
     this.browserProxy_.deleteCertificate(this.model.id)
         .then(
-            function() {
+            () => {
               /** @type {!CrDialogElement} */ (this.$.dialog).close();
-            }.bind(this),
-            /** @param {!CertificatesError} error */
-            function(error) {
+            },
+            error => {
               /** @type {!CrDialogElement} */ (this.$.dialog).close();
               this.fire('certificates-error', {error: error, anchor: null});
-            }.bind(this));
+            });
   },
 });

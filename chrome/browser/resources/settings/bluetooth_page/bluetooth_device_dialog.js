@@ -240,7 +240,7 @@ settings.BluetoothPairDeviceBehavior = {
       else if (pairing == PairingEventType.REQUEST_PASSKEY)
         options.passkey = parseInt(this.$$('#passkey').value, 10);
     }
-    this.bluetoothPrivate.setPairingResponse(options, function() {
+    this.bluetoothPrivate.setPairingResponse(options, () => {
       if (chrome.runtime.lastError) {
         // TODO(stevenjb): Show error.
         console.error(
@@ -249,7 +249,7 @@ settings.BluetoothPairDeviceBehavior = {
             ': Error: ' + chrome.runtime.lastError.message);
       }
       this.close();
-    }.bind(this));
+    });
 
     this.fire('response', options);
   },

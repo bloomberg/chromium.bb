@@ -559,9 +559,9 @@ Polymer({
     this.set(domIfBooleanName, true);
     this.async(function() {
       var dialog = this.$$(toDialog);
-      dialog.addEventListener('close', function() {
+      dialog.addEventListener('close', () => {
         this.set(domIfBooleanName, false);
-      }.bind(this));
+      });
     });
   },
 

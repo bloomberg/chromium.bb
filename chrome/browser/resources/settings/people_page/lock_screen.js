@@ -199,9 +199,9 @@ Polymer({
     if (newRoute == settings.routes.LOCK_SCREEN &&
         this.fingerprintUnlockEnabled_ && this.fingerprintBrowserProxy_) {
       this.fingerprintBrowserProxy_.getNumFingerprints().then(
-          function(numFingerprints) {
+          numFingerprints => {
             this.numFingerprints_ = numFingerprints;
-          }.bind(this));
+          });
     }
 
     if (this.shouldAskForPassword_(newRoute)) {

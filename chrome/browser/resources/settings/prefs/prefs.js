@@ -245,9 +245,9 @@ Polymer({
    * @param {string} key
    */
   refresh: function(key) {
-    this.settingsApi_.getPref(key, function(pref) {
+    this.settingsApi_.getPref(key, pref => {
       this.updatePrefs_([pref]);
-    }.bind(this));
+    });
   },
 
   /**

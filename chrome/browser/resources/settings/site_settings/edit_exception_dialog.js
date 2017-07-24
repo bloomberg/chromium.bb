@@ -68,8 +68,8 @@ Polymer({
       return;
     }
 
-    this.browserProxy_.isPatternValid(this.origin_).then(function(isValid) {
+    this.browserProxy_.isPatternValid(this.origin_).then(isValid => {
       this.invalid_ = !isValid;
-    }.bind(this));
+    });
   },
 });

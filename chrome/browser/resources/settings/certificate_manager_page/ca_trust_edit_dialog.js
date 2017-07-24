@@ -39,12 +39,10 @@ Polymer({
     // imported, otherwise an existing certificate is being edited.
     if (this.model.id) {
       this.browserProxy_.getCaCertificateTrust(this.model.id)
-          .then(
-              /** @param {!CaTrustInfo} trustInfo */
-              function(trustInfo) {
-                this.trustInfo_ = trustInfo;
-                this.$.dialog.showModal();
-              }.bind(this));
+          .then(trustInfo => {
+            this.trustInfo_ = trustInfo;
+            this.$.dialog.showModal();
+          });
     } else {
       /** @type {!CrDialogElement} */ (this.$.dialog).showModal();
     }
@@ -67,14 +65,13 @@ Polymer({
             this.$.ssl.checked, this.$.email.checked, this.$.objSign.checked);
 
     whenDone.then(
-        function() {
+        () => {
           this.$.spinner.active = false;
           /** @type {!CrDialogElement} */ (this.$.dialog).close();
-        }.bind(this),
-        /** @param {!CertificatesError} error */
-        function(error) {
+        },
+        error => {
           /** @type {!CrDialogElement} */ (this.$.dialog).close();
           this.fire('certificates-error', {error: error, anchor: null});
-        }.bind(this));
+        });
   },
 });

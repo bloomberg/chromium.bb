@@ -99,9 +99,9 @@ Polymer({
   attached: function() {
     this.writeUma_(LockScreenProgress.START_SCREEN_LOCK);
     this.$.dialog.showModal();
-    this.async(function() {
+    this.async(() => {
       this.$.passwordInput.focus();
-    }.bind(this));
+    });
   },
 
   /** @private */
@@ -143,10 +143,10 @@ Polymer({
         var password = this.password_;
         this.password_ = '';
 
-        this.setModes = function(modes, credentials, onComplete) {
+        this.setModes = (modes, credentials, onComplete) => {
           this.quickUnlockPrivate_.setModes(
               password, modes, credentials, onComplete);
-        }.bind(this);
+        };
 
         function clearSetModes() {
           // Reset the password so that any cached references to this.setModes
@@ -187,12 +187,12 @@ Polymer({
   checkAccountPassword_: function(onCheck) {
     // We check the account password by trying to update the active set of quick
     // unlock modes without changing any credentials.
-    this.quickUnlockPrivate_.getActiveModes(function(modes) {
+    this.quickUnlockPrivate_.getActiveModes(modes => {
       var credentials =
           /** @type {!Array<string>} */ (Array(modes.length).fill(''));
       this.quickUnlockPrivate_.setModes(
           this.password_, modes, credentials, onCheck);
-    }.bind(this));
+    });
   }
 });
 

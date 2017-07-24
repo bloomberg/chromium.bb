@@ -163,9 +163,9 @@ Polymer({
         settings.navigateToPreviousRoute();
       } else {
         this.showDisconnectDialog_ = true;
-        this.async(function() {
+        this.async(() => {
           this.$$('#disconnectDialog').showModal();
-        }.bind(this));
+        });
       }
     } else if (this.showDisconnectDialog_) {
       this.$$('#disconnectDialog').close();
@@ -291,9 +291,9 @@ Polymer({
     // browser is closed after the sign out. Otherwise, the navigation will be
     // finshed during session restore if the browser is closed before the async
     // callback executed.
-    listenOnce(this, 'signout-dialog-closed', function() {
+    listenOnce(this, 'signout-dialog-closed', () => {
       this.syncBrowserProxy_.signOut(deleteProfile);
-    }.bind(this));
+    });
 
     this.$$('#disconnectDialog').close();
   },
