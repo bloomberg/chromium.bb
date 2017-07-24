@@ -880,8 +880,8 @@ SpdySerializedFrame SpdyFramer::SerializeUnknown(
     const SpdyUnknownIR& unknown) const {
   const size_t total_size = kFrameHeaderSize + unknown.payload().size();
   SpdyFrameBuilder builder(total_size);
-  builder.BeginNewExtensionFrame(*this, unknown.type(), unknown.flags(),
-                                 unknown.stream_id(), unknown.payload().size());
+  builder.BeginNewUncheckedFrame(*this, unknown.type(), unknown.flags(),
+                                 unknown.stream_id(), unknown.length());
   builder.WriteBytes(unknown.payload().data(), unknown.payload().size());
   return builder.take();
 }
@@ -1332,9 +1332,9 @@ bool SpdyFramer::SerializeUnknown(const SpdyUnknownIR& unknown,
                                   ZeroCopyOutputBuffer* output) const {
   const size_t total_size = kFrameHeaderSize + unknown.payload().size();
   SpdyFrameBuilder builder(total_size, output);
-  bool ok = builder.BeginNewExtensionFrame(*this, unknown.type(),
-                                           unknown.flags(), unknown.stream_id(),
-                                           unknown.payload().size());
+  bool ok =
+      builder.BeginNewUncheckedFrame(*this, unknown.type(), unknown.flags(),
+                                     unknown.stream_id(), unknown.length());
   ok = ok &&
        builder.WriteBytes(unknown.payload().data(), unknown.payload().size());
   return ok;
