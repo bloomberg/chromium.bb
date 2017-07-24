@@ -39,10 +39,10 @@
       <template is="dom-repeat" items="[[users_]]">
         <div class="user layout horizontal center two-line">
           <img class="user-icon" src="[[getProfilePictureUrl_(item)]]">
-          <div class="flex user-info">
-            <div>[[getUserName_(item)]]</div>
+          <div class="flex layout vertical user-info no-min-width">
+            <div class="text-elide">[[getUserName_(item)]]</div>
             <template is="dom-if" if="[[shouldShowEmail_(item)]]">
-              <div class="secondary">[[item.displayEmail]]</div>
+              <div class="secondary text-elide">[[item.displayEmail]]</div>
             </template>
           </div>
           <button is="paper-icon-button-light" class="icon-clear"
