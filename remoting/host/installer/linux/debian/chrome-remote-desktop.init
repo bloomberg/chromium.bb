@@ -62,7 +62,7 @@ run_and_ignore_error() {
     # TODO(rkjnsn): Support starting user-initiated sessions with our PAM
     # wrapper.
     if [ "$(whoami)" = "root" ]; then
-      "$USER_SESSION_PATH" --user="$user" --me2me-script="$HOST_PATH"
+      "$USER_SESSION_PATH" start "$user"
     else
       sudo -u "$user" --login --background "$HOST_PATH" --start
     fi
