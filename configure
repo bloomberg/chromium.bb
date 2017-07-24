@@ -552,6 +552,9 @@ post_process_cmdline() {
     enabled ext_comp_refs && enable_feature var_refs
     enabled ext_comp_refs && disable_feature one_sided_compound
     enabled altref2 && enable_feature ext_refs
+    # TODO(urvang): Temporary work-around for nightly tests.
+    # Need to support different width/height in filter-intra functions.
+    enabled filter_intra && disable_feature rect_intra_pred
 
     if ! enabled delta_q && enabled ext_delta_q; then
       log_echo "ext_delta_q requires delta_q, so disabling ext_delta_q"
