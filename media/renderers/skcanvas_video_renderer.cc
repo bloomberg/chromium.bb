@@ -874,6 +874,9 @@ bool SkCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
         skia::GrBackendObjectToGrGLTextureInfo(
             last_image_->getTextureHandle(true));
 
+    if (!texture_info)
+      return false;
+
     gpu::gles2::GLES2Interface* canvas_gl = context_3d.gl;
     gpu::MailboxHolder mailbox_holder;
     mailbox_holder.texture_target = texture_info->fTarget;
@@ -1015,7 +1018,8 @@ void SkCanvasVideoRenderer::ResetCache() {
 bool SkCanvasVideoRenderer::UpdateLastImage(
     const scoped_refptr<VideoFrame>& video_frame,
     const Context3D& context_3d) {
-  if (!last_image_ || video_frame->timestamp() != last_timestamp_) {
+  if (!last_image_ || video_frame->timestamp() != last_timestamp_ ||
+      !last_image_->getTextureHandle(true)) {
     ResetCache();
     // Generate a new image.
     // Note: Skia will hold onto |video_frame| via |video_generator| only when
