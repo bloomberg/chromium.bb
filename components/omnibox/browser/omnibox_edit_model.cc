@@ -685,6 +685,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
         ui::PageTransitionFromInt(
             match.transition | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
         match.type);
+
+    // The observer should have been synchronously notified of a pending load.
     if (observer && observer->HasSeenPendingLoad())
       ignore_result(observer.release());  // The observer will delete itself.
   }
