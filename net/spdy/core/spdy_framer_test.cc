@@ -21,6 +21,7 @@
 #include "net/spdy/core/array_output_buffer.h"
 #include "net/spdy/core/hpack/hpack_constants.h"
 #include "net/spdy/core/mock_spdy_framer_visitor.h"
+#include "net/spdy/core/spdy_bitmasks.h"
 #include "net/spdy/core/spdy_frame_builder.h"
 #include "net/spdy/core/spdy_frame_reader.h"
 #include "net/spdy/core/spdy_protocol.h"
@@ -717,6 +718,13 @@ class TestExtension : public ExtensionVisitorInterface {
   uint8_t type_ = 0;
   uint8_t flags_ = 0;
   SpdyString payload_;
+};
+
+// Exposes SpdyUnknownIR::set_length() for testing purposes.
+class TestSpdyUnknownIR : public SpdyUnknownIR {
+ public:
+  using SpdyUnknownIR::SpdyUnknownIR;
+  using SpdyUnknownIR::set_length;
 };
 
 // Retrieves serialized headers from a HEADERS frame.
@@ -2667,6 +2675,40 @@ TEST_P(SpdyFramerTest, CreateUnknown) {
                            /* type = */ kType,
                            /* flags = */ kFlags,
                            /* payload = */ kDescription);
+  SpdySerializedFrame frame(framer.SerializeFrame(unknown_ir));
+  if (use_output_) {
+    EXPECT_EQ(framer.SerializeFrame(unknown_ir, &output_), frame.size());
+    frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
+  }
+  CompareFrame(kDescription, frame, kFrameData, arraysize(kFrameData));
+}
+
+// Test serialization of a SpdyUnknownIR with a defined type, a length field
+// that does not match the payload size and in fact exceeds framer limits, and a
+// stream ID that effectively flips the reserved bit.
+TEST_P(SpdyFramerTest, CreateUnknownUnchecked) {
+  SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
+
+  const char kDescription[] = "Unknown frame";
+  const uint8_t kType = 0x00;
+  const uint8_t kFlags = 0x11;
+  const uint8_t kLength = framer.GetFrameMaximumSize() + 42;
+  const unsigned int kStreamId = kStreamIdMask + 42;
+  const unsigned char kFrameData[] = {
+      0x00,   0x00, kLength,        // Length: 16426
+      kType,                        //   Type: DATA, defined
+      kFlags,                       //  Flags: arbitrary, undefined
+      0x80,   0x00, 0x00,    0x29,  // Stream: 2147483689
+      0x55,   0x6e, 0x6b,    0x6e,  // "Unkn"
+      0x6f,   0x77, 0x6e,    0x20,  // "own "
+      0x66,   0x72, 0x61,    0x6d,  // "fram"
+      0x65,                         // "e"
+  };
+  TestSpdyUnknownIR unknown_ir(/* stream_id = */ kStreamId,
+                               /* type = */ kType,
+                               /* flags = */ kFlags,
+                               /* payload = */ kDescription);
+  unknown_ir.set_length(kLength);
   SpdySerializedFrame frame(framer.SerializeFrame(unknown_ir));
   if (use_output_) {
     EXPECT_EQ(framer.SerializeFrame(unknown_ir, &output_), frame.size());

@@ -62,8 +62,8 @@ class SPDY_EXPORT_PRIVATE SpdyFrameBuilder {
                      size_t length);
 
   // Populates this frame with a HTTP2 frame prefix with type and length
-  // information.  |raw_frame_type| must not be a defined frame type.
-  bool BeginNewExtensionFrame(const SpdyFramer& framer,
+  // information.  |raw_frame_type| may be a defined or undefined frame type.
+  bool BeginNewUncheckedFrame(const SpdyFramer& framer,
                               uint8_t raw_frame_type,
                               uint8_t flags,
                               SpdyStreamId stream_id,
