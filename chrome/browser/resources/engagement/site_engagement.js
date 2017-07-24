@@ -15,6 +15,9 @@ function whenPageIsPopulatedForTest() {
   return pageIsPopulatedPromise;
 }
 
+var disableAutoupdateForTests;
+var uiHandler;
+
 define(
     'main',
     [
@@ -23,10 +26,9 @@ define(
     ],
     (siteEngagementMojom, frameInterfaces) => {
       return () => {
-        var uiHandler =
-            new siteEngagementMojom.SiteEngagementDetailsProviderPtr(
-                frameInterfaces.getInterface(
-                    siteEngagementMojom.SiteEngagementDetailsProvider.name));
+        uiHandler = new siteEngagementMojom.SiteEngagementDetailsProviderPtr(
+            frameInterfaces.getInterface(
+                siteEngagementMojom.SiteEngagementDetailsProvider.name));
 
         var engagementTableBody = $('engagement-table-body');
         var updateInterval = null;
@@ -112,6 +114,7 @@ define(
             clearInterval(updateInterval);
           updateInterval = null;
         }
+        disableAutoupdateForTests = disableAutoupdate;
 
         function enableAutoupdate() {
           if (updateInterval)

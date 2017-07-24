@@ -41,7 +41,7 @@ SiteEngagementBrowserTest.prototype = {
   setUp: function() {
     testing.Test.prototype.setUp.call(this);
     suiteSetup(function() {
-      return whenPageIsPopulatedForTest();
+      return whenPageIsPopulatedForTest().then(disableAutoupdateForTests);
     });
   },
 };
@@ -53,23 +53,52 @@ GEN('#else');
 GEN('#define MAYBE_All All');
 GEN('#endif');
 TEST_F('SiteEngagementBrowserTest', 'MAYBE_All', function() {
-  test('check engagement values are loaded', function() {
+  var cells;
+
+  function getCells() {
     var originCells =
         Array.from(document.getElementsByClassName('origin-cell'));
+    var scoreInputs =
+        Array.from(document.getElementsByClassName('base-score-input'));
+    var bonusScoreCells =
+        Array.from(document.getElementsByClassName('bonus-score-cell'));
+    var totalScoreCells =
+        Array.from(document.getElementsByClassName('total-score-cell'));
+    return originCells.map((c, i) => {
+      return {
+        origin: c,
+        scoreInput: scoreInputs[i],
+        bonusScore: bonusScoreCells[i],
+        totalScore: totalScoreCells[i],
+      };
+    });
+  }
+
+  setup(function() {
+    cells = getCells();
+  });
+
+  test('check engagement values are loaded', function() {
     assertDeepEquals(
-        [EXAMPLE_URL_1, EXAMPLE_URL_2], originCells.map(x => x.textContent));
+        [EXAMPLE_URL_1, EXAMPLE_URL_2], cells.map((c) => c.origin.textContent));
   });
 
   test('scores rounded to 2 decimal places', function() {
-    var scoreInputs =
-        Array.from(document.getElementsByClassName('base-score-input'));
-    assertDeepEquals(['10', '3.14'], scoreInputs.map(x => x.value));
-    var bonusScoreCells =
-        Array.from(document.getElementsByClassName('bonus-score-cell'));
-    assertDeepEquals(['0', '0'], bonusScoreCells.map(x => x.textContent));
-    var totalScoreCells =
-        Array.from(document.getElementsByClassName('total-score-cell'));
-    assertDeepEquals(['10', '3.14'], totalScoreCells.map(x => x.textContent));
+    assertDeepEquals(['10', '3.14'], cells.map((x) => x.scoreInput.value));
+    assertDeepEquals(['0', '0'], cells.map((x) => x.bonusScore.textContent));
+    assertDeepEquals(
+        ['10', '3.14'], cells.map((x) => x.totalScore.textContent));
+  });
+
+  test('change score', function() {
+    var firstRow = cells[0];
+    firstRow.scoreInput.value = 50;
+    firstRow.scoreInput.dispatchEvent(new Event('change'));
+
+    return uiHandler.getSiteEngagementDetails().then((response) => {
+      assertEquals(firstRow.origin.textContent, response.info[0].origin.url);
+      assertEquals(50, response.info[0].base_score);
+    });
   });
   mocha.run();
 });
