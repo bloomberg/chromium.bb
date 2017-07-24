@@ -2118,16 +2118,6 @@ static bool WidthOrHeightPropertyAppliesToObject(const LayoutObject& object) {
   return !object.IsSVGChild();
 }
 
-CSSPrimitiveValue* ZoomAdjustedPixelValueWithBorderWidthRounding(
-    double value,
-    const ComputedStyle& style) {
-  const double px_value = AdjustFloatForAbsoluteZoom(value, style);
-
-  return CSSPrimitiveValue::Create(
-      px_value > 0.0 && px_value < 1 ? 1.0 : px_value,
-      CSSPrimitiveValue::UnitType::kPixels);
-}
-
 const CSSValue* ComputedStyleCSSValueMapping::Get(
     CSSPropertyID property_id,
     const ComputedStyle& style,
@@ -2314,17 +2304,13 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyBorderLeftStyle:
       return CSSIdentifierValue::Create(style.BorderLeftStyle());
     case CSSPropertyBorderTopWidth:
-      return ZoomAdjustedPixelValueWithBorderWidthRounding(
-          style.BorderTopWidth(), style);
+      return ZoomAdjustedPixelValue(style.BorderTopWidth(), style);
     case CSSPropertyBorderRightWidth:
-      return ZoomAdjustedPixelValueWithBorderWidthRounding(
-          style.BorderRightWidth(), style);
+      return ZoomAdjustedPixelValue(style.BorderRightWidth(), style);
     case CSSPropertyBorderBottomWidth:
-      return ZoomAdjustedPixelValueWithBorderWidthRounding(
-          style.BorderBottomWidth(), style);
+      return ZoomAdjustedPixelValue(style.BorderBottomWidth(), style);
     case CSSPropertyBorderLeftWidth:
-      return ZoomAdjustedPixelValueWithBorderWidthRounding(
-          style.BorderLeftWidth(), style);
+      return ZoomAdjustedPixelValue(style.BorderLeftWidth(), style);
     case CSSPropertyBottom:
       return ValueForPositionOffset(style, CSSPropertyBottom, layout_object);
     case CSSPropertyWebkitBoxAlign:
