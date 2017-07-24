@@ -588,7 +588,7 @@ TEST_F(ResourceFetcherTest, RepetitiveLinkPreloadShouldBeMerged) {
   RegisterMockedURLLoad(url);
 
   FetchParameters fetch_params_for_request{ResourceRequest(url)};
-  FetchParameters fetch_params_for_preload = fetch_params_for_request;
+  FetchParameters fetch_params_for_preload{ResourceRequest(url)};
   fetch_params_for_preload.SetLinkPreload(true);
 
   Resource* resource1 = MockResource::Fetch(fetch_params_for_preload, fetcher);
@@ -617,7 +617,7 @@ TEST_F(ResourceFetcherTest, RepetitiveSpeculativePreloadShouldBeMerged) {
   RegisterMockedURLLoad(url);
 
   FetchParameters fetch_params_for_request{ResourceRequest(url)};
-  FetchParameters fetch_params_for_preload = fetch_params_for_request;
+  FetchParameters fetch_params_for_preload{ResourceRequest(url)};
   fetch_params_for_preload.SetSpeculativePreloadType(
       FetchParameters::SpeculativePreloadType::kInDocument);
 
@@ -647,11 +647,10 @@ TEST_F(ResourceFetcherTest, SpeculativePreloadShouldBePromotedToLinkePreload) {
   RegisterMockedURLLoad(url);
 
   FetchParameters fetch_params_for_request{ResourceRequest(url)};
-  FetchParameters fetch_params_for_speculative_preload =
-      fetch_params_for_request;
+  FetchParameters fetch_params_for_speculative_preload{ResourceRequest(url)};
   fetch_params_for_speculative_preload.SetSpeculativePreloadType(
       FetchParameters::SpeculativePreloadType::kInDocument);
-  FetchParameters fetch_params_for_link_preload = fetch_params_for_request;
+  FetchParameters fetch_params_for_link_preload{ResourceRequest(url)};
   fetch_params_for_link_preload.SetLinkPreload(true);
 
   Resource* resource1 =

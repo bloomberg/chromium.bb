@@ -34,6 +34,7 @@
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/TextEncoding.h"
 #include "public/platform/WebURLRequest.h"
 
@@ -45,6 +46,7 @@ class SecurityOrigin;
 // arguments.
 class PLATFORM_EXPORT FetchParameters {
   STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(FetchParameters);
 
  public:
   enum DeferOption { kNoDefer, kLazyLoad, kIdleLoad };
