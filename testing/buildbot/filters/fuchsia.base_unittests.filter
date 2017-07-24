@@ -65,6 +65,7 @@
 -PersistentHistogramAllocatorTest.StatisticsRecorderMerge
 -PlatformThreadTest.ThreadPriorityCurrentThread
 -ProcessMemoryDumpTest.CountResidentBytes
+-ProcessMemoryDumpTest.CountResidentBytesInSharedMemory
 -ProcessMemoryDumpTest.TakeAllDumpsFrom
 -ProcessTest.Move
 -ProcessTest.Terminate
