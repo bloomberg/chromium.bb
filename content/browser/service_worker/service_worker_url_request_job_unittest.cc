@@ -416,7 +416,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, Simple) {
   EXPECT_TRUE(info->was_fetched_via_service_worker());
   EXPECT_FALSE(info->was_fallback_required());
   EXPECT_EQ(0u, info->url_list_via_service_worker().size());
-  EXPECT_EQ(blink::kWebServiceWorkerResponseTypeDefault,
+  EXPECT_EQ(blink::mojom::FetchResponseType::kDefault,
             info->response_type_via_service_worker());
   EXPECT_FALSE(info->service_worker_start_time().is_null());
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
@@ -446,7 +446,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
     response_callback_->OnResponse(
         ServiceWorkerResponse(
             base::MakeUnique<std::vector<GURL>>(), 200, "OK",
-            blink::kWebServiceWorkerResponseTypeDefault,
+            blink::mojom::FetchResponseType::kDefault,
             base::MakeUnique<ServiceWorkerHeaderMap>(), std::string(), 0,
             blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
             false /* response_is_in_cache_storage */,
@@ -681,7 +681,7 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
     response_callback->OnResponse(
         ServiceWorkerResponse(
             base::MakeUnique<std::vector<GURL>>(), 200, "OK",
-            blink::kWebServiceWorkerResponseTypeDefault,
+            blink::mojom::FetchResponseType::kDefault,
             base::MakeUnique<ServiceWorkerHeaderMap>(), std::string(), 0,
             blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
             false /* response_is_in_cache_storage */,
@@ -714,7 +714,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostOnFetchEvent) {
   EXPECT_TRUE(info->was_fetched_via_service_worker());
   EXPECT_FALSE(info->was_fallback_required());
   EXPECT_EQ(0u, info->url_list_via_service_worker().size());
-  EXPECT_EQ(blink::kWebServiceWorkerResponseTypeDefault,
+  EXPECT_EQ(blink::mojom::FetchResponseType::kDefault,
             info->response_type_via_service_worker());
   EXPECT_FALSE(info->service_worker_start_time().is_null());
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
@@ -743,7 +743,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostBeforeFetchEvent) {
   EXPECT_TRUE(info->was_fetched_via_service_worker());
   EXPECT_FALSE(info->was_fallback_required());
   EXPECT_EQ(0u, info->url_list_via_service_worker().size());
-  EXPECT_EQ(blink::kWebServiceWorkerResponseTypeDefault,
+  EXPECT_EQ(blink::mojom::FetchResponseType::kDefault,
             info->response_type_via_service_worker());
   EXPECT_TRUE(info->service_worker_start_time().is_null());
   EXPECT_TRUE(info->service_worker_ready_time().is_null());
@@ -769,7 +769,7 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
     response_callback->OnResponse(
         ServiceWorkerResponse(
             base::MakeUnique<std::vector<GURL>>(), 200, "OK",
-            blink::kWebServiceWorkerResponseTypeDefault, MakeHeaders(),
+            blink::mojom::FetchResponseType::kDefault, MakeHeaders(),
             blob_uuid_, blob_size_,
             blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
             false /* response_is_in_cache_storage */,
@@ -815,7 +815,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
   EXPECT_TRUE(info->was_fetched_via_service_worker());
   EXPECT_FALSE(info->was_fallback_required());
   EXPECT_EQ(0u, info->url_list_via_service_worker().size());
-  EXPECT_EQ(blink::kWebServiceWorkerResponseTypeDefault,
+  EXPECT_EQ(blink::mojom::FetchResponseType::kDefault,
             info->response_type_via_service_worker());
   EXPECT_FALSE(info->service_worker_start_time().is_null());
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
@@ -835,7 +835,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, NonExistentBlobUUIDResponse) {
   EXPECT_TRUE(info->was_fetched_via_service_worker());
   EXPECT_FALSE(info->was_fallback_required());
   EXPECT_EQ(0u, info->url_list_via_service_worker().size());
-  EXPECT_EQ(blink::kWebServiceWorkerResponseTypeDefault,
+  EXPECT_EQ(blink::mojom::FetchResponseType::kDefault,
             info->response_type_via_service_worker());
   EXPECT_FALSE(info->service_worker_start_time().is_null());
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
@@ -867,7 +867,7 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
     response_callback->OnResponseStream(
         ServiceWorkerResponse(
             base::MakeUnique<std::vector<GURL>>(), 200, "OK",
-            blink::kWebServiceWorkerResponseTypeDefault, MakeHeaders(), "", 0,
+            blink::mojom::FetchResponseType::kDefault, MakeHeaders(), "", 0,
             blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
             false /* response_is_in_cache_storage */,
             std::string() /* response_cache_storage_cache_name */,
@@ -928,7 +928,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse) {
   EXPECT_TRUE(info->was_fetched_via_service_worker());
   EXPECT_FALSE(info->was_fallback_required());
   EXPECT_EQ(0u, info->url_list_via_service_worker().size());
-  EXPECT_EQ(blink::kWebServiceWorkerResponseTypeDefault,
+  EXPECT_EQ(blink::mojom::FetchResponseType::kDefault,
             info->response_type_via_service_worker());
   EXPECT_FALSE(info->service_worker_start_time().is_null());
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
@@ -979,7 +979,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_ConsecutiveRead) {
   EXPECT_TRUE(info->was_fetched_via_service_worker());
   EXPECT_FALSE(info->was_fallback_required());
   EXPECT_EQ(0u, info->url_list_via_service_worker().size());
-  EXPECT_EQ(blink::kWebServiceWorkerResponseTypeDefault,
+  EXPECT_EQ(blink::mojom::FetchResponseType::kDefault,
             info->response_type_via_service_worker());
   EXPECT_FALSE(info->service_worker_start_time().is_null());
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
@@ -1034,7 +1034,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponseAndCancel) {
   EXPECT_TRUE(info->was_fetched_via_service_worker());
   EXPECT_FALSE(info->was_fallback_required());
   EXPECT_EQ(0u, info->url_list_via_service_worker().size());
-  EXPECT_EQ(blink::kWebServiceWorkerResponseTypeDefault,
+  EXPECT_EQ(blink::mojom::FetchResponseType::kDefault,
             info->response_type_via_service_worker());
   EXPECT_FALSE(info->service_worker_start_time().is_null());
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
@@ -1085,7 +1085,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_Abort) {
   EXPECT_TRUE(info->was_fetched_via_service_worker());
   EXPECT_FALSE(info->was_fallback_required());
   EXPECT_EQ(0u, info->url_list_via_service_worker().size());
-  EXPECT_EQ(blink::kWebServiceWorkerResponseTypeDefault,
+  EXPECT_EQ(blink::mojom::FetchResponseType::kDefault,
             info->response_type_via_service_worker());
   EXPECT_FALSE(info->service_worker_start_time().is_null());
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
@@ -1147,7 +1147,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_AbortBeforeData) {
   EXPECT_TRUE(info->was_fetched_via_service_worker());
   EXPECT_FALSE(info->was_fallback_required());
   EXPECT_EQ(0u, info->url_list_via_service_worker().size());
-  EXPECT_EQ(blink::kWebServiceWorkerResponseTypeDefault,
+  EXPECT_EQ(blink::mojom::FetchResponseType::kDefault,
             info->response_type_via_service_worker());
   EXPECT_FALSE(info->service_worker_start_time().is_null());
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
@@ -1192,7 +1192,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_AbortAfterData) {
   EXPECT_TRUE(info->was_fetched_via_service_worker());
   EXPECT_FALSE(info->was_fallback_required());
   EXPECT_EQ(0u, info->url_list_via_service_worker().size());
-  EXPECT_EQ(blink::kWebServiceWorkerResponseTypeDefault,
+  EXPECT_EQ(blink::mojom::FetchResponseType::kDefault,
             info->response_type_via_service_worker());
   EXPECT_FALSE(info->service_worker_start_time().is_null());
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
@@ -1242,7 +1242,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_ConsecutiveReadAndAbort) {
   EXPECT_TRUE(info->was_fetched_via_service_worker());
   EXPECT_FALSE(info->was_fallback_required());
   EXPECT_EQ(0u, info->url_list_via_service_worker().size());
-  EXPECT_EQ(blink::kWebServiceWorkerResponseTypeDefault,
+  EXPECT_EQ(blink::mojom::FetchResponseType::kDefault,
             info->response_type_via_service_worker());
   EXPECT_FALSE(info->service_worker_start_time().is_null());
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
@@ -1356,7 +1356,7 @@ class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
     response_callback->OnResponse(
         ServiceWorkerResponse(
             base::MakeUnique<std::vector<GURL>>(), 200, "OK",
-            blink::kWebServiceWorkerResponseTypeDefault,
+            blink::mojom::FetchResponseType::kDefault,
             base::MakeUnique<ServiceWorkerHeaderMap>(), std::string(), 0,
             blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
             false /* response_is_in_cache_storage */,
@@ -1388,7 +1388,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, EarlyResponse) {
   EXPECT_TRUE(info->was_fetched_via_service_worker());
   EXPECT_FALSE(info->was_fallback_required());
   EXPECT_EQ(0u, info->url_list_via_service_worker().size());
-  EXPECT_EQ(blink::kWebServiceWorkerResponseTypeDefault,
+  EXPECT_EQ(blink::mojom::FetchResponseType::kDefault,
             info->response_type_via_service_worker());
   EXPECT_FALSE(info->service_worker_start_time().is_null());
   EXPECT_FALSE(info->service_worker_ready_time().is_null());

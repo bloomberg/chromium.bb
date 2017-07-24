@@ -17,7 +17,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
+#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 namespace content {
 
@@ -238,7 +238,7 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
 
     settled_fetch.response.url_list = request->GetURLChain();
     settled_fetch.response.response_type =
-        blink::kWebServiceWorkerResponseTypeDefault;
+        blink::mojom::FetchResponseType::kDefault;
 
     // Include the status code, status text and the response's body as a blob
     // when this is allowed by the CORS protocol.

@@ -23,6 +23,7 @@
 #include "platform/wtf/dtoa/utils.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -244,10 +245,10 @@ class SubresourceIntegrityTest : public ::testing::Test {
 
       if (service_worker_mode == kSWOpaqueResponse) {
         response.SetServiceWorkerResponseType(
-            WebServiceWorkerResponseType::kWebServiceWorkerResponseTypeOpaque);
+            mojom::FetchResponseType::kOpaque);
       } else {
         response.SetServiceWorkerResponseType(
-            WebServiceWorkerResponseType::kWebServiceWorkerResponseTypeDefault);
+            mojom::FetchResponseType::kDefault);
       }
     }
 

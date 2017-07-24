@@ -20,9 +20,9 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/service_worker_modes.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
+#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientType.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerState.h"
 #include "url/gurl.h"
 
@@ -81,12 +81,6 @@ enum ServiceWorkerFetchEventResult {
   SERVICE_WORKER_FETCH_EVENT_LAST = SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE
 };
 
-enum class ServiceWorkerFetchType {
-  FETCH,
-  FOREIGN_FETCH,
-  LAST = FOREIGN_FETCH
-};
-
 struct ServiceWorkerCaseInsensitiveCompare {
   bool operator()(const std::string& lhs, const std::string& rhs) const {
     return base::CompareCaseInsensitiveASCII(lhs, rhs) < 0;
@@ -136,7 +130,7 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
       std::unique_ptr<std::vector<GURL>> url_list,
       int status_code,
       const std::string& status_text,
-      blink::WebServiceWorkerResponseType response_type,
+      blink::mojom::FetchResponseType response_type,
       std::unique_ptr<ServiceWorkerHeaderMap> headers,
       const std::string& blob_uuid,
       uint64_t blob_size,
@@ -153,7 +147,7 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
   std::vector<GURL> url_list;
   int status_code;
   std::string status_text;
-  blink::WebServiceWorkerResponseType response_type;
+  blink::mojom::FetchResponseType response_type;
   ServiceWorkerHeaderMap headers;
   // |blob_uuid| and |blob_size| are set when the body is a blob. For other
   // types of responses, the body is provided separately in Mojo IPC via

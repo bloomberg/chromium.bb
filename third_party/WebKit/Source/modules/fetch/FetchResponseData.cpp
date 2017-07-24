@@ -17,27 +17,27 @@ namespace blink {
 
 namespace {
 
-WebServiceWorkerResponseType FetchTypeToWebType(
+mojom::FetchResponseType FetchTypeToWebType(
     FetchResponseData::Type fetch_type) {
-  WebServiceWorkerResponseType web_type = kWebServiceWorkerResponseTypeDefault;
+  mojom::FetchResponseType web_type = mojom::FetchResponseType::kDefault;
   switch (fetch_type) {
     case FetchResponseData::kBasicType:
-      web_type = kWebServiceWorkerResponseTypeBasic;
+      web_type = mojom::FetchResponseType::kBasic;
       break;
     case FetchResponseData::kCORSType:
-      web_type = kWebServiceWorkerResponseTypeCORS;
+      web_type = mojom::FetchResponseType::kCORS;
       break;
     case FetchResponseData::kDefaultType:
-      web_type = kWebServiceWorkerResponseTypeDefault;
+      web_type = mojom::FetchResponseType::kDefault;
       break;
     case FetchResponseData::kErrorType:
-      web_type = kWebServiceWorkerResponseTypeError;
+      web_type = mojom::FetchResponseType::kError;
       break;
     case FetchResponseData::kOpaqueType:
-      web_type = kWebServiceWorkerResponseTypeOpaque;
+      web_type = mojom::FetchResponseType::kOpaque;
       break;
     case FetchResponseData::kOpaqueRedirectType:
-      web_type = kWebServiceWorkerResponseTypeOpaqueRedirect;
+      web_type = mojom::FetchResponseType::kOpaqueRedirect;
       break;
   }
   return web_type;

@@ -450,7 +450,6 @@ source_set("blink_headers") {
     "platform/modules/serviceworker/WebServiceWorkerRequest.h",
     "platform/modules/serviceworker/WebServiceWorkerResponse.h",
     "platform/modules/serviceworker/WebServiceWorkerResponseError.h",
-    "platform/modules/serviceworker/WebServiceWorkerResponseType.h",
     "platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h",
     "platform/modules/serviceworker/WebServiceWorkerState.h",
     "platform/modules/serviceworker/WebServiceWorkerStreamHandle.h",

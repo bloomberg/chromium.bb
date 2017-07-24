@@ -11,8 +11,8 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
 
 #if INSIDE_BLINK
 #include "platform/wtf/Forward.h"
@@ -54,8 +54,8 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerResponse {
   void SetStatusText(const WebString&);
   const WebString& StatusText() const;
 
-  void SetResponseType(WebServiceWorkerResponseType);
-  WebServiceWorkerResponseType ResponseType() const;
+  void SetResponseType(mojom::FetchResponseType);
+  mojom::FetchResponseType ResponseType() const;
 
   void SetHeader(const WebString& key, const WebString& value);
 

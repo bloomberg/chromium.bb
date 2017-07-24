@@ -563,7 +563,7 @@ TEST_F(CacheStorageTest, MatchResponseTest) {
   std::vector<KURL> url_list;
   url_list.push_back(KURL(kParsedURLString, response_url));
   web_response.SetURLList(url_list);
-  web_response.SetResponseType(kWebServiceWorkerResponseTypeDefault);
+  web_response.SetResponseType(mojom::FetchResponseType::kDefault);
 
   Cache* cache = CreateCache(fetcher, new MatchTestCache(web_response));
   CacheQueryOptions options;
@@ -661,10 +661,10 @@ TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest) {
   WebVector<WebServiceWorkerResponse> web_responses(size_t(2));
   web_responses[0].SetURLList(
       std::vector<KURL>({KURL(kParsedURLString, url1)}));
-  web_responses[0].SetResponseType(kWebServiceWorkerResponseTypeDefault);
+  web_responses[0].SetResponseType(mojom::FetchResponseType::kDefault);
   web_responses[1].SetURLList(
       std::vector<KURL>({KURL(kParsedURLString, url2)}));
-  web_responses[1].SetResponseType(kWebServiceWorkerResponseTypeDefault);
+  web_responses[1].SetResponseType(mojom::FetchResponseType::kDefault);
 
   Cache* cache =
       CreateCache(fetcher, new MatchAllAndBatchTestCache(web_responses));
