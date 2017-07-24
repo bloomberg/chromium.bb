@@ -1884,6 +1884,11 @@
   <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_LABEL" desc="Label for the checkbox which enables the OK Google hotword.">
     Enable "Ok Google" to start a voice search
   </message>
+  <if expr="chromeos">
+    <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_DISABLED" desc="Label to indicate to the user that the OK Google hotword has been disabled.">
+      "Ok Google" voice search has been removed from Chrome OS
+    </message>
+  </if>
   <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_ALWAYS_ON" desc="Subtext describing when the OK Google hotword may be used.">
     Say "Ok Google" when the screen is on and unlocked
   </message>
