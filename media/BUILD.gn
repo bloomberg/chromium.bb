@@ -85,31 +85,9 @@ config("media_dependent_config") {
   }
 }
 
-# TODO(jrummell): Each subdirectory should have it's own BUILD.gn, and then
-# this component can depend on them.  http://crbug.com/613033
 component("media") {
-  sources = [
-    "device_monitors/device_monitor_mac.h",
-    "device_monitors/device_monitor_mac.mm",
-    "device_monitors/system_message_window_win.cc",
-    "device_monitors/system_message_window_win.h",
-  ]
-
-  configs += [
-    ":media_config",
-    ":media_implementation",
-    "//build/config:precompiled_headers",
-
-    # TODO(wolenetz): Fix size_t to int trunctaion in win64.
-    # See http://crbug.com/171009
-    "//build/config/compiler:no_size_t_to_int_warning",
-  ]
-  all_dependent_configs = [ ":media_dependent_config" ]
-
-  allow_circular_includes_from = []
-  cflags = []
   libs = []
-  defines = []
+
   deps = [
     "//base",
     "//base:i18n",
@@ -130,17 +108,12 @@ component("media") {
   public_deps = [
     ":media_features",
     ":shared_memory_support",
+    "//media/device_monitors",
     "//media/filters",
     "//media/formats",
     "//media/renderers",
     "//ui/gfx:color_space",
   ]
-
-  include_dirs = [ "." ]
-
-  if (current_cpu == "arm" && arm_use_neon) {
-    defines += [ "USE_NEON" ]
-  }
 
   if (is_mac) {
     public_deps += [ "//media/base/mac" ]
@@ -155,14 +128,6 @@ component("media") {
 
   if (is_win) {
     deps += [ "//media/base/win" ]
-  }
-
-  if (use_udev) {
-    deps += [ "//device/udev_linux" ]
-    sources += [
-      "device_monitors/device_monitor_udev.cc",
-      "device_monitors/device_monitor_udev.h",
-    ]
   }
 }
 
