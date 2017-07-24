@@ -138,6 +138,10 @@ void ProfilingProcessHost::GetAdditionalMappedFilesForChildProcess(
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
+void ProfilingProcessHost::RequestProcessDump(base::ProcessId pid) {
+  // TODO(brettw) implement process dumping.
+}
+
 void ProfilingProcessHost::Launch() {
   mojo::edk::PlatformChannelPair control_channel;
   mojo::edk::HandlePassingInformation handle_passing_info;

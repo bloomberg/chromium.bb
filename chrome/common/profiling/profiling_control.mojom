@@ -9,4 +9,6 @@ interface ProfilingControl {
   // In normal usage, each child process launch will have a corresponding call
   // to this.
   AddNewSender(handle sender_pipe, int32 sender_pid);
+
+  DumpProcess(int32 pid);
 };

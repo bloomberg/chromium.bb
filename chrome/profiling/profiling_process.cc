@@ -43,4 +43,6 @@ void ProfilingProcess::AddNewSender(mojo::ScopedHandle sender_pipe,
   server_->OnNewPipe(base::ScopedPlatformFile(sender_file), sender_pid);
 }
 
+void ProfilingProcess::DumpProcess(int32_t pid) {}
+
 }  // namespace profiling

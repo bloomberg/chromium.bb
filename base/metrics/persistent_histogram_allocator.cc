@@ -771,7 +771,7 @@ bool GlobalHistogramAllocator::CreateWithFile(
   }
   if (!mmfile->IsValid() ||
       !FilePersistentMemoryAllocator::IsFileAcceptable(*mmfile, true)) {
-    NOTREACHED();
+    NOTREACHED() << file_path;
     return false;
   }
 
