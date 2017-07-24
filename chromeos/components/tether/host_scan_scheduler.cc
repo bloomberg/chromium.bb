@@ -44,8 +44,7 @@ void HostScanScheduler::DefaultNetworkChanged(const NetworkState* network) {
 }
 
 void HostScanScheduler::ScanRequested() {
-  if (!host_scanner_->HasRecentlyScanned())
-    EnsureScan();
+  EnsureScan();
 }
 
 void HostScanScheduler::ScanFinished() {

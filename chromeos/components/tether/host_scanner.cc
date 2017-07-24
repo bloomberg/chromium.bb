@@ -46,16 +46,6 @@ bool HostScanner::IsScanActive() {
   return is_fetching_hosts_ || host_scanner_operation_;
 }
 
-bool HostScanner::HasRecentlyScanned() {
-  if (previous_scan_time_.is_null())
-    return false;
-
-  // TODO(khorimoto): Don't depend on MasterHostScanCache here.
-  base::TimeDelta difference = clock_->Now() - previous_scan_time_;
-  return difference.InMinutes() <
-         MasterHostScanCache::kNumMinutesBeforeCacheEntryExpires;
-}
-
 void HostScanner::StartScan() {
   if (IsScanActive()) {
     return;
@@ -187,7 +177,6 @@ void HostScanner::OnFinalScanResultReceived(
   host_scanner_operation_.reset();
 
   NotifyScanFinished();
-  previous_scan_time_ = clock_->Now();
 }
 
 void HostScanner::RecordHostScanResult(HostScanResultEventType event_type) {

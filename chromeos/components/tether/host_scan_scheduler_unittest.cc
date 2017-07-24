@@ -42,7 +42,6 @@ class FakeHostScanner : public HostScanner {
 
   void StartScan() override {
     is_scan_active_ = true;
-    has_recently_scanned_ = true;
     num_scans_started_++;
   }
 
@@ -50,17 +49,10 @@ class FakeHostScanner : public HostScanner {
 
   bool IsScanActive() override { return is_scan_active_; }
 
-  bool HasRecentlyScanned() override { return has_recently_scanned_; }
-
-  void set_has_recently_scanned(bool has_recently_scanned) {
-    has_recently_scanned_ = has_recently_scanned;
-  }
-
   int num_scans_started() { return num_scans_started_; }
 
  private:
   bool is_scan_active_ = false;
-  bool has_recently_scanned_ = false;
   int num_scans_started_ = 0;
 };
 
@@ -170,15 +162,7 @@ TEST_F(HostScanSchedulerTest, ScanRequested) {
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
-  // Should not begin a new scan when a scan has finished recently.
-  host_scan_scheduler_->ScanRequested();
-  EXPECT_EQ(1, fake_host_scanner_->num_scans_started());
-  EXPECT_FALSE(
-      network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
-
-  // A new scan should be allowed once a scan is not active and has not finished
-  // recently.
-  fake_host_scanner_->set_has_recently_scanned(false);
+  // A new scan should be allowed once a scan is not active.
   host_scan_scheduler_->ScanRequested();
   EXPECT_EQ(2, fake_host_scanner_->num_scans_started());
   EXPECT_TRUE(
