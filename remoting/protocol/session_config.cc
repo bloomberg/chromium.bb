@@ -98,6 +98,15 @@ std::unique_ptr<SessionConfig> SessionConfig::SelectCommon(
     });
   }
 
+  // If neither host nor the client have H264 experiment enabled then remove it
+  // from the list of host video configs.
+  if (!client_config->h264_experiment_enabled() &&
+      !host_config->h264_experiment_enabled()) {
+    host_video_configs.remove_if([](const ChannelConfig& config) {
+      return config.codec == ChannelConfig::CODEC_H264;
+    });
+  }
+
   if (!SelectCommonChannelConfig(host_config->control_configs(),
                                  client_config->control_configs(),
                                  &result->control_config_) ||
