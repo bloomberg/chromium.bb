@@ -32,6 +32,7 @@ struct ChannelConfig {
     CODEC_ZIP,
     CODEC_VP8,
     CODEC_VP9,
+    CODEC_H264,
     CODEC_OPUS,
     CODEC_SPEEX,
   };
