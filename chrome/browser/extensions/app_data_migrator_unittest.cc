@@ -257,7 +257,8 @@ TEST_F(AppDataMigratorTest, NoOpMigration) {
                                  base::Bind(&MigrationCallback));
 }
 
-TEST_F(AppDataMigratorTest, FileSystemMigration) {
+// crbug.com/747589
+TEST_F(AppDataMigratorTest, DISABLED_FileSystemMigration) {
   scoped_refptr<const Extension> old_ext = GetTestExtension(false);
   scoped_refptr<const Extension> new_ext = GetTestExtension(true);
 
