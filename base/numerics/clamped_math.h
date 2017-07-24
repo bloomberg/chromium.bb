@@ -176,6 +176,11 @@ class ClampedNumeric {
         value_);
   }
 
+  // This method extracts the raw integer value without saturating it to the
+  // destination type as the conversion operator does. This is useful when
+  // e.g. assigning to an auto type or passing as a deduced template parameter.
+  constexpr T RawValue() const { return value_; }
+
  private:
   T value_;
 

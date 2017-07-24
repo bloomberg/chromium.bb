@@ -69,8 +69,8 @@ class PLATFORM_EXPORT IntPoint {
     y_ += dy;
   }
   void SaturatedMove(int dx, int dy) {
-    x_ = SaturatedAddition(x_, dx);
-    y_ = SaturatedAddition(y_, dy);
+    x_ = ClampAdd(x_, dx);
+    y_ = ClampAdd(y_, dy);
   }
 
   void Scale(float sx, float sy) {

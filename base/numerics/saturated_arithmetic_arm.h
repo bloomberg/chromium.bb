@@ -9,36 +9,6 @@
 
 namespace base {
 
-inline int32_t SaturatedAddition(int32_t a, int32_t b) {
-  int32_t result;
-
-  asm("qadd %[output],%[first],%[second]"
-      : [output] "=r"(result)
-      : [first] "r"(a), [second] "r"(b));
-
-  return result;
-}
-
-inline int32_t SaturatedSubtraction(int32_t a, int32_t b) {
-  int32_t result;
-
-  asm("qsub %[output],%[first],%[second]"
-      : [output] "=r"(result)
-      : [first] "r"(a), [second] "r"(b));
-
-  return result;
-}
-
-inline int32_t SaturatedNegative(int32_t a) {
-  return SaturatedSubtraction(0, a);
-}
-
-inline int32_t SaturatedAbsolute(int32_t a) {
-  if (a >= 0)
-    return a;
-  return SaturatedNegative(a);
-}
-
 inline int GetMaxSaturatedSetResultForTesting(int fractional_shift) {
   // For ARM Asm version the set function maxes out to the biggest
   // possible integer part with the fractional part zero'd out.
