@@ -35,6 +35,9 @@ public class AccountSigninActivity extends AppCompatActivity
     private static final String TAG = "AccountSigninActivity";
     private static final String INTENT_SIGNIN_ACCESS_POINT =
             "AccountSigninActivity.SigninAccessPoint";
+    private static final String INTENT_SELECT_ACCOUNT = "AccountSigninActivity.SelectAccount";
+    private static final String INTENT_IS_DEFAULT_ACCOUNT =
+            "AccountSigninActivity.IsDefaultAccount";
 
     private AccountSigninView mView;
 
@@ -48,7 +51,7 @@ public class AccountSigninActivity extends AppCompatActivity
     /**
      * A convenience method to create a AccountSigninActivity passing the access point as an
      * intent.
-     * @param accessPoint - A SigninAccessPoint designating where the activity is created from.
+     * @param accessPoint {@link AccessPoint} for starting signin flow. Used in metrics.
      */
     public static void startAccountSigninActivity(Context context, @AccessPoint int accessPoint) {
         Intent intent = new Intent(context, AccountSigninActivity.class);
@@ -59,7 +62,7 @@ public class AccountSigninActivity extends AppCompatActivity
     /**
      * A convenience method to create a AccountSigninActivity passing the access point as an
      * intent. Checks if the sign in flow can be started before showing the activity.
-     * @param accessPoint - A SigninAccessPoint designating where the activity is created from.
+     * @param accessPoint {@link AccessPoint} for starting signin flow. Used in metrics.
      * @return {@code true} if sign in has been allowed.
      */
     public static boolean startIfAllowed(Context context, @AccessPoint int accessPoint) {
@@ -72,6 +75,22 @@ public class AccountSigninActivity extends AppCompatActivity
 
         startAccountSigninActivity(context, accessPoint);
         return true;
+    }
+
+    /**
+     * Starts AccountSigninActivity from signin confirmation page.
+     * @param accessPoint {@link AccessPoint} for starting signin flow. Used in metrics.
+     * @param selectAccount Account for which signin confirmation page should be shown.
+     * @param isDefaultAccount Whether {@param selectedAccount} is the default account on
+     *         the device. Used in metrics.
+     */
+    public static void startFromConfirmationPage(Context context, @AccessPoint int accessPoint,
+            String selectAccount, boolean isDefaultAccount) {
+        Intent intent = new Intent(context, AccountSigninActivity.class);
+        intent.putExtra(INTENT_SIGNIN_ACCESS_POINT, accessPoint);
+        intent.putExtra(INTENT_SELECT_ACCOUNT, selectAccount);
+        intent.putExtra(INTENT_IS_DEFAULT_ACCOUNT, isDefaultAccount);
+        context.startActivity(intent);
     }
 
     @Override
@@ -102,9 +121,18 @@ public class AccountSigninActivity extends AppCompatActivity
 
         mView = (AccountSigninView) LayoutInflater.from(this).inflate(
                 R.layout.account_signin_view, null);
+
         ProfileDataCache profileDataCache =
                 new ProfileDataCache(this, Profile.getLastUsedProfile());
-        mView.init(profileDataCache, false, null, this, this);
+        String selectAccount = getIntent().getStringExtra(INTENT_SELECT_ACCOUNT);
+        if (selectAccount == null) {
+            mView.initFromSelectionPage(profileDataCache, false, this, this);
+        } else {
+            boolean isDefaultAccount =
+                    getIntent().getBooleanExtra(INTENT_IS_DEFAULT_ACCOUNT, false);
+            mView.initFromConfirmationPage(profileDataCache, false, selectAccount, isDefaultAccount,
+                    AccountSigninView.UNDO_ABORT, this, this);
+        }
 
         if (getAccessPoint() == SigninAccessPoint.BOOKMARK_MANAGER
                 || getAccessPoint() == SigninAccessPoint.RECENT_TABS) {

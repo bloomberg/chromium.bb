@@ -8,9 +8,9 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.os.SystemClock;
+import android.support.annotation.IntDef;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
-import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.view.View;
@@ -36,18 +36,19 @@ import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 import org.chromium.ui.widget.ButtonCompat;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 // TODO(gogerald): refactor common part into one place after redesign all sign in screens.
 
 /**
- * This view allows the user to select an account to log in to, add an account,
- * cancel account selection, etc. Users of this class should
- * {@link AccountSigninView#setListener(Listener)} and
- * {@link AccountSigninView#setDelegate(Delegate)} after the view has been inflated.
+ * This view allows the user to select an account to log in to, add an account, cancel account
+ * selection, etc. Users of this class should call {@link #initFromSelectionPage} or
+ * {@link #initFromConfirmationPage} after the view has been inflated.
  */
-
 public class AccountSigninView extends FrameLayout {
     /**
      * Callbacks for various account selection events.
@@ -105,6 +106,18 @@ public class AccountSigninView extends FrameLayout {
     private static final String SETTINGS_LINK_OPEN = "<LINK1>";
     private static final String SETTINGS_LINK_CLOSE = "</LINK1>";
 
+    /** Specifies different behaviors for "Undo" button on signin confirmation page. */
+    @IntDef({UNDO_INVISIBLE, UNDO_BACK_TO_SELECTION, UNDO_ABORT})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface UndoBehavior {}
+
+    /** "Undo" button is invisible. */
+    public static final int UNDO_INVISIBLE = 0;
+    /** "Undo" button opens account selection page. */
+    public static final int UNDO_BACK_TO_SELECTION = 1;
+    /** "Undo" button calls {@link Listener#onAccountSelectionCanceled()}. */
+    public static final int UNDO_ABORT = 2;
+
     private List<String> mAccountNames;
     private AccountSigninChooseView mSigninChooseView;
     private ButtonCompat mPositiveButton;
@@ -112,10 +125,12 @@ public class AccountSigninView extends FrameLayout {
     private Button mMoreButton;
     private Listener mListener;
     private Delegate mDelegate;
-    private String mForcedAccountName;
+    @UndoBehavior
+    private int mUndoBehavior;
     private ProfileDataCache mProfileData;
     private final ProfileDataCache.Observer mProfileDataCacheObserver;
-    private boolean mSignedIn;
+    private String mSelectedAccountName;
+    private boolean mIsDefaultAccountSelected;
     private int mCancelButtonTextId;
     private boolean mIsChildAccount;
     private boolean mIsGooglePlayServicesOutOfDate;
@@ -139,25 +154,54 @@ public class AccountSigninView extends FrameLayout {
     }
 
     /**
-     * Initializes this view with profile data cache, delegate and listener.
-     * @param profileData ProfileDataCache that will be used to call to retrieve user account info.
+     * Initializes the view from account selection page. After selecting the account, signin
+     * confirmation page will be opened.
+     *
+     * @param profileData    ProfileDataCache that will be used to retrieve user account info.
      * @param isChildAccount Whether this view is for a child account.
-     * @param forcedAccountName An account that should be force-selected.
-     * @param delegate    The UI object creation delegate.
-     * @param listener    The account selection event listener.
+     * @param delegate       The UI object creation delegate.
+     * @param listener       The account selection event listener.
      */
-    public void init(ProfileDataCache profileData, boolean isChildAccount, String forcedAccountName,
+    public void initFromSelectionPage(ProfileDataCache profileData, boolean isChildAccount,
             Delegate delegate, Listener listener) {
-        mProfileData = profileData;
+        setProfileDataCache(profileData);
         mIsChildAccount = isChildAccount;
-        mForcedAccountName = TextUtils.isEmpty(forcedAccountName) ? null : forcedAccountName;
+        mUndoBehavior = UNDO_BACK_TO_SELECTION;
         mDelegate = delegate;
         mListener = listener;
+        showSigninPage();
+    }
 
+    /**
+     * Initializes the view from signin confirmation page. The account name should be provided by
+     * the caller.
+     *
+     * @param profileData      ProfileDataCache that will be used to retrieve user account info.
+     * @param isChildAccount   Whether this view is for a child account.
+     * @param accountName      An account that should be used for confirmation page and signin.
+     * @param isDefaultAccount Whether {@param accountName} is a default account, used for metrics.
+     * @param undoBehavior     "Undo" button behavior (see {@link UndoBehavior}).
+     * @param delegate         The UI object creation delegate.
+     * @param listener         The account selection event listener.
+     */
+    public void initFromConfirmationPage(ProfileDataCache profileData, boolean isChildAccount,
+            String accountName, boolean isDefaultAccount, @UndoBehavior int undoBehavior,
+            Delegate delegate, Listener listener) {
+        setProfileDataCache(profileData);
+        mIsChildAccount = isChildAccount;
+        mUndoBehavior = undoBehavior;
+        mDelegate = delegate;
+        mListener = listener;
+        showConfirmSigninPageAccountTrackerServiceCheck(accountName, isDefaultAccount);
+        updateAccounts();
+    }
+
+    private void setProfileDataCache(ProfileDataCache profileData) {
+        assert mProfileData == null;
+        mProfileData = profileData;
         if (ViewCompat.isAttachedToWindow(this)) {
             mProfileData.addObserver(mProfileDataCacheObserver);
         }
-        showSigninPage();
     }
 
     @Override
@@ -245,7 +289,24 @@ public class AccountSigninView extends FrameLayout {
      * Refresh the list of available system accounts asynchronously.
      */
     private void updateAccounts() {
-        if (mSignedIn || mProfileData == null) {
+        if (mProfileData == null) {
+            return;
+        }
+
+        if (mSelectedAccountName != null) {
+            AccountManagerFacade.get().tryGetGoogleAccountNames(new Callback<List<String>>() {
+                @Override
+                public void onResult(List<String> result) {
+                    if (result.contains(mSelectedAccountName)) return;
+
+                    if (mUndoBehavior == UNDO_BACK_TO_SELECTION) {
+                        RecordUserAction.record("Signin_Undo_Signin");
+                        showSigninPage();
+                    } else {
+                        mListener.onFailedToSetForcedAccount(mSelectedAccountName);
+                    }
+                }
+            });
             return;
         }
 
@@ -285,30 +346,18 @@ public class AccountSigninView extends FrameLayout {
                     return;
                 }
 
-                if (mSignedIn) {
+                if (mSelectedAccountName != null) {
                     // If sign-in completed in the mean time, return in order to avoid showing the
                     // wrong state in the UI.
                     return;
                 }
 
                 mAccountNames = result;
-
                 int oldSelectedAccount = mSigninChooseView.getSelectedAccountPosition();
-                final int accountToSelect;
-                final boolean shouldJumpToConfirmationScreen;
-                if (isInForcedAccountMode()) {
-                    accountToSelect = mAccountNames.indexOf(mForcedAccountName);
-                    if (accountToSelect < 0) {
-                        mListener.onFailedToSetForcedAccount(mForcedAccountName);
-                        return;
-                    }
-                    shouldJumpToConfirmationScreen = true;
-                } else {
-                    AccountSelectionResult selection = selectAccountAfterAccountsUpdate(
-                            oldAccountNames, mAccountNames, oldSelectedAccount);
-                    accountToSelect = selection.getSelectedAccountIndex();
-                    shouldJumpToConfirmationScreen = selection.shouldJumpToConfirmationScreen();
-                }
+                AccountSelectionResult selection = selectAccountAfterAccountsUpdate(
+                        oldAccountNames, mAccountNames, oldSelectedAccount);
+                int accountToSelect = selection.getSelectedAccountIndex();
+                boolean shouldJumpToConfirmationScreen = selection.shouldJumpToConfirmationScreen();
 
                 mSigninChooseView.updateAccounts(mAccountNames, accountToSelect, mProfileData);
                 setUpSigninButton(!mAccountNames.isEmpty());
@@ -397,23 +446,22 @@ public class AccountSigninView extends FrameLayout {
     public void updateProfileData() {
         mSigninChooseView.updateAccountProfileImages(mProfileData);
 
-        if (mSignedIn) updateSignedInAccountInfo();
+        if (mSelectedAccountName != null) updateSignedInAccountInfo();
     }
 
     private void updateSignedInAccountInfo() {
-        String selectedAccountEmail = getSelectedAccountName();
-        mSigninAccountImage.setImageDrawable(mProfileData.getImage(selectedAccountEmail));
+        mSigninAccountImage.setImageDrawable(mProfileData.getImage(mSelectedAccountName));
         String name = null;
-        if (mIsChildAccount) name = mProfileData.getGivenName(selectedAccountEmail);
-        if (name == null) name = mProfileData.getFullName(selectedAccountEmail);
-        if (name == null) name = selectedAccountEmail;
+        if (mIsChildAccount) name = mProfileData.getGivenName(mSelectedAccountName);
+        if (name == null) name = mProfileData.getFullName(mSelectedAccountName);
+        if (name == null) name = mSelectedAccountName;
         String text = String.format(getResources().getString(R.string.signin_hi_name), name);
         mSigninAccountName.setText(text);
-        mSigninAccountEmail.setText(selectedAccountEmail);
+        mSigninAccountEmail.setText(mSelectedAccountName);
     }
 
     private void showSigninPage() {
-        mSignedIn = false;
+        mSelectedAccountName = null;
 
         mSigninConfirmationView.setVisibility(View.GONE);
         mSigninChooseView.setVisibility(View.VISIBLE);
@@ -423,9 +471,8 @@ public class AccountSigninView extends FrameLayout {
     }
 
     private void showConfirmSigninPage() {
-        mSignedIn = true;
-
         updateSignedInAccountInfo();
+        mProfileData.update(Collections.singletonList(mSelectedAccountName));
 
         mSigninChooseView.setVisibility(View.GONE);
         mSigninConfirmationView.setVisibility(View.VISIBLE);
@@ -437,8 +484,7 @@ public class AccountSigninView extends FrameLayout {
         NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan() {
             @Override
             public void onClick(View widget) {
-                mListener.onAccountSelected(
-                        getSelectedAccountName(), isDefaultAccountSelected(), true);
+                mListener.onAccountSelected(mSelectedAccountName, mIsDefaultAccountSelected, true);
                 RecordUserAction.record("Signin_Signin_WithAdvancedSyncSettings");
             }
         };
@@ -452,8 +498,18 @@ public class AccountSigninView extends FrameLayout {
     }
 
     private void showConfirmSigninPageAccountTrackerServiceCheck() {
+        int index = mSigninChooseView.getSelectedAccountPosition();
+        showConfirmSigninPageAccountTrackerServiceCheck(mAccountNames.get(index), index == 0);
+    }
+
+    private void showConfirmSigninPageAccountTrackerServiceCheck(
+            final String accountName, final boolean isDefaultAccount) {
+        assert accountName != null;
         // Disable the buttons to prevent them being clicked again while waiting for the callbacks.
         setButtonsEnabled(false);
+
+        mSelectedAccountName = accountName;
+        mIsDefaultAccountSelected = isDefaultAccount;
 
         // Ensure that the AccountTrackerService has a fully up to date GAIA id <-> email mapping,
         // as this is needed for the previous account check.
@@ -478,11 +534,10 @@ public class AccountSigninView extends FrameLayout {
     private void showConfirmSigninPagePreviousAccountCheck(long seedingStartTime) {
         RecordHistogram.recordTimesHistogram("Signin.AndroidAccountSigninViewSeedingTime",
                 SystemClock.elapsedRealtime() - seedingStartTime, TimeUnit.MILLISECONDS);
-        String accountName = getSelectedAccountName();
         ConfirmSyncDataStateMachine.run(PrefServiceBridge.getInstance().getSyncLastAccountName(),
-                accountName, ImportSyncType.PREVIOUS_DATA_FOUND,
-                mDelegate.getFragmentManager(),
-                getContext(), new ConfirmImportSyncDataDialog.Listener() {
+                mSelectedAccountName, ImportSyncType.PREVIOUS_DATA_FOUND,
+                mDelegate.getFragmentManager(), getContext(),
+                new ConfirmImportSyncDataDialog.Listener() {
                     @Override
                     public void onConfirm(boolean wipeData) {
                         SigninManager.wipeSyncUserDataIfRequired(wipeData)
@@ -540,15 +595,22 @@ public class AccountSigninView extends FrameLayout {
     }
 
     private void setUpUndoButton() {
-        setNegativeButtonVisible(!isInForcedAccountMode());
-        if (isInForcedAccountMode()) return;
-
+        if (mUndoBehavior == UNDO_INVISIBLE) {
+            setNegativeButtonVisible(false);
+            return;
+        }
+        setNegativeButtonVisible(true);
         mNegativeButton.setText(getResources().getText(R.string.undo));
         mNegativeButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                RecordUserAction.record("Signin_Undo_Signin");
-                showSigninPage();
+                if (mUndoBehavior == UNDO_BACK_TO_SELECTION) {
+                    RecordUserAction.record("Signin_Undo_Signin");
+                    showSigninPage();
+                } else {
+                    assert mUndoBehavior == UNDO_ABORT;
+                    mListener.onAccountSelectionCanceled();
+                }
             }
         });
     }
@@ -558,8 +620,7 @@ public class AccountSigninView extends FrameLayout {
         mPositiveButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onAccountSelected(
-                        getSelectedAccountName(), isDefaultAccountSelected(), false);
+                mListener.onAccountSelected(mSelectedAccountName, mIsDefaultAccountSelected, false);
                 RecordUserAction.record("Signin_Signin_WithDefaultSyncSettings");
             }
         });
@@ -616,22 +677,7 @@ public class AccountSigninView extends FrameLayout {
     /**
      * @return Whether the view is in signed in mode.
      */
-    public boolean isSignedIn() {
-        return mSignedIn;
-    }
-
-    /**
-     * @return Whether the view is in "no choice, just a confirmation" forced-account mode.
-     */
-    public boolean isInForcedAccountMode() {
-        return mForcedAccountName != null;
-    }
-
-    private String getSelectedAccountName() {
-        return mAccountNames.get(mSigninChooseView.getSelectedAccountPosition());
-    }
-
-    private boolean isDefaultAccountSelected() {
-        return mSigninChooseView.getSelectedAccountPosition() == 0;
+    public boolean isInConfirmationScreen() {
+        return mSelectedAccountName != null;
     }
 }
