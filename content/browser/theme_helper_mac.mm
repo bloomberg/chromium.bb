@@ -53,6 +53,8 @@ void FillScrollbarThemeParams(
   params->preferred_scroller_style =
       ThemeHelperMac::GetPreferredScrollerStyle();
   params->button_placement = GetButtonPlacement();
+  params->scroll_view_rubber_banding =
+      [defaults boolForKey:@"NSScrollViewRubberbanding"];
 }
 
 void SendSystemColorsChangedMessage(content::mojom::Renderer* renderer) {
@@ -110,6 +112,13 @@ void SendSystemColorsChangedMessage(content::mojom::Renderer* renderer) {
                           object:nil
               suspensionBehavior:
                   NSNotificationSuspensionBehaviorDeliverImmediately];
+
+  [distributedCenter
+             addObserver:self
+                selector:@selector(behaviorPrefsChanged:)
+                    name:@"NSScrollViewRubberbanding"
+                  object:nil
+      suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately];
 
   // In single-process mode, renderers will catch these notifications
   // themselves and listening for them here may trigger the DCHECK in Observe().
