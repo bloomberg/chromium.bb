@@ -45,11 +45,15 @@ class TestUrlBarTexture : public UrlBarTexture {
   ~TestUrlBarTexture() override {}
 
   void DrawURL(const GURL& gurl) {
-    unsupported_mode_ = UiUnsupportedMode::kCount;
     ToolbarState state(gurl, SecurityLevel::DANGEROUS,
                        &toolbar::kHttpsInvalidIcon,
                        base::UTF8ToUTF16("Not secure"), true, false);
     ASSERT_TRUE(state.should_display_url);
+    DrawURLState(state);
+  }
+
+  void DrawURLState(const ToolbarState& state) {
+    unsupported_mode_ = UiUnsupportedMode::kCount;
     SetToolbarState(state);
     gfx::Size texture_size = GetPreferredTextureSize(kUrlWidthPixels);
     sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
@@ -89,7 +93,11 @@ class TestUrlBarTexture : public UrlBarTexture {
   UiUnsupportedMode unsupported_mode() const { return unsupported_mode_; }
 
   gfx::RenderText* url_render_text() { return url_render_text_.get(); }
-  const base::string16& url_text() { return url_text_; }
+
+  const base::string16& url_text() { return rendered_url_text_; }
+  const base::string16& security_text() { return rendered_security_text_; }
+  const gfx::Rect url_rect() { return rendered_url_text_rect_; }
+  const gfx::Rect security_rect() { return rendered_security_text_rect_; }
 
  private:
   void OnUnsupportedFeature(UiUnsupportedMode mode) {
@@ -291,6 +299,41 @@ TEST(UrlBarTexture, EmptyURL) {
   TestUrlBarTexture texture;
   texture.DrawURL(GURL());
   EXPECT_EQ(UiUnsupportedMode::kCount, texture.unsupported_mode());
+}
+
+TEST(UrlBarTexture, OfflinePage) {
+  TestUrlBarTexture texture;
+  ToolbarState state(GURL("https://host.com/page"), SecurityLevel::NONE,
+                     &toolbar::kHttpsInvalidIcon, base::UTF8ToUTF16("Offline"),
+                     true, false);
+
+  // Render online page.
+  state.offline_page = false;
+  texture.DrawURLState(state);
+  EXPECT_EQ(texture.security_rect().width(), 0);
+  EXPECT_EQ(texture.security_rect().height(), 0);
+  EXPECT_GT(texture.url_rect().width(), 0);
+  EXPECT_GT(texture.url_rect().height(), 0);
+  EXPECT_TRUE(texture.security_text().empty());
+  gfx::Rect online_url_rect = texture.url_rect();
+
+  // Go offline. Security text should be visible and displace the URL.
+  state.offline_page = true;
+  texture.DrawURLState(state);
+  EXPECT_GT(texture.security_rect().width(), 0);
+  EXPECT_GT(texture.security_rect().height(), 0);
+  EXPECT_GT(texture.url_rect().width(), 0);
+  EXPECT_GT(texture.url_rect().height(), 0);
+  EXPECT_GT(texture.url_rect().x(), online_url_rect.x());
+  EXPECT_EQ(texture.security_text(), base::UTF8ToUTF16("Offline"));
+
+  // Go back online.
+  state.offline_page = false;
+  texture.DrawURLState(state);
+  EXPECT_EQ(texture.security_rect().width(), 0);
+  EXPECT_EQ(texture.security_rect().height(), 0);
+  EXPECT_EQ(texture.url_rect(), online_url_rect);
+  EXPECT_TRUE(texture.security_text().empty());
 }
 
 }  // namespace vr
