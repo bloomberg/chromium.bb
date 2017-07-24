@@ -3,6 +3,8 @@ Tests list of user metrics codes and invocations.
 recordActionTaken:
 {
     AnimationsPlaybackRateChanged : 11
+    Audits2Finished : 30
+    Audits2Started : 29
     AuditsStarted : 7
     ChangeInspectedNodeInElementsPanel : 26
     CommandEvaluatedInConsolePanel : 15

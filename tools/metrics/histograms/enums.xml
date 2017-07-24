@@ -7784,7 +7784,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Timeline started"/>
   <int value="5" label="CPU profile taken"/>
   <int value="6" label="Heap profile taken"/>
-  <int value="7" label="Audits started"/>
+  <int value="7" label="Legacy Audits started"/>
   <int value="8" label="Console evaluated"/>
   <int value="9" label="File saved in workspace"/>
   <int value="10" label="Device mode enabled"/>
@@ -7806,6 +7806,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="26" label="Change inspected node in elements panel"/>
   <int value="27" label="Style rule copied"/>
   <int value="28" label="Coverage started"/>
+  <int value="29" label="Audits started"/>
+  <int value="30" label="Audits finished"/>
 </enum>
 
 <enum name="DevToolsPanel">
