@@ -478,7 +478,10 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // Returns true if any transactions in the ActiveEntry depend on this
   // transaction to complete writing to the cache.
   bool HasDependentTransactions(ActiveEntry* entry,
-                                Transaction* transaction,
+                                Transaction* transaction) const;
+
+  // Check the sanity of response code for a writer transaction.
+  bool IsValidResponseForWriter(Transaction* transaction,
                                 bool is_partial) const;
 
   // Returns true if a transaction is currently writing the response body.
