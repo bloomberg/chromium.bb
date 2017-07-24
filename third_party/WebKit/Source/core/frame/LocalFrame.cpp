@@ -135,7 +135,7 @@ LocalFrame* LocalFrame::Create(LocalFrameClient* client,
 }
 
 void LocalFrame::Init() {
-  CoreInitializer::CallModulesLocalFrameInit(*this);
+  CoreInitializer::GetInstance().InitLocalFrame(*this);
 
   loader_.Init();
 }

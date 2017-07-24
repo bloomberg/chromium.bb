@@ -51,58 +51,40 @@ class CORE_EXPORT CoreInitializer {
   WTF_MAKE_NONCOPYABLE(CoreInitializer);
 
  public:
+  // Initialize must be called before GetInstance.
+  static CoreInitializer& GetInstance() {
+    DCHECK(instance_);
+    return *instance_;
+  }
+
   virtual ~CoreInitializer() {}
 
   // Should be called by clients before trying to create Frames.
   virtual void Initialize();
 
-  // Callbacks stored in CoreInitializer and set by ModulesInitializer to bypass
-  // the inverted dependency from core/ to modules/.
-  using LocalFrameCallback = void (*)(LocalFrame&);
-  static void CallModulesLocalFrameInit(LocalFrame& frame) {
-    instance_->local_frame_init_callback_(frame);
-  }
-  static void CallModulesInstallSupplements(LocalFrame& frame) {
-    instance_->chrome_client_install_supplements_callback_(frame);
-  }
-  using WorkerClientsCallback = void (*)(WorkerClients&);
-  static void CallModulesProvideLocalFileSystem(WorkerClients& worker_clients) {
-    instance_->worker_clients_local_file_system_callback_(worker_clients);
-  }
-  static void CallModulesProvideIndexedDB(WorkerClients& worker_clients) {
-    instance_->worker_clients_indexed_db_callback_(worker_clients);
-  }
-  using MediaControlsFactory = MediaControls* (*)(HTMLMediaElement&,
-                                                  ShadowRoot&);
-  static MediaControls* CallModulesMediaControlsFactory(
-      HTMLMediaElement& media_element,
-      ShadowRoot& shadow_root) {
-    return instance_->media_controls_factory_(media_element, shadow_root);
-  }
-  using InspectorAgentSessionInitCallback = void (*)(InspectorSession*,
-                                                     bool,
-                                                     InspectorDOMAgent*,
-                                                     InspectedFrames*,
-                                                     Page*);
-  static void CallModulesInspectorAgentSessionInitCallback(
-      InspectorSession* session,
-      bool allow_view_agents,
-      InspectorDOMAgent* dom_agent,
-      InspectedFrames* inspected_frames,
-      Page* page) {
-    instance_->inspector_agent_session_init_callback_(
-        session, allow_view_agents, dom_agent, inspected_frames, page);
-  }
+  // Methods defined in CoreInitializer and implemented by ModulesInitializer to
+  // bypass the inverted dependency from core/ to modules/.
+  // Mojo Interfaces registered with LocalFrame
+  virtual void InitLocalFrame(LocalFrame&) const = 0;
+  // Supplements installed on a frame using ChromeClient
+  virtual void InstallSupplements(LocalFrame&) const = 0;
+  virtual void ProvideLocalFileSystemToWorker(WorkerClients&) const = 0;
+  virtual void ProvideIndexedDBClientToWorker(WorkerClients&) const = 0;
+  virtual MediaControls* CreateMediaControls(HTMLMediaElement&,
+                                             ShadowRoot&) const = 0;
+  // Session Initializers for Inspector Agents in modules/
+  // These methods typically create agents and append them to a session.
+  // TODO(nverne): remove this and restore to WebDevToolsAgentImpl once that
+  // class is a controller/ crbug:731490
+  virtual void InitInspectorAgentSession(InspectorSession*,
+                                         bool,
+                                         InspectorDOMAgent*,
+                                         InspectedFrames*,
+                                         Page*) const = 0;
 
  protected:
   // CoreInitializer is only instantiated by subclass ModulesInitializer.
   CoreInitializer() {}
-  LocalFrameCallback local_frame_init_callback_;
-  LocalFrameCallback chrome_client_install_supplements_callback_;
-  WorkerClientsCallback worker_clients_local_file_system_callback_;
-  WorkerClientsCallback worker_clients_indexed_db_callback_;
-  MediaControlsFactory media_controls_factory_;
-  InspectorAgentSessionInitCallback inspector_agent_session_init_callback_;
 
  private:
   static CoreInitializer* instance_;

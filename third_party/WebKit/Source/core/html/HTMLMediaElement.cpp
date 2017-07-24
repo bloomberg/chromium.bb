@@ -3691,7 +3691,7 @@ void HTMLMediaElement::EnsureMediaControls() {
 
   ShadowRoot& shadow_root = EnsureUserAgentShadowRoot();
   media_controls_ =
-      CoreInitializer::CallModulesMediaControlsFactory(*this, shadow_root);
+      CoreInitializer::GetInstance().CreateMediaControls(*this, shadow_root);
 
   // The media controls should be inserted after the text track container,
   // so that they are rendered in front of captions and subtitles. This check

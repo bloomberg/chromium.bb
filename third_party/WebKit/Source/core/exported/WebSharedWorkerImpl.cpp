@@ -332,8 +332,10 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
   SecurityOrigin* starter_origin = loading_document_->GetSecurityOrigin();
 
   WorkerClients* worker_clients = WorkerClients::Create();
-  CoreInitializer::CallModulesProvideLocalFileSystem(*worker_clients);
-  CoreInitializer::CallModulesProvideIndexedDB(*worker_clients);
+  CoreInitializer::GetInstance().ProvideLocalFileSystemToWorker(
+      *worker_clients);
+  CoreInitializer::GetInstance().ProvideIndexedDBClientToWorker(
+      *worker_clients);
 
   WebSecurityOrigin web_security_origin(loading_document_->GetSecurityOrigin());
   ProvideContentSettingsClientToWorker(

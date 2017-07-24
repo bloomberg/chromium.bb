@@ -381,7 +381,7 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
   }
 
   // Call session init callbacks registered from higher layers
-  CoreInitializer::CallModulesInspectorAgentSessionInitCallback(
+  CoreInitializer::GetInstance().InitInspectorAgentSession(
       session, include_view_agents_, dom_agent, inspected_frames_.Get(),
       web_local_frame_impl_->ViewImpl()->GetPage());
 
