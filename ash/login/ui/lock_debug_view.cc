@@ -179,6 +179,7 @@ void LockDebugView::Layout() {
   views::View::Layout();
   lock_->SetBoundsRect(GetLocalBounds());
   debug_->SetPosition(gfx::Point());
+  debug_->SizeToPreferredSize();
 }
 
 void LockDebugView::ButtonPressed(views::Button* sender,
