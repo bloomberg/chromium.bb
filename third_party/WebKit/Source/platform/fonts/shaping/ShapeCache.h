@@ -33,6 +33,7 @@
 #include "platform/wtf/HashFunctions.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/HashTableDeletedValueType.h"
+#include "platform/wtf/StringHasher.h"
 #include "platform/wtf/WeakPtr.h"
 
 namespace blink {
@@ -46,12 +47,12 @@ struct ShapeCacheEntry {
 class ShapeCache {
   USING_FAST_MALLOC(ShapeCache);
   WTF_MAKE_NONCOPYABLE(ShapeCache);
+
+ private:
   // Used to optimize small strings as hash table keys. Avoids malloc'ing an
   // out-of-line StringImpl.
   class SmallStringKey {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-
-    void HashString();
 
    public:
     static unsigned Capacity() { return kCapacity; }
@@ -64,26 +65,32 @@ class ShapeCache {
         : length_(kDeletedValueLength),
           direction_(static_cast<unsigned>(TextDirection::kLtr)) {}
 
-    SmallStringKey(const LChar* characters,
+    template <typename CharacterType>
+    SmallStringKey(CharacterType* characters,
                    unsigned short length,
                    TextDirection direction)
         : length_(length), direction_(static_cast<unsigned>(direction)) {
       DCHECK(length <= kCapacity);
-      // Up-convert from LChar to UChar.
-      for (unsigned short i = 0; i < length; ++i) {
+
+      StringHasher hasher;
+
+      bool remainder = length & 1;
+      length >>= 1;
+
+      unsigned i = 0;
+      while (length--) {
         characters_[i] = characters[i];
+        characters_[i + 1] = characters[i + 1];
+        hasher.AddCharactersAssumingAligned(characters[i], characters[i + 1]);
+        i += 2;
       }
 
-      HashString();
-    }
+      if (remainder) {
+        characters_[i] = characters[i];
+        hasher.AddCharacter(characters[i]);
+      }
 
-    SmallStringKey(const UChar* characters,
-                   unsigned short length,
-                   TextDirection direction)
-        : length_(length), direction_(static_cast<unsigned>(direction)) {
-      DCHECK(length <= kCapacity);
-      memcpy(characters_, characters, length * sizeof(UChar));
-      HashString();
+      hash_ = hasher.GetHash();
     }
 
     const UChar* Characters() const { return characters_; }
@@ -109,12 +116,30 @@ class ShapeCache {
     UChar characters_[kCapacity];
   };
 
+  struct SmallStringKeyHash {
+    STATIC_ONLY(SmallStringKeyHash);
+    static unsigned GetHash(const SmallStringKey& key) { return key.GetHash(); }
+    static bool Equal(const SmallStringKey& a, const SmallStringKey& b) {
+      return a == b;
+    }
+    // Empty and deleted values have lengths that are not equal to any valid
+    // length.
+    static const bool safe_to_compare_to_empty_or_deleted = true;
+  };
+
+  struct SmallStringKeyHashTraits : WTF::SimpleClassHashTraits<SmallStringKey> {
+    STATIC_ONLY(SmallStringKeyHashTraits);
+    static const bool kHasIsEmptyValueFunction = true;
+    static bool IsEmptyValue(const SmallStringKey& key) {
+      return key.IsHashTableEmptyValue();
+    }
+    static const unsigned kMinimumTableSize = 16;
+  };
+
+  friend bool operator==(const SmallStringKey&, const SmallStringKey&);
+
  public:
-  ShapeCache() : weak_factory_(this), version_(0) {
-    // We use 5% of the maximum word cache size as start value
-    // for the HashTable.
-    short_string_map_.ReserveCapacityForSize(500);
-  }
+  ShapeCache() : weak_factory_(this), version_(0) {}
 
   ShapeCacheEntry* Add(const TextRun& run, ShapeCacheEntry entry) {
     if (run.length() > SmallStringKey::Capacity())
@@ -159,8 +184,8 @@ class ShapeCache {
     ShapeCacheEntry* value;
     if (length == 1) {
       uint32_t key = run[0];
-      // All current codepoints in UTF-32 are bewteen 0x0 and 0x10FFFF,
-      // as such use bit 31 (zero-based) to indicate direction.
+      // All current codepointsin UTF-32 are bewteen 0x0 and 0x10FFFF,
+      // as such use bit 32 to indicate direction.
       if (run.Direction() == TextDirection::kRtl)
         key |= (1u << 31);
       SingleCharMap::AddResult add_result = single_char_map_.insert(key, entry);
@@ -168,13 +193,12 @@ class ShapeCache {
       value = &add_result.stored_value->value;
     } else {
       SmallStringKey small_string_key;
-      if (run.Is8Bit()) {
+      if (run.Is8Bit())
         small_string_key =
             SmallStringKey(run.Characters8(), length, run.Direction());
-      } else {
+      else
         small_string_key =
             SmallStringKey(run.Characters16(), length, run.Direction());
-      }
 
       SmallStringMap::AddResult add_result =
           short_string_map_.insert(small_string_key, entry);
@@ -182,38 +206,18 @@ class ShapeCache {
       value = &add_result.stored_value->value;
     }
 
-    if ((!is_new_entry) || (size() < kMaxSize)) {
+    if (!is_new_entry)
       return value;
-    }
+
+    if (size() < kMaxSize)
+      return value;
 
     // No need to be fancy: we're just trying to avoid pathological growth.
     single_char_map_.clear();
     short_string_map_.clear();
 
-    return nullptr;
+    return 0;
   }
-
-  struct SmallStringKeyHash {
-    STATIC_ONLY(SmallStringKeyHash);
-    static unsigned GetHash(const SmallStringKey& key) { return key.GetHash(); }
-    static bool Equal(const SmallStringKey& a, const SmallStringKey& b) {
-      return a == b;
-    }
-    // Empty and deleted values have lengths that are not equal to any valid
-    // length.
-    static const bool safe_to_compare_to_empty_or_deleted = true;
-  };
-
-  struct SmallStringKeyHashTraits : WTF::SimpleClassHashTraits<SmallStringKey> {
-    STATIC_ONLY(SmallStringKeyHashTraits);
-    static const bool kHasIsEmptyValueFunction = true;
-    static bool IsEmptyValue(const SmallStringKey& key) {
-      return key.IsHashTableEmptyValue();
-    }
-    static const unsigned kMinimumTableSize = 16;
-  };
-
-  friend bool operator==(const SmallStringKey&, const SmallStringKey&);
 
   typedef HashMap<SmallStringKey,
                   ShapeCacheEntry,
