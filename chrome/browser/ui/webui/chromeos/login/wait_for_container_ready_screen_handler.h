@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/screens/wait_for_container_ready_screen_view.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace chromeos {
@@ -18,7 +18,7 @@ namespace chromeos {
 class WaitForContainerReadyScreenHandler
     : public BaseScreenHandler,
       public WaitForContainerReadyScreenView,
-      public arc::ArcSessionManager::Observer {
+      public ArcAppListPrefs::Observer {
  public:
   WaitForContainerReadyScreenHandler();
   ~WaitForContainerReadyScreenHandler() override;
@@ -33,8 +33,8 @@ class WaitForContainerReadyScreenHandler
   void Show() override;
   void Hide() override;
 
-  // arc::ArcSessionManager::Observer overrides.
-  void OnArcInitialStart() override;
+  // ArcAppListPrefs::Observer overrides.
+  void OnPackageListInitialRefreshed() override;
 
  private:
   // BaseScreenHandler:
@@ -51,8 +51,11 @@ class WaitForContainerReadyScreenHandler
   // Whether the screen should be shown right after initialization.
   bool show_on_init_ = false;
 
-  // Whether container is ready.
-  bool is_container_ready_ = false;
+  // Whether app list is ready.
+  bool is_app_list_ready_ = false;
+
+  // The primary user profile.
+  Profile* profile_ = nullptr;
 
   // Timer used to exit the page when timeout reaches.
   base::OneShotTimer timer_;
