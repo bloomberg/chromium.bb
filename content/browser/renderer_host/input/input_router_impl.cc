@@ -494,8 +494,8 @@ void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {
   touch_event_queue_->SetAckTimeoutEnabled(touch_ack_timeout_enabled);
 }
 
-void InputRouterImpl::SetFrameTreeNodeId(int frameTreeNodeId) {
-  frame_tree_node_id_ = frameTreeNodeId;
+void InputRouterImpl::SetFrameTreeNodeId(int frame_tree_node_id) {
+  frame_tree_node_id_ = frame_tree_node_id;
 }
 
 const NativeWebKeyboardEvent* InputRouterImpl::GetLastKeyboardEvent() const {
