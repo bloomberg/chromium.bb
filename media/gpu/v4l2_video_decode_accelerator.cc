@@ -91,13 +91,6 @@ struct V4L2VideoDecodeAccelerator::EGLSyncKHRRef {
   EGLSyncKHR egl_sync;
 };
 
-struct V4L2VideoDecodeAccelerator::PictureRecord {
-  PictureRecord(bool cleared, const Picture& picture);
-  ~PictureRecord();
-  bool cleared;  // Whether the texture is cleared and safe to render from.
-  Picture picture;  // The decoded picture.
-};
-
 V4L2VideoDecodeAccelerator::BitstreamBufferRef::BitstreamBufferRef(
     base::WeakPtr<Client>& client,
     scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,

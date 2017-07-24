@@ -449,7 +449,13 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   V4L2DecodeSurfaceByPictureBufferId surfaces_at_display_;
 
   // Record for decoded pictures that can be sent to PictureReady.
-  struct PictureRecord;
+  struct PictureRecord {
+    PictureRecord(bool cleared, const Picture& picture);
+    ~PictureRecord();
+    bool cleared;     // Whether the texture is cleared and safe to render from.
+    Picture picture;  // The decoded picture.
+  };
+
   // Pictures that are ready but not sent to PictureReady yet.
   std::queue<PictureRecord> pending_picture_ready_;
 

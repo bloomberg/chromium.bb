@@ -248,13 +248,6 @@ V4L2SliceVideoDecodeAccelerator::EGLSyncKHRRef::~EGLSyncKHRRef() {
     eglDestroySyncKHR(egl_display, egl_sync);
 }
 
-struct V4L2SliceVideoDecodeAccelerator::PictureRecord {
-  PictureRecord(bool cleared, const Picture& picture);
-  ~PictureRecord();
-  bool cleared;  // Whether the texture is cleared and safe to render from.
-  Picture picture;  // The decoded picture.
-};
-
 V4L2SliceVideoDecodeAccelerator::PictureRecord::PictureRecord(
     bool cleared,
     const Picture& picture)
