@@ -61,7 +61,12 @@ class UrlBarTexture : public UiTexture {
                               const ColorScheme& color_scheme);
 
   std::unique_ptr<gfx::RenderText> url_render_text_;
-  base::string16 url_text_;
+
+  // Rendered state for test purposes.
+  base::string16 rendered_url_text_;
+  gfx::Rect rendered_url_text_rect_;
+  base::string16 rendered_security_text_;
+  gfx::Rect rendered_security_text_rect_;
 
  private:
   void Draw(SkCanvas* canvas, const gfx::Size& texture_size) override;
