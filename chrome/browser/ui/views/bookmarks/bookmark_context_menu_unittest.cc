@@ -78,8 +78,6 @@ class BookmarkContextMenuTest : public testing::Test {
 
   void TearDown() override {
     ui::Clipboard::DestroyClipboardForCurrentThread();
-
-    BrowserThread::GetBlockingPool()->FlushForTesting();
   }
 
  protected:
