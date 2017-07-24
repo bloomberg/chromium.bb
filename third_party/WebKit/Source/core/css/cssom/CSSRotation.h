@@ -50,7 +50,7 @@ class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
   // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const final { return kRotationType; }
   const DOMMatrix* AsMatrix() const final;
-  CSSFunctionValue* ToCSSValue() const final;
+  const CSSFunctionValue* ToCSSValue() const final;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(angle_);

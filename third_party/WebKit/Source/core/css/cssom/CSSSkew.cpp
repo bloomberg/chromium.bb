@@ -85,7 +85,7 @@ const DOMMatrix* CSSSkew::AsMatrix() const {
   return result;
 }
 
-CSSFunctionValue* CSSSkew::ToCSSValue() const {
+const CSSFunctionValue* CSSSkew::ToCSSValue() const {
   // TDOO(meade): Handle calc angles here.
   CSSUnitValue* ax = ToCSSUnitValue(ax_);
   CSSUnitValue* ay = ToCSSUnitValue(ay_);

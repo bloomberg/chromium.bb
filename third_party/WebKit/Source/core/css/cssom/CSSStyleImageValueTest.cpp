@@ -22,7 +22,7 @@ class FakeCSSStyleImageValue : public CSSStyleImageValue {
   bool IsCachePending() const override { return cache_pending_; }
   LayoutSize ImageLayoutSize() const override { return layout_size_; }
 
-  CSSValue* ToCSSValue() const override { return nullptr; }
+  const CSSValue* ToCSSValue() const override { return nullptr; }
   StyleValueType GetType() const override { return kUnknownType; }
 
  private:

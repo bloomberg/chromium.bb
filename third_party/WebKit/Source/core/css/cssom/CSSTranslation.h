@@ -51,7 +51,7 @@ class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
   // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const final { return kTranslationType; }
   const DOMMatrix* AsMatrix() const final;
-  CSSFunctionValue* ToCSSValue() const final;
+  const CSSFunctionValue* ToCSSValue() const final;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(x_);

@@ -70,7 +70,7 @@ CSSUnparsedValue* CSSUnparsedValue::FromCSSValue(
       css_variable_reference_value.VariableDataValue()->TokenRange()));
 }
 
-CSSValue* CSSUnparsedValue::ToCSSValue() const {
+const CSSValue* CSSUnparsedValue::ToCSSValue() const {
   StringBuilder tokens;
 
   for (unsigned i = 0; i < fragments_.size(); i++) {

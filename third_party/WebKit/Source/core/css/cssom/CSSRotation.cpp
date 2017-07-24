@@ -137,7 +137,7 @@ const DOMMatrix* CSSRotation::AsMatrix() const {
   return matrix;
 }
 
-CSSFunctionValue* CSSRotation::ToCSSValue() const {
+const CSSFunctionValue* CSSRotation::ToCSSValue() const {
   // TODO(meade): Handle calc angles.
   CSSUnitValue* angle = ToCSSUnitValue(angle_);
   CSSFunctionValue* result =

@@ -15,7 +15,7 @@ class FakeCSSResourceValue : public CSSResourceValue {
   FakeCSSResourceValue(ResourceStatus status) : status_(status) {}
   ResourceStatus Status() const override { return status_; }
 
-  CSSValue* ToCSSValue() const override { return nullptr; }
+  const CSSValue* ToCSSValue() const override { return nullptr; }
   StyleValueType GetType() const override { return kUnknownType; }
 
  private:

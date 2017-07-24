@@ -33,7 +33,7 @@ class CORE_EXPORT CSSPositionValue final : public CSSStyleValue {
   // Internal methods - from CSSStyleValue.
   StyleValueType GetType() const final { return kPositionType; }
 
-  CSSValue* ToCSSValue() const final;
+  const CSSValue* ToCSSValue() const final;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(x_);

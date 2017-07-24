@@ -43,7 +43,7 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
   // Internal methods - from CSSTransformComponent.
   const DOMMatrix* AsMatrix() const override;
   TransformComponentType GetType() const override { return kSkewType; }
-  CSSFunctionValue* ToCSSValue() const override;
+  const CSSFunctionValue* ToCSSValue() const override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(ax_);

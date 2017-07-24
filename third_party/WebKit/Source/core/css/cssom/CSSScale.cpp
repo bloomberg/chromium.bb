@@ -62,7 +62,7 @@ CSSScale* CSSScale::FromCSSValue(const CSSFunctionValue& value) {
   }
 }
 
-CSSFunctionValue* CSSScale::ToCSSValue() const {
+const CSSFunctionValue* CSSScale::ToCSSValue() const {
   CSSFunctionValue* result =
       CSSFunctionValue::Create(is2D() ? CSSValueScale : CSSValueScale3d);
 
