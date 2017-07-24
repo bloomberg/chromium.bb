@@ -115,6 +115,7 @@ class RenderWidgetOwnerDelegate;
 class RenderWidgetScreenMetricsEmulator;
 class ResizingModeSelector;
 class TextInputClientObserver;
+class WidgetInputHandlerManager;
 struct ContextMenuParams;
 struct ResizeParams;
 
@@ -338,6 +339,10 @@ class CONTENT_EXPORT RenderWidget
 
   RenderWidgetCompositor* compositor() const;
 
+  WidgetInputHandlerManager* widget_input_handler_manager() {
+    return widget_input_handler_manager_.get();
+  }
+
   const RenderWidgetInputHandler& input_handler() const {
     return *input_handler_;
   }
@@ -430,6 +435,36 @@ class CONTENT_EXPORT RenderWidget
 
   scoped_refptr<MainThreadEventQueue> GetInputEventQueue();
 
+  virtual void OnSetFocus(bool enable);
+  void OnMouseCaptureLost();
+  void OnCursorVisibilityChange(bool is_visible);
+  void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
+  void OnImeSetComposition(
+      const base::string16& text,
+      const std::vector<blink::WebCompositionUnderline>& underlines,
+      const gfx::Range& replacement_range,
+      int selection_start,
+      int selection_end);
+  void OnImeCommitText(
+      const base::string16& text,
+      const std::vector<blink::WebCompositionUnderline>& underlines,
+      const gfx::Range& replacement_range,
+      int relative_cursor_pos);
+  void OnImeFinishComposingText(bool keep_selection);
+
+  // Called by the browser process to update text input state.
+  void OnRequestTextInputStateUpdate();
+
+  // Called by the browser process to update the cursor and composition
+  // information by sending InputHostMsg_ImeCompositionRangeChanged. If
+  // |immediate_request| is true, an IPC is sent back with current state.
+  // When |monitor_update| is true, then RenderWidget will send the updates
+  // in each compositor frame when there are changes. Outside of compositor
+  // frame updates, a change in text selection might also lead to an update for
+  // composition info (when in monitor mode).
+  void OnRequestCompositionUpdates(bool immediate_request,
+                                   bool monitor_updates);
+
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
@@ -493,10 +528,6 @@ class CONTENT_EXPORT RenderWidget
       const std::vector<const blink::WebInputEvent*>& coalesced_events,
       const ui::LatencyInfo& latency_info,
       InputEventDispatchType dispatch_type);
-  void OnCursorVisibilityChange(bool is_visible);
-  void OnMouseCaptureLost();
-  void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
-  virtual void OnSetFocus(bool enable);
   void OnClose();
   void OnCreatingNewAck();
   virtual void OnResize(const ResizeParams& params);
@@ -511,19 +542,6 @@ class CONTENT_EXPORT RenderWidget
   // Request from browser to show context menu.
   virtual void OnShowContextMenu(ui::MenuSourceType source_type,
                                  const gfx::Point& location);
-  virtual void OnImeSetComposition(
-      const base::string16& text,
-      const std::vector<blink::WebCompositionUnderline>& underlines,
-      const gfx::Range& replacement_range,
-      int selection_start,
-      int selection_end);
-  virtual void OnImeCommitText(
-      const base::string16& text,
-      const std::vector<blink::WebCompositionUnderline>& underlines,
-      const gfx::Range& replacement_range,
-      int relative_cursor_pos);
-  virtual void OnImeFinishComposingText(bool keep_selection);
-
   // Called when the device scale factor is changed, or the layer tree is
   // initialized.
   virtual void OnDeviceScaleFactorChanged();
@@ -558,21 +576,6 @@ class CONTENT_EXPORT RenderWidget
                          const gfx::Point& screen_point,
                          blink::WebDragOperation drag_operation);
   void OnDragSourceSystemDragEnded();
-
-#if defined(OS_ANDROID)
-  // Called by the browser process to update text input state.
-  void OnRequestTextInputStateUpdate();
-#endif
-
-  // Called by the browser process to update the cursor and composition
-  // information by sending InputHostMsg_ImeCompositionRangeChanged. If
-  // |immediate_request| is true, an IPC is sent back with current state.
-  // When |monitor_update| is true, then RenderWidget will send the updates
-  // in each compositor frame when there are changes. Outside of compositor
-  // frame updates, a change in text selection might also lead to an update for
-  // composition info (when in monitor mode).
-  void OnRequestCompositionUpdates(bool immediate_request,
-                                   bool monitor_updates);
 
   // Notify the compositor about a change in viewport size. This should be
   // used only with auto resize mode WebWidgets, as normal WebWidgets should
@@ -767,6 +770,8 @@ class CONTENT_EXPORT RenderWidget
   // The screen rects of the view and the window that contains it.
   gfx::Rect view_screen_rect_;
   gfx::Rect window_screen_rect_;
+
+  scoped_refptr<WidgetInputHandlerManager> widget_input_handler_manager_;
 
   std::unique_ptr<RenderWidgetInputHandler> input_handler_;
 
