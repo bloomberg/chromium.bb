@@ -10,7 +10,7 @@
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
+#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -39,7 +39,7 @@ class CONTENT_EXPORT ServiceWorkerResponseInfo
       bool was_fetched_via_foreign_fetch,
       bool was_fallback_required,
       const std::vector<GURL>& url_list_via_service_worker,
-      blink::WebServiceWorkerResponseType response_type_via_service_worker,
+      blink::mojom::FetchResponseType response_type_via_service_worker,
       base::TimeTicks service_worker_start_time,
       base::TimeTicks service_worker_ready_time,
       bool response_is_in_cache_storage,
@@ -76,7 +76,7 @@ class CONTENT_EXPORT ServiceWorkerResponseInfo
   const std::vector<GURL>& url_list_via_service_worker() const {
     return url_list_via_service_worker_;
   }
-  blink::WebServiceWorkerResponseType response_type_via_service_worker() const {
+  blink::mojom::FetchResponseType response_type_via_service_worker() const {
     return response_type_via_service_worker_;
   }
   base::TimeTicks service_worker_start_time() const {
@@ -100,8 +100,8 @@ class CONTENT_EXPORT ServiceWorkerResponseInfo
   bool was_fetched_via_foreign_fetch_ = false;
   bool was_fallback_required_ = false;
   std::vector<GURL> url_list_via_service_worker_;
-  blink::WebServiceWorkerResponseType response_type_via_service_worker_ =
-      blink::kWebServiceWorkerResponseTypeDefault;
+  blink::mojom::FetchResponseType response_type_via_service_worker_ =
+      blink::mojom::FetchResponseType::kDefault;
   base::TimeTicks service_worker_start_time_;
   base::TimeTicks service_worker_ready_time_;
   bool response_is_in_cache_storage_ = false;

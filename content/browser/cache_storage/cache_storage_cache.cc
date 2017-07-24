@@ -39,7 +39,7 @@
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/storage_histograms.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
+#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 namespace content {
 
@@ -76,40 +76,40 @@ using MetadataCallback =
 // is controlled per-origin by the QuotaManager.
 const int kMaxCacheBytes = std::numeric_limits<int>::max();
 
-blink::WebServiceWorkerResponseType ProtoResponseTypeToWebResponseType(
+blink::mojom::FetchResponseType ProtoResponseTypeToServiceWorkerResponseType(
     proto::CacheResponse::ResponseType response_type) {
   switch (response_type) {
     case proto::CacheResponse::BASIC_TYPE:
-      return blink::kWebServiceWorkerResponseTypeBasic;
+      return blink::mojom::FetchResponseType::kBasic;
     case proto::CacheResponse::CORS_TYPE:
-      return blink::kWebServiceWorkerResponseTypeCORS;
+      return blink::mojom::FetchResponseType::kCORS;
     case proto::CacheResponse::DEFAULT_TYPE:
-      return blink::kWebServiceWorkerResponseTypeDefault;
+      return blink::mojom::FetchResponseType::kDefault;
     case proto::CacheResponse::ERROR_TYPE:
-      return blink::kWebServiceWorkerResponseTypeError;
+      return blink::mojom::FetchResponseType::kError;
     case proto::CacheResponse::OPAQUE_TYPE:
-      return blink::kWebServiceWorkerResponseTypeOpaque;
+      return blink::mojom::FetchResponseType::kOpaque;
     case proto::CacheResponse::OPAQUE_REDIRECT_TYPE:
-      return blink::kWebServiceWorkerResponseTypeOpaqueRedirect;
+      return blink::mojom::FetchResponseType::kOpaqueRedirect;
   }
   NOTREACHED();
-  return blink::kWebServiceWorkerResponseTypeOpaque;
+  return blink::mojom::FetchResponseType::kOpaque;
 }
 
-proto::CacheResponse::ResponseType WebResponseTypeToProtoResponseType(
-    blink::WebServiceWorkerResponseType response_type) {
+proto::CacheResponse::ResponseType ServiceWorkerResponseTypeToProtoResponseType(
+    blink::mojom::FetchResponseType response_type) {
   switch (response_type) {
-    case blink::kWebServiceWorkerResponseTypeBasic:
+    case blink::mojom::FetchResponseType::kBasic:
       return proto::CacheResponse::BASIC_TYPE;
-    case blink::kWebServiceWorkerResponseTypeCORS:
+    case blink::mojom::FetchResponseType::kCORS:
       return proto::CacheResponse::CORS_TYPE;
-    case blink::kWebServiceWorkerResponseTypeDefault:
+    case blink::mojom::FetchResponseType::kDefault:
       return proto::CacheResponse::DEFAULT_TYPE;
-    case blink::kWebServiceWorkerResponseTypeError:
+    case blink::mojom::FetchResponseType::kError:
       return proto::CacheResponse::ERROR_TYPE;
-    case blink::kWebServiceWorkerResponseTypeOpaque:
+    case blink::mojom::FetchResponseType::kOpaque:
       return proto::CacheResponse::OPAQUE_TYPE;
-    case blink::kWebServiceWorkerResponseTypeOpaqueRedirect:
+    case blink::mojom::FetchResponseType::kOpaqueRedirect:
       return proto::CacheResponse::OPAQUE_REDIRECT_TYPE;
   }
   NOTREACHED();
@@ -246,7 +246,8 @@ std::unique_ptr<ServiceWorkerResponse> CreateResponse(
   return base::MakeUnique<ServiceWorkerResponse>(
       std::move(url_list), metadata.response().status_code(),
       metadata.response().status_text(),
-      ProtoResponseTypeToWebResponseType(metadata.response().response_type()),
+      ProtoResponseTypeToServiceWorkerResponseType(
+          metadata.response().response_type()),
       std::move(headers), "", 0, blink::kWebServiceWorkerResponseErrorUnknown,
       base::Time::FromInternalValue(metadata.response().response_time()),
       true /* is_in_cache_storage */, cache_name,
@@ -1074,8 +1075,7 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
   UMA_HISTOGRAM_ENUMERATION(
       "ServiceWorkerCache.Cache.AllWritesResponseType",
       operation.response.response_type,
-      blink::WebServiceWorkerResponseType::kWebServiceWorkerResponseTypeLast +
-          1);
+      static_cast<int>(blink::mojom::FetchResponseType::kLast) + 1);
 
   std::unique_ptr<PutContext> put_context(new PutContext(
       std::move(request), std::move(response), std::move(blob_data_handle),
@@ -1162,7 +1162,8 @@ void CacheStorageCache::PutDidCreateEntry(
   response_metadata->set_status_code(put_context->response->status_code);
   response_metadata->set_status_text(put_context->response->status_text);
   response_metadata->set_response_type(
-      WebResponseTypeToProtoResponseType(put_context->response->response_type));
+      ServiceWorkerResponseTypeToProtoResponseType(
+          put_context->response->response_type));
   for (const auto& url : put_context->response->url_list)
     response_metadata->add_url_list(url.spec());
   response_metadata->set_response_time(

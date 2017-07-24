@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/push_subscription_options.h"
@@ -27,8 +28,6 @@ const uint8_t kTestP256Key[] = {
   0x21, 0xD3, 0x71, 0x90, 0x13, 0xA8, 0xC1, 0xCF, 0xED, 0x20, 0xF7, 0x1F, 0xD1,
   0x7F, 0xF2, 0x76, 0xB6, 0x01, 0x20, 0xD8, 0x35, 0xA5, 0xD9, 0x3C, 0x43, 0xFD
 };
-
-const int64_t kInvalidServiceWorkerRegistrationId = -1LL;
 
 static_assert(sizeof(kTestP256Key) == 65,
               "The fake public key must be a valid P-256 uncompressed point.");

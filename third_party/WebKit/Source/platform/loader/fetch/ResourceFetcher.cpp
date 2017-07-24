@@ -963,7 +963,7 @@ bool ResourceFetcher::IsReusableAlsoForPreloading(const FetchParameters& params,
   // TODO(yhirano): Remove this.
   if (existing_resource->GetResponse().WasFetchedViaServiceWorker() &&
       existing_resource->GetResponse().ServiceWorkerResponseType() ==
-          kWebServiceWorkerResponseTypeOpaque &&
+          mojom::FetchResponseType::kOpaque &&
       request.GetFetchRequestMode() != WebURLRequest::kFetchRequestModeNoCORS) {
     return false;
   }

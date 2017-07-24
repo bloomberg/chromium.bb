@@ -35,7 +35,7 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_status.h"
 #include "storage/common/blob_storage/blob_storage_constants.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
+#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -288,7 +288,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   // Headers that have not yet been committed to |http_response_info_|.
   scoped_refptr<net::HttpResponseHeaders> http_response_headers_;
   std::vector<GURL> response_url_list_;
-  blink::WebServiceWorkerResponseType service_worker_response_type_;
+  blink::mojom::FetchResponseType service_worker_response_type_;
 
   // Used when response type is FORWARD_TO_SERVICE_WORKER.
   std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;

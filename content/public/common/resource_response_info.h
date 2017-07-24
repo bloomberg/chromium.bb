@@ -21,7 +21,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/nqe/effective_connection_type.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
+#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -122,7 +122,7 @@ struct CONTENT_EXPORT ResourceResponseInfo {
   std::vector<GURL> url_list_via_service_worker;
 
   // The type of the response which was fetched by the ServiceWorker.
-  blink::WebServiceWorkerResponseType response_type_via_service_worker;
+  blink::mojom::FetchResponseType response_type_via_service_worker;
 
   // The time immediately before starting ServiceWorker. If the response is not
   // provided by the ServiceWorker, kept empty.

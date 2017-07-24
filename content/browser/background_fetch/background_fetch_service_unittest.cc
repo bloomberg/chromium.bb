@@ -392,7 +392,7 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
 
     EXPECT_EQ(fetches[i].response.url_list[0], fetches[i].request.url);
     EXPECT_EQ(fetches[i].response.response_type,
-              blink::kWebServiceWorkerResponseTypeDefault);
+              blink::mojom::FetchResponseType::kDefault);
 
     switch (i) {
       case 0:
@@ -489,7 +489,7 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
 
     EXPECT_EQ(fetches[i].response.url_list[0], fetches[i].request.url);
     EXPECT_EQ(fetches[i].response.response_type,
-              blink::kWebServiceWorkerResponseTypeDefault);
+              blink::mojom::FetchResponseType::kDefault);
 
     switch (i) {
       case 0:

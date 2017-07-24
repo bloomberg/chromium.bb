@@ -21,7 +21,6 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
 #include "url/gurl.h"
 
 namespace net {

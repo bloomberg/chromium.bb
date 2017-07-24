@@ -40,7 +40,7 @@
 #include "public/platform/WebSecurityStyle.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 
 namespace blink {
 
@@ -227,7 +227,7 @@ class WebURLResponse {
 
   // The type of the response which was served by the ServiceWorker.
   BLINK_PLATFORM_EXPORT void SetServiceWorkerResponseType(
-      WebServiceWorkerResponseType);
+      mojom::FetchResponseType);
 
   // The URL list of the Response object the ServiceWorker passed to
   // respondWith(). See ServiceWorkerResponseInfo::url_list_via_service_worker()

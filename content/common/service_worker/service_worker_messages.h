@@ -38,14 +38,14 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerEventResult,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerState,
                           blink::kWebServiceWorkerStateLast)
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerResponseType,
-                          blink::kWebServiceWorkerResponseTypeLast)
-
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerResponseError,
                           blink::kWebServiceWorkerResponseErrorLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerClientType,
                           blink::kWebServiceWorkerClientTypeLast)
+
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FetchResponseType,
+                          blink::mojom::FetchResponseType::kLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerProviderType,
                           content::SERVICE_WORKER_PROVIDER_TYPE_LAST)

@@ -37,6 +37,14 @@ enum class FetchRedirectMode {
   LAST = MANUAL_MODE
 };
 
+// Whether this is a regular fetch, or a foreign fetch request.
+// Duplicate of blink::mojom::ServiceWorkerFetchType.
+enum class ServiceWorkerFetchType {
+  FETCH,
+  FOREIGN_FETCH,
+  LAST = FOREIGN_FETCH
+};
+
 // Indicates which service workers will receive fetch events for this request.
 enum class ServiceWorkerMode {
   // Relevant local and foreign service workers will get a fetch or

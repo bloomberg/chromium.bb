@@ -59,7 +59,7 @@ TEST_F(FetchResponseDataTest, ToWebServiceWorkerDefaultType) {
   FetchResponseData* internal_response = CreateInternalResponse();
 
   internal_response->PopulateWebServiceWorkerResponse(web_response);
-  EXPECT_EQ(kWebServiceWorkerResponseTypeDefault, web_response.ResponseType());
+  EXPECT_EQ(mojom::FetchResponseType::kDefault, web_response.ResponseType());
   CheckHeaders(web_response);
 }
 
@@ -91,7 +91,7 @@ TEST_F(FetchResponseDataTest, ToWebServiceWorkerBasicType) {
       internal_response->CreateBasicFilteredResponse();
 
   basic_response_data->PopulateWebServiceWorkerResponse(web_response);
-  EXPECT_EQ(kWebServiceWorkerResponseTypeBasic, web_response.ResponseType());
+  EXPECT_EQ(mojom::FetchResponseType::kBasic, web_response.ResponseType());
   CheckHeaders(web_response);
 }
 
@@ -198,7 +198,7 @@ TEST_F(FetchResponseDataTest, ToWebServiceWorkerCORSType) {
       internal_response->CreateCORSFilteredResponse();
 
   cors_response_data->PopulateWebServiceWorkerResponse(web_response);
-  EXPECT_EQ(kWebServiceWorkerResponseTypeCORS, web_response.ResponseType());
+  EXPECT_EQ(mojom::FetchResponseType::kCORS, web_response.ResponseType());
   CheckHeaders(web_response);
 }
 
@@ -248,7 +248,7 @@ TEST_F(FetchResponseDataTest, ToWebServiceWorkerOpaqueType) {
       internal_response->CreateOpaqueFilteredResponse();
 
   opaque_response_data->PopulateWebServiceWorkerResponse(web_response);
-  EXPECT_EQ(kWebServiceWorkerResponseTypeOpaque, web_response.ResponseType());
+  EXPECT_EQ(mojom::FetchResponseType::kOpaque, web_response.ResponseType());
   CheckHeaders(web_response);
 }
 
@@ -259,7 +259,7 @@ TEST_F(FetchResponseDataTest, ToWebServiceWorkerOpaqueRedirectType) {
       internal_response->CreateOpaqueRedirectFilteredResponse();
 
   opaque_redirect_response_data->PopulateWebServiceWorkerResponse(web_response);
-  EXPECT_EQ(kWebServiceWorkerResponseTypeOpaqueRedirect,
+  EXPECT_EQ(mojom::FetchResponseType::kOpaqueRedirect,
             web_response.ResponseType());
   CheckHeaders(web_response);
 }

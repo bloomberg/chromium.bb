@@ -14,6 +14,7 @@
 #include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/AtomicString.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 
 namespace blink {

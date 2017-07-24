@@ -80,7 +80,7 @@ void ServiceWorkerResponseInfo::OnStartCompleted(
     bool was_fetched_via_foreign_fetch,
     bool was_fallback_required,
     const std::vector<GURL>& url_list_via_service_worker,
-    blink::WebServiceWorkerResponseType response_type_via_service_worker,
+    blink::mojom::FetchResponseType response_type_via_service_worker,
     base::TimeTicks service_worker_start_time,
     base::TimeTicks service_worker_ready_time,
     bool response_is_in_cache_storage,
@@ -110,8 +110,7 @@ void ServiceWorkerResponseInfo::ResetData() {
   was_fetched_via_foreign_fetch_ = false;
   was_fallback_required_ = false;
   url_list_via_service_worker_.clear();
-  response_type_via_service_worker_ =
-      blink::kWebServiceWorkerResponseTypeDefault;
+  response_type_via_service_worker_ = blink::mojom::FetchResponseType::kDefault;
   // Don't reset |service_worker_start_time_| or |service_worker_ready_time_|
   // since it's historical timing information that should persist between job
   // restarts.

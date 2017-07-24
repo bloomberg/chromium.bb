@@ -73,7 +73,7 @@ size_t ServiceWorkerFetchRequest::EstimatedStructSize() {
 
 ServiceWorkerResponse::ServiceWorkerResponse()
     : status_code(0),
-      response_type(blink::kWebServiceWorkerResponseTypeOpaque),
+      response_type(blink::mojom::FetchResponseType::kOpaque),
       blob_size(0),
       error(blink::kWebServiceWorkerResponseErrorUnknown) {}
 
@@ -81,7 +81,7 @@ ServiceWorkerResponse::ServiceWorkerResponse(
     std::unique_ptr<std::vector<GURL>> url_list,
     int status_code,
     const std::string& status_text,
-    blink::WebServiceWorkerResponseType response_type,
+    blink::mojom::FetchResponseType response_type,
     std::unique_ptr<ServiceWorkerHeaderMap> headers,
     const std::string& blob_uuid,
     uint64_t blob_size,
