@@ -60,12 +60,23 @@ class MetricsProvider {
   virtual void ProvideSystemProfileMetrics(
       SystemProfileProto* system_profile_proto);
 
-  // Called once at startup to see whether this provider has critical stability
-  // events to share in an initial stability log.
-  // Returning true can trigger ProvideInitialStabilityMetrics and
-  // ProvideStabilityMetrics on all other registered metrics providers.
+  // Called once at startup to see whether this provider has critical data
+  // to provide about the previous session.
+  // Returning true will trigger ProvidePreviousSessionData on all other
+  // registered metrics providers.
   // Default implementation always returns false.
   virtual bool HasInitialStabilityMetrics();
+
+  // Called when building a log about the previous session, so the provider
+  // can provide data about it.  Stability metrics can be provided
+  // directly into |stability_proto| fields or by logging stability histograms
+  // via the UMA_STABILITY_HISTOGRAM_ENUMERATION() macro.
+  virtual void ProvidePreviousSessionData(
+      ChromeUserMetricsExtension* uma_proto);
+
+  // Called when building a log about the current session, so the provider
+  // can provide data about it.
+  virtual void ProvideCurrentSessionData(ChromeUserMetricsExtension* uma_proto);
 
   // Called at most once at startup when an initial stability log is created.
   // It provides critical statiblity metrics that need to be reported in an

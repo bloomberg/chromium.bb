@@ -203,13 +203,19 @@ void MetricsLog::RecordHistogramDelta(const std::string& histogram_name,
   EncodeHistogramDelta(histogram_name, snapshot, &uma_proto_);
 }
 
-void MetricsLog::RecordStabilityMetrics(
+void MetricsLog::RecordPreviousSessionData(
+    const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers) {
+  for (const auto& provider : metrics_providers) {
+    provider->ProvidePreviousSessionData(uma_proto());
+  }
+}
+
+void MetricsLog::RecordCurrentSessionData(
     const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers,
     base::TimeDelta incremental_uptime,
     base::TimeDelta uptime) {
   DCHECK(!closed_);
   DCHECK(HasEnvironment());
-  DCHECK(!HasStabilityMetrics());
 
   // Record recent delta for critical stability metrics.  We can't wait for a
   // restart to gather these, as that delay biases our observation away from
@@ -217,21 +223,12 @@ void MetricsLog::RecordStabilityMetrics(
   // uma log upload, just as we send histogram data.
   WriteRealtimeStabilityAttributes(incremental_uptime, uptime);
 
-  SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
-  for (size_t i = 0; i < metrics_providers.size(); ++i) {
-    if (log_type() == INITIAL_STABILITY_LOG)
-      metrics_providers[i]->ProvideInitialStabilityMetrics(system_profile);
-    metrics_providers[i]->ProvideStabilityMetrics(system_profile);
-  }
-}
-
-void MetricsLog::RecordGeneralMetrics(
-    const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers) {
   if (local_state_->GetBoolean(prefs::kMetricsResetIds))
     UMA_HISTOGRAM_BOOLEAN("UMA.IsClonedInstall", true);
 
-  for (size_t i = 0; i < metrics_providers.size(); ++i)
-    metrics_providers[i]->ProvideGeneralMetrics(uma_proto());
+  for (const auto& provider : metrics_providers) {
+    provider->ProvideCurrentSessionData(uma_proto());
+  }
 }
 
 bool MetricsLog::HasEnvironment() const {
@@ -260,10 +257,6 @@ void MetricsLog::WriteMetricsEnableDefault(EnableMetricsDefault metrics_default,
       system_profile->set_uma_default_state(
           SystemProfileProto_UmaDefaultState_OPT_OUT);
   }
-}
-
-bool MetricsLog::HasStabilityMetrics() const {
-  return uma_proto()->system_profile().stability().has_launch_count();
 }
 
 void MetricsLog::WriteRealtimeStabilityAttributes(

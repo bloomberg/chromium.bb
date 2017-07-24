@@ -112,23 +112,15 @@ class MetricsLog {
   // or it could not be decoded), returns false and |app_version| is empty.
   bool LoadSavedEnvironmentFromPrefs(std::string* app_version);
 
-  // Writes application stability metrics, including stability metrics provided
-  // by the specified set of |metrics_providers|. The system profile portion of
-  // the log must have already been filled in by a call to RecordEnvironment()
-  // or LoadSavedEnvironmentFromPrefs().
-  // NOTE: Has the side-effect of clearing the stability prefs..
-  //
-  // If this log is of type INITIAL_STABILITY_LOG, records additional info such
-  // as number of incomplete shutdowns as well as extra breakpad and debugger
-  // stats.
-  void RecordStabilityMetrics(
+  // Record data from providers about the previous session into the log.
+  void RecordPreviousSessionData(
+      const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers);
+
+  // Record data from providers about the current session into the log.
+  void RecordCurrentSessionData(
       const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers,
       base::TimeDelta incremental_uptime,
       base::TimeDelta uptime);
-
-  // Records general metrics based on the specified |metrics_providers|.
-  void RecordGeneralMetrics(
-      const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers);
 
   // Stop writing to this record and generate the encoded representation.
   // None of the Record* methods can be called after this is called.
@@ -167,10 +159,6 @@ class MetricsLog {
   // Write the default state of the enable metrics checkbox.
   void WriteMetricsEnableDefault(EnableMetricsDefault metrics_default,
                                  SystemProfileProto* system_profile);
-
-  // Returns true if the stability metrics have already been filled in by a
-  // call to RecordStabilityMetrics().
-  bool HasStabilityMetrics() const;
 
   // Within the stability group, write attributes that need to be updated asap
   // and can't be delayed until the user decides to restart chromium.
