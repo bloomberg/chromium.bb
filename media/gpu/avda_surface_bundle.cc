@@ -26,7 +26,7 @@ AVDASurfaceBundle::~AVDASurfaceBundle() {
   // Also release the back buffers.
   if (surface_texture) {
     auto task_runner = surface_texture->task_runner();
-    if (task_runner->RunsTasksOnCurrentThread()) {
+    if (task_runner->RunsTasksInCurrentSequence()) {
       surface_texture->ReleaseBackBuffers();
     } else {
       task_runner->PostTask(
