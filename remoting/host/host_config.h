@@ -41,6 +41,8 @@ extern const char kPrivateKeyConfigPath[];
 extern const char kUsageStatsConsentConfigPath[];
 // Whether to offer VP9 encoding to clients.
 extern const char kEnableVp9ConfigPath[];
+// Whether to offer H264 encoding to clients.
+extern const char kEnableH264ConfigPath[];
 // Number of Kibibytes of frame data to allow each client to record.
 extern const char kFrameRecorderBufferKbConfigPath[];
 // The GCD device ID of this host (if registered with GCD).

@@ -695,6 +695,10 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
       experiments_list.end()) {
     config->set_vp9_experiment_enabled(true);
   }
+  if (std::find(experiments_list.begin(), experiments_list.end(), "h264") !=
+      experiments_list.end()) {
+    config->set_h264_experiment_enabled(true);
+  }
   client_->set_protocol_config(std::move(config));
 
   // Kick off the connection.
