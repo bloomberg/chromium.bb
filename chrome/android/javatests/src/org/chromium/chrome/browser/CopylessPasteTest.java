@@ -22,6 +22,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.blink.mojom.document_metadata.Entity;
 import org.chromium.blink.mojom.document_metadata.Property;
 import org.chromium.blink.mojom.document_metadata.Values;
@@ -143,6 +144,7 @@ public class CopylessPasteTest {
      */
     @Test
     @LargeTest
+    @RetryOnFailure
     @Feature({"CopylessPaste"})
     public void testNoMeta() throws InterruptedException, TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(NODATA_PAGE));
@@ -155,6 +157,7 @@ public class CopylessPasteTest {
      */
     @Test
     @LargeTest
+    @RetryOnFailure
     @Feature({"CopylessPaste"})
     public void testValid() throws InterruptedException, TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(DATA_PAGE));
@@ -186,6 +189,7 @@ public class CopylessPasteTest {
      */
     @Test
     @LargeTest
+    @RetryOnFailure
     @Feature({"CopylessPaste"})
     public void testCache() throws InterruptedException, TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(NODATA_PAGE));
