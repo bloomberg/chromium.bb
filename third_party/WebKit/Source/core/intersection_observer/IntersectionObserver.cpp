@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IntersectionObserverCallback.h"
+#include "bindings/core/v8/V8IntersectionObserverDelegate.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include "core/dom/Element.h"
@@ -147,6 +149,16 @@ IntersectionObserver* IntersectionObserver::Create(
     return nullptr;
 
   return new IntersectionObserver(delegate, root, root_margin, thresholds);
+}
+
+IntersectionObserver* IntersectionObserver::Create(
+    ScriptState* script_state,
+    IntersectionObserverCallback* callback,
+    const IntersectionObserverInit& observer_init,
+    ExceptionState& exception_state) {
+  V8IntersectionObserverDelegate* delegate =
+      new V8IntersectionObserverDelegate(callback, script_state);
+  return Create(observer_init, *delegate, exception_state);
 }
 
 IntersectionObserver* IntersectionObserver::Create(

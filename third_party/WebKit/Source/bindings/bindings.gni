@@ -18,7 +18,6 @@ bindings_core_v8_files =
                     "core/v8/custom/V8EventTargetCustom.cpp",
                     "core/v8/custom/V8HTMLAllCollectionCustom.cpp",
                     "core/v8/custom/V8HTMLPlugInElementCustom.cpp",
-                    "core/v8/custom/V8IntersectionObserverCustom.cpp",
                     "core/v8/custom/V8MediaQueryListCustom.cpp",
                     "core/v8/custom/V8MessageChannelCustom.cpp",
                     "core/v8/custom/V8MessageEventCustom.cpp",
