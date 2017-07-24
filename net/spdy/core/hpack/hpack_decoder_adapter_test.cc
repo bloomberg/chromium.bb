@@ -83,9 +83,18 @@ class HpackDecoderAdapterPeer {
   HpackDecoderAdapter* decoder_;
 };
 
+class HpackEncoderPeer {
+ public:
+  static void CookieToCrumbs(const HpackEncoder::Representation& cookie,
+                             HpackEncoder::Representations* crumbs_out) {
+    HpackEncoder::CookieToCrumbs(cookie, crumbs_out);
+  }
+};
+
 namespace {
 
 const bool kNoCheckDecodedSize = false;
+const char* kCookieKey = "cookie";
 
 // Is HandleControlFrameHeadersStart to be called, and with what value?
 enum StartChoice { START_WITH_HANDLER, START_WITHOUT_HANDLER, NO_START };
@@ -192,7 +201,15 @@ class HpackDecoderAdapterTest
   static size_t SizeOfHeaders(const SpdyHeaderBlock& headers) {
     size_t size = 0;
     for (const auto& kv : headers) {
-      size += kv.first.size() + kv.second.size();
+      if (kv.first == kCookieKey) {
+        HpackEncoder::Representations crumbs;
+        HpackEncoderPeer::CookieToCrumbs(kv, &crumbs);
+        for (const auto& crumb : crumbs) {
+          size += crumb.first.size() + crumb.second.size();
+        }
+      } else {
+        size += kv.first.size() + kv.second.size();
+      }
     }
     return size;
   }
@@ -1052,6 +1069,15 @@ TEST_P(HpackDecoderAdapterTest, ReuseNameOfEvictedEntry) {
               6 * name.size() + 2 * value1.size() + 2 * value2.size() +
                   2 * value3.size());
   }
+}
+
+// Regression test for https://crbug.com/747395.
+TEST_P(HpackDecoderAdapterTest, Cookies) {
+  SpdyHeaderBlock expected_header_set;
+  expected_header_set["cookie"] = "foo; bar";
+
+  EXPECT_TRUE(DecodeHeaderBlock(a2b_hex("608294e76003626172")));
+  EXPECT_EQ(expected_header_set, decoded_block());
 }
 
 }  // namespace
