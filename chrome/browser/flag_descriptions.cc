@@ -2245,18 +2245,6 @@ const char kTeamDrivesDescription[] =
 
 #endif  // defined(OS_CHROMEOS)
 
-//  Arc authorization
-
-#if defined(OS_CHROMEOS)
-
-const char kArcUseAuthEndpointName[] = "Android apps authorization point";
-
-const char kArcUseAuthEndpointDescription[] =
-    "Enable Android apps authorization point to automatic sign-in in OptIn "
-    "flow.";
-
-#endif  // defined(OS_CHROMEOS)
-
 #if defined(OS_WIN) || defined(OS_MACOSX)
 
 //  Tab discarding

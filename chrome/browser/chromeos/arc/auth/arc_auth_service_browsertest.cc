@@ -187,8 +187,6 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 // the system is in silent authentication mode, Chrome supplies the info
 // configured in SetUpOnMainThread() above.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
-  ASSERT_TRUE(base::FeatureList::IsEnabled(arc::kArcUseAuthEndpointFeature));
-
   net::FakeURLFetcherFactory factory(nullptr);
   factory.SetFakeResponse(
       GURL(arc::kAuthTokenExchangeEndPoint),
