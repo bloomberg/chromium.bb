@@ -1358,6 +1358,10 @@ interface HTMLDListElement : HTMLElement
     getter compact
     method constructor
     setter compact
+interface HTMLDataElement : HTMLElement
+    getter value
+    method constructor
+    setter value
 interface HTMLDataListElement : HTMLElement
     getter options
     method constructor

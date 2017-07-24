@@ -427,6 +427,8 @@ html element command
 html element content
     property getDistributedNodes
     property select
+html element data
+    property value
 html element datalist
     property options
 html element dd

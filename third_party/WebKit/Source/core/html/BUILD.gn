@@ -43,6 +43,8 @@ blink_core_sources("html") {
     "HTMLContentElement.h",
     "HTMLDListElement.cpp",
     "HTMLDListElement.h",
+    "HTMLDataElement.cpp",
+    "HTMLDataElement.h",
     "HTMLDataListElement.cpp",
     "HTMLDataListElement.h",
     "HTMLDataListOptionsCollection.h",

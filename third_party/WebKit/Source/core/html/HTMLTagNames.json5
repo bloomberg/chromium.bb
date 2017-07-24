@@ -108,6 +108,10 @@
       interfaceName: "HTMLContentElement",
     },
     {
+      name: "data",
+      interfaceName: "HTMLDataElement",
+    },
+    {
       name: "datalist",
       interfaceName: "HTMLDataListElement",
     },
