@@ -388,10 +388,15 @@ void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {
 }
 
 void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
-  GetDefaultStoragePartition(browser_context)->GetDatabaseTracker()->
-      SetForceKeepSessionState();
   StoragePartition* storage_partition =
       BrowserContext::GetDefaultStoragePartition(browser_context);
+
+  storage::DatabaseTracker* database_tracker =
+      storage_partition->GetDatabaseTracker();
+  database_tracker->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&storage::DatabaseTracker::SetForceKeepSessionState,
+                     make_scoped_refptr(database_tracker)));
 
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
     BrowserThread::PostTask(

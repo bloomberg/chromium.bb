@@ -49,66 +49,52 @@ BrowsingDataDatabaseHelper::BrowsingDataDatabaseHelper(Profile* profile)
 BrowsingDataDatabaseHelper::~BrowsingDataDatabaseHelper() {
 }
 
-void BrowsingDataDatabaseHelper::StartFetching(const FetchCallback& callback) {
+void BrowsingDataDatabaseHelper::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::BindOnce(&BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread,
-                     this, callback));
+  base::PostTaskAndReplyWithResult(
+      tracker_->task_runner(), FROM_HERE,
+      base::BindOnce(
+          [](storage::DatabaseTracker* tracker) {
+            std::list<DatabaseInfo> result;
+            std::vector<storage::OriginInfo> origins_info;
+            if (tracker->GetAllOriginsInfo(&origins_info)) {
+              for (const storage::OriginInfo& origin : origins_info) {
+                DatabaseIdentifier identifier =
+                    DatabaseIdentifier::Parse(origin.GetOriginIdentifier());
+                // Non-websafe state is not considered browsing data.
+                if (!BrowsingDataHelper::HasWebScheme(identifier.ToOrigin()))
+                  continue;
+                std::vector<base::string16> databases;
+                origin.GetAllDatabaseNames(&databases);
+                for (const base::string16& db : databases) {
+                  base::FilePath file_path = tracker->GetFullDBFilePath(
+                      origin.GetOriginIdentifier(), db);
+                  base::File::Info file_info;
+                  if (base::GetFileInfo(file_path, &file_info)) {
+                    result.push_back(DatabaseInfo(
+                        identifier, base::UTF16ToUTF8(db),
+                        base::UTF16ToUTF8(origin.GetDatabaseDescription(db)),
+                        file_info.size, file_info.last_modified));
+                  }
+                }
+              }
+            }
+            return result;
+          },
+          base::RetainedRef(tracker_)),
+      std::move(callback));
 }
 
 void BrowsingDataDatabaseHelper::DeleteDatabase(const std::string& origin,
                                                 const std::string& name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::BindOnce(&BrowsingDataDatabaseHelper::DeleteDatabaseOnFileThread,
-                     this, origin, name));
-}
-
-void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread(
-    const FetchCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  DCHECK(!callback.is_null());
-
-  std::list<DatabaseInfo> result;
-  std::vector<storage::OriginInfo> origins_info;
-  if (tracker_.get() && tracker_->GetAllOriginsInfo(&origins_info)) {
-    for (const storage::OriginInfo& origin : origins_info) {
-      DatabaseIdentifier identifier =
-          DatabaseIdentifier::Parse(origin.GetOriginIdentifier());
-      if (!BrowsingDataHelper::HasWebScheme(identifier.ToOrigin()))
-        continue;  // Non-websafe state is not considered browsing data.
-      std::vector<base::string16> databases;
-      origin.GetAllDatabaseNames(&databases);
-      for (const base::string16& db : databases) {
-        base::FilePath file_path =
-            tracker_->GetFullDBFilePath(origin.GetOriginIdentifier(), db);
-        base::File::Info file_info;
-        if (base::GetFileInfo(file_path, &file_info)) {
-          result.push_back(
-              DatabaseInfo(identifier, base::UTF16ToUTF8(db),
-                           base::UTF16ToUTF8(origin.GetDatabaseDescription(db)),
-                           file_info.size, file_info.last_modified));
-        }
-      }
-    }
-  }
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback, result));
-}
-
-void BrowsingDataDatabaseHelper::DeleteDatabaseOnFileThread(
-    const std::string& origin,
-    const std::string& name) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  if (!tracker_.get())
-    return;
-  tracker_->DeleteDatabase(origin, base::UTF8ToUTF16(name),
-                           net::CompletionCallback());
+  tracker_->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(base::IgnoreResult(
+                                    &storage::DatabaseTracker::DeleteDatabase),
+                                tracker_, origin, base::UTF8ToUTF16(name),
+                                net::CompletionCallback()));
 }
 
 CannedBrowsingDataDatabaseHelper::PendingDatabaseInfo::PendingDatabaseInfo(
@@ -162,8 +148,7 @@ CannedBrowsingDataDatabaseHelper::GetPendingDatabaseInfo() {
   return pending_database_info_;
 }
 
-void CannedBrowsingDataDatabaseHelper::StartFetching(
-    const FetchCallback& callback) {
+void CannedBrowsingDataDatabaseHelper::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
@@ -177,7 +162,7 @@ void CannedBrowsingDataDatabaseHelper::StartFetching(
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback, result));
+                          base::BindOnce(std::move(callback), result));
 }
 
 void CannedBrowsingDataDatabaseHelper::DeleteDatabase(

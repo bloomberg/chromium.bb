@@ -28,8 +28,8 @@ class DatabaseMessageFilter : public BrowserMessageFilter,
 
   // BrowserMessageFilter implementation.
   void OnChannelClosing() override;
-  void OverrideThreadForMessage(const IPC::Message& message,
-                                BrowserThread::ID* thread) override;
+  base::TaskRunner* OverrideTaskRunnerForMessage(
+      const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   storage::DatabaseTracker* database_tracker() const {
@@ -44,7 +44,7 @@ class DatabaseMessageFilter : public BrowserMessageFilter,
   void AddObserver();
   void RemoveObserver();
 
-  // VFS message handlers (file thread)
+  // VFS message handlers (tracker sequence)
   void OnDatabaseOpenFile(const base::string16& vfs_file_name,
                           int desired_flags,
                           IPC::PlatformFileForTransit* handle);
@@ -62,12 +62,12 @@ class DatabaseMessageFilter : public BrowserMessageFilter,
   // Quota message handler (io thread)
   void OnDatabaseGetSpaceAvailable(const url::Origin& origin,
                                    IPC::Message* reply_msg);
-  void OnDatabaseGetUsageAndQuota(IPC::Message* reply_msg,
-                                  storage::QuotaStatusCode status,
-                                  int64_t usage,
-                                  int64_t quota);
+  void OnDatabaseDidGetUsageAndQuota(IPC::Message* reply_msg,
+                                     storage::QuotaStatusCode status,
+                                     int64_t usage,
+                                     int64_t quota);
 
-  // Database tracker message handlers (file thread)
+  // Database tracker message handlers (tracker sequence)
   void OnDatabaseOpened(const url::Origin& origin,
                         const base::string16& database_name,
                         const base::string16& description,
@@ -80,7 +80,7 @@ class DatabaseMessageFilter : public BrowserMessageFilter,
                            const base::string16& database_name,
                            int error);
 
-  // DatabaseTracker::Observer callbacks (file thread)
+  // DatabaseTracker::Observer callbacks (tracker sequence)
   void OnDatabaseSizeChanged(const std::string& origin_identifier,
                              const base::string16& database_name,
                              int64_t database_size) override;

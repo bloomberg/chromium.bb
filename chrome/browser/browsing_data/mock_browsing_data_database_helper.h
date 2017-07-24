@@ -20,7 +20,7 @@ class MockBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
  public:
   explicit MockBrowsingDataDatabaseHelper(Profile* profile);
 
-  void StartFetching(const FetchCallback& callback) override;
+  void StartFetching(FetchCallback callback) override;
 
   void DeleteDatabase(const std::string& origin,
                       const std::string& name) override;

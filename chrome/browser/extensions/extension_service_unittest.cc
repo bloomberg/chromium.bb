@@ -4602,6 +4602,24 @@ class ExtensionCookieCallback {
   base::WeakPtrFactory<base::MessageLoop> weak_factory_;
 };
 
+namespace {
+// Helper to create (open, close, verify) a WebSQL database.
+// Must be run on the DatabaseTracker's task runner.
+void CreateDatabase(storage::DatabaseTracker* db_tracker,
+                    const std::string& origin_id) {
+  DCHECK(db_tracker->task_runner()->RunsTasksInCurrentSequence());
+  base::string16 db_name = base::UTF8ToUTF16("db");
+  base::string16 description = base::UTF8ToUTF16("db_description");
+  int64_t size;
+  db_tracker->DatabaseOpened(origin_id, db_name, description, 1, &size);
+  db_tracker->DatabaseClosed(origin_id, db_name);
+  std::vector<storage::OriginInfo> origins;
+  db_tracker->GetAllOriginsInfo(&origins);
+  EXPECT_EQ(1U, origins.size());
+  EXPECT_EQ(origin_id, origins[0].GetOriginIdentifier());
+}
+}  // namespace
+
 // Verifies extension state is removed upon uninstall.
 TEST_F(ExtensionServiceTest, ClearExtensionData) {
   InitializeEmptyExtensionService();
@@ -4639,15 +4657,10 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   storage::DatabaseTracker* db_tracker =
       BrowserContext::GetDefaultStoragePartition(profile())
           ->GetDatabaseTracker();
-  base::string16 db_name = base::UTF8ToUTF16("db");
-  base::string16 description = base::UTF8ToUTF16("db_description");
-  int64_t size;
-  db_tracker->DatabaseOpened(origin_id, db_name, description, 1, &size);
-  db_tracker->DatabaseClosed(origin_id, db_name);
-  std::vector<storage::OriginInfo> origins;
-  db_tracker->GetAllOriginsInfo(&origins);
-  EXPECT_EQ(1U, origins.size());
-  EXPECT_EQ(origin_id, origins[0].GetOriginIdentifier());
+  db_tracker->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CreateDatabase, base::Unretained(db_tracker), origin_id));
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   // Create local storage. We only simulate this by creating the backing files.
   // Note: This test depends on details of how the dom_storage library
@@ -4689,9 +4702,15 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   EXPECT_EQ(0U, callback.list_.size());
 
   // The database should have vanished as well.
-  origins.clear();
-  db_tracker->GetAllOriginsInfo(&origins);
-  EXPECT_EQ(0U, origins.size());
+  db_tracker->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](storage::DatabaseTracker* db_tracker) {
+                       std::vector<storage::OriginInfo> origins;
+                       db_tracker->GetAllOriginsInfo(&origins);
+                       EXPECT_EQ(0U, origins.size());
+                     },
+                     base::Unretained(db_tracker)));
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   // Check that the LSO file has been removed.
   EXPECT_FALSE(base::PathExists(lso_file_path));
@@ -4760,15 +4779,10 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   storage::DatabaseTracker* db_tracker =
       BrowserContext::GetDefaultStoragePartition(profile())
           ->GetDatabaseTracker();
-  base::string16 db_name = base::UTF8ToUTF16("db");
-  base::string16 description = base::UTF8ToUTF16("db_description");
-  int64_t size;
-  db_tracker->DatabaseOpened(origin_id, db_name, description, 1, &size);
-  db_tracker->DatabaseClosed(origin_id, db_name);
-  std::vector<storage::OriginInfo> origins;
-  db_tracker->GetAllOriginsInfo(&origins);
-  EXPECT_EQ(1U, origins.size());
-  EXPECT_EQ(origin_id, origins[0].GetOriginIdentifier());
+  db_tracker->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CreateDatabase, base::Unretained(db_tracker), origin_id));
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   // Create local storage. We only simulate this by creating the backing files.
   // Note: This test depends on details of how the dom_storage library
@@ -4822,9 +4836,15 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   EXPECT_EQ(0U, callback.list_.size());
 
   // The database should have vanished as well.
-  origins.clear();
-  db_tracker->GetAllOriginsInfo(&origins);
-  EXPECT_EQ(0U, origins.size());
+  db_tracker->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](storage::DatabaseTracker* db_tracker) {
+                       std::vector<storage::OriginInfo> origins;
+                       db_tracker->GetAllOriginsInfo(&origins);
+                       EXPECT_EQ(0U, origins.size());
+                     },
+                     base::Unretained(db_tracker)));
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   // Check that the LSO file has been removed.
   EXPECT_FALSE(base::PathExists(lso_file_path));

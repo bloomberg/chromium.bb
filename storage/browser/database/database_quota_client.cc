@@ -11,9 +11,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "storage/browser/database/database_tracker.h"
@@ -71,10 +72,9 @@ void DidGetOrigins(
   callback.Run(*origins_ptr);
 }
 
-void DidDeleteOriginData(
-    base::SingleThreadTaskRunner* original_task_runner,
-    const QuotaClient::DeletionCallback& callback,
-    int result) {
+void DidDeleteOriginData(base::SequencedTaskRunner* original_task_runner,
+                         const QuotaClient::DeletionCallback& callback,
+                         int result) {
   if (result == net::ERR_IO_PENDING) {
     // The callback will be invoked via
     // DatabaseTracker::ScheduleDatabasesForDeletion.
@@ -87,27 +87,21 @@ void DidDeleteOriginData(
   else
     status = storage::kQuotaStatusUnknown;
 
-  if (original_task_runner->BelongsToCurrentThread())
-    callback.Run(status);
-  else
-    original_task_runner->PostTask(FROM_HERE, base::Bind(callback, status));
+  original_task_runner->PostTask(FROM_HERE, base::BindOnce(callback, status));
 }
 
 }  // namespace
 
 DatabaseQuotaClient::DatabaseQuotaClient(
-    base::SingleThreadTaskRunner* db_tracker_thread,
-    DatabaseTracker* db_tracker)
-    : db_tracker_thread_(db_tracker_thread), db_tracker_(db_tracker) {
-}
+    scoped_refptr<DatabaseTracker> db_tracker)
+    : db_tracker_(std::move(db_tracker)) {}
 
 DatabaseQuotaClient::~DatabaseQuotaClient() {
-  if (db_tracker_thread_.get() &&
-      !db_tracker_thread_->RunsTasksInCurrentSequence() && db_tracker_.get()) {
+  if (!db_tracker_->task_runner()->RunsTasksInCurrentSequence()) {
     DatabaseTracker* tracker = db_tracker_.get();
     tracker->AddRef();
-    db_tracker_ = NULL;
-    if (!db_tracker_thread_->ReleaseSoon(FROM_HERE, tracker))
+    db_tracker_ = nullptr;
+    if (!tracker->task_runner()->ReleaseSoon(FROM_HERE, tracker))
       tracker->Release();
   }
 }
@@ -133,10 +127,10 @@ void DatabaseQuotaClient::GetOriginUsage(const GURL& origin_url,
   }
 
   base::PostTaskAndReplyWithResult(
-      db_tracker_thread_.get(), FROM_HERE,
-      base::Bind(&GetOriginUsageOnDBThread, base::RetainedRef(db_tracker_),
-                 origin_url),
-      callback);
+      db_tracker_->task_runner(), FROM_HERE,
+      base::BindOnce(&GetOriginUsageOnDBThread, base::RetainedRef(db_tracker_),
+                     origin_url),
+      static_cast<base::OnceCallback<void(int64_t usage)>>(callback));
 }
 
 void DatabaseQuotaClient::GetOriginsForType(
@@ -152,11 +146,11 @@ void DatabaseQuotaClient::GetOriginsForType(
   }
 
   std::set<GURL>* origins_ptr = new std::set<GURL>();
-  db_tracker_thread_->PostTaskAndReply(
+  db_tracker_->task_runner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GetOriginsOnDBThread, base::RetainedRef(db_tracker_),
-                 base::Unretained(origins_ptr)),
-      base::Bind(&DidGetOrigins, callback, base::Owned(origins_ptr)));
+      base::BindOnce(&GetOriginsOnDBThread, base::RetainedRef(db_tracker_),
+                     base::Unretained(origins_ptr)),
+      base::BindOnce(&DidGetOrigins, callback, base::Owned(origins_ptr)));
 }
 
 void DatabaseQuotaClient::GetOriginsForHost(
@@ -173,11 +167,12 @@ void DatabaseQuotaClient::GetOriginsForHost(
   }
 
   std::set<GURL>* origins_ptr = new std::set<GURL>();
-  db_tracker_thread_->PostTaskAndReply(
+  db_tracker_->task_runner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GetOriginsForHostOnDBThread, base::RetainedRef(db_tracker_),
-                 base::Unretained(origins_ptr), host),
-      base::Bind(&DidGetOrigins, callback, base::Owned(origins_ptr)));
+      base::BindOnce(&GetOriginsForHostOnDBThread,
+                     base::RetainedRef(db_tracker_),
+                     base::Unretained(origins_ptr), host),
+      base::BindOnce(&DidGetOrigins, callback, base::Owned(origins_ptr)));
 }
 
 void DatabaseQuotaClient::DeleteOriginData(const GURL& origin,
@@ -192,18 +187,19 @@ void DatabaseQuotaClient::DeleteOriginData(const GURL& origin,
     return;
   }
 
-  base::Callback<void(int)> delete_callback = base::Bind(
+  // DidDeleteOriginData() translates the net::Error response to a
+  // storage::QuotaStatusCode if necessary, and no-ops as appropriate if
+  // DatabaseTracker::ScheduleDatabasesForDeletion will also invoke the
+  // callback.
+  auto delete_callback = base::BindRepeating(
       &DidDeleteOriginData,
-      base::RetainedRef(base::ThreadTaskRunnerHandle::Get()), callback);
+      base::RetainedRef(base::SequencedTaskRunnerHandle::Get()), callback);
 
-  PostTaskAndReplyWithResult(
-      db_tracker_thread_.get(),
-      FROM_HERE,
-      base::Bind(&DatabaseTracker::DeleteDataForOrigin,
-                 db_tracker_,
-                 storage::GetIdentifierFromOrigin(origin),
-                 delete_callback),
-      delete_callback);
+  base::PostTaskAndReplyWithResult(
+      db_tracker_->task_runner(), FROM_HERE,
+      base::BindOnce(&DatabaseTracker::DeleteDataForOrigin, db_tracker_,
+                     storage::GetIdentifierFromOrigin(origin), delete_callback),
+      static_cast<base::OnceCallback<void(int)>>(delete_callback));
 }
 
 bool DatabaseQuotaClient::DoesSupport(storage::StorageType type) const {
