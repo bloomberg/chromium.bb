@@ -54,17 +54,16 @@ public class TileGridLayout extends FrameLayout {
         int maxWidthPx = res.getDimensionPixelOffset(R.dimen.tile_grid_layout_max_width);
 
         DisplayMetrics metrics = res.getDisplayMetrics();
-        int totalWidthPx =
-                Math.min(maxWidthPx, Math.min(metrics.widthPixels, metrics.heightPixels));
-
-        // Determine the number of columns that will fit.
         int marginsPx = Math.round(TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, MARGIN_START_DP + MARGIN_END_DP, metrics));
-        int gridWidthPx = totalWidthPx - PADDING_START_PX - PADDING_END_PX - marginsPx;
+        int paddingBoxWidthPx = Math.min(
+                maxWidthPx, Math.min(metrics.widthPixels, metrics.heightPixels) - marginsPx);
+
+        int contentWidthPx = paddingBoxWidthPx - PADDING_START_PX - PADDING_END_PX;
         int childWidthPx = res.getDimensionPixelOffset(R.dimen.tile_view_width);
 
         return Math.max(
-                (gridWidthPx + minHorizontalSpacingPx) / (childWidthPx + minHorizontalSpacingPx),
+                (contentWidthPx + minHorizontalSpacingPx) / (childWidthPx + minHorizontalSpacingPx),
                 1);
     }
 
