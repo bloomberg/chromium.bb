@@ -65,8 +65,10 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
 
   auto client = base::MakeUnique<ServiceWorkerContextClient>(
       params.embedded_worker_id, params.service_worker_version_id, params.scope,
-      params.script_url, std::move(dispatcher_request),
-      std::move(instance_host), std::move(temporal_self_));
+      params.script_url,
+      ServiceWorkerUtils::IsScriptStreamingEnabled() && installed_scripts_info,
+      std::move(dispatcher_request), std::move(instance_host),
+      std::move(temporal_self_));
   client->set_blink_initialized_time(blink_initialized_time_);
   client->set_start_worker_received_time(base::TimeTicks::Now());
   wrapper_ = StartWorkerContext(params, std::move(installed_scripts_info),
