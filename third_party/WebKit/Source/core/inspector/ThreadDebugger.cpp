@@ -7,6 +7,7 @@
 #include <memory>
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8DOMTokenList.h"
 #include "bindings/core/v8/V8Event.h"
@@ -143,6 +144,7 @@ std::unique_ptr<v8_inspector::StringBuffer> ThreadDebugger::valueSubtype(
   static const char kNode[] = "node";
   static const char kArray[] = "array";
   static const char kError[] = "error";
+  static const char kBlob[] = "blob";
   if (V8Node::hasInstance(value, isolate_))
     return ToV8InspectorStringBuffer(kNode);
   if (V8NodeList::hasInstance(value, isolate_) ||
@@ -153,6 +155,8 @@ std::unique_ptr<v8_inspector::StringBuffer> ThreadDebugger::valueSubtype(
   }
   if (V8DOMException::hasInstance(value, isolate_))
     return ToV8InspectorStringBuffer(kError);
+  if (V8Blob::hasInstance(value, isolate_))
+    return ToV8InspectorStringBuffer(kBlob);
   return nullptr;
 }
 
