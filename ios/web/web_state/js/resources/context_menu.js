@@ -286,8 +286,10 @@ goog.provide('__crWeb.contextMenu');
     for (var i = 0; i < metaTags.length; ++i) {
       if (metaTags[i].name.toLowerCase() == 'referrer') {
         var referrerPolicy = metaTags[i].content.toLowerCase();
-        if (referrerPolicy == 'no-referrer' ||
-            referrerPolicy == 'orgin' ||
+        if (referrerPolicy == 'default' ||
+            referrerPolicy == 'always' ||
+            referrerPolicy == 'no-referrer' ||
+            referrerPolicy == 'origin' ||
             referrerPolicy == 'no-referrer-when-downgrade' ||
             referrerPolicy == 'unsafe-url') {
           return referrerPolicy;
