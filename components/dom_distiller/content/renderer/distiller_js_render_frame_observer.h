@@ -11,6 +11,7 @@
 #include "components/dom_distiller/content/renderer/distiller_page_notifier_service_impl.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
 
@@ -27,6 +28,9 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
   ~DistillerJsRenderFrameObserver() override;
 
   // RenderFrameObserver implementation.
+  void OnInterfaceRequestForFrame(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void DidStartProvisionalLoad(blink::WebDataSource* data_source) override;
   void DidFinishLoad() override;
   void DidCreateScriptContext(v8::Local<v8::Context> context,
@@ -50,6 +54,8 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
 
   // Track if the current page is distilled. This is needed for testing.
   bool is_distiller_page_;
+
+  service_manager::BinderRegistry registry_;
 
   // Handle to "distiller" JavaScript object functionality.
   std::unique_ptr<DistillerNativeJavaScript> native_javascript_handle_;

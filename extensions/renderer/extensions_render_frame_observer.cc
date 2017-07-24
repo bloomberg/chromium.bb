@@ -81,7 +81,7 @@ ExtensionsRenderFrameObserver::ExtensionsRenderFrameObserver(
     content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame),
       webview_visually_deemphasized_(false) {
-  render_frame->GetInterfaceRegistry()->AddInterface(
+  registry_.AddInterface(
       base::Bind(&ExtensionsRenderFrameObserver::BindAppWindowRequest,
                  base::Unretained(this)));
 }
@@ -103,6 +103,12 @@ void ExtensionsRenderFrameObserver::SetVisuallyDeemphasized(bool deemphasized) {
   SkColor color =
       deemphasized ? SkColorSetARGB(178, 0, 0, 0) : SK_ColorTRANSPARENT;
   render_frame()->GetRenderView()->GetWebView()->SetPageOverlayColor(color);
+}
+
+void ExtensionsRenderFrameObserver::OnInterfaceRequestForFrame(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 void ExtensionsRenderFrameObserver::DetailedConsoleMessageAdded(

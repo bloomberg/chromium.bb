@@ -161,8 +161,7 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
   render_frame->GetWebFrame()->SetAutofillClient(this);
   password_autofill_agent->SetAutofillAgent(this);
 
-  // AutofillAgent is guaranteed to outlive |render_frame|.
-  render_frame->GetInterfaceRegistry()->AddInterface(
+  registry_.AddInterface(
       base::Bind(&AutofillAgent::BindRequest, base::Unretained(this)));
 }
 
@@ -176,6 +175,12 @@ bool AutofillAgent::FormDataCompare::operator()(const FormData& lhs,
                                                 const FormData& rhs) const {
   return std::tie(lhs.name, lhs.origin, lhs.action, lhs.is_form_tag) <
          std::tie(rhs.name, rhs.origin, rhs.action, rhs.is_form_tag);
+}
+
+void AutofillAgent::OnInterfaceRequestForFrame(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 void AutofillAgent::DidCommitProvisionalLoad(bool is_new_navigation,

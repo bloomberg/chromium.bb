@@ -10,6 +10,7 @@
 #include "components/contextual_search/common/overlay_page_notifier_service.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
 
@@ -25,6 +26,9 @@ class OverlayJsRenderFrameObserver : public content::RenderFrameObserver {
   ~OverlayJsRenderFrameObserver() override;
 
   // RenderFrameObserver implementation.
+  void OnInterfaceRequestForFrame(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void DidStartProvisionalLoad(blink::WebDataSource* data_source) override;
   void DidClearWindowObject() override;
   void DidFinishLoad() override;
@@ -48,6 +52,8 @@ class OverlayJsRenderFrameObserver : public content::RenderFrameObserver {
 
   // Track if the current page is presented in the contextual search overlay.
   bool is_contextual_search_overlay_;
+
+  service_manager::BinderRegistry registry_;
 
   base::WeakPtrFactory<OverlayJsRenderFrameObserver> weak_factory_;
 

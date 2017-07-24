@@ -20,6 +20,7 @@
 #include "components/autofill/content/renderer/page_click_tracker.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
@@ -131,6 +132,9 @@ class AutofillAgent : public content::RenderFrameObserver,
   };
 
   // content::RenderFrameObserver:
+  void OnInterfaceRequestForFrame(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_document_navigation) override;
   void DidFinishDocumentLoad() override;
@@ -291,6 +295,8 @@ class AutofillAgent : public content::RenderFrameObserver,
   mojo::Binding<mojom::AutofillAgent> binding_;
 
   mojom::AutofillDriverPtr autofill_driver_;
+
+  service_manager::BinderRegistry registry_;
 
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_;
 
