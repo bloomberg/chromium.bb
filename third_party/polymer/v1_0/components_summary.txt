@@ -168,9 +168,9 @@ Tree link: https://github.com/PolymerElements/iron-selector/tree/v1.5.2
 
 Name: iron-test-helpers
 Repository: https://github.com/PolymerElements/iron-test-helpers.git
-Tree: v1.2.5
-Revision: a6a123f1330e8e146def1b947b4db0b951003fc0
-Tree link: https://github.com/PolymerElements/iron-test-helpers/tree/v1.2.5
+Tree: v2.0.0
+Revision: b972ff1579d882f3196713f8a72a8bf77aeba07c
+Tree link: https://github.com/PolymerElements/iron-test-helpers/tree/v2.0.0
 
 Name: iron-validatable-behavior
 Repository: https://github.com/PolymerElements/iron-validatable-behavior.git

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+/** @typedef {?{elements: !Array<BookmarkNode>, sameProfile: boolean}} */
+var NormalizedDragData;
+
 cr.define('bookmarks', function() {
   /**
    * @param {BookmarkElement} element
@@ -37,10 +41,25 @@ cr.define('bookmarks', function() {
 
     for (var i = 0; i < path.length; i++) {
       if (isBookmarkItem(path[i]) || isBookmarkFolderNode(path[i]) ||
-          isBookmarkList(path[i]))
+          isBookmarkList(path[i])) {
         return path[i];
+      }
     }
     return null;
+  }
+
+  /**
+   * @param {Array<!Element>|undefined} path
+   * @return {BookmarkElement}
+   */
+  function getDragElement(path) {
+    var dragElement = getBookmarkElement(path);
+    for (var i = 0; i < path.length; i++) {
+      if (path[i].tagName == 'BUTTON')
+        return null;
+    }
+    return dragElement && dragElement.getAttribute('draggable') ? dragElement :
+                                                                  null;
   }
 
   /**
@@ -57,14 +76,18 @@ cr.define('bookmarks', function() {
    * @constructor
    */
   function DragInfo() {
-    /** @type {DragData} */
+    /** @type {NormalizedDragData} */
     this.dragData = null;
   }
 
   DragInfo.prototype = {
     /** @param {DragData} newDragData */
-    handleChromeDragEnter: function(newDragData) {
-      this.dragData = newDragData;
+    setNativeDragData: function(newDragData) {
+      this.dragData = {
+        sameProfile: newDragData.sameProfile,
+        elements:
+            newDragData.elements.map((x) => bookmarks.util.normalizeNode(x))
+      };
     },
 
     clearDragData: function() {
@@ -269,6 +292,23 @@ cr.define('bookmarks', function() {
 
   /**
    * Manages drag and drop events for the bookmarks-app.
+   *
+   * This class manages an internal drag and drop based on mouse events and then
+   * delegates to the native drag and drop in chrome.bookmarkManagerPrivate when
+   * the mouse leaves the web content area. This allows us to render a drag and
+   * drop chip UI for internal drags, while correctly handling and avoiding
+   * conflict with native drags.
+   *
+   * The event flows look like
+   *
+   * mousedown -> mousemove -> mouseup
+   *               |
+   *               v
+   *      dragstart/dragleave (if the drag leaves the browser window)
+   *               |
+   *               v
+   * external drag -> bookmarkManagerPrivate.onDragEnter -> dragover -> drop
+   *
    * @constructor
    */
   function DNDManager() {
@@ -297,10 +337,11 @@ cr.define('bookmarks', function() {
     this.chip_ = null;
 
     /**
-     * The element that initiated a drag.
+     * The element that initiated an internal drag. Not used once native drag
+     * starts.
      * @private {BookmarkElement}
      */
-    this.dragElement_ = null;
+    this.internalDragElement_ = null;
   }
 
   DNDManager.prototype = {
@@ -310,20 +351,24 @@ cr.define('bookmarks', function() {
       this.autoExpander_ = new AutoExpander();
 
       this.documentListeners_ = {
+        'mousedown': this.onMousedown_.bind(this),
+        'mousemove': this.onMouseMove_.bind(this),
+        'mouseup': this.onMouseUp_.bind(this),
+        'mouseleave': this.onMouseLeave_.bind(this),
+
         'dragstart': this.onDragStart_.bind(this),
         'dragenter': this.onDragEnter_.bind(this),
         'dragover': this.onDragOver_.bind(this),
         'dragleave': this.onDragLeave_.bind(this),
         'drop': this.onDrop_.bind(this),
         'dragend': this.clearDragData_.bind(this),
-        'mouseup': this.clearDragData_.bind(this),
         // TODO(calamity): Add touch support.
       };
       for (var event in this.documentListeners_)
         document.addEventListener(event, this.documentListeners_[event]);
 
       chrome.bookmarkManagerPrivate.onDragEnter.addListener(
-          this.dragInfo_.handleChromeDragEnter.bind(this.dragInfo_));
+          this.handleChromeDragEnter_.bind(this));
       chrome.bookmarkManagerPrivate.onDragLeave.addListener(
           this.clearDragData_.bind(this));
       chrome.bookmarkManagerPrivate.onDrop.addListener(
@@ -336,6 +381,130 @@ cr.define('bookmarks', function() {
 
       for (var event in this.documentListeners_)
         document.removeEventListener(event, this.documentListeners_[event]);
+    },
+
+    ////////////////////////////////////////////////////////////////////////////
+    // MouseEvent handlers:
+
+    /**
+     * @private
+     * @param {Event} e
+     */
+    onMousedown_: function(e) {
+      var dragElement = getDragElement(e.path);
+      if (e.button != 0 || !dragElement)
+        return;
+
+      this.internalDragElement_ = dragElement;
+    },
+
+    /**
+     * @private
+     * @param {Event} e
+     */
+    onMouseMove_: function(e) {
+      // mousemove events still fire when dragged onto the the bookmarks bar.
+      // Once we are outside of the web contents, allow the native drag to
+      // start.
+      if (!this.internalDragElement_ || e.clientX < 0 ||
+          e.clientX > window.innerWidth || e.clientY < 0 ||
+          e.clientY > window.innerHeight) {
+        return;
+      }
+
+      this.dropDestination_ = null;
+
+      // Prevents a native drag from starting.
+      e.preventDefault();
+
+      // On the first mousemove after a mousedown, calculate the items to drag.
+      // This can't be done in mousedown because the user may be shift-clicking
+      // an item.
+      if (!this.dragInfo_.isDragValid()) {
+        var dragData = this.calculateDragData_();
+        if (!dragData) {
+          this.clearDragData_();
+          return;
+        }
+
+        this.dragInfo_.dragData = dragData;
+      }
+
+      var state = bookmarks.Store.getInstance().data;
+      var items = this.dragInfo_.dragData.elements;
+      this.dndChip.showForItems(
+          e.clientX, e.clientY, items,
+          this.internalDragElement_ ?
+              state.nodes[this.internalDragElement_.itemId] :
+              items[0]);
+
+      this.onDragOverCommon_(e);
+    },
+
+    /**
+     * This event fires when the mouse leaves the browser window (not the web
+     * content area).
+     * @private
+     */
+    onMouseLeave_: function() {
+      if (!this.internalDragElement_)
+        return;
+
+      this.startNativeDrag_();
+    },
+
+    /**
+     * @private
+     */
+    onMouseUp_: function() {
+      if (!this.internalDragElement_)
+        return;
+
+      if (this.dropDestination_) {
+        // Complete the drag by moving all dragged items to the drop
+        // destination.
+        var dropInfo = this.calculateDropInfo_(this.dropDestination_);
+        this.dragInfo_.dragData.elements.forEach((item) => {
+          chrome.bookmarks.move(item.id, {
+            parentId: dropInfo.parentId,
+            index: dropInfo.index == -1 ? undefined : dropInfo.index
+          });
+        });
+      }
+
+      this.clearDragData_();
+    },
+
+    ////////////////////////////////////////////////////////////////////////////
+    // DragEvent handlers:
+
+    /**
+     * This should only fire when a mousemove goes from the content area to the
+     * browser chrome.
+     * @private
+     * @param {Event} e
+     */
+    onDragStart_: function(e) {
+      // |e| will be for the originally dragged bookmark item which dragstart
+      // was disabled for due to mousemove's preventDefault.
+      var dragElement = getDragElement(e.path);
+      if (!dragElement)
+        return;
+
+      // Prevent normal drags of all bookmark items.
+      e.preventDefault();
+
+      if (!this.startNativeDrag_())
+        return;
+
+      // If we are dragging a single link, we can do the *Link* effect.
+      // Otherwise, we only allow copy and move.
+      if (e.dataTransfer) {
+        var draggedNodes = this.dragInfo_.dragData.elements;
+        e.dataTransfer.effectAllowed =
+            draggedNodes.length == 1 && draggedNodes[0].url ? 'copyLink' :
+                                                              'copyMove';
+      }
     },
 
     /** @private */
@@ -358,9 +527,125 @@ cr.define('bookmarks', function() {
           chrome.bookmarkManagerPrivate.drop(dropInfo.parentId);
       }
 
-      this.dropDestination_ = null;
-      this.dropIndicator_.finish();
+      this.clearDragData_();
     },
+
+    /**
+     * @private
+     * @param {Event} e
+     */
+    onDragEnter_: function(e) {
+      e.preventDefault();
+    },
+
+    /**
+     * @private
+     * @param {Event} e
+     */
+    onDragOver_: function(e) {
+      this.dropDestination_ = null;
+
+      // This is necessary to actually trigger the 'none' effect, even though
+      // the event will have this set to 'none' already.
+      if (e.dataTransfer)
+        e.dataTransfer.dropEffect = 'none';
+
+      // Allow normal DND on text inputs.
+      if (e.path[0].tagName == 'INPUT')
+        return;
+
+      // The default operation is to allow dropping links etc to do
+      // navigation. We never want to do that for the bookmark manager.
+      e.preventDefault();
+
+      if (!this.dragInfo_.isDragValid())
+        return;
+
+      if (this.onDragOverCommon_(e) && e.dataTransfer) {
+        e.dataTransfer.dropEffect =
+            this.dragInfo_.isSameProfile() ? 'move' : 'copy';
+      }
+    },
+
+    /**
+     * @private
+     * @param {DragData} dragData
+     */
+    handleChromeDragEnter_: function(dragData) {
+      this.dragInfo_.setNativeDragData(dragData);
+    },
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Common drag methods:
+
+    /** @private */
+    clearDragData_: function() {
+      this.dndChip.hide();
+      this.internalDragElement_ = null;
+
+      // Defer the clearing of the data so that the bookmark manager API's drop
+      // event doesn't clear the drop data before the web drop event has a
+      // chance to execute (on Mac).
+      this.timerProxy_.setTimeout(function() {
+        this.dragInfo_.clearDragData();
+        this.dropDestination_ = null;
+        this.dropIndicator_.finish();
+      }.bind(this), 0);
+    },
+
+    /**
+     * Starts a native drag by sending a message to the browser.
+     * @private
+     * @return {boolean}
+     */
+    startNativeDrag_: function() {
+      var state = bookmarks.Store.getInstance().data;
+      this.dndChip.hide();
+
+      if (!this.dragInfo_.isDragValid())
+        return false;
+
+      var draggedNodes =
+          this.dragInfo_.dragData.elements.map((item) => item.id);
+
+      // TODO(calamity): account for touch.
+      chrome.bookmarkManagerPrivate.startDrag(draggedNodes, false);
+
+      return true;
+    },
+
+    /**
+     * @private
+     * @param {Event} e
+     * @return {boolean}
+     */
+    onDragOverCommon_: function(e) {
+      var state = bookmarks.Store.getInstance().data;
+      var items = this.dragInfo_.dragData.elements;
+
+      var overElement = getBookmarkElement(e.path);
+      this.autoExpander_.update(e, overElement);
+      if (!overElement) {
+        this.dropIndicator_.finish();
+        return false;
+      }
+
+      // Now we know that we can drop. Determine if we will drop above, on or
+      // below based on mouse position etc.
+      this.dropDestination_ =
+          this.calculateDropDestination_(e.clientY, overElement);
+      if (!this.dropDestination_) {
+        this.dropIndicator_.finish();
+        return false;
+      }
+
+      this.dropIndicator_.update(this.dropDestination_);
+
+      return true;
+    },
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Other methods:
 
     /**
      * @param {DropDestination} dropDestination
@@ -397,44 +682,25 @@ cr.define('bookmarks', function() {
       };
     },
 
-    /** @private */
-    clearDragData_: function() {
-      this.dndChip.hide();
-      this.dragElement_ = null;
-
-      // Defer the clearing of the data so that the bookmark manager API's drop
-      // event doesn't clear the drop data before the web drop event has a
-      // chance to execute (on Mac).
-      this.timerProxy_.setTimeout(function() {
-        this.dragInfo_.clearDragData();
-        this.dropDestination_ = null;
-        this.dropIndicator_.finish();
-      }.bind(this), 0);
-    },
-
     /**
+     * Calculates which items should be dragged based on the initial drag item
+     * and the current selection. Dragged items will end up selected.
      * @private
-     * @param {Event} e
      */
-    onDragStart_: function(e) {
-      var dragElement = getBookmarkElement(e.path);
-      if (!dragElement)
-        return;
-
+    calculateDragData_: function() {
+      var dragId = this.internalDragElement_.itemId;
       var store = bookmarks.Store.getInstance();
-      var dragId = dragElement.itemId;
-      this.dragElement_ = dragElement;
+      var state = store.data;
 
       // Determine the selected bookmarks.
-      var state = store.data;
       var draggedNodes = Array.from(state.selection.items);
 
       // Change selection to the dragged node if the node is not part of the
       // existing selection.
-      if (isBookmarkFolderNode(dragElement) ||
+      if (isBookmarkFolderNode(this.internalDragElement_) ||
           draggedNodes.indexOf(dragId) == -1) {
         store.dispatch(bookmarks.actions.deselectItems());
-        if (!isBookmarkFolderNode(dragElement)) {
+        if (!isBookmarkFolderNode(this.internalDragElement_)) {
           store.dispatch(bookmarks.actions.selectItem(dragId, state, {
             clear: false,
             range: false,
@@ -444,87 +710,17 @@ cr.define('bookmarks', function() {
         draggedNodes = [dragId];
       }
 
-      e.preventDefault();
+      // If any node can't be dragged, end the drag.
+      var anyUnmodifiable = draggedNodes.some(
+          (itemId) => !bookmarks.util.canEditNode(state, itemId));
 
-      // If any node can't be dragged, early return (after preventDefault).
-      var anyUnmodifiable = draggedNodes.some(function(itemId) {
-        return !bookmarks.util.canEditNode(state, itemId);
-      });
       if (anyUnmodifiable)
-        return;
+        return null;
 
-      // If we are dragging a single link, we can do the *Link* effect.
-      // Otherwise, we only allow copy and move.
-      if (e.dataTransfer) {
-        e.dataTransfer.effectAllowed =
-            draggedNodes.length == 1 && state.nodes[draggedNodes[0]].url ?
-            'copyLink' :
-            'copyMove';
-      }
-
-      // TODO(calamity): account for touch.
-      chrome.bookmarkManagerPrivate.startDrag(draggedNodes, false);
-    },
-
-    /**
-     * @private
-     * @param {Event} e
-     */
-    onDragEnter_: function(e) {
-      e.preventDefault();
-    },
-
-    /**
-     * @private
-     * @param {Event} e
-     */
-    onDragOver_: function(e) {
-      this.dropDestination_ = null;
-
-      // This is necessary to actually trigger the 'none' effect, even though
-      // the event will have this set to 'none' already.
-      if (e.dataTransfer)
-        e.dataTransfer.dropEffect = 'none';
-
-      // Allow normal DND on text inputs.
-      if (e.path[0].tagName == 'INPUT')
-        return;
-
-      // The default operation is to allow dropping links etc to do
-      // navigation. We never want to do that for the bookmark manager.
-      e.preventDefault();
-
-      if (!this.dragInfo_.isDragValid())
-        return;
-
-      var state = bookmarks.Store.getInstance().data;
-      var items = this.dragInfo_.dragData.elements.map(function(x) {
-        return bookmarks.util.normalizeNode(x);
-      });
-      this.dndChip.showForItems(
-          e.clientX, e.clientY, items,
-          this.dragElement_ ? state.nodes[this.dragElement_.itemId] : items[0]);
-
-      var overElement = getBookmarkElement(e.path);
-      this.autoExpander_.update(e, overElement);
-      if (!overElement)
-        return;
-
-      // Now we know that we can drop. Determine if we will drop above, on or
-      // below based on mouse position etc.
-      this.dropDestination_ =
-          this.calculateDropDestination_(e.clientY, overElement);
-      if (!this.dropDestination_) {
-        this.dropIndicator_.finish();
-        return;
-      }
-
-      if (e.dataTransfer) {
-        e.dataTransfer.dropEffect =
-            this.dragInfo_.isSameProfile() ? 'move' : 'copy';
-      }
-
-      this.dropIndicator_.update(this.dropDestination_);
+      return {
+        elements: draggedNodes.map((id) => state.nodes[id]),
+        sameProfile: true,
+      };
     },
 
     /**

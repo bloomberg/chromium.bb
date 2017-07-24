@@ -80,7 +80,6 @@
 
     <div id="container"
         class="v-centered"
-        draggable="true"
         on-tap="selectFolder_"
         on-contextmenu="onContextMenu_"
         tabindex$="[[getTabIndex_(isSelectedFolder_)]]"
@@ -108,6 +107,7 @@
             as="child"
             filter="isFolder_">
           <bookmarks-folder-node item-id="[[child]]"
+              draggable="true"
               depth="[[getChildDepth_(depth)]]">
           </bookmarks-folder-node>
         </template>
