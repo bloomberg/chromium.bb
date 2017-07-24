@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_SESSIONS_SESSIONS_SYNC_MANAGER_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <map>
 #include <memory>
@@ -23,6 +24,7 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/model/syncable_service.h"
+#include "components/sync/user_events/global_id_mapper.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/local_session_event_router.h"
 #include "components/sync_sessions/lost_navigations_recorder.h"
@@ -58,7 +60,8 @@ class SyncedWindowDelegatesGetter;
 // the sync sessions model.
 class SessionsSyncManager : public syncer::SyncableService,
                             public OpenTabsUIDelegate,
-                            public LocalSessionEventHandler {
+                            public LocalSessionEventHandler,
+                            public syncer::GlobalIdMapper {
  public:
   SessionsSyncManager(SyncSessionsClient* sessions_client,
                       syncer::SyncPrefs* sync_prefs,
@@ -116,6 +119,10 @@ class SessionsSyncManager : public syncer::SyncableService,
   // |stale_session_threshold_days_|). This is called every time we see new
   // sessions data downloaded (sync cycles complete).
   void DoGarbageCollection();
+
+  // GlobalIdMapper implementation.
+  void AddGlobalIdChangeObserver(syncer::GlobalIdChange callback) override;
+  int64_t GetLatestGlobalId(int64_t global_id) override;
 
  private:
   friend class extensions::ExtensionSessionsTest;
@@ -281,6 +288,10 @@ class SessionsSyncManager : public syncer::SyncableService,
 
   SyncedWindowDelegatesGetter* synced_window_delegates_getter() const;
 
+  void TrackNavigationIds(const sessions::SerializedNavigationEntry& current);
+
+  void CleanupNavigationTracking();
+
   // The client of this sync sessions datatype.
   SyncSessionsClient* const sessions_client_;
 
@@ -336,6 +347,12 @@ class SessionsSyncManager : public syncer::SyncableService,
   // Tracks Chrome Tasks, which associates navigations, with tab and navigation
   // changes of current session.
   std::unique_ptr<TaskTracker> task_tracker_;
+
+  // Used to track global_ids that should be used when referencing various
+  // pieces of sessions data, and notify observer when things have changed.
+  std::map<int64_t, int> global_to_unique_;
+  std::map<int, int64_t> unique_to_current_global_;
+  std::vector<syncer::GlobalIdChange> global_id_change_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionsSyncManager);
 };

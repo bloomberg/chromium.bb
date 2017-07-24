@@ -4,6 +4,7 @@
 
 #include "components/sync/user_events/user_event_sync_bridge.h"
 
+#include <set>
 #include <utility>
 
 #include "base/big_endian.h"
@@ -11,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
@@ -39,6 +41,12 @@ std::string GetStorageKeyFromSpecifics(const UserEventSpecifics& specifics) {
   return key;
 }
 
+int64_t GetEventTimeFromStorageKey(const std::string& storage_key) {
+  int64_t event_time;
+  base::ReadBigEndian(&storage_key[0], &event_time);
+  return event_time;
+}
+
 std::unique_ptr<EntityData> MoveToEntityData(
     std::unique_ptr<UserEventSpecifics> specifics) {
   auto entity_data = base::MakeUnique<EntityData>();
@@ -61,10 +69,14 @@ std::unique_ptr<EntityData> CopyToEntityData(
 
 UserEventSyncBridge::UserEventSyncBridge(
     const ModelTypeStoreFactory& store_factory,
-    const ChangeProcessorFactory& change_processor_factory)
-    : ModelTypeSyncBridge(change_processor_factory, USER_EVENTS) {
+    const ChangeProcessorFactory& change_processor_factory,
+    GlobalIdMapper* global_id_mapper)
+    : ModelTypeSyncBridge(change_processor_factory, USER_EVENTS),
+      global_id_mapper_(global_id_mapper) {
   store_factory.Run(
       base::Bind(&UserEventSyncBridge::OnStoreCreated, base::AsWeakPtr(this)));
+  global_id_mapper_->AddGlobalIdChangeObserver(base::Bind(
+      &UserEventSyncBridge::HandleGlobalIdChange, base::AsWeakPtr(this)));
 }
 
 UserEventSyncBridge::~UserEventSyncBridge() {}
@@ -85,10 +97,24 @@ base::Optional<ModelError> UserEventSyncBridge::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_changes) {
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+  std::set<int64_t> deleted_event_times;
   for (EntityChange& change : entity_changes) {
     DCHECK_EQ(EntityChange::ACTION_DELETE, change.type());
     batch->DeleteData(change.storage_key());
+    deleted_event_times.insert(
+        GetEventTimeFromStorageKey(change.storage_key()));
   }
+
+  // Because we receive ApplySyncChanges with deletions when our commits are
+  // confirmed, this is the perfect time to cleanup our in flight objects which
+  // are no longer in flight.
+  base::EraseIf(in_flight_nav_linked_events_,
+                [&deleted_event_times](
+                    const std::pair<int64_t, sync_pb::UserEventSpecifics> kv) {
+                  return base::ContainsKey(deleted_event_times,
+                                           kv.second.event_time_usec());
+                });
+
   batch->TransferMetadataChanges(std::move(metadata_change_list));
   store_->CommitWriteBatch(
       std::move(batch),
@@ -124,8 +150,27 @@ void UserEventSyncBridge::DisableSync() {
 void UserEventSyncBridge::RecordUserEvent(
     std::unique_ptr<UserEventSpecifics> specifics) {
   std::string storage_key = GetStorageKeyFromSpecifics(*specifics);
+
+  // There are two scenarios we need to guard against here. First, the given
+  // user even may have been read from an old global_id timestamp off of a
+  // navigation, which has already been re-written. In this case, we should be
+  // able to look up the latest/best global_id to use right now, and update as
+  // such. The other scenario is that the navigation is going to be updated in
+  // the future, and the current global_id, while valid for now, is never going
+  // to make it to the server, and will need to be fixed. To handle this
+  // scenario, we store a specifics copy in |in in_flight_nav_linked_events_|,
+  // and will re-record in HandleGlobalIdChange.
+  if (specifics->has_navigation_id()) {
+    int64_t latest_global_id =
+        global_id_mapper_->GetLatestGlobalId(specifics->navigation_id());
+    specifics->set_navigation_id(latest_global_id);
+    in_flight_nav_linked_events_.insert(
+        std::make_pair(latest_global_id, *specifics));
+  }
+
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   batch->WriteData(storage_key, specifics->SerializeAsString());
+
   change_processor()->Put(storage_key, MoveToEntityData(std::move(specifics)),
                           batch->GetMetadataChangeList());
   store_->CommitWriteBatch(
@@ -217,6 +262,21 @@ void UserEventSyncBridge::OnReadAllDataToDelete(
   store_->CommitWriteBatch(
       std::move(batch),
       base::Bind(&UserEventSyncBridge::OnCommit, base::AsWeakPtr(this)));
+}
+
+void UserEventSyncBridge::HandleGlobalIdChange(int64_t old_global_id,
+                                               int64_t new_global_id) {
+  DCHECK_NE(old_global_id, new_global_id);
+  auto iter = in_flight_nav_linked_events_.find(old_global_id);
+  while (iter != in_flight_nav_linked_events_.end()) {
+    auto specifics = base::MakeUnique<UserEventSpecifics>(iter->second);
+    DCHECK_EQ(old_global_id, specifics->navigation_id());
+
+    iter = in_flight_nav_linked_events_.erase(iter);
+
+    specifics->set_navigation_id(new_global_id);
+    RecordUserEvent(std::move(specifics));
+  }
 }
 
 }  // namespace syncer

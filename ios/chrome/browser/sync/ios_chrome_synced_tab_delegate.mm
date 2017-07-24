@@ -96,8 +96,10 @@ void IOSChromeSyncedTabDelegate::GetSerializedNavigationAtIndex(
     int i,
     sessions::SerializedNavigationEntry* serialized_entry) const {
   NavigationItem* item = GetPossiblyPendingItemAtIndex(web_state_, i);
-  *serialized_entry =
-      sessions::IOSSerializedNavigationBuilder::FromNavigationItem(i, *item);
+  if (item) {
+    *serialized_entry =
+        sessions::IOSSerializedNavigationBuilder::FromNavigationItem(i, *item);
+  }
 }
 
 bool IOSChromeSyncedTabDelegate::ProfileIsSupervised() const {

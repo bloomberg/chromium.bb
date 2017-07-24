@@ -6,6 +6,7 @@
 
 #include <map>
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -76,20 +77,44 @@ std::unique_ptr<UserEventSpecifics> SpecificsUniquePtr(int64_t event_time_usec,
       CreateSpecifics(event_time_usec, navigation_id, session_id));
 }
 
+class TestGlobalIdMapper : public GlobalIdMapper {
+ public:
+  void AddGlobalIdChangeObserver(GlobalIdChange callback) override {
+    callback_ = std::move(callback);
+  }
+
+  int64_t GetLatestGlobalId(int64_t global_id) override {
+    auto iter = id_map_.find(global_id);
+    return iter == id_map_.end() ? global_id : iter->second;
+  }
+
+  void ChangeId(int64_t old_id, int64_t new_id) {
+    id_map_[old_id] = new_id;
+    callback_.Run(old_id, new_id);
+  }
+
+ private:
+  GlobalIdChange callback_;
+  std::map<int64_t, int64_t> id_map_;
+};
+
 class UserEventSyncBridgeTest : public testing::Test {
  protected:
   UserEventSyncBridgeTest() {
     bridge_ = base::MakeUnique<UserEventSyncBridge>(
         ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest(),
-        RecordingModelTypeChangeProcessor::FactoryForBridgeTest(&processor_));
+        RecordingModelTypeChangeProcessor::FactoryForBridgeTest(&processor_),
+        &test_global_id_mapper_);
   }
 
   UserEventSyncBridge* bridge() { return bridge_.get(); }
   const RecordingModelTypeChangeProcessor& processor() { return *processor_; }
+  TestGlobalIdMapper* mapper() { return &test_global_id_mapper_; }
 
  private:
   std::unique_ptr<UserEventSyncBridge> bridge_;
   RecordingModelTypeChangeProcessor* processor_;
+  TestGlobalIdMapper test_global_id_mapper_;
   base::MessageLoop message_loop_;
 };
 
@@ -139,6 +164,40 @@ TEST_F(UserEventSyncBridgeTest, ApplySyncChanges) {
                                  {EntityChange::CreateDelete(storage_key)});
   EXPECT_FALSE(error_on_delete);
   bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 1));
+}
+
+TEST_F(UserEventSyncBridgeTest, HandleGlobalIdChange) {
+  int64_t first_id = 11;
+  int64_t second_id = 12;
+  int64_t third_id = 13;
+  int64_t fourth_id = 14;
+
+  // This id update should be applied to the event as it is initially recorded.
+  mapper()->ChangeId(first_id, second_id);
+  bridge()->RecordUserEvent(
+      base::MakeUnique<UserEventSpecifics>(CreateSpecifics(1u, first_id, 2u)));
+  const std::string storage_key = processor().put_multimap().begin()->first;
+  EXPECT_EQ(1u, processor().put_multimap().size());
+  bridge()->GetAllData(
+      VerifyCallback({{storage_key, CreateSpecifics(1u, second_id, 2u)}}));
+
+  // This id update is done while the event is "in flight", and should result in
+  // it being updated and re-sent to sync.
+  mapper()->ChangeId(second_id, third_id);
+  EXPECT_EQ(2u, processor().put_multimap().size());
+  bridge()->GetAllData(
+      VerifyCallback({{storage_key, CreateSpecifics(1u, third_id, 2u)}}));
+  auto error_on_delete =
+      bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
+                                 {EntityChange::CreateDelete(storage_key)});
+  EXPECT_FALSE(error_on_delete);
+  bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 0));
+
+  // This id update should be ignored, since we received commit confirmation
+  // above.
+  mapper()->ChangeId(third_id, fourth_id);
+  EXPECT_EQ(2u, processor().put_multimap().size());
+  bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 0));
 }
 
 }  // namespace
