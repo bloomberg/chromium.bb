@@ -225,24 +225,26 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     /**
-     * Used to check whether an incoming intent can be handled by the
-     * current {@link CustomTabContentHandler}.
+     * Called when a CustomTabs intent is handled.
+     *
+     * Used to check whether an incoming intent can be handled by the current
+     * {@link CustomTabContentHandler}, and to perform action on new Intent.
+     *
      * @return Whether the active {@link CustomTabContentHandler} has handled the intent.
      */
     public static boolean handleInActiveContentIfNeeded(Intent intent) {
-        if (sActiveContentHandler == null) return false;
-
-        if (sActiveContentHandler.shouldIgnoreIntent(intent)) {
-            Log.w(TAG, "Incoming intent to Custom Tab was ignored.");
-            return false;
-        }
-
         CustomTabsSessionToken session = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
-        if (session == null || !session.equals(sActiveContentHandler.getSession())) return false;
 
         String url = IntentHandler.getUrlFromIntent(intent);
         if (TextUtils.isEmpty(url)) return false;
         CustomTabsConnection.getInstance().onHandledIntent(session, url, intent);
+
+        if (sActiveContentHandler == null) return false;
+        if (session == null || !session.equals(sActiveContentHandler.getSession())) return false;
+        if (sActiveContentHandler.shouldIgnoreIntent(intent)) {
+            Log.w(TAG, "Incoming intent to Custom Tab was ignored.");
+            return false;
+        }
         sActiveContentHandler.loadUrlAndTrackFromTimestamp(new LoadUrlParams(url),
                 IntentHandler.getTimestampFromIntent(intent));
         return true;
