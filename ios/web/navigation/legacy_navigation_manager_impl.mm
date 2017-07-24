@@ -194,16 +194,6 @@ void LegacyNavigationManagerImpl::LoadURLWithParams(
   delegate_->LoadURLWithParams(params);
 }
 
-void LegacyNavigationManagerImpl::AddTransientURLRewriter(
-    BrowserURLRewriter::URLRewriter rewriter) {
-  DCHECK(rewriter);
-  if (!transient_url_rewriters_) {
-    transient_url_rewriters_.reset(
-        new std::vector<BrowserURLRewriter::URLRewriter>());
-  }
-  transient_url_rewriters_->push_back(rewriter);
-}
-
 int LegacyNavigationManagerImpl::GetItemCount() const {
   return [session_controller_ items].size();
 }
@@ -296,15 +286,6 @@ void LegacyNavigationManagerImpl::CopyStateFromAndPrune(
 
 bool LegacyNavigationManagerImpl::CanPruneAllButLastCommittedItem() const {
   return [session_controller_ canPruneAllButLastCommittedItem];
-}
-
-std::unique_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
-LegacyNavigationManagerImpl::GetTransientURLRewriters() {
-  return std::move(transient_url_rewriters_);
-}
-
-void LegacyNavigationManagerImpl::RemoveTransientURLRewriters() {
-  transient_url_rewriters_.reset();
 }
 
 int LegacyNavigationManagerImpl::GetIndexForOffset(int offset) const {

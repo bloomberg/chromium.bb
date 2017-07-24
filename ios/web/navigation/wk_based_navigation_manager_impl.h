@@ -55,9 +55,6 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
       NavigationInitiationType initiation_type,
       UserAgentOverrideOption user_agent_override_option) override;
   void CommitPendingItem() override;
-  std::unique_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
-  GetTransientURLRewriters() override;
-  void RemoveTransientURLRewriters() override;
   int GetIndexForOffset(int offset) const override;
   int GetPreviousItemIndex() const override;
 
@@ -70,8 +67,6 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   NavigationItem* GetTransientItem() const override;
   void DiscardNonCommittedItems() override;
   void LoadURLWithParams(const NavigationManager::WebLoadParams&) override;
-  void AddTransientURLRewriter(
-      BrowserURLRewriter::URLRewriter rewriter) override;
   int GetItemCount() const override;
   NavigationItem* GetItemAtIndex(size_t index) const override;
   int GetIndexOfItem(const NavigationItem* item) const override;
@@ -100,8 +95,6 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
 
 
   // List of transient url rewriters added by |AddTransientURLRewriter()|.
-  std::unique_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
-      transient_url_rewriters_;
 
   DISALLOW_COPY_AND_ASSIGN(WKBasedNavigationManagerImpl);
 };

@@ -4,7 +4,9 @@
 
 #import "ios/web/navigation/navigation_manager_impl.h"
 
+#include "base/memory/ptr_util.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
+#import "ios/web/public/web_client.h"
 #include "ui/base/page_transition_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -57,12 +59,72 @@ bool NavigationManagerImpl::AreUrlsFragmentChangeNavigation(
 NavigationManagerImpl::NavigationManagerImpl()
     : delegate_(nullptr), browser_state_(nullptr) {}
 
+NavigationManagerImpl::~NavigationManagerImpl() = default;
+
 void NavigationManagerImpl::SetDelegate(NavigationManagerDelegate* delegate) {
   delegate_ = delegate;
 }
 
 void NavigationManagerImpl::SetBrowserState(BrowserState* browser_state) {
   browser_state_ = browser_state;
+}
+
+void NavigationManagerImpl::RemoveTransientURLRewriters() {
+  transient_url_rewriters_.clear();
+}
+
+std::unique_ptr<NavigationItemImpl> NavigationManagerImpl::CreateNavigationItem(
+    const GURL& url,
+    const Referrer& referrer,
+    ui::PageTransition transition,
+    NavigationInitiationType initiation_type) {
+  GURL loaded_url(url);
+
+  bool url_was_rewritten = false;
+  if (!transient_url_rewriters_.empty()) {
+    url_was_rewritten = web::BrowserURLRewriter::RewriteURLWithWriters(
+        &loaded_url, browser_state_, transient_url_rewriters_);
+  }
+
+  if (!url_was_rewritten) {
+    web::BrowserURLRewriter::GetInstance()->RewriteURLIfNecessary(
+        &loaded_url, browser_state_);
+  }
+
+  if (initiation_type == web::NavigationInitiationType::RENDERER_INITIATED &&
+      loaded_url != url && web::GetWebClient()->IsAppSpecificURL(loaded_url)) {
+    const NavigationItem* last_committed_item = GetLastCommittedItem();
+    bool last_committed_url_is_app_specific =
+        last_committed_item &&
+        web::GetWebClient()->IsAppSpecificURL(last_committed_item->GetURL());
+    if (!last_committed_url_is_app_specific) {
+      // The URL should not be changed to app-specific URL if the load was
+      // renderer-initiated requested by non app-specific URL. Pages with
+      // app-specific urls have elevated previledges and should not be allowed
+      // to open app-specific URLs.
+      loaded_url = url;
+    }
+  }
+
+  RemoveTransientURLRewriters();
+
+  auto item = base::MakeUnique<NavigationItemImpl>();
+  item->SetOriginalRequestURL(loaded_url);
+  item->SetURL(loaded_url);
+  item->SetReferrer(referrer);
+  item->SetTransitionType(transition);
+  item->SetNavigationInitiationType(initiation_type);
+  if (web::GetWebClient()->IsAppSpecificURL(loaded_url)) {
+    item->SetUserAgentType(web::UserAgentType::NONE);
+  }
+
+  return item;
+}
+
+void NavigationManagerImpl::AddTransientURLRewriter(
+    BrowserURLRewriter::URLRewriter rewriter) {
+  DCHECK(rewriter);
+  transient_url_rewriters_.push_back(rewriter);
 }
 
 void NavigationManagerImpl::Reload(ReloadType reload_type,

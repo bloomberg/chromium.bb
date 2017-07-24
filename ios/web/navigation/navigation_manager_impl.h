@@ -50,7 +50,7 @@ enum class NavigationInitiationType {
 class NavigationManagerImpl : public NavigationManager {
  public:
   NavigationManagerImpl();
-  ~NavigationManagerImpl() override {}
+  ~NavigationManagerImpl() override;
 
   // Setters for NavigationManagerDelegate and BrowserState.
   virtual void SetDelegate(NavigationManagerDelegate* delegate);
@@ -108,16 +108,6 @@ class NavigationManagerImpl : public NavigationManager {
   // Commits the pending item, if any.
   virtual void CommitPendingItem() = 0;
 
-  // Returns the current list of transient url rewriters, passing ownership to
-  // the caller.
-  // TODO(crbug.com/546197): remove once NavigationItem creation occurs in this
-  // class.
-  virtual std::unique_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
-  GetTransientURLRewriters() = 0;
-
-  // Called to reset the transient url rewriter list.
-  virtual void RemoveTransientURLRewriters() = 0;
-
   // Returns the navigation index that differs from the current item (or pending
   // item if it exists) by the specified |offset|, skipping redirect navigation
   // items. The index returned is not guaranteed to be valid.
@@ -128,7 +118,21 @@ class NavigationManagerImpl : public NavigationManager {
   // Returns the index of the previous item. Only used by SessionStorageBuilder.
   virtual int GetPreviousItemIndex() const = 0;
 
+  // Resets the transient url rewriter list.
+  void RemoveTransientURLRewriters();
+
+  // Creates a NavigationItem using the given properties. Calling this method
+  // resets the transient URLRewriters cached in this instance.
+  // TODO(crbug.com/738020): Make this private when WKBasedNavigationManagerImpl
+  // is merged into this class.
+  std::unique_ptr<NavigationItemImpl> CreateNavigationItem(
+      const GURL& url,
+      const Referrer& referrer,
+      ui::PageTransition transition,
+      NavigationInitiationType initiation_type);
+
   // NavigationManager:
+  void AddTransientURLRewriter(BrowserURLRewriter::URLRewriter rewriter) final;
   void Reload(ReloadType reload_type, bool check_for_reposts) override;
 
  protected:
@@ -155,6 +159,9 @@ class NavigationManagerImpl : public NavigationManager {
 
   // The BrowserState that is associated with this instance.
   BrowserState* browser_state_;
+
+  // List of transient url rewriters added by |AddTransientURLRewriter()|.
+  std::vector<BrowserURLRewriter::URLRewriter> transient_url_rewriters_;
 };
 
 }  // namespace web
