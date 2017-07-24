@@ -322,8 +322,8 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, NavigateCrossSite) {
   EXPECT_TRUE(catcher.GetNextResult());
 }
 
-// Flaky on ChromeOS: http://crbug.com/746526.
-#if defined(OS_CHROMEOS)
+// Flaky on Linux and ChromeOS: http://crbug.com/746526.
+#if defined(OS_LINUX)
 #define MAYBE_NavigateToAnAttachment DISABLED_NavigateToAnAttachment
 #else
 #define MAYBE_NavigateToAnAttachment NavigateToAnAttachment
@@ -367,8 +367,8 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, MAYBE_NavigateToAnAttachment) {
   EXPECT_TRUE(catcher.GetNextResult());
 }
 
-// Flaky on ChromeOS: http://crbug.com/746526.
-#if defined(OS_CHROMEOS)
+// Flaky on Linux and ChromeOS: http://crbug.com/746526.
+#if defined(OS_LINUX)
 #define MAYBE_DirectDownload DISABLED_DirectDownload
 #else
 #define MAYBE_DirectDownload DirectDownload
