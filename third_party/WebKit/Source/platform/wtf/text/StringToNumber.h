@@ -17,7 +17,7 @@ class NumberParsingOptions {
   static constexpr unsigned kAcceptTrailingGarbage = 1;
   static constexpr unsigned kAcceptLeadingPlus = 1 << 1;
   static constexpr unsigned kAcceptLeadingTrailingWhitespace = 1 << 2;
-  // TODO(tkent): Add kAcceptMinusZeroForUnsigned
+  static constexpr unsigned kAcceptMinusZeroForUnsigned = 1 << 3;
 
   // Legacy 'Strict' behavior.
   static constexpr unsigned kStrict =
@@ -34,6 +34,9 @@ class NumberParsingOptions {
   bool AcceptLeadingPlus() const { return options_ & kAcceptLeadingPlus; }
   bool AcceptWhitespace() const {
     return options_ & kAcceptLeadingTrailingWhitespace;
+  }
+  bool AcceptMinusZeroForUnsigned() const {
+    return options_ & kAcceptMinusZeroForUnsigned;
   }
 
  private:

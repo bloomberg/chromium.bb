@@ -161,53 +161,22 @@ template <typename CharacterType>
 static bool ParseHTMLIntegerInternal(const CharacterType* position,
                                      const CharacterType* end,
                                      int& value) {
-  // Step 3
-  bool is_negative = false;
-
   // Step 4
-  while (position < end) {
-    if (!IsHTMLSpace<CharacterType>(*position))
-      break;
-    ++position;
-  }
+  SkipWhile<CharacterType, IsHTMLSpace<CharacterType>>(position, end);
 
   // Step 5
   if (position == end)
     return false;
   DCHECK_LT(position, end);
 
-  // Step 6
-  if (*position == '-') {
-    is_negative = true;
-    ++position;
-  } else if (*position == '+')
-    ++position;
-  if (position == end)
-    return false;
-  DCHECK_LT(position, end);
-
-  // Step 7
-  if (!IsASCIIDigit(*position))
-    return false;
-
-  // Step 8
-  static const int kIntMax = std::numeric_limits<int>::max();
-  const int kBase = 10;
-  const int kMaxMultiplier = kIntMax / kBase;
-
-  unsigned temp = 0;
-  do {
-    int digit_value = *position - '0';
-    if (temp > kMaxMultiplier ||
-        (temp == kMaxMultiplier &&
-         digit_value > (kIntMax % kBase) + is_negative))
-      return false;
-    temp = temp * kBase + digit_value;
-    ++position;
-  } while (position < end && IsASCIIDigit(*position));
-  // Step 9
-  value = is_negative ? (0 - temp) : temp;
-  return true;
+  bool ok;
+  WTF::NumberParsingOptions options(
+      WTF::NumberParsingOptions::kAcceptTrailingGarbage |
+      WTF::NumberParsingOptions::kAcceptLeadingPlus);
+  int wtf_value = CharactersToInt(position, end - position, options, &ok);
+  if (ok)
+    value = wtf_value;
+  return ok;
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/#rules-for-parsing-integers
@@ -237,9 +206,6 @@ static WTF::NumberParsingState ParseHTMLNonNegativeIntegerInternal(
   // [1]
   // https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-integers
 
-  // Step 3: Let sign have the value "positive".
-  int sign = 1;
-
   // Step 4: Skip whitespace.
   SkipWhile<CharacterType, IsHTMLSpace<CharacterType>>(position, end);
 
@@ -248,43 +214,15 @@ static WTF::NumberParsingState ParseHTMLNonNegativeIntegerInternal(
     return WTF::NumberParsingState::kError;
   DCHECK_LT(position, end);
 
-  // Step 6: If the character indicated by position (the first character) is a
-  // U+002D HYPHEN-MINUS character (-), ...
-  if (*position == '-') {
-    sign = -1;
-    ++position;
-  } else if (*position == '+') {
-    ++position;
-  }
-
-  if (position == end)
-    return WTF::NumberParsingState::kError;
-  DCHECK_LT(position, end);
-
-  // Step 7: If the character indicated by position is not an ASCII digit,
-  // then return an error.
-  if (!IsASCIIDigit(*position))
-    return WTF::NumberParsingState::kError;
-
-  // Step 8: Collect a sequence of characters ...
-  const CharacterType* digits_start = position;
-  SkipWhile<CharacterType, IsASCIIDigit>(position, end);
-
   WTF::NumberParsingState state;
-  unsigned digits_value =
-      CharactersToUInt(digits_start, position - digits_start,
-                       WTF::NumberParsingOptions::kNone, &state);
-  // TODO(tkent): The following code to adjust NumberParsingState is not simple
-  // due to "-0" behavior difference between CharactersToUIntStrict() and
-  // ParseHTMLNonNegativeIntegerInternal(). Simplify the code by updating
-  // CharactersToUIntStrict() to accept "-0".
-  if (state == WTF::NumberParsingState::kOverflowMax && sign < 0)
-    return WTF::NumberParsingState::kError;
-  if (state == WTF::NumberParsingState::kSuccess) {
-    if (sign < 0 && digits_value != 0)
-      return WTF::NumberParsingState::kError;
-    value = digits_value;
-  }
+  WTF::NumberParsingOptions options(
+      WTF::NumberParsingOptions::kAcceptTrailingGarbage |
+      WTF::NumberParsingOptions::kAcceptLeadingPlus |
+      WTF::NumberParsingOptions::kAcceptMinusZeroForUnsigned);
+  unsigned wtf_value =
+      CharactersToUInt(position, end - position, options, &state);
+  if (state == WTF::NumberParsingState::kSuccess)
+    value = wtf_value;
   return state;
 }
 
