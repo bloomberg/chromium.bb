@@ -70,15 +70,6 @@ void AudioWorkletThread::ClearSharedBackingThread() {
   WorkletThreadHolder<AudioWorkletThread>::ClearInstance();
 }
 
-WebThread* AudioWorkletThread::GetSharedBackingThread() {
-  DCHECK(IsMainThread());
-  WorkletThreadHolder<AudioWorkletThread>* instance =
-      WorkletThreadHolder<AudioWorkletThread>::GetInstance();
-  if (!instance)
-    return nullptr;
-  return &(instance->GetThread()->BackingThread().PlatformThread());
-}
-
 void AudioWorkletThread::CreateSharedBackingThreadForTest() {
   WorkletThreadHolder<AudioWorkletThread>::CreateForTest("AudioWorkletThread");
 }

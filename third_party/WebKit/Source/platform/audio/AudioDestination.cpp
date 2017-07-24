@@ -31,7 +31,6 @@
 #include <memory>
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/PushPullFIFO.h"
@@ -41,6 +40,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebAudioLatencyHint.h"
 #include "public/platform/WebSecurityOrigin.h"
+#include "public/platform/WebThread.h"
 
 namespace blink {
 
@@ -130,8 +130,8 @@ void AudioDestination::Render(const WebVector<float*>& destination_data,
   size_t frames_to_render = fifo_->Pull(output_bus_.Get(), number_of_frames);
 
   // TODO(hongchan): this check might be redundant, so consider removing later.
-  if (frames_to_render != 0 && GetRenderingThread()) {
-    GetRenderingThread()->GetWebTaskRunner()->PostTask(
+  if (frames_to_render != 0 && rendering_thread_) {
+    rendering_thread_->GetWebTaskRunner()->PostTask(
         BLINK_FROM_HERE,
         CrossThreadBind(&AudioDestination::RequestRenderOnWebThread,
                         CrossThreadUnretained(this), number_of_frames,
@@ -197,19 +197,6 @@ void AudioDestination::Start() {
   }
 }
 
-void AudioDestination::StartWithWorkletThread(
-    WebThread* worklet_backing_thread) {
-  DCHECK(IsMainThread());
-  DCHECK(RuntimeEnabledFeatures::AudioWorkletEnabled());
-
-  if (web_audio_device_ && !is_playing_) {
-    TRACE_EVENT0("webaudio", "AudioDestination::Start");
-    worklet_backing_thread_ = worklet_backing_thread;
-    web_audio_device_->Start();
-    is_playing_ = true;
-  }
-}
-
 void AudioDestination::Stop() {
   DCHECK(IsMainThread());
 
@@ -218,7 +205,7 @@ void AudioDestination::Stop() {
   if (web_audio_device_ && is_playing_) {
     TRACE_EVENT0("webaudio", "AudioDestination::Stop");
     web_audio_device_->Stop();
-    ClearRenderingThread();
+    rendering_thread_.reset();
     is_playing_ = false;
   }
 }
@@ -274,22 +261,8 @@ bool AudioDestination::CheckBufferSize() {
 }
 
 bool AudioDestination::IsRenderingThread() {
-  return GetRenderingThread()->IsCurrentThread();
-}
-
-WebThread* AudioDestination::GetRenderingThread() {
-  if (RuntimeEnabledFeatures::AudioWorkletEnabled()) {
-    DCHECK(!rendering_thread_ && worklet_backing_thread_);
-    return worklet_backing_thread_;
-  }
-
-  DCHECK(rendering_thread_ && !worklet_backing_thread_);
-  return rendering_thread_.get();
-}
-
-void AudioDestination::ClearRenderingThread() {
-  rendering_thread_.reset();
-  worklet_backing_thread_ = nullptr;
+  return static_cast<ThreadIdentifier>(rendering_thread_->ThreadId()) ==
+         CurrentThread();
 }
 
 }  // namespace blink
