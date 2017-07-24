@@ -19,6 +19,7 @@
 @interface WebTextfieldTouchBarController : NSObject<NSTouchBarDelegate> {
   TabContentsController* owner_;       // weak.
   AutofillPopupViewCocoa* popupView_;  // weak.
+  NSWindow* window_;                   // weak.
 }
 
 // Designated initializer.
