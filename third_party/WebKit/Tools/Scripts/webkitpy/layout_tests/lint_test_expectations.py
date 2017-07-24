@@ -138,19 +138,20 @@ def run_checks(host, options, logging_stream):
         logger.removeHandler(handler)
 
 
-def main(argv, _, stderr):
+def main(argv, stderr, host=None):
     parser = optparse.OptionParser(option_list=platform_options(use_globs=True))
     parser.add_option('--json', help='Path to JSON output file')
     options, _ = parser.parse_args(argv)
 
-    if options.platform and 'test' in options.platform:
-        # It's a bit lame to import mocks into real code, but this allows the user
-        # to run tests against the test platform interactively, which is useful for
-        # debugging test failures.
-        from webkitpy.common.host_mock import MockHost
-        host = MockHost()
-    else:
-        host = Host()
+    if not host:
+        if options.platform and 'test' in options.platform:
+            # It's a bit lame to import mocks into real code, but this allows the user
+            # to run tests against the test platform interactively, which is useful for
+            # debugging test failures.
+            from webkitpy.common.host_mock import MockHost
+            host = MockHost()
+        else:
+            host = Host()
 
     # Need to generate MANIFEST.json since some expectations correspond to WPT
     # tests that aren't files and only exist in the manifest.

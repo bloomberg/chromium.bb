@@ -209,14 +209,11 @@ class CheckVirtualSuiteTest(unittest.TestCase):
 
 
 class MainTest(unittest.TestCase):
-    # pylint: disable=unused-argument
 
     def setUp(self):
         self.orig_lint_fn = lint_test_expectations.lint
         self.orig_check_fn = lint_test_expectations.check_virtual_test_suites
         lint_test_expectations.check_virtual_test_suites = lambda host, options: []
-
-        self.stdout = StringIO.StringIO()
         self.stderr = StringIO.StringIO()
 
     def tearDown(self):
@@ -225,27 +222,28 @@ class MainTest(unittest.TestCase):
 
     def test_success(self):
         lint_test_expectations.lint = lambda host, options: []
-        res = lint_test_expectations.main(['--platform', 'test'], self.stdout, self.stderr)
+        res = lint_test_expectations.main(['--platform', 'test'], self.stderr)
         self.assertTrue('Lint succeeded' in self.stderr.getvalue())
         self.assertEqual(res, 0)
 
     def test_failure(self):
         lint_test_expectations.lint = lambda host, options: ['test failure']
-        res = lint_test_expectations.main(['--platform', 'test'], self.stdout, self.stderr)
+        res = lint_test_expectations.main(['--platform', 'test'], self.stderr)
         self.assertTrue('Lint failed' in self.stderr.getvalue())
         self.assertEqual(res, 1)
 
     def test_interrupt(self):
-        def interrupting_lint(host, options):
+        def interrupting_lint(host, options):  # pylint: disable=unused-argument
             raise KeyboardInterrupt
 
         lint_test_expectations.lint = interrupting_lint
-        res = lint_test_expectations.main([], self.stdout, self.stderr)
+        res = lint_test_expectations.main([], self.stderr, host=MockHost())
         self.assertEqual(res, exit_codes.INTERRUPTED_EXIT_STATUS)
 
     def test_exception(self):
-        def exception_raising_lint(host, options):
+        def exception_raising_lint(host, options):  # pylint: disable=unused-argument
             assert False
+
         lint_test_expectations.lint = exception_raising_lint
-        res = lint_test_expectations.main([], self.stdout, self.stderr)
+        res = lint_test_expectations.main([], self.stderr, host=MockHost())
         self.assertEqual(res, exit_codes.EXCEPTIONAL_EXIT_STATUS)

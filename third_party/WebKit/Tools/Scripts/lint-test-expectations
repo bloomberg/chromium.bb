@@ -33,4 +33,4 @@ from webkitpy.common import version_check
 from webkitpy.layout_tests import lint_test_expectations
 
 
-sys.exit(lint_test_expectations.main(sys.argv[1:], sys.stdout, sys.stderr))
+sys.exit(lint_test_expectations.main(sys.argv[1:], sys.stderr))
