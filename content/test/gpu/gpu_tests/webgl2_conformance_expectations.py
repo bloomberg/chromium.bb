@@ -324,6 +324,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'nvidia', 'intel'], bug=630800)
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
         ['mac', 'nvidia', 'intel'], bug=630800)
+    self.Flaky('deqp/functional/gles3/shaderoperator/common_functions.html',
+        ['mac', 'amd', 'nvidia'], bug=702336)
 
     # Mac Retina NVIDIA
     self.Fail('deqp/functional/gles3/fbomultisample*',
@@ -558,9 +560,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'random_separate_triangles.html',
         ['mac', 'amd'], bug=483282)
-
-    self.Flaky('deqp/functional/gles3/shaderoperator/common_functions.html',
-        ['mac', 'amd'], bug=702336)
 
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_01.html',
         ['mac', 'amd'], bug=636648)
