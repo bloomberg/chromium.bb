@@ -354,7 +354,7 @@ sk_sp<SkImage> ImageBitmap::GetSkImageFromDecoder(
     std::unique_ptr<ImageDecoder> decoder) {
   if (!decoder->FrameCount())
     return nullptr;
-  ImageFrame* frame = decoder->FrameBufferAtIndex(0);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   if (!frame || frame->GetStatus() != ImageFrame::kFrameComplete)
     return nullptr;
   DCHECK(!frame->Bitmap().isNull() && !frame->Bitmap().empty());

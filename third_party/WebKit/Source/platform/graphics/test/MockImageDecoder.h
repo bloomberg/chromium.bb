@@ -42,6 +42,7 @@ class MockImageDecoderClient {
   virtual int RepetitionCount() const = 0;
   virtual float FrameDuration() const = 0;
   virtual void ClearCacheExceptFrameRequested(size_t){};
+  virtual void MemoryAllocatorSet() {}
 
   // Clients can control the behavior of MockImageDecoder::decodedSize() by
   // overriding this method. The default implementation causes
@@ -100,6 +101,10 @@ class MockImageDecoder : public ImageDecoder {
     if (client_->FirstFrameForcedToBeEmpty() && index == 0)
       return 0;
     return ImageDecoder::FrameBytesAtIndex(index);
+  }
+
+  void SetMemoryAllocator(SkBitmap::Allocator*) override {
+    client_->MemoryAllocatorSet();
   }
 
  private:

@@ -43,7 +43,7 @@ TEST(BMPImageDecoderTest, parseAndDecode) {
   std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
   decoder->SetData(data.Get(), true);
 
-  ImageFrame* frame = decoder->FrameBufferAtIndex(0);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   ASSERT_TRUE(frame);
   EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
   EXPECT_EQ(256, frame->Bitmap().width());
@@ -60,7 +60,7 @@ TEST(BMPImageDecoderTest, emptyImage) {
   std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
   decoder->SetData(data.Get(), true);
 
-  ImageFrame* frame = decoder->FrameBufferAtIndex(0);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   ASSERT_TRUE(frame);
   EXPECT_EQ(ImageFrame::kFrameEmpty, frame->GetStatus());
   EXPECT_TRUE(decoder->Failed());

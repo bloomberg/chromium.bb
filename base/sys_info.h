@@ -153,8 +153,9 @@ class BASE_EXPORT SysInfo {
 #endif  // defined(OS_ANDROID)
 
   // Returns true if this is a low-end device.
-  // Low-end device refers to devices having less than 512M memory in the
-  // current implementation.
+  // Low-end device refers to devices having a very low amount of total
+  // system memory, typically <= 1GB.
+  // See also SysUtils.java, method isLowEndDevice.
   static bool IsLowEndDevice();
 
  private:

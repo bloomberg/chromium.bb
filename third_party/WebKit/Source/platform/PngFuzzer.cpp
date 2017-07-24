@@ -47,7 +47,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (decoder->Failed())
     return 0;
   for (size_t frame = 0; frame < decoder->FrameCount(); frame++) {
-    decoder->FrameBufferAtIndex(frame);
+    decoder->DecodeFrameBufferAtIndex(frame);
     if (decoder->Failed())
       return 0;
   }

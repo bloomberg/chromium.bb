@@ -77,6 +77,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   size_t NumberOfProcessors() override;
 
   size_t MaxDecodedImageBytes() override;
+  bool IsLowEndDevice() override;
   uint32_t GetUniqueIdForProcess() override;
   std::unique_ptr<blink::WebDataConsumerHandle> CreateDataConsumerHandle(
       mojo::ScopedDataPipeConsumerHandle handle) override;

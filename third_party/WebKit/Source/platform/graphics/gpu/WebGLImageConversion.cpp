@@ -2815,7 +2815,7 @@ void WebGLImageConversion::ImageExtractor::ExtractImage(
                            : ColorBehavior::TransformToGlobalTarget()));
     if (!decoder || !decoder->FrameCount())
       return;
-    ImageFrame* frame = decoder->FrameBufferAtIndex(0);
+    ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
     if (!frame || frame->GetStatus() != ImageFrame::kFrameComplete)
       return;
     has_alpha = frame->HasAlpha();

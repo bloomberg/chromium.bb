@@ -225,7 +225,7 @@ bool ICOImageDecoder::DecodeAtIndex(size_t index) {
     if (png_decoder->Size() != dir_entry.size_)
       return SetFailed();
 
-    const auto* frame = png_decoder->FrameBufferAtIndex(0);
+    const auto* frame = png_decoder->DecodeFrameBufferAtIndex(0);
     if (frame)
       frame_buffer_cache_[index] = *frame;
   }

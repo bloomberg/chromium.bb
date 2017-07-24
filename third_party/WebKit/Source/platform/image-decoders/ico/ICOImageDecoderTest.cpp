@@ -31,11 +31,11 @@ TEST(ICOImageDecoderTests, trunctedIco) {
   auto decoder = CreateICODecoder();
 
   decoder->SetData(truncated_data.Get(), false);
-  decoder->FrameBufferAtIndex(0);
+  decoder->DecodeFrameBufferAtIndex(0);
   EXPECT_FALSE(decoder->Failed());
 
   decoder->SetData(truncated_data.Get(), true);
-  decoder->FrameBufferAtIndex(0);
+  decoder->DecodeFrameBufferAtIndex(0);
   EXPECT_TRUE(decoder->Failed());
 }
 
@@ -63,7 +63,7 @@ TEST(ICOImageDecoderTests, errorInPngInIco) {
   // count.
   EXPECT_EQ(1u, decoder->FrameCount());
 
-  decoder->FrameBufferAtIndex(0);
+  decoder->DecodeFrameBufferAtIndex(0);
   EXPECT_TRUE(decoder->Failed());
 }
 
@@ -105,7 +105,7 @@ TEST(ICOImageDecoderTests, NullData) {
   decoder->SetMemoryAllocator(nullptr);
   EXPECT_FALSE(decoder->Failed());
 
-  auto* frame = decoder->FrameBufferAtIndex(0);
+  auto* frame = decoder->DecodeFrameBufferAtIndex(0);
   EXPECT_EQ(nullptr, frame);
 
   decoder->SetData(PassRefPtr<SegmentReader>(nullptr), false);

@@ -127,16 +127,19 @@ class PLATFORM_EXPORT ImageFrameGenerator final
                              bool all_data_received,
                              size_t index,
                              const SkISize& scaled_size,
-                             SkBitmap::Allocator*,
+                             SkBitmap::Allocator&,
                              ImageDecoder::AlphaOption);
-  // This method should only be called while m_decodeMutex is locked.
-  bool Decode(SegmentReader*,
-              bool all_data_received,
-              size_t index,
-              ImageDecoder**,
-              SkBitmap*,
-              SkBitmap::Allocator*,
-              ImageDecoder::AlphaOption);
+  // This method should only be called while decode_mutex_ is locked.
+  // Returns a pointer to frame |index|'s ImageFrame, if available.
+  // Sets |used_external_allocator| to true if the the image was decoded into
+  // |external_allocator|'s memory.
+  ImageFrame* Decode(SegmentReader*,
+                     bool all_data_received,
+                     size_t index,
+                     ImageDecoder**,
+                     SkBitmap::Allocator& external_allocator,
+                     ImageDecoder::AlphaOption,
+                     bool& used_external_allocator);
 
   const SkISize full_size_;
 
@@ -154,7 +157,7 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   // Prevents multiple decode operations on the same data.
   Mutex decode_mutex_;
 
-  // Protect concurrent access to m_hasAlpha.
+  // Protect concurrent access to has_alpha_.
   Mutex alpha_mutex_;
 };
 

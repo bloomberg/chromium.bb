@@ -89,7 +89,7 @@ size_t WebImageDecoder::FrameCount() const {
 
 bool WebImageDecoder::IsFrameCompleteAtIndex(int index) const {
   DCHECK(private_);
-  ImageFrame* const frame_buffer = private_->FrameBufferAtIndex(index);
+  ImageFrame* const frame_buffer = private_->DecodeFrameBufferAtIndex(index);
   if (!frame_buffer)
     return false;
   return frame_buffer->GetStatus() == ImageFrame::kFrameComplete;
@@ -97,7 +97,7 @@ bool WebImageDecoder::IsFrameCompleteAtIndex(int index) const {
 
 WebImage WebImageDecoder::GetFrameAtIndex(int index = 0) const {
   DCHECK(private_);
-  ImageFrame* const frame_buffer = private_->FrameBufferAtIndex(index);
+  ImageFrame* const frame_buffer = private_->DecodeFrameBufferAtIndex(index);
   if (!frame_buffer)
     return WebImage();
   return WebImage(frame_buffer->Bitmap());
