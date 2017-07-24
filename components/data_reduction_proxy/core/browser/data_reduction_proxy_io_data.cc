@@ -122,7 +122,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   DataReductionProxyMutableConfigValues* raw_mutable_config = nullptr;
   if (use_config_client) {
     std::unique_ptr<DataReductionProxyMutableConfigValues> mutable_config =
-        DataReductionProxyMutableConfigValues::CreateFromParams(params.get());
+        base::MakeUnique<DataReductionProxyMutableConfigValues>();
     raw_mutable_config = mutable_config.get();
     config_.reset(new DataReductionProxyConfig(
         io_task_runner, net_log, std::move(mutable_config), configurator_.get(),

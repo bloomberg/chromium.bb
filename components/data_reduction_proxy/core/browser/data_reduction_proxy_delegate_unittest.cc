@@ -208,8 +208,7 @@ TEST(DataReductionProxyDelegate, IsTrustedSpdyProxy) {
     }
 
     std::unique_ptr<DataReductionProxyMutableConfigValues> config_values =
-        DataReductionProxyMutableConfigValues::CreateFromParams(
-            test_context->test_params());
+        base::MakeUnique<DataReductionProxyMutableConfigValues>();
     config_values->UpdateValues(proxies_for_http);
 
     std::unique_ptr<DataReductionProxyConfig> config(
@@ -318,8 +317,7 @@ TEST(DataReductionProxyDelegate, AlternativeProxy) {
     }
 
     std::unique_ptr<DataReductionProxyMutableConfigValues> config_values =
-        DataReductionProxyMutableConfigValues::CreateFromParams(
-            test_context->test_params());
+        base::MakeUnique<DataReductionProxyMutableConfigValues>();
     config_values->UpdateValues(proxies_for_http);
 
     std::unique_ptr<DataReductionProxyConfig> config(
