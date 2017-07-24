@@ -6,6 +6,7 @@
 #define CHROME_COMMON_MEDIA_ROUTER_MEDIA_SOURCE_HELPER_H_
 
 #include <string>
+#include <vector>
 
 #include "chrome/common/media_router/media_source.h"
 
@@ -19,6 +20,10 @@ MediaSource MediaSourceForTab(int tab_id);
 MediaSource MediaSourceForTabContentRemoting(int tab_id);
 MediaSource MediaSourceForDesktop();
 MediaSource MediaSourceForPresentationUrl(const GURL& presentation_url);
+
+// Converts multiple Presentation URLs into MediaSources.
+std::vector<MediaSource> MediaSourcesForPresentationUrls(
+    const std::vector<GURL>& presentation_urls);
 
 // Returns true if |source| outputs its content via mirroring.
 bool IsDesktopMirroringMediaSource(const MediaSource& source);

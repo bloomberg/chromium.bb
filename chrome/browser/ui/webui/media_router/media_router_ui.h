@@ -28,6 +28,7 @@
 #include "url/gurl.h"
 
 namespace content {
+struct PresentationRequest;
 class WebContents;
 }
 
@@ -324,7 +325,7 @@ class MediaRouterUI
 
   // PresentationServiceDelegateImpl::DefaultPresentationObserver
   void OnDefaultPresentationChanged(
-      const PresentationRequest& presentation_request) override;
+      const content::PresentationRequest& presentation_request) override;
   void OnDefaultPresentationRemoved() override;
 
   // Populates common route-related parameters for CreateRoute(),
@@ -399,7 +400,7 @@ class MediaRouterUI
 
   // Set to the presentation request corresponding to the presentation cast
   // mode, if supported. Otherwise set to nullptr.
-  std::unique_ptr<PresentationRequest> presentation_request_;
+  base::Optional<content::PresentationRequest> presentation_request_;
 
   // It's possible for PresentationServiceDelegateImpl to be destroyed before
   // this class.

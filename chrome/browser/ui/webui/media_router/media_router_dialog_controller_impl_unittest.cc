@@ -255,9 +255,9 @@ TEST_F(MediaRouterDialogControllerImplTest, NotifyActionController) {
   dialog_controller_->ShowMediaRouterDialogForPresentation(
       std::unique_ptr<CreatePresentationConnectionRequest>(
           new CreatePresentationConnectionRequest(
-              RenderFrameHostId(1, 2),
-              {GURL("http://test.com"), GURL("http://test2.com")},
-              url::Origin(GURL("http://example.com")),
+              content::PresentationRequest(
+                  {1, 2}, {GURL("http://test.com"), GURL("http://test2.com")},
+                  url::Origin(GURL("http://example.com"))),
               base::Bind(&MediaRouterDialogControllerImplTest::
                              PresentationSuccessCallback,
                          base::Unretained(this)),
