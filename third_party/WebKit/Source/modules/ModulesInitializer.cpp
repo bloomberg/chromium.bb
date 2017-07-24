@@ -51,6 +51,7 @@
 #include "modules/presentation/PresentationController.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
+#include "modules/serviceworkers/ServiceWorkerLinkResource.h"
 #include "modules/storage/InspectorDOMStorageAgent.h"
 #include "modules/time_zone_monitor/TimeZoneMonitorClient.h"
 #include "modules/vr/VRController.h"
@@ -181,6 +182,11 @@ void ModulesInitializer::InitInspectorAgentSession(
     session->Append(InspectorDOMStorageAgent::Create(page));
     session->Append(InspectorCacheStorageAgent::Create(inspected_frames));
   }
+}
+
+LinkResource* ModulesInitializer::CreateServiceWorkerLinkResource(
+    HTMLLinkElement* owner) const {
+  return ServiceWorkerLinkResource::Create(owner);
 }
 
 }  // namespace blink

@@ -26,6 +26,7 @@
 #include "core/html/HTMLLinkElement.h"
 
 #include "bindings/core/v8/ScriptEventListener.h"
+#include "core/CoreInitializer.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
@@ -146,9 +147,8 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
     } else if (rel_attribute_.IsServiceWorker() &&
                OriginTrials::linkServiceWorkerEnabled(GetExecutionContext())) {
       if (GetDocument().GetFrame()) {
-        link_ =
-            GetDocument().GetFrame()->Client()->CreateServiceWorkerLinkResource(
-                this);
+        link_ = CoreInitializer::GetInstance().CreateServiceWorkerLinkResource(
+            this);
       }
     } else {
       LinkStyle* link = LinkStyle::Create(this);

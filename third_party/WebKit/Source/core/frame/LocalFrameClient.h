@@ -310,10 +310,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       bool present,
       WebSuddenTerminationDisablerType) {}
 
-  virtual LinkResource* CreateServiceWorkerLinkResource(HTMLLinkElement*) {
-    return nullptr;
-  }
-
   // Effective connection type when this frame was loaded.
   virtual WebEffectiveConnectionType GetEffectiveConnectionType() {
     return WebEffectiveConnectionType::kTypeUnknown;

@@ -36,10 +36,12 @@
 
 namespace blink {
 
+class HTMLLinkElement;
 class HTMLMediaElement;
 class InspectedFrames;
 class InspectorDOMAgent;
 class InspectorSession;
+class LinkResource;
 class LocalFrame;
 class MediaControls;
 class Page;
@@ -81,6 +83,8 @@ class CORE_EXPORT CoreInitializer {
                                          InspectorDOMAgent*,
                                          InspectedFrames*,
                                          Page*) const = 0;
+  virtual LinkResource* CreateServiceWorkerLinkResource(
+      HTMLLinkElement*) const = 0;
 
  protected:
   // CoreInitializer is only instantiated by subclass ModulesInitializer.
