@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/cast_remoting_sender.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
@@ -22,9 +23,9 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 using content::BrowserThread;
-using media::mojom::RemotingSinkCapabilities;
 using media::mojom::RemotingStartFailReason;
 using media::mojom::RemotingStopReason;
+using media::mojom::RemotingSinkMetadata;
 
 class CastRemotingConnector::RemotingBridge : public media::mojom::Remoter {
  public:
@@ -48,8 +49,8 @@ class CastRemotingConnector::RemotingBridge : public media::mojom::Remoter {
   }
 
   // The CastRemotingConnector calls these to call back to the RemotingSource.
-  void OnSinkAvailable(RemotingSinkCapabilities capabilities) {
-    source_->OnSinkAvailable(capabilities);
+  void OnSinkAvailable(const RemotingSinkMetadata& metadata) {
+    source_->OnSinkAvailable(metadata.Clone());
   }
   void OnSinkGone() { source_->OnSinkGone(); }
   void OnStarted() { source_->OnStarted(); }
@@ -145,22 +146,10 @@ void CastRemotingConnector::CreateMediaRemoter(
   connector->CreateBridge(std::move(source), std::move(request));
 }
 
-namespace {
-RemotingSinkCapabilities GetFeatureEnabledCapabilities() {
-#if !defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kMediaRemoting)) {
-    return RemotingSinkCapabilities::RENDERING_ONLY;
-  }
-#endif
-  return RemotingSinkCapabilities::NONE;
-}
-}  // namespace
-
 CastRemotingConnector::CastRemotingConnector(media_router::MediaRouter* router,
                                              int32_t tab_id)
     : media_router_(router),
       tab_id_(tab_id),
-      enabled_features_(GetFeatureEnabledCapabilities()),
       active_bridge_(nullptr),
       binding_(this),
       weak_factory_(this) {
@@ -206,6 +195,7 @@ void CastRemotingConnector::OnMirrorServiceStopped() {
     binding_.Close();
   remoter_.reset();
 
+  sink_metadata_ = RemotingSinkMetadata();
   if (active_bridge_)
     StopRemoting(active_bridge_, RemotingStopReason::SERVICE_GONE);
   for (RemotingBridge* notifyee : bridges_)
@@ -224,9 +214,8 @@ void CastRemotingConnector::RegisterBridge(RemotingBridge* bridge) {
   DCHECK(bridges_.find(bridge) == bridges_.end());
 
   bridges_.insert(bridge);
-  // TODO(xjz): Pass the receiver's capabilities to the source.
   if (remoter_ && !active_bridge_)
-    bridge->OnSinkAvailable(enabled_features_);
+    bridge->OnSinkAvailable(sink_metadata_);
 }
 
 void CastRemotingConnector::DeregisterBridge(RemotingBridge* bridge,
@@ -351,6 +340,10 @@ void CastRemotingConnector::StopRemoting(RemotingBridge* bridge,
   // Cancel all outstanding callbacks related to the remoting session.
   weak_factory_.InvalidateWeakPtrs();
 
+  // Reset |sink_metadata_|. Remoting can only be started after
+  // OnSinkAvailable() is called again.
+  sink_metadata_ = RemotingSinkMetadata();
+
   // Prevent the source from trying to start again until the Cast Provider has
   // indicated the stop operation has completed.
   bridge->OnSinkGone();
@@ -394,21 +387,27 @@ void CastRemotingConnector::OnMessageFromSink(
 }
 
 void CastRemotingConnector::OnSinkAvailable(
-    media::mojom::SinkCapabilitiesPtr capabilities) {
+    media::mojom::RemotingSinkMetadataPtr metadata) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   VLOG(2) << __func__;
 
-  // The receiver's capabilities should be unchanged during an active remoting
+  // The receiver's metadata should be unchanged during an active remoting
   // session.
   if (active_bridge_) {
     LOG(WARNING) << "Unexpected OnSinkAvailable() call during an active"
                  << "remoting session.";
     return;
   }
+  sink_metadata_ = *metadata;
+#if !defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kMediaRemoting)) {
+    sink_metadata_.features.push_back(
+        media::mojom::RemotingSinkFeature::RENDERING);
+  }
+#endif
 
-  // TODO(xjz): Pass the receiver's capabilities to the sources.
   for (RemotingBridge* notifyee : bridges_)
-    notifyee->OnSinkAvailable(enabled_features_);
+    notifyee->OnSinkAvailable(sink_metadata_);
 }
 
 void CastRemotingConnector::OnError() {

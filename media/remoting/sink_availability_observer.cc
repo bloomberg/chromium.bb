@@ -14,13 +14,20 @@ SinkAvailabilityObserver::SinkAvailabilityObserver(
 
 SinkAvailabilityObserver::~SinkAvailabilityObserver() {}
 
+bool SinkAvailabilityObserver::IsRemoteDecryptionAvailable() const {
+  return std::find(std::begin(sink_metadata_.features),
+                   std::end(sink_metadata_.features),
+                   mojom::RemotingSinkFeature::CONTENT_DECRYPTION) !=
+         std::end(sink_metadata_.features);
+}
+
 void SinkAvailabilityObserver::OnSinkAvailable(
-    mojom::RemotingSinkCapabilities capabilities) {
-  sink_capabilities_ = capabilities;
+    mojom::RemotingSinkMetadataPtr metadata) {
+  sink_metadata_ = *metadata;
 }
 
 void SinkAvailabilityObserver::OnSinkGone() {
-  sink_capabilities_ = mojom::RemotingSinkCapabilities::NONE;
+  sink_metadata_ = mojom::RemotingSinkMetadata();
 }
 
 }  // namespace remoting

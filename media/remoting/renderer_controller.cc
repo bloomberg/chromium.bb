@@ -141,7 +141,6 @@ void RendererController::OnSetCdm(CdmContext* cdm_context) {
 }
 
 void RendererController::OnRemotePlaybackDisabled(bool disabled) {
-  VLOG(2) << __func__ << ": disabled = " << disabled;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   is_remote_playback_disabled_ = disabled;
@@ -247,8 +246,17 @@ bool RendererController::IsVideoCodecSupported() {
 
   switch (pipeline_metadata_.video_decoder_config.codec()) {
     case VideoCodec::kCodecH264:
+      return session_->HasVideoCapability(
+          mojom::RemotingSinkVideoCapability::CODEC_H264);
     case VideoCodec::kCodecVP8:
-      return true;
+      return session_->HasVideoCapability(
+          mojom::RemotingSinkVideoCapability::CODEC_VP8);
+    case VideoCodec::kCodecVP9:
+      return session_->HasVideoCapability(
+          mojom::RemotingSinkVideoCapability::CODEC_VP9);
+    case VideoCodec::kCodecHEVC:
+      return session_->HasVideoCapability(
+          mojom::RemotingSinkVideoCapability::CODEC_HEVC);
     default:
       VLOG(2) << "Remoting does not support video codec: "
               << pipeline_metadata_.video_decoder_config.codec();
@@ -262,6 +270,11 @@ bool RendererController::IsAudioCodecSupported() {
 
   switch (pipeline_metadata_.audio_decoder_config.codec()) {
     case AudioCodec::kCodecAAC:
+      return session_->HasAudioCapability(
+          mojom::RemotingSinkAudioCapability::CODEC_AAC);
+    case AudioCodec::kCodecOpus:
+      return session_->HasAudioCapability(
+          mojom::RemotingSinkAudioCapability::CODEC_OPUS);
     case AudioCodec::kCodecMP3:
     case AudioCodec::kCodecPCM:
     case AudioCodec::kCodecVorbis:
@@ -272,12 +285,12 @@ bool RendererController::IsAudioCodecSupported() {
     case AudioCodec::kCodecGSM_MS:
     case AudioCodec::kCodecPCM_S16BE:
     case AudioCodec::kCodecPCM_S24BE:
-    case AudioCodec::kCodecOpus:
     case AudioCodec::kCodecEAC3:
     case AudioCodec::kCodecPCM_ALAW:
     case AudioCodec::kCodecALAC:
     case AudioCodec::kCodecAC3:
-      return true;
+      return session_->HasAudioCapability(
+          mojom::RemotingSinkAudioCapability::CODEC_BASELINE_SET);
     default:
       VLOG(2) << "Remoting does not support audio codec: "
               << pipeline_metadata_.audio_decoder_config.codec();
@@ -336,18 +349,6 @@ bool RendererController::ShouldBeRemoting() {
       return false;  // Use local rendering after stopping remoting.
   }
 
-  switch (session_->sink_capabilities()) {
-    case mojom::RemotingSinkCapabilities::NONE:
-      return false;
-    case mojom::RemotingSinkCapabilities::RENDERING_ONLY:
-    case mojom::RemotingSinkCapabilities::CONTENT_DECRYPTION_AND_RENDERING:
-      break;  // The sink is capable of remote rendering.
-    default:
-      // TODO(xjz): Will be changed in a coming CL that passes the receiver's
-      // capabilities.
-      NOTREACHED();
-  }
-
   if (!IsAudioOrVideoSupported())
     return false;
 
@@ -398,6 +399,7 @@ void RendererController::UpdateAndMaybeSwitch(StartTrigger start_trigger,
     }
     DCHECK_NE(start_trigger, UNKNOWN_START_TRIGGER);
     metrics_recorder_.WillStartSession(start_trigger);
+    VLOG(2) << "Request to start remoting: start_trigger=" << start_trigger;
     // |MediaObserverClient::SwitchRenderer()| will be called after remoting is
     // started successfully.
     session_->StartRemoting(this);
@@ -410,12 +412,12 @@ void RendererController::UpdateAndMaybeSwitch(StartTrigger start_trigger,
     DCHECK_NE(stop_trigger, UNKNOWN_STOP_TRIGGER);
     metrics_recorder_.WillStopSession(stop_trigger);
     client_->SwitchRenderer(false);
+    VLOG(2) << "Request to stop remoting: stop_trigger=" << stop_trigger;
     session_->StopRemoting(this);
   }
 }
 
 void RendererController::OnRendererFatalError(StopTrigger stop_trigger) {
-  VLOG(2) << __func__ << ": stop_trigger= " << stop_trigger;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Do not act on errors caused by things like Mojo pipes being closed during

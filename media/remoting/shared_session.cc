@@ -29,15 +29,40 @@ SharedSession::~SharedSession() {
   }
 }
 
-void SharedSession::OnSinkAvailable(
-    mojom::RemotingSinkCapabilities capabilities) {
+bool SharedSession::HasVideoCapability(
+    mojom::RemotingSinkVideoCapability capability) const {
+  return std::find(std::begin(sink_metadata_.video_capabilities),
+                   std::end(sink_metadata_.video_capabilities),
+                   capability) != std::end(sink_metadata_.video_capabilities);
+}
+
+bool SharedSession::HasAudioCapability(
+    mojom::RemotingSinkAudioCapability capability) const {
+  return std::find(std::begin(sink_metadata_.audio_capabilities),
+                   std::end(sink_metadata_.audio_capabilities),
+                   capability) != std::end(sink_metadata_.audio_capabilities);
+}
+
+bool SharedSession::HasFeatureCapability(
+    mojom::RemotingSinkFeature capability) const {
+  return std::find(std::begin(sink_metadata_.features),
+                   std::end(sink_metadata_.features),
+                   capability) != std::end(sink_metadata_.features);
+}
+
+bool SharedSession::IsRemoteDecryptionAvailable() const {
+  return HasFeatureCapability(mojom::RemotingSinkFeature::CONTENT_DECRYPTION);
+}
+
+void SharedSession::OnSinkAvailable(mojom::RemotingSinkMetadataPtr metadata) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (capabilities == mojom::RemotingSinkCapabilities::NONE) {
+  sink_metadata_ = *metadata;
+
+  if (!HasFeatureCapability(mojom::RemotingSinkFeature::RENDERING)) {
     OnSinkGone();
     return;
   }
-  sink_capabilities_ = capabilities;
   if (state_ == SESSION_UNAVAILABLE)
     UpdateAndNotifyState(SESSION_CAN_START);
 }
@@ -45,7 +70,7 @@ void SharedSession::OnSinkAvailable(
 void SharedSession::OnSinkGone() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  sink_capabilities_ = mojom::RemotingSinkCapabilities::NONE;
+  sink_metadata_ = mojom::RemotingSinkMetadata();
 
   if (state_ == SESSION_PERMANENTLY_STOPPED)
     return;

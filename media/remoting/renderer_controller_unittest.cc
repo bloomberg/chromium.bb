@@ -24,14 +24,12 @@ namespace remoting {
 
 namespace {
 
-constexpr mojom::RemotingSinkCapabilities kAllCapabilities =
-    mojom::RemotingSinkCapabilities::CONTENT_DECRYPTION_AND_RENDERING;
-
-PipelineMetadata DefaultMetadata() {
+PipelineMetadata DefaultMetadata(VideoCodec codec) {
   PipelineMetadata data;
   data.has_audio = true;
   data.has_video = true;
-  data.video_decoder_config = TestVideoConfig::Normal();
+  data.video_decoder_config = TestVideoConfig::Normal(codec);
+  data.audio_decoder_config = TestAudioConfig::Normal();
   return data;
 }
 
@@ -41,6 +39,21 @@ PipelineMetadata EncryptedMetadata() {
   data.has_video = true;
   data.video_decoder_config = TestVideoConfig::NormalEncrypted();
   return data;
+}
+
+mojom::RemotingSinkMetadata GetDefaultSinkMetadata(bool enable) {
+  mojom::RemotingSinkMetadata metadata;
+  if (enable) {
+    metadata.features.push_back(mojom::RemotingSinkFeature::RENDERING);
+    metadata.features.push_back(mojom::RemotingSinkFeature::CONTENT_DECRYPTION);
+  } else {
+    metadata.features.clear();
+  }
+  metadata.video_capabilities.push_back(
+      mojom::RemotingSinkVideoCapability::CODEC_VP8);
+  metadata.audio_capabilities.push_back(
+      mojom::RemotingSinkAudioCapability::CODEC_BASELINE_SET);
+  return metadata;
 }
 
 }  // namespace
@@ -69,6 +82,37 @@ class RendererControllerTest : public ::testing::Test,
 
   void CreateCdm(bool is_remoting) { is_remoting_cdm_ = is_remoting; }
 
+  void InitializeControllerAndEnterFullscreen(
+      const scoped_refptr<SharedSession> shared_session,
+      const PipelineMetadata& pipeline_metadata,
+      const mojom::RemotingSinkMetadata& sink_metadata) {
+    EXPECT_FALSE(is_rendering_remotely_);
+    controller_ = base::MakeUnique<RendererController>(shared_session);
+    controller_->SetClient(this);
+    RunUntilIdle();
+    EXPECT_FALSE(is_rendering_remotely_);
+    EXPECT_FALSE(activate_viewport_intersection_monitoring_);
+    EXPECT_FALSE(disable_pipeline_suspend_);
+    shared_session->OnSinkAvailable(sink_metadata.Clone());
+    RunUntilIdle();
+    EXPECT_FALSE(is_rendering_remotely_);
+    EXPECT_FALSE(disable_pipeline_suspend_);
+    controller_->OnRemotePlaybackDisabled(false);
+    RunUntilIdle();
+    EXPECT_FALSE(is_rendering_remotely_);
+    EXPECT_FALSE(disable_pipeline_suspend_);
+    controller_->OnMetadataChanged(pipeline_metadata);
+    RunUntilIdle();
+    EXPECT_FALSE(is_rendering_remotely_);
+    EXPECT_FALSE(disable_pipeline_suspend_);
+    controller_->OnEnteredFullscreen();
+    RunUntilIdle();
+    EXPECT_FALSE(is_rendering_remotely_);
+    EXPECT_FALSE(disable_pipeline_suspend_);
+    controller_->OnPlaying();
+    RunUntilIdle();
+  }
+
   base::MessageLoop message_loop_;
 
  protected:
@@ -83,31 +127,12 @@ class RendererControllerTest : public ::testing::Test,
 };
 
 TEST_F(RendererControllerTest, ToggleRendererOnFullscreenChange) {
-  EXPECT_FALSE(is_rendering_remotely_);
   const scoped_refptr<SharedSession> shared_session =
       FakeRemoterFactory::CreateSharedSession(false);
-  controller_ = base::MakeUnique<RendererController>(shared_session);
-  controller_->SetClient(this);
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  EXPECT_FALSE(activate_viewport_intersection_monitoring_);
-  EXPECT_FALSE(disable_pipeline_suspend_);
-  shared_session->OnSinkAvailable(kAllCapabilities);
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
+  InitializeControllerAndEnterFullscreen(shared_session,
+                                         DefaultMetadata(VideoCodec::kCodecVP8),
+                                         GetDefaultSinkMetadata(true));
   EXPECT_TRUE(activate_viewport_intersection_monitoring_);
-  EXPECT_FALSE(disable_pipeline_suspend_);
-  controller_->OnEnteredFullscreen();
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnMetadataChanged(DefaultMetadata());
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnRemotePlaybackDisabled(false);
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnPlaying();
-  RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
   EXPECT_TRUE(disable_pipeline_suspend_);
 
@@ -123,28 +148,12 @@ TEST_F(RendererControllerTest, ToggleRendererOnSinkCapabilities) {
   EXPECT_FALSE(is_rendering_remotely_);
   const scoped_refptr<SharedSession> shared_session =
       FakeRemoterFactory::CreateSharedSession(false);
-  controller_ = base::MakeUnique<RendererController>(shared_session);
-  controller_->SetClient(this);
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnMetadataChanged(DefaultMetadata());
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnRemotePlaybackDisabled(false);
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnPlaying();
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnEnteredFullscreen();
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  EXPECT_FALSE(activate_viewport_intersection_monitoring_);
-  EXPECT_FALSE(disable_pipeline_suspend_);
+  InitializeControllerAndEnterFullscreen(shared_session,
+                                         DefaultMetadata(VideoCodec::kCodecVP8),
+                                         GetDefaultSinkMetadata(false));
   // An available sink that does not support remote rendering should not cause
   // the controller to toggle remote rendering on.
-  shared_session->OnSinkAvailable(mojom::RemotingSinkCapabilities::NONE);
-  RunUntilIdle();
+  EXPECT_FALSE(activate_viewport_intersection_monitoring_);
   EXPECT_FALSE(is_rendering_remotely_);
   shared_session->OnSinkGone();  // Bye-bye useless sink!
   RunUntilIdle();
@@ -153,45 +162,20 @@ TEST_F(RendererControllerTest, ToggleRendererOnSinkCapabilities) {
   EXPECT_FALSE(disable_pipeline_suspend_);
   // A sink that *does* support remote rendering *does* cause the controller to
   // toggle remote rendering on.
-  shared_session->OnSinkAvailable(kAllCapabilities);
+  shared_session->OnSinkAvailable(GetDefaultSinkMetadata(true).Clone());
   RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);
   EXPECT_TRUE(activate_viewport_intersection_monitoring_);
   EXPECT_TRUE(disable_pipeline_suspend_);
-  controller_->OnExitedFullscreen();
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  EXPECT_FALSE(activate_viewport_intersection_monitoring_);
-  EXPECT_FALSE(disable_pipeline_suspend_);
 }
 
 TEST_F(RendererControllerTest, ToggleRendererOnDisableChange) {
   EXPECT_FALSE(is_rendering_remotely_);
   const scoped_refptr<SharedSession> shared_session =
       FakeRemoterFactory::CreateSharedSession(false);
-  controller_ = base::MakeUnique<RendererController>(shared_session);
-  controller_->SetClient(this);
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnRemotePlaybackDisabled(true);
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  shared_session->OnSinkAvailable(kAllCapabilities);
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  EXPECT_TRUE(activate_viewport_intersection_monitoring_);
-  EXPECT_FALSE(disable_pipeline_suspend_);
-  controller_->OnMetadataChanged(DefaultMetadata());
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnEnteredFullscreen();
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnRemotePlaybackDisabled(false);
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnPlaying();
-  RunUntilIdle();
+  InitializeControllerAndEnterFullscreen(shared_session,
+                                         DefaultMetadata(VideoCodec::kCodecVP8),
+                                         GetDefaultSinkMetadata(true));
   EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
   EXPECT_TRUE(activate_viewport_intersection_monitoring_);
   EXPECT_TRUE(disable_pipeline_suspend_);
@@ -205,51 +189,152 @@ TEST_F(RendererControllerTest, ToggleRendererOnDisableChange) {
   EXPECT_FALSE(disable_pipeline_suspend_);
 }
 
-TEST_F(RendererControllerTest, StartFailed) {
-  EXPECT_FALSE(is_rendering_remotely_);
+TEST_F(RendererControllerTest, WithVP9VideoCodec) {
   const scoped_refptr<SharedSession> shared_session =
-      FakeRemoterFactory::CreateSharedSession(true);
-  controller_ = base::MakeUnique<RendererController>(shared_session);
-  controller_->SetClient(this);
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  shared_session->OnSinkAvailable(kAllCapabilities);
-  RunUntilIdle();
+      FakeRemoterFactory::CreateSharedSession(false);
+  InitializeControllerAndEnterFullscreen(shared_session,
+                                         DefaultMetadata(VideoCodec::kCodecVP9),
+                                         GetDefaultSinkMetadata(true));
+  // An available sink that does not support VP9 video codec should not cause
+  // the controller to toggle remote rendering on.
   EXPECT_FALSE(is_rendering_remotely_);
   EXPECT_TRUE(activate_viewport_intersection_monitoring_);
   EXPECT_FALSE(disable_pipeline_suspend_);
-  controller_->OnEnteredFullscreen();
+
+  shared_session->OnSinkGone();  // Bye-bye useless sink!
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnMetadataChanged(DefaultMetadata());
+  EXPECT_FALSE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
+  mojom::RemotingSinkMetadata sink_metadata = GetDefaultSinkMetadata(true);
+  sink_metadata.video_capabilities.push_back(
+      mojom::RemotingSinkVideoCapability::CODEC_VP9);
+  // A sink that *does* support VP9 video codec *does* cause the controller to
+  // toggle remote rendering on.
+  shared_session->OnSinkAvailable(sink_metadata.Clone());
+  RunUntilIdle();
+  EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
+  EXPECT_TRUE(activate_viewport_intersection_monitoring_);
+  EXPECT_TRUE(disable_pipeline_suspend_);
+}
+
+TEST_F(RendererControllerTest, WithHEVCVideoCodec) {
+  const scoped_refptr<SharedSession> shared_session =
+      FakeRemoterFactory::CreateSharedSession(false);
+  InitializeControllerAndEnterFullscreen(
+      shared_session, DefaultMetadata(VideoCodec::kCodecHEVC),
+      GetDefaultSinkMetadata(true));
+  // An available sink that does not support HEVC video codec should not cause
+  // the controller to toggle remote rendering on.
+  EXPECT_FALSE(is_rendering_remotely_);
+  EXPECT_TRUE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
+
+  shared_session->OnSinkGone();  // Bye-bye useless sink!
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnRemotePlaybackDisabled(false);
+  EXPECT_FALSE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
+  mojom::RemotingSinkMetadata sink_metadata = GetDefaultSinkMetadata(true);
+  sink_metadata.video_capabilities.push_back(
+      mojom::RemotingSinkVideoCapability::CODEC_HEVC);
+  // A sink that *does* support HEVC video codec *does* cause the controller to
+  // toggle remote rendering on.
+  shared_session->OnSinkAvailable(sink_metadata.Clone());
+  RunUntilIdle();
+  EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
+  EXPECT_TRUE(activate_viewport_intersection_monitoring_);
+  EXPECT_TRUE(disable_pipeline_suspend_);
+}
+
+TEST_F(RendererControllerTest, WithAACAudioCodec) {
+  const scoped_refptr<SharedSession> shared_session =
+      FakeRemoterFactory::CreateSharedSession(false);
+  const AudioDecoderConfig audio_config = AudioDecoderConfig(
+      AudioCodec::kCodecAAC, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO,
+      44100, EmptyExtraData(), Unencrypted());
+  PipelineMetadata pipeline_metadata = DefaultMetadata(VideoCodec::kCodecVP8);
+  pipeline_metadata.audio_decoder_config = audio_config;
+  InitializeControllerAndEnterFullscreen(shared_session, pipeline_metadata,
+                                         GetDefaultSinkMetadata(true));
+  // An available sink that does not support AAC audio codec should not cause
+  // the controller to toggle remote rendering on.
+  EXPECT_FALSE(is_rendering_remotely_);
+  EXPECT_TRUE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
+
+  shared_session->OnSinkGone();  // Bye-bye useless sink!
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnPlaying();
+  EXPECT_FALSE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
+  mojom::RemotingSinkMetadata sink_metadata = GetDefaultSinkMetadata(true);
+  sink_metadata.audio_capabilities.push_back(
+      mojom::RemotingSinkAudioCapability::CODEC_AAC);
+  // A sink that *does* support AAC audio codec *does* cause the controller to
+  // toggle remote rendering on.
+  shared_session->OnSinkAvailable(sink_metadata.Clone());
   RunUntilIdle();
+  EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
+  EXPECT_TRUE(activate_viewport_intersection_monitoring_);
+  EXPECT_TRUE(disable_pipeline_suspend_);
+}
+
+TEST_F(RendererControllerTest, WithOpusAudioCodec) {
+  const scoped_refptr<SharedSession> shared_session =
+      FakeRemoterFactory::CreateSharedSession(false);
+  const AudioDecoderConfig audio_config = AudioDecoderConfig(
+      AudioCodec::kCodecOpus, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO,
+      44100, EmptyExtraData(), Unencrypted());
+  PipelineMetadata pipeline_metadata = DefaultMetadata(VideoCodec::kCodecVP8);
+  pipeline_metadata.audio_decoder_config = audio_config;
+  InitializeControllerAndEnterFullscreen(shared_session, pipeline_metadata,
+                                         GetDefaultSinkMetadata(true));
+  // An available sink that does not support Opus audio codec should not cause
+  // the controller to toggle remote rendering on.
+  EXPECT_FALSE(is_rendering_remotely_);
+  EXPECT_TRUE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
+
+  shared_session->OnSinkGone();  // Bye-bye useless sink!
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  EXPECT_FALSE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
+  mojom::RemotingSinkMetadata sink_metadata = GetDefaultSinkMetadata(true);
+  sink_metadata.audio_capabilities.push_back(
+      mojom::RemotingSinkAudioCapability::CODEC_OPUS);
+  // A sink that *does* support Opus audio codec *does* cause the controller to
+  // toggle remote rendering on.
+  shared_session->OnSinkAvailable(sink_metadata.Clone());
+  RunUntilIdle();
+  EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
+  EXPECT_TRUE(activate_viewport_intersection_monitoring_);
+  EXPECT_TRUE(disable_pipeline_suspend_);
+}
+
+TEST_F(RendererControllerTest, StartFailed) {
+  const scoped_refptr<SharedSession> shared_session =
+      FakeRemoterFactory::CreateSharedSession(true);
+  InitializeControllerAndEnterFullscreen(
+      shared_session, DefaultMetadata(VideoCodec::kCodecHEVC),
+      GetDefaultSinkMetadata(true));
   EXPECT_FALSE(is_rendering_remotely_);
   EXPECT_FALSE(disable_pipeline_suspend_);
 }
 
 TEST_F(RendererControllerTest, EncryptedWithRemotingCdm) {
+  const scoped_refptr<SharedSession> shared_session =
+      FakeRemoterFactory::CreateSharedSession(false);
+  InitializeControllerAndEnterFullscreen(shared_session, EncryptedMetadata(),
+                                         GetDefaultSinkMetadata(true));
   EXPECT_FALSE(is_rendering_remotely_);
-  controller_ = base::MakeUnique<RendererController>(
-      FakeRemoterFactory::CreateSharedSession(false));
-  controller_->SetClient(this);
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnMetadataChanged(EncryptedMetadata());
-  controller_->OnRemotePlaybackDisabled(false);
-  controller_->OnPlaying();
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
+
   const scoped_refptr<SharedSession> cdm_shared_session =
       FakeRemoterFactory::CreateSharedSession(false);
   std::unique_ptr<RemotingCdmController> cdm_controller =
       base::MakeUnique<RemotingCdmController>(cdm_shared_session);
-  cdm_shared_session->OnSinkAvailable(kAllCapabilities);
+  cdm_shared_session->OnSinkAvailable(GetDefaultSinkMetadata(true).Clone());
   cdm_controller->ShouldCreateRemotingCdm(
       base::Bind(&RendererControllerTest::CreateCdm, base::Unretained(this)));
   RunUntilIdle();
@@ -268,9 +353,6 @@ TEST_F(RendererControllerTest, EncryptedWithRemotingCdm) {
   EXPECT_TRUE(is_rendering_remotely_);
 
   // For encrypted contents, entering/exiting full screen has no effect.
-  controller_->OnEnteredFullscreen();
-  RunUntilIdle();
-  EXPECT_TRUE(is_rendering_remotely_);
   controller_->OnExitedFullscreen();
   RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);
@@ -287,34 +369,17 @@ TEST_F(RendererControllerTest, EncryptedWithRemotingCdm) {
 }
 
 TEST_F(RendererControllerTest, EncryptedWithLocalCdm) {
-  EXPECT_FALSE(is_rendering_remotely_);
-  const scoped_refptr<SharedSession> initial_shared_session =
+  const scoped_refptr<SharedSession> shared_session =
       FakeRemoterFactory::CreateSharedSession(false);
-  controller_ = base::MakeUnique<RendererController>(initial_shared_session);
-  controller_->SetClient(this);
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  initial_shared_session->OnSinkAvailable(kAllCapabilities);
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnEnteredFullscreen();
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnMetadataChanged(EncryptedMetadata());
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnRemotePlaybackDisabled(false);
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnPlaying();
-  RunUntilIdle();
+  InitializeControllerAndEnterFullscreen(shared_session, EncryptedMetadata(),
+                                         GetDefaultSinkMetadata(true));
   EXPECT_FALSE(is_rendering_remotely_);
 
   const scoped_refptr<SharedSession> cdm_shared_session =
       FakeRemoterFactory::CreateSharedSession(true);
   std::unique_ptr<RemotingCdmController> cdm_controller =
       base::MakeUnique<RemotingCdmController>(cdm_shared_session);
-  cdm_shared_session->OnSinkAvailable(kAllCapabilities);
+  cdm_shared_session->OnSinkAvailable(GetDefaultSinkMetadata(true).Clone());
   cdm_controller->ShouldCreateRemotingCdm(
       base::Bind(&RendererControllerTest::CreateCdm, base::Unretained(this)));
   RunUntilIdle();
@@ -323,30 +388,17 @@ TEST_F(RendererControllerTest, EncryptedWithLocalCdm) {
 }
 
 TEST_F(RendererControllerTest, EncryptedWithFailedRemotingCdm) {
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_ = base::MakeUnique<RendererController>(
-      FakeRemoterFactory::CreateSharedSession(false));
-  controller_->SetClient(this);
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnEnteredFullscreen();
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnMetadataChanged(EncryptedMetadata());
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnRemotePlaybackDisabled(false);
-  RunUntilIdle();
-  EXPECT_FALSE(is_rendering_remotely_);
-  controller_->OnPlaying();
-  RunUntilIdle();
+  const scoped_refptr<SharedSession> shared_session =
+      FakeRemoterFactory::CreateSharedSession(false);
+  InitializeControllerAndEnterFullscreen(shared_session, EncryptedMetadata(),
+                                         GetDefaultSinkMetadata(true));
   EXPECT_FALSE(is_rendering_remotely_);
 
   const scoped_refptr<SharedSession> cdm_shared_session =
       FakeRemoterFactory::CreateSharedSession(false);
   std::unique_ptr<RemotingCdmController> cdm_controller =
       base::MakeUnique<RemotingCdmController>(cdm_shared_session);
-  cdm_shared_session->OnSinkAvailable(kAllCapabilities);
+  cdm_shared_session->OnSinkAvailable(GetDefaultSinkMetadata(true).Clone());
   cdm_controller->ShouldCreateRemotingCdm(
       base::Bind(&RendererControllerTest::CreateCdm, base::Unretained(this)));
   RunUntilIdle();
