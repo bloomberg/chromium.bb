@@ -23,7 +23,7 @@ const CGFloat kSmallSpacing = 8;
 // Name of the icon displayed when a suggestion is available offline.
 NSString* const kOfflineIconName = @"content_suggestions_offline";
 // Size of the icon displayed when a suggestion is available offline.
-const CGFloat kOfflineIconSize = 24;
+const CGFloat kOfflineIconSize = 16;
 
 // Size of the favicon view.
 const CGFloat kFaviconSize = 16;
