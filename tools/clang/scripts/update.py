@@ -724,21 +724,6 @@ def UpdateClang(args):
       subprocess.call(['install_name_tool', '-id',
                        '@executable_path/' + os.path.basename(dylib), dylib])
 
-
-  if sys.platform == 'win32':
-    # Make an extra copy of the sanitizer headers, to be put on the include path
-    # of the fallback compiler.
-    sanitizer_include_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang',
-                                         VERSION, 'include', 'sanitizer')
-    aux_sanitizer_include_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang',
-                                             VERSION, 'include_sanitizer',
-                                             'sanitizer')
-    EnsureDirExists(aux_sanitizer_include_dir)
-    for _, _, files in os.walk(sanitizer_include_dir):
-      for f in files:
-        CopyFile(os.path.join(sanitizer_include_dir, f),
-                 aux_sanitizer_include_dir)
-
   if args.with_android:
     make_toolchain = os.path.join(
         ANDROID_NDK_DIR, 'build', 'tools', 'make_standalone_toolchain.py')
