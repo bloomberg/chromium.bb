@@ -661,11 +661,11 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   // Don't access main_thread_only_, instead use MainThreadOnly().
   MainThreadOnly main_thread_only_;
-  MainThreadOnly& GetMainThreadOnly() {
+  MainThreadOnly& main_thread_only() {
     helper_.CheckOnValidThread();
     return main_thread_only_;
   }
-  const struct MainThreadOnly& GetMainThreadOnly() const {
+  const struct MainThreadOnly& main_thread_only() const {
     helper_.CheckOnValidThread();
     return main_thread_only_;
   }
@@ -673,11 +673,11 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   mutable base::Lock any_thread_lock_;
   // Don't access any_thread_, instead use AnyThread().
   AnyThread any_thread_;
-  AnyThread& GetAnyThread() {
+  AnyThread& any_thread() {
     any_thread_lock_.AssertAcquired();
     return any_thread_;
   }
-  const struct AnyThread& GetAnyThread() const {
+  const struct AnyThread& any_thread() const {
     any_thread_lock_.AssertAcquired();
     return any_thread_;
   }
