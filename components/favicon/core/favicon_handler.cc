@@ -27,12 +27,7 @@
 namespace favicon {
 namespace {
 
-const int kNonTouchLargestIconSize = 192;
-
-// Size (along each axis) of a touch icon. This currently corresponds to
-// the apple touch icon for iPad.
-// TODO(crbug.com/736290): Consider changing this to 192x192 for Android.
-const int kTouchIconSize = 144;
+const int kLargestIconSize = 192;
 
 // Return true if |bitmap_result| is expired.
 bool IsExpired(const favicon_base::FaviconRawBitmapResult& bitmap_result) {
@@ -136,9 +131,8 @@ std::vector<int> GetDesiredPixelSizes(
       return pixel_sizes;
     }
     case FaviconDriverObserver::NON_TOUCH_LARGEST:
-      return std::vector<int>(1U, kNonTouchLargestIconSize);
     case FaviconDriverObserver::TOUCH_LARGEST:
-      return std::vector<int>(1U, kTouchIconSize);
+      return std::vector<int>(1U, kLargestIconSize);
   }
   NOTREACHED();
   return std::vector<int>();
@@ -348,8 +342,7 @@ void FaviconHandler::OnUpdateCandidates(
 
   // If no manifest available, proceed with the regular candidates only.
   if (manifest_url_.is_empty()) {
-    OnGotFinalIconURLCandidates(candidates,
-                                GetDesiredPixelSizes(handler_type_));
+    OnGotFinalIconURLCandidates(candidates);
     return;
   }
 
@@ -398,9 +391,7 @@ void FaviconHandler::OnDidDownloadManifest(
   manifest_download_request_.Cancel();
 
   if (!candidates.empty()) {
-    // When reading icons from web manifests, prefer kNonTouchLargestIconSize.
-    OnGotFinalIconURLCandidates(candidates,
-                                std::vector<int>(1U, kNonTouchLargestIconSize));
+    OnGotFinalIconURLCandidates(candidates);
     return;
   }
 
@@ -413,13 +404,14 @@ void FaviconHandler::OnDidDownloadManifest(
   service_->UnableToDownloadFavicon(manifest_url_);
   manifest_url_ = GURL();
 
-  OnGotFinalIconURLCandidates(non_manifest_original_candidates_,
-                              GetDesiredPixelSizes(handler_type_));
+  OnGotFinalIconURLCandidates(non_manifest_original_candidates_);
 }
 
 void FaviconHandler::OnGotFinalIconURLCandidates(
-    const std::vector<FaviconURL>& candidates,
-    const std::vector<int>& desired_pixel_sizes) {
+    const std::vector<FaviconURL>& candidates) {
+  const std::vector<int> desired_pixel_sizes =
+      GetDesiredPixelSizes(handler_type_);
+
   std::vector<FaviconCandidate> sorted_candidates;
   for (const FaviconURL& candidate : candidates) {
     if (!candidate.icon_url.is_empty() && (candidate.icon_type & icon_types_)) {

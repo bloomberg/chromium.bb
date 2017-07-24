@@ -1210,6 +1210,27 @@ TEST_F(FaviconHandlerTest, TestSortFavicon) {
           kIconURLWithoutSize1, kIconURLWithoutSize2));
 }
 
+TEST_F(FaviconHandlerTest, TestSortTouchIconLargest) {
+  const GURL kIconURLWithoutSize("http://www.google.com/touchicon-nosize");
+  const GURL kIconURL144x144("http://www.google.com/touchicon144x144");
+  const GURL kIconURL192x192("http://www.google.com/touchicon192x192");
+
+  const std::vector<favicon::FaviconURL> kSourceIconURLs{
+      FaviconURL(kIconURLWithoutSize, TOUCH_ICON, kEmptySizes),
+      FaviconURL(kIconURL144x144, TOUCH_ICON,
+                 SizeVector(1U, gfx::Size(144, 144))),
+      FaviconURL(kIconURL192x192, TOUCH_ICON,
+                 SizeVector(1U, gfx::Size(192, 192))),
+  };
+
+  std::unique_ptr<FaviconHandler> handler = RunHandlerWithCandidates(
+      FaviconDriverObserver::TOUCH_LARGEST, kSourceIconURLs);
+
+  EXPECT_THAT(
+      handler->GetIconURLs(),
+      ElementsAre(kIconURL192x192, kIconURL144x144, kIconURLWithoutSize));
+}
+
 TEST_F(FaviconHandlerTest, TestDownloadLargestFavicon) {
   // Names represent the bitmap sizes per icon.
   const GURL kIconURL1024_512("http://www.google.com/a");
