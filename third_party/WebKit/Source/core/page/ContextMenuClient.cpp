@@ -360,9 +360,10 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
     // suggestions to these markers in the background. Therefore, when a
     // user right-clicks a mouse on a word, Chrome just needs to find a
     // spelling marker on the word instead of spellchecking it.
-    String description;
-    data.misspelled_word =
-        selected_frame->GetSpellChecker().SelectMisspellingAsync(description);
+    std::pair<String, String> misspelled_word_and_description =
+        selected_frame->GetSpellChecker().SelectMisspellingAsync();
+    data.misspelled_word = misspelled_word_and_description.first;
+    const String& description = misspelled_word_and_description.second;
     if (description.length()) {
       Vector<String> suggestions;
       description.Split('\n', suggestions);

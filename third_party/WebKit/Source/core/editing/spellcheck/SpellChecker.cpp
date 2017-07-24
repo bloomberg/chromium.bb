@@ -838,7 +838,7 @@ SpellChecker::GetSpellCheckMarkerUnderSelection() {
   const VisibleSelection& selection =
       GetFrame().Selection().ComputeVisibleSelectionInDOMTree();
   if (selection.IsNone())
-    return Optional<std::pair<Node*, SpellCheckMarker*>>();
+    return {};
 
   // Caret and range selections always return valid normalized ranges.
   const EphemeralRange& selection_range = FirstEphemeralRangeOf(selection);
@@ -866,16 +866,16 @@ SpellChecker::GetSpellCheckMarkerUnderSelection() {
           ToText(*selection_start_container), selection_start_offset,
           selection_end_offset, DocumentMarker::MisspellingMarkers());
   if (!marker)
-    return Optional<std::pair<Node*, SpellCheckMarker*>>();
+    return {};
 
   return std::make_pair(selection_start_container, ToSpellCheckMarker(marker));
 }
 
-String SpellChecker::SelectMisspellingAsync(String& description) {
+std::pair<String, String> SpellChecker::SelectMisspellingAsync() {
   VisibleSelection selection =
       GetFrame().Selection().ComputeVisibleSelectionInDOMTree();
   if (selection.IsNone())
-    return String();
+    return {};
 
   // Caret and range selections always return valid normalized ranges.
   const EphemeralRange& selection_range =
@@ -889,7 +889,7 @@ String SpellChecker::SelectMisspellingAsync(String& description) {
   // We don't currently support the case where a misspelling spans multiple
   // nodes. See crbug.com/720065
   if (selection_start_container != selection_end_container)
-    return String();
+    return {};
 
   const unsigned selection_start_offset =
       selection_range.StartPosition().ComputeOffsetInContainerNode();
@@ -907,10 +907,9 @@ String SpellChecker::SelectMisspellingAsync(String& description) {
                             marker->EndOffset() > selection_start_offset;
                    });
   if (marker_it == markers_in_node.end())
-    return String();
+    return {};
 
   const SpellCheckMarker* const found_marker = ToSpellCheckMarker(*marker_it);
-  description = found_marker->Description();
 
   Range* const marker_range =
       Range::Create(*GetFrame().GetDocument(), selection_start_container,
@@ -921,9 +920,9 @@ String SpellChecker::SelectMisspellingAsync(String& description) {
       CreateRange(selection_range)
           ->GetText()
           .StripWhiteSpace(&IsWhiteSpaceOrPunctuation))
-    return String();
+    return {};
 
-  return marker_range->GetText();
+  return std::make_pair(marker_range->GetText(), found_marker->Description());
 }
 
 void SpellChecker::ReplaceMisspelledRange(const String& text) {
