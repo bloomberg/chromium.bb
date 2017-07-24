@@ -4,9 +4,12 @@
 
 #include "services/device/generic_sensor/platform_sensor_provider_mac.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "services/device/generic_sensor/platform_sensor_accelerometer_mac.h"
 #include "services/device/generic_sensor/platform_sensor_ambient_light_mac.h"
+#include "services/device/generic_sensor/platform_sensor_fusion.h"
+#include "services/device/generic_sensor/relative_orientation_euler_angles_fusion_algorithm_using_accelerometer.h"
 
 namespace device {
 
@@ -36,6 +39,19 @@ void PlatformSensorProviderMac::CreateSensorInternal(
     case mojom::SensorType::ACCELEROMETER: {
       callback.Run(base::MakeRefCounted<PlatformSensorAccelerometerMac>(
           std::move(mapping), this));
+      break;
+    }
+    case mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES: {
+      std::vector<mojom::SensorType> source_sensor_types = {
+          mojom::SensorType::ACCELEROMETER};
+      auto relative_orientation_euler_angles_fusion_algorithm_using_accelerometer =
+          base::MakeUnique<
+              RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer>();
+      base::MakeRefCounted<PlatformSensorFusion>(
+          std::move(mapping), this, callback, source_sensor_types,
+          mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES,
+          std::move(
+              relative_orientation_euler_angles_fusion_algorithm_using_accelerometer));
       break;
     }
     default:
