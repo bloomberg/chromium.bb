@@ -82,7 +82,6 @@ template("ios_remoting_app_tmpl") {
       "BUNDLE_IDENTIFIER=$bundle_id",
       "DISPLAY_NAME=$remoting_ios_display_name",
       "EXECUTABLE_NAME=$output_name",
-      "MINIMUM_OS_VERSION=7.0",
       "PRODUCT_NAME=$output_name",
       "VERSION_FULL=$remoting_version_full",
       "VERSION_SHORT=$remoting_version_short",
