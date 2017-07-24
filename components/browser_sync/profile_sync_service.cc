@@ -2133,10 +2133,6 @@ void ProfileSyncService::GetAllNodes(
   }
 }
 
-syncer::GlobalIdMapper* ProfileSyncService::GetGlobalIdMapper() const {
-  return sessions_sync_manager_.get();
-}
-
 base::WeakPtr<syncer::JsController> ProfileSyncService::GetJsController() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return sync_js_controller_.AsWeakPtr();

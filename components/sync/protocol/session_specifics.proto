@@ -104,7 +104,7 @@ message TabNavigation {
   // The unique navigation id (within this client).
   optional int32 unique_id = 8;
   // Timestamp for when this navigation last occurred (in client time).
-  // If the user goes back/forward in history the timestamp may refresh.
+  // If the user goes back/foward in history the timestamp may refresh.
   optional int64 timestamp_msec = 9;
   // User used the Forward or Back button to navigate among browsing history.
   optional bool navigation_forward_back = 10;

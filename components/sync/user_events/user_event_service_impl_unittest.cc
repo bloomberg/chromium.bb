@@ -39,11 +39,6 @@ class TestSyncService : public FakeSyncService {
   ModelTypeSet preferred_data_types_;
 };
 
-class TestGlobalIdMapper : public GlobalIdMapper {
-  void AddGlobalIdChangeObserver(GlobalIdChange callback) override {}
-  int64_t GetLatestGlobalId(int64_t global_id) override { return global_id; }
-};
-
 class UserEventServiceImplTest : public testing::Test {
  protected:
   UserEventServiceImplTest() {
@@ -54,8 +49,7 @@ class UserEventServiceImplTest : public testing::Test {
   std::unique_ptr<UserEventSyncBridge> MakeBridge() {
     return base::MakeUnique<UserEventSyncBridge>(
         ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest(),
-        RecordingModelTypeChangeProcessor::FactoryForBridgeTest(&processor_),
-        &mapper_);
+        RecordingModelTypeChangeProcessor::FactoryForBridgeTest(&processor_));
   }
 
   const RecordingModelTypeChangeProcessor& processor() { return *processor_; }
@@ -68,7 +62,6 @@ class UserEventServiceImplTest : public testing::Test {
  private:
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   RecordingModelTypeChangeProcessor* processor_;
-  TestGlobalIdMapper mapper_;
   base::MessageLoop message_loop_;
 };
 

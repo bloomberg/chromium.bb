@@ -210,10 +210,6 @@ SigninManagerBase* FakeSyncService::signin() const {
   return nullptr;
 }
 
-GlobalIdMapper* FakeSyncService::GetGlobalIdMapper() const {
-  return nullptr;
-}
-
 bool FakeSyncService::IsPassphraseRequired() const {
   return false;
 }

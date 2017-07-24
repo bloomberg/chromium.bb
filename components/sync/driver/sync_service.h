@@ -33,7 +33,6 @@ class BaseTransaction;
 class DataTypeController;
 class JsController;
 class LocalDeviceInfoProvider;
-class GlobalIdMapper;
 class ProtocolEventObserver;
 class SyncClient;
 class SyncCycleSnapshot;
@@ -353,8 +352,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // Non-owning pointer to sign in logic that can be used to fetch information
   // about the currently signed in user.
   virtual SigninManagerBase* signin() const = 0;
-
-  virtual GlobalIdMapper* GetGlobalIdMapper() const = 0;
 
  protected:
   SyncService() {}
