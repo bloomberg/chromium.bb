@@ -179,6 +179,10 @@ class GClientSmoke(GClientSmokeBase):
     self.check(res, self.gclient(['update']))
 
   def testConfig(self):
+    # Get anhy bootstrapping out of the way.
+    results = self.gclient(['version'])
+    self.assertEquals(results[2], 0)
+
     p = join(self.root_dir, '.gclient')
     def test(cmd, expected):
       if os.path.exists(p):
