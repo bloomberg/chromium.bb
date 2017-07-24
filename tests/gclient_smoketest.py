@@ -729,7 +729,8 @@ class GClientSmokeGIT(GClientSmokeBase):
         'deps = {',
         '  # src -> src/repo2 -> foo/bar',
         '  "foo/bar": {',
-        '    "url": "/repo_3",',
+        '    "url": "git://127.0.0.1:20000/git/repo_3@%s",' % (
+                 self.githash('repo_3', 2)),
         '  },',
         '',
         '  # src',
@@ -753,7 +754,8 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '  # src -> src/repo8',
         '  "src/repo8": {',
-        '    "url": "/repo_8",',
+        '    "url": "git://127.0.0.1:20000/git/repo_8@%s",' % (
+                 self.githash('repo_8', 1)),
         '  },',
         '',
         '}',
@@ -841,6 +843,60 @@ class GClientSmokeGIT(GClientSmokeBase):
         'vars = {',
         '  # src',
         '  "DummyVariable": \'repo\',',
+        '',
+        '}',
+        '',
+    ], deps_contents.splitlines())
+
+  def testFlattenRecursedeps(self):
+    if not self.enabled:
+      return
+
+    output_deps = os.path.join(self.root_dir, 'DEPS.flattened')
+    self.assertFalse(os.path.exists(output_deps))
+
+    self.gclient(['config', self.git_base + 'repo_10', '--name', 'src'])
+    self.gclient(['sync'])
+    self.gclient(['flatten', '-v', '-v', '-v', '--output-deps', output_deps])
+
+    with open(output_deps) as f:
+      deps_contents = f.read()
+
+    self.assertEqual([
+        'deps = {',
+        '  # src',
+        '  "src": {',
+        '    "url": "git://127.0.0.1:20000/git/repo_10",',
+        '  },',
+        '',
+        '  # src -> src/repo9 -> src/repo8',
+        '  "src/repo8": {',
+        '    "url": "/repo_8",',
+        '  },',
+        '',
+        '  # src -> src/repo9',
+        '  "src/repo9": {',
+        '    "url": "/repo_9",',
+        '  },',
+        '',
+        '}',
+        '',
+        'deps_os = {',
+        '  "mac": {',
+        '    # src -> src/repo9 -> src/repo8 -> src/recursed_os_repo',
+        '    "src/recursed_os_repo": {',
+        '      "url": "/repo_5",',
+        '    },',
+        '',
+        '  },',
+        '',
+        '  "unix": {',
+        '    # src -> src/repo9 -> src/repo8 -> src/recursed_os_repo',
+        '    "src/recursed_os_repo": {',
+        '      "url": "/repo_5",',
+        '    },',
+        '',
+        '  },',
         '',
         '}',
         '',

@@ -371,9 +371,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # Calculates properties:
     self._parsed_url = None
     self._dependencies = []
-    # Keep track of original values, before post-processing (e.g. deps_os).
-    self._orig_dependencies = []
-    self._orig_deps_hooks = []
     self._vars = {}
     self._os_dependencies = {}
     self._os_deps_hooks = {}
@@ -738,7 +735,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       rel_prefix = os.path.dirname(self.name)
 
     deps = local_scope.get('deps', {})
-    orig_deps = gclient_utils.freeze(deps)
     if 'recursion' in local_scope:
       self.recursion_override = local_scope.get('recursion')
       logging.warning(
@@ -771,14 +767,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       for dep_os, os_deps in local_scope['deps_os'].iteritems():
         self._os_dependencies[dep_os] = self._deps_to_objects(
             self._postprocess_deps(os_deps, rel_prefix), use_relative_paths)
-      if target_os_list:
+      if target_os_list and not self._get_option(
+          'do_not_merge_os_specific_entries', False):
         deps = self.MergeWithOsDeps(
             deps, local_scope['deps_os'], target_os_list)
 
     deps_to_add = self._deps_to_objects(
         self._postprocess_deps(deps, rel_prefix), use_relative_paths)
-    orig_deps_to_add = self._deps_to_objects(
-        self._postprocess_deps(orig_deps, rel_prefix), use_relative_paths)
 
     # override named sets of hooks by the custom hooks
     hooks_to_run = []
@@ -786,7 +781,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     for hook in local_scope.get('hooks', []):
       if hook.get('name', '') not in hook_names_to_suppress:
         hooks_to_run.append(hook)
-    orig_hooks = gclient_utils.freeze(hooks_to_run)
     if 'hooks_os' in local_scope and target_os_list:
       hooks_os = local_scope['hooks_os']
 
@@ -797,9 +791,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
             for hook in os_hooks]
 
       # Specifically append these to ensure that hooks_os run after hooks.
-      for the_target_os in target_os_list:
-        the_target_os_hooks = hooks_os.get(the_target_os, [])
-        hooks_to_run.extend(the_target_os_hooks)
+      if not self._get_option('do_not_merge_os_specific_entries', False):
+        for the_target_os in target_os_list:
+          the_target_os_hooks = hooks_os.get(the_target_os, [])
+          hooks_to_run.extend(the_target_os_hooks)
 
     # add the replacements and any additions
     for hook in self.custom_hooks:
@@ -811,9 +806,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           Hook.from_dict(hook, variables=self.get_vars()) for hook in
           local_scope.get('pre_deps_hooks', [])]
 
-    self.add_dependencies_and_close(
-        deps_to_add, hooks_to_run, orig_deps_to_add=orig_deps_to_add,
-        orig_hooks=orig_hooks)
+    self.add_dependencies_and_close(deps_to_add, hooks_to_run)
     logging.info('ParseDepsFile(%s) done' % self.name)
 
   def _get_option(self, attr, default):
@@ -822,19 +815,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       obj = obj.parent
     return getattr(obj._options, attr, default)
 
-  def add_dependencies_and_close(
-      self, deps_to_add, hooks, orig_deps_to_add=None, orig_hooks=None):
+  def add_dependencies_and_close(self, deps_to_add, hooks):
     """Adds the dependencies, hooks and mark the parsing as done."""
     for dep in deps_to_add:
       if dep.verify_validity():
         self.add_dependency(dep)
-    for dep in (orig_deps_to_add if orig_deps_to_add is not None
-                else deps_to_add):
-      self.add_orig_dependency(dep)
     self._mark_as_parsed(
-        [Hook.from_dict(h, variables=self.get_vars()) for h in hooks],
-        orig_hooks=[Hook.from_dict(h, variables=self.get_vars())
-                    for h in (orig_hooks if orig_hooks is not None else hooks)])
+        [Hook.from_dict(h, variables=self.get_vars()) for h in hooks])
 
   def findDepsFromNotAllowedHosts(self):
     """Returns a list of depenecies from not allowed hosts.
@@ -1041,24 +1028,14 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self._dependencies.append(new_dep)
 
   @gclient_utils.lockedmethod
-  def add_orig_dependency(self, new_dep):
-    self._orig_dependencies.append(new_dep)
-
-  @gclient_utils.lockedmethod
-  def _mark_as_parsed(self, new_hooks, orig_hooks=None):
+  def _mark_as_parsed(self, new_hooks):
     self._deps_hooks.extend(new_hooks)
-    self._orig_deps_hooks.extend(orig_hooks or new_hooks)
     self._deps_parsed = True
 
   @property
   @gclient_utils.lockedmethod
   def dependencies(self):
     return tuple(self._dependencies)
-
-  @property
-  @gclient_utils.lockedmethod
-  def orig_dependencies(self):
-    return tuple(self._orig_dependencies)
 
   @property
   @gclient_utils.lockedmethod
@@ -1069,11 +1046,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   @gclient_utils.lockedmethod
   def deps_hooks(self):
     return tuple(self._deps_hooks)
-
-  @property
-  @gclient_utils.lockedmethod
-  def orig_deps_hooks(self):
-    return tuple(self._orig_deps_hooks)
 
   @property
   @gclient_utils.lockedmethod
@@ -1806,7 +1778,7 @@ class Flattener(object):
       assert key not in self._vars
       self._vars[key] = (dep, value)
 
-    self._hooks.extend([(dep, hook) for hook in dep.orig_deps_hooks])
+    self._hooks.extend([(dep, hook) for hook in dep.deps_hooks])
     self._pre_deps_hooks.extend([(dep, hook) for hook in dep.pre_deps_hooks])
 
     for hook_os, os_hooks in dep.os_deps_hooks.iteritems():
@@ -1827,7 +1799,7 @@ class Flattener(object):
     """
     self._add_deps_os(dep)
 
-    for sub_dep in dep.orig_dependencies:
+    for sub_dep in dep.dependencies:
       self._flatten_dep(sub_dep)
 
   def _add_deps_os(self, dep):
@@ -1850,6 +1822,7 @@ def CMDflatten(parser, args):
             'for checked out deps, NOT deps_os.'))
   options, args = parser.parse_args(args)
 
+  options.do_not_merge_os_specific_entries = True
   options.nohooks = True
   client = GClient.LoadCurrentConfig(options)
 
@@ -2220,6 +2193,10 @@ def CMDsync(parser, args):
                     help='override deps for the specified (comma-separated) '
                          'platform(s); \'all\' will process all deps_os '
                          'references')
+  # TODO(phajdan.jr): use argparse.SUPPRESS to hide internal flags.
+  parser.add_option('--do-not-merge-os-specific-entries', action='store_true',
+                    help='INTERNAL ONLY - disables merging of deps_os and '
+                         'hooks_os to dependencies and hooks')
   parser.add_option('--upstream', action='store_true',
                     help='Make repo state match upstream branch.')
   parser.add_option('--output-json',
