@@ -12,6 +12,7 @@ import argparse
 import multiprocessing
 import os
 import re
+import signal
 import subprocess
 import sys
 import tempfile
@@ -20,6 +21,7 @@ import tempfile
 DIR_SOURCE_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 SDK_ROOT = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'fuchsia-sdk')
+SYMBOLIZATION_TIMEOUT_SECS = 10
 
 
 def RunAndCheck(dry_run, args):
@@ -200,8 +202,27 @@ def SymbolizeEntry(entry):
 
 
 def ParallelSymbolizeBacktrace(backtrace):
+  # Disable handling of SIGINT during sub-process creation, to prevent
+  # sub-processes from consuming Ctrl-C signals, rather than the parent
+  # process doing so.
+  saved_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
   p = multiprocessing.Pool(multiprocessing.cpu_count())
-  return p.imap(SymbolizeEntry, backtrace)
+
+  # Restore the signal handler for the parent process.
+  signal.signal(signal.SIGINT, saved_sigint_handler)
+
+  symbolized = []
+  try:
+    result = p.map_async(SymbolizeEntry, backtrace)
+    symbolized = result.get(SYMBOLIZATION_TIMEOUT_SECS)
+    if not symbolized:
+      return []
+  except multiprocessing.TimeoutError:
+    return ['(timeout error occurred during symbolization)']
+  except KeyboardInterrupt:  # SIGINT
+    p.terminate()
+
+  return symbolized
 
 
 def main():
