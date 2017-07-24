@@ -749,6 +749,9 @@ To adjust your search term, long press to select. To refine your search, slide t
       <message name="IDS_IOS_NEW_TAB_INCOGNITO" desc="Title for the Incognito panel of the new tab page.">
         Incognito
       </message>
+      <message name="IDS_IOS_NEW_TAB_LEARN_MORE_ABOUT_SUGGESTED_CONTENT" desc="Text in the footer of the New Tab Page. Part of the text is a link to a help center page where the user can learn more about suggested content.">
+        <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph> about suggested content
+      </message>
       <message name="IDS_IOS_NEW_TAB_MOST_VISITED" desc="Title for the Most Visited panel of the new tab page. [Length: 10em] [iOS only]">
         Most Visited
       </message>

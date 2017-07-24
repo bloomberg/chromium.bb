@@ -7,6 +7,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_learn_more_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
@@ -39,6 +40,9 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 // Section Info of type Article. Created lazily.
 @property(nonatomic, strong)
     ContentSuggestionsSectionInformation* articleSection;
+// Section Info of type Learn More. Created lazily.
+@property(nonatomic, strong)
+    ContentSuggestionsSectionInformation* learnMoreSection;
 
 @end
 
@@ -49,6 +53,7 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 @synthesize mostVisitedSection = _mostVisitedSection;
 @synthesize readingListSection = _readingListSection;
 @synthesize articleSection = _articleSection;
+@synthesize learnMoreSection = _learnMoreSection;
 
 #pragma mark - Public
 
@@ -65,7 +70,7 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 - (NSArray<ContentSuggestionsSectionInformation*>*)sectionsInfo {
   return @[
     self.logoHeaderSection, self.mostVisitedSection, self.readingListSection,
-    self.articleSection
+    self.articleSection, self.learnMoreSection
   ];
 }
 
@@ -108,6 +113,14 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
     }
     case ContentSuggestionsSectionLogo: {
       return @[];
+    }
+    case ContentSuggestionsSectionLearnMore: {
+      ContentSuggestionsLearnMoreItem* learnMore =
+          [[ContentSuggestionsLearnMoreItem alloc] init];
+      learnMore.suggestionIdentifier =
+          [[ContentSuggestionIdentifier alloc] init];
+      learnMore.suggestionIdentifier.sectionInfo = self.learnMoreSection;
+      return @[ learnMore ];
     }
     case ContentSuggestionsSectionUnknown:
       return @[];
@@ -179,6 +192,18 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
         l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_FOOTER_TITLE);
   }
   return _articleSection;
+}
+
+- (ContentSuggestionsSectionInformation*)learnMoreSection {
+  if (!_learnMoreSection) {
+    _learnMoreSection = [[ContentSuggestionsSectionInformation alloc]
+        initWithSectionID:ContentSuggestionsSectionLearnMore];
+    _learnMoreSection.layout = ContentSuggestionsSectionLayoutCustom;
+    _learnMoreSection.title = nil;
+    _learnMoreSection.footerTitle = nil;
+    _learnMoreSection.emptyText = nil;
+  }
+  return _learnMoreSection;
 }
 
 #pragma mark - Private

@@ -23,6 +23,7 @@ typedef NS_ENUM(NSInteger, ContentSuggestionType) {
   ContentSuggestionTypeReadingList,
   ContentSuggestionTypeMostVisited,
   ContentSuggestionTypePromo,
+  ContentSuggestionTypeLearnMore,
 };
 
 // Updater for a CollectionViewController populating it with some items and
