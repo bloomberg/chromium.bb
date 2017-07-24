@@ -38,14 +38,24 @@ FlexItem::FlexItem(LayoutBox* box,
                    LayoutUnit flex_base_content_size,
                    LayoutUnit hypothetical_main_content_size,
                    LayoutUnit main_axis_border_and_padding,
+                   LayoutUnit main_axis_min_size,
+                   LayoutUnit main_axis_max_size,
                    LayoutUnit main_axis_margin)
     : box(box),
       flex_base_content_size(flex_base_content_size),
       hypothetical_main_content_size(hypothetical_main_content_size),
       main_axis_border_and_padding(main_axis_border_and_padding),
+      main_axis_min_size(main_axis_min_size),
+      main_axis_max_size(main_axis_max_size),
       main_axis_margin(main_axis_margin),
       frozen(false) {
   DCHECK(!box->IsOutOfFlowPositioned());
+  DCHECK_GE(main_axis_max_size, LayoutUnit())
+      << "Use LayoutUnit::Max() for no max size";
+}
+
+LayoutUnit FlexItem::ClampSizeToMinAndMax(LayoutUnit size) const {
+  return std::max(main_axis_min_size, std::min(size, main_axis_max_size));
 }
 
 void FlexLine::FreezeViolations(Vector<FlexItem*>& violations) {

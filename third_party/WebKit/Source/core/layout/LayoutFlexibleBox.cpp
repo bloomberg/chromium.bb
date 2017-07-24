@@ -1188,22 +1188,23 @@ void LayoutFlexibleBox::PrepareOrderIteratorAndMargins() {
 }
 
 DISABLE_CFI_PERF
-LayoutUnit LayoutFlexibleBox::AdjustChildSizeForMinAndMax(
-    const LayoutBox& child,
-    LayoutUnit child_size) {
+void LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(const LayoutBox& child,
+                                                      LayoutUnit& min_extent,
+                                                      LayoutUnit& max_extent) {
+  min_extent = LayoutUnit();
+  max_extent = LayoutUnit::Max();
+
   Length max = IsHorizontalFlow() ? child.Style()->MaxWidth()
                                   : child.Style()->MaxHeight();
-  LayoutUnit max_extent(-1);
   if (max.IsSpecifiedOrIntrinsic()) {
     max_extent = ComputeMainAxisExtentForChild(child, kMaxSize, max);
-    DCHECK_GE(max_extent, LayoutUnit(-1));
-    if (max_extent != -1 && child_size > max_extent)
-      child_size = max_extent;
+    if (max_extent == -1)
+      max_extent = LayoutUnit::Max();
+    DCHECK_GE(max_extent, LayoutUnit());
   }
 
   Length min = IsHorizontalFlow() ? child.Style()->MinWidth()
                                   : child.Style()->MinHeight();
-  LayoutUnit min_extent;
   if (min.IsSpecifiedOrIntrinsic()) {
     min_extent = ComputeMainAxisExtentForChild(child, kMinSize, min);
     // computeMainAxisExtentForChild can return -1 when the child has a
@@ -1250,7 +1251,6 @@ LayoutUnit LayoutFlexibleBox::AdjustChildSizeForMinAndMax(
     }
   }
   DCHECK_GE(min_extent, LayoutUnit());
-  return std::max(child_size, min_extent);
 }
 
 LayoutUnit LayoutFlexibleBox::CrossSizeForPercentageResolution(
@@ -1345,18 +1345,21 @@ FlexItem LayoutFlexibleBox::ConstructFlexItem(LayoutBox& child,
     layout_type = kLayoutIfNeeded;
   }
 
+  LayoutUnit min_extent, max_extent;
+  ComputeMinAndMaxSizesForChild(child, min_extent, max_extent);
+
   LayoutUnit border_and_padding = IsHorizontalFlow()
                                       ? child.BorderAndPaddingWidth()
                                       : child.BorderAndPaddingHeight();
   LayoutUnit child_inner_flex_base_size =
       ComputeInnerFlexBaseSizeForChild(child, border_and_padding, layout_type);
   LayoutUnit child_min_max_applied_main_axis_extent =
-      AdjustChildSizeForMinAndMax(child, child_inner_flex_base_size);
+      std::max(min_extent, std::min(child_inner_flex_base_size, max_extent));
   LayoutUnit margin =
       IsHorizontalFlow() ? child.MarginWidth() : child.MarginHeight();
   return FlexItem(&child, child_inner_flex_base_size,
                   child_min_max_applied_main_axis_extent, border_and_padding,
-                  margin);
+                  min_extent, max_extent, margin);
 }
 
 // Returns true if we successfully ran the algorithm and sized the flex items.
@@ -1406,8 +1409,7 @@ bool LayoutFlexibleBox::ResolveFlexibleLengths(
     if (std::isfinite(extra_space))
       child_size += LayoutUnit::FromFloatRound(extra_space);
 
-    LayoutUnit adjusted_child_size =
-        AdjustChildSizeForMinAndMax(*child, child_size);
+    LayoutUnit adjusted_child_size = flex_item.ClampSizeToMinAndMax(child_size);
     DCHECK_GE(adjusted_child_size, 0);
     flex_item.flexed_content_size = adjusted_child_size;
     used_free_space += adjusted_child_size - flex_item.flex_base_content_size;
