@@ -121,6 +121,9 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private boolean mUnselectAllOnDismiss;
     private String mLastSelectedText;
 
+    // Tracks whether a touch selection is currently active.
+    private boolean mHasSelection;
+
     // Lazily created paste popup menu, triggered either via long press in an
     // editable region or from tapping the insertion handle.
     private PastePopupMenu mPastePopupMenu;
@@ -234,6 +237,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mSelectionRect.set(left, top, right, bottom);
         mEditable = isEditable;
         mLastSelectedText = selectionText;
+        mHasSelection = selectionText.length() != 0;
         mIsPasswordType = isPasswordType;
         mCanSelectAllForPastePopup = canSelectAll;
         mCanEditRichly = canRichlyEdit;
@@ -983,6 +987,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
             case SelectionEventType.SELECTION_HANDLES_CLEARED:
                 mLastSelectedText = "";
+                mHasSelection = false;
                 mUnselectAllOnDismiss = false;
                 mSelectionRect.setEmpty();
                 if (mSelectionClient != null) mSelectionClient.cancelAllRequests();
@@ -1064,6 +1069,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     @CalledByNative
     private void onSelectionChanged(String text) {
+        mLastSelectedText = text;
         if (mSelectionClient != null) {
             mSelectionClient.onSelectionChanged(text);
         }
@@ -1117,7 +1123,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      */
     @VisibleForTesting
     public boolean hasSelection() {
-        return mLastSelectedText.length() != 0;
+        return mHasSelection;
     }
 
     @Override
