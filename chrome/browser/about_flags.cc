@@ -2679,9 +2679,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kGamepadExtensionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kGamepadExtensions)},
 #if defined(OS_CHROMEOS)
-    {"arc-use-auth-endpoint", flag_descriptions::kArcUseAuthEndpointName,
-     flag_descriptions::kArcUseAuthEndpointDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(arc::kArcUseAuthEndpointFeature)},
     {"arc-boot-completed-broadcast", flag_descriptions::kArcBootCompleted,
      flag_descriptions::kArcBootCompletedDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kBootCompletedBroadcastFeature)},

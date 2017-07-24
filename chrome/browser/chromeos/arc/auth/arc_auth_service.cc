@@ -306,21 +306,10 @@ void ArcAuthService::RequestAccountInfoInternal(
   if (IsArcKioskMode()) {
     // In Kiosk mode, use Robot auth code fetching.
     auth_code_fetcher = base::MakeUnique<ArcRobotAuthCodeFetcher>();
-  } else if (base::FeatureList::IsEnabled(arc::kArcUseAuthEndpointFeature)) {
+  } else {
     // Optionally retrieve auth code in silent mode.
     auth_code_fetcher = base::MakeUnique<ArcBackgroundAuthCodeFetcher>(
         profile_, ArcSessionManager::Get()->auth_context());
-  } else {
-    // Report that silent auth code is not activated. All other states are
-    // reported in ArcBackgroundAuthCodeFetcher.
-    UpdateSilentAuthCodeUMA(OptInSilentAuthCode::DISABLED);
-    // Otherwise, show LSO page and let user click "Sign in" button.
-    // Here, support_host should be available always. The case support_host is
-    // not created is when 1) IsArcOptInVerificationDisabled() is true or 2)
-    // IsArcKioskMode() is true. Both cases are handled above.
-    auth_code_fetcher = base::MakeUnique<ArcManualAuthCodeFetcher>(
-        ArcSessionManager::Get()->auth_context(),
-        ArcSessionManager::Get()->support_host());
   }
   auth_code_fetcher->Fetch(base::Bind(&ArcAuthService::OnAuthCodeFetched,
                                       weak_ptr_factory_.GetWeakPtr()));
