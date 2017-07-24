@@ -7,8 +7,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/task_scheduler/task_traits.h"
 #include "chrome/browser/android/history_report/delta_file_backend_leveldb.h"
 #include "chrome/browser/android/history_report/delta_file_commons.h"
 #include "content/public/browser/browser_thread.h"
@@ -68,33 +66,48 @@ namespace history_report {
 using content::BrowserThread;
 
 DeltaFileService::DeltaFileService(const base::FilePath& dir)
-    : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          base::TaskShutdownBehavior::BLOCK_SHUTDOWN)),
-      delta_file_backend_(new DeltaFileBackend(dir)) {}
+    : worker_pool_token_(BrowserThread::GetBlockingPool()->GetSequenceToken()),
+      delta_file_backend_(new DeltaFileBackend(dir)) {
+}
 
 DeltaFileService::~DeltaFileService() {}
 
 void DeltaFileService::PageAdded(const GURL& url) {
-  task_runner_->PostTask(
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  pool->PostSequencedWorkerTaskWithShutdownBehavior(
+      worker_pool_token_,
       FROM_HERE,
-      base::Bind(&DoAddPage, base::Unretained(delta_file_backend_.get()), url));
+      base::Bind(&DoAddPage,
+                 base::Unretained(delta_file_backend_.get()),
+                 url),
+      base::SequencedWorkerPool::BLOCK_SHUTDOWN);
 }
 
 void DeltaFileService::PageDeleted(const GURL& url) {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DoDeletePage,
-                            base::Unretained(delta_file_backend_.get()), url));
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  pool->PostSequencedWorkerTaskWithShutdownBehavior(
+      worker_pool_token_,
+      FROM_HERE,
+      base::Bind(&DoDeletePage,
+                 base::Unretained(delta_file_backend_.get()),
+                 url),
+      base::SequencedWorkerPool::BLOCK_SHUTDOWN);
 }
 
 int64_t DeltaFileService::Trim(int64_t lower_bound) {
   int64_t result;
   base::WaitableEvent finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                                base::WaitableEvent::InitialState::NOT_SIGNALED);
-  task_runner_->PostTask(
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  pool->PostSequencedWorkerTaskWithShutdownBehavior(
+      worker_pool_token_,
       FROM_HERE,
-      base::Bind(&DoTrim, base::Unretained(delta_file_backend_.get()),
-                 lower_bound, base::Unretained(&finished),
-                 base::Unretained(&result)));
+      base::Bind(&DoTrim,
+                 base::Unretained(delta_file_backend_.get()),
+                 lower_bound,
+                 base::Unretained(&finished),
+                 base::Unretained(&result)),
+      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   finished.Wait();
   return result;
 }
@@ -105,11 +118,17 @@ std::unique_ptr<std::vector<DeltaFileEntryWithData>> DeltaFileService::Query(
   std::unique_ptr<std::vector<DeltaFileEntryWithData>> result;
   base::WaitableEvent finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                                base::WaitableEvent::InitialState::NOT_SIGNALED);
-  task_runner_->PostTask(
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  pool->PostSequencedWorkerTaskWithShutdownBehavior(
+      worker_pool_token_,
       FROM_HERE,
-      base::Bind(&DoQuery, base::Unretained(delta_file_backend_.get()),
-                 last_seq_no, limit, base::Unretained(&finished),
-                 base::Unretained(&result)));
+      base::Bind(&DoQuery,
+                 base::Unretained(delta_file_backend_.get()),
+                 last_seq_no,
+                 limit,
+                 base::Unretained(&finished),
+                 base::Unretained(&result)),
+      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   finished.Wait();
   return result;
 }
@@ -118,28 +137,43 @@ bool DeltaFileService::Recreate(const std::vector<std::string>& urls) {
   bool result = false;
   base::WaitableEvent finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                                base::WaitableEvent::InitialState::NOT_SIGNALED);
-  task_runner_->PostTask(
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  pool->PostSequencedWorkerTaskWithShutdownBehavior(
+      worker_pool_token_,
       FROM_HERE,
-      base::Bind(&DoRecreate, base::Unretained(delta_file_backend_.get()), urls,
-                 base::Unretained(&finished), base::Unretained(&result)));
+      base::Bind(&DoRecreate,
+                 base::Unretained(delta_file_backend_.get()),
+                 urls,
+                 base::Unretained(&finished),
+                 base::Unretained(&result)),
+      base::SequencedWorkerPool::BLOCK_SHUTDOWN);
   finished.Wait();
   return result;
 }
 
 void DeltaFileService::Clear() {
-  task_runner_->PostTask(
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  pool->PostSequencedWorkerTaskWithShutdownBehavior(
+      worker_pool_token_,
       FROM_HERE,
-      base::Bind(&DoClear, base::Unretained(delta_file_backend_.get())));
+      base::Bind(&DoClear,
+                 base::Unretained(delta_file_backend_.get())),
+      base::SequencedWorkerPool::BLOCK_SHUTDOWN);
 }
 
 std::string DeltaFileService::Dump() {
   std::string dump;
   base::WaitableEvent finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                                base::WaitableEvent::InitialState::NOT_SIGNALED);
-  task_runner_->PostTask(
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  pool->PostSequencedWorkerTaskWithShutdownBehavior(
+      worker_pool_token_,
       FROM_HERE,
-      base::Bind(&DoDump, base::Unretained(delta_file_backend_.get()),
-                 base::Unretained(&finished), base::Unretained(&dump)));
+      base::Bind(&DoDump,
+                 base::Unretained(delta_file_backend_.get()),
+                 base::Unretained(&finished),
+                 base::Unretained(&dump)),
+      base::SequencedWorkerPool::BLOCK_SHUTDOWN);
   finished.Wait();
   return dump;
 }

@@ -53,7 +53,8 @@ class UsageReportsBufferService {
   std::string Dump();
 
  private:
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  // Token used to serialize buffer operations.
+  base::SequencedWorkerPool::SequenceToken worker_pool_token_;
   // Non thread safe backend.
   std::unique_ptr<UsageReportsBufferBackend> backend_;
 
