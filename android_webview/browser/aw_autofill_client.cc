@@ -78,10 +78,6 @@ IdentityProvider* AwAutofillClient::GetIdentityProvider() {
   return nullptr;
 }
 
-rappor::RapporServiceImpl* AwAutofillClient::GetRapporServiceImpl() {
-  return nullptr;
-}
-
 ukm::UkmRecorder* AwAutofillClient::GetUkmRecorder() {
   return nullptr;
 }

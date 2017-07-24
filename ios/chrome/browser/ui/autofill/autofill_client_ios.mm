@@ -76,10 +76,6 @@ IdentityProvider* AutofillClientIOS::GetIdentityProvider() {
   return identity_provider_.get();
 }
 
-rappor::RapporServiceImpl* AutofillClientIOS::GetRapporServiceImpl() {
-  return GetApplicationContext()->GetRapporServiceImpl();
-}
-
 ukm::UkmRecorder* AutofillClientIOS::GetUkmRecorder() {
   return GetApplicationContext()->GetUkmRecorder();
 }

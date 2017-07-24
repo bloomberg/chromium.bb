@@ -14,7 +14,6 @@ namespace autofill {
 TestAutofillClient::TestAutofillClient()
     : token_service_(new FakeOAuth2TokenService()),
       identity_provider_(new FakeIdentityProvider(token_service_.get())),
-      rappor_service_(new rappor::TestRapporServiceImpl()),
 #if !defined(OS_ANDROID)
       save_card_bubble_controller_(new MockSaveCardBubbleController()),
 #endif
@@ -41,10 +40,6 @@ syncer::SyncService* TestAutofillClient::GetSyncService() {
 
 IdentityProvider* TestAutofillClient::GetIdentityProvider() {
   return identity_provider_.get();
-}
-
-rappor::RapporServiceImpl* TestAutofillClient::GetRapporServiceImpl() {
-  return rappor_service_.get();
 }
 
 ukm::UkmRecorder* TestAutofillClient::GetUkmRecorder() {

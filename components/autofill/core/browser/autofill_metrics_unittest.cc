@@ -35,7 +35,6 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/test_rappor_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
@@ -51,7 +50,6 @@
 using base::ASCIIToUTF16;
 using base::Bucket;
 using base::TimeTicks;
-using rappor::TestRapporServiceImpl;
 using ::testing::ElementsAre;
 using ::testing::Matcher;
 using ::testing::UnorderedPointwise;
@@ -5110,7 +5108,6 @@ class AutofillMetricsParseQueryResponseTest : public testing::Test {
   }
 
  protected:
-  TestRapporServiceImpl rappor_service_;
   std::vector<std::unique_ptr<FormStructure>> owned_forms_;
   std::vector<FormStructure*> forms_;
 };
@@ -5126,17 +5123,13 @@ TEST_F(AutofillMetricsParseQueryResponseTest, ServerHasData) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   base::HistogramTester histogram_tester;
-  FormStructure::ParseQueryResponse(response_string, forms_, &rappor_service_);
+  FormStructure::ParseQueryResponse(response_string, forms_);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Autofill.ServerResponseHasDataForForm"),
       ElementsAre(Bucket(true, 2)));
-
-  // No RAPPOR metrics are logged in the case there is server data available for
-  // all forms.
-  EXPECT_EQ(0, rappor_service_.GetReportsCount());
 }
 
-// If the server returns NO_SERVER_DATA for one of the forms, expect RAPPOR
+// If the server returns NO_SERVER_DATA for one of the forms, expect proper
 // logging.
 TEST_F(AutofillMetricsParseQueryResponseTest, OneFormNoServerData) {
   AutofillQueryResponseContents response;
@@ -5149,21 +5142,13 @@ TEST_F(AutofillMetricsParseQueryResponseTest, OneFormNoServerData) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   base::HistogramTester histogram_tester;
-  FormStructure::ParseQueryResponse(response_string, forms_, &rappor_service_);
+  FormStructure::ParseQueryResponse(response_string, forms_);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Autofill.ServerResponseHasDataForForm"),
       ElementsAre(Bucket(false, 1), Bucket(true, 1)));
-
-  EXPECT_EQ(1, rappor_service_.GetReportsCount());
-  std::string sample;
-  rappor::RapporType type;
-  EXPECT_TRUE(rappor_service_.GetRecordedSampleForMetric(
-      "Autofill.QueryResponseHasNoServerDataForForm", &sample, &type));
-  EXPECT_EQ("foo.com", sample);
-  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
 }
 
-// If the server returns NO_SERVER_DATA for both of the forms, expect RAPPOR
+// If the server returns NO_SERVER_DATA for both of the forms, expect proper
 // logging.
 TEST_F(AutofillMetricsParseQueryResponseTest, AllFormsNoServerData) {
   AutofillQueryResponseContents response;
@@ -5175,24 +5160,14 @@ TEST_F(AutofillMetricsParseQueryResponseTest, AllFormsNoServerData) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   base::HistogramTester histogram_tester;
-  FormStructure::ParseQueryResponse(response_string, forms_, &rappor_service_);
+  FormStructure::ParseQueryResponse(response_string, forms_);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Autofill.ServerResponseHasDataForForm"),
       ElementsAre(Bucket(false, 2)));
-
-  // Even though both forms are logging to RAPPOR, there is only one sample for
-  // a given eTLD+1.
-  EXPECT_EQ(1, rappor_service_.GetReportsCount());
-  std::string sample;
-  rappor::RapporType type;
-  EXPECT_TRUE(rappor_service_.GetRecordedSampleForMetric(
-      "Autofill.QueryResponseHasNoServerDataForForm", &sample, &type));
-  EXPECT_EQ("foo.com", sample);
-  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
 }
 
-// If the server returns NO_SERVER_DATA for only some of the fields, expect no
-// RAPPOR logging, and expect the UMA metric to say there is data.
+// If the server returns NO_SERVER_DATA for only some of the fields, expect the
+// UMA metric to say there is data.
 TEST_F(AutofillMetricsParseQueryResponseTest, PartialNoServerData) {
   AutofillQueryResponseContents response;
   response.add_field()->set_autofill_type(0);
@@ -5204,14 +5179,10 @@ TEST_F(AutofillMetricsParseQueryResponseTest, PartialNoServerData) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   base::HistogramTester histogram_tester;
-  FormStructure::ParseQueryResponse(response_string, forms_, &rappor_service_);
+  FormStructure::ParseQueryResponse(response_string, forms_);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Autofill.ServerResponseHasDataForForm"),
       ElementsAre(Bucket(true, 2)));
-
-  // No RAPPOR metrics are logged in the case there is at least some server data
-  // available for all forms.
-  EXPECT_EQ(0, rappor_service_.GetReportsCount());
 }
 
 // Test that the Form-Not-Secure warning user action is recorded.

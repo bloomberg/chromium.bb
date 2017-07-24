@@ -58,7 +58,6 @@ class AutofillClientIOS : public AutofillClient {
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   IdentityProvider* GetIdentityProvider() override;
-  rappor::RapporServiceImpl* GetRapporServiceImpl() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   SaveCardBubbleController* GetSaveCardBubbleController() override;
   void ShowAutofillSettings() override;
