@@ -11984,7 +11984,8 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
 
   // handle above row
   if (xd->up_available) {
-    const int overlap = num_4x4_blocks_high_lookup[bsize] * 2;
+    const int overlap =
+        AOMMIN(block_size_high[bsize] >> 1, block_size_high[BLOCK_64X64] >> 1);
     const int miw = AOMMIN(xd->n8_w, cm->mi_cols - mi_col);
     const int mi_row_offset = -1;
     const uint8_t *const mask1d = av1_get_obmc_mask(overlap);
@@ -12004,7 +12005,9 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
             &xd->mi[mi_col_offset + 1 + mi_row_offset * xd->mi_stride]->mbmi;
 #endif
       const BLOCK_SIZE a_bsize = AOMMAX(above_mbmi->sb_type, BLOCK_8X8);
-      const int mi_step = AOMMIN(xd->n8_w, mi_size_wide[a_bsize]);
+      const int above_step =
+          AOMMIN(mi_size_wide[a_bsize], mi_size_wide[BLOCK_64X64]);
+      const int mi_step = AOMMIN(xd->n8_w, above_step);
       const int neighbor_bw = mi_step * MI_SIZE;
 
       if (is_neighbor_overlappable(above_mbmi)) {
@@ -12063,7 +12066,8 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
 
   // handle left column
   if (xd->left_available) {
-    const int overlap = num_4x4_blocks_wide_lookup[bsize] * 2;
+    const int overlap =
+        AOMMIN(block_size_wide[bsize] >> 1, block_size_wide[BLOCK_64X64] >> 1);
     const int mih = AOMMIN(xd->n8_h, cm->mi_rows - mi_row);
     const int mi_col_offset = -1;
     const uint8_t *const mask1d = av1_get_obmc_mask(overlap);
@@ -12084,7 +12088,9 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
             &xd->mi[mi_col_offset + (mi_row_offset + 1) * xd->mi_stride]->mbmi;
 #endif
       const BLOCK_SIZE l_bsize = AOMMAX(left_mbmi->sb_type, BLOCK_8X8);
-      const int mi_step = AOMMIN(xd->n8_h, mi_size_high[l_bsize]);
+      const int left_step =
+          AOMMIN(mi_size_high[l_bsize], mi_size_high[BLOCK_64X64]);
+      const int mi_step = AOMMIN(xd->n8_h, left_step);
       const int neighbor_bh = mi_step * MI_SIZE;
 
       if (is_neighbor_overlappable(left_mbmi)) {
