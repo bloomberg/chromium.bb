@@ -40,8 +40,8 @@ RemotingCdmFactory::CreateRemotingCdmController() {
   // HACK: Copy-over the sink availability status from |sink_observer_| before
   // the RemotingCdmController would naturally get the notification. This is to
   // avoid the possible delay on OnSinkAvailable() call from browser.
-  if (sink_observer_->is_remote_decryption_available())
-    session->OnSinkAvailable(sink_observer_->sink_capabilities());
+  if (sink_observer_->IsRemoteDecryptionAvailable())
+    session->OnSinkAvailable(sink_observer_->sink_metadata().Clone());
   return base::MakeUnique<RemotingCdmController>(std::move(session));
 }
 
@@ -55,7 +55,7 @@ void RemotingCdmFactory::Create(
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     const CdmCreatedCB& cdm_created_cb) {
-  if (!sink_observer_->is_remote_decryption_available()) {
+  if (!sink_observer_->IsRemoteDecryptionAvailable()) {
     CreateCdm(key_system, security_origin, cdm_config, session_message_cb,
               session_closed_cb, session_keys_change_cb,
               session_expiration_update_cb, cdm_created_cb, nullptr, false);

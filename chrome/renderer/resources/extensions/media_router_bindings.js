@@ -291,12 +291,12 @@ define('media_router_bindings', [
           remotingMojom.MirrorServiceRemotingSourcePtr,
       RemotingStopReason: remotingCommonMojom.RemotingStopReason,
       RemotingStartFailReason: remotingCommonMojom.RemotingStartFailReason,
-      RemotingSinkFeatures: remotingCommonMojom.RemotingSinkFeatures,
-      RemotingSinkAudioCapabilities:
-          remotingCommonMojom.RemotingSinkAudioCapabilities,
-      RemotingSinkVideoCapabilities:
-          remotingCommonMojom.RemotingSinkVideoCapabilities,
-      SinkCapabilities: remotingCommonMojom.SinkCapabilities,
+      RemotingSinkFeature: remotingCommonMojom.RemotingSinkFeature,
+      RemotingSinkAudioCapability:
+          remotingCommonMojom.RemotingSinkAudioCapability,
+      RemotingSinkVideoCapability:
+          remotingCommonMojom.RemotingSinkVideoCapability,
+      RemotingSinkMetadata: remotingCommonMojom.RemotingSinkMetadata,
       Origin: originMojom.Origin,
       Sink: mediaRouterMojom.MediaSink,
       SinkExtraData: mediaRouterMojom.MediaSinkExtraData,

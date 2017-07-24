@@ -51,7 +51,7 @@ void RemotingCdmController::ShouldCreateRemotingCdm(
     return;
   }
 
-  if (!session_->is_remote_decryption_available()) {
+  if (!session_->IsRemoteDecryptionAvailable()) {
     cb.Run(false);
     return;
   }

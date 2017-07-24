@@ -122,7 +122,7 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
                         media::mojom::RemotingStopReason reason);
 
   // media::mojom::MirrorServiceRemotingSource implementations.
-  void OnSinkAvailable(media::mojom::SinkCapabilitiesPtr capabilities) override;
+  void OnSinkAvailable(media::mojom::RemotingSinkMetadataPtr metadata) override;
   void OnMessageFromSink(const std::vector<uint8_t>& message) override;
   void OnStopped(media::mojom::RemotingStopReason reason) override;
   void OnError() override;
@@ -163,10 +163,13 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
 
   const int32_t tab_id_;
 
-  // Describes the sink's capabilities according to what has been enabled via
-  // |features::kMediaRemoting|. These are controlled manually via
-  // chrome://flags or the command line; or in-the-wild via feature experiments.
-  const media::mojom::RemotingSinkCapabilities enabled_features_;
+  // Describes the remoting sink's metadata and the enabled features. The sink's
+  // metadata is updated by the mirror service calling OnSinkAvailable() and
+  // cleared when remoting stops. The enabled features are set according to what
+  // has been enabled via |features::kMediaRemoting|. These are controlled
+  // manually via chrome://flags or the command line; or in-the-wild via feature
+  // experiments.
+  media::mojom::RemotingSinkMetadata sink_metadata_;
 
   // Set of registered RemotingBridges, maintained by RegisterBridge() and
   // DeregisterBridge(). These pointers are always valid while they are in this
