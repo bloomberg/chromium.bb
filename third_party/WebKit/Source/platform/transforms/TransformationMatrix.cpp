@@ -47,7 +47,7 @@
 #include <emmintrin.h>
 #endif
 
-#if HAVE(MIPS_MSA_INTRINSICS)
+#if HAVE_MIPS_MSA_INTRINSICS
 #include "platform/cpu/mips/CommonMacrosMSA.h"
 #endif
 
@@ -152,7 +152,7 @@ static double Determinant4x4(const TransformationMatrix::Matrix4& m) {
          d1 * Determinant3x3(a2, a3, a4, b2, b3, b4, c2, c3, c4);
 }
 
-#if !defined(ARCH_CPU_ARM64) && !HAVE(MIPS_MSA_INTRINSICS)
+#if !defined(ARCH_CPU_ARM64) && !HAVE_MIPS_MSA_INTRINSICS
 // adjoint( original_matrix, inverse_matrix )
 //
 //   calculate the adjoint of a 4x4 matrix
@@ -341,7 +341,7 @@ static bool Inverse(const TransformationMatrix::Matrix4& matrix,
       : "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v16", "v17",
         "v18", "v19", "v20", "v21", "v22", "v23", "24", "25", "v26", "v27",
         "v28", "v29", "v30");
-#elif HAVE(MIPS_MSA_INTRINSICS)
+#elif HAVE_MIPS_MSA_INTRINSICS
   const double rDet = 1 / det;
   const double* mat = &(matrix[0][0]);
   v2f64 mat0, mat1, mat2, mat3, mat4, mat5, mat6, mat7;
@@ -1342,7 +1342,7 @@ TransformationMatrix& TransformationMatrix::Multiply(
       : "memory", "x9", "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23",
         "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v0", "v1",
         "v2", "v3", "v4", "v5", "v6", "v7");
-#elif HAVE(MIPS_MSA_INTRINSICS)
+#elif HAVE_MIPS_MSA_INTRINSICS
   v2f64 v_right_m0, v_right_m1, v_right_m2, v_right_m3, v_right_m4, v_right_m5,
       v_right_m6, v_right_m7;
   v2f64 v_left_m0, v_left_m1, v_left_m2, v_left_m3, v_left_m4, v_left_m5,

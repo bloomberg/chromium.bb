@@ -47,9 +47,12 @@
 #define WTF_CPU_ARM_NEON 0
 #endif
 
+// HAVE_MIPS_MSA_INTRINSICS is 0 or 1, and we should not use
+// defined(HAVE_MIPS_MSA_INTRINSICS).
 #if defined(__mips_msa) && defined(__mips_isa_rev) && (__mips_isa_rev >= 5)
-// All MSA intrinsics usage can be disabled by this macro.
 #define HAVE_MIPS_MSA_INTRINSICS 1
+#else
+#define HAVE_MIPS_MSA_INTRINSICS 0
 #endif
 
 #endif /* WTF_CPU_h */

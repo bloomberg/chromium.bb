@@ -43,7 +43,7 @@
 #include <arm_neon.h>
 #endif
 
-#if HAVE(MIPS_MSA_INTRINSICS)
+#if HAVE_MIPS_MSA_INTRINSICS
 #include "platform/cpu/mips/CommonMacrosMSA.h"
 #endif
 
@@ -238,7 +238,7 @@ void Vsma(const float* source_p,
     }
     n = tail_frames;
   }
-#elif HAVE(MIPS_MSA_INTRINSICS)
+#elif HAVE_MIPS_MSA_INTRINSICS
   if ((source_stride == 1) && (dest_stride == 1)) {
     float* destPCopy = destP;
     v4f32 vScale;
@@ -340,7 +340,7 @@ void Vsmul(const float* source_p,
     }
     n = tail_frames;
   }
-#elif HAVE(MIPS_MSA_INTRINSICS)
+#elif HAVE_MIPS_MSA_INTRINSICS
   if ((source_stride == 1) && (dest_stride == 1)) {
     v4f32 vScale;
     v4f32 vSrc0, vSrc1, vSrc2, vSrc3, vSrc4, vSrc5, vSrc6, vSrc7;
@@ -479,7 +479,7 @@ void Vadd(const float* source1p,
     }
     n = tail_frames;
   }
-#elif HAVE(MIPS_MSA_INTRINSICS)
+#elif HAVE_MIPS_MSA_INTRINSICS
   if ((source_stride1 == 1) && (source_stride2 == 1) && (dest_stride == 1)) {
     v4f32 vSrc1P0, vSrc1P1, vSrc1P2, vSrc1P3, vSrc1P4, vSrc1P5, vSrc1P6,
         vSrc1P7;
@@ -582,7 +582,7 @@ void Vmul(const float* source1p,
     }
     n = tail_frames;
   }
-#elif HAVE(MIPS_MSA_INTRINSICS)
+#elif HAVE_MIPS_MSA_INTRINSICS
   if ((source_stride1 == 1) && (source_stride2 == 1) && (dest_stride == 1)) {
     v4f32 vSrc1P0, vSrc1P1, vSrc1P2, vSrc1P3, vSrc1P4, vSrc1P5, vSrc1P6,
         vSrc1P7;
@@ -804,7 +804,7 @@ void Vmaxmgv(const float* source_p,
 
     n = tail_frames;
   }
-#elif HAVE(MIPS_MSA_INTRINSICS)
+#elif HAVE_MIPS_MSA_INTRINSICS
   if (source_stride == 1) {
     v4f32 vMax = {
         0,
@@ -864,7 +864,7 @@ void Vclip(const float* source_p,
     }
     n = tail_frames;
   }
-#elif HAVE(MIPS_MSA_INTRINSICS)
+#elif HAVE_MIPS_MSA_INTRINSICS
   if ((source_stride == 1) && (dest_stride == 1)) {
     v4f32 vSrc0, vSrc1, vSrc2, vSrc3, vSrc4, vSrc5, vSrc6, vSrc7;
     v4f32 vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6, vDst7;
