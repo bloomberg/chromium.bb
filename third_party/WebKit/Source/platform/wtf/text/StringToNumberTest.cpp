@@ -133,11 +133,14 @@ TEST(StringToNumberTest, CharactersToUInt) {
   EXPECT_INVALID("", kStrict);
   EXPECT_INVALID("-", kStrict);
   EXPECT_INVALID("-0", kStrict);
+  EXPECT_VALID("-0", kAcceptMinusZeroForUnsigned, 0u);
   EXPECT_INVALID("-1", kStrict);
+  EXPECT_INVALID("-1", kAcceptMinusZeroForUnsigned);
   EXPECT_INVALID("-2", kStrict);
   EXPECT_INVALID("-9", kStrict);
   EXPECT_INVALID("-10", kStrict);
   EXPECT_INVALID("-00", kStrict);
+  EXPECT_VALID("-00", kAcceptMinusZeroForUnsigned, 0u);
   EXPECT_INVALID("-01", kStrict);
   EXPECT_INVALID("--1", kStrict);
   EXPECT_INVALID("++1", kStrict);

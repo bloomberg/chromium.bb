@@ -43,6 +43,7 @@ static inline IntegralType ToIntegralType(const CharType* data,
   NumberParsingState state = NumberParsingState::kError;
   bool is_negative = false;
   bool overflow = false;
+  const bool accept_minus = kIsSigned || options.AcceptMinusZeroForUnsigned();
 
   if (!data)
     goto bye;
@@ -54,7 +55,7 @@ static inline IntegralType ToIntegralType(const CharType* data,
     }
   }
 
-  if (kIsSigned && length && *data == '-') {
+  if (accept_minus && length && *data == '-') {
     --length;
     ++data;
     is_negative = true;
@@ -78,14 +79,21 @@ static inline IntegralType ToIntegralType(const CharType* data,
       digit_value = c - 'A' + 10;
 
     if (is_negative) {
-      // Overflow condition:
-      //       value * base - digit_value < kIntegralMin
-      //   <=> value < (kIntegralMin + digit_value) / base
-      // We must be careful of rounding errors here, but the default rounding
-      // mode (round to zero) works well, so we can use this formula as-is.
-      if (value < (kIntegralMin + digit_value) / base) {
-        state = NumberParsingState::kOverflowMin;
-        overflow = true;
+      if (!kIsSigned && options.AcceptMinusZeroForUnsigned()) {
+        if (digit_value != 0) {
+          state = NumberParsingState::kError;
+          overflow = true;
+        }
+      } else {
+        // Overflow condition:
+        //       value * base - digit_value < kIntegralMin
+        //   <=> value < (kIntegralMin + digit_value) / base
+        // We must be careful of rounding errors here, but the default rounding
+        // mode (round to zero) works well, so we can use this formula as-is.
+        if (value < (kIntegralMin + digit_value) / base) {
+          state = NumberParsingState::kOverflowMin;
+          overflow = true;
+        }
       }
     } else {
       // Overflow condition:
