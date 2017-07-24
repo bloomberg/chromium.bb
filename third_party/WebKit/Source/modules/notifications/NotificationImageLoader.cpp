@@ -163,7 +163,7 @@ void NotificationImageLoader::DidFinishLoading(
         ColorBehavior::TransformToGlobalTarget());
     if (decoder) {
       // The |ImageFrame*| is owned by the decoder.
-      ImageFrame* image_frame = decoder->FrameBufferAtIndex(0);
+      ImageFrame* image_frame = decoder->DecodeFrameBufferAtIndex(0);
       if (image_frame) {
         (*image_callback_)(image_frame->Bitmap());
         return;

@@ -68,10 +68,10 @@ void TestInvalidImage(const char* webp_file, bool parse_error_expected) {
 
   if (parse_error_expected) {
     EXPECT_EQ(0u, decoder->FrameCount());
-    EXPECT_FALSE(decoder->FrameBufferAtIndex(0));
+    EXPECT_FALSE(decoder->DecodeFrameBufferAtIndex(0));
   } else {
     EXPECT_GT(decoder->FrameCount(), 0u);
-    ImageFrame* frame = decoder->FrameBufferAtIndex(0);
+    ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
     ASSERT_TRUE(frame);
     EXPECT_EQ(ImageFrame::kFramePartial, frame->GetStatus());
   }
@@ -89,9 +89,9 @@ TEST(AnimatedWebPTests, uniqueGenerationIDs) {
   ASSERT_TRUE(data.Get());
   decoder->SetData(data.Get(), true);
 
-  ImageFrame* frame = decoder->FrameBufferAtIndex(0);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   uint32_t generation_id0 = frame->Bitmap().getGenerationID();
-  frame = decoder->FrameBufferAtIndex(1);
+  frame = decoder->DecodeFrameBufferAtIndex(1);
   uint32_t generation_id1 = frame->Bitmap().getGenerationID();
 
   EXPECT_TRUE(generation_id0 != generation_id1);
@@ -124,7 +124,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersTransparentImage) {
   };
 
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(kFrameParameters); ++i) {
-    const ImageFrame* const frame = decoder->FrameBufferAtIndex(i);
+    const ImageFrame* const frame = decoder->DecodeFrameBufferAtIndex(i);
     EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
     EXPECT_EQ(kCanvasWidth, frame->Bitmap().width());
     EXPECT_EQ(kCanvasHeight, frame->Bitmap().height());
@@ -173,7 +173,7 @@ TEST(AnimatedWebPTests,
   };
 
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(kFrameParameters); ++i) {
-    const ImageFrame* const frame = decoder->FrameBufferAtIndex(i);
+    const ImageFrame* const frame = decoder->DecodeFrameBufferAtIndex(i);
     EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
     EXPECT_EQ(kCanvasWidth, frame->Bitmap().width());
     EXPECT_EQ(kCanvasHeight, frame->Bitmap().height());
@@ -221,7 +221,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite) {
   };
 
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(kFrameParameters); ++i) {
-    const ImageFrame* const frame = decoder->FrameBufferAtIndex(i);
+    const ImageFrame* const frame = decoder->DecodeFrameBufferAtIndex(i);
     EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
     EXPECT_EQ(kCanvasWidth, frame->Bitmap().width());
     EXPECT_EQ(kCanvasHeight, frame->Bitmap().height());
@@ -268,15 +268,15 @@ TEST(AnimatedWebPTests, truncatedLastFrame) {
 
   size_t frame_count = 8;
   EXPECT_EQ(frame_count, decoder->FrameCount());
-  ImageFrame* frame = decoder->FrameBufferAtIndex(0);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   ASSERT_TRUE(frame);
   EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
   EXPECT_FALSE(decoder->Failed());
-  frame = decoder->FrameBufferAtIndex(frame_count - 1);
+  frame = decoder->DecodeFrameBufferAtIndex(frame_count - 1);
   ASSERT_TRUE(frame);
   EXPECT_EQ(ImageFrame::kFramePartial, frame->GetStatus());
   EXPECT_TRUE(decoder->Failed());
-  frame = decoder->FrameBufferAtIndex(0);
+  frame = decoder->DecodeFrameBufferAtIndex(0);
   ASSERT_TRUE(frame);
   EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
 }
@@ -291,10 +291,10 @@ TEST(AnimatedWebPTests, truncatedInBetweenFrame) {
       SharedBuffer::Create(full_data.data(), full_data.size() - 1);
   decoder->SetData(data.Get(), false);
 
-  ImageFrame* frame = decoder->FrameBufferAtIndex(1);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(1);
   ASSERT_TRUE(frame);
   EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
-  frame = decoder->FrameBufferAtIndex(2);
+  frame = decoder->DecodeFrameBufferAtIndex(2);
   ASSERT_TRUE(frame);
   EXPECT_EQ(ImageFrame::kFramePartial, frame->GetStatus());
   EXPECT_TRUE(decoder->Failed());
@@ -317,7 +317,7 @@ TEST(AnimatedWebPTests, reproCrash) {
       SharedBuffer::Create(full_data.data(), kPartialSize);
   decoder->SetData(data.Get(), false);
   EXPECT_EQ(1u, decoder->FrameCount());
-  ImageFrame* frame = decoder->FrameBufferAtIndex(0);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   ASSERT_TRUE(frame);
   EXPECT_EQ(ImageFrame::kFramePartial, frame->GetStatus());
   EXPECT_FALSE(decoder->Failed());
@@ -325,7 +325,7 @@ TEST(AnimatedWebPTests, reproCrash) {
   // Parse full data now. The error in bitstream should now be detected.
   decoder->SetData(full_data_buffer.Get(), true);
   EXPECT_EQ(1u, decoder->FrameCount());
-  frame = decoder->FrameBufferAtIndex(0);
+  frame = decoder->DecodeFrameBufferAtIndex(0);
   ASSERT_TRUE(frame);
   EXPECT_EQ(ImageFrame::kFramePartial, frame->GetStatus());
   EXPECT_EQ(kAnimationLoopOnce, decoder->RepetitionCount());
@@ -460,7 +460,7 @@ TEST(AnimatedWEBPTests, clearCacheExceptFrameWithAncestors) {
   ImageFrame* buffers[3];
   size_t buffer_sizes[3];
   for (size_t i = 0; i < decoder->FrameCount(); i++) {
-    buffers[i] = decoder->FrameBufferAtIndex(i);
+    buffers[i] = decoder->DecodeFrameBufferAtIndex(i);
     ASSERT_EQ(ImageFrame::kFrameComplete, buffers[i]->GetStatus());
     buffer_sizes[i] = decoder->FrameBytesAtIndex(i);
   }
@@ -490,7 +490,7 @@ TEST(AnimatedWEBPTests, clearCacheExceptFrameWithAncestors) {
   // frame 1 is necessary to fully decode frame 2.
   for (size_t i = 0; i < decoder->FrameCount(); i++) {
     ASSERT_EQ(ImageFrame::kFrameComplete,
-              decoder->FrameBufferAtIndex(i)->GetStatus());
+              decoder->DecodeFrameBufferAtIndex(i)->GetStatus());
   }
   buffers[2]->SetStatus(ImageFrame::kFramePartial);
   EXPECT_EQ(buffer_sizes[0], decoder->ClearCacheExceptFrame(2));
@@ -511,7 +511,7 @@ TEST(AnimatedWEBPTests, clearCacheExceptFrameWithAncestors) {
   // Thus, since frame 1 is FrameEmpty, no data is cleared in this case.
   for (size_t i = 0; i < decoder->FrameCount(); i++) {
     ASSERT_EQ(ImageFrame::kFrameComplete,
-              decoder->FrameBufferAtIndex(i)->GetStatus());
+              decoder->DecodeFrameBufferAtIndex(i)->GetStatus());
   }
   buffers[1]->SetStatus(ImageFrame::kFrameEmpty);
   buffers[2]->SetStatus(ImageFrame::kFramePartial);

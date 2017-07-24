@@ -772,6 +772,10 @@ size_t BlinkPlatformImpl::MaxDecodedImageBytes() {
 #endif
 }
 
+bool BlinkPlatformImpl::IsLowEndDevice() {
+  return base::SysInfo::IsLowEndDevice();
+}
+
 uint32_t BlinkPlatformImpl::GetUniqueIdForProcess() {
   // TODO(rickyz): Replace this with base::GetUniqueIdForProcess when that's
   // ready.

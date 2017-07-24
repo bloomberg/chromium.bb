@@ -32,6 +32,7 @@
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/graphics/test/MockImageDecoder.h"
 #include "platform/image-decoders/SegmentReader.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
@@ -66,6 +67,7 @@ class ImageFrameGeneratorTest : public ::testing::Test,
     UseMockImageDecoderFactory();
     decoders_destroyed_ = 0;
     decode_request_count_ = 0;
+    memory_allocator_set_count_ = 0;
     status_ = ImageFrame::kFrameEmpty;
     frame_count_ = 1;
     requested_clear_except_frame_ = kNotFound;
@@ -76,6 +78,8 @@ class ImageFrameGeneratorTest : public ::testing::Test,
   void DecoderBeingDestroyed() override { ++decoders_destroyed_; }
 
   void DecodeRequested() override { ++decode_request_count_; }
+
+  void MemoryAllocatorSet() override { ++memory_allocator_set_count_; }
 
   ImageFrame::Status GetStatus() override {
     ImageFrame::Status current_status = status_;
@@ -122,6 +126,7 @@ class ImageFrameGeneratorTest : public ::testing::Test,
   RefPtr<ImageFrameGenerator> generator_;
   int decoders_destroyed_;
   int decode_request_count_;
+  int memory_allocator_set_count_;
   ImageFrame::Status status_;
   ImageFrame::Status next_frame_status_;
   size_t frame_count_;
@@ -136,6 +141,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecode) {
                              buffer, 100 * 4,
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_EQ(1, decode_request_count_);
+  EXPECT_EQ(0, memory_allocator_set_count_);
 
   AddNewData();
   generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
@@ -143,6 +149,37 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecode) {
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_EQ(2, decode_request_count_);
   EXPECT_EQ(0, decoders_destroyed_);
+  EXPECT_EQ(0, memory_allocator_set_count_);
+}
+
+class ImageFrameGeneratorTestPlatform : public TestingPlatformSupport {
+ public:
+  bool IsLowEndDevice() override { return true; }
+};
+
+// This is the same as incompleteData, but with a low-end device set.
+TEST_F(ImageFrameGeneratorTest, LowEndDeviceDestroysDecoderOnPartialDecode) {
+  ScopedTestingPlatformSupport<ImageFrameGeneratorTestPlatform> platform;
+
+  SetFrameStatus(ImageFrame::kFramePartial);
+
+  char buffer[100 * 100 * 4];
+  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+                             buffer, 100 * 4,
+                             ImageDecoder::kAlphaPremultiplied);
+  EXPECT_EQ(1, decode_request_count_);
+  EXPECT_EQ(1, decoders_destroyed_);
+  // The memory allocator is set to the external one, then cleared after decode.
+  EXPECT_EQ(2, memory_allocator_set_count_);
+
+  AddNewData();
+  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+                             buffer, 100 * 4,
+                             ImageDecoder::kAlphaPremultiplied);
+  EXPECT_EQ(2, decode_request_count_);
+  EXPECT_EQ(2, decoders_destroyed_);
+  // The memory allocator is set to the external one, then cleared after decode.
+  EXPECT_EQ(4, memory_allocator_set_count_);
 }
 
 TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesComplete) {
@@ -154,6 +191,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesComplete) {
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_EQ(1, decode_request_count_);
   EXPECT_EQ(0, decoders_destroyed_);
+  EXPECT_EQ(0, memory_allocator_set_count_);
 
   SetFrameStatus(ImageFrame::kFrameComplete);
   AddNewData();
@@ -227,7 +265,7 @@ TEST_F(ImageFrameGeneratorTest, frameHasAlpha) {
       generator_.Get(), FullSize(), ImageDecoder::kAlphaPremultiplied,
       &temp_decoder));
   ASSERT_TRUE(temp_decoder);
-  temp_decoder->FrameBufferAtIndex(0)->SetHasAlpha(false);
+  temp_decoder->DecodeFrameBufferAtIndex(0)->SetHasAlpha(false);
   ImageDecodingStore::Instance().UnlockDecoder(generator_.Get(), temp_decoder);
   EXPECT_EQ(2, decode_request_count_);
 

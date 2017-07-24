@@ -38,7 +38,7 @@ static unsigned CreateDecodingBaseline(DecoderCreator create_decoder,
                                        SharedBuffer* data) {
   std::unique_ptr<ImageDecoder> decoder = create_decoder();
   decoder->SetData(data, true);
-  ImageFrame* frame = decoder->FrameBufferAtIndex(0);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   return HashBitmap(frame->Bitmap());
 }
 
@@ -49,7 +49,7 @@ void CreateDecodingBaseline(DecoderCreator create_decoder,
   decoder->SetData(data, true);
   size_t frame_count = decoder->FrameCount();
   for (size_t i = 0; i < frame_count; ++i) {
-    ImageFrame* frame = decoder->FrameBufferAtIndex(i);
+    ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(i);
     baseline_hashes->push_back(HashBitmap(frame->Bitmap()));
   }
 }
@@ -93,7 +93,7 @@ void TestByteByByteDecode(DecoderCreator create_decoder,
       // would return 1 until receiving full file.
       // When file is completely received frame_count would return 2 and
       // only then both frames could be completely decoded.
-      ImageFrame* frame = decoder->FrameBufferAtIndex(i);
+      ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(i);
       if (frame && frame->GetStatus() == ImageFrame::kFrameComplete)
         ++frames_decoded;
     }
@@ -106,7 +106,7 @@ void TestByteByByteDecode(DecoderCreator create_decoder,
 
   ASSERT_EQ(expected_frame_count, baseline_hashes.size());
   for (size_t i = 0; i < decoder->FrameCount(); i++) {
-    ImageFrame* frame = decoder->FrameBufferAtIndex(i);
+    ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(i);
     EXPECT_EQ(baseline_hashes[i], HashBitmap(frame->Bitmap()));
   }
 }
@@ -138,7 +138,7 @@ static void TestMergeBuffer(DecoderCreator create_decoder,
   // data in a segment, its pointer would no longer be valid.
   segmented_data->Data();
 
-  ImageFrame* frame = decoder->FrameBufferAtIndex(0);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   ASSERT_FALSE(decoder->Failed());
   EXPECT_EQ(frame->GetStatus(), ImageFrame::kFrameComplete);
   EXPECT_EQ(HashBitmap(frame->Bitmap()), hash);
@@ -157,7 +157,7 @@ static void TestRandomFrameDecode(DecoderCreator create_decoder,
   for (size_t i = 0; i < skipping_step; ++i) {
     for (size_t j = i; j < frame_count; j += skipping_step) {
       SCOPED_TRACE(::testing::Message() << "Random i:" << i << " j:" << j);
-      ImageFrame* frame = decoder->FrameBufferAtIndex(j);
+      ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(j);
       EXPECT_EQ(baseline_hashes[j], HashBitmap(frame->Bitmap()));
     }
   }
@@ -167,7 +167,7 @@ static void TestRandomFrameDecode(DecoderCreator create_decoder,
   decoder->SetData(full_data, true);
   for (size_t i = frame_count; i; --i) {
     SCOPED_TRACE(::testing::Message() << "Reverse i:" << i);
-    ImageFrame* frame = decoder->FrameBufferAtIndex(i - 1);
+    ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(i - 1);
     EXPECT_EQ(baseline_hashes[i - 1], HashBitmap(frame->Bitmap()));
   }
 }
@@ -188,7 +188,7 @@ static void TestRandomDecodeAfterClearFrameBufferCache(
     for (size_t i = 0; i < skipping_step; ++i) {
       for (size_t j = 0; j < frame_count; j += skipping_step) {
         SCOPED_TRACE(::testing::Message() << "Random i:" << i << " j:" << j);
-        ImageFrame* frame = decoder->FrameBufferAtIndex(j);
+        ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(j);
         EXPECT_EQ(baseline_hashes[j], HashBitmap(frame->Bitmap()));
       }
     }
@@ -211,7 +211,7 @@ static void TestDecodeAfterReallocatingData(DecoderCreator create_decoder,
   decoder->SetData(reallocated_data.Get(), true);
 
   for (size_t i = 0; i < frame_count; ++i) {
-    const ImageFrame* const frame = decoder->FrameBufferAtIndex(i);
+    const ImageFrame* const frame = decoder->DecodeFrameBufferAtIndex(i);
     EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
   }
 }
@@ -240,7 +240,7 @@ static void TestByteByByteSizeAvailable(DecoderCreator create_decoder,
       EXPECT_FALSE(decoder->HasEmbeddedColorSpace());
       EXPECT_EQ(0u, decoder->FrameCount());
       EXPECT_EQ(kAnimationLoopOnce, decoder->RepetitionCount());
-      EXPECT_FALSE(decoder->FrameBufferAtIndex(0));
+      EXPECT_FALSE(decoder->DecodeFrameBufferAtIndex(0));
     } else {
       EXPECT_TRUE(decoder->IsSizeAvailable());
       EXPECT_FALSE(decoder->Size().IsEmpty());
@@ -271,7 +271,7 @@ static void TestProgressiveDecoding(DecoderCreator create_decoder,
     decoder = create_decoder();
     data->Append(source++, 1u);
     decoder->SetData(data.Get(), i == full_length);
-    ImageFrame* frame = decoder->FrameBufferAtIndex(0);
+    ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
     if (!frame) {
       truncated_hashes.push_back(0);
       continue;
@@ -286,7 +286,7 @@ static void TestProgressiveDecoding(DecoderCreator create_decoder,
   for (size_t i = 1; i <= full_length; i += increment) {
     data->Append(source++, 1u);
     decoder->SetData(data.Get(), i == full_length);
-    ImageFrame* frame = decoder->FrameBufferAtIndex(0);
+    ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
     if (!frame) {
       progressive_hashes.push_back(0);
       continue;
@@ -312,21 +312,23 @@ void TestUpdateRequiredPreviousFrameAfterFirstDecode(
     data->Append(source++, 1u);
     decoder->SetData(data.Get(), false);
   } while (!decoder->FrameCount() ||
-           decoder->FrameBufferAtIndex(0)->GetStatus() ==
+           decoder->DecodeFrameBufferAtIndex(0)->GetStatus() ==
                ImageFrame::kFrameEmpty);
 
   EXPECT_EQ(kNotFound,
-            decoder->FrameBufferAtIndex(0)->RequiredPreviousFrameIndex());
+            decoder->DecodeFrameBufferAtIndex(0)->RequiredPreviousFrameIndex());
   unsigned frame_count = decoder->FrameCount();
   for (size_t i = 1; i < frame_count; ++i) {
-    EXPECT_EQ(i - 1,
-              decoder->FrameBufferAtIndex(i)->RequiredPreviousFrameIndex());
+    EXPECT_EQ(
+        i - 1,
+        decoder->DecodeFrameBufferAtIndex(i)->RequiredPreviousFrameIndex());
   }
 
   decoder->SetData(full_buffer, true);
   for (size_t i = 0; i < frame_count; ++i) {
-    EXPECT_EQ(kNotFound,
-              decoder->FrameBufferAtIndex(i)->RequiredPreviousFrameIndex());
+    EXPECT_EQ(
+        kNotFound,
+        decoder->DecodeFrameBufferAtIndex(i)->RequiredPreviousFrameIndex());
   }
 }
 
@@ -347,18 +349,18 @@ void TestResumePartialDecodeAfterClearFrameBufferCache(
     data->Append(source++, 1u);
     decoder->SetData(data.Get(), false);
   } while (!decoder->FrameCount() ||
-           decoder->FrameBufferAtIndex(0)->GetStatus() ==
+           decoder->DecodeFrameBufferAtIndex(0)->GetStatus() ==
                ImageFrame::kFrameEmpty);
 
   // Skip to the last frame and clear.
   decoder->SetData(full_buffer, true);
   EXPECT_EQ(frame_count, decoder->FrameCount());
-  ImageFrame* last_frame = decoder->FrameBufferAtIndex(frame_count - 1);
+  ImageFrame* last_frame = decoder->DecodeFrameBufferAtIndex(frame_count - 1);
   EXPECT_EQ(baseline_hashes[frame_count - 1], HashBitmap(last_frame->Bitmap()));
   decoder->ClearCacheExceptFrame(kNotFound);
 
   // Resume decoding of the first frame.
-  ImageFrame* first_frame = decoder->FrameBufferAtIndex(0);
+  ImageFrame* first_frame = decoder->DecodeFrameBufferAtIndex(0);
   EXPECT_EQ(ImageFrame::kFrameComplete, first_frame->GetStatus());
   EXPECT_EQ(baseline_hashes[0], HashBitmap(first_frame->Bitmap()));
 }
@@ -581,8 +583,8 @@ void TestAlphaBlending(DecoderCreatorWithAlpha create_decoder,
   ASSERT_EQ(frame_count, decoder_b->FrameCount());
 
   for (size_t i = 0; i < frame_count; ++i) {
-    VerifyFramesMatch(file, decoder_a->FrameBufferAtIndex(i),
-                      decoder_b->FrameBufferAtIndex(i));
+    VerifyFramesMatch(file, decoder_a->DecodeFrameBufferAtIndex(i),
+                      decoder_b->DecodeFrameBufferAtIndex(i));
   }
 }
 

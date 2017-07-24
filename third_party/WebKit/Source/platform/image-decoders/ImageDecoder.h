@@ -185,7 +185,7 @@ class PLATFORM_EXPORT ImageDecoder {
 
   // Decodes as much of the requested frame as possible, and returns an
   // ImageDecoder-owned pointer.
-  ImageFrame* FrameBufferAtIndex(size_t);
+  ImageFrame* DecodeFrameBufferAtIndex(size_t);
 
   // Whether the requested frame has alpha.
   virtual bool FrameHasAlphaAtIndex(size_t) const;
@@ -263,7 +263,7 @@ class PLATFORM_EXPORT ImageDecoder {
   // and returns true. Otherwise returns false.
   virtual bool HotSpot(IntPoint&) const { return false; }
 
-  void SetMemoryAllocator(SkBitmap::Allocator* allocator) {
+  virtual void SetMemoryAllocator(SkBitmap::Allocator* allocator) {
     // FIXME: this doesn't work for images with multiple frames.
     if (frame_buffer_cache_.IsEmpty()) {
       // Ensure that InitializeNewFrame is called, after parsing if

@@ -315,6 +315,10 @@ class BLINK_PLATFORM_EXPORT Platform {
   // See comments on ImageDecoder::m_maxDecodedBytes.
   virtual size_t MaxDecodedImageBytes() { return kNoDecodedImageByteLimit; }
 
+  // Returns true if this is a low-end device.
+  // This is the same as base::SysInfo::IsLowEndDevice.
+  virtual bool IsLowEndDevice() { return false; }
+
   // Process -------------------------------------------------------------
 
   // Returns a unique identifier for a process. This may not necessarily be

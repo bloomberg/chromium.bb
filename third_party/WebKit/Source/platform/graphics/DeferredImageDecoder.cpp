@@ -118,7 +118,7 @@ sk_sp<SkImage> DeferredImageDecoder::CreateFrameAtIndex(size_t index) {
   if (!actual_decoder_ || actual_decoder_->Failed())
     return nullptr;
 
-  ImageFrame* frame = actual_decoder_->FrameBufferAtIndex(index);
+  ImageFrame* frame = actual_decoder_->DecodeFrameBufferAtIndex(index);
   if (!frame || frame->GetStatus() == ImageFrame::kFrameEmpty)
     return nullptr;
 

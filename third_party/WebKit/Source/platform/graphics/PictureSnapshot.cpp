@@ -71,7 +71,7 @@ class SkiaImageDecoder final : public SkImageDeserializer {
     if (!image_decoder)
       return nullptr;
 
-    ImageFrame* frame = image_decoder->FrameBufferAtIndex(0);
+    ImageFrame* frame = image_decoder->DecodeFrameBufferAtIndex(0);
     return (frame && !image_decoder->Failed())
                ? frame->FinalizePixelsAndGetImage()
                : nullptr;

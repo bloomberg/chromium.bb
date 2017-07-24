@@ -68,7 +68,7 @@ void Downsample(size_t max_decoded_bytes,
   std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(max_decoded_bytes);
   decoder->SetData(data.Get(), true);
 
-  ImageFrame* frame = decoder->FrameBufferAtIndex(0);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   ASSERT_TRUE(frame);
   *output_width = frame->Bitmap().width();
   *output_height = frame->Bitmap().height();
@@ -308,7 +308,7 @@ TEST(JPEGImageDecoderTest, manyProgressiveScans) {
   std::unique_ptr<ImageDecoder> test_decoder = CreateJPEGDecoder();
   test_decoder->SetData(test_data.Get(), true);
   EXPECT_EQ(1u, test_decoder->FrameCount());
-  ASSERT_TRUE(test_decoder->FrameBufferAtIndex(0));
+  ASSERT_TRUE(test_decoder->DecodeFrameBufferAtIndex(0));
   EXPECT_TRUE(test_decoder->Failed());
 }
 

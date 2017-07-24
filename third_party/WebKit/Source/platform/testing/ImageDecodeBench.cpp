@@ -217,7 +217,7 @@ bool DecodeImageData(SharedBuffer* data,
 
     int frame_count = decoder->FrameCount();
     for (int i = 0; i < frame_count; ++i) {
-      if (!decoder->FrameBufferAtIndex(i))
+      if (!decoder->DecodeFrameBufferAtIndex(i))
         return false;
     }
 
@@ -240,7 +240,8 @@ bool DecodeImageData(SharedBuffer* data,
 
     size_t frame_count = decoder->FrameCount();
     for (; next_frame_to_decode < frame_count; ++next_frame_to_decode) {
-      ImageFrame* frame = decoder->FrameBufferAtIndex(next_frame_to_decode);
+      ImageFrame* frame =
+          decoder->DecodeFrameBufferAtIndex(next_frame_to_decode);
       if (frame->GetStatus() != ImageFrame::kFrameComplete)
         break;
     }
