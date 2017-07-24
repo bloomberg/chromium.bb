@@ -12,22 +12,6 @@ config("google_toolbox_for_mac_public_config") {
   ]
 }
 
-if (is_ios) {
-  # Must be in a config because of how GN orders flags (otherwise -Wall will
-  # appear after this, and turn it back on).
-  config("google_toolbox_for_mac_warnings") {
-    cflags = []
-
-    # TODO(crbug.com/569158): Suppresses warnings that are treated as errors
-    # when minimum iOS version support is increased to iOS 9 and up.
-    # This should be removed once all deprecation violations have been fixed.
-    cflags += [ "-Wno-deprecated-declarations" ]
-
-    # TODO(crbug.com/747643): Remove once this is fixed upstream.
-    cflags += [ "-Wno-format" ]
-  }
-}
-
 component("google_toolbox_for_mac") {
   sources = [
     "src/Foundation/GTMStringEncoding.h",
@@ -98,7 +82,10 @@ component("google_toolbox_for_mac") {
       "src/iPhone/GTMUILocalizer.m",
     ]
 
-    configs += [ ":google_toolbox_for_mac_warnings" ]
+    # TODO(crbug.com/569158): Suppresses warnings that are treated as errors
+    # when minimum iOS version support is increased to iOS 9 and up.
+    # This should be removed once all deprecation violations have been fixed.
+    cflags = [ "-Wno-deprecated-declarations" ]
   }
 
   if (is_component_build) {
