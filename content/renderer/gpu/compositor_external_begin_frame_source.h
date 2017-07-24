@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "content/renderer/gpu/compositor_forwarding_message_filter.h"
 
 namespace IPC {
@@ -27,11 +27,11 @@ namespace content {
 // TODO(enne): This only implements the BeginFrameSource interface to
 // make it easier to give to cc as an external begin frame source.  In the
 // future, if this is owned by an output surface, then the internal
-// cc::ExternalBeginFrameSource can be the BeginFrameSource passed to cc
+// viz::ExternalBeginFrameSource can be the BeginFrameSource passed to cc
 // directly rather than proxied by this class.
 class CompositorExternalBeginFrameSource
-    : public cc::BeginFrameSource,
-      public cc::ExternalBeginFrameSourceClient {
+    : public viz::BeginFrameSource,
+      public viz::ExternalBeginFrameSourceClient {
  public:
   explicit CompositorExternalBeginFrameSource(
       CompositorForwardingMessageFilter* filter,
@@ -39,13 +39,13 @@ class CompositorExternalBeginFrameSource
       int routing_id);
   ~CompositorExternalBeginFrameSource() override;
 
-  // cc::BeginFrameSource implementation.
-  void AddObserver(cc::BeginFrameObserver* obs) override;
-  void RemoveObserver(cc::BeginFrameObserver* obs) override;
-  void DidFinishFrame(cc::BeginFrameObserver* obs) override;
+  // viz::BeginFrameSource implementation.
+  void AddObserver(viz::BeginFrameObserver* obs) override;
+  void RemoveObserver(viz::BeginFrameObserver* obs) override;
+  void DidFinishFrame(viz::BeginFrameObserver* obs) override;
   bool IsThrottled() const override;
 
-  // cc::ExternalBeginFrameSourceClient implementation.
+  // viz::ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool need_begin_frames) override;
 
  private:
@@ -78,7 +78,7 @@ class CompositorExternalBeginFrameSource
   bool Send(IPC::Message* message);
 
   // Shared helper implementation.
-  cc::ExternalBeginFrameSource external_begin_frame_source_;
+  viz::ExternalBeginFrameSource external_begin_frame_source_;
 
   scoped_refptr<CompositorForwardingMessageFilter> begin_frame_source_filter_;
   scoped_refptr<CompositorExternalBeginFrameSourceProxy>

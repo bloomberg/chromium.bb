@@ -15,9 +15,9 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/output/texture_mailbox_deleter.h"
-#include "cc/scheduler/begin_frame_source.h"
-#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/test/pixel_test_output_surface.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -131,7 +131,7 @@ class DirectOutputSurface : public cc::OutputSurface {
 
 struct InProcessContextFactory::PerCompositorData {
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
-  std::unique_ptr<cc::BeginFrameSource> begin_frame_source;
+  std::unique_ptr<viz::BeginFrameSource> begin_frame_source;
   std::unique_ptr<viz::Display> display;
 };
 
@@ -231,9 +231,9 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
         base::MakeUnique<DirectOutputSurface>(context_provider);
   }
 
-  std::unique_ptr<cc::DelayBasedBeginFrameSource> begin_frame_source(
-      new cc::DelayBasedBeginFrameSource(
-          base::MakeUnique<cc::DelayBasedTimeSource>(
+  std::unique_ptr<viz::DelayBasedBeginFrameSource> begin_frame_source(
+      new viz::DelayBasedBeginFrameSource(
+          base::MakeUnique<viz::DelayBasedTimeSource>(
               compositor->task_runner().get())));
   auto scheduler = base::MakeUnique<viz::DisplayScheduler>(
       begin_frame_source.get(), compositor->task_runner().get(),

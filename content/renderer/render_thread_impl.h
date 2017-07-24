@@ -115,7 +115,9 @@ class Extension;
 }
 
 namespace viz {
+class BeginFrameSource;
 class ClientSharedBitmapManager;
+class SyntheticBeginFrameSource;
 }
 
 namespace content {
@@ -596,10 +598,10 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnSyncMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
-  std::unique_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
+  std::unique_ptr<viz::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id);
 
-  std::unique_ptr<cc::SyntheticBeginFrameSource>
+  std::unique_ptr<viz::SyntheticBeginFrameSource>
   CreateSyntheticBeginFrameSource();
 
   void OnRendererInterfaceRequest(mojom::RendererAssociatedRequest request);

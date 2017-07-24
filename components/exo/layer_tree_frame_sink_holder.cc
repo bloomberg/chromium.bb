@@ -57,7 +57,7 @@ base::WeakPtr<LayerTreeFrameSinkHolder> LayerTreeFrameSinkHolder::GetWeakPtr() {
 // cc::LayerTreeFrameSinkClient overrides:
 
 void LayerTreeFrameSinkHolder::SetBeginFrameSource(
-    cc::BeginFrameSource* source) {
+    viz::BeginFrameSource* source) {
   if (surface_)
     surface_->SetBeginFrameSource(source);
 }

@@ -112,7 +112,7 @@ SynchronousLayerTreeFrameSink::SynchronousLayerTreeFrameSink(
     viz::SharedBitmapManager* shared_bitmap_manager,
     int routing_id,
     uint32_t layer_tree_frame_sink_id,
-    std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
+    std::unique_ptr<viz::BeginFrameSource> begin_frame_source,
     SynchronousCompositorRegistry* registry,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue)
     : cc::LayerTreeFrameSink(std::move(context_provider),

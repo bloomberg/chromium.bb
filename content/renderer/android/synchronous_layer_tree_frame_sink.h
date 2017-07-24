@@ -25,16 +25,13 @@
 
 class SkCanvas;
 
-namespace cc {
-class BeginFrameSource;
-}  // namespace cc
-
 namespace IPC {
 class Message;
 class Sender;
 }  // namespace IPC
 
 namespace viz {
+class BeginFrameSource;
 class CompositorFrameSinkSupport;
 class ContextProvider;
 class Display;
@@ -77,7 +74,7 @@ class SynchronousLayerTreeFrameSink
       viz::SharedBitmapManager* shared_bitmap_manager,
       int routing_id,
       uint32_t layer_tree_frame_sink_id,
-      std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
+      std::unique_ptr<viz::BeginFrameSource> begin_frame_source,
       SynchronousCompositorRegistry* registry,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue);
   ~SynchronousLayerTreeFrameSink() override;
@@ -173,7 +170,7 @@ class SynchronousLayerTreeFrameSink
   std::unique_ptr<viz::Display> display_;
   // Owned by |display_|.
   SoftwareOutputSurface* software_output_surface_ = nullptr;
-  std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
+  std::unique_ptr<viz::BeginFrameSource> begin_frame_source_;
 
   gfx::Rect sw_viewport_for_current_draw_;
 

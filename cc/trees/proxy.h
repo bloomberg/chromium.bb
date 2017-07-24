@@ -15,8 +15,8 @@
 #include "base/values.h"
 #include "cc/cc_export.h"
 #include "cc/input/browser_controls_state.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/task_runner_provider.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 
 namespace gfx {
 class Rect;

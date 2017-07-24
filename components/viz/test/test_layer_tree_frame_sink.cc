@@ -73,11 +73,11 @@ bool TestLayerTreeFrameSink::BindToClient(
   std::unique_ptr<DisplayScheduler> scheduler;
   if (!synchronous_composite_) {
     if (disable_display_vsync_) {
-      begin_frame_source_ = base::MakeUnique<cc::BackToBackBeginFrameSource>(
-          base::MakeUnique<cc::DelayBasedTimeSource>(task_runner_.get()));
+      begin_frame_source_ = base::MakeUnique<BackToBackBeginFrameSource>(
+          base::MakeUnique<DelayBasedTimeSource>(task_runner_.get()));
     } else {
-      begin_frame_source_ = base::MakeUnique<cc::DelayBasedBeginFrameSource>(
-          base::MakeUnique<cc::DelayBasedTimeSource>(task_runner_.get()));
+      begin_frame_source_ = base::MakeUnique<DelayBasedBeginFrameSource>(
+          base::MakeUnique<DelayBasedTimeSource>(task_runner_.get()));
       begin_frame_source_->SetAuthoritativeVSyncInterval(
           base::TimeDelta::FromMilliseconds(1000.f / refresh_rate_));
     }

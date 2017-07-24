@@ -12,9 +12,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface_observer.h"
 #include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/viz_service_export.h"
 
@@ -34,10 +34,10 @@ class VIZ_SERVICE_EXPORT DisplaySchedulerClient {
   virtual void SurfaceDiscarded(const SurfaceId& surface_id) = 0;
 };
 
-class VIZ_SERVICE_EXPORT DisplayScheduler : public cc::BeginFrameObserverBase,
+class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,
                                             public cc::SurfaceObserver {
  public:
-  DisplayScheduler(cc::BeginFrameSource* begin_frame_source,
+  DisplayScheduler(BeginFrameSource* begin_frame_source,
                    base::SingleThreadTaskRunner* task_runner,
                    int max_pending_swaps,
                    bool wait_for_all_surfaces_before_draw = false);
@@ -90,7 +90,7 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public cc::BeginFrameObserverBase,
   bool UpdateHasPendingSurfaces();
 
   DisplaySchedulerClient* client_;
-  cc::BeginFrameSource* begin_frame_source_;
+  BeginFrameSource* begin_frame_source_;
   base::SingleThreadTaskRunner* task_runner_;
 
   BeginFrameArgs current_begin_frame_args_;

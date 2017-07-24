@@ -127,8 +127,8 @@ class CC_EXPORT LayerTreeFrameSink {
   // processed in order to unthrottle the next frame.
   virtual void SubmitCompositorFrame(CompositorFrame frame) = 0;
 
-  // Signals that a BeginFrame issued by the BeginFrameSource provided to the
-  // client did not lead to a CompositorFrame submission.
+  // Signals that a BeginFrame issued by the viz::BeginFrameSource provided to
+  // the client did not lead to a CompositorFrame submission.
   virtual void DidNotProduceFrame(const viz::BeginFrameAck& ack) = 0;
 
  protected:

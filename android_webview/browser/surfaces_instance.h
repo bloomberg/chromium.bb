@@ -15,10 +15,6 @@
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 
-namespace cc {
-class BeginFrameSource;
-}
-
 namespace gfx {
 class Rect;
 class Size;
@@ -26,6 +22,7 @@ class Transform;
 }
 
 namespace viz {
+class BeginFrameSource;
 class CompositorFrameSinkSupport;
 class Display;
 class FrameSinkManagerImpl;
@@ -84,7 +81,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   viz::FrameSinkId frame_sink_id_;
 
   std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_;
-  std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
+  std::unique_ptr<viz::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<viz::Display> display_;
   std::unique_ptr<viz::LocalSurfaceIdAllocator> local_surface_id_allocator_;
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;

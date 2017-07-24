@@ -70,7 +70,7 @@ void SurfaceManager::RequestSurfaceResolution(Surface* surface) {
 Surface* SurfaceManager::CreateSurface(
     base::WeakPtr<SurfaceClient> surface_client,
     const viz::SurfaceInfo& surface_info,
-    BeginFrameSource* begin_frame_source,
+    viz::BeginFrameSource* begin_frame_source,
     bool needs_sync_tokens) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(surface_info.is_valid());

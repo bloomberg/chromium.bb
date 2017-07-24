@@ -36,7 +36,7 @@ bool LayerTreeFrameSinkLocal::BindToClient(
       this, frame_sink_id_, false /* is_root */,
       true /* handles_frame_sink_id_invalidation */,
       true /* needs_sync_points */);
-  begin_frame_source_ = base::MakeUnique<cc::ExternalBeginFrameSource>(this);
+  begin_frame_source_ = base::MakeUnique<viz::ExternalBeginFrameSource>(this);
   client->SetBeginFrameSource(begin_frame_source_.get());
   return true;
 }

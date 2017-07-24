@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "cc/output/compositor_frame.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_reference.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
@@ -38,8 +38,8 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   if (!destruction_callback_.is_null())
     std::move(destruction_callback_).Run();
 
-  // Unregister |this| as a cc::BeginFrameObserver so that the
-  // cc::BeginFrameSource does not call into |this| after it's deleted.
+  // Unregister |this| as a BeginFrameObserver so that the
+  // BeginFrameSource does not call into |this| after it's deleted.
   SetNeedsBeginFrame(false);
 
   // For display root surfaces the surface is no longer going to be visible.
@@ -114,7 +114,7 @@ void CompositorFrameSinkSupport::ReceiveFromChild(
 }
 
 void CompositorFrameSinkSupport::SetBeginFrameSource(
-    cc::BeginFrameSource* begin_frame_source) {
+    BeginFrameSource* begin_frame_source) {
   if (begin_frame_source_ && added_frame_observer_) {
     begin_frame_source_->RemoveObserver(this);
     added_frame_observer_ = false;

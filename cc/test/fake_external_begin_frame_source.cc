@@ -28,13 +28,13 @@ FakeExternalBeginFrameSource::~FakeExternalBeginFrameSource() {
 void FakeExternalBeginFrameSource::SetPaused(bool paused) {
   if (paused != paused_) {
     paused_ = paused;
-    std::set<BeginFrameObserver*> observers(observers_);
+    std::set<viz::BeginFrameObserver*> observers(observers_);
     for (auto* obs : observers)
       obs->OnBeginFrameSourcePausedChanged(paused_);
   }
 }
 
-void FakeExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
+void FakeExternalBeginFrameSource::AddObserver(viz::BeginFrameObserver* obs) {
   DCHECK(obs);
   DCHECK(observers_.find(obs) == observers_.end());
 
@@ -55,7 +55,8 @@ void FakeExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
     client_->OnAddObserver(obs);
 }
 
-void FakeExternalBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
+void FakeExternalBeginFrameSource::RemoveObserver(
+    viz::BeginFrameObserver* obs) {
   DCHECK(obs);
   DCHECK(observers_.find(obs) != observers_.end());
 
@@ -66,7 +67,8 @@ void FakeExternalBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
     client_->OnRemoveObserver(obs);
 }
 
-void FakeExternalBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs) {}
+void FakeExternalBeginFrameSource::DidFinishFrame(
+    viz::BeginFrameObserver* obs) {}
 
 bool FakeExternalBeginFrameSource::IsThrottled() const {
   return true;
@@ -89,7 +91,7 @@ void FakeExternalBeginFrameSource::TestOnBeginFrame(
     const viz::BeginFrameArgs& args) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   current_args_ = args;
-  std::set<BeginFrameObserver*> observers(observers_);
+  std::set<viz::BeginFrameObserver*> observers(observers_);
   for (auto* obs : observers)
     obs->OnBeginFrame(current_args_);
   if (tick_automatically_)

@@ -60,8 +60,8 @@ interface FrameSinkManager {
       cc.mojom.CompositorFrameSinkClient compositor_frame_sink_client);
 
   // Set up a BeginFrame relationship between two FrameSinkIds. In this case,
-  // the child inherits the BeginFrameSource from the parent if it doesn't
-  // already have a BeginFrameSource.
+  // the child inherits the viz::BeginFrameSource from the parent if it doesn't
+  // already have a viz::BeginFrameSource.
   RegisterFrameSinkHierarchy(cc.mojom.FrameSinkId parent_frame_sink_id,
                              cc.mojom.FrameSinkId child_frame_sink_id);
 

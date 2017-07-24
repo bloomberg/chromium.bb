@@ -17,10 +17,13 @@
 #include "cc/trees/task_runner_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 
+namespace viz {
+class BeginFrameSource;
+}
+
 namespace cc {
 
 class MutatorEvents;
-class BeginFrameSource;
 class LayerTreeHost;
 class LayerTreeHostSingleThreadClient;
 
@@ -79,7 +82,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 
   // LayerTreeHostImplClient implementation
   void DidLoseLayerTreeFrameSinkOnImplThread() override;
-  void SetBeginFrameSource(BeginFrameSource* source) override;
+  void SetBeginFrameSource(viz::BeginFrameSource* source) override;
   void DidReceiveCompositorFrameAckOnImplThread() override;
   void OnCanDrawStateChanged(bool can_draw) override;
   void NotifyReadyToActivate() override;

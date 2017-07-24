@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_FAKE_DELAY_BASED_TIME_SOURCE_H_
-#define CC_TEST_FAKE_DELAY_BASED_TIME_SOURCE_H_
+#ifndef COMPONENTS_VIZ_TEST_FAKE_DELAY_BASED_TIME_SOURCE_H_
+#define COMPONENTS_VIZ_TEST_FAKE_DELAY_BASED_TIME_SOURCE_H_
 
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
-#include "cc/scheduler/delay_based_time_source.h"
+#include "components/viz/common/frame_sinks/delay_based_time_source.h"
 
-namespace cc {
+namespace viz {
 
 class FakeDelayBasedTimeSourceClient : public DelayBasedTimeSourceClient {
  public:
@@ -44,6 +44,6 @@ class FakeDelayBasedTimeSource : public DelayBasedTimeSource {
   DISALLOW_COPY_AND_ASSIGN(FakeDelayBasedTimeSource);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_TEST_FAKE_DELAY_BASED_TIME_SOURCE_H_
+#endif  // COMPONENTS_VIZ_TEST_FAKE_DELAY_BASED_TIME_SOURCE_H_

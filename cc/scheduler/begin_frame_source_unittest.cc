@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 
 #include <stdint.h>
 
 #include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "cc/test/begin_frame_source_test.h"
-#include "cc/test/fake_delay_based_time_source.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "components/viz/test/begin_frame_args_test.h"
+#include "components/viz/test/fake_delay_based_time_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,15 +27,16 @@ base::TimeTicks TicksFromMicroseconds(int64_t micros) {
 
 // BeginFrameSource testing ----------------------------------------------------
 TEST(BeginFrameSourceTest, SourceIdsAreUnique) {
-  StubBeginFrameSource source1;
-  StubBeginFrameSource source2;
-  StubBeginFrameSource source3;
+  viz::StubBeginFrameSource source1;
+  viz::StubBeginFrameSource source2;
+  viz::StubBeginFrameSource source3;
   EXPECT_NE(source1.source_id(), source2.source_id());
   EXPECT_NE(source1.source_id(), source3.source_id());
   EXPECT_NE(source2.source_id(), source3.source_id());
 }
 
-// BackToBackBeginFrameSource testing ------------------------------------------
+// viz::BackToBackBeginFrameSource testing
+// ------------------------------------------
 class BackToBackBeginFrameSourceTest : public ::testing::Test {
  protected:
   static const int64_t kDeadline;
@@ -46,10 +47,10 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
     now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
     task_runner_ =
         make_scoped_refptr(new OrderedSimpleTaskRunner(now_src_.get(), false));
-    std::unique_ptr<FakeDelayBasedTimeSource> time_source(
-        new FakeDelayBasedTimeSource(now_src_.get(), task_runner_.get()));
+    std::unique_ptr<viz::FakeDelayBasedTimeSource> time_source(
+        new viz::FakeDelayBasedTimeSource(now_src_.get(), task_runner_.get()));
     delay_based_time_source_ = time_source.get();
-    source_.reset(new BackToBackBeginFrameSource(std::move(time_source)));
+    source_.reset(new viz::BackToBackBeginFrameSource(std::move(time_source)));
     obs_ = base::WrapUnique(new ::testing::NiceMock<MockBeginFrameObserver>);
   }
 
@@ -57,9 +58,10 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
 
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
-  std::unique_ptr<BackToBackBeginFrameSource> source_;
+  std::unique_ptr<viz::BackToBackBeginFrameSource> source_;
   std::unique_ptr<MockBeginFrameObserver> obs_;
-  FakeDelayBasedTimeSource* delay_based_time_source_;  // Owned by |now_src_|.
+  viz::FakeDelayBasedTimeSource*
+      delay_based_time_source_;  // Owned by |now_src_|.
 };
 
 const int64_t BackToBackBeginFrameSourceTest::kDeadline =
@@ -329,12 +331,13 @@ TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversAtOnce) {
   source_->RemoveObserver(&obs2);
 }
 
-// DelayBasedBeginFrameSource testing ------------------------------------------
+// viz::DelayBasedBeginFrameSource testing
+// ------------------------------------------
 class DelayBasedBeginFrameSourceTest : public ::testing::Test {
  public:
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
-  std::unique_ptr<DelayBasedBeginFrameSource> source_;
+  std::unique_ptr<viz::DelayBasedBeginFrameSource> source_;
   std::unique_ptr<MockBeginFrameObserver> obs_;
 
   void SetUp() override {
@@ -342,11 +345,11 @@ class DelayBasedBeginFrameSourceTest : public ::testing::Test {
     now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
     task_runner_ =
         make_scoped_refptr(new OrderedSimpleTaskRunner(now_src_.get(), false));
-    std::unique_ptr<DelayBasedTimeSource> time_source(
-        new FakeDelayBasedTimeSource(now_src_.get(), task_runner_.get()));
+    std::unique_ptr<viz::DelayBasedTimeSource> time_source(
+        new viz::FakeDelayBasedTimeSource(now_src_.get(), task_runner_.get()));
     time_source->SetTimebaseAndInterval(
         base::TimeTicks(), base::TimeDelta::FromMicroseconds(10000));
-    source_.reset(new DelayBasedBeginFrameSource(std::move(time_source)));
+    source_.reset(new viz::DelayBasedBeginFrameSource(std::move(time_source)));
     obs_.reset(new MockBeginFrameObserver);
   }
 
@@ -531,9 +534,10 @@ TEST_F(DelayBasedBeginFrameSourceTest, DoubleTickMissedFrame) {
   source_->RemoveObserver(&obs);
 }
 
-// ExternalBeginFrameSource testing --------------------------------------------
+// viz::ExternalBeginFrameSource testing
+// --------------------------------------------
 class MockExternalBeginFrameSourceClient
-    : public ExternalBeginFrameSourceClient {
+    : public viz::ExternalBeginFrameSourceClient {
  public:
   MOCK_METHOD1(OnNeedsBeginFrames, void(bool));
 };
@@ -541,12 +545,12 @@ class MockExternalBeginFrameSourceClient
 class ExternalBeginFrameSourceTest : public ::testing::Test {
  public:
   std::unique_ptr<MockExternalBeginFrameSourceClient> client_;
-  std::unique_ptr<ExternalBeginFrameSource> source_;
+  std::unique_ptr<viz::ExternalBeginFrameSource> source_;
   std::unique_ptr<MockBeginFrameObserver> obs_;
 
   void SetUp() override {
     client_.reset(new MockExternalBeginFrameSourceClient);
-    source_.reset(new ExternalBeginFrameSource(client_.get()));
+    source_.reset(new viz::ExternalBeginFrameSource(client_.get()));
     obs_.reset(new MockBeginFrameObserver);
   }
 
@@ -570,11 +574,11 @@ TEST_F(ExternalBeginFrameSourceTest, OnBeginFrameChecksBeginFrameContinuity) {
   // Providing same args again to OnBeginFrame() should not notify observer.
   source_->OnBeginFrame(args);
 
-  // Providing same args through a different ExternalBeginFrameSource also does
-  // not notify observer.
+  // Providing same args through a different viz::ExternalBeginFrameSource also
+  // does not notify observer.
   EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
   EXPECT_CALL((*client_), OnNeedsBeginFrames(true)).Times(1);
-  ExternalBeginFrameSource source2(client_.get());
+  viz::ExternalBeginFrameSource source2(client_.get());
   source2.AddObserver(obs_.get());
   source2.OnBeginFrame(args);
 }

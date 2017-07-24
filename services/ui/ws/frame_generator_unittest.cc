@@ -6,8 +6,8 @@
 
 #include "base/macros.h"
 #include "cc/quads/render_pass.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "cc/test/fake_external_begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,7 +34,7 @@ const viz::SurfaceInfo kArbitrarySurfaceInfo(kArbitrarySurfaceId,
 // TestClientBinding Observes a BeginFrame and accepts CompositorFrame submitted
 // from FrameGenerator. It provides a way to inspect CompositorFrames.
 class TestClientBinding : public cc::mojom::CompositorFrameSink,
-                          public cc::BeginFrameObserver {
+                          public viz::BeginFrameObserver {
  public:
   explicit TestClientBinding(cc::mojom::CompositorFrameSinkClient* sink_client)
       : sink_client_(sink_client) {}
@@ -63,7 +63,7 @@ class TestClientBinding : public cc::mojom::CompositorFrameSink,
       begin_frame_source_->RemoveObserver(this);
   }
 
-  // cc::BeginFrameObserver implementation.
+  // viz::BeginFrameObserver implementation.
   void OnBeginFrame(const viz::BeginFrameArgs& args) override {
     sink_client_->OnBeginFrame(args);
     last_begin_frame_args_ = args;
@@ -75,7 +75,7 @@ class TestClientBinding : public cc::mojom::CompositorFrameSink,
 
   void OnBeginFrameSourcePausedChanged(bool paused) override {}
 
-  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) {
+  void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source) {
     begin_frame_source_ = begin_frame_source;
   }
 
@@ -97,7 +97,7 @@ class TestClientBinding : public cc::mojom::CompositorFrameSink,
   cc::mojom::CompositorFrameSinkClient* sink_client_;
   viz::BeginFrameArgs last_begin_frame_args_;
   cc::CompositorFrame last_frame_;
-  cc::BeginFrameSource* begin_frame_source_ = nullptr;
+  viz::BeginFrameSource* begin_frame_source_ = nullptr;
   bool observing_begin_frames_ = false;
   int frames_submitted_ = 0;
   viz::BeginFrameAck last_begin_frame_ack_;
@@ -162,7 +162,7 @@ class FrameGeneratorTest : public testing::Test {
   }
 
   FrameGenerator* frame_generator() { return frame_generator_.get(); }
-  cc::BeginFrameSource* begin_frame_source() {
+  viz::BeginFrameSource* begin_frame_source() {
     return begin_frame_source_.get();
   }
 

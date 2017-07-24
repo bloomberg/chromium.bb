@@ -7,7 +7,7 @@
 namespace cc {
 
 SurfaceDependencyDeadline::SurfaceDependencyDeadline(
-    BeginFrameSource* begin_frame_source)
+    viz::BeginFrameSource* begin_frame_source)
     : begin_frame_source_(begin_frame_source) {
   DCHECK(begin_frame_source_);
 }
@@ -51,7 +51,7 @@ bool SurfaceDependencyDeadline::operator==(
          number_of_frames_to_deadline_ == other.number_of_frames_to_deadline_;
 }
 
-// BeginFrameObserver implementation.
+// viz::BeginFrameObserver implementation.
 void SurfaceDependencyDeadline::OnBeginFrame(const viz::BeginFrameArgs& args) {
   last_begin_frame_args_ = args;
   // OnBeginFrame might get called immediately after cancellation if some other

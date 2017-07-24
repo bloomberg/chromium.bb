@@ -84,7 +84,7 @@ class TestScheduler : public Scheduler {
     return state_machine_.needs_begin_main_frame();
   }
 
-  BeginFrameSource& frame_source() { return *begin_frame_source_; }
+  viz::BeginFrameSource& frame_source() { return *begin_frame_source_; }
 
   bool MainThreadMissedLastDeadline() const {
     return state_machine_.main_thread_missed_last_deadline();

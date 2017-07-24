@@ -68,7 +68,7 @@ class FakeDisplaySchedulerClient : public DisplaySchedulerClient {
 
 class TestDisplayScheduler : public DisplayScheduler {
  public:
-  TestDisplayScheduler(cc::BeginFrameSource* begin_frame_source,
+  TestDisplayScheduler(BeginFrameSource* begin_frame_source,
                        cc::SurfaceManager* surface_manager,
                        base::SingleThreadTaskRunner* task_runner,
                        int max_pending_swaps,

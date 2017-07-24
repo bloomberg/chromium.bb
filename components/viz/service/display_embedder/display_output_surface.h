@@ -11,19 +11,16 @@
 #include "components/viz/common/gpu/in_process_context_provider.h"
 #include "ui/latency/latency_tracker.h"
 
-namespace cc {
-class SyntheticBeginFrameSource;
-}
-
 namespace viz {
+
+class SyntheticBeginFrameSource;
 
 // An OutputSurface implementation that directly draws and
 // swaps to an actual GL surface.
 class DisplayOutputSurface : public cc::OutputSurface {
  public:
-  DisplayOutputSurface(
-      scoped_refptr<InProcessContextProvider> context_provider,
-      cc::SyntheticBeginFrameSource* synthetic_begin_frame_source);
+  DisplayOutputSurface(scoped_refptr<InProcessContextProvider> context_provider,
+                       SyntheticBeginFrameSource* synthetic_begin_frame_source);
   ~DisplayOutputSurface() override;
 
   // cc::OutputSurface implementation
@@ -62,7 +59,7 @@ class DisplayOutputSurface : public cc::OutputSurface {
                                 base::TimeDelta interval);
 
   cc::OutputSurfaceClient* client_ = nullptr;
-  cc::SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
+  SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
   ui::LatencyTracker latency_tracker_;
 
   bool set_draw_rectangle_for_frame_ = false;

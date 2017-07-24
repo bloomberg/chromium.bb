@@ -12,13 +12,13 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/render_pass.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
@@ -48,7 +48,7 @@ class TestSoftwareOutputDevice : public cc::SoftwareOutputDevice {
 
 class TestDisplayScheduler : public DisplayScheduler {
  public:
-  explicit TestDisplayScheduler(cc::BeginFrameSource* begin_frame_source,
+  explicit TestDisplayScheduler(BeginFrameSource* begin_frame_source,
                                 base::SingleThreadTaskRunner* task_runner)
       : DisplayScheduler(begin_frame_source, task_runner, 1),
         damaged(false),
@@ -103,7 +103,7 @@ class DisplayTest : public testing::Test {
 
   void SetUpDisplay(const RendererSettings& settings,
                     std::unique_ptr<cc::TestWebGraphicsContext3D> context) {
-    begin_frame_source_.reset(new cc::StubBeginFrameSource);
+    begin_frame_source_.reset(new StubBeginFrameSource);
 
     std::unique_ptr<cc::FakeOutputSurface> output_surface;
     if (context) {
@@ -159,7 +159,7 @@ class DisplayTest : public testing::Test {
   LocalSurfaceIdAllocator id_allocator_;
   scoped_refptr<base::NullTaskRunner> task_runner_;
   cc::TestSharedBitmapManager shared_bitmap_manager_;
-  std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
+  std::unique_ptr<BeginFrameSource> begin_frame_source_;
   std::unique_ptr<Display> display_;
   TestSoftwareOutputDevice* software_output_device_ = nullptr;
   cc::FakeOutputSurface* output_surface_ = nullptr;
@@ -615,7 +615,7 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
       nullptr, &manager_, kAnotherFrameSinkId, true /* is_root */,
       true /* handles_frame_sink_id_invalidation */,
       true /* needs_sync_points */);
-  auto begin_frame_source2 = base::MakeUnique<cc::StubBeginFrameSource>();
+  auto begin_frame_source2 = base::MakeUnique<StubBeginFrameSource>();
   auto scheduler_for_display2 = base::MakeUnique<TestDisplayScheduler>(
       begin_frame_source2.get(), task_runner_.get());
   TestDisplayScheduler* scheduler2 = scheduler_for_display2.get();

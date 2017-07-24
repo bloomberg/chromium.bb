@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "cc/resources/returned_resource.h"
-#include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"

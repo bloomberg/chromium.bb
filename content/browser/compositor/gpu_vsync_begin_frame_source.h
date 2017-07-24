@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 
 namespace content {
 
@@ -19,13 +19,13 @@ class GpuVSyncControl {
 
 // This is a type of ExternalBeginFrameSource where VSync signals are
 // generated externally on GPU side.
-class GpuVSyncBeginFrameSource : public cc::ExternalBeginFrameSource,
-                                 cc::ExternalBeginFrameSourceClient {
+class GpuVSyncBeginFrameSource : public viz::ExternalBeginFrameSource,
+                                 viz::ExternalBeginFrameSourceClient {
  public:
   explicit GpuVSyncBeginFrameSource(GpuVSyncControl* vsync_control);
   ~GpuVSyncBeginFrameSource() override;
 
-  // cc::ExternalBeginFrameSourceClient implementation.
+  // viz::ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
   void OnVSync(base::TimeTicks timestamp, base::TimeDelta interval);

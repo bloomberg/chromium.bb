@@ -21,7 +21,7 @@ class CC_EXPORT VideoFrameControllerClient {
   virtual ~VideoFrameControllerClient() {}
 };
 
-// TODO(sunnyps): Consider making this a BeginFrameObserver some day.
+// TODO(sunnyps): Consider making this a viz::BeginFrameObserver some day.
 class CC_EXPORT VideoFrameController {
  public:
   virtual void OnBeginFrame(const viz::BeginFrameArgs& args) = 0;

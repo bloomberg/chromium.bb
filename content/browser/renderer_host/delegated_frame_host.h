@@ -11,8 +11,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "cc/output/copy_output_result.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "components/viz/service/frame_sinks/frame_evictor.h"
 #include "content/browser/compositor/image_transport_factory.h"

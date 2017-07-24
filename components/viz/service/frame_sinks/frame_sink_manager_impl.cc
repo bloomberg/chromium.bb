@@ -80,7 +80,7 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
   DCHECK_EQ(0u, compositor_frame_sinks_.count(frame_sink_id));
   DCHECK(display_provider_);
 
-  std::unique_ptr<cc::BeginFrameSource> begin_frame_source;
+  std::unique_ptr<BeginFrameSource> begin_frame_source;
   auto display = display_provider_->CreateDisplay(frame_sink_id, surface_handle,
                                                   &begin_frame_source);
 
@@ -121,7 +121,7 @@ void FrameSinkManagerImpl::RegisterFrameSinkHierarchy(
 
   // If the parent has no source, then attaching it to this child will
   // not change any downstream sources.
-  cc::BeginFrameSource* parent_source =
+  BeginFrameSource* parent_source =
       frame_sink_source_map_[parent_frame_sink_id].source;
   if (!parent_source)
     return;
@@ -165,7 +165,7 @@ void FrameSinkManagerImpl::UnregisterFrameSinkHierarchy(
 
   // If the parent does not have a begin frame source, then disconnecting it
   // will not change any of its children.
-  cc::BeginFrameSource* parent_source = iter->second.source;
+  BeginFrameSource* parent_source = iter->second.source;
   if (!parent_source)
     return;
 
@@ -207,7 +207,7 @@ void FrameSinkManagerImpl::UnregisterFrameSinkManagerClient(
 }
 
 void FrameSinkManagerImpl::RegisterBeginFrameSource(
-    cc::BeginFrameSource* source,
+    BeginFrameSource* source,
     const FrameSinkId& frame_sink_id) {
   DCHECK(source);
   DCHECK_EQ(registered_sources_.count(source), 0u);
@@ -219,7 +219,7 @@ void FrameSinkManagerImpl::RegisterBeginFrameSource(
 }
 
 void FrameSinkManagerImpl::UnregisterBeginFrameSource(
-    cc::BeginFrameSource* source) {
+    BeginFrameSource* source) {
   DCHECK(source);
   DCHECK_EQ(registered_sources_.count(source), 1u);
 
@@ -240,13 +240,13 @@ void FrameSinkManagerImpl::UnregisterBeginFrameSource(
     RecursivelyAttachBeginFrameSource(source_iter.second, source_iter.first);
 }
 
-cc::BeginFrameSource* FrameSinkManagerImpl::GetPrimaryBeginFrameSource() {
+BeginFrameSource* FrameSinkManagerImpl::GetPrimaryBeginFrameSource() {
   return &primary_source_;
 }
 
 void FrameSinkManagerImpl::RecursivelyAttachBeginFrameSource(
     const FrameSinkId& frame_sink_id,
-    cc::BeginFrameSource* source) {
+    BeginFrameSource* source) {
   FrameSinkSourceMapping& mapping = frame_sink_source_map_[frame_sink_id];
   if (!mapping.source) {
     mapping.source = source;
@@ -266,7 +266,7 @@ void FrameSinkManagerImpl::RecursivelyAttachBeginFrameSource(
 
 void FrameSinkManagerImpl::RecursivelyDetachBeginFrameSource(
     const FrameSinkId& frame_sink_id,
-    cc::BeginFrameSource* source) {
+    BeginFrameSource* source) {
   auto iter = frame_sink_source_map_.find(frame_sink_id);
   if (iter == frame_sink_source_map_.end())
     return;

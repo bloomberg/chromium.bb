@@ -16,7 +16,7 @@
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "cc/scheduler/compositor_timing_history.h"
-#include "cc/scheduler/delay_based_time_source.h"
+#include "components/viz/common/frame_sinks/delay_based_time_source.h"
 
 namespace cc {
 
@@ -94,7 +94,7 @@ void Scheduler::NotifyReadyToDraw() {
   ProcessScheduledActions();
 }
 
-void Scheduler::SetBeginFrameSource(BeginFrameSource* source) {
+void Scheduler::SetBeginFrameSource(viz::BeginFrameSource* source) {
   if (source == begin_frame_source_)
     return;
   if (begin_frame_source_ && observing_begin_frame_source_)

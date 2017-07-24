@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/scheduler/delay_based_time_source.h"
+#include "components/viz/common/frame_sinks/delay_based_time_source.h"
 
 #include <algorithm>
 #include <cmath>
@@ -16,7 +16,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 
-namespace cc {
+namespace viz {
 
 // The following methods correspond to the DelayBasedTimeSource that uses
 // the base::TimeTicks::Now as the timebase.
@@ -25,13 +25,13 @@ DelayBasedTimeSource::DelayBasedTimeSource(
     : client_(nullptr),
       active_(false),
       timebase_(base::TimeTicks()),
-      interval_(viz::BeginFrameArgs::DefaultInterval()),
+      interval_(BeginFrameArgs::DefaultInterval()),
       last_tick_time_(base::TimeTicks() - interval_),
       next_tick_time_(base::TimeTicks()),
       task_runner_(task_runner),
       weak_factory_(this) {}
 
-DelayBasedTimeSource::~DelayBasedTimeSource() {}
+DelayBasedTimeSource::~DelayBasedTimeSource() = default;
 
 void DelayBasedTimeSource::SetActive(bool active) {
   TRACE_EVENT1("cc", "DelayBasedTimeSource::SetActive", "active", active);
@@ -54,7 +54,9 @@ base::TimeDelta DelayBasedTimeSource::Interval() const {
   return interval_;
 }
 
-bool DelayBasedTimeSource::Active() const { return active_; }
+bool DelayBasedTimeSource::Active() const {
+  return active_;
+}
 
 base::TimeTicks DelayBasedTimeSource::LastTickTime() const {
   return last_tick_time_;
@@ -175,4 +177,4 @@ void DelayBasedTimeSource::AsValueInto(
   state->SetBoolean("active", active_);
 }
 
-}  // namespace cc
+}  // namespace viz

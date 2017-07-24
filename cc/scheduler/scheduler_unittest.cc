@@ -16,12 +16,12 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/test/fake_delay_based_time_source.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "cc/test/scheduler_test_common.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/test/begin_frame_args_test.h"
+#include "components/viz/test/fake_delay_based_time_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -208,10 +208,10 @@ class FakeSchedulerClient : public SchedulerClient,
   }
 
   // FakeExternalBeginFrameSource::Client implementation.
-  void OnAddObserver(BeginFrameObserver* obs) override {
+  void OnAddObserver(viz::BeginFrameObserver* obs) override {
     PushAction("AddObserver(this)");
   }
-  void OnRemoveObserver(BeginFrameObserver* obs) override {
+  void OnRemoveObserver(viz::BeginFrameObserver* obs) override {
     PushAction("RemoveObserver(this)");
   }
 
@@ -261,16 +261,16 @@ class SchedulerTest : public testing::Test {
 
  protected:
   TestScheduler* CreateScheduler(BeginFrameSourceType bfs_type) {
-    BeginFrameSource* frame_source = nullptr;
-    unthrottled_frame_source_.reset(new BackToBackBeginFrameSource(
-        base::MakeUnique<FakeDelayBasedTimeSource>(now_src_.get(),
-                                                   task_runner_.get())));
+    viz::BeginFrameSource* frame_source = nullptr;
+    unthrottled_frame_source_.reset(new viz::BackToBackBeginFrameSource(
+        base::MakeUnique<viz::FakeDelayBasedTimeSource>(now_src_.get(),
+                                                        task_runner_.get())));
     fake_external_begin_frame_source_.reset(
         new FakeExternalBeginFrameSource(0.f, false));
     fake_external_begin_frame_source_->SetClient(client_.get());
-    synthetic_frame_source_.reset(new DelayBasedBeginFrameSource(
-        base::MakeUnique<FakeDelayBasedTimeSource>(now_src_.get(),
-                                                   task_runner_.get())));
+    synthetic_frame_source_.reset(new viz::DelayBasedBeginFrameSource(
+        base::MakeUnique<viz::FakeDelayBasedTimeSource>(now_src_.get(),
+                                                        task_runner_.get())));
     switch (bfs_type) {
       case EXTERNAL_BFS:
         frame_source = fake_external_begin_frame_source_.get();
@@ -428,7 +428,7 @@ class SchedulerTest : public testing::Test {
     DCHECK_EQ(scheduler_->begin_frame_source(),
               fake_external_begin_frame_source_.get());
     // Creep the time forward so that any viz::BeginFrameArgs is not equal to
-    // the last one otherwise we violate the BeginFrameSource contract.
+    // the last one otherwise we violate the viz::BeginFrameSource contract.
     now_src_->Advance(viz::BeginFrameArgs::DefaultInterval());
     viz::BeginFrameArgs args =
         fake_external_begin_frame_source_->CreateBeginFrameArgs(
@@ -455,8 +455,8 @@ class SchedulerTest : public testing::Test {
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
   std::unique_ptr<FakeExternalBeginFrameSource>
       fake_external_begin_frame_source_;
-  std::unique_ptr<SyntheticBeginFrameSource> synthetic_frame_source_;
-  std::unique_ptr<SyntheticBeginFrameSource> unthrottled_frame_source_;
+  std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_frame_source_;
+  std::unique_ptr<viz::SyntheticBeginFrameSource> unthrottled_frame_source_;
   SchedulerSettings scheduler_settings_;
   std::unique_ptr<FakeSchedulerClient> client_;
   std::unique_ptr<TestScheduler> scheduler_;

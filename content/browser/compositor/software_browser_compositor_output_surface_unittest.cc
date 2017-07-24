@@ -11,9 +11,9 @@
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/output_surface_frame.h"
-#include "cc/scheduler/begin_frame_source.h"
-#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/test/fake_output_surface_client.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/context_factories_for_test.h"
@@ -65,7 +65,7 @@ class FakeSoftwareOutputDevice : public cc::SoftwareOutputDevice {
 class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
  public:
   SoftwareBrowserCompositorOutputSurfaceTest()
-      : begin_frame_source_(base::MakeUnique<cc::DelayBasedTimeSource>(
+      : begin_frame_source_(base::MakeUnique<viz::DelayBasedTimeSource>(
             message_loop_.task_runner().get())) {}
   ~SoftwareBrowserCompositorOutputSurfaceTest() override = default;
 
@@ -85,7 +85,7 @@ class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
   // inside the OutputSurface, so we shouldn't need a MessageLoop. The
   // OutputSurface should be using the TaskRunner given to the compositor.
   base::TestMessageLoop message_loop_;
-  cc::DelayBasedBeginFrameSource begin_frame_source_;
+  viz::DelayBasedBeginFrameSource begin_frame_source_;
   std::unique_ptr<ui::Compositor> compositor_;
   int update_vsync_parameters_call_count_ = 0;
 

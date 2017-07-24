@@ -19,7 +19,7 @@ ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
     scoped_refptr<ContextProvider> worker_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     SharedBitmapManager* shared_bitmap_manager,
-    std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source,
+    std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
     cc::mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info,
     cc::mojom::CompositorFrameSinkClientRequest client_request,
     std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider,
@@ -40,7 +40,7 @@ ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
 
 ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
     scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
-    std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source,
+    std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
     cc::mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info,
     cc::mojom::CompositorFrameSinkClientRequest client_request,
     std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider,
@@ -78,7 +78,7 @@ bool ClientLayerTreeFrameSink::BindToClient(
   if (synthetic_begin_frame_source_) {
     client->SetBeginFrameSource(synthetic_begin_frame_source_.get());
   } else {
-    begin_frame_source_ = base::MakeUnique<cc::ExternalBeginFrameSource>(this);
+    begin_frame_source_ = base::MakeUnique<ExternalBeginFrameSource>(this);
     begin_frame_source_->OnSetBeginFrameSourcePaused(begin_frames_paused_);
     client->SetBeginFrameSource(begin_frame_source_.get());
   }

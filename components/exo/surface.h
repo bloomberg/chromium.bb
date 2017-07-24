@@ -15,8 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "cc/resources/transferable_resource.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window.h"
@@ -56,7 +56,7 @@ class Surface : public ui::ContextFactoryObserver,
                 public aura::WindowObserver,
                 public ui::PropertyHandler,
                 public ui::CompositorVSyncManager::Observer,
-                public cc::BeginFrameObserverBase {
+                public viz::BeginFrameObserverBase {
  public:
   using PropertyDeallocator = void (*)(int64_t value);
 
@@ -191,7 +191,7 @@ class Surface : public ui::ContextFactoryObserver,
   void DidReceiveCompositorFrameAck();
 
   // Called when the begin frame source has changed.
-  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source);
+  void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source);
 
   // Returns the active contents size.
   const gfx::Size& content_size() const { return content_size_; }
@@ -218,7 +218,7 @@ class Surface : public ui::ContextFactoryObserver,
     return pending_damage_.contains(gfx::RectToSkIRect(damage));
   }
 
-  // Overridden from cc::BeginFrameObserverBase:
+  // Overridden from viz::BeginFrameObserverBase:
   bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) override;
   void OnBeginFrameSourcePausedChanged(bool paused) override {}
 
@@ -370,7 +370,7 @@ class Surface : public ui::ContextFactoryObserver,
   base::ObserverList<SurfaceObserver, true> observers_;
 
   // The begin frame source being observed.
-  cc::BeginFrameSource* begin_frame_source_ = nullptr;
+  viz::BeginFrameSource* begin_frame_source_ = nullptr;
   bool needs_begin_frame_ = false;
   viz::BeginFrameAck current_begin_frame_ack_;
 

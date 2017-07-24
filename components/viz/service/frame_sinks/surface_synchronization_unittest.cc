@@ -56,11 +56,9 @@ class FakeExternalBeginFrameSourceClient
   bool has_observers() const { return observer_count_ > 0; }
 
   // cc::FakeExternalBeginFrameSource::Client implementation:
-  void OnAddObserver(cc::BeginFrameObserver* obs) override {
-    ++observer_count_;
-  }
+  void OnAddObserver(BeginFrameObserver* obs) override { ++observer_count_; }
 
-  void OnRemoveObserver(cc::BeginFrameObserver* obs) override {
+  void OnRemoveObserver(BeginFrameObserver* obs) override {
     DCHECK_GT(observer_count_, 0);
     --observer_count_;
   }

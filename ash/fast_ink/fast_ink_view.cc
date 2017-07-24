@@ -45,7 +45,7 @@ class FastInkLayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient {
   void OnFastInkViewDestroying() { view_ = nullptr; }
 
   // Overridden from cc::LayerTreeFrameSinkClient:
-  void SetBeginFrameSource(cc::BeginFrameSource* source) override {}
+  void SetBeginFrameSource(viz::BeginFrameSource* source) override {}
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override {
     if (view_)

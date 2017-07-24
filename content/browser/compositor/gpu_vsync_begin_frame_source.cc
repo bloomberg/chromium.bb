@@ -8,7 +8,7 @@ namespace content {
 
 GpuVSyncBeginFrameSource::GpuVSyncBeginFrameSource(
     GpuVSyncControl* vsync_control)
-    : cc::ExternalBeginFrameSource(this),
+    : viz::ExternalBeginFrameSource(this),
       vsync_control_(vsync_control),
       needs_begin_frames_(false),
       next_sequence_number_(viz::BeginFrameArgs::kStartingFrameNumber) {

@@ -69,7 +69,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // dependencies are satisfied, and it is not reachable from the root surface.
   Surface* CreateSurface(base::WeakPtr<SurfaceClient> surface_client,
                          const viz::SurfaceInfo& surface_info,
-                         BeginFrameSource* begin_frame_source,
+                         viz::BeginFrameSource* begin_frame_source,
                          bool needs_sync_tokens);
 
   // Destroy the Surface once a set of sequence numbers has been satisfied.

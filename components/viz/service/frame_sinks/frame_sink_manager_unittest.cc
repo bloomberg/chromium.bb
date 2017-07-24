@@ -4,9 +4,9 @@
 
 #include <stddef.h>
 
-#include "cc/scheduler/begin_frame_source.h"
 #include "cc/test/begin_frame_source_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_client.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,7 +37,7 @@ class FakeFrameSinkManagerClient : public FrameSinkManagerClient {
     EXPECT_EQ(nullptr, source_);
   }
 
-  cc::BeginFrameSource* source() { return source_; }
+  BeginFrameSource* source() { return source_; }
   const FrameSinkId& frame_sink_id() { return frame_sink_id_; }
 
   void Register(FrameSinkManagerImpl* manager) {
@@ -53,13 +53,13 @@ class FakeFrameSinkManagerClient : public FrameSinkManagerClient {
   }
 
   // FrameSinkManagerClient implementation.
-  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override {
+  void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override {
     DCHECK(!source_ || !begin_frame_source);
     source_ = begin_frame_source;
   }
 
  private:
-  cc::BeginFrameSource* source_;
+  BeginFrameSource* source_;
   FrameSinkManagerImpl* manager_;
   FrameSinkId frame_sink_id_;
 };
@@ -77,7 +77,7 @@ class FrameSinkManagerTest : public testing::Test {
 TEST_F(FrameSinkManagerTest, SingleClients) {
   FakeFrameSinkManagerClient client(FrameSinkId(1, 1));
   FakeFrameSinkManagerClient other_client(FrameSinkId(2, 2));
-  cc::StubBeginFrameSource source;
+  StubBeginFrameSource source;
 
   EXPECT_EQ(nullptr, client.source());
   EXPECT_EQ(nullptr, other_client.source());
@@ -113,7 +113,7 @@ TEST_F(FrameSinkManagerTest, SingleClients) {
 // after restart.
 TEST_F(FrameSinkManagerTest, ClientRestart) {
   FakeFrameSinkManagerClient client(kArbitraryFrameSinkId);
-  cc::StubBeginFrameSource source;
+  StubBeginFrameSource source;
   client.Register(&manager_);
 
   manager_.RegisterBeginFrameSource(&source, kArbitraryFrameSinkId);
@@ -138,8 +138,7 @@ TEST_F(FrameSinkManagerTest, PrimaryBeginFrameSource) {
   // This PrimaryBeginFrameSource should track the first BeginFrameSource
   // registered with the SurfaceManager.
   testing::NiceMock<cc::MockBeginFrameObserver> obs;
-  cc::BeginFrameSource* begin_frame_source =
-      manager_.GetPrimaryBeginFrameSource();
+  BeginFrameSource* begin_frame_source = manager_.GetPrimaryBeginFrameSource();
   begin_frame_source->AddObserver(&obs);
 
   FakeFrameSinkManagerClient root1(FrameSinkId(1, 1), &manager_);
@@ -192,8 +191,8 @@ TEST_F(FrameSinkManagerTest, PrimaryBeginFrameSource) {
 }
 
 TEST_F(FrameSinkManagerTest, MultipleDisplays) {
-  cc::StubBeginFrameSource root1_source;
-  cc::StubBeginFrameSource root2_source;
+  StubBeginFrameSource root1_source;
+  StubBeginFrameSource root2_source;
 
   // root1 -> A -> B
   // root2 -> C
@@ -262,7 +261,7 @@ TEST_F(FrameSinkManagerTest, MultipleDisplays) {
 // FrameSinkId is preserved even if that FrameSinkId has no children
 // and does not have a corresponding FrameSinkManagerClient.
 TEST_F(FrameSinkManagerTest, ParentWithoutClientRetained) {
-  cc::StubBeginFrameSource root_source;
+  StubBeginFrameSource root_source;
 
   constexpr FrameSinkId kFrameSinkIdRoot(1, 1);
   constexpr FrameSinkId kFrameSinkIdA(2, 2);
@@ -301,7 +300,7 @@ TEST_F(FrameSinkManagerTest, ParentWithoutClientRetained) {
 // propagates all the way to C.
 TEST_F(FrameSinkManagerTest,
        ParentWithoutClientRetained_LateBeginFrameRegistration) {
-  cc::StubBeginFrameSource root_source;
+  StubBeginFrameSource root_source;
 
   constexpr FrameSinkId kFrameSinkIdRoot(1, 1);
   constexpr FrameSinkId kFrameSinkIdA(2, 2);
@@ -439,7 +438,7 @@ class SurfaceManagerOrderingTest : public FrameSinkManagerTest {
     AssertAllValidBFS();
   }
 
-  cc::StubBeginFrameSource source_;
+  StubBeginFrameSource source_;
   // A -> B -> C hierarchy, with A always having the BFS.
   FakeFrameSinkManagerClient client_a_;
   FakeFrameSinkManagerClient client_b_;
