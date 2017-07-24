@@ -1085,30 +1085,6 @@ static CSSValue* ConsumeGridTemplatesRowsOrColumns(
   return ConsumeGridTrackList(range, css_parser_mode, kGridTemplate);
 }
 
-static CSSValue* ConsumeGridTemplateAreas(CSSParserTokenRange& range) {
-  if (range.Peek().Id() == CSSValueNone)
-    return ConsumeIdent(range);
-
-  NamedGridAreaMap grid_area_map;
-  size_t row_count = 0;
-  size_t column_count = 0;
-
-  while (range.Peek().GetType() == kStringToken) {
-    if (!ParseGridTemplateAreasRow(
-            range.ConsumeIncludingWhitespace().Value().ToString(),
-            grid_area_map, row_count, column_count))
-      return nullptr;
-    ++row_count;
-  }
-
-  if (row_count == 0)
-    return nullptr;
-  DCHECK(column_count);
-  return CSSGridTemplateAreasValue::Create(grid_area_map, row_count,
-                                           column_count);
-}
-
-
 const CSSValue* CSSPropertyParser::ParseSingleValue(
     CSSPropertyID unresolved_property,
     CSSPropertyID current_shorthand) {
@@ -1257,9 +1233,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyGridTemplateRows:
       DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
       return ConsumeGridTemplatesRowsOrColumns(range_, context_->Mode());
-    case CSSPropertyGridTemplateAreas:
-      DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
-      return ConsumeGridTemplateAreas(range_);
     default:
       return nullptr;
   }

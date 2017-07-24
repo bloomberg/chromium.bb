@@ -36,6 +36,7 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
