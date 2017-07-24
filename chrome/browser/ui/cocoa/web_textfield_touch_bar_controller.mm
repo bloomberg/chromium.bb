@@ -20,14 +20,22 @@
   return self;
 }
 
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
 - (void)showCreditCardAutofillForPopupView:(AutofillPopupViewCocoa*)popupView {
   DCHECK(popupView);
   DCHECK([popupView window]);
+
+  window_ = [popupView window];
+
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
   [center addObserver:self
              selector:@selector(popupWindowWillClose:)
                  name:NSWindowWillCloseNotification
-               object:[popupView window]];
+               object:window_];
   popupView_ = popupView;
 
   if ([owner_ respondsToSelector:@selector(setTouchBar:)])
@@ -39,6 +47,11 @@
 
   if ([owner_ respondsToSelector:@selector(setTouchBar:)])
     [owner_ performSelector:@selector(setTouchBar:) withObject:nil];
+
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:self
+                name:NSWindowWillCloseNotification
+              object:window_];
 }
 
 - (NSTouchBar*)makeTouchBar {
