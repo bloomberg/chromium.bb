@@ -374,7 +374,12 @@ void NotifyUIThreadOfRequestStarted(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     ResourceType resource_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  CHECK(!web_contents_getter.is_null());
+  // TODO(petewil) We're not sure why yet, but we do sometimes see that
+  // web_contents_getter returning null.  Until we find out why, avoid crashing.
+  // crbug.com/742370
+  if (web_contents_getter.is_null())
+    return;
+
   content::WebContents* web_contents = web_contents_getter.Run();
   if (!web_contents)
     return;
@@ -515,9 +520,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     safe_browsing_->OnResourceRequest(request);
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  // TODO(742370): remove when bug is resolved.
-  CHECK(info);
-  CHECK(!info->GetWebContentsGetterForRequest().is_null());
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   // TODO(petewil): Unify the safe browsing request and the metrics observer
