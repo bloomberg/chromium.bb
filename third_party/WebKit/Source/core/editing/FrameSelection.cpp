@@ -960,6 +960,9 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
   const Position& start = selection.Start();
   DCHECK(start.AnchorNode());
   DCHECK(start.AnchorNode()->GetLayoutObject());
+  // This function is needed to make sure that ComputeRectToScroll below has the
+  // sticky offset info available before the computation.
+  GetDocument().EnsurePaintLocationDataValidForNode(start.AnchorNode());
   if (!start.AnchorNode()->GetLayoutObject()->ScrollRectToVisible(
           LayoutRect(ComputeRectToScroll(reveal_extent_option)), alignment,
           alignment))
