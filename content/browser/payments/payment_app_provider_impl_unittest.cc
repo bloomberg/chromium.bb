@@ -69,7 +69,8 @@ class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
                         payments::mojom::PaymentRequestEventDataPtr event_data,
                         PaymentAppProvider::InvokePaymentAppCallback callback) {
     PaymentAppProviderImpl::GetInstance()->InvokePaymentApp(
-        browser_context(), registration_id, std::move(event_data), callback);
+        browser_context(), registration_id, std::move(event_data),
+        std::move(callback));
     base::RunLoop().RunUntilIdle();
   }
 

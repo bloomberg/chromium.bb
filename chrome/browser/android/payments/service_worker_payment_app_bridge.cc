@@ -181,7 +181,7 @@ static void InvokePaymentApp(
 
   content::PaymentAppProvider::GetInstance()->InvokePaymentApp(
       web_contents->GetBrowserContext(), registration_id, std::move(event_data),
-      base::Bind(&OnPaymentAppInvoked,
-                 ScopedJavaGlobalRef<jobject>(env, jweb_contents),
-                 ScopedJavaGlobalRef<jobject>(env, jcallback)));
+      base::BindOnce(&OnPaymentAppInvoked,
+                     ScopedJavaGlobalRef<jobject>(env, jweb_contents),
+                     ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
