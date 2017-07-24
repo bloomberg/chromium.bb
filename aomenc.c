@@ -960,6 +960,7 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
   static const int *ctrl_args_map = NULL;
   struct stream_config *config = &stream->config;
   int eos_mark_found = 0;
+  int webm_forced = 0;
 
   // Handle codec specific options
   if (0) {
@@ -988,6 +989,13 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
 
     if (arg_match(&arg, &outputfile, argi)) {
       config->out_fn = arg.val;
+      if (!webm_forced) {
+        const size_t out_fn_len = strlen(config->out_fn);
+        if (out_fn_len >= 4 &&
+            !strcmp(config->out_fn + out_fn_len - 4, ".ivf")) {
+          config->write_webm = 0;
+        }
+      }
     } else if (arg_match(&arg, &fpf_name, argi)) {
       config->stats_fn = arg.val;
 #if CONFIG_FP_MB_STATS
@@ -997,6 +1005,7 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
     } else if (arg_match(&arg, &use_webm, argi)) {
 #if CONFIG_WEBM_IO
       config->write_webm = 1;
+      webm_forced = 1;
 #else
       die("Error: --webm specified but webm is disabled.");
 #endif
