@@ -27,8 +27,14 @@ var SettingsSectionElement = Polymer({
      */
     section: String,
 
-    /** Title for the section header. */
-    pageTitle: String,
+    /**
+     * Title for the section header. Initialize so we can use the
+     * getTitleHiddenStatus_ method for accessibility.
+     */
+    pageTitle: {
+      type: String,
+      value: '',
+    },
 
     /**
      * A CSS attribute used for temporarily hiding a SETTINGS-SECTION for the
@@ -271,4 +277,16 @@ var SettingsSectionElement = Polymer({
     return new settings.animation.Animation(
         this.$.card, [startFrame, endFrame], options);
   },
+
+  /**
+   * Get the value to which to set the aria-hidden attribute of the section
+   * heading.
+   * @return {boolean|string} A return value of false will not add aria-hidden
+   *    while aria-hidden requires a string of 'true' to be hidden as per aria
+   *    specs. This function ensures we have the right return type.
+   * @private
+   */
+  getTitleHiddenStatus_: function() {
+    return this.pageTitle ? false : 'true';
+  }
 });
