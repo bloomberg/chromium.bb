@@ -95,6 +95,7 @@ void TouchHandle::SetEnabled(bool enabled) {
   if (enabled_ == enabled)
     return;
   if (!enabled) {
+    SetVisible(false, ANIMATION_NONE);
     EndDrag();
     EndFade();
   }
