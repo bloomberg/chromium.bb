@@ -198,7 +198,8 @@ sk_sp<SkTypeface> WebFontDecoder::Decode(SharedBuffer* buffer) {
   ots::ExpandingMemoryStream output(buffer->size(), kMaxWebFontSize);
   double start = CurrentTime();
   BlinkOTSContext ots_context;
-  const char* data = buffer->Data();
+  SharedBuffer::DeprecatedFlatData flattened_buffer(buffer);
+  const char* data = flattened_buffer.Data();
 
   TRACE_EVENT_BEGIN0("blink", "DecodeFont");
   bool ok = ots_context.Process(&output, reinterpret_cast<const uint8_t*>(data),
@@ -214,6 +215,8 @@ sk_sp<SkTypeface> WebFontDecoder::Decode(SharedBuffer* buffer) {
   RecordDecodeSpeedHistogram(data, buffer->size(), CurrentTime() - start,
                              decoded_length);
 
+  // TODO(fmalita): we can avoid this copy by processing into a
+  // SkDynamicMemoryWStream-backed OTSStream.
   sk_sp<SkData> sk_data = SkData::MakeWithCopy(output.get(), decoded_length);
   SkMemoryStream* stream = new SkMemoryStream(sk_data);
 #if defined(OS_WIN)
