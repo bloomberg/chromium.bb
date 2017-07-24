@@ -167,7 +167,12 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   struct EGLSyncKHRRef;
 
   // Record for decoded pictures that can be sent to PictureReady.
-  struct PictureRecord;
+  struct PictureRecord {
+    PictureRecord(bool cleared, const Picture& picture);
+    ~PictureRecord();
+    bool cleared;     // Whether the texture is cleared and safe to render from.
+    Picture picture;  // The decoded picture.
+  };
 
   // Record for input buffers.
   struct InputRecord {
