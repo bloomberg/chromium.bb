@@ -80400,6 +80400,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Thumbnails.Gradient.ImageDetectionTime" units="ms">
+  <owner>peconn@chromium.org</owner>
+  <summary>
+    The time it takes to detect whether a thumbnail requires a gradient overlay.
+    This is run when thumbnails are downloaded for content suggestions, as they
+    load and the result is cached for future use. It is Android specific.
+  </summary>
+</histogram>
+
+<histogram name="Thumbnails.Gradient.ImageRequiresGradient" enum="Boolean">
+  <owner>peconn@chromium.org</owner>
+  <summary>
+    Whether a thumbnail used for a suggestions image requires a gradient to be
+    overlaid to not fade into the background. It applies to the thumbnails used
+    for content suggestions and is Android specific.
+  </summary>
+</histogram>
+
 <histogram name="Thumbnails.ProcessBitmapTime" units="ms">
   <owner>treib@chromium.org</owner>
   <summary>
