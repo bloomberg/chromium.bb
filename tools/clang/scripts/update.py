@@ -490,7 +490,7 @@ def UpdateClang(args):
     EnsureDirExists(LLVM_BOOTSTRAP_DIR)
     os.chdir(LLVM_BOOTSTRAP_DIR)
     bootstrap_args = base_cmake_args + [
-        '-DLLVM_TARGETS_TO_BUILD=X86;ARM',
+        '-DLLVM_TARGETS_TO_BUILD=X86;ARM;AArch64',
         '-DCMAKE_INSTALL_PREFIX=' + LLVM_BOOTSTRAP_INSTALL_DIR,
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
