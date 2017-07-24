@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "net/http2/decoder/decode_buffer.h"
 #include "net/http2/decoder/decode_status.h"
-#include "net/spdy/chromium/spdy_flags.h"
 #include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
 
 namespace net {

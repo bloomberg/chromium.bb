@@ -23,7 +23,6 @@
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_stream_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "net/spdy/chromium/spdy_flags.h"
 #include "net/spdy/core/spdy_alt_svc_wire_format.h"
 #include "net/spdy/core/spdy_protocol.h"
 #include "net/spdy/core/spdy_test_utils.h"
