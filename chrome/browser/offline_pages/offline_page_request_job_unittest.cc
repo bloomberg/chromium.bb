@@ -312,29 +312,23 @@ class OfflinePageRequestJobTest : public testing::Test {
   void ReadCompleted(int bytes_read);
 
   // Runs on IO thread.
+  void SetUpNetworkObjectsOnIO();
+  void TearDownNetworkObjectsOnIO();
   void InterceptRequestOnIO(const GURL& url,
                             const std::string& method,
                             const std::string& extra_header_name,
                             const std::string& extra_header_value,
                             content::ResourceType resource_type);
   void ReadCompletedOnIO(int bytes_read);
+  void TearDownOnReadCompletedOnIO(int bytes_read);
 
   content::TestBrowserThreadBundle thread_bundle_;
   base::SimpleTestClock clock_;
-  std::unique_ptr<TestNetworkChangeNotifier> network_change_notifier_;
-  std::unique_ptr<net::TestURLRequestContext> test_url_request_context_;
-  net::URLRequestJobFactoryImpl url_request_job_factory_;
-  std::unique_ptr<net::URLRequestInterceptingJobFactory>
-      intercepting_job_factory_;
-  std::unique_ptr<TestURLRequestDelegate> url_request_delegate_;
-  std::unique_ptr<TestPreviewsDecider> test_previews_decider_;
-  net::TestNetworkDelegate network_delegate_;
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
   std::unique_ptr<content::WebContents> web_contents_;
   base::HistogramTester histogram_tester_;
   OfflinePageTabHelper* offline_page_tab_helper_;  // Not owned.
-  std::unique_ptr<net::URLRequest> request_;
   int64_t offline_id_;
   int64_t offline_id2_;
   int64_t offline_id3_;
@@ -343,19 +337,34 @@ class OfflinePageRequestJobTest : public testing::Test {
   int bytes_read_;
   OfflinePageItem page_;
 
+  // These are not thread-safe. But they can be used in the pattern that
+  // setting the state is done first from one thread and reading this state
+  // can be from any other thread later.
+  std::unique_ptr<TestNetworkChangeNotifier> network_change_notifier_;
+  std::unique_ptr<TestPreviewsDecider> test_previews_decider_;
+
+  // These should only be accessed purely from IO thread.
+  std::unique_ptr<net::TestURLRequestContext> test_url_request_context_;
+  std::unique_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
+  std::unique_ptr<net::URLRequestInterceptingJobFactory>
+      intercepting_job_factory_;
+  std::unique_ptr<TestURLRequestDelegate> url_request_delegate_;
+  std::unique_ptr<net::URLRequest> request_;
+
   DISALLOW_COPY_AND_ASSIGN(OfflinePageRequestJobTest);
 };
 
 OfflinePageRequestJobTest::OfflinePageRequestJobTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-      network_change_notifier_(new TestNetworkChangeNotifier()),
+    : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
       profile_manager_(TestingBrowserProcess::GetGlobal()),
       offline_id_(-1),
       offline_id2_(-1),
       offline_id3_(-1),
       offline_id4_(-1),
       offline_id5_(-1),
-      bytes_read_(0) {}
+      bytes_read_(0),
+      network_change_notifier_(new TestNetworkChangeNotifier),
+      test_previews_decider_(new TestPreviewsDecider) {}
 
 void OfflinePageRequestJobTest::SetUp() {
   // Create a test profile.
@@ -450,11 +459,32 @@ void OfflinePageRequestJobTest::SetUp() {
   // Check if the original URL is still present.
   OfflinePageItem page = GetPage(offline_id5());
   EXPECT_EQ(kTestUrl5, page.original_url);
+}
+
+void OfflinePageRequestJobTest::TearDown() {
+  OfflinePageModel* model =
+      OfflinePageModelFactory::GetForBrowserContext(profile());
+  static_cast<OfflinePageModelImpl*>(model)->set_testing_clock(nullptr);
+}
+
+void OfflinePageRequestJobTest::SimulateHasNetworkConnectivity(bool online) {
+  network_change_notifier_->set_online(online);
+}
+
+void OfflinePageRequestJobTest::RunUntilIdle() {
+  base::RunLoop().RunUntilIdle();
+}
+
+void OfflinePageRequestJobTest::SetUpNetworkObjectsOnIO() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (test_url_request_context_.get())
+    return;
+
+  url_request_job_factory_.reset(new net::URLRequestJobFactoryImpl);
 
   // Create a context with delayed initialization.
   test_url_request_context_.reset(new net::TestURLRequestContext(true));
-
-  test_previews_decider_.reset(new TestPreviewsDecider());
 
   // Install the interceptor.
   std::unique_ptr<net::URLRequestInterceptor> interceptor(
@@ -470,19 +500,14 @@ void OfflinePageRequestJobTest::SetUp() {
   test_url_request_context_->Init();
 }
 
-void OfflinePageRequestJobTest::TearDown() {
-  OfflinePageModel* model =
-      OfflinePageModelFactory::GetForBrowserContext(profile());
-  static_cast<OfflinePageModelImpl*>(model)->set_testing_clock(nullptr);
-}
+void OfflinePageRequestJobTest::TearDownNetworkObjectsOnIO() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-void OfflinePageRequestJobTest::SimulateHasNetworkConnectivity(
-    bool online) {
-  network_change_notifier_->set_online(online);
-}
-
-void OfflinePageRequestJobTest::RunUntilIdle() {
-  base::RunLoop().RunUntilIdle();
+  request_.reset();
+  url_request_delegate_.reset();
+  intercepting_job_factory_.reset();
+  url_request_job_factory_.reset();
+  test_url_request_context_.reset();
 }
 
 std::unique_ptr<net::URLRequest> OfflinePageRequestJobTest::CreateRequest(
@@ -590,6 +615,8 @@ void OfflinePageRequestJobTest::InterceptRequestOnIO(
     content::ResourceType resource_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
+  SetUpNetworkObjectsOnIO();
+
   request_ = CreateRequest(url, method, resource_type);
   if (!extra_header_name.empty()) {
     request_->SetExtraRequestHeaderByName(
@@ -615,6 +642,19 @@ void OfflinePageRequestJobTest::InterceptRequest(
 
 void OfflinePageRequestJobTest::ReadCompletedOnIO(int bytes_read) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  // Since the caller is still holding a request object which we want to dispose
+  // as part of tearing down on IO thread, we need to do it in a separate task.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&OfflinePageRequestJobTest::TearDownOnReadCompletedOnIO,
+                 base::Unretained(this), bytes_read));
+}
+
+void OfflinePageRequestJobTest::TearDownOnReadCompletedOnIO(int bytes_read) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  TearDownNetworkObjectsOnIO();
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
@@ -716,7 +756,6 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnProhibitivelySlowNetwork) {
   ExpectOneUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           SHOW_OFFLINE_ON_PROHIBITIVELY_SLOW_NETWORK);
-  test_previews_decider()->set_should_allow_preview(false);
 }
 
 TEST_F(OfflinePageRequestJobTest, PageNotFoundOnProhibitivelySlowNetwork) {
@@ -732,7 +771,6 @@ TEST_F(OfflinePageRequestJobTest, PageNotFoundOnProhibitivelySlowNetwork) {
   ExpectOneUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           PAGE_NOT_FOUND_ON_PROHIBITIVELY_SLOW_NETWORK);
-  test_previews_decider()->set_should_allow_preview(false);
 }
 
 TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnFlakyNetwork) {

@@ -136,7 +136,7 @@ class PrerenderingLoaderTest : public testing::Test {
 };
 
 PrerenderingLoaderTest::PrerenderingLoaderTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+    : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
       callback_load_status_(Offliner::RequestStatus::UNKNOWN) {}
 
 void PrerenderingLoaderTest::SetUp() {
