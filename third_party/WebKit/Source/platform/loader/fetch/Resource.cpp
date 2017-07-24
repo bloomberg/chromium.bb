@@ -857,35 +857,35 @@ bool Resource::CanReuse(const FetchParameters& params) const {
   // securityOrigin has more complicated checks which callers are responsible
   // for.
 
-  // TODO(yhirano): Clean up this condition. This is generated to keep the old
-  // behavior across refactoring.
-  //
-  // TODO(tyoshino): Consider returning false when the credentials mode
-  // differs.
+  if (new_request.GetFetchCredentialsMode() !=
+      resource_request_.GetFetchCredentialsMode())
+    return false;
 
-  bool new_is_with_fetcher_cors_suppressed =
-      new_options.cors_handling_by_resource_fetcher ==
-      kDisableCORSHandlingByResourceFetcher;
-  bool existing_was_with_fetcher_cors_suppressed =
-      options_.cors_handling_by_resource_fetcher ==
-      kDisableCORSHandlingByResourceFetcher;
+  const auto new_mode = new_request.GetFetchRequestMode();
+  const auto existing_mode = resource_request_.GetFetchRequestMode();
 
-  auto new_mode = new_request.GetFetchRequestMode();
-  auto existing_mode = resource_request_.GetFetchRequestMode();
+  if (new_mode != existing_mode)
+    return false;
 
-  if (new_is_with_fetcher_cors_suppressed) {
-    if (existing_was_with_fetcher_cors_suppressed)
-      return true;
+  switch (new_mode) {
+    case WebURLRequest::kFetchRequestModeNoCORS:
+    case WebURLRequest::kFetchRequestModeNavigate:
+      break;
 
-    return existing_mode != WebURLRequest::kFetchRequestModeCORS;
+    case WebURLRequest::kFetchRequestModeCORS:
+    case WebURLRequest::kFetchRequestModeSameOrigin:
+    case WebURLRequest::kFetchRequestModeCORSWithForcedPreflight:
+      // We have two separate CORS handling logics in DocumentThreadableLoader
+      // and ResourceFetcher and we cannot share resources if they are handled
+      // in different places.
+      if (new_options.cors_handling_by_resource_fetcher !=
+          options_.cors_handling_by_resource_fetcher) {
+        return false;
+      }
+      break;
   }
 
-  if (existing_was_with_fetcher_cors_suppressed)
-    return new_mode != WebURLRequest::kFetchRequestModeCORS;
-
-  return existing_mode == new_mode &&
-         new_request.GetFetchCredentialsMode() ==
-             resource_request_.GetFetchCredentialsMode();
+  return true;
 }
 
 void Resource::Prune() {
