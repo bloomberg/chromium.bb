@@ -31,10 +31,6 @@ _V8_GC_HIGH_LEVEL_STATS_RE = re.compile(r'^v8-gc-('
 
 class _v8BrowsingBenchmarkBaseClass(perf_benchmark.PerfBenchmark):
   """Base class for all v8 browsing benchmarks."""
-  @classmethod
-  def ShouldTearDownStateAfterEachStoryRun(cls):
-    return True
-
   def CreateStorySet(self, options):
     return page_sets.SystemHealthStorySet(platform=self.PLATFORM, case='browse')
 
