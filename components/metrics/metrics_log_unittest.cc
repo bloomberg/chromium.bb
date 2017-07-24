@@ -315,8 +315,7 @@ TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
   std::vector<std::unique_ptr<MetricsProvider>> metrics_providers;
   metrics_providers.push_back(base::WrapUnique<MetricsProvider>(test_provider));
   log.RecordEnvironment(metrics_providers, kInstallDate, kEnabledDate);
-  log.RecordStabilityMetrics(metrics_providers, base::TimeDelta(),
-                             base::TimeDelta());
+  log.RecordPreviousSessionData(metrics_providers);
 
   // The test provider should have been called upon to provide initial
   // stability and regular stability metrics.
@@ -332,8 +331,8 @@ TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
   std::vector<std::unique_ptr<MetricsProvider>> metrics_providers;
   metrics_providers.push_back(base::WrapUnique<MetricsProvider>(test_provider));
   log.RecordEnvironment(metrics_providers, kInstallDate, kEnabledDate);
-  log.RecordStabilityMetrics(metrics_providers, base::TimeDelta(),
-                             base::TimeDelta());
+  log.RecordCurrentSessionData(metrics_providers, base::TimeDelta(),
+                               base::TimeDelta());
 
   // The test provider should have been called upon to provide regular but not
   // initial stability metrics.
