@@ -4,7 +4,6 @@
 
 #include "chrome/browser/media/router/create_presentation_connection_request.h"
 
-#include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "url/origin.h"
@@ -15,10 +14,14 @@ using content::PresentationError;
 namespace media_router {
 
 CreatePresentationConnectionRequest::CreatePresentationConnectionRequest(
-    const content::PresentationRequest& presentation_request,
+    const RenderFrameHostId& render_frame_host_id,
+    const std::vector<GURL>& presentation_urls,
+    const url::Origin& frame_origin,
     PresentationConnectionCallback success_cb,
     PresentationConnectionErrorCallback error_cb)
-    : presentation_request_(presentation_request),
+    : presentation_request_(render_frame_host_id,
+                            presentation_urls,
+                            frame_origin),
       success_cb_(std::move(success_cb)),
       error_cb_(std::move(error_cb)),
       cb_invoked_(false) {

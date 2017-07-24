@@ -3167,6 +3167,7 @@ test("unit_tests") {
     "../browser/media/router/offscreen_presentation_manager_factory_unittest.cc",
     "../browser/media/router/offscreen_presentation_manager_unittest.cc",
     "../browser/media/router/presentation_media_sinks_observer_unittest.cc",
+    "../browser/media/router/presentation_request_unittest.cc",
     "../browser/media/router/presentation_service_delegate_impl_unittest.cc",
     "../browser/media/webrtc/media_stream_device_permission_context_unittest.cc",
     "../browser/metrics/antivirus_metrics_provider_win_unittest.cc",
