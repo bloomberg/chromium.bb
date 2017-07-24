@@ -78000,6 +78000,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Sync.GlobalIdConflict" units="SyncGlobalIdConflict">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    Two navigations with different unique_ids shared a global_id/timestmap. This
+    means that user events will be ambiguously referencing navigations.
+  </summary>
+</histogram>
+
 <histogram name="Sync.InitialState" enum="SyncInitialState">
   <owner>maxbogue@chromium.org</owner>
   <summary>
