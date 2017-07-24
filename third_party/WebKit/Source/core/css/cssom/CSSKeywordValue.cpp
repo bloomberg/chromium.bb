@@ -62,7 +62,7 @@ CSSValueID CSSKeywordValue::KeywordValueID() const {
   return CssValueKeywordID(keyword_value_);
 }
 
-CSSValue* CSSKeywordValue::ToCSSValue() const {
+const CSSValue* CSSKeywordValue::ToCSSValue() const {
   CSSValueID keyword_id = KeywordValueID();
   switch (keyword_id) {
     case (CSSValueInherit):

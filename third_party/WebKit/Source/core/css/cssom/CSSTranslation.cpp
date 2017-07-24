@@ -211,7 +211,7 @@ const DOMMatrix* CSSTranslation::AsMatrix() const {
   return matrix->translate(x->value(), y->value(), z->value());
 }
 
-CSSFunctionValue* CSSTranslation::ToCSSValue() const {
+const CSSFunctionValue* CSSTranslation::ToCSSValue() const {
   CSSFunctionValue* result = CSSFunctionValue::Create(
       is2D() ? CSSValueTranslate : CSSValueTranslate3d);
   result->Append(*x_->ToCSSValue());

@@ -50,7 +50,7 @@ void CSSPositionValue::setY(CSSNumericValue* y,
   y_ = y;
 }
 
-CSSValue* CSSPositionValue::ToCSSValue() const {
+const CSSValue* CSSPositionValue::ToCSSValue() const {
   return CSSValuePair::Create(x_->ToCSSValue(), y_->ToCSSValue(),
                               CSSValuePair::kKeepIdenticalValues);
 }

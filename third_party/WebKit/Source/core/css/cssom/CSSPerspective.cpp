@@ -69,7 +69,7 @@ const DOMMatrix* CSSPerspective::AsMatrix() const {
   return matrix;
 }
 
-CSSFunctionValue* CSSPerspective::ToCSSValue() const {
+const CSSFunctionValue* CSSPerspective::ToCSSValue() const {
   if (!length_->IsCalculated() && ToCSSUnitValue(length_)->value() < 0) {
     // Negative values are invalid.
     // https://github.com/w3c/css-houdini-drafts/issues/420

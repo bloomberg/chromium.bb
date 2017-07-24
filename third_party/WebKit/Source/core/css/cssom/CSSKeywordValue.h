@@ -28,7 +28,7 @@ class CORE_EXPORT CSSKeywordValue final : public CSSStyleValue {
   void setValue(const String& keyword) { keyword_value_ = keyword; }
   CSSValueID KeywordValueID() const;
 
-  CSSValue* ToCSSValue() const override;
+  const CSSValue* ToCSSValue() const override;
 
  private:
   explicit CSSKeywordValue(const String& keyword) : keyword_value_(keyword) {}

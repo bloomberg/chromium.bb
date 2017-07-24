@@ -43,7 +43,7 @@ class CORE_EXPORT CSSScale final : public CSSTransformComponent {
     DOMMatrix* result = DOMMatrix::Create();
     return result->scaleSelf(x_, y_, z_);
   }
-  CSSFunctionValue* ToCSSValue() const final;
+  const CSSFunctionValue* ToCSSValue() const final;
 
  private:
   CSSScale(double x, double y)

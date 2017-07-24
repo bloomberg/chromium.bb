@@ -39,7 +39,7 @@ const DOMMatrix* CSSMatrixComponent::AsMatrix() const {
   return matrix_.Get();
 }
 
-CSSFunctionValue* CSSMatrixComponent::ToCSSValue() const {
+const CSSFunctionValue* CSSMatrixComponent::ToCSSValue() const {
   CSSFunctionValue* result =
       CSSFunctionValue::Create(is2D() ? CSSValueMatrix : CSSValueMatrix3d);
 
