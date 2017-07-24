@@ -77,6 +77,7 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
                                  TypingContinuation);
   Optional<std::pair<Node*, SpellCheckMarker*>>
   GetSpellCheckMarkerUnderSelection();
+  String SelectMisspellingAsync(String& description);
   void ReplaceMisspelledRange(const String&);
   void RemoveSpellingMarkers();
   void RemoveSpellingMarkersUnderWords(const Vector<String>& words);

@@ -103,66 +103,6 @@ static WebURL UrlFromFrame(LocalFrame* frame) {
   return WebURL();
 }
 
-static bool IsWhiteSpaceOrPunctuation(UChar c) {
-  return IsSpaceOrNewline(c) || WTF::Unicode::IsPunct(c);
-}
-
-static String SelectMisspellingAsync(LocalFrame* selected_frame,
-                                     String& description) {
-  VisibleSelection selection =
-      selected_frame->Selection().ComputeVisibleSelectionInDOMTree();
-  if (selection.IsNone())
-    return String();
-
-  // Caret and range selections always return valid normalized ranges.
-  const EphemeralRange& selection_range =
-      selection.ToNormalizedEphemeralRange();
-
-  Node* const selection_start_container =
-      selection_range.StartPosition().ComputeContainerNode();
-  Node* const selection_end_container =
-      selection_range.EndPosition().ComputeContainerNode();
-
-  // We don't currently support the case where a misspelling spans multiple
-  // nodes
-  if (selection_start_container != selection_end_container)
-    return String();
-
-  const unsigned selection_start_offset =
-      selection_range.StartPosition().ComputeOffsetInContainerNode();
-  const unsigned selection_end_offset =
-      selection_range.EndPosition().ComputeOffsetInContainerNode();
-
-  const DocumentMarkerVector& markers_in_node =
-      selected_frame->GetDocument()->Markers().MarkersFor(
-          selection_start_container, DocumentMarker::MisspellingMarkers());
-
-  const auto marker_it =
-      std::find_if(markers_in_node.begin(), markers_in_node.end(),
-                   [=](const DocumentMarker* marker) {
-                     return marker->StartOffset() < selection_end_offset &&
-                            marker->EndOffset() > selection_start_offset;
-                   });
-  if (marker_it == markers_in_node.end())
-    return String();
-
-  const SpellCheckMarker* const found_marker = ToSpellCheckMarker(*marker_it);
-  description = found_marker->Description();
-
-  Range* const marker_range =
-      Range::Create(*selected_frame->GetDocument(), selection_start_container,
-                    found_marker->StartOffset(), selection_start_container,
-                    found_marker->EndOffset());
-
-  if (marker_range->GetText().StripWhiteSpace(&IsWhiteSpaceOrPunctuation) !=
-      CreateRange(selection_range)
-          ->GetText()
-          .StripWhiteSpace(&IsWhiteSpaceOrPunctuation))
-    return String();
-
-  return marker_range->GetText();
-}
-
 // static
 int ContextMenuClient::ComputeEditFlags(Document& selected_document,
                                         Editor& editor) {
@@ -421,7 +361,8 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
     // user right-clicks a mouse on a word, Chrome just needs to find a
     // spelling marker on the word instead of spellchecking it.
     String description;
-    data.misspelled_word = SelectMisspellingAsync(selected_frame, description);
+    data.misspelled_word =
+        selected_frame->GetSpellChecker().SelectMisspellingAsync(description);
     if (description.length()) {
       Vector<String> suggestions;
       description.Split('\n', suggestions);
