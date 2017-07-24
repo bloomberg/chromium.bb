@@ -84,7 +84,6 @@ class FakeSyncService : public SyncService {
   void GetAllNodes(const base::Callback<void(std::unique_ptr<base::ListValue>)>&
                        callback) override;
   SigninManagerBase* signin() const override;
-  GlobalIdMapper* GetGlobalIdMapper() const override;
 
   // DataTypeEncryptionHandler implementation.
   bool IsPassphraseRequired() const override;

@@ -55,12 +55,10 @@ KeyedService* UserEventServiceFactory::BuildServiceInstanceFor(
       base::BindRepeating(&syncer::ModelTypeChangeProcessor::Create,
                           base::BindRepeating(&syncer::ReportUnrecoverableError,
                                               chrome::GetChannel()));
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
   auto bridge = base::MakeUnique<syncer::UserEventSyncBridge>(
-      std::move(store_factory), std::move(processor_factory),
-      sync_service->GetGlobalIdMapper());
-  return new syncer::UserEventServiceImpl(sync_service, std::move(bridge));
+      std::move(store_factory), std::move(processor_factory));
+  return new syncer::UserEventServiceImpl(
+      ProfileSyncServiceFactory::GetForProfile(profile), std::move(bridge));
 }
 
 content::BrowserContext* UserEventServiceFactory::GetBrowserContextToUse(

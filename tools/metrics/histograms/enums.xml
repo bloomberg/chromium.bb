@@ -36424,12 +36424,6 @@ from previous Chrome versions.
   <int value="3" label="Disabled"/>
 </enum>
 
-<enum name="SyncGlobalIdConflict">
-  <int value="0" label="Conflict"/>
-  <int value="1" label="No conflict, new global id"/>
-  <int value="2" label="No conflict, same global and unique id pair"/>
-</enum>
-
 <enum name="SyncInitialState">
   <int value="0" label="Can attempt to start"/>
   <int value="1" label="No signed in user"/>
