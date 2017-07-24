@@ -122,6 +122,18 @@ ContentSuggestionsSectionInformation* MostVisitedSectionInformation() {
   return sectionInfo;
 }
 
+ContentSuggestionsSectionInformation* LearnMoreSectionInformation() {
+  ContentSuggestionsSectionInformation* sectionInfo =
+      [[ContentSuggestionsSectionInformation alloc]
+          initWithSectionID:ContentSuggestionsSectionLearnMore];
+  sectionInfo.title = nil;
+  sectionInfo.footerTitle = nil;
+  sectionInfo.showIfEmpty = NO;
+  sectionInfo.layout = ContentSuggestionsSectionLayoutCustom;
+
+  return sectionInfo;
+}
+
 ContentSuggestionsMostVisitedItem* ConvertNTPTile(
     const ntp_tiles::NTPTile& tile,
     ContentSuggestionsSectionInformation* sectionInfo) {

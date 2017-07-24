@@ -61,6 +61,9 @@ ContentSuggestionsSectionInformation* LogoSectionInformation();
 // Creates and returns a SectionInfo for the Most Visited section.
 ContentSuggestionsSectionInformation* MostVisitedSectionInformation();
 
+// Creates and returns a SectionInfo for the Learn More section.
+ContentSuggestionsSectionInformation* LearnMoreSectionInformation();
+
 // Converts a ntp_tiles::NTPTile |tile| to a ContentSuggestionsMostVisitedItem
 // with a |sectionInfo|.
 ContentSuggestionsMostVisitedItem* ConvertNTPTile(

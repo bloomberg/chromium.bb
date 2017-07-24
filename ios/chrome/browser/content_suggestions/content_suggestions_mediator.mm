@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/content_suggestions/mediator_util.h"
 #include "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_learn_more_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_whats_new_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
@@ -71,6 +72,10 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
 // Section Info for the Most Visited section.
 @property(nonatomic, strong)
     ContentSuggestionsSectionInformation* mostVisitedSectionInfo;
+// Section Info for the footer message allowing the user to know more about the
+// suggested content.
+@property(nonatomic, strong)
+    ContentSuggestionsSectionInformation* learnMoreSectionInfo;
 // Whether the page impression has been recorded.
 @property(nonatomic, assign) BOOL recordedPageImpression;
 // The ContentSuggestionsService, serving suggestions.
@@ -83,6 +88,8 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
         sectionInformationByCategory;
 // Mediator fetching the favicons for the items.
 @property(nonatomic, strong) ContentSuggestionsFaviconMediator* faviconMediator;
+// Item for the Learn More section, containing the string.
+@property(nonatomic, strong) ContentSuggestionsLearnMoreItem* learnMoreItem;
 
 @end
 
@@ -92,6 +99,7 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
 @synthesize freshMostVisitedItems = _freshMostVisitedItems;
 @synthesize logoSectionInfo = _logoSectionInfo;
 @synthesize mostVisitedSectionInfo = _mostVisitedSectionInfo;
+@synthesize learnMoreSectionInfo = _learnMoreSectionInfo;
 @synthesize recordedPageImpression = _recordedPageImpression;
 @synthesize contentService = _contentService;
 @synthesize dataSink = _dataSink;
@@ -99,6 +107,7 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
 @synthesize commandHandler = _commandHandler;
 @synthesize headerProvider = _headerProvider;
 @synthesize faviconMediator = _faviconMediator;
+@synthesize learnMoreItem = _learnMoreItem;
 
 #pragma mark - Public
 
@@ -119,8 +128,11 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
               largeIconService:largeIconService
                 largeIconCache:largeIconCache];
 
-    _mostVisitedSectionInfo = MostVisitedSectionInformation();
     _logoSectionInfo = LogoSectionInformation();
+    _mostVisitedSectionInfo = MostVisitedSectionInformation();
+    _learnMoreSectionInfo = LearnMoreSectionInformation();
+
+    _learnMoreItem = [[ContentSuggestionsLearnMoreItem alloc] init];
 
     _notificationPromo = base::MakeUnique<NotificationPromoWhatsNew>(
         GetApplicationContext()->GetLocalState());
@@ -178,6 +190,8 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     [sectionsInfo addObject:self.sectionInformationByCategory[categoryWrapper]];
   }
 
+  [sectionsInfo addObject:self.learnMoreSectionInfo];
+
   return sectionsInfo;
 }
 
@@ -198,6 +212,8 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     }
   } else if (sectionInfo == self.mostVisitedSectionInfo) {
     [convertedSuggestions addObjectsFromArray:self.mostVisitedItems];
+  } else if (sectionInfo == self.learnMoreSectionInfo) {
+    [convertedSuggestions addObject:self.learnMoreItem];
   } else {
     ntp_snippets::Category category =
         [[self categoryWrapperForSectionInfo:sectionInfo] category];

@@ -45,6 +45,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeReadingList,
   ItemTypeMostVisited,
   ItemTypePromo,
+  ItemTypeLearnMore,
   ItemTypeUnknown,
 };
 
@@ -55,6 +56,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierReadingList,
   SectionIdentifierMostVisited,
   SectionIdentifierLogo,
+  SectionIdentifierLearnMore,
   SectionIdentifierDefault,
 };
 
@@ -70,6 +72,8 @@ ContentSuggestionType ContentSuggestionTypeForItemType(NSInteger type) {
     return ContentSuggestionTypeMostVisited;
   if (type == ItemTypePromo)
     return ContentSuggestionTypePromo;
+  if (type == ItemTypeLearnMore)
+    return ContentSuggestionTypeLearnMore;
   // Add new type here
 
   // Default type.
@@ -87,6 +91,8 @@ ItemType ItemTypeForInfo(ContentSuggestionsSectionInformation* info) {
       return ItemTypeMostVisited;
     case ContentSuggestionsSectionLogo:
       return ItemTypePromo;
+    case ContentSuggestionsSectionLearnMore:
+      return ItemTypeLearnMore;
 
     case ContentSuggestionsSectionUnknown:
       return ItemTypeUnknown;
@@ -105,6 +111,8 @@ SectionIdentifier SectionIdentifierForInfo(
       return SectionIdentifierMostVisited;
     case ContentSuggestionsSectionLogo:
       return SectionIdentifierLogo;
+    case ContentSuggestionsSectionLearnMore:
+      return SectionIdentifierLearnMore;
 
     case ContentSuggestionsSectionUnknown:
       return SectionIdentifierDefault;
