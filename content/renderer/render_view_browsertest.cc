@@ -637,7 +637,16 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   EXPECT_TRUE(successful);
   EXPECT_EQ(blink::WebHTTPBody::Element::kTypeData, element.type);
   EXPECT_EQ(length, element.data.size());
-  EXPECT_EQ(0, memcmp(raw_data, element.data.Data(), length));
+
+  std::unique_ptr<char[]> flat_data(new char[element.data.size()]);
+  element.data.ForEachSegment([&flat_data](const char* segment,
+                                           size_t segment_size,
+                                           size_t segment_offset) {
+    std::copy(segment, segment + segment_size,
+              flat_data.get() + segment_offset);
+    return true;
+  });
+  EXPECT_EQ(0, memcmp(raw_data, flat_data.get(), length));
 }
 
 #if defined(OS_ANDROID)

@@ -288,12 +288,12 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebHTTPBody(
   while (httpBody.ElementAt(i++, element)) {
     switch (element.type) {
       case WebHTTPBody::Element::kTypeData:
-        if (!element.data.IsEmpty()) {
-          // Blink sometimes gives empty data to append. These aren't
-          // necessary so they are just optimized out here.
-          request_body->AppendBytes(element.data.Data(),
-                                    static_cast<int>(element.data.size()));
-        }
+        element.data.ForEachSegment([&request_body](const char* segment,
+                                                    size_t segment_size,
+                                                    size_t segment_offset) {
+          request_body->AppendBytes(segment, static_cast<int>(segment_size));
+          return true;
+        });
         break;
       case WebHTTPBody::Element::kTypeFile:
         if (element.file_length == -1) {

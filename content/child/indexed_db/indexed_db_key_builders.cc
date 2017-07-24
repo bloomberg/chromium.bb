@@ -50,9 +50,19 @@ IndexedDBKey IndexedDBKeyBuilder::Build(const blink::WebIDBKey& key) {
   switch (key.KeyType()) {
     case kWebIDBKeyTypeArray:
       return IndexedDBKey(CopyKeyArray(key));
-    case kWebIDBKeyTypeBinary:
-      return IndexedDBKey(
-          std::string(key.Binary().Data(), key.Binary().size()));
+    case kWebIDBKeyTypeBinary: {
+      const blink::WebData data = key.Binary();
+      std::string key_string;
+      key_string.reserve(data.size());
+
+      data.ForEachSegment([&key_string](const char* segment,
+                                        size_t segment_size,
+                                        size_t segment_offset) {
+        key_string.append(segment, segment_size);
+        return true;
+      });
+      return IndexedDBKey(key_string);
+    }
     case kWebIDBKeyTypeString:
       return IndexedDBKey(key.GetString().Utf16());
     case kWebIDBKeyTypeDate:

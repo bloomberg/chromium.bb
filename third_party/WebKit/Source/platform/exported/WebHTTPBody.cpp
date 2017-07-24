@@ -31,6 +31,7 @@
 #include "public/platform/WebHTTPBody.h"
 
 #include "platform/FileMetadata.h"
+#include "platform/SharedBuffer.h"
 #include "platform/network/EncodedFormData.h"
 
 namespace blink {
@@ -102,7 +103,11 @@ void WebHTTPBody::AppendData(const WebData& data) {
   EnsureMutable();
   // FIXME: FormDataElement::m_data should be a SharedBuffer<char>.  Then we
   // could avoid this buffer copy.
-  private_->AppendData(data.Data(), data.size());
+  data.ForEachSegment(
+      [this](const char* segment, size_t segment_size, size_t segment_offset) {
+        private_->AppendData(segment, segment_size);
+        return true;
+      });
 }
 
 void WebHTTPBody::AppendFile(const WebString& file_path) {

@@ -56,8 +56,14 @@ DropData DropDataBuilder::Build(const WebDragData& drag_data) {
         break;
       }
       case WebDragData::Item::kStorageTypeBinaryData:
-        result.file_contents.assign(item.binary_data.Data(),
-                                    item.binary_data.size());
+        DCHECK(result.file_contents.empty());
+        result.file_contents.reserve(item.binary_data.size());
+        item.binary_data.ForEachSegment([&result](const char* segment,
+                                                  size_t segment_size,
+                                                  size_t segment_offset) {
+          result.file_contents.append(segment, segment_size);
+          return true;
+        });
         result.file_contents_source_url = item.binary_data_source_url;
 #if defined(OS_WIN)
         result.file_contents_filename_extension =
