@@ -15,9 +15,6 @@
 
 namespace {
 
-constexpr base::TimeDelta kSignificantMediaPlaybackTime =
-    base::TimeDelta::FromSeconds(7);
-
 int ConvertScoreToPercentage(double score) {
   return round(score * 100);
 }
@@ -61,6 +58,10 @@ const char* MediaEngagementContentsObserver::kHistogramSignificantRemovedName =
 const int MediaEngagementContentsObserver::kMaxInsignificantPlaybackReason =
     static_cast<int>(MediaEngagementContentsObserver::
                          InsignificantPlaybackReason::kReasonMax);
+
+const base::TimeDelta
+    MediaEngagementContentsObserver::kSignificantMediaPlaybackTime =
+        base::TimeDelta::FromSeconds(7);
 
 MediaEngagementContentsObserver::MediaEngagementContentsObserver(
     content::WebContents* web_contents,
@@ -372,7 +373,8 @@ void MediaEngagementContentsObserver::UpdateTimer() {
       return;
 
     playback_timer_->Start(
-        FROM_HERE, kSignificantMediaPlaybackTime,
+        FROM_HERE,
+        MediaEngagementContentsObserver::kSignificantMediaPlaybackTime,
         base::Bind(
             &MediaEngagementContentsObserver::OnSignificantMediaPlaybackTime,
             base::Unretained(this)));

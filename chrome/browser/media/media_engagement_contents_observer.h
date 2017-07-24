@@ -43,6 +43,7 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   // Only MediaEngagementService can create a MediaEngagementContentsObserver.
   friend MediaEngagementService;
   friend MediaEngagementContentsObserverTest;
+  friend class MediaEngagementBrowserTest;
 
   MediaEngagementContentsObserver(content::WebContents* web_contents,
                                   MediaEngagementService* service);
@@ -170,6 +171,8 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   void RecordEngagementScoreToHistogramAtPlayback(const MediaPlayerId& id);
 
   url::Origin committed_origin_;
+
+  static const base::TimeDelta kSignificantMediaPlaybackTime;
 
   DISALLOW_COPY_AND_ASSIGN(MediaEngagementContentsObserver);
 };
