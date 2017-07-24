@@ -2154,7 +2154,9 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     const BLOCK_SIZE a_bsize = AOMMAX(BLOCK_8X8, above_mbmi->sb_type);
     MB_MODE_INFO backup_mbmi;
 
-    mi_step = AOMMIN(xd->n8_w, mi_size_wide[a_bsize]);
+    const int above_step =
+        AOMMIN(mi_size_wide[a_bsize], mi_size_wide[BLOCK_64X64]);
+    mi_step = AOMMIN(xd->n8_w, above_step);
 
     if (!is_neighbor_overlappable(above_mbmi)) continue;
 
@@ -2201,6 +2203,7 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
       bw = (mi_step * MI_SIZE) >> pd->subsampling_x;
       bh = AOMMAX((num_4x4_blocks_high_lookup[bsize] * 2) >> pd->subsampling_y,
                   4);
+      bh = AOMMIN(bh, block_size_high[BLOCK_64X64] >> (pd->subsampling_y + 1));
 
       if (skip_u4x4_pred_in_obmc(bsize, pd, 0)) continue;
       build_inter_predictors(cm, xd, j, mi_col_offset, mi_row_offset, 0, bw, bh,
@@ -2250,8 +2253,9 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
     const BLOCK_SIZE l_bsize = AOMMAX(left_mbmi->sb_type, BLOCK_8X8);
     MB_MODE_INFO backup_mbmi;
-
-    mi_step = AOMMIN(xd->n8_h, mi_size_high[l_bsize]);
+    const int left_step =
+        AOMMIN(mi_size_high[l_bsize], mi_size_high[BLOCK_64X64]);
+    mi_step = AOMMIN(xd->n8_h, left_step);
 
     if (!is_neighbor_overlappable(left_mbmi)) continue;
 
@@ -2297,6 +2301,7 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
       const struct macroblockd_plane *pd = &xd->plane[j];
       bw = AOMMAX((num_4x4_blocks_wide_lookup[bsize] * 2) >> pd->subsampling_x,
                   4);
+      bw = AOMMIN(bw, block_size_wide[BLOCK_64X64] >> (pd->subsampling_x + 1));
       bh = (mi_step << MI_SIZE_LOG2) >> pd->subsampling_y;
 
       if (skip_u4x4_pred_in_obmc(bsize, pd, 1)) continue;
