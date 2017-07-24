@@ -123,11 +123,11 @@
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/editing/spellcheck/TextCheckerClientImpl.h"
+#include "core/exported/LocalFrameClientImpl.h"
 #include "core/exported/SharedWorkerRepositoryClientImpl.h"
 #include "core/exported/WebAssociatedURLLoaderImpl.h"
 #include "core/exported/WebDataSourceImpl.h"
 #include "core/exported/WebDevToolsAgentImpl.h"
-#include "core/exported/WebFactory.h"
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/exported/WebViewBase.h"
@@ -1600,8 +1600,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(
     WebFrameClient* client,
     blink::InterfaceRegistry* interface_registry)
     : WebLocalFrameBase(scope),
-      local_frame_client_(
-          WebFactory::GetInstance().CreateLocalFrameClient(this)),
+      local_frame_client_(LocalFrameClientImpl::Create(this)),
       client_(client),
       autofill_client_(0),
       input_events_scale_factor_for_emulation_(1),
