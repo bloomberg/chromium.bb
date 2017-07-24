@@ -39,6 +39,7 @@ include_rules = [
   "+chromeos/dbus/power_manager",
   "+chromeos/dbus/power_manager_client.h",
   "+chromeos/dbus/session_manager_client.h",
+  "+chromeos/dbus/shill_device_client.h",
   "+chromeos/dbus/system_clock_client.h",
   "+chromeos/login",
   # TODO(jamescook): Eliminate this. http://crbug.com/644355

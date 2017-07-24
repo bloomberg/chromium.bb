@@ -876,21 +876,36 @@ int GetMobileUninitializedMsg() {
   static int s_uninitialized_msg(0);
 
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+
+  // Never show messages if the list of Mobile networks is non-empty.
+  NetworkStateHandler::NetworkStateList mobile_networks;
+  handler->GetVisibleNetworkListByType(chromeos::NetworkTypePattern::Mobile(),
+                                       &mobile_networks);
+  if (!mobile_networks.empty())
+    return 0;
+
+  // TODO(lesliewatkins): Only return this message when Tether is uninitialized
+  // due to no Bluetooth (dependent on codereview.chromium.org/2969493002/).
   if (handler->GetTechnologyState(NetworkTypePattern::Tether()) ==
       NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) {
     s_uninitialized_msg = IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH;
     s_uninitialized_state_time = base::Time::Now();
     return s_uninitialized_msg;
-  } else if (handler->GetTechnologyState(NetworkTypePattern::Mobile()) ==
-             NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) {
+  }
+
+  if (handler->GetTechnologyState(NetworkTypePattern::Cellular()) ==
+      NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) {
     s_uninitialized_msg = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
     s_uninitialized_state_time = base::Time::Now();
     return s_uninitialized_msg;
-  } else if (handler->GetScanningByType(NetworkTypePattern::Mobile())) {
+  }
+
+  if (handler->GetScanningByType(NetworkTypePattern::Cellular())) {
     s_uninitialized_msg = IDS_ASH_STATUS_TRAY_MOBILE_SCANNING;
     s_uninitialized_state_time = base::Time::Now();
     return s_uninitialized_msg;
   }
+
   // There can be a delay between leaving the Initializing state and when
   // a Mobile device shows up, so keep showing the initializing
   // animation for a bit to avoid flashing the disconnect icon.

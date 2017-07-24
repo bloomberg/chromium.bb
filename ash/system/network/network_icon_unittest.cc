@@ -4,11 +4,18 @@
 
 #include "ash/system/network/network_icon.h"
 
-#include "ash/test/ash_test_base.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_state_test.h"
 #include "chromeos/network/tether_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -18,40 +25,47 @@ namespace ash {
 
 namespace network_icon {
 
-class NetworkIconTest : public AshTestBase {
+class NetworkIconTest : public chromeos::NetworkStateTest {
  public:
   NetworkIconTest() {}
   ~NetworkIconTest() override {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    chromeos::DBusThreadManager::Initialize();
+    chromeos::NetworkStateTest::SetUp();
+
     chromeos::NetworkHandler::Initialize();
+    handler_ = chromeos::NetworkHandler::Get()->network_state_handler();
 
-    tether_network =
+    tether_network_ =
         base::MakeUnique<chromeos::NetworkState>("tetherNetworkPath");
-    tether_network->set_type(chromeos::kTypeTether);
+    tether_network_->set_type(chromeos::kTypeTether);
 
-    wifi_network = base::MakeUnique<chromeos::NetworkState>("wifiServicePath");
-    wifi_network->set_type(shill::kTypeWifi);
+    wifi_network_ = base::MakeUnique<chromeos::NetworkState>("wifiServicePath");
+    wifi_network_->set_type(shill::kTypeWifi);
 
-    cellular_network =
+    cellular_network_ =
         base::MakeUnique<chromeos::NetworkState>("cellularServicePath");
-    cellular_network->set_type(shill::kTypeCellular);
+    cellular_network_->set_type(shill::kTypeCellular);
 
-    wifi_tether_network =
+    wifi_tether_network_ =
         base::MakeUnique<chromeos::NetworkState>("wifiTetherServicePath");
-    wifi_tether_network->set_type(shill::kTypeWifi);
-    wifi_tether_network.get()->set_tether_guid("tetherNetworkGuid");
+    wifi_tether_network_->set_type(shill::kTypeWifi);
+    wifi_tether_network_.get()->set_tether_guid("tetherNetworkGuid");
   }
 
   void TearDown() override {
     PurgeNetworkIconCache();
+
     chromeos::NetworkHandler::Shutdown();
-    AshTestBase::TearDown();
+
+    ShutdownNetworkState();
+    chromeos::NetworkStateTest::TearDown();
+    chromeos::DBusThreadManager::Shutdown();
   }
 
   gfx::Image ImageForNetwork(chromeos::NetworkState* network) {
-    gfx::ImageSkia image_skia = GetImageForNetwork(network, icon_type);
+    gfx::ImageSkia image_skia = GetImageForNetwork(network, icon_type_);
     return gfx::Image(image_skia);
   }
 
@@ -61,10 +75,10 @@ class NetworkIconTest : public AshTestBase {
   // for a Wi-Fi network. The icon for a Tether network should be the same as
   // one for a Wi-Fi network with an associated Tether guid.
   void GetAndCompareImagesByNetworkType() {
-    gfx::Image tether_image = ImageForNetwork(tether_network.get());
-    gfx::Image wifi_image = ImageForNetwork(wifi_network.get());
-    gfx::Image cellular_image = ImageForNetwork(cellular_network.get());
-    gfx::Image wifi_tether_image = ImageForNetwork(wifi_tether_network.get());
+    gfx::Image tether_image = ImageForNetwork(tether_network_.get());
+    gfx::Image wifi_image = ImageForNetwork(wifi_network_.get());
+    gfx::Image cellular_image = ImageForNetwork(cellular_network_.get());
+    gfx::Image wifi_tether_image = ImageForNetwork(wifi_tether_network_.get());
 
     EXPECT_FALSE(gfx::test::AreImagesEqual(tether_image, wifi_image));
     EXPECT_FALSE(gfx::test::AreImagesEqual(cellular_image, wifi_image));
@@ -73,14 +87,42 @@ class NetworkIconTest : public AshTestBase {
     EXPECT_TRUE(gfx::test::AreImagesEqual(tether_image, wifi_tether_image));
   }
 
-  IconType icon_type = ICON_TYPE_TRAY;
+  void SetCellularUnavailable() {
+    test_manager_client()->RemoveTechnology(shill::kTypeCellular);
 
-  std::unique_ptr<chromeos::NetworkState> tether_network;
-  std::unique_ptr<chromeos::NetworkState> wifi_network;
-  std::unique_ptr<chromeos::NetworkState> cellular_network;
+    base::RunLoop().RunUntilIdle();
+
+    ASSERT_EQ(
+        chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
+        handler_->GetTechnologyState(chromeos::NetworkTypePattern::Cellular()));
+  }
+
+  void SetCellularUninitialized() {
+    test_manager_client()->RemoveTechnology(shill::kTypeCellular);
+    test_manager_client()->AddTechnology(shill::kTypeCellular, false);
+    test_manager_client()->SetTechnologyInitializing(shill::kTypeCellular,
+                                                     true);
+
+    base::RunLoop().RunUntilIdle();
+
+    ASSERT_EQ(
+        chromeos::NetworkStateHandler::TechnologyState::
+            TECHNOLOGY_UNINITIALIZED,
+        handler_->GetTechnologyState(chromeos::NetworkTypePattern::Cellular()));
+  }
+
+  const base::MessageLoop message_loop_;
+
+  IconType icon_type_ = ICON_TYPE_TRAY;
+
+  chromeos::NetworkStateHandler* handler_;
+
+  std::unique_ptr<chromeos::NetworkState> tether_network_;
+  std::unique_ptr<chromeos::NetworkState> wifi_network_;
+  std::unique_ptr<chromeos::NetworkState> cellular_network_;
   // A network whose type is shill::kTypeWifi, but which is associated with
   // a Tether network via its Tether network ID.
-  std::unique_ptr<chromeos::NetworkState> wifi_tether_network;
+  std::unique_ptr<chromeos::NetworkState> wifi_tether_network_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkIconTest);
@@ -97,35 +139,100 @@ TEST_F(NetworkIconTest, CompareImagesByNetworkType_NotVisible) {
 }
 
 TEST_F(NetworkIconTest, CompareImagesByNetworkType_Connecting) {
-  tether_network->set_visible(true);
-  tether_network->set_connection_state(shill::kStateAssociation);
+  tether_network_->set_visible(true);
+  tether_network_->set_connection_state(shill::kStateAssociation);
 
-  wifi_network->set_visible(true);
-  wifi_network->set_connection_state(shill::kStateAssociation);
+  wifi_network_->set_visible(true);
+  wifi_network_->set_connection_state(shill::kStateAssociation);
 
-  cellular_network->set_visible(true);
-  cellular_network->set_connection_state(shill::kStateAssociation);
+  cellular_network_->set_visible(true);
+  cellular_network_->set_connection_state(shill::kStateAssociation);
 
-  wifi_tether_network->set_visible(true);
-  wifi_tether_network->set_connection_state(shill::kStateAssociation);
+  wifi_tether_network_->set_visible(true);
+  wifi_tether_network_->set_connection_state(shill::kStateAssociation);
 
   GetAndCompareImagesByNetworkType();
 }
 
 TEST_F(NetworkIconTest, CompareImagesByNetworkType_Connected) {
-  tether_network->set_visible(true);
-  tether_network->set_connection_state(shill::kStateOnline);
+  tether_network_->set_visible(true);
+  tether_network_->set_connection_state(shill::kStateOnline);
 
-  wifi_network->set_visible(true);
-  wifi_network->set_connection_state(shill::kStateOnline);
+  wifi_network_->set_visible(true);
+  wifi_network_->set_connection_state(shill::kStateOnline);
 
-  cellular_network->set_visible(true);
-  cellular_network->set_connection_state(shill::kStateOnline);
+  cellular_network_->set_visible(true);
+  cellular_network_->set_connection_state(shill::kStateOnline);
 
-  wifi_tether_network->set_visible(true);
-  wifi_tether_network->set_connection_state(shill::kStateOnline);
+  wifi_tether_network_->set_visible(true);
+  wifi_tether_network_->set_connection_state(shill::kStateOnline);
 
   GetAndCompareImagesByNetworkType();
+}
+
+TEST_F(NetworkIconTest,
+       GetMobileUninitializedMsg_NoUninitializedMessageExpected) {
+  EXPECT_EQ(0, GetMobileUninitializedMsg());
+}
+
+TEST_F(NetworkIconTest,
+       GetMobileUninitializedMsg_CellularUnavailable_BluetoothDisabled) {
+  SetCellularUnavailable();
+
+  handler_->SetTetherTechnologyState(
+      chromeos::NetworkStateHandler::TECHNOLOGY_UNINITIALIZED);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH, GetMobileUninitializedMsg());
+}
+
+TEST_F(NetworkIconTest,
+       GetMobileUninitializedMsg_CellularUninitialized_NoMobileNetworks) {
+  SetCellularUninitialized();
+
+  EXPECT_EQ(IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR,
+            GetMobileUninitializedMsg());
+}
+
+TEST_F(NetworkIconTest,
+       GetMobileUninitializedMsg_CellularUninitialized_MobileNetworksExist) {
+  SetCellularUninitialized();
+
+  handler_->SetTetherTechnologyState(
+      chromeos::NetworkStateHandler::TECHNOLOGY_ENABLED);
+  base::RunLoop().RunUntilIdle();
+
+  handler_->AddTetherNetworkState(
+      "guid", "name", "carrier", 100 /* battery_percentage */,
+      100 /* signal_strength */, false /* has_connected_to_host */);
+  base::RunLoop().RunUntilIdle();
+
+  chromeos::NetworkStateHandler::NetworkStateList mobile_networks;
+  handler_->GetVisibleNetworkListByType(chromeos::NetworkTypePattern::Tether(),
+                                        &mobile_networks);
+  ASSERT_FALSE(mobile_networks.empty());
+
+  EXPECT_EQ(0, GetMobileUninitializedMsg());
+}
+
+TEST_F(NetworkIconTest,
+       GetMobileUninitializedMsg_CellularScanning_NoMobileNetworks) {
+  SetCellularUninitialized();
+
+  test_manager_client()->AddTechnology(shill::kTypeCellular, true);
+
+  chromeos::DBusThreadManager* dbus_manager =
+      chromeos::DBusThreadManager::Get();
+  chromeos::ShillDeviceClient::TestInterface* device_test =
+      dbus_manager->GetShillDeviceClient()->GetTestInterface();
+
+  device_test->SetDeviceProperty("/device/cellular1", shill::kScanningProperty,
+                                 base::Value(true));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(
+      handler_->GetScanningByType(chromeos::NetworkTypePattern::Cellular()));
+
+  EXPECT_EQ(IDS_ASH_STATUS_TRAY_MOBILE_SCANNING, GetMobileUninitializedMsg());
 }
 
 }  // namespace network_icon
