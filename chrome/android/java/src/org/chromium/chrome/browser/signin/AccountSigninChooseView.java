@@ -14,7 +14,6 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunChooserView;
-import org.chromium.chrome.browser.firstrun.ProfileDataCache;
 
 import java.util.List;
 
