@@ -80,7 +80,9 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
-  ash::Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  // TODO(sammiequon): Add test for shutdown procedure.
+  if (ash::Shell::Get()->tablet_mode_controller())
+    ash::Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   ash::Shell::Get()->RemoveShellObserver(this);
 }
 

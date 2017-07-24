@@ -99,7 +99,9 @@ RotationLockDefaultView::RotationLockDefaultView(SystemTrayItem* owner)
 
 RotationLockDefaultView::~RotationLockDefaultView() {
   StopObservingRotation();
-  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  // TODO(sammiequon): Add test for shutdown procedure.
+  if (Shell::Get()->tablet_mode_controller())
+    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 }
 
 void RotationLockDefaultView::Update() {
