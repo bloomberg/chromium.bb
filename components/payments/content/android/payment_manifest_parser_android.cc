@@ -30,20 +30,22 @@ class ParseCallback {
   // Copies payment method manifest into Java.
   void OnPaymentMethodManifestParsed(
       const std::vector<GURL>& web_app_manifest_urls,
-      const std::vector<url::Origin>& unused_supported_origins,
-      bool unused_all_origins_supported) {
+      const std::vector<url::Origin>& supported_origins,
+      bool all_origins_supported) {
     DCHECK_GE(100U, web_app_manifest_urls.size());
+    DCHECK_GE(100000U, supported_origins.size());
     JNIEnv* env = base::android::AttachCurrentThread();
 
-    if (web_app_manifest_urls.empty()) {
+    if (web_app_manifest_urls.empty() && supported_origins.empty() &&
+        !all_origins_supported) {
       // Can trigger synchronous deletion of PaymentManifestParserAndroid.
       Java_ManifestParseCallback_onManifestParseFailure(env, jcallback_);
       return;
     }
 
     base::android::ScopedJavaLocalRef<jobjectArray> juris =
-        Java_PaymentManifestParser_createWebAppManifestUris(
-            env, web_app_manifest_urls.size());
+        Java_PaymentManifestParser_createUriArray(env,
+                                                  web_app_manifest_urls.size());
 
     for (size_t i = 0; i < web_app_manifest_urls.size(); ++i) {
       bool is_valid_uri = Java_PaymentManifestParser_addUri(
@@ -53,9 +55,21 @@ class ParseCallback {
       DCHECK(is_valid_uri);
     }
 
+    base::android::ScopedJavaLocalRef<jobjectArray> jorigins =
+        Java_PaymentManifestParser_createUriArray(env,
+                                                  supported_origins.size());
+
+    for (size_t i = 0; i < supported_origins.size(); ++i) {
+      bool is_valid_uri = Java_PaymentManifestParser_addUri(
+          env, jorigins.obj(), base::checked_cast<int>(i),
+          base::android::ConvertUTF8ToJavaString(
+              env, supported_origins[i].Serialize()));
+      DCHECK(is_valid_uri);
+    }
+
     // Can trigger synchronous deletion of PaymentManifestParserAndroid.
     Java_ManifestParseCallback_onPaymentMethodManifestParseSuccess(
-        env, jcallback_, juris.obj());
+        env, jcallback_, juris.obj(), jorigins.obj(), all_origins_supported);
   }
 
   // Copies web app manifest into Java.

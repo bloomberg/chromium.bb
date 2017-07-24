@@ -90,10 +90,12 @@ void PaymentManifestParserHost::OnPaymentMethodParse(
     return;
   }
 
+  const size_t kMaximumNumberOfSupportedOrigins = 100000;
   if (web_app_manifest_urls.size() > kMaximumNumberOfItems ||
-      supported_origins.size() > kMaximumNumberOfItems) {
-    // If more than 100 items, then something went wrong in the utility
-    // process. Stop the utility process and notify all callbacks.
+      supported_origins.size() > kMaximumNumberOfSupportedOrigins) {
+    // If more than 100 web app manifests URLs or more than 100,000 supported
+    // origins, then something went wrong in the utility process. Stop the
+    // utility process and notify all callbacks.
     OnUtilityProcessStopped();
     return;
   }

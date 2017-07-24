@@ -83,7 +83,7 @@ public class PaymentManifestVerifierTest {
             public void parsePaymentMethodManifest(String content, ManifestParseCallback callback) {
                 try {
                     callback.onPaymentMethodManifestParseSuccess(
-                            new URI[] {new URI("https://bobpay.com/app.json")});
+                            new URI[] {new URI("https://bobpay.com/app.json")}, new URI[0], false);
                 } catch (URISyntaxException e) {
                     assert false;
                 }
@@ -202,7 +202,8 @@ public class PaymentManifestVerifierTest {
                             String content, ManifestParseCallback callback) {
                         try {
                             callback.onPaymentMethodManifestParseSuccess(
-                                    new URI[] {new URI("https://alicepay.com/app.json")});
+                                    new URI[] {new URI("https://alicepay.com/app.json")},
+                                    new URI[0], false);
                         } catch (URISyntaxException e) {
                             assert false;
                         }
@@ -250,7 +251,8 @@ public class PaymentManifestVerifierTest {
                 try {
                     callback.onPaymentMethodManifestParseSuccess(
                             new URI[] {new URI("https://alicepay.com/app.json"),
-                                    new URI("https://bobpay.com/app.json")});
+                                    new URI("https://bobpay.com/app.json")},
+                            new URI[0], false);
                 } catch (URISyntaxException e) {
                     assert false;
                 }
@@ -299,7 +301,8 @@ public class PaymentManifestVerifierTest {
                 try {
                     callback.onPaymentMethodManifestParseSuccess(
                             new URI[] {new URI("https://alicepay.com/app.json"),
-                                    new URI("https://bobpay.com/app.json")});
+                                    new URI("https://bobpay.com/app.json")},
+                            new URI[0], false);
                 } catch (URISyntaxException e) {
                     assert false;
                 }
