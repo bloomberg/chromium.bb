@@ -15,6 +15,8 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.view.InputDevice;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -533,6 +535,21 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * changes.
      */
     protected void onDefaultSearchEngineChanged() { }
+
+    @Override
+    public boolean onGenericMotionEvent(MotionEvent event) {
+        // Consumes mouse button events on toolbar so they don't get leaked to content layer.
+        // See https://crbug.com/740855.
+        if ((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != 0
+                && event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE) {
+            int action = event.getActionMasked();
+            if (action == MotionEvent.ACTION_BUTTON_PRESS
+                    || action == MotionEvent.ACTION_BUTTON_RELEASE) {
+                return true;
+            }
+        }
+        return super.onGenericMotionEvent(event);
+    }
 
     @Override
     public void getLocationBarContentRect(Rect outRect) {
