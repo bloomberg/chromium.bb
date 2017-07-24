@@ -36,6 +36,7 @@
 
 namespace blink {
 
+class Document;
 class HTMLLinkElement;
 class HTMLMediaElement;
 class InspectedFrames;
@@ -45,7 +46,13 @@ class LinkResource;
 class LocalFrame;
 class MediaControls;
 class Page;
+class Settings;
 class ShadowRoot;
+class WebFrameClient;
+class WebMediaPlayer;
+class WebMediaPlayerClient;
+class WebMediaPlayerSource;
+class WebRemotePlaybackClient;
 class WorkerClients;
 
 class CORE_EXPORT CoreInitializer {
@@ -85,6 +92,17 @@ class CORE_EXPORT CoreInitializer {
                                          Page*) const = 0;
   virtual LinkResource* CreateServiceWorkerLinkResource(
       HTMLLinkElement*) const = 0;
+
+  virtual void OnClearWindowObjectInMainWorld(Document&, const Settings&) = 0;
+
+  virtual std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
+      WebFrameClient*,
+      HTMLMediaElement&,
+      const WebMediaPlayerSource&,
+      WebMediaPlayerClient*) = 0;
+
+  virtual WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
+      HTMLMediaElement&) = 0;
 
  protected:
   // CoreInitializer is only instantiated by subclass ModulesInitializer.

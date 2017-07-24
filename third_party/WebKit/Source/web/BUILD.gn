@@ -37,8 +37,6 @@ component("web") {
 
   sources = [
     "AssertMatchingEnums.cpp",
-    "LocalFrameClientImpl.cpp",
-    "LocalFrameClientImpl.h",
     "WebExport.h",
     "WebFactoryImpl.cpp",
     "WebFactoryImpl.h",

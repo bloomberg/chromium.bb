@@ -30,7 +30,6 @@ class WebFactoryImpl : public WebFactory {
                                              InterfaceRegistry*,
                                              WebFrame* opener) const override;
 
-  LocalFrameClient* CreateLocalFrameClient(WebLocalFrameBase*) const override;
 };
 
 }  // namespace blink

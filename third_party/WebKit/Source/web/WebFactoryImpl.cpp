@@ -5,7 +5,6 @@
 #include "web/WebFactoryImpl.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/page/ChromeClientImpl.h"
-#include "web/LocalFrameClientImpl.h"
 #include "web/WebViewImpl.h"
 
 namespace blink {
@@ -39,11 +38,6 @@ WebLocalFrameBase* WebFactoryImpl::CreateWebLocalFrameBase(
     InterfaceRegistry* registry,
     WebFrame* opener) const {
   return WebLocalFrameImpl::Create(type, client, registry, opener);
-}
-
-LocalFrameClient* WebFactoryImpl::CreateLocalFrameClient(
-    WebLocalFrameBase* local_frame_base) const {
-  return LocalFrameClientImpl::Create(local_frame_base);
 }
 
 }  // namespace blink

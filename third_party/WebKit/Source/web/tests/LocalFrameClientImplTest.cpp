@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/LocalFrameClientImpl.h"
+#include "core/exported/LocalFrameClientImpl.h"
 
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/WebLocalFrameBase.h"

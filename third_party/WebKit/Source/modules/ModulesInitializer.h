@@ -28,6 +28,14 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
                                  Page*) const override;
   LinkResource* CreateServiceWorkerLinkResource(
       HTMLLinkElement*) const override;
+  void OnClearWindowObjectInMainWorld(Document&, const Settings&) override;
+  std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
+      WebFrameClient*,
+      HTMLMediaElement&,
+      const WebMediaPlayerSource&,
+      WebMediaPlayerClient*) override;
+  WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
+      HTMLMediaElement&) override;
 };
 
 }  // namespace blink

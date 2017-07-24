@@ -10,11 +10,13 @@
 #include "core/dom/Document.h"
 #include "core/exported/WebSharedWorkerImpl.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/InspectorSession.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
+#include "core/origin_trials/OriginTrials.h"
 #include "core/page/ChromeClient.h"
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerClients.h"
@@ -28,15 +30,21 @@
 #include "modules/app_banner/AppBannerController.h"
 #include "modules/audio_output_devices/AudioOutputDeviceClient.h"
 #include "modules/audio_output_devices/AudioOutputDeviceClientImpl.h"
+#include "modules/audio_output_devices/HTMLMediaElementAudioOutputDevice.h"
 #include "modules/cachestorage/InspectorCacheStorageAgent.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/compositorworker/CompositorWorkerThread.h"
 #include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
+#include "modules/device_orientation/DeviceMotionController.h"
+#include "modules/device_orientation/DeviceOrientationAbsoluteController.h"
+#include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
 #include "modules/document_metadata/CopylessPasteServer.h"
+#include "modules/encryptedmedia/HTMLMediaElementEncryptedMedia.h"
 #include "modules/exported/WebEmbeddedWorkerImpl.h"
 #include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
 #include "modules/filesystem/LocalFileSystemClient.h"
+#include "modules/gamepad/NavigatorGamepad.h"
 #include "modules/imagebitmap/ImageBitmapRenderingContext.h"
 #include "modules/indexeddb/IndexedDBClientImpl.h"
 #include "modules/indexeddb/InspectorIndexedDBAgent.h"
@@ -49,11 +57,17 @@
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 #include "modules/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
 #include "modules/presentation/PresentationController.h"
+#include "modules/presentation/PresentationReceiver.h"
 #include "modules/push_messaging/PushController.h"
+#include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
+#include "modules/remoteplayback/RemotePlayback.h"
 #include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
+#include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerLinkResource.h"
+#include "modules/storage/DOMWindowStorageController.h"
 #include "modules/storage/InspectorDOMStorageAgent.h"
 #include "modules/time_zone_monitor/TimeZoneMonitorClient.h"
+#include "modules/vr/NavigatorVR.h"
 #include "modules/vr/VRController.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/InspectorDatabaseAgent.h"
@@ -187,6 +201,44 @@ void ModulesInitializer::InitInspectorAgentSession(
 LinkResource* ModulesInitializer::CreateServiceWorkerLinkResource(
     HTMLLinkElement* owner) const {
   return ServiceWorkerLinkResource::Create(owner);
+}
+
+void ModulesInitializer::OnClearWindowObjectInMainWorld(
+    Document& document,
+    const Settings& settings) {
+  DeviceMotionController::From(document);
+  DeviceOrientationController::From(document);
+  DeviceOrientationAbsoluteController::From(document);
+  NavigatorGamepad::From(document);
+  NavigatorServiceWorker::From(document);
+  DOMWindowStorageController::From(document);
+  if (RuntimeEnabledFeatures::WebVREnabled() ||
+      OriginTrials::webVREnabled(document.GetExecutionContext()))
+    NavigatorVR::From(document);
+  if (RuntimeEnabledFeatures::PresentationEnabled() &&
+      settings.GetPresentationReceiver()) {
+    // Call this in order to ensure the object is created.
+    PresentationReceiver::From(document);
+  }
+}
+
+std::unique_ptr<WebMediaPlayer> ModulesInitializer::CreateWebMediaPlayer(
+    WebFrameClient* web_frame_client,
+    HTMLMediaElement& html_media_element,
+    const WebMediaPlayerSource& source,
+    WebMediaPlayerClient* media_player_client) {
+  HTMLMediaElementEncryptedMedia& encrypted_media =
+      HTMLMediaElementEncryptedMedia::From(html_media_element);
+  WebString sink_id(
+      HTMLMediaElementAudioOutputDevice::sinkId(html_media_element));
+  return WTF::WrapUnique(web_frame_client->CreateMediaPlayer(
+      source, media_player_client, &encrypted_media,
+      encrypted_media.ContentDecryptionModule(), sink_id));
+}
+
+WebRemotePlaybackClient* ModulesInitializer::CreateWebRemotePlaybackClient(
+    HTMLMediaElement& html_media_element) {
+  return HTMLMediaElementRemotePlayback::remote(html_media_element);
 }
 
 }  // namespace blink
