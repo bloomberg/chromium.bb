@@ -13,30 +13,27 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/surfaces/surface_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_client.h"
 #include "components/viz/service/frame_sinks/referenced_surface_tracker.h"
 #include "components/viz/service/frame_sinks/surface_resource_holder.h"
 #include "components/viz/service/frame_sinks/surface_resource_holder_client.h"
+#include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/viz_service_export.h"
-
-namespace cc {
-class Surface;
-class SurfaceManager;
-}  // namespace cc
 
 namespace viz {
 
 class FrameSinkManagerImpl;
 class CompositorFrameSinkSupportClient;
+class Surface;
+class SurfaceManager;
 
 class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
     : public BeginFrameObserver,
       public SurfaceResourceHolderClient,
       public FrameSinkManagerClient,
-      public cc::SurfaceClient {
+      public SurfaceClient {
  public:
   static std::unique_ptr<CompositorFrameSinkSupport> Create(
       CompositorFrameSinkSupportClient* client,
@@ -51,12 +48,12 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
   FrameSinkManagerImpl* frame_sink_manager() { return frame_sink_manager_; }
-  cc::SurfaceManager* surface_manager() { return surface_manager_; }
+  SurfaceManager* surface_manager() { return surface_manager_; }
 
   void SetDestructionCallback(base::OnceCallback<void()> callback);
 
   // SurfaceClient implementation.
-  void OnSurfaceActivated(cc::Surface* surface) override;
+  void OnSurfaceActivated(Surface* surface) override;
   void RefResources(
       const std::vector<cc::TransferableResource>& resources) override;
   void UnrefResources(
@@ -77,7 +74,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void RequestCopyOfSurface(std::unique_ptr<cc::CopyOutputRequest> request);
   void ClaimTemporaryReference(const SurfaceId& surface_id);
 
-  cc::Surface* GetCurrentSurfaceForTesting();
+  Surface* GetCurrentSurfaceForTesting();
 
  protected:
   CompositorFrameSinkSupport(CompositorFrameSinkSupportClient* client,
@@ -98,7 +95,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       const std::vector<SurfaceId>& active_referenced_surfaces);
 
   // Creates a surface reference from the top-level root to |surface_id|.
-  cc::SurfaceReference MakeTopLevelRootReference(const SurfaceId& surface_id);
+  SurfaceReference MakeTopLevelRootReference(const SurfaceId& surface_id);
 
   void DidReceiveCompositorFrameAck();
   void WillDrawSurface(const LocalSurfaceId& local_surface_id,
@@ -110,12 +107,12 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void OnBeginFrameSourcePausedChanged(bool paused) override;
 
   void UpdateNeedsBeginFramesInternal();
-  cc::Surface* CreateSurface(const SurfaceInfo& surface_info);
+  Surface* CreateSurface(const SurfaceInfo& surface_info);
 
   CompositorFrameSinkSupportClient* const client_;
 
   FrameSinkManagerImpl* frame_sink_manager_ = nullptr;
-  cc::SurfaceManager* surface_manager_ = nullptr;
+  SurfaceManager* surface_manager_ = nullptr;
 
   const FrameSinkId frame_sink_id_;
   SurfaceId current_surface_id_;

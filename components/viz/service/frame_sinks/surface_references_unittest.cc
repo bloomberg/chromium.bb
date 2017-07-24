@@ -9,12 +9,12 @@
 
 #include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
-#include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_manager.h"
-#include "cc/test/compositor_frame_helpers.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_manager.h"
+#include "components/viz/test/compositor_frame_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,12 +34,10 @@ constexpr FrameSinkId kFrameSink3(3, 0);
 }  // namespace
 
 // Tests for reference tracking in CompositorFrameSinkSupport and
-// cc::SurfaceManager.
+// SurfaceManager.
 class SurfaceReferencesTest : public testing::Test {
  public:
-  cc::SurfaceManager& GetSurfaceManager() {
-    return *manager_->surface_manager();
-  }
+  SurfaceManager& GetSurfaceManager() { return *manager_->surface_manager(); }
 
   // Creates a new Surface with the provided |frame_sink_id| and |local_id|.
   // Will first create a Surfacesupport for |frame_sink_id| if necessary.
@@ -47,8 +45,7 @@ class SurfaceReferencesTest : public testing::Test {
     LocalSurfaceId local_surface_id(local_id,
                                     base::UnguessableToken::Deserialize(0, 1u));
     GetCompositorFrameSinkSupport(frame_sink_id)
-        .SubmitCompositorFrame(local_surface_id,
-                               cc::test::MakeCompositorFrame());
+        .SubmitCompositorFrame(local_surface_id, MakeCompositorFrame());
     return SurfaceId(frame_sink_id, local_surface_id);
   }
 
@@ -81,13 +78,13 @@ class SurfaceReferencesTest : public testing::Test {
   void RemoveSurfaceReference(const SurfaceId& parent_id,
                               const SurfaceId& child_id) {
     manager_->surface_manager()->RemoveSurfaceReferences(
-        {cc::SurfaceReference(parent_id, child_id)});
+        {SurfaceReference(parent_id, child_id)});
   }
 
   void AddSurfaceReference(const SurfaceId& parent_id,
                            const SurfaceId& child_id) {
     manager_->surface_manager()->AddSurfaceReferences(
-        {cc::SurfaceReference(parent_id, child_id)});
+        {SurfaceReference(parent_id, child_id)});
   }
 
   // Returns all the references where |surface_id| is the parent.
@@ -102,7 +99,7 @@ class SurfaceReferencesTest : public testing::Test {
     return GetSurfaceManager().GetSurfacesThatReferenceChild(surface_id);
   }
 
-  // Temporary references are stored as a map in cc::SurfaceManager. This method
+  // Temporary references are stored as a map in SurfaceManager. This method
   // converts the map to a vector.
   std::vector<SurfaceId> GetAllTempReferences() {
     std::vector<SurfaceId> temp_references;
@@ -114,10 +111,10 @@ class SurfaceReferencesTest : public testing::Test {
  protected:
   // testing::Test:
   void SetUp() override {
-    // Start each test with a fresh cc::SurfaceManager instance.
+    // Start each test with a fresh SurfaceManager instance.
     manager_ = base::MakeUnique<FrameSinkManagerImpl>(
         nullptr /* display_provider */,
-        cc::SurfaceManager::LifetimeType::REFERENCES);
+        SurfaceManager::LifetimeType::REFERENCES);
   }
   void TearDown() override {
     for (auto& support : supports_)

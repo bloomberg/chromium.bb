@@ -6,14 +6,14 @@
 #define CC_TEST_FAKE_SURFACE_OBSERVER_H_
 
 #include "base/containers/flat_set.h"
-#include "cc/surfaces/surface_observer.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/service/surfaces/surface_observer.h"
 
 namespace cc {
 
-class FakeSurfaceObserver : public SurfaceObserver {
+class FakeSurfaceObserver : public viz::SurfaceObserver {
  public:
   // If |damage_display| is true, the observer will indicate display damage when
   // a surface is damaged.

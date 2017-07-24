@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -13,11 +13,12 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
-#include "cc/surfaces/surface_client.h"
-#include "cc/surfaces/surface_manager.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/service/surfaces/surface_client.h"
+#include "components/viz/service/surfaces/surface_manager.h"
+#include "components/viz/service/viz_service_export.h"
 
-namespace cc {
+namespace viz {
 
 namespace {
 // The frame index starts at 2 so that empty frames will be treated as
@@ -25,10 +26,10 @@ namespace {
 constexpr int kFrameIndexStart = 2;
 }  // namespace
 
-Surface::Surface(const viz::SurfaceInfo& surface_info,
+Surface::Surface(const SurfaceInfo& surface_info,
                  SurfaceManager* surface_manager,
                  base::WeakPtr<SurfaceClient> surface_client,
-                 viz::BeginFrameSource* begin_frame_source,
+                 BeginFrameSource* begin_frame_source,
                  bool needs_sync_tokens)
     : surface_info_(surface_info),
       previous_frame_surface_id_(surface_info.id()),
@@ -55,30 +56,32 @@ void Surface::SetPreviousFrameSurface(Surface* surface) {
   DCHECK(surface && (HasActiveFrame() || HasPendingFrame()));
   frame_index_ = surface->frame_index() + 1;
   previous_frame_surface_id_ = surface->surface_id();
-  CompositorFrame& frame = active_frame_data_ ? active_frame_data_->frame
-                                              : pending_frame_data_->frame;
+  cc::CompositorFrame& frame = active_frame_data_ ? active_frame_data_->frame
+                                                  : pending_frame_data_->frame;
   surface->TakeLatencyInfo(&frame.metadata.latency_info);
   surface->TakeLatencyInfoFromPendingFrame(&frame.metadata.latency_info);
 }
 
-void Surface::RefResources(const std::vector<TransferableResource>& resources) {
+void Surface::RefResources(
+    const std::vector<cc::TransferableResource>& resources) {
   if (surface_client_)
     surface_client_->RefResources(resources);
 }
 
-void Surface::UnrefResources(const std::vector<ReturnedResource>& resources) {
+void Surface::UnrefResources(
+    const std::vector<cc::ReturnedResource>& resources) {
   if (surface_client_)
     surface_client_->UnrefResources(resources);
 }
 
 void Surface::RejectCompositorFramesToFallbackSurfaces() {
-  std::vector<viz::FrameSinkId> frame_sink_ids_for_dependencies;
-  for (const viz::SurfaceId& surface_id :
+  std::vector<FrameSinkId> frame_sink_ids_for_dependencies;
+  for (const SurfaceId& surface_id :
        GetPendingFrame().metadata.activation_dependencies) {
     frame_sink_ids_for_dependencies.push_back(surface_id.frame_sink_id());
   }
 
-  for (const viz::SurfaceId& surface_id :
+  for (const SurfaceId& surface_id :
        GetPendingFrame().metadata.referenced_surfaces) {
     // A surface ID in |referenced_surfaces| that has a corresponding surface
     // ID in |activation_dependencies| with the same frame sink ID is said to
@@ -104,7 +107,7 @@ void Surface::Close() {
   closed_ = true;
 }
 
-bool Surface::QueueFrame(CompositorFrame frame,
+bool Surface::QueueFrame(cc::CompositorFrame frame,
                          const base::Closure& callback,
                          const WillDrawCallback& will_draw_callback) {
   late_activation_dependencies_.clear();
@@ -120,8 +123,8 @@ bool Surface::QueueFrame(CompositorFrame frame,
   }
 
   if (closed_) {
-    std::vector<ReturnedResource> resources =
-        TransferableResource::ReturnResources(frame.resource_list);
+    std::vector<cc::ReturnedResource> resources =
+        cc::TransferableResource::ReturnResources(frame.resource_list);
     surface_client_->ReturnResources(resources);
     callback.Run();
     return true;
@@ -135,7 +138,7 @@ bool Surface::QueueFrame(CompositorFrame frame,
 
   UpdateActivationDependencies(frame);
 
-  // Receive and track the resources referenced from the CompositorFrame
+  // Receive and track the resources referenced from the cc::CompositorFrame
   // regardless of whether it's pending or active.
   surface_client_->ReceiveFromChild(frame.resource_list);
 
@@ -160,13 +163,13 @@ bool Surface::QueueFrame(CompositorFrame frame,
 }
 
 void Surface::RequestCopyOfOutput(
-    std::unique_ptr<CopyOutputRequest> copy_request) {
+    std::unique_ptr<cc::CopyOutputRequest> copy_request) {
   if (!active_frame_data_) {
     copy_request->SendEmptyResult();
     return;
   }
 
-  std::vector<std::unique_ptr<CopyOutputRequest>>& copy_requests =
+  std::vector<std::unique_ptr<cc::CopyOutputRequest>>& copy_requests =
       active_frame_data_->frame.render_pass_list.back()->copy_requests;
 
   if (copy_request->has_source()) {
@@ -174,14 +177,14 @@ void Surface::RequestCopyOfOutput(
     // Remove existing CopyOutputRequests made on the Surface by the same
     // source.
     base::EraseIf(copy_requests,
-                  [&source](const std::unique_ptr<CopyOutputRequest>& x) {
+                  [&source](const std::unique_ptr<cc::CopyOutputRequest>& x) {
                     return x->has_source() && x->source() == source;
                   });
   }
   copy_requests.push_back(std::move(copy_request));
 }
 
-void Surface::NotifySurfaceIdAvailable(const viz::SurfaceId& surface_id) {
+void Surface::NotifySurfaceIdAvailable(const SurfaceId& surface_id) {
   auto it = activation_dependencies_.find(surface_id);
   // This surface may no longer have blockers if the deadline has passed.
   if (it == activation_dependencies_.end())
@@ -209,7 +212,7 @@ void Surface::ActivatePendingFrameForDeadline() {
   ActivatePendingFrame();
 }
 
-Surface::FrameData::FrameData(CompositorFrame&& frame,
+Surface::FrameData::FrameData(cc::CompositorFrame&& frame,
                               const base::Closure& draw_callback,
                               const WillDrawCallback& will_draw_callback)
     : frame(std::move(frame)),
@@ -235,7 +238,7 @@ void Surface::ActivateFrame(FrameData frame_data) {
   deadline_.Cancel();
 
   // Save root pass copy requests.
-  std::vector<std::unique_ptr<CopyOutputRequest>> old_copy_requests;
+  std::vector<std::unique_ptr<cc::CopyOutputRequest>> old_copy_requests;
   if (active_frame_data_) {
     std::swap(old_copy_requests,
               active_frame_data_->frame.render_pass_list.back()->copy_requests);
@@ -259,7 +262,7 @@ void Surface::ActivateFrame(FrameData frame_data) {
   UnrefFrameResourcesAndRunDrawCallback(std::move(previous_frame_data));
 
   // TODO(fsamuel): If |surface_client_| is not available then we will not
-  // immediately generate a display frame once the CompositorFrame here
+  // immediately generate a display frame once the cc::CompositorFrame here
   // activates. This isn't a major issue though because this would only
   // happen if the client that generated the surface has went away and so
   // we likely don't care to preserve the surface for long anyway.
@@ -268,10 +271,10 @@ void Surface::ActivateFrame(FrameData frame_data) {
 }
 
 void Surface::UpdateActivationDependencies(
-    const CompositorFrame& current_frame) {
-  base::flat_set<viz::SurfaceId> new_activation_dependencies;
+    const cc::CompositorFrame& current_frame) {
+  base::flat_set<SurfaceId> new_activation_dependencies;
 
-  for (const viz::SurfaceId& surface_id :
+  for (const SurfaceId& surface_id :
        current_frame.metadata.activation_dependencies) {
     Surface* dependency = surface_manager_->GetSurfaceForId(surface_id);
     // If a activation dependency does not have a corresponding active frame in
@@ -283,8 +286,8 @@ void Surface::UpdateActivationDependencies(
   // If this Surface has a previous pending frame, then we must determine the
   // changes in dependencies so that we can update the SurfaceDependencyTracker
   // map.
-  base::flat_set<viz::SurfaceId> added_dependencies;
-  base::flat_set<viz::SurfaceId> removed_dependencies;
+  base::flat_set<SurfaceId> added_dependencies;
+  base::flat_set<SurfaceId> removed_dependencies;
   ComputeChangeInDependencies(activation_dependencies_,
                               new_activation_dependencies, &added_dependencies,
                               &removed_dependencies);
@@ -299,16 +302,16 @@ void Surface::UpdateActivationDependencies(
 }
 
 void Surface::ComputeChangeInDependencies(
-    const base::flat_set<viz::SurfaceId>& existing_dependencies,
-    const base::flat_set<viz::SurfaceId>& new_dependencies,
-    base::flat_set<viz::SurfaceId>* added_dependencies,
-    base::flat_set<viz::SurfaceId>* removed_dependencies) {
-  for (const viz::SurfaceId& surface_id : existing_dependencies) {
+    const base::flat_set<SurfaceId>& existing_dependencies,
+    const base::flat_set<SurfaceId>& new_dependencies,
+    base::flat_set<SurfaceId>* added_dependencies,
+    base::flat_set<SurfaceId>* removed_dependencies) {
+  for (const SurfaceId& surface_id : existing_dependencies) {
     if (!new_dependencies.count(surface_id))
       removed_dependencies->insert(surface_id);
   }
 
-  for (const viz::SurfaceId& surface_id : new_dependencies) {
+  for (const SurfaceId& surface_id : new_dependencies) {
     if (!existing_dependencies.count(surface_id))
       added_dependencies->insert(surface_id);
   }
@@ -328,12 +331,12 @@ void Surface::TakeCopyOutputRequests(Surface::CopyRequestsMap* copy_requests) {
   }
 }
 
-const CompositorFrame& Surface::GetActiveFrame() const {
+const cc::CompositorFrame& Surface::GetActiveFrame() const {
   DCHECK(active_frame_data_);
   return active_frame_data_->frame;
 }
 
-const CompositorFrame& Surface::GetPendingFrame() {
+const cc::CompositorFrame& Surface::GetPendingFrame() {
   DCHECK(pending_frame_data_);
   return pending_frame_data_->frame;
 }
@@ -360,15 +363,15 @@ void Surface::RunWillDrawCallback(const gfx::Rect& damage_rect) {
                                              damage_rect);
 }
 
-void Surface::AddDestructionDependency(viz::SurfaceSequence sequence) {
+void Surface::AddDestructionDependency(SurfaceSequence sequence) {
   destruction_dependencies_.push_back(sequence);
 }
 
 void Surface::SatisfyDestructionDependencies(
-    base::flat_set<viz::SurfaceSequence>* sequences,
-    base::flat_set<viz::FrameSinkId>* valid_frame_sink_ids) {
+    base::flat_set<SurfaceSequence>* sequences,
+    base::flat_set<FrameSinkId>* valid_frame_sink_ids) {
   base::EraseIf(destruction_dependencies_,
-                [sequences, valid_frame_sink_ids](viz::SurfaceSequence seq) {
+                [sequences, valid_frame_sink_ids](SurfaceSequence seq) {
                   return (!!sequences->erase(seq) ||
                           !valid_frame_sink_ids->count(seq.frame_sink_id));
                 });
@@ -383,8 +386,9 @@ void Surface::UnrefFrameResourcesAndRunDrawCallback(
   if (!frame_data || !surface_client_)
     return;
 
-  std::vector<ReturnedResource> resources =
-      TransferableResource::ReturnResources(frame_data->frame.resource_list);
+  std::vector<cc::ReturnedResource> resources =
+      cc::TransferableResource::ReturnResources(
+          frame_data->frame.resource_list);
   // No point in returning same sync token to sender.
   for (auto& resource : resources)
     resource.sync_token.Clear();
@@ -412,7 +416,7 @@ void Surface::TakeLatencyInfoFromPendingFrame(
 
 // static
 void Surface::TakeLatencyInfoFromFrame(
-    CompositorFrame* frame,
+    cc::CompositorFrame* frame,
     std::vector<ui::LatencyInfo>* latency_info) {
   if (latency_info->empty()) {
     frame->metadata.latency_info.swap(*latency_info);
@@ -424,4 +428,4 @@ void Surface::TakeLatencyInfoFromFrame(
   frame->metadata.latency_info.clear();
 }
 
-}  // namespace cc
+}  // namespace viz

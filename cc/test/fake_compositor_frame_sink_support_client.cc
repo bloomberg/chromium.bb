@@ -4,7 +4,7 @@
 
 #include "cc/test/fake_compositor_frame_sink_support_client.h"
 
-#include "cc/surfaces/surface_manager.h"
+#include "components/viz/service/surfaces/surface_manager.h"
 
 namespace cc {
 

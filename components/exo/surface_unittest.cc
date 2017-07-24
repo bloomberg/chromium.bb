@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/surface.h"
+#include "components/exo/surface.h"
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "components/exo/buffer.h"
-#include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
@@ -101,10 +101,10 @@ TEST_F(SurfaceTest, RequestFrameCallback) {
 
 const cc::CompositorFrame& GetFrameFromSurface(Surface* surface) {
   viz::SurfaceId surface_id = surface->GetSurfaceId();
-  cc::SurfaceManager* surface_manager = aura::Env::GetInstance()
-                                            ->context_factory_private()
-                                            ->GetFrameSinkManager()
-                                            ->surface_manager();
+  viz::SurfaceManager* surface_manager = aura::Env::GetInstance()
+                                             ->context_factory_private()
+                                             ->GetFrameSinkManager()
+                                             ->surface_manager();
   const cc::CompositorFrame& frame =
       surface_manager->GetSurfaceForId(surface_id)->GetActiveFrame();
   return frame;

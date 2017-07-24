@@ -8,7 +8,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "cc/quads/surface_draw_quad.h"
-#include "cc/surfaces/surface_manager.h"
+#include "components/viz/service/surfaces/surface_manager.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/cursor_manager.h"

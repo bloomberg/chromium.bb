@@ -18,7 +18,6 @@ viz_source_set("client") {
     "//base",
     "//cc",
     "//cc/ipc:interfaces",
-    "//cc/surfaces",
     "//components/viz/common",
     "//mojo/public/cpp/bindings",
   ]

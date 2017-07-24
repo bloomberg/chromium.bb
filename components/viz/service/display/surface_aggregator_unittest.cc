@@ -19,9 +19,6 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_manager.h"
-#include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_compositor_frame_sink_support_client.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/fake_surface_observer.h"
@@ -31,6 +28,9 @@
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_manager.h"
+#include "components/viz/test/compositor_frame_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -111,13 +111,13 @@ class SurfaceAggregatorTest : public testing::Test {
     }
 
     cc::DrawQuad::Material material;
-    // Set when material==DrawQuad::SURFACE_CONTENT.
+    // Set when material==cc::DrawQuad::SURFACE_CONTENT.
     SurfaceId primary_surface_id;
     SurfaceId fallback_surface_id;
     float opacity;
-    // Set when material==DrawQuad::SOLID_COLOR.
+    // Set when material==cc::DrawQuad::SOLID_COLOR.
     SkColor color;
-    // Set when material==DrawQuad::RENDER_PASS.
+    // Set when material==cc::DrawQuad::RENDER_PASS.
     cc::RenderPassId render_pass_id;
 
    private:
@@ -331,7 +331,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
   void SubmitPassListAsFrame(CompositorFrameSinkSupport* support,
                              const LocalSurfaceId& local_surface_id,
                              cc::RenderPassList* pass_list) {
-    cc::CompositorFrame frame = cc::test::MakeEmptyCompositorFrame();
+    cc::CompositorFrame frame = test::MakeEmptyCompositorFrame();
     pass_list->swap(frame.render_pass_list);
 
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -349,7 +349,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
   void QueuePassAsFrame(std::unique_ptr<cc::RenderPass> pass,
                         const LocalSurfaceId& local_surface_id,
                         CompositorFrameSinkSupport* support) {
-    cc::CompositorFrame child_frame = cc::test::MakeEmptyCompositorFrame();
+    cc::CompositorFrame child_frame = test::MakeEmptyCompositorFrame();
     child_frame.render_pass_list.push_back(std::move(pass));
 
     support->SubmitCompositorFrame(local_surface_id, std::move(child_frame));
@@ -357,7 +357,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
 
  protected:
   LocalSurfaceId root_local_surface_id_;
-  cc::Surface* root_surface_;
+  Surface* root_surface_;
   LocalSurfaceIdAllocator allocator_;
   std::unique_ptr<CompositorFrameSinkSupport> child_support_;
   LocalSurfaceIdAllocator child_allocator_;
@@ -757,7 +757,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RootCopyRequest) {
   Pass root_passes[] = {Pass(root_quads, arraysize(root_quads), 1),
                         Pass(root_quads2, arraysize(root_quads2), 2)};
   {
-    cc::CompositorFrame frame = cc::test::MakeEmptyCompositorFrame();
+    cc::CompositorFrame frame = test::MakeEmptyCompositorFrame();
     AddPasses(&frame.render_pass_list, gfx::Rect(SurfaceSize()), root_passes,
               arraysize(root_passes));
     frame.render_pass_list[0]->copy_requests.push_back(std::move(copy_request));
@@ -840,7 +840,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UnreferencedSurface) {
   Pass parent_passes[] = {Pass(parent_quads, arraysize(parent_quads))};
 
   {
-    cc::CompositorFrame frame = cc::test::MakeEmptyCompositorFrame();
+    cc::CompositorFrame frame = test::MakeEmptyCompositorFrame();
 
     AddPasses(&frame.render_pass_list, gfx::Rect(SurfaceSize()), parent_passes,
               arraysize(parent_passes));
@@ -856,7 +856,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UnreferencedSurface) {
   Pass root_passes[] = {Pass(root_quads, arraysize(root_quads))};
 
   {
-    cc::CompositorFrame frame = cc::test::MakeEmptyCompositorFrame();
+    cc::CompositorFrame frame = test::MakeEmptyCompositorFrame();
     AddPasses(&frame.render_pass_list, gfx::Rect(SurfaceSize()), root_passes,
               arraysize(root_passes));
 
@@ -1403,7 +1403,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
         Pass(child_quads[0], arraysize(child_quads[0]), child_pass_id[0]),
         Pass(child_quads[1], arraysize(child_quads[1]), child_pass_id[1])};
 
-    cc::CompositorFrame child_frame = cc::test::MakeEmptyCompositorFrame();
+    cc::CompositorFrame child_frame = test::MakeEmptyCompositorFrame();
     AddPasses(&child_frame.render_pass_list, gfx::Rect(SurfaceSize()),
               child_passes, arraysize(child_passes));
 
@@ -1434,7 +1434,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
         Pass(middle_quads, arraysize(middle_quads)),
     };
 
-    cc::CompositorFrame middle_frame = cc::test::MakeEmptyCompositorFrame();
+    cc::CompositorFrame middle_frame = test::MakeEmptyCompositorFrame();
     AddPasses(&middle_frame.render_pass_list, gfx::Rect(SurfaceSize()),
               middle_passes, arraysize(middle_passes));
 
@@ -1457,7 +1457,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
   Pass root_passes[] = {Pass(secondary_quads, arraysize(secondary_quads)),
                         Pass(root_quads, arraysize(root_quads))};
 
-  cc::CompositorFrame root_frame = cc::test::MakeEmptyCompositorFrame();
+  cc::CompositorFrame root_frame = test::MakeEmptyCompositorFrame();
   AddPasses(&root_frame.render_pass_list, gfx::Rect(SurfaceSize()), root_passes,
             arraysize(root_passes));
 
@@ -1557,7 +1557,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
   Quad child_quads[] = {Quad::RenderPassQuad(1)};
   Pass child_passes[] = {Pass(child_quads, arraysize(child_quads), 1)};
 
-  cc::CompositorFrame child_frame = cc::test::MakeEmptyCompositorFrame();
+  cc::CompositorFrame child_frame = test::MakeEmptyCompositorFrame();
   AddPasses(&child_frame.render_pass_list, gfx::Rect(SurfaceSize()),
             child_passes, arraysize(child_passes));
 
@@ -1578,8 +1578,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
 
   // Parent surface is only used to test if the transform is applied correctly
   // to the child surface's damage.
-  cc::CompositorFrame parent_surface_frame =
-      cc::test::MakeEmptyCompositorFrame();
+  cc::CompositorFrame parent_surface_frame = test::MakeEmptyCompositorFrame();
   AddPasses(&parent_surface_frame.render_pass_list, gfx::Rect(SurfaceSize()),
             parent_surface_passes, arraysize(parent_surface_passes));
 
@@ -1597,7 +1596,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
       Pass(root_surface_quads, arraysize(root_surface_quads), 1),
       Pass(root_render_pass_quads, arraysize(root_render_pass_quads), 2)};
 
-  cc::CompositorFrame root_frame = cc::test::MakeEmptyCompositorFrame();
+  cc::CompositorFrame root_frame = test::MakeEmptyCompositorFrame();
   AddPasses(&root_frame.render_pass_list, gfx::Rect(SurfaceSize()), root_passes,
             arraysize(root_passes));
 
@@ -1622,7 +1621,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
       aggregated_pass_list[1]->damage_rect.Contains(gfx::Rect(SurfaceSize())));
 
   {
-    cc::CompositorFrame child_frame = cc::test::MakeEmptyCompositorFrame();
+    cc::CompositorFrame child_frame = test::MakeEmptyCompositorFrame();
     AddPasses(&child_frame.render_pass_list, gfx::Rect(SurfaceSize()),
               child_passes, arraysize(child_passes));
 
@@ -1650,7 +1649,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
   }
 
   {
-    cc::CompositorFrame root_frame = cc::test::MakeEmptyCompositorFrame();
+    cc::CompositorFrame root_frame = test::MakeEmptyCompositorFrame();
     AddPasses(&root_frame.render_pass_list, gfx::Rect(SurfaceSize()),
               root_passes, arraysize(root_passes));
 
@@ -1664,7 +1663,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
   }
 
   {
-    cc::CompositorFrame root_frame = cc::test::MakeEmptyCompositorFrame();
+    cc::CompositorFrame root_frame = test::MakeEmptyCompositorFrame();
     AddPasses(&root_frame.render_pass_list, gfx::Rect(SurfaceSize()),
               root_passes, arraysize(root_passes));
 
@@ -1730,7 +1729,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SwitchSurfaceDamage) {
   Pass root_passes[] = {
       Pass(root_render_pass_quads, arraysize(root_render_pass_quads), 2)};
 
-  cc::CompositorFrame root_frame = cc::test::MakeEmptyCompositorFrame();
+  cc::CompositorFrame root_frame = test::MakeEmptyCompositorFrame();
   AddPasses(&root_frame.render_pass_list, gfx::Rect(SurfaceSize()), root_passes,
             arraysize(root_passes));
 
@@ -1763,7 +1762,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SwitchSurfaceDamage) {
     Pass root_passes[] = {
         Pass(root_render_pass_quads, arraysize(root_render_pass_quads), 2)};
 
-    cc::CompositorFrame root_frame = cc::test::MakeEmptyCompositorFrame();
+    cc::CompositorFrame root_frame = test::MakeEmptyCompositorFrame();
     AddPasses(&root_frame.render_pass_list, gfx::Rect(SurfaceSize()),
               root_passes, arraysize(root_passes));
 
@@ -2072,7 +2071,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
 
     // First render pass draw quad is outside damage rect, so shouldn't be
     // drawn. SurfaceDrawQuad is after background filter, so corresponding
-    // RenderPassDrawQuad should be drawn.
+    // cc::RenderPassDrawQuad should be drawn.
     EXPECT_EQ(gfx::Rect(10, 10, 2, 2), aggregated_pass_list[2]->damage_rect);
     EXPECT_EQ(1u, aggregated_pass_list[2]->quad_list.size());
   }
@@ -2103,7 +2102,7 @@ void SubmitCompositorFrameWithResources(cc::ResourceId* resource_ids,
                                         SurfaceId child_id,
                                         CompositorFrameSinkSupport* support,
                                         SurfaceId surface_id) {
-  cc::CompositorFrame frame = cc::test::MakeEmptyCompositorFrame();
+  cc::CompositorFrame frame = test::MakeEmptyCompositorFrame();
   auto pass = cc::RenderPass::Create();
   pass->SetNew(1, gfx::Rect(0, 0, 20, 20), gfx::Rect(), gfx::Transform());
   auto* sqs = pass->CreateAndAppendSharedQuadState();
@@ -2224,7 +2223,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
   LocalSurfaceId local_surface_id(7u, base::UnguessableToken::Create());
   SurfaceId surface_id(support->frame_sink_id(), local_surface_id);
 
-  cc::CompositorFrame frame = cc::test::MakeCompositorFrame();
+  cc::CompositorFrame frame = test::MakeCompositorFrame();
   cc::TransferableResource resource;
   resource.id = 11;
   // ResourceProvider is software but resource is not, so it should be
@@ -2386,7 +2385,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
                          nullptr);
     pass->copy_requests.push_back(cc::CopyOutputRequest::CreateEmptyRequest());
 
-    cc::CompositorFrame frame = cc::test::MakeEmptyCompositorFrame();
+    cc::CompositorFrame frame = test::MakeEmptyCompositorFrame();
     frame.render_pass_list.push_back(std::move(pass));
 
     support2->SubmitCompositorFrame(local_frame2_id, std::move(frame));

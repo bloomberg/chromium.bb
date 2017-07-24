@@ -11,10 +11,10 @@
 #include "cc/layers/surface_layer.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_result.h"
-#include "cc/surfaces/surface.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/display/display.h"
@@ -26,7 +26,7 @@ namespace ui {
 namespace {
 
 scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
-    cc::SurfaceManager* surface_manager,
+    viz::SurfaceManager* surface_manager,
     viz::SurfaceInfo surface_info,
     bool surface_opaque) {
   // manager must outlive compositors using it.

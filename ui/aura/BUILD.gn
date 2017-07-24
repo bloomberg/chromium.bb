@@ -139,7 +139,6 @@ component("aura") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//cc",
-    "//cc/surfaces",
     "//components/discardable_memory/client",
     "//components/discardable_memory/public/interfaces",
     "//components/viz/client",

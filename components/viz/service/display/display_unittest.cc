@@ -12,9 +12,6 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/render_pass.h"
-#include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_manager.h"
-#include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -26,6 +23,9 @@
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_manager.h"
+#include "components/viz/test/compositor_frame_helpers.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -148,7 +148,7 @@ class DisplayTest : public testing::Test {
  protected:
   void SubmitCompositorFrame(cc::RenderPassList* pass_list,
                              const LocalSurfaceId& local_surface_id) {
-    cc::CompositorFrame frame = cc::test::MakeCompositorFrame();
+    cc::CompositorFrame frame = test::MakeCompositorFrame();
     pass_list->swap(frame.render_pass_list);
 
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -359,7 +359,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
 
-    cc::CompositorFrame frame = cc::test::MakeCompositorFrame();
+    cc::CompositorFrame frame = test::MakeCompositorFrame();
     pass_list.swap(frame.render_pass_list);
     frame.metadata.latency_info.push_back(ui::LatencyInfo());
 
@@ -391,7 +391,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
 
-    cc::CompositorFrame frame = cc::test::MakeCompositorFrame();
+    cc::CompositorFrame frame = test::MakeCompositorFrame();
     pass_list.swap(frame.render_pass_list);
 
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -479,7 +479,7 @@ TEST_F(DisplayTest, MaxLatencyInfoCap) {
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
 
-    cc::CompositorFrame frame = cc::test::MakeCompositorFrame();
+    cc::CompositorFrame frame = test::MakeCompositorFrame();
     pass_list.swap(frame.render_pass_list);
     frame.metadata.latency_info.push_back(ui::LatencyInfo());
 

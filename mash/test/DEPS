@@ -7,7 +7,7 @@ include_rules = [
 specific_include_rules = {
   "mash_test_suite\.cc": [
     "+cc/output/context_provider.h",
-    "+cc/surfaces",
+    "+components/viz/service/surfaces",
     "+cc/test",
   ],
 }

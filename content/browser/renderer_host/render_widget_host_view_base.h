@@ -57,16 +57,13 @@ class WebMouseEvent;
 class WebMouseWheelEvent;
 }
 
-namespace cc {
-class SurfaceHittestDelegate;
-}
-
 namespace ui {
 class LatencyInfo;
 struct DidOverscrollParams;
 }
 
 namespace viz {
+class SurfaceHittestDelegate;
 class SurfaceInfo;
 }
 
@@ -267,7 +264,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // properly handle the event (i.e. it has focus for keyboard events, or has
   // been identified by hit testing mouse, touch or gesture events).
   virtual viz::FrameSinkId FrameSinkIdAtPoint(
-      cc::SurfaceHittestDelegate* delegate,
+      viz::SurfaceHittestDelegate* delegate,
       const gfx::Point& point,
       gfx::Point* transformed_point);
   virtual void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event,

@@ -15,10 +15,10 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
-#include "cc/surfaces/surface_manager.h"
-#include "cc/surfaces/surface_observer.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/frame_sinks/primary_begin_frame_source.h"
+#include "components/viz/service/surfaces/surface_manager.h"
+#include "components/viz/service/surfaces/surface_observer.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -41,12 +41,12 @@ class FrameSinkManagerClient;
 // FrameSinkManagerImpl manages BeginFrame hierarchy. This is the implementation
 // detail for FrameSinkManagerImpl.
 class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
-    : public cc::SurfaceObserver,
+    : public SurfaceObserver,
       public NON_EXPORTED_BASE(cc::mojom::FrameSinkManager) {
  public:
   FrameSinkManagerImpl(DisplayProvider* display_provider = nullptr,
-                       cc::SurfaceManager::LifetimeType lifetime_type =
-                           cc::SurfaceManager::LifetimeType::SEQUENCES);
+                       SurfaceManager::LifetimeType lifetime_type =
+                           SurfaceManager::LifetimeType::SEQUENCES);
   ~FrameSinkManagerImpl() override;
 
   // Binds |this| as a FrameSinkManagerImpl for |request| on |task_runner|. On
@@ -107,9 +107,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // available BeginFrameSource.
   BeginFrameSource* GetPrimaryBeginFrameSource();
 
-  cc::SurfaceManager* surface_manager() { return &surface_manager_; }
+  SurfaceManager* surface_manager() { return &surface_manager_; }
 
-  // cc::SurfaceObserver implementation.
+  // SurfaceObserver implementation.
   void OnSurfaceCreated(const SurfaceInfo& surface_info) override;
   bool OnSurfaceDamaged(const SurfaceId& surface_id,
                         const BeginFrameAck& ack) override;
@@ -172,7 +172,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   // |surface_manager_| should be placed under |primary_source_| so that all
   // surfaces are destroyed before |primary_source_|.
-  cc::SurfaceManager surface_manager_;
+  SurfaceManager surface_manager_;
 
   std::unordered_map<FrameSinkId,
                      std::unique_ptr<cc::mojom::CompositorFrameSink>,

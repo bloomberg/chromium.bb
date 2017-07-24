@@ -1623,7 +1623,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 viz::FrameSinkId RenderWidgetHostViewAura::FrameSinkIdAtPoint(
-    cc::SurfaceHittestDelegate* delegate,
+    viz::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,
     gfx::Point* transformed_point) {
   DCHECK(device_scale_factor_ != 0.0f);

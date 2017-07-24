@@ -7,12 +7,12 @@
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/layer_tree_frame_sink_client.h"
-#include "cc/surfaces/surface.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface.h"
 
 namespace viz {
 

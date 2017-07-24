@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "cc/surfaces/surface_reference.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/service/surfaces/surface_reference.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
@@ -22,8 +22,8 @@ void VIZ_SERVICE_EXPORT GetSurfaceReferenceDifference(
     const SurfaceId& parent_surface_id,
     const base::flat_set<SurfaceId>& old_referenced_surfaces,
     const base::flat_set<SurfaceId>& new_referenced_surfaces,
-    std::vector<cc::SurfaceReference>* references_to_add,
-    std::vector<cc::SurfaceReference>* references_to_remove);
+    std::vector<SurfaceReference>* references_to_add,
+    std::vector<SurfaceReference>* references_to_remove);
 
 }  // namespace viz
 

@@ -13,9 +13,9 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_manager.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
+#include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -263,11 +263,11 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
   EXPECT_TRUE(id.is_valid());
 
 #if !defined(OS_ANDROID)
-  cc::SurfaceManager* manager = ImageTransportFactory::GetInstance()
-                                    ->GetContextFactoryPrivate()
-                                    ->GetFrameSinkManager()
-                                    ->surface_manager();
-  cc::Surface* surface = manager->GetSurfaceForId(id);
+  viz::SurfaceManager* manager = ImageTransportFactory::GetInstance()
+                                     ->GetContextFactoryPrivate()
+                                     ->GetFrameSinkManager()
+                                     ->surface_manager();
+  viz::Surface* surface = manager->GetSurfaceForId(id);
   EXPECT_TRUE(surface);
   // There should be a SurfaceSequence created by the RWHVGuest.
   EXPECT_EQ(1u, surface->GetDestructionDependencyCount());

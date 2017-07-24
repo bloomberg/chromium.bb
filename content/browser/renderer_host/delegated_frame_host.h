@@ -148,7 +148,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   viz::FrameSinkId GetFrameSinkId();
   // Returns a null SurfaceId if this DelegatedFrameHost has not yet created
   // a compositor Surface.
-  viz::SurfaceId SurfaceIdAtPoint(cc::SurfaceHittestDelegate* delegate,
+  viz::SurfaceId SurfaceIdAtPoint(viz::SurfaceHittestDelegate* delegate,
                                   const gfx::Point& point,
                                   gfx::Point* transformed_point);
 

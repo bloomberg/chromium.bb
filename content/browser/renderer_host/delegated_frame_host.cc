@@ -17,13 +17,13 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/resources/single_release_callback.h"
-#include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_hittest.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/compositor_resize_lock.h"
@@ -173,14 +173,14 @@ viz::FrameSinkId DelegatedFrameHost::GetFrameSinkId() {
 }
 
 viz::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
-    cc::SurfaceHittestDelegate* delegate,
+    viz::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,
     gfx::Point* transformed_point) {
   viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
   if (!surface_id.is_valid())
     return surface_id;
-  cc::SurfaceHittest hittest(delegate,
-                             GetFrameSinkManager()->surface_manager());
+  viz::SurfaceHittest hittest(delegate,
+                              GetFrameSinkManager()->surface_manager());
   gfx::Transform target_transform;
   viz::SurfaceId target_local_surface_id =
       hittest.GetTargetSurfaceAtPoint(surface_id, point, &target_transform);
@@ -201,7 +201,8 @@ bool DelegatedFrameHost::TransformPointToLocalCoordSpace(
   if (original_surface == surface_id)
     return true;
 
-  cc::SurfaceHittest hittest(nullptr, GetFrameSinkManager()->surface_manager());
+  viz::SurfaceHittest hittest(nullptr,
+                              GetFrameSinkManager()->surface_manager());
   return hittest.TransformPointToTargetSurface(original_surface, surface_id,
                                                transformed_point);
 }

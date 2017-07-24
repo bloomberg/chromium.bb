@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/process/process.h"
-#include "cc/surfaces/surface.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"

@@ -6,7 +6,6 @@ include_rules = [
   "+cc/quads",
   "+cc/resources",
   "+cc/scheduler",
-  "+cc/surfaces",
   "+gpu/command_buffer/client",
   "+gpu/command_buffer/common",
   "+gpu/vulkan",
@@ -19,6 +18,7 @@ specific_include_rules = {
   ".*_(unit|pixel|perf)test\.cc": [
     "+cc/test",
     "+components/viz/service/frame_sinks",
+    "+components/viz/test",
     "+gpu/GLES2",
   ],
 }

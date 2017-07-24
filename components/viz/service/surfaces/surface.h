@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_SURFACE_H_
-#define CC_SURFACES_SURFACE_H_
+#ifndef COMPONENTS_VIZ_SERVICE_SURFACES_SURFACE_H_
+#define COMPONENTS_VIZ_SERVICE_SURFACES_SURFACE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -20,38 +20,40 @@
 #include "base/optional.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
-#include "cc/surfaces/surface_dependency_deadline.h"
-#include "cc/surfaces/surfaces_export.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
+#include "components/viz/service/surfaces/surface_dependency_deadline.h"
+#include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/geometry/size.h"
+
+namespace cc {
+class CopyOutputRequest;
+}
 
 namespace ui {
 class LatencyInfo;
 }
 
-namespace cc {
+namespace viz {
 
 class SurfaceClient;
-class CopyOutputRequest;
 class SurfaceManager;
 
-class CC_SURFACES_EXPORT Surface : public SurfaceDeadlineObserver {
+class VIZ_SERVICE_EXPORT Surface : public SurfaceDeadlineObserver {
  public:
   using WillDrawCallback =
-      base::RepeatingCallback<void(const viz::LocalSurfaceId&,
-                                   const gfx::Rect&)>;
+      base::RepeatingCallback<void(const LocalSurfaceId&, const gfx::Rect&)>;
 
-  Surface(const viz::SurfaceInfo& surface_info,
+  Surface(const SurfaceInfo& surface_info,
           SurfaceManager* surface_manager,
           base::WeakPtr<SurfaceClient> surface_client,
-          viz::BeginFrameSource* begin_frame_source,
+          BeginFrameSource* begin_frame_source,
           bool needs_sync_tokens);
   ~Surface();
 
-  const viz::SurfaceId& surface_id() const { return surface_info_.id(); }
-  const viz::SurfaceId& previous_frame_surface_id() const {
+  const SurfaceId& surface_id() const { return surface_info_.id(); }
+  const SurfaceId& previous_frame_surface_id() const {
     return previous_frame_surface_id_;
   }
 
@@ -72,47 +74,48 @@ class CC_SURFACES_EXPORT Surface : public SurfaceDeadlineObserver {
   void SetPreviousFrameSurface(Surface* surface);
 
   // Increments the reference count on resources specified by |resources|.
-  void RefResources(const std::vector<TransferableResource>& resources);
+  void RefResources(const std::vector<cc::TransferableResource>& resources);
 
   // Decrements the reference count on resources specified by |resources|.
-  void UnrefResources(const std::vector<ReturnedResource>& resources);
+  void UnrefResources(const std::vector<cc::ReturnedResource>& resources);
 
   bool needs_sync_tokens() const { return needs_sync_tokens_; }
 
   // Returns false if |frame| is invalid.
   // |draw_callback| is called once to notify the client that the previously
-  // submitted CompositorFrame is processed and that another frame can be
+  // submitted cc::CompositorFrame is processed and that another frame can be
   // there is visible damage.
   // |will_draw_callback| is called when |surface| is scheduled for a draw and
   // there is visible damage.
-  bool QueueFrame(CompositorFrame frame,
+  bool QueueFrame(cc::CompositorFrame frame,
                   const base::Closure& draw_callback,
                   const WillDrawCallback& will_draw_callback);
-  void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
+  void RequestCopyOfOutput(std::unique_ptr<cc::CopyOutputRequest> copy_request);
 
-  // Notifies the Surface that a blocking viz::SurfaceId now has an active
+  // Notifies the Surface that a blocking SurfaceId now has an active
   // frame.
-  void NotifySurfaceIdAvailable(const viz::SurfaceId& surface_id);
+  void NotifySurfaceIdAvailable(const SurfaceId& surface_id);
 
   // Called if a deadline has been hit and this surface is not yet active but
   // it's marked as respecting deadlines.
   void ActivatePendingFrameForDeadline();
 
   using CopyRequestsMap =
-      std::multimap<RenderPassId, std::unique_ptr<CopyOutputRequest>>;
+      std::multimap<cc::RenderPassId, std::unique_ptr<cc::CopyOutputRequest>>;
 
-  // Adds each CopyOutputRequest in the current frame to copy_requests. The
-  // caller takes ownership of them. |copy_requests| is keyed by RenderPass ids.
+  // Adds each cc::CopyOutputRequest in the current frame to copy_requests. The
+  // caller takes ownership of them. |copy_requests| is keyed by cc::RenderPass
+  // ids.
   void TakeCopyOutputRequests(CopyRequestsMap* copy_requests);
 
   // Returns the most recent frame that is eligible to be rendered.
   // You must check whether HasActiveFrame() returns true before calling this
   // method.
-  const CompositorFrame& GetActiveFrame() const;
+  const cc::CompositorFrame& GetActiveFrame() const;
 
   // Returns the currently pending frame. You must check where HasPendingFrame()
   // returns true before calling this method.
-  const CompositorFrame& GetPendingFrame();
+  const cc::CompositorFrame& GetPendingFrame();
 
   // Returns a number that increments by 1 every time a new frame is enqueued.
   int frame_index() const { return frame_index_; }
@@ -121,20 +124,20 @@ class CC_SURFACES_EXPORT Surface : public SurfaceDeadlineObserver {
   void RunDrawCallback();
   void RunWillDrawCallback(const gfx::Rect& damage_rect);
 
-  // Add a viz::SurfaceSequence that must be satisfied before the Surface is
+  // Add a SurfaceSequence that must be satisfied before the Surface is
   // destroyed.
-  void AddDestructionDependency(viz::SurfaceSequence sequence);
+  void AddDestructionDependency(SurfaceSequence sequence);
 
   // Satisfy all destruction dependencies that are contained in sequences, and
   // remove them from sequences.
   void SatisfyDestructionDependencies(
-      base::flat_set<viz::SurfaceSequence>* sequences,
-      base::flat_set<viz::FrameSinkId>* valid_id_namespaces);
+      base::flat_set<SurfaceSequence>* sequences,
+      base::flat_set<FrameSinkId>* valid_id_namespaces);
   size_t GetDestructionDependencyCount() const {
     return destruction_dependencies_.size();
   }
 
-  const std::vector<viz::SurfaceId>* active_referenced_surfaces() const {
+  const std::vector<SurfaceId>* active_referenced_surfaces() const {
     return active_frame_data_
                ? &active_frame_data_->frame.metadata.referenced_surfaces
                : nullptr;
@@ -142,14 +145,14 @@ class CC_SURFACES_EXPORT Surface : public SurfaceDeadlineObserver {
 
   // Returns the set of dependencies blocking this surface's pending frame
   // that themselves have not yet activated.
-  const base::flat_set<viz::SurfaceId>& activation_dependencies() const {
+  const base::flat_set<SurfaceId>& activation_dependencies() const {
     return activation_dependencies_;
   }
 
   // Returns the set of activation dependencies that have been ignored because
-  // the last CompositorFrame was activated due to a deadline. Late dependencies
-  // activate immediately when they arrive.
-  const base::flat_set<viz::SurfaceId>& late_activation_dependencies() const {
+  // the last cc::CompositorFrame was activated due to a deadline. Late
+  // dependencies activate immediately when they arrive.
+  const base::flat_set<SurfaceId>& late_activation_dependencies() const {
     return late_activation_dependencies_;
   }
 
@@ -164,19 +167,19 @@ class CC_SURFACES_EXPORT Surface : public SurfaceDeadlineObserver {
 
  private:
   struct FrameData {
-    FrameData(CompositorFrame&& frame,
+    FrameData(cc::CompositorFrame&& frame,
               const base::Closure& draw_callback,
               const WillDrawCallback& will_draw_callback);
     FrameData(FrameData&& other);
     ~FrameData();
     FrameData& operator=(FrameData&& other);
-    CompositorFrame frame;
+    cc::CompositorFrame frame;
     base::Closure draw_callback;
     WillDrawCallback will_draw_callback;
   };
 
   // Rejects CompositorFrames submitted to surfaces referenced from this
-  // CompositorFrame as fallbacks. This saves some CPU cycles to allow
+  // cc::CompositorFrame as fallbacks. This saves some CPU cycles to allow
   // children to catch up to the parent.
   void RejectCompositorFramesToFallbackSurfaces();
 
@@ -187,12 +190,12 @@ class CC_SURFACES_EXPORT Surface : public SurfaceDeadlineObserver {
   void ActivatePendingFrame();
   // Called when all of the surface's dependencies have been resolved.
   void ActivateFrame(FrameData frame_data);
-  void UpdateActivationDependencies(const CompositorFrame& current_frame);
+  void UpdateActivationDependencies(const cc::CompositorFrame& current_frame);
   void ComputeChangeInDependencies(
-      const base::flat_set<viz::SurfaceId>& existing_dependencies,
-      const base::flat_set<viz::SurfaceId>& new_dependencies,
-      base::flat_set<viz::SurfaceId>* added_dependencies,
-      base::flat_set<viz::SurfaceId>* removed_dependencies);
+      const base::flat_set<SurfaceId>& existing_dependencies,
+      const base::flat_set<SurfaceId>& new_dependencies,
+      base::flat_set<SurfaceId>* added_dependencies,
+      base::flat_set<SurfaceId>* removed_dependencies);
 
   void UnrefFrameResourcesAndRunDrawCallback(
       base::Optional<FrameData> frame_data);
@@ -201,11 +204,11 @@ class CC_SURFACES_EXPORT Surface : public SurfaceDeadlineObserver {
   void TakeLatencyInfoFromPendingFrame(
       std::vector<ui::LatencyInfo>* latency_info);
   static void TakeLatencyInfoFromFrame(
-      CompositorFrame* frame,
+      cc::CompositorFrame* frame,
       std::vector<ui::LatencyInfo>* latency_info);
 
-  viz::SurfaceInfo surface_info_;
-  viz::SurfaceId previous_frame_surface_id_;
+  SurfaceInfo surface_info_;
+  SurfaceId previous_frame_surface_id_;
   SurfaceManager* const surface_manager_;
   base::WeakPtr<SurfaceClient> surface_client_;
   SurfaceDependencyDeadline deadline_;
@@ -215,14 +218,14 @@ class CC_SURFACES_EXPORT Surface : public SurfaceDeadlineObserver {
   int frame_index_;
   bool closed_ = false;
   const bool needs_sync_tokens_;
-  std::vector<viz::SurfaceSequence> destruction_dependencies_;
+  std::vector<SurfaceSequence> destruction_dependencies_;
 
-  base::flat_set<viz::SurfaceId> activation_dependencies_;
-  base::flat_set<viz::SurfaceId> late_activation_dependencies_;
+  base::flat_set<SurfaceId> activation_dependencies_;
+  base::flat_set<SurfaceId> late_activation_dependencies_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_SURFACES_SURFACE_H_
+#endif  // COMPONENTS_VIZ_SERVICE_SURFACES_SURFACE_H_

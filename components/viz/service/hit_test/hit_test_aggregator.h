@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_VIZ_SERVICE_HIT_TEST_HIT_TEST_AGGREGATOR_H_
 #define COMPONENTS_VIZ_SERVICE_HIT_TEST_HIT_TEST_AGGREGATOR_H_
 
-#include "cc/surfaces/surface_observer.h"
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/service/surfaces/surface_observer.h"
 #include "components/viz/service/viz_service_export.h"
 #include "services/viz/hit_test/public/interfaces/hit_test_region_list.mojom.h"
 
@@ -19,7 +19,7 @@ namespace viz {
 //
 // This is intended to be created in the viz or GPU process. For mus+ash this
 // will be true after the mus process split.
-class VIZ_SERVICE_EXPORT HitTestAggregator : public cc::SurfaceObserver {
+class VIZ_SERVICE_EXPORT HitTestAggregator : public SurfaceObserver {
  public:
   HitTestAggregator();
   ~HitTestAggregator();
@@ -44,7 +44,7 @@ class VIZ_SERVICE_EXPORT HitTestAggregator : public cc::SurfaceObserver {
   void Swap();
 
  protected:
-  // cc::SurfaceObserver:
+  // SurfaceObserver:
   void OnSurfaceCreated(const SurfaceInfo& surface_info) override {}
   void OnSurfaceDestroyed(const SurfaceId& surface_id) override {}
   bool OnSurfaceDamaged(const SurfaceId& surface_id,

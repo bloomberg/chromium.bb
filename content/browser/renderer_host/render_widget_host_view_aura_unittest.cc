@@ -26,7 +26,6 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/copy_output_request.h"
-#include "cc/surfaces/surface.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_surface_observer.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -35,6 +34,7 @@
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
@@ -2443,9 +2443,9 @@ TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
 TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   cc::FakeSurfaceObserver manager_observer;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  cc::SurfaceManager* manager = factory->GetContextFactoryPrivate()
-                                    ->GetFrameSinkManager()
-                                    ->surface_manager();
+  viz::SurfaceManager* manager = factory->GetContextFactoryPrivate()
+                                     ->GetFrameSinkManager()
+                                     ->surface_manager();
   manager->AddObserver(&manager_observer);
 
   gfx::Size view_size(100, 100);
@@ -2478,7 +2478,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
 
   // Report that the surface is drawn to trigger an ACK.
   view_->renderer_compositor_frame_sink_->Reset();
-  cc::Surface* surface = manager->GetSurfaceForId(view_->surface_id());
+  viz::Surface* surface = manager->GetSurfaceForId(view_->surface_id());
   EXPECT_TRUE(surface);
   surface->RunDrawCallback();
   view_->renderer_compositor_frame_sink_->Flush();
@@ -2597,10 +2597,10 @@ TEST_F(RenderWidgetHostViewAuraTest, MirrorLayers) {
   viz::SurfaceId id = view_->GetDelegatedFrameHost()->SurfaceIdForTesting();
   if (id.is_valid()) {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    cc::SurfaceManager* manager = factory->GetContextFactoryPrivate()
-                                      ->GetFrameSinkManager()
-                                      ->surface_manager();
-    cc::Surface* surface = manager->GetSurfaceForId(id);
+    viz::SurfaceManager* manager = factory->GetContextFactoryPrivate()
+                                       ->GetFrameSinkManager()
+                                       ->surface_manager();
+    viz::Surface* surface = manager->GetSurfaceForId(id);
     EXPECT_TRUE(surface);
 
     // An orphaned mirror should not be a destruction dependency.
@@ -3444,9 +3444,9 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
 
   cc::FakeSurfaceObserver observer;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  cc::SurfaceManager* surface_manager = factory->GetContextFactoryPrivate()
-                                            ->GetFrameSinkManager()
-                                            ->surface_manager();
+  viz::SurfaceManager* surface_manager = factory->GetContextFactoryPrivate()
+                                             ->GetFrameSinkManager()
+                                             ->surface_manager();
   surface_manager->AddObserver(&observer);
 
   view_->SetNeedsBeginFrames(true);

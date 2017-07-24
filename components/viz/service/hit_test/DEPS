@@ -1,5 +1,5 @@
 include_rules = [
-  "+cc/surfaces/surface_observer.h",
+  "+components/viz/service/surfaces",
   "+services/viz/hit_test/public/interfaces",
 ]
 

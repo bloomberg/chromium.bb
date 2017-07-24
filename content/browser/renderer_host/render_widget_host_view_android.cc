@@ -30,11 +30,11 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/output/latency_info_swap_promise.h"
 #include "cc/resources/single_release_callback.h"
-#include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_hittest.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/accessibility/web_contents_accessibility_android.h"
 #include "content/browser/android/composited_touch_handle_drawable.h"
@@ -845,7 +845,7 @@ viz::SurfaceId RenderWidgetHostViewAndroid::SurfaceIdForTesting() const {
 }
 
 viz::FrameSinkId RenderWidgetHostViewAndroid::FrameSinkIdAtPoint(
-    cc::SurfaceHittestDelegate* delegate,
+    viz::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,
     gfx::Point* transformed_point) {
   if (!delegated_frame_host_)
@@ -859,8 +859,8 @@ viz::FrameSinkId RenderWidgetHostViewAndroid::FrameSinkIdAtPoint(
 
   viz::SurfaceId surface_id = delegated_frame_host_->SurfaceId();
   if (surface_id.is_valid()) {
-    cc::SurfaceHittest hittest(delegate,
-                               GetFrameSinkManager()->surface_manager());
+    viz::SurfaceHittest hittest(delegate,
+                                GetFrameSinkManager()->surface_manager());
     gfx::Transform target_transform;
     surface_id = hittest.GetTargetSurfaceAtPoint(surface_id, point_in_pixels,
                                                  &target_transform);
@@ -923,7 +923,8 @@ bool RenderWidgetHostViewAndroid::TransformPointToLocalCoordSpace(
     return true;
 
   *transformed_point = point_in_pixels;
-  cc::SurfaceHittest hittest(nullptr, GetFrameSinkManager()->surface_manager());
+  viz::SurfaceHittest hittest(nullptr,
+                              GetFrameSinkManager()->surface_manager());
   if (!hittest.TransformPointToTargetSurface(original_surface, surface_id,
                                              transformed_point))
     return false;

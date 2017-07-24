@@ -1,6 +1,5 @@
 include_rules = [
   "+cc/ipc",
-  "+cc/surfaces",
   "+components/viz/host",
   "+gpu/command_buffer/client",
   "+gpu/command_buffer/common",
