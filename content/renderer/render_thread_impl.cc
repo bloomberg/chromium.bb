@@ -805,16 +805,15 @@ void RenderThreadImpl::Init(
       switches::kEnableGpuMemoryBufferCompositorResources);
 
 #if defined(OS_MACOSX)
-  base::ScopedCFTypeRef<CFStringRef> key(
-      base::SysUTF8ToCFStringRef("NSScrollViewRubberbanding"));
-  Boolean key_exists = false;
-  Boolean value = CFPreferencesGetAppBooleanValue(
-      key, kCFPreferencesCurrentApplication, &key_exists);
-  is_elastic_overscroll_enabled_ = !key_exists || value;
-
   if (base::Process::IsAppNapEnabled()) {
     AppNapActivity::InitializeAppNapSupport();
   }
+#endif
+
+// On macOS this value is adjusted in `UpdateScrollbarTheme()`,
+// but the system default is true.
+#if defined(OS_MACOSX)
+  is_elastic_overscroll_enabled_ = true;
 #else
   is_elastic_overscroll_enabled_ = false;
 #endif
@@ -2235,6 +2234,8 @@ void RenderThreadImpl::UpdateScrollbarTheme(
       params->initial_button_delay, params->autoscroll_button_delay,
       params->preferred_scroller_style, params->redraw,
       params->button_placement);
+
+  is_elastic_overscroll_enabled_ = params->scroll_view_rubber_banding;
 #else
   NOTREACHED();
 #endif
