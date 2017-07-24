@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/output/layer_tree_frame_sink.h"
-#include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
@@ -22,15 +22,14 @@ class SharedBitmapManager;
 
 class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
                                  public cc::mojom::CompositorFrameSinkClient,
-                                 public cc::ExternalBeginFrameSourceClient {
+                                 public ExternalBeginFrameSourceClient {
  public:
   ClientLayerTreeFrameSink(
       scoped_refptr<ContextProvider> context_provider,
       scoped_refptr<ContextProvider> worker_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       SharedBitmapManager* shared_bitmap_manager,
-      std::unique_ptr<cc::SyntheticBeginFrameSource>
-          synthetic_begin_frame_source,
+      std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
       cc::mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info,
       cc::mojom::CompositorFrameSinkClientRequest client_request,
       std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider,
@@ -38,8 +37,7 @@ class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
 
   ClientLayerTreeFrameSink(
       scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
-      std::unique_ptr<cc::SyntheticBeginFrameSource>
-          synthetic_begin_frame_source,
+      std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
       cc::mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info,
       cc::mojom::CompositorFrameSinkClientRequest client_request,
       std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider,
@@ -65,7 +63,7 @@ class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;
 
-  // cc::ExternalBeginFrameSourceClient implementation.
+  // ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
   static void OnMojoConnectionError(uint32_t custom_reason,
@@ -74,8 +72,8 @@ class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   bool begin_frames_paused_ = false;
   LocalSurfaceId local_surface_id_;
   std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider_;
-  std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
-  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
+  std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
+  std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source_;
   cc::mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info_;
   cc::mojom::CompositorFrameSinkClientRequest client_request_;
   cc::mojom::CompositorFrameSinkPtr compositor_frame_sink_;

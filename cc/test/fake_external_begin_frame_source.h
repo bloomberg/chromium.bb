@@ -10,8 +10,8 @@
 #include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 
 namespace base {
 class SimpleTestTickClock;
@@ -19,12 +19,12 @@ class SimpleTestTickClock;
 
 namespace cc {
 
-class FakeExternalBeginFrameSource : public BeginFrameSource {
+class FakeExternalBeginFrameSource : public viz::BeginFrameSource {
  public:
   class Client {
    public:
-    virtual void OnAddObserver(BeginFrameObserver* obs) = 0;
-    virtual void OnRemoveObserver(BeginFrameObserver* obs) = 0;
+    virtual void OnAddObserver(viz::BeginFrameObserver* obs) = 0;
+    virtual void OnRemoveObserver(viz::BeginFrameObserver* obs) = 0;
   };
 
   explicit FakeExternalBeginFrameSource(double refresh_rate,
@@ -34,10 +34,10 @@ class FakeExternalBeginFrameSource : public BeginFrameSource {
   void SetClient(Client* client) { client_ = client; }
   void SetPaused(bool paused);
 
-  // BeginFrameSource implementation.
-  void AddObserver(BeginFrameObserver* obs) override;
-  void RemoveObserver(BeginFrameObserver* obs) override;
-  void DidFinishFrame(BeginFrameObserver* obs) override;
+  // viz::BeginFrameSource implementation.
+  void AddObserver(viz::BeginFrameObserver* obs) override;
+  void RemoveObserver(viz::BeginFrameObserver* obs) override;
+  void DidFinishFrame(viz::BeginFrameObserver* obs) override;
   bool IsThrottled() const override;
 
   viz::BeginFrameArgs CreateBeginFrameArgs(
@@ -60,7 +60,7 @@ class FakeExternalBeginFrameSource : public BeginFrameSource {
   bool paused_ = false;
   viz::BeginFrameArgs current_args_;
   uint64_t next_begin_frame_number_ = viz::BeginFrameArgs::kStartingFrameNumber;
-  std::set<BeginFrameObserver*> observers_;
+  std::set<viz::BeginFrameObserver*> observers_;
   base::CancelableCallback<void(const viz::BeginFrameArgs&)> begin_frame_task_;
 
   SEQUENCE_CHECKER(sequence_checker_);

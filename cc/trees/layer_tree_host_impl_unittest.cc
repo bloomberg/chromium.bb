@@ -147,7 +147,7 @@ class LayerTreeHostImplTest : public testing::Test,
   }
 
   void DidLoseLayerTreeFrameSinkOnImplThread() override {}
-  void SetBeginFrameSource(BeginFrameSource* source) override {}
+  void SetBeginFrameSource(viz::BeginFrameSource* source) override {}
   void DidReceiveCompositorFrameAckOnImplThread() override {}
   void OnCanDrawStateChanged(bool can_draw) override {
     on_can_draw_state_changed_called_ = true;

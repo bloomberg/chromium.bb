@@ -18,17 +18,20 @@ namespace gfx {
 class Transform;
 }
 
+namespace viz {
+class BeginFrameSource;
+}
+
 namespace cc {
 
-class BeginFrameSource;
 struct ManagedMemoryPolicy;
 
 class CC_EXPORT LayerTreeFrameSinkClient {
  public:
   // Pass the begin frame source for the client to observe.  Client does not own
-  // the BeginFrameSource. LayerTreeFrameSink should call this once after
+  // the viz::BeginFrameSource. LayerTreeFrameSink should call this once after
   // binding to the client and then call again with a null while detaching.
-  virtual void SetBeginFrameSource(BeginFrameSource* source) = 0;
+  virtual void SetBeginFrameSource(viz::BeginFrameSource* source) = 0;
 
   // Returns resources sent to SubmitCompositorFrame to be reused or freed.
   virtual void ReclaimResources(

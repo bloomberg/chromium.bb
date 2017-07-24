@@ -15,6 +15,10 @@ viz_component("common") {
     "display/renderer_settings.h",
     "frame_sinks/begin_frame_args.cc",
     "frame_sinks/begin_frame_args.h",
+    "frame_sinks/begin_frame_source.cc",
+    "frame_sinks/begin_frame_source.h",
+    "frame_sinks/delay_based_time_source.cc",
+    "frame_sinks/delay_based_time_source.h",
     "gl_helper.cc",
     "gl_helper.h",
     "gl_helper_readback_support.cc",
@@ -87,6 +91,7 @@ viz_source_set("unit_tests") {
   testonly = true
   sources = [
     "frame_sinks/begin_frame_args_unittest.cc",
+    "frame_sinks/delay_based_time_source_unittest.cc",
     "gl_helper_unittest.cc",
     "resources/buffer_to_texture_target_map_unittest.cc",
     "resources/platform_color_unittest.cc",

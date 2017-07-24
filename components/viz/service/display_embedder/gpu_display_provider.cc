@@ -11,7 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
 #include "cc/output/texture_mailbox_deleter.h"
-#include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/gpu/in_process_context_provider.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
@@ -54,10 +54,10 @@ GpuDisplayProvider::~GpuDisplayProvider() = default;
 std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     const FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
-    std::unique_ptr<cc::BeginFrameSource>* begin_frame_source) {
+    std::unique_ptr<BeginFrameSource>* begin_frame_source) {
   auto synthetic_begin_frame_source =
-      base::MakeUnique<cc::DelayBasedBeginFrameSource>(
-          base::MakeUnique<cc::DelayBasedTimeSource>(task_runner_.get()));
+      base::MakeUnique<DelayBasedBeginFrameSource>(
+          base::MakeUnique<DelayBasedTimeSource>(task_runner_.get()));
 
   scoped_refptr<InProcessContextProvider> context_provider =
       new InProcessContextProvider(gpu_service_, surface_handle,

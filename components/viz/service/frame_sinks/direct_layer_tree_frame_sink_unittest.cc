@@ -8,8 +8,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/output/texture_mailbox_deleter.h"
-#include "cc/scheduler/begin_frame_source.h"
-#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_layer_tree_frame_sink_client.h"
 #include "cc/test/fake_output_surface.h"
@@ -18,6 +16,8 @@
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
@@ -76,8 +76,8 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
     auto display_output_surface = cc::FakeOutputSurface::Create3d();
     display_output_surface_ = display_output_surface.get();
 
-    begin_frame_source_ = base::MakeUnique<cc::BackToBackBeginFrameSource>(
-        base::MakeUnique<cc::DelayBasedTimeSource>(task_runner_.get()));
+    begin_frame_source_ = base::MakeUnique<BackToBackBeginFrameSource>(
+        base::MakeUnique<DelayBasedTimeSource>(task_runner_.get()));
 
     int max_frames_pending = 2;
     std::unique_ptr<DisplayScheduler> scheduler(new DisplayScheduler(
@@ -138,7 +138,7 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
 
   scoped_refptr<cc::TestContextProvider> context_provider_;
   cc::FakeOutputSurface* display_output_surface_ = nullptr;
-  std::unique_ptr<cc::BackToBackBeginFrameSource> begin_frame_source_;
+  std::unique_ptr<BackToBackBeginFrameSource> begin_frame_source_;
   std::unique_ptr<Display> display_;
   cc::FakeLayerTreeFrameSinkClient layer_tree_frame_sink_client_;
   std::unique_ptr<TestDirectLayerTreeFrameSink> layer_tree_frame_sink_;

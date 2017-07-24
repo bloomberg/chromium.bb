@@ -9,6 +9,8 @@ viz_static_library("test_support") {
   sources = [
     "begin_frame_args_test.cc",
     "begin_frame_args_test.h",
+    "fake_delay_based_time_source.cc",
+    "fake_delay_based_time_source.h",
     "paths.cc",
     "paths.h",
     "test_layer_tree_frame_sink.cc",

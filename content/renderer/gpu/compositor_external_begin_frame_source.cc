@@ -34,7 +34,7 @@ CompositorExternalBeginFrameSource::~CompositorExternalBeginFrameSource() {
 }
 
 void CompositorExternalBeginFrameSource::AddObserver(
-    cc::BeginFrameObserver* obs) {
+    viz::BeginFrameObserver* obs) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!begin_frame_source_proxy_) {
@@ -51,12 +51,12 @@ void CompositorExternalBeginFrameSource::AddObserver(
 }
 
 void CompositorExternalBeginFrameSource::RemoveObserver(
-    cc::BeginFrameObserver* obs) {
+    viz::BeginFrameObserver* obs) {
   external_begin_frame_source_.RemoveObserver(obs);
 }
 
 void CompositorExternalBeginFrameSource::DidFinishFrame(
-    cc::BeginFrameObserver* obs) {
+    viz::BeginFrameObserver* obs) {
   external_begin_frame_source_.DidFinishFrame(obs);
 }
 

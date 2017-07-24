@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "cc/output/layer_tree_frame_sink.h"
-#include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
@@ -28,7 +28,7 @@ namespace aura {
 // aura::Window's ui::Layer.
 class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
                                 public viz::CompositorFrameSinkSupportClient,
-                                public cc::ExternalBeginFrameSourceClient {
+                                public viz::ExternalBeginFrameSourceClient {
  public:
   LayerTreeFrameSinkLocal(const viz::FrameSinkId& frame_sink_id,
                           viz::HostFrameSinkManager* host_frame_sink_manager);
@@ -55,7 +55,7 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
                        const gfx::Rect& damage_rect) override {}
   void OnBeginFramePausedChanged(bool paused) override;
 
-  // cc::ExternalBeginFrameSourceClient:
+  // viz::ExternalBeginFrameSourceClient:
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
  private:
@@ -66,7 +66,7 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
   float device_scale_factor_ = 0;
   viz::LocalSurfaceIdAllocator id_allocator_;
   viz::LocalSurfaceId local_surface_id_;
-  std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
+  std::unique_ptr<viz::ExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<base::ThreadChecker> thread_checker_;
   SurfaceChangedCallback surface_changed_callback_;
 

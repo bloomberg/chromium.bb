@@ -11,8 +11,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "jni/WindowAndroid_jni.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/android/window_android_observer.h"
@@ -24,21 +24,21 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
-class WindowAndroid::WindowBeginFrameSource : public cc::BeginFrameSource {
+class WindowAndroid::WindowBeginFrameSource : public viz::BeginFrameSource {
  public:
   explicit WindowBeginFrameSource(WindowAndroid* window)
       : window_(window),
         observers_(
-            base::ObserverList<cc::BeginFrameObserver>::NOTIFY_EXISTING_ONLY),
+            base::ObserverList<viz::BeginFrameObserver>::NOTIFY_EXISTING_ONLY),
         observer_count_(0),
         next_sequence_number_(viz::BeginFrameArgs::kStartingFrameNumber),
         paused_(false) {}
   ~WindowBeginFrameSource() override {}
 
-  // cc::BeginFrameSource implementation.
-  void AddObserver(cc::BeginFrameObserver* obs) override;
-  void RemoveObserver(cc::BeginFrameObserver* obs) override;
-  void DidFinishFrame(cc::BeginFrameObserver* obs) override {}
+  // viz::BeginFrameSource implementation.
+  void AddObserver(viz::BeginFrameObserver* obs) override;
+  void RemoveObserver(viz::BeginFrameObserver* obs) override;
+  void DidFinishFrame(viz::BeginFrameObserver* obs) override {}
   bool IsThrottled() const override { return true; }
 
   void OnVSync(base::TimeTicks frame_time, base::TimeDelta vsync_period);
@@ -46,7 +46,7 @@ class WindowAndroid::WindowBeginFrameSource : public cc::BeginFrameSource {
 
  private:
   WindowAndroid* const window_;
-  base::ObserverList<cc::BeginFrameObserver> observers_;
+  base::ObserverList<viz::BeginFrameObserver> observers_;
   int observer_count_;
   viz::BeginFrameArgs last_begin_frame_args_;
   uint64_t next_sequence_number_;
@@ -54,7 +54,7 @@ class WindowAndroid::WindowBeginFrameSource : public cc::BeginFrameSource {
 };
 
 void WindowAndroid::WindowBeginFrameSource::AddObserver(
-    cc::BeginFrameObserver* obs) {
+    viz::BeginFrameObserver* obs) {
   DCHECK(obs);
   DCHECK(!observers_.HasObserver(obs));
 
@@ -84,7 +84,7 @@ void WindowAndroid::WindowBeginFrameSource::AddObserver(
 }
 
 void WindowAndroid::WindowBeginFrameSource::RemoveObserver(
-    cc::BeginFrameObserver* obs) {
+    viz::BeginFrameObserver* obs) {
   DCHECK(obs);
   DCHECK(observers_.HasObserver(obs));
 
@@ -169,7 +169,7 @@ void WindowAndroid::RemoveObserver(WindowAndroidObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-cc::BeginFrameSource* WindowAndroid::GetBeginFrameSource() {
+viz::BeginFrameSource* WindowAndroid::GetBeginFrameSource() {
   return begin_frame_source_.get();
 }
 

@@ -99,7 +99,7 @@ enum class ImplThreadPhase {
 class LayerTreeHostImplClient {
  public:
   virtual void DidLoseLayerTreeFrameSinkOnImplThread() = 0;
-  virtual void SetBeginFrameSource(BeginFrameSource* source) = 0;
+  virtual void SetBeginFrameSource(viz::BeginFrameSource* source) = 0;
   virtual void DidReceiveCompositorFrameAckOnImplThread() = 0;
   virtual void OnCanDrawStateChanged(bool can_draw) = 0;
   virtual void NotifyReadyToActivate() = 0;
@@ -368,7 +368,7 @@ class CC_EXPORT LayerTreeHostImpl
   void RemoveVideoFrameController(VideoFrameController* controller) override;
 
   // LayerTreeFrameSinkClient implementation.
-  void SetBeginFrameSource(BeginFrameSource* source) override;
+  void SetBeginFrameSource(viz::BeginFrameSource* source) override;
   void SetExternalTilePriorityConstraints(
       const gfx::Rect& viewport_rect,
       const gfx::Transform& transform) override;

@@ -33,12 +33,12 @@ class WindowAndroidCompositor;
 
 class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     : public viz::CompositorFrameSinkSupportClient,
-      public cc::ExternalBeginFrameSourceClient {
+      public viz::ExternalBeginFrameSourceClient {
  public:
   class Client {
    public:
     virtual void SetBeginFrameSource(
-        cc::BeginFrameSource* begin_frame_source) = 0;
+        viz::BeginFrameSource* begin_frame_source) = 0;
     virtual void DidReceiveCompositorFrameAck() = 0;
     virtual void ReclaimResources(const std::vector<cc::ReturnedResource>&) = 0;
   };
@@ -88,7 +88,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
                        const gfx::Rect& damage_rect) override;
   void OnBeginFramePausedChanged(bool paused) override;
 
-  // cc::ExternalBeginFrameSourceClient implementation.
+  // viz::ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
   void CreateNewCompositorFrameSinkSupport();
@@ -103,7 +103,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   Client* client_;
 
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
-  cc::ExternalBeginFrameSource begin_frame_source_;
+  viz::ExternalBeginFrameSource begin_frame_source_;
 
   viz::SurfaceInfo surface_info_;
   bool has_transparent_background_ = false;

@@ -14,7 +14,7 @@
 
 namespace viz {
 
-DisplayScheduler::DisplayScheduler(cc::BeginFrameSource* begin_frame_source,
+DisplayScheduler::DisplayScheduler(BeginFrameSource* begin_frame_source,
                                    base::SingleThreadTaskRunner* task_runner,
                                    int max_pending_swaps,
                                    bool wait_for_all_surfaces_before_draw)

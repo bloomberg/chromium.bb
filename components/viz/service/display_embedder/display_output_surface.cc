@@ -11,7 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
-#include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -20,7 +20,7 @@ namespace viz {
 
 DisplayOutputSurface::DisplayOutputSurface(
     scoped_refptr<InProcessContextProvider> context_provider,
-    cc::SyntheticBeginFrameSource* synthetic_begin_frame_source)
+    SyntheticBeginFrameSource* synthetic_begin_frame_source)
     : cc::OutputSurface(context_provider),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
       weak_ptr_factory_(this) {

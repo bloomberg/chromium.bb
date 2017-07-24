@@ -22,9 +22,11 @@
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 
-namespace cc {
-
+namespace viz {
 class BeginFrameSource;
+}
+
+namespace cc {
 
 class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
  public:
@@ -95,7 +97,7 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
  private:
   void DidReceiveCompositorFrameAck();
 
-  std::unique_ptr<BeginFrameSource> begin_frame_source_;
+  std::unique_ptr<viz::BeginFrameSource> begin_frame_source_;
   base::WeakPtrFactory<FakeLayerTreeFrameSink> weak_ptr_factory_;
 };
 

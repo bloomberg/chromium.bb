@@ -11,10 +11,10 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "cc/output/output_surface_frame.h"
-#include "cc/scheduler/begin_frame_source.h"
-#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/reflector_texture.h"
@@ -137,8 +137,8 @@ class ReflectorImplTest : public testing::Test {
         base::MakeUnique<NoTransportImageTransportFactory>());
     task_runner_ = message_loop_->task_runner();
     compositor_task_runner_ = new FakeTaskRunner();
-    begin_frame_source_.reset(new cc::DelayBasedBeginFrameSource(
-        base::MakeUnique<cc::DelayBasedTimeSource>(
+    begin_frame_source_.reset(new viz::DelayBasedBeginFrameSource(
+        base::MakeUnique<viz::DelayBasedTimeSource>(
             compositor_task_runner_.get())));
     compositor_.reset(new ui::Compositor(
         context_factory_private->AllocateFrameSinkId(), context_factory,
@@ -185,7 +185,7 @@ class ReflectorImplTest : public testing::Test {
 
  protected:
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source_;
+  std::unique_ptr<viz::SyntheticBeginFrameSource> begin_frame_source_;
   std::unique_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<ui::Compositor> compositor_;

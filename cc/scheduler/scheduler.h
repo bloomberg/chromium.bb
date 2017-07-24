@@ -13,14 +13,14 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/begin_frame_tracker.h"
-#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/scheduler/scheduler_state_machine.h"
 #include "cc/tiles/tile_priority.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/delay_based_time_source.h"
 
 namespace base {
 namespace trace_event {
@@ -56,7 +56,7 @@ class SchedulerClient {
   virtual ~SchedulerClient() {}
 };
 
-class CC_EXPORT Scheduler : public BeginFrameObserverBase {
+class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
  public:
   Scheduler(SchedulerClient* client,
             const SchedulerSettings& scheduler_settings,
@@ -82,7 +82,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void SetCanDraw(bool can_draw);
   void NotifyReadyToActivate();
   void NotifyReadyToDraw();
-  void SetBeginFrameSource(BeginFrameSource* source);
+  void SetBeginFrameSource(viz::BeginFrameSource* source);
 
   void SetNeedsBeginMainFrame();
   // Requests a single impl frame (after the current frame if there is one
@@ -157,7 +157,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   void SetVideoNeedsBeginFrames(bool video_needs_begin_frames);
 
-  const BeginFrameSource* begin_frame_source() const {
+  const viz::BeginFrameSource* begin_frame_source() const {
     return begin_frame_source_;
   }
 
@@ -172,7 +172,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   const int layer_tree_host_id_;
   base::SingleThreadTaskRunner* task_runner_;
 
-  BeginFrameSource* begin_frame_source_ = nullptr;
+  viz::BeginFrameSource* begin_frame_source_ = nullptr;
   bool observing_begin_frame_source_ = false;
 
   bool skipped_last_frame_missed_exceeded_deadline_ = false;

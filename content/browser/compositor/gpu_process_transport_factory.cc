@@ -24,8 +24,8 @@
 #include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/raster/task_graph_runner.h"
-#include "cc/scheduler/begin_frame_source.h"
-#include "cc/scheduler/delay_based_time_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display/display.h"
@@ -191,7 +191,7 @@ struct GpuProcessTransportFactory::PerCompositorData {
   BrowserCompositorOutputSurface* display_output_surface = nullptr;
   // Either |synthetic_begin_frame_source| or |gpu_vsync_begin_frame_source| is
   // valid but not both at the same time.
-  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source;
+  std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
   std::unique_ptr<GpuVSyncBeginFrameSource> gpu_vsync_begin_frame_source;
   ReflectorImpl* reflector = nullptr;
   std::unique_ptr<viz::Display> display;
@@ -486,7 +486,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   BrowserCompositorOutputSurface::UpdateVSyncParametersCallback vsync_callback =
       base::Bind(&ui::Compositor::SetDisplayVSyncParameters, compositor);
-  cc::BeginFrameSource* begin_frame_source = nullptr;
+  viz::BeginFrameSource* begin_frame_source = nullptr;
   GpuVSyncControl* gpu_vsync_control = nullptr;
 
   std::unique_ptr<BrowserCompositorOutputSurface> display_output_surface;
@@ -558,7 +558,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   if (data->reflector)
     data->reflector->OnSourceSurfaceReady(data->display_output_surface);
 
-  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source;
+  std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
   std::unique_ptr<GpuVSyncBeginFrameSource> gpu_vsync_begin_frame_source;
 
   if (!begin_frame_source) {
@@ -569,15 +569,15 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         begin_frame_source = gpu_vsync_begin_frame_source.get();
       } else {
         synthetic_begin_frame_source =
-            base::MakeUnique<cc::DelayBasedBeginFrameSource>(
-                base::MakeUnique<cc::DelayBasedTimeSource>(
+            base::MakeUnique<viz::DelayBasedBeginFrameSource>(
+                base::MakeUnique<viz::DelayBasedTimeSource>(
                     compositor->task_runner().get()));
         begin_frame_source = synthetic_begin_frame_source.get();
       }
     } else {
       synthetic_begin_frame_source =
-          base::MakeUnique<cc::BackToBackBeginFrameSource>(
-              base::MakeUnique<cc::DelayBasedTimeSource>(
+          base::MakeUnique<viz::BackToBackBeginFrameSource>(
+              base::MakeUnique<viz::DelayBasedTimeSource>(
                   compositor->task_runner().get()));
       begin_frame_source = synthetic_begin_frame_source.get();
     }

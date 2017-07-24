@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "cc/output/layer_tree_frame_sink.h"
-#include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
@@ -29,7 +29,7 @@ class Display;
 class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
     : public cc::LayerTreeFrameSink,
       public NON_EXPORTED_BASE(CompositorFrameSinkSupportClient),
-      public cc::ExternalBeginFrameSourceClient,
+      public ExternalBeginFrameSourceClient,
       public NON_EXPORTED_BASE(DisplayClient) {
  public:
   // The underlying Display, FrameSinkManagerImpl, and LocalSurfaceIdAllocator
@@ -92,7 +92,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   gfx::Size last_swap_frame_size_;
   float device_scale_factor_ = 1.f;
   bool is_lost_ = false;
-  std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
+  std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectLayerTreeFrameSink);
 };

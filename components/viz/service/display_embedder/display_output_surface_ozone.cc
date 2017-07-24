@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
-#include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/service/display_embedder/buffer_queue.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -22,7 +22,7 @@ namespace viz {
 DisplayOutputSurfaceOzone::DisplayOutputSurfaceOzone(
     scoped_refptr<InProcessContextProvider> context_provider,
     gfx::AcceleratedWidget widget,
-    cc::SyntheticBeginFrameSource* synthetic_begin_frame_source,
+    SyntheticBeginFrameSource* synthetic_begin_frame_source,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     uint32_t target,
     uint32_t internalformat)

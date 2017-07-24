@@ -5,15 +5,15 @@
 #ifndef CC_SURFACES_SURFACE_DEPENDENCY_DEADLINE_H_
 #define CC_SURFACES_SURFACE_DEPENDENCY_DEADLINE_H_
 
-#include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 
 #include "cc/surfaces/surface_deadline_observer.h"
 
 namespace cc {
 
-class SurfaceDependencyDeadline : public BeginFrameObserver {
+class SurfaceDependencyDeadline : public viz::BeginFrameObserver {
  public:
-  explicit SurfaceDependencyDeadline(BeginFrameSource* begin_frame_source);
+  explicit SurfaceDependencyDeadline(viz::BeginFrameSource* begin_frame_source);
   ~SurfaceDependencyDeadline() override;
 
   void Set(uint32_t number_of_frames_to_deadline);
@@ -31,7 +31,7 @@ class SurfaceDependencyDeadline : public BeginFrameObserver {
     return number_of_frames_to_deadline_.has_value();
   }
 
-  // Takes on the same BeginFrameSource and deadline as |other|. Returns
+  // Takes on the same viz::BeginFrameSource and deadline as |other|. Returns
   // false if they're already the same, and true otherwise.
   bool InheritFrom(const SurfaceDependencyDeadline& other);
 
@@ -40,14 +40,14 @@ class SurfaceDependencyDeadline : public BeginFrameObserver {
     return !(*this == other);
   }
 
-  // BeginFrameObserver implementation.
+  // viz::BeginFrameObserver implementation.
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   const viz::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
   void OnBeginFrameSourcePausedChanged(bool paused) override;
 
  private:
   base::ObserverList<SurfaceDeadlineObserver> observer_list_;
-  BeginFrameSource* begin_frame_source_ = nullptr;
+  viz::BeginFrameSource* begin_frame_source_ = nullptr;
   base::Optional<uint32_t> number_of_frames_to_deadline_;
 
   viz::BeginFrameArgs last_begin_frame_args_;

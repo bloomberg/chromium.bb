@@ -1611,7 +1611,7 @@ void RenderWidgetHostViewAndroid::HideInternal() {
 }
 
 void RenderWidgetHostViewAndroid::SetBeginFrameSource(
-    cc::BeginFrameSource* begin_frame_source) {
+    viz::BeginFrameSource* begin_frame_source) {
   if (begin_frame_source_ == begin_frame_source)
     return;
 
@@ -1630,7 +1630,7 @@ void RenderWidgetHostViewAndroid::AddBeginFrameRequest(
   // Note that if we don't currently have a BeginFrameSource, outstanding begin
   // frame requests will be pushed if/when we get one during
   // |StartObservingRootWindow()| or when the DelegatedFrameHostAndroid sets it.
-  cc::BeginFrameSource* source = begin_frame_source_;
+  viz::BeginFrameSource* source = begin_frame_source_;
   if (source && outstanding_begin_frame_requests_ && !prior_requests)
     source->AddObserver(this);
 }
@@ -1640,7 +1640,7 @@ void RenderWidgetHostViewAndroid::ClearBeginFrameRequest(
   uint32_t prior_requests = outstanding_begin_frame_requests_;
   outstanding_begin_frame_requests_ = prior_requests & ~request;
 
-  cc::BeginFrameSource* source = begin_frame_source_;
+  viz::BeginFrameSource* source = begin_frame_source_;
   if (source && !outstanding_begin_frame_requests_ && prior_requests)
     source->RemoveObserver(this);
 }

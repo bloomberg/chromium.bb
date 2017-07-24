@@ -1623,19 +1623,19 @@ blink::scheduler::RendererScheduler* RenderThreadImpl::GetRendererScheduler() {
   return renderer_scheduler_.get();
 }
 
-std::unique_ptr<cc::BeginFrameSource>
+std::unique_ptr<viz::BeginFrameSource>
 RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
   return base::MakeUnique<CompositorExternalBeginFrameSource>(
       compositor_message_filter_.get(), sync_message_filter(), routing_id);
 }
 
-std::unique_ptr<cc::SyntheticBeginFrameSource>
+std::unique_ptr<viz::SyntheticBeginFrameSource>
 RenderThreadImpl::CreateSyntheticBeginFrameSource() {
   base::SingleThreadTaskRunner* compositor_impl_side_task_runner =
       compositor_task_runner_ ? compositor_task_runner_.get()
                               : base::ThreadTaskRunnerHandle::Get().get();
-  return base::MakeUnique<cc::BackToBackBeginFrameSource>(
-      base::MakeUnique<cc::DelayBasedTimeSource>(
+  return base::MakeUnique<viz::BackToBackBeginFrameSource>(
+      base::MakeUnique<viz::DelayBasedTimeSource>(
           compositor_impl_side_task_runner));
 }
 
@@ -1933,7 +1933,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   // to back begin frame source, but using a synthetic begin frame source
   // here reduces latency when in this mode (at least for frames
   // starting--it potentially increases it for input on the other hand.)
-  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source;
+  std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
   if (command_line.HasSwitch(switches::kDisableGpuVsync) &&
       command_line.GetSwitchValueASCII(switches::kDisableGpuVsync) != "gpu") {
     synthetic_begin_frame_source = CreateSyntheticBeginFrameSource();
@@ -2059,7 +2059,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 
 #if defined(OS_ANDROID)
   if (sync_compositor_message_filter_) {
-    std::unique_ptr<cc::BeginFrameSource> begin_frame_source =
+    std::unique_ptr<viz::BeginFrameSource> begin_frame_source =
         synthetic_begin_frame_source
             ? std::move(synthetic_begin_frame_source)
             : CreateExternalBeginFrameSource(routing_id);

@@ -15,7 +15,6 @@
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/compositor_timing_history.h"
-#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/scheduler.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -23,6 +22,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
+#include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gpu/context_provider.h"
 
 namespace cc {
@@ -422,7 +422,7 @@ void SingleThreadProxy::DidLoseLayerTreeFrameSinkOnImplThread() {
   layer_tree_frame_sink_lost_ = true;
 }
 
-void SingleThreadProxy::SetBeginFrameSource(BeginFrameSource* source) {
+void SingleThreadProxy::SetBeginFrameSource(viz::BeginFrameSource* source) {
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetBeginFrameSource(source);
 }

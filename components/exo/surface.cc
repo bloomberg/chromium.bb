@@ -607,7 +607,7 @@ void Surface::DidReceiveCompositorFrameAck() {
   UpdateNeedsBeginFrame();
 }
 
-void Surface::SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) {
+void Surface::SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source) {
   if (needs_begin_frame_) {
     DCHECK(begin_frame_source_);
     begin_frame_source_->RemoveObserver(this);

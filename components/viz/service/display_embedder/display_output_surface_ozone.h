@@ -18,10 +18,6 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_surface.h"
 
-namespace cc {
-class SyntheticBeginFrameSource;
-}
-
 namespace gpu {
 class GpuMemoryBufferManager;
 }
@@ -29,6 +25,7 @@ class GpuMemoryBufferManager;
 namespace viz {
 
 class BufferQueue;
+class SyntheticBeginFrameSource;
 
 // An OutputSurface implementation that directly draws and swap to a GL
 // "surfaceless" surface (aka one backed by a buffer managed explicitly in
@@ -39,7 +36,7 @@ class DisplayOutputSurfaceOzone : public DisplayOutputSurface {
   DisplayOutputSurfaceOzone(
       scoped_refptr<InProcessContextProvider> context_provider,
       gfx::AcceleratedWidget widget,
-      cc::SyntheticBeginFrameSource* synthetic_begin_frame_source,
+      SyntheticBeginFrameSource* synthetic_begin_frame_source,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       uint32_t target,
       uint32_t internalformat);

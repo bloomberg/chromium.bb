@@ -19,8 +19,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "cc/input/selection.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/frame_sinks/frame_evictor.h"
 #include "content/browser/android/content_view_core_observer.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
@@ -75,7 +75,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       public content::ContentViewCoreObserver,
       public content::TextInputManager::Observer,
       public ui::DelegatedFrameHostAndroid::Client,
-      public cc::BeginFrameObserver {
+      public viz::BeginFrameObserver {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               ContentViewCore* content_view_core);
@@ -231,12 +231,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   std::unique_ptr<ui::TouchHandleDrawable> CreateDrawable() override;
 
   // DelegatedFrameHostAndroid::Client implementation.
-  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
+  void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source) override;
   void DidReceiveCompositorFrameAck() override;
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;
 
-  // cc::BeginFrameObserver implementation.
+  // viz::BeginFrameObserver implementation.
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   const viz::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
   void OnBeginFrameSourcePausedChanged(bool paused) override;
@@ -377,7 +377,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   RenderWidgetHostImpl* host_;
 
   // The begin frame source being observed.  Null if none.
-  cc::BeginFrameSource* begin_frame_source_;
+  viz::BeginFrameSource* begin_frame_source_;
   viz::BeginFrameArgs last_begin_frame_args_;
   bool begin_frame_paused_ = false;
 

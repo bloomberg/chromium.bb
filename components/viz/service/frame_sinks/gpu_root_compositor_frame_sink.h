@@ -17,11 +17,9 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace cc {
-class BeginFrameSource;
-}
-
 namespace viz {
+
+class BeginFrameSource;
 class CompositorFrameSinkSupport;
 class Display;
 class FrameSinkManagerImpl;
@@ -37,7 +35,7 @@ class GpuRootCompositorFrameSink
       FrameSinkManagerImpl* frame_sink_manager,
       const FrameSinkId& frame_sink_id,
       std::unique_ptr<Display> display,
-      std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
+      std::unique_ptr<BeginFrameSource> begin_frame_source,
       cc::mojom::CompositorFrameSinkAssociatedRequest request,
       cc::mojom::CompositorFrameSinkPrivateRequest private_request,
       cc::mojom::CompositorFrameSinkClientPtr client,
@@ -88,7 +86,7 @@ class GpuRootCompositorFrameSink
 
   // GpuRootCompositorFrameSink holds a Display and its BeginFrameSource if
   // it was created with a non-null gpu::SurfaceHandle.
-  std::unique_ptr<cc::BeginFrameSource> display_begin_frame_source_;
+  std::unique_ptr<BeginFrameSource> display_begin_frame_source_;
   std::unique_ptr<Display> display_;
 
   cc::mojom::CompositorFrameSinkClientPtr client_;

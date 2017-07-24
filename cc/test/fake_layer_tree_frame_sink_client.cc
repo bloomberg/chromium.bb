@@ -8,7 +8,7 @@
 namespace cc {
 
 void FakeLayerTreeFrameSinkClient::SetBeginFrameSource(
-    BeginFrameSource* source) {
+    viz::BeginFrameSource* source) {
   begin_frame_source_ = source;
 }
 

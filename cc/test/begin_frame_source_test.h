@@ -6,7 +6,7 @@
 #define CC_TEST_BEGIN_FRAME_SOURCE_TEST_H_
 
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,7 +78,7 @@
 
 namespace cc {
 
-class MockBeginFrameObserver : public BeginFrameObserver {
+class MockBeginFrameObserver : public viz::BeginFrameObserver {
  public:
   MOCK_METHOD1(OnBeginFrame, void(const viz::BeginFrameArgs&));
   MOCK_CONST_METHOD0(LastUsedBeginFrameArgs, const viz::BeginFrameArgs&());
@@ -86,8 +86,8 @@ class MockBeginFrameObserver : public BeginFrameObserver {
 
   virtual void AsValueInto(base::trace_event::TracedValue* dict) const;
 
-  // A value different from the normal default returned by a BeginFrameObserver
-  // so it is easiable traced back here.
+  // A value different from the normal default returned by a
+  // viz::BeginFrameObserver so it is easiable traced back here.
   static const viz::BeginFrameArgs kDefaultBeginFrameArgs;
 
   MockBeginFrameObserver();

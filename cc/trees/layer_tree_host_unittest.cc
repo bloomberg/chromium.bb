@@ -6657,8 +6657,8 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
       // get any more draws after that. End the test after a timeout to watch
       // for any extraneous draws.
       // TODO(brianderson): We could remove this delay and instead wait until
-      // the BeginFrameSource decides it doesn't need to send frames anymore,
-      // or test that it already doesn't here.
+      // the viz::BeginFrameSource decides it doesn't need to send frames
+      // anymore, or test that it already doesn't here.
       EndTestAfterDelayMs(16 * 4);
     }
   }

@@ -273,7 +273,7 @@ bool SchedulerStateMachine::PendingActivationsShouldBeForced() const {
   if (!visible_)
     return true;
 
-  // Force pending activations when BeginFrameSource is paused to avoid
+  // Force pending activations when viz::BeginFrameSource is paused to avoid
   // deadlocking the main thread.
   if (begin_frame_source_paused_)
     return true;
@@ -392,7 +392,7 @@ bool SchedulerStateMachine::ShouldNotifyBeginMainFrameNotSent() const {
   if (!visible_)
     return false;
 
-  // There are no BeginImplFrames while BeginFrameSource is paused, meaning
+  // There are no BeginImplFrames while viz::BeginFrameSource is paused, meaning
   // the scheduler should send SendBeginMainFrameNotExpectedSoon instead,
   // indicating a longer period of inactivity.
   if (begin_frame_source_paused_)
@@ -421,7 +421,7 @@ bool SchedulerStateMachine::CouldSendBeginMainFrame() const {
   if (!visible_)
     return false;
 
-  // There are no BeginImplFrames while BeginFrameSource is paused,
+  // There are no BeginImplFrames while viz::BeginFrameSource is paused,
   // so should also stop BeginMainFrames.
   if (begin_frame_source_paused_)
     return false;
@@ -643,8 +643,8 @@ bool SchedulerStateMachine::CouldCreatePendingTree() const {
   if (!visible_)
     return false;
 
-  // If the BeginFrameSource is paused, we will not be able to make any impl
-  // frames.
+  // If the viz::BeginFrameSource is paused, we will not be able to make any
+  // impl frames.
   if (begin_frame_source_paused_)
     return false;
 

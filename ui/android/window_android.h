@@ -21,13 +21,13 @@
 #include "ui/android/view_android.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-namespace cc {
-class BeginFrameSource;
-}  // namespace cc
-
 namespace display {
 class DisplayAndroidManager;
 }  // namespace display
+
+namespace viz {
+class BeginFrameSource;
+}  // namespace viz
 
 namespace ui {
 
@@ -56,7 +56,7 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   void RemoveObserver(WindowAndroidObserver* observer);
 
   WindowAndroidCompositor* GetCompositor() { return compositor_; }
-  cc::BeginFrameSource* GetBeginFrameSource();
+  viz::BeginFrameSource* GetBeginFrameSource();
 
   // Runs the provided callback as soon as the current vsync was handled.
   void AddVSyncCompleteCallback(const base::Closure& callback);

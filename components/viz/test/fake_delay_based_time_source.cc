@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/fake_delay_based_time_source.h"
+#include "components/viz/test/fake_delay_based_time_source.h"
 
-namespace cc {
+namespace viz {
 
 void FakeDelayBasedTimeSourceClient::OnTimerTick() {
   tick_called_ = true;
@@ -25,4 +25,4 @@ std::string FakeDelayBasedTimeSource::TypeString() const {
 
 FakeDelayBasedTimeSource::~FakeDelayBasedTimeSource() = default;
 
-}  // namespace cc
+}  // namespace viz

@@ -20,12 +20,12 @@
 #include "cc/input/browser_controls_offset_manager.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/scheduler/compositor_timing_history.h"
-#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/task_runner_provider.h"
+#include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
@@ -307,9 +307,9 @@ void ProxyImpl::DidLoseLayerTreeFrameSinkOnImplThread() {
   scheduler_->DidLoseLayerTreeFrameSink();
 }
 
-void ProxyImpl::SetBeginFrameSource(BeginFrameSource* source) {
+void ProxyImpl::SetBeginFrameSource(viz::BeginFrameSource* source) {
   // During shutdown, destroying the LayerTreeFrameSink may unset the
-  // BeginFrameSource.
+  // viz::BeginFrameSource.
   if (scheduler_) {
     // TODO(enne): this overrides any preexisting begin frame source.  Those
     // other sources will eventually be removed and this will be the only path.
