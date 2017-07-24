@@ -102,9 +102,10 @@ bool ParseSupportedOrigins(base::DictionaryValue* dict,
   }
 
   size_t supported_origins_number = list->GetSize();
-  if (supported_origins_number > kMaximumNumberOfEntries) {
+  const size_t kMaximumNumberOfSupportedOrigins = 100000;
+  if (supported_origins_number > kMaximumNumberOfSupportedOrigins) {
     LOG(ERROR) << "\"" << kSupportedOrigins << "\" must contain at most "
-               << kMaximumNumberOfEntries << " entires.";
+               << kMaximumNumberOfSupportedOrigins << " entires.";
     return false;
   }
 
@@ -118,7 +119,8 @@ bool ParseSupportedOrigins(base::DictionaryValue* dict,
 
     GURL url(item);
     if (!url.is_valid() || !url.SchemeIs(url::kHttpsScheme) ||
-        url.path() != "/" || url.has_query() || url.has_ref()) {
+        url.path() != "/" || url.has_query() || url.has_ref() ||
+        url.has_username() || url.has_password()) {
       LOG(ERROR) << "\"" << item << "\" entry in \"" << kSupportedOrigins
                  << "\" is not a valid origin with HTTPS scheme.";
       supported_origins->clear();

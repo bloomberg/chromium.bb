@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(PaymentManifestParserHostTest, TooManySupportedOrigins) {
 
   InvokeOnPaymentMethodManifestParse(
       std::vector<GURL>(),
-      std::vector<url::Origin>(101, url::Origin(GURL("https://bobpay.com"))),
+      std::vector<url::Origin>(100001, url::Origin(GURL("https://bobpay.com"))),
       false);
 
   EXPECT_TRUE(supported_origins().empty());

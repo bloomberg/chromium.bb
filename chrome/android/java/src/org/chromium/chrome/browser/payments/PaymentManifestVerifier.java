@@ -306,7 +306,8 @@ public class PaymentManifestVerifier
     }
 
     @Override
-    public void onPaymentMethodManifestParseSuccess(URI[] webAppManifestUris) {
+    public void onPaymentMethodManifestParseSuccess(URI[] webAppManifestUris,
+            URI[] unusedSupportedOrigins, boolean unusedAllOriginsSupported) {
         assert webAppManifestUris != null;
         assert webAppManifestUris.length > 0;
         assert !mAtLeastOneManifestFailedToDownloadOrParse;

@@ -67,28 +67,12 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
                 String content, final ManifestParseCallback callback) {
             super.parsePaymentMethodManifest(content, new ManifestParseCallback() {
                 @Override
-                public void onPaymentMethodManifestParseSuccess(URI[] webAppManifestUris) {
-                    URI[] localhostWebAppManifestUris = new URI[webAppManifestUris.length];
-                    for (int i = 0; i < webAppManifestUris.length; i++) {
-                        try {
-                            localhostWebAppManifestUris[i] = new URI(
-                                    webAppManifestUris[i]
-                                            .toString()
-                                            .replaceAll("https://alicepay.com",
-                                                    mTestServerUri.toString() + "/alicepay.com")
-                                            .replaceAll("https://bobpay.com",
-                                                    mTestServerUri.toString() + "/bobpay.com")
-                                            .replaceAll("https://charliepay.com",
-                                                    mTestServerUri.toString() + "/charliepay.com")
-                                            .replaceAll("https://davepay.com",
-                                                    mTestServerUri.toString() + "/davepay.com")
-                                            .replaceAll("https://evepay.com",
-                                                    mTestServerUri.toString() + "/evepay.com"));
-                        } catch (URISyntaxException e) {
-                            assert false : "URI should be valid";
-                        }
-                    }
-                    callback.onPaymentMethodManifestParseSuccess(localhostWebAppManifestUris);
+                public void onPaymentMethodManifestParseSuccess(URI[] webAppManifestUris,
+                        URI[] supportedOrigins, boolean allOriginsSupported) {
+                    substituteTestServerUris(webAppManifestUris);
+                    substituteTestServerUris(supportedOrigins);
+                    callback.onPaymentMethodManifestParseSuccess(
+                            webAppManifestUris, supportedOrigins, allOriginsSupported);
                 }
 
                 @Override
@@ -101,6 +85,26 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
                     callback.onManifestParseFailure();
                 }
             });
+        }
+
+        private void substituteTestServerUris(URI[] uris) {
+            for (int i = 0; i < uris.length; i++) {
+                try {
+                    uris[i] = new URI(uris[i].toString()
+                                              .replaceAll("https://alicepay.com",
+                                                      mTestServerUri.toString() + "/alicepay.com")
+                                              .replaceAll("https://bobpay.com",
+                                                      mTestServerUri.toString() + "/bobpay.com")
+                                              .replaceAll("https://charliepay.com",
+                                                      mTestServerUri.toString() + "/charliepay.com")
+                                              .replaceAll("https://davepay.com",
+                                                      mTestServerUri.toString() + "/davepay.com")
+                                              .replaceAll("https://evepay.com",
+                                                      mTestServerUri.toString() + "/evepay.com"));
+                } catch (URISyntaxException e) {
+                    assert false : "URI should be valid";
+                }
+            }
         }
     }
 

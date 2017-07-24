@@ -40,15 +40,20 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
 
     private final PaymentManifestParser mParser = new PaymentManifestParser();
     private URI[] mWebAppManifestUris;
+    private URI[] mSupportedOrigins;
+    private boolean mAllOriginsSupported;
     private WebAppManifestSection[] mWebAppManifest;
     private boolean mParseFailure;
     private boolean mParsePaymentMethodManifestSuccess;
     private boolean mParseWebAppManifestSuccess;
 
     @Override
-    public void onPaymentMethodManifestParseSuccess(URI[] webAppManifestUris) {
+    public void onPaymentMethodManifestParseSuccess(
+            URI[] webAppManifestUris, URI[] supportedOrigins, boolean allOriginsSupported) {
         mParsePaymentMethodManifestSuccess = true;
         mWebAppManifestUris = webAppManifestUris.clone();
+        mSupportedOrigins = supportedOrigins.clone();
+        mAllOriginsSupported = allOriginsSupported;
     }
 
     @Override
@@ -72,6 +77,8 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
             }
         });
         mWebAppManifestUris = null;
+        mSupportedOrigins = null;
+        mAllOriginsSupported = false;
         mWebAppManifest = null;
         mParseFailure = false;
         mParsePaymentMethodManifestSuccess = false;
@@ -137,6 +144,35 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
         Assert.assertEquals(2, mWebAppManifestUris.length);
         Assert.assertEquals(new URI("https://bobpay.com/app.json"), mWebAppManifestUris[0]);
         Assert.assertEquals(new URI("https://alicepay.com/app.json"), mWebAppManifestUris[1]);
+        Assert.assertNotNull(mSupportedOrigins);
+        Assert.assertEquals(2, mSupportedOrigins.length);
+        Assert.assertEquals(new URI("https://charliepay.com"), mSupportedOrigins[0]);
+        Assert.assertEquals(new URI("https://evepay.com"), mSupportedOrigins[1]);
+        Assert.assertFalse(mAllOriginsSupported);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testParsePaymentMethodManifestWithAllOriginsSupported() throws Throwable {
+        mRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mParser.parsePaymentMethodManifest(
+                        "{\"supported_origins\": \"*\"}", PaymentManifestParserTest.this);
+            }
+        });
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mParsePaymentMethodManifestSuccess;
+            }
+        });
+        Assert.assertNotNull(mWebAppManifestUris);
+        Assert.assertEquals(0, mWebAppManifestUris.length);
+        Assert.assertNotNull(mSupportedOrigins);
+        Assert.assertEquals(0, mSupportedOrigins.length);
+        Assert.assertTrue(mAllOriginsSupported);
     }
 
     @Test
