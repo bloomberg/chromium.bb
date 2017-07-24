@@ -458,6 +458,7 @@ pre_deps_hooks = [
       'DEPS': """
 vars = {
   'DummyVariable': 'repo',
+  'git_base': '%(git_base)s',
 }
 gclient_gn_args_file = 'src/gclient.args'
 gclient_gn_args = ['DummyVariable']
@@ -466,7 +467,7 @@ allowed_hosts = [
 ]
 deps = {
   'src/repo2': {
-    'url': '%(git_base)srepo_2@%(hash)s',
+    'url': Var('git_base') + 'repo_2@%(hash)s',
     'condition': 'True',
   },
   'src/repo4': {
