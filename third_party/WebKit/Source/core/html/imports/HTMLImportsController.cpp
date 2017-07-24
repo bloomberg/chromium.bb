@@ -89,16 +89,18 @@ HTMLImportChild* HTMLImportsController::CreateChild(
 
 HTMLImportChild* HTMLImportsController::Load(HTMLImport* parent,
                                              HTMLImportChildClient* client,
-                                             FetchParameters params) {
-  DCHECK(!params.Url().IsEmpty());
-  DCHECK(params.Url().IsValid());
+                                             FetchParameters& params) {
+  const KURL& url = params.Url();
+
+  DCHECK(!url.IsEmpty());
+  DCHECK(url.IsValid());
   DCHECK(parent == Root() || ToHTMLImportChild(parent)->Loader()->IsFirstImport(
                                  ToHTMLImportChild(parent)));
 
-  if (HTMLImportChild* child_to_share_with = Root()->Find(params.Url())) {
+  if (HTMLImportChild* child_to_share_with = Root()->Find(url)) {
     HTMLImportLoader* loader = child_to_share_with->Loader();
     DCHECK(loader);
-    HTMLImportChild* child = CreateChild(params.Url(), loader, parent, client);
+    HTMLImportChild* child = CreateChild(url, loader, parent, client);
     child->DidShareLoader();
     return child;
   }
@@ -111,7 +113,7 @@ HTMLImportChild* HTMLImportsController::Load(HTMLImport* parent,
     return nullptr;
 
   HTMLImportLoader* loader = CreateLoader();
-  HTMLImportChild* child = CreateChild(params.Url(), loader, parent, client);
+  HTMLImportChild* child = CreateChild(url, loader, parent, client);
   // We set resource after the import tree is built since
   // Resource::addClient() immediately calls back to feed the bytes when the
   // resource is cached.

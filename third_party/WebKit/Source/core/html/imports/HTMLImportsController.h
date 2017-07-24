@@ -60,7 +60,7 @@ class HTMLImportsController final
   bool ShouldBlockScriptExecution(const Document&) const;
   HTMLImportChild* Load(HTMLImport* parent,
                         HTMLImportChildClient*,
-                        FetchParameters);
+                        FetchParameters&);
 
   Document* Master() const;
 

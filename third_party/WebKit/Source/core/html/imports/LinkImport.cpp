@@ -79,7 +79,7 @@ void LinkImport::Process() {
     master.CreateImportsController();
   }
 
-  KURL url = owner_->GetNonEmptyURLAttribute(HTMLNames::hrefAttr);
+  const KURL& url = owner_->GetNonEmptyURLAttribute(HTMLNames::hrefAttr);
   if (url.IsEmpty() || !url.IsValid()) {
     DidFinish();
     return;
@@ -99,6 +99,7 @@ void LinkImport::Process() {
 
   ResourceLoaderOptions options;
   options.initiator_info.name = owner_->localName();
+
   FetchParameters params(resource_request, options);
   params.SetCharset(GetCharset());
   params.SetContentSecurityPolicyNonce(owner_->nonce());
