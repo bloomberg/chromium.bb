@@ -51,7 +51,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -135,34 +134,34 @@ class ObservingAutofillClient
  public:
   ~ObservingAutofillClient() override {}
 
-  void Wait() { message_loop_runner_->Run(); }
-
-  // Pump messages until idle, then return bool indicating whether the popup was
-  // shown.
-  bool DidPopupAppear() {
+  // Wait until the autofill popup is shown.
+  void WaitForAutofillPopup() {
     base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-    return popup_shown;
+    run_loop_ = &run_loop;
+    run_loop.Run();
+    DCHECK(!run_loop_);
   }
+
+  bool popup_shown() const { return popup_shown_; }
 
   void ShowAutofillPopup(
       const gfx::RectF& element_bounds,
       base::i18n::TextDirection text_direction,
       const std::vector<autofill::Suggestion>& suggestions,
       base::WeakPtr<autofill::AutofillPopupDelegate> delegate) override {
-    if (message_loop_runner_)
-      message_loop_runner_->Quit();
-    popup_shown = true;
+    if (run_loop_)
+      run_loop_->Quit();
+    run_loop_ = nullptr;
+    popup_shown_ = true;
   }
 
  private:
   explicit ObservingAutofillClient(content::WebContents* web_contents)
-      : message_loop_runner_(new content::MessageLoopRunner),
-        popup_shown(false) {}
+      : run_loop_(nullptr), popup_shown_(false) {}
   friend class content::WebContentsUserData<ObservingAutofillClient>;
 
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  bool popup_shown;
+  base::RunLoop* run_loop_;
+  bool popup_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(ObservingAutofillClient);
 };
@@ -1032,10 +1031,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
               .get());
 
-  // Spin the message loop to make sure the password store had a chance to save
-  // the password.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  WaitForPasswordStore();
   EXPECT_FALSE(password_store->IsEmpty());
 
   CheckThatCredentialsStored(password_store.get(), base::ASCIIToUTF16("temp"),
@@ -1625,13 +1621,14 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   // executed on the IO thread. The actual task is empty, because only the reply
   // is relevant. By the time the reply is executed it is guaranteed that the
   // migration is completed.
-  const auto empty_lambda = []() {};
   base::RunLoop run_loop;
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::IO, FROM_HERE, base::BindOnce(empty_lambda),
-      run_loop.QuitClosure());
+  content::BrowserThread::PostTaskAndReply(content::BrowserThread::IO,
+                                           FROM_HERE, base::BindOnce([]() {}),
+                                           run_loop.QuitClosure());
   run_loop.Run();
 
+  // Migration updates should touch the password store.
+  WaitForPasswordStore();
   // Only HTTPS passwords should be present.
   EXPECT_TRUE(
       password_store->stored_passwords().at(http_origin.spec()).empty());
@@ -1662,10 +1659,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   EXPECT_TRUE(prompt_observer->IsShowingSavePrompt());
   prompt_observer->AcceptSavePrompt();
 
-  // Spin the message loop to make sure the password store had a chance to save
-  // the password.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  WaitForPasswordStore();
   EXPECT_FALSE(password_store->IsEmpty());
 }
 
@@ -1901,7 +1895,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                                 blink::WebMouseEvent::Button::kLeft,
                                 gfx::Point(left + 1, top + 1));
   // Make sure the popup would be shown.
-  observing_autofill_client->Wait();
+  observing_autofill_client->WaitForAutofillPopup();
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
@@ -2304,10 +2298,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
           PasswordStoreFactory::GetForProfile(
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
               .get());
-  // Spin the message loop to make sure the password store had a chance to save
-  // the password.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  WaitForPasswordStore();
   EXPECT_FALSE(password_store->IsEmpty());
   CheckThatCredentialsStored(password_store.get(), base::ASCIIToUTF16(""),
                              base::ASCIIToUTF16("new_pw"));
@@ -2351,10 +2342,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
           ->GetPendingPassword();
   prompt_observer->AcceptUpdatePrompt(pending_credentials);
 
-  // Spin the message loop to make sure the password store had a chance to
-  // update the password.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  WaitForPasswordStore();
   CheckThatCredentialsStored(password_store.get(), base::ASCIIToUTF16("temp"),
                              base::ASCIIToUTF16("new_pw"));
 }
@@ -2470,10 +2458,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   const autofill::PasswordForm stored_form =
       password_store->stored_passwords().begin()->second[0];
   prompt_observer->AcceptUpdatePrompt(stored_form);
-  // Spin the message loop to make sure the password store had a chance to
-  // update the password.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  WaitForPasswordStore();
   CheckThatCredentialsStored(password_store.get(), base::ASCIIToUTF16("temp"),
                              base::ASCIIToUTF16("new_pw"));
 }
@@ -2493,12 +2478,6 @@ IN_PROC_BROWSER_TEST_F(
   login_form.username_value = base::ASCIIToUTF16("myusername");
   login_form.password_value = base::ASCIIToUTF16("mypassword");
   password_store->AddLogin(login_form);
-
-  // Logins are added asynchronously to the password store. Spin the message
-  // loop to make sure the |password_store| had a chance to store the
-  // |login_form|.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
 
   // Now, navigate to the password form having ambiguous Ids for username and
   // password fields and verify whether username and password is autofilled.
@@ -2542,12 +2521,6 @@ IN_PROC_BROWSER_TEST_F(
   login_form.password_value = base::ASCIIToUTF16("mypassword");
   password_store->AddLogin(login_form);
 
-  // Logins are added asynchronously to the password store. Spin the message
-  // loop to make sure the |password_store| had a chance to store the
-  // |login_form|.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
-
   // Now, navigate to the password form having no Ids for username and password
   // fields and verify whether username and password is autofilled.
   NavigateToFile("/password/ambiguous_password_form.html");
@@ -2588,12 +2561,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   login_form.username_value = base::ASCIIToUTF16("myusername");
   login_form.password_value = base::ASCIIToUTF16("mypassword");
   password_store->AddLogin(login_form);
-
-  // Logins are added asynchronously to the password store. Spin the message
-  // loop to make sure the |password_store| had a chance to store the
-  // |login_form|.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
 
   // Now, navigate to the password form having no Ids for username and password
   // fields and verify whether username and password is autofilled.
@@ -2649,12 +2616,6 @@ IN_PROC_BROWSER_TEST_F(
   login_form.password_value = base::ASCIIToUTF16("mypassword");
   password_store->AddLogin(login_form);
 
-  // Logins are added asynchronously to the password store. Spin the message
-  // loop to make sure the |password_store| had a chance to store the
-  // |login_form|.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
-
   // Now, navigate to the password form having no Ids for username and password
   // fields and verify whether username and password is autofilled.
   NavigateToFile("/password/ambiguous_password_form.html");
@@ -2705,12 +2666,6 @@ IN_PROC_BROWSER_TEST_F(
   login_form.username_value = base::ASCIIToUTF16("myusername");
   login_form.password_value = base::ASCIIToUTF16("mypassword");
   password_store->AddLogin(login_form);
-
-  // Logins are added asynchronously to the password store. Spin the message
-  // loop to make sure the |password_store| had a chance to store the
-  // |login_form|.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
 
   // Now, navigate to the password form having no Ids for username and password
   // fields and verify whether username and password is autofilled.
@@ -2773,8 +2728,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   creds.password_value = base::ASCIIToUTF16("pw");
   creds.username_value = base::ASCIIToUTF16("temp");
   password_store->AddLogin(creds);
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  WaitForPasswordStore();
   ASSERT_FALSE(password_store->IsEmpty());
 
   // In addition to the LoginModelObserver created automatically for the HTTP
@@ -2804,8 +2758,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
   // The auth dialog caused a query to PasswordStore, make sure it was
   // processed.
-  base::RunLoop run_loop2;
-  run_loop2.RunUntilIdle();
+  WaitForPasswordStore();
 
   password_manager->RemoveObserver(&mock_login_model_observer);
 }
@@ -2885,12 +2838,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   login_form.username_value = base::ASCIIToUTF16("myusername");
   login_form.password_value = base::ASCIIToUTF16("mypassword");
   password_store->AddLogin(login_form);
-
-  // Logins are added asynchronously to the password store. Spin the message
-  // loop to make sure the |password_store| had a chance to store the
-  // |login_form|.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
 
   // Now, navigate to the password form having ambiguous Ids for username and
   // password fields and verify whether username and password is autofilled.
@@ -2999,10 +2946,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsShowingSavePrompt());
   prompt_observer->AcceptSavePrompt();
-  // Spin the message loop to make sure the password store had a chance to
-  // update the password.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+
+  WaitForPasswordStore();
   CheckThatCredentialsStored(password_store.get(), base::string16(),
                              base::ASCIIToUTF16("pw"));
 }
@@ -3073,10 +3018,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   const autofill::PasswordForm stored_form =
       password_store->stored_passwords().begin()->second[0];
   prompt_observer->AcceptUpdatePrompt(stored_form);
-  // Spin the message loop to make sure the password store had a chance to
-  // update the password.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+
+  WaitForPasswordStore();
   CheckThatCredentialsStored(password_store.get(), base::ASCIIToUTF16("temp"),
                              base::ASCIIToUTF16("new_pw"));
 }
@@ -3305,7 +3248,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWarning,
                                 blink::WebMouseEvent::Button::kLeft,
                                 gfx::Point(left + 1, top + 1));
   // Ensure the warning would be shown.
-  observing_autofill_client->Wait();
+  observing_autofill_client->WaitForAutofillPopup();
   // Ensure the histogram was updated.
   histograms.ExpectUniqueSample(kHistogram, true, 1);
 }
@@ -3363,7 +3306,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWarning,
   ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(RenderFrameHost(),
                                                        "var noop = 'noop';"));
   // Ensure the warning was not triggered.
-  ASSERT_FALSE(observing_autofill_client->DidPopupAppear());
+  content::RunAllBlockingPoolTasksUntilIdle();
+  ASSERT_FALSE(observing_autofill_client->popup_shown());
   // Ensure the histogram remains empty.
   histograms.ExpectTotalCount(kHistogram, 0);
 }
