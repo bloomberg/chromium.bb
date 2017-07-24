@@ -20,13 +20,14 @@ PaintWorkletGlobalScopeProxy* PaintWorkletGlobalScopeProxy::From(
 
 PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
     LocalFrame* frame,
-    PaintWorkletPendingGeneratorRegistry* pending_generator_registry) {
+    PaintWorkletPendingGeneratorRegistry* pending_generator_registry,
+    size_t global_scope_number) {
   DCHECK(IsMainThread());
   Document* document = frame->GetDocument();
   global_scope_ = PaintWorkletGlobalScope::Create(
       frame, document->Url(), document->UserAgent(),
       document->GetSecurityOrigin(), ToIsolate(document),
-      pending_generator_registry);
+      pending_generator_registry, global_scope_number);
 }
 
 void PaintWorkletGlobalScopeProxy::FetchAndInvokeScript(

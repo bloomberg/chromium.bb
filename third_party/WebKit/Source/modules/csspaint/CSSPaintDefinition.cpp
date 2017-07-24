@@ -37,9 +37,9 @@ CSSPaintDefinition* CSSPaintDefinition::Create(
     ScriptState* script_state,
     v8::Local<v8::Function> constructor,
     v8::Local<v8::Function> paint,
-    Vector<CSSPropertyID>& native_invalidation_properties,
-    Vector<AtomicString>& custom_invalidation_properties,
-    Vector<CSSSyntaxDescriptor>& input_argument_types,
+    const Vector<CSSPropertyID>& native_invalidation_properties,
+    const Vector<AtomicString>& custom_invalidation_properties,
+    const Vector<CSSSyntaxDescriptor>& input_argument_types,
     bool has_alpha) {
   return new CSSPaintDefinition(
       script_state, constructor, paint, native_invalidation_properties,
@@ -50,9 +50,9 @@ CSSPaintDefinition::CSSPaintDefinition(
     ScriptState* script_state,
     v8::Local<v8::Function> constructor,
     v8::Local<v8::Function> paint,
-    Vector<CSSPropertyID>& native_invalidation_properties,
-    Vector<AtomicString>& custom_invalidation_properties,
-    Vector<CSSSyntaxDescriptor>& input_argument_types,
+    const Vector<CSSPropertyID>& native_invalidation_properties,
+    const Vector<AtomicString>& custom_invalidation_properties,
+    const Vector<CSSSyntaxDescriptor>& input_argument_types,
     bool has_alpha)
     : script_state_(script_state),
       constructor_(script_state->GetIsolate(), this, constructor),
@@ -60,9 +60,9 @@ CSSPaintDefinition::CSSPaintDefinition(
       instance_(this),
       did_call_constructor_(false),
       has_alpha_(has_alpha) {
-  native_invalidation_properties_.swap(native_invalidation_properties);
-  custom_invalidation_properties_.swap(custom_invalidation_properties);
-  input_argument_types_.swap(input_argument_types);
+  native_invalidation_properties_ = native_invalidation_properties;
+  custom_invalidation_properties_ = custom_invalidation_properties;
+  input_argument_types_ = input_argument_types;
 }
 
 CSSPaintDefinition::~CSSPaintDefinition() {}
