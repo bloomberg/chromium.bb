@@ -20,6 +20,9 @@
 #include "remoting/base/string_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+// TODO(yuweih): Change to google.com/remotedesktop when ready.
+static NSString* const kInstallationLink = @"chrome.google.com/remotedesktop";
+
 static NSString* const kReusableIdentifierItem = @"remotingSetupStepVCItem";
 
 static const CGFloat kHeaderHeight = 80.f;
@@ -51,9 +54,12 @@ static const CGFloat kFooterHeight = 15.f;  // 80.0f for HostSetupFooterView
             forSupplementaryViewOfKind:UICollectionElementKindSectionFooter
                    withReuseIdentifier:UICollectionElementKindSectionFooter];
 
-    setupSteps = base::SplitString(
-        l10n_util::GetStringUTF8(IDS_HOST_SETUP_INSTRUCTIONS), "\n",
-        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    std::string instructions =
+        l10n_util::GetStringFUTF8(IDS_HOST_SETUP_INSTRUCTIONS,
+                                  base::SysNSStringToUTF16(kInstallationLink));
+
+    setupSteps = base::SplitString(instructions, "\n", base::TRIM_WHITESPACE,
+                                   base::SPLIT_WANT_NONEMPTY);
   }
   return self;
 }
