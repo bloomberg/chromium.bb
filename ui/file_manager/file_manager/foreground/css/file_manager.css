@@ -578,6 +578,7 @@ body.check-select #files-selected-label {
 }
 
 #cancel-selection-button {
+  display: flex;
   text-transform: none;
 }
 
@@ -594,6 +595,7 @@ body.check-select #files-selected-label {
       url(../images/files/ui/2x/back.png) 2x);
   background-position: center;
   background-repeat: no-repeat;
+  flex: none;
   height: 16px;
   width: 16px;
 }
@@ -605,6 +607,13 @@ body.check-select #files-selected-label {
 
 #cancel-selection-button > iron-icon {
   -webkit-margin-end: 6px;
+}
+
+#cancel-selection-label {
+  flex: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 body.check-select #cancel-selection-button-wrapper {
