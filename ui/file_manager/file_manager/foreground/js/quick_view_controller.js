@@ -144,7 +144,7 @@ QuickViewController.prototype.init_ = function(quickView) {
   this.quickView_ = quickView;
   this.metadataBoxController_.init(quickView);
   quickView.addEventListener('keydown', this.onQuickViewKeyDown_.bind(this));
-  quickView.addEventListener('iron-overlay-closed', function() {
+  quickView.addEventListener('close', function() {
     this.listContainer_.focus();
   }.bind(this));
   quickView.onOpenInNewButtonTap = this.onOpenInNewButtonTap_.bind(this);
