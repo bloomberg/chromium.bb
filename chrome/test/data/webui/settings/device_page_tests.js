@@ -21,9 +21,13 @@ cr.define('device_page_tests', function() {
     this.keyboardShortcutsOverlayShown_ = 0;
     this.updatePowerStatusCalled_ = 0;
     this.requestPowerManagementSettingsCalled_ = 0;
-    this.onNoteTakingAppsUpdated_ = null;
     this.requestNoteTakingApps_ = 0;
-    this.setPreferredNoteTakingApp_ = '';
+    this.onNoteTakingAppsUpdated_ = null;
+
+    this.androidAppsReceived_ = false;
+    this.noteTakingApps_ = [];
+    this.setPreferredAppCount_ = 0;
+    this.setAppOnLockScreenCount_ = 0;
   }
 
   TestDevicePageBrowserProxy.prototype = {
@@ -93,8 +97,113 @@ cr.define('device_page_tests', function() {
 
     /** @override */
     setPreferredNoteTakingApp: function(appId) {
-      this.setPreferredNoteTakingApp_ = appId;
+      ++this.setPreferredAppCount_;
+
+      var changed = false;
+      this.noteTakingApps_.forEach(function(app) {
+        changed = changed || app.preferred != (app.value == appId);
+        app.preferred = app.value == appId;
+      });
+
+      if (changed)
+        this.scheduleLockScreenAppsUpdated_();
     },
+
+    /** @override */
+    setPreferredNoteTakingAppEnabledOnLockScreen: function(enabled) {
+      ++this.setAppOnLockScreenCount_;
+
+      this.noteTakingApps_.forEach(function(app) {
+        if (enabled) {
+          if (app.preferred) {
+            assertEquals(settings.NoteAppLockScreenSupport.SUPPORTED,
+                         app.lockScreenSupport);
+          }
+          if (app.lockScreenSupport ==
+                  settings.NoteAppLockScreenSupport.SUPPORTED) {
+            app.lockScreenSupport = settings.NoteAppLockScreenSupport.ENABLED;
+          }
+        } else {
+          if (app.preferred) {
+            assertEquals(settings.NoteAppLockScreenSupport.ENABLED,
+                         app.lockScreenSupport);
+          }
+          if (app.lockScreenSupport ==
+                  settings.NoteAppLockScreenSupport.ENABLED) {
+            app.lockScreenSupport = settings.NoteAppLockScreenSupport.SUPPORTED;
+          }
+        }
+      });
+
+      this.scheduleLockScreenAppsUpdated_();
+    },
+
+    // Test interface:
+    /**
+     * Sets whether the app list contains Android apps.
+     * @param {boolean} Whether the list of Android note-taking apps was
+     *     received.
+     */
+    setAndroidAppsReceived: function(received) {
+      this.androidAppsReceived_ = received;
+
+      this.scheduleLockScreenAppsUpdated_();
+    },
+
+    /**
+     * @return {string} App id of the app currently selected as preferred.
+     */
+    getPreferredNoteTakingAppId: function() {
+      var app = this.noteTakingApps_.find(function(existing) {
+        return existing.preferred;
+      });
+
+      return app ? app.value : '';
+    },
+
+    /**
+     * @return {settings.NoteAppLockScreenSupport | undefined} The lock screen
+     *     support state of the app currently selected as preferred.
+     */
+    getPreferredAppLockScreenState: function() {
+      var app = this.noteTakingApps_.find(function(existing) {
+        return existing.preferred;
+      });
+
+      return app ? app.lockScreenSupport : undefined;
+    },
+
+    /**
+     * Sets the current list of known note taking apps.
+     * @param {Array<!settings.NoteAppInfo>} The list of apps to set.
+     */
+    setNoteTakingApps: function(apps) {
+      this.noteTakingApps_ = apps;
+      this.scheduleLockScreenAppsUpdated_();
+    },
+
+    /**
+     * Adds an app to the list of known note-taking apps.
+     * @param {!settings.NoteAppInfo}
+     */
+    addNoteTakingApp: function(app) {
+      assert(!this.noteTakingApps_.find(function(existing) {
+        return existing.value === app.value;
+      }));
+
+      this.noteTakingApps_.push(app);
+      this.scheduleLockScreenAppsUpdated_();
+    },
+
+    /**
+     * Invokes the registered note taking apps update callback.
+     * @private
+     */
+    scheduleLockScreenAppsUpdated_: function() {
+      this.onNoteTakingAppsUpdated_(this.noteTakingApps_.map(function(app) {
+        return Object.assign({}, app);
+      }), !this.androidAppsReceived_);
+    }
   };
 
   function getFakePrefs() {
@@ -219,11 +328,6 @@ cr.define('device_page_tests', function() {
             type: chrome.settingsPrivate.PrefType.NUMBER,
             value: 500,
           },
-        },
-        note_taking_app_enabled_on_lock_screen: {
-          key: 'settings.note_taking_app_enabled_on_lock_screen',
-          type: chrome.settingsPrivate.PrefType.BOOLEAN,
-          value: false
         }
       }
     };
@@ -946,6 +1050,8 @@ cr.define('device_page_tests', function() {
       var waitingDiv;
       var selectAppDiv;
 
+      // Shorthand for settings.NoteAppLockScreenSupport.
+      var LockScreenSupport;
 
       suiteSetup(function() {
         // Always show stylus settings.
@@ -963,20 +1069,20 @@ cr.define('device_page_tests', function() {
               noAppsDiv = assert(page.$$('#no-apps'));
               waitingDiv = assert(page.$$('#waiting'));
               selectAppDiv = assert(page.$$('#select-app'));
+              LockScreenSupport = settings.NoteAppLockScreenSupport;
 
               assertEquals(1, browserProxy.requestNoteTakingApps_);
-              assertEquals('', browserProxy.setPreferredNoteTakingApp_);
               assert(browserProxy.onNoteTakingAppsUpdated_);
             });
       });
 
       // Helper function to allocate a note app entry.
-      function entry(name, value, preferred, supportsLockScreen) {
+      function entry(name, value, preferred, lockScreenSupport) {
         return {
           name: name,
           value: value,
           preferred: preferred,
-          supportsLockScreen: supportsLockScreen
+          lockScreenSupport: lockScreenSupport
         };
       }
 
@@ -987,6 +1093,14 @@ cr.define('device_page_tests', function() {
         return stylusPage.$$('#enable-app-on-lock-screen-toggle');
       }
 
+      function enableAppOnLockScreenPolicyIndicator() {
+        return stylusPage.$$("#enable-app-on-lock-screen-policy-indicator");
+      }
+
+      function enableAppOnLockScreenToggleLabel() {
+        return stylusPage.$$('#lock-screen-toggle-label');
+      }
+
       /**
        * @param {Element|undefined} element
        */
@@ -994,95 +1108,96 @@ cr.define('device_page_tests', function() {
         return !!element && element.offsetWidth > 0 && element.offsetHeight > 0;
       }
 
-      test('initial app choice selector value', function() {
+      test('choose first app if no preferred ones', function() {
         // Selector chooses the first value in list if there is no preferred
         // value set.
-        browserProxy.onNoteTakingAppsUpdated_([
-          entry('n1', 'v1', false, false),
-          entry('n2', 'v2', false, false)
-        ], false);
+        browserProxy.setNoteTakingApps([
+          entry('n1', 'v1', false, LockScreenSupport.NOT_SUPPORTED),
+          entry('n2', 'v2', false, LockScreenSupport.NOT_SUPPORTED)
+        ]);
         Polymer.dom.flush();
         assertEquals('v1', appSelector.value);
+       });
 
+       test('choose prefered app if exists', function() {
         // Selector chooses the preferred value if set.
-        browserProxy.onNoteTakingAppsUpdated_([
-          entry('n1', 'v1', false, false),
-          entry('n2', 'v2', true, false)
-        ], false);
+        browserProxy.setNoteTakingApps([
+          entry('n1', 'v1', false, LockScreenSupport.NOT_SUPPORTED),
+          entry('n2', 'v2', true, LockScreenSupport.NOT_SUPPORTED)
+        ]);
         Polymer.dom.flush();
         assertEquals('v2', appSelector.value);
       });
 
       test('change preferred app', function() {
         // Load app list.
-        browserProxy.onNoteTakingAppsUpdated_([
-          entry('n1', 'v1', false, false),
-          entry('n2', 'v2', true, false)
-        ], false);
+        browserProxy.setNoteTakingApps([
+          entry('n1', 'v1', false, LockScreenSupport.NOT_SUPPORTED),
+          entry('n2', 'v2', true, LockScreenSupport.NOT_SUPPORTED)
+        ]);
         Polymer.dom.flush();
-        assertEquals('', browserProxy.setPreferredNoteTakingApp_);
+        assertEquals(0, browserProxy.setPreferredAppCount_);
+        assertEquals('v2', browserProxy.getPreferredNoteTakingAppId());
 
         // Update select element to new value, verify browser proxy is called.
         appSelector.value = 'v1';
         stylusPage.onSelectedAppChanged_();
-        assertEquals('v1', browserProxy.setPreferredNoteTakingApp_);
+        assertEquals(1, browserProxy.setPreferredAppCount_);
+        assertEquals('v1', browserProxy.getPreferredNoteTakingAppId());
       });
 
       test('preferred app does not change without interaction', function() {
         // Pass various types of data to page, verify the preferred note-app
         // does not change.
-        browserProxy.onNoteTakingAppsUpdated_([], false);
+        browserProxy.setNoteTakingApps([]);
         Polymer.dom.flush();
-        assertEquals('', browserProxy.setPreferredNoteTakingApp_);
+        assertEquals('', browserProxy.getPreferredNoteTakingAppId());
 
         browserProxy.onNoteTakingAppsUpdated_([], true);
         Polymer.dom.flush();
-        assertEquals('', browserProxy.setPreferredNoteTakingApp_);
+        assertEquals('', browserProxy.getPreferredNoteTakingAppId());
 
-        browserProxy.onNoteTakingAppsUpdated_([
-          entry('n', 'v', false, false)
-        ], true);
+        browserProxy.addNoteTakingApp(
+            entry('n', 'v', false, LockScreenSupport.NOT_SUPPORTED));
         Polymer.dom.flush();
-        assertEquals('', browserProxy.setPreferredNoteTakingApp_);
+        assertEquals('', browserProxy.getPreferredNoteTakingAppId());
 
-        browserProxy.onNoteTakingAppsUpdated_([
-          entry('n', 'v', false, false)
-        ], false);
+        browserProxy.setNoteTakingApps([
+          entry('n1', 'v1', false, LockScreenSupport.NOT_SUPPORTED),
+          entry('n2', 'v2', true, LockScreenSupport.NOT_SUPPORTED)
+        ]);
         Polymer.dom.flush();
-        assertEquals('', browserProxy.setPreferredNoteTakingApp_);
-
-        browserProxy.onNoteTakingAppsUpdated_([
-          entry('n1', 'v1', false, false),
-          entry('n2', 'v2', true, false)
-        ], false);
-        Polymer.dom.flush();
-        assertEquals('', browserProxy.setPreferredNoteTakingApp_);
+        assertEquals(0, browserProxy.setPreferredAppCount_);
+        assertEquals('v2', browserProxy.getPreferredNoteTakingAppId());
       });
 
       test('app-visibility', function() {
         // No apps available.
-        browserProxy.onNoteTakingAppsUpdated_([], false);
+        browserProxy.setNoteTakingApps([]);
+        assert(noAppsDiv.hidden);
+        assert(!waitingDiv.hidden);
+        assert(selectAppDiv.hidden);
+
+        // Waiting for apps to finish loading.
+        browserProxy.setAndroidAppsReceived(true);
         assert(!noAppsDiv.hidden);
         assert(waitingDiv.hidden);
         assert(selectAppDiv.hidden);
 
-        // Waiting for apps to finish loading.
-        browserProxy.onNoteTakingAppsUpdated_([], true);
-        assert(noAppsDiv.hidden);
-        assert(!waitingDiv.hidden);
-        assert(selectAppDiv.hidden);
-
-        browserProxy.onNoteTakingAppsUpdated_([
-          entry('n', 'v', false, false)
-        ], true);
-        assert(noAppsDiv.hidden);
-        assert(!waitingDiv.hidden);
-        assert(selectAppDiv.hidden);
-
         // Apps loaded, show selector.
-        browserProxy.onNoteTakingAppsUpdated_([
-          entry('n', 'v', false, false)
-        ], false);
+        browserProxy.addNoteTakingApp(
+            entry('n', 'v', false, LockScreenSupport.NOT_SUPPORTED));
+        assert(noAppsDiv.hidden);
+        assert(waitingDiv.hidden);
+        assert(!selectAppDiv.hidden);
+
+        // Waiting for Android apps again.
+        browserProxy.setAndroidAppsReceived(false);
+        assert(noAppsDiv.hidden);
+        assert(!waitingDiv.hidden);
+        assert(selectAppDiv.hidden);
+
+        browserProxy.setAndroidAppsReceived(true);
         assert(noAppsDiv.hidden);
         assert(waitingDiv.hidden);
         assert(!selectAppDiv.hidden);
@@ -1090,88 +1205,110 @@ cr.define('device_page_tests', function() {
 
       test('enabled-on-lock-screen', function() {
         expectFalse(isVisible(enableAppOnLockScreenToggle()));
+        expectFalse(isVisible(enableAppOnLockScreenPolicyIndicator()));
 
         return new Promise(function(resolve) {
           // No apps available.
-          browserProxy.onNoteTakingAppsUpdated_([], false);
+          browserProxy.setNoteTakingApps([]);
           stylusPage.async(resolve);
         }).then(function() {
           Polymer.dom.flush();
           expectFalse(isVisible(enableAppOnLockScreenToggle()));
+          expectFalse(isVisible(enableAppOnLockScreenPolicyIndicator()));
 
           // Single app which does not support lock screen note taking.
-          browserProxy.onNoteTakingAppsUpdated_([
-            entry('n1', 'v1', false, false)
-          ], false);
+          browserProxy.addNoteTakingApp(
+              entry('n1', 'v1', true, LockScreenSupport.NOT_SUPPORTED));
           return new Promise(function(resolve) {stylusPage.async(resolve);});
         }).then(function() {
           Polymer.dom.flush();
           expectFalse(isVisible(enableAppOnLockScreenToggle()));
+          expectFalse(isVisible(enableAppOnLockScreenPolicyIndicator()));
 
           // Add an app with lock screen support, but do not select it yet.
-          browserProxy.onNoteTakingAppsUpdated_([
-            entry('n1', 'v1', false, false),
-            entry('n2', 'v2', false, true)
-          ], false);
+          browserProxy.addNoteTakingApp(
+              entry('n2', 'v2', false, LockScreenSupport.SUPPORTED));
           return new Promise(function(resolve) { stylusPage.async(resolve); });
         }).then(function() {
           Polymer.dom.flush();
           expectFalse(isVisible(enableAppOnLockScreenToggle()));
+          expectFalse(isVisible(enableAppOnLockScreenPolicyIndicator()));
 
           // Select the app with lock screen app support.
           appSelector.value = 'v2';
           stylusPage.onSelectedAppChanged_();
-          assertEquals('v2', browserProxy.setPreferredNoteTakingApp_);
+          assertEquals(1, browserProxy.setPreferredAppCount_);
+          assertEquals('v2', browserProxy.getPreferredNoteTakingAppId());
 
+          return new Promise(function(resolve) { stylusPage.async(resolve); });
+        }).then(function() {
           Polymer.dom.flush();
+          expectFalse(isVisible(enableAppOnLockScreenPolicyIndicator()));
           assert(isVisible(enableAppOnLockScreenToggle()));
           expectFalse(enableAppOnLockScreenToggle().checked);
 
-          devicePage.set(
-              'prefs.settings.note_taking_app_enabled_on_lock_screen.value',
-              true);
+          // Preferred app updated to be enabled on lock screen.
+          browserProxy.setNoteTakingApps([
+            entry('n1', 'v1', false, LockScreenSupport.NOT_SUPPORTED),
+            entry('n2', 'v2', true, LockScreenSupport.ENABLED)
+          ]);
+          return new Promise(function(resolve) { stylusPage.async(resolve); });
+        }).then(function() {
           Polymer.dom.flush();
+          expectFalse(isVisible(enableAppOnLockScreenPolicyIndicator()));
           assert(isVisible(enableAppOnLockScreenToggle()));
           expectTrue(enableAppOnLockScreenToggle().checked);
 
           // Select the app that does not support lock screen again.
           appSelector.value = 'v1';
           stylusPage.onSelectedAppChanged_();
-          assertEquals('v1', browserProxy.setPreferredNoteTakingApp_);
+          assertEquals(2, browserProxy.setPreferredAppCount_);
+          assertEquals('v1', browserProxy.getPreferredNoteTakingAppId());
 
+          return new Promise(function(resolve) { stylusPage.async(resolve); });
+        }).then(function() {
           Polymer.dom.flush();
           expectFalse(isVisible(enableAppOnLockScreenToggle()));
+          expectFalse(isVisible(enableAppOnLockScreenPolicyIndicator()));
         });
       });
 
       test('initial-app-lock-screen-enabled', function() {
         return new Promise(function(resolve) {
-          // No apps available.
-          browserProxy.onNoteTakingAppsUpdated_([
-            entry('n1', 'v1', true, true)
-          ], false);
+          browserProxy.setNoteTakingApps([
+            entry('n1', 'v1', true, LockScreenSupport.SUPPORTED)
+          ]);
           stylusPage.async(resolve);
         }).then(function() {
           Polymer.dom.flush();
 
           assert(isVisible(enableAppOnLockScreenToggle()));
           expectFalse(enableAppOnLockScreenToggle().checked);
+          expectFalse(isVisible(enableAppOnLockScreenPolicyIndicator()));
 
-          devicePage.set(
-              'prefs.settings.note_taking_app_enabled_on_lock_screen.value',
-              true);
+          browserProxy.setNoteTakingApps([
+            entry('n1', 'v1', true, LockScreenSupport.ENABLED)
+          ]);
+
+          return new Promise(function(resolve) { stylusPage.async(resolve); });
+        }).then(function() {
           Polymer.dom.flush();
           assert(isVisible(enableAppOnLockScreenToggle()));
           expectTrue(enableAppOnLockScreenToggle().checked);
+          expectFalse(isVisible(enableAppOnLockScreenPolicyIndicator()));
 
-          devicePage.set(
-              'prefs.settings.note_taking_app_enabled_on_lock_screen.value',
-              false);
+          browserProxy.setNoteTakingApps([
+            entry('n1', 'v1', true, LockScreenSupport.SUPPORTED)
+          ]);
+
+          return new Promise(function(resolve) { stylusPage.async(resolve); });
+        }).then(function() {
           Polymer.dom.flush();
           assert(isVisible(enableAppOnLockScreenToggle()));
           expectFalse(enableAppOnLockScreenToggle().checked);
+          expectFalse(isVisible(enableAppOnLockScreenPolicyIndicator()));
 
-          browserProxy.onNoteTakingAppsUpdated_([], false);
+          browserProxy.setNoteTakingApps([]);
           return new Promise(function(resolve) { stylusPage.async(resolve); });
         }).then(function() {
           Polymer.dom.flush();
@@ -1181,10 +1318,47 @@ cr.define('device_page_tests', function() {
 
       test('tap-on-enable-note-taking-on-lock-screen', function() {
         return new Promise(function(resolve) {
-          // No apps available.
-          browserProxy.onNoteTakingAppsUpdated_([
-            entry('n1', 'v1', true, true)
-          ], false);
+          browserProxy.setNoteTakingApps([
+            entry('n1', 'v1', true, LockScreenSupport.SUPPORTED)
+          ]);
+          stylusPage.async(resolve);
+        }).then(function() {
+          Polymer.dom.flush();
+
+          assert(isVisible(enableAppOnLockScreenToggle()));
+          expectFalse(enableAppOnLockScreenToggle().checked);
+          expectFalse(isVisible(enableAppOnLockScreenPolicyIndicator()));
+
+          MockInteractions.tap(enableAppOnLockScreenToggle());
+          assertEquals(1, browserProxy.setAppOnLockScreenCount_);
+
+          return new Promise(function(resolve) { stylusPage.async(resolve); });
+        }).then(function() {
+          Polymer.dom.flush();
+          expectTrue(enableAppOnLockScreenToggle().checked);
+          expectFalse(isVisible(enableAppOnLockScreenPolicyIndicator()));
+
+          expectEquals(LockScreenSupport.ENABLED,
+                       browserProxy.getPreferredAppLockScreenState());
+
+          MockInteractions.tap(enableAppOnLockScreenToggle());
+          assertEquals(2, browserProxy.setAppOnLockScreenCount_);
+
+          return new Promise(function(resolve) { stylusPage.async(resolve); });
+        }).then(function() {
+          Polymer.dom.flush();
+          expectFalse(isVisible(enableAppOnLockScreenPolicyIndicator()));
+          expectFalse(enableAppOnLockScreenToggle().checked);
+          expectEquals(LockScreenSupport.SUPPORTED,
+                       browserProxy.getPreferredAppLockScreenState());
+        });
+      });
+
+      test('tap-on-enable-note-taking-on-lock-screen-label', function() {
+        return new Promise(function(resolve) {
+          browserProxy.setNoteTakingApps([
+            entry('n1', 'v1', true, LockScreenSupport.SUPPORTED)
+          ]);
           stylusPage.async(resolve);
         }).then(function() {
           Polymer.dom.flush();
@@ -1192,24 +1366,67 @@ cr.define('device_page_tests', function() {
           assert(isVisible(enableAppOnLockScreenToggle()));
           expectFalse(enableAppOnLockScreenToggle().checked);
 
-          expectFalse(
-              devicePage.prefs.settings.note_taking_app_enabled_on_lock_screen
-                  .value);
+          MockInteractions.tap(enableAppOnLockScreenToggleLabel());
+          assertEquals(1, browserProxy.setAppOnLockScreenCount_);
+
+          return new Promise(function(resolve) { stylusPage.async(resolve); });
+        }).then(function() {
+          Polymer.dom.flush();
+          expectTrue(enableAppOnLockScreenToggle().checked);
+          expectFalse(isVisible(enableAppOnLockScreenPolicyIndicator()));
+
+          expectEquals(LockScreenSupport.ENABLED,
+                       browserProxy.getPreferredAppLockScreenState());
+
+          MockInteractions.tap(enableAppOnLockScreenToggleLabel());
+          assertEquals(2, browserProxy.setAppOnLockScreenCount_);
+
+          return new Promise(function(resolve) { stylusPage.async(resolve); });
+        }).then(function() {
+          Polymer.dom.flush();
+          expectFalse(enableAppOnLockScreenToggle().checked);
+          expectEquals(LockScreenSupport.SUPPORTED,
+                       browserProxy.getPreferredAppLockScreenState());
+        });
+      });
+
+      test('lock-screen-apps-disabled-by-policy', function() {
+        expectFalse(isVisible(enableAppOnLockScreenToggle()));
+        expectFalse(isVisible(enableAppOnLockScreenPolicyIndicator()));
+
+        return new Promise(function(resolve) {
+          // Add an app with lock screen support.
+          browserProxy.addNoteTakingApp(
+              entry('n2', 'v2', true, LockScreenSupport.NOT_ALLOWED_BY_POLICY));
+          stylusPage.async(resolve);
+        }).then(function() {
           Polymer.dom.flush();
           assert(isVisible(enableAppOnLockScreenToggle()));
           expectFalse(enableAppOnLockScreenToggle().checked);
+          expectTrue(isVisible(enableAppOnLockScreenPolicyIndicator()));
 
-          MockInteractions.tap(enableAppOnLockScreenToggle().$$('#control'));
-          expectTrue(enableAppOnLockScreenToggle().checked);
-          expectTrue(
-              devicePage.prefs.settings.note_taking_app_enabled_on_lock_screen
-                  .value);
+          // The toggle should be disabled, so enabling app on lock screen
+          // should not be attempted.
+          MockInteractions.tap(enableAppOnLockScreenToggle());
+          assertEquals(0, browserProxy.setAppOnLockScreenCount_);
 
-          MockInteractions.tap(enableAppOnLockScreenToggle().$$('#control'));
+          return new Promise(function(resolve) { stylusPage.async(resolve); });
+        }).then(function() {
+          Polymer.dom.flush();
+
+          // Tap on label should not work either.
+          MockInteractions.tap(enableAppOnLockScreenToggleLabel());
+          assertEquals(0, browserProxy.setAppOnLockScreenCount_);
+
+          return new Promise(function(resolve) { stylusPage.async(resolve); });
+        }).then(function() {
+          Polymer.dom.flush();
+          assert(isVisible(enableAppOnLockScreenToggle()));
           expectFalse(enableAppOnLockScreenToggle().checked);
-          expectFalse(
-              devicePage.prefs.settings.note_taking_app_enabled_on_lock_screen
-                  .value);
+          expectTrue(isVisible(enableAppOnLockScreenPolicyIndicator()));
+
+          expectEquals(LockScreenSupport.NOT_ALLOWED_BY_POLICY,
+                       browserProxy.getPreferredAppLockScreenState());
         });
       });
     });

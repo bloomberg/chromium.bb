@@ -24,7 +24,7 @@ namespace {
 constexpr char kAppNameKey[] = "name";
 constexpr char kAppIdKey[] = "value";
 constexpr char kAppPreferredKey[] = "preferred";
-constexpr char kAppLockScreenSupportKey[] = "supportsLockScreen";
+constexpr char kAppLockScreenSupportKey[] = "lockScreenSupport";
 
 }  // namespace
 
@@ -52,12 +52,21 @@ void StylusHandler::RegisterMessages() {
       base::Bind(&StylusHandler::SetPreferredNoteTakingApp,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "setPreferredNoteTakingAppEnabledOnLockScreen",
+      base::Bind(&StylusHandler::SetPreferredNoteTakingAppEnabledOnLockScreen,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "showPlayStoreApps",
       base::Bind(&StylusHandler::ShowPlayStoreApps, base::Unretained(this)));
 }
 
 void StylusHandler::OnAvailableNoteTakingAppsUpdated() {
   UpdateNoteTakingApps();
+}
+
+void StylusHandler::OnPreferredNoteTakingAppUpdated(Profile* profile) {
+  if (Profile::FromWebUI(web_ui()) == profile)
+    UpdateNoteTakingApps();
 }
 
 void StylusHandler::OnDeviceListsComplete() {
@@ -82,9 +91,8 @@ void StylusHandler::UpdateNoteTakingApps() {
       dict->SetString(kAppNameKey, info.name);
       dict->SetString(kAppIdKey, info.app_id);
       dict->SetBoolean(kAppPreferredKey, info.preferred);
-      dict->SetBoolean(kAppLockScreenSupportKey,
-                       info.lock_screen_support !=
-                           NoteTakingLockScreenSupport::kNotSupported);
+      dict->SetInteger(kAppLockScreenSupportKey,
+                       static_cast<int>(info.lock_screen_support));
       apps_list.Append(std::move(dict));
 
       note_taking_app_ids_.insert(info.app_id);
@@ -113,6 +121,15 @@ void StylusHandler::SetPreferredNoteTakingApp(const base::ListValue* args) {
 
   NoteTakingHelper::Get()->SetPreferredApp(Profile::FromWebUI(web_ui()),
                                            app_id);
+}
+
+void StylusHandler::SetPreferredNoteTakingAppEnabledOnLockScreen(
+    const base::ListValue* args) {
+  bool enabled = false;
+  CHECK(args->GetBoolean(0, &enabled));
+
+  NoteTakingHelper::Get()->SetPreferredAppEnabledOnLockScreen(
+      Profile::FromWebUI(web_ui()), enabled);
 }
 
 void StylusHandler::HandleInitialize(const base::ListValue* args) {

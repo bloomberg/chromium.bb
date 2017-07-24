@@ -14,6 +14,8 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
+class Profile;
+
 namespace base {
 class ListValue;
 }  // namespace base
@@ -36,6 +38,7 @@ class OptionsStylusHandler : public ::options::OptionsPageUIHandler,
 
   // NoteTakingHelper::Observer implementation.
   void OnAvailableNoteTakingAppsUpdated() override;
+  void OnPreferredNoteTakingAppUpdated(Profile* profile) override;
 
   // ui::InputDeviceEventObserver implementation:
   void OnDeviceListsComplete() override;
