@@ -342,7 +342,7 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      'BrowserThread::(FILE|FILE_USER_BLOCKING|DB|PROCESS_LAUNCHER|CACHE)',
+      r'/BrowserThread::(FILE|FILE_USER_BLOCKING|DB|PROCESS_LAUNCHER|CACHE)',
       (
         'The non-UI/IO BrowserThreads are deprecated, please migrate this',
         'code to TaskScheduler. See https://goo.gl/mDSxKl for details.',
