@@ -988,9 +988,8 @@ void ChromeClientImpl::RequestPointerUnlock(LocalFrame* frame) {
 }
 
 void ChromeClientImpl::DidAssociateFormControlsAfterLoad(LocalFrame* frame) {
-  WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
-  if (webframe->AutofillClient())
-    webframe->AutofillClient()->DidAssociateFormControlsDynamically();
+  if (auto* fill_client = AutofillClientFromFrame(frame))
+    fill_client->DidAssociateFormControlsDynamically();
 }
 
 void ChromeClientImpl::ShowVirtualKeyboardOnElementFocus(LocalFrame& frame) {
@@ -1013,8 +1012,7 @@ void ChromeClientImpl::ShowUnhandledTapUIIfNeeded(
 
 void ChromeClientImpl::OnMouseDown(Node& mouse_down_node) {
   if (auto* fill_client =
-          WebLocalFrameImpl::FromFrame(mouse_down_node.GetDocument().GetFrame())
-              ->AutofillClient()) {
+          AutofillClientFromFrame(mouse_down_node.GetDocument().GetFrame())) {
     fill_client->DidReceiveLeftMouseDownOrGestureTapInNode(
         WebNode(&mouse_down_node));
   }
@@ -1023,22 +1021,18 @@ void ChromeClientImpl::OnMouseDown(Node& mouse_down_node) {
 void ChromeClientImpl::HandleKeyboardEventOnTextField(
     HTMLInputElement& input_element,
     KeyboardEvent& event) {
-  WebLocalFrameImpl* webframe =
-      WebLocalFrameImpl::FromFrame(input_element.GetDocument().GetFrame());
-  if (webframe->AutofillClient()) {
-    webframe->AutofillClient()->TextFieldDidReceiveKeyDown(
-        WebInputElement(&input_element), WebKeyboardEventBuilder(event));
+  if (auto* fill_client =
+          AutofillClientFromFrame(input_element.GetDocument().GetFrame())) {
+    fill_client->TextFieldDidReceiveKeyDown(WebInputElement(&input_element),
+                                            WebKeyboardEventBuilder(event));
   }
 }
 
 void ChromeClientImpl::DidChangeValueInTextField(
     HTMLFormControlElement& element) {
   Document& doc = element.GetDocument();
-  WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(doc.GetFrame());
-  if (webframe->AutofillClient()) {
-    webframe->AutofillClient()->TextFieldDidChange(
-        WebFormControlElement(&element));
-  }
+  if (auto* fill_client = AutofillClientFromFrame(doc.GetFrame()))
+    fill_client->TextFieldDidChange(WebFormControlElement(&element));
 
   UseCounter::Count(doc, doc.IsSecureContext()
                              ? WebFeature::kFieldEditInSecureContext
@@ -1048,35 +1042,30 @@ void ChromeClientImpl::DidChangeValueInTextField(
 
 void ChromeClientImpl::DidEndEditingOnTextField(
     HTMLInputElement& input_element) {
-  WebLocalFrameImpl* webframe =
-      WebLocalFrameImpl::FromFrame(input_element.GetDocument().GetFrame());
-  if (webframe->AutofillClient()) {
-    webframe->AutofillClient()->TextFieldDidEndEditing(
-        WebInputElement(&input_element));
+  if (auto* fill_client =
+          AutofillClientFromFrame(input_element.GetDocument().GetFrame())) {
+    fill_client->TextFieldDidEndEditing(WebInputElement(&input_element));
   }
 }
 
 void ChromeClientImpl::OpenTextDataListChooser(HTMLInputElement& input) {
   NotifyPopupOpeningObservers();
-  WebLocalFrameImpl* webframe =
-      WebLocalFrameImpl::FromFrame(input.GetDocument().GetFrame());
-  if (webframe->AutofillClient()) {
-    webframe->AutofillClient()->OpenTextDataListChooser(
-        WebInputElement(&input));
+  if (auto* fill_client =
+          AutofillClientFromFrame(input.GetDocument().GetFrame())) {
+    fill_client->OpenTextDataListChooser(WebInputElement(&input));
   }
 }
 
 void ChromeClientImpl::TextFieldDataListChanged(HTMLInputElement& input) {
-  WebLocalFrameImpl* webframe =
-      WebLocalFrameImpl::FromFrame(input.GetDocument().GetFrame());
-  if (webframe->AutofillClient())
-    webframe->AutofillClient()->DataListOptionsChanged(WebInputElement(&input));
+  if (auto* fill_client =
+          AutofillClientFromFrame(input.GetDocument().GetFrame())) {
+    fill_client->DataListOptionsChanged(WebInputElement(&input));
+  }
 }
 
 void ChromeClientImpl::AjaxSucceeded(LocalFrame* frame) {
-  WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
-  if (webframe->AutofillClient())
-    webframe->AutofillClient()->AjaxSucceeded();
+  if (auto* fill_client = AutofillClientFromFrame(frame))
+    fill_client->AjaxSucceeded();
 }
 
 void ChromeClientImpl::RegisterViewportLayers() const {
@@ -1123,6 +1112,17 @@ std::unique_ptr<WebFrameScheduler> ChromeClientImpl::CreateFrameScheduler(
 
 double ChromeClientImpl::LastFrameTimeMonotonic() const {
   return web_view_->LastFrameTimeMonotonic();
+}
+
+WebAutofillClient* ChromeClientImpl::AutofillClientFromFrame(
+    LocalFrame* frame) {
+  if (!frame) {
+    // It is possible to pass nullptr to this method. For instance the call from
+    // OnMouseDown might be nullptr. See https://crbug.com/739199.
+    return nullptr;
+  }
+
+  return WebLocalFrameImpl::FromFrame(frame)->AutofillClient();
 }
 
 }  // namespace blink
