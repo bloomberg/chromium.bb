@@ -251,9 +251,8 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForLocalContext) {
   }
 }
 
-// Tests that CanFollowRedirect() checks both report-only and enforced CSP
-// headers.
-TEST_F(BaseFetchContextTest, RedirectChecksReportedAndEnforcedCSP) {
+// Tests that CanRequest() checks the enforced CSP headers.
+TEST_F(BaseFetchContextTest, CanRequest) {
   ContentSecurityPolicy* policy =
       execution_context_->GetContentSecurityPolicy();
   policy->DidReceiveHeader("script-src https://foo.test",
@@ -272,15 +271,16 @@ TEST_F(BaseFetchContextTest, RedirectChecksReportedAndEnforcedCSP) {
   ResourceLoaderOptions options;
 
   EXPECT_EQ(ResourceRequestBlockedReason::kCSP,
-            fetch_context_->CanFollowRedirect(
+            fetch_context_->CanRequest(
                 Resource::kScript, resource_request, url, options,
                 SecurityViolationReportingPolicy::kReport,
-                FetchParameters::kUseDefaultOriginRestrictionForType));
-  EXPECT_EQ(2u, policy->violation_reports_sent_.size());
+                FetchParameters::kUseDefaultOriginRestrictionForType,
+                ResourceRequest::RedirectStatus::kFollowedRedirect));
+  EXPECT_EQ(1u, policy->violation_reports_sent_.size());
 }
 
-// Tests that AllowResponse() checks both report-only and enforced CSP headers.
-TEST_F(BaseFetchContextTest, AllowResponseChecksReportedAndEnforcedCSP) {
+// Tests that CheckCSPForRequest() checks the report-only CSP headers.
+TEST_F(BaseFetchContextTest, CheckCSPForRequest) {
   ContentSecurityPolicy* policy =
       execution_context_->GetContentSecurityPolicy();
   policy->DidReceiveHeader("script-src https://foo.test",
@@ -298,10 +298,12 @@ TEST_F(BaseFetchContextTest, AllowResponseChecksReportedAndEnforcedCSP) {
 
   ResourceLoaderOptions options;
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kCSP,
-            fetch_context_->AllowResponse(Resource::kScript, resource_request,
-                                          url, options));
-  EXPECT_EQ(2u, policy->violation_reports_sent_.size());
+  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
+            fetch_context_->CheckCSPForRequest(
+                resource_request, url, options,
+                SecurityViolationReportingPolicy::kReport,
+                ResourceRequest::RedirectStatus::kFollowedRedirect));
+  EXPECT_EQ(1u, policy->violation_reports_sent_.size());
 }
 
 TEST_F(BaseFetchContextTest, CanRequestWhenDetached) {
@@ -314,13 +316,15 @@ TEST_F(BaseFetchContextTest, CanRequestWhenDetached) {
             fetch_context_->CanRequest(
                 Resource::kRaw, request, url, ResourceLoaderOptions(),
                 SecurityViolationReportingPolicy::kSuppressReporting,
-                FetchParameters::kNoOriginRestriction));
+                FetchParameters::kNoOriginRestriction,
+                ResourceRequest::RedirectStatus::kNoRedirect));
 
   EXPECT_EQ(ResourceRequestBlockedReason::kNone,
             fetch_context_->CanRequest(
                 Resource::kRaw, keepalive_request, url, ResourceLoaderOptions(),
                 SecurityViolationReportingPolicy::kSuppressReporting,
-                FetchParameters::kNoOriginRestriction));
+                FetchParameters::kNoOriginRestriction,
+                ResourceRequest::RedirectStatus::kNoRedirect));
 
   fetch_context_->SetIsDetached(true);
 
@@ -328,13 +332,15 @@ TEST_F(BaseFetchContextTest, CanRequestWhenDetached) {
             fetch_context_->CanRequest(
                 Resource::kRaw, request, url, ResourceLoaderOptions(),
                 SecurityViolationReportingPolicy::kSuppressReporting,
-                FetchParameters::kNoOriginRestriction));
+                FetchParameters::kNoOriginRestriction,
+                ResourceRequest::RedirectStatus::kNoRedirect));
 
   EXPECT_EQ(ResourceRequestBlockedReason::kNone,
             fetch_context_->CanRequest(
                 Resource::kRaw, keepalive_request, url, ResourceLoaderOptions(),
                 SecurityViolationReportingPolicy::kSuppressReporting,
-                FetchParameters::kNoOriginRestriction));
+                FetchParameters::kNoOriginRestriction,
+                ResourceRequest::RedirectStatus::kNoRedirect));
 }
 
 }  // namespace blink

@@ -49,51 +49,13 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequest(
     const KURL& url,
     const ResourceLoaderOptions& options,
     SecurityViolationReportingPolicy reporting_policy,
-    FetchParameters::OriginRestriction origin_restriction) const {
-  ResourceRequestBlockedReason blocked_reason = CanRequestInternal(
-      type, resource_request, url, options, reporting_policy,
-      origin_restriction, resource_request.GetRedirectStatus());
+    FetchParameters::OriginRestriction origin_restriction,
+    ResourceRequest::RedirectStatus redirect_status) const {
+  ResourceRequestBlockedReason blocked_reason =
+      CanRequestInternal(type, resource_request, url, options, reporting_policy,
+                         origin_restriction, redirect_status);
   if (blocked_reason != ResourceRequestBlockedReason::kNone &&
       reporting_policy == SecurityViolationReportingPolicy::kReport) {
-    DispatchDidBlockRequest(resource_request, options.initiator_info,
-                            blocked_reason);
-  }
-  return blocked_reason;
-}
-
-ResourceRequestBlockedReason BaseFetchContext::CanFollowRedirect(
-    Resource::Type type,
-    const ResourceRequest& resource_request,
-    const KURL& url,
-    const ResourceLoaderOptions& options,
-    SecurityViolationReportingPolicy reporting_policy,
-    FetchParameters::OriginRestriction origin_restriction) const {
-  // CanRequestInternal checks enforced CSP, so check report-only here to ensure
-  // that violations are sent.
-  CheckCSPForRequest(resource_request, url, options, reporting_policy,
-                     RedirectStatus::kFollowedRedirect,
-                     ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly);
-  return CanRequest(type, resource_request, url, options, reporting_policy,
-                    origin_restriction);
-}
-
-ResourceRequestBlockedReason BaseFetchContext::AllowResponse(
-    Resource::Type type,
-    const ResourceRequest& resource_request,
-    const KURL& url,
-    const ResourceLoaderOptions& options) const {
-  // CanRequestInternal only checks enforced policies: check report-only here
-  // to ensure violations are sent.
-  CheckCSPForRequest(resource_request, url, options,
-                     SecurityViolationReportingPolicy::kReport,
-                     RedirectStatus::kFollowedRedirect,
-                     ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly);
-  ResourceRequestBlockedReason blocked_reason =
-      CanRequestInternal(type, resource_request, url, options,
-                         SecurityViolationReportingPolicy::kReport,
-                         FetchParameters::kUseDefaultOriginRestrictionForType,
-                         RedirectStatus::kFollowedRedirect);
-  if (blocked_reason != ResourceRequestBlockedReason::kNone) {
     DispatchDidBlockRequest(resource_request, options.initiator_info,
                             blocked_reason);
   }
@@ -131,6 +93,17 @@ void BaseFetchContext::AddCSPHeaderIfNecessary(Resource::Type type,
 }
 
 ResourceRequestBlockedReason BaseFetchContext::CheckCSPForRequest(
+    const ResourceRequest& resource_request,
+    const KURL& url,
+    const ResourceLoaderOptions& options,
+    SecurityViolationReportingPolicy reporting_policy,
+    ResourceRequest::RedirectStatus redirect_status) const {
+  return CheckCSPForRequestInternal(
+      resource_request, url, options, reporting_policy, redirect_status,
+      ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly);
+}
+
+ResourceRequestBlockedReason BaseFetchContext::CheckCSPForRequestInternal(
     const ResourceRequest& resource_request,
     const KURL& url,
     const ResourceLoaderOptions& options,
@@ -219,7 +192,7 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
   // We check the 'report-only' headers before upgrading the request (in
   // populateResourceRequest). We check the enforced headers here to ensure we
   // block things we ought to block.
-  if (CheckCSPForRequest(
+  if (CheckCSPForRequestInternal(
           resource_request, url, options, reporting_policy, redirect_status,
           ContentSecurityPolicy::CheckHeaderType::kCheckEnforce) ==
       ResourceRequestBlockedReason::kCSP) {

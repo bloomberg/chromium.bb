@@ -139,9 +139,6 @@ class PLATFORM_EXPORT ResourceFetcher
 
   WARN_UNUSED_RESULT static WebURLRequest::RequestContext
   DetermineRequestContext(Resource::Type, IsImageSet, bool is_main_frame);
-  WARN_UNUSED_RESULT WebURLRequest::RequestContext DetermineRequestContext(
-      Resource::Type,
-      IsImageSet) const;
 
   void UpdateAllImageResourcePriorities();
 
@@ -218,9 +215,6 @@ class PLATFORM_EXPORT ResourceFetcher
   void RemoveResourceLoader(ResourceLoader*);
   void HandleLoadCompletion(Resource*);
 
-  void InitializeResourceRequest(ResourceRequest&,
-                                 Resource::Type,
-                                 FetchParameters::DeferOption);
   void RequestLoadStarted(unsigned long identifier,
                           Resource*,
                           const FetchParameters&,

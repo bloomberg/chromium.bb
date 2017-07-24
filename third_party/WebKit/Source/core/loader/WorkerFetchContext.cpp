@@ -322,12 +322,9 @@ void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
 }
 
 void WorkerFetchContext::PopulateResourceRequest(
-    const KURL& url,
     Resource::Type type,
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
-    const ResourceLoaderOptions& options,
-    SecurityViolationReportingPolicy reporting_policy,
     ResourceRequest& out_request) {
   SetFirstPartyCookieAndRequestorOrigin(out_request);
 }
