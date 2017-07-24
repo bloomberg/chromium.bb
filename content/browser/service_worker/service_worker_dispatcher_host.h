@@ -63,7 +63,8 @@ struct ServiceWorkerVersionAttributes;
 //
 // This class is bound with mojom::ServiceWorkerDispatcherHost. All
 // InterfacePtrs on the same render process are bound to the same
-// content::ServiceWorkerDispatcherHost.
+// content::ServiceWorkerDispatcherHost. This can be overridden only for
+// testing.
 class CONTENT_EXPORT ServiceWorkerDispatcherHost
     : public BrowserMessageFilter,
       public BrowserAssociatedInterface<mojom::ServiceWorkerDispatcherHost>,
@@ -89,12 +90,24 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   // be destroyed.
   bool Send(IPC::Message* message) override;
 
-  void RegisterServiceWorkerHandle(std::unique_ptr<ServiceWorkerHandle> handle);
-  void RegisterServiceWorkerRegistrationHandle(
+  // Virtual for testing.
+  virtual void RegisterServiceWorkerHandle(
+      std::unique_ptr<ServiceWorkerHandle> handle);
+  // Virtual for testing.
+  virtual void RegisterServiceWorkerRegistrationHandle(
       std::unique_ptr<ServiceWorkerRegistrationHandle> handle);
 
   ServiceWorkerHandle* FindServiceWorkerHandle(int provider_id,
                                                int64_t version_id);
+
+  // Gets or creates the registration and version handles appropriate for
+  // representing |registration| inside of |provider_host|. Sets |out_info| and
+  // |out_attrs| accordingly for these handles.
+  void GetRegistrationObjectInfoAndVersionAttributes(
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      ServiceWorkerRegistration* registration,
+      ServiceWorkerRegistrationObjectInfo* out_info,
+      ServiceWorkerVersionAttributes* out_attrs);
 
   // Returns the existing registration handle whose reference count is
   // incremented or a newly created one if it doesn't exist.
@@ -114,17 +127,14 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
                            ProviderCreatedAndDestroyed);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDispatcherHostTest,
                            CleanupOnRendererCrash);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundSyncManagerTest,
+                           RegisterWithoutLiveSWRegistration);
 
   using StatusCallback = base::Callback<void(ServiceWorkerStatusCode status)>;
   enum class ProviderStatus { OK, NO_CONTEXT, DEAD_HOST, NO_HOST, NO_URL };
 
   // mojom::ServiceWorkerDispatcherHost implementation
   void OnProviderCreated(ServiceWorkerProviderHostInfo info) override;
-  void OnSetHostedVersionId(
-      int provider_id,
-      int64_t version_id,
-      int embedded_worker_id,
-      mojom::URLLoaderFactoryAssociatedRequest request) override;
 
   // IPC Message handlers
   void OnRegisterServiceWorker(int thread_id,
@@ -212,12 +222,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   ServiceWorkerRegistrationHandle* FindRegistrationHandle(
       int provider_id,
       int64_t registration_handle_id);
-
-  void GetRegistrationObjectInfoAndVersionAttributes(
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      ServiceWorkerRegistration* registration,
-      ServiceWorkerRegistrationObjectInfo* info,
-      ServiceWorkerVersionAttributes* attrs);
 
   // Callbacks from ServiceWorkerContextCore
   void RegistrationComplete(int thread_id,

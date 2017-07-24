@@ -269,14 +269,16 @@ class MessageReceiverDisallowStart : public MessageReceiver {
 
   enum class StartMode { STALL, FAIL, SUCCEED };
 
-  void OnStartWorker(int embedded_worker_id,
-                     int64_t service_worker_version_id,
-                     const GURL& scope,
-                     const GURL& script_url,
-                     bool pause_after_download,
-                     mojom::ServiceWorkerEventDispatcherRequest request,
-                     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
-                         instance_host) override {
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t service_worker_version_id,
+      const GURL& scope,
+      const GURL& script_url,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest request,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info)
+      override {
     switch (mode_) {
       case StartMode::STALL:
         // Prepare for OnStopWorker().
@@ -295,7 +297,8 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       case StartMode::SUCCEED:
         MessageReceiver::OnStartWorker(
             embedded_worker_id, service_worker_version_id, scope, script_url,
-            pause_after_download, std::move(request), std::move(instance_host));
+            pause_after_download, std::move(request), std::move(instance_host),
+            std::move(provider_info));
         break;
     }
     current_mock_instance_index_++;
@@ -703,6 +706,11 @@ TEST_F(ServiceWorkerVersionTest, StoppingBeforeDestruct) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, listener.last_status);
 
+  // Destruct |version_| by releasing all references, including the provider
+  // host's.
+  helper_->context()->RemoveProviderHost(
+      version_->provider_host()->process_id(),
+      version_->provider_host()->provider_id());
   version_ = nullptr;
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, listener.last_status);
 }
@@ -1201,7 +1209,7 @@ TEST_F(ServiceWorkerStallInStoppingTest, DetachThenRestart) {
   version_->StopWorker(CreateReceiverOnCurrentThread(&status));
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, version_->running_status());
 
-  // Worker is now stalled in stopping. Add a start worker requset.
+  // Worker is now stalled in stopping. Add a start worker request.
   ServiceWorkerStatusCode start_status = SERVICE_WORKER_ERROR_FAILED;
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
                         CreateReceiverOnCurrentThread(&start_status));
@@ -1215,7 +1223,42 @@ TEST_F(ServiceWorkerStallInStoppingTest, DetachThenRestart) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_EQ(SERVICE_WORKER_OK, start_status);
+}
+
+TEST_F(ServiceWorkerStallInStoppingTest, DetachThenRestartNoCrash) {
+  // Start a worker.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
+                        CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
+
+  // Try to stop the worker.
+  status = SERVICE_WORKER_ERROR_FAILED;
+  version_->StopWorker(CreateReceiverOnCurrentThread(&status));
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, version_->running_status());
+
+  // Worker is now stalled in stopping. Add a start worker request.
+  ServiceWorkerStatusCode start_status = SERVICE_WORKER_ERROR_FAILED;
+  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
+                        CreateReceiverOnCurrentThread(&start_status));
+
+  // Simulate timeout. The worker should stop and get restarted.
+  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
+  version_->stop_time_ = base::TimeTicks::Now() -
+                         ServiceWorkerVersion::kStopWorkerTimeout -
+                         base::TimeDelta::FromSeconds(1);
+  ServiceWorkerVersion* version = version_.get();
+  // Don't crash even if no one externally holds a reference to version.
+  // The provider host for the version holds a reference, but it
+  // could be destroyed during detach of the embedded worker instance.
+  version_ = nullptr;
+  version->timeout_timer_.user_task().Run();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_NE(SERVICE_WORKER_OK, start_status);
+  // No crash.
 }
 
 TEST_F(ServiceWorkerVersionTest, RegisterForeignFetchScopes) {

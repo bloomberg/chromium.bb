@@ -187,6 +187,21 @@ void OnEventDispatcherConnectionError(
   }
 }
 
+mojom::ServiceWorkerProviderInfoForStartWorkerPtr
+CompleteProviderHostPreparation(
+    ServiceWorkerVersion* version,
+    std::unique_ptr<ServiceWorkerProviderHost> provider_host,
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    int process_id) {
+  // Caller should ensure |context| is alive when completing StartWorker
+  // preparation.
+  DCHECK(context);
+  auto info =
+      provider_host->CompleteStartWorkerPreparation(process_id, version);
+  context->AddProviderHost(std::move(provider_host));
+  return info;
+}
+
 }  // namespace
 
 constexpr base::TimeDelta ServiceWorkerVersion::kTimeoutTimerDelay;
@@ -444,7 +459,8 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
   }
 
   // Ensure the live registration during starting worker so that the worker can
-  // get associated with it in SWDispatcherHost::OnSetHostedVersionId().
+  // get associated with it in
+  // ServiceWorkerProviderHost::CompleteStartWorkerPreparation.
   context_->storage()->FindRegistrationForId(
       registration_id_, scope_.GetOrigin(),
       base::Bind(&ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker,
@@ -833,6 +849,9 @@ ServiceWorkerVersion::PendingRequest::~PendingRequest() {}
 
 void ServiceWorkerVersion::OnThreadStarted() {
   DCHECK_EQ(EmbeddedWorkerStatus::STARTING, running_status());
+  DCHECK(provider_host_);
+  provider_host_->SetReadyToSendMessagesToWorker(
+      embedded_worker()->thread_id());
   // Activate ping/pong now that JavaScript execution will start.
   ping_controller_->Activate();
 }
@@ -1468,6 +1487,10 @@ void ServiceWorkerVersion::StartWorkerInternal() {
 
   StartTimeoutTimer();
 
+  std::unique_ptr<ServiceWorkerProviderHost> pending_provider_host =
+      ServiceWorkerProviderHost::PreCreateForController(context());
+  provider_host_ = pending_provider_host->AsWeakPtr();
+
   auto params = base::MakeUnique<EmbeddedWorkerStartParams>();
   params->service_worker_version_id = version_id_;
   params->scope = scope_;
@@ -1487,8 +1510,12 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   }
 
   embedded_worker_->Start(
-      std::move(params), mojo::MakeRequest(&event_dispatcher_),
-      std::move(installed_scripts_info),
+      std::move(params),
+      // Unretained is used here because the callback will be owned by
+      // |embedded_worker_| whose owner is |this|.
+      base::BindOnce(&CompleteProviderHostPreparation, base::Unretained(this),
+                     base::Passed(&pending_provider_host), context()),
+      mojo::MakeRequest(&event_dispatcher_), std::move(installed_scripts_info),
       base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
                  weak_factory_.GetWeakPtr()));
   event_dispatcher_.set_connection_error_handler(base::Bind(
@@ -1560,7 +1587,10 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
 
     // Detach the worker. Remove |this| as a listener first; otherwise
     // OnStoppedInternal might try to restart before the new worker
-    // is created.
+    // is created. Also, protect |this|, since swapping out the
+    // EmbeddedWorkerInstance could destroy our ServiceWorkerProviderHost
+    // which could in turn destroy |this|.
+    scoped_refptr<ServiceWorkerVersion> protect_this(this);
     embedded_worker_->RemoveListener(this);
     embedded_worker_->Detach();
     embedded_worker_ = context_->embedded_worker_registry()->CreateWorker();

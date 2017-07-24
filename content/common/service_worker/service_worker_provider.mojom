@@ -7,6 +7,20 @@ module content.mojom;
 import "content/common/service_worker/service_worker_provider_interfaces.mojom";
 import "content/common/service_worker/service_worker_types.mojom";
 
+// A container object carried from the browser to the renderer process.
+// This contains the params for the constructor of ServiceWorkerNetworkProvider
+// used for starting a service worker.
+struct ServiceWorkerProviderInfoForStartWorker {
+  int32 provider_id;
+  // |registration| and |attributes| are information about the service worker's
+  // registration used to populate ServiceWorkerGlobalScope#registration.
+  ServiceWorkerRegistrationObjectInfo registration;
+  ServiceWorkerVersionAttributes attributes;
+
+  associated ServiceWorkerProviderHost host_ptr_info;
+  associated ServiceWorkerProvider& client_request;
+};
+
 // A container object carried from the renderer to the browser process.
 // This contains the parameters to specify the provider on the browser side.
 // See also comments in

@@ -76,8 +76,8 @@ class EmbeddedWorkerInstanceClientImpl
       const EmbeddedWorkerStartParams& params,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host)
-      override;
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info) override;
   void StopWorker() override;
   void ResumeAfterDownload() override;
   void AddMessageToConsole(blink::WebConsoleMessage::Level level,
