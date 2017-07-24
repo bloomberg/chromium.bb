@@ -65,6 +65,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
       int process_id,
       int frame_tree_node_id) const override;
   int GetMainFrameRenderProcessId() const override;
+  int GetMainFrameTreeNodeId() const override;
 
   // HeadlessDevToolsTarget implementation:
   bool AttachClient(HeadlessDevToolsClient* client) override;

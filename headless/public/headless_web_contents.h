@@ -92,6 +92,8 @@ class HEADLESS_EXPORT HeadlessWebContents {
 
   virtual int GetMainFrameRenderProcessId() const = 0;
 
+  virtual int GetMainFrameTreeNodeId() const = 0;
+
  private:
   friend class HeadlessWebContentsImpl;
   HeadlessWebContents() {}

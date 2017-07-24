@@ -301,6 +301,10 @@ int HeadlessWebContentsImpl::GetMainFrameRenderProcessId() const {
   return web_contents()->GetMainFrame()->GetProcess()->GetID();
 }
 
+int HeadlessWebContentsImpl::GetMainFrameTreeNodeId() const {
+  return web_contents()->GetMainFrame()->GetFrameTreeNodeId();
+}
+
 bool HeadlessWebContentsImpl::OpenURL(const GURL& url) {
   if (!url.is_valid())
     return false;
