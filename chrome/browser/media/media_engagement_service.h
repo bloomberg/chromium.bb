@@ -86,6 +86,7 @@ class MediaEngagementService : public KeyedService,
   static const char kHistogramScoreAtStartupName[];
 
  private:
+  friend class MediaEngagementBrowserTest;
   friend class MediaEngagementServiceTest;
   friend class MediaEngagementContentsObserverTest;
   friend MediaEngagementContentsObserver;
