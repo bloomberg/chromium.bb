@@ -162,81 +162,61 @@ proto_library("cronet_android_cert_proto") {
   extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-# Variables:
-#   defines: Extra defines.
-#   deps: Extra dependencies.
-template("cronet_static_tmpl") {
-  source_set(target_name) {
-    defines = []
-
-    deps = [
-      ":cronet_android_cert_proto",
-      ":cronet_jni_headers",
-      ":cronet_jni_registration",
-      ":cronet_version_header",
-      "//base",
-      "//base/third_party/dynamic_annotations",
-      "//components/metrics",
-      "//components/prefs",
-      "//url:url_features",
-    ]
-    sources = [
-      "//components/cronet/android/cert/cert_verifier_cache_serializer.cc",
-      "//components/cronet/android/cert/cert_verifier_cache_serializer.h",
-      "//components/cronet/android/cronet_bidirectional_stream_adapter.cc",
-      "//components/cronet/android/cronet_bidirectional_stream_adapter.h",
-      "//components/cronet/android/cronet_library_loader.cc",
-      "//components/cronet/android/cronet_library_loader.h",
-      "//components/cronet/android/cronet_upload_data_stream.cc",
-      "//components/cronet/android/cronet_upload_data_stream.h",
-      "//components/cronet/android/cronet_upload_data_stream_adapter.cc",
-      "//components/cronet/android/cronet_upload_data_stream_adapter.h",
-      "//components/cronet/android/cronet_url_request_adapter.cc",
-      "//components/cronet/android/cronet_url_request_adapter.h",
-      "//components/cronet/android/cronet_url_request_context_adapter.cc",
-      "//components/cronet/android/cronet_url_request_context_adapter.h",
-      "//components/cronet/android/io_buffer_with_byte_buffer.cc",
-      "//components/cronet/android/io_buffer_with_byte_buffer.h",
-      "//components/cronet/android/metrics_util.cc",
-      "//components/cronet/android/metrics_util.h",
-      "//components/cronet/android/url_request_error.cc",
-      "//components/cronet/android/url_request_error.h",
-      "//components/cronet/histogram_manager.cc",
-      "//components/cronet/histogram_manager.h",
-      "//components/cronet/host_cache_persistence_manager.cc",
-      "//components/cronet/host_cache_persistence_manager.h",
-      "//components/cronet/stale_host_resolver.cc",
-      "//components/cronet/stale_host_resolver.h",
-      "//components/cronet/url_request_context_config.cc",
-      "//components/cronet/url_request_context_config.h",
-    ]
-
-    include_dirs = [ _cronet_version_header_include_dir ]
-
-    cflags = [
-      "-DLOGGING=1",
-      "-Wno-sign-promo",
-    ]
-
-    libs = [
-      "android",
-      "log",
-    ]
-
-    if (defined(invoker.defines)) {
-      defines += invoker.defines
-    }
-
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
-  }
-}
-
-cronet_static_tmpl("cronet_static") {
+source_set("cronet_static") {
   deps = [
+    ":cronet_android_cert_proto",
+    ":cronet_jni_headers",
+    ":cronet_jni_registration",
+    ":cronet_version_header",
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//components/metrics",
+    "//components/prefs",
     "//net",
     "//url",
+    "//url:url_features",
+  ]
+  sources = [
+    "//components/cronet/android/cert/cert_verifier_cache_serializer.cc",
+    "//components/cronet/android/cert/cert_verifier_cache_serializer.h",
+    "//components/cronet/android/cronet_bidirectional_stream_adapter.cc",
+    "//components/cronet/android/cronet_bidirectional_stream_adapter.h",
+    "//components/cronet/android/cronet_library_loader.cc",
+    "//components/cronet/android/cronet_library_loader.h",
+    "//components/cronet/android/cronet_upload_data_stream.cc",
+    "//components/cronet/android/cronet_upload_data_stream.h",
+    "//components/cronet/android/cronet_upload_data_stream_adapter.cc",
+    "//components/cronet/android/cronet_upload_data_stream_adapter.h",
+    "//components/cronet/android/cronet_url_request_adapter.cc",
+    "//components/cronet/android/cronet_url_request_adapter.h",
+    "//components/cronet/android/cronet_url_request_context_adapter.cc",
+    "//components/cronet/android/cronet_url_request_context_adapter.h",
+    "//components/cronet/android/io_buffer_with_byte_buffer.cc",
+    "//components/cronet/android/io_buffer_with_byte_buffer.h",
+    "//components/cronet/android/metrics_util.cc",
+    "//components/cronet/android/metrics_util.h",
+    "//components/cronet/android/url_request_error.cc",
+    "//components/cronet/android/url_request_error.h",
+    "//components/cronet/histogram_manager.cc",
+    "//components/cronet/histogram_manager.h",
+    "//components/cronet/host_cache_persistence_manager.cc",
+    "//components/cronet/host_cache_persistence_manager.h",
+    "//components/cronet/stale_host_resolver.cc",
+    "//components/cronet/stale_host_resolver.h",
+    "//components/cronet/url_request_context_config.cc",
+    "//components/cronet/url_request_context_config.h",
+  ]
+
+  include_dirs = [ _cronet_version_header_include_dir ]
+
+  cflags = [
+    "-DLOGGING=1",
+    "-Wno-sign-promo",
+  ]
+
+  libs = [
+    "android",
+    "log",
   ]
 
   if (!use_platform_icu_alternatives) {
