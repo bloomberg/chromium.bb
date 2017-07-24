@@ -76,10 +76,4 @@ WebViewTranslateAcceptLanguagesFactory::BuildServiceInstanceFor(
       browser_state->GetPrefs());
 }
 
-web::BrowserState* WebViewTranslateAcceptLanguagesFactory::GetBrowserStateToUse(
-    web::BrowserState* context) const {
-  // Override to enable this service for off the record browser states.
-  return context;
-}
-
 }  // namespace ios_web_view

@@ -40,6 +40,8 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 - (void)stopLoading;
 // Disconnects and release the |webView|.
 - (void)removeWebView;
+// Resets translate settings back to default.
+- (void)resetTranslateSettings;
 @end
 
 @implementation ShellViewController
@@ -214,7 +216,21 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                   createWebViewWithConfiguration:configuration];
                             }]];
 
+  // Resets all translation settings to default values.
+  [alertController
+      addAction:[UIAlertAction actionWithTitle:@"Reset translate settings"
+                                         style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction* action) {
+                                         [weakSelf resetTranslateSettings];
+                                       }]];
+
   [self presentViewController:alertController animated:YES completion:nil];
+}
+
+- (void)resetTranslateSettings {
+  CWVWebViewConfiguration* configuration =
+      [CWVWebViewConfiguration defaultConfiguration];
+  [configuration.preferences resetTranslationSettings];
 }
 
 - (void)toggleIncognito {

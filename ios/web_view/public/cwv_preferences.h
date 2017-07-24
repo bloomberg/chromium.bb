@@ -14,6 +14,8 @@ CWV_EXPORT
 @interface CWVPreferences : NSObject
 
 // Whether or not translation as a feature is turned on.
+// Because translate settings are shared from incognito to non-incognito, this
+// has no effect if this instance is from an incognito CWVWebViewConfiguration.
 @property(nonatomic, assign, getter=isTranslationEnabled)
     BOOL translationEnabled;
 
@@ -21,6 +23,8 @@ CWV_EXPORT
 
 // Resets all translation settings back to default. In particular, this will
 // change all translation policies back to CWVTranslationPolicyAsk.
+// Because translate settings are shared from incognito to non-incognito, this
+// has no effect if this instance is from an incognito CWVWebViewConfiguration.
 - (void)resetTranslationSettings;
 
 @end
