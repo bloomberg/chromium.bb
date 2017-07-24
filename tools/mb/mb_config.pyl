@@ -112,6 +112,7 @@
       'Chromium Mac 10.10 MacViews': 'mac_views_browser_release_bot',
       'Chromium Mac 10.11': 'release_bot',
       'Chromium Mac 10.11 Force Mac Toolchain': 'release_bot_mac_new_sdk',
+      'Chromium Mac 10.13': 'release_bot',
       'Chromium Mac 10.9 Goma Canary': 'release_bot',
       'Chromium Mac 10.9 Goma Canary (clobber)': 'release_bot',
       'Chromium Mac 10.9 Goma Canary (dbg)': 'debug_bot',
