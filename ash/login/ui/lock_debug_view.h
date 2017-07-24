@@ -22,8 +22,10 @@ class LockDebugView : public views::View, public views::ButtonListener {
   explicit LockDebugView(LoginDataDispatcher* data_dispatcher);
   ~LockDebugView() override;
 
-  // views::ButtonListener:
+  // views::View:
   void Layout() override;
+
+  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
