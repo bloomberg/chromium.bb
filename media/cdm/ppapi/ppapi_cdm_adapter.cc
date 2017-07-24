@@ -95,6 +95,32 @@ void ConfigureInputBuffer(const pp::Buffer_Dev& encrypted_buffer,
   input_buffer->timestamp = encrypted_block_info.tracking_info.timestamp;
 }
 
+cdm::HdcpVersion PpHdcpVersionToCdmHdcpVersion(PP_HdcpVersion hdcp_version) {
+  switch (hdcp_version) {
+    case PP_HDCPVERSION_NONE:
+      return cdm::kHdcpVersionNone;
+    case PP_HDCPVERSION_1_0:
+      return cdm::kHdcpVersion1_0;
+    case PP_HDCPVERSION_1_1:
+      return cdm::kHdcpVersion1_1;
+    case PP_HDCPVERSION_1_2:
+      return cdm::kHdcpVersion1_2;
+    case PP_HDCPVERSION_1_3:
+      return cdm::kHdcpVersion1_3;
+    case PP_HDCPVERSION_1_4:
+      return cdm::kHdcpVersion1_4;
+    case PP_HDCPVERSION_2_0:
+      return cdm::kHdcpVersion2_0;
+    case PP_HDCPVERSION_2_1:
+      return cdm::kHdcpVersion2_1;
+    case PP_HDCPVERSION_2_2:
+      return cdm::kHdcpVersion2_2;
+  }
+
+  PP_NOTREACHED();
+  return cdm::kHdcpVersion2_2;
+}
+
 PP_DecryptResult CdmStatusToPpDecryptResult(cdm::Status status) {
   switch (status) {
     case cdm::kSuccess:
@@ -447,6 +473,15 @@ void PpapiCdmAdapter::SetServerCertificate(
                              server_certificate_size);
 }
 
+void PpapiCdmAdapter::GetStatusForPolicy(uint32_t promise_id,
+                                         PP_HdcpVersion min_hdcp_version) {
+  if (!cdm_->GetStatusForPolicy(
+          promise_id, PpHdcpVersionToCdmHdcpVersion(min_hdcp_version))) {
+    RejectPromise(promise_id, cdm::Exception::kExceptionNotSupportedError, 0,
+                  "GetStatusForPolicy not supported.");
+  }
+}
+
 void PpapiCdmAdapter::CreateSessionAndGenerateRequest(
     uint32_t promise_id,
     PP_SessionType session_type,
@@ -675,10 +710,9 @@ cdm::Time PpapiCdmAdapter::GetCurrentWallTime() {
 
 void PpapiCdmAdapter::OnResolveKeyStatusPromise(uint32_t promise_id,
                                                 cdm::KeyStatus key_status) {
-  // TODO(xhwang): Implement HDCP Policy Check. https://crbug.com/709348.
-  PP_NOTREACHED();
-  RejectPromise(promise_id, cdm::Exception::kExceptionNotSupportedError, 0,
-                "HDCP Policy Check not implemented.");
+  PostOnMain(callback_factory_.NewCallback(
+      &PpapiCdmAdapter::SendPromiseResolvedWithKeyStatusInternal, promise_id,
+      key_status));
 }
 
 void PpapiCdmAdapter::OnResolveNewSessionPromise(uint32_t promise_id,
@@ -818,6 +852,15 @@ void PpapiCdmAdapter::SendPromiseResolvedInternal(int32_t result,
                                                   uint32_t promise_id) {
   PP_DCHECK(result == PP_OK);
   pp::ContentDecryptor_Private::PromiseResolved(promise_id);
+}
+
+void PpapiCdmAdapter::SendPromiseResolvedWithKeyStatusInternal(
+    int32_t result,
+    uint32_t promise_id,
+    cdm::KeyStatus key_status) {
+  PP_DCHECK(result == PP_OK);
+  pp::ContentDecryptor_Private::PromiseResolvedWithKeyStatus(
+      promise_id, CdmKeyStatusToPpKeyStatus(key_status));
 }
 
 void PpapiCdmAdapter::SendPromiseResolvedWithSessionInternal(

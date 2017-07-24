@@ -13,7 +13,6 @@
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
-
 #include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/var.h"
@@ -42,6 +41,8 @@ class ContentDecryptor_Private {
                           bool allow_persistent_state) = 0;
   virtual void SetServerCertificate(uint32_t promise_id,
                                     pp::VarArrayBuffer server_certificate) = 0;
+  virtual void GetStatusForPolicy(uint32_t promise_id,
+                                  PP_HdcpVersion min_hdcp_version) = 0;
   virtual void CreateSessionAndGenerateRequest(
       uint32_t promise_id,
       PP_SessionType session_type,
@@ -78,6 +79,8 @@ class ContentDecryptor_Private {
   // PPB_ContentDecryptor_Private methods for passing data from the decryptor
   // to the browser.
   void PromiseResolved(uint32_t promise_id);
+  void PromiseResolvedWithKeyStatus(uint32_t promise_id,
+                                    PP_CdmKeyStatus key_status);
   void PromiseResolvedWithSession(uint32_t promise_id,
                                   const std::string& session_id);
   void PromiseRejected(uint32_t promise_id,

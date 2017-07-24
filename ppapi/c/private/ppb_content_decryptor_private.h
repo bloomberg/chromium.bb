@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Mon Mar 30 22:35:33 2015.
+ *   modified Mon Jul 17 14:47:07 2017.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -19,10 +19,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_14 \
-    "PPB_ContentDecryptor_Private;0.14"
+#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_15 \
+    "PPB_ContentDecryptor_Private;0.15"
 #define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_14
+    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_15
 
 /**
  * @file
@@ -43,13 +43,24 @@
  * browser side support for the Content Decryption Module (CDM) for Encrypted
  * Media Extensions: http://www.w3.org/TR/encrypted-media/
  */
-struct PPB_ContentDecryptor_Private_0_14 {
+struct PPB_ContentDecryptor_Private_0_15 {
   /**
    * A promise has been resolved by the CDM.
    *
    * @param[in] promise_id Identifies the promise that the CDM resolved.
    */
   void (*PromiseResolved)(PP_Instance instance, uint32_t promise_id);
+  /**
+   * A promise has been resolved by the CDM with a key status.
+   *
+   * @param[in] promise_id Identifies the promise that the CDM resolved.
+   *
+   * @param[in] key_status A <code>PP_KeyStatus</code> containing the key status
+   * the promise is resolved with.
+   */
+  void (*PromiseResolvedWithKeyStatus)(PP_Instance instance,
+                                       uint32_t promise_id,
+                                       PP_CdmKeyStatus key_status);
   /**
    * A promise that resulted in a new session has been resolved by the CDM.
    *
@@ -308,7 +319,7 @@ struct PPB_ContentDecryptor_Private_0_14 {
       const struct PP_DecryptedSampleInfo* decrypted_sample_info);
 };
 
-typedef struct PPB_ContentDecryptor_Private_0_14 PPB_ContentDecryptor_Private;
+typedef struct PPB_ContentDecryptor_Private_0_15 PPB_ContentDecryptor_Private;
 /**
  * @}
  */

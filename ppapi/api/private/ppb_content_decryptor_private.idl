@@ -12,7 +12,7 @@
 [generate_thunk]
 
 label Chrome {
-  M44 = 0.14
+  M62 = 0.15
 };
 
 /**
@@ -31,6 +31,19 @@ interface PPB_ContentDecryptor_Private {
   void PromiseResolved(
       [in] PP_Instance instance,
       [in] uint32_t promise_id);
+
+  /**
+   * A promise has been resolved by the CDM with a key status.
+   *
+   * @param[in] promise_id Identifies the promise that the CDM resolved.
+   *
+   * @param[in] key_status A <code>PP_KeyStatus</code> containing the key status
+   * the promise is resolved with.
+   */
+  void PromiseResolvedWithKeyStatus(
+      [in] PP_Instance instance,
+      [in] uint32_t promise_id,
+      [in] PP_CdmKeyStatus key_status);
 
   /**
    * A promise that resulted in a new session has been resolved by the CDM.

@@ -55,6 +55,8 @@ class PpapiCdmAdapter : public pp::Instance,
                   bool allow_persistent_state) override;
   void SetServerCertificate(uint32_t promise_id,
                             pp::VarArrayBuffer server_certificate) override;
+  void GetStatusForPolicy(uint32_t promise_id,
+                          PP_HdcpVersion min_hdcp_version) override;
   void CreateSessionAndGenerateRequest(uint32_t promise_id,
                                        PP_SessionType session_type,
                                        PP_InitDataType init_data_type,
@@ -185,6 +187,9 @@ class PpapiCdmAdapter : public pp::Instance,
   // <code>callback_factory_</code> to ensure that calls into
   // <code>PPP_ContentDecryptor_Private</code> are asynchronous.
   void SendPromiseResolvedInternal(int32_t result, uint32_t promise_id);
+  void SendPromiseResolvedWithKeyStatusInternal(int32_t result,
+                                                uint32_t promise_id,
+                                                cdm::KeyStatus key_status);
   void SendPromiseResolvedWithSessionInternal(int32_t result,
                                               uint32_t promise_id,
                                               const std::string& session_id);

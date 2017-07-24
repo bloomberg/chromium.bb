@@ -34,7 +34,7 @@ handleMessage = function(message) {
     if (success)
       Utils.setResultInTitle(UNIT_TEST_SUCCESS);
     else
-      Utils.failTest('CDM unit test failed.');
+      Utils.failTest(UNIT_TEST_FAILURE);
   }
 };
 

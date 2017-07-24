@@ -180,6 +180,8 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgGetPluginReferrerURL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_PromiseResolved,
                         OnHostMsgPromiseResolved)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_PromiseResolvedWithKeyStatus,
+                        OnHostMsgPromiseResolvedWithKeyStatus)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_PromiseResolvedWithSession,
                         OnHostMsgPromiseResolvedWithSession)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_PromiseRejected,
@@ -549,6 +551,14 @@ void PPB_Instance_Proxy::PromiseResolved(PP_Instance instance,
                                          uint32_t promise_id) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_PromiseResolved(
       API_ID_PPB_INSTANCE, instance, promise_id));
+}
+
+void PPB_Instance_Proxy::PromiseResolvedWithKeyStatus(
+    PP_Instance instance,
+    uint32_t promise_id,
+    PP_CdmKeyStatus key_status) {
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_PromiseResolvedWithKeyStatus(
+      API_ID_PPB_INSTANCE, instance, promise_id, key_status));
 }
 
 void PPB_Instance_Proxy::PromiseResolvedWithSession(PP_Instance instance,
@@ -1186,6 +1196,19 @@ void PPB_Instance_Proxy::OnHostMsgPromiseResolved(PP_Instance instance,
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     enter.functions()->PromiseResolved(instance, promise_id);
+  }
+}
+
+void PPB_Instance_Proxy::OnHostMsgPromiseResolvedWithKeyStatus(
+    PP_Instance instance,
+    uint32_t promise_id,
+    PP_CdmKeyStatus key_status) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded()) {
+    enter.functions()->PromiseResolvedWithKeyStatus(instance, promise_id,
+                                                    key_status);
   }
 }
 

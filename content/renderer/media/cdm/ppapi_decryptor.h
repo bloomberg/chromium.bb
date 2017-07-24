@@ -53,6 +53,9 @@ class PpapiDecryptor : public media::ContentDecryptionModule,
   void SetServerCertificate(
       const std::vector<uint8_t>& certificate,
       std::unique_ptr<media::SimpleCdmPromise> promise) override;
+  void GetStatusForPolicy(
+      media::HdcpVersion min_hdcp_version,
+      std::unique_ptr<media::KeyStatusCdmPromise> promise) override;
   void CreateSessionAndGenerateRequest(
       media::CdmSessionType session_type,
       media::EmeInitDataType init_data_type,

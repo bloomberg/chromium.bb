@@ -42,6 +42,9 @@ class PPP_ContentDecryptor_Private_Proxy : public InterfaceProxy {
   void OnMsgSetServerCertificate(PP_Instance instance,
                                  uint32_t promise_id,
                                  std::vector<uint8_t> server_certificate);
+  void OnMsgGetStatusForPolicy(PP_Instance instance,
+                               uint32_t promise_id,
+                               PP_HdcpVersion min_hdcp_version);
   void OnMsgCreateSessionAndGenerateRequest(
       PP_Instance instance,
       uint32_t promise_id,

@@ -68,6 +68,8 @@ class ContentDecryptorDelegate {
   // Provides access to PPP_ContentDecryptor_Private.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
                             std::unique_ptr<media::SimpleCdmPromise> promise);
+  void GetStatusForPolicy(media::HdcpVersion min_hdcp_version,
+                          std::unique_ptr<media::KeyStatusCdmPromise> promise);
   void CreateSessionAndGenerateRequest(
       media::CdmSessionType session_type,
       media::EmeInitDataType init_data_type,
@@ -107,6 +109,8 @@ class ContentDecryptorDelegate {
 
   // PPB_ContentDecryptor_Private dispatching methods.
   void OnPromiseResolved(uint32_t promise_id);
+  void OnPromiseResolvedWithKeyStatus(uint32_t promise_id,
+                                      PP_CdmKeyStatus key_status);
   void OnPromiseResolvedWithSession(uint32_t promise_id, PP_Var session_id);
   void OnPromiseRejected(uint32_t promise_id,
                          PP_CdmExceptionCode exception_code,

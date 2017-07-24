@@ -94,6 +94,7 @@ const char kUnknownSession[] = "UnknownSession";
 
 // EME-specific test results and errors.
 const char kUnitTestSuccess[] = "UNIT_TEST_SUCCESS";
+const char kEmeUnitTestFailure[] = "UNIT_TEST_FAILURE";
 const char kEmeNotSupportedError[] = "NOTSUPPORTEDERROR";
 const char kEmeGenerateRequestFailed[] = "EME_GENERATEREQUEST_FAILED";
 const char kEmeSessionNotFound[] = "EME_SESSION_NOT_FOUND";
@@ -256,6 +257,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
   // We want to fail quickly when a test fails because an error is encountered.
   void AddWaitForTitles(content::TitleWatcher* title_watcher) override {
     MediaBrowserTest::AddWaitForTitles(title_watcher);
+    title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeUnitTestFailure));
     title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeNotSupportedError));
     title_watcher->AlsoWaitForTitle(
         base::ASCIIToUTF16(kEmeGenerateRequestFailed));
@@ -271,6 +273,8 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kIgnoreAutoplayRestrictionsForTests);
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "EncryptedMediaHdcpPolicyCheck");
   }
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -394,6 +398,8 @@ class EncryptedMediaTest
 
   CdmHostType CurrentCdmHostType() { return std::tr1::get<2>(GetParam()); }
 
+  bool IsUsingMojoCdm() { return CurrentCdmHostType() == CdmHostType::kMojo; }
+
   void TestSimplePlayback(const std::string& encrypted_media,
                           const std::string& media_type) {
     RunSimpleEncryptedMediaTest(encrypted_media, media_type, CurrentKeySystem(),
@@ -442,6 +448,26 @@ class EncryptedMediaTest
         base::IntToString(static_cast<int>(config_change_type))));
     RunEncryptedMediaTestPage("mse_config_change.html", CurrentKeySystem(),
                               query_params, kEnded);
+  }
+
+  void TestPolicyCheck() {
+    // TODO(xhwang): Support policy check using mojo CDM. See
+    // http://crbug.com/709348
+    if (IsUsingMojoCdm()) {
+      DVLOG(0) << "Skipping test; Not working with mojo CDM yet.";
+      return;
+    }
+
+    base::StringPairs query_params;
+    // We do not care about playback so choose an arbitrary media file.
+    query_params.push_back(std::make_pair("mediaFile", "bear-a_enc-a.webm"));
+    query_params.push_back(std::make_pair("mediaType", kWebMVorbisAudioOnly));
+    if (CurrentSourceType() == SrcType::MSE)
+      query_params.push_back(std::make_pair("useMSE", "1"));
+    query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
+    query_params.push_back(std::make_pair("policyCheck", "1"));
+    RunEncryptedMediaTestPage(kDefaultEmePlayer, CurrentKeySystem(),
+                              query_params, kUnitTestSuccess);
   }
 
   std::string ConvertContainerFormat(EncryptedContainer format) {
@@ -611,6 +637,10 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
     return;
   }
   TestFrameSizeChange();
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, PolicyCheck) {
+  TestPolicyCheck();
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, EncryptedMediaDisabled) {

@@ -122,6 +122,21 @@ void PpapiDecryptor::SetServerCertificate(
   CdmDelegate()->SetServerCertificate(certificate, std::move(promise));
 }
 
+void PpapiDecryptor::GetStatusForPolicy(
+    media::HdcpVersion min_hdcp_version,
+    std::unique_ptr<media::KeyStatusCdmPromise> promise) {
+  DVLOG(2) << __func__;
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
+
+  if (!CdmDelegate()) {
+    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+                    "CDM has failed.");
+    return;
+  }
+
+  CdmDelegate()->GetStatusForPolicy(min_hdcp_version, std::move(promise));
+}
+
 void PpapiDecryptor::CreateSessionAndGenerateRequest(
     media::CdmSessionType session_type,
     media::EmeInitDataType init_data_type,

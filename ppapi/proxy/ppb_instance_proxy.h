@@ -115,6 +115,9 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   PP_Var GetPluginReferrerURL(PP_Instance instance,
                               PP_URLComponents_Dev* components) override;
   void PromiseResolved(PP_Instance instance, uint32_t promise_id) override;
+  void PromiseResolvedWithKeyStatus(PP_Instance instance,
+                                    uint32_t promise_id,
+                                    PP_CdmKeyStatus key_status) override;
   void PromiseResolvedWithSession(PP_Instance instance,
                                   uint32_t promise_id,
                                   PP_Var session_id_var) override;
@@ -243,6 +246,10 @@ class PPB_Instance_Proxy : public InterfaceProxy,
 
   virtual void OnHostMsgPromiseResolved(PP_Instance instance,
                                         uint32_t promise_id);
+  virtual void OnHostMsgPromiseResolvedWithKeyStatus(
+      PP_Instance instance,
+      uint32_t promise_id,
+      PP_CdmKeyStatus key_status);
   virtual void OnHostMsgPromiseResolvedWithSession(
       PP_Instance instance,
       uint32_t promise_id,
