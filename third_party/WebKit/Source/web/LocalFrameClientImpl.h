@@ -217,8 +217,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   BlameContext* GetFrameBlameContext() override;
 
-  LinkResource* CreateServiceWorkerLinkResource(HTMLLinkElement*) override;
-
   WebEffectiveConnectionType GetEffectiveConnectionType() override;
 
   bool IsClientLoFiActiveForFrame() override;

@@ -1005,11 +1005,6 @@ BlameContext* LocalFrameClientImpl::GetFrameBlameContext() {
   return nullptr;
 }
 
-LinkResource* LocalFrameClientImpl::CreateServiceWorkerLinkResource(
-    HTMLLinkElement* owner) {
-  return ServiceWorkerLinkResource::Create(owner);
-}
-
 WebEffectiveConnectionType LocalFrameClientImpl::GetEffectiveConnectionType() {
   if (web_frame_->Client())
     return web_frame_->Client()->GetEffectiveConnectionType();
