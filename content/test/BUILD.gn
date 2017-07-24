@@ -1492,6 +1492,10 @@ test("content_unittests") {
     sources += [ "../browser/memory/memory_monitor_linux_unittest.cc" ]
   }
 
+  if (is_mac) {
+    sources += [ "../renderer/sandbox_mac_v2_unittest.mm" ]
+  }
+
   if (is_android || is_linux || is_mac || is_win) {
     data = [
       "$root_out_dir/content_shell.pak",
