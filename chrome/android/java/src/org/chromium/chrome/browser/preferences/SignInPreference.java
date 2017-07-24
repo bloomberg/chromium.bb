@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -53,10 +54,10 @@ public class SignInPreference extends Preference
         update();
     }
 
-    /**
-     * Starts listening for updates to the sign-in and sync state.
-     */
-    public void registerForUpdates() {
+    @Override
+    protected void onAttachedToHierarchy(PreferenceManager preferenceManager) {
+        super.onAttachedToHierarchy(preferenceManager);
+
         SigninManager manager = SigninManager.get(getContext());
         manager.addSignInAllowedObserver(this);
         ProfileDownloader.addObserver(this);
@@ -68,11 +69,8 @@ public class SignInPreference extends Preference
         }
     }
 
-    /**
-     * Stops listening for updates to the sign-in and sync state. Every call to registerForUpdates()
-     * must be matched with a call to this method.
-     */
-    public void unregisterForUpdates() {
+    @Override
+    protected void onPrepareForRemoval() {
         SigninManager manager = SigninManager.get(getContext());
         manager.removeSignInAllowedObserver(this);
         ProfileDownloader.removeObserver(this);
@@ -81,6 +79,8 @@ public class SignInPreference extends Preference
         if (syncService != null) {
             syncService.removeSyncStateChangedListener(this);
         }
+
+        super.onPrepareForRemoval();
     }
 
     /**
