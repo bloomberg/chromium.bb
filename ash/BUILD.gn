@@ -1318,6 +1318,7 @@ source_set("common_unittests") {
     "//base/test:test_support",
     "//chromeos",
     "//chromeos:power_manager_proto",
+    "//chromeos:test_support",
     "//chromeos:test_support_without_gmock",
     "//components/prefs:test_support",
     "//components/user_manager:test_support",
