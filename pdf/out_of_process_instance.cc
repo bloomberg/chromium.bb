@@ -218,10 +218,41 @@ void EnableAccessibility(PP_Instance instance) {
   }
 }
 
+void SetCaretPosition(PP_Instance instance, const PP_FloatPoint* position) {
+  void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
+  if (object) {
+    OutOfProcessInstance* obj_instance =
+        static_cast<OutOfProcessInstance*>(object);
+    return obj_instance->SetCaretPosition(pp::FloatPoint(*position));
+  }
+}
+
+void MoveRangeSelectionExtent(PP_Instance instance,
+                              const PP_FloatPoint* extent) {
+  void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
+  if (object) {
+    OutOfProcessInstance* obj_instance =
+        static_cast<OutOfProcessInstance*>(object);
+    return obj_instance->MoveRangeSelectionExtent(pp::FloatPoint(*extent));
+  }
+}
+
+void SetSelectionBounds(PP_Instance instance,
+                        const PP_FloatPoint* base,
+                        const PP_FloatPoint* extent) {
+  void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
+  if (object) {
+    OutOfProcessInstance* obj_instance =
+        static_cast<OutOfProcessInstance*>(object);
+    return obj_instance->SetSelectionBounds(pp::FloatPoint(*base),
+                                            pp::FloatPoint(*extent));
+  }
+}
+
 const PPP_Pdf ppp_private = {
-    &GetLinkAtPosition, &Transform, &GetPrintPresetOptionsFromDocument,
-    &EnableAccessibility,
-};
+    &GetLinkAtPosition,   &Transform,        &GetPrintPresetOptionsFromDocument,
+    &EnableAccessibility, &SetCaretPosition, &MoveRangeSelectionExtent,
+    &SetSelectionBounds};
 
 int ExtractPrintPreviewPageIndex(base::StringPiece src_url) {
   // Sample |src_url| format: chrome://print/id/page_index/print.pdf
@@ -643,13 +674,7 @@ bool OutOfProcessInstance::HandleInputEvent(const pp::InputEvent& event) {
             touch_event.GetTouchByIndex(PP_TOUCHLIST_TYPE_TARGETTOUCHES, i);
 
         pp::FloatPoint point = touch_point.position();
-
-        // Account for the scroll position. Touch events are in DOM coordinates
-        // where mouse events appear to be in screen coordinates.
-        point.set_x(scroll_offset_.x() + point.x());
-        point.set_y(scroll_offset_.y() + point.y());
         ScaleFloatPoint(device_scale_, &point);
-
         point.set_x(point.x() - available_area_.x());
 
         new_touch_event.AddTouchPoint(
@@ -841,6 +866,48 @@ void OutOfProcessInstance::SendAccessibilityViewportInfo() {
   viewport_info.offset = available_area_.point();
   viewport_info.zoom = zoom_ * device_scale_;
   pp::PDF::SetAccessibilityViewportInfo(GetPluginInstance(), &viewport_info);
+}
+
+void OutOfProcessInstance::SelectionChanged(const pp::Rect& left,
+                                            const pp::Rect& right) {
+  pp::Point l(left.point().x() + available_area_.x(), left.point().y());
+  pp::Point r(right.x() + available_area_.x(), right.point().y());
+
+  float inverse_scale = 1.0f / device_scale_;
+  ScalePoint(inverse_scale, &l);
+  ScalePoint(inverse_scale, &r);
+
+  pp::PDF::SelectionChanged(GetPluginInstance(),
+                            PP_MakeFloatPoint(l.x(), l.y()), left.height(),
+                            PP_MakeFloatPoint(r.x(), r.y()), right.height());
+}
+
+void OutOfProcessInstance::SetCaretPosition(const pp::FloatPoint& position) {
+  pp::Point new_position(position.x(), position.y());
+  ScalePoint(device_scale_, &new_position);
+  new_position.set_x(new_position.x() - available_area_.x());
+  engine_->SetCaretPosition(new_position);
+}
+
+void OutOfProcessInstance::MoveRangeSelectionExtent(
+    const pp::FloatPoint& extent) {
+  pp::Point new_extent(extent.x(), extent.y());
+  ScalePoint(device_scale_, &new_extent);
+  new_extent.set_x(new_extent.x() - available_area_.x());
+  engine_->MoveRangeSelectionExtent(new_extent);
+}
+
+void OutOfProcessInstance::SetSelectionBounds(const pp::FloatPoint& base,
+                                              const pp::FloatPoint& extent) {
+  pp::Point new_base_point(base.x(), base.y());
+  ScalePoint(device_scale_, &new_base_point);
+  new_base_point.set_x(new_base_point.x() - available_area_.x());
+
+  pp::Point new_extent_point(extent.x(), extent.y());
+  ScalePoint(device_scale_, &new_extent_point);
+  new_extent_point.set_x(new_extent_point.x() - available_area_.x());
+
+  engine_->SetSelectionBounds(new_base_point, new_extent_point);
 }
 
 pp::Var OutOfProcessInstance::GetLinkAtPosition(const pp::Point& point) {

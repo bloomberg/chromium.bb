@@ -15,6 +15,7 @@
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/gfx/geometry/point_f.h"
 
 class GURL;
 
@@ -121,6 +122,18 @@ class PepperPluginInstance {
 
   // Posts a message to the JavaScript object for this instance.
   virtual void PostMessageToJavaScript(PP_Var message) = 0;
+
+  // Sets the current mouse caret position.
+  virtual void SetCaretPosition(const gfx::PointF& position) = 0;
+
+  // Sends notification that the selection extent has been modified.
+  virtual void MoveRangeSelectionExtent(const gfx::PointF& extent) = 0;
+
+  // Sends notification of the base and extent of the current selection.
+  // The extent provided maybe modified by subsequent calls to
+  // MoveRangeSelectionExtent.
+  virtual void SetSelectionBounds(const gfx::PointF& base,
+                                  const gfx::PointF& extent) = 0;
 };
 
 }  // namespace content

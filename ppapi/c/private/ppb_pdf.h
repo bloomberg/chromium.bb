@@ -162,6 +162,13 @@ struct PPB_PDF {
   void (*SetCrashData)(PP_Instance instance,
                        const char* pdf_url,
                        const char* top_level_url);
+
+  // Sets the current selection bounding edges.
+  void (*SelectionChanged)(PP_Instance instance,
+                           const struct PP_FloatPoint* left,
+                           int32_t left_height,
+                           const struct PP_FloatPoint* right,
+                           int32_t right_height);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_PDF_H_
