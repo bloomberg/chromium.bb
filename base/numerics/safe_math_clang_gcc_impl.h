@@ -112,7 +112,7 @@ template <typename T, typename U>
 struct ClampedAddFastOp {
   static const bool is_supported = true;
   template <typename V>
-  static V Do(T x, U y) {
+  __attribute__((always_inline)) static V Do(T x, U y) {
     if ((!IsCompileTimeConstant(x) || !IsCompileTimeConstant(y)) &&
         ClampedAddFastAsmOp<T, U>::is_supported) {
       return ClampedAddFastAsmOp<T, U>::template Do<V>(x, y);
@@ -176,7 +176,7 @@ template <typename T, typename U>
 struct ClampedSubFastOp {
   static const bool is_supported = true;
   template <typename V>
-  static V Do(T x, U y) {
+  __attribute__((always_inline)) static V Do(T x, U y) {
     if ((!IsCompileTimeConstant(x) || !IsCompileTimeConstant(y)) &&
         ClampedSubFastAsmOp<T, U>::is_supported) {
       return ClampedSubFastAsmOp<T, U>::template Do<V>(x, y);
@@ -207,7 +207,7 @@ template <typename T, typename U>
 struct ClampedMulFastOp {
   static const bool is_supported = CheckedMulFastOp<T, U>::is_supported;
   template <typename V>
-  static V Do(T x, U y) {
+  __attribute__((always_inline)) static V Do(T x, U y) {
     if ((!IsCompileTimeConstant(x) && !IsCompileTimeConstant(y)) &&
         ClampedMulFastAsmOp<T, U>::is_supported) {
       return ClampedMulFastAsmOp<T, U>::template Do<V>(x, y);
@@ -228,7 +228,7 @@ struct ClampedAbsFastOp {
 #else
   static const bool is_supported = std::is_signed<T>::value;
 #endif
-  static T Do(T value) {
+  __attribute__((always_inline)) static T Do(T value) {
     // This variable assignment is necessary to prevent the compiler from
     // emitting longer, ugly, branchy code.
     T negated = ClampedSubFastOp<T, T>::template Do<T>(T(0), value);
