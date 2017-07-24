@@ -14,80 +14,67 @@ class DirectoryOwnersExtractorTest(unittest.TestCase):
         self.filesystem = MockFileSystem()
         self.extractor = DirectoryOwnersExtractor(self.filesystem)
 
-    def test_lines_to_owner_map(self):
-        lines = [
-            'external/wpt/webgl [ Skip ]',
-            '## Owners: mek@chromium.org',
-            '# external/wpt/webmessaging [ Pass ]',
-            '## Owners: hta@chromium.org',
-            '# external/wpt/webrtc [ Pass ]',
-            'external/wpt/websockets [ Skip ]',
-            '## Owners: michaeln@chromium.org,jsbell@chromium.org',
-            '# external/wpt/webstorage [ Pass ]',
-            'external/wpt/webvtt [ Skip ]',
-        ]
-        self.assertEqual(
-            self.extractor.lines_to_owner_map(lines),
-            {
-                'external/wpt/webmessaging': ['mek@chromium.org'],
-                'external/wpt/webrtc': ['hta@chromium.org'],
-                'external/wpt/webstorage': ['michaeln@chromium.org', 'jsbell@chromium.org'],
-            })
-
-    def test_lines_to_owner_map_no_owners(self):
-        lines = [
-            '## Owners: someone@chromium.org',
-            '# external/wpt/something [ Pass ]',
-            '## Owners: explicitly no owners but still enabled',
-            '# external/wpt/common [ Pass ]',
-        ]
-        self.assertEqual(
-            self.extractor.lines_to_owner_map(lines),
-            {
-                'external/wpt/something': ['someone@chromium.org'],
-            })
-
-
     def test_list_owners(self):
-        self.extractor.owner_map = {
-            'external/wpt/foo': ['a@chromium.org', 'c@chromium.org'],
-            'external/wpt/bar': ['b@chromium.org'],
-            'external/wpt/baz': ['a@chromium.org', 'c@chromium.org'],
-        }
         self.filesystem.files = {
-            '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo/x/y.html': '',
+            '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo/x.html': '',
+            '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo/OWNERS':
+            'a@chromium.org\nc@chromium.org\n',
             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/bar/x/y.html': '',
+            '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/bar/OWNERS':
+            'a@chromium.org\nc@chromium.org\n',
             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/baz/x/y.html': '',
+            '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/baz/x/OWNERS':
+            'b@chromium.org\n',
             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/quux/x/y.html': '',
         }
         changed_files = [
-            'third_party/WebKit/LayoutTests/external/wpt/foo/x/y.html',
+            'third_party/WebKit/LayoutTests/external/wpt/foo/x.html',
+            'third_party/WebKit/LayoutTests/external/wpt/bar/x/y.html',
             'third_party/WebKit/LayoutTests/external/wpt/baz/x/y.html',
             'third_party/WebKit/LayoutTests/external/wpt/quux/x/y.html',
         ]
         self.assertEqual(
             self.extractor.list_owners(changed_files),
-            {('a@chromium.org', 'c@chromium.org'): ['external/wpt/foo', 'external/wpt/baz']})
+            {('a@chromium.org', 'c@chromium.org'): ['external/wpt/foo', 'external/wpt/bar'],
+             ('b@chromium.org',): ['external/wpt/baz/x']}
+        )
 
-    def test_extract_owner_positive_cases(self):
-        self.assertEqual(self.extractor.extract_owners('## Owners: foo@chromium.org'), ['foo@chromium.org'])
-        self.assertEqual(self.extractor.extract_owners('# Owners: foo@chromium.org'), ['foo@chromium.org'])
-        self.assertEqual(self.extractor.extract_owners('## Owners: a@x.com,b@x.com'), ['a@x.com', 'b@x.com'])
-        self.assertEqual(self.extractor.extract_owners('## Owners: a@x.com, b@x.com'), ['a@x.com', 'b@x.com'])
-        self.assertEqual(self.extractor.extract_owners('## Owner: foo@chromium.org'), ['foo@chromium.org'])
+    def test_find_owners_file_current_dir(self):
+        self.filesystem.files = {'/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo/OWNERS': ''}
+        self.assertEqual(self.extractor.find_owners_file('third_party/WebKit/LayoutTests/external/wpt/foo'),
+                         '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo/OWNERS')
 
-    def test_extract_owner_negative_cases(self):
-        self.assertIsNone(self.extractor.extract_owners(''))
-        self.assertIsNone(self.extractor.extract_owners('## Something: foo@chromium.org'))
-        self.assertIsNone(self.extractor.extract_owners('## Owners: not an email address'))
+    def test_find_owners_file_ancestor(self):
+        self.filesystem.files = {
+            '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/OWNERS': '',
+            '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/x/y/z.html': '',
+        }
+        self.assertEqual(self.extractor.find_owners_file('third_party/WebKit/LayoutTests/external/wpt/x/y'),
+                         '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/OWNERS')
 
-    def test_extract_directory_positive_cases(self):
-        self.assertEqual(self.extractor.extract_directory('external/a/b [ Pass ]'), 'external/a/b')
-        self.assertEqual(self.extractor.extract_directory('# external/c/d [ Pass ]'), 'external/c/d')
-        self.assertEqual(self.extractor.extract_directory('# external/e/f [ Skip ]'), 'external/e/f')
-        self.assertEqual(self.extractor.extract_directory('# external/g/h/i [ Skip ]'), 'external/g/h/i')
+    def test_find_owners_file_not_found(self):
+        self.filesystem.files = {
+            '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo/OWNERS': '',
+            '/other-place/OWNERS': '',
+            '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/x/y/z.html': '',
+        }
+        self.assertIsNone(self.extractor.find_owners_file('third_party/WebKit/LayoutTests/external/wpt/x/y'))
 
-    def test_extract_directory_negative_cases(self):
-        self.assertIsNone(self.extractor.extract_directory(''))
-        self.assertIsNone(self.extractor.extract_directory('external/a/b [ Skip ]'))
-        self.assertIsNone(self.extractor.extract_directory('# some comment'))
+    def test_find_owners_file_absolute_path(self):
+        with self.assertRaises(AssertionError):
+            self.extractor.find_owners_file('/absolute/path')
+
+    def test_extract_owners(self):
+        self.filesystem.files = {
+            '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo/OWNERS':
+            '#This is a comment\n'
+            '*\n'
+            'foo@chromium.org\n'
+            'bar@chromium.org\n'
+            'foobar\n'
+            '#foobar@chromium.org\n'
+            '# TEAM: some-team@chromium.org\n'
+            '# COMPONENT: Blink>Layout\n'
+        }
+        self.assertEqual(self.extractor.extract_owners('/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo/OWNERS'),
+                         ['foo@chromium.org', 'bar@chromium.org'])

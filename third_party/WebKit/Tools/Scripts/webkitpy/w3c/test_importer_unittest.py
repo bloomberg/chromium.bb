@@ -172,10 +172,9 @@ class TestImporterTest(LoggingTestCase):
 
     def test_get_directory_owners(self):
         host = MockHost()
-        host.filesystem.write_text_file(
-            '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations',
-            '## Owners: someone@chromium.org\n'
-            '# external/wpt/foo [ Pass ]\n')
+        host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
+        host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo/OWNERS',
+                                        'someone@chromium.org\n')
         git = MockGit(filesystem=host.filesystem, executive=host.executive, platform=host.platform)
         git.changed_files = lambda: ['third_party/WebKit/LayoutTests/external/wpt/foo/x.html']
         host.git = lambda: git
@@ -184,10 +183,9 @@ class TestImporterTest(LoggingTestCase):
 
     def test_get_directory_owners_no_changed_files(self):
         host = MockHost()
-        host.filesystem.write_text_file(
-            '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations',
-            '## Owners: someone@chromium.org\n'
-            '# external/wpt/foo [ Pass ]\n')
+        host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
+        host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo/OWNERS',
+                                        'someone@chromium.org\n')
         importer = TestImporter(host)
         self.assertEqual(importer.get_directory_owners(), {})
 
