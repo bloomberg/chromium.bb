@@ -1064,17 +1064,29 @@ static void fhalfright32(const tran_low_t *input, tran_low_t *output) {
 }
 
 #if CONFIG_MRC_TX
-static void get_masked_residual32_fwd(const tran_low_t *input,
-                                      tran_low_t *output) {
-  // placeholder for future bitmask creation
-  memcpy(output, input, 32 * 32 * sizeof(*input));
-}
-
-static void fmrc32(const tran_low_t *input, tran_low_t *output) {
-  // placeholder for mrc_dct, this just performs regular dct
-  tran_low_t masked_input[32 * 32];
-  get_masked_residual32_fwd(input, masked_input);
-  fdct32(masked_input, output);
+static void get_masked_residual32(const int16_t **input, int *input_stride,
+                                  const uint8_t *pred, int pred_stride,
+                                  int16_t *masked_input) {
+  int mrc_mask[32 * 32];
+  get_mrc_mask(pred, pred_stride, mrc_mask, 32, 32, 32);
+  int32_t sum = 0;
+  int16_t avg;
+  // Get the masked average of the prediction
+  for (int i = 0; i < 32; ++i) {
+    for (int j = 0; j < 32; ++j) {
+      sum += mrc_mask[i * 32 + j] * (*input)[i * (*input_stride) + j];
+    }
+  }
+  avg = ROUND_POWER_OF_TWO_SIGNED(sum, 10);
+  // Replace all of the unmasked pixels in the prediction with the average
+  // of the masked pixels
+  for (int i = 0; i < 32; ++i) {
+    for (int j = 0; j < 32; ++j)
+      masked_input[i * 32 + j] =
+          (mrc_mask[i * 32 + j]) ? (*input)[i * (*input_stride) + j] : avg;
+  }
+  *input = masked_input;
+  *input_stride = 32;
 }
 #endif  // CONFIG_MRC_TX
 
@@ -2387,7 +2399,7 @@ void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
     { fidtx32, fhalfright32 },       // H_FLIPADST
 #endif
 #if CONFIG_MRC_TX
-    { fmrc32, fmrc32 },  // MRC_TX
+    { fdct32, fdct32 },  // MRC_TX
 #endif                   // CONFIG_MRC_TX
   };
   const transform_2d ht = FHT[tx_type];
@@ -2399,6 +2411,14 @@ void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
   int16_t flipped_input[32 * 32];
   maybe_flip_input(&input, &stride, 32, 32, flipped_input, tx_type);
 #endif
+
+#if CONFIG_MRC_TX
+  if (tx_type == MRC_DCT) {
+    int16_t masked_input[32 * 32];
+    get_masked_residual32(&input, &stride, txfm_param->dst, txfm_param->stride,
+                          masked_input);
+  }
+#endif  // CONFIG_MRC_TX
 
   // Columns
   for (i = 0; i < 32; ++i) {

@@ -1463,6 +1463,35 @@ static void idct16x16_add(const tran_low_t *input, uint8_t *dest, int stride,
     aom_idct16x16_256_add(input, dest, stride);
 }
 
+#if CONFIG_MRC_TX
+static void imrc32x32_add_c(const tran_low_t *input, uint8_t *dest, int stride,
+                            const TxfmParam *txfm_param) {
+#if CONFIG_ADAPT_SCAN
+  const int16_t half = txfm_param->eob_threshold[0];
+  const int16_t quarter = txfm_param->eob_threshold[1];
+#else
+  const int16_t half = 135;
+  const int16_t quarter = 34;
+#endif
+
+  const int eob = txfm_param->eob;
+  if (eob == 1) {
+    aom_idct32x32_1_add_c(input, dest, stride);
+  } else {
+    tran_low_t mask[32 * 32];
+    get_mrc_mask(txfm_param->dst, txfm_param->stride, mask, 32, 32, 32);
+    if (eob <= quarter)
+      // non-zero coeff only in upper-left 8x8
+      aom_imrc32x32_34_add_c(input, dest, stride, mask);
+    else if (eob <= half)
+      // non-zero coeff only in upper-left 16x16
+      aom_imrc32x32_135_add_c(input, dest, stride, mask);
+    else
+      aom_imrc32x32_1024_add_c(input, dest, stride, mask);
+  }
+}
+#endif  // CONFIG_MRC_TX
+
 static void idct32x32_add(const tran_low_t *input, uint8_t *dest, int stride,
                           const TxfmParam *txfm_param) {
 #if CONFIG_ADAPT_SCAN
@@ -1485,24 +1514,6 @@ static void idct32x32_add(const tran_low_t *input, uint8_t *dest, int stride,
   else
     aom_idct32x32_1024_add(input, dest, stride);
 }
-
-#if CONFIG_MRC_TX
-static void get_masked_residual32_inv(const tran_low_t *input, uint8_t *dest,
-                                      tran_low_t *output) {
-  // placeholder for bitmask creation, in the future it
-  // will likely be made based on dest
-  (void)dest;
-  memcpy(output, input, 32 * 32 * sizeof(*input));
-}
-
-static void imrc32x32_add_c(const tran_low_t *input, uint8_t *dest, int stride,
-                            const TxfmParam *param) {
-  // placeholder mrc tx function
-  tran_low_t masked_input[32 * 32];
-  get_masked_residual32_inv(input, dest, masked_input);
-  idct32x32_add(input, dest, stride, param);
-}
-#endif  // CONFIG_MRC_TX
 
 #if CONFIG_TX64X64
 static void idct64x64_add(const tran_low_t *input, uint8_t *dest, int stride,
@@ -2200,10 +2211,12 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
 #endif  // CONFIG_PVQ
   TxfmParam txfm_param;
   init_txfm_param(xd, tx_size, tx_type, eob, &txfm_param);
-#if CONFIG_LGT
+#if CONFIG_LGT || CONFIG_MRC_TX
   txfm_param.dst = dst;
-  txfm_param.mode = mode;
   txfm_param.stride = stride;
+#endif  // CONFIG_LGT || CONFIG_MRC_TX
+#if CONFIG_LGT
+  txfm_param.mode = mode;
 #endif
 
   const int is_hbd = get_bitdepth_data_path_index(xd);

@@ -209,6 +209,16 @@ static INLINE void set_flip_cfg(int tx_type, TXFM_2D_FLIP_CFG *cfg) {
   }
 }
 
+#if CONFIG_MRC_TX
+static INLINE void get_mrc_mask(const uint8_t *pred, int pred_stride, int *mask,
+                                int mask_stride, int width, int height) {
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j)
+      mask[i * mask_stride + j] = pred[i * pred_stride + j] > 100 ? 1 : 0;
+  }
+}
+#endif  // CONFIG_MRC_TX
+
 #ifdef __cplusplus
 extern "C" {
 #endif

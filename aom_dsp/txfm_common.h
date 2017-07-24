@@ -27,11 +27,13 @@ typedef struct txfm_param {
   int tx_size;
   int lossless;
   int bd;
+#if CONFIG_MRC_TX || CONFIG_LGT
+  int stride;
+  uint8_t *dst;
+#endif  // CONFIG_MRC_TX || CONFIG_LGT
 #if CONFIG_LGT
   int is_inter;
-  int stride;
   int mode;
-  uint8_t *dst;
 #endif
 // for inverse transforms only
 #if CONFIG_ADAPT_SCAN

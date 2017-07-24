@@ -538,7 +538,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 
   TxfmParam txfm_param;
 
-#if CONFIG_PVQ || CONFIG_DIST_8X8 || CONFIG_LGT
+#if CONFIG_PVQ || CONFIG_DIST_8X8 || CONFIG_LGT || CONFIG_MRC_TX
   uint8_t *dst;
   const int dst_stride = pd->dst.stride;
 #if CONFIG_PVQ || CONFIG_DIST_8X8
@@ -601,7 +601,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #endif  // CONFIG_HIGHBITDEPTH
 #endif
 
-#if CONFIG_PVQ || CONFIG_DIST_8X8 || CONFIG_LGT
+#if CONFIG_PVQ || CONFIG_DIST_8X8 || CONFIG_LGT || CONFIG_MRC_TX
   dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
 #if CONFIG_PVQ || CONFIG_DIST_8X8
   pred = &pd->pred[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
@@ -623,17 +623,19 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   }
 #endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_PVQ || CONFIG_DIST_8X8
-#endif  // CONFIG_PVQ || CONFIG_DIST_8X8 || CONFIG_LGT
+#endif  // CONFIG_PVQ || CONFIG_DIST_8X8 || CONFIG_LGT || CONFIG_MRC_TX
 
   (void)ctx;
 
   txfm_param.tx_type = tx_type;
   txfm_param.tx_size = tx_size;
   txfm_param.lossless = xd->lossless[mbmi->segment_id];
-#if CONFIG_LGT
-  txfm_param.is_inter = is_inter_block(mbmi);
+#if CONFIG_MRC_TX || CONFIG_LGT
   txfm_param.dst = dst;
   txfm_param.stride = dst_stride;
+#endif  // CONFIG_MRC_TX || CONFIG_LGT
+#if CONFIG_LGT
+  txfm_param.is_inter = is_inter_block(mbmi);
   txfm_param.mode = get_prediction_mode(xd->mi[0], plane, tx_size, block);
 #endif
 
