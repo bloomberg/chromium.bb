@@ -8,20 +8,13 @@
 // Implements the ANGLE platform interface, for functionality like
 // histograms and trace profiling.
 
-#include "base/callback_forward.h"
 #include "ui/gl/gl_context_egl.h"
-#include "ui/gl/gl_export.h"
 
-namespace angle {
+namespace gl {
 
-GL_EXPORT bool InitializePlatform(EGLDisplay display);
-GL_EXPORT void ResetPlatform(EGLDisplay display);
+bool InitializeANGLEPlatform(EGLDisplay display);
+void ResetANGLEPlatform(EGLDisplay display);
 
-using CacheProgramCallback =
-    base::RepeatingCallback<void(const std::string&, const std::string&)>;
-GL_EXPORT void SetCacheProgramCallback(CacheProgramCallback callback);
-GL_EXPORT void ResetCacheProgramCallback();
-
-}  // namespace angle
+}  // namespace gl
 
 #endif  // UI_GL_ANGLE_PLATFORM_IMPL_H_

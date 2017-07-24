@@ -21,7 +21,6 @@
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_program_cache.h"
-#include "gpu/command_buffer/service/passthrough_program_cache.h"
 #include "gpu/command_buffer/service/preemption_flag.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
@@ -110,17 +109,10 @@ gles2::ProgramCache* GpuChannelManager::program_cache() {
     bool disable_disk_cache =
         gpu_preferences_.disable_gpu_shader_disk_cache ||
         workarounds.disable_program_disk_cache;
-
-    // Use the EGL cache control extension for the passthrough decoder.
-    if (gpu_preferences_.use_passthrough_cmd_decoder) {
-      program_cache_.reset(new gles2::PassthroughProgramCache(
-          gpu_preferences_.gpu_program_cache_size, disable_disk_cache));
-    } else {
-      program_cache_.reset(new gles2::MemoryProgramCache(
-          gpu_preferences_.gpu_program_cache_size, disable_disk_cache,
-          workarounds.disable_program_caching_for_transform_feedback,
-          &activity_flags_));
-    }
+    program_cache_.reset(new gles2::MemoryProgramCache(
+        gpu_preferences_.gpu_program_cache_size, disable_disk_cache,
+        workarounds.disable_program_caching_for_transform_feedback,
+        &activity_flags_));
   }
   return program_cache_.get();
 }

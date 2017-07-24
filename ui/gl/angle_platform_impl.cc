@@ -4,53 +4,45 @@
 
 #include "ui/gl/angle_platform_impl.h"
 
-#include "base/base64.h"
-#include "base/callback.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/angle/include/platform/Platform.h"
 #include "ui/gl/gl_bindings.h"
 
-namespace angle {
+namespace gl {
 
 namespace {
 
-// This platform context stores user data accessible inside the impl methods.
-struct PlatformContext {
-  CacheProgramCallback cache_program_callback;
-};
+angle::ResetDisplayPlatformFunc g_angle_reset_platform = nullptr;
 
-PlatformContext g_platform_context;
-ResetDisplayPlatformFunc g_angle_reset_platform = nullptr;
-
-double ANGLEPlatformImpl_currentTime(PlatformMethods* platform) {
+double ANGLEPlatformImpl_currentTime(angle::PlatformMethods* platform) {
   return base::Time::Now().ToDoubleT();
 }
 
 double ANGLEPlatformImpl_monotonicallyIncreasingTime(
-    PlatformMethods* platform) {
+    angle::PlatformMethods* platform) {
   return (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
 }
 
 const unsigned char* ANGLEPlatformImpl_getTraceCategoryEnabledFlag(
-    PlatformMethods* platform,
+    angle::PlatformMethods* platform,
     const char* category_group) {
   return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group);
 }
 
-void ANGLEPlatformImpl_logError(PlatformMethods* platform,
+void ANGLEPlatformImpl_logError(angle::PlatformMethods* platform,
                                 const char* errorMessage) {
   LOG(ERROR) << errorMessage;
 }
 
-void ANGLEPlatformImpl_logWarning(PlatformMethods* platform,
+void ANGLEPlatformImpl_logWarning(angle::PlatformMethods* platform,
                                   const char* warningMessage) {
   LOG(WARNING) << warningMessage;
 }
 
-TraceEventHandle ANGLEPlatformImpl_addTraceEvent(
-    PlatformMethods* platform,
+angle::TraceEventHandle ANGLEPlatformImpl_addTraceEvent(
+    angle::PlatformMethods* platform,
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
@@ -69,23 +61,23 @@ TraceEventHandle ANGLEPlatformImpl_addTraceEvent(
           trace_event_internal::kGlobalScope, id, trace_event_internal::kNoId,
           base::PlatformThread::CurrentId(), timestamp_tt, num_args, arg_names,
           arg_types, arg_values, nullptr, flags);
-  TraceEventHandle result;
+  angle::TraceEventHandle result;
   memcpy(&result, &handle, sizeof(result));
   return result;
 }
 
 void ANGLEPlatformImpl_updateTraceEventDuration(
-    PlatformMethods* platform,
+    angle::PlatformMethods* platform,
     const unsigned char* category_group_enabled,
     const char* name,
-    TraceEventHandle handle) {
+    angle::TraceEventHandle handle) {
   base::trace_event::TraceEventHandle trace_event_handle;
   memcpy(&trace_event_handle, &handle, sizeof(handle));
   TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION(category_group_enabled, name,
                                               trace_event_handle);
 }
 
-void ANGLEPlatformImpl_histogramCustomCounts(PlatformMethods* platform,
+void ANGLEPlatformImpl_histogramCustomCounts(angle::PlatformMethods* platform,
                                              const char* name,
                                              int sample,
                                              int min,
@@ -100,7 +92,7 @@ void ANGLEPlatformImpl_histogramCustomCounts(PlatformMethods* platform,
   counter->Add(sample);
 }
 
-void ANGLEPlatformImpl_histogramEnumeration(PlatformMethods* platform,
+void ANGLEPlatformImpl_histogramEnumeration(angle::PlatformMethods* platform,
                                             const char* name,
                                             int sample,
                                             int boundary_value) {
@@ -113,7 +105,7 @@ void ANGLEPlatformImpl_histogramEnumeration(PlatformMethods* platform,
   counter->Add(sample);
 }
 
-void ANGLEPlatformImpl_histogramSparse(PlatformMethods* platform,
+void ANGLEPlatformImpl_histogramSparse(angle::PlatformMethods* platform,
                                        const char* name,
                                        int sample) {
   // For sparse histograms, we can use the macro, as it does not incorporate a
@@ -121,45 +113,30 @@ void ANGLEPlatformImpl_histogramSparse(PlatformMethods* platform,
   UMA_HISTOGRAM_SPARSE_SLOWLY(name, sample);
 }
 
-void ANGLEPlatformImpl_histogramBoolean(PlatformMethods* platform,
+void ANGLEPlatformImpl_histogramBoolean(angle::PlatformMethods* platform,
                                         const char* name,
                                         bool sample) {
   ANGLEPlatformImpl_histogramEnumeration(platform, name, sample ? 1 : 0, 2);
 }
 
-void ANGLEPlatformImpl_cacheProgram(PlatformMethods* platform,
-                                    const ProgramKeyType& key,
-                                    size_t program_size,
-                                    const uint8_t* program_bytes) {
-  PlatformContext* context =
-      reinterpret_cast<PlatformContext*>(platform->context);
-  if (context && context->cache_program_callback) {
-    // Convert the key and binary to string form.
-    std::string key_string(reinterpret_cast<const char*>(&key[0]),
-                           sizeof(ProgramKeyType));
-    std::string value_string(reinterpret_cast<const char*>(program_bytes),
-                             program_size);
-    context->cache_program_callback.Run(key_string, value_string);
-  }
-}
-
 }  // anonymous namespace
 
-bool InitializePlatform(EGLDisplay display) {
-  GetDisplayPlatformFunc angle_get_platform =
-      reinterpret_cast<GetDisplayPlatformFunc>(
+bool InitializeANGLEPlatform(EGLDisplay display) {
+  angle::GetDisplayPlatformFunc angle_get_platform =
+      reinterpret_cast<angle::GetDisplayPlatformFunc>(
           eglGetProcAddress("ANGLEGetDisplayPlatform"));
   if (!angle_get_platform)
     return false;
 
   // Save the pointer to the destroy function here to avoid crash.
-  g_angle_reset_platform = reinterpret_cast<ResetDisplayPlatformFunc>(
+  g_angle_reset_platform = reinterpret_cast<angle::ResetDisplayPlatformFunc>(
       eglGetProcAddress("ANGLEResetDisplayPlatform"));
 
-  PlatformMethods* platformMethods = nullptr;
-  if (!angle_get_platform(static_cast<EGLDisplayType>(display),
-                          g_PlatformMethodNames, g_NumPlatformMethods,
-                          &g_platform_context, &platformMethods))
+  angle::PlatformMethods* platformMethods = nullptr;
+  if (!angle_get_platform(static_cast<angle::EGLDisplayType>(display),
+                          angle::g_PlatformMethodNames,
+                          angle::g_NumPlatformMethods, nullptr,
+                          &platformMethods))
     return false;
   platformMethods->currentTime = ANGLEPlatformImpl_currentTime;
   platformMethods->addTraceEvent = ANGLEPlatformImpl_addTraceEvent;
@@ -178,23 +155,13 @@ bool InitializePlatform(EGLDisplay display) {
       ANGLEPlatformImpl_monotonicallyIncreasingTime;
   platformMethods->updateTraceEventDuration =
       ANGLEPlatformImpl_updateTraceEventDuration;
-  platformMethods->cacheProgram = ANGLEPlatformImpl_cacheProgram;
   return true;
 }
 
-void ResetPlatform(EGLDisplay display) {
+void ResetANGLEPlatform(EGLDisplay display) {
   if (!g_angle_reset_platform)
     return;
-  g_angle_reset_platform(static_cast<EGLDisplayType>(display));
-  ResetCacheProgramCallback();
+  g_angle_reset_platform(static_cast<angle::EGLDisplayType>(display));
 }
 
-void SetCacheProgramCallback(CacheProgramCallback callback) {
-  g_platform_context.cache_program_callback = callback;
-}
-
-void ResetCacheProgramCallback() {
-  g_platform_context.cache_program_callback.Reset();
-}
-
-}  // namespace angle
+}  // namespace gl
