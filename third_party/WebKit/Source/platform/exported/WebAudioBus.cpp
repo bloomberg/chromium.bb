@@ -24,8 +24,6 @@
 
 #include "public/platform/WebAudioBus.h"
 
-#include "platform/wtf/build_config.h"
-
 #include "platform/audio/AudioBus.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"

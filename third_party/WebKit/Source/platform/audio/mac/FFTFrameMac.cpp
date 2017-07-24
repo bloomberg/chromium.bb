@@ -29,12 +29,10 @@
 // Mac OS X - specific FFTFrame implementation
 
 #include "build/build_config.h"
-#include "platform/wtf/build_config.h"
 
 #if defined(OS_MACOSX)
 
 #include "platform/audio/FFTFrame.h"
-
 #include "platform/audio/VectorMath.h"
 
 namespace blink {

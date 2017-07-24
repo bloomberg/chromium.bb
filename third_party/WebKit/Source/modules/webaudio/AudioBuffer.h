@@ -36,7 +36,6 @@
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
-#include "platform/wtf/build_config.h"
 
 namespace blink {
 

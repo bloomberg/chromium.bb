@@ -7,8 +7,6 @@
 // TODO(kojii): This file will need to be renamed, because it's no more
 // specific to AddressSanitizer.
 
-#include "platform/wtf/build_config.h"
-
 // TODO(sof): Add SyZyASan support?
 #if defined(ADDRESS_SANITIZER)
 #include <sanitizer/asan_interface.h>

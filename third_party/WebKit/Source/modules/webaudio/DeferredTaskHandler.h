@@ -35,7 +35,6 @@
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/Vector.h"
-#include "platform/wtf/build_config.h"
 
 namespace blink {
 

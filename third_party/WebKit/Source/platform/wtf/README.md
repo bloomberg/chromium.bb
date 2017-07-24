@@ -66,7 +66,6 @@ The below is a list of major libraries. For a complete list, look at
 
   [Compiler.h] (e.g. `COMPILER(GCC)`),
   [CPU.h] (e.g. `WTF_CPU_ARM_NEON`),
-  [build_config.h] (e.g. `USE(APPLE_SYSTEM_LOG)`)
 
 * **Miscellaneous**
 
