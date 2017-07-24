@@ -159,17 +159,6 @@ def BuildBootfs(output_directory, runtime_deps_path, test_name, child_args,
   DumpFile(dry_run, autorun_file.name, 'autorun')
   target_source_pairs.append(('autorun', autorun_file.name))
 
-  # Generate test.config for bootstrap that tells it to run our autorun script
-  # with sh.
-  bootstrap_config_file = tempfile.NamedTemporaryFile()
-  bootstrap_config_file.write(
-      '{"apps": [[ "file:///boot/bin/sh", "/system/autorun" ]]}')
-  bootstrap_config_file.flush()
-  DumpFile(dry_run, bootstrap_config_file.name,
-           'data/bootstrap/test.config')
-  target_source_pairs.append(('data/bootstrap/test.config',
-                              bootstrap_config_file.name))
-
   manifest_file = tempfile.NamedTemporaryFile()
   bootfs_name = runtime_deps_path + '.bootfs'
 
