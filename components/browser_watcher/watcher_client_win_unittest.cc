@@ -161,42 +161,7 @@ class WatcherClientTest : public base::MultiProcessTest {
 // TODO(siggi): More testing - test WatcherClient base implementation.
 
 TEST_F(WatcherClientTest, LaunchWatcherSucceeds) {
-  // We can only use the non-legacy launch method on Windows Vista or better.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return;
-
   WatcherClient client(GetBaseCommandLineGenerator(NO_LEAK_HANDLE));
-  ASSERT_FALSE(client.use_legacy_launch());
-
-  client.LaunchWatcher();
-
-  ASSERT_NO_FATAL_FAILURE(
-      AssertSuccessfulExitCode(client.process().Duplicate()));
-}
-
-TEST_F(WatcherClientTest, LaunchWatcherLegacyModeSucceeds) {
-  // Test the XP-compatible legacy launch mode. This is expected to leak
-  // a handle to the child process.
-  WatcherClient client(GetBaseCommandLineGenerator(LEAK_HANDLE));
-
-  // Use the legacy launch mode.
-  client.set_use_legacy_launch(true);
-
-  client.LaunchWatcher();
-
-  ASSERT_NO_FATAL_FAILURE(
-      AssertSuccessfulExitCode(client.process().Duplicate()));
-}
-
-TEST_F(WatcherClientTest, LegacyModeDetectedOnXP) {
-  // This test only works on Windows XP.
-  if (base::win::GetVersion() > base::win::VERSION_XP)
-    return;
-
-  // Test that the client detects the need to use legacy launch mode, and that
-  // it works on Windows XP.
-  WatcherClient client(GetBaseCommandLineGenerator(LEAK_HANDLE));
-  ASSERT_TRUE(client.use_legacy_launch());
 
   client.LaunchWatcher();
 

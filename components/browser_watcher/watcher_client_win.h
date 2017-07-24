@@ -30,8 +30,7 @@ class WatcherClient {
   ~WatcherClient();
 
   // Launches the watcher process such that the child process is able to inherit
-  // a handle to the current process. If use_legacy_launch() is true, this uses
-  // a non-threadsafe legacy launch mode that's compatible with Windows XP.
+  // a handle to the current process.
   void LaunchWatcher();
 
   // Ensures that |handle| may be inherited by the watcher process. |handle|
@@ -42,18 +41,7 @@ class WatcherClient {
   // Returns the launched process.
   const base::Process& process() const { return process_; }
 
-  // Accessors, exposed only for testing.
-  bool use_legacy_launch() const { return use_legacy_launch_; }
-  void set_use_legacy_launch(bool use_legacy_launch) {
-      use_legacy_launch_ = use_legacy_launch;
-  }
-
  private:
-  // If true, the watcher process will be launched with XP legacy handle
-  // inheritance. This is not thread safe and can leak random handles into the
-  // child process, but it's the best we can do on XP.
-  bool use_legacy_launch_;
-
   // The CommandLineGenerator passed to the constructor.
   CommandLineGenerator command_line_generator_;
 
