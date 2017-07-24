@@ -6,9 +6,10 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IntersectionObserverCallback.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8GCController.h"
-#include "bindings/core/v8/V8IntersectionObserverCallback.h"
+#include "bindings/core/v8/V8IntersectionObserverDelegate.h"
 #include "bindings/core/v8/V8IntersectionObserverInit.h"
 #include "core/dom/Element.h"
 #include "platform/bindings/V8DOMWrapper.h"
@@ -47,11 +48,12 @@ void V8IntersectionObserver::constructorCustom(
   if (exception_state.HadException())
     return;
 
-  IntersectionObserverCallback* callback = new V8IntersectionObserverCallback(
-      v8::Local<v8::Function>::Cast(info[0]), wrapper,
-      ScriptState::Current(info.GetIsolate()));
+  IntersectionObserverCallback* callback = IntersectionObserverCallback::Create(
+      ScriptState::Current(info.GetIsolate()), info[0]);
+  V8IntersectionObserverDelegate* delegate = new V8IntersectionObserverDelegate(
+      callback, ScriptState::Current(info.GetIsolate()));
   IntersectionObserver* observer = IntersectionObserver::Create(
-      intersection_observer_init, *callback, exception_state);
+      intersection_observer_init, *delegate, exception_state);
   if (exception_state.HadException())
     return;
   DCHECK(observer);

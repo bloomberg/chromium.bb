@@ -60,7 +60,6 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/intersection_observer/IntersectionObserverCallback.h"
 #include "core/intersection_observer/IntersectionObserverController.h"
 #include "core/intersection_observer/IntersectionObserverInit.h"
 #include "core/layout/LayoutAnalyzer.h"

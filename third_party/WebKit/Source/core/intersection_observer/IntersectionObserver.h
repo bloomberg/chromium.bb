@@ -10,6 +10,7 @@
 #include "core/intersection_observer/IntersectionObserverEntry.h"
 #include "platform/Length.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Vector.h"
@@ -19,7 +20,7 @@ namespace blink {
 class Document;
 class Element;
 class ExceptionState;
-class IntersectionObserverCallback;
+class IntersectionObserverDelegate;
 class IntersectionObserverInit;
 
 class CORE_EXPORT IntersectionObserver final
@@ -33,7 +34,7 @@ class CORE_EXPORT IntersectionObserver final
                WTF::kSameThreadAffinity>;
 
   static IntersectionObserver* Create(const IntersectionObserverInit&,
-                                      IntersectionObserverCallback&,
+                                      IntersectionObserverDelegate&,
                                       ExceptionState&);
   static IntersectionObserver* Create(const Vector<Length>& root_margin,
                                       const Vector<float>& thresholds,
@@ -79,9 +80,10 @@ class CORE_EXPORT IntersectionObserver final
   }
 
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
  private:
-  explicit IntersectionObserver(IntersectionObserverCallback&,
+  explicit IntersectionObserver(IntersectionObserverDelegate&,
                                 Element*,
                                 const Vector<Length>& root_margin,
                                 const Vector<float>& thresholds);
@@ -91,7 +93,7 @@ class CORE_EXPORT IntersectionObserver final
   // deleted; true otherwise.
   bool RootIsValid() const;
 
-  Member<IntersectionObserverCallback> callback_;
+  const TraceWrapperMember<IntersectionObserverDelegate> delegate_;
   WeakMember<Element> root_;
   HeapLinkedHashSet<WeakMember<IntersectionObservation>> observations_;
   HeapVector<Member<IntersectionObserverEntry>> entries_;

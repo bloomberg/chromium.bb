@@ -16,8 +16,8 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/intersection_observer/ElementIntersectionObserverData.h"
-#include "core/intersection_observer/IntersectionObserverCallback.h"
 #include "core/intersection_observer/IntersectionObserverController.h"
+#include "core/intersection_observer/IntersectionObserverDelegate.h"
 #include "core/intersection_observer/IntersectionObserverEntry.h"
 #include "core/intersection_observer/IntersectionObserverInit.h"
 #include "core/layout/LayoutView.h"
@@ -29,27 +29,27 @@ namespace blink {
 
 namespace {
 
-// Internal implementation of IntersectionObserverCallback when using
+// Internal implementation of IntersectionObserverDelegate when using
 // IntersectionObserver with an EventCallback.
-class IntersectionObserverCallbackImpl final
-    : public IntersectionObserverCallback {
-  WTF_MAKE_NONCOPYABLE(IntersectionObserverCallbackImpl);
+class IntersectionObserverDelegateImpl final
+    : public IntersectionObserverDelegate {
+  WTF_MAKE_NONCOPYABLE(IntersectionObserverDelegateImpl);
 
  public:
-  IntersectionObserverCallbackImpl(
+  IntersectionObserverDelegateImpl(
       ExecutionContext* context,
       std::unique_ptr<IntersectionObserver::EventCallback> callback)
       : context_(context), callback_(std::move(callback)) {}
 
-  void HandleEvent(const HeapVector<Member<IntersectionObserverEntry>>& entries,
-                   IntersectionObserver&) override {
+  void Deliver(const HeapVector<Member<IntersectionObserverEntry>>& entries,
+               IntersectionObserver&) override {
     (*callback_.get())(entries);
   }
 
   ExecutionContext* GetExecutionContext() const override { return context_; }
 
   DEFINE_INLINE_TRACE() {
-    IntersectionObserverCallback::Trace(visitor);
+    IntersectionObserverDelegate::Trace(visitor);
     visitor->Trace(context_);
   }
 
@@ -132,7 +132,7 @@ void ParseThresholds(const DoubleOrDoubleSequence& threshold_parameter,
 
 IntersectionObserver* IntersectionObserver::Create(
     const IntersectionObserverInit& observer_init,
-    IntersectionObserverCallback& callback,
+    IntersectionObserverDelegate& delegate,
     ExceptionState& exception_state) {
   Element* root = observer_init.root();
 
@@ -146,7 +146,7 @@ IntersectionObserver* IntersectionObserver::Create(
   if (exception_state.HadException())
     return nullptr;
 
-  return new IntersectionObserver(callback, root, root_margin, thresholds);
+  return new IntersectionObserver(delegate, root, root_margin, thresholds);
 }
 
 IntersectionObserver* IntersectionObserver::Create(
@@ -155,18 +155,18 @@ IntersectionObserver* IntersectionObserver::Create(
     Document* document,
     std::unique_ptr<EventCallback> callback,
     ExceptionState& exception_state) {
-  IntersectionObserverCallbackImpl* intersection_observer_callback =
-      new IntersectionObserverCallbackImpl(document, std::move(callback));
-  return new IntersectionObserver(*intersection_observer_callback, nullptr,
+  IntersectionObserverDelegateImpl* intersection_observer_delegate =
+      new IntersectionObserverDelegateImpl(document, std::move(callback));
+  return new IntersectionObserver(*intersection_observer_delegate, nullptr,
                                   root_margin, thresholds);
 }
 
 IntersectionObserver::IntersectionObserver(
-    IntersectionObserverCallback& callback,
+    IntersectionObserverDelegate& delegate,
     Element* root,
     const Vector<Length>& root_margin,
     const Vector<float>& thresholds)
-    : callback_(&callback),
+    : delegate_(this, &delegate),
       root_(root),
       thresholds_(thresholds),
       top_margin_(kFixed),
@@ -220,8 +220,8 @@ bool IntersectionObserver::RootIsValid() const {
 
 Document& IntersectionObserver::TrackingDocument() const {
   if (RootIsImplicit()) {
-    DCHECK(callback_->GetExecutionContext());
-    return *ToDocument(callback_->GetExecutionContext());
+    DCHECK(delegate_->GetExecutionContext());
+    return *ToDocument(delegate_->GetExecutionContext());
   }
   DCHECK(root());
   return root()->GetDocument();
@@ -269,14 +269,14 @@ void IntersectionObserver::unobserve(Element* target,
 void IntersectionObserver::ComputeIntersectionObservations() {
   if (!RootIsValid())
     return;
-  Document* callback_document = ToDocument(callback_->GetExecutionContext());
-  if (!callback_document)
+  Document* delegate_document = ToDocument(delegate_->GetExecutionContext());
+  if (!delegate_document)
     return;
-  LocalDOMWindow* callback_dom_window = callback_document->domWindow();
-  if (!callback_dom_window)
+  LocalDOMWindow* delegate_dom_window = delegate_document->domWindow();
+  if (!delegate_dom_window)
     return;
   DOMHighResTimeStamp timestamp =
-      DOMWindowPerformance::performance(*callback_dom_window)->now();
+      DOMWindowPerformance::performance(*delegate_dom_window)->now();
   for (auto& observation : observations_)
     observation->ComputeIntersectionObservations(timestamp);
 }
@@ -318,7 +318,7 @@ String IntersectionObserver::rootMargin() const {
 void IntersectionObserver::EnqueueIntersectionObserverEntry(
     IntersectionObserverEntry& entry) {
   entries_.push_back(&entry);
-  ToDocument(callback_->GetExecutionContext())
+  ToDocument(delegate_->GetExecutionContext())
       ->EnsureIntersectionObserverController()
       .ScheduleIntersectionObserverForDelivery(*this);
 }
@@ -336,15 +336,19 @@ void IntersectionObserver::Deliver() {
 
   HeapVector<Member<IntersectionObserverEntry>> entries;
   entries.swap(entries_);
-  callback_->HandleEvent(entries, *this);
+  delegate_->Deliver(entries, *this);
 }
 
 DEFINE_TRACE(IntersectionObserver) {
   visitor->template RegisterWeakMembers<
       IntersectionObserver, &IntersectionObserver::ClearWeakMembers>(this);
-  visitor->Trace(callback_);
+  visitor->Trace(delegate_);
   visitor->Trace(observations_);
   visitor->Trace(entries_);
+}
+
+DEFINE_TRACE_WRAPPERS(IntersectionObserver) {
+  visitor->TraceWrappers(delegate_);
 }
 
 }  // namespace blink
