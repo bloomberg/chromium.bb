@@ -879,10 +879,15 @@ void CompositedLayerMapping::ComputeBoundsOfOwningLayer(
   // the previous subpixel accumulation is baked into the dispay list.
   // However, don't do so for directly composited layers, to avoid impacting
   // performance.
-  if (subpixel_accumulation != owning_layer_.SubpixelAccumulation() &&
-      !(owning_layer_.GetCompositingReasons() &
-        kCompositingReasonComboAllDirectReasons))
-    SetContentsNeedDisplay();
+  if (subpixel_accumulation != owning_layer_.SubpixelAccumulation()) {
+    // Always invalidate if under-invalidation checking is on, to avoid
+    // false positives.
+    if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
+      SetContentsNeedDisplay();
+    else if (!(owning_layer_.GetCompositingReasons() &
+               kCompositingReasonComboAllDirectReasons))
+      SetContentsNeedDisplay();
+  }
 
   // Otherwise discard the sub-pixel remainder because paint offset can't be
   // transformed by a non-translation transform.
