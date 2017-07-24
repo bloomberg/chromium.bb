@@ -122,10 +122,10 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
     : content::RenderFrameObserver(render_frame),
       translate_helper_(nullptr),
       phishing_classifier_(nullptr) {
-  render_frame->GetInterfaceRegistry()->AddInterface(
+  registry_.AddInterface(
       base::Bind(&ChromeRenderFrameObserver::OnImageContextMenuRendererRequest,
                  base::Unretained(this)));
-  render_frame->GetInterfaceRegistry()->AddInterface(
+  registry_.AddInterface(
       base::Bind(&ChromeRenderFrameObserver::OnThumbnailCapturerRequest,
                  base::Unretained(this)));
 
@@ -143,6 +143,12 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
 }
 
 ChromeRenderFrameObserver::~ChromeRenderFrameObserver() {
+}
+
+void ChromeRenderFrameObserver::OnInterfaceRequestForFrame(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {

@@ -106,7 +106,7 @@ ContentSettingsObserver::ContentSettingsObserver(
   ClearBlockedContentSettings();
   render_frame->GetWebFrame()->SetContentSettingsClient(this);
 
-  render_frame->GetInterfaceRegistry()->AddInterface(
+  registry_.AddInterface(
       base::Bind(&ContentSettingsObserver::OnInsecureContentRendererRequest,
                  base::Unretained(this)));
 
@@ -158,6 +158,12 @@ void ContentSettingsObserver::DidBlockContentType(
     Send(new ChromeViewHostMsg_ContentBlocked(routing_id(), settings_type,
                                               details));
   }
+}
+
+void ContentSettingsObserver::OnInterfaceRequestForFrame(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {

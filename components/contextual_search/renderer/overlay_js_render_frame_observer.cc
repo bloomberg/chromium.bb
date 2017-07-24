@@ -25,13 +25,19 @@ OverlayJsRenderFrameObserver::OverlayJsRenderFrameObserver(
 
 OverlayJsRenderFrameObserver::~OverlayJsRenderFrameObserver() {}
 
+void OverlayJsRenderFrameObserver::OnInterfaceRequestForFrame(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe);
+}
+
 void OverlayJsRenderFrameObserver::DidStartProvisionalLoad(
     blink::WebDataSource* data_source) {
   RegisterMojoInterface();
 }
 
 void OverlayJsRenderFrameObserver::RegisterMojoInterface() {
-  render_frame()->GetInterfaceRegistry()->AddInterface(base::Bind(
+  registry_.AddInterface(base::Bind(
       &OverlayJsRenderFrameObserver::CreateOverlayPageNotifierService,
       weak_factory_.GetWeakPtr()));
 }
@@ -62,11 +68,7 @@ void OverlayJsRenderFrameObserver::DidFinishLoad() {
 }
 
 void OverlayJsRenderFrameObserver::DestroyOverlayPageNotifierService() {
-  if (render_frame()) {
-    render_frame()
-        ->GetInterfaceRegistry()
-        ->RemoveInterface<mojom::OverlayPageNotifierService>();
-  }
+  registry_.RemoveInterface<mojom::OverlayPageNotifierService>();
 }
 
 void OverlayJsRenderFrameObserver::OnDestruct() {

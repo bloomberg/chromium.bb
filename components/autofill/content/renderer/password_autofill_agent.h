@@ -22,6 +22,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 
 namespace blink {
@@ -201,6 +202,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   };
 
   // RenderFrameObserver:
+  void OnInterfaceRequestForFrame(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void DidFinishDocumentLoad() override;
   void DidFinishLoad() override;
   void FrameDetached() override;
@@ -311,6 +315,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   mojo::Binding<mojom::PasswordAutofillAgent> binding_;
 
   blink::WebFormElementObserver* form_element_observer_;
+
+  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };

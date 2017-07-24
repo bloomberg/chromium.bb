@@ -29,12 +29,18 @@ SpellCheckPanel::SpellCheckPanel(content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame),
       spelling_panel_visible_(false) {
   DCHECK(render_frame);
-  render_frame->GetInterfaceRegistry()->AddInterface(base::Bind(
-      &SpellCheckPanel::SpellCheckPanelRequest, base::Unretained(this)));
+  registry_.AddInterface(base::Bind(&SpellCheckPanel::SpellCheckPanelRequest,
+                                    base::Unretained(this)));
   render_frame->GetWebFrame()->SetSpellCheckPanelHostClient(this);
 }
 
 SpellCheckPanel::~SpellCheckPanel() = default;
+
+void SpellCheckPanel::OnInterfaceRequestForFrame(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe);
+}
 
 void SpellCheckPanel::OnDestruct() {
   delete this;

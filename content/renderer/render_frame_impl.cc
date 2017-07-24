@@ -1201,13 +1201,12 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
                      base::Bind(&RenderFrameImpl::RequestOverlayRoutingToken,
                                 base::Unretained(this))),
       weak_factory_(this) {
-  interface_registry_ = base::MakeUnique<service_manager::BinderRegistry>();
   service_manager::mojom::InterfaceProviderPtr remote_interfaces;
   pending_remote_interface_provider_request_ = MakeRequest(&remote_interfaces);
   remote_interfaces_.reset(new service_manager::InterfaceProvider);
   remote_interfaces_->Bind(std::move(remote_interfaces));
   blink_interface_registry_.reset(
-      new BlinkInterfaceRegistryImpl(interface_registry_->GetWeakPtr()));
+      new BlinkInterfaceRegistryImpl(registry_.GetWeakPtr()));
 
   // Must call after binding our own remote interfaces.
   media_factory_.SetupMojo();
@@ -1353,8 +1352,14 @@ void RenderFrameImpl::InitializeBlameContext(RenderFrameImpl* parent_frame) {
 void RenderFrameImpl::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  // TODO(beng): We should be getting this info from the frame factory request.
-  interface_registry_->BindInterface(interface_name, std::move(interface_pipe));
+  if (registry_.TryBindInterface(interface_name, &interface_pipe))
+    return;
+
+  for (auto& observer : observers_) {
+    observer.OnInterfaceRequestForFrame(interface_name, &interface_pipe);
+    if (!interface_pipe.is_valid())
+      return;
+  }
 }
 
 RenderWidget* RenderFrameImpl::GetRenderWidget() {
@@ -2652,8 +2657,10 @@ void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
   OnJavaScriptExecuteRequest(javascript, 0, false);
 }
 
-service_manager::BinderRegistry* RenderFrameImpl::GetInterfaceRegistry() {
-  return interface_registry_.get();
+void RenderFrameImpl::BindLocalInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  GetInterface(interface_name, std::move(interface_pipe));
 }
 
 service_manager::InterfaceProvider* RenderFrameImpl::GetRemoteInterfaces() {
@@ -6289,7 +6296,7 @@ void RenderFrameImpl::InitializeUserMediaClient() {
       this, RenderThreadImpl::current()->GetPeerConnectionDependencyFactory(),
       base::MakeUnique<MediaStreamDispatcher>(this),
       render_thread->GetWorkerTaskRunner());
-  GetInterfaceRegistry()->AddInterface(
+  registry_.AddInterface(
       base::Bind(&MediaDevicesListenerImpl::Create, GetRoutingID()));
 #endif
 }
@@ -6682,13 +6689,13 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
   GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
       &RenderFrameImpl::BindFrameBindingsControl, weak_factory_.GetWeakPtr()));
 
-  GetInterfaceRegistry()->AddInterface(base::Bind(
-      &FrameInputHandlerImpl::CreateMojoService, weak_factory_.GetWeakPtr()));
+  registry_.AddInterface(base::Bind(&FrameInputHandlerImpl::CreateMojoService,
+                                    weak_factory_.GetWeakPtr()));
 
   if (!frame_->Parent()) {
     // Only main frame have ImageDownloader service.
-    GetInterfaceRegistry()->AddInterface(base::Bind(
-        &ImageDownloaderImpl::CreateMojoService, base::Unretained(this)));
+    registry_.AddInterface(base::Bind(&ImageDownloaderImpl::CreateMojoService,
+                                      base::Unretained(this)));
 
     // Host zoom is per-page, so only added on the main frame.
     GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(

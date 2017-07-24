@@ -167,15 +167,20 @@ PasswordGenerationAgent::PasswordGenerationAgent(
       password_agent_(password_agent),
       binding_(this) {
   LogBoolean(Logger::STRING_GENERATION_RENDERER_ENABLED, enabled_);
-  // PasswordGenerationAgent is guaranteed to outlive |render_frame|.
-  render_frame->GetInterfaceRegistry()->AddInterface(base::Bind(
-      &PasswordGenerationAgent::BindRequest, base::Unretained(this)));
+  registry_.AddInterface(base::Bind(&PasswordGenerationAgent::BindRequest,
+                                    base::Unretained(this)));
 }
 PasswordGenerationAgent::~PasswordGenerationAgent() {}
 
 void PasswordGenerationAgent::BindRequest(
     mojom::PasswordGenerationAgentRequest request) {
   binding_.Bind(std::move(request));
+}
+
+void PasswordGenerationAgent::OnInterfaceRequestForFrame(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 void PasswordGenerationAgent::DidFinishDocumentLoad() {

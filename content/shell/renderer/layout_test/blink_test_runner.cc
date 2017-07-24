@@ -700,13 +700,10 @@ void BlinkTestRunner::DispatchBeforeInstallPromptEvent(
     const std::vector<std::string>& event_platforms,
     const base::Callback<void(bool)>& callback) {
   app_banner_service_.reset(new test_runner::AppBannerService());
-
-  service_manager::BinderRegistry* registry =
-      render_view()->GetMainRenderFrame()->GetInterfaceRegistry();
   blink::mojom::AppBannerControllerRequest request =
       mojo::MakeRequest(&app_banner_service_->controller());
-  registry->BindInterface(blink::mojom::AppBannerController::Name_,
-                          request.PassMessagePipe());
+  render_view()->GetMainRenderFrame()->BindLocalInterface(
+      blink::mojom::AppBannerController::Name_, request.PassMessagePipe());
   app_banner_service_->SendBannerPromptRequest(event_platforms, callback);
 }
 

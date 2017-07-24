@@ -12,6 +12,7 @@
 #include "chrome/common/thumbnail_capturer.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace gfx {
 class Size;
@@ -39,6 +40,9 @@ class ChromeRenderFrameObserver
   enum TextCaptureType { PRELIMINARY_CAPTURE, FINAL_CAPTURE };
 
   // RenderFrameObserver implementation.
+  void OnInterfaceRequestForFrame(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void DidStartProvisionalLoad(blink::WebDataSource* data_source) override;
   void DidFinishLoad() override;
@@ -92,6 +96,8 @@ class ChromeRenderFrameObserver
 
   mojo::BindingSet<chrome::mojom::ThumbnailCapturer>
       thumbnail_capturer_bindings_;
+
+  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderFrameObserver);
 };

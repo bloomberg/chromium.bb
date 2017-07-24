@@ -16,7 +16,7 @@ HeadlessRenderFrameControllerImpl::HeadlessRenderFrameControllerImpl(
     : content::RenderFrameObserver(render_frame),
       render_frame_(render_frame),
       weak_ptr_factory_(this) {
-  render_frame->GetInterfaceRegistry()->AddInterface(base::Bind(
+  registry_.AddInterface(base::Bind(
       &HeadlessRenderFrameControllerImpl::OnRenderFrameControllerRequest,
       base::Unretained(this)));
 }
@@ -66,6 +66,12 @@ void HeadlessRenderFrameControllerImpl::SendMessageToTabSocket(
   }
 
   find_it->second.OnMessageFromEmbedder(message);
+}
+
+void HeadlessRenderFrameControllerImpl::OnInterfaceRequestForFrame(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 void HeadlessRenderFrameControllerImpl::DidCreateScriptContext(

@@ -687,8 +687,7 @@ PasswordAutofillAgent::PasswordAutofillAgent(content::RenderFrame* render_frame)
       checked_safe_browsing_reputation_(false),
       binding_(this),
       form_element_observer_(nullptr) {
-  // PasswordAutofillAgent is guaranteed to outlive |render_frame|.
-  render_frame->GetInterfaceRegistry()->AddInterface(
+  registry_.AddInterface(
       base::Bind(&PasswordAutofillAgent::BindRequest, base::Unretained(this)));
 }
 
@@ -1280,6 +1279,12 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
       GetPasswordManagerDriver()->PasswordFormsParsed(password_forms);
     }
   }
+}
+
+void PasswordAutofillAgent::OnInterfaceRequestForFrame(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 void PasswordAutofillAgent::DidFinishDocumentLoad() {

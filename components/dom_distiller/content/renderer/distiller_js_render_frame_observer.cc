@@ -27,6 +27,12 @@ DistillerJsRenderFrameObserver::DistillerJsRenderFrameObserver(
 
 DistillerJsRenderFrameObserver::~DistillerJsRenderFrameObserver() {}
 
+void DistillerJsRenderFrameObserver::OnInterfaceRequestForFrame(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe);
+}
+
 void DistillerJsRenderFrameObserver::DidStartProvisionalLoad(
     blink::WebDataSource* data_source) {
   RegisterMojoInterface();
@@ -36,9 +42,7 @@ void DistillerJsRenderFrameObserver::DidFinishLoad() {
   // If no message about the distilled page was received at this point, there
   // will not be one; remove the mojom::DistillerPageNotifierService from the
   // registry.
-  render_frame()
-      ->GetInterfaceRegistry()
-      ->RemoveInterface<mojom::DistillerPageNotifierService>();
+  registry_.RemoveInterface<mojom::DistillerPageNotifierService>();
 }
 
 void DistillerJsRenderFrameObserver::DidCreateScriptContext(
@@ -54,7 +58,7 @@ void DistillerJsRenderFrameObserver::DidCreateScriptContext(
 }
 
 void DistillerJsRenderFrameObserver::RegisterMojoInterface() {
-  render_frame()->GetInterfaceRegistry()->AddInterface(base::Bind(
+  registry_.AddInterface(base::Bind(
       &DistillerJsRenderFrameObserver::CreateDistillerPageNotifierService,
       weak_factory_.GetWeakPtr()));
 }

@@ -10,6 +10,7 @@
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/platform/WebSpellCheckPanelHostClient.h"
 
 #if !BUILDFLAG(HAS_SPELLCHECK_PANEL)
@@ -25,6 +26,9 @@ class SpellCheckPanel : public content::RenderFrameObserver,
 
  private:
   // content::RenderFrameObserver:
+  void OnInterfaceRequestForFrame(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void OnDestruct() override;
 
   // blink::WebSpellCheckPanelHostClient:
@@ -46,6 +50,8 @@ class SpellCheckPanel : public content::RenderFrameObserver,
 
   // True if the browser is showing the spelling panel.
   bool spelling_panel_visible_;
+
+  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckPanel);
 };

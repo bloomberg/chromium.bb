@@ -19,6 +19,7 @@
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "extensions/features/features.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
 #include "url/gurl.h"
 
@@ -95,6 +96,9 @@ class ContentSettingsObserver
   FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, PluginsTemporarilyAllowed);
 
   // RenderFrameObserver implementation.
+  void OnInterfaceRequestForFrame(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_document_navigation) override;
@@ -169,6 +173,8 @@ class ContentSettingsObserver
 
   mojo::BindingSet<chrome::mojom::InsecureContentRenderer>
       insecure_content_renderer_bindings_;
+
+  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsObserver);
 };
