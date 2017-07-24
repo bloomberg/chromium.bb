@@ -1032,6 +1032,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsBinder.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsBottomSheetContent.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsConfig.java",
+  "java/src/org/chromium/chrome/browser/suggestions/ThumbnailGradient.java",
   "java/src/org/chromium/chrome/browser/suggestions/Tile.java",
   "java/src/org/chromium/chrome/browser/suggestions/TileGrid.java",
   "java/src/org/chromium/chrome/browser/suggestions/TileGridLayout.java",

@@ -93,6 +93,8 @@ public class RenderTestRule extends TestWatcher {
     private String mTestClassName;
     private List<String> mMismatchIds = new LinkedList<>();
     private List<String> mGoldenMissingIds = new LinkedList<>();
+    /** Parameterized tests have a prefix inserted at the front of the test description. */
+    private String mVariantPrefix;
 
     /**
      * An exception thrown after a Render Test if images do not match the goldens or goldens are
@@ -143,16 +145,15 @@ public class RenderTestRule extends TestWatcher {
             }
         });
 
-        String filename = imageName(mTestClassName, id);
+        String filename = imageName(mTestClassName, mVariantPrefix, id);
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = testBitmap.getConfig();
         File goldenFile = createGoldenPath(filename);
         Bitmap goldenBitmap = BitmapFactory.decodeFile(goldenFile.getAbsolutePath(), options);
-        Log.d(TAG, goldenFile.getAbsolutePath());
 
         Pair<ComparisonResult, Bitmap> result = compareBitmapToGolden(testBitmap, goldenBitmap);
-        Log.d(TAG, "RenderTest %s %s", id, result.first.toString());
+        Log.i(TAG, "RenderTest %s %s", id, result.first.toString());
 
         // Save the result and any interesting images.
         switch (result.first) {
@@ -216,15 +217,28 @@ public class RenderTestRule extends TestWatcher {
     }
 
     /**
+     * Sets a string that will be inserted at the start of the description in the golden image name.
+     * This is used to create goldens for multiple different variants of the UI.
+     */
+    public void setVariantPrefix(String variantPrefix) {
+        mVariantPrefix = variantPrefix;
+    }
+
+    /**
      * Creates an image name combining the image description with details about the device
      * (eg model, current orientation).
      *
      * This function must be kept in sync with |RE_RENDER_IMAGE_NAME| from
      * src/build/android/pylib/local/device/local_device_instrumentation_test_run.py.
      */
-    private static String imageName(String testClass, String desc) {
+    private static String imageName(String testClass, String variantPrefix, String desc) {
         DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
         String orientation = metrics.widthPixels > metrics.heightPixels ? "land" : "port";
+
+        if (!TextUtils.isEmpty(variantPrefix)) {
+            desc = variantPrefix + "-" + desc;
+        }
+
         return String.format(
                 "%s.%s.%s.%s.png", testClass, desc, Build.MODEL.replace(' ', '_'), orientation);
     }

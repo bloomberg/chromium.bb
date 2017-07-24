@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.ntp.snippets;
 
-import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.DiscardableReferencePool.DiscardableReference;
@@ -54,8 +54,8 @@ public class SnippetArticle implements OfflinableSuggestion {
     /** The global rank of this article in the complete list. */
     private int mGlobalRank = -1;
 
-    /** Bitmap of the thumbnail, fetched lazily, when the RecyclerView wants to show the snippet. */
-    private DiscardableReference<Bitmap> mThumbnailBitmap;
+    /** The thumbnail, fetched lazily when the RecyclerView wants to show the snippet. */
+    private DiscardableReference<Drawable> mThumbnail;
 
     /** Stores whether impression of this article has been tracked already. */
     private boolean mImpressionTracked;
@@ -109,16 +109,15 @@ public class SnippetArticle implements OfflinableSuggestion {
     }
 
     /**
-     * Returns this article's thumbnail as a {@link Bitmap}. Can return {@code null} as it is
-     * initially unset.
+     * Returns this article's thumbnail. Can return {@code null} as it is initially unset.
      */
-    public Bitmap getThumbnailBitmap() {
-        return mThumbnailBitmap == null ? null : mThumbnailBitmap.get();
+    public Drawable getThumbnail() {
+        return mThumbnail == null ? null : mThumbnail.get();
     }
 
     /** Sets the thumbnail bitmap for this article. */
-    public void setThumbnailBitmap(DiscardableReference<Bitmap> bitmap) {
-        mThumbnailBitmap = bitmap;
+    public void setThumbnail(DiscardableReference<Drawable> thumbnail) {
+        mThumbnail = thumbnail;
     }
 
     /** Returns whether to track an impression for this article. */

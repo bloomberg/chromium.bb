@@ -72,7 +72,7 @@ RENDER_TEST_FEATURE_ANNOTATION = 'RenderTest'
 # This needs to be kept in sync with formatting in |RenderUtils.imageName|
 RE_RENDER_IMAGE_NAME = re.compile(
       r'(?P<test_class>\w+)\.'
-      r'(?P<description>\w+)\.'
+      r'(?P<description>[-\w]+)\.'
       r'(?P<device_model>\w+)\.'
       r'(?P<orientation>port|land)\.png')
 
