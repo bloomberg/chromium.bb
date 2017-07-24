@@ -285,7 +285,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   int sbr, sbc;
   uint16_t *src[3];
   uint16_t *ref_coeff[3];
-  dering_list dlist[MAX_MIB_SIZE * MAX_MIB_SIZE];
+  dering_list dlist[MI_SIZE_64X64 * MI_SIZE_64X64];
   int dir[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS] = { { 0 } };
   int var[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS] = { { 0 } };
   int stride[3];
@@ -300,8 +300,8 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   uint64_t best_tot_mse = (uint64_t)1 << 63;
   uint64_t tot_mse;
   int sb_count;
-  int nvsb = (cm->mi_rows + MAX_MIB_SIZE - 1) / MAX_MIB_SIZE;
-  int nhsb = (cm->mi_cols + MAX_MIB_SIZE - 1) / MAX_MIB_SIZE;
+  int nvsb = (cm->mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
+  int nhsb = (cm->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
   int *sb_index = aom_malloc(nvsb * nhsb * sizeof(*sb_index));
   int *selected_strength = aom_malloc(nvsb * nhsb * sizeof(*sb_index));
   uint64_t(*mse[2])[TOTAL_STRENGTHS];
@@ -387,14 +387,14 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       int nvb, nhb;
       int gi;
       int dirinit = 0;
-      nhb = AOMMIN(MAX_MIB_SIZE, cm->mi_cols - MAX_MIB_SIZE * sbc);
-      nvb = AOMMIN(MAX_MIB_SIZE, cm->mi_rows - MAX_MIB_SIZE * sbr);
-      cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
-                          MAX_MIB_SIZE * sbc]
+      nhb = AOMMIN(MI_SIZE_64X64, cm->mi_cols - MI_SIZE_64X64 * sbc);
+      nvb = AOMMIN(MI_SIZE_64X64, cm->mi_rows - MI_SIZE_64X64 * sbr);
+      cm->mi_grid_visible[MI_SIZE_64X64 * sbr * cm->mi_stride +
+                          MI_SIZE_64X64 * sbc]
           ->mbmi.cdef_strength = -1;
-      if (sb_all_skip(cm, sbr * MAX_MIB_SIZE, sbc * MAX_MIB_SIZE)) continue;
-      dering_count = sb_compute_dering_list(cm, sbr * MAX_MIB_SIZE,
-                                            sbc * MAX_MIB_SIZE, dlist, 1);
+      if (sb_all_skip(cm, sbr * MI_SIZE_64X64, sbc * MI_SIZE_64X64)) continue;
+      dering_count = sb_compute_dering_list(cm, sbr * MI_SIZE_64X64,
+                                            sbc * MI_SIZE_64X64, dlist, 1);
       for (pli = 0; pli < nplanes; pli++) {
         for (i = 0; i < OD_DERING_INBUF_SIZE; i++)
           inbuf[i] = OD_DERING_VERY_LARGE;
@@ -419,8 +419,8 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
           if (clpf_strength == 0)
             copy_sb16_16(&in[(-yoff * OD_FILT_BSTRIDE - xoff)], OD_FILT_BSTRIDE,
                          src[pli],
-                         (sbr * MAX_MIB_SIZE << mi_high_l2[pli]) - yoff,
-                         (sbc * MAX_MIB_SIZE << mi_wide_l2[pli]) - xoff,
+                         (sbr * MI_SIZE_64X64 << mi_high_l2[pli]) - yoff,
+                         (sbc * MI_SIZE_64X64 << mi_wide_l2[pli]) - xoff,
                          stride[pli], ysize, xsize);
           od_dering(clpf_strength ? NULL : (uint8_t *)in, OD_FILT_BSTRIDE,
                     tmp_dst, in, xdec[pli], ydec[pli], dir, &dirinit, var, pli,
@@ -429,8 +429,8 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
                     dering_damping, coeff_shift, clpf_strength != 0, 1);
           curr_mse = compute_dering_dist(
               ref_coeff[pli] +
-                  (sbr * MAX_MIB_SIZE << mi_high_l2[pli]) * stride[pli] +
-                  (sbc * MAX_MIB_SIZE << mi_wide_l2[pli]),
+                  (sbr * MI_SIZE_64X64 << mi_high_l2[pli]) * stride[pli] +
+                  (sbc * MI_SIZE_64X64 << mi_wide_l2[pli]),
               stride[pli], tmp_dst, dlist, dering_count, bsize[pli],
               coeff_shift, pli);
           if (pli < 2)
@@ -438,7 +438,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
           else
             mse[1][sb_count][gi] += curr_mse;
           sb_index[sb_count] =
-              MAX_MIB_SIZE * sbr * cm->mi_stride + MAX_MIB_SIZE * sbc;
+              MI_SIZE_64X64 * sbr * cm->mi_stride + MI_SIZE_64X64 * sbc;
         }
       }
       sb_count++;

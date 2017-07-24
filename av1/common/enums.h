@@ -65,6 +65,8 @@ extern "C" {
 #define MAX_VARTX_DEPTH 2
 #endif
 
+#define MI_SIZE_64X64 (64 >> MI_SIZE_LOG2)
+
 // Bitstream profiles indicated by 2-3 bits in the uncompressed header.
 // 00: Profile 0.  8-bit 4:2:0 only.
 // 10: Profile 1.  8-bit 4:4:4, 4:2:2, and 4:4:0.
