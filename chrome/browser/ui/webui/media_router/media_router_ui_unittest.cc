@@ -93,10 +93,7 @@ class PresentationRequestCallbacks {
 
 class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
  public:
-  MediaRouterUITest()
-      : presentation_request_({0, 0},
-                              {GURL("https://google.com/presentation")},
-                              url::Origin(GURL("http://google.com"))) {
+  MediaRouterUITest() {
     ON_CALL(mock_router_, GetCurrentRoutes())
         .WillByDefault(Return(std::vector<MediaRoute>()));
 
@@ -184,7 +181,6 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
-  content::PresentationRequest presentation_request_;
   MockMediaRouter mock_router_;
   content::TestWebUI web_ui_;
   std::unique_ptr<WebContents> web_ui_contents_;
@@ -236,8 +232,8 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForDesktop) {
 
 TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
   CreateMediaRouterUI(profile());
-  content::PresentationRequest presentation_request(
-      {0, 0}, {GURL("https://presentationurl.com")},
+  PresentationRequest presentation_request(
+      RenderFrameHostId(0, 0), {GURL("https://presentationurl.com")},
       url::Origin(GURL("https://frameurl.fakeurl")));
   media_router_ui_->OnDefaultPresentationChanged(presentation_request);
   std::vector<MediaRouteResponseCallback> callbacks;
@@ -301,7 +297,11 @@ TEST_F(MediaRouterUITest, RouteCreationParametersCantBeCreated) {
 
 TEST_F(MediaRouterUITest, RouteRequestFromIncognito) {
   CreateMediaRouterUI(profile()->GetOffTheRecordProfile());
-  media_router_ui_->OnDefaultPresentationChanged(presentation_request_);
+
+  PresentationRequest presentation_request(
+      RenderFrameHostId(0, 0), {GURL("https://foo.url.com/")},
+      url::Origin(GURL("https://frameUrl")));
+  media_router_ui_->OnDefaultPresentationChanged(presentation_request);
 
   EXPECT_CALL(mock_router_,
               CreateRouteInternal(_, _, _, _, _,
@@ -560,7 +560,10 @@ TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoSinks) {
       "No screens found.");
   PresentationRequestCallbacks request_callbacks(expected_error);
   create_session_request_.reset(new CreatePresentationConnectionRequest(
-      presentation_request_,
+      RenderFrameHostId(0, 0),
+      {GURL("http://google.com/presentation"),
+       GURL("http://google.com/presentation2")},
+      url::Origin(GURL("http://google.com")),
       base::Bind(&PresentationRequestCallbacks::Success,
                  base::Unretained(&request_callbacks)),
       base::Bind(&PresentationRequestCallbacks::Error,
@@ -576,8 +579,10 @@ TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoCompatibleSinks) {
       content::PresentationErrorType::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
       "No screens found.");
   PresentationRequestCallbacks request_callbacks(expected_error);
+  GURL presentation_url("http://google.com/presentation");
   create_session_request_.reset(new CreatePresentationConnectionRequest(
-      presentation_request_,
+      RenderFrameHostId(0, 0), {presentation_url},
+      url::Origin(GURL("http://google.com")),
       base::Bind(&PresentationRequestCallbacks::Success,
                  base::Unretained(&request_callbacks)),
       base::Bind(&PresentationRequestCallbacks::Error,
@@ -589,10 +594,8 @@ TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoCompatibleSinks) {
   std::vector<MediaSink> sinks;
   sinks.emplace_back("sink id", "sink name", SinkIconType::GENERIC);
   std::vector<url::Origin> origins;
-  auto presentation_source =
-      MediaSourceForPresentationUrl(presentation_request_.presentation_urls[0]);
   for (auto* observer : media_sinks_observers_) {
-    if (!(observer->source() == presentation_source)) {
+    if (observer->source().id() != presentation_url.spec()) {
       observer->OnSinksUpdated(sinks, origins);
     }
   }
@@ -607,8 +610,10 @@ TEST_F(MediaRouterUITest, AbortErrorOnClose) {
           PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED,
       "Dialog closed.");
   PresentationRequestCallbacks request_callbacks(expected_error);
+  GURL presentation_url("http://google.com/presentation");
   create_session_request_.reset(new CreatePresentationConnectionRequest(
-      presentation_request_,
+      RenderFrameHostId(0, 0), {presentation_url},
+      url::Origin(GURL("http://google.com")),
       base::Bind(&PresentationRequestCallbacks::Success,
                  base::Unretained(&request_callbacks)),
       base::Bind(&PresentationRequestCallbacks::Error,
@@ -620,10 +625,10 @@ TEST_F(MediaRouterUITest, AbortErrorOnClose) {
   std::vector<MediaSink> sinks;
   sinks.emplace_back("sink id", "sink name", SinkIconType::GENERIC);
   std::vector<url::Origin> origins;
-  auto presentation_source =
-      MediaSourceForPresentationUrl(presentation_request_.presentation_urls[0]);
+  MediaSource::Id presentation_source_id =
+      MediaSourceForPresentationUrl(presentation_url).id();
   for (auto* observer : media_sinks_observers_) {
-    if (observer->source() == presentation_source) {
+    if (observer->source().id() == presentation_source_id) {
       observer->OnSinksUpdated(sinks, origins);
     }
   }
@@ -737,14 +742,15 @@ TEST_F(MediaRouterUITest, SendInitialMediaStatusUpdate) {
 }
 
 TEST_F(MediaRouterUITest, SetsForcedCastModeWithPresentationURLs) {
-  presentation_request_.presentation_urls.push_back(
-      GURL("https://google.com/presentation2"));
   content::PresentationError expected_error(
       content::PresentationErrorType::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
       "No screens found.");
   PresentationRequestCallbacks request_callbacks(expected_error);
   create_session_request_.reset(new CreatePresentationConnectionRequest(
-      presentation_request_,
+      RenderFrameHostId(0, 0),
+      {GURL("http://google.com/presentation"),
+       GURL("http://google.com/presentation2")},
+      url::Origin(GURL("http://google.com")),
       base::Bind(&PresentationRequestCallbacks::Success,
                  base::Unretained(&request_callbacks)),
       base::Bind(&PresentationRequestCallbacks::Error,

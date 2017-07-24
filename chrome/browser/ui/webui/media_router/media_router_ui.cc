@@ -393,13 +393,12 @@ void MediaRouterUI::InitForTest(
 }
 
 void MediaRouterUI::OnDefaultPresentationChanged(
-    const content::PresentationRequest& presentation_request) {
-  std::vector<MediaSource> sources =
-      MediaSourcesForPresentationUrls(presentation_request.presentation_urls);
-  presentation_request_ = presentation_request;
+    const PresentationRequest& presentation_request) {
+  std::vector<MediaSource> sources = presentation_request.GetMediaSources();
+  presentation_request_.reset(new PresentationRequest(presentation_request));
   query_result_manager_->SetSourcesForCastMode(
       MediaCastMode::PRESENTATION, sources,
-      presentation_request_->frame_origin);
+      presentation_request_->frame_origin());
   // Register for MediaRoute updates.  NOTE(mfoltz): If there are multiple
   // sources that can be connected to via the dialog, this will break.  We will
   // need to observe multiple sources (keyed by sinks) in that case.  As this is
@@ -536,7 +535,7 @@ bool MediaRouterUI::SetRouteParameters(
 
   current_route_request_id_ = ++route_request_counter_;
   *origin = for_presentation_source
-                ? presentation_request_->frame_origin
+                ? presentation_request_->frame_origin()
                 : url::Origin(GURL(chrome::kChromeUIMediaRouterURL));
   DVLOG(1) << "DoCreateRoute: origin: " << *origin;
 
@@ -838,7 +837,7 @@ void MediaRouterUI::SendIssueForUnableToCast(MediaCastMode cast_mode) {
 }
 
 GURL MediaRouterUI::GetFrameURL() const {
-  return presentation_request_ ? presentation_request_->frame_origin.GetURL()
+  return presentation_request_ ? presentation_request_->frame_origin().GetURL()
                                : GURL();
 }
 

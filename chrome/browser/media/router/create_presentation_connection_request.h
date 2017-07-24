@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "content/public/browser/presentation_request.h"
+#include "chrome/browser/media/router/presentation_request.h"
+#include "chrome/browser/media/router/render_frame_host_id.h"
+#include "chrome/common/media_router/media_route.h"
 #include "content/public/browser/presentation_service_delegate.h"
 
 namespace content {
@@ -18,9 +20,12 @@ struct PresentationError;
 struct PresentationInfo;
 }  // namespace content
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace media_router {
 
-class MediaRoute;
 class RouteRequestResult;
 
 // Holds parameters for creating a presentation.  A request object is created by
@@ -36,17 +41,21 @@ class CreatePresentationConnectionRequest {
                               const MediaRoute&)>;
   using PresentationConnectionErrorCallback =
       content::PresentationConnectionErrorCallback;
-  // |presentation_request|: Request object containing the presentation URLs,
-  //     and the ID and origin of the initiating frame.
+  // |presentation_url|: The presentation URL of the request. Must be a valid
+  //                     URL.
+  // |frame_origin|: The origin of the frame that initiated the presentation
+  // request.
   // |success_cb|: Callback to invoke when the request succeeds. Must be valid.
   // |error_cb|: Callback to invoke when the request fails. Must be valid.
   CreatePresentationConnectionRequest(
-      const content::PresentationRequest& presentation_request,
+      const RenderFrameHostId& render_frame_host_id,
+      const std::vector<GURL>& presentation_urls,
+      const url::Origin& frame_origin,
       PresentationConnectionCallback success_cb,
       PresentationConnectionErrorCallback error_cb);
   ~CreatePresentationConnectionRequest();
 
-  const content::PresentationRequest& presentation_request() const {
+  const PresentationRequest& presentation_request() const {
     return presentation_request_;
   }
 
@@ -64,7 +73,7 @@ class CreatePresentationConnectionRequest {
       const RouteRequestResult& result);
 
  private:
-  content::PresentationRequest presentation_request_;
+  const PresentationRequest presentation_request_;
   PresentationConnectionCallback success_cb_;
   PresentationConnectionErrorCallback error_cb_;
   bool cb_invoked_;
