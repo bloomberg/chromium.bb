@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "build/build_config.h"
 #include "cc/base/container_util.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/resource_util.h"
@@ -98,6 +99,12 @@ ResourcePool::ResourcePool(ResourceProvider* resource_provider,
       weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::ResourcePool", task_runner_.get());
+
+#if defined(OS_ANDROID)
+  // TODO(ericrk): This feature appears to be causing visual corruption on
+  // certain android devices. Will investigate and re-enable. crbug.com/746931
+  disallow_non_exact_reuse_ = true;
+#endif
 
   // Register this component with base::MemoryCoordinatorClientRegistry.
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
