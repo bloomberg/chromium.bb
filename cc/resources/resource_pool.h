@@ -193,7 +193,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool evict_expired_resources_pending_ = false;
   const base::TimeDelta resource_expiration_delay_;
-  const bool disallow_non_exact_reuse_ = false;
+  bool disallow_non_exact_reuse_ = false;
 
   base::WeakPtrFactory<ResourcePool> weak_ptr_factory_;
 
