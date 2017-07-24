@@ -272,7 +272,8 @@ static WTF::NumberParsingState ParseHTMLNonNegativeIntegerInternal(
 
   WTF::NumberParsingState state;
   unsigned digits_value =
-      CharactersToUIntStrict(digits_start, position - digits_start, &state);
+      CharactersToUInt(digits_start, position - digits_start,
+                       WTF::NumberParsingOptions::kNone, &state);
   // TODO(tkent): The following code to adjust NumberParsingState is not simple
   // due to "-0" behavior difference between CharactersToUIntStrict() and
   // ParseHTMLNonNegativeIntegerInternal(). Simplify the code by updating
