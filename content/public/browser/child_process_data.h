@@ -13,7 +13,8 @@ namespace content {
 
 // Holds information about a child process.
 struct ChildProcessData {
-  // The type of the process.
+  // The type of the process. See the content::ProcessType enum for the
+  // well-known process types.
   int process_type;
 
   // The name of the process.  i.e. for plugins it might be Flash, while for

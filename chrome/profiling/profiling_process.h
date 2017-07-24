@@ -28,6 +28,7 @@ class ProfilingProcess : public mojom::ProfilingControl {
   // ProfilingControl implementation.
   void AddNewSender(mojo::ScopedHandle sender_pipe,
                     int32_t sender_pid) override;
+  void DumpProcess(int32_t pid) override;
 
  private:
   bool started_mojo_ = false;

@@ -65,6 +65,10 @@ class ProfilingProcessHost {
       content::FileDescriptorInfo* mappings);
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
+  // Sends a message to the profiling process that it dump the given process'
+  // memory data.
+  void RequestProcessDump(base::ProcessId pid);
+
  private:
   ProfilingProcessHost();
   ~ProfilingProcessHost();
