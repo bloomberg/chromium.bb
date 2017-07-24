@@ -86,6 +86,10 @@ void UpdateShortcutWorker::DownloadIcon() {
 
   if (unprocessed_icons_.empty()) {
     // No app icon. Just use the favicon from WebContents.
+    // TODO(mgiuca): This Image is passed to the FILE thread while still being
+    // used on the UI thread. This is not thread-safe and needs to be fixed.
+    // Remove this thread-check disable. https://crbug.com/596348.
+    shortcut_info_->favicon.DisableThreadChecking();
     UpdateShortcuts();
     return;
   }

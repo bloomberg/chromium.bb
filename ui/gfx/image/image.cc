@@ -357,23 +357,45 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
   }
 
   Image::RepresentationType default_representation_type() {
+    DCHECK(thread_checking_disabled() || IsOnValidSequence());
     return default_representation_type_;
   }
-  Image::RepresentationMap& representations() { return representations_; }
+
+  Image::RepresentationMap& representations() {
+    DCHECK(thread_checking_disabled() || IsOnValidSequence());
+    return representations_;
+  }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   void set_default_representation_color_space(CGColorSpaceRef color_space) {
+    DCHECK(thread_checking_disabled() || IsOnValidSequence());
     default_representation_color_space_ = color_space;
   }
   CGColorSpaceRef default_representation_color_space() {
+    DCHECK(thread_checking_disabled() || IsOnValidSequence());
     return default_representation_color_space_;
   }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
+  void DisableThreadChecking() {
+    DCHECK(thread_checking_disabled() || IsOnValidSequence());
+#if DCHECK_IS_ON()
+    thread_checking_disabled_ = true;
+#endif
+  }
 
  private:
   friend class base::RefCounted<ImageStorage>;
 
   ~ImageStorage() {}
+
+  bool thread_checking_disabled() const {
+#if DCHECK_IS_ON()
+    return thread_checking_disabled_;
+#else
+    return true;
+#endif
+  }
 
   // The type of image that was passed to the constructor. This key will always
   // exist in the |representations_| map.
@@ -390,6 +412,10 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
   // All the representations of an Image. Size will always be at least one, with
   // more for any converted representations.
   Image::RepresentationMap representations_;
+
+#if DCHECK_IS_ON()
+  bool thread_checking_disabled_ = false;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ImageStorage);
 };
@@ -739,6 +765,10 @@ void Image::SetSourceColorSpace(CGColorSpaceRef color_space) {
     storage_->set_default_representation_color_space(color_space);
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
+void Image::DisableThreadChecking() {
+  storage_->DisableThreadChecking();
+}
 
 Image::RepresentationType Image::DefaultRepresentationType() const {
   CHECK(storage_.get());
