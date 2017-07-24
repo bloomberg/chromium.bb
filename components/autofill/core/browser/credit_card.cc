@@ -98,18 +98,6 @@ base::string16 NetworkForFill(const std::string& network) {
   return base::string16();
 }
 
-// Returns the last four digits of the credit card |number| (fewer if there are
-// not enough characters in |number|).
-base::string16 GetLastFourDigits(const base::string16& number) {
-  static const size_t kNumLastDigits = 4;
-
-  base::string16 stripped = CreditCard::StripSeparators(number);
-  if (stripped.size() <= kNumLastDigits)
-    return stripped;
-
-  return stripped.substr(stripped.size() - kNumLastDigits, kNumLastDigits);
-}
-
 }  // namespace
 
 CreditCard::CreditCard(const std::string& guid, const std::string& origin)
@@ -442,15 +430,8 @@ void CreditCard::GetMatchingTypes(const base::string16& text,
 
   base::string16 card_number =
       GetInfo(AutofillType(CREDIT_CARD_NUMBER), app_locale);
-  if (!card_number.empty()) {
-    // We only have the last four digits for masked cards, so match against
-    // that if |this| is a masked card.
-    bool numbers_match = record_type_ == MASKED_SERVER_CARD
-                             ? GetLastFourDigits(text) == LastFourDigits()
-                             : StripSeparators(text) == card_number;
-    if (numbers_match)
-      matching_types->insert(CREDIT_CARD_NUMBER);
-  }
+  if (!card_number.empty() && StripSeparators(text) == card_number)
+    matching_types->insert(CREDIT_CARD_NUMBER);
 
   int month;
   if (ConvertMonth(text, app_locale, &month) &&
@@ -750,7 +731,13 @@ const base::string16 CreditCard::Label() const {
 }
 
 base::string16 CreditCard::LastFourDigits() const {
-  return GetLastFourDigits(number_);
+  static const size_t kNumLastDigits = 4;
+
+  base::string16 number = StripSeparators(number_);
+  if (number.size() <= kNumLastDigits)
+    return number;
+
+  return number.substr(number.size() - kNumLastDigits, kNumLastDigits);
 }
 
 base::string16 CreditCard::NetworkForDisplay() const {

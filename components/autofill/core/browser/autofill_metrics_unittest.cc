@@ -179,7 +179,6 @@ class TestPersonalDataManager : public PersonalDataManager {
           CreditCard::MASKED_SERVER_CARD, "server_id");
       credit_card->set_guid("10000000-0000-0000-0000-000000000002");
       credit_card->SetNetworkForMaskedCard(kDiscoverCard);
-      credit_card->SetNumber(ASCIIToUTF16("9424"));
       server_credit_cards_.push_back(std::move(credit_card));
     }
     if (include_full_server_credit_card) {
