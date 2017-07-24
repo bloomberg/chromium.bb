@@ -588,8 +588,7 @@ BENCHMARKS_TO_UPLOAD_TO_FLAKINESS_DASHBOARD = ['system_health.common_desktop',
                                                'system_health.memory_mobile']
 
 
-def generate_telemetry_test(swarming_dimensions,
-      benchmark_name, browser, for_fyi_waterfall=False):
+def generate_telemetry_test(swarming_dimensions, benchmark_name, browser):
   # The step name must end in 'test' or 'tests' in order for the
   # results to automatically show up on the flakiness dashboard.
   # (At least, this was true some time ago.) Continue to use this
@@ -605,8 +604,7 @@ def generate_telemetry_test(swarming_dimensions,
   # When this is enabled on more than just windows machines we will need
   # --device=android
 
-  if (for_fyi_waterfall and
-      benchmark_name in BENCHMARKS_TO_UPLOAD_TO_FLAKINESS_DASHBOARD):
+  if benchmark_name in BENCHMARKS_TO_UPLOAD_TO_FLAKINESS_DASHBOARD:
     test_args.append('--output-format=json-test-results')
 
   ignore_task_failure = False
@@ -683,8 +681,7 @@ def ShouldBenchmarkBeScheduled(benchmark, platform):
 
 def generate_telemetry_tests(name, tester_config, benchmarks,
                              benchmark_sharding_map,
-                             benchmark_ref_build_blacklist,
-                             for_fyi_waterfall=False):
+                             benchmark_ref_build_blacklist):
   isolated_scripts = []
   # First determine the browser that you need based on the tester
   browser_name = ''
@@ -721,7 +718,7 @@ def generate_telemetry_tests(name, tester_config, benchmarks,
           dimension, device))
 
     test = generate_telemetry_test(
-      swarming_dimensions, benchmark.Name(), browser_name, for_fyi_waterfall)
+      swarming_dimensions, benchmark.Name(), browser_name)
     isolated_scripts.append(test)
     # Now create another executable for this benchmark on the reference browser
     # if it is not blacklisted from running on the reference browser.
@@ -729,7 +726,7 @@ def generate_telemetry_tests(name, tester_config, benchmarks,
     if not tester_config.get('replace_system_webview', False) and (
         benchmark.Name() not in benchmark_ref_build_blacklist):
       reference_test = generate_telemetry_test(
-        swarming_dimensions, benchmark.Name(),'reference', for_fyi_waterfall)
+        swarming_dimensions, benchmark.Name(),'reference')
       isolated_scripts.append(reference_test)
 
   return isolated_scripts
@@ -804,7 +801,7 @@ def generate_all_tests(waterfall):
     # Generate benchmarks
     isolated_scripts = generate_telemetry_tests(
         name, config, all_benchmarks, benchmark_sharding_map,
-        BENCHMARK_REF_BUILD_BLACKLIST, waterfall['name']=='chromium.perf.fyi')
+        BENCHMARK_REF_BUILD_BLACKLIST)
     # Generate swarmed non-telemetry tests if present
     if config['swarming_dimensions'][0].get('perf_tests', False):
       isolated_scripts += generate_cplusplus_isolate_script_test(
