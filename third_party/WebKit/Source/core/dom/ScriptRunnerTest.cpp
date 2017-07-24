@@ -122,7 +122,7 @@ MockScriptLoader* MockScriptLoader::SetupForNonStreaming() {
   return this;
 }
 
-class ScriptRunnerTest : public testing::Test {
+class ScriptRunnerTest : public ::testing::Test {
  public:
   ScriptRunnerTest() : document_(Document::Create()) {}
 
