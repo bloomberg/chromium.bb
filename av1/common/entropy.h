@@ -414,7 +414,11 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
 #define COEF_MAX_UPDATE_FACTOR_AFTER_KEY 128
 
 #if CONFIG_ADAPT_SCAN
-#define ADAPT_SCAN_UPDATE_RATE_16 (1 << 13)
+#define ADAPT_SCAN_PROB_PRECISION 16
+// 1/8 update rate
+#define ADAPT_SCAN_UPDATE_LOG_RATE 3
+#define ADAPT_SCAN_UPDATE_RATE \
+  (1 << (ADAPT_SCAN_PROB_PRECISION - ADAPT_SCAN_UPDATE_LOG_RATE))
 #endif
 
 static INLINE aom_prob av1_merge_probs(aom_prob pre_prob,
