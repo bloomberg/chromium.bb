@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_snapshot_manager.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/stl_util.h"
@@ -60,8 +61,6 @@ StatisticsRecorder::HistogramIterator::operator++() {
   const HistogramMap::iterator histograms_end = histograms_->end();
   if (iter_ == histograms_end)
     return *this;
-
-  base::AutoLock auto_lock(lock_.Get());
 
   for (;;) {
     ++iter_;
@@ -328,27 +327,14 @@ void StatisticsRecorder::ImportProvidedHistograms() {
 }
 
 // static
-StatisticsRecorder::HistogramIterator StatisticsRecorder::begin(
-    bool include_persistent) {
-  DCHECK(histograms_);
-  ImportGlobalPersistentHistograms();
-
-  HistogramMap::iterator iter_begin;
-  {
-    base::AutoLock auto_lock(lock_.Get());
-    iter_begin = histograms_->begin();
-  }
-  return HistogramIterator(iter_begin, include_persistent);
-}
-
-// static
-StatisticsRecorder::HistogramIterator StatisticsRecorder::end() {
-  HistogramMap::iterator iter_end;
-  {
-    base::AutoLock auto_lock(lock_.Get());
-    iter_end = histograms_->end();
-  }
-  return HistogramIterator(iter_end, true);
+void StatisticsRecorder::PrepareDeltas(
+    bool include_persistent,
+    HistogramBase::Flags flags_to_set,
+    HistogramBase::Flags required_flags,
+    HistogramSnapshotManager* snapshot_manager) {
+  base::AutoLock auto_lock(lock_.Get());
+  snapshot_manager->PrepareDeltas(begin(include_persistent), end(),
+                                  flags_to_set, required_flags);
 }
 
 // static
@@ -472,6 +458,22 @@ void StatisticsRecorder::UninitializeForTesting() {
   // created so it's necessary to clear out an internal variable which
   // shouldn't be publicly visible but is for initialization reasons.
   g_statistics_recorder_.private_instance_ = 0;
+}
+
+// static
+StatisticsRecorder::HistogramIterator StatisticsRecorder::begin(
+    bool include_persistent) {
+  DCHECK(histograms_);
+  ImportGlobalPersistentHistograms();
+
+  HistogramMap::iterator iter_begin = histograms_->begin();
+  return HistogramIterator(iter_begin, include_persistent);
+}
+
+// static
+StatisticsRecorder::HistogramIterator StatisticsRecorder::end() {
+  HistogramMap::iterator iter_end = histograms_->end();
+  return HistogramIterator(iter_end, true);
 }
 
 // static

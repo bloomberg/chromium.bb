@@ -100,9 +100,9 @@ class SubprocessMetricsProviderTest : public testing::Test {
     HistogramFlattenerDeltaRecorder flattener;
     base::HistogramSnapshotManager snapshot_manager(&flattener);
     // "true" to the begin() includes histograms held in persistent storage.
-    snapshot_manager.PrepareDeltas(
-        base::StatisticsRecorder::begin(true), base::StatisticsRecorder::end(),
-        base::Histogram::kNoFlags, base::Histogram::kNoFlags);
+    base::StatisticsRecorder::PrepareDeltas(true, base::Histogram::kNoFlags,
+                                            base::Histogram::kNoFlags,
+                                            &snapshot_manager);
     return flattener.GetRecordedDeltaHistogramNames().size();
   }
 

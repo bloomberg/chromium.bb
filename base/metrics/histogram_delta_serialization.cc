@@ -69,9 +69,9 @@ void HistogramDeltaSerialization::PrepareAndSerializeDeltas(
   // Note: Before serializing, we set the kIPCSerializationSourceFlag for all
   // the histograms, so that the receiving process can distinguish them from the
   // local histograms.
-  histogram_snapshot_manager_.PrepareDeltas(
-      StatisticsRecorder::begin(include_persistent), StatisticsRecorder::end(),
-      Histogram::kIPCSerializationSourceFlag, Histogram::kNoFlags);
+  StatisticsRecorder::PrepareDeltas(
+      include_persistent, Histogram::kIPCSerializationSourceFlag,
+      Histogram::kNoFlags, &histogram_snapshot_manager_);
   serialized_deltas_ = NULL;
 }
 
