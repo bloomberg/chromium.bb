@@ -44,6 +44,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
 
+    # This test needs to be rewritten to measure its expected
+    # performance; it's currently too flaky even on release bots.
+    self.Skip('conformance/rendering/texture-switch-performance.html',
+        bug=735483)
+    self.Skip('conformance2/rendering/texture-switch-performance.html',
+        bug=735483)
+
     self.Fail('conformance2/rendering/depth-stencil-feedback-loop.html',
         bug=660844) # WebGL 2.0.1
     self.Fail('conformance2/rendering/rendering-sampling-feedback-loop.html',
@@ -476,10 +483,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=654187)
 
     # Mac AMD
-    self.Fail('conformance/rendering/texture-switch-performance.html',
-        ['mac', 'amd'], bug=735483)
-    self.Fail('conformance2/rendering/texture-switch-performance.html',
-        ['mac', 'amd'], bug=735483)
+    # TODO(kbr): uncomment the following two exepectations after test
+    # has been made more robust.
+    # self.Fail('conformance/rendering/texture-switch-performance.html',
+    #     ['mac', 'amd'], bug=735483)
+    # self.Fail('conformance2/rendering/texture-switch-performance.html',
+    #     ['mac', 'amd'], bug=735483)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'array_interleaved_lines.html',
         ['mac', 'amd'], bug=483282)
