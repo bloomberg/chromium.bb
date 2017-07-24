@@ -139,10 +139,31 @@ bool WindowTargeter::SubtreeCanAcceptEvent(
 bool WindowTargeter::EventLocationInsideBounds(
     Window* window,
     const ui::LocatedEvent& event) const {
+  gfx::Rect mouse_rect;
+  gfx::Rect touch_rect;
+  if (!GetHitTestRects(window, &mouse_rect, &touch_rect))
+    return false;
+
+  const gfx::Vector2d offset = -window->bounds().OffsetFromOrigin();
+  mouse_rect.Offset(offset);
+  touch_rect.Offset(offset);
   gfx::Point point = event.location();
   if (window->parent())
     Window::ConvertPointToTarget(window->parent(), window, &point);
-  return gfx::Rect(window->bounds().size()).Contains(point);
+
+  if (event.IsTouchEvent() || event.IsGestureEvent())
+    return touch_rect.Contains(point);
+
+  return mouse_rect.Contains(point);
+}
+
+bool WindowTargeter::GetHitTestRects(Window* window,
+                                     gfx::Rect* hit_test_rect_mouse,
+                                     gfx::Rect* hit_test_rect_touch) const {
+  DCHECK(hit_test_rect_mouse);
+  DCHECK(hit_test_rect_touch);
+  *hit_test_rect_mouse = *hit_test_rect_touch = gfx::Rect(window->bounds());
+  return true;
 }
 
 Window* WindowTargeter::FindTargetForKeyEvent(Window* window,

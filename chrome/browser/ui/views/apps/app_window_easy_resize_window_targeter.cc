@@ -15,18 +15,19 @@ AppWindowEasyResizeWindowTargeter::AppWindowEasyResizeWindowTargeter(
       native_app_window_(native_app_window) {
 }
 
-AppWindowEasyResizeWindowTargeter::~AppWindowEasyResizeWindowTargeter() {
-}
+AppWindowEasyResizeWindowTargeter::~AppWindowEasyResizeWindowTargeter() {}
 
-bool AppWindowEasyResizeWindowTargeter::EventLocationInsideBounds(
+bool AppWindowEasyResizeWindowTargeter::GetHitTestRects(
     aura::Window* window,
-    const ui::LocatedEvent& event) const {
+    gfx::Rect* rect_mouse,
+    gfx::Rect* rect_touch) const {
   // EasyResizeWindowTargeter intercepts events landing at the edges of the
   // window. Since maximized and fullscreen windows can't be resized anyway,
   // skip EasyResizeWindowTargeter so that the web contents receive all mouse
   // events.
   if (native_app_window_->IsMaximized() || native_app_window_->IsFullscreen())
-    return WindowTargeter::EventLocationInsideBounds(window, event);
-  else
-    return EasyResizeWindowTargeter::EventLocationInsideBounds(window, event);
+    return WindowTargeter::GetHitTestRects(window, rect_mouse, rect_touch);
+
+  return EasyResizeWindowTargeter::GetHitTestRects(window, rect_mouse,
+                                                   rect_touch);
 }
