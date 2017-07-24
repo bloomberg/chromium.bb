@@ -169,6 +169,17 @@ void SetCrashData(PP_Instance instance,
   enter.functions()->SetCrashData(pdf_url, top_level_url);
 }
 
+void SelectionChanged(PP_Instance instance,
+                      const PP_FloatPoint* left,
+                      int32_t left_height,
+                      const PP_FloatPoint* right,
+                      int32_t right_height) {
+  EnterInstanceAPI<PPB_PDF_API> enter(instance);
+  if (enter.failed())
+    return;
+  enter.functions()->SelectionChanged(*left, left_height, *right, right_height);
+}
+
 const PPB_PDF g_ppb_pdf_thunk = {
     &GetFontFileWithFallback,
     &GetFontTableForPrivateFontFile,
@@ -188,6 +199,7 @@ const PPB_PDF g_ppb_pdf_thunk = {
     &SetAccessibilityDocInfo,
     &SetAccessibilityPageInfo,
     &SetCrashData,
+    &SelectionChanged,
 };
 
 }  // namespace

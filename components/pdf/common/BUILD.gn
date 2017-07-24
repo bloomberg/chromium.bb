@@ -20,4 +20,6 @@ mojom("interfaces") {
 
   overridden_deps_blink = [ "//third_party/WebKit/public:mojo_bindings" ]
   component_deps_blink = [ "//third_party/WebKit/Source/platform" ]
+
+  cpp_only = true
 }
