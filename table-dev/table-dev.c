@@ -239,7 +239,7 @@ static int find_matching_rules(widechar *text,
 				if (find_matching_rules(&text[rule->charslen], text_len - rule->charslen,
 				                        &braille[rule->dotslen], braille_len - rule->dotslen,
 				                        &data[rule->charslen])) {
-					char *data_tmp = (char *)malloc((text_len - rule->charslen) * sizeof(char));
+					char *data_tmp = (char *)malloc((text_len - rule->charslen + 1) * sizeof(char));
 					memcpy(data_tmp, &data[rule->charslen - 1], text_len - rule->charslen + 1);
 					data[rule->charslen - 1] = '1';
 					debug("%s", data);
