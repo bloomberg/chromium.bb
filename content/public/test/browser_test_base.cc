@@ -399,8 +399,10 @@ void BrowserTestBase::InitializeNetworkProcess() {
     // For now, this covers all the rules used in content's tests.
     // TODO(jam: expand this when we try to make browser_tests and
     // components_browsertests work.
-    if (rule.resolver_type !=
-            net::RuleBasedHostResolverProc::Rule::kResolverTypeSystem ||
+    if ((rule.resolver_type !=
+             net::RuleBasedHostResolverProc::Rule::kResolverTypeSystem &&
+         rule.resolver_type !=
+             net::RuleBasedHostResolverProc::Rule::kResolverTypeIPLiteral) ||
         rule.address_family != net::AddressFamily::ADDRESS_FAMILY_UNSPECIFIED ||
         !!rule.latency_ms || rule.replacement.empty())
       continue;
