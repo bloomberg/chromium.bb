@@ -29,7 +29,6 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
-#include "modules/webaudio/AudioWorkletThread.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "modules/webaudio/OfflineAudioContext.h"
 #include "platform/CrossThreadFunctional.h"
@@ -86,8 +85,8 @@ void OfflineAudioDestinationHandler::Uninitialize() {
   if (!IsInitialized())
     return;
 
-  render_thread_.reset();
-  worklet_backing_thread_ = nullptr;
+  if (render_thread_)
+    render_thread_.reset();
 
   AudioHandler::Uninitialize();
 }
@@ -102,7 +101,7 @@ unsigned long OfflineAudioDestinationHandler::MaxChannelCount() const {
 
 void OfflineAudioDestinationHandler::StartRendering() {
   DCHECK(IsMainThread());
-  DCHECK(GetRenderingThread());
+  DCHECK(render_thread_);
   DCHECK(render_target_);
 
   if (!render_target_)
@@ -111,7 +110,7 @@ void OfflineAudioDestinationHandler::StartRendering() {
   // Rendering was not started. Starting now.
   if (!is_rendering_started_) {
     is_rendering_started_ = true;
-    GetRenderingThread()->GetWebTaskRunner()->PostTask(
+    render_thread_->GetWebTaskRunner()->PostTask(
         BLINK_FROM_HERE,
         CrossThreadBind(&OfflineAudioDestinationHandler::StartOfflineRendering,
                         WrapPassRefPtr(this)));
@@ -120,7 +119,7 @@ void OfflineAudioDestinationHandler::StartRendering() {
 
   // Rendering is already started, which implicitly means we resume the
   // rendering by calling |doOfflineRendering| on the render thread.
-  GetRenderingThread()->GetWebTaskRunner()->PostTask(
+  render_thread_->GetWebTaskRunner()->PostTask(
       BLINK_FROM_HERE,
       CrossThreadBind(&OfflineAudioDestinationHandler::DoOfflineRendering,
                       WrapPassRefPtr(this)));
@@ -139,14 +138,7 @@ size_t OfflineAudioDestinationHandler::CallbackBufferSize() const {
 
 void OfflineAudioDestinationHandler::InitializeOfflineRenderThread() {
   DCHECK(IsMainThread());
-
-  if (RuntimeEnabledFeatures::AudioWorkletEnabled()) {
-    AudioWorkletThread::EnsureSharedBackingThread();
-    worklet_backing_thread_ = AudioWorkletThread::GetSharedBackingThread();
-  } else {
-    render_thread_ =
-        Platform::Current()->CreateThread("offline audio renderer");
-  }
+  render_thread_ = Platform::Current()->CreateThread("offline audio renderer");
 }
 
 void OfflineAudioDestinationHandler::StartOfflineRendering() {
@@ -353,18 +345,6 @@ bool OfflineAudioDestinationHandler::RenderIfNotSuspended(
   ReleaseStore(&current_sample_frame_, new_sample_frame);
 
   return false;
-}
-
-WebThread* OfflineAudioDestinationHandler::GetRenderingThread() {
-  DCHECK(IsInitialized());
-
-  if (RuntimeEnabledFeatures::AudioWorkletEnabled()) {
-    DCHECK(!render_thread_ && worklet_backing_thread_);
-    return worklet_backing_thread_;
-  }
-
-  DCHECK(render_thread_ && !worklet_backing_thread_);
-  return render_thread_.get();
 }
 
 // ----------------------------------------------------------------
