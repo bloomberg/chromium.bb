@@ -9,7 +9,6 @@
 #include <stdint.h>
 #include "build/build_config.h"
 #include "platform/wtf/WTFExport.h"
-#include "platform/wtf/build_config.h"
 
 namespace WTF {
 

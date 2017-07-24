@@ -33,7 +33,6 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/allocator/Partitions.h"
-#include "platform/wtf/build_config.h"
 
 namespace blink {
 

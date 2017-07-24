@@ -31,7 +31,6 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/build_config.h"
 
 namespace blink {
 

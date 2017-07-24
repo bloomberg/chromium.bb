@@ -50,7 +50,6 @@
  */
 
 #include "platform/wtf/WTFExport.h"
-#include "platform/wtf/build_config.h"
 
 #if defined(WTF_USE_DYNAMIC_ANNOTATIONS)
 /* Tell data race detector that we're not interested in reports on the given

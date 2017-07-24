@@ -36,7 +36,6 @@
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/build_config.h"
 
 namespace blink {
 

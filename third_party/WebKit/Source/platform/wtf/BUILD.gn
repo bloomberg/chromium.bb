@@ -144,7 +144,6 @@ component("wtf") {
     "allocator/PartitionAllocator.h",
     "allocator/Partitions.cpp",
     "allocator/Partitions.h",
-    "build_config.h",
     "debug/Alias.h",
     "debug/CrashLogging.h",
     "debug/StackTrace.h",

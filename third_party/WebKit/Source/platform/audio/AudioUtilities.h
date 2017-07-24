@@ -28,7 +28,6 @@
 
 #include <cstddef>
 #include "platform/PlatformExport.h"
-#include "platform/wtf/build_config.h"
 
 namespace blink {
 namespace AudioUtilities {

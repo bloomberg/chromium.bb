@@ -40,7 +40,6 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CPU.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/build_config.h"
 #include "platform/wtf/text/WTFString.h"
 
 #if defined(ARCH_CPU_X86_64)

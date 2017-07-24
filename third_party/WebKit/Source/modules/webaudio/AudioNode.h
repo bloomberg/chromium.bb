@@ -35,7 +35,6 @@
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/Vector.h"
-#include "platform/wtf/build_config.h"
 
 #define DEBUG_AUDIONODE_REFERENCES 0
 
