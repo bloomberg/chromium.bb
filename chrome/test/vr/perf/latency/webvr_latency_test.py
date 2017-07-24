@@ -164,8 +164,12 @@ class WebVrLatencyTest(object):
     }
 
   def _SaveResultsToFile(self):
-    if not (self._args.output_dir and os.path.isdir(self._args.output_dir)):
-      logging.warning('No output directory set, not saving results to file')
+    outpath = None
+    if (hasattr(self._args, 'isolated_script_test_chartjson_output') and
+        self._args.isolated_script_test_chartjson_output):
+      outpath = self._args.isolated_script_test_chartjson_output
+    else:
+      logging.warning('No output file set, not saving results to file')
       return
 
     correlation_string = self._device_name + '_correlation'
@@ -223,6 +227,5 @@ class WebVrLatencyTest(object):
       'charts': charts,
     }
 
-    with file(os.path.join(self._args.output_dir,
-                           self._args.results_file), 'w') as outfile:
+    with file(outpath, 'w') as outfile:
       json.dump(results, outfile)

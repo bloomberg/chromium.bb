@@ -153,7 +153,6 @@
     "type": "script",
     "script": "//chrome/test/vr/perf/latency/run_latency_test.py",
     "args": [
-      "--output-dir=${ISOLATED_OUTDIR}",
       "-v",
     ],
   },
@@ -162,7 +161,6 @@
     "type": "script",
     "script": "//chrome/test/vr/perf/vrcore_fps/run_vrcore_fps_test.py",
     "args": [
-      "--output-dir=${ISOLATED_OUTDIR}",
       "-v",
     ],
   },

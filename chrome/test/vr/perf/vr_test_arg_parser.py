@@ -14,7 +14,6 @@ DEFAULT_DURATION_SECONDS = 30
 # existing on the bot already.
 DEFAULT_MOTOPHO_PATH = os.path.join(os.path.expanduser('~'), 'motopho/Motopho')
 DEFAULT_NUM_SAMPLES = 10
-DEFAULT_RESULTS_FILE = 'results-chart.json'
 
 
 class VrTestArgParser(argparse.ArgumentParser):
@@ -32,14 +31,17 @@ class VrTestArgParser(argparse.ArgumentParser):
                       default=None,
                       help='A string containing any additional Chrome command '
                            'line flags to set for a test run')
-    self.add_argument('--output-dir',
+    # Add --isolated-script-test-* args to be compatible being run as an
+    # isolated script on the automated bots
+    # TODO(bsheedy): Implement a cleaner solution than this
+    self.add_argument('--isolated-script-test-chartjson-output',
                       type=os.path.realpath,
-                      help='The directory where the script\'s output files '
-                           'will be saved')
-    self.add_argument('--results-file',
-                      default=DEFAULT_RESULTS_FILE,
-                      help='The name of the JSON file the results will be '
-                           'saved to')
+                      help='Path to a JSON file where the perf dashboard '
+                           'chart data will be output.')
+    self.add_argument('--isolated-script-test-output',
+                      type=os.path.realpath,
+                      help='Path to a JSON file where failures and the '
+                           'of the results will be reported.')
     self.add_argument('--url',
                       action='append',
                       default=[],
