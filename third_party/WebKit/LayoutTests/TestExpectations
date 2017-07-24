@@ -1565,6 +1565,8 @@ crbug.com/240576 external/wpt/fullscreen/api/element-ready-check-containing-ifra
 
 crbug.com/567230 [ Debug ] virtual/threaded/animations/stability/restart-not-visible.html [ Timeout ]
 
+crbug.com/747758 [ Mac Win ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-prevent-default.html [ Failure ]
+
 crbug.com/567419 inspector/elements/styles-2/metrics-box-sizing.html [ Skip ]
 
 crbug.com/457273 [ Mac ] http/tests/websocket/close.html [ Pass Timeout ]
