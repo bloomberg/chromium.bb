@@ -7,66 +7,126 @@
 (function(global, binding, v8) {
   'use strict';
 
+  const _front = v8.createPrivateSymbol('front');
+  const _back = v8.createPrivateSymbol('back');
+  const _cursor = v8.createPrivateSymbol('cursor');
+  const _size = v8.createPrivateSymbol('size');
+  const _elements = v8.createPrivateSymbol('elements');
+  const _next = v8.createPrivateSymbol('next');
+
+  // Take copies of global objects to protect against them being replaced.
+  const undefined = global.undefined;
+  const RangeError = global.RangeError;
+
+  // shift() and peek() can only be called on a non-empty queue. This function
+  // throws an exception with the message mentioning |functionName| if |queue|
+  // is empty.
+  function requireNonEmptyQueue(queue, functionName) {
+    if (queue[_size] === 0) {
+      throw new RangeError(
+          `${functionName}() must not be called on an empty queue`);
+    }
+  }
+
   // Simple queue structure. Avoids scalability issues with using
   // InternalPackedArray directly by using multiple arrays in a linked list and
   // keeping the array size bounded.
   const QUEUE_MAX_ARRAY_SIZE = 16384;
   class SimpleQueue {
     constructor() {
-      this.front = {
-        elements: new v8.InternalPackedArray(),
-        next: undefined,
+      // [_front] and [_back] are always defined.
+      this[_front] = {
+        [_elements]: new v8.InternalPackedArray(),
+        [_next]: undefined,
       };
-      this.back = this.front;
-      // The cursor is used to avoid calling InternalPackedArray.shift().
-      this.cursor = 0;
-      this.size = 0;
+      this[_back] = this[_front];
+      // The cursor is used to avoid calling InternalPackedArray.shift(). It
+      // contains the index of the front element of the array inside the
+      // frontmost node. It is always in the range [0, QUEUE_MAX_ARRAY_SIZE).
+      this[_cursor] = 0;
+      // When there is only one node, size === elements.length - cursor.
+      this[_size] = 0;
     }
 
     get length() {
-      return this.size;
+      return this[_size];
     }
 
+    // For exception safety, this method is structured in order:
+    // 1. Read state
+    // 2. Calculate required state mutations
+    // 3. Perform state mutations
     push(element) {
-      ++this.size;
-      if (this.back.elements.length === QUEUE_MAX_ARRAY_SIZE) {
-        const oldBack = this.back;
-        this.back = {
-          elements: new v8.InternalPackedArray(),
-          next: undefined,
+      const oldBack = this[_back];
+      let newBack = oldBack;
+      if (oldBack[_elements].length === QUEUE_MAX_ARRAY_SIZE) {
+        newBack = {
+          [_elements]: new v8.InternalPackedArray(),
+          [_next]: undefined,
         };
-        oldBack.next = this.back;
       }
-      this.back.elements.push(element);
+
+      // push() is the mutation most likely to throw an exception, so it
+      // goes first.
+      newBack[_elements].push(element);
+      if (newBack !== oldBack) {
+        this[_back] = newBack;
+        oldBack[_next] = newBack;
+      }
+      ++this[_size];
     }
 
+    // Like push(), shift() follows the read -> calculate -> mutate pattern for
+    // exception safety.
     shift() {
-      // assert(this.size > 0);
-      --this.size;
-      if (this.front.elements.length === this.cursor) {
-        // assert(this.cursor === QUEUE_MAX_ARRAY_SIZE);
-        // assert(this.front.next !== undefined);
-        this.front = this.front.next;
-        this.cursor = 0;
+      requireNonEmptyQueue(this, 'shift');
+
+      const oldFront = this[_front];
+      let newFront = oldFront;
+      const oldCursor = this[_cursor];
+      let newCursor = oldCursor + 1;
+
+      const elements = oldFront[_elements];
+      const element = elements[oldCursor];
+
+      if (newCursor === QUEUE_MAX_ARRAY_SIZE) {
+        // assert(elements.length === QUEUE_MAX_ARRAY_SIZE);
+        // assert(oldFront[_next] !== undefined);
+        newFront = oldFront[_next];
+        newCursor = 0;
       }
-      const element = this.front.elements[this.cursor];
+
+      // No mutations before this point.
+      --this[_size];
+      this[_cursor] = newCursor;
+      if (oldFront !== newFront) {
+        this[_front] = newFront;
+      }
+
       // Permit shifted element to be garbage collected.
-      this.front.elements[this.cursor] = undefined;
-      ++this.cursor;
+      elements[oldCursor] = undefined;
 
       return element;
     }
 
+    // The tricky thing about forEach() is that it can be called
+    // re-entrantly. The queue may be mutated inside the callback. It is easy to
+    // see that push() within the callback has no negative effects since the end
+    // of the queue is checked for on every iteration. If shift() is called
+    // repeatedly within the callback then the next iteration may return an
+    // element that has been removed. In this case the callback will be called
+    // with undefined values until we either "catch up" with elements that still
+    // exist or reach the back of the queue.
     forEach(callback) {
-      let i = this.cursor;
-      let node = this.front;
-      let elements = node.elements;
-      while (i !== elements.length || node.next !== undefined) {
+      let i = this[_cursor];
+      let node = this[_front];
+      let elements = node[_elements];
+      while (i !== elements.length || node[_next] !== undefined) {
         if (i === elements.length) {
-          // assert(node.next !== undefined);
+          // assert(node[_next] !== undefined);
           // assert(i === QUEUE_MAX_ARRAY_SIZE);
-          node = node.next;
-          elements = node.elements;
+          node = node[_next];
+          elements = node[_elements];
           i = 0;
         }
         callback(elements[i]);
@@ -77,13 +137,11 @@
     // Return the element that would be returned if shift() was called now,
     // without modifying the queue.
     peek() {
-      // assert(this.size > 0);
-      if (this.front.elements.length === this.cursor) {
-        // assert(this.cursor === QUEUE_MAX_ARRAY_SIZE)
-        // assert(this.front.next !== undefined);
-        return this.front.next.elements[0];
-      }
-      return this.front.elements[this.cursor];
+      requireNonEmptyQueue(this, 'peek');
+
+      const front = this[_front];
+      const cursor = this[_cursor];
+      return front[_elements][cursor];
     }
   }
 
