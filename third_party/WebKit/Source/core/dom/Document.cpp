@@ -3769,7 +3769,8 @@ void Document::MaybeHandleHttpRefresh(const String& content,
                                              kErrorMessageLevel, message));
     return;
   }
-  frame_->GetNavigationScheduler().ScheduleRedirect(delay, refresh_url);
+  frame_->GetNavigationScheduler().ScheduleRedirect(delay, refresh_url,
+                                                    http_refresh_type);
 }
 
 bool Document::ShouldMergeWithLegacyDescription(

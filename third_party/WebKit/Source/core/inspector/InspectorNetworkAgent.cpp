@@ -1494,7 +1494,7 @@ void InspectorNetworkAgent::DidCommitLoad(LocalFrame* frame,
 }
 
 void InspectorNetworkAgent::FrameScheduledNavigation(LocalFrame* frame,
-                                                     double) {
+                                                     ScheduledNavigation*) {
   String frame_id = IdentifiersFactory::FrameId(frame);
   frames_with_scheduled_navigation_.insert(frame_id);
   if (!frames_with_scheduled_client_navigation_.Contains(frame_id)) {

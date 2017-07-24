@@ -47,6 +47,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderStateMachine.h"
+#include "core/loader/ScheduledNavigation.h"
 #include "core/page/Page.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/Histogram.h"
@@ -68,7 +69,7 @@ enum ScheduledNavigationType {
   kScheduledFormSubmission,
   kScheduledURLNavigation,
   kScheduledRedirect,
-  kScheduledLocationChange,
+  kScheduledFrameNavigation,
   kScheduledPageBlock,
 
   kScheduledLastEntry
@@ -110,57 +111,16 @@ void MaybeLogScheduledNavigationClobber(ScheduledNavigationType type,
 
 unsigned NavigationDisablerForBeforeUnload::navigation_disable_count_ = 0;
 
-class ScheduledNavigation
-    : public GarbageCollectedFinalized<ScheduledNavigation> {
-  WTF_MAKE_NONCOPYABLE(ScheduledNavigation);
-
- public:
-  ScheduledNavigation(double delay,
-                      Document* origin_document,
-                      bool replaces_current_item,
-                      bool is_location_change)
-      : delay_(delay),
-        origin_document_(origin_document),
-        replaces_current_item_(replaces_current_item),
-        is_location_change_(is_location_change) {
-    if (UserGestureIndicator::ProcessingUserGesture())
-      user_gesture_token_ = UserGestureIndicator::CurrentToken();
-  }
-  virtual ~ScheduledNavigation() {}
-
-  virtual void Fire(LocalFrame*) = 0;
-
-  virtual bool ShouldStartTimer(LocalFrame*) { return true; }
-
-  double Delay() const { return delay_; }
-  Document* OriginDocument() const { return origin_document_.Get(); }
-  bool ReplacesCurrentItem() const { return replaces_current_item_; }
-  bool IsLocationChange() const { return is_location_change_; }
-  std::unique_ptr<UserGestureIndicator> CreateUserGestureIndicator() {
-    return WTF::MakeUnique<UserGestureIndicator>(user_gesture_token_);
-  }
-
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(origin_document_); }
-
- protected:
-  void ClearUserGesture() { user_gesture_token_.Clear(); }
-
- private:
-  double delay_;
-  Member<Document> origin_document_;
-  bool replaces_current_item_;
-  bool is_location_change_;
-  RefPtr<UserGestureToken> user_gesture_token_;
-};
-
 class ScheduledURLNavigation : public ScheduledNavigation {
  protected:
-  ScheduledURLNavigation(double delay,
+  ScheduledURLNavigation(Reason reason,
+                         double delay,
                          Document* origin_document,
                          const KURL& url,
                          bool replaces_current_item,
                          bool is_location_change)
-      : ScheduledNavigation(delay,
+      : ScheduledNavigation(reason,
+                            delay,
                             origin_document,
                             replaces_current_item,
                             is_location_change),
@@ -182,7 +142,7 @@ class ScheduledURLNavigation : public ScheduledNavigation {
     request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
 
     ScheduledNavigationType type =
-        IsLocationChange() ? ScheduledNavigationType::kScheduledLocationChange
+        IsLocationChange() ? ScheduledNavigationType::kScheduledFrameNavigation
                            : ScheduledNavigationType::kScheduledURLNavigation;
     MaybeLogScheduledNavigationClobber(type, frame);
     frame->Loader().Load(request);
@@ -201,8 +161,9 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
   static ScheduledRedirect* Create(double delay,
                                    Document* origin_document,
                                    const KURL& url,
+                                   Document::HttpRefreshType http_refresh_type,
                                    bool replaces_current_item) {
-    return new ScheduledRedirect(delay, origin_document, url,
+    return new ScheduledRedirect(delay, origin_document, url, http_refresh_type,
                                  replaces_current_item);
   }
 
@@ -227,11 +188,26 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
   }
 
  private:
+  static Reason ToReason(Document::HttpRefreshType http_refresh_type) {
+    switch (http_refresh_type) {
+      case Document::HttpRefreshType::kHttpRefreshFromHeader:
+        return Reason::kHttpHeaderRefresh;
+      case Document::HttpRefreshType::kHttpRefreshFromMetaTag:
+        return Reason::kMetaTagRefresh;
+      default:
+        break;
+    }
+    NOTREACHED();
+    return Reason::kMetaTagRefresh;
+  }
+
   ScheduledRedirect(double delay,
                     Document* origin_document,
                     const KURL& url,
+                    Document::HttpRefreshType http_refresh_type,
                     bool replaces_current_item)
-      : ScheduledURLNavigation(delay,
+      : ScheduledURLNavigation(ToReason(http_refresh_type),
+                               delay,
                                origin_document,
                                url,
                                replaces_current_item,
@@ -240,20 +216,21 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
   }
 };
 
-class ScheduledLocationChange final : public ScheduledURLNavigation {
+class ScheduledFrameNavigation final : public ScheduledURLNavigation {
  public:
-  static ScheduledLocationChange* Create(Document* origin_document,
-                                         const KURL& url,
-                                         bool replaces_current_item) {
-    return new ScheduledLocationChange(origin_document, url,
-                                       replaces_current_item);
+  static ScheduledFrameNavigation* Create(Document* origin_document,
+                                          const KURL& url,
+                                          bool replaces_current_item) {
+    return new ScheduledFrameNavigation(origin_document, url,
+                                        replaces_current_item);
   }
 
  private:
-  ScheduledLocationChange(Document* origin_document,
-                          const KURL& url,
-                          bool replaces_current_item)
-      : ScheduledURLNavigation(0.0,
+  ScheduledFrameNavigation(Document* origin_document,
+                           const KURL& url,
+                           bool replaces_current_item)
+      : ScheduledURLNavigation(Reason::kFrameNavigation,
+                               0.0,
                                origin_document,
                                url,
                                replaces_current_item,
@@ -279,7 +256,8 @@ class ScheduledReload final : public ScheduledNavigation {
   }
 
  private:
-  ScheduledReload() : ScheduledNavigation(0.0, nullptr, true, true) {}
+  ScheduledReload()
+      : ScheduledNavigation(Reason::kReload, 0.0, nullptr, true, true) {}
 };
 
 class ScheduledPageBlock final : public ScheduledNavigation {
@@ -294,7 +272,11 @@ class ScheduledPageBlock final : public ScheduledNavigation {
 
  private:
   ScheduledPageBlock(Document* origin_document, int reason)
-      : ScheduledNavigation(0.0, origin_document, true, true),
+      : ScheduledNavigation(Reason::kPageBlock,
+                            0.0,
+                            origin_document,
+                            true,
+                            true),
         reason_(reason) {}
 
   int reason_;
@@ -329,7 +311,11 @@ class ScheduledFormSubmission final : public ScheduledNavigation {
   ScheduledFormSubmission(Document* document,
                           FormSubmission* submission,
                           bool replaces_current_item)
-      : ScheduledNavigation(0, document, replaces_current_item, true),
+      : ScheduledNavigation(Reason::kFormSubmission,
+                            0,
+                            document,
+                            replaces_current_item,
+                            true),
         submission_(submission) {
     DCHECK(submission_->Form());
   }
@@ -390,7 +376,10 @@ inline bool NavigationScheduler::ShouldScheduleNavigation(
           NavigationDisablerForBeforeUnload::IsNavigationAllowed());
 }
 
-void NavigationScheduler::ScheduleRedirect(double delay, const KURL& url) {
+void NavigationScheduler::ScheduleRedirect(
+    double delay,
+    const KURL& url,
+    Document::HttpRefreshType http_refresh_type) {
   if (!ShouldScheduleNavigation(url))
     return;
   if (delay < 0 || delay > INT_MAX / 1000)
@@ -401,7 +390,7 @@ void NavigationScheduler::ScheduleRedirect(double delay, const KURL& url) {
   // We want a new back/forward list item if the refresh timeout is > 1 second.
   if (!redirect_ || delay <= redirect_->Delay()) {
     Schedule(ScheduledRedirect::Create(delay, frame_->GetDocument(), url,
-                                       delay <= 1));
+                                       http_refresh_type, delay <= 1));
   }
 }
 
@@ -423,9 +412,9 @@ bool NavigationScheduler::MustReplaceCurrentItem(LocalFrame* target_frame) {
          !ToLocalFrame(parent_frame)->Loader().AllAncestorsAreComplete();
 }
 
-void NavigationScheduler::ScheduleLocationChange(Document* origin_document,
-                                                 const KURL& url,
-                                                 bool replaces_current_item) {
+void NavigationScheduler::ScheduleFrameNavigation(Document* origin_document,
+                                                  const KURL& url,
+                                                  bool replaces_current_item) {
   if (!ShouldScheduleNavigation(url))
     return;
 
@@ -449,8 +438,8 @@ void NavigationScheduler::ScheduleLocationChange(Document* origin_document,
     }
   }
 
-  Schedule(ScheduledLocationChange::Create(origin_document, url,
-                                           replaces_current_item));
+  Schedule(ScheduledFrameNavigation::Create(origin_document, url,
+                                            replaces_current_item));
 }
 
 void NavigationScheduler::SchedulePageBlock(Document* origin_document,
@@ -536,7 +525,7 @@ void NavigationScheduler::StartTimer() {
                     WrapWeakPersistent(this)),
           TimeDelta::FromSecondsD(redirect_->Delay()));
 
-  probe::frameScheduledNavigation(frame_, redirect_->Delay());
+  probe::frameScheduledNavigation(frame_, redirect_.Get());
 }
 
 void NavigationScheduler::Cancel() {
