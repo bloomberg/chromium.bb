@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/service_worker/service_worker_provider_interfaces.mojom.h"
+#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,6 +21,7 @@ namespace content {
 class ServiceWorkerContextCore;
 class ServiceWorkerDispatcherHost;
 class ServiceWorkerProviderHost;
+class ServiceWorkerVersion;
 struct ServiceWorkerProviderHostInfo;
 
 template <typename Arg>
@@ -58,6 +59,8 @@ class ServiceWorkerRemoteProviderEndpoint {
   ~ServiceWorkerRemoteProviderEndpoint();
 
   void BindWithProviderHostInfo(ServiceWorkerProviderHostInfo* info);
+  void BindWithProviderInfo(
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
 
   mojom::ServiceWorkerProviderHostAssociatedPtr* host_ptr() {
     return &host_ptr_;
@@ -88,8 +91,8 @@ std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
 std::unique_ptr<ServiceWorkerProviderHost>
 CreateProviderHostForServiceWorkerContext(
     int process_id,
-    int provider_id,
     bool is_parent_frame_secure,
+    ServiceWorkerVersion* hosted_version,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint);
 

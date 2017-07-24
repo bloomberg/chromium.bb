@@ -172,17 +172,6 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
   }
 
   void CreateServiceWorkerTypeProviderHost() {
-    remote_endpoints_.emplace_back();
-    std::unique_ptr<ServiceWorkerProviderHost> host =
-        CreateProviderHostForServiceWorkerContext(
-            helper_->mock_render_process_id(), kMockProviderId,
-            true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
-            &remote_endpoints_.back());
-    EXPECT_FALSE(
-        context()->GetProviderHost(host->process_id(), host->provider_id()));
-    provider_host_ = host->AsWeakPtr();
-    context()->AddProviderHost(std::move(host));
-
     // Create another worker whose requests will be intercepted by the foreign
     // fetch event handler.
     scoped_refptr<ServiceWorkerRegistration> registration =
@@ -206,7 +195,16 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
         base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
     base::RunLoop().RunUntilIdle();
 
-    provider_host_->running_hosted_version_ = version;
+    remote_endpoints_.emplace_back();
+    std::unique_ptr<ServiceWorkerProviderHost> host =
+        CreateProviderHostForServiceWorkerContext(
+            helper_->mock_render_process_id(),
+            true /* is_parent_frame_secure */, version.get(),
+            helper_->context()->AsWeakPtr(), &remote_endpoints_.back());
+    EXPECT_FALSE(
+        context()->GetProviderHost(host->process_id(), host->provider_id()));
+    provider_host_ = host->AsWeakPtr();
+    context()->AddProviderHost(std::move(host));
   }
 
  private:

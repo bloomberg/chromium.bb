@@ -57,7 +57,8 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
     const EmbeddedWorkerStartParams& params,
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
     mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
-    mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host) {
+    mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+    mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info) {
   DCHECK(ChildThreadImpl::current());
   DCHECK(!wrapper_);
   TRACE_EVENT0("ServiceWorker",
@@ -68,7 +69,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       params.script_url,
       ServiceWorkerUtils::IsScriptStreamingEnabled() && installed_scripts_info,
       std::move(dispatcher_request), std::move(instance_host),
-      std::move(temporal_self_));
+      std::move(provider_info), std::move(temporal_self_));
   client->set_blink_initialized_time(blink_initialized_time_);
   client->set_start_worker_received_time(base::TimeTicks::Now());
   wrapper_ = StartWorkerContext(params, std::move(installed_scripts_info),

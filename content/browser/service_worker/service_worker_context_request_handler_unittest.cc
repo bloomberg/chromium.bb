@@ -90,12 +90,11 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
   void SetUpProvider() {
     std::unique_ptr<ServiceWorkerProviderHost> host =
         CreateProviderHostForServiceWorkerContext(
-            helper_->mock_render_process_id(), 1 /* provider_id */,
-            true /* is_parent_frame_secure */, context()->AsWeakPtr(),
-            &remote_endpoint_);
+            helper_->mock_render_process_id(),
+            true /* is_parent_frame_secure */, version_.get(),
+            context()->AsWeakPtr(), &remote_endpoint_);
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
-    provider_host_->running_hosted_version_ = version_;
   }
 
   std::unique_ptr<net::URLRequest> CreateRequest(const GURL& url) {
