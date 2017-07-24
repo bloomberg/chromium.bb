@@ -57,12 +57,13 @@ bool HistogramManager::GetDeltas(std::vector<uint8_t>* data) {
     base::AutoLock lock(get_deltas_lock_, base::AutoLock::AlreadyAcquired());
     // Clear the protobuf between calls.
     uma_proto_.Clear();
-    // "false" to StatisticsRecorder::begin() indicates to *not* include
-    // histograms held in persistent storage on the assumption that they will be
-    // visible to the recipient through other means.
-    histogram_snapshot_manager_.PrepareDeltas(
-        base::StatisticsRecorder::begin(false), base::StatisticsRecorder::end(),
-        base::Histogram::kNoFlags, base::Histogram::kUmaTargetedHistogramFlag);
+    // "false" indicates to *not* include histograms held in persistent storage
+    // on the assumption that they will be visible to the recipient through
+    // other means.
+    base::StatisticsRecorder::PrepareDeltas(
+        false, base::Histogram::kNoFlags,
+        base::Histogram::kUmaTargetedHistogramFlag,
+        &histogram_snapshot_manager_);
     int32_t data_size = uma_proto_.ByteSize();
     data->resize(data_size);
     if (uma_proto_.SerializeToArray(&(*data)[0], data_size))

@@ -187,9 +187,9 @@ void TodayMetricsLogger::RecordUserAction(base::UserMetricsAction action) {
 }
 
 void TodayMetricsLogger::PersistLogs() {
-  histogram_snapshot_manager_.PrepareDeltas(
-      base::StatisticsRecorder::begin(false), base::StatisticsRecorder::end(),
-      base::Histogram::kNoFlags, base::Histogram::kNoFlags);
+  base::StatisticsRecorder::PrepareDeltas(false, base::Histogram::kNoFlags,
+                                          base::Histogram::kNoFlags,
+                                          &histogram_snapshot_manager_);
   std::string encoded_log;
   log_->GetOpenEncodedLog(&encoded_log);
   NSData* ns_encoded_log =
