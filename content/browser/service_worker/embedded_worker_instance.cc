@@ -295,14 +295,14 @@ class EmbeddedWorkerInstance::StartTask {
         weak_factory_(this) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker",
-                                      "EmbeddedWorkerInstance::Start",
-                                      instance_, "Script", script_url.spec());
+                                      "EmbeddedWorkerInstance::Start", this,
+                                      "Script", script_url.spec());
   }
 
   ~StartTask() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker",
-                                    "EmbeddedWorkerInstance::Start", instance_);
+                                    "EmbeddedWorkerInstance::Start", this);
 
     if (!instance_->context_)
       return;
@@ -358,7 +358,7 @@ class EmbeddedWorkerInstance::StartTask {
             params->service_worker_version_id) < kMaxSameProcessFailureCount;
     DCHECK_EQ(params->embedded_worker_id, instance_->embedded_worker_id_);
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "ALLOCATING_PROCESS",
-                                      instance_);
+                                      this);
     // Hop to the UI thread for process allocation and setup. We will continue
     // on the IO thread in StartTask::OnSetupCompleted().
     BrowserThread::PostTask(
@@ -375,6 +375,9 @@ class EmbeddedWorkerInstance::StartTask {
   static void RunStartCallback(StartTask* task,
                                ServiceWorkerStatusCode status) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "INITIALIZING_ON_RENDERER",
+                                    task, "Status",
+                                    ServiceWorkerStatusToString(status));
     StatusCallback callback = task->start_callback_;
     task->start_callback_.Reset();
     callback.Run(status);
@@ -393,7 +396,7 @@ class EmbeddedWorkerInstance::StartTask {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     if (status != SERVICE_WORKER_OK) {
       TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "ALLOCATING_PROCESS",
-                                      instance_, "Error",
+                                      this, "Error",
                                       ServiceWorkerStatusToString(status));
       StatusCallback callback = start_callback_;
       start_callback_.Reset();
@@ -405,7 +408,7 @@ class EmbeddedWorkerInstance::StartTask {
     ServiceWorkerMetrics::StartSituation start_situation =
         process_info->start_situation;
     TRACE_EVENT_NESTABLE_ASYNC_END1(
-        "ServiceWorker", "ALLOCATING_PROCESS", instance_, "StartSituation",
+        "ServiceWorker", "ALLOCATING_PROCESS", this, "StartSituation",
         ServiceWorkerMetrics::StartSituationToString(start_situation));
     if (is_installed_) {
       ServiceWorkerMetrics::RecordProcessCreated(
@@ -434,7 +437,8 @@ class EmbeddedWorkerInstance::StartTask {
       instance_->OnStartFailed(callback, status);
       // |this| may be destroyed.
     }
-
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker",
+                                      "INITIALIZING_ON_RENDERER", this);
     // |this|'s work is done here, but |instance_| still uses its state until
     // startup is complete.
   }
@@ -652,13 +656,6 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
                        std::move(host_ptr_info));
   registry_->BindWorkerToProcess(process_id(), embedded_worker_id());
   OnStartWorkerMessageSent(is_script_streaming);
-  if (starting_phase() == SCRIPT_STREAMING) {
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker",
-                                      "SENT_START_WITH_SCRIPT_STREAMING", this);
-  } else {
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "SENT_START_WORKER",
-                                      this);
-  }
   return SERVICE_WORKER_OK;
 }
 
@@ -683,14 +680,10 @@ void EmbeddedWorkerInstance::OnReadyForInspection() {
 }
 
 void EmbeddedWorkerInstance::OnScriptReadStarted() {
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "SCRIPT_READING_CACHE",
-                                    this);
   starting_phase_ = SCRIPT_READ_STARTED;
 }
 
 void EmbeddedWorkerInstance::OnScriptReadFinished() {
-  TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "SCRIPT_READING_CACHE",
-                                  this);
   starting_phase_ = SCRIPT_READ_FINISHED;
 }
 
@@ -709,22 +702,6 @@ void EmbeddedWorkerInstance::OnScriptLoaded() {
     source = LoadSource::HTTP_CACHE;
   }
 
-  switch (starting_phase_) {
-    case SCRIPT_DOWNLOADING:
-      TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "SCRIPT_DOWNLOADING",
-                                      this);
-      break;
-    case SCRIPT_STREAMING:
-      TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker",
-                                      "SENT_START_WITH_SCRIPT_STREAMING", this);
-      break;
-    default:
-      TRACE_EVENT_NESTABLE_ASYNC_END1(
-          "ServiceWorker", "SCRIPT_LOADING", this, "Source",
-          ServiceWorkerMetrics::LoadSourceToString(source));
-      break;
-  }
-
   // Don't record the time when script streaming is enabled because
   // OnScriptLoaded is called at the different timing.
   if (starting_phase_ != SCRIPT_STREAMING && !step_time_.is_null()) {
@@ -733,8 +710,6 @@ void EmbeddedWorkerInstance::OnScriptLoaded() {
   }
 
   // Renderer side has started to launch the worker thread.
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "LAUNCHING_WORKER_THREAD",
-                                    this);
   starting_phase_ = SCRIPT_LOADED;
   for (auto& observer : listener_list_)
     observer.OnScriptLoaded();
@@ -742,8 +717,6 @@ void EmbeddedWorkerInstance::OnScriptLoaded() {
 }
 
 void EmbeddedWorkerInstance::OnURLJobCreatedForMainScript() {
-  TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "SENT_START_WORKER", this);
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "SCRIPT_LOADING", this);
   if (!inflight_start_task_)
     return;
 
@@ -778,10 +751,7 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id, int provider_id) {
 
   provider_host->SetReadyToSendMessagesToWorker(thread_id);
 
-  TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "LAUNCHING_WORKER_THREAD",
-                                  this);
   // Renderer side has started to evaluate the loaded worker script.
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "EVALUATING_SCRIPT", this);
   starting_phase_ = THREAD_STARTED;
   if (!step_time_.is_null()) {
     base::TimeDelta duration = UpdateStepTime();
@@ -799,13 +769,6 @@ void EmbeddedWorkerInstance::OnScriptLoadFailed() {
     return;
 
   // starting_phase_ may be SCRIPT_READ_FINISHED in case of reading from cache.
-  if (starting_phase_ == SCRIPT_DOWNLOADING) {
-    TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "SCRIPT_DOWNLOADING",
-                                    this);
-  }
-  TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "SCRIPT_LOADING", this,
-                                  "Error", "Script load failed.");
-
   for (auto& observer : listener_list_)
     observer.OnScriptLoadFailed();
 }
@@ -817,8 +780,6 @@ void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
   DCHECK_EQ(EmbeddedWorkerStatus::STARTING, status_);
 
   // Renderer side has completed evaluating the loaded worker script.
-  TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "EVALUATING_SCRIPT", this,
-                                  "Success", success);
   starting_phase_ = SCRIPT_EVALUATED;
   if (!step_time_.is_null()) {
     base::TimeDelta duration = UpdateStepTime();
@@ -827,12 +788,6 @@ void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
                                                        start_situation_);
   }
 
-  if (success) {
-    // Renderer side has started the final preparations to complete the start
-    // process.
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker",
-                                      "WAITING_FOR_START_COMPLETE", this);
-  }
   base::WeakPtr<EmbeddedWorkerInstance> weak_this = weak_factory_.GetWeakPtr();
   StartTask::RunStartCallback(
       inflight_start_task_.get(),
@@ -854,9 +809,6 @@ void EmbeddedWorkerInstance::OnStarted(
         std::move(start_timing), inflight_start_task_->start_worker_sent_time(),
         start_situation_);
   }
-
-  TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "WAITING_FOR_START_COMPLETE",
-                                  this);
   DCHECK(status_ == EmbeddedWorkerStatus::STARTING);
   status_ = EmbeddedWorkerStatus::RUNNING;
   inflight_start_task_.reset();
@@ -947,8 +899,6 @@ void EmbeddedWorkerInstance::SetDevToolsAttached(bool attached) {
 }
 
 void EmbeddedWorkerInstance::OnNetworkAccessedForScriptLoad() {
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "SCRIPT_DOWNLOADING",
-                                    this);
   starting_phase_ = SCRIPT_DOWNLOADING;
   network_accessed_for_script_ = true;
 }

@@ -83,11 +83,14 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   static ServiceWorkerContextClient* ThreadSpecificInstance();
 
   // Called on the main thread.
+  // |is_script_streaming| is true if the script is already installed and will
+  // be streamed from the browser process.
   ServiceWorkerContextClient(
       int embedded_worker_id,
       int64_t service_worker_version_id,
       const GURL& service_worker_scope,
       const GURL& script_url,
+      bool is_script_streaming,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client);
@@ -353,6 +356,10 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   const int64_t service_worker_version_id_;
   const GURL service_worker_scope_;
   const GURL script_url_;
+
+  // True if the scripts for the worker are installed and its scripts are
+  // streamed from the browser process instead of ResourceLoader.
+  const bool is_script_streaming_;
   int network_provider_id_ = kInvalidServiceWorkerProviderId;
   scoped_refptr<ThreadSafeSender> sender_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
