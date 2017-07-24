@@ -83,10 +83,6 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(
     return Get(type, ToDocument(execution_context));
   if (execution_context->IsDocument())
     return Get(type, ToDocument(execution_context));
-  if (execution_context->IsMainThreadWorkletGlobalScope()) {
-    return Get(type,
-               ToMainThreadWorkletGlobalScope(execution_context)->GetFrame());
-  }
   if (execution_context->IsWorkerOrWorkletGlobalScope())
     return Get(type, ToWorkerOrWorkletGlobalScope(execution_context));
   execution_context = nullptr;
@@ -104,6 +100,12 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(
     WorkerOrWorkletGlobalScope* global_scope) {
   DCHECK(global_scope);
   DCHECK(global_scope->IsContextThread());
+  if (global_scope->IsMainThreadWorkletGlobalScope()) {
+    // MainThreadWorkletGlobalScope lives on the main thread and its GetThread()
+    // doesn't return a valid worker thread. Instead, retrieve a task runner
+    // from the frame.
+    return Get(type, ToMainThreadWorkletGlobalScope(global_scope)->GetFrame());
+  }
   return Get(type, global_scope->GetThread());
 }
 

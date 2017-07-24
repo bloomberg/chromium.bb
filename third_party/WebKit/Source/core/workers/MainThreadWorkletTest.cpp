@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/UseCounter.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
@@ -91,6 +92,12 @@ TEST_F(MainThreadWorkletTest, UseCounter) {
   // API use should be reported to the Document only one time. See comments in
   // MainThreadWorkletGlobalScopeForTest::ReportDeprecation.
   Deprecation::CountDeprecation(global_scope_, kFeature2);
+}
+
+TEST_F(MainThreadWorkletTest, TaskRunner) {
+  RefPtr<WebTaskRunner> task_runner =
+      TaskRunnerHelper::Get(TaskType::kUnthrottled, global_scope_);
+  EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
 }
 
 }  // namespace blink
