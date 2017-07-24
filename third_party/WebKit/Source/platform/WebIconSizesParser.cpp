@@ -41,9 +41,12 @@ static inline size_t FindEndOfWord(const String& string, size_t start) {
 static inline int PartialStringToInt(const String& string,
                                      size_t start,
                                      size_t end) {
-  if (string.Is8Bit())
-    return CharactersToInt(string.Characters8() + start, end - start, nullptr);
-  return CharactersToInt(string.Characters16() + start, end - start, nullptr);
+  if (string.Is8Bit()) {
+    return CharactersToInt(string.Characters8() + start, end - start,
+                           WTF::NumberParsingOptions::kNone, nullptr);
+  }
+  return CharactersToInt(string.Characters16() + start, end - start,
+                         WTF::NumberParsingOptions::kNone, nullptr);
 }
 
 }  // namespace

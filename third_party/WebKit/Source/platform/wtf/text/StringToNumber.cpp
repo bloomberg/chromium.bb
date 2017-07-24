@@ -139,108 +139,88 @@ static inline IntegralType ToIntegralType(const CharType* data,
   return value;
 }
 
-unsigned CharactersToUIntStrict(const LChar* data,
-                                size_t length,
-                                NumberParsingState* state) {
-  return ToIntegralType<unsigned, LChar, 10>(
-      data, length, NumberParsingOptions::kStrict, state);
+unsigned CharactersToUInt(const LChar* data,
+                          size_t length,
+                          NumberParsingOptions options,
+                          NumberParsingState* state) {
+  return ToIntegralType<unsigned, LChar, 10>(data, length, options, state);
 }
 
-unsigned CharactersToUIntStrict(const UChar* data,
-                                size_t length,
-                                NumberParsingState* state) {
-  return ToIntegralType<unsigned, UChar, 10>(
-      data, length, NumberParsingOptions::kStrict, state);
+unsigned CharactersToUInt(const UChar* data,
+                          size_t length,
+                          NumberParsingOptions options,
+                          NumberParsingState* state) {
+  return ToIntegralType<unsigned, UChar, 10>(data, length, options, state);
 }
 
-int CharactersToIntStrict(const LChar* data, size_t length, bool* ok) {
-  return ToIntegralType<int, LChar, 10>(data, length,
-                                        NumberParsingOptions::kStrict, ok);
+unsigned HexCharactersToUInt(const LChar* data,
+                             size_t length,
+                             NumberParsingOptions options,
+                             bool* ok) {
+  return ToIntegralType<unsigned, LChar, 16>(data, length, options, ok);
 }
 
-int CharactersToIntStrict(const UChar* data, size_t length, bool* ok) {
-  return ToIntegralType<int, UChar, 10>(data, length,
-                                        NumberParsingOptions::kStrict, ok);
+unsigned HexCharactersToUInt(const UChar* data,
+                             size_t length,
+                             NumberParsingOptions options,
+                             bool* ok) {
+  return ToIntegralType<unsigned, UChar, 16>(data, length, options, ok);
 }
 
-unsigned CharactersToUIntStrict(const LChar* data, size_t length, bool* ok) {
-  return ToIntegralType<unsigned, LChar, 10>(data, length,
-                                             NumberParsingOptions::kStrict, ok);
+int CharactersToInt(const LChar* data,
+                    size_t length,
+                    NumberParsingOptions options,
+                    bool* ok) {
+  return ToIntegralType<int, LChar, 10>(data, length, options, ok);
 }
 
-unsigned CharactersToUIntStrict(const UChar* data, size_t length, bool* ok) {
-  return ToIntegralType<unsigned, UChar, 10>(data, length,
-                                             NumberParsingOptions::kStrict, ok);
+int CharactersToInt(const UChar* data,
+                    size_t length,
+                    NumberParsingOptions options,
+                    bool* ok) {
+  return ToIntegralType<int, UChar, 10>(data, length, options, ok);
 }
 
-unsigned HexCharactersToUIntStrict(const LChar* data, size_t length, bool* ok) {
-  return ToIntegralType<unsigned, LChar, 16>(data, length,
-                                             NumberParsingOptions::kStrict, ok);
+unsigned CharactersToUInt(const LChar* data,
+                          size_t length,
+                          NumberParsingOptions options,
+                          bool* ok) {
+  return ToIntegralType<unsigned, LChar, 10>(data, length, options, ok);
 }
 
-unsigned HexCharactersToUIntStrict(const UChar* data, size_t length, bool* ok) {
-  return ToIntegralType<unsigned, UChar, 16>(data, length,
-                                             NumberParsingOptions::kStrict, ok);
+unsigned CharactersToUInt(const UChar* data,
+                          size_t length,
+                          NumberParsingOptions options,
+                          bool* ok) {
+  return ToIntegralType<unsigned, UChar, 10>(data, length, options, ok);
 }
 
-int64_t CharactersToInt64Strict(const LChar* data, size_t length, bool* ok) {
-  return ToIntegralType<int64_t, LChar, 10>(data, length,
-                                            NumberParsingOptions::kStrict, ok);
+int64_t CharactersToInt64(const LChar* data,
+                          size_t length,
+                          NumberParsingOptions options,
+                          bool* ok) {
+  return ToIntegralType<int64_t, LChar, 10>(data, length, options, ok);
 }
 
-int64_t CharactersToInt64Strict(const UChar* data, size_t length, bool* ok) {
-  return ToIntegralType<int64_t, UChar, 10>(data, length,
-                                            NumberParsingOptions::kStrict, ok);
+int64_t CharactersToInt64(const UChar* data,
+                          size_t length,
+                          NumberParsingOptions options,
+                          bool* ok) {
+  return ToIntegralType<int64_t, UChar, 10>(data, length, options, ok);
 }
 
-uint64_t CharactersToUInt64Strict(const LChar* data, size_t length, bool* ok) {
-  return ToIntegralType<uint64_t, LChar, 10>(data, length,
-                                             NumberParsingOptions::kStrict, ok);
+uint64_t CharactersToUInt64(const LChar* data,
+                            size_t length,
+                            NumberParsingOptions options,
+                            bool* ok) {
+  return ToIntegralType<uint64_t, LChar, 10>(data, length, options, ok);
 }
 
-uint64_t CharactersToUInt64Strict(const UChar* data, size_t length, bool* ok) {
-  return ToIntegralType<uint64_t, UChar, 10>(data, length,
-                                             NumberParsingOptions::kStrict, ok);
-}
-
-int CharactersToInt(const LChar* data, size_t length, bool* ok) {
-  return ToIntegralType<int, LChar, 10>(data, length,
-                                        NumberParsingOptions::kLoose, ok);
-}
-
-int CharactersToInt(const UChar* data, size_t length, bool* ok) {
-  return ToIntegralType<int, UChar, 10>(data, length,
-                                        NumberParsingOptions::kLoose, ok);
-}
-
-unsigned CharactersToUInt(const LChar* data, size_t length, bool* ok) {
-  return ToIntegralType<unsigned, LChar, 10>(data, length,
-                                             NumberParsingOptions::kLoose, ok);
-}
-
-unsigned CharactersToUInt(const UChar* data, size_t length, bool* ok) {
-  return ToIntegralType<unsigned, UChar, 10>(data, length,
-                                             NumberParsingOptions::kLoose, ok);
-}
-
-int64_t CharactersToInt64(const LChar* data, size_t length, bool* ok) {
-  return ToIntegralType<int64_t, LChar, 10>(data, length,
-                                            NumberParsingOptions::kLoose, ok);
-}
-
-int64_t CharactersToInt64(const UChar* data, size_t length, bool* ok) {
-  return ToIntegralType<int64_t, UChar, 10>(data, length,
-                                            NumberParsingOptions::kLoose, ok);
-}
-
-uint64_t CharactersToUInt64(const LChar* data, size_t length, bool* ok) {
-  return ToIntegralType<uint64_t, LChar, 10>(data, length,
-                                             NumberParsingOptions::kLoose, ok);
-}
-
-uint64_t CharactersToUInt64(const UChar* data, size_t length, bool* ok) {
-  return ToIntegralType<uint64_t, UChar, 10>(data, length,
-                                             NumberParsingOptions::kLoose, ok);
+uint64_t CharactersToUInt64(const UChar* data,
+                            size_t length,
+                            NumberParsingOptions options,
+                            bool* ok) {
+  return ToIntegralType<uint64_t, UChar, 10>(data, length, options, ok);
 }
 
 enum TrailingJunkPolicy { kDisallowTrailingJunk, kAllowTrailingJunk };

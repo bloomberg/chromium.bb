@@ -538,7 +538,8 @@ bool SourceListDirective::ParsePort(
     return false;
 
   bool ok;
-  port = CharactersToIntStrict(begin, end - begin, &ok);
+  port = CharactersToInt(begin, end - begin, WTF::NumberParsingOptions::kNone,
+                         &ok);
   return ok;
 }
 

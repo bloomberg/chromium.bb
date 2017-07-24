@@ -117,10 +117,13 @@ unsigned VTTScanner::ScanDigits(int& number) {
   }
   bool valid_number;
   size_t num_digits = run_of_digits.length();
-  if (is8_bit_)
-    number = CharactersToInt(data_.characters8, num_digits, &valid_number);
-  else
-    number = CharactersToInt(data_.characters16, num_digits, &valid_number);
+  if (is8_bit_) {
+    number = CharactersToInt(data_.characters8, num_digits,
+                             WTF::NumberParsingOptions::kNone, &valid_number);
+  } else {
+    number = CharactersToInt(data_.characters16, num_digits,
+                             WTF::NumberParsingOptions::kNone, &valid_number);
+  }
 
   // Since we know that scanDigits only scanned valid (ASCII) digits (and
   // hence that's what got passed to charactersToInt()), the remaining
