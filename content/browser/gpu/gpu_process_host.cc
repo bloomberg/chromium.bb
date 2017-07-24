@@ -242,14 +242,6 @@ class GpuSandboxedProcessLauncherDelegate
   ~GpuSandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
-  bool ShouldSandbox() override {
-    bool sandbox = !cmd_line_.HasSwitch(switches::kDisableGpuSandbox);
-    if (!sandbox) {
-      DVLOG(1) << "GPU sandbox is disabled";
-    }
-    return sandbox;
-  }
-
   bool DisableDefaultPolicy() override {
     return true;
   }
@@ -314,6 +306,12 @@ class GpuSandboxedProcessLauncherDelegate
 #endif  // OS_WIN
 
   SandboxType GetSandboxType() override {
+#if defined(OS_WIN)
+    if (cmd_line_.HasSwitch(switches::kDisableGpuSandbox)) {
+      DVLOG(1) << "GPU sandbox is disabled";
+      return SANDBOX_TYPE_NO_SANDBOX;
+    }
+#endif
     return SANDBOX_TYPE_GPU;
   }
 

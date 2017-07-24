@@ -69,6 +69,10 @@ bool NaClBrokerListener::PreSpawnTarget(sandbox::TargetPolicy* policy) {
   return result == sandbox::SBOX_ALL_OK;
 }
 
+content::SandboxType NaClBrokerListener::GetSandboxType() {
+  return content::SANDBOX_TYPE_PPAPI;
+}
+
 void NaClBrokerListener::OnChannelConnected(int32_t peer_pid) {
   browser_process_ = base::Process::OpenWithExtraPrivileges(peer_pid);
   CHECK(browser_process_.IsValid());

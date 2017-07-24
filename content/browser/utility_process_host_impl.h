@@ -85,8 +85,8 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   // Directory opened through the child process sandbox if needed.
   base::FilePath exposed_dir_;
 
-  // Whether to launch the child process with switches::kNoSandbox.
-  bool no_sandbox_;
+  // Launch the child process with switches that will setup this sandbox type.
+  SandboxType sandbox_type_;
 
   // Whether to launch the child process with elevated privileges.
   bool run_elevated_;

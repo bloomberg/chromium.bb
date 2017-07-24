@@ -13,10 +13,6 @@ bool SandboxedProcessLauncherDelegate::ShouldLaunchElevated() {
   return false;
 }
 
-bool SandboxedProcessLauncherDelegate::ShouldSandbox() {
-  return true;
-}
-
 bool SandboxedProcessLauncherDelegate::DisableDefaultPolicy() {
   return false;
 }
@@ -38,9 +34,5 @@ base::EnvironmentMap SandboxedProcessLauncherDelegate::GetEnvironment() {
   return base::EnvironmentMap();
 }
 #endif
-
-SandboxType SandboxedProcessLauncherDelegate::GetSandboxType() {
-  return SANDBOX_TYPE_INVALID;
-}
 
 }  // namespace content

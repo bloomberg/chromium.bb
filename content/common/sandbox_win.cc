@@ -741,19 +741,16 @@ sandbox::ResultCode StartSandboxedProcess(
 
   ProcessDebugFlags(cmd_line);
 
-  if ((!delegate->ShouldSandbox()) ||
+  if (IsUnsandboxedSandboxType(delegate->GetSandboxType()) ||
       browser_command_line.HasSwitch(switches::kNoSandbox) ||
       cmd_line->HasSwitch(switches::kNoSandbox)) {
     base::LaunchOptions options;
-
     base::HandlesToInheritVector handles = handles_to_inherit;
     if (!handles_to_inherit.empty()) {
       options.inherit_handles = true;
       options.handles_to_inherit = &handles;
     }
-    base::Process unsandboxed_process = base::LaunchProcess(*cmd_line, options);
-
-    *process = std::move(unsandboxed_process);
+    *process = base::LaunchProcess(*cmd_line, options);
     return sandbox::SBOX_ALL_OK;
   }
 

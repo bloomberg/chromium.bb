@@ -165,8 +165,6 @@ class NaClSandboxedProcessLauncherDelegate
  public:
   NaClSandboxedProcessLauncherDelegate() {}
 
-  ~NaClSandboxedProcessLauncherDelegate() override {}
-
 #if defined(OS_WIN)
   void PostSpawnTarget(base::ProcessHandle process) override {
     // For Native Client sel_ldr processes on 32-bit Windows, reserve 1 GB of
@@ -185,6 +183,9 @@ class NaClSandboxedProcessLauncherDelegate
     return content::GetGenericZygote();
   }
 #endif  // OS_WIN
+  content::SandboxType GetSandboxType() override {
+    return content::SANDBOX_TYPE_PPAPI;
+  }
 };
 
 void CloseFile(base::File file) {
