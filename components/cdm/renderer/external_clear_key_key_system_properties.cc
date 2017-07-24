@@ -7,11 +7,10 @@
 #include "base/logging.h"
 #include "media/base/eme_constants.h"
 #include "media/media_features.h"
-#include "ppapi/features/features.h"
 
 namespace cdm {
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 const char kExternalClearKeyPepperType[] = "application/x-ppapi-clearkey-cdm";
 #endif
 
@@ -82,7 +81,7 @@ ExternalClearKeyProperties::GetDistinctiveIdentifierSupport() const {
   return media::EmeFeatureSupport::NOT_SUPPORTED;
 }
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 std::string ExternalClearKeyProperties::GetPepperType() const {
   return kExternalClearKeyPepperType;
 }

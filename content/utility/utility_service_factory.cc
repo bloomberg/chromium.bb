@@ -15,7 +15,7 @@
 #include "content/public/utility/content_utility_client.h"
 #include "content/public/utility/utility_thread.h"
 #include "content/utility/utility_thread_impl.h"
-#include "ppapi/features/features.h"
+#include "media/media_features.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/interfaces/constants.mojom.h"
 #include "services/shape_detection/public/interfaces/constants.mojom.h"
@@ -23,7 +23,7 @@
 #include "services/video_capture/public/interfaces/constants.mojom.h"
 #include "services/video_capture/service_impl.h"
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "base/memory/ptr_util.h"
 #include "media/cdm/cdm_adapter_factory.h"           // nogncheck
 #include "media/mojo/features.h"                     // nogncheck
@@ -45,7 +45,7 @@ namespace content {
 
 namespace {
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 static_assert(BUILDFLAG(ENABLE_STANDALONE_CDM_SERVICE), "");
 static_assert(BUILDFLAG(ENABLE_MOJO_CDM), "");
@@ -70,7 +70,7 @@ std::unique_ptr<service_manager::Service> CreateCdmService() {
   return std::unique_ptr<service_manager::Service>(
       new ::media::MediaService(base::MakeUnique<CdmMojoMediaClient>()));
 }
-#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 std::unique_ptr<service_manager::Service> CreateDataDecoderService() {
   content::UtilityThread::Get()->EnsureBlinkInitialized();
@@ -92,7 +92,7 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
   services->insert(
       std::make_pair(video_capture::mojom::kServiceName, video_capture_info));
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   service_manager::EmbeddedServiceInfo info;
   info.factory = base::Bind(&CreateCdmService);
   services->insert(std::make_pair(media::mojom::kCdmServiceName, info));

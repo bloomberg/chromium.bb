@@ -89,6 +89,7 @@ source_set("browser") {
     "//gpu/ipc/host",
     "//gpu/vulkan:features",
     "//media",
+    "//media:media_features",
     "//media/capture",
     "//media/capture/mojo:image_capture",
     "//media/gpu/ipc/client",

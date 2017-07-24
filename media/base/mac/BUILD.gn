@@ -33,7 +33,6 @@ source_set("mac") {
   ]
 
   deps = [
-    "//ppapi/features",
     "//ui/gfx:color_space",
   ]
 }

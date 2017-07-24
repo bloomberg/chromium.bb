@@ -2156,6 +2156,7 @@ split_static_library("browser") {
     ]
     deps += [
       "//components/pdf/browser",
+      "//media:media_features",
       "//ppapi/features",
       "//ppapi/proxy:ipc",
       "//services/device/public/interfaces",
@@ -3526,7 +3527,7 @@ split_static_library("browser") {
     ]
   }
 
-  if (enable_pepper_cdms) {
+  if (enable_library_cdms) {
     sources += [
       "component_updater/widevine_cdm_component_installer.cc",
       "component_updater/widevine_cdm_component_installer.h",
@@ -4567,7 +4568,7 @@ static_library("test_support") {
     ]
   }
 
-  if (enable_pepper_cdms) {
+  if (enable_library_cdms) {
     sources += [
       "media/pepper_cdm_test_helper.cc",
       "media/pepper_cdm_test_helper.h",

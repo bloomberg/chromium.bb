@@ -280,7 +280,6 @@ target(link_target_type, "base") {
   defines = []
   public_deps = [
     "//media/base:video_facing",
-    "//ppapi/features",
     "//ui/gfx:color_space",
   ]
   deps = [
@@ -490,7 +489,6 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//gpu/command_buffer/common",
     "//media",
-    "//ppapi/features",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

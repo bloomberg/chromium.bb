@@ -1658,6 +1658,7 @@ test("browser_tests") {
       "//device/usb:test_support",
       "//google_apis:test_support",
       "//media",
+      "//media:media_features",
       "//media/base:test_support",
       "//media/cast:test_support",
       "//mojo/common:common_base",
@@ -2585,7 +2586,7 @@ test("browser_tests") {
         "../browser/supervised_user/supervised_user_service_browsertest.cc",
       ]
     }
-    if (enable_pepper_cdms) {
+    if (enable_library_cdms) {
       # Runtime dependencies.
       data_deps += [
         "//media/cdm/ppapi:clearkeycdmadapter",
@@ -2898,13 +2899,13 @@ if (!is_android) {
     # differently if possible).
     deps = [
       "//base/test:test_support_perf",
-      "//ppapi/features",
+      "//media:media_features",
       "//testing/gtest",
       "//testing/perf",
       "//third_party/widevine/cdm:headers",
     ]
 
-    if (enable_pepper_cdms) {
+    if (enable_library_cdms) {
       deps += [ "//media/cdm:cdm_paths" ]
       data_deps = [
         "//media/cdm/ppapi:clearkeycdmadapter",

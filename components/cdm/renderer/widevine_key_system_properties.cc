@@ -5,7 +5,6 @@
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 
 #include "media/media_features.h"
-#include "ppapi/features/features.h"
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
@@ -163,7 +162,7 @@ EmeFeatureSupport WidevineKeySystemProperties::GetDistinctiveIdentifierSupport()
   return distinctive_identifier_support_;
 }
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 std::string WidevineKeySystemProperties::GetPepperType() const {
   return kWidevineCdmPluginMimeType;
 }

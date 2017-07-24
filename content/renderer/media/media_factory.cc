@@ -28,6 +28,7 @@
 #include "media/blink/webencryptedmediaclient_impl.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/filters/context_3d.h"
+#include "media/media_features.h"
 #include "media/renderers/default_renderer_factory.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -69,7 +70,7 @@
 #include "media/remoting/sink_availability_observer.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "content/renderer/media/cdm/pepper_cdm_wrapper_impl.h"
 #include "content/renderer/media/cdm/render_cdm_factory.h"
 #endif
@@ -460,9 +461,10 @@ media::CdmFactory* MediaFactory::GetCdmFactory() {
   if (cdm_factory_)
     return cdm_factory_.get();
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
-  static_assert(BUILDFLAG(ENABLE_MOJO_CDM),
-                "Mojo CDM should always be enabled when PPAPI CDM is enabled");
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  static_assert(
+      BUILDFLAG(ENABLE_MOJO_CDM),
+      "Mojo CDM should always be enabled when library CDM is enabled");
   if (base::FeatureList::IsEnabled(media::kMojoCdm)) {
     cdm_factory_.reset(new media::MojoCdmFactory(GetMediaInterfaceProvider()));
   } else {
@@ -471,7 +473,7 @@ media::CdmFactory* MediaFactory::GetCdmFactory() {
   }
 #elif BUILDFLAG(ENABLE_MOJO_CDM)
   cdm_factory_.reset(new media::MojoCdmFactory(GetMediaInterfaceProvider()));
-#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   cdm_factory_.reset(new media::remoting::RemotingCdmFactory(

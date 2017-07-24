@@ -32,7 +32,6 @@
 #include "media/cdm/external_clear_key_test_helper.h"
 #include "media/cdm/simple_cdm_allocator.h"
 #include "media/media_features.h"
-#include "ppapi/features/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1073,7 +1072,7 @@ INSTANTIATE_TEST_CASE_P(AesDecryptor,
                         AesDecryptorTest,
                         testing::Values("AesDecryptor"));
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 INSTANTIATE_TEST_CASE_P(CdmAdapter,
                         AesDecryptorTest,
                         testing::Values("CdmAdapter"));

@@ -9,7 +9,6 @@ import("//build/config/features.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//media/media_options.gni")
-import("//ppapi/features/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/ffmpeg/ffmpeg_options.gni")
@@ -20,9 +19,11 @@ buildflag_header("media_features") {
   flags = [
     "ENABLE_AC3_EAC3_AUDIO_DEMUXING=$enable_ac3_eac3_audio_demuxing",
     "ENABLE_CBCS_ENCRYPTION_SCHEME=$enable_cbcs_encryption_scheme",
+    "ENABLE_CDM_HOST_VERIFICATION=$enable_cdm_host_verification",
     "ENABLE_HEVC_DEMUXING=$enable_hevc_demuxing",
     "ENABLE_DOLBY_VISION_DEMUXING=$enable_dolby_vision_demuxing",
     "ENABLE_HLS_SAMPLE_AES=$enable_hls_sample_aes",
+    "ENABLE_LIBRARY_CDMS=$enable_library_cdms",
     "ENABLE_MSE_MPEG2TS_STREAM_PARSER=$enable_mse_mpeg2ts_stream_parser",
     "ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION=$enable_runtime_media_renderer_selection",
     "ENABLE_MEDIA_REMOTING=$enable_media_remoting",
@@ -218,7 +219,6 @@ source_set("unit_tests") {
     "//media/base:test_support",
     "//media/cdm:cdm_api",
     "//media/cdm:cdm_paths",
-    "//ppapi/features",
     "//skia",  # Direct dependency required to inherit config.
     "//testing/gmock",
     "//testing/gtest",
@@ -242,7 +242,7 @@ source_set("unit_tests") {
   }
 
   # If ExternalClearKey is built, we can test CdmAdapter.
-  if (enable_pepper_cdms) {
+  if (enable_library_cdms) {
     sources += [ "cdm/cdm_adapter_unittest.cc" ]
     data_deps += [ "//media/cdm/ppapi:clearkeycdm" ]
   }

@@ -204,6 +204,7 @@ static_library("renderer") {
     deps += [
       "//components/pdf/renderer",
       "//components/strings",
+      "//media:media_features",
       "//ppapi/host",
       "//ppapi/proxy",
       "//ppapi/proxy:ipc",

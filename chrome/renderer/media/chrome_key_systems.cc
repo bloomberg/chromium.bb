@@ -21,13 +21,12 @@
 #include "media/base/eme_constants.h"
 #include "media/base/key_system_properties.h"
 #include "media/media_features.h"
-#include "ppapi/features/features.h"
 
 #if defined(OS_ANDROID)
 #include "components/cdm/renderer/android_key_systems.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "base/feature_list.h"
 #include "media/base/media_switches.h"
 #endif
@@ -44,7 +43,7 @@
 using media::KeySystemProperties;
 using media::SupportedCodecs;
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 static bool IsPepperCdmAvailable(
     const std::string& pepper_type,
     std::vector<base::string16>* additional_param_names,
@@ -235,11 +234,11 @@ static void AddPepperBasedWidevine(
 #endif  // defined(OS_CHROMEOS)
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
-#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 void AddChromeKeySystems(
     std::vector<std::unique_ptr<KeySystemProperties>>* key_systems_properties) {
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   if (base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting))
     AddExternalClearKey(key_systems_properties);
 
@@ -247,7 +246,7 @@ void AddChromeKeySystems(
   AddPepperBasedWidevine(key_systems_properties);
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
-#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if defined(OS_ANDROID)
   cdm::AddAndroidWidevine(key_systems_properties);

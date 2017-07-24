@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//ppapi/features/features.gni")
+import("//media/media_options.gni")
 
 source_set("utility") {
   # Only the public target should depend on this. All other targets (even
@@ -34,9 +34,9 @@ source_set("utility") {
     "//content/network:network_sources",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
+    "//media:media_features",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
-    "//ppapi/features",
     "//sandbox",
     "//services/data_decoder:lib",
     "//services/data_decoder/public/cpp",
@@ -54,9 +54,7 @@ source_set("utility") {
 
   # When pepper CDMs are supported, we also support running the CDM in the
   # utility process using mojo MediaService.
-  # TODO(xhwang): Replace "enable_pepper_cdms" with a better buildflag. See
-  # http://crbug.com/725394
-  if (enable_pepper_cdms) {
+  if (enable_library_cdms) {
     deps += [
       "//media",
       "//media/mojo:features",
