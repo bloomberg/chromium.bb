@@ -361,6 +361,8 @@ let Report = {
     }
 
     let statusMap = new Map(test.expectedMap);
+    if (statusMap.has("PASS") && statusMap.size == 1)
+       statusMap.delete("PASS");
     for (let s of test.actualMap.keys()) {
       let result = s;
       if (result == "TEXT" || result == "IMAGE" || result == "IMAGE+TEXT")
@@ -648,7 +650,7 @@ let Filters = {
   },
   wontfix: test => test.expected == "WONTFIX",
   all: _ => true,
-  flaky: test => { let i = test.actualMap.keys(); return !i.next().done && !i.next().done;}
+  flaky: test => test.actualMap.size > 1
 }
 
 // Event handling, initialization.
