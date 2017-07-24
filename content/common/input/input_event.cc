@@ -10,6 +10,10 @@ namespace content {
 
 InputEvent::InputEvent() {}
 
+InputEvent::InputEvent(ui::WebScopedInputEvent event,
+                       const ui::LatencyInfo& info)
+    : web_event(std::move(event)), latency_info(info) {}
+
 InputEvent::InputEvent(const blink::WebInputEvent& web_event,
                        const ui::LatencyInfo& latency_info)
     : web_event(ui::WebInputEventTraits::Clone(web_event)),
