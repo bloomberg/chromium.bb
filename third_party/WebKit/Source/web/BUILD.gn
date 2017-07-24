@@ -74,7 +74,6 @@ test("webkit_unit_tests") {
     # crbug.com/353585
 
     "tests/AccessibilityObjectModelTest.cpp",
-    "tests/ChromeClientImplTest.cpp",
     "tests/HTMLImportSheetsTest.cpp",
     "tests/LayoutGeometryMapTest.cpp",
     "tests/LocalFrameClientImplTest.cpp",
