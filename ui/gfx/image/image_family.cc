@@ -136,6 +136,11 @@ gfx::Image ImageFamily::CreateExact(const gfx::Size& size) const {
   return CreateExact(size.width(), size.height());
 }
 
+void ImageFamily::DisableThreadChecking() {
+  for (auto& item : map_)
+    item.second.DisableThreadChecking();
+}
+
 const gfx::Image* ImageFamily::GetWithExactAspect(float aspect,
                                                   int width) const {
   // Find the two images of given aspect ratio on either side of |width|.
