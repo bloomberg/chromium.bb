@@ -76,7 +76,8 @@ const CGFloat kToolbarBackgroundTransparency = 0.97f;
 - (MDCButton*)openButton {
   if (!_openButton) {
     _openButton = [[MDCFlatButton alloc] init];
-    [_openButton setCustomTitleColor:[[MDCPalette cr_bluePalette] tint500]];
+    [_openButton setTitleColor:[[MDCPalette cr_bluePalette] tint500]
+                      forState:UIControlStateNormal];
     [_openButton setTitle:l10n_util::GetNSStringWithFixup(IDS_IOS_OPEN_IN)
                  forState:UIControlStateNormal];
     [_openButton sizeToFit];

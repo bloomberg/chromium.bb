@@ -35,7 +35,8 @@ static const CGFloat kTopPadding = 6.f;
   [raisedButton
       setTitle:l10n_util::GetNSString(IDS_EMAIL_LINKS_AND_INSTRUCTIONS)
       forState:UIControlStateNormal];
-  raisedButton.customTitleColor = RemotingTheme.buttonTextColor;
+  [raisedButton setTitleColor:RemotingTheme.buttonTextColor
+                     forState:UIControlStateNormal];
   [raisedButton setBackgroundColor:RemotingTheme.buttonBackgroundColor
                           forState:UIControlStateNormal];
   [raisedButton sizeToFit];

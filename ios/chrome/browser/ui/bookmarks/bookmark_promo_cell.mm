@@ -101,7 +101,8 @@ void SetTextWithLineHeight(UILabel* label, NSString* text, CGFloat lineHeight) {
     _signInButton = signInButton;
     [_signInButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
                              forState:UIControlStateNormal];
-    _signInButton.customTitleColor = [UIColor whiteColor];
+    [_signInButton setTitleColor:[UIColor whiteColor]
+                        forState:UIControlStateNormal];
     _signInButton.inkColor = [UIColor colorWithWhite:1 alpha:0.2];
     [_signInButton
         setTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_PROMO_SIGN_IN_BUTTON)
@@ -116,7 +117,8 @@ void SetTextWithLineHeight(UILabel* label, NSString* text, CGFloat lineHeight) {
     [_dismissButton
         setTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_PROMO_DISMISS_BUTTON)
         forState:UIControlStateNormal];
-    _dismissButton.customTitleColor = [[MDCPalette cr_bluePalette] tint500];
+    [_dismissButton setTitleColor:[[MDCPalette cr_bluePalette] tint500]
+                         forState:UIControlStateNormal];
     _dismissButton.accessibilityIdentifier = @"promo_no_thanks_button";
     _dismissButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:_dismissButton];

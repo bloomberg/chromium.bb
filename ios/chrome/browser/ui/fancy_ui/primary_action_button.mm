@@ -40,7 +40,7 @@
                   forState:UIControlStateNormal];
   [self setBackgroundColor:[UIColor colorWithWhite:0.6f alpha:1.0f]
                   forState:UIControlStateDisabled];
-  self.customTitleColor = [UIColor whiteColor];
+  [self setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
 }
 
 @end

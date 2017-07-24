@@ -105,7 +105,8 @@ const CGFloat kPrefHeight = 300;
   NSString* cancelTitle = l10n_util::GetNSString(IDS_CANCEL);
   MDCFlatButton* cancelButton = [[MDCFlatButton alloc] init];
   [cancelButton sizeToFit];
-  [cancelButton setCustomTitleColor:[UIColor blackColor]];
+  [cancelButton setTitleColor:[UIColor blackColor]
+                     forState:UIControlStateNormal];
   [cancelButton setTitle:cancelTitle forState:UIControlStateNormal];
   [cancelButton addTarget:self
                    action:@selector(cancelCallback)

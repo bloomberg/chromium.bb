@@ -263,7 +263,7 @@ void HideButton(UIButton* button) {
 - (void)setPrimaryButtonStyling:(MDCButton*)button {
   [button setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
                     forState:UIControlStateNormal];
-  [button setCustomTitleColor:[UIColor whiteColor]];
+  [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
   [button setUnderlyingColorHint:[UIColor blackColor]];
   [button setInkColor:[UIColor colorWithWhite:1 alpha:0.2f]];
 }
@@ -271,7 +271,8 @@ void HideButton(UIButton* button) {
 - (void)setSecondaryButtonStyling:(MDCButton*)button {
   [button setBackgroundColor:self.backgroundColor
                     forState:UIControlStateNormal];
-  [button setCustomTitleColor:[[MDCPalette cr_bluePalette] tint500]];
+  [button setTitleColor:[[MDCPalette cr_bluePalette] tint500]
+               forState:UIControlStateNormal];
   [button setUnderlyingColorHint:[UIColor whiteColor]];
   [button setInkColor:[UIColor colorWithWhite:0 alpha:0.06f]];
 }

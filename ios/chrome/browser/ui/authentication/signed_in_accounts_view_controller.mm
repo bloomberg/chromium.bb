@@ -299,7 +299,8 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
       forState:UIControlStateNormal];
   [_primaryButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
                             forState:UIControlStateNormal];
-  _primaryButton.customTitleColor = [UIColor whiteColor];
+  [_primaryButton setTitleColor:[UIColor whiteColor]
+                       forState:UIControlStateNormal];
   _primaryButton.underlyingColorHint = [UIColor blackColor];
   _primaryButton.inkColor = [UIColor colorWithWhite:1 alpha:0.2f];
   _primaryButton.translatesAutoresizingMaskIntoConstraints = NO;
@@ -315,7 +316,8 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
       forState:UIControlStateNormal];
   [_secondaryButton setBackgroundColor:[UIColor whiteColor]
                               forState:UIControlStateNormal];
-  _secondaryButton.customTitleColor = [[MDCPalette cr_bluePalette] tint500];
+  [_secondaryButton setTitleColor:[[MDCPalette cr_bluePalette] tint500]
+                         forState:UIControlStateNormal];
   _secondaryButton.underlyingColorHint = [UIColor whiteColor];
   _secondaryButton.inkColor = [UIColor colorWithWhite:0 alpha:0.06f];
   _secondaryButton.translatesAutoresizingMaskIntoConstraints = NO;

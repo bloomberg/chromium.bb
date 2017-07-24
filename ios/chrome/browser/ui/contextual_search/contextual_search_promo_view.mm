@@ -131,7 +131,8 @@ const CGFloat kCloseDuration = ios::material::kDuration1;
   [acceptButton
       setTitle:l10n_util::GetNSString(IDS_IOS_CONTEXTUAL_SEARCH_GOT_IT_BUTTON)
       forState:UIControlStateNormal];
-  acceptButton.customTitleColor = [UIColor whiteColor];
+  [acceptButton setTitleColor:[UIColor whiteColor]
+                     forState:UIControlStateNormal];
   [acceptButton addTarget:_delegate
                    action:@selector(promoViewAcceptTapped)
          forControlEvents:UIControlEventTouchUpInside];

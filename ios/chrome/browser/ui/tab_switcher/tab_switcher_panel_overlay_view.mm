@@ -138,7 +138,8 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
                            forState:UIControlStateDisabled];
     [_textButton setTranslatesAutoresizingMaskIntoConstraints:NO];
     [[_textButton imageView] setTintColor:[UIColor whiteColor]];
-    [_textButton setCustomTitleColor:[UIColor whiteColor]];
+    [_textButton setTitleColor:[UIColor whiteColor]
+                      forState:UIControlStateNormal];
     [_container addSubview:_textButton];
 
     // Create and add floatingButton to the container.
