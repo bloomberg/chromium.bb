@@ -84,6 +84,8 @@ void SoftwareVideoRenderer::OnSessionConfig(
     decoder_ = VideoDecoderVpx::CreateForVP8();
   } else if (codec == ChannelConfig::CODEC_VP9) {
     decoder_ = VideoDecoderVpx::CreateForVP9();
+  } else if (codec == ChannelConfig::CODEC_H264) {
+    NOTIMPLEMENTED() << "H264 software decoding is not supported.";
   } else {
     NOTREACHED() << "Invalid Encoding found: " << codec;
   }

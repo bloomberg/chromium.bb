@@ -26,7 +26,8 @@ WebrtcDummyVideoEncoder::WebrtcDummyVideoEncoder(
       state_(kUninitialized),
       codec_type_(type),
       video_channel_state_observer_(video_channel_state_observer) {
-  DCHECK(type == webrtc::kVideoCodecVP8 || type == webrtc::kVideoCodecVP9);
+  DCHECK(type == webrtc::kVideoCodecVP8 || type == webrtc::kVideoCodecVP9 ||
+         type == webrtc::kVideoCodecH264);
 }
 
 WebrtcDummyVideoEncoder::~WebrtcDummyVideoEncoder() {}
@@ -173,6 +174,7 @@ WebrtcDummyVideoEncoderFactory::WebrtcDummyVideoEncoderFactory()
   // in webrtc.
   codecs_.push_back(cricket::VideoCodec("VP8"));
   codecs_.push_back(cricket::VideoCodec("VP9"));
+  codecs_.push_back(cricket::VideoCodec("H264"));
 }
 
 WebrtcDummyVideoEncoderFactory::~WebrtcDummyVideoEncoderFactory() {
