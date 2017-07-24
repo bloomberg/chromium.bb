@@ -20,12 +20,14 @@ namespace content {
 
 LayoutTestURLRequestContextGetter::LayoutTestURLRequestContextGetter(
     bool ignore_certificate_errors,
+    bool off_the_record,
     const base::FilePath& base_path,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     ProtocolHandlerMap* protocol_handlers,
     URLRequestInterceptorScopedVector request_interceptors,
     net::NetLog* net_log)
     : ShellURLRequestContextGetter(ignore_certificate_errors,
+                                   off_the_record,
                                    base_path,
                                    std::move(io_task_runner),
                                    protocol_handlers,

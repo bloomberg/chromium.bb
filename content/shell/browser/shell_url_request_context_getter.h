@@ -33,6 +33,7 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   ShellURLRequestContextGetter(
       bool ignore_certificate_errors,
+      bool off_the_record,
       const base::FilePath& base_path,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       ProtocolHandlerMap* protocol_handlers,
@@ -58,6 +59,7 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
 
  private:
   bool ignore_certificate_errors_;
+  bool off_the_record_;
   base::FilePath base_path_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   net::NetLog* net_log_;

@@ -28,6 +28,7 @@ class LayoutTestURLRequestContextGetter : public ShellURLRequestContextGetter {
  public:
   LayoutTestURLRequestContextGetter(
       bool ignore_certificate_errors,
+      bool off_the_record,
       const base::FilePath& base_path,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       ProtocolHandlerMap* protocol_handlers,
