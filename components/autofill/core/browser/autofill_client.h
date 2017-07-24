@@ -29,10 +29,6 @@ namespace gfx {
 class RectF;
 }
 
-namespace rappor {
-class RapporServiceImpl;
-}
-
 namespace syncer {
 class SyncService;
 }
@@ -107,9 +103,6 @@ class AutofillClient : public RiskDataLoader {
 
   // Gets the IdentityProvider associated with the client (for OAuth2).
   virtual IdentityProvider* GetIdentityProvider() = 0;
-
-  // Gets the RapporServiceImpl associated with the client (for metrics).
-  virtual rappor::RapporServiceImpl* GetRapporServiceImpl() = 0;
 
   // Gets the UKM service associated with this client (for metrics).
   virtual ukm::UkmRecorder* GetUkmRecorder() = 0;

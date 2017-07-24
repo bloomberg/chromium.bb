@@ -68,8 +68,6 @@
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "google_apis/gaia/identity_provider.h"
@@ -1033,8 +1031,7 @@ void AutofillManager::OnLoadedServerPredictions(
     return;
 
   // Parse and store the server predictions.
-  FormStructure::ParseQueryResponse(std::move(response), queried_forms,
-                                    client_->GetRapporServiceImpl());
+  FormStructure::ParseQueryResponse(std::move(response), queried_forms);
 
   // Will log quality metrics for each FormStructure based on the presence of
   // autocomplete attributes, if available.
@@ -1307,9 +1304,8 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
 
     // Upload requires that recently used or modified addresses meet the
     // client-side validation rules.
-    std::string rappor_metric_name;
-    int upload_decision_metrics = SetProfilesForCreditCardUpload(
-        *imported_credit_card, &upload_request_, &rappor_metric_name);
+    int upload_decision_metrics =
+        SetProfilesForCreditCardUpload(*imported_credit_card, &upload_request_);
 
     pending_upload_request_url_ = GURL(submitted_form.source_url());
 
@@ -1323,15 +1319,11 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
             kAutofillUpstreamRequestCvcIfMissing.name);
       } else {
         upload_decision_metrics |= GetCVCCardUploadDecisionMetric();
-        rappor_metric_name = "Autofill.CardUploadNotOfferedNoCvc";
       }
     }
     if (upload_decision_metrics) {
       LogCardUploadDecisions(upload_decision_metrics);
       pending_upload_request_url_ = GURL();
-      if (!rappor_metric_name.empty()) {
-        CollectRapporSample(submitted_form.source_url(), rappor_metric_name);
-      }
       return;
     }
 
@@ -1355,8 +1347,7 @@ AutofillManager::GetCVCCardUploadDecisionMetric() const {
 
 int AutofillManager::SetProfilesForCreditCardUpload(
     const CreditCard& card,
-    payments::PaymentsClient::UploadRequestDetails* upload_request,
-    std::string* rappor_metric_name) const {
+    payments::PaymentsClient::UploadRequestDetails* upload_request) const {
   std::vector<AutofillProfile> candidate_profiles;
   const base::Time now = AutofillClock::Now();
   const base::TimeDelta fifteen_minutes = base::TimeDelta::FromMinutes(15);
@@ -1400,7 +1391,6 @@ int AutofillManager::SetProfilesForCreditCardUpload(
         has_profile
             ? AutofillMetrics::UPLOAD_NOT_OFFERED_NO_RECENTLY_USED_ADDRESS
             : AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE;
-    *rappor_metric_name = "Autofill.CardUploadNotOfferedNoAddress";
   }
 
   std::unique_ptr<AutofillProfileComparator> comparator;
@@ -1455,7 +1445,6 @@ int AutofillManager::SetProfilesForCreditCardUpload(
     }
     if (found_conflicting_names) {
       if (!upload_decision_metrics)
-        *rappor_metric_name = "Autofill.CardUploadNotOfferedConflictingNames";
       upload_decision_metrics |=
           AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES;
     }
@@ -1465,7 +1454,6 @@ int AutofillManager::SetProfilesForCreditCardUpload(
   // them, the candidate set is invalid.
   if (verified_name.empty()) {
     if (!upload_decision_metrics)
-      *rappor_metric_name = "Autofill.CardUploadNotOfferedNoName";
     upload_decision_metrics |= AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME;
   }
 
@@ -1532,15 +1520,6 @@ int AutofillManager::SetProfilesForCreditCardUpload(
   return upload_decision_metrics;
 }
 
-void AutofillManager::CollectRapporSample(
-    const GURL& source_url,
-    const std::string& metric_name) const {
-  if (source_url.is_valid() && client_->GetRapporServiceImpl()) {
-    rappor::SampleDomainAndRegistryFromGURL(client_->GetRapporServiceImpl(),
-                                            metric_name, source_url);
-  }
-}
-
 // Note that |submitted_form| is passed as a pointer rather than as a reference
 // so that we can get memory management right across threads.  Note also that we
 // explicitly pass in all the time stamps of interest, as the cached ones might
@@ -1551,10 +1530,10 @@ void AutofillManager::UploadFormDataAsyncCallback(
     const TimeTicks& interaction_time,
     const TimeTicks& submission_time,
     bool observed_submission) {
-  submitted_form->LogQualityMetrics(
-      load_time, interaction_time, submission_time,
-      client_->GetRapporServiceImpl(), form_interactions_ukm_logger_.get(),
-      did_show_suggestions_, observed_submission);
+  submitted_form->LogQualityMetrics(load_time, interaction_time,
+                                    submission_time,
+                                    form_interactions_ukm_logger_.get(),
+                                    did_show_suggestions_, observed_submission);
   if (submitted_form->ShouldBeCrowdsourced())
     UploadFormData(*submitted_form, observed_submission);
 }

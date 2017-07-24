@@ -36,8 +36,6 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
 #include "components/autofill/core/common/signatures_util.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace autofill {
@@ -466,8 +464,7 @@ bool FormStructure::EncodeQueryRequest(
 // static
 void FormStructure::ParseQueryResponse(
     std::string payload,
-    const std::vector<FormStructure*>& forms,
-    rappor::RapporServiceImpl* rappor_service) {
+    const std::vector<FormStructure*>& forms) {
   AutofillMetrics::LogServerQueryMetric(
       AutofillMetrics::QUERY_RESPONSE_RECEIVED);
 
@@ -519,11 +516,6 @@ void FormStructure::ParseQueryResponse(
 
     AutofillMetrics::LogServerResponseHasDataForForm(
         !query_response_has_no_server_data);
-    if (query_response_has_no_server_data && form->source_url().is_valid()) {
-      rappor::SampleDomainAndRegistryFromGURL(
-          rappor_service, "Autofill.QueryResponseHasNoServerDataForForm",
-          form->source_url());
-    }
 
     form->UpdateAutofillCount();
     form->IdentifySections(false);
@@ -695,7 +687,6 @@ void FormStructure::LogQualityMetrics(
     const base::TimeTicks& load_time,
     const base::TimeTicks& interaction_time,
     const base::TimeTicks& submission_time,
-    rappor::RapporServiceImpl* rappor_service,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
     bool did_show_suggestions,
     bool observed_submission) const {

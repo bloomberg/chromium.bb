@@ -3766,7 +3766,7 @@ TEST_F(FormStructureTest, ParseQueryResponse) {
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms);
 
   ASSERT_GE(forms[0]->field_count(), 2U);
   ASSERT_GE(forms[1]->field_count(), 2U);
@@ -3804,7 +3804,7 @@ TEST_F(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms);
 
   ASSERT_GE(forms[0]->field_count(), 2U);
   // Server type is parsed from the response and is the end result type.

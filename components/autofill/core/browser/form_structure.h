@@ -34,10 +34,6 @@ namespace base {
 class TimeTicks;
 }
 
-namespace rappor {
-class RapporServiceImpl;
-}
-
 namespace ukm {
 class UkmRecorder;
 }
@@ -78,10 +74,8 @@ class FormStructure {
 
   // Parses the field types from the server query response. |forms| must be the
   // same as the one passed to EncodeQueryRequest when constructing the query.
-  // |rappor_service| may be null.
   static void ParseQueryResponse(std::string response,
-                                 const std::vector<FormStructure*>& forms,
-                                 rappor::RapporServiceImpl* rappor_service);
+                                 const std::vector<FormStructure*>& forms);
 
   // Returns predictions using the details from the given |form_structures| and
   // their fields' predicted types.
@@ -139,7 +133,6 @@ class FormStructure {
       const base::TimeTicks& load_time,
       const base::TimeTicks& interaction_time,
       const base::TimeTicks& submission_time,
-      rappor::RapporServiceImpl* rappor_service,
       AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
       bool did_show_suggestions,
       bool observed_submission) const;

@@ -432,21 +432,15 @@ class AutofillManager : public AutofillHandler,
   // Imports the form data, submitted by the user, into |personal_data_|.
   void ImportFormData(const FormStructure& submitted_form);
 
-  // Logs |metric_name| with RAPPOR, for the specific form |source_url|.
-  void CollectRapporSample(const GURL& source_url,
-                           const std::string& metric_name) const;
-
   // Examines |card| and the stored profiles and if a candidate set of profiles
   // is found that matches the client-side validation rules, assigns the values
   // to |upload_request.profiles| and returns 0. If no valid set can be found,
-  // returns the failure reasons and, if applicable, the RAPPOR metric to log to
-  // |rappor_metric_name|. Appends any experiments that were triggered to
+  // returns the failure reasons. Appends any experiments that were triggered to
   // |upload_request.active_experiments|. The return value is a bitmask of
   // |AutofillMetrics::CardUploadDecisionMetric|.
   int SetProfilesForCreditCardUpload(
       const CreditCard& card,
-      payments::PaymentsClient::UploadRequestDetails* upload_request,
-      std::string* rappor_metric_name) const;
+      payments::PaymentsClient::UploadRequestDetails* upload_request) const;
 
   // Returns metric relevant to the CVC field based on values in
   // |found_cvc_field_|, |found_value_in_cvc_field_| and

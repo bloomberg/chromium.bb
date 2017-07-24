@@ -142,10 +142,6 @@ IdentityProvider* ChromeAutofillClient::GetIdentityProvider() {
   return identity_provider_.get();
 }
 
-rappor::RapporServiceImpl* ChromeAutofillClient::GetRapporServiceImpl() {
-  return g_browser_process->rappor_service();
-}
-
 ukm::UkmRecorder* ChromeAutofillClient::GetUkmRecorder() {
   return g_browser_process->ukm_recorder();
 }

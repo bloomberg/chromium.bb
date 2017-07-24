@@ -53,7 +53,6 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/metrics/proto/ukm/entry.pb.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/test_rappor_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -4847,16 +4846,6 @@ TEST_F(AutofillManagerTest, UploadCreditCard_CvcUnavailable) {
                                  AutofillMetrics::CVC_VALUE_NOT_FOUND);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(AutofillMetrics::CVC_VALUE_NOT_FOUND);
-
-  rappor::TestRapporServiceImpl* rappor_service =
-      autofill_client_.test_rappor_service();
-  EXPECT_EQ(1, rappor_service->GetReportsCount());
-  std::string sample;
-  rappor::RapporType type;
-  EXPECT_TRUE(rappor_service->GetRecordedSampleForMetric(
-      "Autofill.CardUploadNotOfferedNoCvc", &sample, &type));
-  EXPECT_EQ("myform.com", sample);
-  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_CvcInvalidLength) {
@@ -4895,16 +4884,6 @@ TEST_F(AutofillManagerTest, UploadCreditCard_CvcInvalidLength) {
                                  AutofillMetrics::INVALID_CVC_VALUE);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(AutofillMetrics::INVALID_CVC_VALUE);
-
-  rappor::TestRapporServiceImpl* rappor_service =
-      autofill_client_.test_rappor_service();
-  EXPECT_EQ(1, rappor_service->GetReportsCount());
-  std::string sample;
-  rappor::RapporType type;
-  EXPECT_TRUE(rappor_service->GetRecordedSampleForMetric(
-      "Autofill.CardUploadNotOfferedNoCvc", &sample, &type));
-  EXPECT_EQ("myform.com", sample);
-  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_MultipleCvcFields) {
@@ -5322,16 +5301,6 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NoCvcFieldOnFormExperimentOff) {
                                  AutofillMetrics::CVC_FIELD_NOT_FOUND);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(AutofillMetrics::CVC_FIELD_NOT_FOUND);
-
-  rappor::TestRapporServiceImpl* rappor_service =
-      autofill_client_.test_rappor_service();
-  EXPECT_EQ(1, rappor_service->GetReportsCount());
-  std::string sample;
-  rappor::RapporType type;
-  EXPECT_TRUE(rappor_service->GetRecordedSampleForMetric(
-      "Autofill.CardUploadNotOfferedNoCvc", &sample, &type));
-  EXPECT_EQ("myform.com", sample);
-  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_NoProfileAvailable) {
@@ -5365,16 +5334,6 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NoProfileAvailable) {
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE);
-
-  rappor::TestRapporServiceImpl* rappor_service =
-      autofill_client_.test_rappor_service();
-  EXPECT_EQ(1, rappor_service->GetReportsCount());
-  std::string sample;
-  rappor::RapporType type;
-  EXPECT_TRUE(rappor_service->GetRecordedSampleForMetric(
-      "Autofill.CardUploadNotOfferedNoAddress", &sample, &type));
-  EXPECT_EQ("myform.com", sample);
-  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_NoRecentlyUsedProfile) {
@@ -5523,16 +5482,6 @@ TEST_F(AutofillManagerTest,
                AutofillMetrics::CVC_VALUE_NOT_FOUND |
                AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE,
                1 /* expected_num_matching_entries */);
-
-  rappor::TestRapporServiceImpl* rappor_service =
-      autofill_client_.test_rappor_service();
-  EXPECT_EQ(1, rappor_service->GetReportsCount());
-  std::string sample;
-  rappor::RapporType type;
-  EXPECT_TRUE(rappor_service->GetRecordedSampleForMetric(
-      "Autofill.CardUploadNotOfferedNoCvc", &sample, &type));
-  EXPECT_EQ("myform.com", sample);
-  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_NoNameAvailable) {
@@ -5571,16 +5520,6 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NoNameAvailable) {
                                  AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
-
-  rappor::TestRapporServiceImpl* rappor_service =
-      autofill_client_.test_rappor_service();
-  EXPECT_EQ(1, rappor_service->GetReportsCount());
-  std::string sample;
-  rappor::RapporType type;
-  EXPECT_TRUE(rappor_service->GetRecordedSampleForMetric(
-      "Autofill.CardUploadNotOfferedNoName", &sample, &type));
-  EXPECT_EQ("myform.com", sample);
-  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_ZipCodesConflict) {
@@ -6139,16 +6078,6 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NamesHaveToMatch) {
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
-
-  rappor::TestRapporServiceImpl* rappor_service =
-      autofill_client_.test_rappor_service();
-  EXPECT_EQ(1, rappor_service->GetReportsCount());
-  std::string sample;
-  rappor::RapporType type;
-  EXPECT_TRUE(rappor_service->GetRecordedSampleForMetric(
-      "Autofill.CardUploadNotOfferedConflictingNames", &sample, &type));
-  EXPECT_EQ("myform.com", sample);
-  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_IgnoreOldProfiles) {
