@@ -14,6 +14,7 @@
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/test/web_test.h"
+#import "ios/web/test/fakes/test_navigation_manager_delegate.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
 #include "net/cert/x509_util_ios_and_mac.h"
 #include "net/test/cert_test_util.h"
@@ -89,6 +90,7 @@ class CRWSSLStatusUpdaterTest : public web::WebTest {
 
     nav_manager_.reset(new LegacyNavigationManagerImpl());
     nav_manager_->SetBrowserState(GetBrowserState());
+    nav_manager_->SetDelegate(&nav_delegate_);
 
     ssl_status_updater_ =
         [[CRWSSLStatusUpdater alloc] initWithDataSource:data_source_
@@ -112,13 +114,15 @@ class CRWSSLStatusUpdaterTest : public web::WebTest {
     web::WebTest::TearDown();
   }
 
-  // Returns autoreleased session controller with a single committed entry.
-  CRWSessionController* SessionControllerWithEntry(std::string item_url_spec) {
+  // Creates an autoreleased session controller with a single committed entry
+  // and link it with nav_manager_.
+  void CreateSessionControllerWithEntry(std::string item_url_spec) {
     std::vector<std::unique_ptr<web::NavigationItem>> nav_items;
     CRWSessionController* session_controller =
         [[CRWSessionController alloc] initWithBrowserState:GetBrowserState()
                                            navigationItems:std::move(nav_items)
                                     lastCommittedItemIndex:0];
+    nav_manager_->SetSessionController(session_controller);
     [session_controller
                  addPendingItem:GURL(item_url_spec)
                        referrer:Referrer()
@@ -127,13 +131,12 @@ class CRWSSLStatusUpdaterTest : public web::WebTest {
         userAgentOverrideOption:NavigationManager::UserAgentOverrideOption::
                                     INHERIT];
     [session_controller commitPendingItem];
-
-    return session_controller;
   }
 
   CRWSSLStatusUpdaterTestDataSource* data_source_;
   id delegate_;
   std::unique_ptr<web::NavigationManagerImpl> nav_manager_;
+  TestNavigationManagerDelegate nav_delegate_;
   CRWSSLStatusUpdater* ssl_status_updater_;
   base::ScopedCFTypeRef<SecTrustRef> trust_;
 };
@@ -145,7 +148,7 @@ TEST_F(CRWSSLStatusUpdaterTest, Initialization) {
 
 // Tests updating http navigation item.
 TEST_F(CRWSSLStatusUpdaterTest, HttpItem) {
-  nav_manager_->SetSessionController(SessionControllerWithEntry(kHttpUrl));
+  CreateSessionControllerWithEntry(kHttpUrl);
   web::NavigationItem* item = nav_manager_->GetLastCommittedItem();
   // Make sure that item change callback was called.
   [[delegate_ expect] SSLStatusUpdater:ssl_status_updater_
@@ -167,7 +170,7 @@ TEST_F(CRWSSLStatusUpdaterTest, HttpItem) {
 // Tests that delegate callback is not called if no changes were made to http
 // navigation item.
 TEST_F(CRWSSLStatusUpdaterTest, NoChangesToHttpItem) {
-  nav_manager_->SetSessionController(SessionControllerWithEntry(kHttpUrl));
+  CreateSessionControllerWithEntry(kHttpUrl);
   web::NavigationItem* item = nav_manager_->GetLastCommittedItem();
   item->GetSSL().security_style = SECURITY_STYLE_UNAUTHENTICATED;
 
@@ -183,7 +186,7 @@ TEST_F(CRWSSLStatusUpdaterTest, NoChangesToHttpItem) {
 
 // Tests updating https navigation item without cert.
 TEST_F(CRWSSLStatusUpdaterTest, HttpsItemNoCert) {
-  nav_manager_->SetSessionController(SessionControllerWithEntry(kHttpsUrl));
+  CreateSessionControllerWithEntry(kHttpsUrl);
   web::NavigationItem* item = nav_manager_->GetLastCommittedItem();
   // Change default value to test that |item| is actually changed.
   item->GetSSL().security_style = SECURITY_STYLE_UNAUTHENTICATED;
@@ -207,7 +210,7 @@ TEST_F(CRWSSLStatusUpdaterTest, HttpsItemNoCert) {
 // Tests that unnecessary cert verification does not happen if SSL status has
 // already been calculated and the only change was appearing of mixed content.
 TEST_F(CRWSSLStatusUpdaterTest, HttpsItemNoCertReverification) {
-  nav_manager_->SetSessionController(SessionControllerWithEntry(kHttpsUrl));
+  CreateSessionControllerWithEntry(kHttpsUrl);
   web::NavigationItem* item = nav_manager_->GetLastCommittedItem();
   // Set SSL status manually in the way so cert re-verification is not run.
   item->GetSSL().cert_status_host = base::SysNSStringToUTF8(kHostName);
@@ -232,7 +235,7 @@ TEST_F(CRWSSLStatusUpdaterTest, HttpsItemNoCertReverification) {
 
 // Tests updating https navigation item.
 TEST_F(CRWSSLStatusUpdaterTest, HttpsItem) {
-  nav_manager_->SetSessionController(SessionControllerWithEntry(kHttpsUrl));
+  CreateSessionControllerWithEntry(kHttpsUrl);
   web::NavigationItem* item = nav_manager_->GetLastCommittedItem();
 
   // Make sure that item change callback was called twice for changing
@@ -271,7 +274,7 @@ TEST_F(CRWSSLStatusUpdaterTest, HttpsItem) {
 // Tests that SSL status is not changed if navigation item host changed during
 // verification (e.g. because of redirect).
 TEST_F(CRWSSLStatusUpdaterTest, HttpsItemChangeUrlDuringUpdate) {
-  nav_manager_->SetSessionController(SessionControllerWithEntry(kHttpsUrl));
+  CreateSessionControllerWithEntry(kHttpsUrl);
   web::NavigationItem* item = nav_manager_->GetLastCommittedItem();
 
   // Make sure that item change callback was called once for changing
@@ -308,7 +311,7 @@ TEST_F(CRWSSLStatusUpdaterTest, HttpsItemChangeUrlDuringUpdate) {
 // Tests that SSL status is not changed if navigation item has downgraded to
 // http.
 TEST_F(CRWSSLStatusUpdaterTest, HttpsItemDowngrade) {
-  nav_manager_->SetSessionController(SessionControllerWithEntry(kHttpsUrl));
+  CreateSessionControllerWithEntry(kHttpsUrl);
   web::NavigationItem* item = nav_manager_->GetLastCommittedItem();
 
   // Make sure that item change callback was called.
@@ -343,7 +346,7 @@ TEST_F(CRWSSLStatusUpdaterTest, HttpsItemDowngrade) {
 
 // Tests that SSL status is not changed if navigation item's cert is changed.
 TEST_F(CRWSSLStatusUpdaterTest, CertChanged) {
-  nav_manager_->SetSessionController(SessionControllerWithEntry(kHttpsUrl));
+  CreateSessionControllerWithEntry(kHttpsUrl);
   web::NavigationItem* item = nav_manager_->GetLastCommittedItem();
 
   // Make sure that item change callback was called.

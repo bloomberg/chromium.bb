@@ -644,44 +644,9 @@ initiationType:(web::NavigationInitiationType)initiationType;
       referrer:(const web::Referrer&)referrer
     transition:(ui::PageTransition)transition
 initiationType:(web::NavigationInitiationType)initiationType {
-  GURL loaded_url(url);
-  BOOL urlWasRewritten = NO;
-  if (_navigationManager) {
-    std::unique_ptr<std::vector<web::BrowserURLRewriter::URLRewriter>>
-        transientRewriters = _navigationManager->GetTransientURLRewriters();
-    if (transientRewriters) {
-      urlWasRewritten = web::BrowserURLRewriter::RewriteURLWithWriters(
-          &loaded_url, _browserState, *transientRewriters.get());
-    }
-  }
-  if (!urlWasRewritten) {
-    web::BrowserURLRewriter::GetInstance()->RewriteURLIfNecessary(
-        &loaded_url, _browserState);
-  }
-
-  if (initiationType == web::NavigationInitiationType::RENDERER_INITIATED &&
-      loaded_url != url && web::GetWebClient()->IsAppSpecificURL(loaded_url)) {
-    bool lastCommittedURLIsAppSpecific =
-        self.lastCommittedItem &&
-        web::GetWebClient()->IsAppSpecificURL(self.lastCommittedItem->GetURL());
-    if (!lastCommittedURLIsAppSpecific) {
-      // The URL should not be changed to app-specific URL if the load was
-      // renderer-initiated requested by non app-specific URL. Pages with
-      // app-specific urls have elevated previledges and should not be allowed
-      // to open app-specific URLs.
-      loaded_url = url;
-    }
-  }
-
-  std::unique_ptr<web::NavigationItemImpl> item(new web::NavigationItemImpl());
-  item->SetOriginalRequestURL(loaded_url);
-  item->SetURL(loaded_url);
-  item->SetReferrer(referrer);
-  item->SetTransitionType(transition);
-  item->SetNavigationInitiationType(initiationType);
-  if (web::GetWebClient()->IsAppSpecificURL(loaded_url))
-    item->SetUserAgentType(web::UserAgentType::NONE);
-  return item;
+  DCHECK(_navigationManager);
+  return _navigationManager->CreateNavigationItem(url, referrer, transition,
+                                                  initiationType);
 }
 
 - (BOOL)isRedirectTransitionForItemAtIndex:(size_t)index {

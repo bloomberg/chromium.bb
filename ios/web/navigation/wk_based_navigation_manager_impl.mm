@@ -131,15 +131,6 @@ void WKBasedNavigationManagerImpl::LoadURLWithParams(
   DLOG(WARNING) << "Not yet implemented.";
 }
 
-void WKBasedNavigationManagerImpl::AddTransientURLRewriter(
-    BrowserURLRewriter::URLRewriter rewriter) {
-  DCHECK(rewriter);
-  if (!transient_url_rewriters_) {
-    transient_url_rewriters_.reset(
-        new std::vector<BrowserURLRewriter::URLRewriter>());
-  }
-  transient_url_rewriters_->push_back(rewriter);
-}
 
 int WKBasedNavigationManagerImpl::GetItemCount() const {
   id<CRWWebViewNavigationProxy> proxy = delegate_->GetWebViewNavigationProxy();
@@ -229,14 +220,6 @@ bool WKBasedNavigationManagerImpl::CanPruneAllButLastCommittedItem() const {
   return true;
 }
 
-void WKBasedNavigationManagerImpl::RemoveTransientURLRewriters() {
-  transient_url_rewriters_.reset();
-}
-
-std::unique_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
-WKBasedNavigationManagerImpl::GetTransientURLRewriters() {
-  return std::move(transient_url_rewriters_);
-};
 
 NavigationItemImpl* WKBasedNavigationManagerImpl::GetNavigationItemImplAtIndex(
     size_t index) const {

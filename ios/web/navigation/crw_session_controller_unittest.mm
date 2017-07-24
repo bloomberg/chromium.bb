@@ -12,11 +12,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
+#import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/test/fakes/test_navigation_manager_delegate.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -52,6 +54,22 @@ class CRWSessionControllerTest : public PlatformTest {
   void SetUp() override {
     session_controller_ =
         [[CRWSessionController alloc] initWithBrowserState:&browser_state_];
+    CreateNavigationManagerForSessionController(session_controller_);
+  }
+
+  // Creates a new LegacyNavigationManagerImpl object and links it with
+  // session_controller. This method should be called for each newly created
+  // CRWSessionController because they rely on a non-null NavigationManagerImpl
+  // to create NavigationItemImpl objects. The life time of the created
+  // navigation managers are managed by the test fixture class.
+  void CreateNavigationManagerForSessionController(
+      CRWSessionController* session_controller) {
+    auto navigation_manager =
+        base::MakeUnique<web::LegacyNavigationManagerImpl>();
+    navigation_manager->SetBrowserState(&browser_state_);
+    navigation_manager->SetDelegate(&delegate_);
+    navigation_manager->SetSessionController(session_controller);
+    navigation_managers_.push_back(std::move(navigation_manager));
   }
 
   web::Referrer MakeReferrer(const std::string& url) {
@@ -60,7 +78,12 @@ class CRWSessionControllerTest : public PlatformTest {
 
   web::TestWebThreadBundle thread_bundle_;
   web::TestBrowserState browser_state_;
+  web::TestNavigationManagerDelegate delegate_;
   CRWSessionController* session_controller_;
+  // Implements RAII pattern for navigation manager objects created by
+  // CreateNavigationManagerForSessionController.
+  std::vector<std::unique_ptr<web::LegacyNavigationManagerImpl>>
+      navigation_managers_;
 };
 
 TEST_F(CRWSessionControllerTest, Init) {
@@ -526,6 +549,7 @@ TEST_F(CRWSessionControllerTest, CopyState) {
   // Create source session controller with 1 committed item.
   CRWSessionController* other_session_controller =
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_];
+  CreateNavigationManagerForSessionController(other_session_controller);
   [other_session_controller
                addPendingItem:GURL("http://www.url.com/0")
                      referrer:web::Referrer()
@@ -579,6 +603,7 @@ TEST_F(CRWSessionControllerTest, CopyStateFromEmptySessionController) {
   // Create empty source session controller.
   CRWSessionController* other_session_controller =
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_];
+  CreateNavigationManagerForSessionController(other_session_controller);
 
   // Insert and verify the state of target session controller.
   EXPECT_TRUE([session_controller_ canPruneAllButLastCommittedItem]);
@@ -603,6 +628,7 @@ TEST_F(CRWSessionControllerTest, CopyStateToEmptySessionController) {
   // Create source session controller with 1 committed item.
   CRWSessionController* other_session_controller =
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_];
+  CreateNavigationManagerForSessionController(other_session_controller);
   [other_session_controller
                addPendingItem:GURL("http://www.url.com/0")
                      referrer:web::Referrer()
@@ -651,6 +677,7 @@ TEST_F(CRWSessionControllerTest, CopyStateDuringPendingHistoryNavigation) {
   // Create source session controller with 1 committed item.
   CRWSessionController* other_session_controller =
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_];
+  CreateNavigationManagerForSessionController(other_session_controller);
   [other_session_controller
                addPendingItem:GURL("http://www.url.com/0")
                      referrer:web::Referrer()
@@ -705,6 +732,7 @@ TEST_F(CRWSessionControllerTest, CopyStateWithTransientItem) {
   // Create source session controller with 1 committed item.
   CRWSessionController* other_session_controller =
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_];
+  CreateNavigationManagerForSessionController(other_session_controller);
   [other_session_controller
                addPendingItem:GURL("http://www.url.com/0")
                      referrer:web::Referrer()
@@ -771,6 +799,7 @@ TEST_F(CRWSessionControllerTest, CreateWithEmptyNavigations) {
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_
                                          navigationItems:std::move(items)
                                   lastCommittedItemIndex:0];
+  CreateNavigationManagerForSessionController(controller);
   EXPECT_TRUE(controller.items.empty());
   EXPECT_EQ(controller.lastCommittedItemIndex, -1);
   EXPECT_EQ(controller.previousItemIndex, -1);
@@ -789,6 +818,7 @@ TEST_F(CRWSessionControllerTest, CreateWithNavList) {
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_
                                          navigationItems:std::move(items)
                                   lastCommittedItemIndex:1];
+  CreateNavigationManagerForSessionController(controller);
 
   EXPECT_EQ(controller.items.size(), 3U);
   EXPECT_EQ(controller.lastCommittedItemIndex, 1);
@@ -852,6 +882,7 @@ TEST_F(CRWSessionControllerTest, PushNewItem) {
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_
                                          navigationItems:std::move(items)
                                   lastCommittedItemIndex:0];
+  CreateNavigationManagerForSessionController(controller);
 
   GURL pushPageGurl1("http://www.firstpage.com/#push1");
   NSString* stateObject1 = @"{'foo': 1}";
@@ -901,6 +932,7 @@ TEST_F(CRWSessionControllerTest, IsSameDocumentNavigation) {
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_
                                          navigationItems:std::move(items)
                                   lastCommittedItemIndex:0];
+  CreateNavigationManagerForSessionController(controller);
   web::NavigationItemImpl* item0 = [controller items][0].get();
   web::NavigationItemImpl* item1 = [controller items][1].get();
   web::NavigationItemImpl* item2 = [controller items][2].get();
@@ -939,6 +971,7 @@ TEST_F(CRWSessionControllerTest, UpdateCurrentItem) {
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_
                                          navigationItems:std::move(items)
                                   lastCommittedItemIndex:0];
+  CreateNavigationManagerForSessionController(controller);
 
   GURL replacePageGurl1("http://www.firstpage.com/#replace1");
   NSString* stateObject1 = @"{'foo': 1}";
