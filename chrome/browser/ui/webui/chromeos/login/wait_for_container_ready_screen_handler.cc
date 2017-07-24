@@ -5,9 +5,10 @@
 #include "chrome/browser/ui/webui/chromeos/login/wait_for_container_ready_screen_handler.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/wait_for_container_ready_screen.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
 
@@ -23,8 +24,6 @@ namespace chromeos {
 WaitForContainerReadyScreenHandler::WaitForContainerReadyScreenHandler()
     : BaseScreenHandler(kScreenId), weak_ptr_factory_(this) {
   set_call_js_prefix(kJsScreenPath);
-  arc::ArcSessionManager::Get()->AddObserver(this);
-  is_container_ready_ = arc::ArcSessionManager::Get()->IsSessionRunning();
 }
 
 WaitForContainerReadyScreenHandler::~WaitForContainerReadyScreenHandler() {
@@ -32,8 +31,12 @@ WaitForContainerReadyScreenHandler::~WaitForContainerReadyScreenHandler() {
     screen_->OnViewDestroyed(this);
   }
   timer_.Stop();
-  if (arc::ArcSessionManager::Get())
-    arc::ArcSessionManager::Get()->RemoveObserver(this);
+
+  if (!profile_)
+    return;
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (prefs)
+    prefs->RemoveObserver(this);
 }
 
 void WaitForContainerReadyScreenHandler::DeclareLocalizedValues(
@@ -64,7 +67,7 @@ void WaitForContainerReadyScreenHandler::Show() {
     return;
   }
 
-  if (is_container_ready_) {
+  if (is_app_list_ready_) {
     NotifyContainerReady();
     return;
   }
@@ -79,8 +82,8 @@ void WaitForContainerReadyScreenHandler::Show() {
 
 void WaitForContainerReadyScreenHandler::Hide() {}
 
-void WaitForContainerReadyScreenHandler::OnArcInitialStart() {
-  is_container_ready_ = true;
+void WaitForContainerReadyScreenHandler::OnPackageListInitialRefreshed() {
+  is_app_list_ready_ = true;
   if (!screen_)
     return;
 
@@ -94,6 +97,14 @@ void WaitForContainerReadyScreenHandler::OnArcInitialStart() {
 }
 
 void WaitForContainerReadyScreenHandler::Initialize() {
+  profile_ = ProfileManager::GetPrimaryUserProfile();
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (prefs) {
+    is_app_list_ready_ = prefs->package_list_initial_refreshed();
+    if (!is_app_list_ready_)
+      prefs->AddObserver(this);
+  }
+
   if (!screen_ || !show_on_init_)
     return;
 
