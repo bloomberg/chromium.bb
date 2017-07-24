@@ -70,10 +70,7 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
     : NetworkQualityEstimator(
           std::move(external_estimate_provider),
           base::MakeUnique<NetworkQualityEstimatorParams>(variation_params),
-          allow_local_host_requests_for_tests,
-          allow_smaller_responses_for_tests,
-          add_default_platform_observations,
-          net_log->bound()),
+          net_log->bound().net_log()),
 
       current_network_type_(NetworkChangeNotifier::CONNECTION_UNKNOWN),
       accuracy_recording_intervals_set_(false),
@@ -82,6 +79,11 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
       suppress_notifications_for_testing_(suppress_notifications_for_testing),
       net_log_(std::move(net_log)) {
   // Set up the embedded test server.
+  SetUseLocalHostRequestsForTesting(allow_local_host_requests_for_tests);
+  SetUseSmallResponsesForTesting(allow_smaller_responses_for_tests);
+  SetAddDefaultPlatformObservationsForTesting(
+      add_default_platform_observations);
+
   EXPECT_TRUE(embedded_test_server_.Start());
 }
 

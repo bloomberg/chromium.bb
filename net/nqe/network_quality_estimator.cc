@@ -216,28 +216,11 @@ NetworkQualityEstimator::NetworkQualityEstimator(
     std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
     std::unique_ptr<NetworkQualityEstimatorParams> params,
     NetLog* net_log)
-    : NetworkQualityEstimator(
-          std::move(external_estimates_provider),
-          std::move(params),
-          false,
-          false,
-          true,
-          NetLogWithSource::Make(
-              net_log,
-              net::NetLogSourceType::NETWORK_QUALITY_ESTIMATOR)) {}
-
-NetworkQualityEstimator::NetworkQualityEstimator(
-    std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
-    std::unique_ptr<NetworkQualityEstimatorParams> params,
-    bool use_local_host_requests_for_tests,
-    bool use_smaller_responses_for_tests,
-    bool add_default_platform_observations,
-    const NetLogWithSource& net_log)
     : params_(std::move(params)),
-      use_localhost_requests_(use_local_host_requests_for_tests),
-      use_small_responses_(use_smaller_responses_for_tests),
+      use_localhost_requests_(false),
+      use_small_responses_(false),
       disable_offline_check_(false),
-      add_default_platform_observations_(add_default_platform_observations),
+      add_default_platform_observations_(true),
       tick_clock_(new base::DefaultTickClock()),
       last_connection_change_(tick_clock_->NowTicks()),
       current_network_id_(nqe::internal::NetworkID(
@@ -256,7 +239,10 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       rtt_observations_size_at_last_ect_computation_(0),
       throughput_observations_size_at_last_ect_computation_(0),
       effective_connection_type_(EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      event_creator_(net_log),
+      net_log_(NetLogWithSource::Make(
+          net_log,
+          net::NetLogSourceType::NETWORK_QUALITY_ESTIMATOR)),
+      event_creator_(net_log_),
       disallowed_observation_sources_for_http_(
           {NETWORK_QUALITY_OBSERVATION_SOURCE_TCP,
            NETWORK_QUALITY_OBSERVATION_SOURCE_QUIC,
@@ -267,7 +253,6 @@ NetworkQualityEstimator::NetworkQualityEstimator(
            NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE,
            NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE,
            NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM}),
-      net_log_(net_log),
       weak_ptr_factory_(this) {
   network_quality_store_.reset(new nqe::internal::NetworkQualityStore());
   NetworkChangeNotifier::AddConnectionTypeObserver(this);
@@ -280,13 +265,12 @@ NetworkQualityEstimator::NetworkQualityEstimator(
         EXTERNAL_ESTIMATE_PROVIDER_STATUS_NOT_AVAILABLE);
   }
   current_network_id_ = GetCurrentNetworkID();
-  AddDefaultEstimates();
 
   throughput_analyzer_.reset(new nqe::internal::ThroughputAnalyzer(
       params_.get(), base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&NetworkQualityEstimator::OnNewThroughputObservationAvailable,
                  base::Unretained(this)),
-      use_localhost_requests_, use_smaller_responses_for_tests, net_log_));
+      net_log_));
 
   watcher_factory_.reset(new nqe::internal::SocketWatcherFactory(
       base::ThreadTaskRunnerHandle::Get(),
@@ -302,6 +286,8 @@ NetworkQualityEstimator::NetworkQualityEstimator(
 
   for (int i = 0; i < STATISTIC_LAST; ++i)
     http_rtt_at_last_main_frame_[i] = nqe::internal::InvalidRTT();
+
+  ComputeEffectiveConnectionType();
 }
 
 void NetworkQualityEstimator::AddDefaultEstimates() {
@@ -730,6 +716,12 @@ void NetworkQualityEstimator::DisableOfflineCheckForTesting(
   DCHECK(thread_checker_.CalledOnValidThread());
   disable_offline_check_ = disable_offline_check;
   network_quality_store_->DisableOfflineCheckForTesting(disable_offline_check_);
+}
+
+void NetworkQualityEstimator::SetAddDefaultPlatformObservationsForTesting(
+    bool add_default_platform_observations) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  add_default_platform_observations_ = add_default_platform_observations;
 }
 
 void NetworkQualityEstimator::ReportEffectiveConnectionTypeForTesting(
