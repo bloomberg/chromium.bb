@@ -51,7 +51,7 @@ namespace blink {
 #define HAVE_DENORMAL 1
 #endif
 
-#if HAVE(DENORMAL)
+#if defined(HAVE_DENORMAL)
 class DenormalDisabler {
   DISALLOW_NEW();
 

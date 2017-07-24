@@ -5,7 +5,7 @@
 #ifndef WebGLImageConversionMSA_h
 #define WebGLImageConversionMSA_h
 
-#if HAVE(MIPS_MSA_INTRINSICS)
+#if HAVE_MIPS_MSA_INTRINSICS
 
 #include "platform/cpu/mips/CommonMacrosMSA.h"
 
@@ -1149,6 +1149,6 @@ ALWAYS_INLINE void packOneRowOfRGBA8LittleToRA8MSA(const uint8_t*& source,
 
 }  // namespace blink
 
-#endif  // HAVE(MIPS_MSA_INTRINSICS)
+#endif  // HAVE_MIPS_MSA_INTRINSICS
 
 #endif  // WebGLImageConversionMSA_h

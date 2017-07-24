@@ -27,13 +27,6 @@
 #include "build/build_config.h"
 #include "platform/wtf/Compiler.h"
 
-/* ==== Platform adaptation macros: these describe properties of the target
- * environment. ==== */
-
-/* HAVE() - specific system features (headers, functions or similar) that are
- * present or not */
-#define HAVE(WTF_FEATURE) (defined HAVE_##WTF_FEATURE && HAVE_##WTF_FEATURE)
-
 /* There is an assumption in the project that either OS_WIN or OS_POSIX is
  * set. */
 #if !defined(OS_WIN) && !defined(OS_POSIX)
