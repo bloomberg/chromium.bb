@@ -319,7 +319,7 @@ class ScriptURLLoaderFactory : public mojom::URLLoaderFactory {
 
     // For installed worker we fallback to the network for now.
     if (ServiceWorkerVersion::IsInstalled(version->status())) {
-      DCHECK(ServiceWorkerUtils::IsScriptStreamingEnabled());
+      DCHECK(!ServiceWorkerUtils::IsScriptStreamingEnabled());
       return false;
     }
 
