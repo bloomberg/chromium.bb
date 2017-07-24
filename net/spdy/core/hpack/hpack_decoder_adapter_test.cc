@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/spdy/core/hpack/hpack_decoder3.h"
+#include "net/spdy/core/hpack/hpack_decoder_adapter.h"
 
-// Tests of HpackDecoder3.
+// Tests of HpackDecoderAdapter.
 
 #include <stdint.h>
 
@@ -20,7 +20,6 @@
 #include "net/http2/tools/http2_random.h"
 #include "net/spdy/core/hpack/hpack_constants.h"
 #include "net/spdy/core/hpack/hpack_encoder.h"
-#include "net/spdy/core/hpack/hpack_huffman_table.h"
 #include "net/spdy/core/hpack/hpack_output_stream.h"
 #include "net/spdy/core/spdy_test_utils.h"
 #include "net/spdy/platform/api/spdy_string.h"
@@ -50,9 +49,10 @@ class Http2HpackDecoderPeer {
   }
 };
 
-class HpackDecoder3Peer {
+class HpackDecoderAdapterPeer {
  public:
-  explicit HpackDecoder3Peer(HpackDecoder3* decoder) : decoder_(decoder) {}
+  explicit HpackDecoderAdapterPeer(HpackDecoderAdapter* decoder)
+      : decoder_(decoder) {}
 
   void HandleHeaderRepresentation(SpdyStringPiece name, SpdyStringPiece value) {
     decoder_->listener_adapter_.OnHeader(HpackEntryType::kIndexedLiteralHeader,
@@ -80,7 +80,7 @@ class HpackDecoder3Peer {
   }
 
  private:
-  HpackDecoder3* decoder_;
+  HpackDecoderAdapter* decoder_;
 };
 
 namespace {
@@ -90,10 +90,10 @@ const bool kNoCheckDecodedSize = false;
 // Is HandleControlFrameHeadersStart to be called, and with what value?
 enum StartChoice { START_WITH_HANDLER, START_WITHOUT_HANDLER, NO_START };
 
-class HpackDecoder3Test
+class HpackDecoderAdapterTest
     : public ::testing::TestWithParam<std::tuple<StartChoice, bool>> {
  protected:
-  HpackDecoder3Test() : decoder_(), decoder_peer_(&decoder_) {}
+  HpackDecoderAdapterTest() : decoder_(), decoder_peer_(&decoder_) {}
 
   void SetUp() override {
     std::tie(start_choice_, randomly_split_input_buffer_) = GetParam();
@@ -222,9 +222,8 @@ class HpackDecoder3Test
   }
 
   Http2Random random_;
-  HpackHuffmanTable huffman_table_;
-  HpackDecoder3 decoder_;
-  test::HpackDecoder3Peer decoder_peer_;
+  HpackDecoderAdapter decoder_;
+  test::HpackDecoderAdapterPeer decoder_peer_;
   TestHeadersHandler handler_;
   StartChoice start_choice_;
   bool randomly_split_input_buffer_;
@@ -234,17 +233,18 @@ class HpackDecoder3Test
 
 INSTANTIATE_TEST_CASE_P(
     NoHandler,
-    HpackDecoder3Test,
+    HpackDecoderAdapterTest,
     ::testing::Combine(::testing::Values(START_WITHOUT_HANDLER, NO_START),
                        ::testing::Bool()));
 
 INSTANTIATE_TEST_CASE_P(
     WithHandler,
-    HpackDecoder3Test,
+    HpackDecoderAdapterTest,
     ::testing::Combine(::testing::Values(START_WITH_HANDLER),
                        ::testing::Bool()));
 
-TEST_P(HpackDecoder3Test, AddHeaderDataWithHandleControlFrameHeadersData) {
+TEST_P(HpackDecoderAdapterTest,
+       AddHeaderDataWithHandleControlFrameHeadersData) {
   // The hpack decode buffer size is limited in size. This test verifies that
   // adding encoded data under that limit is accepted, and data that exceeds the
   // limit is rejected.
@@ -267,7 +267,7 @@ TEST_P(HpackDecoder3Test, AddHeaderDataWithHandleControlFrameHeadersData) {
   EXPECT_EQ(expected_block, decoded_block());
 }
 
-TEST_P(HpackDecoder3Test, NameTooLong) {
+TEST_P(HpackDecoderAdapterTest, NameTooLong) {
   // Verify that a name longer than the allowed size generates an error.
   const size_t kMaxBufferSizeBytes = 50;
   const SpdyString name = SpdyString(2 * kMaxBufferSizeBytes, 'x');
@@ -286,7 +286,7 @@ TEST_P(HpackDecoder3Test, NameTooLong) {
   EXPECT_FALSE(HandleControlFrameHeadersData(fragment));
 }
 
-TEST_P(HpackDecoder3Test, HeaderTooLongToBuffer) {
+TEST_P(HpackDecoderAdapterTest, HeaderTooLongToBuffer) {
   // Verify that a header longer than the allowed size generates an error if
   // it isn't all in one input buffer.
   const SpdyString name = "some-key";
@@ -305,7 +305,7 @@ TEST_P(HpackDecoder3Test, HeaderTooLongToBuffer) {
 }
 
 // Decode with incomplete data in buffer.
-TEST_P(HpackDecoder3Test, DecodeWithIncompleteData) {
+TEST_P(HpackDecoderAdapterTest, DecodeWithIncompleteData) {
   HandleControlFrameHeadersStart();
 
   // No need to wait for more data.
@@ -339,7 +339,7 @@ TEST_P(HpackDecoder3Test, DecodeWithIncompleteData) {
   EXPECT_EQ(expected_block3, decoded_block());
 }
 
-TEST_P(HpackDecoder3Test, HandleHeaderRepresentation) {
+TEST_P(HpackDecoderAdapterTest, HandleHeaderRepresentation) {
   // Make sure the decoder is properly initialized.
   HandleControlFrameHeadersStart();
   HandleControlFrameHeadersData("");
@@ -385,7 +385,7 @@ TEST_P(HpackDecoder3Test, HandleHeaderRepresentation) {
 }
 
 // Decoding indexed static table field should work.
-TEST_P(HpackDecoder3Test, IndexedHeaderStatic) {
+TEST_P(HpackDecoderAdapterTest, IndexedHeaderStatic) {
   // Reference static table entries #2 and #5.
   const SpdyHeaderBlock& header_set1 = DecodeBlockExpectingSuccess("\x82\x85");
   SpdyHeaderBlock expected_header_set1;
@@ -400,7 +400,7 @@ TEST_P(HpackDecoder3Test, IndexedHeaderStatic) {
   EXPECT_EQ(expected_header_set2, header_set2);
 }
 
-TEST_P(HpackDecoder3Test, IndexedHeaderDynamic) {
+TEST_P(HpackDecoderAdapterTest, IndexedHeaderDynamic) {
   // First header block: add an entry to header table.
   const SpdyHeaderBlock& header_set1 = DecodeBlockExpectingSuccess(
       "\x40\x03"
@@ -430,12 +430,12 @@ TEST_P(HpackDecoder3Test, IndexedHeaderDynamic) {
 }
 
 // Test a too-large indexed header.
-TEST_P(HpackDecoder3Test, InvalidIndexedHeader) {
+TEST_P(HpackDecoderAdapterTest, InvalidIndexedHeader) {
   // High-bit set, and a prefix of one more than the number of static entries.
   EXPECT_FALSE(DecodeHeaderBlock("\xbe"));
 }
 
-TEST_P(HpackDecoder3Test, ContextUpdateMaximumSize) {
+TEST_P(HpackDecoderAdapterTest, ContextUpdateMaximumSize) {
   EXPECT_EQ(kDefaultHeaderTableSizeSetting,
             decoder_peer_.header_table_size_limit());
   SpdyString input;
@@ -474,7 +474,7 @@ TEST_P(HpackDecoder3Test, ContextUpdateMaximumSize) {
 }
 
 // Two HeaderTableSizeUpdates may appear at the beginning of the block
-TEST_P(HpackDecoder3Test, TwoTableSizeUpdates) {
+TEST_P(HpackDecoderAdapterTest, TwoTableSizeUpdates) {
   SpdyString input;
   {
     // Should accept two table size updates, update to second one
@@ -491,7 +491,7 @@ TEST_P(HpackDecoder3Test, TwoTableSizeUpdates) {
 }
 
 // Three HeaderTableSizeUpdates should result in an error
-TEST_P(HpackDecoder3Test, ThreeTableSizeUpdatesError) {
+TEST_P(HpackDecoderAdapterTest, ThreeTableSizeUpdatesError) {
   SpdyString input;
   {
     // Should reject three table size updates, update to second one
@@ -512,7 +512,7 @@ TEST_P(HpackDecoder3Test, ThreeTableSizeUpdatesError) {
 
 // HeaderTableSizeUpdates may only appear at the beginning of the block
 // Any other updates should result in an error
-TEST_P(HpackDecoder3Test, TableSizeUpdateSecondError) {
+TEST_P(HpackDecoderAdapterTest, TableSizeUpdateSecondError) {
   SpdyString input;
   {
     // Should reject a table size update appearing after a different entry
@@ -532,7 +532,7 @@ TEST_P(HpackDecoder3Test, TableSizeUpdateSecondError) {
 
 // HeaderTableSizeUpdates may only appear at the beginning of the block
 // Any other updates should result in an error
-TEST_P(HpackDecoder3Test, TableSizeUpdateFirstThirdError) {
+TEST_P(HpackDecoderAdapterTest, TableSizeUpdateFirstThirdError) {
   SpdyString input;
   {
     // Should reject the second table size update
@@ -554,7 +554,7 @@ TEST_P(HpackDecoder3Test, TableSizeUpdateFirstThirdError) {
 
 // Decoding two valid encoded literal headers with no indexing should
 // work.
-TEST_P(HpackDecoder3Test, LiteralHeaderNoIndexing) {
+TEST_P(HpackDecoderAdapterTest, LiteralHeaderNoIndexing) {
   // First header with indexed name, second header with string literal
   // name.
   const char input[] = "\x04\x0c/sample/path\x00\x06:path2\x0e/sample/path/2";
@@ -569,7 +569,7 @@ TEST_P(HpackDecoder3Test, LiteralHeaderNoIndexing) {
 
 // Decoding two valid encoded literal headers with incremental
 // indexing and string literal names should work.
-TEST_P(HpackDecoder3Test, LiteralHeaderIncrementalIndexing) {
+TEST_P(HpackDecoderAdapterTest, LiteralHeaderIncrementalIndexing) {
   const char input[] = "\x44\x0c/sample/path\x40\x06:path2\x0e/sample/path/2";
   const SpdyHeaderBlock& header_set =
       DecodeBlockExpectingSuccess(SpdyStringPiece(input, arraysize(input) - 1));
@@ -580,7 +580,7 @@ TEST_P(HpackDecoder3Test, LiteralHeaderIncrementalIndexing) {
   EXPECT_EQ(expected_header_set, header_set);
 }
 
-TEST_P(HpackDecoder3Test, LiteralHeaderWithIndexingInvalidNameIndex) {
+TEST_P(HpackDecoderAdapterTest, LiteralHeaderWithIndexingInvalidNameIndex) {
   decoder_.ApplyHeaderTableSizeSetting(0);
   EXPECT_TRUE(EncodeAndDecodeDynamicTableSizeUpdates(0, 0));
 
@@ -590,27 +590,27 @@ TEST_P(HpackDecoder3Test, LiteralHeaderWithIndexingInvalidNameIndex) {
   EXPECT_FALSE(DecodeHeaderBlock(SpdyStringPiece("\x7e\x03ooo")));
 }
 
-TEST_P(HpackDecoder3Test, LiteralHeaderNoIndexingInvalidNameIndex) {
+TEST_P(HpackDecoderAdapterTest, LiteralHeaderNoIndexingInvalidNameIndex) {
   // Name is the last static index. Works.
   EXPECT_TRUE(DecodeHeaderBlock(SpdyStringPiece("\x0f\x2e\x03ooo")));
   // Name is one beyond the last static index. Fails.
   EXPECT_FALSE(DecodeHeaderBlock(SpdyStringPiece("\x0f\x2f\x03ooo")));
 }
 
-TEST_P(HpackDecoder3Test, LiteralHeaderNeverIndexedInvalidNameIndex) {
+TEST_P(HpackDecoderAdapterTest, LiteralHeaderNeverIndexedInvalidNameIndex) {
   // Name is the last static index. Works.
   EXPECT_TRUE(DecodeHeaderBlock(SpdyStringPiece("\x1f\x2e\x03ooo")));
   // Name is one beyond the last static index. Fails.
   EXPECT_FALSE(DecodeHeaderBlock(SpdyStringPiece("\x1f\x2f\x03ooo")));
 }
 
-TEST_P(HpackDecoder3Test, TruncatedIndex) {
+TEST_P(HpackDecoderAdapterTest, TruncatedIndex) {
   // Indexed Header, varint for index requires multiple bytes,
   // but only one provided.
   EXPECT_FALSE(DecodeHeaderBlock(SpdyStringPiece("\xff", 1)));
 }
 
-TEST_P(HpackDecoder3Test, TruncatedHuffmanLiteral) {
+TEST_P(HpackDecoderAdapterTest, TruncatedHuffmanLiteral) {
   // Literal value, Huffman encoded, but with the last byte missing (i.e.
   // drop the final ff shown below).
   //
@@ -630,7 +630,7 @@ TEST_P(HpackDecoder3Test, TruncatedHuffmanLiteral) {
   EXPECT_FALSE(DecodeHeaderBlock(first));
 }
 
-TEST_P(HpackDecoder3Test, HuffmanEOSError) {
+TEST_P(HpackDecoderAdapterTest, HuffmanEOSError) {
   // Literal value, Huffman encoded, but with an additional ff byte at the end
   // of the string, i.e. an EOS that is longer than permitted.
   //
@@ -652,7 +652,7 @@ TEST_P(HpackDecoder3Test, HuffmanEOSError) {
 
 // Round-tripping the header set from RFC 7541 C.3.1 should work.
 // http://httpwg.org/specs/rfc7541.html#rfc.section.C.3.1
-TEST_P(HpackDecoder3Test, BasicC31) {
+TEST_P(HpackDecoderAdapterTest, BasicC31) {
   HpackEncoder encoder(ObtainHpackHuffmanTable());
 
   SpdyHeaderBlock expected_header_set;
@@ -671,7 +671,7 @@ TEST_P(HpackDecoder3Test, BasicC31) {
 
 // RFC 7541, Section C.4: Request Examples with Huffman Coding
 // http://httpwg.org/specs/rfc7541.html#rfc.section.C.4
-TEST_P(HpackDecoder3Test, SectionC4RequestHuffmanExamples) {
+TEST_P(HpackDecoderAdapterTest, SectionC4RequestHuffmanExamples) {
   // TODO(jamessynge): Use net/http2/hpack/tools/hpack_example.h to parse the
   // example directly, instead of having it as a comment.
   // 82                                      | == Indexed - Add ==
@@ -794,7 +794,7 @@ TEST_P(HpackDecoder3Test, SectionC4RequestHuffmanExamples) {
 
 // RFC 7541, Section C.6: Response Examples with Huffman Coding
 // http://httpwg.org/specs/rfc7541.html#rfc.section.C.6
-TEST_P(HpackDecoder3Test, SectionC6ResponseHuffmanExamples) {
+TEST_P(HpackDecoderAdapterTest, SectionC6ResponseHuffmanExamples) {
   // The example is based on a maximum dynamic table size of 256,
   // which allows for testing dynamic table evictions.
   decoder_peer_.set_header_table_size_limit(256);
@@ -987,7 +987,7 @@ TEST_P(HpackDecoder3Test, SectionC6ResponseHuffmanExamples) {
 // Regression test: Found that entries with dynamic indexed names and literal
 // values caused "use after free" MSAN failures if the name was evicted as it
 // was being re-used.
-TEST_P(HpackDecoder3Test, ReuseNameOfEvictedEntry) {
+TEST_P(HpackDecoderAdapterTest, ReuseNameOfEvictedEntry) {
   // Each entry is measured as 32 bytes plus the sum of the lengths of the name
   // and the value. Set the size big enough for at most one entry, and a fairly
   // small one at that (31 ASCII characters).
