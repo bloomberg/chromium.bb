@@ -92,6 +92,10 @@ SettingsMap AddDefaultHttp2Settings(SettingsMap http2_settings) {
   if (it == http2_settings.end())
     http2_settings[SETTINGS_INITIAL_WINDOW_SIZE] = kSpdyStreamMaxRecvWindowSize;
 
+  it = http2_settings.find(SETTINGS_MAX_HEADER_LIST_SIZE);
+  if (it == http2_settings.end())
+    http2_settings[SETTINGS_MAX_HEADER_LIST_SIZE] = kSpdyMaxHeaderListSize;
+
   return http2_settings;
 }
 

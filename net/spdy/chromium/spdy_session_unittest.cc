@@ -2845,9 +2845,6 @@ TEST_F(SpdySessionTest, ReadDataWithoutYielding) {
   session_deps_.host_resolver->set_synchronous_mode(true);
   session_deps_.time_func = InstantaneousReads;
 
-  NetLogWithSource net_log;
-  BufferedSpdyFramer framer(net_log);
-
   SpdySerializedFrame req1(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, MEDIUM, true));
   MockWrite writes[] = {
@@ -3058,9 +3055,6 @@ TEST_F(SpdySessionTest, TestYieldingDuringReadData) {
   session_deps_.host_resolver->set_synchronous_mode(true);
   session_deps_.time_func = InstantaneousReads;
 
-  NetLogWithSource net_log;
-  BufferedSpdyFramer framer(net_log);
-
   SpdySerializedFrame req1(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, MEDIUM, true));
   MockWrite writes[] = {
@@ -3151,9 +3145,6 @@ TEST_F(SpdySessionTest, TestYieldingDuringReadData) {
 TEST_F(SpdySessionTest, TestYieldingDuringAsyncReadData) {
   session_deps_.host_resolver->set_synchronous_mode(true);
   session_deps_.time_func = InstantaneousReads;
-
-  NetLogWithSource net_log;
-  BufferedSpdyFramer framer(net_log);
 
   SpdySerializedFrame req1(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, MEDIUM, true));
@@ -5540,6 +5531,7 @@ TEST_F(SendInitialSettingsOnNewSpdySessionTest, Empty) {
   expected_settings[SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
   expected_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       kSpdyMaxConcurrentPushedStreams;
+  expected_settings[SETTINGS_MAX_HEADER_LIST_SIZE] = kSpdyMaxHeaderListSize;
   RunInitialSettingsTest(expected_settings);
 }
 
@@ -5554,6 +5546,7 @@ TEST_F(SendInitialSettingsOnNewSpdySessionTest, ProtocolDefault) {
   SettingsMap expected_settings;
   expected_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       kSpdyMaxConcurrentPushedStreams;
+  expected_settings[SETTINGS_MAX_HEADER_LIST_SIZE] = kSpdyMaxHeaderListSize;
   RunInitialSettingsTest(expected_settings);
 }
 
@@ -5563,12 +5556,14 @@ TEST_F(SendInitialSettingsOnNewSpdySessionTest, OverwriteValues) {
   session_deps_.http2_settings[SETTINGS_ENABLE_PUSH] = 0;
   session_deps_.http2_settings[SETTINGS_MAX_CONCURRENT_STREAMS] = 42;
   session_deps_.http2_settings[SETTINGS_INITIAL_WINDOW_SIZE] = 32 * 1024;
+  session_deps_.http2_settings[SETTINGS_MAX_HEADER_LIST_SIZE] = 101 * 1024;
 
   SettingsMap expected_settings;
   expected_settings[SETTINGS_HEADER_TABLE_SIZE] = 16 * 1024;
   expected_settings[SETTINGS_ENABLE_PUSH] = 0;
   expected_settings[SETTINGS_MAX_CONCURRENT_STREAMS] = 42;
   expected_settings[SETTINGS_INITIAL_WINDOW_SIZE] = 32 * 1024;
+  expected_settings[SETTINGS_MAX_HEADER_LIST_SIZE] = 101 * 1024;
   RunInitialSettingsTest(expected_settings);
 }
 
@@ -5582,6 +5577,7 @@ TEST_F(SendInitialSettingsOnNewSpdySessionTest, UnknownSettings) {
   expected_settings[SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
   expected_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       kSpdyMaxConcurrentPushedStreams;
+  expected_settings[SETTINGS_MAX_HEADER_LIST_SIZE] = kSpdyMaxHeaderListSize;
   expected_settings[static_cast<SpdySettingsIds>(7)] = 1234;
   expected_settings[static_cast<SpdySettingsIds>(25)] = 5678;
   RunInitialSettingsTest(expected_settings);
