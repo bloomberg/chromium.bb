@@ -12,7 +12,6 @@ import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 import android.util.Pair;
 
-import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 
@@ -145,10 +144,8 @@ public class ThumbnailProviderImpl implements ThumbnailProvider {
 
             // We set the key pair to contain the required size instead of the minimal dimension so
             // that future fetches of this thumbnail can recognise the key in the cache.
-            if (!SysUtils.isLowEndDevice()) {
-                getBitmapCache().put(Pair.create(filePath, mCurrentRequest.getIconSize()),
-                        Pair.create(bitmap, bitmap.getByteCount()));
-            }
+            getBitmapCache().put(Pair.create(filePath, mCurrentRequest.getIconSize()),
+                    Pair.create(bitmap, bitmap.getByteCount()));
             mCurrentRequest.onThumbnailRetrieved(filePath, bitmap);
         }
 
