@@ -221,17 +221,18 @@ void DrmThread::MoveCursor(const gfx::AcceleratedWidget& widget,
 }
 
 void DrmThread::CheckOverlayCapabilities(
-    gfx::AcceleratedWidget widget,
-    const std::vector<OverlayCheck_Params>& overlays,
-    base::OnceCallback<void(gfx::AcceleratedWidget,
-                            const std::vector<OverlayCheck_Params>&,
-                            const std::vector<OverlayCheckReturn_Params>&)>
-        callback) {
+    const gfx::AcceleratedWidget& widget,
+    const OverlaySurfaceCandidateList& overlays,
+    base::OnceCallback<void(const gfx::AcceleratedWidget&,
+                            const OverlaySurfaceCandidateList&,
+                            const OverlayStatusList&)> callback) {
   TRACE_EVENT0("drm,hwoverlays", "DrmThread::CheckOverlayCapabilities");
 
+  auto params = CreateParamsFromOverlaySurfaceCandidate(overlays);
   std::move(callback).Run(
       widget, overlays,
-      screen_manager_->GetWindow(widget)->TestPageFlip(overlays));
+      CreateOverlayStatusListFrom(
+          screen_manager_->GetWindow(widget)->TestPageFlip(params)));
 }
 
 void DrmThread::RefreshNativeDisplays(

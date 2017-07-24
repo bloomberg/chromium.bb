@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PUBLIC_OVERLAY_SURFACE_CANDIDATE_H_
 #define UI_OZONE_PUBLIC_OVERLAY_SURFACE_CANDIDATE_H_
 
+#include <vector>
+
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -26,6 +28,8 @@ class OZONE_BASE_EXPORT OverlaySurfaceCandidate {
   OverlaySurfaceCandidate();
   OverlaySurfaceCandidate(const OverlaySurfaceCandidate& other);
   ~OverlaySurfaceCandidate();
+
+  bool operator<(const OverlaySurfaceCandidate& plane) const;
 
   // Transformation to apply to layer during composition.
   gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_NONE;
@@ -53,6 +57,9 @@ class OZONE_BASE_EXPORT OverlaySurfaceCandidate {
   // an overlay.
   bool overlay_handled = false;
 };
+
+using OverlaySurfaceCandidateList = std::vector<OverlaySurfaceCandidate>;
+using OverlayStatusList = std::vector<OverlayStatus>;
 
 }  // namespace ui
 

@@ -35,10 +35,9 @@ class DrmOverlayManager : public OverlayManagerOzone {
 
   // Communication-free implementations of actions performed in response to
   // messages from the GPU thread.
-  void GpuSentOverlayResult(
-      gfx::AcceleratedWidget widget,
-      const std::vector<OverlayCheck_Params>& params,
-      const std::vector<OverlayCheckReturn_Params>& returns);
+  void GpuSentOverlayResult(const gfx::AcceleratedWidget& widget,
+                            const OverlaySurfaceCandidateList& params,
+                            const OverlayStatusList& returns);
 
   // Service method for DrmOverlayCandidatesHost
   void CheckOverlaySupport(
@@ -47,7 +46,7 @@ class DrmOverlayManager : public OverlayManagerOzone {
 
  private:
   void SendOverlayValidationRequest(
-      const std::vector<OverlayCheck_Params>& new_params,
+      const OverlaySurfaceCandidateList& candidates,
       gfx::AcceleratedWidget widget) const;
   bool CanHandleCandidate(const OverlaySurfaceCandidate& candidate,
                           gfx::AcceleratedWidget widget) const;
@@ -55,10 +54,11 @@ class DrmOverlayManager : public OverlayManagerOzone {
   GpuThreadAdapter* proxy_;               // Not owned.
   DrmWindowHostManager* window_manager_;  // Not owned.
 
-  // List of all OverlayCheck_Params which have been validated in GPU side.
-  // Value is set to true if we are waiting for validation results from GPU.
-  base::MRUCache<std::vector<OverlayCheck_Params>,
-                 std::vector<OverlayCheckReturn_Params>>
+  // List of all OverlaySurfaceCandidate instances which have been validated in
+  // GPU side.  Value is set to true if we are waiting for validation results
+  // from GPU.
+  base::MRUCache<std::vector<OverlaySurfaceCandidate>,
+                 std::vector<OverlayStatus>>
       cache_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayManager);

@@ -49,7 +49,7 @@ class GpuThreadAdapter {
   // Services needed by DrmOverlayManager
   virtual bool GpuCheckOverlayCapabilities(
       gfx::AcceleratedWidget widget,
-      const std::vector<OverlayCheck_Params>& new_params) = 0;
+      const OverlaySurfaceCandidateList& overlays) = 0;
 
   // Services needed by DrmDisplayHost
   virtual bool GpuConfigureNativeDisplay(
