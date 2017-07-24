@@ -9,6 +9,10 @@
 #include "ui/aura/aura_export.h"
 #include "ui/events/event_targeter.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace ui {
 class KeyEvent;
 class LocatedEvent;
@@ -30,6 +34,15 @@ class AURA_EXPORT WindowTargeter : public ui::EventTargeter {
   // |event| is in |window|'s parent's coordinate system.
   virtual bool SubtreeShouldBeExploredForEvent(Window* window,
                                                const ui::LocatedEvent& event);
+
+  // Returns true if the |target| is accepting LocatedEvents, false otherwise.
+  // |hit_test_rect_mouse| and |hit_test_rect_touch| must be not null and return
+  // the bounds that can be used for hit testing. E.g. a subclass can extend the
+  // hit-test area for touch events to make targeting windows with imprecise
+  // input devices easier.
+  virtual bool GetHitTestRects(Window* target,
+                               gfx::Rect* hit_test_rect_mouse,
+                               gfx::Rect* hit_test_rect_touch) const;
 
   Window* FindTargetInRootWindow(Window* root_window,
                                  const ui::LocatedEvent& event);
@@ -60,6 +73,8 @@ class AURA_EXPORT WindowTargeter : public ui::EventTargeter {
   // Returns whether the location of the event is in an actionable region of the
   // target. Note that the location etc. of |event| is in the |window|'s
   // parent's coordinate system.
+  // Deprecated. As an alternative, override GetHitTestRects.
+  // TODO(varkha): Make this non-overridable.
   virtual bool EventLocationInsideBounds(Window* target,
                                          const ui::LocatedEvent& event) const;
 
