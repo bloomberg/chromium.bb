@@ -156,6 +156,7 @@ bool AcceleratorControllerDelegateClassic::CanPerformAction(
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
       return debug::DebugAcceleratorsEnabled();
     case DEV_ADD_REMOVE_DISPLAY:
+      return debug::DeveloperAcceleratorsEnabled();
     case MAGNIFY_SCREEN_ZOOM_IN:
     case MAGNIFY_SCREEN_ZOOM_OUT:
       return CanHandleMagnifyScreen();
