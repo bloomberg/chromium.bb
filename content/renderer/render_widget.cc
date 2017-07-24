@@ -53,6 +53,7 @@
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/input/main_thread_event_queue.h"
+#include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -534,6 +535,18 @@ void RenderWidget::Init(const ShowCallback& show_callback,
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
 
   input_handler_ = base::MakeUnique<RenderWidgetInputHandler>(this, this);
+
+  if (base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
+    RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
+
+    widget_input_handler_manager_ = new WidgetInputHandlerManager(
+        weak_ptr_factory_.GetWeakPtr(), RenderThread::Get()->GetChannel(),
+        render_thread_impl && compositor_
+            ? render_thread_impl->compositor_task_runner()
+            : nullptr,
+        render_thread_impl ? render_thread_impl->GetRendererScheduler()
+                           : nullptr);
+  }
 
   show_callback_ = show_callback;
 
@@ -1047,6 +1060,9 @@ void RenderWidget::ObserveGestureEventAndResult(
   if (input_handler_manager) {
     input_handler_manager->ObserveGestureEventAndResultOnMainThread(
         routing_id_, gesture_event, scroll_result);
+  } else if (widget_input_handler_manager_) {
+    widget_input_handler_manager_->ObserveGestureEventOnMainThread(
+        gesture_event, scroll_result);
   }
 }
 
@@ -1334,18 +1350,20 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
       viz::FrameSinkId(RenderThread::Get()->GetClientId(), routing_id_));
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  // render_thread may be NULL in tests.
-  InputHandlerManager* input_handler_manager =
-      render_thread ? render_thread->input_handler_manager() : NULL;
-  if (input_handler_manager) {
+  if (render_thread) {
     input_event_queue_ = new MainThreadEventQueue(
         this, render_thread->GetRendererScheduler()->CompositorTaskRunner(),
         render_thread->GetRendererScheduler(), should_generate_frame_sink);
-    input_handler_manager->AddInputHandler(
-        routing_id_, compositor()->GetInputHandler(), input_event_queue_,
-        weak_ptr_factory_.GetWeakPtr(),
-        compositor_deps_->IsScrollAnimatorEnabled());
-    has_added_input_handler_ = true;
+
+    InputHandlerManager* input_handler_manager =
+        render_thread->input_handler_manager();
+    if (input_handler_manager) {
+      input_handler_manager->AddInputHandler(
+          routing_id_, compositor()->GetInputHandler(), input_event_queue_,
+          weak_ptr_factory_.GetWeakPtr(),
+          compositor_deps_->IsScrollAnimatorEnabled());
+      has_added_input_handler_ = true;
+    }
   }
 
   return compositor_.get();
@@ -1927,13 +1945,13 @@ void RenderWidget::ConvertWindowToViewport(blink::WebFloatRect* rect) {
   }
 }
 
-#if defined(OS_ANDROID)
 void RenderWidget::OnRequestTextInputStateUpdate() {
+#if defined(OS_ANDROID)
   DCHECK(!ime_event_guard_);
   UpdateSelectionBounds();
   UpdateTextInputStateInternal(false, true /* reply_to_request */);
-}
 #endif
+}
 
 void RenderWidget::OnRequestCompositionUpdates(bool immediate_request,
                                                bool monitor_updates) {
