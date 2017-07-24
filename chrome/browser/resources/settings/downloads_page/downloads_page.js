@@ -49,18 +49,18 @@ Polymer({
   attached: function() {
     this.browserProxy_ = settings.DownloadsBrowserProxyImpl.getInstance();
 
-    this.addWebUIListener('auto-open-downloads-changed', function(autoOpen) {
+    this.addWebUIListener('auto-open-downloads-changed', autoOpen => {
       this.autoOpenDownloads_ = autoOpen;
-    }.bind(this));
+    });
 
     this.browserProxy_.initializeDownloads();
   },
 
   /** @private */
   selectDownloadLocation_: function() {
-    listenOnce(this, 'transitionend', function() {
+    listenOnce(this, 'transitionend', () => {
       this.browserProxy_.selectDownloadLocation();
-    }.bind(this));
+    });
   },
 
   // <if expr="chromeos">

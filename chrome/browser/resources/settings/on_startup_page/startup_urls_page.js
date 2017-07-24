@@ -63,36 +63,36 @@ Polymer({
   /** @override */
   attached: function() {
     this.getNtpExtension_();
-    this.addWebUIListener('update-ntp-extension', function(ntpExtension) {
+    this.addWebUIListener('update-ntp-extension', ntpExtension => {
       // Note that |ntpExtension| is empty if there is no NTP extension.
       this.ntpExtension_ = ntpExtension;
-    }.bind(this));
+    });
 
     this.browserProxy_ = settings.StartupUrlsPageBrowserProxyImpl.getInstance();
-    this.addWebUIListener('update-startup-pages', function(startupPages) {
+    this.addWebUIListener('update-startup-pages', startupPages => {
       // If an "edit" URL dialog was open, close it, because the underlying page
       // might have just been removed (and model indices have changed anyway).
       if (this.startupUrlDialogModel_)
         this.destroyUrlDialog_();
       this.startupPages_ = startupPages;
       this.updateScrollableContents();
-    }.bind(this));
+    });
     this.browserProxy_.loadStartupPages();
 
-    this.addEventListener(settings.EDIT_STARTUP_URL_EVENT, function(event) {
+    this.addEventListener(settings.EDIT_STARTUP_URL_EVENT, event => {
       this.startupUrlDialogModel_ = event.detail.model;
       this.startupUrlDialogAnchor_ = event.detail.anchor;
       this.showStartupUrlDialog_ = true;
       event.stopPropagation();
-    }.bind(this));
+    });
   },
 
   /** @private */
   getNtpExtension_: function() {
     settings.OnStartupBrowserProxyImpl.getInstance().getNtpExtension().then(
-        function(ntpExtension) {
+        ntpExtension => {
           this.ntpExtension_ = ntpExtension;
-        }.bind(this));
+        });
   },
 
   /**

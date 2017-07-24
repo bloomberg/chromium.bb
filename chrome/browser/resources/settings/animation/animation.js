@@ -80,10 +80,10 @@ cr.define('settings.animation', function() {
      * @private
      */
     queueDispatch_: function(e) {
-      setTimeout(function() {
+      setTimeout(() => {
         this.dispatchEvent(e);
         this.animation_ = undefined;
-      }.bind(this));
+      });
     },
   };
 

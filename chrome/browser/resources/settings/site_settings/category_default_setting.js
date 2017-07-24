@@ -194,7 +194,7 @@ Polymer({
    */
   onCategoryChanged_: function() {
     this.browserProxy.getDefaultValueForContentType(this.category)
-        .then(function(defaultValue) {
+        .then(defaultValue => {
           this.updateControlParams_(defaultValue);
 
           // Flash only shows ALLOW or BLOCK descriptions on the toggle.
@@ -210,7 +210,7 @@ Polymer({
           var categoryEnabled = setting != settings.ContentSetting.BLOCK;
           this.optionLabel_ =
               categoryEnabled ? this.toggleOnLabel : this.toggleOffLabel;
-        }.bind(this));
+        });
   },
 
   /**

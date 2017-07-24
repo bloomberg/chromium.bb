@@ -67,9 +67,9 @@ Polymer({
 
   /** @override */
   attached: function() {
-    var setIcons = function(icons) {
+    var setIcons = icons => {
       this.availableIcons = icons;
-    }.bind(this);
+    };
 
     this.addWebUIListener('available-icons-changed', setIcons);
     this.browserProxy_.getAvailableIcons().then(setIcons);
@@ -81,7 +81,7 @@ Polymer({
       this.$.name.value = this.profileName;
 
       if (loadTimeData.getBoolean('profileShortcutsEnabled')) {
-        this.browserProxy_.getProfileShortcutStatus().then(function(status) {
+        this.browserProxy_.getProfileShortcutStatus().then(status => {
           if (status == ProfileShortcutStatus.PROFILE_SHORTCUT_SETTING_HIDDEN) {
             this.isProfileShortcutSettingVisible_ = false;
             return;
@@ -90,7 +90,7 @@ Polymer({
           this.isProfileShortcutSettingVisible_ = true;
           this.hasProfileShortcut_ =
               status == ProfileShortcutStatus.PROFILE_SHORTCUT_FOUND;
-        }.bind(this));
+        });
       }
     }
   },

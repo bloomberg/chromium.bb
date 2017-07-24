@@ -72,9 +72,9 @@ Polymer({
   ready: function() {
     this.browserProxy_ = settings.ResetBrowserProxyImpl.getInstance();
 
-    this.addEventListener('cancel', function() {
+    this.addEventListener('cancel', () => {
       this.browserProxy_.onHideResetProfileDialog();
-    }.bind(this));
+    });
 
     this.$$('paper-checkbox a')
         .addEventListener('tap', this.onShowReportedSettingsTap_.bind(this));
@@ -96,11 +96,11 @@ Polymer({
     this.isTriggered_ =
         settings.getCurrentRoute() == settings.routes.TRIGGERED_RESET_DIALOG;
     if (this.isTriggered_) {
-      this.browserProxy_.getTriggeredResetToolName().then(function(name) {
+      this.browserProxy_.getTriggeredResetToolName().then(name => {
         this.resetRequestOrigin_ = 'triggeredreset';
         this.triggeredResetToolName_ = name;
         this.showDialog_();
-      }.bind(this));
+      });
     } else {
       // For the non-triggered reset dialog, a '#cct' hash indicates that the
       // reset request came from the Chrome Cleanup Tool by launching Chrome
@@ -124,12 +124,12 @@ Polymer({
     this.browserProxy_
         .performResetProfileSettings(
             this.$.sendSettings.checked, this.resetRequestOrigin_)
-        .then(function() {
+        .then(() => {
           this.clearingInProgress_ = false;
           if (this.$.dialog.open)
             this.$.dialog.close();
           this.fire('reset-done');
-        }.bind(this));
+        });
   },
 
   /**

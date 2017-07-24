@@ -98,17 +98,17 @@ Polymer({
     this.closePopupMenu_();
 
     this.showEditSearchEngineDialog_ = true;
-    this.async(function() {
+    this.async(() => {
       var dialog = this.$$('settings-search-engine-dialog');
       // Register listener to detect when the dialog is closed. Flip the boolean
       // once closed to force a restamp next time it is shown such that the
       // previous dialog's contents are cleared.
-      dialog.addEventListener('close', function() {
+      dialog.addEventListener('close', () => {
         this.showEditSearchEngineDialog_ = false;
         cr.ui.focusWithoutInk(
             assert(this.$$('button[is="paper-icon-button-light"]')));
-      }.bind(this));
-    }.bind(this));
+      });
+    });
   },
 
   /** @private */

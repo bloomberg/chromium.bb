@@ -221,9 +221,9 @@ Polymer({
     switch (scanResult) {
       case settings.FingerprintResultType.SUCCESS:
         this.problemMessage_ = '';
-        this.tapSensorMessageTimeoutId_ = setTimeout(function() {
+        this.tapSensorMessageTimeoutId_ = setTimeout(() => {
           this.problemMessage_ = this.i18n('configureFingerprintLiftFinger');
-        }.bind(this), SHOW_TAP_SENSOR_MESSAGE_DELAY_MS);
+        }, SHOW_TAP_SENSOR_MESSAGE_DELAY_MS);
         break;
       case settings.FingerprintResultType.PARTIAL:
         this.problemMessage_ = this.i18n('configureFingerprintPartialData');

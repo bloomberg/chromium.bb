@@ -59,18 +59,18 @@ Polymer({
         this.browserProxy_.editStartupPage(this.model.modelIndex, this.url_) :
         this.browserProxy_.addStartupPage(this.url_);
 
-    whenDone.then(function(success) {
+    whenDone.then(success => {
       if (success)
         this.$.dialog.close();
       // If the URL was invalid, there is nothing to do, just leave the dialog
       // open and let the user fix the URL or cancel.
-    }.bind(this));
+    });
   },
 
   /** @private */
   validate_: function() {
-    this.browserProxy_.validateStartupPage(this.url_).then(function(isValid) {
+    this.browserProxy_.validateStartupPage(this.url_).then(isValid => {
       this.$.actionButton.disabled = !isValid;
-    }.bind(this));
+    });
   },
 });

@@ -241,13 +241,13 @@ Polymer({
   /** @override */
   attached: function() {
     // Create listener functions.
-    var setSavedPasswordsListener = function(list) {
+    var setSavedPasswordsListener = list => {
       this.savedPasswords = list;
-    }.bind(this);
+    };
 
-    var setPasswordExceptionsListener = function(list) {
+    var setPasswordExceptionsListener = list => {
       this.passwordExceptions = list;
-    }.bind(this);
+    };
 
     this.setSavedPasswordsListener_ = setSavedPasswordsListener;
     this.setPasswordExceptionsListener_ = setPasswordExceptionsListener;
@@ -385,10 +385,9 @@ Polymer({
    */
   showPassword_: function(event) {
     this.passwordManager_.getPlaintextPassword(
-        /** @type {!PasswordManager.LoginPair} */ (event.detail),
-        function(item) {
+        /** @type {!PasswordManager.LoginPair} */ (event.detail), item => {
           this.setPassword(item.loginPair, item.plaintextPassword);
-        }.bind(this));
+        });
   },
 
   /**

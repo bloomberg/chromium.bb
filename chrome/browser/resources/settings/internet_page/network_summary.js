@@ -223,10 +223,10 @@ Polymer({
    */
   getNetworkLists_: function() {
     // First get the device states.
-    this.networkingPrivate.getDeviceStates(function(deviceStates) {
+    this.networkingPrivate.getDeviceStates(deviceStates => {
       // Second get the network states.
       this.getNetworkStates_(deviceStates);
-    }.bind(this));
+    });
   },
 
   /**
@@ -242,9 +242,9 @@ Polymer({
       visible: true,
       configured: false
     };
-    this.networkingPrivate.getNetworks(filter, function(networkStates) {
+    this.networkingPrivate.getNetworks(filter, networkStates => {
       this.updateNetworkStates_(networkStates, deviceStates);
-    }.bind(this));
+    });
   },
 
   /**

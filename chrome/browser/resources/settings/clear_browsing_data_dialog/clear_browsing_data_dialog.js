@@ -105,14 +105,14 @@ Polymer({
   attached: function() {
     this.browserProxy_ =
         settings.ClearBrowsingDataBrowserProxyImpl.getInstance();
-    this.browserProxy_.initialize().then(function() {
+    this.browserProxy_.initialize().then(() => {
       this.$.clearBrowsingDataDialog.showModal();
-    }.bind(this));
+    });
 
     if (this.importantSitesFlagEnabled_) {
-      this.browserProxy_.getImportantSites().then(function(sites) {
+      this.browserProxy_.getImportantSites().then(sites => {
         this.importantSites_ = sites;
-      }.bind(this));
+      });
     }
   },
 
@@ -197,18 +197,12 @@ Polymer({
     this.clearingInProgress_ = true;
 
     this.browserProxy_.clearBrowsingData(this.importantSites_)
-        .then(
-            /**
-             * @param {boolean} shouldShowNotice Whether we should show the
-             * notice about other forms of browsing history before closing the
-             * dialog.
-             */
-            function(shouldShowNotice) {
-              this.clearingInProgress_ = false;
-              this.showHistoryDeletionDialog_ = shouldShowNotice;
-              if (!shouldShowNotice)
-                this.closeDialogs_();
-            }.bind(this));
+        .then(shouldShowNotice => {
+          this.clearingInProgress_ = false;
+          this.showHistoryDeletionDialog_ = shouldShowNotice;
+          if (!shouldShowNotice)
+            this.closeDialogs_();
+        });
   },
 
   /**

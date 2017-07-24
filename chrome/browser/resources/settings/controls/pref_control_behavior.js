@@ -29,7 +29,7 @@ var PrefControlBehavior = {
    * @private
    */
   validatePref_: function() {
-    CrSettingsPrefs.initialized.then(function() {
+    CrSettingsPrefs.initialized.then(() => {
       if (!this.pref) {
         var error = 'Pref not found for element ' + this.tagName;
         if (this.id)
@@ -37,6 +37,6 @@ var PrefControlBehavior = {
         error += ' in ' + this.domHost.tagName;
         console.error(error);
       }
-    }.bind(this));
+    });
   },
 };

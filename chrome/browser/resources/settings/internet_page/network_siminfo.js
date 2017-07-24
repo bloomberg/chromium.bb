@@ -145,7 +145,7 @@ Polymer({
       currentPin: pin,
       requirePin: this.sendSimLockEnabled_,
     });
-    this.networkingPrivate.setCellularSimState(guid, simState, function() {
+    this.networkingPrivate.setCellularSimState(guid, simState, () => {
       if (chrome.runtime.lastError) {
         this.error_ = ErrorType.INCORRECT_PIN;
         this.$.enterPin.inputElement.select();
@@ -153,7 +153,7 @@ Polymer({
         this.error_ = ErrorType.NONE;
         this.$.enterPinDialog.close();
       }
-    }.bind(this));
+    });
   },
 
   /**
@@ -188,7 +188,7 @@ Polymer({
       currentPin: this.$.changePinOld.value,
       newPin: newPin
     });
-    this.networkingPrivate.setCellularSimState(guid, simState, function() {
+    this.networkingPrivate.setCellularSimState(guid, simState, () => {
       if (chrome.runtime.lastError) {
         this.error_ = ErrorType.INCORRECT_PIN;
         this.$.changePinOld.inputElement.select();
@@ -196,7 +196,7 @@ Polymer({
         this.error_ = ErrorType.NONE;
         this.$.changePinDialog.close();
       }
-    }.bind(this));
+    });
   },
 
   /**
@@ -222,7 +222,7 @@ Polymer({
     if (!this.validatePin_(pin))
       return;
 
-    this.networkingPrivate.unlockCellularSim(guid, pin, '', function() {
+    this.networkingPrivate.unlockCellularSim(guid, pin, '', () => {
       if (chrome.runtime.lastError) {
         this.error_ = ErrorType.INCORRECT_PIN;
         this.$.unlockPin.inputElement.select();
@@ -230,7 +230,7 @@ Polymer({
         this.error_ = ErrorType.NONE;
         this.$.unlockPinDialog.close();
       }
-    }.bind(this));
+    });
   },
 
   /** @private */
@@ -256,7 +256,7 @@ Polymer({
     if (!this.validatePin_(pin, this.$.unlockPin2.value))
       return;
 
-    this.networkingPrivate.unlockCellularSim(guid, pin, puk, function() {
+    this.networkingPrivate.unlockCellularSim(guid, pin, puk, () => {
       if (chrome.runtime.lastError) {
         this.error_ = ErrorType.INCORRECT_PUK;
         this.$.unlockPuk.inputElement.select();
@@ -264,7 +264,7 @@ Polymer({
         this.error_ = ErrorType.NONE;
         this.$.unlockPukDialog.close();
       }
-    }.bind(this));
+    });
   },
 
   /**

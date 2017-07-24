@@ -38,7 +38,7 @@ var CookieTreeBehaviorImpl = {
    * @private
    */
   loadChildren_: function(list) {
-    var loadChildrenRecurse = function(childList) {
+    var loadChildrenRecurse = childList => {
       var parentId = childList.id;
       var children = childList.children;
       var prefix = '';
@@ -56,15 +56,15 @@ var CookieTreeBehaviorImpl = {
         }
       }
       return Promise.all(promises);
-    }.bind(this);
+    };
 
     // New root being added, clear the list and add the nodes.
     this.sites = [];
     this.rootCookieNode.addChildNodes(this.rootCookieNode, list.children);
-    return loadChildrenRecurse(list).then(function() {
+    return loadChildrenRecurse(list).then(() => {
       this.sites = this.rootCookieNode.getSummaryList();
       return Promise.resolve();
-    }.bind(this));
+    });
   },
 
   /**

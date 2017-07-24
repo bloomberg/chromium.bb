@@ -47,8 +47,8 @@ Polymer({
     if (this.loading_)
       return this.loading_;
 
-    this.loading_ = new Promise(function(resolve, reject) {
-      this.importHref(this.url, function() {
+    this.loading_ = new Promise((resolve, reject) => {
+      this.importHref(this.url, () => {
         assert(!this.ctor);
         this.templatize(this);
         assert(this.ctor);
@@ -62,8 +62,8 @@ Polymer({
         resolve(this.child_);
 
         this.fire('lazy-loaded');
-      }.bind(this), reject, true);
-    }.bind(this));
+      }, reject, true);
+    });
 
     return this.loading_;
   },

@@ -29,8 +29,10 @@ cr.define('settings', function() {
   class ClearBrowsingDataBrowserProxy {
     /**
      * @param {!Array<!ImportantSite>} importantSites
-     * @return {!Promise<void>}
-     *     A promise resolved when data clearing has completed.
+     * @return {!Promise<boolean>}
+     *     A promise resolved when data clearing has completed. The boolean
+     *     indicates whether an additional dialog should be shown, informing the
+     *     user about other forms of browsing history.
      */
     clearBrowsingData(importantSites) {}
 

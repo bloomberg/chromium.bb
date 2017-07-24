@@ -63,7 +63,7 @@ var LockStateBehavior = {
    * @private
    */
   updateUnlockType_: function() {
-    this.quickUnlockPrivate_.getActiveModes(function(modes) {
+    this.quickUnlockPrivate_.getActiveModes(modes => {
       if (modes.includes(chrome.quickUnlockPrivate.QuickUnlockMode.PIN)) {
         this.hasPin = true;
         this.selectedUnlockType = LockScreenUnlockType.PIN_PASSWORD;
@@ -71,6 +71,6 @@ var LockStateBehavior = {
         this.hasPin = false;
         this.selectedUnlockType = LockScreenUnlockType.PASSWORD;
       }
-    }.bind(this));
+    });
   },
 };

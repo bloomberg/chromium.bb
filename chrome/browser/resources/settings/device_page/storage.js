@@ -246,13 +246,13 @@ Polymer({
   startPeriodicUpdate_: function() {
     // We update the storage usage every 5 seconds.
     if (this.updateTimerId_ == -1) {
-      this.updateTimerId_ = window.setInterval(function() {
+      this.updateTimerId_ = window.setInterval(() => {
         if (settings.getCurrentRoute() != settings.routes.STORAGE) {
           this.stopPeriodicUpdate_();
           return;
         }
         chrome.send('updateStorageInfo');
-      }.bind(this), 5000);
+      }, 5000);
     }
   },
 

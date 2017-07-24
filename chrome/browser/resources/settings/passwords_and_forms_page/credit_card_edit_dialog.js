@@ -98,11 +98,11 @@ Polymer({
     }
     this.yearList_ = yearList;
 
-    this.async(function() {
+    this.async(() => {
       this.expirationYear_ = selectedYear.toString();
       this.expirationMonth_ = this.creditCard.expirationMonth;
       this.$.dialog.showModal();
-    }.bind(this));
+    });
   },
 
   /** Closes the dialog. */

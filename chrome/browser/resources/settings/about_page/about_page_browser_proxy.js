@@ -18,8 +18,8 @@ var RegulatoryInfo;
 
 /**
  * @typedef {{
- *   currentChannel: string,
- *   targetChannel: string,
+ *   currentChannel: BrowserChannel,
+ *   targetChannel: BrowserChannel,
  *   canChangeChannel: boolean,
  * }}
  */

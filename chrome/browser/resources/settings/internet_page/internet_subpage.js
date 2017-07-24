@@ -150,9 +150,9 @@ Polymer({
       return;
     /** @const */ var INTERVAL_MS = 10 * 1000;
     this.networkingPrivate.requestNetworkScan();
-    this.scanIntervalId_ = window.setInterval(function() {
+    this.scanIntervalId_ = window.setInterval(() => {
       this.networkingPrivate.requestNetworkScan();
-    }.bind(this), INTERVAL_MS);
+    }, INTERVAL_MS);
   },
 
   /** @private */
@@ -199,9 +199,9 @@ Polymer({
         visible: true,
         configured: false
       };
-      this.networkingPrivate.getNetworks(filter, function(tetherNetworkStates) {
+      this.networkingPrivate.getNetworks(filter, tetherNetworkStates => {
         this.networkStateList_ = networkStates.concat(tetherNetworkStates);
-      }.bind(this));
+      });
       return;
     }
 

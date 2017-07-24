@@ -66,9 +66,9 @@ Polymer({
       this.actionButtonText_ = loadTimeData.getString('add');
     }
 
-    this.addEventListener('cancel', function() {
+    this.addEventListener('cancel', () => {
       this.browserProxy_.searchEngineEditCancelled();
-    }.bind(this));
+    });
   },
 
   /** @override */
@@ -108,10 +108,10 @@ Polymer({
 
     this.browserProxy_
         .validateSearchEngineInput(inputElement.id, inputElement.value)
-        .then(function(isValid) {
+        .then(isValid => {
           inputElement.invalid = !isValid;
           this.updateActionButtonState_();
-        }.bind(this));
+        });
   },
 
   /** @private */

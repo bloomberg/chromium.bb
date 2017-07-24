@@ -138,14 +138,14 @@ Polymer({
     var browserProxy = settings.CertificatesBrowserProxyImpl.getInstance();
     if (this.certificateType == CertificateType.PERSONAL) {
       browserProxy.importPersonalCertificate(useHardwareBacked)
-          .then(function(showPasswordPrompt) {
+          .then(showPasswordPrompt => {
             if (showPasswordPrompt)
               this.dispatchImportActionEvent_(null, anchor);
-          }.bind(this), this.onRejected_.bind(this, anchor));
+          }, this.onRejected_.bind(this, anchor));
     } else if (this.certificateType == CertificateType.CA) {
-      browserProxy.importCaCertificate().then(function(certificateName) {
+      browserProxy.importCaCertificate().then(certificateName => {
         this.dispatchImportActionEvent_({name: certificateName}, anchor);
-      }.bind(this), this.onRejected_.bind(this, anchor));
+      }, this.onRejected_.bind(this, anchor));
     } else if (this.certificateType == CertificateType.SERVER) {
       browserProxy.importServerCertificate().catch(
           this.onRejected_.bind(this, anchor));

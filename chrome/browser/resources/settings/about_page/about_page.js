@@ -136,19 +136,19 @@ Polymer({
         settings.LifetimeBrowserProxyImpl.getInstance();
 
     // <if expr="chromeos">
-    this.addEventListener('target-channel-changed', function(e) {
+    this.addEventListener('target-channel-changed', e => {
       this.targetChannel_ = e.detail;
-    }.bind(this));
+    });
 
-    this.aboutBrowserProxy_.getChannelInfo().then(function(info) {
+    this.aboutBrowserProxy_.getChannelInfo().then(info => {
       this.currentChannel_ = info.currentChannel;
       this.targetChannel_ = info.targetChannel;
       this.startListening_();
-    }.bind(this));
+    });
 
-    this.aboutBrowserProxy_.getRegulatoryInfo().then(function(info) {
+    this.aboutBrowserProxy_.getRegulatoryInfo().then(info => {
       this.regulatoryInfo_ = info;
-    }.bind(this));
+    });
     // </if>
     // <if expr="not chromeos">
     this.startListening_();

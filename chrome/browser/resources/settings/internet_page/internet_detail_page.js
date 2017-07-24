@@ -346,13 +346,13 @@ Polymer({
       return;
 
     assert(!!this.guid);
-    this.networkingPrivate.setProperties(this.guid, onc, function() {
+    this.networkingPrivate.setProperties(this.guid, onc, () => {
       if (chrome.runtime.lastError) {
         // An error typically indicates invalid input; request the properties
         // to update any invalid fields.
         this.getNetworkDetails_();
       }
-    }.bind(this));
+    });
   },
 
   /**

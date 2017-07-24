@@ -217,11 +217,11 @@ Polymer({
     // Focus the password input box if password is needed to start sync.
     if (this.syncPrefs.passphraseRequired) {
       // Wait for the dom-if templates to render and subpage to become visible.
-      listenOnce(document, 'show-container', function() {
+      listenOnce(document, 'show-container', () => {
         var input = /** @type {!PaperInputElement} */ (
             this.$$('#existingPassphraseInput'));
         input.inputElement.focus();
-      }.bind(this));
+      });
     }
   },
 

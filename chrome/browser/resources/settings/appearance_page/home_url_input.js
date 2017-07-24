@@ -134,8 +134,8 @@ Polymer({
       return;
     }
 
-    this.browserProxy_.validateStartupPage(this.value).then(function(isValid) {
+    this.browserProxy_.validateStartupPage(this.value).then(isValid => {
       this.invalid = !isValid;
-    }.bind(this));
+    });
   },
 });

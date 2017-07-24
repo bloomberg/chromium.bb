@@ -140,9 +140,9 @@ Polymer({
     this.$.defaultFontSize.menuOptions = this.fontSizeOptions_;
     // TODO(dschuyler): Look into adding a listener for the
     // default zoom percent.
-    this.browserProxy_.getDefaultZoom().then(function(zoom) {
+    this.browserProxy_.getDefaultZoom().then(zoom => {
       this.defaultZoom_ = zoom;
-    }.bind(this));
+    });
   },
 
   /**
@@ -271,9 +271,9 @@ Polymer({
     if (themeId) {
       assert(!useSystemTheme);
 
-      this.browserProxy_.getThemeInfo(themeId).then(function(info) {
+      this.browserProxy_.getThemeInfo(themeId).then(info => {
         this.themeSublabel_ = info.name;
-      }.bind(this));
+      });
 
       this.themeUrl_ = 'https://chrome.google.com/webstore/detail/' + themeId;
       return;

@@ -256,9 +256,9 @@ Polymer({
       this.deviceList_ = [];
       return;
     }
-    this.bluetooth.getDevices(function(devices) {
+    this.bluetooth.getDevices(devices => {
       this.deviceList_ = devices;
-    }.bind(this));
+    });
   },
 
   /**
@@ -385,7 +385,7 @@ Polymer({
       this.openDialog_('pairDevice');
     }
 
-    this.bluetoothPrivate.connect(device.address, function(result) {
+    this.bluetoothPrivate.connect(device.address, result => {
       var error;
       if (chrome.runtime.lastError) {
         error = chrome.runtime.lastError.message;
@@ -416,7 +416,7 @@ Polymer({
         console.error('Unexpected error connecting to: ' + name + ': ' + error);
       }
       this.openDialog_('connectError');
-    }.bind(this));
+    });
   },
 
   /**
@@ -438,14 +438,14 @@ Polymer({
    * @private
    */
   forgetDevice_: function(device) {
-    this.bluetoothPrivate.forgetDevice(device.address, function() {
+    this.bluetoothPrivate.forgetDevice(device.address, () => {
       if (chrome.runtime.lastError) {
         console.error(
             'Error forgetting: ' + device.name + ': ' +
             chrome.runtime.lastError.message);
       }
       this.updateDeviceList_();
-    }.bind(this));
+    });
   },
 
   /**
