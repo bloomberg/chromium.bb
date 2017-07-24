@@ -455,14 +455,17 @@ css_properties("make_core_generated_css_value_id_mappings") {
 }
 
 # TODO(shend): Need a better way to specify generated output files
-css_properties("make_core_generated_css_property_apis") {
-  script = "../build/scripts/make_css_property_apis.py"
-  other_inputs = [
-    "../build/scripts/templates/CSSPropertyDescriptor.cpp.tmpl",
-    "../build/scripts/templates/CSSPropertyDescriptor.h.tmpl",
-    "../build/scripts/templates/CSSPropertyAPIFiles.h.tmpl",
+code_generator("make_core_generated_css_property_apis") {
+  script = "../build/scripts/core/css/properties/make_css_property_apis.py"
+  json_inputs = [
+    "css/CSSProperties.json5",
+    "css/properties/CSSPropertyAPIMethods.json5",
   ]
-  in_files = [ "css/properties/CSSPropertyAPIMethods.json5" ]
+  templates = [
+    "../build/scripts/core/css/properties/templates/CSSPropertyDescriptor.cpp.tmpl",
+    "../build/scripts/core/css/properties/templates/CSSPropertyDescriptor.h.tmpl",
+    "../build/scripts/core/css/properties/templates/CSSPropertyAPIFiles.h.tmpl",
+  ]
   outputs = [
     "$blink_core_output_dir/css/properties/CSSPropertyAPIAlignItems.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIAlignOrJustifyContent.h",

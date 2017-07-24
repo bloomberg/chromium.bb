@@ -3,11 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
 import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 
 import json5_generator
 import template_expander
-import make_style_builder
 
 from collections import namedtuple, defaultdict
 from json5_generator import Json5File
@@ -23,18 +24,18 @@ class ApiClass(namedtuple('ApiClass', 'index,classname,property_ids,methods_for_
 
 
 # Gets the classname for a given property.
-def get_classname(property):
-    if property['api_class'] is True:
+def get_classname(property_):
+    if property_['api_class'] is True:
         # This property had the generated_api_class flag set in CSSProperties.json5.
-        if property['longhands']:
+        if property_['longhands']:
             api_prefix = 'CSSShorthandPropertyAPI'
         else:
             api_prefix = 'CSSPropertyAPI'
-        return api_prefix + property['upper_camel_name']
+        return api_prefix + property_['upper_camel_name']
     # This property has a specified class name.
-    assert isinstance(property['api_class'], str), \
-        ("api_class value for " + property['api_class'] + " should be None, True or a string")
-    return property['api_class']
+    assert isinstance(property_['api_class'], str), \
+        ("api_class value for " + property_['api_class'] + " should be None, True or a string")
+    return property_['api_class']
 
 
 class CSSPropertyAPIWriter(StyleBuilderWriter):
@@ -103,7 +104,7 @@ class CSSPropertyAPIWriter(StyleBuilderWriter):
             for property_enum in property_enums_for_class[api_class.classname]:
                 self._descriptor_indices[property_enum] = {'id': api_class.index, 'api': api_class.classname}
 
-    @template_expander.use_jinja('templates/CSSPropertyDescriptor.cpp.tmpl')
+    @template_expander.use_jinja('core/css/properties/templates/CSSPropertyDescriptor.cpp.tmpl')
     def generate_property_descriptor_cpp(self):
         return {
             'input_files': self._input_files,
@@ -113,7 +114,7 @@ class CSSPropertyAPIWriter(StyleBuilderWriter):
             'invalid_descriptor_index': self._invalid_descriptor_index
         }
 
-    @template_expander.use_jinja('templates/CSSPropertyDescriptor.h.tmpl')
+    @template_expander.use_jinja('core/css/properties/templates/CSSPropertyDescriptor.h.tmpl')
     def generate_property_descriptor_h(self):
         return {
             'input_files': self._input_files,
@@ -123,7 +124,7 @@ class CSSPropertyAPIWriter(StyleBuilderWriter):
 
     # Provides a function object given the classname of the property.
     def generate_property_api_h_builder(self, api_classname, property_name):
-        @template_expander.use_jinja('templates/CSSPropertyAPIFiles.h.tmpl')
+        @template_expander.use_jinja('core/css/properties/templates/CSSPropertyAPIFiles.h.tmpl')
         def generate_property_api_h():
             return {
                 'input_files': self._input_files,
