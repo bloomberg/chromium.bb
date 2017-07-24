@@ -26,6 +26,7 @@ class ArcNotificationSurfaceImpl : public ArcNotificationSurface {
   void Attach(views::NativeViewHost* native_view_host) override;
   void Detach() override;
   bool IsAttached() const override;
+  views::NativeViewHost* GetAttachedHost() const override;
 
   exo::NotificationSurface* surface() const { return surface_; }
 

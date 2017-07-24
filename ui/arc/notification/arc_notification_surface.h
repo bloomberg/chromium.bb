@@ -48,6 +48,10 @@ class ArcNotificationSurface {
   // True if the surface window is attached to the native host. False otherwise.
   virtual bool IsAttached() const = 0;
 
+  // Returns the native host which the surface window attaches to. Returns null
+  // if it doesn't attach to any host.
+  virtual views::NativeViewHost* GetAttachedHost() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationSurface);
 };

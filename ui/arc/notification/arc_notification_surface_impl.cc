@@ -42,6 +42,10 @@ bool ArcNotificationSurfaceImpl::IsAttached() const {
   return native_view_host_;
 }
 
+views::NativeViewHost* ArcNotificationSurfaceImpl::GetAttachedHost() const {
+  return native_view_host_;
+}
+
 aura::Window* ArcNotificationSurfaceImpl::GetWindow() const {
   return surface_->host_window();
 }
