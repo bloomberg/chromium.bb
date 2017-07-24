@@ -15,7 +15,6 @@ source_set("cpp") {
   public_deps = [
     "//base",
     "//cc",
-    "//cc/surfaces",
     "//components/viz/common",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/interfaces",
@@ -60,7 +59,6 @@ source_set("internal") {
   deps = [
     "//base",
     "//cc",
-    "//cc/surfaces",
     "//components/viz/common",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",

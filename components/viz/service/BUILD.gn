@@ -57,6 +57,25 @@ viz_component("service") {
     "frame_sinks/surface_resource_holder_client.h",
     "hit_test/hit_test_aggregator.cc",
     "hit_test/hit_test_aggregator.h",
+    "surfaces/direct_surface_reference_factory.cc",
+    "surfaces/direct_surface_reference_factory.h",
+    "surfaces/stub_surface_reference_factory.cc",
+    "surfaces/stub_surface_reference_factory.h",
+    "surfaces/surface.cc",
+    "surfaces/surface.h",
+    "surfaces/surface_client.h",
+    "surfaces/surface_deadline_observer.h",
+    "surfaces/surface_dependency_deadline.cc",
+    "surfaces/surface_dependency_deadline.h",
+    "surfaces/surface_dependency_tracker.cc",
+    "surfaces/surface_dependency_tracker.h",
+    "surfaces/surface_hittest.cc",
+    "surfaces/surface_hittest.h",
+    "surfaces/surface_hittest_delegate.h",
+    "surfaces/surface_manager.cc",
+    "surfaces/surface_manager.h",
+    "surfaces/surface_reference.cc",
+    "surfaces/surface_reference.h",
     "viz_service_export.h",
   ]
 
@@ -80,7 +99,6 @@ viz_component("service") {
     "//base",
     "//cc",
     "//cc/ipc:interfaces",
-    "//cc/surfaces",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc:command_buffer",
     "//services/viz/hit_test/public/interfaces",
@@ -138,6 +156,8 @@ viz_source_set("unit_tests") {
     "frame_sinks/surface_references_unittest.cc",
     "frame_sinks/surface_synchronization_unittest.cc",
     "hit_test/hit_test_aggregator_unittest.cc",
+    "surfaces/surface_hittest_unittest.cc",
+    "surfaces/surface_unittest.cc",
   ]
 
   if (!use_aura && !is_mac) {
@@ -180,6 +200,7 @@ viz_source_set("perf_tests") {
     "//base",
     "//cc:test_support",
     "//cc/base",
+    "//components/viz/test:test_support",
     "//testing/gtest",
     "//testing/perf",
   ]

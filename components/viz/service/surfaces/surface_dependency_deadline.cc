@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/surface_dependency_deadline.h"
+#include "components/viz/service/surfaces/surface_dependency_deadline.h"
 
-namespace cc {
+namespace viz {
 
 SurfaceDependencyDeadline::SurfaceDependencyDeadline(
-    viz::BeginFrameSource* begin_frame_source)
+    BeginFrameSource* begin_frame_source)
     : begin_frame_source_(begin_frame_source) {
   DCHECK(begin_frame_source_);
 }
@@ -51,13 +51,12 @@ bool SurfaceDependencyDeadline::operator==(
          number_of_frames_to_deadline_ == other.number_of_frames_to_deadline_;
 }
 
-// viz::BeginFrameObserver implementation.
-void SurfaceDependencyDeadline::OnBeginFrame(const viz::BeginFrameArgs& args) {
+// BeginFrameObserver implementation.
+void SurfaceDependencyDeadline::OnBeginFrame(const BeginFrameArgs& args) {
   last_begin_frame_args_ = args;
   // OnBeginFrame might get called immediately after cancellation if some other
   // deadline triggered this deadline to be canceled.
-  if (!number_of_frames_to_deadline_ ||
-      args.type == viz::BeginFrameArgs::MISSED)
+  if (!number_of_frames_to_deadline_ || args.type == BeginFrameArgs::MISSED)
     return;
 
   if (--(*number_of_frames_to_deadline_) > 0)
@@ -68,11 +67,11 @@ void SurfaceDependencyDeadline::OnBeginFrame(const viz::BeginFrameArgs& args) {
     observer.OnDeadline();
 }
 
-const viz::BeginFrameArgs& SurfaceDependencyDeadline::LastUsedBeginFrameArgs()
+const BeginFrameArgs& SurfaceDependencyDeadline::LastUsedBeginFrameArgs()
     const {
   return last_begin_frame_args_;
 }
 
 void SurfaceDependencyDeadline::OnBeginFrameSourcePausedChanged(bool paused) {}
 
-}  // namespace cc
+}  // namespace viz

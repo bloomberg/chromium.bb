@@ -8,8 +8,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "cc/surfaces/surface_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"

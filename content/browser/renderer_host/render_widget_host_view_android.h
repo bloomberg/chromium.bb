@@ -166,7 +166,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnDidNavigateMainFrameToNewPage() override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
   viz::FrameSinkId GetFrameSinkId() override;
-  viz::FrameSinkId FrameSinkIdAtPoint(cc::SurfaceHittestDelegate* delegate,
+  viz::FrameSinkId FrameSinkIdAtPoint(viz::SurfaceHittestDelegate* delegate,
                                       const gfx::Point& point,
                                       gfx::Point* transformed_point) override;
   void ProcessMouseEvent(const blink::WebMouseEvent& event,

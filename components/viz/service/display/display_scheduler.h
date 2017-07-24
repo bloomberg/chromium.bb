@@ -12,10 +12,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "cc/surfaces/surface_observer.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/service/surfaces/surface_observer.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
@@ -35,7 +35,7 @@ class VIZ_SERVICE_EXPORT DisplaySchedulerClient {
 };
 
 class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,
-                                            public cc::SurfaceObserver {
+                                            public SurfaceObserver {
  public:
   DisplayScheduler(BeginFrameSource* begin_frame_source,
                    base::SingleThreadTaskRunner* task_runner,

@@ -19,7 +19,6 @@ viz_component("host") {
   deps = [
     "//base",
     "//cc/ipc:interfaces",
-    "//cc/surfaces",
     "//gpu/ipc/client",
     "//gpu/ipc/common",
     "//services/ui/gpu/interfaces",
@@ -48,7 +47,6 @@ viz_source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//cc/ipc:interfaces",
-    "//cc/surfaces",
     "//components/viz/host/hit_test:unit_tests",
     "//gpu/ipc/host",
     "//mojo/public/cpp/bindings",

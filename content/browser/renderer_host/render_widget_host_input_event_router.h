@@ -14,8 +14,8 @@
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "cc/surfaces/surface_hittest_delegate.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/service/surfaces/surface_hittest_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -103,7 +103,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
     bool ignored_for_hittest;
   };
 
-  class HittestDelegate : public cc::SurfaceHittestDelegate {
+  class HittestDelegate : public viz::SurfaceHittestDelegate {
    public:
     HittestDelegate(const std::unordered_map<viz::SurfaceId,
                                              HittestData,

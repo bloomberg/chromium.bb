@@ -1520,7 +1520,7 @@ viz::FrameSinkId RenderWidgetHostViewMac::GetFrameSinkId() {
 }
 
 viz::FrameSinkId RenderWidgetHostViewMac::FrameSinkIdAtPoint(
-    cc::SurfaceHittestDelegate* delegate,
+    viz::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,
     gfx::Point* transformed_point) {
   // The surface hittest happens in device pixels, so we need to convert the

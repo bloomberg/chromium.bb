@@ -16,7 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/test/compositor_frame_helpers.h"
+#include "components/viz/test/compositor_frame_helpers.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/test/test_synchronous_compositor_android.h"
 
@@ -119,7 +119,7 @@ content::SynchronousCompositor* RenderingTest::ActiveCompositor() const {
 
 std::unique_ptr<cc::CompositorFrame> RenderingTest::ConstructEmptyFrame() {
   auto compositor_frame = base::MakeUnique<cc::CompositorFrame>(
-      cc::test::MakeEmptyCompositorFrame());
+      viz::test::MakeEmptyCompositorFrame());
   std::unique_ptr<cc::RenderPass> root_pass(cc::RenderPass::Create());
   gfx::Rect viewport(browser_view_renderer_->size());
   root_pass->SetNew(1, viewport, viewport, gfx::Transform());

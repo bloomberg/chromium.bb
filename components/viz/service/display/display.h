@@ -11,12 +11,12 @@
 #include "base/macros.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/resources/returned_resource.h"
-#include "cc/surfaces/surface_manager.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/surface_aggregator.h"
+#include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/color_space.h"
@@ -62,7 +62,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   ~Display() override;
 
-  void Initialize(DisplayClient* client, cc::SurfaceManager* surface_manager);
+  void Initialize(DisplayClient* client, SurfaceManager* surface_manager);
 
   // device_scale_factor is used to communicate to the external window system
   // what scale this was rendered at.
@@ -106,7 +106,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   const RendererSettings settings_;
 
   DisplayClient* client_ = nullptr;
-  cc::SurfaceManager* surface_manager_ = nullptr;
+  SurfaceManager* surface_manager_ = nullptr;
   const FrameSinkId frame_sink_id_;
   SurfaceId current_surface_id_;
   gfx::Size current_surface_size_;

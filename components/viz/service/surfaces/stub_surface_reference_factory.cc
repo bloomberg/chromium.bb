@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/stub_surface_reference_factory.h"
+#include "components/viz/service/surfaces/stub_surface_reference_factory.h"
 
 #include "base/callback.h"
 
-namespace cc {
+namespace viz {
 
 base::Closure StubSurfaceReferenceFactory::CreateReference(
-    viz::SurfaceReferenceOwner* owner,
-    const viz::SurfaceId& surface_id) const {
+    SurfaceReferenceOwner* owner,
+    const SurfaceId& surface_id) const {
   return base::Closure();
 }
 
-}  // namespace cc
+}  // namespace viz

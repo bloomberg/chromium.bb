@@ -32,7 +32,7 @@ FrameSinkManagerImpl::FrameSinkSourceMapping::~FrameSinkSourceMapping() =
 
 FrameSinkManagerImpl::FrameSinkManagerImpl(
     DisplayProvider* display_provider,
-    cc::SurfaceManager::LifetimeType lifetime_type)
+    SurfaceManager::LifetimeType lifetime_type)
     : display_provider_(display_provider),
       surface_manager_(lifetime_type),
       binding_(this) {

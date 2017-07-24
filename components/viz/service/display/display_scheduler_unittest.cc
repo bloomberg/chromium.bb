@@ -69,7 +69,7 @@ class FakeDisplaySchedulerClient : public DisplaySchedulerClient {
 class TestDisplayScheduler : public DisplayScheduler {
  public:
   TestDisplayScheduler(BeginFrameSource* begin_frame_source,
-                       cc::SurfaceManager* surface_manager,
+                       SurfaceManager* surface_manager,
                        base::SingleThreadTaskRunner* task_runner,
                        int max_pending_swaps,
                        bool wait_for_all_surfaces_before_draw)
@@ -163,7 +163,7 @@ class DisplaySchedulerTest : public testing::Test {
 
   base::SimpleTestTickClock now_src_;
   scoped_refptr<base::NullTaskRunner> task_runner_;
-  cc::SurfaceManager surface_manager_;
+  SurfaceManager surface_manager_;
   FakeDisplaySchedulerClient client_;
   TestDisplayScheduler scheduler_;
 };

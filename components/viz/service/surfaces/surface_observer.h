@@ -2,26 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_SURFACE_OBSERVER_H_
-#define CC_SURFACES_SURFACE_OBSERVER_H_
+#ifndef COMPONENTS_VIZ_SERVICE_SURFACES_SURFACE_OBSERVER_H_
+#define COMPONENTS_VIZ_SERVICE_SURFACES_SURFACE_OBSERVER_H_
 
 namespace viz {
+
 class SurfaceId;
 class SurfaceInfo;
 struct BeginFrameAck;
 struct BeginFrameArgs;
-}
-
-namespace cc {
 
 class SurfaceObserver {
  public:
   // Runs when a CompositorFrame is activated for the given SurfaceInfo for the
   // first time.
-  virtual void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) = 0;
+  virtual void OnSurfaceCreated(const SurfaceInfo& surface_info) = 0;
 
   // Runs when a Surface was marked to be destroyed.
-  virtual void OnSurfaceDestroyed(const viz::SurfaceId& surface_id) = 0;
+  virtual void OnSurfaceDestroyed(const SurfaceId& surface_id) = 0;
 
   // Runs when a Surface is modified, e.g. when a CompositorFrame is
   // activated, its producer confirms that no CompositorFrame will be submitted
@@ -29,21 +27,21 @@ class SurfaceObserver {
   //
   // |ack.sequence_number| is only valid if called in response to a BeginFrame.
   // Should return true if this causes a Display to be damaged.
-  virtual bool OnSurfaceDamaged(const viz::SurfaceId& surface_id,
-                                const viz::BeginFrameAck& ack) = 0;
+  virtual bool OnSurfaceDamaged(const SurfaceId& surface_id,
+                                const BeginFrameAck& ack) = 0;
 
   // Called when a surface is garbage-collected.
-  virtual void OnSurfaceDiscarded(const viz::SurfaceId& surface_id) = 0;
+  virtual void OnSurfaceDiscarded(const SurfaceId& surface_id) = 0;
 
   // Runs when a Surface's CompositorFrame producer has received a BeginFrame
   // and, thus, is expected to produce damage soon.
-  virtual void OnSurfaceDamageExpected(const viz::SurfaceId& surface_id,
-                                       const viz::BeginFrameArgs& args) = 0;
+  virtual void OnSurfaceDamageExpected(const SurfaceId& surface_id,
+                                       const BeginFrameArgs& args) = 0;
 
   // Runs when a surface has been added to the aggregated CompositorFrame.
-  virtual void OnSurfaceWillDraw(const viz::SurfaceId& surface_id) = 0;
+  virtual void OnSurfaceWillDraw(const SurfaceId& surface_id) = 0;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_SURFACES_SURFACE_OBSERVER_H_
+#endif  // COMPONENTS_VIZ_SERVICE_SURFACES_SURFACE_OBSERVER_H_

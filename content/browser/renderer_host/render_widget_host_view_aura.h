@@ -179,7 +179,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnDidNavigateMainFrameToNewPage() override;
   viz::FrameSinkId GetFrameSinkId() override;
   viz::LocalSurfaceId GetLocalSurfaceId() const override;
-  viz::FrameSinkId FrameSinkIdAtPoint(cc::SurfaceHittestDelegate* delegate,
+  viz::FrameSinkId FrameSinkIdAtPoint(viz::SurfaceHittestDelegate* delegate,
                                       const gfx::Point& point,
                                       gfx::Point* transformed_point) override;
   void ProcessMouseEvent(const blink::WebMouseEvent& event,

@@ -5,7 +5,7 @@
 #include "ui/aura/mus/client_surface_embedder.h"
 
 #include "base/memory/ptr_util.h"
-#include "cc/surfaces/stub_surface_reference_factory.h"
+#include "components/viz/service/surfaces/stub_surface_reference_factory.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/dip_util.h"
 
@@ -27,7 +27,7 @@ ClientSurfaceEmbedder::ClientSurfaceEmbedder(
   // this is the case with window decorations provided by Window Manager.
   // This content should appear underneath the content of the embedded client.
   window_->layer()->StackAtTop(surface_layer_.get());
-  ref_factory_ = new cc::StubSurfaceReferenceFactory();
+  ref_factory_ = new viz::StubSurfaceReferenceFactory();
 }
 
 ClientSurfaceEmbedder::~ClientSurfaceEmbedder() = default;

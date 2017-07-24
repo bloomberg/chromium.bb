@@ -52,7 +52,6 @@ source_set("lib") {
   deps = [
     "//base",
     "//cc",
-    "//cc/surfaces",
     "//components/discardable_memory/public/interfaces",
     "//components/discardable_memory/service",
     "//components/viz/service",

@@ -16,13 +16,13 @@
 #include "cc/output/gl_renderer.h"
 #include "cc/output/software_renderer.h"
 #include "cc/output/texture_mailbox_deleter.h"
-#include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_manager.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/surface_aggregator.h"
+#include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/vulkan/features.h"
 #include "ui/gfx/buffer_types.h"
@@ -64,7 +64,7 @@ Display::~Display() {
   }
   if (aggregator_) {
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
-      cc::Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
+      Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
       if (surface)
         surface->RunDrawCallback();
     }
@@ -72,7 +72,7 @@ Display::~Display() {
 }
 
 void Display::Initialize(DisplayClient* client,
-                         cc::SurfaceManager* surface_manager) {
+                         SurfaceManager* surface_manager) {
   DCHECK(client);
   DCHECK(surface_manager);
   client_ = client;
@@ -213,7 +213,7 @@ void Display::InitializeRenderer() {
 }
 
 void Display::UpdateRootSurfaceResourcesLocked() {
-  cc::Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id_);
+  Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id_);
   bool root_surface_resources_locked = !surface || !surface->HasActiveFrame();
   if (scheduler_)
     scheduler_->SetRootSurfaceResourcesLocked(root_surface_resources_locked);
@@ -253,7 +253,7 @@ bool Display::DrawAndSwap() {
 
   // Run callbacks early to allow pipelining.
   for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
-    cc::Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
+    Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
     if (surface)
       surface->RunDrawCallback();
   }
@@ -388,7 +388,7 @@ bool Display::SurfaceDamaged(const SurfaceId& surface_id,
   if (ack.has_damage) {
     if (aggregator_ &&
         aggregator_->previous_contained_surfaces().count(surface_id)) {
-      cc::Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
+      Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
       if (surface) {
         DCHECK(surface->HasActiveFrame());
         if (surface->GetActiveFrame().resource_list.empty())
@@ -415,7 +415,7 @@ bool Display::SurfaceHasUndrawnFrame(const SurfaceId& surface_id) const {
   if (!surface_manager_)
     return false;
 
-  cc::Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
+  Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
   if (!surface)
     return false;
 

@@ -9,7 +9,6 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_surface_observer.h"
 #include "cc/test/mock_compositor_frame_sink_support_client.h"
@@ -19,6 +18,7 @@
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/begin_frame_args_test.h"
+#include "components/viz/test/compositor_frame_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -117,7 +117,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
 
   void SubmitCompositorFrameWithResources(cc::ResourceId* resource_ids,
                                           size_t num_resource_ids) {
-    auto frame = cc::test::MakeCompositorFrame();
+    auto frame = test::MakeCompositorFrame();
     for (size_t i = 0u; i < num_resource_ids; ++i) {
       cc::TransferableResource resource;
       resource.id = resource_ids[i];
@@ -161,12 +161,12 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     fake_support_client_.clear_returned_resources();
   }
 
-  cc::Surface* GetSurfaceForId(const SurfaceId& id) {
+  Surface* GetSurfaceForId(const SurfaceId& id) {
     return manager_.surface_manager()->GetSurfaceForId(id);
   }
 
   void RefCurrentFrameResources() {
-    cc::Surface* surface = GetSurfaceForId(
+    Surface* surface = GetSurfaceForId(
         SurfaceId(support_->frame_sink_id(), local_surface_id_));
     support_->RefResources(surface->GetActiveFrame().resource_list);
   }
@@ -494,13 +494,12 @@ TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
       kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
   LocalSurfaceId local_surface_id(6, kArbitraryToken);
-  support->SubmitCompositorFrame(local_surface_id,
-                                 cc::test::MakeCompositorFrame());
+  support->SubmitCompositorFrame(local_surface_id, test::MakeCompositorFrame());
 
   EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(_))
       .WillOnce(testing::InvokeWithoutArgs([&support, &mock_client]() {
         LocalSurfaceId new_id(7, base::UnguessableToken::Create());
-        support->SubmitCompositorFrame(new_id, cc::test::MakeCompositorFrame());
+        support->SubmitCompositorFrame(new_id, test::MakeCompositorFrame());
       }))
       .WillRepeatedly(testing::Return());
   support->EvictCurrentSurface();
@@ -518,7 +517,7 @@ TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
   cc::TransferableResource resource;
   resource.id = 1;
   resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
-  auto frame = cc::test::MakeCompositorFrame();
+  auto frame = test::MakeCompositorFrame();
   frame.resource_list.push_back(resource);
   support->SubmitCompositorFrame(local_surface_id, std::move(frame));
   EXPECT_EQ(surface_observer_.last_created_surface_id().local_surface_id(),
@@ -546,7 +545,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   cc::TransferableResource resource;
   resource.id = 1;
   resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
-  auto frame = cc::test::MakeCompositorFrame();
+  auto frame = test::MakeCompositorFrame();
   frame.resource_list.push_back(resource);
   support->SubmitCompositorFrame(local_surface_id, std::move(frame));
   EXPECT_EQ(surface_observer_.last_created_surface_id().local_surface_id(),
@@ -554,7 +553,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   local_surface_id_ = LocalSurfaceId();
 
   SurfaceId surface_id(kAnotherArbitraryFrameSinkId, local_surface_id);
-  cc::Surface* surface = GetSurfaceForId(surface_id);
+  Surface* surface = GetSurfaceForId(surface_id);
   surface->AddDestructionDependency(
       SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
 
@@ -580,7 +579,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   cc::TransferableResource resource;
   resource.id = 1;
   resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
-  auto frame = cc::test::MakeCompositorFrame();
+  auto frame = test::MakeCompositorFrame();
   frame.resource_list.push_back(resource);
   uint32_t execute_count = 0;
   support->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -592,7 +591,7 @@ TEST_F(CompositorFrameSinkSupportTest,
       kYetAnotherArbitraryFrameSinkId);
 
   SurfaceId surface_id(kAnotherArbitraryFrameSinkId, local_surface_id);
-  cc::Surface* surface = GetSurfaceForId(surface_id);
+  Surface* surface = GetSurfaceForId(surface_id);
   surface->AddDestructionDependency(
       SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
 
@@ -617,7 +616,7 @@ TEST_F(CompositorFrameSinkSupportTest, DestroySequence) {
       kIsChildRoot, kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
   SurfaceId id2(kYetAnotherArbitraryFrameSinkId, local_surface_id2);
   support2->SubmitCompositorFrame(local_surface_id2,
-                                  cc::test::MakeCompositorFrame());
+                                  test::MakeCompositorFrame());
 
   // Check that waiting before the sequence is satisfied works.
   GetSurfaceForId(id2)->AddDestructionDependency(
@@ -633,7 +632,7 @@ TEST_F(CompositorFrameSinkSupportTest, DestroySequence) {
 
   // Check that waiting after the sequence is satisfied works.
   support2->SubmitCompositorFrame(local_surface_id2,
-                                  cc::test::MakeCompositorFrame());
+                                  test::MakeCompositorFrame());
   DCHECK(GetSurfaceForId(id2));
   GetSurfaceForId(id2)->AddDestructionDependency(
       SurfaceSequence(kAnotherArbitraryFrameSinkId, 6));
@@ -649,7 +648,7 @@ TEST_F(CompositorFrameSinkSupportTest, InvalidFrameSinkId) {
   LocalSurfaceId local_surface_id(5, kArbitraryToken);
   SurfaceId id(support_->frame_sink_id(), local_surface_id);
   support_->SubmitCompositorFrame(local_surface_id,
-                                  cc::test::MakeCompositorFrame());
+                                  test::MakeCompositorFrame());
 
   manager_.surface_manager()->RegisterFrameSinkId(frame_sink_id);
   GetSurfaceForId(id)->AddDestructionDependency(
@@ -677,12 +676,12 @@ TEST_F(CompositorFrameSinkSupportTest, DestroyCycle) {
   // Give local_surface_id_ an initial frame so another client can refer to
   // that surface.
   {
-    auto frame = cc::test::MakeCompositorFrame();
+    auto frame = test::MakeCompositorFrame();
     support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
   }
   // Give id2 a frame that references local_surface_id_.
   {
-    auto frame = cc::test::MakeCompositorFrame();
+    auto frame = test::MakeCompositorFrame();
     frame.metadata.referenced_surfaces.push_back(
         SurfaceId(support_->frame_sink_id(), local_surface_id_));
     support2->SubmitCompositorFrame(local_surface_id2, std::move(frame));
@@ -694,7 +693,7 @@ TEST_F(CompositorFrameSinkSupportTest, DestroyCycle) {
   support2->EvictCurrentSurface();
   // Give local_surface_id_ a frame that references id2.
   {
-    auto frame = cc::test::MakeCompositorFrame();
+    auto frame = test::MakeCompositorFrame();
     frame.metadata.referenced_surfaces.push_back(id2);
     support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
   }
@@ -724,7 +723,7 @@ void CopyRequestTestCallback(bool* called,
 
 TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   {
-    auto frame = cc::test::MakeCompositorFrame();
+    auto frame = test::MakeCompositorFrame();
     frame.metadata.referenced_surfaces.push_back(
         SurfaceId(support_->frame_sink_id(), local_surface_id_));
     support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
@@ -771,7 +770,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
 // Check whether the SurfaceInfo object is created and populated correctly
 // after the frame submission.
 TEST_F(CompositorFrameSinkSupportTest, SurfaceInfo) {
-  auto frame = cc::test::MakeCompositorFrame();
+  auto frame = test::MakeCompositorFrame();
 
   auto render_pass = cc::RenderPass::Create();
   render_pass->SetNew(1, gfx::Rect(5, 6), gfx::Rect(), gfx::Transform());
@@ -795,7 +794,7 @@ TEST_F(CompositorFrameSinkSupportTest, SurfaceInfo) {
 // a Surface for it.
 TEST_F(CompositorFrameSinkSupportTest, ZeroFrameSize) {
   SurfaceId id(support_->frame_sink_id(), local_surface_id_);
-  auto frame = cc::test::MakeEmptyCompositorFrame();
+  auto frame = test::MakeEmptyCompositorFrame();
   frame.render_pass_list.push_back(cc::RenderPass::Create());
   EXPECT_TRUE(
       support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
@@ -806,7 +805,7 @@ TEST_F(CompositorFrameSinkSupportTest, ZeroFrameSize) {
 // don't create a Surface for it.
 TEST_F(CompositorFrameSinkSupportTest, ZeroDeviceScaleFactor) {
   SurfaceId id(support_->frame_sink_id(), local_surface_id_);
-  auto frame = cc::test::MakeCompositorFrame();
+  auto frame = test::MakeCompositorFrame();
   frame.metadata.device_scale_factor = 0.f;
   EXPECT_TRUE(
       support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
@@ -819,7 +818,7 @@ TEST_F(CompositorFrameSinkSupportTest, FrameSizeMismatch) {
   SurfaceId id(support_->frame_sink_id(), local_surface_id_);
 
   // Submit a frame with size (5,5).
-  auto frame = cc::test::MakeEmptyCompositorFrame();
+  auto frame = test::MakeEmptyCompositorFrame();
   auto pass = cc::RenderPass::Create();
   pass->SetNew(1, gfx::Rect(5, 5), gfx::Rect(), gfx::Transform());
   frame.render_pass_list.push_back(std::move(pass));
@@ -829,7 +828,7 @@ TEST_F(CompositorFrameSinkSupportTest, FrameSizeMismatch) {
 
   // Submit a frame with size (5,4). This frame should be rejected and the
   // surface should be destroyed.
-  frame = cc::test::MakeEmptyCompositorFrame();
+  frame = test::MakeEmptyCompositorFrame();
   pass = cc::RenderPass::Create();
   pass->SetNew(1, gfx::Rect(5, 4), gfx::Rect(), gfx::Transform());
   frame.render_pass_list.push_back(std::move(pass));
@@ -845,7 +844,7 @@ TEST_F(CompositorFrameSinkSupportTest, DeviceScaleFactorMismatch) {
   SurfaceId id(support_->frame_sink_id(), local_surface_id_);
 
   // Submit a frame with device scale factor of 0.5.
-  auto frame = cc::test::MakeCompositorFrame();
+  auto frame = test::MakeCompositorFrame();
   frame.metadata.device_scale_factor = 0.5f;
   EXPECT_TRUE(
       support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
@@ -853,7 +852,7 @@ TEST_F(CompositorFrameSinkSupportTest, DeviceScaleFactorMismatch) {
 
   // Submit a frame with device scale factor of 0.4. This frame should be
   // rejected and the surface should be destroyed.
-  frame = cc::test::MakeCompositorFrame();
+  frame = test::MakeCompositorFrame();
   frame.metadata.device_scale_factor = 0.4f;
   EXPECT_FALSE(
       support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
@@ -872,7 +871,7 @@ TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
   // Check that the support and SurfaceManager forward the BeginFrameAck
   // attached to a CompositorFrame to the SurfaceObserver.
   BeginFrameAck ack(0, 1, true);
-  auto frame = cc::test::MakeCompositorFrame();
+  auto frame = test::MakeCompositorFrame();
   frame.metadata.begin_frame_ack = ack;
   support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
   EXPECT_EQ(ack, surface_observer_.last_ack());

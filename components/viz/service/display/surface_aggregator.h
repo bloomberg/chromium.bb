@@ -23,19 +23,20 @@ namespace cc {
 class BlockingTaskRunner;
 class CompositorFrame;
 class ResourceProvider;
-class Surface;
-class SurfaceClient;
 class SurfaceDrawQuad;
-class SurfaceManager;
 }  // namespace cc
 
 namespace viz {
+
+class Surface;
+class SurfaceClient;
+class SurfaceManager;
 
 class VIZ_SERVICE_EXPORT SurfaceAggregator {
  public:
   using SurfaceIndexMap = base::flat_map<SurfaceId, int>;
 
-  SurfaceAggregator(cc::SurfaceManager* manager,
+  SurfaceAggregator(SurfaceManager* manager,
                     cc::ResourceProvider* provider,
                     bool aggregate_only_damaged);
   ~SurfaceAggregator();
@@ -48,7 +49,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   void SetFullDamageForSurface(const SurfaceId& surface_id);
   void set_output_is_secure(bool secure) { output_is_secure_ = secure; }
 
-  // Set the color spaces for the created RenderPasses, which is propagated
+  // Set the color spaces for the created cc::RenderPasses, which is propagated
   // to the output surface.
   void SetOutputColorSpace(const gfx::ColorSpace& blending_color_space,
                            const gfx::ColorSpace& output_color_space);
@@ -128,7 +129,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                         int parent_pass,
                         PrewalkResult* result);
   void CopyUndrawnSurfaces(PrewalkResult* prewalk);
-  void CopyPasses(const cc::CompositorFrame& frame, cc::Surface* surface);
+  void CopyPasses(const cc::CompositorFrame& frame, Surface* surface);
   void AddColorConversionPass();
 
   // Remove Surfaces that were referenced before but aren't currently
@@ -139,20 +140,20 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   void PropagateCopyRequestPasses();
 
-  int ChildIdForSurface(cc::Surface* surface);
-  gfx::Rect DamageRectForSurface(const cc::Surface* surface,
+  int ChildIdForSurface(Surface* surface);
+  gfx::Rect DamageRectForSurface(const Surface* surface,
                                  const cc::RenderPass& source,
                                  const gfx::Rect& full_rect) const;
 
-  static void UnrefResources(base::WeakPtr<cc::SurfaceClient> surface_client,
+  static void UnrefResources(base::WeakPtr<SurfaceClient> surface_client,
                              const std::vector<cc::ReturnedResource>& resources,
                              cc::BlockingTaskRunner* main_thread_task_runner);
 
-  cc::SurfaceManager* manager_;
+  SurfaceManager* manager_;
   cc::ResourceProvider* provider_;
 
-  // Every Surface has its own RenderPass ID namespace. This structure maps
-  // each source (SurfaceId, RenderPass id) to a unified ID namespace that's
+  // Every Surface has its own cc::RenderPass ID namespace. This structure maps
+  // each source (SurfaceId, cc::RenderPass id) to a unified ID namespace that's
   // used in the aggregated frame. An entry is removed from the map if it's not
   // used for one output frame.
   base::flat_map<std::pair<SurfaceId, cc::RenderPassId>, RenderPassInfo>
@@ -201,7 +202,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   base::flat_set<cc::RenderPassId> copy_request_passes_;
 
   // This maps each aggregated pass id to the set of (aggregated) pass ids
-  // that its RenderPassDrawQuads depend on
+  // that its cc::RenderPassDrawQuads depend on
   base::flat_map<cc::RenderPassId, base::flat_set<cc::RenderPassId>>
       render_pass_dependencies_;
 

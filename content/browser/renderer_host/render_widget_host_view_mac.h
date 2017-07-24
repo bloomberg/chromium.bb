@@ -349,7 +349,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       override;
 
   viz::FrameSinkId GetFrameSinkId() override;
-  viz::FrameSinkId FrameSinkIdAtPoint(cc::SurfaceHittestDelegate* delegate,
+  viz::FrameSinkId FrameSinkIdAtPoint(viz::SurfaceHittestDelegate* delegate,
                                       const gfx::Point& point,
                                       gfx::Point* transformed_point) override;
   // Returns true when we can do SurfaceHitTesting for the event type.

@@ -4,9 +4,9 @@
 
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 
-#include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_hittest.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -146,7 +146,8 @@ bool CrossProcessFrameConnector::TransformPointToLocalCoordSpace(
   // is necessary.
   *transformed_point =
       gfx::ConvertPointToPixel(view_->current_surface_scale_factor(), point);
-  cc::SurfaceHittest hittest(nullptr, GetFrameSinkManager()->surface_manager());
+  viz::SurfaceHittest hittest(nullptr,
+                              GetFrameSinkManager()->surface_manager());
   if (!hittest.TransformPointToTargetSurface(original_surface, local_surface_id,
                                              transformed_point))
     return false;

@@ -32,6 +32,7 @@ include_rules = [
   "+components/viz/common",
   "+components/viz/service/display",
   "+components/viz/service/frame_sinks",
+  "+components/viz/test",
   "+components/webdata/common",
 
   "+content/public/browser",

@@ -60,7 +60,6 @@ component("android") {
     ":ui_android_jni_headers",
     "//base",
     "//cc",
-    "//cc/surfaces",
     "//components/viz/common",
     "//components/viz/host",
     "//components/viz/service",

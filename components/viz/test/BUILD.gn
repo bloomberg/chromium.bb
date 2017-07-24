@@ -9,10 +9,14 @@ viz_static_library("test_support") {
   sources = [
     "begin_frame_args_test.cc",
     "begin_frame_args_test.h",
+    "compositor_frame_helpers.cc",
+    "compositor_frame_helpers.h",
     "fake_delay_based_time_source.cc",
     "fake_delay_based_time_source.h",
     "paths.cc",
     "paths.h",
+    "surface_hittest_test_helpers.cc",
+    "surface_hittest_test_helpers.h",
     "test_layer_tree_frame_sink.cc",
     "test_layer_tree_frame_sink.h",
   ]
@@ -20,7 +24,6 @@ viz_static_library("test_support") {
     "//base",
     "//base/test:test_support",
     "//cc",
-    "//cc/surfaces",
     "//components/viz/service",
     "//ui/gfx/geometry",
   ]

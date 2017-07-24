@@ -28,9 +28,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_manager.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
@@ -1335,7 +1335,7 @@ class SurfaceHitTestReadyNotifier {
  private:
   bool ContainsSurfaceId(const viz::SurfaceId& container_surface_id);
 
-  cc::SurfaceManager* surface_manager_;
+  viz::SurfaceManager* surface_manager_;
   RenderWidgetHostViewBase* target_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceHitTestReadyNotifier);
@@ -1368,7 +1368,7 @@ bool SurfaceHitTestReadyNotifier::ContainsSurfaceId(
   if (!container_surface_id.is_valid())
     return false;
 
-  cc::Surface* container_surface =
+  viz::Surface* container_surface =
       surface_manager_->GetSurfaceForId(container_surface_id);
   if (!container_surface || !container_surface->active_referenced_surfaces())
     return false;

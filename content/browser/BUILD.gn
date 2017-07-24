@@ -37,7 +37,6 @@ source_set("browser") {
     "//cc",
     "//cc/animation",
     "//cc/paint",
-    "//cc/surfaces",
     "//components/discardable_memory/common",
     "//components/discardable_memory/service",
     "//components/filesystem:lib",
@@ -2150,7 +2149,7 @@ source_set("browser") {
       ]
     }
     deps += [
-      "//cc/surfaces:surfaces",
+      "//components/viz/service",
       "//ui/compositor",
     ]
   }

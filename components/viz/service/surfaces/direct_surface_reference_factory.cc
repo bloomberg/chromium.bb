@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/direct_surface_reference_factory.h"
+#include "components/viz/service/surfaces/direct_surface_reference_factory.h"
 
 #include <vector>
 
-#include "cc/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface.h"
 
-namespace cc {
+namespace viz {
 
 DirectSurfaceReferenceFactory::DirectSurfaceReferenceFactory(
     base::WeakPtr<SurfaceManager> manager)
@@ -16,16 +16,16 @@ DirectSurfaceReferenceFactory::DirectSurfaceReferenceFactory(
 
 DirectSurfaceReferenceFactory::~DirectSurfaceReferenceFactory() = default;
 void DirectSurfaceReferenceFactory::SatisfySequence(
-    const viz::SurfaceSequence& sequence) const {
+    const SurfaceSequence& sequence) const {
   if (!manager_)
     return;
   manager_->SatisfySequence(sequence);
 }
 
 void DirectSurfaceReferenceFactory::RequireSequence(
-    const viz::SurfaceId& surface_id,
-    const viz::SurfaceSequence& sequence) const {
+    const SurfaceId& surface_id,
+    const SurfaceSequence& sequence) const {
   manager_->RequireSequence(surface_id, sequence);
 }
 
-}  // namespace cc
+}  // namespace viz

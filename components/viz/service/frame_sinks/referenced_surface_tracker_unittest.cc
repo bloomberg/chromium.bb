@@ -10,9 +10,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "cc/surfaces/surface_reference.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/service/surfaces/surface_reference.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,11 +45,11 @@ class ReferencedSurfaceTrackerTest : public testing::Test {
   ReferencedSurfaceTrackerTest() {}
   ~ReferencedSurfaceTrackerTest() override {}
 
-  const std::vector<cc::SurfaceReference>& references_to_remove() const {
+  const std::vector<SurfaceReference>& references_to_remove() const {
     return references_to_remove_;
   }
 
-  const std::vector<cc::SurfaceReference>& references_to_add() const {
+  const std::vector<SurfaceReference>& references_to_add() const {
     return references_to_add_;
   }
 
@@ -65,8 +65,8 @@ class ReferencedSurfaceTrackerTest : public testing::Test {
   }
 
  private:
-  std::vector<cc::SurfaceReference> references_to_add_;
-  std::vector<cc::SurfaceReference> references_to_remove_;
+  std::vector<SurfaceReference> references_to_add_;
+  std::vector<SurfaceReference> references_to_remove_;
 
   DISALLOW_COPY_AND_ASSIGN(ReferencedSurfaceTrackerTest);
 };
@@ -74,7 +74,7 @@ class ReferencedSurfaceTrackerTest : public testing::Test {
 TEST_F(ReferencedSurfaceTrackerTest, AddSurfaceReference) {
   const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
   const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const cc::SurfaceReference reference(parent_id, child_id1);
+  const SurfaceReference reference(parent_id, child_id1);
 
   // Check that reference to |child_id1| is added.
   UpdateReferences(parent_id, MakeReferenceSet({}),
@@ -86,7 +86,7 @@ TEST_F(ReferencedSurfaceTrackerTest, AddSurfaceReference) {
 TEST_F(ReferencedSurfaceTrackerTest, NoChangeToReferences) {
   const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
   const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const cc::SurfaceReference reference(parent_id, child_id1);
+  const SurfaceReference reference(parent_id, child_id1);
 
   // Check that no references are added or removed.
   auto referenced_surfaces = MakeReferenceSet({child_id1});
@@ -98,7 +98,7 @@ TEST_F(ReferencedSurfaceTrackerTest, NoChangeToReferences) {
 TEST_F(ReferencedSurfaceTrackerTest, RemoveSurfaceReference) {
   const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
   const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const cc::SurfaceReference reference(parent_id, child_id1);
+  const SurfaceReference reference(parent_id, child_id1);
 
   // Check that reference to |child_id1| is removed.
   UpdateReferences(parent_id, MakeReferenceSet({child_id1}),
@@ -111,8 +111,8 @@ TEST_F(ReferencedSurfaceTrackerTest, RemoveOneOfTwoSurfaceReferences) {
   const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
   const SurfaceId child_id1_first = MakeSurfaceId(kChildFrameSink1, 1);
   const SurfaceId child_id1_second = MakeSurfaceId(kChildFrameSink1, 2);
-  const cc::SurfaceReference reference_first(parent_id, child_id1_first);
-  const cc::SurfaceReference reference_second(parent_id, child_id1_second);
+  const SurfaceReference reference_first(parent_id, child_id1_first);
+  const SurfaceReference reference_second(parent_id, child_id1_second);
 
   // Check that reference to |child_id1_first| is removed and reference to
   // |child_id1_second| is added.
@@ -126,8 +126,8 @@ TEST_F(ReferencedSurfaceTrackerTest, AddTwoThenRemoveOneSurfaceReferences) {
   const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
   const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
   const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 2);
-  const cc::SurfaceReference reference1(parent_id, child_id1);
-  const cc::SurfaceReference reference2(parent_id, child_id2);
+  const SurfaceReference reference1(parent_id, child_id1);
+  const SurfaceReference reference2(parent_id, child_id2);
 
   // Check that first frame adds both surface references.
   const auto initial_referenced = MakeReferenceSet({child_id1, child_id2});

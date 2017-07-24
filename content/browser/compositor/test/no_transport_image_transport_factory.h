@@ -9,9 +9,9 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "cc/surfaces/surface_manager.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "ui/compositor/test/in_process_context_factory.h"
 

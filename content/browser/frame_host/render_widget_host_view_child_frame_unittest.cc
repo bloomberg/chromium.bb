@@ -15,11 +15,11 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_manager.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
@@ -205,10 +205,10 @@ TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
   if (id.is_valid()) {
 #if !defined(OS_ANDROID)
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    cc::SurfaceManager* manager = factory->GetContextFactoryPrivate()
-                                      ->GetFrameSinkManager()
-                                      ->surface_manager();
-    cc::Surface* surface = manager->GetSurfaceForId(id);
+    viz::SurfaceManager* manager = factory->GetContextFactoryPrivate()
+                                       ->GetFrameSinkManager()
+                                       ->surface_manager();
+    viz::Surface* surface = manager->GetSurfaceForId(id);
     EXPECT_TRUE(surface);
     // There should be a SurfaceSequence created by the RWHVChildFrame.
     EXPECT_EQ(1u, surface->GetDestructionDependencyCount());

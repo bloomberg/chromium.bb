@@ -2,76 +2,77 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/surface_hittest_test_helpers.h"
+#include "components/viz/test/surface_hittest_test_helpers.h"
 
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
-#include "cc/test/compositor_frame_helpers.h"
+#include "components/viz/test/compositor_frame_helpers.h"
 
-namespace cc {
+namespace viz {
 namespace test {
 
-void CreateSharedQuadState(RenderPass* pass,
+void CreateSharedQuadState(cc::RenderPass* pass,
                            const gfx::Transform& transform,
                            const gfx::Rect& root_rect) {
-  SharedQuadState* child_shared_state = pass->CreateAndAppendSharedQuadState();
+  cc::SharedQuadState* child_shared_state =
+      pass->CreateAndAppendSharedQuadState();
   child_shared_state->SetAll(transform, root_rect, root_rect, root_rect, false,
                              1.0f, SkBlendMode::kSrcOver, 0);
 }
 
-void CreateSolidColorDrawQuad(RenderPass* pass,
+void CreateSolidColorDrawQuad(cc::RenderPass* pass,
                               const gfx::Transform& transform,
                               const gfx::Rect& root_rect,
                               const gfx::Rect& quad_rect) {
   CreateSharedQuadState(pass, transform, root_rect);
-  SolidColorDrawQuad* color_quad =
-      pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  cc::SolidColorDrawQuad* color_quad =
+      pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
   color_quad->SetNew(pass->shared_quad_state_list.back(), quad_rect, quad_rect,
                      SK_ColorYELLOW, false);
 }
 
-void CreateRenderPassDrawQuad(RenderPass* pass,
+void CreateRenderPassDrawQuad(cc::RenderPass* pass,
                               const gfx::Transform& transform,
                               const gfx::Rect& root_rect,
                               const gfx::Rect& quad_rect,
                               int render_pass_id) {
   CreateSharedQuadState(pass, transform, root_rect);
-  RenderPassDrawQuad* render_pass_quad =
-      pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+  cc::RenderPassDrawQuad* render_pass_quad =
+      pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
   render_pass_quad->SetNew(pass->shared_quad_state_list.back(), quad_rect,
-                           quad_rect, render_pass_id, ResourceId(),
+                           quad_rect, render_pass_id, cc::ResourceId(),
                            gfx::RectF(), gfx::Size(), gfx::Vector2dF(),
                            gfx::PointF(), gfx::RectF());
 }
 
-void CreateSurfaceDrawQuad(RenderPass* pass,
+void CreateSurfaceDrawQuad(cc::RenderPass* pass,
                            const gfx::Transform& transform,
                            const gfx::Rect& root_rect,
                            const gfx::Rect& quad_rect,
-                           viz::SurfaceId surface_id) {
+                           SurfaceId surface_id) {
   CreateSharedQuadState(pass, transform, root_rect);
-  SurfaceDrawQuad* surface_quad =
-      pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+  cc::SurfaceDrawQuad* surface_quad =
+      pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
   surface_quad->SetNew(pass->shared_quad_state_list.back(), quad_rect,
-                       quad_rect, surface_id, SurfaceDrawQuadType::PRIMARY,
+                       quad_rect, surface_id, cc::SurfaceDrawQuadType::PRIMARY,
                        nullptr);
 }
 
 void CreateRenderPass(int render_pass_id,
                       const gfx::Rect& rect,
                       const gfx::Transform& transform_to_root_target,
-                      RenderPassList* render_pass_list) {
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+                      cc::RenderPassList* render_pass_list) {
+  std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   render_pass->SetNew(render_pass_id, rect, rect, transform_to_root_target);
   render_pass_list->push_back(std::move(render_pass));
 }
 
-CompositorFrame CreateCompositorFrame(const gfx::Rect& root_rect,
-                                      RenderPass** render_pass) {
-  CompositorFrame root_frame = test::MakeCompositorFrame();
+cc::CompositorFrame CreateCompositorFrame(const gfx::Rect& root_rect,
+                                          cc::RenderPass** render_pass) {
+  cc::CompositorFrame root_frame = MakeCompositorFrame();
   int root_id = 1;
   CreateRenderPass(root_id, root_rect, gfx::Transform(),
                    &root_frame.render_pass_list);
@@ -85,19 +86,19 @@ TestSurfaceHittestDelegate::TestSurfaceHittestDelegate()
 TestSurfaceHittestDelegate::~TestSurfaceHittestDelegate() {}
 
 void TestSurfaceHittestDelegate::AddInsetsForRejectSurface(
-    const viz::SurfaceId& surface_id,
+    const SurfaceId& surface_id,
     const gfx::Insets& inset) {
   insets_for_reject_.insert(std::make_pair(surface_id, inset));
 }
 
 void TestSurfaceHittestDelegate::AddInsetsForAcceptSurface(
-    const viz::SurfaceId& surface_id,
+    const SurfaceId& surface_id,
     const gfx::Insets& inset) {
   insets_for_accept_.insert(std::make_pair(surface_id, inset));
 }
 
 bool TestSurfaceHittestDelegate::RejectHitTarget(
-    const SurfaceDrawQuad* surface_quad,
+    const cc::SurfaceDrawQuad* surface_quad,
     const gfx::Point& point_in_quad_space) {
   if (!insets_for_reject_.count(surface_quad->surface_id))
     return false;
@@ -113,7 +114,7 @@ bool TestSurfaceHittestDelegate::RejectHitTarget(
 }
 
 bool TestSurfaceHittestDelegate::AcceptHitTarget(
-    const SurfaceDrawQuad* surface_quad,
+    const cc::SurfaceDrawQuad* surface_quad,
     const gfx::Point& point_in_quad_space) {
   if (!insets_for_accept_.count(surface_quad->surface_id))
     return false;
@@ -128,4 +129,4 @@ bool TestSurfaceHittestDelegate::AcceptHitTarget(
 }
 
 }  // namespace test
-}  // namespace cc
+}  // namespace viz

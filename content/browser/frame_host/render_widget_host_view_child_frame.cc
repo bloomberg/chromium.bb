@@ -15,11 +15,11 @@
 #include "build/build_config.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
-#include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_manager.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -482,7 +482,7 @@ void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
     return;
   viz::SurfaceSequence sequence =
       viz::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
-  cc::SurfaceManager* manager = GetFrameSinkManager()->surface_manager();
+  viz::SurfaceManager* manager = GetFrameSinkManager()->surface_manager();
   viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
   // The renderer process will satisfy this dependency when it creates a
   // SurfaceLayer.

@@ -1589,8 +1589,8 @@ component("platform") {
     "//v8",
   ]
   deps = [
-    "//cc/surfaces:surfaces",
     "//components/mime_util:mime_util",
+    "//components/viz/service",
     "//device/base/synchronization",
     "//gin",
     "//mojo/public/cpp/bindings",
