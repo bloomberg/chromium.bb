@@ -35,7 +35,7 @@ var FilesQuickView = Polymer({
   },
 
   listeners: {
-    'iron-overlay-closed': 'clear',
+    'close': 'clear',
     'files-safe-media-tap-outside': 'close',
   },
 
