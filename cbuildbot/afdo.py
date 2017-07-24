@@ -413,7 +413,8 @@ def GetLatestAFDOFile(cpv, arch, buildroot, gs_context):
   previous_release = str(int(current_release) - 1)
   prev_release_spec = {'package': cpv.package,
                        'arch': generator_arch,
-                       'release': previous_release}
+                       'release': previous_release,
+                       'build': current_build}
   return VerifyLatestAFDOFile(prev_release_spec, buildroot, gs_context)
 
 
