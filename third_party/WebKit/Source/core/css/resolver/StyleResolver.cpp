@@ -69,7 +69,6 @@
 #include "core/css/resolver/MediaQueryResult.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/css/resolver/SelectorFilterParentScope.h"
-#include "core/css/resolver/SharedStyleFinder.h"
 #include "core/css/resolver/StyleAdjuster.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/StyleResolverStats.h"
@@ -187,37 +186,6 @@ void StyleResolver::Dispose() {
 
 void StyleResolver::SetRuleUsageTracker(StyleRuleUsageTracker* tracker) {
   tracker_ = tracker;
-}
-
-void StyleResolver::AddToStyleSharingList(Element& element) {
-  DCHECK(RuntimeEnabledFeatures::StyleSharingEnabled());
-  // Never add elements to the style sharing list if we're not in a recalcStyle,
-  // otherwise we could leave stale pointers in there.
-  if (!GetDocument().InStyleRecalc())
-    return;
-  INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
-                                shared_style_candidates, 1);
-  StyleSharingList& list = GetStyleSharingList();
-  if (list.size() >= kStyleSharingListSize)
-    list.pop_back();
-  list.push_front(&element);
-}
-
-StyleSharingList& StyleResolver::GetStyleSharingList() {
-  style_sharing_lists_.resize(kStyleSharingMaxDepth);
-
-  // We never put things at depth 0 into the list since that's only the <html>
-  // element and it has no siblings or cousins to share with.
-  unsigned depth =
-      std::max(std::min(style_sharing_depth_, kStyleSharingMaxDepth), 1u) - 1u;
-
-  if (!style_sharing_lists_[depth])
-    style_sharing_lists_[depth] = new StyleSharingList;
-  return *style_sharing_lists_[depth];
-}
-
-void StyleResolver::ClearStyleSharingList() {
-  style_sharing_lists_.resize(0);
 }
 
 static inline ScopedStyleResolver* ScopedResolverFor(const Element& element) {
@@ -623,7 +591,6 @@ PassRefPtr<ComputedStyle> StyleResolver::StyleForElement(
     Element* element,
     const ComputedStyle* default_parent,
     const ComputedStyle* default_layout_parent,
-    StyleSharingBehavior sharing_behavior,
     RuleMatchingBehavior matching_behavior) {
   DCHECK(GetDocument().GetFrame());
   DCHECK(GetDocument().GetSettings());
@@ -631,8 +598,7 @@ PassRefPtr<ComputedStyle> StyleResolver::StyleForElement(
   // Once an element has a layoutObject, we don't try to destroy it, since
   // otherwise the layoutObject will vanish if a style recalc happens during
   // loading.
-  if (sharing_behavior == kAllowStyleSharing &&
-      !GetDocument().IsRenderingReady() && !element->GetLayoutObject()) {
+  if (!GetDocument().IsRenderingReady() && !element->GetLayoutObject()) {
     if (!style_not_yet_available_) {
       style_not_yet_available_ = ComputedStyle::Create().LeakRef();
       style_not_yet_available_->SetDisplay(EDisplay::kNone);
@@ -651,14 +617,6 @@ PassRefPtr<ComputedStyle> StyleResolver::StyleForElement(
   SelectorFilterParentScope::EnsureParentStackIsPushed();
 
   ElementResolveContext element_context(*element);
-
-  if (RuntimeEnabledFeatures::StyleSharingEnabled() &&
-      sharing_behavior == kAllowStyleSharing &&
-      (default_parent || element_context.ParentStyle())) {
-    if (RefPtr<ComputedStyle> shared_style =
-            GetDocument().GetStyleEngine().FindSharedStyle(element_context))
-      return shared_style;
-  }
 
   StyleResolverState state(GetDocument(), element_context, default_parent,
                            default_layout_parent);
@@ -2071,7 +2029,6 @@ void StyleResolver::UpdateMediaType() {
 DEFINE_TRACE(StyleResolver) {
   visitor->Trace(matched_properties_cache_);
   visitor->Trace(selector_filter_);
-  visitor->Trace(style_sharing_lists_);
   visitor->Trace(document_);
   visitor->Trace(tracker_);
 }

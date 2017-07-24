@@ -29,7 +29,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/StyleSheetList.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/css/resolver/StyleSharingDepthScope.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ShadowRootRareDataV0.h"
@@ -143,8 +142,6 @@ void ShadowRoot::RecalcStyle(StyleRecalcChange change) {
   // ShadowRoot doesn't support custom callbacks.
   DCHECK(!HasCustomStyleCallbacks());
 
-  StyleSharingDepthScope sharing_scope(*this);
-
   if (GetStyleChangeType() >= kSubtreeStyleChange) {
     change = kForce;
     if (NeedsAttach())
@@ -163,8 +160,6 @@ void ShadowRoot::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     SkipRebuildLayoutTree(whitespace_attacher);
     return;
   }
-
-  StyleSharingDepthScope sharing_scope(*this);
 
   ClearNeedsReattachLayoutTree();
   RebuildChildrenLayoutTrees(whitespace_attacher);
@@ -201,7 +196,6 @@ void ShadowRoot::SkipRebuildLayoutTree(
 }
 
 void ShadowRoot::AttachLayoutTree(AttachContext& context) {
-  StyleSharingDepthScope sharing_scope(*this);
   DocumentFragment::AttachLayoutTree(context);
 }
 

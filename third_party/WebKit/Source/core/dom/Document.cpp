@@ -2205,8 +2205,6 @@ void Document::UpdateStyle() {
   ClearChildNeedsStyleRecalc();
   ClearChildNeedsReattachLayoutTree();
 
-  resolver.ClearStyleSharingList();
-
   DCHECK(!NeedsStyleRecalc());
   DCHECK(!ChildNeedsStyleRecalc());
   DCHECK(!NeedsReattachLayoutTree());

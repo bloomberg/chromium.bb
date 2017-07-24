@@ -37,7 +37,6 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/invalidation/InvalidationSet.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
-#include "core/css/resolver/SharedStyleFinder.h"
 #include "core/css/resolver/StyleRuleUsageTracker.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/DocumentStyleSheetCollector.h"
@@ -1051,17 +1050,6 @@ void StyleEngine::HtmlImportAddedOrRemoved() {
   }
 }
 
-PassRefPtr<ComputedStyle> StyleEngine::FindSharedStyle(
-    const ElementResolveContext& element_resolve_context) {
-  DCHECK(IsMaster());
-  DCHECK(resolver_);
-  DCHECK(global_rule_set_);
-  return SharedStyleFinder(
-             element_resolve_context, global_rule_set_->GetRuleFeatureSet(),
-             global_rule_set_->SiblingRuleSet(),
-             global_rule_set_->UncommonAttributeRuleSet(), *resolver_)
-      .FindSharedStyle();
-}
 namespace {
 
 enum RuleSetFlags {

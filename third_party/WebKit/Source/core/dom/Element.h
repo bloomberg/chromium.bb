@@ -454,8 +454,6 @@ class CORE_EXPORT Element : public ContainerNode {
 
   void SetNeedsCompositingUpdate();
 
-  bool SupportsStyleSharing() const;
-
   ElementShadow* Shadow() const;
   ElementShadow& EnsureShadow();
   // If type of ShadowRoot (either closed or open) is explicitly specified,

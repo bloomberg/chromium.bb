@@ -1445,7 +1445,6 @@ void ContainerNode::RecalcDescendantStyles(StyleRecalcChange change) {
   DCHECK(change >= kUpdatePseudoElements || ChildNeedsStyleRecalc());
   DCHECK(!NeedsStyleRecalc());
 
-  StyleResolver& style_resolver = GetDocument().EnsureStyleResolver();
   for (Node* child = lastChild(); child; child = child->previousSibling()) {
     if (child->IsTextNode()) {
       ToText(child)->RecalcTextStyle(change);
@@ -1453,8 +1452,6 @@ void ContainerNode::RecalcDescendantStyles(StyleRecalcChange change) {
       Element* element = ToElement(child);
       if (element->ShouldCallRecalcStyle(change))
         element->RecalcStyle(change);
-      else if (element->SupportsStyleSharing())
-        style_resolver.AddToStyleSharingList(*element);
     }
   }
 }

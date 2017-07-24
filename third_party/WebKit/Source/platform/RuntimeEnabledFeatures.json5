@@ -1003,10 +1003,6 @@
       status: "stable",
     },
     {
-      name: "StyleSharing",
-      status: "experimental",
-    },
-    {
       name: "Suborigins",
       status: "experimental",
     },
