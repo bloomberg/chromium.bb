@@ -23,7 +23,7 @@ class CC_PAINT_EXPORT SolidColorAnalyzer {
       const PaintOpBuffer* buffer,
       const gfx::Rect& rect,
       int max_ops_to_analyze,
-      const std::vector<size_t>* indices = nullptr);
+      const std::vector<size_t>* offsets = nullptr);
 };
 
 }  // namespace cc

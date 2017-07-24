@@ -21,8 +21,8 @@ ClipRecorder::~ClipRecorder() {
   for (int i = 0; i < num_closers_; ++i) {
     // Each restore is part of a separate visual rect, so gets its own
     // StartPaint/EndPaintOfPairedEnd.
-    cc::PaintOpBuffer* buffer = context_.list_->StartPaint();
-    buffer->push<cc::RestoreOp>();
+    context_.list_->StartPaint();
+    context_.list_->push<cc::RestoreOp>();
     context_.list_->EndPaintOfPairedEnd();
   }
 }
@@ -30,10 +30,10 @@ ClipRecorder::~ClipRecorder() {
 void ClipRecorder::ClipRect(const gfx::Rect& clip_rect) {
   bool antialias = false;
 
-  cc::PaintOpBuffer* buffer = context_.list_->StartPaint();
-  buffer->push<cc::SaveOp>();
-  buffer->push<cc::ClipRectOp>(gfx::RectToSkRect(clip_rect),
-                               SkClipOp::kIntersect, antialias);
+  context_.list_->StartPaint();
+  context_.list_->push<cc::SaveOp>();
+  context_.list_->push<cc::ClipRectOp>(gfx::RectToSkRect(clip_rect),
+                                       SkClipOp::kIntersect, antialias);
   context_.list_->EndPaintOfPairedBegin();
   ++num_closers_;
 }
@@ -41,9 +41,10 @@ void ClipRecorder::ClipRect(const gfx::Rect& clip_rect) {
 void ClipRecorder::ClipPath(const gfx::Path& clip_path) {
   bool antialias = false;
 
-  cc::PaintOpBuffer* buffer = context_.list_->StartPaint();
-  buffer->push<cc::SaveOp>();
-  buffer->push<cc::ClipPathOp>(clip_path, SkClipOp::kIntersect, antialias);
+  context_.list_->StartPaint();
+  context_.list_->push<cc::SaveOp>();
+  context_.list_->push<cc::ClipPathOp>(clip_path, SkClipOp::kIntersect,
+                                       antialias);
   context_.list_->EndPaintOfPairedBegin();
   ++num_closers_;
 }
@@ -51,9 +52,10 @@ void ClipRecorder::ClipPath(const gfx::Path& clip_path) {
 void ClipRecorder::ClipPathWithAntiAliasing(const gfx::Path& clip_path) {
   bool antialias = true;
 
-  cc::PaintOpBuffer* buffer = context_.list_->StartPaint();
-  buffer->push<cc::SaveOp>();
-  buffer->push<cc::ClipPathOp>(clip_path, SkClipOp::kIntersect, antialias);
+  context_.list_->StartPaint();
+  context_.list_->push<cc::SaveOp>();
+  context_.list_->push<cc::ClipPathOp>(clip_path, SkClipOp::kIntersect,
+                                       antialias);
   context_.list_->EndPaintOfPairedBegin();
   ++num_closers_;
 }

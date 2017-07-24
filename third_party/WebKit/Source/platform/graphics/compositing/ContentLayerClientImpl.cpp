@@ -309,7 +309,9 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   }
   cc_display_item_list_ = PaintChunksToCcLayer::Convert(
       paint_chunks, layer_state, layer_bounds.OffsetFromOrigin(),
-      paint_artifact.GetDisplayItemList(), params ? &*params : nullptr);
+      paint_artifact.GetDisplayItemList(),
+      cc::DisplayItemList::kTopLevelDisplayItemList,
+      params ? &*params : nullptr);
 
   paint_chunks_info_.clear();
   std::swap(paint_chunks_info_, new_chunks_info);

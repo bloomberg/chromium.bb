@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "cc/paint/display_item_list.h"
 #include "cc/paint/record_paint_canvas.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/canvas.h"
@@ -40,6 +41,7 @@ class COMPOSITOR_EXPORT PaintRecorder {
 
  private:
   const PaintContext& context_;
+  scoped_refptr<cc::DisplayItemList> local_list_;
   cc::RecordPaintCanvas record_canvas_;
   gfx::Canvas canvas_;
   PaintCache* cache_;

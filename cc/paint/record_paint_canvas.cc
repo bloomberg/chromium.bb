@@ -6,7 +6,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/paint/display_item_list.h"
-#include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_recorder.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
@@ -15,10 +14,10 @@
 
 namespace cc {
 
-RecordPaintCanvas::RecordPaintCanvas(PaintOpBuffer* buffer,
+RecordPaintCanvas::RecordPaintCanvas(DisplayItemList* list,
                                      const SkRect& bounds)
-    : buffer_(buffer), recording_bounds_(bounds) {
-  DCHECK(buffer_);
+    : list_(list), recording_bounds_(bounds) {
+  DCHECK(list_);
 }
 
 RecordPaintCanvas::~RecordPaintCanvas() = default;
@@ -38,7 +37,7 @@ void RecordPaintCanvas::flush() {
 }
 
 int RecordPaintCanvas::save() {
-  buffer_->push<SaveOp>();
+  list_->push<SaveOp>();
   return GetCanvas()->save();
 }
 
@@ -55,23 +54,23 @@ int RecordPaintCanvas::saveLayer(const SkRect* bounds,
     // TODO(enne): it appears that image filters affect matrices and color
     // matrices affect transparent flags on SkCanvas layers, but it's not clear
     // whether those are actually needed and we could just skip ToSkPaint here.
-    buffer_->push<SaveLayerOp>(bounds, flags);
+    list_->push<SaveLayerOp>(bounds, flags);
     SkPaint paint = flags->ToSkPaint();
     return GetCanvas()->saveLayer(bounds, &paint);
   }
-  buffer_->push<SaveLayerOp>(bounds, flags);
+  list_->push<SaveLayerOp>(bounds, flags);
   return GetCanvas()->saveLayer(bounds, nullptr);
 }
 
 int RecordPaintCanvas::saveLayerAlpha(const SkRect* bounds,
                                       uint8_t alpha,
                                       bool preserve_lcd_text_requests) {
-  buffer_->push<SaveLayerAlphaOp>(bounds, alpha, preserve_lcd_text_requests);
+  list_->push<SaveLayerAlphaOp>(bounds, alpha, preserve_lcd_text_requests);
   return GetCanvas()->saveLayerAlpha(bounds, alpha);
 }
 
 void RecordPaintCanvas::restore() {
-  buffer_->push<RestoreOp>();
+  list_->push<RestoreOp>();
   GetCanvas()->restore();
 }
 
@@ -93,34 +92,34 @@ void RecordPaintCanvas::restoreToCount(int save_count) {
 }
 
 void RecordPaintCanvas::translate(SkScalar dx, SkScalar dy) {
-  buffer_->push<TranslateOp>(dx, dy);
+  list_->push<TranslateOp>(dx, dy);
   GetCanvas()->translate(dx, dy);
 }
 
 void RecordPaintCanvas::scale(SkScalar sx, SkScalar sy) {
-  buffer_->push<ScaleOp>(sx, sy);
+  list_->push<ScaleOp>(sx, sy);
   GetCanvas()->scale(sx, sy);
 }
 
 void RecordPaintCanvas::rotate(SkScalar degrees) {
-  buffer_->push<RotateOp>(degrees);
+  list_->push<RotateOp>(degrees);
   GetCanvas()->rotate(degrees);
 }
 
 void RecordPaintCanvas::concat(const SkMatrix& matrix) {
-  buffer_->push<ConcatOp>(matrix);
+  list_->push<ConcatOp>(matrix);
   GetCanvas()->concat(matrix);
 }
 
 void RecordPaintCanvas::setMatrix(const SkMatrix& matrix) {
-  buffer_->push<SetMatrixOp>(matrix);
+  list_->push<SetMatrixOp>(matrix);
   GetCanvas()->setMatrix(matrix);
 }
 
 void RecordPaintCanvas::clipRect(const SkRect& rect,
                                  SkClipOp op,
                                  bool antialias) {
-  buffer_->push<ClipRectOp>(rect, op, antialias);
+  list_->push<ClipRectOp>(rect, op, antialias);
   GetCanvas()->clipRect(rect, op, antialias);
 }
 
@@ -132,7 +131,7 @@ void RecordPaintCanvas::clipRRect(const SkRRect& rrect,
     clipRect(rrect.getBounds(), op, antialias);
     return;
   }
-  buffer_->push<ClipRRectOp>(rrect, op, antialias);
+  list_->push<ClipRRectOp>(rrect, op, antialias);
   GetCanvas()->clipRRect(rrect, op, antialias);
 }
 
@@ -160,7 +159,7 @@ void RecordPaintCanvas::clipPath(const SkPath& path,
     }
   }
 
-  buffer_->push<ClipPathOp>(path, op, antialias);
+  list_->push<ClipPathOp>(path, op, antialias);
   GetCanvas()->clipPath(path, op, antialias);
   return;
 }
@@ -190,11 +189,11 @@ bool RecordPaintCanvas::getDeviceClipBounds(SkIRect* bounds) const {
 }
 
 void RecordPaintCanvas::drawColor(SkColor color, SkBlendMode mode) {
-  buffer_->push<DrawColorOp>(color, mode);
+  list_->push<DrawColorOp>(color, mode);
 }
 
 void RecordPaintCanvas::clear(SkColor color) {
-  buffer_->push<DrawColorOp>(color, SkBlendMode::kSrc);
+  list_->push<DrawColorOp>(color, SkBlendMode::kSrc);
 }
 
 void RecordPaintCanvas::drawLine(SkScalar x0,
@@ -202,25 +201,25 @@ void RecordPaintCanvas::drawLine(SkScalar x0,
                                  SkScalar x1,
                                  SkScalar y1,
                                  const PaintFlags& flags) {
-  buffer_->push<DrawLineOp>(x0, y0, x1, y1, flags);
+  list_->push<DrawLineOp>(x0, y0, x1, y1, flags);
 }
 
 void RecordPaintCanvas::drawRect(const SkRect& rect, const PaintFlags& flags) {
-  buffer_->push<DrawRectOp>(rect, flags);
+  list_->push<DrawRectOp>(rect, flags);
 }
 
 void RecordPaintCanvas::drawIRect(const SkIRect& rect,
                                   const PaintFlags& flags) {
-  buffer_->push<DrawIRectOp>(rect, flags);
+  list_->push<DrawIRectOp>(rect, flags);
 }
 
 void RecordPaintCanvas::drawOval(const SkRect& oval, const PaintFlags& flags) {
-  buffer_->push<DrawOvalOp>(oval, flags);
+  list_->push<DrawOvalOp>(oval, flags);
 }
 
 void RecordPaintCanvas::drawRRect(const SkRRect& rrect,
                                   const PaintFlags& flags) {
-  buffer_->push<DrawRRectOp>(rrect, flags);
+  list_->push<DrawRRectOp>(rrect, flags);
 }
 
 void RecordPaintCanvas::drawDRRect(const SkRRect& outer,
@@ -232,14 +231,14 @@ void RecordPaintCanvas::drawDRRect(const SkRRect& outer,
     drawRRect(outer, flags);
     return;
   }
-  buffer_->push<DrawDRRectOp>(outer, inner, flags);
+  list_->push<DrawDRRectOp>(outer, inner, flags);
 }
 
 void RecordPaintCanvas::drawCircle(SkScalar cx,
                                    SkScalar cy,
                                    SkScalar radius,
                                    const PaintFlags& flags) {
-  buffer_->push<DrawCircleOp>(cx, cy, radius, flags);
+  list_->push<DrawCircleOp>(cx, cy, radius, flags);
 }
 
 void RecordPaintCanvas::drawArc(const SkRect& oval,
@@ -247,7 +246,7 @@ void RecordPaintCanvas::drawArc(const SkRect& oval,
                                 SkScalar sweep_angle,
                                 bool use_center,
                                 const PaintFlags& flags) {
-  buffer_->push<DrawArcOp>(oval, start_angle, sweep_angle, use_center, flags);
+  list_->push<DrawArcOp>(oval, start_angle, sweep_angle, use_center, flags);
 }
 
 void RecordPaintCanvas::drawRoundRect(const SkRect& rect,
@@ -265,14 +264,14 @@ void RecordPaintCanvas::drawRoundRect(const SkRect& rect,
 }
 
 void RecordPaintCanvas::drawPath(const SkPath& path, const PaintFlags& flags) {
-  buffer_->push<DrawPathOp>(path, flags);
+  list_->push<DrawPathOp>(path, flags);
 }
 
 void RecordPaintCanvas::drawImage(const PaintImage& image,
                                   SkScalar left,
                                   SkScalar top,
                                   const PaintFlags* flags) {
-  buffer_->push<DrawImageOp>(image, left, top, flags);
+  list_->push<DrawImageOp>(image, left, top, flags);
 }
 
 void RecordPaintCanvas::drawImageRect(const PaintImage& image,
@@ -280,7 +279,7 @@ void RecordPaintCanvas::drawImageRect(const PaintImage& image,
                                       const SkRect& dst,
                                       const PaintFlags* flags,
                                       SrcRectConstraint constraint) {
-  buffer_->push<DrawImageRectOp>(image, src, dst, flags, constraint);
+  list_->push<DrawImageRectOp>(image, src, dst, flags, constraint);
 }
 
 void RecordPaintCanvas::drawBitmap(const SkBitmap& bitmap,
@@ -302,7 +301,7 @@ void RecordPaintCanvas::drawText(const void* text,
                                  SkScalar x,
                                  SkScalar y,
                                  const PaintFlags& flags) {
-  buffer_->push_with_data<DrawTextOp>(text, byte_length, x, y, flags);
+  list_->push_with_data<DrawTextOp>(text, byte_length, x, y, flags);
 }
 
 void RecordPaintCanvas::drawPosText(const void* text,
@@ -312,19 +311,19 @@ void RecordPaintCanvas::drawPosText(const void* text,
   // TODO(enne): implement countText in PaintFlags??
   SkPaint paint = flags.ToSkPaint();
   size_t count = paint.countText(text, byte_length);
-  buffer_->push_with_array<DrawPosTextOp>(text, byte_length, pos, count, flags);
+  list_->push_with_array<DrawPosTextOp>(text, byte_length, pos, count, flags);
 }
 
 void RecordPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
                                      SkScalar x,
                                      SkScalar y,
                                      const PaintFlags& flags) {
-  buffer_->push<DrawTextBlobOp>(blob, x, y, flags);
+  list_->push<DrawTextBlobOp>(blob, x, y, flags);
 }
 
 void RecordPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {
   // TODO(enne): If this is small, maybe flatten it?
-  buffer_->push<DrawRecordOp>(record);
+  list_->push<DrawRecordOp>(record);
 }
 
 bool RecordPaintCanvas::isClipEmpty() const {
@@ -342,7 +341,7 @@ const SkMatrix& RecordPaintCanvas::getTotalMatrix() const {
 void RecordPaintCanvas::Annotate(AnnotationType type,
                                  const SkRect& rect,
                                  sk_sp<SkData> data) {
-  buffer_->push<AnnotateOp>(type, rect, data);
+  list_->push<AnnotateOp>(type, rect, data);
 }
 
 const SkNoDrawCanvas* RecordPaintCanvas::GetCanvas() const {

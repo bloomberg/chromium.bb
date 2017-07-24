@@ -34,22 +34,70 @@ class TracedValue;
 
 namespace cc {
 
+// DisplayItemList is a container of paint operations. One can populate the list
+// using StartPaint, followed by push{,_with_data,_with_array} functions
+// specialized with ops coming from paint_op_buffer.h. Internally, the
+// DisplayItemList contains a PaintOpBuffer and defers op saving to it.
+// Additionally, it store some meta information about the paint operations.
+// Specifically, it creates an rtree to assist in rasterization: when
+// rasterizing a rect, it queries the rtree to extract only the byte offsets of
+// the ops required and replays those into a canvas.
 class CC_PAINT_EXPORT DisplayItemList
     : public base::RefCountedThreadSafe<DisplayItemList> {
  public:
-  DisplayItemList();
+  // TODO(vmpstr): It would be cool if we didn't need this, and instead used
+  // PaintOpBuffer directly when we needed to release this as a paint op buffer.
+  enum UsageHint { kTopLevelDisplayItemList, kToBeReleasedAsPaintOpBuffer };
+
+  explicit DisplayItemList(UsageHint = kTopLevelDisplayItemList);
 
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback = nullptr) const;
 
-  PaintOpBuffer* StartPaint() {
+  // TODO(vmpstr): This is only used to keep track of debugging info, so we can
+  // probably remove it? But it would be nice to delimit painting in a block
+  // somehow (RAII object maybe).
+  void StartPaint() {
     DCHECK(!in_painting_);
     in_painting_ = true;
-    return &paint_op_buffer_;
+  }
+
+  // Push functions construct a new op on the paint op buffer, while maintaining
+  // bookkeeping information. Must be called after invoking StartPaint().
+  template <typename T, typename... Args>
+  void push(Args&&... args) {
+    DCHECK(in_painting_);
+    if (usage_hint_ == kTopLevelDisplayItemList)
+      offsets_.push_back(paint_op_buffer_.next_op_offset());
+    paint_op_buffer_.push<T>(std::forward<Args>(args)...);
+  }
+
+  template <typename T, typename... Args>
+  void push_with_data(const void* data, size_t bytes, Args&&... args) {
+    DCHECK(in_painting_);
+    if (usage_hint_ == kTopLevelDisplayItemList)
+      offsets_.push_back(paint_op_buffer_.next_op_offset());
+    paint_op_buffer_.push_with_data<T>(data, bytes,
+                                       std::forward<Args>(args)...);
+  }
+
+  template <typename T, typename M, typename... Args>
+  void push_with_array(const void* data,
+                       size_t bytes,
+                       const M* array,
+                       size_t count,
+                       Args&&... args) {
+    DCHECK(in_painting_);
+    if (usage_hint_ == kTopLevelDisplayItemList)
+      offsets_.push_back(paint_op_buffer_.next_op_offset());
+    paint_op_buffer_.push_with_array<T>(data, bytes, array, count,
+                                        std::forward<Args>(args)...);
   }
 
   void EndPaintOfUnpaired(const gfx::Rect& visual_rect) {
     in_painting_ = false;
+    if (usage_hint_ == kToBeReleasedAsPaintOpBuffer)
+      return;
 
     // Empty paint item.
     if (visual_rects_.size() == paint_op_buffer_.size())
@@ -61,6 +109,9 @@ class CC_PAINT_EXPORT DisplayItemList
   }
 
   void EndPaintOfPairedBegin(const gfx::Rect& visual_rect = gfx::Rect()) {
+    in_painting_ = false;
+    if (usage_hint_ == kToBeReleasedAsPaintOpBuffer)
+      return;
     DCHECK_NE(visual_rects_.size(), paint_op_buffer_.size());
     size_t count = paint_op_buffer_.size() - visual_rects_.size();
     for (size_t i = 0; i < count; ++i)
@@ -68,11 +119,13 @@ class CC_PAINT_EXPORT DisplayItemList
     begin_paired_indices_.push_back(
         std::make_pair(visual_rects_.size() - 1, count));
 
-    in_painting_ = false;
     in_paired_begin_count_++;
   }
 
   void EndPaintOfPairedEnd() {
+    in_painting_ = false;
+    if (usage_hint_ == kToBeReleasedAsPaintOpBuffer)
+      return;
     DCHECK_NE(current_range_start_, paint_op_buffer_.size());
     DCHECK(in_paired_begin_count_);
 
@@ -100,7 +153,6 @@ class CC_PAINT_EXPORT DisplayItemList
     // block.
     GrowCurrentBeginItemVisualRect(visual_rect);
 
-    in_painting_ = false;
     in_paired_begin_count_--;
   }
 
@@ -159,6 +211,8 @@ class CC_PAINT_EXPORT DisplayItemList
   // display item list. These rects are intentionally kept separate because they
   // are used to decide which ops to walk for raster.
   std::vector<gfx::Rect> visual_rects_;
+  // Byte offsets associated with each of the ops.
+  std::vector<size_t> offsets_;
   // A stack of pairs of indices and counts. The indices are into the
   // |visual_rects_| for each paired begin range that hasn't been closed. The
   // counts refer to the number of visual rects in that begin sequence that end
@@ -173,6 +227,8 @@ class CC_PAINT_EXPORT DisplayItemList
   // For debugging, tracks if we're painting a visual rect range, to prevent
   // nesting.
   bool in_painting_ = false;
+
+  UsageHint usage_hint_;
 
   friend class base::RefCountedThreadSafe<DisplayItemList>;
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, BytesUsed);

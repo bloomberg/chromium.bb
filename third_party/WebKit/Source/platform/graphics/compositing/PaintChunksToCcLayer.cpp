@@ -28,8 +28,8 @@ void AppendDisplayItemToCcDisplayItemList(const DisplayItem& display_item,
       static_cast<const DrawingDisplayItem&>(display_item).GetPaintRecord();
   if (!record)
     return;
-  cc::PaintOpBuffer* buffer = list.StartPaint();
-  buffer->push<cc::DrawRecordOp>(std::move(record));
+  list.StartPaint();
+  list.push<cc::DrawRecordOp>(std::move(record));
   // TODO(trchen): Pass correct visual rect here.
   // The visual rect of the item can be used by cc to skip replaying items
   // that can't be seen. To workaround a space conversion bug, the optimization
@@ -38,9 +38,9 @@ void AppendDisplayItemToCcDisplayItemList(const DisplayItem& display_item,
 }
 
 void AppendRestore(cc::DisplayItemList& list, size_t n) {
-  cc::PaintOpBuffer* buffer = list.StartPaint();
+  list.StartPaint();
   while (n--)
-    buffer->push<cc::RestoreOp>();
+    list.push<cc::RestoreOp>();
   list.EndPaintOfPairedEnd();
 }
 
@@ -203,22 +203,22 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
     DCHECK_EQ(current_clip_, sub_clip->Parent());
 
     // Step 3a: Switch CTM to the clip's local space then apply clip.
-    cc::PaintOpBuffer* buffer = cc_list_.StartPaint();
-    buffer->push<cc::SaveOp>();
+    cc_list_.StartPaint();
+    cc_list_.push<cc::SaveOp>();
     const TransformPaintPropertyNode* target_transform =
         sub_clip->LocalTransformSpace();
     if (current_transform_ != target_transform) {
-      buffer->push<cc::ConcatOp>(
+      cc_list_.push<cc::ConcatOp>(
           static_cast<SkMatrix>(TransformationMatrix::ToSkMatrix44(
               GeometryMapper::SourceToDestinationProjection(
                   target_transform, current_transform_))));
     }
-    buffer->push<cc::ClipRectOp>(
+    cc_list_.push<cc::ClipRectOp>(
         static_cast<SkRect>(sub_clip->ClipRect().Rect()), SkClipOp::kIntersect,
         false);
     if (sub_clip->ClipRect().IsRounded()) {
-      buffer->push<cc::ClipRRectOp>(static_cast<SkRRect>(sub_clip->ClipRect()),
-                                    SkClipOp::kIntersect, true);
+      cc_list_.push<cc::ClipRRectOp>(static_cast<SkRRect>(sub_clip->ClipRect()),
+                                     SkClipOp::kIntersect, true);
     }
     cc_list_.EndPaintOfPairedBegin();
 
@@ -282,7 +282,7 @@ void ConversionContext::SwitchToEffect(
     // effects. Strictly speaking the CTM shall be appled first, it is done
     // in this particular order only to save one SaveOp.
     // TODO(trchen): Omit one of the SaveLayerOp if no-op.
-    cc::PaintOpBuffer* buffer = cc_list_.StartPaint();
+    cc_list_.StartPaint();
 
     cc::PaintFlags flags;
     flags.setBlendMode(sub_effect->BlendMode());
@@ -292,12 +292,12 @@ void ConversionContext::SwitchToEffect(
         static_cast<uint8_t>(gfx::ToFlooredInt(255 * sub_effect->Opacity())));
     flags.setColorFilter(GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
         sub_effect->GetColorFilter()));
-    buffer->push<cc::SaveLayerOp>(nullptr, &flags);
+    cc_list_.push<cc::SaveLayerOp>(nullptr, &flags);
 
     const TransformPaintPropertyNode* target_transform =
         sub_effect->LocalTransformSpace();
     if (current_transform_ != target_transform) {
-      buffer->push<cc::ConcatOp>(
+      cc_list_.push<cc::ConcatOp>(
           static_cast<SkMatrix>(TransformationMatrix::ToSkMatrix44(
               GeometryMapper::SourceToDestinationProjection(
                   target_transform, current_transform_))));
@@ -305,15 +305,15 @@ void ConversionContext::SwitchToEffect(
 
     // TODO(chrishtr): specify origin of the filter.
     FloatPoint filter_origin;
-    buffer->push<cc::TranslateOp>(filter_origin.X(), filter_origin.Y());
+    cc_list_.push<cc::TranslateOp>(filter_origin.X(), filter_origin.Y());
     // The size parameter is only used to computed the origin of zoom
     // operation, which we never generate.
     gfx::SizeF empty;
     cc::PaintFlags filter_flags;
     filter_flags.setImageFilter(cc::RenderSurfaceFilters::BuildImageFilter(
         sub_effect->Filter().AsCcFilterOperations(), empty));
-    buffer->push<cc::SaveLayerOp>(nullptr, &filter_flags);
-    buffer->push<cc::TranslateOp>(-filter_origin.X(), -filter_origin.Y());
+    cc_list_.push<cc::SaveLayerOp>(nullptr, &filter_flags);
+    cc_list_.push<cc::TranslateOp>(-filter_origin.X(), -filter_origin.Y());
 
     cc_list_.EndPaintOfPairedBegin();
 
@@ -339,9 +339,9 @@ void ConversionContext::Convert(const Vector<const PaintChunk*>& paint_chunks,
     SwitchToClip(chunk_state.Clip());
     bool transformed = chunk_state.Transform() != current_transform_;
     if (transformed) {
-      cc::PaintOpBuffer* buffer = cc_list_.StartPaint();
-      buffer->push<cc::SaveOp>();
-      buffer->push<cc::ConcatOp>(
+      cc_list_.StartPaint();
+      cc_list_.push<cc::SaveOp>();
+      cc_list_.push<cc::ConcatOp>(
           static_cast<SkMatrix>(TransformationMatrix::ToSkMatrix44(
               GeometryMapper::SourceToDestinationProjection(
                   chunk_state.Transform(), current_transform_))));
@@ -361,14 +361,14 @@ scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::Convert(
     const PropertyTreeState& layer_state,
     const gfx::Vector2dF& layer_offset,
     const DisplayItemList& display_items,
+    cc::DisplayItemList::UsageHint hint,
     RasterUnderInvalidationCheckingParams* under_invalidation_checking_params) {
-  auto cc_list = make_scoped_refptr(new cc::DisplayItemList);
-
+  auto cc_list = base::MakeRefCounted<cc::DisplayItemList>(hint);
   bool need_translate = !layer_offset.IsZero();
   if (need_translate) {
-    cc::PaintOpBuffer* buffer = cc_list->StartPaint();
-    buffer->push<cc::SaveOp>();
-    buffer->push<cc::TranslateOp>(-layer_offset.x(), -layer_offset.y());
+    cc_list->StartPaint();
+    cc_list->push<cc::SaveOp>();
+    cc_list->push<cc::TranslateOp>(-layer_offset.x(), -layer_offset.y());
     cc_list->EndPaintOfPairedBegin();
   }
 
@@ -384,14 +384,15 @@ scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::Convert(
     // Create a complete cloned list for under-invalidation checking. We can't
     // use cc_list because it is not finalized yet.
     auto list_clone =
-        Convert(paint_chunks, layer_state, layer_offset, display_items);
+        Convert(paint_chunks, layer_state, layer_offset, display_items,
+                cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer);
     recorder.getRecordingCanvas()->drawPicture(list_clone->ReleaseAsRecord());
     params.tracking.CheckUnderInvalidations(params.debug_name,
                                             recorder.finishRecordingAsPicture(),
                                             params.interest_rect);
     if (auto record = params.tracking.under_invalidation_record) {
-      cc::PaintOpBuffer* buffer = cc_list->StartPaint();
-      buffer->push<cc::DrawRecordOp>(record);
+      cc_list->StartPaint();
+      cc_list->push<cc::DrawRecordOp>(record);
       cc_list->EndPaintOfUnpaired(g_large_rect);
     }
   }
