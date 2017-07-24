@@ -57,7 +57,7 @@ class RendererControllerTest : public ::testing::Test,
 
   // MediaObserverClient implementation.
   void SwitchRenderer(bool disable_pipeline_auto_suspend) override {
-    is_rendering_remotely_ = controller_->remote_rendering_started();
+    is_rendering_remotely_ = disable_pipeline_auto_suspend;
     disable_pipeline_suspend_ = disable_pipeline_auto_suspend;
   }
 

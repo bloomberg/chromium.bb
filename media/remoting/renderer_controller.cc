@@ -26,6 +26,10 @@ RendererController::RendererController(scoped_refptr<SharedSession> session)
 
 RendererController::~RendererController() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (remote_rendering_started_) {
+    DCHECK(client_);
+    client_->SwitchRenderer(false);
+  }
   metrics_recorder_.WillStopSession(MEDIA_ELEMENT_DESTROYED);
   session_->RemoveClient(this);
 }
