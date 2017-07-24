@@ -12,11 +12,14 @@
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/storage/backend_task_runner.h"
 #include "extensions/browser/value_store/leveldb_value_store.h"
 #include "extensions/browser/value_store/value_store_factory.h"
 
 using content::BrowserThread;
 using extensions::ValueStoreFactory;
+using extensions::IsOnBackendSequence;
+using extensions::GetBackendTaskRunner;
 
 class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
  public:
@@ -26,7 +29,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
 
   void Get(const std::string& key,
            const ValueStoreFrontend::ReadCallback& callback) {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+    DCHECK(IsOnBackendSequence());
     LazyInit();
     ValueStore::ReadResult result = storage_->Get(key);
 
@@ -46,7 +49,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   }
 
   void Set(const std::string& key, std::unique_ptr<base::Value> value) {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+    DCHECK(IsOnBackendSequence());
     LazyInit();
     // We don't need the old value, so skip generating changes.
     ValueStore::WriteResult result = storage_->Set(
@@ -57,7 +60,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   }
 
   void Remove(const std::string& key) {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+    DCHECK(IsOnBackendSequence());
     LazyInit();
     storage_->Remove(key);
   }
@@ -66,13 +69,12 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   friend class base::RefCountedThreadSafe<Backend>;
 
   virtual ~Backend() {
-    if (storage_ && !BrowserThread::CurrentlyOn(BrowserThread::FILE))
-      BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE,
-                                storage_.release());
+    if (storage_ && !IsOnBackendSequence())
+      GetBackendTaskRunner()->DeleteSoon(FROM_HERE, storage_.release());
   }
 
   void LazyInit() {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+    DCHECK(IsOnBackendSequence());
     if (storage_)
       return;
     TRACE_EVENT0("ValueStoreFrontend::Backend", "LazyInit");
@@ -93,12 +95,12 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   }
 
   // The factory which will be used to lazily create the ValueStore when needed.
-  // Used exclusively on the FILE thread.
+  // Used exclusively on the backend sequence.
   scoped_refptr<ValueStoreFactory> store_factory_;
   BackendType backend_type_;
 
   // The actual ValueStore that handles persisting the data to disk. Used
-  // exclusively on the FILE thread.
+  // exclusively on the backend sequence.
   std::unique_ptr<ValueStore> storage_;
 
   base::FilePath db_path_;
@@ -121,24 +123,24 @@ void ValueStoreFrontend::Get(const std::string& key,
                              const ReadCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ValueStoreFrontend::Backend::Get,
-                 backend_, key, callback));
+  GetBackendTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ValueStoreFrontend::Backend::Get, backend_, key, callback));
 }
 
 void ValueStoreFrontend::Set(const std::string& key,
                              std::unique_ptr<base::Value> value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ValueStoreFrontend::Backend::Set,
-                 backend_, key, base::Passed(&value)));
+  GetBackendTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ValueStoreFrontend::Backend::Set, backend_, key,
+                            base::Passed(&value)));
 }
 
 void ValueStoreFrontend::Remove(const std::string& key) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ValueStoreFrontend::Backend::Remove,
-                 backend_, key));
+  GetBackendTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ValueStoreFrontend::Backend::Remove, backend_, key));
 }
