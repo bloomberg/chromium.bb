@@ -7,6 +7,7 @@
         testRunner.dumpAsText();
     }
 
+    console.log("This test logs exposed APIs once from each PaintWorkletGlobalScope");
     paintWorklet.addModule('resources/global-interface-listing-worklet.js').then(function() {
         if (window.testRunner) {
             testRunner.notifyDone();

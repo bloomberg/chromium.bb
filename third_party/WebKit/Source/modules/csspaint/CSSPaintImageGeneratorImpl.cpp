@@ -7,6 +7,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "modules/csspaint/CSSPaintDefinition.h"
+#include "modules/csspaint/DocumentPaintDefinition.h"
 #include "modules/csspaint/PaintWorklet.h"
 #include "modules/csspaint/WindowPaintWorklet.h"
 #include "platform/graphics/Image.h"
@@ -21,31 +22,32 @@ CSSPaintImageGenerator* CSSPaintImageGeneratorImpl::Create(
   PaintWorklet* paint_worklet =
       WindowPaintWorklet::From(*dom_window).paintWorklet();
 
-  CSSPaintDefinition* paint_definition = paint_worklet->FindDefinition(name);
+  DCHECK(paint_worklet);
   CSSPaintImageGeneratorImpl* generator;
-  if (!paint_definition) {
-    generator = new CSSPaintImageGeneratorImpl(observer);
-    paint_worklet->AddPendingGenerator(name, generator);
+  if (paint_worklet->GetDocumentDefinitionMap().Contains(name)) {
+    generator = new CSSPaintImageGeneratorImpl(paint_worklet, name);
   } else {
-    generator = new CSSPaintImageGeneratorImpl(paint_definition);
+    generator = new CSSPaintImageGeneratorImpl(observer, paint_worklet, name);
+    paint_worklet->AddPendingGenerator(name, generator);
   }
 
   return generator;
 }
 
 CSSPaintImageGeneratorImpl::CSSPaintImageGeneratorImpl(
-    CSSPaintDefinition* definition)
-    : definition_(definition) {}
+    PaintWorklet* paint_worklet,
+    const String& name)
+    : CSSPaintImageGeneratorImpl(nullptr, paint_worklet, name) {}
 
-CSSPaintImageGeneratorImpl::CSSPaintImageGeneratorImpl(Observer* observer)
-    : observer_(observer) {}
+CSSPaintImageGeneratorImpl::CSSPaintImageGeneratorImpl(
+    Observer* observer,
+    PaintWorklet* paint_worklet,
+    const String& name)
+    : observer_(observer), paint_worklet_(paint_worklet), name_(name) {}
 
 CSSPaintImageGeneratorImpl::~CSSPaintImageGeneratorImpl() {}
 
-void CSSPaintImageGeneratorImpl::SetDefinition(CSSPaintDefinition* definition) {
-  DCHECK(!definition_);
-  definition_ = definition;
-
+void CSSPaintImageGeneratorImpl::NotifyGeneratorReady() {
   DCHECK(observer_);
   observer_->PaintImageGeneratorReady();
 }
@@ -54,40 +56,58 @@ PassRefPtr<Image> CSSPaintImageGeneratorImpl::Paint(
     const ImageResourceObserver& observer,
     const IntSize& size,
     const CSSStyleValueVector* data) {
-  return definition_ ? definition_->Paint(observer, size, data) : nullptr;
+  return paint_worklet_->Paint(name_, observer, size, data);
+}
+
+bool CSSPaintImageGeneratorImpl::HasDocumentDefinition() const {
+  return paint_worklet_->GetDocumentDefinitionMap().Contains(name_);
 }
 
 const Vector<CSSPropertyID>&
 CSSPaintImageGeneratorImpl::NativeInvalidationProperties() const {
   DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, empty_vector, ());
-  return definition_ ? definition_->NativeInvalidationProperties()
-                     : empty_vector;
+  if (!HasDocumentDefinition())
+    return empty_vector;
+  DocumentPaintDefinition* definition =
+      paint_worklet_->GetDocumentDefinitionMap().at(name_);
+  return definition ? definition->NativeInvalidationProperties() : empty_vector;
 }
 
 const Vector<AtomicString>&
 CSSPaintImageGeneratorImpl::CustomInvalidationProperties() const {
   DEFINE_STATIC_LOCAL(Vector<AtomicString>, empty_vector, ());
-  return definition_ ? definition_->CustomInvalidationProperties()
-                     : empty_vector;
+  if (!HasDocumentDefinition())
+    return empty_vector;
+  DocumentPaintDefinition* definition =
+      paint_worklet_->GetDocumentDefinitionMap().at(name_);
+  return definition ? definition->CustomInvalidationProperties() : empty_vector;
 }
 
 bool CSSPaintImageGeneratorImpl::HasAlpha() const {
-  return definition_ && definition_->HasAlpha();
+  if (!HasDocumentDefinition())
+    return false;
+  DocumentPaintDefinition* definition =
+      paint_worklet_->GetDocumentDefinitionMap().at(name_);
+  return definition && definition->HasAlpha();
 }
 
 const Vector<CSSSyntaxDescriptor>&
 CSSPaintImageGeneratorImpl::InputArgumentTypes() const {
   DEFINE_STATIC_LOCAL(Vector<CSSSyntaxDescriptor>, empty_vector, ());
-  return definition_ ? definition_->InputArgumentTypes() : empty_vector;
+  if (!HasDocumentDefinition())
+    return empty_vector;
+  DocumentPaintDefinition* definition =
+      paint_worklet_->GetDocumentDefinitionMap().at(name_);
+  return definition ? definition->InputArgumentTypes() : empty_vector;
 }
 
 bool CSSPaintImageGeneratorImpl::IsImageGeneratorReady() const {
-  return definition_;
+  return HasDocumentDefinition();
 }
 
 DEFINE_TRACE(CSSPaintImageGeneratorImpl) {
-  visitor->Trace(definition_);
   visitor->Trace(observer_);
+  visitor->Trace(paint_worklet_);
   CSSPaintImageGenerator::Trace(visitor);
 }
 

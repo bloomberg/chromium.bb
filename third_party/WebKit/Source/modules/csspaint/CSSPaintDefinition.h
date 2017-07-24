@@ -32,9 +32,9 @@ class CSSPaintDefinition final
       ScriptState*,
       v8::Local<v8::Function> constructor,
       v8::Local<v8::Function> paint,
-      Vector<CSSPropertyID>&,
-      Vector<AtomicString>& custom_invalidation_properties,
-      Vector<CSSSyntaxDescriptor>& input_argument_types,
+      const Vector<CSSPropertyID>&,
+      const Vector<AtomicString>& custom_invalidation_properties,
+      const Vector<CSSSyntaxDescriptor>& input_argument_types,
       bool has_alpha);
   virtual ~CSSPaintDefinition();
 
@@ -68,13 +68,14 @@ class CSSPaintDefinition final
   DECLARE_TRACE_WRAPPERS();
 
  private:
-  CSSPaintDefinition(ScriptState*,
-                     v8::Local<v8::Function> constructor,
-                     v8::Local<v8::Function> paint,
-                     Vector<CSSPropertyID>& native_invalidation_properties,
-                     Vector<AtomicString>& custom_invalidation_properties,
-                     Vector<CSSSyntaxDescriptor>& input_argument_types,
-                     bool has_alpha);
+  CSSPaintDefinition(
+      ScriptState*,
+      v8::Local<v8::Function> constructor,
+      v8::Local<v8::Function> paint,
+      const Vector<CSSPropertyID>& native_invalidation_properties,
+      const Vector<AtomicString>& custom_invalidation_properties,
+      const Vector<CSSSyntaxDescriptor>& input_argument_types,
+      bool has_alpha);
 
   void MaybeCreatePaintInstance();
 

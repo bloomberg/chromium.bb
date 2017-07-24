@@ -14,10 +14,10 @@
 
 namespace blink {
 
-class CSSPaintDefinition;
 class CSSSyntaxDescriptor;
 class Document;
 class Image;
+class PaintWorklet;
 
 class CSSPaintImageGeneratorImpl final : public CSSPaintImageGenerator {
  public:
@@ -37,16 +37,19 @@ class CSSPaintImageGeneratorImpl final : public CSSPaintImageGenerator {
 
   // Should be called from the PaintWorkletGlobalScope when a javascript class
   // is registered with the same name.
-  void SetDefinition(CSSPaintDefinition*);
+  void NotifyGeneratorReady();
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  CSSPaintImageGeneratorImpl(Observer*);
-  CSSPaintImageGeneratorImpl(CSSPaintDefinition*);
+  CSSPaintImageGeneratorImpl(Observer*, PaintWorklet*, const String&);
+  CSSPaintImageGeneratorImpl(PaintWorklet*, const String&);
 
-  Member<CSSPaintDefinition> definition_;
+  bool HasDocumentDefinition() const;
+
   Member<Observer> observer_;
+  Member<PaintWorklet> paint_worklet_;
+  const String name_;
 };
 
 }  // namespace blink

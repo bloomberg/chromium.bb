@@ -10,6 +10,8 @@ blink_modules_sources("csspaint") {
     "CSSPaintDefinition.h",
     "CSSPaintImageGeneratorImpl.cpp",
     "CSSPaintImageGeneratorImpl.h",
+    "DocumentPaintDefinition.cpp",
+    "DocumentPaintDefinition.h",
     "PaintRenderingContext2D.cpp",
     "PaintRenderingContext2D.h",
     "PaintSize.h",

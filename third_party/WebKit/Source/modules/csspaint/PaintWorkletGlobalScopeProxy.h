@@ -25,7 +25,8 @@ class MODULES_EXPORT PaintWorkletGlobalScopeProxy
   static PaintWorkletGlobalScopeProxy* From(WorkletGlobalScopeProxy*);
 
   PaintWorkletGlobalScopeProxy(LocalFrame*,
-                               PaintWorkletPendingGeneratorRegistry*);
+                               PaintWorkletPendingGeneratorRegistry*,
+                               size_t global_scope_number);
   virtual ~PaintWorkletGlobalScopeProxy() = default;
 
   // Implements WorkletGlobalScopeProxy.

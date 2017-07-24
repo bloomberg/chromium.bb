@@ -23,7 +23,7 @@ class PaintWorkletPendingGeneratorRegistry
  public:
   PaintWorkletPendingGeneratorRegistry() = default;
 
-  void SetDefinition(const String& name, CSSPaintDefinition*);
+  void NotifyGeneratorReady(const String& name);
   void AddPendingGenerator(const String& name, CSSPaintImageGeneratorImpl*);
 
   DECLARE_TRACE();
