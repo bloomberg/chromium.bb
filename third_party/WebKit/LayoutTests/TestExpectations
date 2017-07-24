@@ -3033,6 +3033,10 @@ crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-background-size.htm
 crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-overflow-position.html [ Failure Pass ]
 crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-tiled.html [ Failure Pass ]
 
+crbug.com/747976 virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ NeedsManualRebaseline ]
+crbug.com/747976 virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
+crbug.com/747976 virtual/gpu/fast/canvas/image-object-in-canvas.html [ NeedsManualRebaseline ]
+
 # These tests are failing on Mac-10.12 when using an Intel GPU.
 crbug.com/736177 [ Mac10.12 ] css2.1/t1202-counter-04-b.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] css2.1/t1202-counters-04-b.html [ Failure Pass ]
