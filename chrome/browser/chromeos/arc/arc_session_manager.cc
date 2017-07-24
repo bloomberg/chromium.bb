@@ -675,6 +675,7 @@ void ArcSessionManager::RequestDisable() {
   directly_started_ = false;
   enable_requested_ = false;
   scoped_opt_in_tracker_.reset();
+  pai_starter_.reset();
 
   // Reset any pending request to re-enable ARC.
   reenable_arc_ = false;
