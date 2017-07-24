@@ -218,8 +218,8 @@ class RendererSchedulerImplForTest : public RendererSchedulerImpl {
     RendererSchedulerImpl::UpdatePolicyLocked(update_type);
 
     std::string use_case = RendererSchedulerImpl::UseCaseToString(
-        GetMainThreadOnly().current_use_case);
-    if (GetMainThreadOnly().touchstart_expected_soon) {
+        main_thread_only().current_use_case);
+    if (main_thread_only().touchstart_expected_soon) {
       use_cases_.push_back(use_case + " touchstart expected");
     } else {
       use_cases_.push_back(use_case);
@@ -238,12 +238,12 @@ class RendererSchedulerImplForTest : public RendererSchedulerImpl {
 
   bool BeginMainFrameOnCriticalPath() {
     base::AutoLock lock(any_thread_lock_);
-    return GetAnyThread().begin_main_frame_on_critical_path;
+    return any_thread().begin_main_frame_on_critical_path;
   }
 
   bool waiting_for_meaningful_paint() const {
     base::AutoLock lock(any_thread_lock_);
-    return GetAnyThread().waiting_for_meaningful_paint;
+    return any_thread().waiting_for_meaningful_paint;
   }
 
   int update_policy_count_;
@@ -521,44 +521,44 @@ class RendererSchedulerImplTest : public ::testing::Test {
   void EnableIdleTasks() { DoMainFrame(); }
 
   UseCase CurrentUseCase() {
-    return scheduler_->GetMainThreadOnly().current_use_case;
+    return scheduler_->main_thread_only().current_use_case;
   }
 
   UseCase ForceUpdatePolicyAndGetCurrentUseCase() {
     scheduler_->ForceUpdatePolicy();
-    return scheduler_->GetMainThreadOnly().current_use_case;
+    return scheduler_->main_thread_only().current_use_case;
   }
 
   v8::RAILMode GetRAILMode() {
-    return scheduler_->GetMainThreadOnly().current_policy.rail_mode();
+    return scheduler_->main_thread_only().current_policy.rail_mode();
   }
 
   bool BeginFrameNotExpectedSoon() {
-    return scheduler_->GetMainThreadOnly().begin_frame_not_expected_soon;
+    return scheduler_->main_thread_only().begin_frame_not_expected_soon;
   }
 
   bool TouchStartExpectedSoon() {
-    return scheduler_->GetMainThreadOnly().touchstart_expected_soon;
+    return scheduler_->main_thread_only().touchstart_expected_soon;
   }
 
   bool HaveSeenABeginMainframe() {
-    return scheduler_->GetMainThreadOnly().have_seen_a_begin_main_frame;
+    return scheduler_->main_thread_only().have_seen_a_begin_main_frame;
   }
 
   bool LoadingTasksSeemExpensive() {
-    return scheduler_->GetMainThreadOnly().loading_tasks_seem_expensive;
+    return scheduler_->main_thread_only().loading_tasks_seem_expensive;
   }
 
   bool TimerTasksSeemExpensive() {
-    return scheduler_->GetMainThreadOnly().timer_tasks_seem_expensive;
+    return scheduler_->main_thread_only().timer_tasks_seem_expensive;
   }
 
   base::TimeTicks EstimatedNextFrameBegin() {
-    return scheduler_->GetMainThreadOnly().estimated_next_frame_begin;
+    return scheduler_->main_thread_only().estimated_next_frame_begin;
   }
 
   int NavigationTaskExpectedCount() {
-    return scheduler_->GetMainThreadOnly().navigation_task_expected_count;
+    return scheduler_->main_thread_only().navigation_task_expected_count;
   }
 
   void AdvanceTimeWithTask(double duration) {
