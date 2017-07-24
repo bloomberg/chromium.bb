@@ -19,6 +19,9 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -363,8 +366,8 @@ base::string16 GetDisplayNameForSubFolder(const base::string16& device_name,
           device_name);
 }
 
-void InitializeImportedMediaGalleryRegistryOnFileThread() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+void InitializeImportedMediaGalleryRegistryInBackground() {
+  base::ThreadRestrictions::AssertIOAllowed();
   ImportedMediaGalleryRegistry::GetInstance()->Initialize();
 }
 
@@ -522,6 +525,7 @@ bool MediaGalleriesPreferences::IsInitialized() const { return initialized_; }
 Profile* MediaGalleriesPreferences::profile() { return profile_; }
 
 void MediaGalleriesPreferences::OnInitializationCallbackReturned() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!IsInitialized());
   DCHECK_GT(pre_initialization_callbacks_waiting_, 0);
   if (--pre_initialization_callbacks_waiting_ == 0)
@@ -529,6 +533,7 @@ void MediaGalleriesPreferences::OnInitializationCallbackReturned() {
 }
 
 void MediaGalleriesPreferences::FinishInitialization() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!IsInitialized());
 
   initialized_ = true;
@@ -669,9 +674,9 @@ void MediaGalleriesPreferences::OnFinderDeviceID(const std::string& device_id) {
 
     if (!gallery_name.empty()) {
       pre_initialization_callbacks_waiting_++;
-      content::BrowserThread::PostTaskAndReply(
-          content::BrowserThread::FILE, FROM_HERE,
-          base::BindOnce(&InitializeImportedMediaGalleryRegistryOnFileThread),
+      base::PostTaskWithTraitsAndReply(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+          base::BindOnce(&InitializeImportedMediaGalleryRegistryInBackground),
           base::BindOnce(
               &MediaGalleriesPreferences::OnInitializationCallbackReturned,
               weak_factory_.GetWeakPtr()));
