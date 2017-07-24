@@ -409,8 +409,6 @@ bool StyleInvalidator::Invalidate(Element& element,
       layout_object->SetStyleInternal(
           ComputedStyle::Clone(layout_object->StyleRef()));
     } else {
-      TRACE_STYLE_INVALIDATOR_INVALIDATION_IF_ENABLED(
-          element, kPreventStyleSharingForParent);
       element.SetNeedsStyleRecalc(kLocalStyleChange,
                                   StyleChangeReasonForTracing::Create(
                                       StyleChangeReason::kStyleInvalidator));

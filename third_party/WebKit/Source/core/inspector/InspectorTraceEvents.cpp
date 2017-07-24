@@ -455,9 +455,6 @@ const char
 const char
     InspectorStyleInvalidatorInvalidateEvent::kInvalidationSetMatchedTagName[] =
         "Invalidation set matched tagName";
-const char
-    InspectorStyleInvalidatorInvalidateEvent::kPreventStyleSharingForParent[] =
-        "Prevent style sharing for parent";
 
 namespace InspectorStyleInvalidatorInvalidateEvent {
 std::unique_ptr<TracedValue> FillCommonPart(ContainerNode& node,

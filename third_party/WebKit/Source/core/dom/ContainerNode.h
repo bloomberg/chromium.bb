@@ -264,8 +264,6 @@ class CORE_EXPORT ContainerNode : public Node {
   void RebuildChildrenLayoutTrees(WhitespaceAttacher&);
   void RebuildLayoutTreeForChild(Node* child, WhitespaceAttacher&);
 
-  bool ChildrenSupportStyleSharing() const { return !HasRestyleFlags(); }
-
   // -----------------------------------------------------------------------------
   // Notification of document structure changes (see core/dom/Node.h for more
   // notification methods)

@@ -269,8 +269,6 @@ class CORE_EXPORT StyleEngine final
   StyleResolverStats* Stats() { return style_resolver_stats_.get(); }
   void SetStatsEnabled(bool);
 
-  PassRefPtr<ComputedStyle> FindSharedStyle(const ElementResolveContext&);
-
   void ApplyRuleSetChanges(TreeScope&,
                            const ActiveStyleSheetVector& old_style_sheets,
                            const ActiveStyleSheetVector& new_style_sheets);

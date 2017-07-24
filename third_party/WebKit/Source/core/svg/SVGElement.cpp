@@ -1081,7 +1081,7 @@ PassRefPtr<ComputedStyle> SVGElement::CustomStyleForLayoutObject() {
   }
 
   return GetDocument().EnsureStyleResolver().StyleForElement(
-      CorrespondingElement(), style, style, kDisallowStyleSharing);
+      CorrespondingElement(), style, style);
 }
 
 bool SVGElement::LayoutObjectIsNeeded(const ComputedStyle& style) {

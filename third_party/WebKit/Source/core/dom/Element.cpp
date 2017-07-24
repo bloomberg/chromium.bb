@@ -47,7 +47,6 @@
 #include "core/css/resolver/SelectorFilterParentScope.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleResolverStats.h"
-#include "core/css/resolver/StyleSharingDepthScope.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CSSSelectorWatch.h"
@@ -1814,7 +1813,6 @@ void Element::AttachLayoutTree(AttachContext& context) {
   }
 
   SelectorFilterParentScope filter_scope(*this);
-  StyleSharingDepthScope sharing_scope(*this);
 
   CreatePseudoElementIfNeeded(kPseudoIdBefore);
 
@@ -1986,7 +1984,6 @@ void Element::RecalcStyle(StyleRecalcChange change) {
   if (change < kReattach &&
       (change >= kUpdatePseudoElements || ChildNeedsStyleRecalc())) {
     SelectorFilterParentScope filter_scope(*this);
-    StyleSharingDepthScope sharing_scope(*this);
 
     UpdatePseudoElement(kPseudoIdBefore, change);
 
@@ -2128,7 +2125,6 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
                                            reattach_context.previous_in_flow);
   } else {
     SelectorFilterParentScope filter_scope(*this);
-    StyleSharingDepthScope sharing_scope(*this);
     // We create a local WhitespaceAttacher when rebuilding children of an
     // element with a LayoutObject since whitespace nodes do not rely on layout
     // objects further up the tree. Also, if this Element's layout object is an
@@ -3521,8 +3517,8 @@ PassRefPtr<ComputedStyle> Element::GetUncachedPseudoStyle(
 
   if (request.pseudo_id == kPseudoIdFirstLineInherited) {
     RefPtr<ComputedStyle> result =
-        GetDocument().EnsureStyleResolver().StyleForElement(
-            this, parent_style, parent_style, kDisallowStyleSharing);
+        GetDocument().EnsureStyleResolver().StyleForElement(this, parent_style,
+                                                            parent_style);
     result->SetStyleType(kPseudoIdFirstLineInherited);
     return result;
   }
@@ -4299,38 +4295,6 @@ void Element::AddPropertyToPresentationAttributeStyle(
     const CSSValue* value) {
   DCHECK(IsStyledElement());
   style->SetProperty(property_id, *value);
-}
-
-bool Element::SupportsStyleSharing() const {
-  if (!RuntimeEnabledFeatures::StyleSharingEnabled())
-    return false;
-  if (!IsStyledElement() || !ParentOrShadowHostElement())
-    return false;
-  // If the element has inline style it is probably unique.
-  if (InlineStyle())
-    return false;
-  if (IsSVGElement() && ToSVGElement(this)->AnimatedSMILStyleProperties())
-    return false;
-  // Ids stop style sharing if they show up in the stylesheets.
-  if (HasID() &&
-      GetDocument().GetStyleEngine().HasRulesForId(IdForStyleResolution()))
-    return false;
-  // :active and :hover elements always make a chain towards the document node
-  // and no siblings or cousins will have the same state. There's also only one
-  // :focus element per scope so we don't need to attempt to share.
-  if (IsUserActionElement())
-    return false;
-  if (!ParentOrShadowHostElement()->ChildrenSupportStyleSharing())
-    return false;
-  if (this == GetDocument().CssTarget())
-    return false;
-  if (IsHTMLElement() && ToHTMLElement(this)->HasDirectionAuto())
-    return false;
-  if (HasAnimations())
-    return false;
-  if (Fullscreen::IsFullscreenElement(*this))
-    return false;
-  return true;
 }
 
 void Element::LogAddElementIfIsolatedWorldAndInDocument(
