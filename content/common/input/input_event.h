@@ -22,6 +22,8 @@ namespace content {
 class CONTENT_EXPORT InputEvent {
  public:
   InputEvent();
+  InputEvent(ui::WebScopedInputEvent web_event,
+             const ui::LatencyInfo& latency_info);
   InputEvent(const blink::WebInputEvent& web_event,
              const ui::LatencyInfo& latency_info);
   ~InputEvent();

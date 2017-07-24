@@ -11,6 +11,7 @@ namespace content {
 // generated from inside the renderer.
 enum class InputEventAckSource {
   UNKNOWN,
+  BROWSER,
   COMPOSITOR_THREAD,
   MAIN_THREAD,
   MAX = MAIN_THREAD
