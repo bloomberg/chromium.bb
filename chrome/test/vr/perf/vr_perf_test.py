@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import logging
 import subprocess
 
@@ -33,6 +34,7 @@ class VrPerfTest(object):
           # We always want to perform teardown even if an exception gets raised.
           self._Teardown()
       self._SaveResultsToFile()
+      self._SaveOutput()
     finally:
       self._OneTimeTeardown()
 
@@ -79,8 +81,17 @@ class VrPerfTest(object):
     raise NotImplementedError(
         'Command-line flag setting must be implemented in subclass')
 
-  def _SaveResultsToFile():
+  def _SaveResultsToFile(self):
     """Saves test results to a Chrome perf dashboard-compatible JSON file."""
     raise NotImplementedError(
         'Result saving must be implemented in subclass')
 
+  def _SaveOutput(self):
+    """Saves the failures and results validity if necessary."""
+    if not (hasattr(self._args, 'isolated_script_test_output') and
+            self._args.isolated_script_test_output):
+      logging.warning('Isolated script output file not specified, not saving')
+      return
+    with file(self._args.isolated_script_test_output, 'w') as outfile:
+      # TODO(bsheedy): Actually check failures/validity
+      json.dump({'failures': [], 'valid': True}, outfile)
