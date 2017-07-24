@@ -49,9 +49,18 @@ test_with_window((w) => {
   class A extends w.HTMLDivElement {}
   w.customElements.define('defined-name', A, { extends: 'div' });
   assert_equals(new A().localName, 'div',
-                'localName should be element interface for extends');
+                'localName should be div element interface for extends');
   assert_not_equals(new A().localName, 'defined-name',
                     'localName should not be defined-name');
-}, 'localName set to element interface for extends');
+}, 'localName set to div element interface for extends');
+
+test_with_window((w) => {
+  class A extends w.HTMLDataElement {}
+  w.customElements.define('defined-name', A, { extends: 'data' });
+  assert_equals(new A().localName, 'data',
+                'localName should be data element interface for extends');
+  assert_not_equals(new A().localName, 'defined-name',
+                    'localName should not be defined-name');
+}, 'localName set to data element interface for extends');
 </script>
 </body>

@@ -1820,6 +1820,11 @@ interface HTMLDListElement : HTMLElement
     getter compact
     method constructor
     setter compact
+interface HTMLDataElement : HTMLElement
+    attribute @@toStringTag
+    getter value
+    method constructor
+    setter value
 interface HTMLDataListElement : HTMLElement
     attribute @@toStringTag
     getter options

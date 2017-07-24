@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 133 tests; 129 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 133 tests; 130 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS createElement(a) 
 PASS createElement(abbr) 
 PASS createElement(acronym) 
@@ -26,7 +26,7 @@ PASS createElement(cite)
 PASS createElement(code) 
 PASS createElement(col) 
 PASS createElement(colgroup) 
-FAIL createElement(data) assert_true: HTMLDataElement is not supported expected true got false
+PASS createElement(data) 
 PASS createElement(datalist) 
 PASS createElement(dialog) 
 PASS createElement(dd) 

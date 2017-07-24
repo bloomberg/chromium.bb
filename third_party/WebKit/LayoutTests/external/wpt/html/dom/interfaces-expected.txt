@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5193 tests; 4987 PASS, 206 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5193 tests; 4996 PASS, 197 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver 
 PASS Document interface: attribute domain 
 PASS Document interface: attribute referrer 
@@ -1021,15 +1021,15 @@ PASS HTMLAnchorElement interface: document.createElement("a") must inherit prope
 PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "pathname" with the proper type (22) 
 PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "search" with the proper type (23) 
 PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "hash" with the proper type (24) 
-FAIL HTMLDataElement interface: existence and properties of interface object assert_own_property: self does not have own property "HTMLDataElement" expected property "HTMLDataElement" missing
-FAIL HTMLDataElement interface object length assert_own_property: self does not have own property "HTMLDataElement" expected property "HTMLDataElement" missing
-FAIL HTMLDataElement interface object name assert_own_property: self does not have own property "HTMLDataElement" expected property "HTMLDataElement" missing
-FAIL HTMLDataElement interface: existence and properties of interface prototype object assert_own_property: self does not have own property "HTMLDataElement" expected property "HTMLDataElement" missing
-FAIL HTMLDataElement interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "HTMLDataElement" expected property "HTMLDataElement" missing
-FAIL HTMLDataElement interface: attribute value assert_own_property: self does not have own property "HTMLDataElement" expected property "HTMLDataElement" missing
-FAIL HTMLDataElement must be primary interface of document.createElement("data") assert_own_property: self does not have own property "HTMLDataElement" expected property "HTMLDataElement" missing
-FAIL Stringification of document.createElement("data") assert_equals: class string of document.createElement("data") expected "[object HTMLDataElement]" but got "[object HTMLUnknownElement]"
-FAIL HTMLDataElement interface: document.createElement("data") must inherit property "value" with the proper type (0) assert_inherits: property "value" not found in prototype chain
+PASS HTMLDataElement interface: existence and properties of interface object 
+PASS HTMLDataElement interface object length 
+PASS HTMLDataElement interface object name 
+PASS HTMLDataElement interface: existence and properties of interface prototype object 
+PASS HTMLDataElement interface: existence and properties of interface prototype object's "constructor" property 
+PASS HTMLDataElement interface: attribute value 
+PASS HTMLDataElement must be primary interface of document.createElement("data") 
+PASS Stringification of document.createElement("data") 
+PASS HTMLDataElement interface: document.createElement("data") must inherit property "value" with the proper type (0) 
 FAIL HTMLTimeElement interface: existence and properties of interface object assert_own_property: self does not have own property "HTMLTimeElement" expected property "HTMLTimeElement" missing
 FAIL HTMLTimeElement interface object length assert_own_property: self does not have own property "HTMLTimeElement" expected property "HTMLTimeElement" missing
 FAIL HTMLTimeElement interface object name assert_own_property: self does not have own property "HTMLTimeElement" expected property "HTMLTimeElement" missing
