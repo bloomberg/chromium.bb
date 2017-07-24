@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/platform/api/quic_flags.h"
-#include "net/spdy/chromium/spdy_flags.h"
 #include "net/spdy/core/array_output_buffer.h"
 #include "net/spdy/core/hpack/hpack_constants.h"
 #include "net/spdy/core/mock_spdy_framer_visitor.h"

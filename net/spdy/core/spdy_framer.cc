@@ -18,7 +18,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "net/quic/platform/api/quic_flags.h"
-#include "net/spdy/chromium/spdy_flags.h"
 #include "net/spdy/core/hpack/hpack_constants.h"
 #include "net/spdy/core/hpack/hpack_decoder_adapter.h"
 #include "net/spdy/core/http2_frame_decoder_adapter.h"
