@@ -491,6 +491,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // PPB_ContentDecryptor_Private implementation.
   void PromiseResolved(PP_Instance instance, uint32_t promise_id) override;
+  void PromiseResolvedWithKeyStatus(PP_Instance instance,
+                                    uint32_t promise_id,
+                                    PP_CdmKeyStatus key_status) override;
   void PromiseResolvedWithSession(PP_Instance instance,
                                   uint32_t promise_id,
                                   PP_Var session_id_var) override;

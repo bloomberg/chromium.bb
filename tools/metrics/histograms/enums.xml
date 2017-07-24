@@ -29442,6 +29442,7 @@ from previous Chrome versions.
   <int value="415548516" label="PPB_MessageLoop;1.0"/>
   <int value="434146763" label="PPB_BrowserFont_Trusted;1.0"/>
   <int value="495324603" label="PPB_Widget(Dev);0.4"/>
+  <int value="502777837" label="PPB_ContentDecryptor_Private;0.15"/>
   <int value="556941117" label="PPB_IMEInputEvent;1.0"/>
   <int value="588532407" label="PPB_Graphics2D;1.1"/>
   <int value="596770967" label="PPB_X509Certificate_Private;0.1"/>

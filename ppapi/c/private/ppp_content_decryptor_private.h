@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_content_decryptor_private.idl,
- *   modified Mon Oct 19 13:04:26 2015.
+ *   modified Mon Jul 17 14:47:07 2017.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_16 \
-    "PPP_ContentDecryptor_Private;0.16"
+#define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_17 \
+    "PPP_ContentDecryptor_Private;0.17"
 #define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_16
+    PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_17
 
 /**
  * @file
@@ -42,7 +42,7 @@
  * Decryption Module (CDM) for Encrypted Media Extensions:
  * http://www.w3.org/TR/encrypted-media/
  */
-struct PPP_ContentDecryptor_Private_0_16 {
+struct PPP_ContentDecryptor_Private_0_17 {
   /**
    * Initialize for the specified key system.
    *
@@ -74,6 +74,20 @@ struct PPP_ContentDecryptor_Private_0_16 {
   void (*SetServerCertificate)(PP_Instance instance,
                                uint32_t promise_id,
                                struct PP_Var server_certificate);
+  /**
+   * Gets the key status for a policy with minimum HDCP version requirement.
+   * Gets the key status if there's a hypothetical key that requires the
+   * <code>min_hdcp_version</code>
+   *
+   * @param[in] promise_id A reference for the promise that gets resolved or
+   * rejected depending upon the success or failure of getting the key status.
+   *
+   * @param[in] min_hdcp_version A <code>PP_HdcpVersion</code> that indicates
+   * the minimum HDCP version required.
+   */
+  void (*GetStatusForPolicy)(PP_Instance instance,
+                             uint32_t promise_id,
+                             PP_HdcpVersion min_hdcp_version);
   /**
    * Creates a session and subsequently generates a request for a license.
    * <code>init_data_type</code> contains the MIME type of
@@ -305,7 +319,7 @@ struct PPP_ContentDecryptor_Private_0_16 {
       const struct PP_EncryptedBlockInfo* encrypted_block_info);
 };
 
-typedef struct PPP_ContentDecryptor_Private_0_16 PPP_ContentDecryptor_Private;
+typedef struct PPP_ContentDecryptor_Private_0_17 PPP_ContentDecryptor_Private;
 /**
  * @}
  */

@@ -2585,6 +2585,14 @@ void PepperPluginInstanceImpl::PromiseResolved(PP_Instance instance,
   content_decryptor_delegate_->OnPromiseResolved(promise_id);
 }
 
+void PepperPluginInstanceImpl::PromiseResolvedWithKeyStatus(
+    PP_Instance instance,
+    uint32_t promise_id,
+    PP_CdmKeyStatus key_status) {
+  content_decryptor_delegate_->OnPromiseResolvedWithKeyStatus(promise_id,
+                                                              key_status);
+}
+
 void PepperPluginInstanceImpl::PromiseResolvedWithSession(
     PP_Instance instance,
     uint32_t promise_id,

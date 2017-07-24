@@ -80,6 +80,9 @@ std::unique_ptr<CdmPromise> CdmPromiseAdapter::TakePromise(
 template MEDIA_EXPORT void CdmPromiseAdapter::ResolvePromise(uint32_t);
 template MEDIA_EXPORT void CdmPromiseAdapter::ResolvePromise(
     uint32_t,
+    const CdmKeyInformation::KeyStatus&);
+template MEDIA_EXPORT void CdmPromiseAdapter::ResolvePromise(
+    uint32_t,
     const std::string&);
 
 }  // namespace media

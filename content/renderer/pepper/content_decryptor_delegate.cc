@@ -143,6 +143,33 @@ bool MakeEncryptedBlockInfo(const scoped_refptr<media::DecoderBuffer>& buffer,
   return true;
 }
 
+PP_HdcpVersion MediaHdcpVersionToPpHdcpVersion(
+    media::HdcpVersion hdcp_version) {
+  switch (hdcp_version) {
+    case media::HdcpVersion::kHdcpVersionNone:
+      return PP_HDCPVERSION_NONE;
+    case media::HdcpVersion::kHdcpVersion1_0:
+      return PP_HDCPVERSION_1_0;
+    case media::HdcpVersion::kHdcpVersion1_1:
+      return PP_HDCPVERSION_1_1;
+    case media::HdcpVersion::kHdcpVersion1_2:
+      return PP_HDCPVERSION_1_2;
+    case media::HdcpVersion::kHdcpVersion1_3:
+      return PP_HDCPVERSION_1_3;
+    case media::HdcpVersion::kHdcpVersion1_4:
+      return PP_HDCPVERSION_1_4;
+    case media::HdcpVersion::kHdcpVersion2_0:
+      return PP_HDCPVERSION_2_0;
+    case media::HdcpVersion::kHdcpVersion2_1:
+      return PP_HDCPVERSION_2_1;
+    case media::HdcpVersion::kHdcpVersion2_2:
+      return PP_HDCPVERSION_2_2;
+  }
+
+  NOTREACHED();
+  return PP_HDCPVERSION_2_2;
+}
+
 PP_AudioCodec MediaAudioCodecToPpAudioCodec(media::AudioCodec codec) {
   switch (codec) {
     case media::kCodecVorbis:
@@ -442,6 +469,15 @@ void ContentDecryptorDelegate::SetServerCertificate(
           base::checked_cast<uint32_t>(certificate.size()), certificate.data());
   plugin_decryption_interface_->SetServerCertificate(
       pp_instance_, promise_id, certificate_array);
+}
+
+void ContentDecryptorDelegate::GetStatusForPolicy(
+    media::HdcpVersion min_hdcp_version,
+    std::unique_ptr<media::KeyStatusCdmPromise> promise) {
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
+  plugin_decryption_interface_->GetStatusForPolicy(
+      pp_instance_, promise_id,
+      MediaHdcpVersionToPpHdcpVersion(min_hdcp_version));
 }
 
 void ContentDecryptorDelegate::CreateSessionAndGenerateRequest(
@@ -749,6 +785,13 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
 
 void ContentDecryptorDelegate::OnPromiseResolved(uint32_t promise_id) {
   cdm_promise_adapter_.ResolvePromise(promise_id);
+}
+
+void ContentDecryptorDelegate::OnPromiseResolvedWithKeyStatus(
+    uint32_t promise_id,
+    PP_CdmKeyStatus key_status) {
+  cdm_promise_adapter_.ResolvePromise(
+      promise_id, PpCdmKeyStatusToCdmKeyInformationKeyStatus(key_status));
 }
 
 void ContentDecryptorDelegate::OnPromiseResolvedWithSession(uint32_t promise_id,

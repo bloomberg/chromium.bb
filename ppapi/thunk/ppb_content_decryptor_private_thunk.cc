@@ -26,6 +26,17 @@ void PromiseResolved(PP_Instance instance, uint32_t promise_id) {
   enter.functions()->PromiseResolved(instance, promise_id);
 }
 
+void PromiseResolvedWithKeyStatus(PP_Instance instance,
+                                  uint32_t promise_id,
+                                  PP_CdmKeyStatus key_status) {
+  VLOG(4) << "PPB_ContentDecryptor_Private::PromiseResolvedWithKeyStatus()";
+  EnterInstance enter(instance);
+  if (enter.failed())
+    return;
+  enter.functions()->PromiseResolvedWithKeyStatus(instance, promise_id,
+                                                  key_status);
+}
+
 void PromiseResolvedWithSession(PP_Instance instance,
                                 uint32_t promise_id,
                                 struct PP_Var session_id) {
@@ -176,8 +187,9 @@ void DeliverSamples(
                                     decrypted_sample_info);
 }
 
-const PPB_ContentDecryptor_Private_0_14
-    g_ppb_contentdecryptor_private_thunk_0_14 = {&PromiseResolved,
+const PPB_ContentDecryptor_Private_0_15
+    g_ppb_contentdecryptor_private_thunk_0_15 = {&PromiseResolved,
+                                                 &PromiseResolvedWithKeyStatus,
                                                  &PromiseResolvedWithSession,
                                                  &PromiseRejected,
                                                  &SessionMessage,
@@ -194,9 +206,9 @@ const PPB_ContentDecryptor_Private_0_14
 
 }  // namespace
 
-PPAPI_THUNK_EXPORT const PPB_ContentDecryptor_Private_0_14*
-GetPPB_ContentDecryptor_Private_0_14_Thunk() {
-  return &g_ppb_contentdecryptor_private_thunk_0_14;
+PPAPI_THUNK_EXPORT const PPB_ContentDecryptor_Private_0_15*
+GetPPB_ContentDecryptor_Private_0_15_Thunk() {
+  return &g_ppb_contentdecryptor_private_thunk_0_15;
 }
 
 }  // namespace thunk

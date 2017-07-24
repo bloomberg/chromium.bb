@@ -149,6 +149,9 @@ class PPB_Instance_API {
 #if !defined(OS_NACL)
   // Content Decryptor.
   virtual void PromiseResolved(PP_Instance instance, uint32_t promise_id) = 0;
+  virtual void PromiseResolvedWithKeyStatus(PP_Instance instance,
+                                            uint32_t promise_id,
+                                            PP_CdmKeyStatus key_status) = 0;
   virtual void PromiseResolvedWithSession(PP_Instance instance,
                                           uint32_t promise_id,
                                           PP_Var session_id_var) = 0;

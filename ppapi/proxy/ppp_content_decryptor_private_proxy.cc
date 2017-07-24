@@ -155,6 +155,20 @@ void SetServerCertificate(PP_Instance instance,
       server_certificate_vector));
 }
 
+void GetStatusForPolicy(PP_Instance instance,
+                        uint32_t promise_id,
+                        PP_HdcpVersion min_hdcp_version) {
+  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  if (!dispatcher) {
+    NOTREACHED();
+    return;
+  }
+
+  dispatcher->Send(new PpapiMsg_PPPContentDecryptor_GetStatusForPolicy(
+      API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE, instance, promise_id,
+      min_hdcp_version));
+}
+
 void CreateSessionAndGenerateRequest(PP_Instance instance,
                                      uint32_t promise_id,
                                      PP_SessionType session_type,
@@ -438,6 +452,7 @@ void DecryptAndDecode(PP_Instance instance,
 static const PPP_ContentDecryptor_Private content_decryptor_interface = {
     &Initialize,
     &SetServerCertificate,
+    &GetStatusForPolicy,
     &CreateSessionAndGenerateRequest,
     &LoadSession,
     &UpdateSession,
@@ -484,6 +499,8 @@ bool PPP_ContentDecryptor_Private_Proxy::OnMessageReceived(
                         OnMsgInitialize)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_SetServerCertificate,
                         OnMsgSetServerCertificate)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_GetStatusForPolicy,
+                        OnMsgGetStatusForPolicy)
     IPC_MESSAGE_HANDLER(
         PpapiMsg_PPPContentDecryptor_CreateSessionAndGenerateRequest,
         OnMsgCreateSessionAndGenerateRequest)
@@ -548,6 +565,16 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgSetServerCertificate(
                       instance,
                       promise_id,
                       server_certificate_var.get());
+  }
+}
+
+void PPP_ContentDecryptor_Private_Proxy::OnMsgGetStatusForPolicy(
+    PP_Instance instance,
+    uint32_t promise_id,
+    PP_HdcpVersion min_hdcp_version) {
+  if (ppp_decryptor_impl_) {
+    CallWhileUnlocked(ppp_decryptor_impl_->GetStatusForPolicy, instance,
+                      promise_id, min_hdcp_version);
   }
 }
 

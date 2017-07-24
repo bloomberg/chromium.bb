@@ -9,7 +9,7 @@
  * Decryption Modules, not normal plugins.
  */
 label Chrome {
-  M48 = 0.16
+  M62 = 0.17
 };
 
 /**
@@ -54,6 +54,22 @@ interface PPP_ContentDecryptor_Private {
       [in] PP_Instance instance,
       [in] uint32_t promise_id,
       [in] PP_Var server_certificate);
+
+  /**
+   * Gets the key status for a policy with minimum HDCP version requirement.
+   * Gets the key status if there's a hypothetical key that requires the
+   * <code>min_hdcp_version</code>
+   *
+   * @param[in] promise_id A reference for the promise that gets resolved or
+   * rejected depending upon the success or failure of getting the key status.
+   *
+   * @param[in] min_hdcp_version A <code>PP_HdcpVersion</code> that indicates
+   * the minimum HDCP version required.
+   */
+  void GetStatusForPolicy(
+      [in] PP_Instance instance,
+      [in] uint32_t promise_id,
+      [in] PP_HdcpVersion min_hdcp_version);
 
   /**
    * Creates a session and subsequently generates a request for a license.

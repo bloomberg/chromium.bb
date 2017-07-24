@@ -447,6 +447,23 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_VideoDecoderConfig, 24);
  * @{
  */
 /**
+ * <code>PP_HdcpVersion</code> contains HDCP version constants.
+ */
+typedef enum {
+  PP_HDCPVERSION_NONE = 0,
+  PP_HDCPVERSION_1_0 = 1,
+  PP_HDCPVERSION_1_1 = 2,
+  PP_HDCPVERSION_1_2 = 3,
+  PP_HDCPVERSION_1_3 = 4,
+  PP_HDCPVERSION_1_4 = 5,
+  PP_HDCPVERSION_2_0 = 6,
+  PP_HDCPVERSION_2_1 = 7,
+  PP_HDCPVERSION_2_2 = 8,
+  PP_HDCPVERSION_MAX = PP_HDCPVERSION_2_2
+} PP_HdcpVersion;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_HdcpVersion, 4);
+
+/**
  * <code>PP_DecryptorStreamType</code> contains stream type constants.
  */
 typedef enum {

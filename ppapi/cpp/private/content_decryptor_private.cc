@@ -61,6 +61,18 @@ void SetServerCertificate(PP_Instance instance,
       ->SetServerCertificate(promise_id, server_certificate);
 }
 
+void GetStatusForPolicy(PP_Instance instance,
+                        uint32_t promise_id,
+                        PP_HdcpVersion min_hdcp_version) {
+  void* object =
+      Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
+  if (!object)
+    return;
+
+  static_cast<ContentDecryptor_Private*>(object)->GetStatusForPolicy(
+      promise_id, min_hdcp_version);
+}
+
 void CreateSessionAndGenerateRequest(PP_Instance instance,
                                      uint32_t promise_id,
                                      PP_SessionType session_type,
@@ -242,6 +254,7 @@ void DecryptAndDecode(PP_Instance instance,
 const PPP_ContentDecryptor_Private ppp_content_decryptor = {
     &Initialize,
     &SetServerCertificate,
+    &GetStatusForPolicy,
     &CreateSessionAndGenerateRequest,
     &LoadSession,
     &UpdateSession,
@@ -277,6 +290,15 @@ void ContentDecryptor_Private::PromiseResolved(uint32_t promise_id) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     get_interface<PPB_ContentDecryptor_Private>()->PromiseResolved(
         associated_instance_.pp_instance(), promise_id);
+  }
+}
+
+void ContentDecryptor_Private::PromiseResolvedWithKeyStatus(
+    uint32_t promise_id,
+    PP_CdmKeyStatus key_status) {
+  if (has_interface<PPB_ContentDecryptor_Private>()) {
+    get_interface<PPB_ContentDecryptor_Private>()->PromiseResolvedWithKeyStatus(
+        associated_instance_.pp_instance(), promise_id, key_status);
   }
 }
 

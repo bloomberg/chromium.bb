@@ -369,9 +369,15 @@ void ClearKeyCdm::Initialize(bool allow_distinctive_identifier,
 
 void ClearKeyCdm::GetStatusForPolicy(uint32_t promise_id,
                                      const cdm::Policy& policy) {
-  NOTREACHED() << "GetStatusForPolicy() called unexpectedly.";
-  OnPromiseFailed(promise_id, CdmPromise::INVALID_STATE_ERROR, 0,
-                  "GetStatusForPolicy() called unexpectedly.");
+  // Pretend the device is HDCP 2.0 compliant.
+  const cdm::HdcpVersion kDeviceHdcpVersion = cdm::kHdcpVersion2_0;
+
+  if (policy.min_hdcp_version <= kDeviceHdcpVersion) {
+    host_->OnResolveKeyStatusPromise(promise_id, cdm::kUsable);
+    return;
+  }
+
+  host_->OnResolveKeyStatusPromise(promise_id, cdm::kOutputRestricted);
 }
 
 void ClearKeyCdm::CreateSessionAndGenerateRequest(

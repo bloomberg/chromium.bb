@@ -30,7 +30,7 @@ PlayerUtils.registerDefaultEventListeners = function(player) {
     // This most likely happens on pipeline failures (e.g. when the CDM
     // crashes). Don't report a failure if the test is checking that sessions
     // are closed on a crash.
-    Utils.timeLog('onHTMLElementError', error);
+    Utils.timeLog('onHTMLElementError', error.target.error.message);
     if (player.testConfig.keySystem == CRASH_TEST_KEYSYSTEM) {
       // On failure the session should have been closed, so verify.
       player.session.closed.then(
@@ -64,6 +64,46 @@ PlayerUtils.registerEMEEventListeners = function(player) {
         }
         player.onMessage(message);
       });
+    }
+
+    function getStatusForHdcpPolicy(mediaKeys, hdcpVersion, expectedResult) {
+      var policy = new MediaKeysPolicy({minHdcpVersion: hdcpVersion});
+
+      return mediaKeys.getStatusForPolicy(policy).then(function(keyStatus) {
+        if (keyStatus == expectedResult) {
+          return Promise.resolve();
+        } else {
+          return Promise.reject(
+              "keyStatus " + keyStatus + " does not match " + expectedResult);
+        }
+      }, function(error) {
+        if (expectedResult == "rejected") {
+          return Promise.resolve();
+        } else {
+          return Promise.reject("Promise rejected unexpectedly.");
+        }
+      });
+    }
+
+    function testGetStatusForHdcpPolicy(mediaKeys) {
+      const keySystem = this.testConfig.keySystem;
+      Utils.timeLog('Key system: ' + keySystem);
+      if (keySystem == EXTERNAL_CLEARKEY) {
+        return Promise.resolve().then(function() {
+          return getStatusForHdcpPolicy(mediaKeys, "", "usable");
+        }).then(function() {
+          return getStatusForHdcpPolicy(mediaKeys, "hdcp-1.0", "usable");
+        }).then(function() {
+          return getStatusForHdcpPolicy(
+              mediaKeys, "hdcp-2.2", "output-restricted");
+        });
+      } else {
+        return Promise.resolve().then(function() {
+          return getStatusForHdcpPolicy(mediaKeys, "", "rejected");
+        }).then(function() {
+          return getStatusForHdcpPolicy(mediaKeys, "hdcp-1.0", "rejected");
+        });
+      }
     }
 
     try {
@@ -101,6 +141,21 @@ PlayerUtils.registerEMEEventListeners = function(player) {
                 function(error) {
                   Utils.failTest(error, EME_LOAD_FAILED);
                 });
+      } else if (player.testConfig.policyCheck) {
+        // TODO(xhwang): We should be able to move all policy check code to a
+        // new test js file once we figure out an easy way to separate the
+        // requrestMediaKeySystemAccess() logic from the rest of this file.
+        Utils.timeLog('Policy check test.');
+        player.access.createMediaKeys().then(function(mediaKeys) {
+          // Call getStatusForPolicy() before creating any MediaKeySessions.
+          return testGetStatusForHdcpPolicy(mediaKeys);
+        }).then(function(result) {
+          Utils.timeLog('Policy check test passed.');
+          Utils.setResultInTitle(UNIT_TEST_SUCCESS);
+        }).catch(function(error) {
+          Utils.timeLog('Policy check test failed.');
+          Utils.failTest(error, UNIT_TEST_FAILURE);
+        });
       } else {
         Utils.timeLog('Creating new media key session for initDataType: ' +
                       message.initDataType + ', initData: ' +
