@@ -205,7 +205,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   PendingRequestInfo* GetPendingRequestInfo(int request_id);
 
   // Follows redirect, if any, for the given request.
-  void FollowPendingRedirect(int request_id, PendingRequestInfo* request_info);
+  void FollowPendingRedirect(PendingRequestInfo* request_info);
 
   // Message response handlers, called by the message handler for this process.
   void OnUploadProgress(int request_id, int64_t position, int64_t size);

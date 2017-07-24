@@ -317,7 +317,7 @@ void ResourceDispatcher::OnReceivedRedirect(
     request_info->pending_redirect_message.reset(
         new ResourceHostMsg_FollowRedirect(request_id));
     if (!request_info->is_deferred) {
-      FollowPendingRedirect(request_id, request_info);
+      FollowPendingRedirect(request_info);
     }
   } else {
     Cancel(request_id);
@@ -325,7 +325,6 @@ void ResourceDispatcher::OnReceivedRedirect(
 }
 
 void ResourceDispatcher::FollowPendingRedirect(
-    int request_id,
     PendingRequestInfo* request_info) {
   IPC::Message* msg = request_info->pending_redirect_message.release();
   if (msg) {
@@ -471,7 +470,7 @@ void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
     if (request_info->url_loader_client)
       request_info->url_loader_client->UnsetDefersLoading();
 
-    FollowPendingRedirect(request_id, request_info);
+    FollowPendingRedirect(request_info);
 
     thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&ResourceDispatcher::FlushDeferredMessages,
