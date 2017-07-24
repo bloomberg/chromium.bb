@@ -111,6 +111,16 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
         ->Get(TaskType::kUnspecedTimer)
         ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
   }
+
+  void TestTaskRunner() {
+    EXPECT_TRUE(IsCurrentThread());
+    RefPtr<WebTaskRunner> task_runner =
+        TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GlobalScope());
+    EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
+    GetParentFrameTaskRunners()
+        ->Get(TaskType::kUnspecedTimer)
+        ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
+  }
 };
 
 class ThreadedWorkletMessagingProxyForTest
@@ -121,12 +131,9 @@ class ThreadedWorkletMessagingProxyForTest
       : ThreadedWorkletMessagingProxy(execution_context, worker_clients) {
     worklet_object_proxy_ = WTF::MakeUnique<ThreadedWorkletObjectProxyForTest>(
         this, GetParentFrameTaskRunners());
-    ThreadedWorkletThreadForTest::EnsureSharedBackingThread();
   }
 
-  ~ThreadedWorkletMessagingProxyForTest() override {
-    ThreadedWorkletThreadForTest::ClearSharedBackingThread();
-  };
+  ~ThreadedWorkletMessagingProxyForTest() override {}
 
   void Start() {
     KURL script_url(kParsedURLString, "http://fake.url/");
@@ -164,12 +171,14 @@ class ThreadedWorkletTest : public ::testing::Test {
     page_ = DummyPageHolder::Create();
     messaging_proxy_ = new ThreadedWorkletMessagingProxyForTest(
         &page_->GetDocument(), WorkerClients::Create());
+    ThreadedWorkletThreadForTest::EnsureSharedBackingThread();
   }
 
   void TearDown() override {
     GetWorkerThread()->Terminate();
     GetWorkerThread()->WaitForShutdownForTesting();
     testing::RunPendingTasks();
+    ThreadedWorkletThreadForTest::ClearSharedBackingThread();
     messaging_proxy_ = nullptr;
   }
 
@@ -236,6 +245,16 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
           BLINK_FROM_HERE,
           CrossThreadBind(&ThreadedWorkletThreadForTest::CountDeprecation,
                           CrossThreadUnretained(GetWorkerThread()), kFeature2));
+  testing::EnterRunLoop();
+}
+
+TEST_F(ThreadedWorkletTest, TaskRunner) {
+  MessagingProxy()->Start();
+
+  TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GetWorkerThread())
+      ->PostTask(BLINK_FROM_HERE,
+                 CrossThreadBind(&ThreadedWorkletThreadForTest::TestTaskRunner,
+                                 CrossThreadUnretained(GetWorkerThread())));
   testing::EnterRunLoop();
 }
 

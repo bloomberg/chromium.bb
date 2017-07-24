@@ -76,6 +76,16 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
         ->Get(TaskType::kUnspecedTimer)
         ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
   }
+
+  void TestTaskRunner() {
+    EXPECT_TRUE(IsCurrentThread());
+    RefPtr<WebTaskRunner> task_runner =
+        TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GlobalScope());
+    EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
+    GetParentFrameTaskRunners()
+        ->Get(TaskType::kUnspecedTimer)
+        ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
+  }
 };
 
 class InProcessWorkerObjectProxyForTest final
@@ -455,6 +465,17 @@ TEST_F(DedicatedWorkerTest, DISABLED_UseCounter) {
           BLINK_FROM_HERE,
           CrossThreadBind(&DedicatedWorkerThreadForTest::CountDeprecation,
                           CrossThreadUnretained(GetWorkerThread()), kFeature2));
+  testing::EnterRunLoop();
+}
+
+TEST_F(DedicatedWorkerTest, TaskRunner) {
+  const String source_code = "// Do nothing";
+  WorkerMessagingProxy()->StartWithSourceCode(source_code);
+
+  TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GetWorkerThread())
+      ->PostTask(BLINK_FROM_HERE,
+                 CrossThreadBind(&DedicatedWorkerThreadForTest::TestTaskRunner,
+                                 CrossThreadUnretained(GetWorkerThread())));
   testing::EnterRunLoop();
 }
 
