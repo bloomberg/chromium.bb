@@ -45,7 +45,7 @@ DEFINE_TRACE(ChromeClient) {
 }
 
 void ChromeClient::InstallSupplements(LocalFrame& frame) {
-  CoreInitializer::CallModulesInstallSupplements(frame);
+  CoreInitializer::GetInstance().InstallSupplements(frame);
 }
 
 void ChromeClient::SetWindowRectWithAdjustment(const IntRect& pending_rect,

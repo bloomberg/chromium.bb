@@ -13,6 +13,19 @@ namespace blink {
 class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
  public:
   void Initialize() override;
+
+ private:
+  void InitLocalFrame(LocalFrame&) const override;
+  void InstallSupplements(LocalFrame&) const override;
+  void ProvideLocalFileSystemToWorker(WorkerClients&) const override;
+  void ProvideIndexedDBClientToWorker(WorkerClients&) const override;
+  MediaControls* CreateMediaControls(HTMLMediaElement&,
+                                     ShadowRoot&) const override;
+  void InitInspectorAgentSession(InspectorSession*,
+                                 bool,
+                                 InspectorDOMAgent*,
+                                 InspectedFrames*,
+                                 Page*) const override;
 };
 
 }  // namespace blink

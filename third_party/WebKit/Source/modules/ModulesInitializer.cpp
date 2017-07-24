@@ -107,82 +107,80 @@ void ModulesInitializer::Initialize() {
       WTF::MakeUnique<WebGLRenderingContext::Factory>());
   OffscreenCanvas::RegisterRenderingContextFactory(
       WTF::MakeUnique<WebGL2RenderingContext::Factory>());
+}
 
-  // Mojo Interfaces registered with LocalFrame
-  local_frame_init_callback_ = [](LocalFrame& frame) {
-    // CoreInitializer::RegisterLocalFrameInitCallback([](LocalFrame& frame) {
-    if (frame.IsMainFrame()) {
-      frame.GetInterfaceRegistry()->AddInterface(WTF::Bind(
-          &CopylessPasteServer::BindMojoRequest, WrapWeakPersistent(&frame)));
-    }
+void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
+  // CoreInitializer::RegisterLocalFrameInitCallback([](LocalFrame& frame) {
+  if (frame.IsMainFrame()) {
     frame.GetInterfaceRegistry()->AddInterface(WTF::Bind(
-        &InstallationServiceImpl::Create, WrapWeakPersistent(&frame)));
-    // TODO(dominickn): This interface should be document-scoped rather than
-    // frame-scoped, as the resulting banner event is dispatched to
-    // frame()->document().
-    frame.GetInterfaceRegistry()->AddInterface(WTF::Bind(
-        &AppBannerController::BindMojoRequest, WrapWeakPersistent(&frame)));
-  };
+        &CopylessPasteServer::BindMojoRequest, WrapWeakPersistent(&frame)));
+  }
+  frame.GetInterfaceRegistry()->AddInterface(
+      WTF::Bind(&InstallationServiceImpl::Create, WrapWeakPersistent(&frame)));
+  // TODO(dominickn): This interface should be document-scoped rather than
+  // frame-scoped, as the resulting banner event is dispatched to
+  // frame()->document().
+  frame.GetInterfaceRegistry()->AddInterface(WTF::Bind(
+      &AppBannerController::BindMojoRequest, WrapWeakPersistent(&frame)));
+}
 
-  // Supplements installed on a frame using ChromeClient
-  chrome_client_install_supplements_callback_ = [](LocalFrame& frame) {
-    WebLocalFrameBase* web_frame = WebLocalFrameBase::FromFrame(&frame);
-    WebFrameClient* client = web_frame->Client();
-    DCHECK(client);
-    ProvidePushControllerTo(frame, client->PushClient());
-    ProvideUserMediaTo(frame,
-                       UserMediaClientImpl::Create(client->UserMediaClient()));
-    ProvideIndexedDBClientTo(frame, IndexedDBClientImpl::Create(frame));
-    ProvideLocalFileSystemTo(frame, LocalFileSystemClient::Create());
-    NavigatorContentUtils::ProvideTo(
-        *frame.DomWindow()->navigator(),
-        NavigatorContentUtilsClient::Create(web_frame));
+void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
+  WebLocalFrameBase* web_frame = WebLocalFrameBase::FromFrame(&frame);
+  WebFrameClient* client = web_frame->Client();
+  DCHECK(client);
+  ProvidePushControllerTo(frame, client->PushClient());
+  ProvideUserMediaTo(frame,
+                     UserMediaClientImpl::Create(client->UserMediaClient()));
+  ProvideIndexedDBClientTo(frame, IndexedDBClientImpl::Create(frame));
+  ProvideLocalFileSystemTo(frame, LocalFileSystemClient::Create());
+  NavigatorContentUtils::ProvideTo(
+      *frame.DomWindow()->navigator(),
+      NavigatorContentUtilsClient::Create(web_frame));
 
-    ScreenOrientationControllerImpl::ProvideTo(
-        frame, client->GetWebScreenOrientationClient());
-    if (RuntimeEnabledFeatures::PresentationEnabled())
-      PresentationController::ProvideTo(frame, client->PresentationClient());
-    if (RuntimeEnabledFeatures::AudioOutputDevicesEnabled()) {
-      ProvideAudioOutputDeviceClientTo(frame,
-                                       new AudioOutputDeviceClientImpl(frame));
-    }
-    InstalledAppController::ProvideTo(frame, client->GetRelatedAppsFetcher());
-  };
+  ScreenOrientationControllerImpl::ProvideTo(
+      frame, client->GetWebScreenOrientationClient());
+  if (RuntimeEnabledFeatures::PresentationEnabled())
+    PresentationController::ProvideTo(frame, client->PresentationClient());
+  if (RuntimeEnabledFeatures::AudioOutputDevicesEnabled()) {
+    ProvideAudioOutputDeviceClientTo(frame,
+                                     new AudioOutputDeviceClientImpl(frame));
+  }
+  InstalledAppController::ProvideTo(frame, client->GetRelatedAppsFetcher());
+}
 
-  worker_clients_local_file_system_callback_ =
-      [](WorkerClients& worker_clients) {
-        ProvideLocalFileSystemToWorker(&worker_clients,
-                                       LocalFileSystemClient::Create());
-      };
+void ModulesInitializer::ProvideLocalFileSystemToWorker(
+    WorkerClients& worker_clients) const {
+  ::blink::ProvideLocalFileSystemToWorker(&worker_clients,
+                                          LocalFileSystemClient::Create());
+}
 
-  worker_clients_indexed_db_callback_ = [](WorkerClients& worker_clients) {
-    ProvideIndexedDBClientToWorker(&worker_clients,
-                                   IndexedDBClientImpl::Create(worker_clients));
-  };
+void ModulesInitializer::ProvideIndexedDBClientToWorker(
+    WorkerClients& worker_clients) const {
+  ::blink::ProvideIndexedDBClientToWorker(
+      &worker_clients, IndexedDBClientImpl::Create(worker_clients));
+}
 
-  media_controls_factory_ = [](HTMLMediaElement& media_element,
-                               ShadowRoot& shadow_root) -> MediaControls* {
-    return MediaControlsImpl::Create(media_element, shadow_root);
-  };
+MediaControls* ModulesInitializer::CreateMediaControls(
+    HTMLMediaElement& media_element,
+    ShadowRoot& shadow_root) const {
+  return MediaControlsImpl::Create(media_element, shadow_root);
+}
 
-  // Session Initializers for Inspector Agents in modules/
-  // These methods typically create agents and append them to a session.
-  // TODO(nverne): remove this and restore to WebDevToolsAgentImpl once that
-  // class is a controller/ crbug:731490
-  inspector_agent_session_init_callback_ =
-      [](InspectorSession* session, bool allow_view_agents,
-         InspectorDOMAgent* dom_agent, InspectedFrames* inspected_frames,
-         Page* page) {
-        session->Append(new InspectorIndexedDBAgent(inspected_frames,
-                                                    session->V8Session()));
-        session->Append(new DeviceOrientationInspectorAgent(inspected_frames));
-        if (allow_view_agents) {
-          session->Append(InspectorDatabaseAgent::Create(page));
-          session->Append(new InspectorAccessibilityAgent(page, dom_agent));
-          session->Append(InspectorDOMStorageAgent::Create(page));
-          session->Append(InspectorCacheStorageAgent::Create(inspected_frames));
-        }
-      };
+void ModulesInitializer::InitInspectorAgentSession(
+    InspectorSession* session,
+    bool allow_view_agents,
+    InspectorDOMAgent* dom_agent,
+    InspectedFrames* inspected_frames,
+    Page* page) const {
+  session->Append(
+      new InspectorIndexedDBAgent(inspected_frames, session->V8Session()));
+  session->Append(new DeviceOrientationInspectorAgent(inspected_frames));
+  if (allow_view_agents) {
+    session->Append(InspectorDatabaseAgent::Create(page));
+    session->Append(new InspectorAccessibilityAgent(page, dom_agent));
+    session->Append(InspectorDOMStorageAgent::Create(page));
+    session->Append(InspectorCacheStorageAgent::Create(inspected_frames));
+  }
 }
 
 }  // namespace blink
