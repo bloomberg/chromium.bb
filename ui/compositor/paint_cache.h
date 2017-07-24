@@ -36,12 +36,7 @@ class COMPOSITOR_EXPORT PaintCache {
   // Only PaintRecorder can modify these.
   friend PaintRecorder;
 
-  // Resets the cache to be empty, and returns a PaintOpBuffer that is the new
-  // empty cache. Adding PaintOps to the buffer will put them in the cache.
-  cc::PaintOpBuffer* ResetCache();
-
-  // Call when done recording into the cache's PaintOpBuffer.
-  void FinalizeCache();
+  void SetPaintOpBuffer(sk_sp<cc::PaintOpBuffer> paint_op_buffer);
 
   // Stored in an sk_sp because PaintOpBuffer requires this to append the cached
   // items into it.

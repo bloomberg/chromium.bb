@@ -49,9 +49,11 @@ class RTree {
   template <typename Container>
   void Build(const Container& items);
 
-  // Build helper that takes a container and a function used to get gfx::Rect
-  // from each item. That is, "bounds_getter(items[i]);" should return a
-  // gfx::Rect representing the bounds of items[i] for each i.
+  // Build helper that takes a container, a function used to get gfx::Rect
+  // from each item, and a function used to get the payload for each item. That
+  // is, "bounds_getter(items, i);" should return a gfx::Rect representing the
+  // bounds of ith item, and "payload_getter(items, i);" should return the
+  // payload (aka T) of ith item.
   template <typename Container, typename BoundsFunctor, typename PayloadFunctor>
   void Build(const Container& items,
              const BoundsFunctor& bounds_getter,

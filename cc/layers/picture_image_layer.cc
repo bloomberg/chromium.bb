@@ -68,19 +68,20 @@ scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
 
   auto display_list = base::MakeRefCounted<DisplayItemList>();
 
-  PaintOpBuffer* buffer = display_list->StartPaint();
+  display_list->StartPaint();
   if (has_scale) {
-    buffer->push<SaveOp>();
-    buffer->push<ScaleOp>(content_to_layer_scale_x, content_to_layer_scale_y);
+    display_list->push<SaveOp>();
+    display_list->push<ScaleOp>(content_to_layer_scale_x,
+                                content_to_layer_scale_y);
   }
 
   // Because Android WebView resourceless software draw mode rasters directly
   // to the root canvas, this draw must use the SkBlendMode::kSrcOver so that
   // transparent images blend correctly.
-  buffer->push<DrawImageOp>(image_, 0.f, 0.f, nullptr);
+  display_list->push<DrawImageOp>(image_, 0.f, 0.f, nullptr);
 
   if (has_scale)
-    buffer->push<RestoreOp>();
+    display_list->push<RestoreOp>();
   display_list->EndPaintOfUnpaired(PaintableRegion());
   display_list->Finalize();
   return display_list;

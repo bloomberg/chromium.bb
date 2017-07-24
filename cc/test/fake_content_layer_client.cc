@@ -52,32 +52,34 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     const gfx::RectF& draw_rect = it->first;
     const PaintFlags& flags = it->second;
 
-    PaintOpBuffer* buffer = display_list->StartPaint();
-    buffer->push<DrawRectOp>(gfx::RectFToSkRect(draw_rect), flags);
+    display_list->StartPaint();
+    display_list->push<DrawRectOp>(gfx::RectFToSkRect(draw_rect), flags);
     display_list->EndPaintOfUnpaired(ToEnclosingRect(draw_rect));
   }
 
   for (ImageVector::const_iterator it = draw_images_.begin();
        it != draw_images_.end(); ++it) {
     if (!it->transform.IsIdentity()) {
-      PaintOpBuffer* buffer = display_list->StartPaint();
-      buffer->push<SaveOp>();
-      buffer->push<ConcatOp>(static_cast<SkMatrix>(it->transform.matrix()));
+      display_list->StartPaint();
+      display_list->push<SaveOp>();
+      display_list->push<ConcatOp>(
+          static_cast<SkMatrix>(it->transform.matrix()));
       display_list->EndPaintOfPairedBegin();
     }
 
-    PaintOpBuffer* buffer = display_list->StartPaint();
-    buffer->push<SaveOp>();
-    buffer->push<ClipRectOp>(gfx::RectToSkRect(PaintableRegion()),
-                             SkClipOp::kIntersect, false);
-    buffer->push<DrawImageOp>(it->image, static_cast<float>(it->point.x()),
-                              static_cast<float>(it->point.y()), &it->flags);
-    buffer->push<RestoreOp>();
+    display_list->StartPaint();
+    display_list->push<SaveOp>();
+    display_list->push<ClipRectOp>(gfx::RectToSkRect(PaintableRegion()),
+                                   SkClipOp::kIntersect, false);
+    display_list->push<DrawImageOp>(
+        it->image, static_cast<float>(it->point.x()),
+        static_cast<float>(it->point.y()), &it->flags);
+    display_list->push<RestoreOp>();
     display_list->EndPaintOfUnpaired(PaintableRegion());
 
     if (!it->transform.IsIdentity()) {
-      PaintOpBuffer* buffer = display_list->StartPaint();
-      buffer->push<RestoreOp>();
+      display_list->StartPaint();
+      display_list->push<RestoreOp>();
       display_list->EndPaintOfPairedEnd();
     }
   }
@@ -87,9 +89,9 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     SkPath path;
     path.addCircle(2, 2, 5);
     path.addCircle(3, 4, 2);
-    PaintOpBuffer* buffer = display_list->StartPaint();
+    display_list->StartPaint();
     for (int i = 0; i < 6; ++i) {
-      buffer->push<ClipPathOp>(path, SkClipOp::kIntersect, true);
+      display_list->push<ClipPathOp>(path, SkClipOp::kIntersect, true);
     }
     display_list->EndPaintOfUnpaired(PaintableRegion());
   }
@@ -99,9 +101,9 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     PaintFlags flags;
     flags.setColor(SK_ColorRED);
 
-    PaintOpBuffer* buffer = display_list->StartPaint();
+    display_list->StartPaint();
     while (!draw_rect.IsEmpty()) {
-      buffer->push<DrawIRectOp>(gfx::RectToSkIRect(draw_rect), flags);
+      display_list->push<DrawIRectOp>(gfx::RectToSkIRect(draw_rect), flags);
       draw_rect.Inset(1, 1);
     }
     display_list->EndPaintOfUnpaired(PaintableRegion());

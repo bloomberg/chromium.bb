@@ -19,9 +19,9 @@ CompositingRecorder::CompositingRecorder(const PaintContext& context,
   if (!saved_)
     return;
 
-  cc::PaintOpBuffer* buffer = context_.list_->StartPaint();
-  buffer->push<cc::SaveLayerAlphaOp>(nullptr, alpha,
-                                     !lcd_text_requires_opaque_layer);
+  context_.list_->StartPaint();
+  context_.list_->push<cc::SaveLayerAlphaOp>(nullptr, alpha,
+                                             !lcd_text_requires_opaque_layer);
   context_.list_->EndPaintOfPairedBegin();
 }
 
@@ -29,8 +29,8 @@ CompositingRecorder::~CompositingRecorder() {
   if (!saved_)
     return;
 
-  cc::PaintOpBuffer* buffer = context_.list_->StartPaint();
-  buffer->push<cc::RestoreOp>();
+  context_.list_->StartPaint();
+  context_.list_->push<cc::RestoreOp>();
   context_.list_->EndPaintOfPairedEnd();
 }
 

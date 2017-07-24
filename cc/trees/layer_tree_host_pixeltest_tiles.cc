@@ -109,7 +109,7 @@ class BlueYellowClient : public ContentLayerClient {
       PaintingControlSetting painting_status) override {
     auto display_list = make_scoped_refptr(new DisplayItemList);
 
-    PaintOpBuffer* buffer = display_list->StartPaint();
+    display_list->StartPaint();
 
     gfx::Rect top(0, 0, size_.width(), size_.height() / 2);
     gfx::Rect bottom(0, size_.height() / 2, size_.width(), size_.height() / 2);
@@ -121,9 +121,9 @@ class BlueYellowClient : public ContentLayerClient {
     flags.setStyle(PaintFlags::kFill_Style);
 
     flags.setColor(SK_ColorBLUE);
-    buffer->push<DrawRectOp>(gfx::RectToSkRect(blue_rect), flags);
+    display_list->push<DrawRectOp>(gfx::RectToSkRect(blue_rect), flags);
     flags.setColor(SK_ColorYELLOW);
-    buffer->push<DrawRectOp>(gfx::RectToSkRect(yellow_rect), flags);
+    display_list->push<DrawRectOp>(gfx::RectToSkRect(yellow_rect), flags);
 
     display_list->EndPaintOfUnpaired(PaintableRegion());
     display_list->Finalize();

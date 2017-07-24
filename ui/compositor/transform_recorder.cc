@@ -17,8 +17,8 @@ TransformRecorder::~TransformRecorder() {
   if (!transformed_)
     return;
 
-  cc::PaintOpBuffer* buffer = context_.list_->StartPaint();
-  buffer->push<cc::RestoreOp>();
+  context_.list_->StartPaint();
+  context_.list_->push<cc::RestoreOp>();
   context_.list_->EndPaintOfPairedEnd();
 }
 
@@ -27,9 +27,9 @@ void TransformRecorder::Transform(const gfx::Transform& transform) {
   if (transform.IsIdentity())
     return;
 
-  cc::PaintOpBuffer* buffer = context_.list_->StartPaint();
-  buffer->push<cc::SaveOp>();
-  buffer->push<cc::ConcatOp>(static_cast<SkMatrix>(transform.matrix()));
+  context_.list_->StartPaint();
+  context_.list_->push<cc::SaveOp>();
+  context_.list_->push<cc::ConcatOp>(static_cast<SkMatrix>(transform.matrix()));
   context_.list_->EndPaintOfPairedBegin();
 
   transformed_ = true;

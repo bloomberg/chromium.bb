@@ -14,7 +14,7 @@
 
 namespace cc {
 
-class PaintOpBuffer;
+class DisplayItemList;
 
 class CC_PAINT_EXPORT PaintRecorder {
  public:
@@ -37,9 +37,8 @@ class CC_PAINT_EXPORT PaintRecorder {
   sk_sp<PaintRecord> finishRecordingAsPicture();
 
  private:
-  sk_sp<PaintOpBuffer> buffer_;
+  scoped_refptr<DisplayItemList> display_item_list_;
   base::Optional<RecordPaintCanvas> canvas_;
-
   DISALLOW_COPY_AND_ASSIGN(PaintRecorder);
 };
 

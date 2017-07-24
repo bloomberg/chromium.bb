@@ -132,8 +132,8 @@ base::Optional<SkColor> SolidColorAnalyzer::DetermineIfSolidColor(
     const PaintOpBuffer* buffer,
     const gfx::Rect& rect,
     int max_ops_to_analyze,
-    const std::vector<size_t>* indices) {
-  if (buffer->size() == 0 || (indices && indices->empty()))
+    const std::vector<size_t>* offsets) {
+  if (buffer->size() == 0 || (offsets && offsets->empty()))
     return SK_ColorTRANSPARENT;
 
   bool is_solid = false;
@@ -142,12 +142,12 @@ base::Optional<SkColor> SolidColorAnalyzer::DetermineIfSolidColor(
 
   struct Frame {
     Frame() = default;
-    Frame(PaintOpBuffer::Iterator iter,
+    Frame(PaintOpBuffer::CompositeIterator iter,
           const SkMatrix& original_ctm,
           int save_count)
         : iter(iter), original_ctm(original_ctm), save_count(save_count) {}
 
-    PaintOpBuffer::Iterator iter;
+    PaintOpBuffer::CompositeIterator iter;
     const SkMatrix original_ctm;
     int save_count = 0;
   };
@@ -160,7 +160,7 @@ base::Optional<SkColor> SolidColorAnalyzer::DetermineIfSolidColor(
   // We expect to see at least one DrawRecordOp because of the way items are
   // constructed. Reserve this to 2, and go from there.
   stack.reserve(2);
-  stack.emplace_back(PaintOpBuffer::Iterator(buffer, indices),
+  stack.emplace_back(PaintOpBuffer::CompositeIterator(buffer, offsets),
                      canvas.getTotalMatrix(), canvas.getSaveCount());
 
   int num_ops = 0;
@@ -179,8 +179,9 @@ base::Optional<SkColor> SolidColorAnalyzer::DetermineIfSolidColor(
     switch (op->GetType()) {
       case PaintOpType::DrawRecord: {
         const DrawRecordOp* record_op = static_cast<const DrawRecordOp*>(op);
-        stack.emplace_back(PaintOpBuffer::Iterator(record_op->record.get()),
-                           canvas.getTotalMatrix(), canvas.getSaveCount());
+        stack.emplace_back(
+            PaintOpBuffer::CompositeIterator(record_op->record.get(), nullptr),
+            canvas.getTotalMatrix(), canvas.getSaveCount());
         continue;
       }
 

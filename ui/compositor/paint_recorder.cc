@@ -23,11 +23,20 @@ PaintRecorder::PaintRecorder(const PaintContext& context,
                              const gfx::Size& recording_size,
                              PaintCache* cache)
     : context_(context),
-      record_canvas_(cache ? cache->ResetCache() : context_.list_->StartPaint(),
+      local_list_(cache ? base::MakeRefCounted<cc::DisplayItemList>(
+                              cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+                        : nullptr),
+      record_canvas_(cache ? local_list_.get() : context_.list_,
                      gfx::RectToSkRect(gfx::Rect(recording_size))),
       canvas_(&record_canvas_, context.device_scale_factor_),
       cache_(cache),
       recording_size_(recording_size) {
+  if (cache) {
+    local_list_->StartPaint();
+  } else {
+    context_.list_->StartPaint();
+  }
+
 #if DCHECK_IS_ON()
   DCHECK(!context.inside_paint_recorder_);
   context.inside_paint_recorder_ = true;
@@ -46,7 +55,9 @@ PaintRecorder::~PaintRecorder() {
   // Otherwise, the content is already stored in the PaintContext, and we can
   // just close it.
   if (cache_) {
-    cache_->FinalizeCache();
+    local_list_->EndPaintOfUnpaired(gfx::Rect());
+    local_list_->Finalize();
+    cache_->SetPaintOpBuffer(local_list_->ReleaseAsRecord());
     cache_->UseCache(context_, recording_size_);
   } else {
     gfx::Rect bounds_in_layer = context_.ToLayerSpaceBounds(recording_size_);

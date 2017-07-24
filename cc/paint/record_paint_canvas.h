@@ -19,12 +19,12 @@
 
 namespace cc {
 
-class PaintOpBuffer;
+class DisplayItemList;
 class PaintFlags;
 
 class CC_PAINT_EXPORT RecordPaintCanvas final : public PaintCanvas {
  public:
-  explicit RecordPaintCanvas(PaintOpBuffer* buffer, const SkRect& bounds);
+  RecordPaintCanvas(DisplayItemList* list, const SkRect& bounds);
   ~RecordPaintCanvas() override;
 
   SkMetaData& getMetaData() override;
@@ -136,7 +136,7 @@ class CC_PAINT_EXPORT RecordPaintCanvas final : public PaintCanvas {
   const SkNoDrawCanvas* GetCanvas() const;
   SkNoDrawCanvas* GetCanvas();
 
-  PaintOpBuffer* buffer_;
+  DisplayItemList* list_;
 
   // TODO(enne): Although RecordPaintCanvas is mostly a write-only interface
   // where paint commands are stored, occasionally users of PaintCanvas want
