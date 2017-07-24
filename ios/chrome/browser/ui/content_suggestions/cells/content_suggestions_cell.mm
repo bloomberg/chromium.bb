@@ -16,7 +16,7 @@
 #endif
 
 namespace {
-const CGFloat kImageSize = 72;
+const CGFloat kImageSize = 62;
 const CGFloat kStandardSpacing = 16;
 const CGFloat kSmallSpacing = 8;
 
@@ -186,7 +186,9 @@ const CGFloat kAnimationDuration = 0.3;
 
   CGFloat labelHeight = 3 * kStandardSpacing;
   labelHeight += [titleLabel sizeThatFits:sizeForLabels].height;
-  labelHeight += [additionalInfoLabel sizeThatFits:sizeForLabels].height;
+  CGFloat additionalInfoHeight =
+      [additionalInfoLabel sizeThatFits:sizeForLabels].height;
+  labelHeight += MAX(additionalInfoHeight, kFaviconSize);
 
   CGFloat minimalHeight = hasImage ? kImageSize : 0;
   minimalHeight += 2 * kStandardSpacing;
@@ -227,8 +229,8 @@ const CGFloat kAnimationDuration = 0.3;
 - (void)applyConstraints {
   _imageSize =
       [_imageContainer.heightAnchor constraintEqualToConstant:kImageSize];
-  _imageTitleSpacing = [_imageContainer.leadingAnchor
-      constraintEqualToAnchor:_titleLabel.trailingAnchor
+  _imageTitleSpacing = [_titleLabel.leadingAnchor
+      constraintEqualToAnchor:_imageContainer.trailingAnchor
                      constant:kStandardSpacing];
 
   [NSLayoutConstraint activateConstraints:@[
@@ -258,6 +260,8 @@ const CGFloat kAnimationDuration = 0.3;
     [_faviconView.topAnchor
         constraintGreaterThanOrEqualToAnchor:_titleLabel.bottomAnchor
                                     constant:kStandardSpacing],
+    [_faviconView.leadingAnchor
+        constraintEqualToAnchor:_titleLabel.leadingAnchor],
     [_faviconView.centerYAnchor
         constraintEqualToAnchor:_additionalInformationLabel.centerYAnchor],
     [_faviconView.bottomAnchor
@@ -280,10 +284,10 @@ const CGFloat kAnimationDuration = 0.3;
 
   ApplyVisualConstraintsWithMetrics(
       @[
-        @"H:|-(space)-[title]",
-        @"H:[image]-(space)-|",
+        @"H:[title]-(space)-|",
+        @"H:|-(space)-[image]",
         @"V:|-(space)-[title]",
-        @"H:|-(space)-[favicon]-(small)-[additional]",
+        @"H:[favicon]-(small)-[additional]",
       ],
       @{
         @"image" : _imageContainer,
