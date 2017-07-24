@@ -23,6 +23,7 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
     net::NetLog* net_log,
     InfoMap* extension_info_map)
     : content::ShellURLRequestContextGetter(ignore_certificate_errors,
+                                            false /* not incognito */,
                                             base_path,
                                             std::move(io_task_runner),
                                             protocol_handlers,

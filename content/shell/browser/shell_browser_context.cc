@@ -154,7 +154,7 @@ ShellBrowserContext::CreateURLRequestContextGetter(
     ProtocolHandlerMap* protocol_handlers,
     URLRequestInterceptorScopedVector request_interceptors) {
   return new ShellURLRequestContextGetter(
-      ignore_certificate_errors_, GetPath(),
+      ignore_certificate_errors_, off_the_record_, GetPath(),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       protocol_handlers, std::move(request_interceptors), net_log_);
 }
