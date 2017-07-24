@@ -135,7 +135,7 @@ void ChromeOmniboxNavigationObserver::Observe(
   if (!InfoBarService::FromWebContents(web_contents))
     return;
 
-  // Ignore navgiations to the wrong URL.
+  // Ignore navigations to the wrong URL.
   // This shouldn't actually happen, but right now it's possible because the
   // prerenderer doesn't properly notify us when it swaps in a prerendered page.
   // Plus, the swap-in can trigger instant to kick off a new background
@@ -147,30 +147,26 @@ void ChromeOmniboxNavigationObserver::Observe(
       content::Details<content::NavigationEntry>(details)->GetVirtualURL())
     return;
 
+  // If we've already observed one load, this tab is getting reloaded, so this
+  // is no longer the navigation we wanted to look at.
+  if (load_state_ != LOAD_NOT_SEEN) {
+    delete this;
+    return;
+  }
+
+  // We've seen a pending load; update our state accordingly and begin watching
+  // for future state changes.
   registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                     content::NotificationService::AllSources());
+  load_state_ = LOAD_PENDING;
+  WebContentsObserver::Observe(web_contents);
+
+  // Start the alternate nav fetcher if need be.
   if (fetcher_) {
     fetcher_->SetRequestContext(
         content::BrowserContext::GetDefaultStoragePartition(
             controller->GetBrowserContext())->GetURLRequestContext());
-  }
-  WebContentsObserver::Observe(web_contents);
-  // DidStartNavigationToPendingEntry() will be called for this load as well.
-}
-
-void ChromeOmniboxNavigationObserver::DidStartNavigation(
-      content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument()) {
-    return;
-  }
-
-  if (load_state_ == LOAD_NOT_SEEN) {
-    load_state_ = LOAD_PENDING;
-    if (fetcher_)
-      fetcher_->Start();
-  } else {
-    delete this;
+    fetcher_->Start();
   }
 }
 
