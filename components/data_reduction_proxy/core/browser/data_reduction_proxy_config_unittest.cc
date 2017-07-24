@@ -817,7 +817,8 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithMutableConfig) {
   };
 
   std::unique_ptr<DataReductionProxyMutableConfigValues> config_values =
-      DataReductionProxyMutableConfigValues::CreateFromParams(params());
+      base::MakeUnique<DataReductionProxyMutableConfigValues>();
+
   config_values->UpdateValues(proxies_for_http);
   std::unique_ptr<DataReductionProxyConfig> config(new DataReductionProxyConfig(
       task_runner(), net_log(), std::move(config_values), configurator(),

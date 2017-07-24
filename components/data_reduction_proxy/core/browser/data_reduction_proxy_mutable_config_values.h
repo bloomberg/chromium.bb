@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_MUTABLE_CONFIG_VALUES_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_MUTABLE_CONFIG_VALUES_H_
 
-#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -16,7 +15,6 @@
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyParams;
 class DataReductionProxyServer;
 
 // A |DataReductionProxyConfigValues| which is permitted to change its
@@ -24,11 +22,7 @@ class DataReductionProxyServer;
 class DataReductionProxyMutableConfigValues
     : public DataReductionProxyConfigValues {
  public:
-  // Creates a new |DataReductionProxyMutableConfigValues| using |params| as
-  // the basis for its initial values.
-  static std::unique_ptr<DataReductionProxyMutableConfigValues>
-  CreateFromParams(const DataReductionProxyParams* params);
-
+  DataReductionProxyMutableConfigValues();
   ~DataReductionProxyMutableConfigValues() override;
 
   // Updates |proxies_for_http_| with the provided values.
@@ -43,16 +37,13 @@ class DataReductionProxyMutableConfigValues
   const std::vector<DataReductionProxyServer>& proxies_for_http()
       const override;
 
- protected:
-  DataReductionProxyMutableConfigValues();
-
  private:
   std::vector<DataReductionProxyServer> proxies_for_http_;
+  std::vector<DataReductionProxyServer> override_proxies_for_http_;
 
   // Permits use of locally specified Data Reduction Proxy servers instead of
   // ones specified from the Data Saver API.
-  bool use_override_proxies_for_http_;
-  std::vector<DataReductionProxyServer> override_proxies_for_http_;
+  const bool use_override_proxies_for_http_;
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;

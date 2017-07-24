@@ -44,6 +44,23 @@
 
 namespace {
 
+enum TestContextOptions {
+  // Permits mocking of the underlying |DataReductionProxyConfig|.
+  USE_MOCK_CONFIG = 0x1,
+  // Construct, but do not initialize the |DataReductionProxySettings| object.
+  // Primarily used for testing of the |DataReductionProxySettings| object
+  // itself.
+  SKIP_SETTINGS_INITIALIZATION = 0x2,
+  // Permits mocking of the underlying |DataReductionProxyService|.
+  USE_MOCK_SERVICE = 0x4,
+  // Permits mocking of the underlying |DataReductionProxyRequestOptions|.
+  USE_MOCK_REQUEST_OPTIONS = 0x8,
+  // Specifies the use of the |DataReductionProxyConfigServiceClient|.
+  USE_CONFIG_CLIENT = 0x10,
+  // Specifies the use of the |TESTDataReductionProxyConfigServiceClient|.
+  USE_TEST_CONFIG_CLIENT = 0x20,
+};
+
 const char kTestKey[] = "test-key";
 
 // Name of the preference that governs enabling the Data Reduction Proxy.
@@ -414,7 +431,7 @@ DataReductionProxyTestContext::Builder::Build() {
   if (use_config_client_) {
     test_context_flags |= USE_CONFIG_CLIENT;
     std::unique_ptr<DataReductionProxyMutableConfigValues> mutable_config =
-        DataReductionProxyMutableConfigValues::CreateFromParams(params.get());
+        base::MakeUnique<DataReductionProxyMutableConfigValues>();
     if (!proxy_servers_.empty()) {
       mutable_config->UpdateValues(proxy_servers_);
     }
@@ -555,8 +572,7 @@ void DataReductionProxyTestContext::RunUntilIdle() {
 }
 
 void DataReductionProxyTestContext::InitSettings() {
-  DCHECK(test_context_flags_ &
-         DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION);
+  DCHECK(test_context_flags_ & SKIP_SETTINGS_INITIALIZATION);
   InitSettingsWithoutCheck();
 }
 
@@ -586,15 +602,14 @@ void DataReductionProxyTestContext::InitSettingsWithoutCheck() {
 std::unique_ptr<DataReductionProxyService>
 DataReductionProxyTestContext::CreateDataReductionProxyService(
     DataReductionProxySettings* settings) {
-  DCHECK(test_context_flags_ &
-         DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION);
+  DCHECK(test_context_flags_ & SKIP_SETTINGS_INITIALIZATION);
   return CreateDataReductionProxyServiceInternal(settings);
 }
 
 std::unique_ptr<DataReductionProxyService>
 DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal(
     DataReductionProxySettings* settings) {
-  if (test_context_flags_ & DataReductionProxyTestContext::USE_MOCK_SERVICE) {
+  if (test_context_flags_ & USE_MOCK_SERVICE) {
     return base::MakeUnique<MockDataReductionProxyService>(
         settings, simple_pref_service_.get(), request_context_getter_.get(),
         task_runner_);
@@ -650,7 +665,7 @@ void DataReductionProxyTestContext::
 
 MockDataReductionProxyConfig* DataReductionProxyTestContext::mock_config()
     const {
-  DCHECK(test_context_flags_ & DataReductionProxyTestContext::USE_MOCK_CONFIG);
+  DCHECK(test_context_flags_ & USE_MOCK_CONFIG);
   return reinterpret_cast<MockDataReductionProxyConfig*>(io_data_->config());
 }
 
@@ -662,17 +677,15 @@ DataReductionProxyTestContext::data_reduction_proxy_service() const {
 MockDataReductionProxyService*
 DataReductionProxyTestContext::mock_data_reduction_proxy_service()
     const {
-  DCHECK(!(test_context_flags_ &
-           DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION));
-  DCHECK(test_context_flags_ & DataReductionProxyTestContext::USE_MOCK_SERVICE);
+  DCHECK(!(test_context_flags_ & SKIP_SETTINGS_INITIALIZATION));
+  DCHECK(test_context_flags_ & USE_MOCK_SERVICE);
   return reinterpret_cast<MockDataReductionProxyService*>(
       data_reduction_proxy_service());
 }
 
 MockDataReductionProxyRequestOptions*
 DataReductionProxyTestContext::mock_request_options() const {
-  DCHECK(test_context_flags_ &
-         DataReductionProxyTestContext::USE_MOCK_REQUEST_OPTIONS);
+  DCHECK(test_context_flags_ & USE_MOCK_REQUEST_OPTIONS);
   return reinterpret_cast<MockDataReductionProxyRequestOptions*>(
       io_data_->request_options());
 }
@@ -683,16 +696,14 @@ TestDataReductionProxyConfig* DataReductionProxyTestContext::config() const {
 
 DataReductionProxyMutableConfigValues*
 DataReductionProxyTestContext::mutable_config_values() {
-  DCHECK(test_context_flags_ &
-         DataReductionProxyTestContext::USE_CONFIG_CLIENT);
+  DCHECK(test_context_flags_ & USE_CONFIG_CLIENT);
   return reinterpret_cast<DataReductionProxyMutableConfigValues*>(
       config()->config_values());
 }
 
 TestDataReductionProxyConfigServiceClient*
 DataReductionProxyTestContext::test_config_client() {
-  DCHECK(test_context_flags_ &
-         DataReductionProxyTestContext::USE_TEST_CONFIG_CLIENT);
+  DCHECK(test_context_flags_ & USE_TEST_CONFIG_CLIENT);
   return reinterpret_cast<TestDataReductionProxyConfigServiceClient*>(
       io_data_->config_client());
 }

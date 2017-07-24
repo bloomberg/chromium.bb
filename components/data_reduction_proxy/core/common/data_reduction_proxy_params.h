@@ -215,9 +215,6 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
  private:
   std::vector<DataReductionProxyServer> proxies_for_http_;
 
-  bool use_override_proxies_for_http_;
-  std::vector<DataReductionProxyServer> override_data_reduction_proxy_servers_;
-
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyParams);
 };
 

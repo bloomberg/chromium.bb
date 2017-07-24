@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -24,9 +25,8 @@ class DataReductionProxyMutableConfigValuesTest : public testing::Test {
   ~DataReductionProxyMutableConfigValuesTest() override {}
 
   void Init() {
-    params_.reset(new DataReductionProxyParams());
     mutable_config_values_ =
-        DataReductionProxyMutableConfigValues::CreateFromParams(params_.get());
+        base::MakeUnique<DataReductionProxyMutableConfigValues>();
   }
 
   DataReductionProxyMutableConfigValues* mutable_config_values() const {
@@ -34,7 +34,6 @@ class DataReductionProxyMutableConfigValuesTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<DataReductionProxyParams> params_;
   std::unique_ptr<DataReductionProxyMutableConfigValues> mutable_config_values_;
 };
 
