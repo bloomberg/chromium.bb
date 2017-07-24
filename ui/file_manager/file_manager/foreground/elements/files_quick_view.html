@@ -26,6 +26,7 @@
            <files-icon-button toggles id="metadata-button" on-tap="onMetadataButtonTap_" active="{{metadataBoxActive}}" i18n-values="aria-label:QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL" tabindex="0" has-tooltip>
            </files-icon-button>
         </div>
+	<files-tooltip></files-tooltip>
       </paper-toolbar>
       <div id="mainPanel">
         <div id="contentPanel" metadata-box-active$="[[metadataBoxActive]]" on-tap="onContentPanelTap_">
@@ -77,7 +78,6 @@
         <files-metadata-box id="metadata-box" hidden$="[[!metadataBoxActive]]"></file-metadata-box>
       </div> <!-- mainPanel -->
     </dialog>
-    <files-tooltip></files-tooltip>
   </template>
 </dom-module>
 

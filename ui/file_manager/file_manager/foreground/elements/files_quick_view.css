@@ -23,6 +23,10 @@ dialog[open] {
   transition: opacity 0.2s;
 }
 
+dialog:focus {
+  outline: none;
+}
+
 dialog::backdrop {
   background-color: #000;
   opacity: 0.6;
