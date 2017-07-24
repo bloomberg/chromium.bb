@@ -281,8 +281,10 @@ void ArcNotificationContentView::SetSurface(ArcNotificationSurface* surface) {
     surface_->GetWindow()->RemoveObserver(this);
     surface_->GetWindow()->RemovePreTargetHandler(event_forwarder_.get());
 
-    if (GetWidget() && surface_->IsAttached())
+    if (surface_->IsAttached()) {
+      DCHECK_EQ(this, surface_->GetAttachedHost());
       surface_->Detach();
+    }
   }
 
   surface_ = surface;

@@ -50,6 +50,9 @@ class MockNotificationSurface : public ArcNotificationSurface {
   }
 
   bool IsAttached() const override { return native_view_host_; }
+  views::NativeViewHost* GetAttachedHost() const override {
+    return native_view_host_;
+  }
 
   aura::Window* GetWindow() const override { return window_.get(); }
   aura::Window* GetContentWindow() const override { return window_.get(); }
@@ -367,6 +370,29 @@ TEST_F(ArcNotificationContentViewTest, CloseButton) {
   PressCloseButton();
   EXPECT_TRUE(controller()->IsRemoved(notification_item->GetNotificationId()));
 
+  CloseNotificationView();
+}
+
+TEST_F(ArcNotificationContentViewTest, ReuseSurfaceAfterClosing) {
+  std::string notification_key("notification id");
+
+  auto notification_item =
+      base::MakeUnique<MockArcNotificationItem>(notification_key);
+  message_center::Notification notification =
+      CreateNotification(notification_item.get());
+
+  surface_manager()->PrepareSurface(notification_key);
+
+  // Use the created surface.
+  CreateAndShowNotificationView(notification);
+  CloseNotificationView();
+
+  // Reuse.
+  CreateAndShowNotificationView(notification);
+  CloseNotificationView();
+
+  // Reuse again.
+  CreateAndShowNotificationView(notification);
   CloseNotificationView();
 }
 
