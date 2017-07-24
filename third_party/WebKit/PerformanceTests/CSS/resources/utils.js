@@ -12,16 +12,16 @@ function createDeepDOMTree() {
     createDOMTree(document.body, 2, 10);
 }
 
-function forceStyleRecalc(node) {
-    node.offsetTop; // forces style recalc
-}
-
 function createShallowDOMTree() {
     createDOMTree(document.body, 10, 2);
 }
 
 function createRegularDOMTree() {
     createDOMTree(document.body, 6, 6);
+}
+
+function forceStyleRecalc(node) {
+    node.offsetTop; // forces style recalc
 }
 
 function applyCSSRule(rule) {
