@@ -47,17 +47,18 @@ class BrowsingDataDatabaseHelper
     base::Time last_modified;
   };
 
-  using FetchCallback = base::Callback<void(const std::list<DatabaseInfo>&)>;
+  using FetchCallback =
+      base::OnceCallback<void(const std::list<DatabaseInfo>&)>;
 
   explicit BrowsingDataDatabaseHelper(Profile* profile);
 
   // Starts the fetching process, which will notify its completion via
   // callback.
   // This must be called only in the UI thread.
-  virtual void StartFetching(const FetchCallback& callback);
+  virtual void StartFetching(FetchCallback callback);
 
-  // Requests a single database to be deleted in the FILE thread. This must be
-  // called in the UI thread.
+  // Requests a single database to be deleted. This must be called in the UI
+  // thread.
   virtual void DeleteDatabase(const std::string& origin_identifier,
                               const std::string& name);
 
@@ -66,13 +67,6 @@ class BrowsingDataDatabaseHelper
   virtual ~BrowsingDataDatabaseHelper();
 
  private:
-  // Enumerates all databases. This must be called in the FILE thread.
-  void FetchDatabaseInfoOnFileThread(const FetchCallback& callback);
-
-  // Delete a single database file. This must be called in the FILE thread.
-  void DeleteDatabaseOnFileThread(const std::string& origin,
-                                  const std::string& name);
-
   scoped_refptr<storage::DatabaseTracker> tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataDatabaseHelper);
@@ -118,7 +112,7 @@ class CannedBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
   const std::set<PendingDatabaseInfo>& GetPendingDatabaseInfo();
 
   // BrowsingDataDatabaseHelper implementation.
-  void StartFetching(const FetchCallback& callback) override;
+  void StartFetching(FetchCallback callback) override;
   void DeleteDatabase(const std::string& origin_identifier,
                       const std::string& name) override;
 

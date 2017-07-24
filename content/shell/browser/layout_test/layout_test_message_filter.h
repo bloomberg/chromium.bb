@@ -45,8 +45,8 @@ class LayoutTestMessageFilter : public BrowserMessageFilter {
   ~LayoutTestMessageFilter() override;
 
   // BrowserMessageFilter implementation.
-  void OverrideThreadForMessage(const IPC::Message& message,
-                                BrowserThread::ID* thread) override;
+  base::TaskRunner* OverrideTaskRunnerForMessage(
+      const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnReadFileToString(const base::FilePath& local_file,
@@ -78,9 +78,9 @@ class LayoutTestMessageFilter : public BrowserMessageFilter {
 
   int render_process_id_;
 
-  storage::DatabaseTracker* database_tracker_;
-  storage::QuotaManager* quota_manager_;
-  net::URLRequestContextGetter* request_context_getter_;
+  scoped_refptr<storage::DatabaseTracker> database_tracker_;
+  scoped_refptr<storage::QuotaManager> quota_manager_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestMessageFilter);
 };

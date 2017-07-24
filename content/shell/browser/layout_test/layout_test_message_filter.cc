@@ -45,21 +45,20 @@ LayoutTestMessageFilter::LayoutTestMessageFilter(
 LayoutTestMessageFilter::~LayoutTestMessageFilter() {
 }
 
-void LayoutTestMessageFilter::OverrideThreadForMessage(
-    const IPC::Message& message, BrowserThread::ID* thread) {
+base::TaskRunner* LayoutTestMessageFilter::OverrideTaskRunnerForMessage(
+    const IPC::Message& message) {
   switch (message.type()) {
     case LayoutTestHostMsg_ClearAllDatabases::ID:
-      *thread = BrowserThread::FILE;
-      break;
+      return database_tracker_->task_runner();
     case LayoutTestHostMsg_SimulateWebNotificationClick::ID:
     case LayoutTestHostMsg_SimulateWebNotificationClose::ID:
     case LayoutTestHostMsg_SetPermission::ID:
     case LayoutTestHostMsg_ResetPermissions::ID:
     case LayoutTestHostMsg_LayoutTestRuntimeFlagsChanged::ID:
     case LayoutTestHostMsg_TestFinishedInSecondaryRenderer::ID:
-      *thread = BrowserThread::UI;
-      break;
+      return BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get();
   }
+  return nullptr;
 }
 
 bool LayoutTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -113,9 +112,9 @@ void LayoutTestMessageFilter::OnRegisterIsolatedFileSystem(
 }
 
 void LayoutTestMessageFilter::OnClearAllDatabases() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  database_tracker_->DeleteDataModifiedSince(
-      base::Time(), net::CompletionCallback());
+  DCHECK(database_tracker_->task_runner()->RunsTasksInCurrentSequence());
+  database_tracker_->DeleteDataModifiedSince(base::Time(),
+                                             net::CompletionCallback());
 }
 
 void LayoutTestMessageFilter::OnSetDatabaseQuota(int quota) {
@@ -126,6 +125,7 @@ void LayoutTestMessageFilter::OnSimulateWebNotificationClick(
     const std::string& title,
     int action_index,
     const base::NullableString16& reply) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LayoutTestNotificationManager* manager =
       LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
   if (manager)
@@ -134,6 +134,7 @@ void LayoutTestMessageFilter::OnSimulateWebNotificationClick(
 
 void LayoutTestMessageFilter::OnSimulateWebNotificationClose(
     const std::string& title, bool by_user) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LayoutTestNotificationManager* manager =
       LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
   if (manager)
@@ -193,11 +194,13 @@ void LayoutTestMessageFilter::OnResetPermissions() {
 
 void LayoutTestMessageFilter::OnLayoutTestRuntimeFlagsChanged(
     const base::DictionaryValue& changed_layout_test_runtime_flags) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BlinkTestController::Get()->OnLayoutTestRuntimeFlagsChanged(
       render_process_id_, changed_layout_test_runtime_flags);
 }
 
 void LayoutTestMessageFilter::OnTestFinishedInSecondaryRenderer() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BlinkTestController::Get()->OnTestFinishedInSecondaryRenderer();
 }
 

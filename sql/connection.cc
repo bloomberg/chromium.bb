@@ -29,7 +29,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "sql/connection_memory_dump_provider.h"
@@ -165,18 +165,18 @@ void InitializeSqlite() {
     sqlite3_initialize();
 
     // Schedule callback to record memory footprint histograms at 10m, 1h, and
-    // 1d. There may not be a registered thread task runner in tests.
-    if (base::ThreadTaskRunnerHandle::IsSet()) {
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    // 1d. There may not be a registered task runner in tests.
+    if (base::SequencedTaskRunnerHandle::IsSet()) {
+      base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&RecordSqliteMemory10Min),
           base::TimeDelta::FromMinutes(10));
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&RecordSqliteMemoryHour),
           base::TimeDelta::FromHours(1));
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&RecordSqliteMemoryDay),
           base::TimeDelta::FromDays(1));
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&RecordSqliteMemoryWeek),
           base::TimeDelta::FromDays(7));
     }

@@ -24,9 +24,7 @@ class DatabaseTracker;
 // on the IO thread by the quota manager.
 class STORAGE_EXPORT DatabaseQuotaClient : public storage::QuotaClient {
  public:
-  DatabaseQuotaClient(
-      base::SingleThreadTaskRunner* tracker_thread,
-      DatabaseTracker* tracker);
+  DatabaseQuotaClient(scoped_refptr<DatabaseTracker> tracker);
   ~DatabaseQuotaClient() override;
 
   // QuotaClient method overrides
@@ -46,8 +44,7 @@ class STORAGE_EXPORT DatabaseQuotaClient : public storage::QuotaClient {
   bool DoesSupport(storage::StorageType type) const override;
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> db_tracker_thread_;
-  scoped_refptr<DatabaseTracker> db_tracker_;  // only used on its thread
+  scoped_refptr<DatabaseTracker> db_tracker_;  // only used on its sequence
 
   DISALLOW_COPY_AND_ASSIGN(DatabaseQuotaClient);
 };
