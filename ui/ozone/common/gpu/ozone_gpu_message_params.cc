@@ -38,16 +38,4 @@ OverlayCheck_Params::OverlayCheck_Params(const OverlayCheck_Params& other) =
 
 OverlayCheck_Params::~OverlayCheck_Params() {}
 
-bool OverlayCheck_Params::operator<(const OverlayCheck_Params& param) const {
-  int lwidth = buffer_size.width();
-  int lheight = buffer_size.height();
-  int rwidth = param.buffer_size.width();
-  int rheight = param.buffer_size.height();
-
-  return std::tie(plane_z_order, format, display_rect, lwidth, lheight,
-                  transform) < std::tie(param.plane_z_order, param.format,
-                                        param.display_rect, rwidth, rheight,
-                                        param.transform);
-}
-
 }  // namespace ui

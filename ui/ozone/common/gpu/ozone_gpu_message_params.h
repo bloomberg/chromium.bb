@@ -62,7 +62,6 @@ struct OverlayCheck_Params {
   OverlayCheck_Params(const OverlayCheck_Params& other);
   ~OverlayCheck_Params();
 
-  bool operator<(const OverlayCheck_Params& plane) const;
 
   gfx::Size buffer_size;
   gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_NONE;

@@ -526,4 +526,53 @@ MovableDisplaySnapshots CreateMovableDisplaySnapshotsFromParams(
   return snapshots;
 }
 
+OverlaySurfaceCandidateList CreateOverlaySurfaceCandidateListFrom(
+    const std::vector<OverlayCheck_Params>& params) {
+  OverlaySurfaceCandidateList candidates;
+  for (auto& p : params) {
+    OverlaySurfaceCandidate osc;
+    osc.transform = p.transform;
+    osc.buffer_size = p.buffer_size;
+    osc.format = p.format;
+    osc.display_rect = gfx::RectF(p.display_rect);
+    osc.crop_rect = p.crop_rect;
+    osc.plane_z_order = p.plane_z_order;
+    osc.overlay_handled = p.is_overlay_candidate;
+    candidates.push_back(osc);
+  }
+
+  return candidates;
+}
+
+std::vector<OverlayCheck_Params> CreateParamsFromOverlaySurfaceCandidate(
+    const OverlaySurfaceCandidateList& candidates) {
+  std::vector<OverlayCheck_Params> overlay_params;
+  for (auto& candidate : candidates) {
+    overlay_params.push_back(OverlayCheck_Params(candidate));
+  }
+
+  return overlay_params;
+}
+
+OverlayStatusList CreateOverlayStatusListFrom(
+    const std::vector<OverlayCheckReturn_Params>& params) {
+  OverlayStatusList returns;
+  for (auto& p : params) {
+    returns.push_back(p.status);
+  }
+
+  return returns;
+}
+
+std::vector<OverlayCheckReturn_Params> CreateParamsFromOverlayStatusList(
+    const OverlayStatusList& returns) {
+  std::vector<OverlayCheckReturn_Params> params;
+  for (auto& s : returns) {
+    OverlayCheckReturn_Params p;
+    p.status = s;
+    params.push_back(p);
+  }
+  return params;
+}
+
 }  // namespace ui

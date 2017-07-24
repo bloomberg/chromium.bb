@@ -77,7 +77,7 @@ class MusThreadProxy : public GpuThreadAdapter,
 
   bool GpuCheckOverlayCapabilities(
       gfx::AcceleratedWidget widget,
-      const std::vector<OverlayCheck_Params>& new_params) override;
+      const OverlaySurfaceCandidateList& new_params) override;
 
   // Services needed by DrmDisplayHost
   bool GpuConfigureNativeDisplay(int64_t display_id,
@@ -111,9 +111,9 @@ class MusThreadProxy : public GpuThreadAdapter,
   void DispatchObserversFromDrmThread();
 
   void GpuCheckOverlayCapabilitiesCallback(
-      gfx::AcceleratedWidget widget,
-      const std::vector<OverlayCheck_Params>& overlays,
-      const std::vector<OverlayCheckReturn_Params>& returns) const;
+      const gfx::AcceleratedWidget& widget,
+      const OverlaySurfaceCandidateList& overlays,
+      const OverlayStatusList& returns) const;
 
   void GpuConfigureNativeDisplayCallback(int64_t display_id,
                                          bool success) const;

@@ -109,8 +109,9 @@ void DrmThreadMessageProxy::OnCursorMove(gfx::AcceleratedWidget widget,
 
 void DrmThreadMessageProxy::OnCheckOverlayCapabilities(
     gfx::AcceleratedWidget widget,
-    const std::vector<OverlayCheck_Params>& overlays) {
+    const std::vector<OverlayCheck_Params>& param_overlays) {
   DCHECK(drm_thread_->IsRunning());
+  auto overlays = CreateOverlaySurfaceCandidateListFrom(param_overlays);
   auto callback =
       base::BindOnce(&DrmThreadMessageProxy::OnCheckOverlayCapabilitiesCallback,
                      weak_ptr_factory_.GetWeakPtr());
@@ -239,11 +240,13 @@ void DrmThreadMessageProxy::OnSetColorCorrection(
 }
 
 void DrmThreadMessageProxy::OnCheckOverlayCapabilitiesCallback(
-    gfx::AcceleratedWidget widget,
-    const std::vector<OverlayCheck_Params>& overlays,
-    const std::vector<OverlayCheckReturn_Params>& returns) const {
-  sender_->Send(
-      new OzoneHostMsg_OverlayCapabilitiesReceived(widget, overlays, returns));
+    const gfx::AcceleratedWidget& widget,
+    const OverlaySurfaceCandidateList& candidates,
+    const OverlayStatusList& returns) const {
+  auto param_overlays = CreateParamsFromOverlaySurfaceCandidate(candidates);
+  auto param_returns = CreateParamsFromOverlayStatusList(returns);
+  sender_->Send(new OzoneHostMsg_OverlayCapabilitiesReceived(
+      widget, param_overlays, param_returns));
 }
 
 void DrmThreadMessageProxy::OnRefreshNativeDisplaysCallback(

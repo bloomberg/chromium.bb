@@ -74,7 +74,7 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
   // Services needed by DrmOverlayManager
   bool GpuCheckOverlayCapabilities(
       gfx::AcceleratedWidget widget,
-      const std::vector<OverlayCheck_Params>& new_params) override;
+      const OverlaySurfaceCandidateList& new_params) override;
 
   // Services needed by DrmDisplayHost
   bool GpuConfigureNativeDisplay(int64_t display_id,
