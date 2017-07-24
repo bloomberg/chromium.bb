@@ -3,9 +3,10 @@
 <script src="../resources/testharnessreport.js"></script>
 <body>
 <script>
-var t = async_test('Test that preloaded non-cacheable resources get reused even after onload');
+var t = async_test('Test that XHR (CORS) is not matched with a preload without crossorigin attribute');
 var action;
-const URL = 'resources/timestamp.php?from=memcache_reuse_of_non_cacheable_preload.html';
+
+const URL = 'resources/timestamp.php?from=preload-fetch-mode-mismatch.html';
 
 var test = t.step_func(function() {
     var entries = performance.getEntriesByType("resource");
@@ -14,7 +15,7 @@ var test = t.step_func(function() {
         if (entries[i].name.indexOf("timestamp") != -1)
             ++resources;
     }
-    assert_equals(resources, 1);
+    assert_equals(resources, 2);
     t.done();
 });
 
@@ -31,7 +32,6 @@ var loadTimestampWithXHR = t.step_func(function() {
 var loadTimestampWithLink = (function() {
     var l = document.createElement('link');
     l.setAttribute('rel', 'preload');
-    l.setAttribute('crossorigin', 'use-credentials');
     l.setAttribute('href', URL);
     l.setAttribute('as', 'fetch');
     l.onload = loadTimestampWithXHR;
