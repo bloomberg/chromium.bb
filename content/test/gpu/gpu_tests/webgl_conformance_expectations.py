@@ -111,9 +111,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/misc/uninitialized-local-global-variables.html',
         bug=1966) # angle bug ID
 
-    # Don't run performance tests on debug builds
+    # This test needs to be rewritten to measure its expected
+    # performance; it's currently too flaky even on release bots.
     self.Skip('conformance/rendering/texture-switch-performance.html',
-        ['debug', 'debug_x64'], bug=735483)
+        bug=735483)
 
     # Passthrough command decoder
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
@@ -383,8 +384,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac', 'amd', 'no_passthrough'], bug=625365)
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['mac', 'amd'], bug=642822)
-    self.Fail('conformance/rendering/texture-switch-performance.html',
-        ['mac', 'amd', 'release'], bug=735483)
+    # TODO(kbr): uncomment the following exepectation after test has
+    # been made more robust.
+    # self.Fail('conformance/rendering/texture-switch-performance.html',
+    #     ['mac', 'amd', 'release'], bug=735483)
 
     # Mac Retina NVidia failures
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
