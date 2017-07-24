@@ -9,8 +9,10 @@ callback IntersectionObserverCallback = void (sequence<IntersectionObserverEntry
 // https://wicg.github.io/IntersectionObserver/#intersection-observer-interface
 
 [
-    CustomConstructor(IntersectionObserverCallback callback, optional IntersectionObserverInit options),
+    Constructor(IntersectionObserverCallback callback, optional IntersectionObserverInit options),
+    ConstructorCallWith=ScriptState,
     MeasureAs=IntersectionObserver_Constructor,
+    RaisesException=Constructor,
     RuntimeEnabled=IntersectionObserver,
     DependentLifetime
 ] interface IntersectionObserver {
