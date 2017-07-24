@@ -55,6 +55,7 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
 #include "media/base/media.h"
+#include "media/media_features.h"
 #include "ppapi/features/features.h"
 #include "services/service_manager/embedder/switches.h"
 #include "ui/base/ui_base_paths.h"

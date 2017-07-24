@@ -472,6 +472,7 @@ target(link_target_type, "renderer") {
     "//gpu/command_buffer/client:gles2_interface",
     "//jingle:jingle_glue",
     "//media",
+    "//media:media_features",
     "//media/blink",
     "//media/capture",
     "//media/gpu",
@@ -953,7 +954,7 @@ target(link_target_type, "renderer") {
     ]
   }
 
-  if (!enable_pepper_cdms) {
+  if (!enable_library_cdms) {
     sources -= [
       "media/cdm/pepper_cdm_wrapper.h",
       "media/cdm/pepper_cdm_wrapper_impl.cc",

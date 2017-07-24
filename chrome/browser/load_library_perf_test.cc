@@ -13,13 +13,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "ppapi/features/features.h"
+#include "media/media_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
 #include "widevine_cdm_version.h"  //  In SHARED_INTERMEDIATE_DIR.
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_paths.h"
 #endif
 
@@ -60,7 +60,7 @@ void MeasureSizeAndTimeToLoadNativeLibrary(
                          true);
 }
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 void MeasureSizeAndTimeToLoadCdm(const std::string& cdm_base_dir,
                                  const std::string& cdm_name) {
@@ -69,11 +69,11 @@ void MeasureSizeAndTimeToLoadCdm(const std::string& cdm_base_dir,
       base::FilePath::FromUTF8Unsafe(cdm_name));
 }
 
-#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 }  // namespace
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #if defined(WIDEVINE_CDM_AVAILABLE)
 TEST(LoadCDMPerfTest, Widevine) {
   MeasureSizeAndTimeToLoadCdm(
@@ -97,4 +97,4 @@ TEST(LoadCDMPerfTest, ExternalClearKeyAdapter) {
   MeasureSizeAndTimeToLoadCdm(media::kClearKeyCdmBaseDirectory,
                               media::kClearKeyCdmAdapterFileName);
 }
-#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

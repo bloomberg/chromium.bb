@@ -81,7 +81,7 @@
 #include "ppapi/shared_impl/ppapi_permissions.h"  // nogncheck
 #endif
 
-#if defined(WIDEVINE_CDM_AVAILABLE) && BUILDFLAG(ENABLE_PEPPER_CDMS) && \
+#if defined(WIDEVINE_CDM_AVAILABLE) && BUILDFLAG(ENABLE_LIBRARY_CDMS) && \
     !defined(WIDEVINE_CDM_IS_COMPONENT)
 #define WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT
 #include "chrome/common/widevine_cdm_constants.h"
@@ -533,7 +533,7 @@ void ChromeContentClient::AddContentDecryptionModules(
     std::vector<content::CdmHostFilePath>* cdm_host_file_paths) {
   if (cdms) {
 // TODO(jrummell): Need to have a better flag to indicate systems Widevine
-// is available on. For now we continue to use ENABLE_PEPPER_CDMS so that
+// is available on. For now we continue to use ENABLE_LIBRARY_CDMS so that
 // we can experiment between pepper and mojo.
 #if defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
     base::FilePath adapter_path;

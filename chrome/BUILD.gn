@@ -16,6 +16,7 @@ import("//chrome/chrome_paks.gni")
 import("//chrome/common/features.gni")
 import("//chrome/process_version_rc_template.gni")
 import("//extensions/features/features.gni")
+import("//media/media_options.gni")
 import("//ppapi/features/features.gni")
 import("//third_party/WebKit/public/public_features.gni")
 import("//third_party/widevine/cdm/widevine.gni")
@@ -768,7 +769,7 @@ if (is_win) {
 
     # Only official builds that include Widevine need the widevine
     # signature file.
-    if (is_chrome_branded && enable_pepper_cdms) {
+    if (is_chrome_branded && enable_library_cdms) {
       sources += [ "$root_out_dir/Widevine Resources.bundle" ]
       public_deps += [ ":widevine_resources_bundle" ]
     }
@@ -965,7 +966,7 @@ if (is_win) {
   }
 
   _should_bundle_widevine =
-      (is_chrome_branded || enable_widevine) && enable_pepper_cdms
+      (is_chrome_branded || enable_widevine) && enable_library_cdms
   if (_should_bundle_widevine) {
     # The Widevine CDM and manifest are either the actual Widevine CDM and
     # manifest or stubs used for testing only. The choice is made within the

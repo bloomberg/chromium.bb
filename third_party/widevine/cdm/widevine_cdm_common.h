@@ -6,7 +6,6 @@
 #define WIDEVINE_CDM_WIDEVINE_CDM_COMMON_H_
 
 #include "media/media_features.h"
-#include "ppapi/features/features.h"
 
 // This file defines constants common to all Widevine CDM versions.
 
@@ -31,7 +30,7 @@ const char kWidevineCdmDisplayName[] = "Widevine Content Decryption Module";
 const char kWidevineCdmDescription[] =
     "Enables Widevine licenses for playback of HTML audio/video content.";
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 const char kWidevineCdmPluginMimeType[] = "application/x-ppapi-widevine-cdm";
 const char kWidevineCdmPluginMimeTypeDescription[] =
     "Widevine Content Decryption Module";
@@ -63,6 +62,6 @@ const char kCdmSupportedCodecAvc1[] = "avc1";
 // CDM is installed by the component installer instead of the Chrome installer.
 #define WIDEVINE_CDM_IS_COMPONENT
 #endif  // defined(OS_MACOSX) || defined(OS_WIN)
-#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #endif  // WIDEVINE_CDM_WIDEVINE_CDM_COMMON_H_

@@ -13,8 +13,8 @@
 #include "content/shell/browser/shell.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
+#include "media/media_features.h"
 #include "media/mojo/features.h"
-#include "ppapi/features/features.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -24,7 +24,7 @@
 #include "base/win/windows_version.h"
 #endif
 
-#if BUILDFLAG(ENABLE_MOJO_CDM) && !BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_MOJO_CDM) && !BUILDFLAG(ENABLE_LIBRARY_CDMS)
 // When mojo CDM is enabled, External Clear Key is supported in //content/shell/
 // by using mojo CDM with AesDecryptor running in the remote (e.g. GPU or
 // Browser) process. When pepper CDM is supported, External Clear Key is

@@ -791,6 +791,7 @@ test("content_browsertests") {
     "//ipc",
     "//ipc:test_support",
     "//media",
+    "//media:media_features",
     "//media:test_support",
     "//media/audio:test_support",
     "//media/base:test_support",

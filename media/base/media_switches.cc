@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "media/base/media_switches.h"
+
 #include "base/command_line.h"
 #include "build/build_config.h"
-#include "ppapi/features/features.h"
 
 namespace switches {
 

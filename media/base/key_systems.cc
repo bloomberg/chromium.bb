@@ -19,7 +19,6 @@
 #include "media/base/key_system_properties.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
-#include "ppapi/features/features.h"
 #include "media/base/media_client.h"
 #include "media/media_features.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
@@ -190,7 +189,7 @@ class KeySystemsImpl : public KeySystems {
 
   bool UseAesDecryptor(const std::string& key_system) const;
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   std::string GetPepperType(const std::string& key_system) const;
 #endif
 
@@ -346,7 +345,7 @@ void KeySystemsImpl::UpdateSupportedKeySystems() {
 // Returns whether distinctive identifiers and persistent state can be reliably
 // blocked for |properties| (and therefore be safely configurable).
 static bool CanBlock(const KeySystemProperties& properties) {
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // Distinctive identifiers and persistent state can be reliably blocked for
   // Pepper-hosted key systems.
   DCHECK_EQ(properties.UseAesDecryptor(), properties.GetPepperType().empty());
@@ -516,7 +515,7 @@ bool KeySystemsImpl::UseAesDecryptor(const std::string& key_system) const {
   return key_system_iter->second->UseAesDecryptor();
 }
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 std::string KeySystemsImpl::GetPepperType(const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -721,7 +720,7 @@ bool CanUseAesDecryptor(const std::string& key_system) {
   return KeySystemsImpl::GetInstance()->UseAesDecryptor(key_system);
 }
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 std::string GetPepperType(const std::string& key_system) {
   return KeySystemsImpl::GetInstance()->GetPepperType(key_system);
 }

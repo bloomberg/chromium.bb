@@ -19,6 +19,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "extensions/features/features.h"
+#include "media/media_features.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/features/features.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -53,7 +54,7 @@ const char* const kWhitelistedHistogramPrefixes[] = {
 };
 
 const char* const kWhitelistedPluginBaseNames[] = {
-#if defined(WIDEVINE_CDM_AVAILABLE) && BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if defined(WIDEVINE_CDM_AVAILABLE) && BUILDFLAG(ENABLE_LIBRARY_CDMS)
     kWidevineCdmAdapterFileName,  // see http://crbug.com/368743
                                   // and http://crbug.com/410630
 #endif

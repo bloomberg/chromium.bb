@@ -65,7 +65,7 @@ source_set("cdm") {
   }
 
   # TODO(xhwang): Move other library CDM related files to this block as well.
-  if (enable_pepper_cdms) {
+  if (enable_library_cdms) {
     deps += [
       ":cdm_paths",
 

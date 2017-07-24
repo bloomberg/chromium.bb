@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/cdm_factory.h"
-#include "ppapi/features/features.h"
+#include "media/media_features.h"
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "content/renderer/media/cdm/pepper_cdm_wrapper.h"
 #endif
 
@@ -29,11 +29,11 @@ namespace content {
 // and should only be used on one thread.
 class RenderCdmFactory : public media::CdmFactory {
  public:
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   explicit RenderCdmFactory(const CreatePepperCdmCB& create_pepper_cdm_cb);
 #else
   RenderCdmFactory();
-#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   ~RenderCdmFactory() override;
 
@@ -49,7 +49,7 @@ class RenderCdmFactory : public media::CdmFactory {
       const media::CdmCreatedCB& cdm_created_cb) override;
 
  private:
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   CreatePepperCdmCB create_pepper_cdm_cb_;
 #endif
 
