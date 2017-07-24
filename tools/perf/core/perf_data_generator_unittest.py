@@ -151,7 +151,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
   def testGenerateTelemetryTestsWithUploadToFlakinessDashboard(self):
     swarming_dimensions = [{'os': 'SkyNet', 'id': 'T-850', 'pool': 'T-RIP'}]
     test = perf_data_generator.generate_telemetry_test(
-        swarming_dimensions, 'system_health.common_desktop', 'release', True)
+        swarming_dimensions, 'system_health.common_desktop', 'release')
     expected_generated_test = {
         'override_compile_targets': ['telemetry_perf_tests'],
         'args': ['system_health.common_desktop', '-v', '--upload-results',
