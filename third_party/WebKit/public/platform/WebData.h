@@ -71,7 +71,28 @@ class BLINK_PLATFORM_EXPORT WebData {
   void Assign(const char* data, size_t size);
 
   size_t size() const;
-  const char* Data() const;
+
+  // Returns the number of consecutive bytes after "position". "data"
+  // points to the first byte. Returns 0 when no more data is left.
+  size_t GetSomeData(const char*& data, size_t position) const;
+
+  // Helper for applying a lambda to all data segments, sequentially:
+  //
+  //   bool func(const char* segment, size_t segment_size,
+  //             size_t segment_offset);
+  //
+  // The iterator stops early when the lambda returns |false|.
+  template <typename Func>
+  void ForEachSegment(Func&& func) const {
+    const char* segment;
+    size_t pos = 0;
+
+    while (size_t length = GetSomeData(segment, pos)) {
+      if (!func(segment, length, pos))
+        break;
+      pos += length;
+    }
+  }
 
   bool IsEmpty() const { return !size(); }
   bool IsNull() const { return private_.IsNull(); }

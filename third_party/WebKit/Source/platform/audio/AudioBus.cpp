@@ -32,6 +32,7 @@
 #include <math.h>
 #include <algorithm>
 #include <memory>
+#include "platform/SharedBuffer.h"
 #include "platform/audio/AudioFileReader.h"
 #include "platform/audio/DenormalDisabler.h"
 #include "platform/audio/SincResampler.h"
@@ -751,8 +752,14 @@ PassRefPtr<AudioBus> AudioBus::GetDataResource(const char* name,
   if (resource.IsEmpty())
     return nullptr;
 
+  // Currently, the only client of this method is caching the result -- so
+  // it's reasonable to (potentially) pay a one-time flat access cost.
+  // If this becomes problematic, we'll have the refactor DecodeAudioFileData
+  // to take WebData and use segmented access.
+  SharedBuffer::DeprecatedFlatData flat_data(
+      resource.operator RefPtr<SharedBuffer>());
   RefPtr<AudioBus> audio_bus =
-      DecodeAudioFileData(resource.Data(), resource.size());
+      DecodeAudioFileData(flat_data.Data(), flat_data.size());
 
   if (!audio_bus.Get())
     return nullptr;

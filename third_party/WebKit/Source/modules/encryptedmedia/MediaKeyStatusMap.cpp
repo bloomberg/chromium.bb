@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ArrayBufferOrArrayBufferView.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMArrayPiece.h"
+#include "platform/SharedBuffer.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebData.h"
 
@@ -60,7 +61,7 @@ class MediaKeyStatusMap::MapEntry final
 
  private:
   MapEntry(WebData key_id, const String& status)
-      : key_id_(DOMArrayBuffer::Create(key_id.Data(), key_id.size())),
+      : key_id_(DOMArrayBuffer::Create(RefPtr<SharedBuffer>(key_id))),
         status_(status) {}
 
   const Member<DOMArrayBuffer> key_id_;

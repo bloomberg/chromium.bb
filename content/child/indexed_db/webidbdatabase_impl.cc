@@ -315,7 +315,13 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
       transaction_id, nullptr);
 
   auto mojo_value = indexed_db::mojom::Value::New();
-  mojo_value->bits.assign(value.Data(), value.Data() + value.size());
+  DCHECK(mojo_value->bits.empty());
+  mojo_value->bits.reserve(value.size());
+  value.ForEachSegment([&mojo_value](const char* segment, size_t segment_size,
+                                     size_t segment_offset) {
+    mojo_value->bits.append(segment, segment_size);
+    return true;
+  });
   mojo_value->blob_or_file_info.reserve(web_blob_info.size());
   for (const WebBlobInfo& info : web_blob_info) {
     auto blob_info = indexed_db::mojom::BlobInfo::New();

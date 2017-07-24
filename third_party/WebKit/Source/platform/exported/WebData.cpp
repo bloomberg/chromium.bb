@@ -52,10 +52,8 @@ size_t WebData::size() const {
   return private_->size();
 }
 
-const char* WebData::Data() const {
-  if (private_.IsNull())
-    return 0;
-  return private_->Data();
+size_t WebData::GetSomeData(const char*& data, size_t position) const {
+  return private_.IsNull() ? 0 : private_->GetSomeData(data, position);
 }
 
 WebData::WebData(RefPtr<SharedBuffer> buffer) : private_(std::move(buffer)) {}

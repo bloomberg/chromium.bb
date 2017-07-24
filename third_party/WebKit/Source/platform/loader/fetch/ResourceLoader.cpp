@@ -625,8 +625,12 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
   // empty buffer is a noop in most cases, but is destructive in the case of
   // a 304, where it will overwrite the cached data we should be reusing.
   if (data_out.size()) {
-    Context().DispatchDidReceiveData(resource_->Identifier(), data_out.Data(),
-                                     data_out.size());
+    data_out.ForEachSegment([this](const char* segment, size_t segment_size,
+                                   size_t segment_offset) {
+      Context().DispatchDidReceiveData(resource_->Identifier(), segment,
+                                       segment_size);
+      return true;
+    });
     resource_->SetResourceBuffer(data_out);
   }
   DidFinishLoading(MonotonicallyIncreasingTime(), encoded_data_length,

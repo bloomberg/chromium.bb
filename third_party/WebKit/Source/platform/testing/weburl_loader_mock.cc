@@ -4,6 +4,7 @@
 
 #include "platform/testing/weburl_loader_mock.h"
 
+#include "platform/SharedBuffer.h"
 #include "platform/testing/weburl_loader_mock_factory_impl.h"
 #include "public/platform/URLConversion.h"
 #include "public/platform/WebData.h"
@@ -63,7 +64,16 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
     delegate->DidFail(client_, error, data.size(), 0, 0);
     return;
   }
-  delegate->DidReceiveData(client_, data.Data(), data.size());
+
+  data.ForEachSegment([this, &delegate, &self](const char* segment,
+                                               size_t segment_size,
+                                               size_t segment_offset) {
+    delegate->DidReceiveData(client_, segment, segment_size);
+    // DidReceiveData() may clear the |self| weak ptr.  We stop iterating
+    // when that happens.
+    return self;
+  });
+
   if (!self)
     return;
 
