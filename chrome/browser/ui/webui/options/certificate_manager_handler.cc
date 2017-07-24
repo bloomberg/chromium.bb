@@ -23,6 +23,8 @@
 #include "base/posix/safe_strerror.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -34,7 +36,6 @@
 #include "chrome/browser/ui/webui/certificate_viewer_webui.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
@@ -48,7 +49,6 @@
 #endif
 
 using base::UTF8ToUTF16;
-using content::BrowserThread;
 
 namespace {
 
@@ -296,10 +296,11 @@ base::CancelableTaskTracker::TaskId FileAccessProvider::StartRead(
   int* saved_errno = new int(0);
   std::string* data = new std::string();
 
-  // Post task to file thread to read file.
+  // Post task to a background sequence to read file.
+  auto task_runner = base::CreateTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND});
   return tracker->PostTaskAndReply(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get(),
-      FROM_HERE,
+      task_runner.get(), FROM_HERE,
       base::Bind(&FileAccessProvider::DoRead, this, path, saved_errno, data),
       base::Bind(callback, base::Owned(saved_errno), base::Owned(data)));
 }
@@ -313,11 +314,14 @@ base::CancelableTaskTracker::TaskId FileAccessProvider::StartWrite(
   int* saved_errno = new int(0);
   int* bytes_written = new int(0);
 
-  // Post task to file thread to write file.
+  // This task blocks shutdown because it saves critical user data.
+  auto task_runner = base::CreateTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   return tracker->PostTaskAndReply(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get(),
-      FROM_HERE, base::Bind(&FileAccessProvider::DoWrite, this, path, data,
-                            saved_errno, bytes_written),
+      task_runner.get(), FROM_HERE,
+      base::Bind(&FileAccessProvider::DoWrite, this, path, data, saved_errno,
+                 bytes_written),
       base::Bind(callback, base::Owned(saved_errno),
                  base::Owned(bytes_written)));
 }
