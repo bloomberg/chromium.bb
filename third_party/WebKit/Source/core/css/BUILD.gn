@@ -519,6 +519,8 @@ blink_core_sources("css") {
     "properties/CSSPropertyCounterUtils.h",
     "properties/CSSPropertyFontUtils.cpp",
     "properties/CSSPropertyFontUtils.h",
+    "properties/CSSPropertyGridTemplateAreasUtils.cpp",
+    "properties/CSSPropertyGridTemplateAreasUtils.h",
     "properties/CSSPropertyLengthUtils.cpp",
     "properties/CSSPropertyLengthUtils.h",
     "properties/CSSPropertyMarginUtils.cpp",
