@@ -1078,10 +1078,13 @@ void Element::ScrollFrameBy(const ScrollToOptions& scroll_to_options) {
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
                                            scroll_behavior);
   LocalFrame* frame = GetDocument().GetFrame();
-  if (!frame)
+  if (!frame || !frame->View() || !GetDocument().GetPage())
     return;
+
   ScrollableArea* viewport =
-      frame->View() ? frame->View()->GetScrollableArea() : 0;
+      GetDocument().GetPage()->GetSettings().GetInertVisualViewport()
+          ? frame->View()->LayoutViewportScrollableArea()
+          : frame->View()->GetScrollableArea();
   if (!viewport)
     return;
 
@@ -1098,10 +1101,13 @@ void Element::ScrollFrameTo(const ScrollToOptions& scroll_to_options) {
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
                                            scroll_behavior);
   LocalFrame* frame = GetDocument().GetFrame();
-  if (!frame)
+  if (!frame || !frame->View() || !GetDocument().GetPage())
     return;
+
   ScrollableArea* viewport =
-      frame->View() ? frame->View()->GetScrollableArea() : 0;
+      GetDocument().GetPage()->GetSettings().GetInertVisualViewport()
+          ? frame->View()->LayoutViewportScrollableArea()
+          : frame->View()->GetScrollableArea();
   if (!viewport)
     return;
 
