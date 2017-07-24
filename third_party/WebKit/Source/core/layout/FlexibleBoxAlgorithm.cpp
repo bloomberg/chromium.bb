@@ -108,7 +108,12 @@ FlexLayoutAlgorithm::FlexLayoutAlgorithm(const ComputedStyle* style,
       next_item_index_(0) {}
 
 FlexLine* FlexLayoutAlgorithm::ComputeNextFlexLine() {
-  FlexLine new_line;
+  Vector<FlexItem> line_items;
+  LayoutUnit sum_flex_base_size;
+  double total_flex_grow = 0;
+  double total_flex_shrink = 0;
+  double total_weighted_flex_shrink = 0;
+  LayoutUnit sum_hypothetical_main_size;
 
   bool line_has_in_flow_item = false;
 
@@ -116,26 +121,26 @@ FlexLine* FlexLayoutAlgorithm::ComputeNextFlexLine() {
     const FlexItem& flex_item = all_items_[next_item_index_];
     DCHECK(!flex_item.box->IsOutOfFlowPositioned());
     if (IsMultiline() &&
-        new_line.sum_hypothetical_main_size +
+        sum_hypothetical_main_size +
                 flex_item.HypotheticalMainAxisMarginBoxSize() >
             line_break_length_ &&
         line_has_in_flow_item)
       break;
-    new_line.line_items.push_back(flex_item);
+    line_items.push_back(flex_item);
     line_has_in_flow_item = true;
-    new_line.sum_flex_base_size += flex_item.FlexBaseMarginBoxSize();
-    new_line.total_flex_grow += flex_item.box->Style()->FlexGrow();
-    new_line.total_flex_shrink += flex_item.box->Style()->FlexShrink();
-    new_line.total_weighted_flex_shrink +=
+    sum_flex_base_size += flex_item.FlexBaseMarginBoxSize();
+    total_flex_grow += flex_item.box->Style()->FlexGrow();
+    total_flex_shrink += flex_item.box->Style()->FlexShrink();
+    total_weighted_flex_shrink +=
         flex_item.box->Style()->FlexShrink() * flex_item.flex_base_content_size;
-    new_line.sum_hypothetical_main_size +=
-        flex_item.HypotheticalMainAxisMarginBoxSize();
+    sum_hypothetical_main_size += flex_item.HypotheticalMainAxisMarginBoxSize();
   }
-  DCHECK(new_line.line_items.size() > 0 ||
-         next_item_index_ == all_items_.size());
-  if (new_line.line_items.size() > 0) {
-    flex_lines_.push_back(std::move(new_line));
-    return &flex_lines_.back();
+  DCHECK(line_items.size() > 0 || next_item_index_ == all_items_.size());
+  if (line_items.size() > 0) {
+    // This will std::move line_items.
+    return &flex_lines_.emplace_back(
+        line_items, sum_flex_base_size, total_flex_grow, total_flex_shrink,
+        total_weighted_flex_shrink, sum_hypothetical_main_size);
   }
   return nullptr;
 }
