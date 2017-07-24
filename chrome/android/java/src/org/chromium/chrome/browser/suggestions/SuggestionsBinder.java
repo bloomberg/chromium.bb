@@ -25,7 +25,6 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Promise;
-import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
@@ -358,11 +357,8 @@ public class SuggestionsBinder {
             Drawable drawable = ThumbnailGradient.createDrawableWithGradientIfNeeded(
                     thumbnail, mThumbnailView.getResources());
 
-            // If the device has sufficient memory, store the image to skip the download task
-            // next time we display this snippet.
-            if (!SysUtils.isLowEndDevice()) {
-                mCapturedSuggestion.setThumbnail(mUiDelegate.getReferencePool().put(drawable));
-            }
+            // Store the bitmap to skip the download task next time we display this snippet.
+            mCapturedSuggestion.setThumbnail(mUiDelegate.getReferencePool().put(drawable));
 
             // Check whether the suggestions currently displayed in the view holder is the same as
             // the suggestion whose thumbnail we have just fetched.
