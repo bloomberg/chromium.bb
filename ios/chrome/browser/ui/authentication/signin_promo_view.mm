@@ -94,10 +94,12 @@ const CGFloat kButtonHeight = 36;
 
     [_primaryButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
                               forState:UIControlStateNormal];
-    _primaryButton.customTitleColor = [UIColor whiteColor];
+    [_primaryButton setTitleColor:[UIColor whiteColor]
+                         forState:UIControlStateNormal];
     _primaryButton.inkColor = [UIColor colorWithWhite:1 alpha:0.2];
 
-    _secondaryButton.customTitleColor = [[MDCPalette cr_bluePalette] tint500];
+    [_secondaryButton setTitleColor:[[MDCPalette cr_bluePalette] tint500]
+                           forState:UIControlStateNormal];
     _secondaryButton.uppercaseTitle = NO;
 
     [_closeButton setImage:[UIImage imageNamed:@"signin_promo_close_gray"]

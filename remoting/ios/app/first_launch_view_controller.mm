@@ -43,7 +43,8 @@ static const float kButtonHeight = 80.f;
   [signInButton addTarget:self
                    action:@selector(didTapSignIn:)
          forControlEvents:UIControlEventTouchUpInside];
-  signInButton.customTitleColor = RemotingTheme.flatButtonTextColor;
+  [signInButton setTitleColor:RemotingTheme.flatButtonTextColor
+                     forState:UIControlStateNormal];
   signInButton.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:signInButton];
 

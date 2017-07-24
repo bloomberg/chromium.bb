@@ -59,7 +59,8 @@ const CGFloat kVerticalPadding = 16;
     _textLabel.text =
         l10n_util::GetNSString(IDS_IOS_AUTOFILL_DESCRIBE_LOCAL_COPY);
 
-    _button.customTitleColor = [[MDCPalette cr_bluePalette] tint600];
+    [_button setTitleColor:[[MDCPalette cr_bluePalette] tint600]
+                  forState:UIControlStateNormal];
     [_button
         setTitle:l10n_util::GetNSString(IDS_AUTOFILL_CLEAR_LOCAL_COPY_BUTTON)
         forState:UIControlStateNormal];

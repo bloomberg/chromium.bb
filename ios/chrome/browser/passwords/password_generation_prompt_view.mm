@@ -323,7 +323,8 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
   MDCFlatButton* cancelButton = [[MDCFlatButton alloc] init];
   [cancelButton setTitle:cancelTitle forState:UIControlStateNormal];
   [cancelButton sizeToFit];
-  [cancelButton setCustomTitleColor:[UIColor blackColor]];
+  [cancelButton setTitleColor:[UIColor blackColor]
+                     forState:UIControlStateNormal];
   [cancelButton addTarget:self
                    action:@selector(dismiss)
          forControlEvents:UIControlEventTouchUpInside];
@@ -333,7 +334,7 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
   MDCFlatButton* OKButton = [[MDCFlatButton alloc] init];
   [OKButton setTitle:acceptTitle forState:UIControlStateNormal];
   [OKButton sizeToFit];
-  [OKButton setCustomTitleColor:[UIColor blackColor]];
+  [OKButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
   [OKButton addTarget:self
                 action:@selector(acceptPassword)
       forControlEvents:UIControlEventTouchUpInside];
