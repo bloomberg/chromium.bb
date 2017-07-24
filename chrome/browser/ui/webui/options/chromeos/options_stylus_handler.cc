@@ -84,6 +84,11 @@ void OptionsStylusHandler::OnAvailableNoteTakingAppsUpdated() {
   UpdateNoteTakingApps();
 }
 
+void OptionsStylusHandler::OnPreferredNoteTakingAppUpdated(Profile* profile) {
+  if (Profile::FromWebUI(web_ui()) == profile)
+    UpdateNoteTakingApps();
+}
+
 void OptionsStylusHandler::OnDeviceListsComplete() {
   SendHasStylus();
 }

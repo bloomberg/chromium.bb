@@ -23,6 +23,10 @@
         margin-left: 12px;
         @apply(--cr-icon-height-width);
       }
+
+      cr-policy-indicator {
+        padding: 0 var(--cr-controlled-by-spacing);
+      }
     </style>
 
     <div class="settings-box continuation">
@@ -71,11 +75,24 @@
 
     <template is="dom-if" if="[[supportsLockScreen_(selectedApp_)]]">
       <div class="settings-box">
-        <settings-toggle-button id="enable-app-on-lock-screen-toggle"
-            class="start"
-            pref="{{prefs.settings.note_taking_app_enabled_on_lock_screen}}"
-            label="$i18n{stylusNoteTakingAppEnabledOnLockScreen}">
-        </settings-toggle-button>
+        <div id="lock-screen-toggle-label" class="start"
+            actionable$="[[!disallowedOnLockScreenByPolicy_(selectedApp_)]]"
+            on-tap="toggleLockScreenSupport_">
+          $i18n{stylusNoteTakingAppEnabledOnLockScreen}
+        </div>
+        <template is="dom-if"
+            if="[[disallowedOnLockScreenByPolicy_(selectedApp_)]]">
+          <cr-policy-indicator
+              id="enable-app-on-lock-screen-policy-indicator"
+              indicator-type="[[userPolicyIndicator_]]">
+          </cr-policy-indicator>
+        </template>
+        <paper-toggle-button id="enable-app-on-lock-screen-toggle"
+            aria-labelledby="lock-screen-toggle-label"
+            disabled="[[disallowedOnLockScreenByPolicy_(selectedApp_)]]"
+            checked="[[lockScreenSupportEnabled_(selectedApp_)]]"
+            on-change="toggleLockScreenSupport_">
+        </paper-toggle-button>
       </div>
     </template>
 

@@ -14,8 +14,10 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_command_line.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_observer.h"
+#include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -27,6 +29,8 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_session.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -61,6 +65,11 @@ const char kPrimaryProfileName[] = "primary_profile";
 
 // Key for pref containing lock screen data crypto key.
 constexpr char kDataCryptoKeyPref[] = "lockScreenAppDataCryptoKey";
+
+std::unique_ptr<arc::ArcSession> ArcSessionFactory() {
+  ADD_FAILURE() << "Attempt to create arc session.";
+  return nullptr;
+}
 
 scoped_refptr<extensions::Extension> CreateTestNoteTakingApp(
     const std::string& app_id) {
@@ -350,6 +359,13 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     session_manager_->SetSessionState(
         session_manager::SessionState::LOGIN_PRIMARY);
 
+    // Initialize arc session manager - NoteTakingHelper expects it to be set.
+    arc_session_manager_ = base::MakeUnique<arc::ArcSessionManager>(
+        base::MakeUnique<arc::ArcSessionRunner>(
+            base::Bind(&ArcSessionFactory)));
+
+    chromeos::NoteTakingHelper::Initialize();
+
     ASSERT_TRUE(lock_screen_apps::StateController::IsEnabled());
 
     // Create fake lock screen app profile.
@@ -381,6 +397,8 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
     state_controller_->RemoveObserver(&observer_);
     state_controller_->Shutdown();
+    chromeos::NoteTakingHelper::Shutdown();
+
     session_manager_.reset();
     app_manager_ = nullptr;
     app_window_.reset();
@@ -547,6 +565,11 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   // Power manager client set by the test - the power manager client instance is
   // owned by DBusThreadManager.
   chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;
+
+  // The StateController does not really have dependency on ARC, but this is
+  // needed to properly initialize NoteTakingHelper.
+  std::unique_ptr<arc::ArcServiceManager> arc_service_manager_;
+  std::unique_ptr<arc::ArcSessionManager> arc_session_manager_;
 
   std::unique_ptr<session_manager::SessionManager> session_manager_;
 

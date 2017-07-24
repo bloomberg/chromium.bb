@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"
-#include "components/prefs/pref_change_registrar.h"
+#include "chrome/browser/chromeos/note_taking_helper.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
@@ -26,6 +26,7 @@ namespace lock_screen_apps {
 
 // The default implementation of lock_screen_apps::AppManager.
 class AppManagerImpl : public AppManager,
+                       public chromeos::NoteTakingHelper::Observer,
                        public extensions::ExtensionRegistryObserver {
  public:
   AppManagerImpl();
@@ -40,12 +41,16 @@ class AppManagerImpl : public AppManager,
   bool IsNoteTakingAppAvailable() const override;
   std::string GetNoteTakingAppId() const override;
 
-  // extensions::ExtensionRegistryObserver implementation:
+  // extensions::ExtensionRegistryObserver:
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const extensions::Extension* extension) override;
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const extensions::Extension* extension,
                            extensions::UnloadedExtensionReason reason) override;
+
+  // chromeos::NoteTakingHelper::Observer:
+  void OnAvailableNoteTakingAppsUpdated() override;
+  void OnPreferredNoteTakingAppUpdated(Profile* profile) override;
 
  private:
   enum class State {
@@ -101,10 +106,13 @@ class AppManagerImpl : public AppManager,
   State state_ = State::kNotInitialized;
   std::string lock_screen_app_id_;
 
-  PrefChangeRegistrar pref_change_registrar_;
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       extensions_observer_;
+
+  ScopedObserver<chromeos::NoteTakingHelper,
+                 chromeos::NoteTakingHelper::Observer>
+      note_taking_helper_observer_;
 
   base::Closure note_taking_changed_callback_;
 

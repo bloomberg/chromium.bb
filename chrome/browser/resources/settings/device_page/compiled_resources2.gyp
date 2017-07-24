@@ -45,6 +45,7 @@
     {
       'target_name': 'stylus',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/policy/compiled_resources2.gyp:cr_policy_indicator',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '../prefs/compiled_resources2.gyp:prefs_types',
         'device_page_browser_proxy'

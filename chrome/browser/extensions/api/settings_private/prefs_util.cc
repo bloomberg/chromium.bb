@@ -301,8 +301,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kLaunchPaletteOnEjectEvent] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kNoteTakingAppEnabledOnLockScreen] =
-      settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kNightLightEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kNightLightTemperature] =

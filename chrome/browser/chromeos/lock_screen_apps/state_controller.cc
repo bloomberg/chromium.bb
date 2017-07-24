@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager_impl.h"
+#include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -209,6 +210,9 @@ void StateController::InitializeWithCryptoKey(Profile* profile,
       base::MakeUnique<extensions::lock_screen_data::LockScreenItemStorage>(
           profile, g_browser_process->local_state(), crypto_key,
           base_path.AppendASCII("lock_screen_app_data"));
+
+  chromeos::NoteTakingHelper::Get()->SetProfileWithEnabledLockScreenApps(
+      profile);
 
   // App manager might have been set previously by a test.
   if (!app_manager_)

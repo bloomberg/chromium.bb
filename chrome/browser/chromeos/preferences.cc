@@ -314,6 +314,7 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kNoteTakingAppId, std::string());
   registry->RegisterBooleanPref(prefs::kNoteTakingAppEnabledOnLockScreen,
                                 false);
+  registry->RegisterListPref(prefs::kNoteTakingAppsLockScreenWhitelist);
 
   // We don't sync wake-on-wifi related prefs because they are device specific.
   registry->RegisterBooleanPref(prefs::kWakeOnWifiDarkConnect, true);

@@ -113,7 +113,9 @@ void InstallExtensionCopy(
 }  // namespace
 
 AppManagerImpl::AppManagerImpl()
-    : extensions_observer_(this), weak_ptr_factory_(this) {}
+    : extensions_observer_(this),
+      note_taking_helper_observer_(this),
+      weak_ptr_factory_(this) {}
 
 AppManagerImpl::~AppManagerImpl() = default;
 
@@ -138,15 +140,7 @@ void AppManagerImpl::Initialize(Profile* primary_profile,
   lock_screen_profile_ = lock_screen_profile;
   state_ = State::kInactive;
 
-  pref_change_registrar_.Init(primary_profile->GetPrefs());
-  pref_change_registrar_.Add(
-      prefs::kNoteTakingAppId,
-      base::Bind(&AppManagerImpl::OnNoteTakingExtensionChanged,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kNoteTakingAppEnabledOnLockScreen,
-      base::Bind(&AppManagerImpl::OnNoteTakingExtensionChanged,
-                 base::Unretained(this)));
+  note_taking_helper_observer_.Add(chromeos::NoteTakingHelper::Get());
 }
 
 void AppManagerImpl::Start(const base::Closure& note_taking_changed_callback) {
@@ -233,6 +227,15 @@ void AppManagerImpl::OnExtensionUnloaded(
     OnNoteTakingExtensionChanged();
 }
 
+void AppManagerImpl::OnAvailableNoteTakingAppsUpdated() {}
+
+void AppManagerImpl::OnPreferredNoteTakingAppUpdated(Profile* profile) {
+  if (profile != primary_profile_)
+    return;
+
+  OnNoteTakingExtensionChanged();
+}
+
 void AppManagerImpl::OnNoteTakingExtensionChanged() {
   if (state_ == State::kInactive)
     return;
@@ -259,9 +262,9 @@ std::string AppManagerImpl::FindLockScreenNoteTakingApp() const {
       chromeos::NoteTakingHelper::Get()->GetPreferredChromeAppInfo(
           primary_profile_);
 
-  if (!note_taking_app ||
+  if (!note_taking_app || !note_taking_app->preferred ||
       note_taking_app->lock_screen_support !=
-          chromeos::NoteTakingLockScreenSupport::kSelected) {
+          chromeos::NoteTakingLockScreenSupport::kEnabled) {
     return std::string();
   }
 
