@@ -61,7 +61,8 @@
       }
     </style>
     <div id="header">
-      <h2 class="title">{{pageTitle}}</h2>
+      <h2 class="title"
+          aria-hidden$="[[getTitleHiddenStatus_(pageTitle)]]">[[pageTitle]]</h2>
     </div>
     <div id="card">
       <content id="content"></content>
