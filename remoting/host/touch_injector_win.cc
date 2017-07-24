@@ -4,12 +4,16 @@
 
 #include "remoting/host/touch_injector_win.h"
 
+#include <string>
 #include <utility>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "remoting/proto/event.pb.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/webrtc/modules/desktop_capture/win/screen_capture_utils.h"
 
 namespace remoting {
 
@@ -37,9 +41,7 @@ void AppendMapValuesToVector(
   }
 }
 
-// The caller should set memset(0) the struct and set
-// pointer_touch_info->pointerInfo.pointerFlags.
-void ConvertToPointerTouchInfo(
+void ConvertToPointerTouchInfoImpl(
     const TouchEventPoint& touch_point,
     POINTER_TOUCH_INFO* pointer_touch_info) {
   pointer_touch_info->touchMask =
@@ -79,6 +81,27 @@ void ConvertToPointerTouchInfo(
   pointer_touch_info->pointerInfo.pointerId = touch_point.id();
   pointer_touch_info->pointerInfo.ptPixelLocation.x = touch_point.x();
   pointer_touch_info->pointerInfo.ptPixelLocation.y = touch_point.y();
+}
+
+// The caller should set memset(0) the struct and set
+// pointer_touch_info->pointerInfo.pointerFlags.
+void ConvertToPointerTouchInfo(
+    const TouchEventPoint& touch_point,
+    POINTER_TOUCH_INFO* pointer_touch_info) {
+  // TODO(zijiehe): Use GetFullscreenTopLeft() once
+  // https://chromium-review.googlesource.com/c/581951/ is submitted.
+  webrtc::DesktopVector top_left = webrtc::GetScreenRect(
+      webrtc::kFullDesktopScreenId, std::wstring()).top_left();
+  if (top_left.is_zero()) {
+    ConvertToPointerTouchInfoImpl(touch_point, pointer_touch_info);
+    return;
+  }
+
+  TouchEventPoint point(touch_point);
+  point.set_x(point.x() + top_left.x());
+  point.set_y(point.y() + top_left.y());
+
+  ConvertToPointerTouchInfoImpl(point, pointer_touch_info);
 }
 
 }  // namespace
