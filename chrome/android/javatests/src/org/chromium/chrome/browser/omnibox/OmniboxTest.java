@@ -259,6 +259,7 @@ public class OmniboxTest {
     @Test
     @MediumTest
     @Feature({"Omnibox"})
+    @RetryOnFailure
     public void testRequestZeroSuggestTypeAndBackspace() throws InterruptedException {
         final LocationBarLayout locationBar =
                 (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);

@@ -234,6 +234,7 @@ public class OverviewListLayoutTest {
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
+    @RetryOnFailure
     public void testCanSwipeClosed() throws InterruptedException, TimeoutException {
         setupTabs();
 

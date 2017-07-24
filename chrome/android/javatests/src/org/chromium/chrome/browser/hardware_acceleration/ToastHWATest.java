@@ -26,6 +26,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.download.DownloadTestRule;
@@ -132,6 +133,7 @@ public class ToastHWATest implements CustomMainActivityStart {
     @Test
     @SmallTest
     @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
+    @RetryOnFailure
     public void testOpenedInBackgroundToast() throws Exception {
         mDownloadTestRule.loadUrl(mTestServer.getURL(URL_PATH));
         mDownloadTestRule.assertWaitForPageScaleFactorMatch(0.5f);
