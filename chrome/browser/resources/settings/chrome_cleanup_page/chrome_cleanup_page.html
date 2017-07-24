@@ -18,6 +18,11 @@
 <dom-module id="settings-chrome-cleanup-page">
   <template>
     <style include="settings-shared">
+      #cleaning-spinner {
+        height: 20px;
+        width: 20px;
+      }
+
       #files-to-remove-container {
         padding: 0 var(--settings-box-row-padding);
         /* Use the full available width for file paths to avoid inconsistent
@@ -29,6 +34,10 @@
       #files-to-remove-list {
         margin: 0;
         word-break: break-all;
+      }
+
+      #learn-more {
+        -webkit-margin-start: 0;
       }
 
       #powered-by-settings-box {
@@ -51,13 +60,13 @@
       }
 
       #status-icon {
-        height: 24px;
-        width: 24px;
+        height: 20px;
+        vertical-align: top;
+        width: 20px;
       }
 
       .status-icon-container {
-        -webkit-padding-end: 12px;
-        min-width: 28px;
+        -webkit-padding-end: var(--settings-box-row-padding);
       }
 
       .status-icon-remove {
@@ -65,11 +74,11 @@
       }
 
       .status-icon-done {
-        --iron-icon-fill-color: var(--paper-blue-500);
+        --iron-icon-fill-color: var(--google-blue-500);
       }
 
       .status-icon-warning {
-        --iron-icon-fill-color: var(--paper-red-700);
+        --iron-icon-fill-color: var(--google-red-700);
       }
 
       .top-aligned-settings-box {
@@ -85,15 +94,16 @@
             hidden="[[!isRemoving_]]">
         </paper-spinner>
         <iron-icon icon="[[statusIcon_]]" hidden="[[isRemoving_]]"
-            class$="[[statusIconClassName_]]"
-            id="status-icon">
-        </iron-icon>
+            class$="[[statusIconClassName_]]" id="status-icon"></iron-icon>
       </div>
       <div class="start">
         <div>[[title_]]</div>
-        <div class="secondary" hidden="[[!showDetails_]]">
-          $i18n{chromeCleanupExplanation}
-          <a href="$i18n{chromeCleanupLearnMoreUrl}" target="_blank">
+        <div class="secondary">
+          <span hidden="[[!showDetails_]]">
+            $i18n{chromeCleanupExplanation}
+          </span>
+          <a id="learn-more" href="$i18n{chromeCleanupLearnMoreUrl}"
+              target="_blank" hidden="[[!showLearnMore_]]">
             $i18n{learnMore}
           </a>
         </div>
