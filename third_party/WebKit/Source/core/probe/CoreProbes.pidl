@@ -55,6 +55,7 @@ interface CoreProbes {
 
   class ConsoleMessage;
   class HTMLDocumentParser;
+  class ScheduledNavigation;
   class ThreadableLoaderClient;
   class WebSocketHandshakeRequest;
   class WebSocketHandshakeResponse;
@@ -120,7 +121,7 @@ interface CoreProbes {
   void frameDocumentUpdated([Keep] LocalFrame*);
   void frameStartedLoading([Keep] LocalFrame*, FrameLoadType);
   void frameStoppedLoading([Keep] LocalFrame*);
-  void frameScheduledNavigation([Keep] LocalFrame*, double delay);
+  void frameScheduledNavigation([Keep] LocalFrame*, ScheduledNavigation*);
   void frameClearedScheduledNavigation([Keep] LocalFrame*);
   void frameScheduledClientNavigation([Keep] LocalFrame*);
   void frameClearedScheduledClientNavigation([Keep] LocalFrame*);

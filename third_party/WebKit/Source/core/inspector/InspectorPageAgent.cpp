@@ -56,6 +56,7 @@
 #include "core/inspector/V8InspectorString.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/ScheduledNavigation.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "core/page/Page.h"
@@ -112,6 +113,28 @@ String DialogTypeToProtocol(ChromeClient::DialogType dialog_type) {
       NOTREACHED();
   }
   return protocol::Page::DialogTypeEnum::Alert;
+}
+
+String ScheduledNavigationReasonToProtocol(ScheduledNavigation::Reason reason) {
+  using ReasonEnum =
+      protocol::Page::FrameScheduledNavigationNotification::ReasonEnum;
+  switch (reason) {
+    case ScheduledNavigation::Reason::kFormSubmission:
+      return ReasonEnum::FormSubmission;
+    case ScheduledNavigation::Reason::kHttpHeaderRefresh:
+      return ReasonEnum::HttpHeaderRefresh;
+    case ScheduledNavigation::Reason::kFrameNavigation:
+      return ReasonEnum::ScriptInitiated;
+    case ScheduledNavigation::Reason::kMetaTagRefresh:
+      return ReasonEnum::MetaTagRefresh;
+    case ScheduledNavigation::Reason::kPageBlock:
+      return ReasonEnum::PageBlockInterstitial;
+    case ScheduledNavigation::Reason::kReload:
+      return ReasonEnum::Reload;
+    default:
+      NOTREACHED();
+  }
+  return ReasonEnum::Reload;
 }
 
 }  // namespace
@@ -747,9 +770,12 @@ void InspectorPageAgent::FrameStoppedLoading(LocalFrame* frame) {
   GetFrontend()->frameStoppedLoading(FrameId(frame));
 }
 
-void InspectorPageAgent::FrameScheduledNavigation(LocalFrame* frame,
-                                                  double delay) {
-  GetFrontend()->frameScheduledNavigation(FrameId(frame), delay);
+void InspectorPageAgent::FrameScheduledNavigation(
+    LocalFrame* frame,
+    ScheduledNavigation* scheduled_navigation) {
+  GetFrontend()->frameScheduledNavigation(
+      FrameId(frame), scheduled_navigation->Delay(),
+      ScheduledNavigationReasonToProtocol(scheduled_navigation->GetReason()));
 }
 
 void InspectorPageAgent::FrameClearedScheduledNavigation(LocalFrame* frame) {

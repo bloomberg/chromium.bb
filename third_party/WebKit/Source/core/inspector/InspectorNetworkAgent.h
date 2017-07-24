@@ -164,7 +164,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   void WillDestroyResource(Resource*);
 
   void ApplyUserAgentOverride(String* user_agent);
-  void FrameScheduledNavigation(LocalFrame*, double);
+  void FrameScheduledNavigation(LocalFrame*, ScheduledNavigation*);
   void FrameClearedScheduledNavigation(LocalFrame*);
   void FrameScheduledClientNavigation(LocalFrame*);
   void FrameClearedScheduledClientNavigation(LocalFrame*);

@@ -53,6 +53,7 @@ class InspectedFrames;
 class InspectorResourceContentLoader;
 class KURL;
 class LocalFrame;
+class ScheduledNavigation;
 class SharedBuffer;
 
 using blink::protocol::Maybe;
@@ -162,7 +163,7 @@ class CORE_EXPORT InspectorPageAgent final
   void FrameDetachedFromParent(LocalFrame*);
   void FrameStartedLoading(LocalFrame*, FrameLoadType);
   void FrameStoppedLoading(LocalFrame*);
-  void FrameScheduledNavigation(LocalFrame*, double delay);
+  void FrameScheduledNavigation(LocalFrame*, ScheduledNavigation*);
   void FrameClearedScheduledNavigation(LocalFrame*);
   void WillRunJavaScriptDialog(const String& message, ChromeClient::DialogType);
   void DidRunJavaScriptDialog(bool result);
