@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <memory>
 #include <queue>
 
+#include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -71,7 +71,7 @@ class CONTENT_EXPORT InputRouterImpl
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void SetFrameTreeNodeId(int frameTreeNodeId) override;
+  void SetFrameTreeNodeId(int frame_tree_node_id) override;
 
   cc::TouchAction AllowedTouchAction() override;
 
@@ -214,7 +214,7 @@ class CONTENT_EXPORT InputRouterImpl
   float device_scale_factor_;
 
   // Last touch position relative to screen. Used to compute movementX/Y.
-  std::map<int, gfx::Point> global_touch_position_;
+  base::flat_map<int, gfx::Point> global_touch_position_;
 
   base::WeakPtr<InputRouterImpl> weak_this_;
   base::WeakPtrFactory<InputRouterImpl> weak_ptr_factory_;

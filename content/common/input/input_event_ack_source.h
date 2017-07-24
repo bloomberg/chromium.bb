@@ -11,10 +11,12 @@ namespace content {
 // generated from inside the renderer.
 enum class InputEventAckSource {
   UNKNOWN,
-  BROWSER,
   COMPOSITOR_THREAD,
   MAIN_THREAD,
-  MAX = MAIN_THREAD
+  MAX_FROM_RENDERER = MAIN_THREAD,
+  // All values less than or equal to |MAX_FROM_RENDERER| are
+  // permitted to be sent from the renderer on the IPC channel.
+  BROWSER,
 };
 
 }  // namespace content
