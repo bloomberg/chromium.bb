@@ -238,6 +238,9 @@ class CONTENT_EXPORT PresentationServiceImpl
   // |receiver_delegate| if current frame is receiver frame.
   PresentationServiceDelegate* GetPresentationServiceDelegate();
 
+  // The RenderFrameHost associated with this object.
+  RenderFrameHost* const render_frame_host_;
+
   // Embedder-specific delegate for controller to forward Presentation requests
   // to. Must be nullptr if current page is receiver page or
   // embedder does not support Presentation API .

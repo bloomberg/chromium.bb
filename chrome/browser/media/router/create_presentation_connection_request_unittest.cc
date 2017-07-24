@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/create_presentation_connection_request.h"
 
 #include "base/bind.h"
+#include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,9 +28,10 @@ class CreatePresentationConnectionRequestTest : public ::testing::Test {
  public:
   CreatePresentationConnectionRequestTest()
       : cb_invoked_(false),
-        render_frame_host_id_(1, 2),
         presentation_url_(kPresentationUrl1),
-        presentation_urls_({presentation_url_, GURL(kPresentationUrl2)}) {}
+        presentation_request_({1, 2},
+                              {presentation_url_, GURL(kPresentationUrl2)},
+                              url::Origin(GURL(kFrameUrl))) {}
 
   ~CreatePresentationConnectionRequestTest() override {}
 
@@ -59,25 +61,20 @@ class CreatePresentationConnectionRequestTest : public ::testing::Test {
   }
 
   bool cb_invoked_;
-  const RenderFrameHostId render_frame_host_id_;
   GURL presentation_url_;
-  std::vector<GURL> presentation_urls_;
+  content::PresentationRequest presentation_request_;
 };
 
-// Test that the object's getters match the constructor parameters.
-TEST_F(CreatePresentationConnectionRequestTest, Getters) {
+TEST_F(CreatePresentationConnectionRequestTest, ErrorCallbackInvokedByDefault) {
   content::PresentationError error(content::PRESENTATION_ERROR_UNKNOWN,
                                    "Unknown error.");
   CreatePresentationConnectionRequest request(
-      render_frame_host_id_, presentation_urls_, url::Origin(GURL(kFrameUrl)),
+      presentation_request_,
       base::BindOnce(&CreatePresentationConnectionRequestTest::FailOnSuccess,
                      base::Unretained(this)),
       base::BindOnce(&CreatePresentationConnectionRequestTest::OnError,
                      base::Unretained(this), error));
 
-  PresentationRequest presentation_request(
-      render_frame_host_id_, presentation_urls_, url::Origin(GURL(kFrameUrl)));
-  EXPECT_TRUE(request.presentation_request().Equals(presentation_request));
   // Since we didn't explicitly call Invoke*, the error callback will be
   // invoked when |request| is destroyed.
 }
@@ -86,7 +83,7 @@ TEST_F(CreatePresentationConnectionRequestTest, SuccessCallback) {
   content::PresentationInfo presentation_info(presentation_url_,
                                               kPresentationId);
   CreatePresentationConnectionRequest request(
-      render_frame_host_id_, {presentation_url_}, url::Origin(GURL(kFrameUrl)),
+      presentation_request_,
       base::BindOnce(&CreatePresentationConnectionRequestTest::OnSuccess,
                      base::Unretained(this), presentation_info),
       base::BindOnce(&CreatePresentationConnectionRequestTest::FailOnError,
@@ -102,7 +99,7 @@ TEST_F(CreatePresentationConnectionRequestTest, ErrorCallback) {
       content::PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED,
       "This is an error message");
   CreatePresentationConnectionRequest request(
-      render_frame_host_id_, presentation_urls_, url::Origin(GURL(kFrameUrl)),
+      presentation_request_,
       base::BindOnce(&CreatePresentationConnectionRequestTest::FailOnSuccess,
                      base::Unretained(this)),
       base::BindOnce(&CreatePresentationConnectionRequestTest::OnError,

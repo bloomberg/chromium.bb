@@ -60,6 +60,15 @@ MediaSource MediaSourceForPresentationUrl(const GURL& presentation_url) {
   return MediaSource(presentation_url);
 }
 
+std::vector<MediaSource> MediaSourcesForPresentationUrls(
+    const std::vector<GURL>& presentation_urls) {
+  std::vector<MediaSource> sources;
+  for (const auto& presentation_url : presentation_urls)
+    sources.push_back(MediaSourceForPresentationUrl(presentation_url));
+
+  return sources;
+}
+
 bool IsDesktopMirroringMediaSource(const MediaSource& source) {
   return base::StartsWith(source.id(), kDesktopMediaUrn,
                           base::CompareCase::SENSITIVE);

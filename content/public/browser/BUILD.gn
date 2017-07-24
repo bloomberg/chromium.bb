@@ -194,6 +194,8 @@ source_set("browser_sources") {
     "plugin_data_remover.h",
     "plugin_service.h",
     "plugin_service_filter.h",
+    "presentation_request.cc",
+    "presentation_request.h",
     "presentation_screen_availability_listener.h",
     "presentation_service_delegate.h",
     "profiler_controller.h",

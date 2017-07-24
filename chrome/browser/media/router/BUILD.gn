@@ -51,8 +51,6 @@ static_library("router") {
     "offscreen_presentation_manager_factory.h",
     "presentation_media_sinks_observer.cc",
     "presentation_media_sinks_observer.h",
-    "presentation_request.cc",
-    "presentation_request.h",
     "presentation_service_delegate_impl.cc",
     "presentation_service_delegate_impl.h",
     "presentation_service_delegate_observers.cc",
