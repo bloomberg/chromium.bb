@@ -4,7 +4,7 @@
 
 // https://wicg.github.io/IntersectionObserver/#intersection-observer-callback
 
-[Custom] callback IntersectionObserverCallback = void (sequence<IntersectionObserverEntry> entries, IntersectionObserver observer);
+callback IntersectionObserverCallback = void (sequence<IntersectionObserverEntry> entries, IntersectionObserver observer);
 
 // https://wicg.github.io/IntersectionObserver/#intersection-observer-interface
 
