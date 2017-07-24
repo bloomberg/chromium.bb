@@ -22,7 +22,7 @@ namespace {
 typedef void (*gnome_accessibility_module_init)();
 
 const char kAccessibilityEnabled[] = "ACCESSIBILITY_ENABLED";
-const char kAtkBridgeModule[] = "gail:atk-bridge";
+const char kAtkBridgeModule[] = "atk-bridge";
 const char kAtkBridgePath[] = "gtk-2.0/modules/libatk-bridge.so";
 const char kAtkBridgeSymbolName[] = "gnome_accessibility_module_init";
 const char kGtkModules[] = "GTK_MODULES";
@@ -58,8 +58,8 @@ bool PlatformShouldEnableAccessibility() {
     return false;
 
   for (const std::string& module :
-       base::SplitString(gtk_modules, base::kWhitespaceASCII,
-                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+       base::SplitString(gtk_modules, ":", base::TRIM_WHITESPACE,
+                         base::SPLIT_WANT_NONEMPTY)) {
     if (module == kAtkBridgeModule)
       return true;
   }
