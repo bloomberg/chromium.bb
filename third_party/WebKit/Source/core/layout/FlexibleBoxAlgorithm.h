@@ -53,6 +53,8 @@ class FlexItem {
            LayoutUnit flex_base_content_size,
            LayoutUnit hypothetical_main_content_size,
            LayoutUnit main_axis_border_and_padding,
+           LayoutUnit main_axis_min_size,
+           LayoutUnit main_axis_max_size,
            LayoutUnit main_axis_margin);
 
   LayoutUnit HypotheticalMainAxisMarginBoxSize() const {
@@ -70,10 +72,14 @@ class FlexItem {
            main_axis_margin;
   }
 
+  LayoutUnit ClampSizeToMinAndMax(LayoutUnit size) const;
+
   LayoutBox* box;
   const LayoutUnit flex_base_content_size;
   const LayoutUnit hypothetical_main_content_size;
   const LayoutUnit main_axis_border_and_padding;
+  const LayoutUnit main_axis_min_size;
+  const LayoutUnit main_axis_max_size;
   const LayoutUnit main_axis_margin;
   LayoutUnit flexed_content_size;
   bool frozen;

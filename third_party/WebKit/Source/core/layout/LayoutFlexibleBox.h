@@ -185,8 +185,9 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   LayoutUnit ComputeChildMarginValue(Length margin);
   void PrepareOrderIteratorAndMargins();
-  LayoutUnit AdjustChildSizeForMinAndMax(const LayoutBox& child,
-                                         LayoutUnit child_size);
+  void ComputeMinAndMaxSizesForChild(const LayoutBox& child,
+                                     LayoutUnit& min_extent,
+                                     LayoutUnit& max_extent);
   LayoutUnit AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
       const LayoutBox& child,
       LayoutUnit child_size);
