@@ -7,6 +7,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -21,6 +22,7 @@ namespace device {
 
 class PlatformSensorProvider;
 class PlatformSensorConfiguration;
+class SensorReadingSharedBufferReader;
 
 // Base class for the sensors provided by the platform. Concrete instances of
 // this class are created by platform specific PlatformSensorProvider.
@@ -39,6 +41,11 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
 
   virtual mojom::ReportingMode GetReportingMode() = 0;
   virtual PlatformSensorConfiguration GetDefaultConfiguration() = 0;
+  virtual bool StartSensor(
+      const PlatformSensorConfiguration& configuration) = 0;
+  virtual void StopSensor() = 0;
+  virtual bool CheckSensorConfiguration(
+      const PlatformSensorConfiguration& configuration) = 0;
 
   // Can be overriden to return the sensor maximum sampling frequency
   // value obtained from the platform if it is available. If platfrom
@@ -62,6 +69,8 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
   void AddClient(Client*);
   void RemoveClient(Client*);
 
+  bool GetLatestReading(SensorReading* result);
+
  protected:
   virtual ~PlatformSensor();
   PlatformSensor(mojom::SensorType type,
@@ -72,11 +81,6 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
   using ReadingBuffer = SensorReadingSharedBuffer;
 
   virtual bool UpdateSensorInternal(const ConfigMap& configurations);
-  virtual bool StartSensor(
-      const PlatformSensorConfiguration& configuration) = 0;
-  virtual void StopSensor() = 0;
-  virtual bool CheckSensorConfiguration(
-      const PlatformSensorConfiguration& configuration) = 0;
 
   // Updates shared buffer with new sensor reading data.
   // Note: this method is thread-safe.
@@ -92,12 +96,13 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
   // If platfrom sensor events are processed on a different
   // thread, notifications are forwarded to |task_runner_|.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::ObserverList<Client, true> clients_;
 
  private:
   friend class base::RefCountedThreadSafe<PlatformSensor>;
   const mojo::ScopedSharedBufferMapping shared_buffer_mapping_;
+  std::unique_ptr<SensorReadingSharedBufferReader> shared_buffer_reader_;
   mojom::SensorType type_;
-  base::ObserverList<Client, true> clients_;
   ConfigMap config_map_;
   PlatformSensorProvider* provider_;
   base::WeakPtrFactory<PlatformSensor> weak_factory_;

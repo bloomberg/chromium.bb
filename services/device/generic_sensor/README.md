@@ -25,8 +25,10 @@ platform.
 | PRESSURE                          |                           |                |                    |                                           |
 | ABSOLUTE_ORIENTATION_EULER_ANGLES |                           |                |                    | SENSOR_TYPE_INCLINOMETER_3D               |
 | ABSOLUTE_ORIENTATION_QUATERNION   | TYPE_ROTATION_VECTOR      |                |                    | SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION |
-| RELATIVE_ORIENTATION_EULER_ANGLES |                           |                |                    |                                           |
+| RELATIVE_ORIENTATION_EULER_ANGLES |                           |                | ACCELEROMETER (*)  |                                           |
 | RELATIVE_ORIENTATION_QUATERNION   | TYPE_GAME_ROTATION_VECTOR |                |                    |                                           |
+
+(Note: "*" means the sensor type is provided by sensor fusion.)
 
 ### Android
 
@@ -47,7 +49,8 @@ searches for to provide data for a SensorType.
 On this platform there is limited support for sensors. The AMBIENT_LIGHT sensor
 type is provided by interpreting the value that can be read from the LMU. The
 ACCELEROMETER sensor type is provided by interpreting the value that can be read
-from the SMCMotionSensor.
+from the SMCMotionSensor. The RELATIVE_ORIENTATION_EULER_ANGLES sensor type is
+provided by interpreting the value that can be read from the ACCELEROMETER.
 
 ### Windows
 
