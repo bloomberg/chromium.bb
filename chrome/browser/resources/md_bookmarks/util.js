@@ -22,7 +22,7 @@ cr.define('bookmarks.util', function() {
 
   /**
    * @param {BookmarkTreeNode} treeNode
-   * @return {BookmarkNode}
+   * @return {!BookmarkNode}
    */
   function normalizeNode(treeNode) {
     var node = Object.assign({}, treeNode);

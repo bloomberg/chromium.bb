@@ -244,7 +244,7 @@ suite('<history-synced-device-manager>', function() {
     PolymerTest.flushTasks().then(function() {
       var cards = getCards(element);
       var anchor = cards[0].root.querySelector('a');
-      MockInteractions.tap(anchor, {emulateTouch: true});
+      MockInteractions.tap(anchor);
     });
   });
 
