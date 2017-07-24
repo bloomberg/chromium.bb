@@ -1657,6 +1657,8 @@ cr.define('login', function() {
       if (this.parentNode.disabled)
         return;
       this.isActionBoxMenuActive = !this.isActionBoxMenuActive;
+      // Action area menu and error bubbles shouldn't appear together.
+      Oobe.clearErrors();
       e.stopPropagation();
     },
 
@@ -1670,8 +1672,10 @@ cr.define('login', function() {
       switch (e.key) {
         case 'Enter':
         case ' ':
-          if (this.parentNode.focusedPod_ && !this.isActionBoxMenuActive)
+          if (this.parentNode.focusedPod_ && !this.isActionBoxMenuActive) {
             this.isActionBoxMenuActive = true;
+            Oobe.clearErrors();
+          }
           e.stopPropagation();
           break;
         case 'ArrowUp':
@@ -3474,6 +3478,11 @@ cr.define('login', function() {
         // the virtual keyboard.
         this.parentNode.setPreferredSize(
             this.screenSize.width, this.screenSize.height);
+        // Normally, |WebUILoginView::OnKeyboardBoundsChanging| toggles the
+        // visibility of the login header bar based on virtual keyboard status
+        // at a later time. As a result the login header bar may be seen for a
+        // short moment before being hidden, so here we hide it up front.
+        Oobe.getInstance().headerHidden = true;
       } else {
         // Make sure not to block the header bar when virtual keyboard is absent.
         this.parentNode.setPreferredSize(
@@ -3937,19 +3946,27 @@ cr.define('login', function() {
           }
         }
       }
-      // Update the position of the sign-in banner if it's shown.
-      if ($('signin-banner').textContent.length != 0) {
-        var bannerContainer = $('signin-banner-container1');
-        bannerContainer.style.top = cr.ui.toCssPx(this.mainPod_.top / 2);
-        if (this.pods.length <= POD_ROW_LIMIT) {
-          bannerContainer.style.left = cr.ui.toCssPx(
-              (this.screenSize.width - bannerContainer.offsetWidth) / 2);
-        }
-        else {
-          var leftPadding = this.mainPod_.left -
-              (bannerContainer.offsetWidth - CROS_POD_WIDTH) / 2;
-          bannerContainer.style.left = cr.ui.toCssPx(Math.max(leftPadding, 0));
-        }
+      this.updateSigninBannerPosition_();
+    },
+
+    /**
+     * Updates the sign-in banner position if it's shown. Called each time
+     * after message update or pod placement, because the position of the
+     * banner dynamically depends on the pod positions.
+     * @private
+     */
+    updateSigninBannerPosition_: function() {
+      var bannerContainer = $('signin-banner-container1');
+      if (bannerContainer.hidden)
+        return;
+      bannerContainer.style.top = cr.ui.toCssPx(this.mainPod_.top / 2);
+      if (this.pods.length <= POD_ROW_LIMIT) {
+        bannerContainer.style.left = cr.ui.toCssPx(
+            (this.screenSize.width - bannerContainer.offsetWidth) / 2);
+      } else {
+        var leftPadding = this.mainPod_.left -
+            (bannerContainer.offsetWidth - CROS_POD_WIDTH) / 2;
+        bannerContainer.style.left = cr.ui.toCssPx(Math.max(leftPadding, 0));
       }
     },
 
@@ -4079,8 +4096,6 @@ cr.define('login', function() {
     /**
      * Displays a banner containing |message|. If the banner is already present
      * this function updates the message in the banner.
-     * The positioning of the banner is handled by handleAfterPodPlacement_()
-     * becuase it dynamically depends on the pod positions.
      * @param {string} message Text to be displayed or empty to hide the banner.
      */
     showBannerMessage: function(message) {
@@ -4088,6 +4103,7 @@ cr.define('login', function() {
       banner.textContent = message;
       banner.classList.toggle('message-set', !!message);
       $('signin-banner-container1').hidden = banner.textContent.length == 0;
+      this.updateSigninBannerPosition_();
     },
 
     /**
