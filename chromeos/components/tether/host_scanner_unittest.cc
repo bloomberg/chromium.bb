@@ -581,43 +581,6 @@ TEST_F(HostScannerTest, TestScan_MultipleCompleteScanSessions) {
   VerifyScanResultsMatchCache();
 }
 
-TEST_F(HostScannerTest, HasRecentlyScanned) {
-  test_clock_->SetNow(base::Time::Now());
-
-  host_scanner_->StartScan();
-  fake_tether_host_fetcher_->InvokePendingCallbacks();
-
-  ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
-      0u /* test_device_index */, false /* is_final_scan_result */);
-  ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
-      1u /* test_device_index */, true /* is_final_scan_result */);
-
-  // We have just scanned.
-  EXPECT_TRUE(host_scanner_->HasRecentlyScanned());
-
-  int time_limit_minutes =
-      MasterHostScanCache::kNumMinutesBeforeCacheEntryExpires;
-  int time_limit_seconds = time_limit_minutes * 60;
-  int time_limit_half_seconds = time_limit_seconds / 2;
-  int time_limit_threshold_seconds =
-      time_limit_seconds - time_limit_half_seconds - 1;
-
-  // Move up some amount of time, but not the full limit.
-  test_clock_->Advance(base::TimeDelta::FromSeconds(time_limit_half_seconds));
-  EXPECT_TRUE(host_scanner_->HasRecentlyScanned());
-
-  // Move right up to the limit.
-  test_clock_->Advance(
-      base::TimeDelta::FromSeconds(time_limit_threshold_seconds));
-  EXPECT_TRUE(host_scanner_->HasRecentlyScanned());
-
-  // Move past the limit.
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
-  EXPECT_FALSE(host_scanner_->HasRecentlyScanned());
-}
-
 }  // namespace tether
 
 }  // namespace chromeos
