@@ -95,13 +95,37 @@ TEST_P(CompositedLayerMappingTest, SubpixelAccumulationChange) {
 }
 
 TEST_P(CompositedLayerMappingTest,
+       SubpixelAccumulationChangeUnderInvalidation) {
+  ScopedPaintUnderInvalidationCheckingForTest test(true);
+  SetBodyInnerHTML(
+      "<div id='target' style='will-change: transform; background: lightblue; "
+      "position: relative; left: 0.4px; width: 100px; height: 100px'>");
+
+  Element* target = GetDocument().getElementById("target");
+  target->SetInlineStyleProperty(CSSPropertyLeft, "0.6px");
+
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
+  // Directly composited layers are not invalidated on subpixel accumulation
+  // change.
+  EXPECT_TRUE(paint_layer->GraphicsLayerBacking()
+                  ->GetPaintController()
+                  .GetPaintArtifact()
+                  .IsEmpty());
+}
+
+TEST_P(CompositedLayerMappingTest,
        SubpixelAccumulationChangeIndirectCompositing) {
   SetBodyInnerHTML(
-      "<div style='position; relative; width: 100px; height: 100px;"
-      "    background: lightgray; will-change: transform'></div>"
+
       "<div id='target' style='background: lightblue; "
       "    position: relative; top: -10px; left: 0.4px; width: 100px;"
-      "    height: 100px'></div>");
+      "    height: 100px; transform: translateX(0)'>"
+      "  <div style='position; relative; width: 100px; height: 100px;"
+      "    background: lightgray; will-change: transform'></div>"
+      "</div>");
 
   Element* target = GetDocument().getElementById("target");
   target->SetInlineStyleProperty(CSSPropertyLeft, "0.6px");
@@ -112,10 +136,10 @@ TEST_P(CompositedLayerMappingTest,
       ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
   // The PaintArtifact should have been deleted because paint was
   // invalidated for subpixel accumulation change.
-  EXPECT_FALSE(paint_layer->GraphicsLayerBacking()
-                   ->GetPaintController()
-                   .GetPaintArtifact()
-                   .IsEmpty());
+  EXPECT_TRUE(paint_layer->GraphicsLayerBacking()
+                  ->GetPaintController()
+                  .GetPaintArtifact()
+                  .IsEmpty());
 }
 
 TEST_P(CompositedLayerMappingTest, SimpleInterestRect) {
