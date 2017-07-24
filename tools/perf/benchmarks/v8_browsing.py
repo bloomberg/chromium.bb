@@ -122,15 +122,10 @@ class _V8RuntimeStatsBrowsingBenchmark(_v8BrowsingBenchmarkBaseClass):
       # V8 categories.
       'blink.console',
       'disabled-by-default-v8.gc',
-      'disabled-by-default-v8.compile',
       'renderer.scheduler',
       'v8',
       'webkit.console',
       'disabled-by-default-v8.runtime_stats',
-      # TODO(crbug.com/616441, primiano): Remove this temporary workaround,
-      # which enables memory-infra V8 code stats in V8 code size benchmarks
-      # only (to not slow down detailed memory dumps in other benchmarks).
-      'disabled-by-default-memory-infra.v8.code_stats',
     ]
     options = timeline_based_measurement.Options(
         chrome_trace_category_filter.ChromeTraceCategoryFilter(
@@ -142,8 +137,7 @@ class _V8RuntimeStatsBrowsingBenchmark(_v8BrowsingBenchmarkBaseClass):
     options.config.chrome_trace_config.SetMemoryDumpConfig(memory_dump_config)
 
     options.SetTimelineBasedMetrics([
-      'expectedQueueingTimeMetric', 'runtimeStatsTotalMetric', 'gcMetric',
-      'memoryMetric'])
+      'expectedQueueingTimeMetric', 'runtimeStatsTotalMetric', 'gcMetric'])
     return options
 
 
