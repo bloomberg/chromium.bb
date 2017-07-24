@@ -174,7 +174,8 @@ ImageResource* ImageResource::Fetch(FetchParameters& params,
           params.IsSpeculativePreload()
               ? SecurityViolationReportingPolicy::kSuppressReporting
               : SecurityViolationReportingPolicy::kReport,
-          params.GetOriginRestriction());
+          params.GetOriginRestriction(),
+          params.GetResourceRequest().GetRedirectStatus());
       if (block_reason == ResourceRequestBlockedReason::kNone)
         fetcher->Context().SendImagePing(request_url);
     }

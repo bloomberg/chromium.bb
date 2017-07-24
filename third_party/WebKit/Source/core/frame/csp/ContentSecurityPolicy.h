@@ -430,8 +430,8 @@ class CORE_EXPORT ContentSecurityPolicy
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceInline);
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceSinglePolicy);
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceMultiplePolicy);
-  FRIEND_TEST_ALL_PREFIXES(BaseFetchContextTest,
-                           RedirectChecksReportedAndEnforcedCSP);
+  FRIEND_TEST_ALL_PREFIXES(BaseFetchContextTest, CanRequest);
+  FRIEND_TEST_ALL_PREFIXES(BaseFetchContextTest, CheckCSPForRequest);
   FRIEND_TEST_ALL_PREFIXES(BaseFetchContextTest,
                            AllowResponseChecksReportedAndEnforcedCSP);
   FRIEND_TEST_ALL_PREFIXES(FrameFetchContextTest,

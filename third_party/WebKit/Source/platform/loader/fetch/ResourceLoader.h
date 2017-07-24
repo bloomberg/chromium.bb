@@ -142,9 +142,6 @@ class PLATFORM_EXPORT ResourceLoader final
   void Restart(const ResourceRequest&);
 
   FetchContext& Context() const;
-  ResourceRequestBlockedReason CanAccessResponse(Resource*,
-                                                 const ResourceResponse&,
-                                                 const String&) const;
 
   CORSStatus DetermineCORSStatus(const ResourceResponse&, StringBuilder&) const;
 

@@ -95,12 +95,9 @@ class WorkerFetchContext final : public BaseFetchContext {
                        int64_t encodedDataLength,
                        bool isInternalRequest) override;
   void AddResourceTiming(const ResourceTimingInfo&) override;
-  void PopulateResourceRequest(const KURL&,
-                               Resource::Type,
+  void PopulateResourceRequest(Resource::Type,
                                const ClientHintsPreferences&,
                                const FetchParameters::ResourceWidth&,
-                               const ResourceLoaderOptions&,
-                               SecurityViolationReportingPolicy,
                                ResourceRequest&) override;
   void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&) override;
 

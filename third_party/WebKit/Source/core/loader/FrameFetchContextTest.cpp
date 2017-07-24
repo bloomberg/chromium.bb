@@ -202,7 +202,8 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
     ResourceLoaderOptions options;
     return fetch_context->CanRequest(
         Resource::kImage, resource_request, input_url, options,
-        reporting_policy, FetchParameters::kUseDefaultOriginRestrictionForType);
+        reporting_policy, FetchParameters::kUseDefaultOriginRestrictionForType,
+        ResourceRequest::RedirectStatus::kNoRedirect);
   }
 
   int filtered_load_callback_counter_;
@@ -482,32 +483,6 @@ TEST_F(FrameFetchContextModifyRequestTest, SendRequiredCSPHeader) {
             ? another_required_csp
             : g_null_atom);
   }
-}
-
-// Tests that PopulateResourceRequest() checks report-only CSP headers, so that
-// any violations are reported before the request is modified.
-TEST_F(FrameFetchContextTest, PopulateResourceRequestChecksReportOnlyCSP) {
-  ContentSecurityPolicy* policy = document->GetContentSecurityPolicy();
-  policy->DidReceiveHeader(
-      "upgrade-insecure-requests; script-src https://foo.test",
-      kContentSecurityPolicyHeaderTypeEnforce,
-      kContentSecurityPolicyHeaderSourceHTTP);
-  policy->DidReceiveHeader("script-src https://bar.test",
-                           kContentSecurityPolicyHeaderTypeReport,
-                           kContentSecurityPolicyHeaderSourceHTTP);
-  KURL url(NullURL(), "http://baz.test");
-  ResourceRequest resource_request(url);
-  resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
-  resource_request.SetFetchCredentialsMode(
-      WebURLRequest::kFetchCredentialsModeOmit);
-  ResourceLoaderOptions options;
-  fetch_context->PopulateResourceRequest(
-      url, Resource::kScript, ClientHintsPreferences(),
-      FetchParameters::ResourceWidth(), options,
-      SecurityViolationReportingPolicy::kReport, resource_request);
-  EXPECT_EQ(1u, policy->violation_reports_sent_.size());
-  // Check that the resource was upgraded to a secure URL.
-  EXPECT_EQ(KURL(NullURL(), "https://baz.test"), resource_request.Url());
 }
 
 class FrameFetchContextHintsTest : public FrameFetchContextTest {
@@ -1266,8 +1241,7 @@ TEST_F(FrameFetchContextTest, PopulateResourceRequestWhenDetached) {
   dummy_page_holder = nullptr;
 
   fetch_context->PopulateResourceRequest(
-      url, Resource::kRaw, client_hints_preferences, resource_width, options,
-      SecurityViolationReportingPolicy::kReport, request);
+      Resource::kRaw, client_hints_preferences, resource_width, request);
   // Should not crash.
 }
 

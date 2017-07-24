@@ -137,12 +137,9 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
                          LogMessageType = kLogErrorMessage) const override;
   SecurityOrigin* GetSecurityOrigin() const override;
 
-  void PopulateResourceRequest(const KURL&,
-                               Resource::Type,
+  void PopulateResourceRequest(Resource::Type,
                                const ClientHintsPreferences&,
                                const FetchParameters::ResourceWidth&,
-                               const ResourceLoaderOptions&,
-                               SecurityViolationReportingPolicy,
                                ResourceRequest&) override;
   void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&) override;
 

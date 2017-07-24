@@ -34,19 +34,14 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       const KURL&,
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,
-      FetchParameters::OriginRestriction) const override;
-  ResourceRequestBlockedReason CanFollowRedirect(
-      Resource::Type,
+      FetchParameters::OriginRestriction,
+      ResourceRequest::RedirectStatus) const override;
+  ResourceRequestBlockedReason CheckCSPForRequest(
       const ResourceRequest&,
       const KURL&,
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,
-      FetchParameters::OriginRestriction) const override;
-  ResourceRequestBlockedReason AllowResponse(
-      Resource::Type,
-      const ResourceRequest&,
-      const KURL&,
-      const ResourceLoaderOptions&) const override;
+      ResourceRequest::RedirectStatus) const override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -86,13 +81,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   // Utility method that can be used to implement other methods.
   void PrintAccessDeniedMessage(const KURL&) const;
   void AddCSPHeaderIfNecessary(Resource::Type, ResourceRequest&);
-  ResourceRequestBlockedReason CheckCSPForRequest(
-      const ResourceRequest&,
-      const KURL&,
-      const ResourceLoaderOptions&,
-      SecurityViolationReportingPolicy,
-      ResourceRequest::RedirectStatus,
-      ContentSecurityPolicy::CheckHeaderType) const;
 
   // Utility methods that are used in default implement for CanRequest,
   // CanFollowRedirect and AllowResponse.
@@ -104,6 +92,15 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       SecurityViolationReportingPolicy,
       FetchParameters::OriginRestriction,
       ResourceRequest::RedirectStatus) const;
+
+ private:
+  ResourceRequestBlockedReason CheckCSPForRequestInternal(
+      const ResourceRequest&,
+      const KURL&,
+      const ResourceLoaderOptions&,
+      SecurityViolationReportingPolicy,
+      ResourceRequest::RedirectStatus,
+      ContentSecurityPolicy::CheckHeaderType) const;
 };
 
 }  // namespace blink

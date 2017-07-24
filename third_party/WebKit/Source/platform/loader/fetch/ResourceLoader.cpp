@@ -197,73 +197,86 @@ bool ResourceLoader::WillFollowRedirect(
     return false;
   }
 
+  const ResourceRequest& request = resource_->GetResourceRequest();
+  Resource::Type resource_type = resource_->GetType();
+  const ResourceLoaderOptions& options = resource_->Options();
+
   ResourceRequest& new_request(passed_new_request.ToMutableResourceRequest());
+  const KURL& new_url = new_request.Url();
+
   const ResourceResponse& redirect_response(
       passed_redirect_response.ToResourceResponse());
 
   new_request.SetRedirectStatus(
       ResourceRequest::RedirectStatus::kFollowedRedirect);
 
-  const KURL original_url = new_request.Url();
+  if (!IsManualRedirectFetchRequest(request)) {
+    bool unused_preload = resource_->IsUnusedPreload();
 
-  if (!IsManualRedirectFetchRequest(resource_->GetResourceRequest())) {
-    ResourceRequestBlockedReason blocked_reason = Context().CanFollowRedirect(
-        resource_->GetType(), new_request, new_request.Url(),
-        resource_->Options(),
-        /* Don't send security violation reports for unused preloads */
-        (resource_->IsUnusedPreload()
-             ? SecurityViolationReportingPolicy::kSuppressReporting
-             : SecurityViolationReportingPolicy::kReport),
-        FetchParameters::kUseDefaultOriginRestrictionForType);
+    // Don't send security violation reports for unused preloads.
+    SecurityViolationReportingPolicy reporting_policy =
+        unused_preload ? SecurityViolationReportingPolicy::kSuppressReporting
+                       : SecurityViolationReportingPolicy::kReport;
+
+    // CanRequest() checks only enforced CSP, so check report-only here to
+    // ensure that violations are sent.
+    Context().CheckCSPForRequest(
+        new_request, new_url, options, reporting_policy,
+        ResourceRequest::RedirectStatus::kFollowedRedirect);
+
+    ResourceRequestBlockedReason blocked_reason = Context().CanRequest(
+        resource_type, new_request, new_url, options, reporting_policy,
+        FetchParameters::kUseDefaultOriginRestrictionForType,
+        new_request.GetRedirectStatus());
     if (blocked_reason != ResourceRequestBlockedReason::kNone) {
-      CancelForRedirectAccessCheckError(new_request.Url(), blocked_reason);
+      CancelForRedirectAccessCheckError(new_url, blocked_reason);
       return false;
     }
 
-    if (resource_->Options().cors_handling_by_resource_fetcher ==
+    if (options.cors_handling_by_resource_fetcher ==
             kEnableCORSHandlingByResourceFetcher &&
-        resource_->GetResourceRequest().GetFetchRequestMode() ==
-            WebURLRequest::kFetchRequestModeCORS) {
-      RefPtr<SecurityOrigin> source_origin =
-          resource_->Options().security_origin;
+        request.GetFetchRequestMode() == WebURLRequest::kFetchRequestModeCORS) {
+      RefPtr<SecurityOrigin> source_origin = options.security_origin;
       if (!source_origin.Get())
         source_origin = Context().GetSecurityOrigin();
 
-      String error_message;
+      String cors_error_msg;
       if (!CrossOriginAccessControl::HandleRedirect(
               source_origin, new_request, redirect_response,
-              resource_->GetResourceRequest().GetFetchCredentialsMode(),
-              resource_->MutableOptions(), error_message)) {
+              request.GetFetchCredentialsMode(), resource_->MutableOptions(),
+              cors_error_msg)) {
         resource_->SetCORSStatus(CORSStatus::kFailed);
-        Context().AddConsoleMessage(error_message);
-        CancelForRedirectAccessCheckError(new_request.Url(),
+
+        if (!unused_preload)
+          Context().AddConsoleMessage(cors_error_msg);
+
+        CancelForRedirectAccessCheckError(new_url,
                                           ResourceRequestBlockedReason::kOther);
         return false;
       }
     }
-    if (resource_->GetType() == Resource::kImage &&
-        fetcher_->ShouldDeferImageLoad(new_request.Url())) {
-      CancelForRedirectAccessCheckError(new_request.Url(),
+    if (resource_type == Resource::kImage &&
+        fetcher_->ShouldDeferImageLoad(new_url)) {
+      CancelForRedirectAccessCheckError(new_url,
                                         ResourceRequestBlockedReason::kOther);
       return false;
     }
   }
 
-  bool cross_origin = !SecurityOrigin::AreSameSchemeHostPort(
-      redirect_response.Url(), new_request.Url());
+  bool cross_origin =
+      !SecurityOrigin::AreSameSchemeHostPort(redirect_response.Url(), new_url);
   fetcher_->RecordResourceTimingOnRedirect(resource_.Get(), redirect_response,
                                            cross_origin);
 
-  if (resource_->Options().cors_handling_by_resource_fetcher ==
+  if (options.cors_handling_by_resource_fetcher ==
           kEnableCORSHandlingByResourceFetcher &&
-      resource_->GetResourceRequest().GetFetchRequestMode() ==
-          WebURLRequest::kFetchRequestModeCORS) {
+      request.GetFetchRequestMode() == WebURLRequest::kFetchRequestModeCORS) {
     bool allow_stored_credentials = false;
     switch (new_request.GetFetchCredentialsMode()) {
       case WebURLRequest::kFetchCredentialsModeOmit:
         break;
       case WebURLRequest::kFetchCredentialsModeSameOrigin:
-        allow_stored_credentials = !resource_->Options().cors_flag;
+        allow_stored_credentials = !options.cors_flag;
         break;
       case WebURLRequest::kFetchCredentialsModeInclude:
       case WebURLRequest::kFetchCredentialsModePassword:
@@ -273,18 +286,20 @@ bool ResourceLoader::WillFollowRedirect(
     new_request.SetAllowStoredCredentials(allow_stored_credentials);
   }
 
-  Context().PrepareRequest(new_request,
-                           FetchContext::RedirectType::kForRedirect);
-  Context().DispatchWillSendRequest(resource_->Identifier(), new_request,
-                                    redirect_response,
-                                    resource_->Options().initiator_info);
-
-  // ResourceFetcher::WillFollowRedirect() may rewrite the URL to
+  // The following two calls may rewrite the new_request.Url() to
   // something else not for rejecting redirect but for other reasons.
   // E.g. WebFrameTestClient::WillSendRequest() and
   // RenderFrameImpl::WillSendRequest(). We should reflect the
-  // rewriting but currently we cannot. So, return false to make the
-  // redirect fail.
+  // rewriting but currently we cannot. So, save the value here, compare it
+  // with new_request.Url() after calling them, and return false to make the
+  // redirect fail on mismatch.
+  const KURL original_url = new_request.Url();
+
+  Context().PrepareRequest(new_request,
+                           FetchContext::RedirectType::kForRedirect);
+  Context().DispatchWillSendRequest(resource_->Identifier(), new_request,
+                                    redirect_response, options.initiator_info);
+
   if (new_request.Url() != original_url) {
     CancelForRedirectAccessCheckError(new_request.Url(),
                                       ResourceRequestBlockedReason::kOther);
@@ -311,31 +326,6 @@ void ResourceLoader::DidSendData(unsigned long long bytes_sent,
 
 FetchContext& ResourceLoader::Context() const {
   return fetcher_->Context();
-}
-
-ResourceRequestBlockedReason ResourceLoader::CanAccessResponse(
-    Resource* resource,
-    const ResourceResponse& response,
-    const String& cors_error_message) const {
-  // Redirects can change the response URL different from one of request.
-  bool unused_preload = resource->IsUnusedPreload();
-  ResourceRequestBlockedReason blocked_reason = Context().CanRequest(
-      resource->GetType(), resource->GetResourceRequest(), response.Url(),
-      resource->Options(),
-      /* Don't send security violation reports for unused preloads */
-      (unused_preload ? SecurityViolationReportingPolicy::kSuppressReporting
-                      : SecurityViolationReportingPolicy::kReport),
-      FetchParameters::kUseDefaultOriginRestrictionForType);
-  if (blocked_reason != ResourceRequestBlockedReason::kNone)
-    return blocked_reason;
-
-  if (resource->IsSameOriginOrCORSSuccessful())
-    return ResourceRequestBlockedReason::kNone;
-
-  if (!resource_->IsUnusedPreload())
-    Context().AddConsoleMessage(cors_error_message);
-
-  return ResourceRequestBlockedReason::kOther;
 }
 
 CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
@@ -414,6 +404,10 @@ void ResourceLoader::DidReceiveResponse(
     std::unique_ptr<WebDataConsumerHandle> handle) {
   DCHECK(!web_url_response.IsNull());
 
+  const ResourceRequest& request = resource_->GetResourceRequest();
+  const ResourceLoaderOptions& options = resource_->Options();
+  Resource::Type resource_type = resource_->GetType();
+
   const ResourceResponse& response = web_url_response.ToResourceResponse();
 
   // Later, CORS results should already be in the response we get from the
@@ -422,13 +416,12 @@ void ResourceLoader::DidReceiveResponse(
   resource_->SetCORSStatus(DetermineCORSStatus(response, cors_error_msg));
 
   if (response.WasFetchedViaServiceWorker()) {
-    if (resource_->Options().cors_handling_by_resource_fetcher ==
+    if (options.cors_handling_by_resource_fetcher ==
             kEnableCORSHandlingByResourceFetcher &&
-        resource_->GetResourceRequest().GetFetchRequestMode() ==
-            WebURLRequest::kFetchRequestModeCORS &&
+        request.GetFetchRequestMode() == WebURLRequest::kFetchRequestModeCORS &&
         response.WasFallbackRequiredByServiceWorker()) {
-      ResourceRequest request = resource_->LastResourceRequest();
-      DCHECK_EQ(request.GetServiceWorkerMode(),
+      ResourceRequest last_request = resource_->LastResourceRequest();
+      DCHECK_EQ(last_request.GetServiceWorkerMode(),
                 WebURLRequest::ServiceWorkerMode::kAll);
       // This code handles the case when a regular controlling service worker
       // doesn't handle a cross origin request. When this happens we still want
@@ -437,13 +430,14 @@ void ResourceLoader::DidReceiveResponse(
       // safe because of http://crbug.com/604084 the
       // wasFallbackRequiredByServiceWorker flag is never set when foreign fetch
       // handled a request.
-      if (!Context().ShouldLoadNewResource(resource_->GetType())) {
+      if (!Context().ShouldLoadNewResource(resource_type)) {
         // Cancel the request if we should not trigger a reload now.
         HandleError(ResourceError::CancelledError(response.Url()));
         return;
       }
-      request.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kForeign);
-      Restart(request);
+      last_request.SetServiceWorkerMode(
+          WebURLRequest::ServiceWorkerMode::kForeign);
+      Restart(last_request);
       return;
     }
 
@@ -453,32 +447,59 @@ void ResourceLoader::DidReceiveResponse(
     // https://w3c.github.io/webappsec-csp/#should-block-response
     const KURL& original_url = response.OriginalURLViaServiceWorker();
     if (!original_url.IsEmpty()) {
-      ResourceRequestBlockedReason blocked_reason = Context().AllowResponse(
-          resource_->GetType(), resource_->GetResourceRequest(), original_url,
-          resource_->Options());
+      // CanRequest() below only checks enforced policies: check report-only
+      // here to ensure violations are sent.
+      Context().CheckCSPForRequest(
+          request, original_url, options,
+          SecurityViolationReportingPolicy::kReport,
+          ResourceRequest::RedirectStatus::kFollowedRedirect);
+
+      ResourceRequestBlockedReason blocked_reason = Context().CanRequest(
+          resource_type, request, original_url, options,
+          SecurityViolationReportingPolicy::kReport,
+          FetchParameters::kUseDefaultOriginRestrictionForType,
+          ResourceRequest::RedirectStatus::kFollowedRedirect);
       if (blocked_reason != ResourceRequestBlockedReason::kNone) {
         HandleError(ResourceError::CancelledDueToAccessCheckError(
             original_url, blocked_reason));
         return;
       }
     }
-  } else if (resource_->Options().cors_handling_by_resource_fetcher ==
+  } else if (options.cors_handling_by_resource_fetcher ==
                  kEnableCORSHandlingByResourceFetcher &&
-             resource_->GetResourceRequest().GetFetchRequestMode() ==
+             request.GetFetchRequestMode() ==
                  WebURLRequest::kFetchRequestModeCORS) {
-    ResourceRequestBlockedReason blocked_reason =
-        CanAccessResponse(resource_, response, cors_error_msg.ToString());
+    bool unused_preload = resource_->IsUnusedPreload();
+
+    // Redirects can change the response URL different from one of request.
+    const KURL& response_url = response.Url();
+
+    ResourceRequestBlockedReason blocked_reason = Context().CanRequest(
+        resource_type, request, response_url, options,
+        /* Don't send security violation reports for unused preloads */
+        (unused_preload ? SecurityViolationReportingPolicy::kSuppressReporting
+                        : SecurityViolationReportingPolicy::kReport),
+        FetchParameters::kUseDefaultOriginRestrictionForType,
+        request.GetRedirectStatus());
     if (blocked_reason != ResourceRequestBlockedReason::kNone) {
       HandleError(ResourceError::CancelledDueToAccessCheckError(
-          response.Url(), blocked_reason));
+          response_url, blocked_reason));
+      return;
+    }
+
+    if (!resource_->IsSameOriginOrCORSSuccessful()) {
+      if (!unused_preload)
+        Context().AddConsoleMessage(cors_error_msg.ToString());
+
+      HandleError(ResourceError::CancelledDueToAccessCheckError(
+          response_url, ResourceRequestBlockedReason::kOther));
       return;
     }
   }
 
   Context().DispatchDidReceiveResponse(
-      resource_->Identifier(), response,
-      resource_->GetResourceRequest().GetFrameType(),
-      resource_->GetResourceRequest().GetRequestContext(), resource_,
+      resource_->Identifier(), response, request.GetFrameType(),
+      request.GetRequestContext(), resource_,
       FetchContext::ResourceResponseType::kNotFromMemoryCache);
 
   resource_->ResponseReceived(response, std::move(handle));
