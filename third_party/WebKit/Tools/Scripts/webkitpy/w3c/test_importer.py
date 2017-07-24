@@ -306,7 +306,7 @@ class TestImporter(object):
                         locally_applied_commits=None):
         message = 'Import {}\n\nUsing wpt-import in Chromium {}.\n'.format(
             import_commit_sha, chromium_commit_sha)
-        if locally_applied_commits is not None:
+        if locally_applied_commits:
             message += 'With Chromium commits locally applied on WPT:\n'
             message += '\n'.join(str(commit) for commit in locally_applied_commits)
         message += '\nNo-Export: true'
