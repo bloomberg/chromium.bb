@@ -87,6 +87,33 @@ would still be considered to affect all users, and a bug affecting all
 Enterprise Windows users (but not all consumer Windows users) could also be
 considered to affect all users.
 
+### Assessing uncertainty
+
+In practice, the data available for assessing severity and prevalence of bugs is
+usually imperfect, so best judgement and rules of thumb need to be employed.
+
+Engineers assessing bugs can use their knowledge of the underlying system to
+intuit whether the observed symptom might be the "tip of an iceberg" of a wider
+bug which might have much wider severity and prevalence.  The evaluation isn't
+required to be limited to the so-far exactly observed symptoms, but should also
+be biased upward on the basis of well-founded fears.  For example, scary race
+conditions or symptoms that indicate a core system with many dependencies is
+being undermined.
+
+A rule of thumb is that such scary "iceberg" problems are more likely for
+changes which have not yet been exposed to a large population of users --
+especially, bugs in Dev channel, or bugs in Beta channel affecting a relatively
+small or quiet population (for example, Android WebView has a tiny beta
+population, and non-English-speaking users have more difficulty getting their
+feedback heard).  On the other hand, if a bug already has been present on 100%
+of stable channel for weeks or months before it was first noticed, that's
+evidence that the problem is not so scary or urgent after all.  Therefore,
+recent regressions should have an upward bias in severity/prevalence assessment,
+while nonrecent ones should have a downward one.
+
+If this sort of consideration is a factor, that should be explicitly mentioned
+in the bug update.
+
 ### Customization
 
 The definitions provided above are examples; teams are encouraged to customize
@@ -141,3 +168,7 @@ need to address, and we should focus on the most important.  To ensure we
 maintain a high bar for product quality, we should track the number of
 introduced versus escaped regressions, and follow up if the number starts to
 rise.
+
+In practice, it is still expected that the majority of release blockers filed
+will be recent regressions, because on average they have higher severity,
+prevalence and uncertainty than longstanding bugs.
