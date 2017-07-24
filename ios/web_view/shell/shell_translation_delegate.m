@@ -33,7 +33,7 @@
 
   self.beforeTranslateActionSheet = [UIAlertController
       alertControllerWithTitle:nil
-                       message:@"Translate?"
+                       message:@"Pick Translate Action"
                 preferredStyle:UIAlertControllerStyleActionSheet];
   UIAlertAction* cancelAction =
       [UIAlertAction actionWithTitle:@"Nope."
@@ -43,11 +43,16 @@
                              }];
   [_beforeTranslateActionSheet addAction:cancelAction];
 
+  NSString* translateTitle = [NSString
+      stringWithFormat:@"Translate to %@", userLanguage.localizedName];
   UIAlertAction* translateAction = [UIAlertAction
-      actionWithTitle:@"Yes!"
+      actionWithTitle:translateTitle
                 style:UIAlertActionStyleDefault
               handler:^(UIAlertAction* action) {
                 weakSelf.beforeTranslateActionSheet = nil;
+                if (!weakSelf) {
+                  return;
+                }
                 CWVTranslationLanguage* source = pageLanguage;
                 CWVTranslationLanguage* target = userLanguage;
                 [controller translatePageFromLanguage:source
@@ -55,6 +60,36 @@
                                         userInitiated:YES];
               }];
   [_beforeTranslateActionSheet addAction:translateAction];
+
+  UIAlertAction* alwaysTranslateAction = [UIAlertAction
+      actionWithTitle:@"Always Translate"
+                style:UIAlertActionStyleDefault
+              handler:^(UIAlertAction* action) {
+                weakSelf.beforeTranslateActionSheet = nil;
+                if (!weakSelf) {
+                  return;
+                }
+                CWVTranslationPolicy* policy = [CWVTranslationPolicy
+                    translationPolicyAutoTranslateToLanguage:userLanguage];
+                [controller setTranslationPolicy:policy
+                                 forPageLanguage:pageLanguage];
+              }];
+  [_beforeTranslateActionSheet addAction:alwaysTranslateAction];
+
+  UIAlertAction* neverTranslateAction = [UIAlertAction
+      actionWithTitle:@"Never Translate"
+                style:UIAlertActionStyleDefault
+              handler:^(UIAlertAction* action) {
+                weakSelf.beforeTranslateActionSheet = nil;
+                if (!weakSelf) {
+                  return;
+                }
+                CWVTranslationPolicy* policy =
+                    [CWVTranslationPolicy translationPolicyNever];
+                [controller setTranslationPolicy:policy
+                                 forPageLanguage:pageLanguage];
+              }];
+  [_beforeTranslateActionSheet addAction:neverTranslateAction];
 
   [[UIApplication sharedApplication].keyWindow.rootViewController
       presentViewController:_beforeTranslateActionSheet

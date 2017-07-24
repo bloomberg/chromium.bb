@@ -20,6 +20,7 @@
 #include "components/translate/core/common/language_detection_details.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_state/web_state.h"
+#import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 #include "ios/web_view/internal/pref_names.h"
 #import "ios/web_view/internal/translate/cwv_translation_controller_internal.h"
 #include "ios/web_view/internal/translate/web_view_translate_accept_languages_factory.h"
@@ -35,6 +36,14 @@ DEFINE_WEB_STATE_USER_DATA_KEY(ios_web_view::WebViewTranslateClient);
 
 namespace ios_web_view {
 
+namespace {
+// Translate settings for off-the-record browser states are inherited from a
+// non-off-the-record browser state. This allows them to share settings.
+WebViewBrowserState* GetMainBrowserState() {
+  return [CWVWebViewConfiguration defaultConfiguration].browserState;
+}
+}  // namespace
+
 // TODO(crbug.com/729859): Support logging histogram data on detected language
 // page, by passing a valid language_histogram, when histogram logging is
 // available on ios/web_view.
@@ -43,8 +52,7 @@ WebViewTranslateClient::WebViewTranslateClient(web::WebState* web_state)
       translate_manager_(base::MakeUnique<translate::TranslateManager>(
           this,
           WebViewTranslateRankerFactory::GetForBrowserState(
-              WebViewBrowserState::FromBrowserState(
-                  web_state->GetBrowserState())),
+              WebViewBrowserState::FromBrowserState(GetMainBrowserState())),
           prefs::kAcceptLanguages)),
       translate_driver_(web_state,
                         web_state->GetNavigationManager(),
@@ -79,9 +87,7 @@ translate::TranslateDriver* WebViewTranslateClient::GetTranslateDriver() {
 }
 
 PrefService* WebViewTranslateClient::GetPrefs() {
-  DCHECK(web_state());
-  return WebViewBrowserState::FromBrowserState(web_state()->GetBrowserState())
-      ->GetPrefs();
+  return GetMainBrowserState()->GetPrefs();
 }
 
 std::unique_ptr<translate::TranslatePrefs>
@@ -95,8 +101,7 @@ translate::TranslateAcceptLanguages*
 WebViewTranslateClient::GetTranslateAcceptLanguages() {
   translate::TranslateAcceptLanguages* accept_languages =
       WebViewTranslateAcceptLanguagesFactory::GetForBrowserState(
-          WebViewBrowserState::FromBrowserState(
-              web_state()->GetBrowserState()));
+          WebViewBrowserState::FromBrowserState(GetMainBrowserState()));
   DCHECK(accept_languages);
   return accept_languages;
 }

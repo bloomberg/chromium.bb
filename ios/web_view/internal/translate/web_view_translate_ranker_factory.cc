@@ -53,10 +53,4 @@ WebViewTranslateRankerFactory::BuildServiceInstanceFor(
   return std::move(ranker);
 }
 
-web::BrowserState* WebViewTranslateRankerFactory::GetBrowserStateToUse(
-    web::BrowserState* context) const {
-  // Override to enable this service for off the record browser states.
-  return context;
-}
-
 }  // namespace ios_web_view
