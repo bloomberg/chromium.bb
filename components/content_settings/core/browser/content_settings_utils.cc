@@ -142,6 +142,9 @@ void GetRendererContentSettingRules(const HostContentSettingsMap* map,
       CONTENT_SETTINGS_TYPE_AUTOPLAY,
       ResourceIdentifier(),
       &(rules->autoplay_rules));
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_CLIENT_HINTS,
+                             ResourceIdentifier(),
+                             &(rules->client_hints_rules));
 }
 
 bool IsMorePermissive(ContentSetting a, ContentSetting b) {
