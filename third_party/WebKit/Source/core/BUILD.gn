@@ -1497,6 +1497,7 @@ jumbo_source_set("unit_tests") {
     "loader/resource/MockImageResourceObserver.h",
     "loader/resource/MultipartImageResourceParserTest.cpp",
     "origin_trials/OriginTrialContextTest.cpp",
+    "page/ChromeClientImplTest.cpp",
     "page/ChromeClientTest.cpp",
     "page/DragControllerTest.cpp",
     "page/EffectiveNavigationPolicyTest.cpp",
