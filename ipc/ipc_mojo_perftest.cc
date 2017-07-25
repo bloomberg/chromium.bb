@@ -12,8 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/perf_time_logger.h"
-#include "base/test/test_io_thread.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_sync_channel.h"
@@ -38,6 +37,12 @@ IPC_SYNC_MESSAGE_CONTROL1_1(TestMsg_SyncPing, std::string, std::string)
 
 namespace IPC {
 namespace {
+
+scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() {
+  scoped_refptr<base::TaskRunner> runner = mojo::edk::GetIOTaskRunner();
+  return scoped_refptr<base::SingleThreadTaskRunner>(
+      static_cast<base::SingleThreadTaskRunner*>(runner.get()));
+}
 
 class PerformanceChannelListener : public Listener {
  public:
@@ -266,15 +271,13 @@ class MojoChannelPerfTest : public IPCChannelMojoTestBase {
   ~MojoChannelPerfTest() override = default;
 
   void RunTestChannelProxyPingPong() {
-    io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
-
     Init("MojoPerfTestClient");
 
     // Set up IPC channel and start client.
     PerformanceChannelListener listener("ChannelProxy");
     auto channel_proxy = IPC::ChannelProxy::Create(
         TakeHandle().release(), IPC::Channel::MODE_SERVER, &listener,
-        io_thread_->task_runner());
+        GetIOThreadTaskRunner());
     listener.Init(channel_proxy.get());
 
     LockThreadAffinity thread_locker(kSharedCore);
@@ -295,13 +298,9 @@ class MojoChannelPerfTest : public IPCChannelMojoTestBase {
 
     EXPECT_TRUE(WaitForClientShutdown());
     channel_proxy.reset();
-
-    io_thread_.reset();
   }
 
   void RunTestChannelProxySyncPing() {
-    io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
-
     Init("MojoPerfTestClient");
 
     // Set up IPC channel and start client.
@@ -311,7 +310,7 @@ class MojoChannelPerfTest : public IPCChannelMojoTestBase {
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     auto channel_proxy = IPC::SyncChannel::Create(
         TakeHandle().release(), IPC::Channel::MODE_SERVER, &listener,
-        io_thread_->task_runner(), false, &shutdown_event);
+        GetIOThreadTaskRunner(), false, &shutdown_event);
     listener.Init(channel_proxy.get());
 
     LockThreadAffinity thread_locker(kSharedCore);
@@ -332,18 +331,7 @@ class MojoChannelPerfTest : public IPCChannelMojoTestBase {
 
     EXPECT_TRUE(WaitForClientShutdown());
     channel_proxy.reset();
-
-    io_thread_.reset();
   }
-
-  scoped_refptr<base::TaskRunner> io_task_runner() {
-    if (io_thread_)
-      return io_thread_->task_runner();
-    return base::ThreadTaskRunnerHandle::Get();
-  }
-
- private:
-  std::unique_ptr<base::TestIOThread> io_thread_;
 };
 
 TEST_F(MojoChannelPerfTest, ChannelProxyPingPong) {
@@ -371,11 +359,10 @@ class MojoPerfTestClient {
   int Run(MojoHandle handle) {
     handle_ = mojo::MakeScopedHandle(mojo::MessagePipeHandle(handle));
     LockThreadAffinity thread_locker(kSharedCore);
-    base::TestIOThread io_thread(base::TestIOThread::kAutoStart);
 
     std::unique_ptr<ChannelProxy> channel =
         IPC::ChannelProxy::Create(handle_.release(), Channel::MODE_CLIENT,
-                                  listener_.get(), io_thread.task_runner());
+                                  listener_.get(), GetIOThreadTaskRunner());
     listener_->Init(channel.get());
 
     base::RunLoop().Run();
