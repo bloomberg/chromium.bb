@@ -162,7 +162,16 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 	size_t plane;
 	struct drm_rockchip_gem_create gem_create;
 
-	if (width <= 2560 &&
+	if (format == DRM_FORMAT_NV12) {
+		uint32_t w_mbs = DIV_ROUND_UP(ALIGN(width, 16), 16);
+		uint32_t h_mbs = DIV_ROUND_UP(ALIGN(height, 16), 16);
+
+		uint32_t aligned_width = w_mbs * 16;
+		uint32_t aligned_height = DIV_ROUND_UP(h_mbs * 16 * 3, 2);
+
+		drv_bo_from_format(bo, aligned_width, height, format);
+		bo->total_size = bo->strides[0] * aligned_height + w_mbs * h_mbs * 128;
+	} else if (width <= 2560 &&
 		   has_modifier(modifiers, count, DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC)) {
 		/* If the caller has decided they can use AFBC, always
 		 * pick that */
@@ -174,34 +183,20 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 			return -1;
 		}
 
-		uint32_t stride, extra_size;
+		uint32_t stride;
 		/*
-		 * Since the ARM L1 cache line size is 64 bytes, align to that as a performance
-		 * optimization. For YV12, the Mali cmem allocator requires that chroma planes are
-		 * aligned to 64-bytes, so align the luma plane to 128 bytes.
+		 * Since the ARM L1 cache line size is 64 bytes, align to that
+		 * as a performance optimization. For YV12, the Mali cmem allocator
+		 * requires that chroma planes are aligned to 64-bytes, so align the
+		 * luma plane to 128 bytes.
 		 */
-		extra_size = 0;
 		stride = drv_stride_from_format(format, width, 0);
 		if (format == DRM_FORMAT_YVU420 || format == DRM_FORMAT_YVU420_ANDROID)
 			stride = ALIGN(stride, 128);
 		else
 			stride = ALIGN(stride, 64);
 
-		if (format == DRM_FORMAT_NV12) {
-			/* RK VPU needs the buffers macroblock-aligned. */
-			stride = ALIGN(stride, 16);
-			height = ALIGN(height, 16);
-			/*
-			 * The RK VPU driver requires extra space for motion vectors. The amount
-			 * of extra space required is specified in 16x16 macroblocks.
-			 */
-			uint32_t w_mbs = DIV_ROUND_UP(stride, 16);
-			uint32_t h_mbs = DIV_ROUND_UP(height, 16);
-			extra_size = w_mbs * h_mbs * 128;
-		}
-
 		drv_bo_from_format(bo, stride, height, format);
-		bo->total_size += extra_size;
 	}
 
 	memset(&gem_create, 0, sizeof(gem_create));
