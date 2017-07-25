@@ -103,8 +103,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   void Reload();
 
   // Hides virtual keyboard and notifies observer bounds change.
-  // This method hides the keyboard with a delay to avoid layout flicker
-  // when the focus of input field quickly change.
+  // This method immediately starts hiding animation.
   void HideKeyboard(HideReason reason);
 
   // Notifies the observer for contents bounds changed.
@@ -145,10 +144,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Retrieve the active keyboard controller.
   static KeyboardController* GetInstance();
 
-  // Returns true if keyboard is currently visible.
-  bool keyboard_visible() const { return keyboard_visible_; }
-
-  bool show_on_resize() const { return show_on_resize_; }
+  // Returns true if keyboard is in SHOWN or SHOWING state.
+  bool keyboard_visible() const;
 
   // Returns true if keyboard window has been created.
   bool IsKeyboardWindowCreated();
@@ -167,6 +164,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // For access to SetContainerBounds.
   friend class KeyboardLayoutManager;
+
+  bool show_on_resize() const { return show_on_resize_; }
 
   // aura::WindowObserver overrides
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
@@ -202,6 +201,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // is aborted, it won't be called.
   void ShowAnimationFinished();
   void HideAnimationFinished();
+
+  void NotifyKeyboardBoundsChangingAndEnsrueCaretInWorkArea();
 
   // Called when the keyboard mode is set or the keyboard is moved to another
   // display.
