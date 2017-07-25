@@ -9,14 +9,5 @@
 		<string>$(AppIdentifierPrefix)$(CFBundleIdentifier)</string>
 		<string>$(AppIdentifierPrefix)com.google.common.SSO</string>
 	</array>
-	<!--
-	This blocks device debugging and doesn't seem to be used. Commented out
-	until we find this useful.
-
-	<key>com.apple.security.application-groups</key>
-	<array>
-		<string>group.com.google.chrome</string>
-	</array>
-	-->
 </dict>
 </plist>

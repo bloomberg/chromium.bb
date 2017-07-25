@@ -13,20 +13,6 @@ group("all") {
   ]
 }
 
-foreach(locale, remoting_locales_with_underscores) {
-  bundle_data("locale_${locale}_bundle_data") {
-    sources = [
-      "$root_out_dir/remoting/resources/$locale.lproj/locale.pak",
-    ]
-    outputs = [
-      "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}",
-    ]
-    public_deps = [
-      "//remoting/resources:copy_locales",
-    ]
-  }
-}
-
 # source set to be used by both external and internal app.
 source_set("common_source_set") {
   sources = [
@@ -100,7 +86,7 @@ source_set("common_source_set") {
   ]
 
   foreach(locale, remoting_locales_with_underscores) {
-    deps += [ ":locale_${locale}_bundle_data" ]
+    deps += [ "//remoting/ios/app/resources:locale_${locale}_bundle_data" ]
   }
 
   public_deps = [
