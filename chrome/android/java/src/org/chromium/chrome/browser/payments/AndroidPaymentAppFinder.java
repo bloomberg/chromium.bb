@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.payments;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
-import android.content.res.Resources;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
@@ -234,11 +233,8 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         int resId = activityInfo.metaData.getInt(META_DATA_NAME_OF_PAYMENT_METHOD_NAMES);
         if (resId == 0) return result;
 
-        Resources resources =
-                mPackageManagerDelegate.getResourcesForApplication(activityInfo.applicationInfo);
-        if (resources == null) return result;
-
-        String[] methodNames = resources.getStringArray(resId);
+        String[] methodNames = mPackageManagerDelegate.getStringArrayResourceForApplication(
+                activityInfo.applicationInfo, resId);
         if (methodNames == null) return result;
 
         for (int i = 0; i < methodNames.length; i++) {

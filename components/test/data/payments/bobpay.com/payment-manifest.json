@@ -1,4 +1,3 @@
 {
-  "default_applications": ["https://bobpay.com/app.json"],
-  "supported_origins": ["https://alicepay.com"]
+  "default_applications": ["https://bobpay.com/app.json"]
 }

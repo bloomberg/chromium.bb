@@ -42,8 +42,7 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     private static final String EXPECTED_PAYMENT_METHOD_MANIFEST = "{\n"
-            + "  \"default_applications\": [\"https://bobpay.com/app.json\"],\n"
-            + "  \"supported_origins\": [\"https://alicepay.com\"]\n"
+            + "  \"default_applications\": [\"https://bobpay.com/app.json\"]\n"
             + "}\n";
 
     private static final String EXPECTED_WEB_APP_MANIFEST = "{\n"
