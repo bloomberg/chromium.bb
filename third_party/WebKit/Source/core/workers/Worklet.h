@@ -71,7 +71,7 @@ class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
   // list is empty; it is populated when the user agent chooses to create its
   // WorkletGlobalScope."
   // https://drafts.css-houdini.org/worklets/#worklet-section
-  HeapHashSet<Member<WorkletGlobalScopeProxy>> proxies_;
+  HeapVector<Member<WorkletGlobalScopeProxy>> proxies_;
 
   // "A Worklet has a module responses map. This is a ordered map of module URLs
   // to values that are a fetch responses. The map's entries are ordered based

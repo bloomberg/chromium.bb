@@ -138,7 +138,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
   // WorkletGlobalScopes at this time."
 
   while (NeedsToCreateGlobalScope())
-    proxies_.insert(CreateGlobalScope());
+    proxies_.push_back(CreateGlobalScope());
 
   // Step 11: "Let pendingTaskStruct be a new pending tasks struct with counter
   // initialized to the length of worklet's WorkletGlobalScopes."
