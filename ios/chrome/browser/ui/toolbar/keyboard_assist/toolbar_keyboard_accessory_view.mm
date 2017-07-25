@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/toolbar/new_keyboard_accessory_view.h"
+#import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_keyboard_accessory_view.h"
 
 #import <NotificationCenter/NotificationCenter.h>
 
@@ -18,10 +18,10 @@
 #error "This file requires ARC support."
 #endif
 
-@interface NewKeyboardAccessoryView ()
+@interface ToolbarKeyboardAccessoryView ()
 
 @property(nonatomic, retain) NSArray<NSString*>* buttonTitles;
-@property(nonatomic, weak) id<KeyboardAccessoryViewDelegate> delegate;
+@property(nonatomic, weak) id<ToolbarAssistiveKeyboardDelegate> delegate;
 
 // Called when a keyboard shortcut button is pressed.
 - (void)keyboardButtonPressed:(NSString*)title;
@@ -30,16 +30,16 @@
 
 @end
 
-@implementation NewKeyboardAccessoryView
+@implementation ToolbarKeyboardAccessoryView
 
 @synthesize buttonTitles = _buttonTitles;
 @synthesize delegate = _delegate;
 
 - (instancetype)initWithButtons:(NSArray<NSString*>*)buttonTitles
-                       delegate:(id<KeyboardAccessoryViewDelegate>)delegate {
+                       delegate:(id<ToolbarAssistiveKeyboardDelegate>)delegate {
   const CGFloat kViewHeight = 44.0;
   CGFloat width = [[UIScreen mainScreen] bounds].size.width;
-  // TODO(734512): Have the creator of the view define the size.
+  // TODO(crbug.com/734512): Have the creator of the view define the size.
   CGRect frame = CGRectMake(0.0, 0.0, width, kViewHeight);
 
   self = [super initWithFrame:frame inputViewStyle:UIInputViewStyleKeyboard];

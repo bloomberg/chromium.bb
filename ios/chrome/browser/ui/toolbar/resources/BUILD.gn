@@ -22,15 +22,6 @@ imageset("collapse_pressed_incognito") {
   ]
 }
 
-imageset("keyboard_accessory_voice_search") {
-  sources = [
-    "keyboard_accessory_voice_search.imageset/Contents.json",
-    "keyboard_accessory_voice_search.imageset/keyboard_accessory_voice_search.png",
-    "keyboard_accessory_voice_search.imageset/keyboard_accessory_voice_search@2x.png",
-    "keyboard_accessory_voice_search.imageset/keyboard_accessory_voice_search@3x.png",
-  ]
-}
-
 imageset("toolbar_dark_newtab") {
   sources = [
     "toolbar_dark_newtab.imageset/Contents.json",
@@ -82,15 +73,6 @@ imageset("incognito_marker_typing") {
     "incognito_marker_typing.imageset/incognito_marker_typing.png",
     "incognito_marker_typing.imageset/incognito_marker_typing@2x.png",
     "incognito_marker_typing.imageset/incognito_marker_typing@3x.png",
-  ]
-}
-
-imageset("keyboard_accessory_qr_scanner") {
-  sources = [
-    "keyboard_accessory_qr_scanner.imageset/Contents.json",
-    "keyboard_accessory_qr_scanner.imageset/keyboard_accessory_qr_scanner.png",
-    "keyboard_accessory_qr_scanner.imageset/keyboard_accessory_qr_scanner@2x.png",
-    "keyboard_accessory_qr_scanner.imageset/keyboard_accessory_qr_scanner@3x.png",
   ]
 }
 

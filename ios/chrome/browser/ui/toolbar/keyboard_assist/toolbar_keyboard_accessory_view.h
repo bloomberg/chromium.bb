@@ -7,18 +7,18 @@
 
 #import <UIKit/UIKIt.h>
 
-#import "ios/chrome/browser/ui/toolbar/keyboard_accessory_view_delegate.h"
+#import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_delegate.h"
 
 // Accessory View above the keyboard.
 // Shows keys that are shortcuts to commonly used characters or strings,
 // and buttons to start Voice Search or a Camera Search.
-@interface NewKeyboardAccessoryView : UIInputView<UIInputViewAudioFeedback>
+@interface ToolbarKeyboardAccessoryView : UIInputView<UIInputViewAudioFeedback>
 
 // Designated initializer. |buttonTitles| lists the titles of the shortcut
 // buttons. |delegate| receives the various events triggered in the view. Not
 // retained, and can be nil.
 - (instancetype)initWithButtons:(NSArray<NSString*>*)buttonTitles
-                       delegate:(id<KeyboardAccessoryViewDelegate>)delegate
+                       delegate:(id<ToolbarAssistiveKeyboardDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
