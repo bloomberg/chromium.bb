@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/presentation_request.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -49,6 +50,7 @@ PresentationServiceImpl::PresentationServiceImpl(
     ControllerPresentationServiceDelegate* controller_delegate,
     ReceiverPresentationServiceDelegate* receiver_delegate)
     : WebContentsObserver(web_contents),
+      render_frame_host_(render_frame_host),
       controller_delegate_(controller_delegate),
       receiver_delegate_(receiver_delegate),
       start_presentation_request_id_(kInvalidRequestId),
@@ -180,8 +182,11 @@ void PresentationServiceImpl::StartPresentation(
   start_presentation_request_id_ = GetNextRequestId();
   pending_start_presentation_cb_.reset(
       new NewPresentationCallbackWrapper(std::move(callback)));
+  PresentationRequest request({render_process_id_, render_frame_id_},
+                              presentation_urls,
+                              render_frame_host_->GetLastCommittedOrigin());
   controller_delegate_->StartPresentation(
-      render_process_id_, render_frame_id_, presentation_urls,
+      request,
       base::Bind(&PresentationServiceImpl::OnStartPresentationSucceeded,
                  weak_factory_.GetWeakPtr(), start_presentation_request_id_),
       base::Bind(&PresentationServiceImpl::OnStartPresentationError,
@@ -206,9 +211,12 @@ void PresentationServiceImpl::ReconnectPresentation(
     InvokeNewPresentationCallbackWithError(std::move(callback));
     return;
   }
+
+  PresentationRequest request({render_process_id_, render_frame_id_},
+                              presentation_urls,
+                              render_frame_host_->GetLastCommittedOrigin());
   controller_delegate_->ReconnectPresentation(
-      render_process_id_, render_frame_id_, presentation_urls,
-      presentation_id.value_or(std::string()),
+      request, presentation_id.value_or(std::string()),
       base::Bind(&PresentationServiceImpl::OnReconnectPresentationSucceeded,
                  weak_factory_.GetWeakPtr(), request_id),
       base::Bind(&PresentationServiceImpl::OnReconnectPresentationError,
@@ -304,8 +312,11 @@ void PresentationServiceImpl::SetDefaultPresentationUrls(
     return;
 
   default_presentation_urls_ = presentation_urls;
+  PresentationRequest request({render_process_id_, render_frame_id_},
+                              presentation_urls,
+                              render_frame_host_->GetLastCommittedOrigin());
   controller_delegate_->SetDefaultPresentationUrls(
-      render_process_id_, render_frame_id_, presentation_urls,
+      request,
       base::Bind(&PresentationServiceImpl::OnDefaultPresentationStarted,
                  weak_factory_.GetWeakPtr()));
 }
