@@ -71,5 +71,13 @@
             android:process=":webapk_sandboxed_process2"
             android:exported="true"
             tools:ignore="ExportedService"/>
+        <service
+            android:name="org.chromium.webapk.shell_apk.IdentityService"
+            android:exported="true"
+            tools:ignore="ExportedService">
+            <intent-filter>
+              <action android:name="org.webapk.IDENTITY_SERVICE_API" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>
