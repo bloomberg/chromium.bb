@@ -552,8 +552,6 @@ bool WindowTree::SetModalType(const ClientWindowId& window_id,
   if (window->modal_type() == modal_type)
     return true;
 
-  // TODO(moshayedi): crbug.com/697176. When modality of a window that used to
-  // be a system modal changes, notify window manager state.
   auto* display_root = GetWindowManagerDisplayRoot(window);
   switch (modal_type) {
     case MODAL_TYPE_SYSTEM:

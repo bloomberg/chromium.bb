@@ -741,6 +741,27 @@ TEST_F(WindowTreeTest, DisallowSetSystemModalForEmbedded) {
       ClientWindowIdForWindow(last_tree(), embed_window), MODAL_TYPE_SYSTEM));
 }
 
+TEST_F(WindowTreeTest, ModalTypeSystemToModalTypeNone) {
+  const ClientWindowId test_window_id = BuildClientWindowId(wm_tree(), 21);
+  EXPECT_TRUE(wm_tree()->NewWindow(test_window_id, ServerWindow::Properties()));
+  ServerWindow* test_window = wm_tree()->GetWindowByClientId(test_window_id);
+  ASSERT_TRUE(test_window);
+  test_window->SetVisible(true);
+  const ClientWindowId wm_root_id = FirstRootId(wm_tree());
+  EXPECT_TRUE(wm_tree()->AddWindow(wm_root_id, test_window_id));
+  EXPECT_TRUE(wm_tree()->SetModalType(test_window_id, MODAL_TYPE_SYSTEM));
+  WindowManagerState* wms =
+      display()->GetActiveWindowManagerDisplayRoot()->window_manager_state();
+  ModalWindowControllerTestApi modal_window_controller_test_api(
+      EventDispatcherTestApi(wms->event_dispatcher())
+          .modal_window_controller());
+  EXPECT_EQ(test_window,
+            modal_window_controller_test_api.GetActiveSystemModalWindow());
+  EXPECT_TRUE(wm_tree()->SetModalType(test_window_id, MODAL_TYPE_NONE));
+  EXPECT_EQ(nullptr,
+            modal_window_controller_test_api.GetActiveSystemModalWindow());
+}
+
 // Establish client, call NewTopLevelWindow(), make sure get id, and make
 // sure client paused.
 TEST_F(WindowTreeTest, NewTopLevelWindow) {

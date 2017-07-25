@@ -12,6 +12,7 @@
 
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/public/interfaces/mus_constants.mojom.h"
+#include "ui/base/ui_base_types.h"
 
 namespace gfx {
 class Insets;
@@ -93,6 +94,9 @@ class ServerWindowObserver {
   // Called when a transient child is removed from |window|.
   virtual void OnTransientWindowRemoved(ServerWindow* window,
                                         ServerWindow* transient_child) {}
+
+  virtual void OnWindowModalTypeChanged(ServerWindow* window,
+                                        ModalType old_modal_type) {}
 
  protected:
   virtual ~ServerWindowObserver() {}

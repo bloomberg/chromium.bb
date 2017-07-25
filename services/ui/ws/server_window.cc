@@ -269,7 +269,13 @@ void ServerWindow::RemoveTransientWindow(ServerWindow* child) {
 }
 
 void ServerWindow::SetModalType(ModalType modal_type) {
+  if (modal_type_ == modal_type)
+    return;
+
+  const ModalType old_modal_type = modal_type_;
   modal_type_ = modal_type;
+  for (auto& observer : observers_)
+    observer.OnWindowModalTypeChanged(this, old_modal_type);
 }
 
 bool ServerWindow::Contains(const ServerWindow* window) const {
