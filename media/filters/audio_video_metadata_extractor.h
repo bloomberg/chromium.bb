@@ -41,7 +41,12 @@ class MEDIA_EXPORT AudioVideoMetadataExtractor {
   // be called once.
   bool Extract(DataSource* source, bool extract_attached_pics);
 
-  // Returns -1 if we cannot extract the duration. In seconds.
+  // Returns whether or not duration information was extracted. Do not call
+  // duration() if this returns false.
+  bool has_duration() const;
+
+  // Returns the duration in seconds. Value is undefined if has_duration()
+  // returns false.
   double duration() const;
 
   // Returns -1 for containers without video.
@@ -77,7 +82,8 @@ class MEDIA_EXPORT AudioVideoMetadataExtractor {
 
   bool extracted_;
 
-  int duration_;
+  bool has_duration_;
+  double duration_;  // Valid only if |has_duration_| is true.
   int width_;
   int height_;
 

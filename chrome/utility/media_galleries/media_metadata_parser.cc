@@ -52,7 +52,7 @@ void ParseAudioVideoMetadata(
   if (!extractor.Extract(source, get_attached_images))
     return;
 
-  if (extractor.duration() >= 0)
+  if (extractor.has_duration() && extractor.duration() >= 0)
     metadata->duration.reset(new double(extractor.duration()));
 
   if (extractor.height() >= 0 && extractor.width() >= 0) {
