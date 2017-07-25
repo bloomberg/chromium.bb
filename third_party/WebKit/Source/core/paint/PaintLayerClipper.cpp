@@ -500,15 +500,8 @@ void PaintLayerClipper::InitializeCommonClipRectState(
   } else {
     const auto* ancestor_overflow_clip = ancestor_properties->OverflowClip();
     if (ancestor_overflow_clip) {
-      if (const auto* ancestor_rounded_clip =
-              ancestor_properties->InnerBorderRadiusClip()) {
-        DCHECK_EQ(destination_property_tree_state.Clip(),
-                  ancestor_rounded_clip->Parent());
-        DCHECK_EQ(ancestor_rounded_clip, ancestor_overflow_clip->Parent());
-      } else {
-        DCHECK_EQ(destination_property_tree_state.Clip(),
-                  ancestor_overflow_clip->Parent());
-      }
+      DCHECK_EQ(destination_property_tree_state.Clip(),
+                ancestor_overflow_clip->Parent());
       destination_property_tree_state.SetClip(ancestor_overflow_clip);
     }
   }
