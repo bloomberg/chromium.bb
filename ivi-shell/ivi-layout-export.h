@@ -45,7 +45,7 @@
  * application surfaces grouped to the layer all together.
  *
  * This API and ABI follow following specifications.
- * http://projects.genivi.org/wayland-ivi-extension/layer-manager-apis
+ * https://at.projects.genivi.org/wiki/display/PROJ/Wayland+IVI+Extension+Design
  */
 
 #ifndef _IVI_LAYOUT_EXPORT_H_
