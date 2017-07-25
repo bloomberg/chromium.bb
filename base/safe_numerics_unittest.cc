@@ -583,14 +583,15 @@ static void TestArithmetic(const char* dst, int line) {
   using DstLimits = SaturationDefaultLimits<Dst>;
 
   EXPECT_EQ(true, CheckedNumeric<Dst>().IsValid());
-  EXPECT_EQ(false,
-            CheckedNumeric<Dst>(CheckedNumeric<Dst>(DstLimits::max()) *
-                                DstLimits::max()).IsValid());
+  EXPECT_EQ(false, CheckedNumeric<Dst>(CheckedNumeric<Dst>(DstLimits::max()) *
+                                       DstLimits::max())
+                       .IsValid());
   EXPECT_EQ(static_cast<Dst>(0), CheckedNumeric<Dst>().ValueOrDie());
   EXPECT_EQ(static_cast<Dst>(0), CheckedNumeric<Dst>().ValueOrDefault(1));
   EXPECT_EQ(static_cast<Dst>(1),
             CheckedNumeric<Dst>(CheckedNumeric<Dst>(DstLimits::max()) *
-                                DstLimits::max()).ValueOrDefault(1));
+                                DstLimits::max())
+                .ValueOrDefault(1));
 
   // Test the operator combinations.
   TEST_EXPECTED_VALUE(2, CheckedNumeric<Dst>(1) + CheckedNumeric<Dst>(1));
@@ -915,7 +916,7 @@ void TestStrictComparison() {
 
 template <typename Dst, typename Src>
 struct TestNumericConversion<Dst, Src, SIGN_PRESERVING_VALUE_PRESERVING> {
-  static void Test(const char *dst, const char *src, int line) {
+  static void Test(const char* dst, const char* src, int line) {
     using SrcLimits = SaturationDefaultLimits<Src>;
     using DstLimits = SaturationDefaultLimits<Dst>;
     // Integral to floating.
@@ -971,7 +972,7 @@ struct TestNumericConversion<Dst, Src, SIGN_PRESERVING_VALUE_PRESERVING> {
 
 template <typename Dst, typename Src>
 struct TestNumericConversion<Dst, Src, SIGN_PRESERVING_NARROW> {
-  static void Test(const char *dst, const char *src, int line) {
+  static void Test(const char* dst, const char* src, int line) {
     using SrcLimits = SaturationDefaultLimits<Src>;
     using DstLimits = SaturationDefaultLimits<Dst>;
     static_assert(SrcLimits::is_signed == DstLimits::is_signed,
@@ -1026,7 +1027,7 @@ struct TestNumericConversion<Dst, Src, SIGN_PRESERVING_NARROW> {
 
 template <typename Dst, typename Src>
 struct TestNumericConversion<Dst, Src, SIGN_TO_UNSIGN_WIDEN_OR_EQUAL> {
-  static void Test(const char *dst, const char *src, int line) {
+  static void Test(const char* dst, const char* src, int line) {
     using SrcLimits = SaturationDefaultLimits<Src>;
     using DstLimits = SaturationDefaultLimits<Dst>;
     static_assert(MaxExponent<Dst>::value >= MaxExponent<Src>::value,
@@ -1059,7 +1060,7 @@ struct TestNumericConversion<Dst, Src, SIGN_TO_UNSIGN_WIDEN_OR_EQUAL> {
 
 template <typename Dst, typename Src>
 struct TestNumericConversion<Dst, Src, SIGN_TO_UNSIGN_NARROW> {
-  static void Test(const char *dst, const char *src, int line) {
+  static void Test(const char* dst, const char* src, int line) {
     using SrcLimits = SaturationDefaultLimits<Src>;
     using DstLimits = SaturationDefaultLimits<Dst>;
     static_assert(MaxExponent<Dst>::value < MaxExponent<Src>::value,
@@ -1118,7 +1119,7 @@ struct TestNumericConversion<Dst, Src, SIGN_TO_UNSIGN_NARROW> {
 
 template <typename Dst, typename Src>
 struct TestNumericConversion<Dst, Src, UNSIGN_TO_SIGN_NARROW_OR_EQUAL> {
-  static void Test(const char *dst, const char *src, int line) {
+  static void Test(const char* dst, const char* src, int line) {
     using SrcLimits = SaturationDefaultLimits<Src>;
     using DstLimits = SaturationDefaultLimits<Dst>;
     static_assert(MaxExponent<Dst>::value <= MaxExponent<Src>::value,
@@ -1243,8 +1244,7 @@ TEST(SafeNumerics, IntMaxOperations) {
 
 TEST(SafeNumerics, FloatOperations) {
   TEST_NUMERIC_CONVERSION(float, intmax_t, SIGN_PRESERVING_VALUE_PRESERVING);
-  TEST_NUMERIC_CONVERSION(float, uintmax_t,
-                          SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(float, uintmax_t, SIGN_PRESERVING_VALUE_PRESERVING);
   TEST_NUMERIC_CONVERSION(float, int, SIGN_PRESERVING_VALUE_PRESERVING);
   TEST_NUMERIC_CONVERSION(float, unsigned int,
                           SIGN_PRESERVING_VALUE_PRESERVING);
@@ -1254,8 +1254,7 @@ TEST(SafeNumerics, FloatOperations) {
 
 TEST(SafeNumerics, DoubleOperations) {
   TEST_NUMERIC_CONVERSION(double, intmax_t, SIGN_PRESERVING_VALUE_PRESERVING);
-  TEST_NUMERIC_CONVERSION(double, uintmax_t,
-                          SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(double, uintmax_t, SIGN_PRESERVING_VALUE_PRESERVING);
   TEST_NUMERIC_CONVERSION(double, int, SIGN_PRESERVING_VALUE_PRESERVING);
   TEST_NUMERIC_CONVERSION(double, unsigned int,
                           SIGN_PRESERVING_VALUE_PRESERVING);
@@ -1354,10 +1353,8 @@ TEST(SafeNumerics, CastTests) {
             static_cast<int>(small_negative));
   EXPECT_EQ(saturated_cast<int>(small_positive),
             static_cast<int>(small_positive));
-  EXPECT_EQ(saturated_cast<unsigned>(small_negative),
-            static_cast<unsigned>(0));
-  EXPECT_EQ(saturated_cast<int>(double_small),
-            static_cast<int>(double_small));
+  EXPECT_EQ(saturated_cast<unsigned>(small_negative), static_cast<unsigned>(0));
+  EXPECT_EQ(saturated_cast<int>(double_small), static_cast<int>(double_small));
   EXPECT_EQ(saturated_cast<int>(double_large), numeric_limits<int>::max());
   EXPECT_EQ(saturated_cast<float>(double_large), double_infinity);
   EXPECT_EQ(saturated_cast<float>(-double_large), -double_infinity);
