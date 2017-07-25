@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/media/capture/mojo/image_capture.mojom.js"></script>
 <script src="resources/imagecapture-helpers.js"></script>
 <script src="resources/mock-imagecapture.js"></script>
 <body>
@@ -12,9 +13,9 @@
 // This test verifies that the |constraints| configured in the mock Mojo
 // service implementation, are returned by MediaStreamTrack.getSettings().
 
-async_test(function(t) {
-  var canvas = document.getElementById('canvas');
-  var context = canvas.getContext('2d');
+promise_test(async function() {
+  let canvas = document.getElementById('canvas');
+  let context = canvas.getContext('2d');
   context.fillStyle = 'red';
   context.fillRect(0, 0, 10, 10);
 
@@ -38,69 +39,55 @@ async_test(function(t) {
 
                                       torch                : true
                                     }]};
-  var theMock = null;
-  var videoTrack = null;
-  mockImageCaptureReady
-    .then(mock => {
-      theMock = mock;
-    },
-    error => {
-      assert_unreached('Error creating MockImageCapture: ' + error);
-    })
-    .then(() => {
-      // |stream| must be created _after_ |mock| is constructed to give the
-      // latter time to override the bindings.
-      var stream = canvas.captureStream();
-      videoTrack = stream.getVideoTracks()[0];
 
-      // |videoTrack|'s capabilities gathering, just like the actual capture, is
-      // a process kicked off right after creation, we introduce a small delay
-      // to allow for those to be collected, since they are needed to understand
-      // which constraints are supported in applyConstraints().
-      // TODO(mcasas): this shouldn't be needed, https://crbug.com/711524.
-      return new Promise(resolve => setTimeout(resolve, 100));
-    })
-    .then(() => videoTrack.applyConstraints(constraints))
-    .then(appliedConstraints => {
+  let stream = canvas.captureStream();
+  let videoTrack = stream.getVideoTracks()[0];
 
-      settings = videoTrack.getSettings();
-      assert_equals(typeof settings, 'object');
+  // |videoTrack|'s capabilities gathering, just like the actual capture, is
+  // a process kicked off right after creation, we introduce a small delay
+  // to allow for those to be collected, since they are needed to understand
+  // which constraints are supported in applyConstraints().
+  // TODO(mcasas): this shouldn't be needed, https://crbug.com/711524.
+  await new Promise(resolve => setTimeout(resolve, 100));
 
-      assert_equals(constraints.advanced[0].whiteBalanceMode,
-                    settings.whiteBalanceMode, 'whiteBalanceMode');
-      assert_equals(constraints.advanced[0].exposureMode, settings.exposureMode,
-                    'exposureMode');
-      assert_equals(constraints.advanced[0].focusMode, settings.focusMode,
-                    'focusMode');
+  try {
+    await videoTrack.applyConstraints(constraints);
+  } catch (error) {
+    assert_unreached('Error applying constraints: ' + error.message);
+  }
 
-      assert_point2d_array_approx_equals(
-          constraints.advanced[0].pointsOfInterest, settings.pointsOfInterest,
-          0.01);
+  let settings = videoTrack.getSettings();
+  assert_equals(typeof settings, 'object');
 
-      assert_equals(constraints.advanced[0].exposureCompensation,
-                    settings.exposureCompensation, 'exposureCompensation');
-      assert_equals(constraints.advanced[0].colorTemperature,
-                    settings.colorTemperature, 'colorTemperature');
-      assert_equals(constraints.advanced[0].iso, settings.iso, 'iso');
+  assert_equals(constraints.advanced[0].whiteBalanceMode,
+                settings.whiteBalanceMode, 'whiteBalanceMode');
+  assert_equals(constraints.advanced[0].exposureMode, settings.exposureMode,
+                'exposureMode');
+  assert_equals(constraints.advanced[0].focusMode, settings.focusMode,
+                'focusMode');
 
-      assert_equals(constraints.advanced[0].brightness, settings.brightness,
-                    'brightness');
-      assert_equals(constraints.advanced[0].contrast, settings.contrast,
-                    'contrast');
-      assert_equals(constraints.advanced[0].saturation, settings.saturation,
-                    'saturation');
-      assert_equals(constraints.advanced[0].sharpness, settings.sharpness,
-                    'sharpness');
+  assert_point2d_array_approx_equals(
+      constraints.advanced[0].pointsOfInterest, settings.pointsOfInterest,
+      0.01);
 
-      assert_equals(constraints.advanced[0].zoom, settings.zoom, 'zoom');
+  assert_equals(constraints.advanced[0].exposureCompensation,
+                settings.exposureCompensation, 'exposureCompensation');
+  assert_equals(constraints.advanced[0].colorTemperature,
+                settings.colorTemperature, 'colorTemperature');
+  assert_equals(constraints.advanced[0].iso, settings.iso, 'iso');
 
-      assert_equals(constraints.advanced[0].torch, settings.torch, 'torch');
+  assert_equals(constraints.advanced[0].brightness, settings.brightness,
+                'brightness');
+  assert_equals(constraints.advanced[0].contrast, settings.contrast,
+                'contrast');
+  assert_equals(constraints.advanced[0].saturation, settings.saturation,
+                'saturation');
+  assert_equals(constraints.advanced[0].sharpness, settings.sharpness,
+                'sharpness');
 
-      t.done();
-    })
-    .catch(error => {
-      assert_unreached('Error applying constraints: ' + error.message);
-    });
+  assert_equals(constraints.advanced[0].zoom, settings.zoom, 'zoom');
+
+  assert_equals(constraints.advanced[0].torch, settings.torch, 'torch');
 
 }, 'exercises an applyConstraints() - getSettings() cycle');
 

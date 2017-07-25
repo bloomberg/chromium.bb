@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/media/capture/mojo/image_capture.mojom.js"></script>
 <script src="resources/imagecapture-helpers.js"></script>
 <script src="resources/mock-imagecapture.js"></script>
 <body>
@@ -15,64 +16,54 @@ const meteringModeNames = ['none', 'manual', 'single-shot', 'continuous'];
 // implementation are the same as those returned by the corresponding
 // MediaStreamTrack.getSettings().
 
-async_test(function(t) {
-  var canvas = document.getElementById('canvas');
-  var context = canvas.getContext('2d');
+promise_test(async function() {
+  let canvas = document.getElementById('canvas');
+  let context = canvas.getContext('2d');
   context.fillStyle = 'red';
   context.fillRect(0, 0, 10, 10);
 
-  var mock_settings;
-  mockImageCaptureReady
-    .then(mock => {
-      mock_settings = mock.state();
+  let mockSettings = mockImageCapture.state();
 
-      // |stream| must be created _after_ |mock| is constructed to give the
-      // latter time to override the bindings.
-      var stream = canvas.captureStream();
-      var videoTrack = stream.getVideoTracks()[0];
+  // |stream| must be created _after_ |mock| is constructed to give the
+  // latter time to override the bindings.
+  let stream = canvas.captureStream();
+  let videoTrack = stream.getVideoTracks()[0];
 
-      // |videoTrack|s settings retrieval, just like the actual capture, is a
-      // process kicked right after creation, we introduce a small delay to
-      // allow for those to be collected.
-      setTimeout(() => {
-        settings = videoTrack.getSettings();
-        assert_equals(typeof settings, 'object');
+  // |videoTrack|s settings retrieval, just like the actual capture, is a
+  // process kicked right after creation, we introduce a small delay to
+  // allow for those to be collected.
+  await new Promise(resolve => setTimeout(resolve, 100));
 
-        assert_equals(
-            settings.whiteBalanceMode,
-            meteringModeNames[mock_settings.current_white_balance_mode],
-            'whiteBalanceMode');
-        assert_equals(settings.exposureMode,
-                      meteringModeNames[mock_settings.current_exposure_mode],
-                      'exposureMode;');
-        assert_equals(settings.focusMode,
-                      meteringModeNames[mock_settings.current_focus_mode],
-                      'focusMode');
+  let settings = videoTrack.getSettings();
+  assert_equals(typeof settings, 'object');
 
-        assert_point2d_array_approx_equals(
-            settings.pointsOfInterest, mock_settings.points_of_interest, 0.01);
+  assert_equals(settings.whiteBalanceMode,
+                meteringModeNames[mockSettings.currentWhiteBalanceMode],
+                'whiteBalanceMode');
+  assert_equals(settings.exposureMode,
+                meteringModeNames[mockSettings.currentExposureMode],
+                'exposureMode;');
+  assert_equals(settings.focusMode,
+                meteringModeNames[mockSettings.currentFocusMode],
+                'focusMode');
 
-        assert_equals(settings.exposureCompensation,
-                      mock_settings.exposure_compensation.current);
-        assert_equals(settings.colorTemperature,
-                      mock_settings.color_temperature.current);
-        assert_equals(settings.iso, mock_settings.iso.current);
+  assert_point2d_array_approx_equals(
+      settings.pointsOfInterest, mockSettings.pointsOfInterest, 0.01);
 
-        assert_equals(settings.brightness, mock_settings.brightness.current);
-        assert_equals(settings.contrast, mock_settings.contrast.current);
-        assert_equals(settings.saturation, mock_settings.saturation.current);
-        assert_equals(settings.sharpness, mock_settings.sharpness.current);
+  assert_equals(settings.exposureCompensation,
+                mockSettings.exposureCompensation.current);
+  assert_equals(settings.colorTemperature,
+                mockSettings.colorTemperature.current);
+  assert_equals(settings.iso, mockSettings.iso.current);
 
-        assert_equals(settings.zoom, mock_settings.zoom.current);
+  assert_equals(settings.brightness, mockSettings.brightness.current);
+  assert_equals(settings.contrast, mockSettings.contrast.current);
+  assert_equals(settings.saturation, mockSettings.saturation.current);
+  assert_equals(settings.sharpness, mockSettings.sharpness.current);
 
-        assert_equals(settings.torch, mock_settings.torch, 'torch');
+  assert_equals(settings.zoom, mockSettings.zoom.current);
 
-        t.done();
-      }, 100);
-    },
-    error => {
-      assert_unreached('Error creating MockImageCapture: ' + error);
-    });
+  assert_equals(settings.torch, mockSettings.torch, 'torch');
 
 }, 'exercises MediaStreamTrack.getSettings()');
 
