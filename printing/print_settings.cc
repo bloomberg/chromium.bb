@@ -146,7 +146,7 @@ bool IsColorModelSelected(int color_mode) {
 }
 
 // Global SequenceNumber used for generating unique cookie values.
-static base::StaticAtomicSequenceNumber cookie_seq;
+static base::AtomicSequenceNumber cookie_seq;
 
 PrintSettings::PrintSettings() {
   Clear();
