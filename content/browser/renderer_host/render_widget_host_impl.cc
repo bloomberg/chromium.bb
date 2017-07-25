@@ -1531,11 +1531,6 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
   Send(new ViewMsg_ForceRedraw(GetRoutingID(), latency_info));
 }
 
-const NativeWebKeyboardEvent*
-    RenderWidgetHostImpl::GetLastKeyboardEvent() const {
-  return input_router_->GetLastKeyboardEvent();
-}
-
 void RenderWidgetHostImpl::SelectionChanged(const base::string16& text,
                                             uint32_t offset,
                                             const gfx::Range& range) {

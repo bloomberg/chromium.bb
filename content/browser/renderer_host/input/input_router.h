@@ -42,9 +42,6 @@ class InputRouter : public IPC::Listener {
   virtual void SendTouchEvent(
       const TouchEventWithLatencyInfo& touch_event) = 0;
 
-  // Returns the oldest queued or in-flight keyboard event sent to the router.
-  virtual const NativeWebKeyboardEvent* GetLastKeyboardEvent() const = 0;
-
   // Notify the router about whether the current page is mobile-optimized (i.e.,
   // the site has a mobile-friendly viewport).
   virtual void NotifySiteIsMobileOptimized(bool is_mobile_optimized) = 0;

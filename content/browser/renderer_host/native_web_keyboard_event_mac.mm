@@ -12,6 +12,34 @@
 
 namespace content {
 
+namespace {
+
+int modifiersForEvent(int modifiers) {
+  int flags = 0;
+  if (modifiers & blink::WebInputEvent::kControlKey)
+    flags |= NSControlKeyMask;
+  if (modifiers & blink::WebInputEvent::kShiftKey)
+    flags |= NSShiftKeyMask;
+  if (modifiers & blink::WebInputEvent::kAltKey)
+    flags |= NSAlternateKeyMask;
+  if (modifiers & blink::WebInputEvent::kMetaKey)
+    flags |= NSCommandKeyMask;
+  if (modifiers & blink::WebInputEvent::kCapsLockOn)
+    flags |= NSAlphaShiftKeyMask;
+  return flags;
+}
+
+size_t WebKeyboardEventTextLength(const blink::WebUChar* text) {
+  size_t text_length = 0;
+  while (text_length < blink::WebKeyboardEvent::kTextLengthCap &&
+         text[text_length]) {
+    ++text_length;
+  }
+  return text_length;
+}
+
+}  // namepsace
+
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
                                                int modifiers,
                                                base::TimeTicks timestamp)
@@ -25,6 +53,42 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
     : WebKeyboardEvent(type, modifiers, timestampSeconds),
       os_event(NULL),
       skip_in_browser(false) {}
+
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(
+    const blink::WebKeyboardEvent& web_event)
+    : WebKeyboardEvent(web_event), os_event(nullptr), skip_in_browser(false) {
+  NSEventType type = NSKeyUp;
+  int flags = modifiersForEvent(web_event.GetModifiers());
+  if (web_event.GetType() == blink::WebInputEvent::kChar ||
+      web_event.GetType() == blink::WebInputEvent::kRawKeyDown ||
+      web_event.GetType() == blink::WebInputEvent::kKeyDown) {
+    type = NSKeyDown;
+  }
+  size_t text_length = WebKeyboardEventTextLength(web_event.text);
+  size_t unmod_text_length =
+      WebKeyboardEventTextLength(web_event.unmodified_text);
+
+  if (text_length == 0)
+    type = NSFlagsChanged;
+
+  NSString* text =
+      [[[NSString alloc] initWithCharacters:web_event.text length:text_length]
+          autorelease];
+  NSString* unmodified_text =
+      [[[NSString alloc] initWithCharacters:web_event.unmodified_text
+                                     length:unmod_text_length] autorelease];
+
+  os_event = [[NSEvent keyEventWithType:type
+                               location:NSZeroPoint
+                          modifierFlags:flags
+                              timestamp:web_event.TimeStampSeconds()
+                           windowNumber:0
+                                context:nil
+                             characters:text
+            charactersIgnoringModifiers:unmodified_text
+                              isARepeat:NO
+                                keyCode:web_event.native_key_code] retain];
+}
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
     : WebKeyboardEvent(WebKeyboardEventBuilder::Build(native_event)),

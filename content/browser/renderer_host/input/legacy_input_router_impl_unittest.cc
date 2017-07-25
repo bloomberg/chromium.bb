@@ -726,10 +726,6 @@ TEST_F(LegacyInputRouterImplTest, HandledInputEvent) {
 
   // OnKeyboardEventAck should be triggered without actual ack.
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
-
-  // As the event was acked already, keyboard event queue should be
-  // empty.
-  ASSERT_EQ(NULL, input_router_->GetLastKeyboardEvent());
 }
 
 TEST_F(LegacyInputRouterImplTest, ClientCanceledKeyboardEvent) {
@@ -763,9 +759,6 @@ TEST_F(LegacyInputRouterImplTest, NoncorrespondingKeyEvents) {
 TEST_F(LegacyInputRouterImplTest, HandleKeyEventsWeSent) {
   // Simulate a keyboard event.
   SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
-  ASSERT_TRUE(input_router_->GetLastKeyboardEvent());
-  EXPECT_EQ(WebInputEvent::kRawKeyDown,
-            input_router_->GetLastKeyboardEvent()->GetType());
 
   // Make sure we sent the input event to the renderer.
   EXPECT_TRUE(

@@ -102,7 +102,10 @@ PP_InputEvent_Type ConvertEventTypes(const WebInputEvent& event) {
     case WebInputEvent::kMouseWheel:
       return PP_INPUTEVENT_TYPE_WHEEL;
     case WebInputEvent::kRawKeyDown:
-      return PP_INPUTEVENT_TYPE_RAWKEYDOWN;
+      // In the past blink has always returned kKeyDown passed into plugins
+      // although PPAPI had a RAWKEYDOWN definition. However implementations are
+      // broken now that blink passes kRawKeyDown so convert it to a keydown.
+      return PP_INPUTEVENT_TYPE_KEYDOWN;
     case WebInputEvent::kKeyDown:
       return PP_INPUTEVENT_TYPE_KEYDOWN;
     case WebInputEvent::kKeyUp:

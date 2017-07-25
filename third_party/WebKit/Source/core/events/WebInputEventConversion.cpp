@@ -326,11 +326,6 @@ WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
 WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event) {
   if (const WebKeyboardEvent* web_event = event.KeyEvent()) {
     *static_cast<WebKeyboardEvent*>(this) = *web_event;
-
-    // TODO(dtapuska): DOM KeyboardEvents converted back to WebInputEvents
-    // drop the Raw behaviour. Figure out if this is actually really needed.
-    if (type_ == kRawKeyDown)
-      type_ = kKeyDown;
     return;
   }
 

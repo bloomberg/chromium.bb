@@ -821,7 +821,8 @@ void WebPluginContainerImpl::HandleKeyboardEvent(KeyboardEvent* event) {
   if (web_event.GetType() == WebInputEvent::kUndefined)
     return;
 
-  if (web_event.GetType() == WebInputEvent::kKeyDown) {
+  if (web_event.GetType() == WebInputEvent::kRawKeyDown ||
+      web_event.GetType() == WebInputEvent::kKeyDown) {
 #if defined(OS_MACOSX)
     if ((web_event.GetModifiers() & WebInputEvent::kInputModifiers) ==
             WebInputEvent::kMetaKey

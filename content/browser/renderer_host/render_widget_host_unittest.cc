@@ -124,10 +124,6 @@ class MockInputRouter : public InputRouter {
         client_->FilterInputEvent(touch_event.event, touch_event.latency) ==
         INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
   }
-  const NativeWebKeyboardEvent* GetLastKeyboardEvent() const override {
-    NOTREACHED();
-    return NULL;
-  }
   void NotifySiteIsMobileOptimized(bool is_mobile_optimized) override {}
   bool HasPendingEvents() const override { return false; }
   void SetDeviceScaleFactor(float device_scale_factor) override {}

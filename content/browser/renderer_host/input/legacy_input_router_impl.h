@@ -69,7 +69,6 @@ class CONTENT_EXPORT LegacyInputRouterImpl
   void SendGestureEvent(
       const GestureEventWithLatencyInfo& gesture_event) override;
   void SendTouchEvent(const TouchEventWithLatencyInfo& touch_event) override;
-  const NativeWebKeyboardEvent* GetLastKeyboardEvent() const override;
   void NotifySiteIsMobileOptimized(bool is_mobile_optimized) override;
   bool HasPendingEvents() const override;
   void SetDeviceScaleFactor(float device_scale_factor) override;
