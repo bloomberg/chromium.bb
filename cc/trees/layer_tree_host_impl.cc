@@ -1116,11 +1116,18 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
                              client_name),
           base::saturated_cast<int>(total_memory / 1024));
     }
+
     // GetClientNameForMetrics only returns one non-null value over the lifetime
-    // of the process, so this histogram name is runtime constant.
+    // of the process, so these histogram names are runtime constant.
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         base::StringPrintf("Compositing.%s.NumActiveLayers", client_name),
         base::saturated_cast<int>(active_tree_->NumLayers()), 1, 400, 20);
+
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        base::StringPrintf("Compositing.%s.NumActivePictureLayers",
+                           client_name),
+        base::saturated_cast<int>(active_tree_->picture_layers().size()), 1,
+        400, 20);
   }
 
   bool ok = active_tree_->UpdateDrawProperties();
