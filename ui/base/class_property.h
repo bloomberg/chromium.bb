@@ -45,8 +45,9 @@
 //  // outside all namespaces:
 //  DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(FOO_EXPORT, MyType)
 //
-// If a property type is not exported, use DECLARE_CLASS_PROPERTY_TYPE(MyType)
-// which is a shorthand for DECLARE_EXPORTED_CLASS_PROPERTY_TYPE(, MyType).
+// If a property type is not exported, use
+// DECLARE_UI_CLASS_PROPERTY_TYPE(MyType) which is a shorthand for
+// DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(, MyType).
 
 namespace ui {
 
