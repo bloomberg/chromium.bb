@@ -49,10 +49,6 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
   virtual ~SelectionEditor();
   void Dispose();
 
-  bool HasEditableStyle() const;
-  bool IsContentEditable() const;
-  bool IsContentRichlyEditable() const;
-
   const SelectionInDOMTree& GetSelectionInDOMTree() const;
 
   const VisibleSelection& ComputeVisibleSelectionInDOMTree() const;

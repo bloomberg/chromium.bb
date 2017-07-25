@@ -100,18 +100,6 @@ const SelectionInDOMTree& SelectionEditor::GetSelectionInDOMTree() const {
   return selection_;
 }
 
-bool SelectionEditor::HasEditableStyle() const {
-  return ComputeVisibleSelectionInDOMTree().HasEditableStyle();
-}
-
-bool SelectionEditor::IsContentEditable() const {
-  return ComputeVisibleSelectionInDOMTree().IsContentEditable();
-}
-
-bool SelectionEditor::IsContentRichlyEditable() const {
-  return ComputeVisibleSelectionInDOMTree().IsContentRichlyEditable();
-}
-
 void SelectionEditor::MarkCacheDirty() {
   if (!cached_visible_selection_in_dom_tree_is_dirty_) {
     cached_visible_selection_in_dom_tree_ = VisibleSelection();
