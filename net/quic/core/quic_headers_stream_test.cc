@@ -473,7 +473,6 @@ TEST_P(QuicHeadersStreamTest, ProcessPushPromise) {
 
 TEST_P(QuicHeadersStreamTest, ProcessPushPromiseDisabledSetting) {
   FLAGS_quic_reloadable_flag_quic_respect_http2_settings_frame = true;
-  FLAGS_quic_reloadable_flag_quic_enable_server_push_by_default = true;
   session_.OnConfigNegotiated();
   SpdySettingsIR data;
   // Respect supported settings frames SETTINGS_ENABLE_PUSH.
@@ -723,8 +722,7 @@ TEST_P(QuicHeadersStreamTest, RespectHttp2SettingsFrameUnsupportedFields) {
                       QuicStrCat("Unsupported field of HTTP/2 SETTINGS frame: ",
                                  SETTINGS_INITIAL_WINDOW_SIZE),
                       _));
-  if (!FLAGS_quic_reloadable_flag_quic_enable_server_push_by_default ||
-      session_.perspective() == Perspective::IS_CLIENT) {
+  if (session_.perspective() == Perspective::IS_CLIENT) {
     EXPECT_CALL(*connection_,
                 CloseConnection(
                     QUIC_INVALID_HEADERS_STREAM_DATA,

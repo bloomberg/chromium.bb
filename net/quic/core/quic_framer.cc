@@ -1145,6 +1145,14 @@ bool QuicFramer::ProcessStreamFrame(QuicDataReader* reader,
 
   frame->fin = (stream_flags & kQuicStreamFinMask) == kQuicStreamFinShift;
 
+  uint16_t data_len = 0;
+  if (has_data_length && quic_version_ > QUIC_VERSION_39) {
+    if (!reader->ReadUInt16(&data_len)) {
+      set_detailed_error("Unable to read data length.");
+      return false;
+    }
+  }
+
   uint64_t stream_id = 0;
   if (!reader->ReadBytesToUInt64(stream_id_length, &stream_id)) {
     set_detailed_error("Unable to read stream_id.");
@@ -1161,9 +1169,16 @@ bool QuicFramer::ProcessStreamFrame(QuicDataReader* reader,
   // TODO(ianswett): Don't use QuicStringPiece as an intermediary.
   QuicStringPiece data;
   if (has_data_length) {
-    if (!reader->ReadStringPiece16(&data)) {
-      set_detailed_error("Unable to read frame data.");
-      return false;
+    if (quic_version_ > QUIC_VERSION_39) {
+      if (!reader->ReadStringPiece(&data, data_len)) {
+        set_detailed_error("Unable to read frame data.");
+        return false;
+      }
+    } else {
+      if (!reader->ReadStringPiece16(&data)) {
+        set_detailed_error("Unable to read frame data.");
+        return false;
+      }
     }
   } else {
     if (!reader->ReadStringPiece(&data, reader->BytesRemaining())) {
@@ -1334,9 +1349,11 @@ bool QuicFramer::ProcessRstStreamFrame(QuicDataReader* reader,
     return false;
   }
 
-  if (!reader->ReadUInt64(&frame->byte_offset)) {
-    set_detailed_error("Unable to read rst stream sent byte offset.");
-    return false;
+  if (quic_version_ <= QUIC_VERSION_39) {
+    if (!reader->ReadUInt64(&frame->byte_offset)) {
+      set_detailed_error("Unable to read rst stream sent byte offset.");
+      return false;
+    }
   }
 
   uint32_t error_code;
@@ -1351,6 +1368,14 @@ bool QuicFramer::ProcessRstStreamFrame(QuicDataReader* reader,
   }
 
   frame->error_code = static_cast<QuicRstStreamErrorCode>(error_code);
+
+  if (quic_version_ > QUIC_VERSION_39) {
+    if (!reader->ReadUInt64(&frame->byte_offset)) {
+      set_detailed_error("Unable to read rst stream sent byte offset.");
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -1794,6 +1819,13 @@ bool QuicFramer::AppendAckBlock(uint8_t gap,
 bool QuicFramer::AppendStreamFrame(const QuicStreamFrame& frame,
                                    bool no_stream_frame_length,
                                    QuicDataWriter* writer) {
+  if (!no_stream_frame_length && quic_version_ > QUIC_VERSION_39) {
+    if ((frame.data_length > std::numeric_limits<uint16_t>::max()) ||
+        !writer->WriteUInt16(static_cast<uint16_t>(frame.data_length))) {
+      QUIC_BUG << "Writing stream frame length failed";
+      return false;
+    }
+  }
   if (!AppendStreamId(GetStreamIdSize(frame.stream_id), frame.stream_id,
                       writer)) {
     QUIC_BUG << "Writing stream id size failed.";
@@ -1804,7 +1836,7 @@ bool QuicFramer::AppendStreamFrame(const QuicStreamFrame& frame,
     QUIC_BUG << "Writing offset size failed.";
     return false;
   }
-  if (!no_stream_frame_length) {
+  if (!no_stream_frame_length && quic_version_ <= QUIC_VERSION_39) {
     if ((frame.data_length > std::numeric_limits<uint16_t>::max()) ||
         !writer->WriteUInt16(static_cast<uint16_t>(frame.data_length))) {
       QUIC_BUG << "Writing stream frame length failed";
@@ -2081,13 +2113,21 @@ bool QuicFramer::AppendRstStreamFrame(const QuicRstStreamFrame& frame,
     return false;
   }
 
-  if (!writer->WriteUInt64(frame.byte_offset)) {
-    return false;
+  if (quic_version_ <= QUIC_VERSION_39) {
+    if (!writer->WriteUInt64(frame.byte_offset)) {
+      return false;
+    }
   }
 
   uint32_t error_code = static_cast<uint32_t>(frame.error_code);
   if (!writer->WriteUInt32(error_code)) {
     return false;
+  }
+
+  if (quic_version_ > QUIC_VERSION_39) {
+    if (!writer->WriteUInt64(frame.byte_offset)) {
+      return false;
+    }
   }
 
   return true;
