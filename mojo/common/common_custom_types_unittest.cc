@@ -286,27 +286,27 @@ TEST_F(CommonCustomTypesTest, Value) {
 
   auto input = base::MakeUnique<base::Value>();
   ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
-  EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
+  EXPECT_EQ(*input, *output);
 
   input = base::MakeUnique<base::Value>(123);
   ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
-  EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
+  EXPECT_EQ(*input, *output);
 
   input = base::MakeUnique<base::Value>(1.23);
   ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
-  EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
+  EXPECT_EQ(*input, *output);
 
   input = base::MakeUnique<base::Value>(false);
   ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
-  EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
+  EXPECT_EQ(*input, *output);
 
   input = base::MakeUnique<base::Value>("test string");
   ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
-  EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
+  EXPECT_EQ(*input, *output);
 
   input = base::Value::CreateWithCopiedBuffer("mojo", 4);
   ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
-  EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
+  EXPECT_EQ(*input, *output);
 
   auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetBoolean("bool", false);
@@ -326,11 +326,11 @@ TEST_F(CommonCustomTypesTest, Value) {
 
   std::unique_ptr<base::DictionaryValue> dict_output;
   ASSERT_TRUE(ptr->BounceDictionaryValue(dict->CreateDeepCopy(), &dict_output));
-  EXPECT_TRUE(base::Value::Equals(dict.get(), dict_output.get()));
+  EXPECT_EQ(*dict, *dict_output);
 
   input = std::move(dict);
   ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
-  EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
+  EXPECT_EQ(*input, *output);
 
   auto list = base::MakeUnique<base::ListValue>();
   list->AppendString("string");
@@ -346,11 +346,11 @@ TEST_F(CommonCustomTypesTest, Value) {
   }
   std::unique_ptr<base::ListValue> list_output;
   ASSERT_TRUE(ptr->BounceListValue(list->CreateDeepCopy(), &list_output));
-  EXPECT_TRUE(base::Value::Equals(list.get(), list_output.get()));
+  EXPECT_EQ(*list, *list_output);
 
   input = std::move(list);
   ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
-  ASSERT_TRUE(base::Value::Equals(input.get(), output.get()));
+  ASSERT_EQ(*input, *output);
 }
 
 TEST_F(CommonCustomTypesTest, String16) {

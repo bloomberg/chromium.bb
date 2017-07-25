@@ -144,12 +144,10 @@ class AutoEnrollmentClientTest : public testing::Test {
   void VerifyCachedResult(bool should_enroll, int power_limit) {
     base::Value value_should_enroll(should_enroll);
     base::Value value_power_limit(power_limit);
-    EXPECT_TRUE(base::Value::Equals(
-        &value_should_enroll,
-        local_state_->GetUserPref(prefs::kShouldAutoEnroll)));
-    EXPECT_TRUE(base::Value::Equals(
-        &value_power_limit,
-        local_state_->GetUserPref(prefs::kAutoEnrollmentPowerLimit)));
+    EXPECT_EQ(value_should_enroll,
+              *local_state_->GetUserPref(prefs::kShouldAutoEnroll));
+    EXPECT_EQ(value_power_limit,
+              *local_state_->GetUserPref(prefs::kAutoEnrollmentPowerLimit));
   }
 
   bool HasServerBackedState() {

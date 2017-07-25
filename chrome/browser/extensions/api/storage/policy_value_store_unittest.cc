@@ -150,7 +150,7 @@ TEST_F(PolicyValueStoreTest, DontProvideRecommendedPolicies) {
   base::Value* value = NULL;
   EXPECT_FALSE(result->settings().Get("may", &value));
   EXPECT_TRUE(result->settings().Get("must", &value));
-  EXPECT_TRUE(base::Value::Equals(&expected, value));
+  EXPECT_EQ(expected, *value);
 }
 
 TEST_F(PolicyValueStoreTest, ReadOnly) {

@@ -64,7 +64,7 @@ class SafeJsonParserTest : public InProcessBrowserTest {
  private:
   void ExpectValue(std::unique_ptr<base::Value> expected_value,
                    std::unique_ptr<base::Value> actual_value) {
-    EXPECT_TRUE(base::Value::Equals(actual_value.get(), expected_value.get()))
+    EXPECT_EQ(*expected_value, *actual_value)
         << "Expected: " << MaybeToJson(expected_value.get())
         << " Actual: " << MaybeToJson(actual_value.get());
     message_loop_runner_->Quit();

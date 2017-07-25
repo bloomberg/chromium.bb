@@ -59,8 +59,7 @@ testing::AssertionResult RegistryDictEquals(const RegistryDict& a,
   for (; iter_value_a != a.values().end() && iter_value_b != b.values().end();
        ++iter_value_a, ++iter_value_b) {
     if (iter_value_a->first != iter_value_b->first ||
-        !base::Value::Equals(iter_value_a->second.get(),
-                             iter_value_b->second.get())) {
+        *iter_value_a->second != *iter_value_b->second) {
       return testing::AssertionFailure()
              << "Value mismatch " << iter_value_a->first << "="
              << *iter_value_a->second.get() << " vs. " << iter_value_b->first

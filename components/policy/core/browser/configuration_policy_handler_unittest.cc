@@ -108,7 +108,7 @@ TEST(StringMappingListPolicyHandlerTest, ApplyPolicySettings) {
                  POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(&expected, value));
+  EXPECT_EQ(expected, *value);
 
   list.AppendString("two");
   expected.AppendInteger(2);
@@ -116,14 +116,14 @@ TEST(StringMappingListPolicyHandlerTest, ApplyPolicySettings) {
                  POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(&expected, value));
+  EXPECT_EQ(expected, *value);
 
   list.AppendString("invalid");
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(&expected, value));
+  EXPECT_EQ(expected, *value);
 }
 
 TEST(IntRangePolicyHandler, CheckPolicySettingsClamp) {
@@ -256,7 +256,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+  EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(5),
@@ -265,7 +265,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(5));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+  EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(10),
@@ -274,7 +274,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(10));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+  EXPECT_EQ(*expected, *value);
 
   // Check that values lying outside the accepted range are clamped and written
   // to the pref.
@@ -285,7 +285,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+  EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(15),
@@ -294,7 +294,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(10));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+  EXPECT_EQ(*expected, *value);
 }
 
 TEST(IntRangePolicyHandler, ApplyPolicySettingsDontClamp) {
@@ -315,7 +315,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsDontClamp) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+  EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(5),
@@ -324,7 +324,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsDontClamp) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(5));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+  EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(10),
@@ -333,7 +333,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsDontClamp) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(10));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+  EXPECT_EQ(*expected, *value);
 }
 
 TEST(IntPercentageToDoublePolicyHandler, CheckPolicySettingsClamp) {
@@ -469,7 +469,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0.0));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+  EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(5),
@@ -478,7 +478,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0.05));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+  EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(10),
@@ -487,7 +487,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0.1));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+  EXPECT_EQ(*expected, *value);
 
   // Check that values lying outside the accepted range are clamped and written
   // to the pref.
@@ -498,7 +498,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0.0));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+  EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(15),
@@ -507,7 +507,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0.1));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+  EXPECT_EQ(*expected, *value);
 }
 
 TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
@@ -529,7 +529,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0.0));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+  EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(5),
@@ -538,7 +538,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0.05));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+  EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(10),
@@ -547,7 +547,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0.1));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::Value::Equals(expected.get(), value));
+  EXPECT_EQ(*expected, *value);
 }
 
 TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValue) {

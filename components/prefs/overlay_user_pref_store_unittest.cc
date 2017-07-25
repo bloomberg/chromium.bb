@@ -150,7 +150,7 @@ TEST_F(OverlayUserPrefStoreTest, ModifyDictionaries) {
   EXPECT_TRUE(overlay_->GetMutableValue(overlay_key, &modified));
   ASSERT_TRUE(modified);
   ASSERT_TRUE(modified->IsType(Value::Type::DICTIONARY));
-  EXPECT_TRUE(Value::Equals(modify, static_cast<DictionaryValue*>(modified)));
+  EXPECT_EQ(*modify, *modified);
 }
 
 // Here we consider a global preference that is not overlayed.

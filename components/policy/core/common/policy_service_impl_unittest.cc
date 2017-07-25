@@ -45,7 +45,7 @@ MATCHER_P(PolicyEquals, expected, "") {
 // Helper to compare the arguments to an EXPECT_CALL of OnPolicyValueUpdated()
 // with their expected values.
 MATCHER_P(ValueEquals, expected, "") {
-  return base::Value::Equals(arg, expected);
+  return *expected == *arg;
 }
 
 // Helper that fills |bundle| with test policies.
@@ -511,8 +511,8 @@ TEST_F(PolicyServiceTest, RefreshPolicies) {
 
   const PolicyMap& policies = policy_service_->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
-  EXPECT_TRUE(base::Value::Equals(&kValue2, policies.GetValue("aaa")));
-  EXPECT_TRUE(base::Value::Equals(&kValue0, policies.GetValue("bbb")));
+  EXPECT_EQ(kValue2, *policies.GetValue("aaa"));
+  EXPECT_EQ(kValue0, *policies.GetValue("bbb"));
 }
 
 TEST_F(PolicyServiceTest, NamespaceMerge) {

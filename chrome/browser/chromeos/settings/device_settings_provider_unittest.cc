@@ -141,12 +141,10 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   void VerifyHeartbeatSettings(bool expected_enable_state,
                                int expected_frequency) {
     const base::Value expected_enabled_value(expected_enable_state);
-    EXPECT_TRUE(base::Value::Equals(provider_->Get(kHeartbeatEnabled),
-                                    &expected_enabled_value));
+    EXPECT_EQ(expected_enabled_value, *provider_->Get(kHeartbeatEnabled));
 
     const base::Value expected_frequency_value(expected_frequency);
-    EXPECT_TRUE(base::Value::Equals(provider_->Get(kHeartbeatFrequency),
-                                    &expected_frequency_value));
+    EXPECT_EQ(expected_frequency_value, *provider_->Get(kHeartbeatFrequency));
   }
 
   // Helper routine to ensure all reporting policies have been correctly
@@ -169,21 +167,19 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
 
     const base::Value expected_enable_value(expected_enable_state);
     for (auto* setting : reporting_settings) {
-      EXPECT_TRUE(base::Value::Equals(provider_->Get(setting),
-                                      &expected_enable_value))
+      EXPECT_EQ(expected_enable_value, *provider_->Get(setting))
           << "Value for " << setting << " does not match expected";
     }
     const base::Value expected_frequency_value(expected_frequency);
-    EXPECT_TRUE(base::Value::Equals(provider_->Get(kReportUploadFrequency),
-                                    &expected_frequency_value));
+    EXPECT_EQ(expected_frequency_value,
+              *provider_->Get(kReportUploadFrequency));
   }
 
   // Helper routine to ensure log upload policy has been correctly
   // decoded.
   void VerifyLogUploadSettings(bool expected_enable_state) {
     const base::Value expected_enabled_value(expected_enable_state);
-    EXPECT_TRUE(base::Value::Equals(provider_->Get(kSystemLogUploadEnabled),
-                                    &expected_enabled_value));
+    EXPECT_EQ(expected_enabled_value, *provider_->Get(kSystemLogUploadEnabled));
   }
 
   // Helper routine to set LoginScreenDomainAutoComplete policy.
@@ -201,9 +197,13 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   // Helper routine to check value of the LoginScreenDomainAutoComplete policy.
   void VerifyDomainAutoComplete(
       const base::Value* const ptr_to_expected_value) {
-    EXPECT_TRUE(base::Value::Equals(
-        provider_->Get(kAccountsPrefLoginScreenDomainAutoComplete),
-        ptr_to_expected_value));
+    // The pointer might be null, so check before dereferencing.
+    if (ptr_to_expected_value)
+      EXPECT_EQ(*ptr_to_expected_value,
+                *provider_->Get(kAccountsPrefLoginScreenDomainAutoComplete));
+    else
+      EXPECT_EQ(ptr_to_expected_value,
+                provider_->Get(kAccountsPrefLoginScreenDomainAutoComplete));
   }
 
   ScopedTestingLocalState local_state_;
@@ -450,7 +450,7 @@ TEST_F(DeviceSettingsProviderTest, LegacyDeviceLocalAccounts) {
   expected_accounts.Append(std::move(entry_dict));
   const base::Value* actual_accounts =
       provider_->Get(kAccountsPrefDeviceLocalAccounts);
-  EXPECT_TRUE(base::Value::Equals(&expected_accounts, actual_accounts));
+  EXPECT_EQ(expected_accounts, *actual_accounts);
 }
 
 TEST_F(DeviceSettingsProviderTest, DecodeDeviceState) {
@@ -466,11 +466,10 @@ TEST_F(DeviceSettingsProviderTest, DecodeDeviceState) {
 
   // Verify that the device state has been decoded correctly.
   const base::Value expected_disabled_value(true);
-  EXPECT_TRUE(base::Value::Equals(provider_->Get(kDeviceDisabled),
-                                  &expected_disabled_value));
+  EXPECT_EQ(expected_disabled_value, *provider_->Get(kDeviceDisabled));
   const base::Value expected_disabled_message_value(kDisabledMessage);
-  EXPECT_TRUE(base::Value::Equals(provider_->Get(kDeviceDisabledMessage),
-                                  &expected_disabled_message_value));
+  EXPECT_EQ(expected_disabled_message_value,
+            *provider_->Get(kDeviceDisabledMessage));
 
   // Verify that a change to the device state triggers a notification.
   EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));

@@ -315,7 +315,7 @@ TEST(PinnedLauncherAppsPolicyHandler, PrefTranslation) {
                  nullptr);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kPolicyPinnedLauncherApps, &value));
-  EXPECT_TRUE(base::Value::Equals(&expected_pinned_apps, value));
+  EXPECT_EQ(expected_pinned_apps, *value);
 
   base::Value entry1("abcdefghijklmnopabcdefghijklmnop");
   auto entry1_dict = base::MakeUnique<base::DictionaryValue>();
@@ -328,7 +328,7 @@ TEST(PinnedLauncherAppsPolicyHandler, PrefTranslation) {
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kPolicyPinnedLauncherApps, &value));
-  EXPECT_TRUE(base::Value::Equals(&expected_pinned_apps, value));
+  EXPECT_EQ(expected_pinned_apps, *value);
 }
 
 TEST_F(LoginScreenPowerManagementPolicyHandlerTest, Empty) {

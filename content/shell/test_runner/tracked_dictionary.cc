@@ -31,7 +31,7 @@ void TrackedDictionary::Set(const std::string& path,
   // Is this truly a *new* value?
   const base::Value* old_value;
   if (current_values_.Get(path, &old_value)) {
-    if (base::Value::Equals(old_value, new_value.get()))
+    if (*old_value == *new_value)
       return;
   }
 

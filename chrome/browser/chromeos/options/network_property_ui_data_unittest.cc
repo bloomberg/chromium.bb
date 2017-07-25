@@ -20,8 +20,7 @@ class NetworkPropertyUIDataTest : public testing::Test {
                      bool expected_managed,
                      bool expected_editable) {
     if (expected_default_value) {
-      EXPECT_TRUE(base::Value::Equals(expected_default_value,
-                                      property.default_value()));
+      EXPECT_EQ(*expected_default_value, *property.default_value());
     } else {
       EXPECT_FALSE(property.default_value());
     }

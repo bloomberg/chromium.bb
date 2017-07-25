@@ -205,9 +205,8 @@ void LoginScreenDefaultPolicyLoginScreenBrowsertest::
   ASSERT_TRUE(pref);
   EXPECT_FALSE(pref->IsManaged());
   EXPECT_FALSE(pref->IsDefaultValue());
-  EXPECT_TRUE(base::Value::Equals(&recommended_value, pref->GetValue()));
-  EXPECT_TRUE(base::Value::Equals(&recommended_value,
-                                  pref->GetRecommendedValue()));
+  EXPECT_EQ(recommended_value, *pref->GetValue());
+  EXPECT_EQ(recommended_value, *pref->GetRecommendedValue());
 }
 
 LoginScreenDefaultPolicyInSessionBrowsertest::
