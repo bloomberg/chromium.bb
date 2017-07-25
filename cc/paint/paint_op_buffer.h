@@ -147,6 +147,16 @@ class CC_PAINT_EXPORT PaintOp {
   // memory buffers and so don't have their destructors run automatically.
   void DestroyThis();
 
+  static bool IsValidSkBlendMode(SkBlendMode mode) {
+    return static_cast<uint32_t>(mode) <=
+           static_cast<uint32_t>(SkBlendMode::kLastCoeffMode);
+  }
+
+  static bool IsValidSkClipOp(SkClipOp op) {
+    return static_cast<uint32_t>(op) <=
+           static_cast<uint32_t>(SkClipOp::kMax_EnumValue);
+  }
+
   static constexpr bool kIsDrawOp = false;
   static constexpr bool kHasPaintFlags = false;
   // Since skip and type fit in a uint32_t, this is the max size of skip.
