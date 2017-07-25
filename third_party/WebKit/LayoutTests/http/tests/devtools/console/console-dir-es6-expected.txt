@@ -1,65 +1,46 @@
-CONSOLE MESSAGE: line 15: [object Object]
-CONSOLE MESSAGE: line 18: Symbol()
-CONSOLE MESSAGE: line 22: [object Map]
-CONSOLE MESSAGE: line 22: [object WeakMap]
-CONSOLE MESSAGE: line 26: [object Set]
-CONSOLE MESSAGE: line 26: [object WeakSet]
-CONSOLE MESSAGE: line 34: [object Set]
-CONSOLE MESSAGE: line 37: [object WeakMap]
-CONSOLE MESSAGE: line 45: [object Map Iterator]
-CONSOLE MESSAGE: line 46: [object Map Iterator]
-CONSOLE MESSAGE: line 47: [object Map Iterator]
-CONSOLE MESSAGE: line 45: [object Set Iterator]
-CONSOLE MESSAGE: line 46: [object Set Iterator]
-CONSOLE MESSAGE: line 47: [object Set Iterator]
-CONSOLE MESSAGE: line 85: class{method(){ return 1 }},class        classWithWhitespace     {       method(){ return 1 }     },class FooClass {
-        jump(x) { return 1 }
-        badArrow(x = a => 2) { return "looooooooooooooooooooooooooooooooooooooooooooooooooooong" }
-    },jump(x) { return 1 },class BarClass extends FooClass{},class BarClass2 extends class base{} {},class BarClass3 extends function base2(a, b) {} {},_ => { return 1 },(x) => { return 1 },(x, y, z) => { return 1 },({}) => { return 1 },([]) => { return 1 },() => { return "short" },() => { return "looooooooooooooooooooooooooooooooooooooooooooooooooooong" },(...x) => { return 1 },(x, y, ...z) => { return 1 },function (...x) { return 1 },function (x, y, ...z) { return 1 },function ({a}){ return 1 },function ([a]){ return 1 },function ({a, b}){ return 1 },function (...{a}){ return 1 },function (a = (1), b){ return 1 },function (a = {x: (1)}, b){ return 1 },function (a = (x) => { return 1 }, b){ return 2 },function ({a: b}){ return 1 },function (c = ")", {a: b}){ return 1 }
-CONSOLE MESSAGE: line 93: badArrow(x = a => 2) { return "looooooooooooooooooooooooooooooooooooooooooooooooooooong" },function (a = ") {", b){ return 1 },function (a = function(){ return 1 }, b){ return 2 },function (a = class{ constructor(){} }){ return 2 }
 Tests that console logging dumps proper messages.
 
-console-dir-es6.html:15 Object
+console-dir-es6.js:20 Object
     a: 1
     Symbol(): 2
     Symbol(Symbol.iterator): Symbol(foo)
     Symbol(a): 3
     Symbol(a): Symbol(Symbol.iterator)
     __proto__: Object
-console-dir-es6.html:18 Symbol()
-console-dir-es6.html:22 Map(1)
+console-dir-es6.js:23 Symbol()
+console-dir-es6.js:27 Map(1)
     size: (...)
     __proto__: Map
     [[Entries]]: Array(1)
         0: {Object => Object}
         length: 1
-console-dir-es6.html:22 WeakMap
+console-dir-es6.js:27 WeakMap
     __proto__: WeakMap
     [[Entries]]: Array(1)
         0: {Object => Object}
         length: 1
-console-dir-es6.html:26 Set(1)
+console-dir-es6.js:31 Set(1)
     size: (...)
     __proto__: Set
     [[Entries]]: Array(1)
         0: Object
         length: 1
-console-dir-es6.html:26 WeakSet
+console-dir-es6.js:31 WeakSet
     __proto__: WeakSet
     [[Entries]]: Array(1)
         0: Object
         length: 1
-console-dir-es6.html:34 Set(1)
+console-dir-es6.js:39 Set(1)
     size: (...)
     __proto__: Set
     [[Entries]]: Array(1)
         0: Set(1)
         length: 1
-console-dir-es6.html:37 WeakMap
+console-dir-es6.js:42 WeakMap
     __proto__: WeakMap
     [[Entries]]: Array(0)
         length: 0
-console-dir-es6.html:45 MapIterator
+console-dir-es6.js:50 MapIterator
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -67,7 +48,7 @@ console-dir-es6.html:45 MapIterator
     [[Entries]]: Array(1)
         0: Object
         length: 1
-console-dir-es6.html:46 MapIterator
+console-dir-es6.js:51 MapIterator
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -75,7 +56,7 @@ console-dir-es6.html:46 MapIterator
     [[Entries]]: Array(1)
         0: Object
         length: 1
-console-dir-es6.html:47 MapIterator
+console-dir-es6.js:52 MapIterator
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -83,7 +64,7 @@ console-dir-es6.html:47 MapIterator
     [[Entries]]: Array(1)
         0: {Object => Object}
         length: 1
-console-dir-es6.html:45 SetIterator
+console-dir-es6.js:50 SetIterator
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -91,7 +72,7 @@ console-dir-es6.html:45 SetIterator
     [[Entries]]: Array(1)
         0: Object
         length: 1
-console-dir-es6.html:46 SetIterator
+console-dir-es6.js:51 SetIterator
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -99,7 +80,7 @@ console-dir-es6.html:46 SetIterator
     [[Entries]]: Array(1)
         0: Object
         length: 1
-console-dir-es6.html:47 SetIterator
+console-dir-es6.js:52 SetIterator
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -107,7 +88,7 @@ console-dir-es6.html:47 SetIterator
     [[Entries]]: Array(1)
         0: Object
         length: 1
-console-dir-es6.html:85 Array(27)
+console-dir-es6.js:90 Array(27)
     0: class 
     1: class classWithWhitespace
     2: class FooClass
@@ -137,7 +118,7 @@ console-dir-es6.html:85 Array(27)
     26: ƒ (c = ")", {a: b})
     length: 27
     __proto__: Array(0)
-console-dir-es6.html:93 Array(4)
+console-dir-es6.js:98 Array(4)
     0: badArrow(x = a => {…}
     1: ƒ (a = ")
     2: ƒ (a = function()

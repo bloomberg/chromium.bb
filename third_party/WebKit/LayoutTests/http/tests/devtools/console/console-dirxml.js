@@ -1,45 +1,37 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function logToConsole()
-{
-    var fragment = document.createDocumentFragment();
-    fragment.appendChild(document.createElement("p"));
+(async function() {
+  TestRunner.addResult('Tests that console logging dumps proper messages.\n');
 
-    console.dirxml(document);
-    console.dirxml(fragment);
-    console.dirxml(fragment.firstChild);
-    console.log([fragment.firstChild]);
-    console.dirxml([document, fragment, document.createElement("span")]);
-}
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadPanel('console');
 
-function test()
-{
-    runtime.loadModulePromise("elements").then(function() {
-        InspectorTest.evaluateInPage("logToConsole()", onLoggedToConsole);
-    });
-
-    function onLoggedToConsole()
+  await TestRunner.evaluateInPagePromise(`
+    function logToConsole()
     {
-        InspectorTest.waitForRemoteObjectsConsoleMessages(onRemoteObjectsLoaded)
+        var fragment = document.createDocumentFragment();
+        fragment.appendChild(document.createElement("p"));
+
+        console.dirxml(document);
+        console.dirxml(fragment);
+        console.dirxml(fragment.firstChild);
+        console.log([fragment.firstChild]);
+        console.dirxml([document, fragment, document.createElement("span")]);
     }
+  `);
 
-    function onRemoteObjectsLoaded()
-    {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
-    }
-}
-</script>
-</head>
+  runtime.loadModulePromise('elements').then(function() {
+    TestRunner.evaluateInPage('logToConsole()', onLoggedToConsole);
+  });
 
-<body onload="runTest()">
-<p>
-Tests that console logging dumps proper messages.
-</p>
+  function onLoggedToConsole() {
+    ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(onRemoteObjectsLoaded);
+  }
 
-</body>
-</html>
+  function onRemoteObjectsLoaded() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
+})();

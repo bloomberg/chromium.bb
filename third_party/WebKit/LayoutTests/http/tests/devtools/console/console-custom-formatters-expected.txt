@@ -1,18 +1,12 @@
-CONSOLE MESSAGE: line 123: [object Object]
-CONSOLE MESSAGE: line 124: [object Object]
-CONSOLE MESSAGE: line 125: [object Object]
-CONSOLE MESSAGE: line 126: [object Object]
-CONSOLE MESSAGE: line 127: [object Object]
-CONSOLE ERROR: Custom Formatter Failed: Too deep hierarchy of inlined custom previews
 Tests that console logging dumps properly when there are multiple custom formatters on the page
 
-console-custom-formatters.html:123 Header formatted by 1 aBody formatted by 1 a
-console-custom-formatters.html:124 Header formatted by 2 bBody formatted by 2 b
-console-custom-formatters.html:125 Header formatted by 1 cBody formatted by 1 c
-console-custom-formatters.html:126 Formatter with config Header info: additional infobodyinfo: additional info
-console-custom-formatters.html:127 Formatter with config Formatter with config Formatter with config Formatter with config Formatter with config Formatter with config Formatter with config Formatter with config Formatter with config Object
+console-custom-formatters.js:120 Header formatted by 1 aBody formatted by 1 a
+console-custom-formatters.js:121 Header formatted by 2 bBody formatted by 2 b
+console-custom-formatters.js:122 Header formatted by 1 cBody formatted by 1 c
+console-custom-formatters.js:123 Formatter with config Header info: additional infobodyinfo: additional info
+console-custom-formatters.js:124 Formatter with config Formatter with config Formatter with config Formatter with config Formatter with config Formatter with config Formatter with config Formatter with config Formatter with config Object
 Custom Formatter Failed: Too deep hierarchy of inlined custom previews undefined
 Promise resolved (async)
-logVars @ console-custom-formatters.html:127
-(anonymous) @ VM:1
+logVars @ console-custom-formatters.js:124
+(anonymous) @ console-custom-formatters.js:131
 

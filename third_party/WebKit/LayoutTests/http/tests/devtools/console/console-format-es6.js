@@ -1,115 +1,104 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-var globals = [];
+(async function() {
+  TestRunner.addResult('Tests that console properly displays information about ES6 features.\n');
 
-function log(current)
-{
-    console.log(globals[current]);
-    console.log([globals[current]]);
-}
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadPanel('console');
 
-function onload()
-{
-    var p = Promise.reject(-0);
-    p.catch(function() {});
-
-    var smb1 = Symbol();
-    var smb2 = Symbol("a");
-    var obj = {
-        get getter() {}
-    };
-    obj["a"] = smb1;
-    obj[smb2] = 2;
-
-    var map = new Map();
-    var weakMap = new WeakMap();
-    map.set(obj, {foo: 1});
-    weakMap.set(obj, {foo: 1});
-
-    var set = new Set();
-    var weakSet = new WeakSet();
-    set.add(obj);
-    weakSet.add(obj);
-
-    var mapMap0 = new Map();
-    mapMap0.set(new Map(), new WeakMap());
-    var mapMap = new Map();
-    mapMap.set(map, weakMap);
-
-    var setSet0 = new Set();
-    setSet0.add(new WeakSet());
-    var setSet = new Set();
-    setSet.add(weakSet);
-
-    var bigmap = new Map();
-    bigmap.set(" from str ", " to str ");
-    bigmap.set(undefined, undefined);
-    bigmap.set(null, null);
-    bigmap.set(42, 42);
-    bigmap.set({foo:"from"}, {foo:"to"});
-    bigmap.set(["from"], ["to"]);
-
-    var genFunction = function *() {
-        yield 1;
-        yield 2;
-    }
-    var generator = genFunction();
-
-    globals = [
-        p, smb1, smb2, obj, map, weakMap, set, weakSet,
-        mapMap0, mapMap, setSet0, setSet, bigmap, generator
-    ];
-
-    runTest();
-}
-
-function test()
-{
-    InspectorTest.evaluateInPage("globals.length", loopOverGlobals.bind(this, 0));
-
-    function loopOverGlobals(current, total)
+  await TestRunner.evaluateInPagePromise(`
+    var globals = [];
+    function log(current)
     {
-        function advance()
-        {
-            var next = current + 1;
-            if (next == total.description)
-                finish();
-            else
-                loopOverGlobals(next, total);
-        }
-
-        function finish()
-        {
-            InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
-            InspectorTest.addResult("Expanded all messages");
-            InspectorTest.expandConsoleMessages(dumpConsoleMessages);
-        }
-
-        function dumpConsoleMessages()
-        {
-            InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
-            InspectorTest.completeTest();
-        }
-
-        InspectorTest.evaluateInPage("log(" + current + ")");
-        InspectorTest.deprecatedRunAfterPendingDispatches(evalInConsole);
-        function evalInConsole()
-        {
-            InspectorTest.evaluateInConsole("globals[" + current + "]");
-            InspectorTest.deprecatedRunAfterPendingDispatches(advance);
-        }
+        console.log(globals[current]);
+        console.log([globals[current]]);
     }
-}
-</script>
-</head>
+    (function onload()
+    {
+        var p = Promise.reject(-0);
+        p.catch(function() {});
 
-<body onload="onload()">
-<p>
-Tests that console properly displays information about ES6 features.
-</p>
-</body>
-</html>
+        var smb1 = Symbol();
+        var smb2 = Symbol("a");
+        var obj = {
+            get getter() {}
+        };
+        obj["a"] = smb1;
+        obj[smb2] = 2;
+
+        var map = new Map();
+        var weakMap = new WeakMap();
+        map.set(obj, {foo: 1});
+        weakMap.set(obj, {foo: 1});
+
+        var set = new Set();
+        var weakSet = new WeakSet();
+        set.add(obj);
+        weakSet.add(obj);
+
+        var mapMap0 = new Map();
+        mapMap0.set(new Map(), new WeakMap());
+        var mapMap = new Map();
+        mapMap.set(map, weakMap);
+
+        var setSet0 = new Set();
+        setSet0.add(new WeakSet());
+        var setSet = new Set();
+        setSet.add(weakSet);
+
+        var bigmap = new Map();
+        bigmap.set(" from str ", " to str ");
+        bigmap.set(undefined, undefined);
+        bigmap.set(null, null);
+        bigmap.set(42, 42);
+        bigmap.set({foo:"from"}, {foo:"to"});
+        bigmap.set(["from"], ["to"]);
+
+        var genFunction = function *() {
+            yield 1;
+            yield 2;
+        }
+        var generator = genFunction();
+
+        globals = [
+            p, smb1, smb2, obj, map, weakMap, set, weakSet,
+            mapMap0, mapMap, setSet0, setSet, bigmap, generator
+        ];
+
+    })();
+  `);
+
+  TestRunner.evaluateInPage('globals.length', loopOverGlobals.bind(this, 0));
+
+  function loopOverGlobals(current, total) {
+    function advance() {
+      var next = current + 1;
+
+      if (next == total.description)
+        finish();
+      else
+        loopOverGlobals(next, total);
+    }
+
+    function finish() {
+      ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+      TestRunner.addResult('Expanded all messages');
+      ConsoleTestRunner.expandConsoleMessages(dumpConsoleMessages);
+    }
+
+    function dumpConsoleMessages() {
+      ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+      TestRunner.completeTest();
+    }
+
+    TestRunner.evaluateInPage('log(' + current + ')');
+    TestRunner.deprecatedRunAfterPendingDispatches(evalInConsole);
+
+    function evalInConsole() {
+      ConsoleTestRunner.evaluateInConsole('globals[' + current + ']');
+      TestRunner.deprecatedRunAfterPendingDispatches(advance);
+    }
+  }
+})();
