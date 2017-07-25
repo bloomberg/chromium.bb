@@ -542,5 +542,10 @@
     "prefix": "outofblink-cors",
     "base": "webexposed",
     "args": ["--enable-blink-features=OutOfBlinkCORS"]
+  },
+  {
+    "prefix": "presentation",
+    "base": "receiver",
+    "args": ["--force-presentation-receiver-for-testing"]
   }
 ]
