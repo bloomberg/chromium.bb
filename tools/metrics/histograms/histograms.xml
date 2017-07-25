@@ -8624,6 +8624,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Compositing.Browser.NumActivePictureLayers" units="layers">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    The number of PictureLayers in the active tree for each compositor frame.
+    This is logged once per frame, before the frame is drawn (in a browser
+    process).
+  </summary>
+</histogram>
+
 <histogram name="Compositing.Browser.NumRenderSurfaces" units="surfaces">
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -8938,6 +8947,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of layers in the active tree for each compositor frame. This is
     logged once per frame, before the frame is drawn (in a renderer process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Renderer.NumActivePictureLayers" units="layers">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    The number of PictureLayers in the active tree for each compositor frame.
+    This is logged once per frame, before the frame is drawn (in a renderer
+    process).
   </summary>
 </histogram>
 
