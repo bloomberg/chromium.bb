@@ -15,16 +15,19 @@
 namespace media {
 
 // media::CdmPromiseTemplate implementations backed by base::Callbacks.
-template <typename... T>
+// TODO(xhwang): We need a new type F to solve the issue where parameters in the
+// callback can be passed in by value or as const-refs. Find a better solution
+// to handle this.
+template <typename F, typename... T>
 class MojoCdmPromise : public CdmPromiseTemplate<T...> {
  public:
-  using CallbackType =
-      base::OnceCallback<void(mojom::CdmPromiseResultPtr, const T&...)>;
+  using CallbackType = base::OnceCallback<F>;
 
   explicit MojoCdmPromise(CallbackType callback);
   ~MojoCdmPromise() final;
 
   // CdmPromiseTemplate<> implementation.
+
   void resolve(const T&... result) final;
   void reject(CdmPromise::Exception exception,
               uint32_t system_code,

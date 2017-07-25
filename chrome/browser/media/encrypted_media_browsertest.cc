@@ -451,13 +451,6 @@ class EncryptedMediaTest
   }
 
   void TestPolicyCheck() {
-    // TODO(xhwang): Support policy check using mojo CDM. See
-    // http://crbug.com/709348
-    if (IsUsingMojoCdm()) {
-      DVLOG(0) << "Skipping test; Not working with mojo CDM yet.";
-      return;
-    }
-
     base::StringPairs query_params;
     // We do not care about playback so choose an arbitrary media file.
     query_params.push_back(std::make_pair("mediaFile", "bear-a_enc-a.webm"));

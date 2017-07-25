@@ -36,6 +36,32 @@ namespace media {
 
 namespace {
 
+cdm::HdcpVersion ToCdmHdcpVersion(HdcpVersion hdcp_version) {
+  switch (hdcp_version) {
+    case media::HdcpVersion::kHdcpVersionNone:
+      return cdm::kHdcpVersionNone;
+    case media::HdcpVersion::kHdcpVersion1_0:
+      return cdm::kHdcpVersion1_0;
+    case media::HdcpVersion::kHdcpVersion1_1:
+      return cdm::kHdcpVersion1_1;
+    case media::HdcpVersion::kHdcpVersion1_2:
+      return cdm::kHdcpVersion1_2;
+    case media::HdcpVersion::kHdcpVersion1_3:
+      return cdm::kHdcpVersion1_3;
+    case media::HdcpVersion::kHdcpVersion1_4:
+      return cdm::kHdcpVersion1_4;
+    case media::HdcpVersion::kHdcpVersion2_0:
+      return cdm::kHdcpVersion2_0;
+    case media::HdcpVersion::kHdcpVersion2_1:
+      return cdm::kHdcpVersion2_1;
+    case media::HdcpVersion::kHdcpVersion2_2:
+      return cdm::kHdcpVersion2_2;
+  }
+
+  NOTREACHED();
+  return cdm::kHdcpVersion2_2;
+}
+
 cdm::SessionType ToCdmSessionType(CdmSessionType session_type) {
   switch (session_type) {
     case CdmSessionType::TEMPORARY_SESSION:
@@ -471,6 +497,14 @@ void CdmAdapter::SetServerCertificate(
                              certificate.size());
 }
 
+void CdmAdapter::GetStatusForPolicy(
+    HdcpVersion min_hdcp_version,
+    std::unique_ptr<KeyStatusCdmPromise> promise) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
+  cdm_->GetStatusForPolicy(promise_id, ToCdmHdcpVersion(min_hdcp_version));
+}
+
 void CdmAdapter::CreateSessionAndGenerateRequest(
     CdmSessionType session_type,
     EmeInitDataType init_data_type,
@@ -758,11 +792,9 @@ cdm::Time CdmAdapter::GetCurrentWallTime() {
 
 void CdmAdapter::OnResolveKeyStatusPromise(uint32_t promise_id,
                                            cdm::KeyStatus key_status) {
-  // TODO(xhwang): Implement HDCP Policy Check. https://crbug.com/709348.
-  NOTIMPLEMENTED();
-  cdm_promise_adapter_.RejectPromise(promise_id,
-                                     CdmPromise::NOT_SUPPORTED_ERROR, 0,
-                                     "HDCP Policy Check not implemented.");
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  cdm_promise_adapter_.ResolvePromise(promise_id,
+                                      ToCdmKeyInformationKeyStatus(key_status));
 }
 
 void CdmAdapter::OnResolvePromise(uint32_t promise_id) {

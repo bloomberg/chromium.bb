@@ -76,6 +76,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::EmeInitDataType, media::EmeInitDataType::MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(media::EncryptionScheme::CipherMode,
                           media::EncryptionScheme::CipherMode::CIPHER_MODE_MAX)
 
+IPC_ENUM_TRAITS_MAX_VALUE(media::HdcpVersion,
+                          media::HdcpVersion::kHdcpVersionMax)
+
 IPC_ENUM_TRAITS_MAX_VALUE(media::MediaLogEvent::Type,
                           media::MediaLogEvent::TYPE_LAST)
 
