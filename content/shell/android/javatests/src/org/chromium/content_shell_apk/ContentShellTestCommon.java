@@ -166,7 +166,7 @@ public final class ContentShellTestCommon {
                 Criteria.equals(expectedScale, new Callable<Float>() {
                     @Override
                     public Float call() {
-                        return getContentViewCore().getScale();
+                        return getContentViewCore().getPageScaleFactor();
                     }
                 }));
     }
