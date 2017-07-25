@@ -41,12 +41,12 @@ static float PointsToPixels(float points) {
 
 // static
 void LayoutThemeFontProvider::SystemFont(CSSValueID system_font_id,
-                                         FontStyle& font_style,
-                                         FontWeight& font_weight,
+                                         FontSelectionValue& font_style,
+                                         FontSelectionValue& font_weight,
                                          float& font_size,
                                          AtomicString& font_family) {
-  font_style = kFontStyleNormal;
-  font_weight = kFontWeightNormal;
+  font_style = NormalSlopeValue();
+  font_weight = NormalWeightValue();
   font_size = default_font_size_;
   font_family = DefaultGUIFont();
 

@@ -29,11 +29,11 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (-35.50,3) size 71x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (-35.50,3) size 71x15
             chunk 1 (middle anchor) text run 1 at (-35.50,15.00) startOffset 0 endOffset 15 width 71.00: "SansSerif, bold"
-      LayoutSVGContainer {g} at (-42.50,-27) size 86.50x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,110.00)}]
-        LayoutSVGContainer {use} at (-41,-27) size 85x34
-          LayoutSVGText {text} at (-41,-27) size 85x34 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (-41,-27) size 85x34
-              chunk 1 (middle anchor) text run 1 at (-41.00,0.00) startOffset 0 endOffset 6 width 82.00: "sample"
+      LayoutSVGContainer {g} at (-42.50,-28) size 85x46 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,110.00)}]
+        LayoutSVGContainer {use} at (-42.50,-28) size 85x35
+          LayoutSVGText {text} at (-42.50,-28) size 85x35 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-42.50,-28) size 85x35
+              chunk 1 (middle anchor) text run 1 at (-42.50,0.00) startOffset 0 endOffset 6 width 85.00: "sample"
         LayoutSVGText {text} at (-42.50,3) size 85x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (-42.50,3) size 85x15
             chunk 1 (middle anchor) text run 1 at (-42.50,15.00) startOffset 0 endOffset 18 width 85.00: "SansSerif, oblique"
@@ -53,11 +53,11 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (-24.50,3) size 49x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (-24.50,3) size 49x15
             chunk 1 (middle anchor) text run 1 at (-24.50,15.00) startOffset 0 endOffset 11 width 49.00: "Serif, bold"
-      LayoutSVGContainer {g} at (-41,-27) size 85x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,160.00)}]
-        LayoutSVGContainer {use} at (-41,-27) size 85x34
-          LayoutSVGText {text} at (-41,-27) size 85x34 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (-41,-27) size 85x34
-              chunk 1 (middle anchor) text run 1 at (-41.00,0.00) startOffset 0 endOffset 6 width 82.00: "sample"
+      LayoutSVGContainer {g} at (-42.50,-28) size 85x46 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,160.00)}]
+        LayoutSVGContainer {use} at (-42.50,-28) size 85x35
+          LayoutSVGText {text} at (-42.50,-28) size 85x35 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-42.50,-28) size 85x35
+              chunk 1 (middle anchor) text run 1 at (-42.50,0.00) startOffset 0 endOffset 6 width 85.00: "sample"
         LayoutSVGText {text} at (-31.50,3) size 63x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (-31.50,3) size 63x15
             chunk 1 (middle anchor) text run 1 at (-31.50,15.00) startOffset 0 endOffset 14 width 63.00: "Serif, oblique"
@@ -77,11 +77,11 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (-45,3) size 90x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (-45,3) size 90x15
             chunk 1 (middle anchor) text run 1 at (-45.00,15.00) startOffset 0 endOffset 16 width 90.00: "Monospaced, bold"
-      LayoutSVGContainer {g} at (-52,-27) size 104x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,210.00)}]
-        LayoutSVGContainer {use} at (-41,-27) size 85x34
-          LayoutSVGText {text} at (-41,-27) size 85x34 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (-41,-27) size 85x34
-              chunk 1 (middle anchor) text run 1 at (-41.00,0.00) startOffset 0 endOffset 6 width 82.00: "sample"
+      LayoutSVGContainer {g} at (-52,-28) size 104x46 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,210.00)}]
+        LayoutSVGContainer {use} at (-42.50,-28) size 85x35
+          LayoutSVGText {text} at (-42.50,-28) size 85x35 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-42.50,-28) size 85x35
+              chunk 1 (middle anchor) text run 1 at (-42.50,0.00) startOffset 0 endOffset 6 width 85.00: "sample"
         LayoutSVGText {text} at (-52,3) size 104x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (-52,3) size 104x15
             chunk 1 (middle anchor) text run 1 at (-52.00,15.00) startOffset 0 endOffset 19 width 104.00: "Monospaced, oblique"
@@ -94,10 +94,10 @@ layer at (0,0) size 450x500
           LayoutSVGInlineText {#text} at (-20.50,3) size 41x15
             chunk 1 (middle anchor) text run 1 at (-20.50,15.00) startOffset 0 endOffset 9 width 41.00: "(default)"
       LayoutSVGContainer {g} at (-50.50,-28) size 101x46 [transform={m=((1.00,0.00)(0.00,1.00)) t=(225.00,260.00)}]
-        LayoutSVGContainer {use} at (-44,-28) size 90x35
-          LayoutSVGText {text} at (-44,-28) size 90x35 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (-44,-28) size 90x35
-              chunk 1 (middle anchor) text run 1 at (-44.00,0.00) startOffset 0 endOffset 6 width 88.00: "sample"
+        LayoutSVGContainer {use} at (-43.50,-28) size 87x34
+          LayoutSVGText {text} at (-43.50,-28) size 87x34 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-43.50,-28) size 87x34
+              chunk 1 (middle anchor) text run 1 at (-43.50,0.00) startOffset 0 endOffset 6 width 87.00: "sample"
         LayoutSVGText {text} at (-50.50,3) size 101x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (-50.50,3) size 101x15
             chunk 1 (middle anchor) text run 1 at (-50.50,15.00) startOffset 0 endOffset 22 width 101.00: "default, bold, oblique"
@@ -112,9 +112,9 @@ layer at (0,0) size 450x500
       LayoutSVGText {text} at (181,300) size 88x12 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (181,300) size 88x12
           chunk 1 (middle anchor) text run 1 at (181.00,310.00) startOffset 0 endOffset 19 width 88.00: "Named Font Families"
-      LayoutSVGText {text} at (131,315) size 189x12 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (131,315) size 189x12
-          chunk 1 (middle anchor) text run 1 at (131.00,325.00) startOffset 0 endOffset 49 width 188.00: "(Not all typefaces are available on all systems.)"
+      LayoutSVGText {text} at (128.17,315) size 193.63x12 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (128.17,315) size 193.63x12
+          chunk 1 (middle anchor) text run 1 at (128.19,325.00) startOffset 0 endOffset 49 width 193.63: "(Not all typefaces are available on all systems.)"
       LayoutSVGContainer {g} at (-41,-27) size 82x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,360.00)}]
         LayoutSVGContainer {use} at (-41,-27) size 82x34
           LayoutSVGText {text} at (-41,-27) size 82x34 contains 1 chunk(s)

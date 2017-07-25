@@ -252,11 +252,11 @@ Color LayoutThemeDefault::PlatformFocusRingColor() const {
 }
 
 void LayoutThemeDefault::SystemFont(CSSValueID system_font_id,
-                                    FontStyle& font_style,
-                                    FontWeight& font_weight,
+                                    FontSelectionValue& font_slope,
+                                    FontSelectionValue& font_weight,
                                     float& font_size,
                                     AtomicString& font_family) const {
-  LayoutThemeFontProvider::SystemFont(system_font_id, font_style, font_weight,
+  LayoutThemeFontProvider::SystemFont(system_font_id, font_slope, font_weight,
                                       font_size, font_family);
 }
 

@@ -86,7 +86,6 @@
 #include "modules/accessibility/AXSVGRoot.h"
 #include "modules/accessibility/AXSpinButton.h"
 #include "modules/accessibility/AXTable.h"
-#include "platform/fonts/FontTraits.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/TextDirection.h"
@@ -1011,9 +1010,9 @@ TextStyle AXLayoutObject::GetTextStyle() const {
     return AXNodeObject::GetTextStyle();
 
   unsigned text_style = kTextStyleNone;
-  if (style->GetFontWeight() == kFontWeightBold)
+  if (style->GetFontWeight() == BoldWeightValue())
     text_style |= kTextStyleBold;
-  if (style->GetFontDescription().Style() == kFontStyleItalic)
+  if (style->GetFontDescription().Style() == ItalicSlopeValue())
     text_style |= kTextStyleItalic;
   if (style->GetTextDecoration() == TextDecoration::kUnderline)
     text_style |= kTextStyleUnderline;
