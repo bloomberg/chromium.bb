@@ -13,13 +13,16 @@ namespace app_list {
 AnswerCardResult::AnswerCardResult(Profile* profile,
                                    AppListControllerDelegate* list_controller,
                                    const std::string& result_url,
+                                   const std::string& stripped_result_url,
                                    const base::string16& result_title,
                                    AnswerCardContents* contents)
     : profile_(profile),
       list_controller_(list_controller),
       contents_(contents) {
+  DCHECK(!stripped_result_url.empty());
   set_display_type(DISPLAY_CARD);
   set_id(result_url);
+  set_comparable_id(stripped_result_url);
   set_relevance(1);
   set_view(contents ? contents->GetView() : nullptr);
   set_title(result_title);
@@ -38,8 +41,8 @@ void AnswerCardResult::OnContentsDestroying() {
 }
 
 std::unique_ptr<SearchResult> AnswerCardResult::Duplicate() const {
-  return base::MakeUnique<AnswerCardResult>(profile_, list_controller_, id(),
-                                            title(), contents_);
+  return base::MakeUnique<AnswerCardResult>(
+      profile_, list_controller_, id(), comparable_id(), title(), contents_);
 }
 
 void AnswerCardResult::Open(int event_flags) {

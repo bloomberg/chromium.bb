@@ -27,6 +27,10 @@ void UpdateResult(const SearchResult& source, SearchResult* target) {
   target->set_details_tags(source.details_tags());
 }
 
+const std::string& GetComparableId(const SearchResult& result) {
+  return !result.comparable_id().empty() ? result.comparable_id() : result.id();
+}
+
 }  // namespace
 
 Mixer::SortData::SortData() : result(nullptr), score(0.0) {}
@@ -229,7 +233,7 @@ void Mixer::RemoveDuplicates(SortedResults* results) {
 
   std::set<std::string> id_set;
   for (const SortData& sort_data : *results) {
-    if (!id_set.insert(sort_data.result->id()).second)
+    if (!id_set.insert(GetComparableId(*sort_data.result)).second)
       continue;
 
     final.emplace_back(sort_data);

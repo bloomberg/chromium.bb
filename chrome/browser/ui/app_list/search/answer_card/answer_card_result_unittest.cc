@@ -20,7 +20,9 @@ namespace test {
 
 namespace {
 
-constexpr char kResultUrl[] = "http://google.com/search?q=weather";
+constexpr char kResultUrl[] =
+    "http://www.google.com/search?q=weather&strippable_part=something";
+constexpr char kResultUrlStripped[] = "http://google.com/search?q=weather";
 constexpr char kResultTitle[] = "The weather is fine";
 
 class AnswerCardTestContents : public AnswerCardContents {
@@ -52,10 +54,11 @@ class AnswerCardResultTest : public AppListTestBase,
 
   std::unique_ptr<AnswerCardResult> CreateResult(
       const std::string& result_url,
+      const std::string& stripped_result_url,
       const base::string16& result_title) const {
     return base::MakeUnique<AnswerCardResult>(
         profile_.get(), app_list_controller_delegate_.get(), result_url,
-        result_title, contents_.get());
+        stripped_result_url, result_title, contents_.get());
   }
 
   const GURL& GetLastOpenedUrl() const {
@@ -101,8 +104,8 @@ class AnswerCardResultTest : public AppListTestBase,
 };
 
 TEST_F(AnswerCardResultTest, Basic) {
-  std::unique_ptr<AnswerCardResult> result =
-      CreateResult(kResultUrl, base::ASCIIToUTF16(kResultTitle));
+  std::unique_ptr<AnswerCardResult> result = CreateResult(
+      kResultUrl, kResultUrlStripped, base::ASCIIToUTF16(kResultTitle));
 
   EXPECT_EQ(kResultUrl, result->id());
   EXPECT_EQ(base::ASCIIToUTF16(kResultTitle), result->title());
@@ -126,15 +129,15 @@ TEST_F(AnswerCardResultTest, NullContents) {
   DeleteContents();
 
   // Shouldn't crash with null contents.
-  std::unique_ptr<AnswerCardResult> result =
-      CreateResult(kResultUrl, base::ASCIIToUTF16(kResultTitle));
+  std::unique_ptr<AnswerCardResult> result = CreateResult(
+      kResultUrl, kResultUrlStripped, base::ASCIIToUTF16(kResultTitle));
   std::unique_ptr<SearchResult> result1 = result->Duplicate();
 }
 
 TEST_F(AnswerCardResultTest, EarlyDeleteContents) {
   // Shouldn't crash with contents gets deleted while search result exists.
-  std::unique_ptr<AnswerCardResult> result =
-      CreateResult(kResultUrl, base::ASCIIToUTF16(kResultTitle));
+  std::unique_ptr<AnswerCardResult> result = CreateResult(
+      kResultUrl, kResultUrlStripped, base::ASCIIToUTF16(kResultTitle));
 
   DeleteContents();
 
@@ -142,8 +145,8 @@ TEST_F(AnswerCardResultTest, EarlyDeleteContents) {
 }
 
 TEST_F(AnswerCardResultTest, MouseEvents) {
-  std::unique_ptr<SearchResult> result =
-      CreateResult(kResultUrl, base::ASCIIToUTF16(kResultTitle));
+  std::unique_ptr<SearchResult> result = CreateResult(
+      kResultUrl, kResultUrlStripped, base::ASCIIToUTF16(kResultTitle));
 
   result->AddObserver(this);
 

@@ -121,6 +121,7 @@ OmniboxResult::OmniboxResult(Profile* profile,
         *match_.search_terms_args, &match_);
   }
   set_id(match_.destination_url.spec());
+  set_comparable_id(match_.stripped_destination_url.spec());
 
   // Derive relevance from omnibox relevance and normalize it to [0, 1].
   // The magic number 1500 is the highest score of an omnibox result.

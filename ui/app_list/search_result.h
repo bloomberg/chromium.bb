@@ -136,6 +136,7 @@ class APP_LIST_EXPORT SearchResult {
   void SetIsMouseInView(bool mouse_is_inside);
 
   const std::string& id() const { return id_; }
+  const std::string& comparable_id() const { return comparable_id_; }
 
   double relevance() const { return relevance_; }
   void set_relevance(double relevance) { relevance_ = relevance; }
@@ -200,6 +201,9 @@ class APP_LIST_EXPORT SearchResult {
 
  protected:
   void set_id(const std::string& id) { id_ = id; }
+  void set_comparable_id(const std::string& comparable_id) {
+    comparable_id_ = comparable_id;
+  }
   void set_voice_result(bool voice_result) { voice_result_ = voice_result; }
 
  private:
@@ -233,6 +237,9 @@ class APP_LIST_EXPORT SearchResult {
   bool mouse_is_in_view_ = false;
 
   std::string id_;
+  // ID that can be compared across results from different providers to remove
+  // duplicates. May be empty, in which case |id_| will be used for comparison.
+  std::string comparable_id_;
   double relevance_ = 0;
   DisplayType display_type_ = DISPLAY_LIST;
 
