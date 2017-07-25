@@ -40,6 +40,7 @@ class PromotionManager;
 class ProximityAuthPrefManager;
 }
 
+class EasyUnlockNotificationController;
 class Profile;
 
 // EasyUnlockService instance that should be used for regular, non-signin
@@ -50,6 +51,12 @@ class EasyUnlockServiceRegular
       public cryptauth::CryptAuthDeviceManager::Observer {
  public:
   explicit EasyUnlockServiceRegular(Profile* profile);
+
+  // Constructor for tests.
+  EasyUnlockServiceRegular(Profile* profile,
+                           std::unique_ptr<EasyUnlockNotificationController>
+                               notification_controller);
+
   ~EasyUnlockServiceRegular() override;
 
   // Returns the ProximityAuthPrefManager, which manages the profile's
@@ -102,6 +109,7 @@ class EasyUnlockServiceRegular
 #endif
 
   // CryptAuthDeviceManager::Observer:
+  void OnSyncStarted() override;
   void OnSyncFinished(
       cryptauth::CryptAuthDeviceManager::SyncResult sync_result,
       cryptauth::CryptAuthDeviceManager::DeviceChangeResult
@@ -188,6 +196,18 @@ class EasyUnlockServiceRegular
   // this deferment prevents the lock screen from being changed by a network
   // event.
   bool deferring_device_load_;
+
+  // Responsible for showing all the notifications used for EasyUnlock.
+  std::unique_ptr<EasyUnlockNotificationController> notification_controller_;
+
+  // Stores the unlock keys for EasyUnlock before the current device sync, so we
+  // can compare it to the unlock keys after syncing.
+  std::vector<cryptauth::ExternalDeviceInfo> unlock_keys_before_sync_;
+
+  // True if the pairing changed notification was shown, so that the next time
+  // the Chromebook is unlocked, we can show the subsequent 'pairing applied'
+  // notification.
+  bool shown_pairing_changed_notification_;
 
   base::WeakPtrFactory<EasyUnlockServiceRegular> weak_ptr_factory_;
 
