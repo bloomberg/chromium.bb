@@ -220,10 +220,11 @@ void DatabaseMessageFilter::DatabaseDeleteFile(
 
     if ((error_code == SQLITE_IOERR_DELETE) && reschedule_count) {
       // If the file could not be deleted, try again.
-      BrowserThread::PostDelayedTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&DatabaseMessageFilter::DatabaseDeleteFile, this,
-                     vfs_file_name, sync_dir, reply_msg, reschedule_count - 1),
+      db_tracker_->task_runner()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&DatabaseMessageFilter::DatabaseDeleteFile, this,
+                         vfs_file_name, sync_dir, reply_msg,
+                         reschedule_count - 1),
           base::TimeDelta::FromMilliseconds(kDelayDeleteRetryMs));
       return;
     }
