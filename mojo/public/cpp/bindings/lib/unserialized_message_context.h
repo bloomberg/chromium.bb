@@ -50,7 +50,7 @@ class MOJO_CPP_BINDINGS_EXPORT UnserializedMessageContext {
   void SerializeHandles(MojoHandle* handles);
   void SerializePayload(Buffer* buffer);
 
-  virtual void PrepareToSerialize(
+  virtual size_t PrepareToSerialize(
       SerializationContext* serialization_context) = 0;
   virtual void Serialize(SerializationContext* serialization_context,
                          Buffer* buffer) = 0;
