@@ -164,6 +164,7 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
 }
 
 #define TASK_DURATION_METRIC_NAME "RendererScheduler.TaskDurationPerQueueType2"
+#define TASK_COUNT_METRIC_NAME "RendererScheduler.TaskCountPerQueueType"
 
 RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
     RendererSchedulerImpl* renderer_scheduler_impl,
@@ -2000,12 +2001,39 @@ void RendererSchedulerImpl::RecordTaskMetrics(
   main_thread_only().background_main_thread_load_tracker.RecordTaskTime(
       start_time, end_time);
 
-  // TODO(altimin): See whether this metric is still useful after
-  // adding RendererScheduler.TaskDurationPerQueueType.
   UMA_HISTOGRAM_ENUMERATION(
-      "RendererScheduler.NumberOfTasksPerQueueType2",
-      static_cast<int>(queue_type),
+      TASK_COUNT_METRIC_NAME, static_cast<int>(queue_type),
       static_cast<int>(MainThreadTaskQueue::QueueType::COUNT));
+
+  if (duration >= base::TimeDelta::FromMilliseconds(16)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        TASK_COUNT_METRIC_NAME ".LongerThan16ms", static_cast<int>(queue_type),
+        static_cast<int>(MainThreadTaskQueue::QueueType::COUNT));
+  }
+
+  if (duration >= base::TimeDelta::FromMilliseconds(50)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        TASK_COUNT_METRIC_NAME ".LongerThan50ms", static_cast<int>(queue_type),
+        static_cast<int>(MainThreadTaskQueue::QueueType::COUNT));
+  }
+
+  if (duration >= base::TimeDelta::FromMilliseconds(100)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        TASK_COUNT_METRIC_NAME ".LongerThan100ms", static_cast<int>(queue_type),
+        static_cast<int>(MainThreadTaskQueue::QueueType::COUNT));
+  }
+
+  if (duration >= base::TimeDelta::FromMilliseconds(150)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        TASK_COUNT_METRIC_NAME ".LongerThan150ms", static_cast<int>(queue_type),
+        static_cast<int>(MainThreadTaskQueue::QueueType::COUNT));
+  }
+
+  if (duration >= base::TimeDelta::FromSeconds(1)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        TASK_COUNT_METRIC_NAME ".LongerThan1s", static_cast<int>(queue_type),
+        static_cast<int>(MainThreadTaskQueue::QueueType::COUNT));
+  }
 
   main_thread_only().task_duration_reporter.RecordTask(queue_type, duration);
 
