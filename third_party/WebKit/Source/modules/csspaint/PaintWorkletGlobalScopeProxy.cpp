@@ -32,13 +32,14 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
 
 void PaintWorkletGlobalScopeProxy::FetchAndInvokeScript(
     const KURL& module_url_record,
+    WorkletModuleResponsesMap* module_responses_map,
     WebURLRequest::FetchCredentialsMode credentials_mode,
     RefPtr<WebTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsMainThread());
-  global_scope_->FetchAndInvokeScript(module_url_record, credentials_mode,
-                                      std::move(outside_settings_task_runner),
-                                      pending_tasks);
+  global_scope_->FetchAndInvokeScript(
+      module_url_record, module_responses_map, credentials_mode,
+      std::move(outside_settings_task_runner), pending_tasks);
 }
 
 void PaintWorkletGlobalScopeProxy::WorkletObjectDestroyed() {
