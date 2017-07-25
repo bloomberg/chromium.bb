@@ -59,6 +59,10 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=new_tab";
+}  // namespace
+
 @interface ContentSuggestionsCoordinator ()<
     ContentSuggestionsAlertCommands,
     ContentSuggestionsCommands,
@@ -253,6 +257,14 @@
     return;
   }
   NOTREACHED();
+}
+
+- (void)handleLearnMoreTapped {
+  // TODO(crbug.com/691979): Add metrics.
+  [self.URLLoader loadURL:GURL(kNTPHelpURL)
+                 referrer:web::Referrer()
+               transition:ui::PAGE_TRANSITION_LINK
+        rendererInitiated:NO];
 }
 
 #pragma mark - ContentSuggestionsAlertCommands

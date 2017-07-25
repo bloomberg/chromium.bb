@@ -53,6 +53,9 @@ source_set("cells_ui") {
     "//ios/chrome/common",
     "//ui/base",
   ]
+  public_deps = [
+    "//ios/third_party/material_components_ios",
+  ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 

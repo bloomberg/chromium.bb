@@ -40,6 +40,7 @@ const int kLinkColorRGB = 0x5595FE;
 - (void)configureCell:(ContentSuggestionsLearnMoreCell*)cell {
   [super configureCell:cell];
   [cell setText:[self text]];
+  cell.accessibilityIdentifier = [[self class] accessibilityIdentifier];
 }
 
 - (NSString*)text {
@@ -50,6 +51,10 @@ const int kLinkColorRGB = 0x5595FE;
 - (CGFloat)cellHeightForWidth:(CGFloat)width {
   return [ContentSuggestionsLearnMoreCell heightForWidth:width
                                                 withText:[self text]];
+}
+
++ (NSString*)accessibilityIdentifier {
+  return @"Learn more";
 }
 
 @end

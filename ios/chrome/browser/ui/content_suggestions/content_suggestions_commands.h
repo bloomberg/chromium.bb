@@ -31,6 +31,8 @@
 - (void)dismissModals;
 // Handles the actions following a tap on the promo.
 - (void)handlePromoTapped;
+// Handles the actions following a tap on the "Learn more" item.
+- (void)handleLearnMoreTapped;
 
 @end
 
