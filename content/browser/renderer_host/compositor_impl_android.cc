@@ -687,21 +687,24 @@ void CompositorImpl::HandlePendingLayerTreeFrameSinkRequest() {
     return;
 #endif
 
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableTimeoutsForProfiling)) {
 #if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
     defined(SYZYASAN) || defined(CYGPROFILE_INSTRUMENTATION)
-  const int64_t kGpuChannelTimeoutInSeconds = 40;
+    const int64_t kGpuChannelTimeoutInSeconds = 40;
 #else
-  // The GPU watchdog timeout is 15 seconds (1.5x the kGpuTimeout value due to
-  // logic in GpuWatchdogThread). Make this slightly longer to give the GPU a
-  // chance to crash itself before crashing the browser.
-  const int64_t kGpuChannelTimeoutInSeconds = 20;
+    // The GPU watchdog timeout is 15 seconds (1.5x the kGpuTimeout value due to
+    // logic in GpuWatchdogThread). Make this slightly longer to give the GPU a
+    // chance to crash itself before crashing the browser.
+    const int64_t kGpuChannelTimeoutInSeconds = 20;
 #endif
 
-  // Start the timer first, if the result comes synchronously, we want it to
-  // stop in the callback.
-  establish_gpu_channel_timeout_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kGpuChannelTimeoutInSeconds),
-      this, &CompositorImpl::OnGpuChannelTimeout);
+    // Start the timer first, if the result comes synchronously, we want it to
+    // stop in the callback.
+    establish_gpu_channel_timeout_.Start(
+        FROM_HERE, base::TimeDelta::FromSeconds(kGpuChannelTimeoutInSeconds),
+        this, &CompositorImpl::OnGpuChannelTimeout);
+  }
 
   DCHECK(surface_handle_ != gpu::kNullSurfaceHandle);
   BrowserMainLoop::GetInstance()

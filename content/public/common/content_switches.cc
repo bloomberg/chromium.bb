@@ -960,6 +960,10 @@ const char kDisablePullToRefreshEffect[]   = "disable-pull-to-refresh-effect";
 // Disable the locking feature of the screen orientation API.
 const char kDisableScreenOrientationLock[]  = "disable-screen-orientation-lock";
 
+// Disable timeouts that may cause the browser to die when running slowly. This
+// is useful if running with profiling (such as debug malloc).
+const char kDisableTimeoutsForProfiling[] = "disable-timeouts-for-profiling";
+
 // Enable inverting of selection handles so that they are not clipped by the
 // viewport boundaries.
 const char kEnableAdaptiveSelectionHandleOrientation[] =
