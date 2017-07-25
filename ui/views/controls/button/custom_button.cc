@@ -5,6 +5,7 @@
 #include "ui/views/controls/button/custom_button.h"
 
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/class_property.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -32,6 +33,8 @@
 namespace views {
 
 namespace {
+
+DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(bool, kIsButtonProperty, false);
 
 // How long the hover animation takes if uninterrupted.
 const int kHoverFadeDurationMs = 150;
@@ -61,18 +64,8 @@ const CustomButton* CustomButton::AsCustomButton(const views::View* view) {
 
 // static
 CustomButton* CustomButton::AsCustomButton(views::View* view) {
-  if (view) {
-    const char* classname = view->GetClassName();
-    if (!strcmp(classname, Checkbox::kViewClassName) ||
-        !strcmp(classname, CustomButton::kViewClassName) ||
-        !strcmp(classname, ImageButton::kViewClassName) ||
-        !strcmp(classname, LabelButton::kViewClassName) ||
-        !strcmp(classname, RadioButton::kViewClassName) ||
-        !strcmp(classname, ToggleButton::kViewClassName) ||
-        !strcmp(classname, MenuButton::kViewClassName)) {
-      return static_cast<CustomButton*>(view);
-    }
-  }
+  if (view && view->GetProperty(kIsButtonProperty))
+    return static_cast<CustomButton*>(view);
   return NULL;
 }
 
@@ -452,6 +445,7 @@ CustomButton::CustomButton(ButtonListener* listener)
       has_ink_drop_action_on_click_(false),
       hide_ink_drop_when_showing_context_menu_(true),
       ink_drop_base_color_(gfx::kPlaceholderColor) {
+  SetProperty(kIsButtonProperty, true);
   hover_animation_.SetSlideDuration(kHoverFadeDurationMs);
 }
 
