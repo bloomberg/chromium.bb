@@ -58,8 +58,8 @@ public class VrTransitionUtils {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                VrShellDelegateUtils.getDelegateInstance().shutdownVr(true /* disableVrMode */,
-                        false /* canReenter */, true /* stayingInChrome */);
+                VrShellDelegateUtils.getDelegateInstance().shutdownVr(
+                        true /* disableVrMode */, true /* stayingInChrome */);
             }
         });
     }
