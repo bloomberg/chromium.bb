@@ -526,14 +526,14 @@ static void predict_and_reconstruct_intra_block(
         AOMMAX(BLOCK_4X4, get_plane_block_size(mbmi->sb_type, pd));
 #else
     const BLOCK_SIZE plane_bsize = get_plane_block_size(mbmi->sb_type, pd);
-#endif
+#endif  // CONFIG_CHROMA_SUB8X8
     uint8_t *dst =
         &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
     // TODO (ltrudeau) Store sub-8x8 inter blocks when bottom right block is
     // intra predicted.
     cfl_store(xd->cfl, dst, pd->dst.stride, row, col, tx_size, plane_bsize);
   }
-#endif
+#endif  // CONFIG_CFL
 }
 
 #if CONFIG_VAR_TX && !CONFIG_COEF_INTERLEAVE
@@ -1889,6 +1889,11 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
         }
       }
     }
+#if CONFIG_CFL && CONFIG_CB4X4 && CONFIG_DEBUG
+    if (xd->cfl->is_chroma_reference) {
+      cfl_clear_sub8x8_val(xd->cfl);
+    }
+#endif  // CONFIG_CFL && CONFIG_CB4X4 && CONFIG_DEBUG
   } else {
     int ref;
 

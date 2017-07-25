@@ -1100,7 +1100,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
     // intra predicted.
     cfl_store(xd->cfl, dst, dst_stride, blk_row, blk_col, tx_size, plane_bsize);
   }
-#endif
+#endif  // CONFIG_CFL
 }
 
 void av1_encode_intra_block_plane(AV1_COMMON *cm, MACROBLOCK *x,
