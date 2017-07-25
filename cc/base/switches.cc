@@ -49,11 +49,6 @@ const char kEnableTileCompression[] = "enable-tile-compression";
 // Enables the GPU benchmarking extension
 const char kEnableGpuBenchmarking[] = "enable-gpu-benchmarking";
 
-// Enables multi-client Surface synchronization. In practice, this indicates
-// that LayerTreeHost expects to be given a valid viz::LocalSurfaceId provided
-// by the parent compositor.
-const char kEnableSurfaceSynchronization[] = "enable-surface-synchronization";
-
 // Renders a border around compositor layers to help debug and study
 // layer compositing.
 const char kShowCompositedLayerBorders[] = "show-composited-layer-borders";
