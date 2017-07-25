@@ -6,7 +6,6 @@
 #define UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_CONTROL_BUTTONS_VIEW_H_
 
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/message_center/message_center_export.h"
@@ -45,10 +44,6 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
   // Set the background color of the view.
   void SetBackgroundColor(const SkColor& target_bgcolor);
 
-  // Set and get the visi8blity of buttons.
-  void SetButtonsVisible(bool visible);
-  bool GetButtonsVisible() const;
-
   // Request the focus on the close button.
   void RequestFocusOnCloseButton();
 
@@ -63,18 +58,9 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
   message_center::PaddedButton* close_button_for_testing() const;
   message_center::PaddedButton* settings_button_for_testing() const;
 
-#if defined(OS_CHROMEOS)
-  void ReparentToWidgetLayer();
-  void AdjustLayerBounds();
-#endif  // defined(OS_CHROMEOS)
-
   // views::View
   const char* GetClassName() const override;
-#if defined(OS_CHROMEOS)
-  void ReorderChildLayers(ui::Layer* parent_layer) override;
-  gfx::Vector2d CalculateOffsetToAncestorWithLayer(
-      ui::Layer** layer_parent) override;
-#endif  // defined(OS_CHROMEOS)
+  void SetVisible(bool visible) override;
 
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -85,23 +71,14 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
   void AnimationCanceled(const gfx::Animation* animation) override;
 
  private:
-  // InnerView is the container for buttons. NotificationControlButtonsView has
-  // only one child which is InnerView.
-  class InnerView;
-
   MessageView* message_view_;
 
-  std::unique_ptr<InnerView> buttons_container_;
   std::unique_ptr<message_center::PaddedButton> close_button_;
   std::unique_ptr<message_center::PaddedButton> settings_button_;
 
   std::unique_ptr<gfx::LinearAnimation> bgcolor_animation_;
   SkColor bgcolor_origin_;
   SkColor bgcolor_target_;
-
-#if defined(OS_CHROMEOS)
-  bool is_layer_parent_widget_ = false;
-#endif  // defined(OS_CHROMEOS)
 
   DISALLOW_COPY_AND_ASSIGN(NotificationControlButtonsView);
 };
