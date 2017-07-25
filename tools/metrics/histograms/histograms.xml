@@ -7918,8 +7918,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>lizeb@chromium.org</owner>
   <summary>
     In &quot;Herb&quot; mode shows the time between the intent arrival in a
-    Chrome generated CCT and the first navigation commit, if the navigation is
-    successful. Similar in principle to Startup.FirstCommitNavigationTime.
+    Chrome generated CCT and the first navigation start (note: not the
+    navigation commit, as the name suggests). Recorded when the page has
+    finished loading.
   </summary>
 </histogram>
 
@@ -10561,8 +10562,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="CustomTabs.IntentToFirstCommitNavigationTime2" units="ms">
   <owner>lizeb@chromium.org</owner>
   <summary>
-    Time between the intent arrival to a Custom Tab and the first navigation
-    start, if the navigation is successful. Non-&quot;Herb&quot; mode.
+    Time between the intent arrival to a Custom Tab and the navigation start
+    (note: not the navigation commit, as the name suggests). Recorded when the
+    page has finished loading. Non-&quot;Herb&quot; mode.
   </summary>
 </histogram>
 
@@ -10570,8 +10572,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>lizeb@chromium.org</owner>
   <summary>
     Time between the intent arrival to a Custom Tab and the first navigation
-    commit, if the navigation is successful. Similar in principle to
-    Startup.FirstCommitNavigationTime. Non-&quot;Herb&quot; mode.
+    commit. Recorded for every CCT intent when the page has finished loading.
   </summary>
 </histogram>
 
