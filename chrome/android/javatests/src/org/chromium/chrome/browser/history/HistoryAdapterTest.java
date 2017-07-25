@@ -36,6 +36,7 @@ public class HistoryAdapterTest {
     public void setUp() throws Exception {
         mHistoryProvider = new StubbedHistoryProvider();
         mAdapter = new HistoryAdapter(new SelectionDelegate<HistoryItem>(), null, mHistoryProvider);
+        mAdapter.generateHeaderItemsForTest();
     }
 
     private void initializeAdapter() {

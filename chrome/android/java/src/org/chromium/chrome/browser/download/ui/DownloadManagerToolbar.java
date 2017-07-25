@@ -24,10 +24,18 @@ import java.util.List;
 public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistoryItemWrapper>
         implements DownloadUiObserver {
     private Spinner mSpinner;
+    private DownloadManagerUi mManager;
 
     public DownloadManagerToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
         inflateMenu(R.menu.download_manager_menu);
+    }
+
+    /**
+     * @param manager The {@link DownloadManagerUi} associated with this toolbar.
+     */
+    public void setManager(DownloadManagerUi manager) {
+        mManager = manager;
     }
 
     /**
@@ -93,6 +101,12 @@ public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistor
     @Override
     public void onManagerDestroyed() {
         mSpinner.setAdapter(null);
+    }
+
+    @Override
+    protected void showNormalView() {
+        super.showNormalView();
+        mManager.updateInfoButtonVisibility();
     }
 
     @Override
