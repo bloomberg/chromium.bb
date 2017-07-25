@@ -408,9 +408,6 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             self._update_expectations_files(lines_to_remove)
 
         if options.optimize:
-            # TODO(wkorman): Consider changing temporary branch to base off of HEAD rather than
-            # origin/master to ensure we run baseline optimization processes with the same code as
-            # auto-rebaseline itself.
             self._run_in_parallel(self._optimize_baselines(test_baseline_set, options.verbose))
 
         self._remove_all_pass_testharness_baselines(test_baseline_set)
