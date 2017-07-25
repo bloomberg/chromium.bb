@@ -6,20 +6,23 @@
 
 #include <stdint.h>
 
-#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/build_time.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/memory/singleton.h"
 #include "base/process/launch.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_runner.h"
+#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/common/channel_info.h"
@@ -28,7 +31,6 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
@@ -38,8 +40,6 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/mac/keystone_glue.h"
 #endif
-
-using content::BrowserThread;
 
 namespace {
 
@@ -95,46 +95,11 @@ int GetCheckForUpgradeEveryMs() {
 #if !defined(OS_WIN) || defined(GOOGLE_CHROME_BUILD)
 // Return true if the current build is one of the unstable channels.
 bool IsUnstableChannel() {
-  // TODO(mad): Investigate whether we still need to be on the file thread for
-  // this. On Windows, the file thread used to be required for registry access
-  // but no anymore. But other platform may still need the file thread.
-  // crbug.com/366647.
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   version_info::Channel channel = chrome::GetChannel();
   return channel == version_info::Channel::DEV ||
          channel == version_info::Channel::CANARY;
 }
 #endif  // !defined(OS_WIN) || defined(GOOGLE_CHROME_BUILD)
-
-#if !defined(OS_WIN)
-// This task identifies whether we are running an unstable version. And then it
-// unconditionally calls back the provided task.
-void CheckForUnstableChannel(const base::Closure& callback_task,
-                             bool* is_unstable_channel) {
-  *is_unstable_channel = IsUnstableChannel();
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_task);
-}
-#else  // !defined(OS_WIN)
-#if defined(GOOGLE_CHROME_BUILD)
-// Sets |is_unstable_channel| to true if the current chrome is on the dev or
-// canary channels. Sets |is_auto_update_enabled| to true if Google Update will
-// update the current chrome. Unconditionally posts |callback_task| to the UI
-// thread to continue processing.
-void DetectUpdatability(const base::Closure& callback_task,
-                        bool* is_unstable_channel,
-                        bool* is_auto_update_enabled) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
-  // Don't try to turn on autoupdate when we failed previously.
-  if (is_auto_update_enabled) {
-    *is_auto_update_enabled =
-        GoogleUpdateSettings::AreAutoupdatesEnabled();
-  }
-  *is_unstable_channel = IsUnstableChannel();
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_task);
-}
-#endif  // defined(GOOGLE_CHROME_BUILD)
-#endif  // !defined(OS_WIN)
 
 // Gets the currently installed version. On Windows, if |critical_update| is not
 // NULL, also retrieves the critical update version info if available.
@@ -148,8 +113,6 @@ base::Version GetCurrentlyInstalledVersionImpl(base::Version* critical_update) {
   // upgraded in the background.
   bool system_install = !InstallUtil::IsPerUserInstall();
 
-  // TODO(tommi): Check if using the default distribution is always the right
-  // thing to do.
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   InstallUtil::GetChromeVersion(dist, system_install, &installed_version);
   if (critical_update && installed_version.IsValid()) {
@@ -178,7 +141,11 @@ base::Version GetCurrentlyInstalledVersionImpl(base::Version* critical_update) {
 }  // namespace
 
 UpgradeDetectorImpl::UpgradeDetectorImpl()
-    : is_unstable_channel_(false),
+    : blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+           base::MayBlock()})),
+      is_unstable_channel_(false),
       is_auto_update_enabled_(true),
       build_date_(base::GetBuildTime()),
       weak_factory_(this) {
@@ -241,29 +208,29 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
   if (variations_service)
     variations_service->AddObserver(this);
 
-  base::Closure start_upgrade_check_timer_task =
-      base::Bind(&UpgradeDetectorImpl::StartTimerForUpgradeCheck,
-                 weak_factory_.GetWeakPtr());
-
 #if defined(OS_WIN)
-  // Only enable upgrade notifications for official builds.  Chromium has no
-  // upgrade channel.
+// Only enable upgrade notifications for Google Chrome builds. Chromium has no
+// upgrade channel.
 #if defined(GOOGLE_CHROME_BUILD)
-  // On Windows, there might be a policy/enterprise environment preventing
-  // updates, so validate updatability, and then call StartTimerForUpgradeCheck
-  // appropriately. And don't check for autoupdate if we already attempted to
-  // enable it in the past.
-  bool attempted_enabling_autoupdate = g_browser_process->local_state() &&
+  // Check whether the build is an unstable channel before starting the timer.
+  is_unstable_channel_ = IsUnstableChannel();
+  // There might be a policy/enterprise environment preventing updates, so
+  // validate updatability and then call StartTimerForUpgradeCheck
+  // appropriately. Skip this step if a past attempt has been made to enable
+  // auto updates.
+  if (g_browser_process->local_state() &&
       g_browser_process->local_state()->GetBoolean(
-          prefs::kAttemptedToEnableAutoupdate);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&DetectUpdatability,
-                                     start_upgrade_check_timer_task,
-                                     &is_unstable_channel_,
-                                     attempted_enabling_autoupdate ?
-                                         NULL : &is_auto_update_enabled_));
-#endif
-#else
+          prefs::kAttemptedToEnableAutoupdate)) {
+    StartTimerForUpgradeCheck();
+  } else {
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_.get(), FROM_HERE,
+        base::BindOnce(&GoogleUpdateSettings::AreAutoupdatesEnabled),
+        base::BindOnce(&UpgradeDetectorImpl::OnAutoupdatesEnabledResult,
+                       weak_factory_.GetWeakPtr()));
+  }
+#endif  // defined(GOOGLE_CHROME_BUILD)
+#else   // defined(OS_WIN)
 #if defined(OS_MACOSX)
   // Only enable upgrade notifications if the updater (Keystone) is present.
   if (!keystone_glue::KeystoneEnabled()) {
@@ -276,14 +243,13 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
   return;
 #endif
   // Check whether the build is an unstable channel before starting the timer.
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&CheckForUnstableChannel,
-                                     start_upgrade_check_timer_task,
-                                     &is_unstable_channel_));
-#endif
+  is_unstable_channel_ = IsUnstableChannel();
+  StartTimerForUpgradeCheck();
+#endif  // defined(OS_WIN)
 }
 
 UpgradeDetectorImpl::~UpgradeDetectorImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 // static
@@ -292,14 +258,9 @@ base::Version UpgradeDetectorImpl::GetCurrentlyInstalledVersion() {
 }
 
 // static
-// This task checks the currently running version of Chrome against the
-// installed version. If the installed version is newer, it calls back
-// UpgradeDetectorImpl::UpgradeDetected using a weak pointer so that it can
-// be interrupted from the UI thread.
 void UpgradeDetectorImpl::DetectUpgradeTask(
-    base::WeakPtr<UpgradeDetectorImpl> upgrade_detector) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
+    scoped_refptr<base::TaskRunner> callback_task_runner,
+    UpgradeDetectedCallback callback) {
   base::Version critical_update;
   base::Version installed_version =
       GetCurrentlyInstalledVersionImpl(&critical_update);
@@ -314,31 +275,28 @@ void UpgradeDetectorImpl::DetectUpgradeTask(
   // |installed_version| may be NULL when the user downgrades on Linux (by
   // switching from dev to beta channel, for example). The user needs a
   // restart in this case as well. See http://crbug.com/46547
-  if (!installed_version.IsValid() ||
-      (installed_version.CompareTo(running_version) > 0)) {
+  if (!installed_version.IsValid() || installed_version > running_version) {
     // If a more recent version is available, it might be that we are lacking
     // a critical update, such as a zero-day fix.
     UpgradeAvailable upgrade_available = UPGRADE_AVAILABLE_REGULAR;
-    if (critical_update.IsValid() &&
-        critical_update.CompareTo(running_version) > 0) {
+    if (critical_update.IsValid() && critical_update > running_version)
       upgrade_available = UPGRADE_AVAILABLE_CRITICAL;
-    }
 
     // Fire off the upgrade detected task.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&UpgradeDetectorImpl::UpgradeDetected,
-                                       upgrade_detector,
-                                       upgrade_available));
+    callback_task_runner->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), upgrade_available));
   }
 }
 
 void UpgradeDetectorImpl::StartTimerForUpgradeCheck() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   detect_upgrade_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(GetCheckForUpgradeEveryMs()),
       this, &UpgradeDetectorImpl::CheckForUpgrade);
 }
 
 void UpgradeDetectorImpl::StartUpgradeNotificationTimer() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The timer may already be running (e.g. due to both a software upgrade and
   // experiment updates being available).
   if (upgrade_notification_timer_.IsRunning())
@@ -357,6 +315,7 @@ void UpgradeDetectorImpl::StartUpgradeNotificationTimer() {
 }
 
 void UpgradeDetectorImpl::CheckForUpgrade() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Interrupt any (unlikely) unfinished execution of DetectUpgradeTask, or at
   // least prevent the callback from being executed, because we will potentially
   // call it from within DetectOutdatedInstall() or will post
@@ -367,16 +326,16 @@ void UpgradeDetectorImpl::CheckForUpgrade() {
   if (DetectOutdatedInstall())
     return;
 
-  // We use FILE as the thread to run the upgrade detection code on all
-  // platforms. For Linux, this is because we don't want to block the UI thread
-  // while launching a background process and reading its output; on the Mac and
-  // on Windows checking for an upgrade requires reading a file.
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&UpgradeDetectorImpl::DetectUpgradeTask,
-                                     weak_factory_.GetWeakPtr()));
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&UpgradeDetectorImpl::DetectUpgradeTask,
+                     base::SequencedTaskRunnerHandle::Get(),
+                     base::BindOnce(&UpgradeDetectorImpl::UpgradeDetected,
+                                    weak_factory_.GetWeakPtr())));
 }
 
 bool UpgradeDetectorImpl::DetectOutdatedInstall() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   static constexpr base::Feature kOutdatedBuildDetector = {
       "OutdatedBuildDetector", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -427,13 +386,14 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
 }
 
 void UpgradeDetectorImpl::OnExperimentChangesDetected(Severity severity) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   set_best_effort_experiment_updates_available(severity == BEST_EFFORT);
   set_critical_experiment_updates_available(severity == CRITICAL);
   StartUpgradeNotificationTimer();
 }
 
 void UpgradeDetectorImpl::UpgradeDetected(UpgradeAvailable upgrade_available) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   set_upgrade_available(upgrade_available);
 
   // Stop the recurring timer (that is checking for changes).
@@ -445,6 +405,7 @@ void UpgradeDetectorImpl::UpgradeDetected(UpgradeAvailable upgrade_available) {
 
 void UpgradeDetectorImpl::NotifyOnUpgradeWithTimePassed(
     base::TimeDelta time_passed) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const bool is_critical_or_outdated =
       upgrade_available() > UPGRADE_AVAILABLE_REGULAR ||
       critical_experiment_updates_available();
@@ -497,15 +458,26 @@ void UpgradeDetectorImpl::NotifyOnUpgradeWithTimePassed(
   NotifyUpgrade();
 }
 
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+void UpgradeDetectorImpl::OnAutoupdatesEnabledResult(
+    bool auto_updates_enabled) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  is_auto_update_enabled_ = auto_updates_enabled;
+  StartTimerForUpgradeCheck();
+}
+#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+
 void UpgradeDetectorImpl::NotifyOnUpgrade() {
   const base::TimeDelta time_passed =
       base::TimeTicks::Now() - upgrade_detected_time_;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NotifyOnUpgradeWithTimePassed(time_passed);
 }
 
 // static
 UpgradeDetectorImpl* UpgradeDetectorImpl::GetInstance() {
-  return base::Singleton<UpgradeDetectorImpl>::get();
+  static auto* const instance = new UpgradeDetectorImpl();
+  return instance;
 }
 
 // static
