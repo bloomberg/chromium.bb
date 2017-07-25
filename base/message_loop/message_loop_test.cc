@@ -133,10 +133,9 @@ void RunTest_PostDelayedTask_Basic(MessagePumpFactory factory) {
   int num_tasks = 1;
   TimeTicks run_time;
 
+  TimeTicks time_before_run = TimeTicks::Now();
   loop.task_runner()->PostDelayedTask(
       FROM_HERE, BindOnce(&RecordRunTimeFunc, &run_time, &num_tasks), kDelay);
-
-  TimeTicks time_before_run = TimeTicks::Now();
   RunLoop().Run();
   TimeTicks time_after_run = TimeTicks::Now();
 
