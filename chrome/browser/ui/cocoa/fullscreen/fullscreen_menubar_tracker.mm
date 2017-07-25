@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_menubar_tracker.h"
 
 #include <Carbon/Carbon.h>
+#include <QuartzCore/QuartzCore.h>
 
 #include "base/mac/mac_util.h"
 #include "base/macros.h"
@@ -141,21 +142,9 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   menubarFraction_ = progress;
   [owner_ updateToolbarLayout];
 
-  // In 10.12. the toolbar to be janky since the UI doesn't update until the
-  // menubar finished revealing itself. To smooth things out, animate the
-  // toolbar in/out by locking/releasing its visibility instead of relying on
-  // the menubar fraction.
-  // TODO(spqchan): Figure out why it's not updating and make the toolbar drop
-  // down in sync with the menubar. See crbug.com/672254.
-  if (base::mac::IsOS10_12()) {
-    if (state_ == FullscreenMenubarState::SHOWING) {
-      [[owner_ visibilityLockController] lockToolbarVisibilityForOwner:self
-                                                         withAnimation:YES];
-    } else if (state_ == FullscreenMenubarState::HIDING) {
-      [[owner_ visibilityLockController] releaseToolbarVisibilityForOwner:self
-                                                            withAnimation:YES];
-    }
-  }
+  // AppKit drives the menu bar animation from a nested run loop. Flush
+  // explicitly so that Chrome's UI updates during the animation.
+  [CATransaction flush];
 }
 
 - (BOOL)isMouseOnScreen {
