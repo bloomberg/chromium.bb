@@ -610,7 +610,8 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration() {
 
   bool layer_config_changed = false;
   SetBackgroundLayerPaintsFixedRootBackground(
-      compositor->NeedsFixedRootBackgroundLayer(&owning_layer_));
+      layout_object.IsLayoutView() &&
+      compositor->NeedsFixedRootBackgroundLayer());
 
   // The background layer is currently only used for fixed root backgrounds.
   if (UpdateBackgroundLayer(background_layer_paints_fixed_root_background_))
