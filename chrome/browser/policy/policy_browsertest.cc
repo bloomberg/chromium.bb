@@ -175,6 +175,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
+#include "extensions/common/switches.h"
 #include "media/media_features.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
@@ -208,6 +209,7 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
@@ -4448,5 +4450,107 @@ IN_PROC_BROWSER_TEST_F(NetworkTimePolicyTest, NetworkTimeQueriesDisabled) {
   ASSERT_TRUE(interstitial_page);
   EXPECT_EQ(1u, num_requests());
 }
+
+#if defined(OS_CHROMEOS)
+
+class NoteTakingOnLockScreenPolicyTest : public PolicyTest {
+ public:
+  NoteTakingOnLockScreenPolicyTest() = default;
+  ~NoteTakingOnLockScreenPolicyTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(chromeos::switches::kEnableLockScreenApps);
+    // An app requires lockScreen permission to be enabled as a lock screen app.
+    // This permission is protected by a whitelist, so the test app has to be
+    // whitelisted as well.
+    command_line->AppendSwitchASCII(
+        extensions::switches::kWhitelistedExtensionID, kTestAppId);
+    PolicyTest::SetUpCommandLine(command_line);
+  }
+
+  void SetUserLevelPrefValue(const std::string& app_id,
+                             bool enabled_on_lock_screen) {
+    chromeos::NoteTakingHelper* helper = chromeos::NoteTakingHelper::Get();
+    ASSERT_TRUE(helper);
+
+    helper->SetPreferredApp(browser()->profile(), app_id);
+    helper->SetPreferredAppEnabledOnLockScreen(browser()->profile(),
+                                               enabled_on_lock_screen);
+  }
+
+  void SetPolicyValue(std::unique_ptr<base::Value> value) {
+    PolicyMap policies;
+    if (value) {
+      policies.Set(key::kNoteTakingAppsLockScreenWhitelist,
+                   POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                   POLICY_SOURCE_CLOUD, std::move(value), nullptr);
+    }
+    UpdateProviderPolicy(policies);
+  }
+
+  chromeos::NoteTakingLockScreenSupport GetAppLockScreenStatus(
+      const std::string& app_id) {
+    std::unique_ptr<chromeos::NoteTakingAppInfo> info =
+        chromeos::NoteTakingHelper::Get()->GetPreferredChromeAppInfo(
+            browser()->profile());
+    if (!info || info->app_id != app_id)
+      return chromeos::NoteTakingLockScreenSupport::kNotSupported;
+    return info->lock_screen_support;
+  }
+
+  // The test app ID.
+  static const char kTestAppId[];
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NoteTakingOnLockScreenPolicyTest);
+};
+
+const char NoteTakingOnLockScreenPolicyTest::kTestAppId[] =
+    "cadfeochfldmbdgoccgbeianhamecbae";
+
+IN_PROC_BROWSER_TEST_F(NoteTakingOnLockScreenPolicyTest,
+                       DisableLockScreenNoteTakingByPolicy) {
+  scoped_refptr<const extensions::Extension> app =
+      LoadUnpackedExtension("lock_screen_apps/app_launch");
+  ASSERT_TRUE(app);
+  ASSERT_EQ(kTestAppId, app->id());
+
+  SetUserLevelPrefValue(app->id(), true);
+  EXPECT_EQ(chromeos::NoteTakingLockScreenSupport::kEnabled,
+            GetAppLockScreenStatus(app->id()));
+
+  SetPolicyValue(base::MakeUnique<base::ListValue>());
+  EXPECT_EQ(chromeos::NoteTakingLockScreenSupport::kNotAllowedByPolicy,
+            GetAppLockScreenStatus(app->id()));
+
+  SetPolicyValue(nullptr);
+  EXPECT_EQ(chromeos::NoteTakingLockScreenSupport::kEnabled,
+            GetAppLockScreenStatus(app->id()));
+}
+
+IN_PROC_BROWSER_TEST_F(NoteTakingOnLockScreenPolicyTest,
+                       WhitelistLockScreenNoteTakingAppByPolicy) {
+  scoped_refptr<const extensions::Extension> app =
+      LoadUnpackedExtension("lock_screen_apps/app_launch");
+  ASSERT_TRUE(app);
+  ASSERT_EQ(kTestAppId, app->id());
+
+  SetUserLevelPrefValue(app->id(), false);
+  EXPECT_EQ(chromeos::NoteTakingLockScreenSupport::kSupported,
+            GetAppLockScreenStatus(app->id()));
+
+  auto policy = base::MakeUnique<base::ListValue>();
+  policy->GetList().emplace_back(base::Value(kTestAppId));
+  SetPolicyValue(std::move(policy));
+
+  EXPECT_EQ(chromeos::NoteTakingLockScreenSupport::kSupported,
+            GetAppLockScreenStatus(app->id()));
+
+  SetUserLevelPrefValue(app->id(), true);
+  EXPECT_EQ(chromeos::NoteTakingLockScreenSupport::kEnabled,
+            GetAppLockScreenStatus(app->id()));
+}
+
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace policy

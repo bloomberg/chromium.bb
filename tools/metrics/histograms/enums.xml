@@ -11093,13 +11093,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="367" label="InstantTetheringAllowed"/>
   <int value="368" label="RemoteAccessHostDomainList"/>
   <int value="369" label="RemoteAccessHostClientDomainList"/>
-  <int value="370" label="NetworkTimeQueriesEnabled"/>
+  <int value="370" label="BrowserNetworkTimeQueriesEnabled"/>
   <int value="371" label="DownloadRestrictions"/>
   <int value="372" label="DeviceSecondFactorAuthentication"/>
-  <int value="373" label="UseSystemDefaultPrinterAsDefault"/>
+  <int value="373" label="PrintPreviewUseSystemDefaultPrinter"/>
   <int value="374" label="DeviceEcryptfsMigrationStrategy"/>
   <int value="375" label="SafeBrowsingForTrustedSourcesEnabled"/>
   <int value="376" label="EcryptfsMigrationStrategy"/>
+  <int value="377" label="NoteTakingAppsLockScreenWhitelist"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

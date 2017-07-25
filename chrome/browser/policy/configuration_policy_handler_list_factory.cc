@@ -1048,6 +1048,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       base::MakeUnique<chromeos::KeyPermissionsPolicyHandler>(chrome_schema));
   handlers->AddHandler(base::WrapUnique(new DefaultGeolocationPolicyHandler()));
+  handlers->AddHandler(base::MakeUnique<extensions::ExtensionListPolicyHandler>(
+      key::kNoteTakingAppsLockScreenWhitelist,
+      prefs::kNoteTakingAppsLockScreenWhitelist, false /*allow_wildcards*/));
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
