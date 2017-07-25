@@ -6,10 +6,17 @@ package org.chromium.components.signin.test;
 
 import android.accounts.Account;
 import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
@@ -18,45 +25,45 @@ import org.chromium.components.signin.test.util.SimpleFuture;
 /**
  * Test class for {@link AccountManagerFacade}.
  */
-public class AccountManagerFacadeTest extends InstrumentationTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class AccountManagerFacadeTest {
     private FakeAccountManagerDelegate mDelegate;
     private AccountManagerFacade mHelper;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        Context context = getInstrumentation().getTargetContext();
+    @Before
+    public void setUp() throws Exception {
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mDelegate = new FakeAccountManagerDelegate(context);
         AccountManagerFacade.overrideAccountManagerFacadeForTests(context, mDelegate);
         mHelper = AccountManagerFacade.get();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         AccountManagerFacade.resetAccountManagerFacadeForTests();
-        super.tearDown();
     }
 
+    @Test
     @SmallTest
     public void testCanonicalAccount() throws InterruptedException {
         addTestAccount("test@gmail.com", "password");
 
-        assertTrue(hasAccountForName("test@gmail.com"));
-        assertTrue(hasAccountForName("Test@gmail.com"));
-        assertTrue(hasAccountForName("te.st@gmail.com"));
+        Assert.assertTrue(hasAccountForName("test@gmail.com"));
+        Assert.assertTrue(hasAccountForName("Test@gmail.com"));
+        Assert.assertTrue(hasAccountForName("te.st@gmail.com"));
     }
 
     // If this test starts flaking, please re-open crbug.com/568636 and make sure there is some sort
     // of stack trace or error message in that bug BEFORE disabling the test.
+    @Test
     @SmallTest
     public void testNonCanonicalAccount() throws InterruptedException {
         addTestAccount("test.me@gmail.com", "password");
 
-        assertTrue(hasAccountForName("test.me@gmail.com"));
-        assertTrue(hasAccountForName("testme@gmail.com"));
-        assertTrue(hasAccountForName("Testme@gmail.com"));
-        assertTrue(hasAccountForName("te.st.me@gmail.com"));
+        Assert.assertTrue(hasAccountForName("test.me@gmail.com"));
+        Assert.assertTrue(hasAccountForName("testme@gmail.com"));
+        Assert.assertTrue(hasAccountForName("Testme@gmail.com"));
+        Assert.assertTrue(hasAccountForName("te.st.me@gmail.com"));
     }
 
     private Account addTestAccount(String accountName, String password) {
