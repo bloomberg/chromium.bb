@@ -30,16 +30,12 @@ struct NativeStructSerializerImpl {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Traits = IPC::ParamTraits<UserType>;
 
-  static size_t PrepareToSerialize(MaybeConstUserType& value,
-                                   SerializationContext* context) {
-    base::PickleSizer sizer;
-    Traits::GetSize(&sizer, value);
-    return Align(sizer.payload_size() + sizeof(ArrayHeader));
-  }
+  static void PrepareToSerialize(MaybeConstUserType& value,
+                                 SerializationContext* context) {}
 
   static void Serialize(MaybeConstUserType& value,
                         Buffer* buffer,
-                        NativeStruct_Data** out,
+                        NativeStruct_Data::BufferWriter* writer,
                         SerializationContext* context) {
     base::Pickle pickle;
     Traits::Write(&pickle, value);
@@ -50,18 +46,10 @@ struct NativeStructSerializerImpl {
     DCHECK_EQ(sizer.payload_size(), pickle.payload_size());
 #endif
 
-    size_t total_size = pickle.payload_size() + sizeof(ArrayHeader);
-    DCHECK_LT(total_size, std::numeric_limits<uint32_t>::max());
-
     // Allocate a uint8 array, initialize its header, and copy the Pickle in.
-    ArrayHeader* header =
-        reinterpret_cast<ArrayHeader*>(buffer->Allocate(total_size));
-    header->num_bytes = static_cast<uint32_t>(total_size);
-    header->num_elements = static_cast<uint32_t>(pickle.payload_size());
-    memcpy(reinterpret_cast<char*>(header) + sizeof(ArrayHeader),
-           pickle.payload(), pickle.payload_size());
-
-    *out = reinterpret_cast<NativeStruct_Data*>(header);
+    writer->Allocate(pickle.payload_size(), buffer);
+    memcpy(writer->array_writer()->storage(), pickle.payload(),
+           pickle.payload_size());
   }
 
   static bool Deserialize(NativeStruct_Data* data,
@@ -105,11 +93,11 @@ struct NativeStructSerializerImpl {
 };
 
 struct MOJO_CPP_BINDINGS_EXPORT UnmappedNativeStructSerializerImpl {
-  static size_t PrepareToSerialize(const NativeStructPtr& input,
-                                   SerializationContext* context);
+  static void PrepareToSerialize(const NativeStructPtr& input,
+                                 SerializationContext* context);
   static void Serialize(const NativeStructPtr& input,
                         Buffer* buffer,
-                        NativeStruct_Data** output,
+                        NativeStruct_Data::BufferWriter* writer,
                         SerializationContext* context);
   static bool Deserialize(NativeStruct_Data* input,
                           NativeStructPtr* output,

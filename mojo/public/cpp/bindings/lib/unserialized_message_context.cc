@@ -24,9 +24,9 @@ void UnserializedMessageContext::GetSerializedSize(size_t* num_bytes,
   DCHECK(!serialization_context_.has_value());
   serialization_context_.emplace();
 
-  size_t payload_size = PrepareToSerialize(&serialization_context_.value());
+  PrepareToSerialize(&serialization_context_.value());
   total_serialized_size_ = ComputeSerializedMessageSize(
-      header_.flags, payload_size, 0 /* payload_interface_id_count */);
+      header_.flags, 0, 0 /* payload_interface_id_count */);
   *num_bytes = total_serialized_size_;
   *num_handles = serialization_context_->handles()->size();
 }

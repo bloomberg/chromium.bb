@@ -153,7 +153,7 @@ class PingPongPaddle : public MessageReceiverWithResponderStatus {
       }
     }
 
-    Message reply(count, 0, 8, 0);
+    Message reply(count, 0, 0, 0, nullptr);
     bool result = sender_->Accept(&reply);
     DCHECK(result);
     return true;
@@ -173,7 +173,7 @@ class PingPongPaddle : public MessageReceiverWithResponderStatus {
     quit_closure_ = run_loop.QuitClosure();
 
     start_time_ = base::TimeTicks::Now();
-    Message message(0, 0, 8, 0);
+    Message message(0, 0, 0, 0, nullptr);
     bool result = sender_->Accept(&message);
     DCHECK(result);
 
@@ -263,7 +263,7 @@ TEST_F(MojoBindingsPerftest, MultiplexRouterDispatchCost) {
     receiver.Reset();
     base::TimeTicks start_time = base::TimeTicks::Now();
     for (size_t j = 0; j < kIterations[i]; ++j) {
-      Message message(0, 0, 8, 0);
+      Message message(0, 0, 8, 0, nullptr);
       bool result = router->SimulateReceivingMessageForTesting(&message);
       DCHECK(result);
     }

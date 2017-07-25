@@ -37,7 +37,7 @@ void DoNotifyBadMessage(Message message, const std::string& error) {
 
 template <typename HeaderType>
 void AllocateHeaderFromBuffer(internal::Buffer* buffer, HeaderType** header) {
-  *header = static_cast<HeaderType*>(buffer->Allocate(sizeof(HeaderType)));
+  *header = buffer->AllocateAndGet<HeaderType>();
   (*header)->num_bytes = sizeof(HeaderType);
 }
 
@@ -102,7 +102,7 @@ void CreateSerializedMessageObject(uint32_t name,
       ignore_result(handles->at(i).release());
   }
 
-  internal::Buffer payload_buffer(buffer, buffer_size);
+  internal::Buffer payload_buffer(handle.get(), buffer, buffer_size);
 
   // Make sure we zero the memory first!
   memset(payload_buffer.data(), 0, total_size);
@@ -136,7 +136,7 @@ void SerializeUnserializedContext(MojoMessageHandle message,
   if (rv != MOJO_RESULT_OK)
     return;
 
-  internal::Buffer payload_buffer(buffer, num_bytes);
+  internal::Buffer payload_buffer(MessageHandle(message), buffer, buffer_size);
   WriteMessageHeader(context->message_name(), context->message_flags(),
                      0 /* payload_interface_id_count */, &payload_buffer);
 
@@ -153,6 +153,7 @@ void SerializeUnserializedContext(MojoMessageHandle message,
   }
 
   context->SerializePayload(&payload_buffer);
+  payload_buffer.Seal();
 }
 
 void DestroyUnserializedContext(uintptr_t context) {
@@ -190,8 +191,6 @@ Message::Message(uint32_t name,
   CreateSerializedMessageObject(name, flags, payload_size,
                                 payload_interface_id_count, handles, &handle_,
                                 &payload_buffer_);
-  data_ = payload_buffer_.data();
-  data_size_ = payload_buffer_.size();
   transferable_ = true;
   serialized_ = true;
 }
@@ -227,8 +226,7 @@ Message::Message(ScopedMessageHandle handle) {
       return;
     }
 
-    data_ = buffer;
-    data_size_ = num_bytes;
+    payload_buffer_ = internal::Buffer(buffer, num_bytes, num_bytes);
     serialized_ = true;
   } else {
     DCHECK_EQ(MOJO_RESULT_OK, get_context_result);
@@ -238,8 +236,9 @@ Message::Message(ScopedMessageHandle handle) {
     // choice is V1 reflects unserialized message capabilities: we may or may
     // not need to support request IDs (which require at least V1), but we never
     // (for now, anyway) need to support associated interface handles (V2).
-    data_ = context->header();
-    data_size_ = sizeof(internal::MessageHeaderV1);
+    payload_buffer_ =
+        internal::Buffer(context->header(), sizeof(internal::MessageHeaderV1),
+                         sizeof(internal::MessageHeaderV1));
     transferable_ = true;
     serialized_ = false;
   }
@@ -253,10 +252,9 @@ Message& Message::operator=(Message&& other) = default;
 
 void Message::Reset() {
   handle_.reset();
+  payload_buffer_.Reset();
   handles_.clear();
   associated_endpoint_handles_.clear();
-  data_ = nullptr;
-  data_size_ = 0;
   transferable_ = false;
   serialized_ = false;
 }
@@ -284,7 +282,7 @@ uint32_t Message::payload_num_bytes() const {
     DCHECK_GE(payload_end, payload_begin);
     num_bytes = payload_end - payload_begin;
   }
-  DCHECK_LE(num_bytes, std::numeric_limits<uint32_t>::max());
+  DCHECK(base::IsValueInRangeForNumericType<uint32_t>(num_bytes));
   return static_cast<uint32_t>(num_bytes);
 }
 
@@ -305,6 +303,7 @@ ScopedMessageHandle Message::TakeMojoMessage() {
   // SerializeAssociatedEndpointHandles() must be called before this method.
   DCHECK(associated_endpoint_handles_.empty());
   DCHECK(transferable_);
+  payload_buffer_.Seal();
   auto handle = std::move(handle_);
   Reset();
   return handle;
@@ -323,16 +322,19 @@ void Message::SerializeAssociatedEndpointHandles(
   DCHECK_GE(version(), 2u);
   DCHECK(header_v2()->payload_interface_ids.is_null());
   DCHECK(payload_buffer_.is_valid());
+  DCHECK(handle_.is_valid());
 
   size_t size = associated_endpoint_handles_.size();
-  auto* data = internal::Array_Data<uint32_t>::New(size, &payload_buffer_);
-  header_v2()->payload_interface_ids.Set(data);
+
+  internal::Array_Data<uint32_t>::BufferWriter handle_writer;
+  handle_writer.Allocate(size, &payload_buffer_);
+  header_v2()->payload_interface_ids.Set(handle_writer.data());
 
   for (size_t i = 0; i < size; ++i) {
     ScopedInterfaceEndpointHandle& handle = associated_endpoint_handles_[i];
 
     DCHECK(handle.pending_association());
-    data->storage()[i] =
+    handle_writer->storage()[i] =
         group_controller->AssociateInterface(std::move(handle));
   }
   associated_endpoint_handles_.clear();

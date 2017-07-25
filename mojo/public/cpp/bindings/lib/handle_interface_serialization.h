@@ -26,11 +26,10 @@ struct Serializer<AssociatedInterfacePtrInfoDataView<Base>,
                   AssociatedInterfacePtrInfo<T>> {
   static_assert(std::is_base_of<Base, T>::value, "Interface type mismatch.");
 
-  static size_t PrepareToSerialize(AssociatedInterfacePtrInfo<T>& input,
-                                   SerializationContext* context) {
+  static void PrepareToSerialize(AssociatedInterfacePtrInfo<T>& input,
+                                 SerializationContext* context) {
     DCHECK(!input.handle().is_valid() || input.handle().pending_association());
     context->AddAssociatedInterfaceInfo(input.PassHandle(), input.version());
-    return 0;
   }
 
   static void Serialize(const AssociatedInterfacePtrInfo<T>& input,
@@ -59,11 +58,10 @@ struct Serializer<AssociatedInterfaceRequestDataView<Base>,
                   AssociatedInterfaceRequest<T>> {
   static_assert(std::is_base_of<Base, T>::value, "Interface type mismatch.");
 
-  static size_t PrepareToSerialize(AssociatedInterfaceRequest<T>& input,
-                                   SerializationContext* context) {
+  static void PrepareToSerialize(AssociatedInterfaceRequest<T>& input,
+                                 SerializationContext* context) {
     DCHECK(!input.handle().is_valid() || input.handle().pending_association());
     context->AddAssociatedEndpoint(input.PassHandle());
-    return 0;
   }
 
   static void Serialize(const AssociatedInterfaceRequest<T>& input,
@@ -89,11 +87,10 @@ template <typename Base, typename T>
 struct Serializer<InterfacePtrDataView<Base>, InterfacePtr<T>> {
   static_assert(std::is_base_of<Base, T>::value, "Interface type mismatch.");
 
-  static size_t PrepareToSerialize(InterfacePtr<T>& input,
-                                   SerializationContext* context) {
+  static void PrepareToSerialize(InterfacePtr<T>& input,
+                                 SerializationContext* context) {
     InterfacePtrInfo<T> info = input.PassInterface();
     context->AddInterfaceInfo(info.PassHandle(), info.version());
-    return 0;
   }
 
   static void Serialize(const InterfacePtr<T>& input,
@@ -117,10 +114,9 @@ template <typename Base, typename T>
 struct Serializer<InterfaceRequestDataView<Base>, InterfaceRequest<T>> {
   static_assert(std::is_base_of<Base, T>::value, "Interface type mismatch.");
 
-  static size_t PrepareToSerialize(InterfaceRequest<T>& input,
-                                   SerializationContext* context) {
+  static void PrepareToSerialize(InterfaceRequest<T>& input,
+                                 SerializationContext* context) {
     context->AddHandle(ScopedHandle::From(input.PassMessagePipe()));
-    return 0;
   }
 
   static void Serialize(const InterfaceRequest<T>& input,
@@ -141,10 +137,9 @@ struct Serializer<InterfaceRequestDataView<Base>, InterfaceRequest<T>> {
 
 template <typename T>
 struct Serializer<ScopedHandleBase<T>, ScopedHandleBase<T>> {
-  static size_t PrepareToSerialize(ScopedHandleBase<T>& input,
-                                   SerializationContext* context) {
+  static void PrepareToSerialize(ScopedHandleBase<T>& input,
+                                 SerializationContext* context) {
     context->AddHandle(ScopedHandle::From(std::move(input)));
-    return 0;
   }
 
   static void Serialize(const ScopedHandleBase<T>& input,

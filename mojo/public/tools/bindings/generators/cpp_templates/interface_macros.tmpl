@@ -59,12 +59,13 @@ const {{method.name}}Callback& callback
                                    params_struct, params_description,
                                    flags_text, message_object) %}
   mojo::internal::SerializationContext serialization_context;
-  {{struct_macros.get_serialized_size(params_struct, param_name_prefix,
-                                      "&serialization_context")}}
+  {{struct_macros.prepare_to_serialize(params_struct, param_name_prefix,
+                                       "&serialization_context")}}
   serialization_context.PrepareMessage(
-      {{message_name}},
-      {{flags_text}}, size, {{message_object}});
+      {{message_name}}, {{flags_text}}, {{message_object}});
   auto* buffer = ({{message_object}})->payload_buffer();
+  {{params_struct|get_qualified_name_for_kind(internal=True)}}::BufferWriter
+      params;
   {{struct_macros.serialize(params_struct, params_description,
                             param_name_prefix, "params", "buffer",
                             "&serialization_context")}}
@@ -165,15 +166,16 @@ class {{message_typename}}
 
  private:
   // mojo::internal::UnserializedMessageContext:
-  size_t PrepareToSerialize(
+  void PrepareToSerialize(
       mojo::internal::SerializationContext* serialization_context) override {
-    {{struct_macros.get_serialized_size(params_struct, "param_%s_",
-                                        "serialization_context")}}
-    return size;
+    {{struct_macros.prepare_to_serialize(params_struct, "param_%s_",
+                                         "serialization_context")}}
   }
 
   void Serialize(mojo::internal::SerializationContext* serialization_context,
                  mojo::internal::Buffer* buffer) override {
+    {{params_struct|get_qualified_name_for_kind(internal=True)}}::BufferWriter
+        params;
     {{struct_macros.serialize(params_struct, params_description, "param_%s_",
                               "params", "buffer", "serialization_context")}}
   }

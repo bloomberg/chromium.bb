@@ -115,14 +115,11 @@ bool ControlMessageHandler::Run(
 
   auto response_params_ptr = interface_control::RunResponseMessageParams::New();
   response_params_ptr->output = std::move(output);
-  size_t size =
-      PrepareToSerialize<interface_control::RunResponseMessageParamsDataView>(
-          response_params_ptr, &context_);
   Message response_message(interface_control::kRunMessageId,
-                           Message::kFlagIsResponse, size, 0);
+                           Message::kFlagIsResponse, 0, 0, nullptr);
   response_message.set_request_id(message->request_id());
-  interface_control::internal::RunResponseMessageParams_Data* response_params =
-      nullptr;
+  interface_control::internal::RunResponseMessageParams_Data::BufferWriter
+      response_params;
   Serialize<interface_control::RunResponseMessageParamsDataView>(
       response_params_ptr, response_message.payload_buffer(), &response_params,
       &context_);
