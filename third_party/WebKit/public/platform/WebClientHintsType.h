@@ -20,6 +20,19 @@ enum WebClientHintsType {
   kWebClientHintsTypeLast = kWebClientHintsTypeViewportWidth
 };
 
+// WebEnabledClientHints stores all the client hints along with whether the hint
+// is enabled or not.
+struct WebEnabledClientHints {
+  WebEnabledClientHints() {}
+
+  bool IsEnabled(WebClientHintsType type) const { return enabled_types_[type]; }
+  void SetIsEnabled(WebClientHintsType type, bool should_send) {
+    enabled_types_[type] = should_send;
+  }
+
+  bool enabled_types_[kWebClientHintsTypeLast + 1] = {};
+};
+
 }  // namespace blink
 
 #endif  // WebClientHintsType_h

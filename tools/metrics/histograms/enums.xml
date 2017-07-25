@@ -15940,6 +15940,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2062" label="PrepareModuleScript"/>
   <int value="2063" label="PresentationRequestStartSecureOrigin"/>
   <int value="2064" label="PresentationRequestStartInsecureOrigin"/>
+  <int value="2065" label="PersistentClientHintHeader"/>
 </enum>
 
 <enum name="FeedbackSource">

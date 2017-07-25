@@ -431,6 +431,8 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   if (IsDetached())
     return;
 
+  ParseAndPersistClientHints(response);
+
   if (response_type == ResourceResponseType::kFromMemoryCache) {
     // Note: probe::willSendRequest needs to precede before this probe method.
     probe::markResourceAsCached(GetFrame(), identifier);
@@ -1079,6 +1081,22 @@ bool FrameFetchContext::ShouldSendClientHint(
     const ClientHintsPreferences& hints_preferences) const {
   return GetClientHintsPreferences().ShouldSend(type) ||
          hints_preferences.ShouldSend(type);
+}
+
+void FrameFetchContext::ParseAndPersistClientHints(
+    const ResourceResponse& response) {
+  ClientHintsPreferences hints_preferences;
+  WebEnabledClientHints enabled_client_hints;
+  TimeDelta persist_duration;
+  FrameClientHintsPreferencesContext hints_context(GetFrame());
+  hints_preferences.UpdatePersistentHintsFromHeaders(
+      response, &hints_context, enabled_client_hints, &persist_duration);
+
+  if (persist_duration.InSeconds() <= 0)
+    return;
+
+  GetContentSettingsClient()->PersistClientHints(
+      enabled_client_hints, persist_duration, response.Url());
 }
 
 std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(

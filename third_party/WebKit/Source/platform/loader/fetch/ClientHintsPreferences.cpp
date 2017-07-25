@@ -4,8 +4,11 @@
 
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 
+#include "platform/HTTPNames.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/weborigin/KURL.h"
 
 namespace blink {
 
@@ -21,16 +24,20 @@ static_assert(kWebClientHintsTypeLast + 1 == arraysize(kHeaderMapping),
               "unhandled client hint type");
 
 void ParseAcceptChHeader(const String& header_value,
-                         bool enabled_types[kWebClientHintsTypeLast + 1]) {
+                         WebEnabledClientHints& enabled_hints) {
   CommaDelimitedHeaderSet accept_client_hints_header;
   ParseCommaDelimitedHeader(header_value, accept_client_hints_header);
 
-  for (size_t i = 0; i < kWebClientHintsTypeLast + 1; ++i)
-    enabled_types[i] = accept_client_hints_header.Contains(kHeaderMapping[i]);
+  for (size_t i = 0; i < kWebClientHintsTypeLast + 1; ++i) {
+    enabled_hints.SetIsEnabled(
+        static_cast<WebClientHintsType>(i),
+        accept_client_hints_header.Contains(kHeaderMapping[i]));
+  }
 
-  enabled_types[kWebClientHintsTypeDeviceMemory] =
-      enabled_types[kWebClientHintsTypeDeviceMemory] &&
-      RuntimeEnabledFeatures::DeviceMemoryHeaderEnabled();
+  enabled_hints.SetIsEnabled(
+      kWebClientHintsTypeDeviceMemory,
+      enabled_hints.IsEnabled(kWebClientHintsTypeDeviceMemory) &&
+          RuntimeEnabledFeatures::DeviceMemoryHeaderEnabled());
 }
 
 }  // namespace
@@ -39,8 +46,10 @@ ClientHintsPreferences::ClientHintsPreferences() {}
 
 void ClientHintsPreferences::UpdateFrom(
     const ClientHintsPreferences& preferences) {
-  for (size_t i = 0; i < kWebClientHintsTypeLast + 1; ++i)
-    enabled_types_[i] = preferences.enabled_types_[i];
+  for (size_t i = 0; i < kWebClientHintsTypeLast + 1; ++i) {
+    WebClientHintsType type = static_cast<WebClientHintsType>(i);
+    enabled_hints_.SetIsEnabled(type, preferences.ShouldSend(type));
+  }
 }
 
 void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
@@ -49,19 +58,66 @@ void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
   if (!RuntimeEnabledFeatures::ClientHintsEnabled() || header_value.IsEmpty())
     return;
 
-  bool new_enabled_types[kWebClientHintsTypeLast + 1] = {};
+  WebEnabledClientHints new_enabled_types;
 
   ParseAcceptChHeader(header_value, new_enabled_types);
 
-  for (size_t i = 0; i < kWebClientHintsTypeLast + 1; ++i)
-    enabled_types_[i] = enabled_types_[i] || new_enabled_types[i];
+  for (size_t i = 0; i < kWebClientHintsTypeLast + 1; ++i) {
+    WebClientHintsType type = static_cast<WebClientHintsType>(i);
+    enabled_hints_.SetIsEnabled(type, enabled_hints_.IsEnabled(type) ||
+                                          new_enabled_types.IsEnabled(type));
+  }
 
   if (context) {
     for (size_t i = 0; i < kWebClientHintsTypeLast + 1; ++i) {
-      if (enabled_types_[i])
-        context->CountClientHints(static_cast<WebClientHintsType>(i));
+      WebClientHintsType type = static_cast<WebClientHintsType>(i);
+      if (enabled_hints_.IsEnabled(type))
+        context->CountClientHints(type);
     }
   }
+}
+
+// static
+void ClientHintsPreferences::UpdatePersistentHintsFromHeaders(
+    const ResourceResponse& response,
+    Context* context,
+    WebEnabledClientHints& enabled_hints,
+    TimeDelta* persist_duration) {
+  *persist_duration = base::TimeDelta();
+
+  if (response.WasCached())
+    return;
+
+  String accept_ch_header_value =
+      response.HttpHeaderField(HTTPNames::Accept_CH);
+  String accept_ch_lifetime_header_value =
+      response.HttpHeaderField(HTTPNames::Accept_CH_Lifetime);
+
+  if (!RuntimeEnabledFeatures::ClientHintsEnabled() ||
+      !RuntimeEnabledFeatures::ClientHintsPersistentEnabled() ||
+      accept_ch_header_value.IsEmpty() ||
+      accept_ch_lifetime_header_value.IsEmpty()) {
+    return;
+  }
+
+  const KURL url = response.Url();
+
+  if (url.Protocol() != "https") {
+    // Only HTTPS domains are allowed to persist client hints.
+    return;
+  }
+
+  bool conversion_ok = false;
+  int64_t persist_duration_seconds =
+      accept_ch_lifetime_header_value.ToInt64Strict(&conversion_ok);
+  if (!conversion_ok || persist_duration_seconds <= 0)
+    return;
+
+  *persist_duration = TimeDelta::FromSeconds(persist_duration_seconds);
+  if (context)
+    context->CountPersistentClientHintHeaders();
+
+  ParseAcceptChHeader(accept_ch_header_value, enabled_hints);
 }
 
 }  // namespace blink
