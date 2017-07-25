@@ -9,6 +9,8 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/values.h"
+#include "chrome/test/chromedriver/session.h"
 
 namespace base {
 class DictionaryValue;
@@ -340,4 +342,13 @@ Status ExecuteTakeHeapSnapshot(Session* session,
                                std::unique_ptr<base::Value>* value,
                                Timeout* timeout);
 
+Status ExecutePerformActions(Session* session,
+                             WebView* web_view,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value,
+                             Timeout* timeout);
+
+Status ProcessInputActionSequence(Session* session,
+                                  const base::DictionaryValue* action_sequence,
+                                  std::unique_ptr<base::ListValue>* result);
 #endif  // CHROME_TEST_CHROMEDRIVER_WINDOW_COMMANDS_H_

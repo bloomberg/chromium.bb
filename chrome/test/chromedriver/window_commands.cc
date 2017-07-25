@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
@@ -36,7 +37,7 @@
 
 namespace {
 
-const std::string kUnreachableWebDataURL = "data:text/html,chromewebdata";
+static const char kUnreachableWebDataURL[] = "data:text/html,chromewebdata";
 
 // Defaults to 20 years into the future when adding a cookie.
 const double kDefaultCookieExpiryTime = 20*365*24*60*60;
@@ -728,6 +729,47 @@ Status ExecuteTouchPinch(Session* session,
   if (!params.GetDouble("scale", &scale_factor))
     return Status(kUnknownError, "'scale' must be an integer");
   return web_view->SynthesizePinchGesture(location.x, location.y, scale_factor);
+}
+
+Status ProcessInputActionSequence(Session* session,
+                                  const base::DictionaryValue* action_sequence,
+                                  std::unique_ptr<base::ListValue>* result) {
+  return Status(kOk);
+}
+
+Status ExecutePerformActions(Session* session,
+                             WebView* web_view,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value,
+                             Timeout* timeout) {
+  // TODO(kereliuk): check if the current browsing context is still open
+  // or if this error check is handled elsewhere
+
+  // TODO(kereliuk): handle prompts
+
+  // extract action sequence
+  const base::ListValue* actions;
+  if (!params.GetList("actions", &actions))
+    return Status(kInvalidArgument, "'actions' must be an array");
+
+  base::ListValue actions_by_tick;
+  std::unique_ptr<base::ListValue> input_source_actions(new base::ListValue());
+  for (size_t i = 0; i < actions->GetSize(); i++) {
+    // proccess input action sequence
+    const base::DictionaryValue* action_sequence;
+    if (!actions->GetDictionary(i, &action_sequence))
+      return Status(kInvalidArgument, "each argument must be a dictionary");
+
+    Status status = ProcessInputActionSequence(session, action_sequence,
+                                               &input_source_actions);
+    actions_by_tick.Append(std::move(input_source_actions));
+    if (status.IsError())
+      return Status(kInvalidArgument, status);
+  }
+
+  // TODO(kereliuk): dispatch actions
+
+  return Status(kOk);
 }
 
 Status ExecuteSendCommand(Session* session,
