@@ -20,6 +20,12 @@ class LocalFrame;
 class EditingTestBase : public ::testing::Test {
   USING_FAST_MALLOC(EditingTestBase);
 
+ public:
+  static ShadowRoot* CreateShadowRootForElementWithIDAndSetInnerHTML(
+      TreeScope&,
+      const char* host_element_id,
+      const char* shadow_root_content);
+
  protected:
   EditingTestBase();
   ~EditingTestBase() override;
@@ -32,11 +38,6 @@ class EditingTestBase : public ::testing::Test {
   DummyPageHolder& GetDummyPageHolder() const { return *dummy_page_holder_; }
   LocalFrame& GetFrame() const;
   FrameSelection& Selection() const;
-
-  static ShadowRoot* CreateShadowRootForElementWithIDAndSetInnerHTML(
-      TreeScope&,
-      const char* host_element_id,
-      const char* shadow_root_content);
 
   void SetBodyContent(const std::string&);
   ShadowRoot* SetShadowContent(const char* shadow_content,
