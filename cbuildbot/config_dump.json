@@ -20293,6 +20293,7 @@
         "boards": [
             "reef-uni"
         ],
+        "important": true,
         "models": [
             "pyro",
             "reef",
