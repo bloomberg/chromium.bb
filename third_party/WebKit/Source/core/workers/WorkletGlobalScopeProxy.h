@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class WorkletModuleResponsesMap;
 class WorkletPendingTasks;
 
 // Abstracts communication from (Main/Threaded)Worklet on the main thread to
@@ -26,6 +27,7 @@ class CORE_EXPORT WorkletGlobalScopeProxy : public GarbageCollectedMixin {
   // https://drafts.css-houdini.org/worklets/#fetch-and-invoke-a-worklet-script
   virtual void FetchAndInvokeScript(
       const KURL& module_url_record,
+      WorkletModuleResponsesMap*,
       WebURLRequest::FetchCredentialsMode,
       RefPtr<WebTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*) = 0;

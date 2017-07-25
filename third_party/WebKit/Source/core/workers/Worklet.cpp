@@ -33,7 +33,8 @@ WebURLRequest::FetchCredentialsMode ParseCredentialsOption(
 }  // namespace
 
 Worklet::Worklet(LocalFrame* frame)
-    : ContextLifecycleObserver(frame->GetDocument()) {
+    : ContextLifecycleObserver(frame->GetDocument()),
+      module_responses_map_(new WorkletModuleResponsesMap) {
   DCHECK(IsMainThread());
 }
 
@@ -122,7 +123,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
       TaskRunnerHelper::Get(TaskType::kUnspecedLoading, GetExecutionContext());
 
   // Step 8: "Let moduleResponsesMap be worklet's module responses map."
-  // TODO(nhiroki): Implement moduleResponsesMap (https://crbug.com/627945).
+  WorkletModuleResponsesMap* module_responses_map = module_responses_map_;
 
   // Step 9: "Let workletGlobalScopeType be worklet's worklet global scope
   // type."
@@ -151,13 +152,15 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
   // and promise."
   // TODO(nhiroki): Queue a task instead of executing this here.
   for (const auto& proxy : proxies_) {
-    proxy->FetchAndInvokeScript(module_url_record, credentials_mode,
-                                outside_settings_task_runner, pending_tasks);
+    proxy->FetchAndInvokeScript(module_url_record, module_responses_map,
+                                credentials_mode, outside_settings_task_runner,
+                                pending_tasks);
   }
 }
 
 DEFINE_TRACE(Worklet) {
   visitor->Trace(proxies_);
+  visitor->Trace(module_responses_map_);
   ContextLifecycleObserver::Trace(visitor);
 }
 

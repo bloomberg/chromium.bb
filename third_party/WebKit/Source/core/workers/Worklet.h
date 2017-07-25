@@ -9,6 +9,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/workers/WorkletGlobalScopeProxy.h"
+#include "core/workers/WorkletModuleResponsesMap.h"
 #include "core/workers/WorkletOptions.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
@@ -71,6 +72,12 @@ class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
   // WorkletGlobalScope."
   // https://drafts.css-houdini.org/worklets/#worklet-section
   HeapHashSet<Member<WorkletGlobalScopeProxy>> proxies_;
+
+  // "A Worklet has a module responses map. This is a ordered map of module URLs
+  // to values that are a fetch responses. The map's entries are ordered based
+  // on their insertion order. Access to this map should be thread-safe."
+  // https://drafts.css-houdini.org/worklets/#module-responses-map
+  Member<WorkletModuleResponsesMap> module_responses_map_;
 };
 
 }  // namespace blink

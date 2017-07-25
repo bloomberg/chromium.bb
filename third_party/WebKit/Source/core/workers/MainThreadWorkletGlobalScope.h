@@ -9,6 +9,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkletGlobalScope.h"
+#include "core/workers/WorkletModuleResponsesMapProxy.h"
 #include "core/workers/WorkletPendingTasks.h"
 #include "platform/WebTaskRunner.h"
 #include "public/platform/WebURLRequest.h"
@@ -17,6 +18,7 @@ namespace blink {
 
 class ConsoleMessage;
 class LocalFrame;
+class WorkletModuleResponsesMap;
 
 class CORE_EXPORT MainThreadWorkletGlobalScope
     : public WorkletGlobalScope,
@@ -43,11 +45,14 @@ class CORE_EXPORT MainThreadWorkletGlobalScope
   // the given WorkletPendingTasks via |outside_settings_task_runner| (i.e., the
   // parent frame's task runner).
   void FetchAndInvokeScript(const KURL& module_url_record,
+                            WorkletModuleResponsesMap*,
                             WebURLRequest::FetchCredentialsMode,
                             RefPtr<WebTaskRunner> outside_settings_task_runner,
                             WorkletPendingTasks*);
 
   void Terminate();
+
+  WorkletModuleResponsesMapProxy* GetModuleResponsesMapProxy() const;
 
   // ExecutionContext
   void AddConsoleMessage(ConsoleMessage*) final;
@@ -55,6 +60,9 @@ class CORE_EXPORT MainThreadWorkletGlobalScope
   CoreProbeSink* GetProbeSink() final;
 
   DECLARE_VIRTUAL_TRACE();
+
+ private:
+  Member<WorkletModuleResponsesMapProxy> module_responses_map_proxy_;
 };
 
 DEFINE_TYPE_CASTS(MainThreadWorkletGlobalScope,

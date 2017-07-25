@@ -126,6 +126,7 @@ DEFINE_TRACE(ThreadedWorkletMessagingProxy) {
 
 void ThreadedWorkletMessagingProxy::FetchAndInvokeScript(
     const KURL& module_url_record,
+    WorkletModuleResponsesMap*,
     WebURLRequest::FetchCredentialsMode credentials_mode,
     RefPtr<WebTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {

@@ -14,7 +14,7 @@
 
 namespace blink {
 
-// A ModuleScriptCreationParams carries parameters for creating ModuleScript.
+// ModuleScriptCreationParams contains parameters for creating ModuleScript.
 class ModuleScriptCreationParams {
  public:
   ModuleScriptCreationParams(
@@ -42,6 +42,18 @@ class ModuleScriptCreationParams {
   const String source_text_;
   const WebURLRequest::FetchCredentialsMode fetch_credentials_mode_;
   const AccessControlStatus access_control_status_;
+};
+
+// Creates a deep copy because |response_url_| and |source_text_| are not
+// cross-thread-transfer-safe.
+template <>
+struct CrossThreadCopier<ModuleScriptCreationParams> {
+  static ModuleScriptCreationParams Copy(
+      const ModuleScriptCreationParams& params) {
+    return ModuleScriptCreationParams(
+        params.GetResponseUrl().Copy(), params.GetSourceText().IsolatedCopy(),
+        params.GetFetchCredentialsMode(), params.GetAccessControlStatus());
+  }
 };
 
 }  // namespace blink
