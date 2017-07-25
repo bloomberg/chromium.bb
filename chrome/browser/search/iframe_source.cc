@@ -10,17 +10,13 @@
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "net/url_request/url_request.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
-IframeSource::IframeSource() {
-}
+IframeSource::IframeSource() = default;
 
-IframeSource::~IframeSource() {
-}
+IframeSource::~IframeSource() = default;
 
 std::string IframeSource::GetMimeType(
     const std::string& path_and_query) const {
@@ -44,11 +40,10 @@ bool IframeSource::ShouldServiceRequest(
     const GURL& url,
     content::ResourceContext* resource_context,
     int render_process_id) const {
-  const std::string& path = url.path();
   return InstantIOContext::ShouldServiceRequest(url, resource_context,
                                                 render_process_id) &&
          url.SchemeIs(chrome::kChromeSearchScheme) &&
-         url.host_piece() == GetSource() && ServesPath(path);
+         url.host_piece() == GetSource() && ServesPath(url.path());
 }
 
 bool IframeSource::ShouldDenyXFrameOptions() const {
@@ -60,12 +55,12 @@ bool IframeSource::GetOrigin(
     std::string* origin) const {
   if (wc_getter.is_null())
     return false;
-  content::WebContents* contents = wc_getter.Run();
+  const content::WebContents* contents = wc_getter.Run();
   if (!contents)
     return false;
   const content::NavigationEntry* entry =
       contents->GetController().GetVisibleEntry();
-  if (entry == NULL)
+  if (!entry)
     return false;
 
   *origin = entry->GetURL().GetOrigin().spec();
@@ -88,7 +83,7 @@ void IframeSource::SendJSWithOrigin(
     const content::URLDataSource::GotDataCallback& callback) {
   std::string origin;
   if (!GetOrigin(wc_getter, &origin)) {
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
 

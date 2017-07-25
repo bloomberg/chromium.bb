@@ -6,37 +6,35 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/search/local_files_ntp_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
-#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 namespace {
 
+// Single-iframe version, used by the local NTP and the Google remote NTP.
+const char kSingleHTMLPath[] = "/single.html";
+const char kSingleCSSPath[] = "/single.css";
+const char kSingleJSPath[] = "/single.js";
+
+// Multi-iframe version, used by third party remote NTPs.
 const char kTitleHTMLPath[] = "/title.html";
 const char kTitleCSSPath[] = "/title.css";
 const char kTitleJSPath[] = "/title.js";
 const char kThumbnailHTMLPath[] = "/thumbnail.html";
 const char kThumbnailCSSPath[] = "/thumbnail.css";
 const char kThumbnailJSPath[] = "/thumbnail.js";
-const char kSingleHTMLPath[] = "/single.html";
-const char kSingleCSSPath[] = "/single.css";
-const char kSingleJSPath[] = "/single.js";
 const char kUtilJSPath[] = "/util.js";
 const char kCommonCSSPath[] = "/common.css";
 
 }  // namespace
 
-MostVisitedIframeSource::MostVisitedIframeSource() {
-}
+MostVisitedIframeSource::MostVisitedIframeSource() = default;
 
-MostVisitedIframeSource::~MostVisitedIframeSource() {
-}
+MostVisitedIframeSource::~MostVisitedIframeSource() = default;
 
 std::string MostVisitedIframeSource::GetSource() const {
   return chrome::kChromeSearchMostVisitedHost;
@@ -67,7 +65,13 @@ void MostVisitedIframeSource::StartDataRequest(
   }
 #endif
 
-  if (path == kTitleHTMLPath) {
+  if (path == kSingleHTMLPath) {
+    SendResource(IDR_MOST_VISITED_SINGLE_HTML, callback);
+  } else if (path == kSingleCSSPath) {
+    SendResource(IDR_MOST_VISITED_SINGLE_CSS, callback);
+  } else if (path == kSingleJSPath) {
+    SendJSWithOrigin(IDR_MOST_VISITED_SINGLE_JS, wc_getter, callback);
+  } else if (path == kTitleHTMLPath) {
     SendResource(IDR_MOST_VISITED_TITLE_HTML, callback);
   } else if (path == kTitleCSSPath) {
     SendResource(IDR_MOST_VISITED_TITLE_CSS, callback);
@@ -79,25 +83,20 @@ void MostVisitedIframeSource::StartDataRequest(
     SendResource(IDR_MOST_VISITED_THUMBNAIL_CSS, callback);
   } else if (path == kThumbnailJSPath) {
     SendJSWithOrigin(IDR_MOST_VISITED_THUMBNAIL_JS, wc_getter, callback);
-  } else if (path == kSingleHTMLPath) {
-    SendResource(IDR_MOST_VISITED_SINGLE_HTML, callback);
-  } else if (path == kSingleCSSPath) {
-    SendResource(IDR_MOST_VISITED_SINGLE_CSS, callback);
-  } else if (path == kSingleJSPath) {
-    SendJSWithOrigin(IDR_MOST_VISITED_SINGLE_JS, wc_getter, callback);
   } else if (path == kUtilJSPath) {
     SendJSWithOrigin(IDR_MOST_VISITED_UTIL_JS, wc_getter, callback);
   } else if (path == kCommonCSSPath) {
     SendResource(IDR_MOST_VISITED_IFRAME_CSS, callback);
   } else {
-    callback.Run(NULL);
+    callback.Run(nullptr);
   }
 }
 
 bool MostVisitedIframeSource::ServesPath(const std::string& path) const {
-  return path == kTitleHTMLPath || path == kTitleCSSPath ||
-         path == kTitleJSPath || path == kThumbnailHTMLPath ||
-         path == kThumbnailCSSPath || path == kThumbnailJSPath ||
-         path == kSingleHTMLPath || path == kSingleCSSPath ||
-         path == kSingleJSPath || path == kUtilJSPath || path == kCommonCSSPath;
+  return path == kSingleHTMLPath || path == kSingleCSSPath ||
+         path == kSingleJSPath || path == kTitleHTMLPath ||
+         path == kTitleCSSPath || path == kTitleJSPath ||
+         path == kThumbnailHTMLPath || path == kThumbnailCSSPath ||
+         path == kThumbnailJSPath || path == kUtilJSPath ||
+         path == kCommonCSSPath;
 }
