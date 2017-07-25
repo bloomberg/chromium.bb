@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
+#include "chrome/browser/chromeos/input_method/textinput_test_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/keyboard/content/keyboard_constants.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -56,19 +59,27 @@ class KeyboardEndToEndTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(keyboard::switches::kEnableVirtualKeyboard);
   }
+
+  void SetUpOnMainThread() override {
+    GURL test_url =
+        ui_test_utils::GetTestUrl(base::FilePath("chromeos/virtual_keyboard"),
+                                  base::FilePath("inputs.html"));
+    ui_test_utils::NavigateToURL(browser(), test_url);
+    web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(web_contents);
+
+    EXPECT_FALSE(IsKeyboardVisible());
+  }
+
+ protected:
+  // Initialized in |SetUpOnMainThread|.
+  content::WebContents* web_contents;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(KeyboardEndToEndTest);
 };
 
 IN_PROC_BROWSER_TEST_F(KeyboardEndToEndTest, OpenIfFocusedOnClick) {
-  GURL test_url =
-      ui_test_utils::GetTestUrl(base::FilePath("chromeos/virtual_keyboard"),
-                                base::FilePath("inputs.html"));
-  ui_test_utils::NavigateToURL(browser(), test_url);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents);
-
-  EXPECT_FALSE(IsKeyboardVisible());
-
   ClickElementWithId(web_contents, "text");
 
   ASSERT_TRUE(keyboard::WaitUntilShown());
@@ -77,6 +88,32 @@ IN_PROC_BROWSER_TEST_F(KeyboardEndToEndTest, OpenIfFocusedOnClick) {
   ClickElementWithId(web_contents, "blur");
   ASSERT_TRUE(keyboard::WaitUntilHidden());
   EXPECT_FALSE(IsKeyboardVisible());
+}
+
+IN_PROC_BROWSER_TEST_F(KeyboardEndToEndTest, OpenOnlyOnSyncFocus) {
+  auto* controller = keyboard::KeyboardController::GetInstance();
+  EXPECT_FALSE(IsKeyboardVisible());
+
+  chromeos::TextInputTestHelper helper;
+
+  ClickElementWithId(web_contents, "blur");
+  helper.WaitForTextInputStateChanged(ui::TEXT_INPUT_TYPE_NONE);
+
+  ClickElementWithId(web_contents, "sync");
+  helper.WaitForTextInputStateChanged(ui::TEXT_INPUT_TYPE_TEXT);
+
+  EXPECT_EQ(controller->GetStateForTest(),
+            keyboard::KeyboardControllerState::LOADING_EXTENSION);
+
+  EXPECT_TRUE(keyboard::WaitUntilShown());
+
+  ClickElementWithId(web_contents, "blur");
+  ASSERT_TRUE(keyboard::WaitUntilHidden());
+
+  ClickElementWithId(web_contents, "async");
+  helper.WaitForTextInputStateChanged(ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(controller->GetStateForTest(),
+            keyboard::KeyboardControllerState::HIDDEN);
 }
 
 }  // namespace keyboard

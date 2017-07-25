@@ -2032,6 +2032,8 @@ test("browser_tests") {
 
     if (use_ash) {
       sources += [
+        "../browser/chromeos/input_method/textinput_test_helper.cc",
+        "../browser/chromeos/input_method/textinput_test_helper.h",
         "../browser/ui/ash/accelerator_commands_browsertest.cc",
         "../browser/ui/ash/accelerator_controller_browsertest.cc",
         "../browser/ui/ash/app_list/app_list_controller_ash_browsertest.cc",
