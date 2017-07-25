@@ -364,56 +364,90 @@ void PageHandler::CaptureScreenshot(
   }
 
   RenderWidgetHostImpl* widget_host = host_->GetRenderWidgetHost();
-  bool emulation_enabled = emulation_handler_->device_emulation_enabled();
-  gfx::Size original_view_size =
-      emulation_enabled ? widget_host->GetView()->GetViewBounds().size()
-                        : gfx::Size();
-  blink::WebDeviceEmulationParams original_params =
-      emulation_handler_->GetDeviceEmulationParams();
-
-  if (emulation_enabled && from_surface.fromMaybe(true)) {
-    blink::WebDeviceEmulationParams modified_params = original_params;
-    gfx::Size emulated_view_size = modified_params.view_size;
-    if (!modified_params.view_size.width)
-      emulated_view_size = original_view_size;
-
-    ScreenInfo screen_info;
-    widget_host->GetScreenInfo(&screen_info);
-    double dpfactor =
-        modified_params.device_scale_factor / screen_info.device_scale_factor;
-    modified_params.scale = dpfactor;
-    modified_params.view_size.width = emulated_view_size.width();
-    modified_params.view_size.height = emulated_view_size.height();
-    if (clip.isJust()) {
-      // TODO(pfeldman): Modifying here to save on the extra
-      // RenderWidgetScreenMetricsEmulator / DevToolsEmulator delegate back
-      // and forth.
-      modified_params.viewport_offset.x = clip.fromJust()->GetX() * dpfactor;
-      modified_params.viewport_offset.y = clip.fromJust()->GetY() * dpfactor;
-      modified_params.viewport_scale = clip.fromJust()->GetScale();
-    }
-
-    emulation_handler_->SetDeviceEmulationParams(modified_params);
-
-    if (clip.isJust()) {
-      double scale = dpfactor * clip.fromJust()->GetScale();
-      widget_host->GetView()->SetSize(
-          gfx::Size(gfx::ToRoundedInt(clip.fromJust()->GetWidth() * scale),
-                    gfx::ToRoundedInt(clip.fromJust()->GetHeight() * scale)));
-    } else {
-      widget_host->GetView()->SetSize(
-          gfx::ScaleToFlooredSize(emulated_view_size, dpfactor));
-    }
-  }
-
   std::string screenshot_format = format.fromMaybe(kPng);
   int screenshot_quality = quality.fromMaybe(kDefaultScreenshotQuality);
+
+  // We don't support clip/emulation when capturing from window, bail out.
+  if (!from_surface.fromMaybe(true)) {
+    widget_host->GetSnapshotFromBrowser(
+        base::Bind(&PageHandler::ScreenshotCaptured, weak_factory_.GetWeakPtr(),
+                   base::Passed(std::move(callback)), screenshot_format,
+                   screenshot_quality, gfx::Size(),
+                   blink::WebDeviceEmulationParams()),
+        false);
+    return;
+  }
+
+  // Welcome to the neural net of capturing screenshot while emulating device
+  // metrics!
+  bool emulation_enabled = emulation_handler_->device_emulation_enabled();
+  blink::WebDeviceEmulationParams original_params =
+      emulation_handler_->GetDeviceEmulationParams();
+  blink::WebDeviceEmulationParams modified_params = original_params;
+
+  // Capture original view size if we know we are going to destroy it. We use
+  // it in ScreenshotCaptured to restore.
+  gfx::Size original_view_size =
+      emulation_enabled || clip.isJust()
+          ? widget_host->GetView()->GetViewBounds().size()
+          : gfx::Size();
+  gfx::Size emulated_view_size = modified_params.view_size;
+
+  double dpfactor = 1;
+  if (emulation_enabled) {
+    ScreenInfo screen_info;
+    widget_host->GetScreenInfo(&screen_info);
+    // When emulating, emulate again and scale to make resulting image match
+    // physical DP resolution. If view_size is not overriden, use actual view
+    // size.
+    if (!modified_params.view_size.width)
+      emulated_view_size.set_width(original_view_size.width());
+    if (!modified_params.view_size.height)
+      emulated_view_size.set_height(original_view_size.height());
+
+    dpfactor =
+        modified_params.device_scale_factor / screen_info.device_scale_factor;
+    // When clip is specified, we scale viewport via clip, otherwise we use
+    // scale.
+    modified_params.scale = clip.isJust() ? 1 : dpfactor;
+    modified_params.view_size.width = emulated_view_size.width();
+    modified_params.view_size.height = emulated_view_size.height();
+  } else if (clip.isJust()) {
+    // When not emulating, still need to emulate the page size.
+    modified_params.view_size.width = original_view_size.width();
+    modified_params.view_size.height = original_view_size.height();
+    modified_params.screen_size.width = 0;
+    modified_params.screen_size.height = 0;
+    modified_params.device_scale_factor = 0;
+    modified_params.scale = 1;
+  }
+
+  // Set up viewport in renderer.
+  if (clip.isJust()) {
+    modified_params.viewport_offset.x = clip.fromJust()->GetX();
+    modified_params.viewport_offset.y = clip.fromJust()->GetY();
+    modified_params.viewport_scale = clip.fromJust()->GetScale() * dpfactor;
+  }
+
+  // We use WebDeviceEmulationParams to either emulate, set viewport or both.
+  emulation_handler_->SetDeviceEmulationParams(modified_params);
+
+  // Set view size for the screenshot right after emulating.
+  if (clip.isJust()) {
+    double scale = dpfactor * clip.fromJust()->GetScale();
+    widget_host->GetView()->SetSize(
+        gfx::Size(gfx::ToRoundedInt(clip.fromJust()->GetWidth() * scale),
+                  gfx::ToRoundedInt(clip.fromJust()->GetHeight() * scale)));
+  } else if (emulation_enabled) {
+    widget_host->GetView()->SetSize(
+        gfx::ScaleToFlooredSize(emulated_view_size, dpfactor));
+  }
 
   widget_host->GetSnapshotFromBrowser(
       base::Bind(&PageHandler::ScreenshotCaptured, weak_factory_.GetWeakPtr(),
                  base::Passed(std::move(callback)), screenshot_format,
                  screenshot_quality, original_view_size, original_params),
-      from_surface.fromMaybe(true));
+      true);
 }
 
 void PageHandler::PrintToPDF(Maybe<bool> landscape,

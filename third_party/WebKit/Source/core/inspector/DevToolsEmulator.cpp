@@ -263,7 +263,7 @@ void DevToolsEmulator::DisableDeviceEmulation() {
   DisableMobileEmulation();
   web_view_->SetCompositorDeviceScaleFactorOverride(0.f);
   web_view_->SetPageScaleFactor(1.f);
-  UpdateRootLayerTransform();
+  ResetViewport();
   // mainFrameImpl() could be null during cleanup or remote <-> local swap.
   if (web_view_->MainFrameImpl()) {
     if (Document* document =
@@ -401,6 +401,7 @@ void DevToolsEmulator::ResetViewport() {
       web_view_->GetPage()->GetVisualViewport().ContainerLayer();
   if (container_layer)
     container_layer->SetMasksToBounds(original_masking);
+
   UpdateRootLayerTransform();
 }
 

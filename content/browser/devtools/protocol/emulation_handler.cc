@@ -242,6 +242,7 @@ Response EmulationHandler::ClearDeviceMetricsOverride() {
     return Response::OK();
 
   device_emulation_enabled_ = false;
+  device_emulation_params_ = blink::WebDeviceEmulationParams();
   if (original_view_size_.width())
     widget_host->GetView()->SetSize(original_view_size_);
   original_view_size_ = gfx::Size();
@@ -269,6 +270,8 @@ blink::WebDeviceEmulationParams EmulationHandler::GetDeviceEmulationParams() {
 
 void EmulationHandler::SetDeviceEmulationParams(
     const blink::WebDeviceEmulationParams& params) {
+  bool enabled = params != blink::WebDeviceEmulationParams();
+  device_emulation_enabled_ = enabled;
   device_emulation_params_ = params;
   UpdateDeviceEmulationState();
 }
