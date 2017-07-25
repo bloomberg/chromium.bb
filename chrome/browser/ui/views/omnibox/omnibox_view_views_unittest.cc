@@ -71,7 +71,6 @@ class TestingOmniboxView : public OmniboxViewViews {
 
   // OmniboxViewViews:
   void EmphasizeURLComponents() override;
-  void OnFocus() override;
 
  private:
   // OmniboxViewViews:
@@ -125,12 +124,6 @@ void TestingOmniboxView::CheckUpdatePopupCallInfo(
 
 void TestingOmniboxView::EmphasizeURLComponents() {
   UpdateTextStyle(text(), model()->client()->GetSchemeClassifier());
-}
-
-void TestingOmniboxView::OnFocus() {
-  views::Textfield::OnFocus();
-  model()->OnSetFocus(false);
-  GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
 }
 
 void TestingOmniboxView::UpdatePopup() {

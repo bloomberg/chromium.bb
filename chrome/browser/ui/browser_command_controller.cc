@@ -82,11 +82,6 @@
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
-#include "chrome/browser/feature_engagement_tracker/new_tab/new_tab_tracker.h"
-#include "chrome/browser/feature_engagement_tracker/new_tab/new_tab_tracker_factory.h"
-#endif
-
 using content::NavigationEntry;
 using content::NavigationController;
 using content::WebContents;
@@ -355,13 +350,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       CloseWindow(browser_);
       break;
     case IDC_NEW_TAB:
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
-      // This is not in NewTab() to avoid tracking programmatic creation of new
-      // tabs by extensions.
-      feature_engagement_tracker::NewTabTrackerFactory::GetInstance()
-          ->GetForProfile(profile())
-          ->OnNewTabOpened();
-#endif
       NewTab(browser_);
       break;
     case IDC_CLOSE_TAB:
