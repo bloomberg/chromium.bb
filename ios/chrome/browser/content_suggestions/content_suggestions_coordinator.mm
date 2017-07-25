@@ -415,6 +415,8 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=new_tab";
 
 - (void)wasShown {
   self.headerController.isShowing = YES;
+  [self.suggestionsViewController.collectionView
+          .collectionViewLayout invalidateLayout];
 }
 
 - (void)wasHidden {
