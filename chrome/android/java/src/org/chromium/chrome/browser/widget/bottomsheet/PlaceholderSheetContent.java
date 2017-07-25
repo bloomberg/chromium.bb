@@ -78,4 +78,9 @@ class PlaceholderSheetContent implements BottomSheet.BottomSheetContent {
     public int getType() {
         return BottomSheetContentController.TYPE_PLACEHOLDER;
     }
+
+    @Override
+    public boolean applyDefaultTopPadding() {
+        return true;
+    }
 }

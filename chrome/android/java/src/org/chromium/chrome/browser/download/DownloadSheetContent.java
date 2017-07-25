@@ -12,6 +12,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
@@ -25,7 +26,7 @@ import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
  */
 public class DownloadSheetContent implements BottomSheetContent {
     private final View mContentView;
-    private final SelectableListToolbar mToolbarView;
+    private final SelectableListToolbar<DownloadHistoryItemWrapper> mToolbarView;
     private final ActivityStateListener mActivityStateListener;
     private DownloadManagerUi mDownloadManager;
 
@@ -110,5 +111,10 @@ public class DownloadSheetContent implements BottomSheetContent {
     @Override
     public int getType() {
         return BottomSheetContentController.TYPE_DOWNLOADS;
+    }
+
+    @Override
+    public boolean applyDefaultTopPadding() {
+        return true;
     }
 }

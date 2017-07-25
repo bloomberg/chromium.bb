@@ -13,13 +13,14 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
+import org.chromium.components.bookmarks.BookmarkId;
 
 /**
  * A {@link BottomSheetContent} holding a {@link BookmarkManager} for display in the BottomSheet.
  */
 public class BookmarkSheetContent implements BottomSheetContent {
     private final View mContentView;
-    private final SelectableListToolbar mToolbarView;
+    private final SelectableListToolbar<BookmarkId> mToolbarView;
     private BookmarkManager mBookmarkManager;
 
     /**
@@ -82,5 +83,10 @@ public class BookmarkSheetContent implements BottomSheetContent {
     @Override
     public int getType() {
         return BottomSheetContentController.TYPE_BOOKMARKS;
+    }
+
+    @Override
+    public boolean applyDefaultTopPadding() {
+        return true;
     }
 }
