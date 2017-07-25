@@ -47,6 +47,7 @@
 #include "cc/trees/layer_tree_mutator.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/switches.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/layer_tree_settings_factory.h"
 #include "content/public/common/content_client.h"
@@ -425,7 +426,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       cmd.HasSwitch(cc::switches::kEnableGpuBenchmarking));
   settings.enable_surface_synchronization =
       IsRunningInMash() ||
-      cmd.HasSwitch(cc::switches::kEnableSurfaceSynchronization);
+      cmd.HasSwitch(switches::kEnableSurfaceSynchronization);
 
   if (cmd.HasSwitch(cc::switches::kSlowDownRasterScaleFactor)) {
     const int kMinSlowDownScaleFactor = 0;
