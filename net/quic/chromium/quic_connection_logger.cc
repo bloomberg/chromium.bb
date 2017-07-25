@@ -415,6 +415,8 @@ void QuicConnectionLogger::OnPacketSent(
     QuicPacketNumber original_packet_number,
     TransmissionType transmission_type,
     QuicTime sent_time) {
+  if (!net_log_.IsCapturing())
+    return;
   if (original_packet_number == 0) {
     net_log_.AddEvent(
         NetLogEventType::QUIC_SESSION_PACKET_SENT,
