@@ -85,6 +85,7 @@ class WMHelper {
 
   static void SetInstance(WMHelper* helper);
   static WMHelper* GetInstance();
+  static bool HasInstance();
 
   void AddActivationObserver(ActivationObserver* observer);
   void RemoveActivationObserver(ActivationObserver* observer);
