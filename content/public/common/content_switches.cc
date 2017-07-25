@@ -544,6 +544,12 @@ const char kGpuRasterizationMSAASampleCount[] =
 // testing the Android overlay fullscreen functionality on other platforms.
 const char kForceOverlayFullscreenVideo[]   = "force-overlay-fullscreen-video";
 
+// This forces pages to be loaded as presentation receivers.  Useful for testing
+// behavior specific to presentation receivers.
+// Spec: https://www.w3.org/TR/presentation-api/#interface-presentationreceiver
+const char kForcePresentationReceiverForTesting[] =
+    "force-presentation-receiver-for-testing";
+
 // Force renderer accessibility to be on instead of enabling it on demand when
 // a screen reader is detected. The disable-renderer-accessibility switch
 // overrides this if present.
