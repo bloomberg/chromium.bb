@@ -30,6 +30,13 @@ class PPP_Pdf_Proxy : public InterfaceProxy {
                                      PP_PdfPrintPresetOptions_Dev* options,
                                      PP_Bool* result);
   void OnPluginMsgEnableAccessibility(PP_Instance instance);
+  void OnPluginMsgSetCaretPosition(PP_Instance instance,
+                                   const PP_FloatPoint& position);
+  void OnPluginMsgMoveRangeSelectionExtent(PP_Instance instance,
+                                           const PP_FloatPoint& extent);
+  void OnPluginMsgSetSelectionBounds(PP_Instance instance,
+                                     const PP_FloatPoint& base,
+                                     const PP_FloatPoint& extent);
 
   // When this proxy is in the plugin side, this value caches the interface
   // pointer so we don't have to retrieve it from the dispatcher each time.

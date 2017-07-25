@@ -41,11 +41,31 @@ void EnableAccessibility(PP_Instance instance) {
       new PpapiMsg_PPPPdf_EnableAccessibility(API_ID_PPP_PDF, instance));
 }
 
+void SetCaretPosition(PP_Instance instance, const PP_FloatPoint* position) {
+  HostDispatcher::GetForInstance(instance)->Send(
+      new PpapiMsg_PPPPdf_SetCaretPosition(API_ID_PPP_PDF, instance,
+                                           *position));
+}
+
+void MoveRangeSelectionExtent(PP_Instance instance,
+                              const PP_FloatPoint* extent) {
+  HostDispatcher::GetForInstance(instance)->Send(
+      new PpapiMsg_PPPPdf_MoveRangeSelectionExtent(API_ID_PPP_PDF, instance,
+                                                   *extent));
+}
+
+void SetSelectionBounds(PP_Instance instance,
+                        const PP_FloatPoint* base,
+                        const PP_FloatPoint* extent) {
+  HostDispatcher::GetForInstance(instance)->Send(
+      new PpapiMsg_PPPPdf_SetSelectionBounds(API_ID_PPP_PDF, instance, *base,
+                                             *extent));
+}
+
 const PPP_Pdf ppp_pdf_interface = {
-  &GetLinkAtPosition,
-  &Transform,
-  &GetPrintPresetOptionsFromDocument,
-  &EnableAccessibility,
+    &GetLinkAtPosition,   &Transform,        &GetPrintPresetOptionsFromDocument,
+    &EnableAccessibility, &SetCaretPosition, &MoveRangeSelectionExtent,
+    &SetSelectionBounds,
 };
 #else
 // The NaCl plugin doesn't need the host side interface - stub it out.
@@ -82,6 +102,12 @@ bool PPP_Pdf_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnPluginMsgPrintPresetOptions)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_EnableAccessibility,
                         OnPluginMsgEnableAccessibility)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_SetCaretPosition,
+                        OnPluginMsgSetCaretPosition)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_MoveRangeSelectionExtent,
+                        OnPluginMsgMoveRangeSelectionExtent)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_SetSelectionBounds,
+                        OnPluginMsgSetSelectionBounds)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -108,6 +134,26 @@ void PPP_Pdf_Proxy::OnPluginMsgPrintPresetOptions(
 void PPP_Pdf_Proxy::OnPluginMsgEnableAccessibility(PP_Instance instance) {
   if (ppp_pdf_)
     CallWhileUnlocked(ppp_pdf_->EnableAccessibility, instance);
+}
+
+void PPP_Pdf_Proxy::OnPluginMsgSetCaretPosition(PP_Instance instance,
+                                                const PP_FloatPoint& position) {
+  if (ppp_pdf_)
+    CallWhileUnlocked(ppp_pdf_->SetCaretPosition, instance, &position);
+}
+
+void PPP_Pdf_Proxy::OnPluginMsgMoveRangeSelectionExtent(
+    PP_Instance instance,
+    const PP_FloatPoint& extent) {
+  if (ppp_pdf_)
+    CallWhileUnlocked(ppp_pdf_->MoveRangeSelectionExtent, instance, &extent);
+}
+
+void PPP_Pdf_Proxy::OnPluginMsgSetSelectionBounds(PP_Instance instance,
+                                                  const PP_FloatPoint& base,
+                                                  const PP_FloatPoint& extent) {
+  if (ppp_pdf_)
+    CallWhileUnlocked(ppp_pdf_->SetSelectionBounds, instance, &base, &extent);
 }
 
 }  // namespace proxy

@@ -1,6 +1,7 @@
 include_rules = [
   "+components/strings/grit/components_strings.h",
   "+gin",
+  "+mojo/public/cpp/bindings",
   "+skia/ext",
   "+ui/accessibility",
   "+ui/gfx",

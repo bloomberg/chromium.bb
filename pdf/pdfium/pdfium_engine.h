@@ -106,6 +106,10 @@ class PDFiumEngine : public PDFEngine,
 #endif
   bool IsProgressiveLoad() override;
   std::string GetMetadata(const std::string& key) override;
+  void SetCaretPosition(const pp::Point& position) override;
+  void MoveRangeSelectionExtent(const pp::Point& extent) override;
+  void SetSelectionBounds(const pp::Point& base,
+                          const pp::Point& extent) override;
 
   // DocumentLoader::Client implementation.
   pp::Instance* GetPluginInstance() override;
@@ -300,6 +304,8 @@ class PDFiumEngine : public PDFEngine,
   bool OnKeyDown(const pp::KeyboardInputEvent& event);
   bool OnKeyUp(const pp::KeyboardInputEvent& event);
   bool OnChar(const pp::KeyboardInputEvent& event);
+
+  bool ExtendSelection(int page_index, int char_index);
 
   FPDF_DOCUMENT CreateSinglePageRasterPdf(
       double source_page_width,
@@ -763,6 +769,11 @@ class PDFiumEngine : public PDFEngine,
   // Set to true if the user is being prompted for their password. Will be set
   // to false after the user finishes getting their password.
   bool getting_password_;
+
+  enum class RangeSelectionDirection { Left, Right };
+  RangeSelectionDirection range_selection_direction_;
+
+  pp::Point range_selection_base_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFiumEngine);
 };

@@ -190,6 +190,9 @@ class PDFEngine {
 
     // Sets selection status.
     virtual void IsSelectingChanged(bool is_selecting) {}
+
+    virtual void SelectionChanged(const pp::Rect& left, const pp::Rect& right) {
+    }
   };
 
   // Factory method to create an instance of the PDF Engine.
@@ -305,6 +308,11 @@ class PDFEngine {
   virtual bool IsProgressiveLoad() = 0;
 
   virtual std::string GetMetadata(const std::string& key) = 0;
+
+  virtual void SetCaretPosition(const pp::Point& position) = 0;
+  virtual void MoveRangeSelectionExtent(const pp::Point& extent) = 0;
+  virtual void SetSelectionBounds(const pp::Point& base,
+                                  const pp::Point& extent) = 0;
 };
 
 // Interface for exports that wrap the PDF engine.
