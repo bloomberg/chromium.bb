@@ -14,3 +14,4 @@ Local Modifications:
 - Hardcoded ShadowProvider service config files. These files are normally
   generated at compile time but it is difficult to use the generated file
   with GN.
+- Changed calls of TempDirectory.create to TempDirectory.createDeleteOnExit.
