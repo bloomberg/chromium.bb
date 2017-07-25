@@ -430,10 +430,6 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
     GaiaCookieManagerServiceFactory::GetInstance()
         ->GetForProfile(profile())
         ->Init();
-
-    // Ensure that the token service is initialized, as the Identity Service
-    // delays responding to requests until this initialization is complete.
-    token_service_->LoadCredentials("dummy_primary_account_id");
   }
 
  protected:
