@@ -2515,12 +2515,4 @@ void AXLayoutObject::AddRemoteSVGChildren() {
   }
 }
 
-bool AXLayoutObject::ElementAttributeValue(
-    const QualifiedName& attribute_name) const {
-  if (!layout_object_)
-    return false;
-
-  return EqualIgnoringASCIICase(GetAttribute(attribute_name), "true");
-}
-
 }  // namespace blink
