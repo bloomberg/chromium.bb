@@ -53,6 +53,7 @@ constexpr int kActionsRowHorizontalSpacing = 8;
 constexpr gfx::Insets kImageContainerPadding(0, 12, 12, 12);
 constexpr gfx::Insets kActionButtonPadding(0, 12, 0, 12);
 constexpr gfx::Size kActionButtonMinSize(88, 32);
+constexpr gfx::Size kIconViewSize(30, 30);
 
 // Foreground of small icon image.
 constexpr SkColor kSmallImageBackgroundColor = SK_ColorWHITE;
@@ -76,6 +77,10 @@ constexpr int kMaxLinesForExpandedMessageView = 4;
 constexpr int kCompactTitleMessageViewSpacing = 12;
 
 constexpr int kProgressBarHeight = 4;
+
+constexpr int kMessageViewWidth =
+    message_center::kNotificationWidth - kIconViewSize.width() -
+    kContentRowPadding.left() - kContentRowPadding.right();
 
 const gfx::ImageSkia CreateSolidColorImage(int width,
                                            int height,
@@ -549,6 +554,15 @@ void NotificationViewMD::CreateOrUpdateMessageView(
     message_view_->SetLineLimit(kMaxLinesForMessageView);
     message_view_->SetColors(message_center::kDimTextColor,
                              kContextTextBackgroundColor);
+
+    // TODO(tetsui): Workaround https://crbug.com/682266 by explicitly setting
+    // the width.
+    // Ideally, we should fix the original bug, but it seems there's no obvious
+    // solution for the bug according to https://crbug.com/678337#c7, we should
+    // ensure that the change won't break any of the users of BoxLayout class.
+    DCHECK(right_content_);
+    message_view_->SizeToFit(kMessageViewWidth);
+
     left_content_->AddChildView(message_view_);
   } else {
     message_view_->SetText(text);
@@ -634,9 +648,8 @@ void NotificationViewMD::CreateOrUpdateIconView(
     return;
   }
 
-  gfx::Size image_view_size(30, 30);
   if (!icon_view_) {
-    icon_view_ = new ProportionalImageView(image_view_size);
+    icon_view_ = new ProportionalImageView(kIconViewSize);
     right_content_->AddChildView(icon_view_);
   }
 
