@@ -285,11 +285,9 @@ void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride, int row,
 
 #if CONFIG_CHROMA_SUB8X8
   if (bsize < BLOCK_8X8) {
-#if CONFIG_DEBUG
     // Transform cannot be smaller than
     assert(tx_width >= 4);
     assert(tx_height >= 4);
-#endif
 
     const int bw = block_size_wide[bsize];
     const int bh = block_size_high[bsize];
@@ -316,6 +314,8 @@ void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride, int row,
       col++;
     }
   }
+#else
+  (void)bsize;
 #endif
 
   // Invalidate current parameters

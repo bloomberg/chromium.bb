@@ -660,7 +660,7 @@ static void predict_and_reconstruct_intra_block(
 #if CONFIG_CFL
   if (plane == AOM_PLANE_Y) {
     struct macroblockd_plane *const pd = &xd->plane[plane];
-#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+#if CONFIG_CHROMA_SUB8X8
     const BLOCK_SIZE plane_bsize =
         AOMMAX(BLOCK_4X4, get_plane_block_size(mbmi->sb_type, pd));
 #else
