@@ -16,13 +16,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "components/storage_monitor/mock_removable_storage_observer.h"
 #include "components/storage_monitor/removable_device_constants.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/test_media_transfer_protocol_manager_chromeos.h"
 #include "components/storage_monitor/test_storage_monitor.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,7 +30,6 @@ namespace storage_monitor {
 
 namespace {
 
-using content::BrowserThread;
 using chromeos::disks::DiskMountManager;
 using testing::_;
 
@@ -127,9 +126,6 @@ class StorageMonitorCrosTest : public testing::Test {
   // path on failure.
   base::FilePath CreateMountPoint(const std::string& dir, bool with_dcim_dir);
 
-  static void PostQuitToUIThread();
-  static void WaitForFileThread();
-
   MockRemovableStorageObserver& observer() {
     return *mock_storage_observer_;
   }
@@ -142,6 +138,8 @@ class StorageMonitorCrosTest : public testing::Test {
   StorageMonitor::EjectStatus status_;
 
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   content::TestBrowserThreadBundle thread_bundle_;
 
   // Temporary directory for created test data.
@@ -157,14 +155,13 @@ StorageMonitorCrosTest::StorageMonitorCrosTest()
     : monitor_(NULL),
       disk_mount_manager_mock_(NULL),
       status_(StorageMonitor::EJECT_FAILURE),
-      thread_bundle_(content::TestBrowserThreadBundle::REAL_FILE_THREAD) {
-}
+      scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
 StorageMonitorCrosTest::~StorageMonitorCrosTest() {
 }
 
 void StorageMonitorCrosTest::SetUp() {
-  ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
   disk_mount_manager_mock_ = new chromeos::disks::MockDiskMountManager();
   DiskMountManager::InitializeForTesting(disk_mount_manager_mock_);
@@ -188,7 +185,7 @@ void StorageMonitorCrosTest::TearDown() {
 
   disk_mount_manager_mock_ = NULL;
   DiskMountManager::Shutdown();
-  WaitForFileThread();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 void StorageMonitorCrosTest::MountDevice(
@@ -215,7 +212,7 @@ void StorageMonitorCrosTest::MountDevice(
         true /* on_removable_device */);
   }
   monitor_->OnMountEvent(DiskMountManager::MOUNTING, error_code, mount_info);
-  WaitForFileThread();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 void StorageMonitorCrosTest::UnmountDevice(
@@ -224,7 +221,7 @@ void StorageMonitorCrosTest::UnmountDevice(
   monitor_->OnMountEvent(DiskMountManager::UNMOUNTING, error_code, mount_info);
   if (error_code == chromeos::MOUNT_ERROR_NONE)
     disk_mount_manager_mock_->RemoveDiskEntryForMountDevice(mount_info);
-  WaitForFileThread();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 uint64_t StorageMonitorCrosTest::GetDeviceStorageSize(
@@ -246,19 +243,6 @@ base::FilePath StorageMonitorCrosTest::CreateMountPoint(
   if (!base::CreateDirectory(path))
     return base::FilePath();
   return return_path;
-}
-
-// static
-void StorageMonitorCrosTest::PostQuitToUIThread() {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::MessageLoop::QuitWhenIdleClosure());
-}
-
-// static
-void StorageMonitorCrosTest::WaitForFileThread() {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&PostQuitToUIThread));
-  base::RunLoop().Run();
 }
 
 void StorageMonitorCrosTest::EjectNotify(StorageMonitor::EjectStatus status) {
