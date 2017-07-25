@@ -524,6 +524,18 @@ TEST_F(DocumentMarkerListEditorTest,
   EXPECT_EQ(10u, markers_intersecting_range[0]->EndOffset());
 }
 
+TEST_F(DocumentMarkerListEditorTest, MarkersIntersectingRange_CollapsedRange) {
+  DocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(5, 10));
+
+  DocumentMarkerListEditor::MarkerList markers_intersecting_range =
+      DocumentMarkerListEditor::MarkersIntersectingRange(markers, 7, 7);
+  EXPECT_EQ(1u, markers_intersecting_range.size());
+
+  EXPECT_EQ(5u, markers_intersecting_range[0]->StartOffset());
+  EXPECT_EQ(10u, markers_intersecting_range[0]->EndOffset());
+}
+
 TEST_F(DocumentMarkerListEditorTest, MarkersIntersectingRange_MultipleMarkers) {
   DocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 5));
