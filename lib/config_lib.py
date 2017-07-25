@@ -488,9 +488,11 @@ class HWTestConfig(object):
     self.minimum_duts = 0
 
     # Only reduce priority if it's lower.
-    new_priority = constants.HWTEST_DEFAULT_PRIORITY
-    if (constants.HWTEST_PRIORITIES_MAP[self.priority] >
-        constants.HWTEST_PRIORITIES_MAP[new_priority]):
+    new_priority = constants.HWTEST_PRIORITIES_MAP[
+        constants.HWTEST_DEFAULT_PRIORITY]
+    if isinstance(self.priority, (int, long)):
+      self.priority = min(self.priority, new_priority)
+    elif constants.HWTEST_PRIORITIES_MAP[self.priority] > new_priority:
       self.priority = new_priority
 
   @property

@@ -880,9 +880,12 @@ class CBuildBotTest(ChromeosConfigTestBase):
     """Verify that hw test priority is valid."""
     for build_name, config in self.site_config.iteritems():
       for test_config in config['hw_tests']:
-        self.assertTrue(
-            test_config.priority in constants.HWTEST_VALID_PRIORITIES,
-            '%s has an invalid hwtest priority.' % build_name)
+        if isinstance(test_config.priority, (int, long)):
+          self.assertTrue(0 <= test_config.priority <= 100)
+        else:
+          self.assertTrue(
+              test_config.priority in constants.HWTEST_VALID_PRIORITIES,
+              '%s has an invalid hwtest priority.' % build_name)
 
   def testAllBoardsExist(self):
     """Verifies that all config boards are in _all_boards."""
