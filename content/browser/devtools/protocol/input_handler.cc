@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/protocol/native_input_event_builder.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
@@ -300,7 +301,7 @@ void InputHandler::DispatchKeyEvent(
                         auto_repeat.fromMaybe(false),
                         is_keypad.fromMaybe(false)),
       GetEventTimeTicks(std::move(timestamp)));
-  event.skip_in_browser = true;
+
   if (!SetKeyboardEventText(event.text, std::move(text))) {
     callback->sendFailure(Response::InvalidParams("Invalid 'text' parameter"));
     return;
@@ -333,6 +334,13 @@ void InputHandler::DispatchKeyEvent(
     callback->sendFailure(Response::InternalError());
     return;
   }
+
+  // We do not pass events to browser if there is no native key event
+  // due to Mac needing the actual os_event.
+  if (event.native_key_code)
+    event.os_event = NativeInputEventBuilder::CreateEvent(event);
+  else
+    event.skip_in_browser = true;
 
   host_->GetRenderWidgetHost()->Focus();
   input_queued_ = false;
