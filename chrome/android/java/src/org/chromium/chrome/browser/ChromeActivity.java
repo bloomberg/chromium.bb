@@ -1982,21 +1982,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             String packageName = WebApkValidator.queryWebApkPackage(context, currentTab.getUrl());
             Intent launchIntent = WebApkNavigationClient.createLaunchWebApkIntent(
                     packageName, currentTab.getUrl(), false);
-            boolean launchFailed = false;
-            if (launchIntent != null) {
-                try {
-                    context.startActivity(launchIntent);
-                    RecordUserAction.record("MobileMenuOpenWebApk");
-                    WebApkUma.recordWebApkOpenAttempt(WebApkUma.WEBAPK_OPEN_LAUNCH_SUCCESS);
-                } catch (ActivityNotFoundException e) {
-                    WebApkUma.recordWebApkOpenAttempt(WebApkUma.WEBAPK_OPEN_ACTIVITY_NOT_FOUND);
-                    launchFailed = true;
-                }
-            } else {
-                WebApkUma.recordWebApkOpenAttempt(WebApkUma.WEBAPK_OPEN_NO_LAUNCH_INTENT);
-                launchFailed = true;
-            }
-            if (launchFailed) {
+            try {
+                context.startActivity(launchIntent);
+                RecordUserAction.record("MobileMenuOpenWebApk");
+                WebApkUma.recordWebApkOpenAttempt(WebApkUma.WEBAPK_OPEN_LAUNCH_SUCCESS);
+            } catch (ActivityNotFoundException e) {
+                WebApkUma.recordWebApkOpenAttempt(WebApkUma.WEBAPK_OPEN_ACTIVITY_NOT_FOUND);
                 Toast.makeText(context, R.string.open_webapk_failed, Toast.LENGTH_SHORT).show();
             }
         } else if (id == R.id.request_desktop_site_id || id == R.id.request_desktop_site_check_id) {

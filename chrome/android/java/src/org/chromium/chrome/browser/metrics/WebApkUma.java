@@ -52,7 +52,7 @@ public class WebApkUma {
 
     private static final int WEBAPK_OPEN_MAX = 3;
     public static final int WEBAPK_OPEN_LAUNCH_SUCCESS = 0;
-    public static final int WEBAPK_OPEN_NO_LAUNCH_INTENT = 1;
+    // Obsolete: WEBAPK_OPEN_NO_LAUNCH_INTENT = 1;
     public static final int WEBAPK_OPEN_ACTIVITY_NOT_FOUND = 2;
 
     /**

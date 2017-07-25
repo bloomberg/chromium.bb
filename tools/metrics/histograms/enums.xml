@@ -38953,7 +38953,7 @@ from previous Chrome versions.
 
 <enum name="WebApkOpenResult">
   <int value="0" label="Open an installed WebAPK successfully"/>
-  <int value="1" label="Launch intent for WebAPK is null"/>
+  <int value="1" label="(Obsolete) Launch intent for WebAPK is null"/>
   <int value="2" label="Activity for WebAPK not found."/>
 </enum>
 
