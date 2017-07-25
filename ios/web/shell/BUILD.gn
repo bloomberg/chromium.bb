@@ -4,6 +4,7 @@
 
 import("//build/config/ios/rules.gni")
 import("//ios/build/config.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
@@ -84,6 +85,12 @@ repack("packed_resources") {
   copy_data_to_bundle = true
 }
 
+mojom("shell_interfaces") {
+  sources = [
+    "web_usage_controller.mojom",
+  ]
+}
+
 source_set("shell") {
   sources = [
     "app_delegate.h",
@@ -108,6 +115,7 @@ source_set("shell") {
   deps = [
     ":packed_resources",
     ":shell_bundle_data",
+    ":shell_interfaces",
     "//base",
     "//ios/net",
     "//ios/web",
@@ -115,6 +123,7 @@ source_set("shell") {
     "//ios/web/public/app",
     "//net",
     "//net:extras",
+    "//services/service_manager/public/cpp",
     "//services/test/echo:lib",
     "//services/test/echo/public/interfaces",
     "//services/test/user_id:lib",

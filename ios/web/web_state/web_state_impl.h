@@ -208,6 +208,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void RemoveScriptCommandCallback(const std::string& command_prefix) override;
   id<CRWWebViewProxy> GetWebViewProxy() const override;
   WebStateInterfaceProvider* GetWebStateInterfaceProvider() override;
+  void BindInterfaceRequestFromMainFrame(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle interface_pipe) override;
   bool HasOpener() const override;
   void TakeSnapshot(const SnapshotCallback& callback,
                     CGSize target_size) const override;

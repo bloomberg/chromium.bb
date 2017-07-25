@@ -15,6 +15,8 @@
 #include "base/supports_user_data.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/size.h"
@@ -247,6 +249,24 @@ class WebState : public base::SupportsUserData {
 
   // Returns Mojo interface registry for this WebState.
   virtual WebStateInterfaceProvider* GetWebStateInterfaceProvider() = 0;
+
+ protected:
+  // Binds |interface_pipe| to an implementation of |interface_name| that is
+  // scoped to this WebState instance (if that such an implementation is
+  // present). Embedders of //ios/web can inject interface implementations by
+  // overriding WebClient::BindInterfaceRequestFromMainFrame().
+  // NOTE: Callers should use the more-friendly wrapper below.
+  virtual void BindInterfaceRequestFromMainFrame(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle interface_pipe) {}
+
+ public:
+  template <class Interface>
+  void BindInterfaceRequestFromMainFrame(
+      mojo::InterfaceRequest<Interface> request) {
+    BindInterfaceRequestFromMainFrame(Interface::Name_,
+                                      std::move(request.PassMessagePipe()));
+  }
 
   // Returns whether this WebState was created with an opener.  See
   // CreateParams::created_with_opener for more details.

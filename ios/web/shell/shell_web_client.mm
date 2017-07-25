@@ -10,8 +10,11 @@
 #include "base/memory/ptr_util.h"
 #include "ios/web/public/service_names.mojom.h"
 #include "ios/web/public/user_agent.h"
+#include "ios/web/public/web_state/web_state.h"
 #include "ios/web/shell/grit/shell_resources.h"
 #include "ios/web/shell/shell_web_main_parts.h"
+#import "ios/web/shell/web_usage_controller.mojom.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/test/echo/echo_service.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -20,6 +23,33 @@
 #endif
 
 namespace web {
+
+namespace {
+
+// Implementation of mojom::WebUsageController that exposes the ability
+// to set whether a WebState has web usage enabled via Mojo.
+class WebUsageController : public mojom::WebUsageController {
+ public:
+  explicit WebUsageController(WebState* web_state) : web_state_(web_state) {}
+  ~WebUsageController() override {}
+
+  static void Create(mojo::InterfaceRequest<mojom::WebUsageController> request,
+                     WebState* web_state) {
+    mojo::MakeStrongBinding(base::MakeUnique<WebUsageController>(web_state),
+                            std::move(request));
+  }
+
+ private:
+  void SetWebUsageEnabled(bool enabled,
+                          SetWebUsageEnabledCallback callback) override {
+    web_state_->SetWebUsageEnabled(enabled);
+    std::move(callback).Run();
+  }
+
+  WebState* web_state_;
+};
+
+}  // namespace
 
 ShellWebClient::ShellWebClient() : web_main_parts_(nullptr) {}
 
@@ -82,6 +112,21 @@ std::unique_ptr<base::Value> ShellWebClient::GetServiceManifestOverlay(
   return base::JSONReader::Read(manifest_contents);
 }
 
+void ShellWebClient::BindInterfaceRequestFromMainFrame(
+    WebState* web_state,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  if (!main_frame_interfaces_.get() &&
+      !main_frame_interfaces_parameterized_.get()) {
+    InitMainFrameInterfaces();
+  }
+
+  if (!main_frame_interfaces_parameterized_->TryBindInterface(
+          interface_name, &interface_pipe, web_state)) {
+    main_frame_interfaces_->TryBindInterface(interface_name, &interface_pipe);
+  }
+}
+
 void ShellWebClient::AllowCertificateError(
     WebState*,
     int /*cert_error*/,
@@ -111,6 +156,14 @@ void ShellWebClient::AllowCertificateError(
       presentViewController:alert
                    animated:YES
                  completion:nil];
+}
+
+void ShellWebClient::InitMainFrameInterfaces() {
+  main_frame_interfaces_ = base::MakeUnique<service_manager::BinderRegistry>();
+  main_frame_interfaces_parameterized_ =
+      base::MakeUnique<service_manager::BinderRegistryWithArgs<WebState*>>();
+  main_frame_interfaces_parameterized_->AddInterface(
+      base::Bind(WebUsageController::Create));
 }
 
 }  // namespace web
