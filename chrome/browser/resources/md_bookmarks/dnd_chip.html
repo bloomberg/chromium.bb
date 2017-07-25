@@ -10,7 +10,7 @@
     <style include="shared-style">
       :host {
         --chip-height: 40px;
-        --chip-padding-x: 20px;
+        --chip-padding-x: 8px;
         --chip-width: 172px;
 
         left: 0;
@@ -29,8 +29,8 @@
       .chip-container {
         background-color: var(--interactive-color);
         border-radius: calc(var(--chip-height) / 2);
-        box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12),
-                    0 8px 8px 0 rgba(0, 0, 0, 0.24);
+        box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.12),
+                    0 4px 10px 0 rgba(0, 0, 0, 0.24);
         height: var(--chip-height);
         left: 0;
         padding: 0 var(--chip-padding-x);
@@ -39,13 +39,9 @@
         width: calc(var(--chip-width) - var(--chip-padding-x) * 2);
       }
 
-      #secondary {
-        left: 5px;
-        top: 5px;
-      }
-
       #title {
-        -webkit-margin-start: 20px;
+        -webkit-margin-end: 8px;
+        -webkit-margin-start: 12px;
         color: white;
         flex: 1;
         font-weight: 500;
@@ -88,9 +84,7 @@
         right: auto;
       }
     </style>
-    <div id="secondary" class="chip-container" hidden$="[[!isMultiItem_]]">
-    </div>
-    <div id="primary" class="chip-container centered">
+    <div class="chip-container centered">
       <div id="icon-wrapper" class="centered">
         <div id="icon"></div>
       </div>
