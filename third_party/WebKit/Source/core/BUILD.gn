@@ -616,6 +616,8 @@ code_generator("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIFont.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIFontVariant.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIListStyle.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIGridColumn.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIGridRow.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIMargin.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIOutline.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIOverflow.h",
