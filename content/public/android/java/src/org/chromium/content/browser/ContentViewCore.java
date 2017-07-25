@@ -1854,15 +1854,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         }
     }
 
-    /**
-     * Return the current scale of the ContentView.
-     * @return The current page scale factor.
-     */
-    @VisibleForTesting
-    public float getScale() {
-        return mRenderCoordinates.getPageScaleFactor();
-    }
-
     @Override
     public void onAccessibilityStateChanged(boolean enabled) {
         setAccessibilityState(enabled);

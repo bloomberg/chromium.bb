@@ -70,7 +70,7 @@ public class FocusedEditableTextFieldZoomTest {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return contentViewCore.getScale() - INITIAL_SCALE < FLOAT_DELTA;
+                return contentViewCore.getPageScaleFactor() - INITIAL_SCALE < FLOAT_DELTA;
             }
         }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
     }
@@ -80,7 +80,7 @@ public class FocusedEditableTextFieldZoomTest {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return contentViewCore.getScale() > initialZoomLevel;
+                return contentViewCore.getPageScaleFactor() > initialZoomLevel;
             }
         }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
     }
@@ -95,7 +95,7 @@ public class FocusedEditableTextFieldZoomTest {
         // This should focus the text field and initiate a zoom in.
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         final ContentViewCore contentViewCore = tab.getContentViewCore();
-        float initialZoomLevel = contentViewCore.getScale();
+        float initialZoomLevel = contentViewCore.getPageScaleFactor();
 
         DOMUtils.clickNode(contentViewCore, TEXTFIELD_DOM_ID);
 
@@ -112,7 +112,7 @@ public class FocusedEditableTextFieldZoomTest {
     public void testZoomOutOfSelectedIfOnlyBackPressed() throws Throwable {
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
         final ContentViewCore contentViewCore = tab.getContentViewCore();
-        final float initialZoomLevel = contentViewCore.getScale();
+        final float initialZoomLevel = contentViewCore.getPageScaleFactor();
 
         // This should focus the text field and initiate a zoom in.
         DOMUtils.clickNode(contentViewCore, TEXTFIELD_DOM_ID);
@@ -127,7 +127,7 @@ public class FocusedEditableTextFieldZoomTest {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return (contentViewCore.getScale() - initialZoomLevel) < FLOAT_DELTA;
+                return (contentViewCore.getPageScaleFactor() - initialZoomLevel) < FLOAT_DELTA;
             }
         }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
     }
