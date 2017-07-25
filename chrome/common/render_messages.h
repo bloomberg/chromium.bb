@@ -168,13 +168,6 @@ IPC_MESSAGE_CONTROL0(ChromeViewHostMsg_ShowBrowserAccountManagementUI)
 // Tells the frame it is displaying an interstitial page.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_SetAsInterstitial)
 
-// Provides the renderer with the results of the browser's investigation into
-// why a recent main frame load failed (currently, just DNS probe result).
-// NetErrorHelper will receive this mesage and replace or update the error
-// page with more specific troubleshooting suggestions.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_NetErrorInfo,
-                    int /* DNS probe status */)
-
 // Provides the information needed by the renderer process to contact a
 // navigation correction service.  Handled by the NetErrorHelper.
 IPC_MESSAGE_ROUTED5(ChromeViewMsg_SetNavigationCorrectionInfo,
