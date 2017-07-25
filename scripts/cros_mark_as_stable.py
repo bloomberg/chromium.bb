@@ -308,8 +308,7 @@ def main(argv):
           logging.info('Working on %s, info %s', ebuild.package,
                        ebuild.cros_workon_vars)
         try:
-          new_package = ebuild.RevWorkOnEBuild(options.srcroot, manifest,
-                                               enforce_subdir_rev=False)
+          new_package = ebuild.RevWorkOnEBuild(options.srcroot, manifest, enforce_subdir_rev=True)
           if new_package:
             revved_packages.append(ebuild.package)
             new_package_atoms.append('=%s' % new_package)
