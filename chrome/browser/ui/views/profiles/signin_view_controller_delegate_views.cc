@@ -43,14 +43,11 @@ SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
     ui::ModalType dialog_modal_type,
     bool wait_for_size)
     : SigninViewControllerDelegate(signin_view_controller,
-                                   content_view->GetWebContents()),
+                                   content_view->GetWebContents(),
+                                   browser),
       content_view_(content_view.release()),
       modal_signin_widget_(nullptr),
-      dialog_modal_type_(dialog_modal_type),
-      browser_(browser) {
-  DCHECK(browser_);
-  DCHECK(browser_->tab_strip_model()->GetActiveWebContents())
-      << "A tab must be active to present the sign-in modal dialog.";
+      dialog_modal_type_(dialog_modal_type) {
   DCHECK(dialog_modal_type == ui::MODAL_TYPE_CHILD ||
          dialog_modal_type == ui::MODAL_TYPE_WINDOW)
       << "Unsupported dialog modal type " << dialog_modal_type;
@@ -96,10 +93,11 @@ void SigninViewControllerDelegateViews::PerformClose() {
 }
 
 void SigninViewControllerDelegateViews::ResizeNativeView(int height) {
-  int max_height = browser_
-      ->window()
-      ->GetWebContentsModalDialogHost()
-      ->GetMaximumDialogSize().height();
+  int max_height = browser()
+                       ->window()
+                       ->GetWebContentsModalDialogHost()
+                       ->GetMaximumDialogSize()
+                       .height();
   content_view_->SetPreferredSize(
       gfx::Size(kModalDialogWidth, std::min(height, max_height)));
 
@@ -114,7 +112,7 @@ void SigninViewControllerDelegateViews::DisplayModal() {
   DCHECK(!modal_signin_widget_);
 
   content::WebContents* host_web_contents =
-      browser_->tab_strip_model()->GetActiveWebContents();
+      browser()->tab_strip_model()->GetActiveWebContents();
 
   // Avoid displaying the sign-in modal view if there are no active web
   // contents. This happens if the user closes the browser window before this
@@ -131,7 +129,7 @@ void SigninViewControllerDelegateViews::DisplayModal() {
       break;
     case ui::MODAL_TYPE_CHILD:
       modal_signin_widget_ = constrained_window::ShowWebModalDialogViews(
-          this, browser_->tab_strip_model()->GetActiveWebContents());
+          this, browser()->tab_strip_model()->GetActiveWebContents());
       break;
     default:
       NOTREACHED() << "Unsupported dialog modal type " << dialog_modal_type_;

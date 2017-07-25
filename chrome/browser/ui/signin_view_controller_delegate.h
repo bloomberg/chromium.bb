@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_SIGNIN_VIEW_CONTROLLER_DELEGATE_H_
 #define CHROME_BROWSER_UI_SIGNIN_VIEW_CONTROLLER_DELEGATE_H_
 
+#include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "content/public/browser/web_contents_delegate.h"
 
@@ -21,7 +22,9 @@ enum class AccessPoint;
 // as well as managing the navigation inside them.
 // Subclasses are responsible for deleting themselves when the window they're
 // managing closes.
-class SigninViewControllerDelegate : public content::WebContentsDelegate {
+class SigninViewControllerDelegate
+    : public content::WebContentsDelegate,
+      public ChromeWebModalDialogManagerDelegate {
  public:
   // Returns a platform-specific SigninViewControllerDelegate instance that
   // displays the sign in flow. The returned object should delete itself when
@@ -46,6 +49,11 @@ class SigninViewControllerDelegate : public content::WebContentsDelegate {
       SigninViewController* signin_view_controller,
       Browser* browser);
 
+  // Attaches a dialog manager to this sign-in view controller dialog.
+  // Should be called by subclasses when a different dialog may need to be
+  // presented on top of the sign-in dialog.
+  void AttachDialogManager();
+
   // Closes the sign-in dialog. Note that this method may destroy this object,
   // so the caller should no longer use this object after calling this method.
   void CloseModalSignin();
@@ -64,14 +72,21 @@ class SigninViewControllerDelegate : public content::WebContentsDelegate {
   // content::WebContentsDelegate:
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
 
+  // ChromeWebModalDialogManagerDelegate:
+  web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
+      override;
+
   // WebContents is used for executing javascript in the context of a modal sync
   // confirmation dialog.
   content::WebContents* web_contents_for_testing() { return web_contents_; }
 
  protected:
   SigninViewControllerDelegate(SigninViewController* signin_view_controller,
-                               content::WebContents* web_contents);
+                               content::WebContents* web_contents,
+                               Browser* browser);
   ~SigninViewControllerDelegate() override;
+
+  Browser* browser() { return browser_; }
 
   // Notifies the SigninViewController that this instance is being deleted.
   void ResetSigninViewControllerDelegate();
@@ -91,7 +106,8 @@ class SigninViewControllerDelegate : public content::WebContentsDelegate {
   bool CanGoBack(content::WebContents* web_ui_web_contents) const;
 
   SigninViewController* signin_view_controller_;  // Not owned.
-  content::WebContents* web_contents_;  // Not owned.
+  content::WebContents* web_contents_;            // Not owned.
+  Browser* browser_;                              // Not owned.
   DISALLOW_COPY_AND_ASSIGN(SigninViewControllerDelegate);
 };
 
