@@ -358,8 +358,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   if (stderr_handle != stdout_handle && stderr_handle != INVALID_HANDLE_VALUE)
     inherited_handle_list.push_back(stderr_handle);
 
-  const base::HandlesToInheritVector& policy_handle_list =
-      policy_base->GetHandlesBeingShared();
+  const auto& policy_handle_list = policy_base->GetHandlesBeingShared();
 
   for (HANDLE handle : policy_handle_list)
     inherited_handle_list.push_back(handle);

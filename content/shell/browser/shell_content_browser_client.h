@@ -77,7 +77,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
-      content::FileDescriptorInfo* mappings) override;
+      content::PosixFileDescriptorInfo* mappings) override;
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 #if defined(OS_WIN)
   bool PreSpawnRenderer(sandbox::TargetPolicy* policy) override;

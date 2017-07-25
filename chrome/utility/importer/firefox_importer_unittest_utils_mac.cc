@@ -57,13 +57,10 @@ base::Process LaunchNSSDecrypterChildProcess(
   // why we need this.
   base::LaunchOptions options;
   options.environ["DYLD_FALLBACK_LIBRARY_PATH"] = nss_path.value();
-
-  base::FileHandleMappingVector fds_to_map;
-  fds_to_map.push_back(std::pair<int, int>(
+  options.fds_to_remap.push_back(std::pair<int, int>(
       mojo_handle.get().handle,
       kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
 
-  options.fds_to_remap = &fds_to_map;
   return base::LaunchProcess(cl.argv(), options);
 }
 

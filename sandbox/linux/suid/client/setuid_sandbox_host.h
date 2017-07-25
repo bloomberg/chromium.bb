@@ -50,11 +50,12 @@ class SANDBOX_EXPORT SetuidSandboxHost {
 
   // Set-up the launch options for launching via the setuid sandbox.  Caller is
   // responsible for keeping |dummy_fd| alive until LaunchProcess() completes.
-  // |options| and |fds_to_remap| must not be NULL.
+  // |options| must not be NULL. This function will append to
+  // options->fds_to_remap so the caller should take care to append rather than
+  // overwrite if it has additional FDs.
   // (Keeping |dummy_fd| alive is an unfortunate historical artifact of the
   // chrome-sandbox ABI.)
   void SetupLaunchOptions(base::LaunchOptions* options,
-                          base::FileHandleMappingVector* fds_to_remap,
                           base::ScopedFD* dummy_fd);
 
   // Set-up the environment. This should be done prior to launching the setuid

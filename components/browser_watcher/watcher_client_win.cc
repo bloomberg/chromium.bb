@@ -38,13 +38,14 @@ void WatcherClient::LaunchWatcher() {
   DCHECK(self.IsValid());
   base::CommandLine cmd_line(command_line_generator_.Run(self.Handle()));
 
-  base::HandlesToInheritVector to_inherit;
   base::LaunchOptions options;
   options.start_hidden = true;
-  to_inherit.push_back(self.Handle());
-  to_inherit.insert(to_inherit.end(), inherited_handles_.begin(),
-                    inherited_handles_.end());
-  options.handles_to_inherit = &to_inherit;
+
+  // Launch the child process inheriting only |self|.
+  options.handles_to_inherit.push_back(self.Handle());
+  options.handles_to_inherit.insert(options.handles_to_inherit.end(),
+                                    inherited_handles_.begin(),
+                                    inherited_handles_.end());
 
   process_ = base::LaunchProcess(cmd_line, options);
   if (!process_.IsValid())

@@ -13,7 +13,7 @@
 #include "base/metrics/field_trial.h"
 #include "content/browser/child_process_launcher_helper.h"
 #include "content/browser/child_process_launcher_helper_posix.h"
-#include "content/browser/file_descriptor_info_impl.h"
+#include "content/browser/posix_file_descriptor_info_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -63,7 +63,7 @@ ChildProcessLauncherHelper::PrepareMojoPipeHandlesOnClientThread() {
   return mojo::edk::ScopedPlatformHandle();
 }
 
-std::unique_ptr<FileDescriptorInfo>
+std::unique_ptr<PosixFileDescriptorInfo>
 ChildProcessLauncherHelper::GetFilesToMap() {
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
 
@@ -71,7 +71,7 @@ ChildProcessLauncherHelper::GetFilesToMap() {
   // running in single process mode.
   CHECK(!command_line()->HasSwitch(switches::kSingleProcess));
 
-  std::unique_ptr<FileDescriptorInfo> files_to_register =
+  std::unique_ptr<PosixFileDescriptorInfo> files_to_register =
       CreateDefaultPosixFilesToMap(child_process_id(), mojo_client_handle(),
                                    true /* include_service_required_files */,
                                    GetProcessType(), command_line());
@@ -86,14 +86,13 @@ ChildProcessLauncherHelper::GetFilesToMap() {
 }
 
 void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
-    const FileDescriptorInfo& files_to_register,
-    base::LaunchOptions* options) {
-}
+    const PosixFileDescriptorInfo& files_to_register,
+    base::LaunchOptions* options) {}
 
 ChildProcessLauncherHelper::Process
 ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     const base::LaunchOptions& options,
-    std::unique_ptr<FileDescriptorInfo> files_to_register,
+    std::unique_ptr<PosixFileDescriptorInfo> files_to_register,
     bool* is_synchronous_launch,
     int* launch_result) {
   *is_synchronous_launch = false;

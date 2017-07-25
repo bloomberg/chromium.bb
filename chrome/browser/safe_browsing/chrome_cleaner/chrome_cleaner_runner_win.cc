@@ -142,11 +142,9 @@ ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread() {
       chrome_cleaner::kChromeMojoPipeTokenSwitch, mojo_pipe_token);
 
   mojo::edk::PlatformChannelPair channel;
-  base::HandlesToInheritVector handles_to_inherit;
-  channel.PrepareToPassClientHandleToChildProcess(&cleaner_command_line_,
-                                                  &handles_to_inherit);
   base::LaunchOptions launch_options;
-  launch_options.handles_to_inherit = &handles_to_inherit;
+  channel.PrepareToPassClientHandleToChildProcess(
+      &cleaner_command_line_, &launch_options.handles_to_inherit);
 
   base::Process cleaner_process =
       g_test_delegate

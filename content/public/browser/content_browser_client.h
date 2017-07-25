@@ -45,7 +45,7 @@
 #endif
 
 #if defined(OS_POSIX)
-#include "content/public/browser/file_descriptor_info.h"
+#include "content/public/browser/posix_file_descriptor_info.h"
 #endif
 
 class GURL;
@@ -789,7 +789,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
-      content::FileDescriptorInfo* mappings) {}
+      content::PosixFileDescriptorInfo* mappings) {}
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
 #if defined(OS_WIN)

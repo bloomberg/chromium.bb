@@ -1614,10 +1614,10 @@ source_set("browser") {
     ]
   }
 
-  if (!is_win) {
+  if (is_posix) {
     sources += [
-      "file_descriptor_info_impl.cc",
-      "file_descriptor_info_impl.h",
+      "posix_file_descriptor_info_impl.cc",
+      "posix_file_descriptor_info_impl.h",
     ]
   }
 

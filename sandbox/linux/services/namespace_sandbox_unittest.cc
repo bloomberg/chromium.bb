@@ -51,12 +51,11 @@ class NamespaceSandboxTest : public base::MultiProcessTest {
       return;
     }
 
-    base::FileHandleMappingVector fds_to_remap = {
-        std::make_pair(STDOUT_FILENO, STDOUT_FILENO),
-        std::make_pair(STDERR_FILENO, STDERR_FILENO),
-    };
     base::LaunchOptions launch_options;
-    launch_options.fds_to_remap = &fds_to_remap;
+    launch_options.fds_to_remap.push_back(
+        std::make_pair(STDOUT_FILENO, STDOUT_FILENO));
+    launch_options.fds_to_remap.push_back(
+        std::make_pair(STDERR_FILENO, STDERR_FILENO));
 
     base::Process process = NamespaceSandbox::LaunchProcessWithOptions(
         MakeCmdLine(procname), launch_options, ns_sandbox_options);
@@ -123,12 +122,12 @@ TEST_F(NamespaceSandboxTest, DISABLE_ON_ASAN(ChrootAndDropCapabilities)) {
 }
 
 MULTIPROCESS_TEST_MAIN(NestedNamespaceSandbox) {
-  base::FileHandleMappingVector fds_to_remap = {
-      std::make_pair(STDOUT_FILENO, STDOUT_FILENO),
-      std::make_pair(STDERR_FILENO, STDERR_FILENO),
-  };
   base::LaunchOptions launch_options;
-  launch_options.fds_to_remap = &fds_to_remap;
+  launch_options.fds_to_remap.push_back(
+      std::make_pair(STDOUT_FILENO, STDOUT_FILENO));
+  launch_options.fds_to_remap.push_back(
+      std::make_pair(STDERR_FILENO, STDERR_FILENO));
+
   base::Process process = NamespaceSandbox::LaunchProcess(
       base::CommandLine(base::FilePath("/bin/true")), launch_options);
   CHECK(process.IsValid());

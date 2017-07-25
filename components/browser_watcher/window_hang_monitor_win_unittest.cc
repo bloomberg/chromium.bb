@@ -362,7 +362,8 @@ class WindowHangMonitorTest : public testing::Test {
     AppendSwitchHandle(&command_line, kChildWritePipeSwitch, child_write_pipe);
 
     base::LaunchOptions options = {};
-    options.inherit_handles = true;
+    // TODO(brettw) bug 748258: Share only explicit handles.
+    options.inherit_mode = base::LaunchOptions::Inherit::kAll;
     monitored_process_ = base::LaunchProcess(command_line, options);
     if (!monitored_process_.IsValid())
       return false;

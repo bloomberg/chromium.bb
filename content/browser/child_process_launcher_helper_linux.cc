@@ -40,22 +40,19 @@ ChildProcessLauncherHelper::GetFilesToMap() {
 }
 
 void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
-    const FileDescriptorInfo& files_to_register,
+    const PosixFileDescriptorInfo& files_to_register,
     base::LaunchOptions* options) {
   // Convert FD mapping to FileHandleMappingVector
-  std::unique_ptr<base::FileHandleMappingVector> fds_to_map =
-      files_to_register.GetMappingWithIDAdjustment(
-          base::GlobalDescriptors::kBaseDescriptor);
+  options->fds_to_remap = files_to_register.GetMappingWithIDAdjustment(
+      base::GlobalDescriptors::kBaseDescriptor);
 
   if (GetProcessType() == switches::kRendererProcess) {
     const int sandbox_fd =
         RenderSandboxHostLinux::GetInstance()->GetRendererSocket();
-    fds_to_map->push_back(std::make_pair(sandbox_fd, GetSandboxFD()));
+    options->fds_to_remap.push_back(std::make_pair(sandbox_fd, GetSandboxFD()));
   }
 
   options->environ = delegate_->GetEnvironment();
-  // fds_to_remap will de deleted in AfterLaunchOnLauncherThread() below.
-  options->fds_to_remap = fds_to_map.release();
 }
 
 ChildProcessLauncherHelper::Process
@@ -93,7 +90,6 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
 void ChildProcessLauncherHelper::AfterLaunchOnLauncherThread(
     const ChildProcessLauncherHelper::Process& process,
     const base::LaunchOptions& options) {
-  delete options.fds_to_remap;
 }
 
 base::TerminationStatus ChildProcessLauncherHelper::GetTerminationStatus(

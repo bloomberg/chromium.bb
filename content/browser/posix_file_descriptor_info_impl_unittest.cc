@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/file_descriptor_info_impl.h"
+#include "content/browser/posix_file_descriptor_info_impl.h"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -35,11 +35,12 @@ bool VerifyClosed(int fd) {
 
 namespace content {
 
-typedef testing::Test FileDescriptorInfoTest;
+typedef testing::Test PosixFileDescriptorInfoTest;
 
-TEST_F(FileDescriptorInfoTest, Transfer) {
+TEST_F(PosixFileDescriptorInfoTest, Transfer) {
   int testingId = 42;
-  std::unique_ptr<FileDescriptorInfo> target(FileDescriptorInfoImpl::Create());
+  std::unique_ptr<PosixFileDescriptorInfo> target(
+      PosixFileDescriptorInfoImpl::Create());
   base::ScopedFD fd(GetSafeFd());
 
   int raw_fd = fd.get();
@@ -53,9 +54,10 @@ TEST_F(FileDescriptorInfoTest, Transfer) {
   ASSERT_TRUE(VerifyClosed(raw_fd));
 }
 
-TEST_F(FileDescriptorInfoTest, Share) {
+TEST_F(PosixFileDescriptorInfoTest, Share) {
   int testingId = 42;
-  std::unique_ptr<FileDescriptorInfo> target(FileDescriptorInfoImpl::Create());
+  std::unique_ptr<PosixFileDescriptorInfo> target(
+      PosixFileDescriptorInfoImpl::Create());
   base::ScopedFD fd(GetSafeFd());
 
   int raw_fd = fd.get();
@@ -69,18 +71,19 @@ TEST_F(FileDescriptorInfoTest, Share) {
   ASSERT_TRUE(!VerifyClosed(fd.release()));
 }
 
-TEST_F(FileDescriptorInfoTest, GetMappingWithIDAdjustment) {
+TEST_F(PosixFileDescriptorInfoTest, GetMappingWithIDAdjustment) {
   int testingId1 = 42;
   int testingId2 = 43;
-  std::unique_ptr<FileDescriptorInfo> target(FileDescriptorInfoImpl::Create());
+  std::unique_ptr<PosixFileDescriptorInfo> target(
+      PosixFileDescriptorInfoImpl::Create());
 
   target->Transfer(testingId1, base::ScopedFD(GetSafeFd()));
   target->Transfer(testingId2, base::ScopedFD(GetSafeFd()));
 
-  std::unique_ptr<base::FileHandleMappingVector> mapping =
+  base::FileHandleMappingVector mapping =
       target->GetMappingWithIDAdjustment(100);
-  ASSERT_EQ((*mapping)[0].second, 142);
-  ASSERT_EQ((*mapping)[1].second, 143);
+  ASSERT_EQ(mapping[0].second, 142);
+  ASSERT_EQ(mapping[1].second, 143);
 }
 
 }  // namespace content

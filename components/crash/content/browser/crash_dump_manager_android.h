@@ -30,7 +30,7 @@ class CrashDumpManager : public breakpad::CrashDumpObserver::Client {
 
   // breakpad::CrashDumpObserver::Client implementation:
   void OnChildStart(int child_process_id,
-                    content::FileDescriptorInfo* mappings) override;
+                    content::PosixFileDescriptorInfo* mappings) override;
   void OnChildExit(int child_process_id,
                    base::ProcessHandle pid,
                    content::ProcessType process_type,

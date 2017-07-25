@@ -116,15 +116,12 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   else
     to_clone |= LP_CLONE_ENVIRON;
 
-  if (!options.fds_to_remap)
+  if (options.fds_to_remap.empty())
     to_clone |= LP_CLONE_MXIO_STDIO;
   launchpad_clone(lp, to_clone);
 
-  if (options.fds_to_remap) {
-    for (const auto& src_target : *options.fds_to_remap) {
-      launchpad_clone_fd(lp, src_target.first, src_target.second);
-    }
-  }
+  for (const auto& src_target : options.fds_to_remap)
+    launchpad_clone_fd(lp, src_target.first, src_target.second);
 
   mx_handle_t proc;
   const char* errmsg;

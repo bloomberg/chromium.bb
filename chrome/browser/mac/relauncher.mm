@@ -130,8 +130,8 @@ bool RelaunchAppWithHelper(const std::string& helper,
   // pipe. It can close the write side as soon as the relauncher process has
   // forked off. The relauncher process will only use pipe_write_fd as the
   // write side of the pipe. In that process, the read side will be closed by
-  // base::LaunchApp because it won't be present in fd_map, and the write side
-  // will be remapped to kRelauncherSyncFD by fd_map.
+  // base::LaunchApp because it won't be present in fds_to_remap, and the write
+  // side will be remapped to kRelauncherSyncFD by fds_to_remap.
   base::ScopedFD pipe_read_fd(pipe_fds[0]);
   base::ScopedFD pipe_write_fd(pipe_fds[1]);
 
@@ -143,11 +143,9 @@ bool RelaunchAppWithHelper(const std::string& helper,
                 kRelauncherSyncFD != STDERR_FILENO,
                 "kRelauncherSyncFD must not conflict with stdio fds");
 
-  base::FileHandleMappingVector fd_map;
-  fd_map.push_back(std::make_pair(pipe_write_fd.get(), kRelauncherSyncFD));
-
   base::LaunchOptions options;
-  options.fds_to_remap = &fd_map;
+  options.fds_to_remap.push_back(
+      std::make_pair(pipe_write_fd.get(), kRelauncherSyncFD));
   if (!base::LaunchProcess(relaunch_args, options).IsValid()) {
     LOG(ERROR) << "base::LaunchProcess failed";
     return false;

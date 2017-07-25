@@ -139,25 +139,23 @@ pid_t ZygoteHostImpl::LaunchZygote(base::CommandLine* cmd_line,
   CHECK_EQ(0, socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
   CHECK(base::UnixDomainSocket::EnableReceiveProcessId(fds[0]));
 
-  base::FileHandleMappingVector fds_to_map;
-  fds_to_map.push_back(std::make_pair(fds[1], kZygoteSocketPairFd));
+  base::LaunchOptions options;
+  options.fds_to_remap.push_back(std::make_pair(fds[1], kZygoteSocketPairFd));
 
   // Start up the sandbox host process and get the file descriptor for the
   // renderers to talk to it.
   const int sfd = RenderSandboxHostLinux::GetInstance()->GetRendererSocket();
-  fds_to_map.push_back(std::make_pair(sfd, GetSandboxFD()));
+  options.fds_to_remap.push_back(std::make_pair(sfd, GetSandboxFD()));
 
-  base::LaunchOptions options;
   base::ScopedFD dummy_fd;
   if (use_suid_sandbox_) {
     std::unique_ptr<sandbox::SetuidSandboxHost> sandbox_host(
         sandbox::SetuidSandboxHost::Create());
     sandbox_host->PrependWrapper(cmd_line);
-    sandbox_host->SetupLaunchOptions(&options, &fds_to_map, &dummy_fd);
+    sandbox_host->SetupLaunchOptions(&options, &dummy_fd);
     sandbox_host->SetupLaunchEnvironment();
   }
 
-  options.fds_to_remap = &fds_to_map;
   base::Process process =
       use_namespace_sandbox_
           ? sandbox::NamespaceSandbox::LaunchProcess(*cmd_line, options)

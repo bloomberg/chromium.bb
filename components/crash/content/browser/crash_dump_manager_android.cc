@@ -21,9 +21,9 @@
 #include "base/task_scheduler/post_task.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/browser/file_descriptor_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/posix_file_descriptor_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "jni/CrashDumpManager_jni.h"
 
@@ -36,8 +36,9 @@ CrashDumpManager::CrashDumpManager(const base::FilePath& crash_dump_dir,
 CrashDumpManager::~CrashDumpManager() {
 }
 
-void CrashDumpManager::OnChildStart(int child_process_id,
-                                    content::FileDescriptorInfo* mappings) {
+void CrashDumpManager::OnChildStart(
+    int child_process_id,
+    content::PosixFileDescriptorInfo* mappings) {
   if (!breakpad::IsCrashReporterEnabled())
     return;
 

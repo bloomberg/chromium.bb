@@ -27,11 +27,11 @@ struct PlatformHandle;
 
 namespace content {
 
-class FileDescriptorInfo;
+class PosixFileDescriptorInfo;
 
 namespace internal {
 
-std::unique_ptr<FileDescriptorInfo> CreateDefaultPosixFilesToMap(
+std::unique_ptr<PosixFileDescriptorInfo> CreateDefaultPosixFilesToMap(
     int child_process_id,
     const mojo::edk::PlatformHandle& mojo_client_handle,
     bool include_service_required_files,

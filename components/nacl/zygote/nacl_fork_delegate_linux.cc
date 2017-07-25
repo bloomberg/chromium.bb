@@ -174,9 +174,6 @@ void NaClForkDelegate::Init(const int sandboxdesc,
 
   int fds[2];
   PCHECK(0 == socketpair(PF_UNIX, SOCK_SEQPACKET, 0, fds));
-  base::FileHandleMappingVector fds_to_map;
-  fds_to_map.push_back(std::make_pair(fds[1], kNaClZygoteDescriptor));
-  fds_to_map.push_back(std::make_pair(sandboxdesc, nacl_sandbox_descriptor));
 
   bool use_nacl_bootstrap = false;
   // For non-SFI mode, we do not use fixed address space.
@@ -254,6 +251,10 @@ void NaClForkDelegate::Init(const int sandboxdesc,
     }
 
     base::LaunchOptions options;
+    options.fds_to_remap.push_back(
+        std::make_pair(fds[1], kNaClZygoteDescriptor));
+    options.fds_to_remap.push_back(
+        std::make_pair(sandboxdesc, nacl_sandbox_descriptor));
 
     base::ScopedFD dummy_fd;
     if (using_setuid_sandbox) {
@@ -261,11 +262,9 @@ void NaClForkDelegate::Init(const int sandboxdesc,
       // setuid sandbox wrapper manually.
       base::FilePath sandbox_path = setuid_sandbox_host->GetSandboxBinaryPath();
       argv_to_launch.insert(argv_to_launch.begin(), sandbox_path.value());
-      setuid_sandbox_host->SetupLaunchOptions(&options, &fds_to_map, &dummy_fd);
+      setuid_sandbox_host->SetupLaunchOptions(&options, &dummy_fd);
       setuid_sandbox_host->SetupLaunchEnvironment();
     }
-
-    options.fds_to_remap = &fds_to_map;
 
     // The NaCl processes spawned may need to exceed the ambient soft limit
     // on RLIMIT_AS to allocate the untrusted address space and its guard

@@ -204,17 +204,16 @@ bool ProcessProxy::CreatePseudoTerminalPair(int *pt_pair) {
 }
 
 int ProcessProxy::LaunchProcess(const std::string& command, int slave_fd) {
-  // Redirect crosh  process' output and input so we can read it.
-  base::FileHandleMappingVector fds_mapping;
-  fds_mapping.push_back(std::make_pair(slave_fd, STDIN_FILENO));
-  fds_mapping.push_back(std::make_pair(slave_fd, STDOUT_FILENO));
-  fds_mapping.push_back(std::make_pair(slave_fd, STDERR_FILENO));
   base::LaunchOptions options;
+
+  // Redirect crosh  process' output and input so we can read it.
+  options.fds_to_remap.push_back(std::make_pair(slave_fd, STDIN_FILENO));
+  options.fds_to_remap.push_back(std::make_pair(slave_fd, STDOUT_FILENO));
+  options.fds_to_remap.push_back(std::make_pair(slave_fd, STDERR_FILENO));
   // Do not set NO_NEW_PRIVS on processes if the system is in dev-mode. This
   // permits sudo in the crosh shell when in developer mode.
   options.allow_new_privs = base::CommandLine::ForCurrentProcess()->
       HasSwitch(chromeos::switches::kSystemInDevMode);
-  options.fds_to_remap = &fds_mapping;
   options.ctrl_terminal_fd = slave_fd;
   options.environ["TERM"] = "xterm";
 

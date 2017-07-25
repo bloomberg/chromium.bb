@@ -1613,8 +1613,8 @@ test("content_unittests") {
     "//third_party/mesa:osmesa",
   ]
 
-  if (!is_win) {
-    sources += [ "../browser/file_descriptor_info_impl_unittest.cc" ]
+  if (is_posix) {
+    sources += [ "../browser/posix_file_descriptor_info_impl_unittest.cc" ]
   }
 
   if (enable_plugins) {
