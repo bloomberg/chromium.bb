@@ -12,9 +12,9 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/observer_list_threadsafe.h"
-#include "base/synchronization/lock.h"
+#include "base/sequence_checker.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/media/router/discovery/discovery_network_info.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 
@@ -32,11 +32,11 @@ class DiscoveryNetworkMonitor
     : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   using NetworkInfoFunction = std::vector<DiscoveryNetworkInfo> (*)();
-  using NetworkRefreshCompleteCallback = base::Callback<void()>;
+  using NetworkIdCallback = base::OnceCallback<void(const std::string&)>;
   class Observer {
    public:
-    // Called when the list of connected interfaces has changed.
-    virtual void OnNetworksChanged(const DiscoveryNetworkMonitor& monitor) = 0;
+    // Called when the network ID has changed.  Called with the new network ID.
+    virtual void OnNetworksChanged(const std::string&) = 0;
 
    protected:
     ~Observer() = default;
@@ -58,14 +58,13 @@ class DiscoveryNetworkMonitor
 
   // Forces a query of the current network state.  |callback| will be called
   // after the refresh.  This can be called from any thread and |callback| will
-  // be executed on the calling thread.
-  void Refresh(NetworkRefreshCompleteCallback callback);
+  // be executed on the calling thread with the updated network ID value.
+  void Refresh(NetworkIdCallback callback);
 
-  // Computes a stable string identifier from the list of connected interfaces.
-  // Returns kNetworkIdDisconnected if there are no connected interfaces or
-  // kNetworkIdUnknown if the identifier could not be computed.  This should be
-  // called from the IO thread.
-  const std::string& GetNetworkId() const;
+  // Gets the current value of |netework_id_| without querying for the current
+  // network state.  This should only return a stale result if no network
+  // notifications have happened yet *and* Refresh hasn't been called yet.
+  void GetNetworkId(NetworkIdCallback callback);
 
  private:
   friend class DiscoveryNetworkMonitorTest;
@@ -78,20 +77,29 @@ class DiscoveryNetworkMonitor
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
-  void UpdateNetworkInfo();
+  std::string GetNetworkIdOnSequence() const;
+  std::string UpdateNetworkInfo();
 
   // A hashed representation of the set of networks to which we are connected.
   // This may also be |kNetworkIdDisconnected| if no interfaces are connected or
-  // |kNetworkIdUnknown| if we can't determine the set of networks.
+  // |kNetworkIdUnknown| if we can't determine the set of networks.  This should
+  // only be accessed from |task_runner_|'s sequence.
   std::string network_id_;
 
   // The list of observers which have registered interest in when |network_id_|
   // changes.
   scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
 
+  // The SequencedTaskRunner which controls access to |network_id_| and allows
+  // blocking IO for network information queries.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
   // Function used to get information about the networks to which we are
   // connected.
   NetworkInfoFunction network_info_function_;
+
+  // SequenceChecker for |task_runner_|.
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(DiscoveryNetworkMonitor);
 };
