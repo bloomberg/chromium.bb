@@ -3128,6 +3128,14 @@
     "test_policy": { "DeviceEcryptfsMigrationStrategy": 1 }
   },
 
+  "NoteTakingAppsLockScreenWhitelist": {
+    "os": ["chromeos"],
+    "test_policy": { "NoteTakingAppsLockScreenWhitelist": [] },
+    "pref_mappings": [
+      {"pref": "settings.note_taking_apps_lock_screen_whitelist"}
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {
