@@ -22,6 +22,9 @@
 // This delegate will handle interactions on the view.
 @property(weak, nonatomic) id<SessionReconnectViewDelegate> delegate;
 
+// This is the optional error text to be displayed above the reconnect button.
+@property(nonatomic, copy) NSString* errorText;
+
 @end
 
 #endif  // REMOTING_IOS_SESSON_RECONNECT_VIEW_H_

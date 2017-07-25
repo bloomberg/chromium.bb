@@ -867,6 +867,9 @@ After your remote device is setup, you can access it directly from this page
       <message desc="Error displayed when the service returns a 503 error. Such errors are usually temporary, and resolve themselves in about 30 seconds." name="IDS_ERROR_SERVICE_UNAVAILABLE">
         The service is temporarily unavailable. Please try again later.
       </message>
+      <message desc="Error displayed when the user's oauth token is invalid." name="IDS_ERROR_OAUTH_TOKEN_INVALID">
+        There was an issue authenticating, please login again.
+      </message>
       <message desc="Error displayed in situations where things go wrong in ways not anticipated by the developers. There is typically no user-workaround to suggest, other than reporting the error so that we can investigate further." name="IDS_ERROR_UNEXPECTED" formatter_data="android_java">
         An unexpected error occurred. Please report this problem to the developers.
       </message>

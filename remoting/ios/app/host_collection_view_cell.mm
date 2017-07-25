@@ -53,7 +53,7 @@ static const CGFloat kHostCardIconSize = 45.f;
   _imageView = [[UIImageView alloc] init];
   _imageView.translatesAutoresizingMaskIntoConstraints = NO;
   _imageView.contentMode = UIViewContentModeCenter;
-  _imageView.backgroundColor = RemotingTheme.offlineHostColor;
+  _imageView.backgroundColor = RemotingTheme.hostOfflineColor;
   _imageView.layer.cornerRadius = kHostCardIconSize / 2.f;
   _imageView.layer.masksToBounds = YES;
   [self.contentView addSubview:_imageView];
@@ -136,10 +136,10 @@ static const CGFloat kHostCardIconSize = 45.f;
   _imageView.image = RemotingTheme.desktopIcon;
 
   if ([_hostInfo.status isEqualToString:@"ONLINE"]) {
-    _imageView.backgroundColor = RemotingTheme.onlineHostColor;
+    _imageView.backgroundColor = RemotingTheme.hostOnlineColor;
     _statusLabel.text = l10n_util::GetNSString(IDS_HOST_ONLINE_SUBTITLE);
   } else {
-    _imageView.backgroundColor = RemotingTheme.offlineHostColor;
+    _imageView.backgroundColor = RemotingTheme.hostOfflineColor;
     _statusLabel.text =
         hostInfo.updatedTime
             ? l10n_util::GetNSStringF(

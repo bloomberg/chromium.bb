@@ -60,6 +60,9 @@ static const int kMinPinLength = 6;
         setImage:[RemotingTheme
                          .arrowIcon imageFlippedForRightToLeftLayoutDirection]
         forState:UIControlStateNormal];
+    [_pinButton setBackgroundColor:RemotingTheme.buttonBackgroundColor
+                          forState:UIControlStateNormal];
+    [_pinButton setDisabledAlpha:0.7];
     [_pinButton addTarget:self
                    action:@selector(didTapPinEntry:)
          forControlEvents:UIControlEventTouchUpInside];

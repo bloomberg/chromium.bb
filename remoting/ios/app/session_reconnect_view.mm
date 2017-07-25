@@ -14,11 +14,11 @@
 #include "remoting/base/string_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-static const CGFloat kReconnectButtonWidth = 120.f;
-static const CGFloat kReconnectButtonHeight = 30.f;
+static const CGFloat kPadding = 20.f;
 
 @interface SessionReconnectView () {
-  MDCRaisedButton* _reconnectButton;
+  MDCFloatingButton* _reconnectButton;
+  UILabel* _errorLabel;
 }
 @end
 
@@ -31,7 +31,15 @@ static const CGFloat kReconnectButtonHeight = 30.f;
   if (self) {
     self.backgroundColor = [UIColor clearColor];
 
-    _reconnectButton = [[MDCRaisedButton alloc] init];
+    _reconnectButton =
+        [MDCFloatingButton floatingButtonWithShape:MDCFloatingButtonShapeMini];
+    [_reconnectButton
+        setImage:[RemotingTheme
+                         .refreshIcon imageFlippedForRightToLeftLayoutDirection]
+        forState:UIControlStateNormal];
+    [_reconnectButton setBackgroundColor:RemotingTheme.buttonBackgroundColor
+                                forState:UIControlStateNormal];
+
     [_reconnectButton setElevation:4.0f forState:UIControlStateNormal];
     [_reconnectButton setTitle:l10n_util::GetNSString(IDS_RECONNECT)
                       forState:UIControlStateNormal];
@@ -41,31 +49,62 @@ static const CGFloat kReconnectButtonHeight = 30.f;
     _reconnectButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:_reconnectButton];
 
+    _errorLabel = [[UILabel alloc] init];
+    _errorLabel.textColor = RemotingTheme.hostErrorColor;
+    _errorLabel.font = [UIFont systemFontOfSize:13.f];
+    _errorLabel.numberOfLines = 0;
+    _errorLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    _errorLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:_errorLabel];
+
     [self initializeLayoutConstraintsWithViews:NSDictionaryOfVariableBindings(
-                                                   _reconnectButton)];
+                                                   _reconnectButton,
+                                                   _errorLabel)];
   }
   return self;
 }
 
 - (void)initializeLayoutConstraintsWithViews:(NSDictionary*)views {
-  NSMutableArray* layoutConstraints = [NSMutableArray array];
+  //  NSMutableArray* layoutConstraints = [NSMutableArray array];
+  // Metrics to use in visual format strings.
+  NSDictionary* layoutMetrics = @{
+    @"padding" : @(kPadding),
+  };
 
-  [layoutConstraints addObject:[_reconnectButton.centerYAnchor
-                                   constraintEqualToAnchor:self.centerYAnchor]];
+  [self
+      addConstraints:[NSLayoutConstraint
+                         constraintsWithVisualFormat:
+                             @"H:|-[_errorLabel]-(padding)-[_reconnectButton]-|"
+                                             options:0
+                                             metrics:layoutMetrics
+                                               views:views]];
+  [self addConstraints:[NSLayoutConstraint
+                           constraintsWithVisualFormat:@"V:|-[_errorLabel]"
+                                               options:0
+                                               metrics:layoutMetrics
+                                                 views:views]];
+  [self addConstraints:[NSLayoutConstraint
+                           constraintsWithVisualFormat:@"V:|-[_reconnectButton]"
+                                               options:0
+                                               metrics:layoutMetrics
+                                                 views:views]];
 
-  [layoutConstraints addObject:[_reconnectButton.centerXAnchor
-                                   constraintEqualToAnchor:self.centerXAnchor]];
-
-  [layoutConstraints
-      addObject:[_reconnectButton.widthAnchor
-                    constraintEqualToConstant:kReconnectButtonWidth]];
-
-  [layoutConstraints
-      addObject:[_reconnectButton.heightAnchor
-                    constraintEqualToConstant:kReconnectButtonHeight]];
-
-  [NSLayoutConstraint activateConstraints:layoutConstraints];
   [self setNeedsUpdateConstraints];
+}
+
+#pragma mark - Properties
+
+- (void)setErrorText:(NSString*)errorText {
+  if (errorText) {
+    _errorLabel.text = errorText;
+    _errorLabel.hidden = NO;
+  } else {
+    _errorLabel.hidden = YES;
+  }
+}
+
+- (NSString*)errorText {
+  return _errorLabel.text;
 }
 
 #pragma mark - Private
