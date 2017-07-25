@@ -17,7 +17,7 @@ class SerialDeviceEnumeratorWin : public SerialDeviceEnumerator {
   ~SerialDeviceEnumeratorWin() override;
 
   // Implementation for SerialDeviceEnumerator.
-  std::vector<serial::DeviceInfoPtr> GetDevices() override;
+  std::vector<mojom::SerialDeviceInfoPtr> GetDevices() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SerialDeviceEnumeratorWin);

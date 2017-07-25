@@ -30,10 +30,10 @@ class SerialIoHandlerPosix : public SerialIoHandler {
   bool ConfigurePortImpl() override;
   bool PostOpen() override;
   bool Flush() const override;
-  serial::DeviceControlSignalsPtr GetControlSignals() const override;
+  mojom::SerialDeviceControlSignalsPtr GetControlSignals() const override;
   bool SetControlSignals(
-      const serial::HostControlSignals& control_signals) override;
-  serial::ConnectionInfoPtr GetPortInfo() const override;
+      const mojom::SerialHostControlSignals& control_signals) override;
+  mojom::SerialConnectionInfoPtr GetPortInfo() const override;
   bool SetBreak() override;
   bool ClearBreak() override;
   int CheckReceiveError(char* buffer,
@@ -53,7 +53,7 @@ class SerialIoHandlerPosix : public SerialIoHandler {
   void AttemptRead(bool within_read);
   void RunReadCompleted(bool within_read,
                         int bytes_read,
-                        serial::ReceiveError error);
+                        mojom::SerialReceiveError error);
 
   // Called when file() is writable without blocking.
   void OnFileCanWriteWithoutBlocking();

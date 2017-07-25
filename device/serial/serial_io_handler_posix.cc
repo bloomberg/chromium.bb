@@ -200,28 +200,28 @@ bool SerialIoHandlerPosix::ConfigurePortImpl() {
 #endif
   }
 
-  DCHECK(options().data_bits != serial::DataBits::NONE);
+  DCHECK(options().data_bits != mojom::SerialDataBits::NONE);
   config.c_cflag &= ~CSIZE;
   switch (options().data_bits) {
-    case serial::DataBits::SEVEN:
+    case mojom::SerialDataBits::SEVEN:
       config.c_cflag |= CS7;
       break;
-    case serial::DataBits::EIGHT:
+    case mojom::SerialDataBits::EIGHT:
     default:
       config.c_cflag |= CS8;
       break;
   }
 
-  DCHECK(options().parity_bit != serial::ParityBit::NONE);
+  DCHECK(options().parity_bit != mojom::SerialParityBit::NONE);
   switch (options().parity_bit) {
-    case serial::ParityBit::EVEN:
+    case mojom::SerialParityBit::EVEN:
       config.c_cflag |= PARENB;
       config.c_cflag &= ~PARODD;
       break;
-    case serial::ParityBit::ODD:
+    case mojom::SerialParityBit::ODD:
       config.c_cflag |= (PARODD | PARENB);
       break;
-    case serial::ParityBit::NO_PARITY:
+    case mojom::SerialParityBit::NO_PARITY:
     default:
       config.c_cflag &= ~(PARODD | PARENB);
       break;
@@ -240,12 +240,12 @@ bool SerialIoHandlerPosix::ConfigurePortImpl() {
     parity_check_enabled_ = false;
   }
 
-  DCHECK(options().stop_bits != serial::StopBits::NONE);
+  DCHECK(options().stop_bits != mojom::SerialStopBits::NONE);
   switch (options().stop_bits) {
-    case serial::StopBits::TWO:
+    case mojom::SerialStopBits::TWO:
       config.c_cflag |= CSTOPB;
       break;
-    case serial::StopBits::ONE:
+    case mojom::SerialStopBits::ONE:
     default:
       config.c_cflag &= ~CSTOPB;
       break;
@@ -308,12 +308,14 @@ void SerialIoHandlerPosix::AttemptRead(bool within_read) {
         // The fd does not have data to read yet so continue waiting.
         EnsureWatchingReads();
       } else if (errno == ENXIO) {
-        RunReadCompleted(within_read, 0, serial::ReceiveError::DEVICE_LOST);
+        RunReadCompleted(within_read, 0,
+                         mojom::SerialReceiveError::DEVICE_LOST);
       } else {
-        RunReadCompleted(within_read, 0, serial::ReceiveError::SYSTEM_ERROR);
+        RunReadCompleted(within_read, 0,
+                         mojom::SerialReceiveError::SYSTEM_ERROR);
       }
     } else if (bytes_read == 0) {
-      RunReadCompleted(within_read, 0, serial::ReceiveError::DEVICE_LOST);
+      RunReadCompleted(within_read, 0, mojom::SerialReceiveError::DEVICE_LOST);
     } else {
       bool break_detected = false;
       bool parity_error_detected = false;
@@ -323,13 +325,13 @@ void SerialIoHandlerPosix::AttemptRead(bool within_read) {
 
       if (break_detected) {
         RunReadCompleted(within_read, new_bytes_read,
-                         serial::ReceiveError::BREAK);
+                         mojom::SerialReceiveError::BREAK);
       } else if (parity_error_detected) {
         RunReadCompleted(within_read, new_bytes_read,
-                         serial::ReceiveError::PARITY_ERROR);
+                         mojom::SerialReceiveError::PARITY_ERROR);
       } else {
         RunReadCompleted(within_read, new_bytes_read,
-                         serial::ReceiveError::NONE);
+                         mojom::SerialReceiveError::NONE);
       }
     }
   } else {
@@ -341,7 +343,7 @@ void SerialIoHandlerPosix::AttemptRead(bool within_read) {
 
 void SerialIoHandlerPosix::RunReadCompleted(bool within_read,
                                             int bytes_read,
-                                            serial::ReceiveError error) {
+                                            mojom::SerialReceiveError error) {
   if (within_read) {
     // Stop watching the fd to avoid more reads until the queued ReadCompleted()
     // completes and releases the pending_read_buffer.
@@ -361,9 +363,9 @@ void SerialIoHandlerPosix::OnFileCanWriteWithoutBlocking() {
                                            pending_write_buffer(),
                                            pending_write_buffer_len()));
     if (bytes_written < 0) {
-      WriteCompleted(0, serial::SendError::SYSTEM_ERROR);
+      WriteCompleted(0, mojom::SerialSendError::SYSTEM_ERROR);
     } else {
-      WriteCompleted(bytes_written, serial::SendError::NONE);
+      WriteCompleted(bytes_written, mojom::SerialSendError::NONE);
     }
   } else {
     // Stop watching the fd if we get notifications with no pending
@@ -401,15 +403,16 @@ bool SerialIoHandlerPosix::Flush() const {
   return true;
 }
 
-serial::DeviceControlSignalsPtr SerialIoHandlerPosix::GetControlSignals()
+mojom::SerialDeviceControlSignalsPtr SerialIoHandlerPosix::GetControlSignals()
     const {
   int status;
   if (ioctl(file().GetPlatformFile(), TIOCMGET, &status) == -1) {
     VPLOG(1) << "Failed to get port control signals";
-    return serial::DeviceControlSignalsPtr();
+    return mojom::SerialDeviceControlSignalsPtr();
   }
 
-  serial::DeviceControlSignalsPtr signals(serial::DeviceControlSignals::New());
+  mojom::SerialDeviceControlSignalsPtr signals(
+      mojom::SerialDeviceControlSignals::New());
   signals->dcd = (status & TIOCM_CAR) != 0;
   signals->cts = (status & TIOCM_CTS) != 0;
   signals->dsr = (status & TIOCM_DSR) != 0;
@@ -418,7 +421,7 @@ serial::DeviceControlSignalsPtr SerialIoHandlerPosix::GetControlSignals()
 }
 
 bool SerialIoHandlerPosix::SetControlSignals(
-    const serial::HostControlSignals& signals) {
+    const mojom::SerialHostControlSignals& signals) {
   int status;
 
   if (ioctl(file().GetPlatformFile(), TIOCMGET, &status) == -1) {
@@ -449,7 +452,7 @@ bool SerialIoHandlerPosix::SetControlSignals(
   return true;
 }
 
-serial::ConnectionInfoPtr SerialIoHandlerPosix::GetPortInfo() const {
+mojom::SerialConnectionInfoPtr SerialIoHandlerPosix::GetPortInfo() const {
 #if defined(OS_LINUX)
   struct termios2 config;
   if (ioctl(file().GetPlatformFile(), TCGETS2, &config) < 0) {
@@ -458,10 +461,10 @@ serial::ConnectionInfoPtr SerialIoHandlerPosix::GetPortInfo() const {
   if (tcgetattr(file().GetPlatformFile(), &config) == -1) {
 #endif
     VPLOG(1) << "Failed to get port info";
-    return serial::ConnectionInfoPtr();
+    return mojom::SerialConnectionInfoPtr();
   }
 
-  serial::ConnectionInfoPtr info(serial::ConnectionInfo::New());
+  mojom::SerialConnectionInfoPtr info(mojom::SerialConnectionInfo::New());
 #if defined(OS_LINUX)
   // Linux forces c_ospeed to contain the correct value, which is nice.
   info->bitrate = config.c_ospeed;
@@ -479,20 +482,20 @@ serial::ConnectionInfoPtr SerialIoHandlerPosix::GetPortInfo() const {
 #endif
 
   if ((config.c_cflag & CSIZE) == CS7) {
-    info->data_bits = serial::DataBits::SEVEN;
+    info->data_bits = mojom::SerialDataBits::SEVEN;
   } else if ((config.c_cflag & CSIZE) == CS8) {
-    info->data_bits = serial::DataBits::EIGHT;
+    info->data_bits = mojom::SerialDataBits::EIGHT;
   } else {
-    info->data_bits = serial::DataBits::NONE;
+    info->data_bits = mojom::SerialDataBits::NONE;
   }
   if (config.c_cflag & PARENB) {
-    info->parity_bit = (config.c_cflag & PARODD) ? serial::ParityBit::ODD
-                                                 : serial::ParityBit::EVEN;
+    info->parity_bit = (config.c_cflag & PARODD) ? mojom::SerialParityBit::ODD
+                                                 : mojom::SerialParityBit::EVEN;
   } else {
-    info->parity_bit = serial::ParityBit::NO_PARITY;
+    info->parity_bit = mojom::SerialParityBit::NO_PARITY;
   }
-  info->stop_bits =
-      (config.c_cflag & CSTOPB) ? serial::StopBits::TWO : serial::StopBits::ONE;
+  info->stop_bits = (config.c_cflag & CSTOPB) ? mojom::SerialStopBits::TWO
+                                              : mojom::SerialStopBits::ONE;
   info->cts_flow_control = (config.c_cflag & CRTSCTS) != 0;
   return info;
 }

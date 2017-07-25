@@ -38,8 +38,9 @@ SerialDeviceEnumeratorLinux::SerialDeviceEnumeratorLinux() {
 
 SerialDeviceEnumeratorLinux::~SerialDeviceEnumeratorLinux() {}
 
-std::vector<serial::DeviceInfoPtr> SerialDeviceEnumeratorLinux::GetDevices() {
-  std::vector<serial::DeviceInfoPtr> devices;
+std::vector<mojom::SerialDeviceInfoPtr>
+SerialDeviceEnumeratorLinux::GetDevices() {
+  std::vector<mojom::SerialDeviceInfoPtr> devices;
   ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev_.get()));
   if (!enumerate) {
     LOG(ERROR) << "Serial device enumeration failed.";
@@ -67,7 +68,7 @@ std::vector<serial::DeviceInfoPtr> SerialDeviceEnumeratorLinux::GetDevices() {
         udev_device_get_property_value(device.get(), kHostPathKey);
     const char* bus = udev_device_get_property_value(device.get(), kHostBusKey);
     if (path != NULL && bus != NULL) {
-      serial::DeviceInfoPtr info(serial::DeviceInfo::New());
+      mojom::SerialDeviceInfoPtr info(mojom::SerialDeviceInfo::New());
       info->path = path;
 
       const char* vendor_id =

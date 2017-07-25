@@ -49,11 +49,13 @@ class FakeSerialDeviceEnumerator : public device::SerialDeviceEnumerator {
  public:
   ~FakeSerialDeviceEnumerator() override {}
 
-  std::vector<device::serial::DeviceInfoPtr> GetDevices() override {
-    std::vector<device::serial::DeviceInfoPtr> devices;
-    device::serial::DeviceInfoPtr device0(device::serial::DeviceInfo::New());
+  std::vector<device::mojom::SerialDeviceInfoPtr> GetDevices() override {
+    std::vector<device::mojom::SerialDeviceInfoPtr> devices;
+    device::mojom::SerialDeviceInfoPtr device0(
+        device::mojom::SerialDeviceInfo::New());
     device0->path = "/dev/fakeserialmojo";
-    device::serial::DeviceInfoPtr device1(device::serial::DeviceInfo::New());
+    device::mojom::SerialDeviceInfoPtr device1(
+        device::mojom::SerialDeviceInfo::New());
     device1->path = "\\\\COM800\\";
     devices.push_back(std::move(device0));
     devices.push_back(std::move(device1));
@@ -76,7 +78,7 @@ class FakeEchoSerialIoHandler : public device::TestSerialIoHandler {
   }
 
   MOCK_METHOD1(SetControlSignals,
-               bool(const device::serial::HostControlSignals&));
+               bool(const device::mojom::SerialHostControlSignals&));
 
  protected:
   ~FakeEchoSerialIoHandler() override {}

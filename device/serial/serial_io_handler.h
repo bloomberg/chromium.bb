@@ -36,7 +36,7 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
 
   // Initiates an asynchronous Open of the device.
   virtual void Open(const std::string& port,
-                    const serial::ConnectionOptions& options,
+                    const mojom::SerialConnectionOptions& options,
                     const OpenCompleteCallback& callback);
 
 #if defined(OS_CHROMEOS)
@@ -73,10 +73,10 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
   bool IsWritePending() const;
 
   // Attempts to cancel a pending read operation.
-  void CancelRead(serial::ReceiveError reason);
+  void CancelRead(mojom::SerialReceiveError reason);
 
   // Attempts to cancel a pending write operation.
-  void CancelWrite(serial::SendError reason);
+  void CancelWrite(mojom::SerialSendError reason);
 
   // Flushes input and output buffers.
   virtual bool Flush() const = 0;
@@ -84,22 +84,22 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
   // Reads current control signals (DCD, CTS, etc.) into an existing
   // DeviceControlSignals structure. Returns |true| iff the signals were
   // successfully read.
-  virtual serial::DeviceControlSignalsPtr GetControlSignals() const = 0;
+  virtual mojom::SerialDeviceControlSignalsPtr GetControlSignals() const = 0;
 
   // Sets one or more control signals (DTR and/or RTS). Returns |true| iff
   // the signals were successfully set. Unininitialized flags in the
   // HostControlSignals structure are left unchanged.
   virtual bool SetControlSignals(
-      const serial::HostControlSignals& control_signals) = 0;
+      const mojom::SerialHostControlSignals& control_signals) = 0;
 
   // Performs platform-specific port configuration. Returns |true| iff
   // configuration was successful.
-  bool ConfigurePort(const serial::ConnectionOptions& options);
+  bool ConfigurePort(const mojom::SerialConnectionOptions& options);
 
   // Performs a platform-specific port configuration query. Fills values in an
   // existing ConnectionInfo. Returns |true| iff port configuration was
   // successfully retrieved.
-  virtual serial::ConnectionInfoPtr GetPortInfo() const = 0;
+  virtual mojom::SerialConnectionInfoPtr GetPortInfo() const = 0;
 
   // Initiates a BREAK signal. Places the transmission line in a break state
   // until the |ClearBreak| is called.
@@ -143,22 +143,22 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
   // Called by the implementation to signal that the active read has completed.
   // WARNING: Calling this method can destroy the SerialIoHandler instance
   // if the associated I/O operation was the only thing keeping it alive.
-  void ReadCompleted(int bytes_read, serial::ReceiveError error);
+  void ReadCompleted(int bytes_read, mojom::SerialReceiveError error);
 
   // Called by the implementation to signal that the active write has completed.
   // WARNING: Calling this method may destroy the SerialIoHandler instance
   // if the associated I/O operation was the only thing keeping it alive.
-  void WriteCompleted(int bytes_written, serial::SendError error);
+  void WriteCompleted(int bytes_written, mojom::SerialSendError error);
 
   // Queues a ReadCompleted call on the current thread. This is used to allow
   // ReadImpl to immediately signal completion with 0 bytes and an error,
   // without being reentrant.
-  void QueueReadCompleted(int bytes_read, serial::ReceiveError error);
+  void QueueReadCompleted(int bytes_read, mojom::SerialReceiveError error);
 
   // Queues a WriteCompleted call on the current thread. This is used to allow
   // WriteImpl to immediately signal completion with 0 bytes and an error,
   // without being reentrant.
-  void QueueWriteCompleted(int bytes_written, serial::SendError error);
+  void QueueWriteCompleted(int bytes_written, mojom::SerialSendError error);
 
   const base::File& file() const { return file_; }
 
@@ -170,7 +170,7 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
     return pending_read_buffer_ ? pending_read_buffer_->GetSize() : 0;
   }
 
-  serial::ReceiveError read_cancel_reason() const {
+  mojom::SerialReceiveError read_cancel_reason() const {
     return read_cancel_reason_;
   }
 
@@ -184,11 +184,13 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
     return pending_write_buffer_ ? pending_write_buffer_->GetSize() : 0;
   }
 
-  serial::SendError write_cancel_reason() const { return write_cancel_reason_; }
+  mojom::SerialSendError write_cancel_reason() const {
+    return write_cancel_reason_;
+  }
 
   bool write_canceled() const { return write_canceled_; }
 
-  const serial::ConnectionOptions& options() const { return options_; }
+  const mojom::SerialConnectionOptions& options() const { return options_; }
 
   // Possibly fixes up a serial port path name in a platform-specific manner.
   static std::string MaybeFixUpPortName(const std::string& port_name);
@@ -204,7 +206,7 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
  private:
   friend class base::RefCountedThreadSafe<SerialIoHandler>;
 
-  void MergeConnectionOptions(const serial::ConnectionOptions& options);
+  void MergeConnectionOptions(const mojom::SerialConnectionOptions& options);
 
   // Continues an Open operation on the FILE thread.
   void StartOpen(const std::string& port,
@@ -223,14 +225,14 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
   base::File file_;
 
   // Currently applied connection options.
-  serial::ConnectionOptions options_;
+  mojom::SerialConnectionOptions options_;
 
   std::unique_ptr<WritableBuffer> pending_read_buffer_;
-  serial::ReceiveError read_cancel_reason_;
+  mojom::SerialReceiveError read_cancel_reason_;
   bool read_canceled_;
 
   std::unique_ptr<ReadOnlyBuffer> pending_write_buffer_;
-  serial::SendError write_cancel_reason_;
+  mojom::SerialSendError write_cancel_reason_;
   bool write_canceled_;
 
   // Callback to handle the completion of a pending Open() request.

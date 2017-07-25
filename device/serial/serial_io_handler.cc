@@ -26,9 +26,9 @@ SerialIoHandler::SerialIoHandler(
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
     : ui_thread_task_runner_(ui_thread_task_runner) {
   options_.bitrate = 9600;
-  options_.data_bits = serial::DataBits::EIGHT;
-  options_.parity_bit = serial::ParityBit::NO_PARITY;
-  options_.stop_bits = serial::StopBits::ONE;
+  options_.data_bits = mojom::SerialDataBits::EIGHT;
+  options_.parity_bit = mojom::SerialParityBit::NO_PARITY;
+  options_.stop_bits = mojom::SerialStopBits::ONE;
   options_.cts_flow_control = false;
   options_.has_cts_flow_control = true;
 }
@@ -39,7 +39,7 @@ SerialIoHandler::~SerialIoHandler() {
 }
 
 void SerialIoHandler::Open(const std::string& port,
-                           const serial::ConnectionOptions& options,
+                           const mojom::SerialConnectionOptions& options,
                            const OpenCompleteCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(open_complete_.is_null());
@@ -104,17 +104,17 @@ void SerialIoHandler::ReportPathOpenError(const std::string& error_name,
 #endif
 
 void SerialIoHandler::MergeConnectionOptions(
-    const serial::ConnectionOptions& options) {
+    const mojom::SerialConnectionOptions& options) {
   if (options.bitrate) {
     options_.bitrate = options.bitrate;
   }
-  if (options.data_bits != serial::DataBits::NONE) {
+  if (options.data_bits != mojom::SerialDataBits::NONE) {
     options_.data_bits = options.data_bits;
   }
-  if (options.parity_bit != serial::ParityBit::NONE) {
+  if (options.parity_bit != mojom::SerialParityBit::NONE) {
     options_.parity_bit = options.parity_bit;
   }
-  if (options.stop_bits != serial::StopBits::NONE) {
+  if (options.stop_bits != mojom::SerialStopBits::NONE) {
     options_.stop_bits = options.stop_bits;
   }
   if (options.has_cts_flow_control) {
@@ -201,12 +201,12 @@ void SerialIoHandler::Write(std::unique_ptr<ReadOnlyBuffer> buffer) {
 }
 
 void SerialIoHandler::ReadCompleted(int bytes_read,
-                                    serial::ReceiveError error) {
+                                    mojom::SerialReceiveError error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsReadPending());
   std::unique_ptr<WritableBuffer> pending_read_buffer =
       std::move(pending_read_buffer_);
-  if (error == serial::ReceiveError::NONE) {
+  if (error == mojom::SerialReceiveError::NONE) {
     pending_read_buffer->Done(bytes_read);
   } else {
     pending_read_buffer->DoneWithError(bytes_read, static_cast<int32_t>(error));
@@ -215,12 +215,12 @@ void SerialIoHandler::ReadCompleted(int bytes_read,
 }
 
 void SerialIoHandler::WriteCompleted(int bytes_written,
-                                     serial::SendError error) {
+                                     mojom::SerialSendError error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsWritePending());
   std::unique_ptr<ReadOnlyBuffer> pending_write_buffer =
       std::move(pending_write_buffer_);
-  if (error == serial::SendError::NONE) {
+  if (error == mojom::SerialSendError::NONE) {
     pending_write_buffer->Done(bytes_written);
   } else {
     pending_write_buffer->DoneWithError(bytes_written,
@@ -239,7 +239,7 @@ bool SerialIoHandler::IsWritePending() const {
   return pending_write_buffer_ != NULL;
 }
 
-void SerialIoHandler::CancelRead(serial::ReceiveError reason) {
+void SerialIoHandler::CancelRead(mojom::SerialReceiveError reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (IsReadPending() && !read_canceled_) {
     read_canceled_ = true;
@@ -248,7 +248,7 @@ void SerialIoHandler::CancelRead(serial::ReceiveError reason) {
   }
 }
 
-void SerialIoHandler::CancelWrite(serial::SendError reason) {
+void SerialIoHandler::CancelWrite(mojom::SerialSendError reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (IsWritePending() && !write_canceled_) {
     write_canceled_ = true;
@@ -257,20 +257,21 @@ void SerialIoHandler::CancelWrite(serial::SendError reason) {
   }
 }
 
-bool SerialIoHandler::ConfigurePort(const serial::ConnectionOptions& options) {
+bool SerialIoHandler::ConfigurePort(
+    const mojom::SerialConnectionOptions& options) {
   MergeConnectionOptions(options);
   return ConfigurePortImpl();
 }
 
 void SerialIoHandler::QueueReadCompleted(int bytes_read,
-                                         serial::ReceiveError error) {
+                                         mojom::SerialReceiveError error) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&SerialIoHandler::ReadCompleted, this, bytes_read, error));
 }
 
 void SerialIoHandler::QueueWriteCompleted(int bytes_written,
-                                          serial::SendError error) {
+                                          mojom::SerialSendError error) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&SerialIoHandler::WriteCompleted, this, bytes_written, error));

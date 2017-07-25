@@ -149,10 +149,12 @@ class SerialConnection : public ApiResource,
   void OnSendTimeout();
 
   // Receives read completion notification from the |io_handler_|.
-  void OnAsyncReadComplete(int bytes_read, device::serial::ReceiveError error);
+  void OnAsyncReadComplete(int bytes_read,
+                           device::mojom::SerialReceiveError error);
 
   // Receives write completion notification from the |io_handler_|.
-  void OnAsyncWriteComplete(int bytes_sent, device::serial::SendError error);
+  void OnAsyncWriteComplete(int bytes_sent,
+                            device::mojom::SerialSendError error);
 
   // The pathname of the serial device.
   std::string port_;
@@ -204,16 +206,16 @@ class SerialConnection : public ApiResource,
 namespace mojo {
 
 template <>
-struct TypeConverter<device::serial::HostControlSignalsPtr,
+struct TypeConverter<device::mojom::SerialHostControlSignalsPtr,
                      extensions::api::serial::HostControlSignals> {
-  static device::serial::HostControlSignalsPtr Convert(
+  static device::mojom::SerialHostControlSignalsPtr Convert(
       const extensions::api::serial::HostControlSignals& input);
 };
 
 template <>
-struct TypeConverter<device::serial::ConnectionOptionsPtr,
+struct TypeConverter<device::mojom::SerialConnectionOptionsPtr,
                      extensions::api::serial::ConnectionOptions> {
-  static device::serial::ConnectionOptionsPtr Convert(
+  static device::mojom::SerialConnectionOptionsPtr Convert(
       const extensions::api::serial::ConnectionOptions& input);
 };
 
