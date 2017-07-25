@@ -266,7 +266,8 @@
     },
     'cast_channel': {
       'filepath':  'chrome/test/data/extensions/api_test/cast_channel/' \
-                   '|extensions/(browser|common)/api/cast_channel'
+                   '|components/cast_channel/' \
+                   '|extensions/browser/api/cast_channel'
     },
     'certificate_transparency': {
       'filepath': 'components/certificate_transparency/'\
@@ -1945,7 +1946,8 @@
     'cast_certificate': ['dougsteed+watch@chromium.org',
                          'mfoltz+watch@chromium.org',
                          'ryanchung+watch@chromium.org'],
-    'cast_channel': ['mfoltz+watch@chromium.org'],
+    'cast_channel': ['mfoltz+watch@chromium.org',
+                     'ryanchung+watch@chromium.org'],
     'cc': ['cc-bugs@chromium.org'],
     'certificate_transparency': ['certificate-transparency-chrome@googlegroups.com',
                                  'eranm@chromium.org',
