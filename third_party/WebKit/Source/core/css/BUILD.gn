@@ -567,6 +567,7 @@ blink_core_sources("css") {
     "properties/CSSShorthandPropertyAPIOutline.cpp",
     "properties/CSSShorthandPropertyAPIOverflow.cpp",
     "properties/CSSShorthandPropertyAPIPadding.cpp",
+    "properties/CSSShorthandPropertyAPIScrollBoundaryBehavior.cpp",
     "properties/CSSShorthandPropertyAPIScrollPadding.cpp",
     "properties/CSSShorthandPropertyAPIScrollPaddingBlock.cpp",
     "properties/CSSShorthandPropertyAPIScrollPaddingInline.cpp",
