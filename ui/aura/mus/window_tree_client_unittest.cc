@@ -724,6 +724,12 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
   bool was_acked() const { return was_acked_; }
   const gfx::Point& last_event_location() const { return last_event_location_; }
   void set_event_id(uint32_t event_id) { event_id_ = event_id; }
+  bool last_mouse_event_had_native_event() const {
+    return last_mouse_event_had_native_event_;
+  }
+  const gfx::Point& last_native_event_location() const {
+    return last_native_event_location_;
+  }
 
   // TestWindowDelegate::
   void OnMouseEvent(ui::MouseEvent* event) override {
@@ -735,6 +741,11 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
     else if (event->type() == ui::ET_MOUSE_RELEASED)
       got_release_ = true;
     last_event_location_ = event->location();
+    last_mouse_event_had_native_event_ = event->HasNativeEvent();
+    if (event->HasNativeEvent()) {
+      last_native_event_location_ =
+          ui::EventSystemLocationFromNative(event->native_event());
+    }
     event->SetHandled();
   }
 
@@ -765,6 +776,8 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
   bool got_release_ = false;
   gfx::Point last_event_location_;
   uint32_t event_id_ = 0;
+  bool last_mouse_event_had_native_event_ = false;
+  gfx::Point last_native_event_location_;
 
   DISALLOW_COPY_AND_ASSIGN(InputEventBasicTestWindowDelegate);
 };
@@ -2425,9 +2438,9 @@ TEST_F(WindowTreeClientClientTestHighDPI, InputEventsInDip) {
   uint32_t event_id = 1;
   window_delegate1.set_event_id(event_id);
   window_delegate2.set_event_id(event_id);
-  std::unique_ptr<ui::Event> ui_event(
-      new ui::MouseEvent(ui::ET_MOUSE_MOVED, event_location_in_pixels,
-                         gfx::Point(), ui::EventTimeForNow(), ui::EF_NONE, 0));
+  std::unique_ptr<ui::Event> ui_event(new ui::MouseEvent(
+      ui::ET_MOUSE_MOVED, event_location_in_pixels, event_location_in_pixels,
+      ui::EventTimeForNow(), ui::EF_NONE, 0));
   window_tree_client()->OnWindowInputEvent(
       event_id, server_id(&child1), window_tree_host.display_id(),
       ui::Event::Clone(*ui_event.get()), 0);
@@ -2438,6 +2451,13 @@ TEST_F(WindowTreeClientClientTestHighDPI, InputEventsInDip) {
   EXPECT_FALSE(window_delegate2.got_move());
   const gfx::Point event_location_in_dip(25, 30);
   EXPECT_EQ(event_location_in_dip, window_delegate1.last_event_location());
+#if defined(USE_OZONE)
+  // For ozone there should be NativeEvent.
+  EXPECT_TRUE(window_delegate1.last_mouse_event_had_native_event());
+  // And the location of the NativeEvent should be in pixels.
+  EXPECT_EQ(event_location_in_pixels,
+            window_delegate1.last_native_event_location());
+#endif
   window_delegate1.reset();
   window_delegate2.reset();
 
