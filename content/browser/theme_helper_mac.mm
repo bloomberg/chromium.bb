@@ -53,8 +53,10 @@ void FillScrollbarThemeParams(
   params->preferred_scroller_style =
       ThemeHelperMac::GetPreferredScrollerStyle();
   params->button_placement = GetButtonPlacement();
+
+  id rubber_band_value = [defaults objectForKey:@"NSScrollViewRubberbanding"];
   params->scroll_view_rubber_banding =
-      [defaults boolForKey:@"NSScrollViewRubberbanding"];
+      rubber_band_value ? [rubber_band_value boolValue] : YES;
 }
 
 void SendSystemColorsChangedMessage(content::mojom::Renderer* renderer) {
