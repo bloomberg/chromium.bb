@@ -43,9 +43,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 @property(nonatomic, strong)
     ContentSuggestionsCollectionUpdater* collectionUpdater;
 
-// Left and right margins for the content inset of the collection view.
-@property(nonatomic, assign) CGFloat cardStyleMargin;
-
 // The overscroll actions controller managing accelerators over the toolbar.
 @property(nonatomic, strong)
     OverscrollActionsController* overscrollActionsController;
@@ -58,7 +55,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 @synthesize headerCommandHandler = _headerCommandHandler;
 @synthesize suggestionsDelegate = _suggestionsDelegate;
 @synthesize collectionUpdater = _collectionUpdater;
-@synthesize cardStyleMargin = _cardStyleMargin;
 @synthesize overscrollActionsController = _overscrollActionsController;
 @synthesize overscrollDelegate = _overscrollDelegate;
 @synthesize scrolledToTop = _scrolledToTop;
@@ -68,7 +64,12 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
                    dataSource:(id<ContentSuggestionsDataSource>)dataSource {
-  UICollectionViewLayout* layout = [[ContentSuggestionsLayout alloc] init];
+  UICollectionViewLayout* layout = nil;
+  if (IsIPadIdiom()) {
+    layout = [[MDCCollectionViewFlowLayout alloc] init];
+  } else {
+    layout = [[ContentSuggestionsLayout alloc] init];
+  }
   self = [super initWithLayout:layout style:style];
   if (self) {
     _collectionUpdater = [[ContentSuggestionsCollectionUpdater alloc]
@@ -172,9 +173,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
     self.styler.cellStyle = MDCCollectionViewCellStyleGrouped;
   } else {
     self.styler.cellStyle = MDCCollectionViewCellStyleCard;
-    CGFloat margin =
-        MAX(0, (self.collectionView.frame.size.width - kMaxCardWidth) / 2);
-    self.collectionView.contentInset = UIEdgeInsetsMake(0, margin, 0, margin);
   }
   self.automaticallyAdjustsScrollViewInsets = NO;
   self.collectionView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -203,13 +201,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
        withTransitionCoordinator:
            (id<UIViewControllerTransitionCoordinator>)coordinator {
   [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-  // Change the margin, in case -willTransitionToTraitCollection: is called
-  // after this method.
-  self.cardStyleMargin = MAX(0, (size.width - kMaxCardWidth) / 2);
-  if (self.styler.cellStyle == MDCCollectionViewCellStyleCard) {
-    self.collectionView.contentInset =
-        UIEdgeInsetsMake(0, self.cardStyleMargin, 0, self.cardStyleMargin);
-  }
   [self.collectionUpdater updateMostVisitedForSize:size];
   [self.collectionView reloadData];
 }
@@ -219,16 +210,12 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
                   (id<UIViewControllerTransitionCoordinator>)coordinator {
   [super willTransitionToTraitCollection:newCollection
                withTransitionCoordinator:coordinator];
-  // Invalidating the layout after changing the cellStyle/contentInset results
-  // in the layout not being updated. Do it before to have it taken into
-  // account.
+  // Invalidating the layout after changing the cellStyle results in the layout
+  // not being updated. Do it before to have it taken into account.
   [self.collectionView.collectionViewLayout invalidateLayout];
   if (ShouldCellsBeFullWidth(newCollection)) {
-    self.collectionView.contentInset = UIEdgeInsetsZero;
     self.styler.cellStyle = MDCCollectionViewCellStyleGrouped;
   } else {
-    self.collectionView.contentInset =
-        UIEdgeInsetsMake(0, self.cardStyleMargin, 0, self.cardStyleMargin);
     self.styler.cellStyle = MDCCollectionViewCellStyleCard;
   }
 }
@@ -294,10 +281,17 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   UIEdgeInsets parentInset = [super collectionView:collectionView
                                             layout:collectionViewLayout
                             insetForSectionAtIndex:section];
-  if ([self.collectionUpdater isMostVisitedSection:section] ||
-      [self.collectionUpdater isHeaderSection:section]) {
+  if ([self.collectionUpdater isHeaderSection:section]) {
+    return parentInset;
+  }
+  if ([self.collectionUpdater isMostVisitedSection:section]) {
     CGFloat margin = content_suggestions::centeredTilesMarginForWidth(
-        collectionView.frame.size.width - 2 * collectionView.contentInset.left);
+        collectionView.frame.size.width);
+    parentInset.left = margin;
+    parentInset.right = margin;
+  } else if (self.styler.cellStyle == MDCCollectionViewCellStyleCard) {
+    CGFloat margin =
+        MAX(0, (collectionView.frame.size.width - kMaxCardWidth) / 2);
     parentInset.left = margin;
     parentInset.right = margin;
   }
@@ -379,9 +373,8 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   UIEdgeInsets inset = [self collectionView:collectionView
                                      layout:collectionView.collectionViewLayout
                      insetForSectionAtIndex:indexPath.section];
-  UIEdgeInsets contentInset = self.collectionView.contentInset;
-  CGFloat width = CGRectGetWidth(collectionView.bounds) - inset.left -
-                  inset.right - contentInset.left - contentInset.right;
+  CGFloat width =
+      CGRectGetWidth(collectionView.bounds) - inset.left - inset.right;
 
   return [item cellHeightForWidth:width];
 }

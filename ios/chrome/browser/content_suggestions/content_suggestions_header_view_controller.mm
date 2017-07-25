@@ -121,6 +121,21 @@ const CGFloat kHintLabelSidePadding = 12;
     [self.headerView hideToolbarViewsForNewTabPage];
 }
 
+#pragma mark - UIViewController
+
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:
+           (id<UIViewControllerTransitionCoordinator>)coordinator {
+  [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+  void (^alongsideBlock)(id<UIViewControllerTransitionCoordinatorContext>) =
+      ^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        [self.fakeOmniboxWidthConstraint
+            setConstant:content_suggestions::searchFieldWidth(size.width)];
+      };
+  [coordinator animateAlongsideTransition:alongsideBlock completion:nil];
+}
+
 #pragma mark - ContentSuggestionsHeaderControlling
 
 - (void)updateSearchFieldForOffset:(CGFloat)offset {
