@@ -21,7 +21,7 @@
 #include "net/disk_cache/simple/simple_index.h"
 
 namespace base {
-class SingleThreadTaskRunner;
+class SequencedTaskRunner;
 class TaskRunner;
 }
 
@@ -81,11 +81,10 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
     uint64_t cache_size_;  // Total cache storage size in bytes.
   };
 
-  SimpleIndexFile(
-      const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
-      const scoped_refptr<base::TaskRunner>& worker_pool,
-      net::CacheType cache_type,
-      const base::FilePath& cache_directory);
+  SimpleIndexFile(const scoped_refptr<base::SequencedTaskRunner>& cache_runner,
+                  const scoped_refptr<base::TaskRunner>& worker_pool,
+                  net::CacheType cache_type,
+                  const base::FilePath& cache_directory);
   virtual ~SimpleIndexFile();
 
   // Get index entries based on current disk context.
@@ -183,7 +182,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
     uint32_t crc;
   };
 
-  const scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
+  const scoped_refptr<base::SequencedTaskRunner> cache_runner_;
   const scoped_refptr<base::TaskRunner> worker_pool_;
   const net::CacheType cache_type_;
   const base::FilePath cache_directory_;
