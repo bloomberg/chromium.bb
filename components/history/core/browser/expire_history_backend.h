@@ -20,6 +20,7 @@ class GURL;
 class TestingProfile;
 
 namespace base {
+struct Feature;
 class SequencedTaskRunner;
 }
 
@@ -41,6 +42,11 @@ class ExpiringVisitsReader {
 };
 
 typedef std::vector<const ExpiringVisitsReader*> ExpiringVisitsReaders;
+
+namespace internal {
+// Feature that enables clearing old on-demand favicons.
+extern const base::Feature kClearOldOnDemandFavicons;
+}  // namespace internal
 
 // Helper component to HistoryBackend that manages expiration and deleting of
 // history.
@@ -102,6 +108,16 @@ class ExpireHistoryBackend {
   FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, ExpireSomeOldHistory);
   FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, ExpiringVisitsReader);
   FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, ExpireSomeOldHistoryWithSource);
+  FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest,
+                           ClearOldOnDemandFaviconsDoesNotDeleteStarred);
+  FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest,
+                           ClearOldOnDemandFaviconsDoesDeleteUnstarred);
+  FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest,
+                           ClearOldOnDemandFaviconsDoesDeleteAfterLongDelay);
+  FRIEND_TEST_ALL_PREFIXES(
+      ExpireHistoryTest,
+      ClearOldOnDemandFaviconsDoesNotDeleteAfterShortDelay);
+
   friend class ::TestingProfile;
 
   struct DeleteEffects {
@@ -206,6 +222,9 @@ class ExpireHistoryBackend {
   // future.
   void DoExpireIteration();
 
+  // Clears all old on-demand favicons from thumbnail database.
+  void ClearOldOnDemandFavicons(base::Time expiration_threshold);
+
   // Tries to expire the oldest |max_visits| visits from history that are older
   // than |time_threshold|. The return value indicates if we think there might
   // be more history to expire with the current time threshold (it does not
@@ -239,6 +258,9 @@ class ExpireHistoryBackend {
 
   // The threshold for "old" history where we will automatically delete it.
   base::TimeDelta expiration_threshold_;
+
+  // The lastly used threshold for "old" on-demand favicons.
+  base::Time last_on_demand_expiration_threshold_;
 
   // List of all distinct types of readers. This list is used to populate the
   // work queue.

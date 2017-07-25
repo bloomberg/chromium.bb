@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -114,8 +115,27 @@ const int kExpirationDelaySec = 30;
 // iteration, so we want to wait longer before checking to avoid wasting CPU.
 const int kExpirationEmptyDelayMin = 5;
 
+// The minimum number of hours between checking for old on-demand favicons that
+// should be cleared.
+const int kClearOnDemandFaviconsIntervalHours = 24;
+
+bool IsAnyURLBookmarked(HistoryBackendClient* backend_client,
+                        const std::vector<GURL>& urls) {
+  for (const GURL& url : urls) {
+    if (backend_client->IsBookmarked(url))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
+namespace internal {
+
+const base::Feature kClearOldOnDemandFavicons{
+    "ClearOldOnDemandFavicons", base::FEATURE_DISABLED_BY_DEFAULT};
+
+}  // namespace internal
 
 // ExpireHistoryBackend::DeleteEffects ----------------------------------------
 
@@ -473,12 +493,52 @@ void ExpireHistoryBackend::DoExpireIteration() {
       GetCurrentExpirationTime(), reader, kNumExpirePerIteration);
 
   work_queue_.pop();
-  // If there are more items to expire, add the reader back to the queue, thus
-  // creating a new task for future iterations.
-  if (more_to_expire)
+  if (more_to_expire) {
+    // If there are more items to expire, add the reader back to the queue, thus
+    // creating a new task for future iterations.
     work_queue_.push(reader);
+  } else {
+    // Otherwise do a final clean-up - remove old favicons not bound to visits.
+    ClearOldOnDemandFavicons(GetCurrentExpirationTime());
+  }
 
   ScheduleExpire();
+}
+
+void ExpireHistoryBackend::ClearOldOnDemandFavicons(
+    base::Time expiration_threshold) {
+  if (!base::FeatureList::IsEnabled(internal::kClearOldOnDemandFavicons))
+    return;
+
+  // Extra precaution to avoid repeated calls to GetOldOnDemandFavicons() close
+  // in time, since it can be fairly expensive.
+  if (expiration_threshold <
+      last_on_demand_expiration_threshold_ +
+          base::TimeDelta::FromHours(kClearOnDemandFaviconsIntervalHours)) {
+    return;
+  }
+
+  last_on_demand_expiration_threshold_ = expiration_threshold;
+
+  std::map<favicon_base::FaviconID, IconMappingsForExpiry> icon_mappings =
+      thumb_db_->GetOldOnDemandFavicons(expiration_threshold);
+  DeleteEffects effects;
+
+  for (auto id_and_mappings_pair : icon_mappings) {
+    favicon_base::FaviconID icon_id = id_and_mappings_pair.first;
+    const IconMappingsForExpiry& mappings = id_and_mappings_pair.second;
+
+    if (backend_client_ &&
+        IsAnyURLBookmarked(backend_client_, mappings.page_urls)) {
+      continue;
+    }
+
+    thumb_db_->DeleteFavicon(icon_id);
+    thumb_db_->DeleteIconMappingsForFaviconId(icon_id);
+    effects.deleted_favicons.insert(mappings.icon_url);
+  }
+
+  BroadcastNotifications(&effects, DELETION_EXPIRED);
 }
 
 bool ExpireHistoryBackend::ExpireSomeOldHistory(

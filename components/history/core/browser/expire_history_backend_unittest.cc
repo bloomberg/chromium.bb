@@ -20,6 +20,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_backend_notifier.h"
@@ -889,6 +890,151 @@ TEST_F(ExpireHistoryTest, ExpiringVisitsReader) {
   // Now, read all visits and verify that there's at least one.
   EXPECT_TRUE(all->Read(now, main_db_.get(), &visits, 1));
   EXPECT_EQ(1U, visits.size());
+}
+
+// Test that ClearOldOnDemandFavicons() deletes favicons associated only to
+// unstarred page URLs.
+TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesDeleteUnstarred) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(internal::kClearOldOnDemandFavicons);
+
+  // The blob does not encode any real bitmap, obviously.
+  const unsigned char kBlob[] = "0";
+  scoped_refptr<base::RefCountedBytes> favicon(
+      new base::RefCountedBytes(kBlob, sizeof(kBlob)));
+
+  // Icon: old and not bookmarked case.
+  GURL url("http://google.com/favicon.ico");
+  favicon_base::FaviconID icon_id = thumb_db_->AddFavicon(
+      url, favicon_base::FAVICON, favicon, FaviconBitmapType::ON_DEMAND,
+      base::Time::Now() - base::TimeDelta::FromDays(100), gfx::Size());
+  ASSERT_NE(0, icon_id);
+  GURL page_url("http://google.com/");
+  ASSERT_NE(0, thumb_db_->AddIconMapping(page_url, icon_id));
+
+  expirer_.ClearOldOnDemandFavicons(base::Time::Now() -
+                                    base::TimeDelta::FromDays(90));
+
+  // The icon gets deleted.
+  EXPECT_FALSE(thumb_db_->GetIconMappingsForPageURL(page_url, nullptr));
+  EXPECT_FALSE(thumb_db_->GetFaviconHeader(icon_id, nullptr, nullptr));
+  EXPECT_FALSE(thumb_db_->GetFaviconBitmaps(icon_id, nullptr));
+}
+
+// Test that ClearOldOnDemandFavicons() deletes favicons associated to at least
+// one starred page URL.
+TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesNotDeleteStarred) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(internal::kClearOldOnDemandFavicons);
+
+  // The blob does not encode any real bitmap, obviously.
+  const unsigned char kBlob[] = "0";
+  scoped_refptr<base::RefCountedBytes> favicon(
+      new base::RefCountedBytes(kBlob, sizeof(kBlob)));
+
+  // Icon: old but bookmarked case.
+  GURL url("http://google.com/favicon.ico");
+  favicon_base::FaviconID icon_id = thumb_db_->AddFavicon(
+      url, favicon_base::FAVICON, favicon, FaviconBitmapType::ON_DEMAND,
+      base::Time::Now() - base::TimeDelta::FromDays(100), gfx::Size());
+  ASSERT_NE(0, icon_id);
+  GURL page_url1("http://google.com/1");
+  ASSERT_NE(0, thumb_db_->AddIconMapping(page_url1, icon_id));
+  StarURL(page_url1);
+  GURL page_url2("http://google.com/2");
+  ASSERT_NE(0, thumb_db_->AddIconMapping(page_url2, icon_id));
+
+  expirer_.ClearOldOnDemandFavicons(base::Time::Now() -
+                                    base::TimeDelta::FromDays(90));
+
+  // Nothing gets deleted.
+  EXPECT_TRUE(thumb_db_->GetFaviconHeader(icon_id, nullptr, nullptr));
+  std::vector<FaviconBitmap> favicon_bitmaps;
+  EXPECT_TRUE(thumb_db_->GetFaviconBitmaps(icon_id, &favicon_bitmaps));
+  EXPECT_EQ(1u, favicon_bitmaps.size());
+  std::vector<IconMapping> icon_mapping;
+  EXPECT_TRUE(thumb_db_->GetIconMappingsForPageURL(page_url1, &icon_mapping));
+  EXPECT_TRUE(thumb_db_->GetIconMappingsForPageURL(page_url2, &icon_mapping));
+  EXPECT_EQ(2u, icon_mapping.size());
+  EXPECT_EQ(icon_id, icon_mapping[0].icon_id);
+  EXPECT_EQ(icon_id, icon_mapping[1].icon_id);
+}
+
+// Test that ClearOldOnDemandFavicons() has effect if the last clearing was long
+// time age (such as 2 days ago).
+TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesDeleteAfterLongDelay) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(internal::kClearOldOnDemandFavicons);
+
+  // Previous clearing (2 days ago).
+  expirer_.ClearOldOnDemandFavicons(base::Time::Now() -
+                                    base::TimeDelta::FromDays(92));
+
+  // The blob does not encode any real bitmap, obviously.
+  const unsigned char kBlob[] = "0";
+  scoped_refptr<base::RefCountedBytes> favicon(
+      new base::RefCountedBytes(kBlob, sizeof(kBlob)));
+
+  // Icon: old and not bookmarked case.
+  GURL url("http://google.com/favicon.ico");
+  favicon_base::FaviconID icon_id = thumb_db_->AddFavicon(
+      url, favicon_base::FAVICON, favicon, FaviconBitmapType::ON_DEMAND,
+      base::Time::Now() - base::TimeDelta::FromDays(100), gfx::Size());
+  ASSERT_NE(0, icon_id);
+  GURL page_url("http://google.com/");
+  ASSERT_NE(0, thumb_db_->AddIconMapping(page_url, icon_id));
+
+  expirer_.ClearOldOnDemandFavicons(base::Time::Now() -
+                                    base::TimeDelta::FromDays(90));
+
+  // The icon gets deleted.
+  EXPECT_FALSE(thumb_db_->GetIconMappingsForPageURL(page_url, nullptr));
+  EXPECT_FALSE(thumb_db_->GetFaviconHeader(icon_id, nullptr, nullptr));
+  EXPECT_FALSE(thumb_db_->GetFaviconBitmaps(icon_id, nullptr));
+}
+
+// Test that ClearOldOnDemandFavicons() deletes favicons associated to at least
+// one starred page URL.
+TEST_F(ExpireHistoryTest,
+       ClearOldOnDemandFaviconsDoesNotDeleteAfterShortDelay) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(internal::kClearOldOnDemandFavicons);
+
+  // Previous clearing (5 minutes ago).
+  expirer_.ClearOldOnDemandFavicons(base::Time::Now() -
+                                    base::TimeDelta::FromDays(90) -
+                                    base::TimeDelta::FromMinutes(5));
+
+  // The blob does not encode any real bitmap, obviously.
+  const unsigned char kBlob[] = "0";
+  scoped_refptr<base::RefCountedBytes> favicon(
+      new base::RefCountedBytes(kBlob, sizeof(kBlob)));
+
+  // Icon: old but bookmarked case.
+  GURL url("http://google.com/favicon.ico");
+  favicon_base::FaviconID icon_id = thumb_db_->AddFavicon(
+      url, favicon_base::FAVICON, favicon, FaviconBitmapType::ON_DEMAND,
+      base::Time::Now() - base::TimeDelta::FromDays(100), gfx::Size());
+  ASSERT_NE(0, icon_id);
+  GURL page_url1("http://google.com/1");
+  ASSERT_NE(0, thumb_db_->AddIconMapping(page_url1, icon_id));
+  GURL page_url2("http://google.com/2");
+  ASSERT_NE(0, thumb_db_->AddIconMapping(page_url2, icon_id));
+
+  expirer_.ClearOldOnDemandFavicons(base::Time::Now() -
+                                    base::TimeDelta::FromDays(90));
+
+  // Nothing gets deleted.
+  EXPECT_TRUE(thumb_db_->GetFaviconHeader(icon_id, nullptr, nullptr));
+  std::vector<FaviconBitmap> favicon_bitmaps;
+  EXPECT_TRUE(thumb_db_->GetFaviconBitmaps(icon_id, &favicon_bitmaps));
+  EXPECT_EQ(1u, favicon_bitmaps.size());
+  std::vector<IconMapping> icon_mapping;
+  EXPECT_TRUE(thumb_db_->GetIconMappingsForPageURL(page_url1, &icon_mapping));
+  EXPECT_TRUE(thumb_db_->GetIconMappingsForPageURL(page_url2, &icon_mapping));
+  EXPECT_EQ(2u, icon_mapping.size());
+  EXPECT_EQ(icon_id, icon_mapping[0].icon_id);
+  EXPECT_EQ(icon_id, icon_mapping[1].icon_id);
 }
 
 // TODO(brettw) add some visits with no URL to make sure everything is updated

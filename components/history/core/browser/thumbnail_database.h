@@ -66,6 +66,11 @@ class ThumbnailDatabase {
   // true try to trim all unused cache, otherwise trim by half.
   void TrimMemory(bool aggressively);
 
+  // Get all on-demand favicon bitmaps that have been last requested prior to
+  // |threshold|.
+  std::map<favicon_base::FaviconID, IconMappingsForExpiry>
+  GetOldOnDemandFavicons(base::Time threshold);
+
   // Favicon Bitmaps -----------------------------------------------------------
 
   // Returns true if there are favicon bitmaps for |icon_id|. If
@@ -199,6 +204,10 @@ class ThumbnailDatabase {
   // Deletes the icon mapping entries for the given page url.
   // Returns true if the deletion succeeded.
   bool DeleteIconMappings(const GURL& page_url);
+
+  // Deletes the icon mapping entries for the given favicon ID.
+  // Returns true if the deletion succeeded.
+  bool DeleteIconMappingsForFaviconId(favicon_base::FaviconID id);
 
   // Deletes the icon mapping with |mapping_id|.
   // Returns true if the deletion succeeded.

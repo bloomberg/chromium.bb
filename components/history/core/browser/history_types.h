@@ -524,6 +524,18 @@ enum FaviconBitmapType {
   ON_DEMAND
 };
 
+// Defines all associated mappings of a given favicon.
+struct IconMappingsForExpiry {
+  IconMappingsForExpiry();
+  IconMappingsForExpiry(const IconMappingsForExpiry& other);
+  ~IconMappingsForExpiry();
+
+  // URL of a given favicon.
+  GURL icon_url;
+  // URLs of all pages mapped to a given favicon
+  std::vector<GURL> page_urls;
+};
+
 // Defines a favicon bitmap stored in the history backend.
 struct FaviconBitmap {
   FaviconBitmap();
