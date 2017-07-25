@@ -145,7 +145,7 @@ TEST_F(LaserPointerControllerTest, LaserPointerPrediction) {
             controller_test_api_.predicted_laser_points().GetNumberOfPoints());
   // Verify predicted points are in the right direction.
   for (const auto& point :
-       controller_test_api_.predicted_laser_points().laser_points()) {
+       controller_test_api_.predicted_laser_points().points()) {
     EXPECT_LT(30, point.location.x());
     EXPECT_LT(30, point.location.y());
   }
