@@ -22,22 +22,23 @@ class TestSerialIoHandler : public SerialIoHandler {
 
   // SerialIoHandler overrides.
   void Open(const std::string& port,
-            const serial::ConnectionOptions& options,
+            const mojom::SerialConnectionOptions& options,
             const OpenCompleteCallback& callback) override;
   void ReadImpl() override;
   void CancelReadImpl() override;
   void WriteImpl() override;
   void CancelWriteImpl() override;
   bool ConfigurePortImpl() override;
-  serial::DeviceControlSignalsPtr GetControlSignals() const override;
-  serial::ConnectionInfoPtr GetPortInfo() const override;
+  mojom::SerialDeviceControlSignalsPtr GetControlSignals() const override;
+  mojom::SerialConnectionInfoPtr GetPortInfo() const override;
   bool Flush() const override;
-  bool SetControlSignals(const serial::HostControlSignals& signals) override;
+  bool SetControlSignals(
+      const mojom::SerialHostControlSignals& signals) override;
   bool SetBreak() override;
   bool ClearBreak() override;
 
-  serial::ConnectionInfo* connection_info() { return &info_; }
-  serial::DeviceControlSignals* device_control_signals() {
+  mojom::SerialConnectionInfo* connection_info() { return &info_; }
+  mojom::SerialDeviceControlSignals* device_control_signals() {
     return &device_control_signals_;
   }
   bool dtr() { return dtr_; }
@@ -54,8 +55,8 @@ class TestSerialIoHandler : public SerialIoHandler {
 
  private:
   bool opened_;
-  serial::ConnectionInfo info_;
-  serial::DeviceControlSignals device_control_signals_;
+  mojom::SerialConnectionInfo info_;
+  mojom::SerialDeviceControlSignals device_control_signals_;
   bool dtr_;
   bool rts_;
   mutable int flushes_;

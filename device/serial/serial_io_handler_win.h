@@ -25,10 +25,10 @@ class SerialIoHandlerWin : public SerialIoHandler,
   void CancelWriteImpl() override;
   bool ConfigurePortImpl() override;
   bool Flush() const override;
-  serial::DeviceControlSignalsPtr GetControlSignals() const override;
+  mojom::SerialDeviceControlSignalsPtr GetControlSignals() const override;
   bool SetControlSignals(
-      const serial::HostControlSignals& control_signals) override;
-  serial::ConnectionInfoPtr GetPortInfo() const override;
+      const mojom::SerialHostControlSignals& control_signals) override;
+  mojom::SerialConnectionInfoPtr GetPortInfo() const override;
   bool SetBreak() override;
   bool ClearBreak() override;
   bool PostOpen() override;

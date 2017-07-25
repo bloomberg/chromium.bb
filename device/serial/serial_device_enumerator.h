@@ -19,7 +19,7 @@ class SerialDeviceEnumerator {
   SerialDeviceEnumerator();
   virtual ~SerialDeviceEnumerator();
 
-  virtual std::vector<serial::DeviceInfoPtr> GetDevices() = 0;
+  virtual std::vector<mojom::SerialDeviceInfoPtr> GetDevices() = 0;
 };
 
 }  // namespace device

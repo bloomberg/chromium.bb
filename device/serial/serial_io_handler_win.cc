@@ -49,33 +49,33 @@ int BitrateToSpeedConstant(int bitrate) {
 #undef BITRATE_TO_SPEED_CASE
 }
 
-int DataBitsEnumToConstant(serial::DataBits data_bits) {
+int DataBitsEnumToConstant(mojom::SerialDataBits data_bits) {
   switch (data_bits) {
-    case serial::DataBits::SEVEN:
+    case mojom::SerialDataBits::SEVEN:
       return 7;
-    case serial::DataBits::EIGHT:
+    case mojom::SerialDataBits::EIGHT:
     default:
       return 8;
   }
 }
 
-int ParityBitEnumToConstant(serial::ParityBit parity_bit) {
+int ParityBitEnumToConstant(mojom::SerialParityBit parity_bit) {
   switch (parity_bit) {
-    case serial::ParityBit::EVEN:
+    case mojom::SerialParityBit::EVEN:
       return EVENPARITY;
-    case serial::ParityBit::ODD:
+    case mojom::SerialParityBit::ODD:
       return ODDPARITY;
-    case serial::ParityBit::NO_PARITY:
+    case mojom::SerialParityBit::NO_PARITY:
     default:
       return NOPARITY;
   }
 }
 
-int StopBitsEnumToConstant(serial::StopBits stop_bits) {
+int StopBitsEnumToConstant(mojom::SerialStopBits stop_bits) {
   switch (stop_bits) {
-    case serial::StopBits::TWO:
+    case mojom::SerialStopBits::TWO:
       return TWOSTOPBITS;
-    case serial::StopBits::ONE:
+    case mojom::SerialStopBits::ONE:
     default:
       return ONESTOPBIT;
   }
@@ -109,35 +109,35 @@ int SpeedConstantToBitrate(int speed) {
 #undef SPEED_TO_BITRATE_CASE
 }
 
-serial::DataBits DataBitsConstantToEnum(int data_bits) {
+mojom::SerialDataBits DataBitsConstantToEnum(int data_bits) {
   switch (data_bits) {
     case 7:
-      return serial::DataBits::SEVEN;
+      return mojom::SerialDataBits::SEVEN;
     case 8:
     default:
-      return serial::DataBits::EIGHT;
+      return mojom::SerialDataBits::EIGHT;
   }
 }
 
-serial::ParityBit ParityBitConstantToEnum(int parity_bit) {
+mojom::SerialParityBit ParityBitConstantToEnum(int parity_bit) {
   switch (parity_bit) {
     case EVENPARITY:
-      return serial::ParityBit::EVEN;
+      return mojom::SerialParityBit::EVEN;
     case ODDPARITY:
-      return serial::ParityBit::ODD;
+      return mojom::SerialParityBit::ODD;
     case NOPARITY:
     default:
-      return serial::ParityBit::NO_PARITY;
+      return mojom::SerialParityBit::NO_PARITY;
   }
 }
 
-serial::StopBits StopBitsConstantToEnum(int stop_bits) {
+mojom::SerialStopBits StopBitsConstantToEnum(int stop_bits) {
   switch (stop_bits) {
     case TWOSTOPBITS:
-      return serial::StopBits::TWO;
+      return mojom::SerialStopBits::TWO;
     case ONESTOPBIT:
     default:
-      return serial::StopBits::ONE;
+      return mojom::SerialStopBits::ONE;
   }
 }
 
@@ -228,7 +228,7 @@ void SerialIoHandlerWin::OnDeviceRemoved(const std::string& device_path) {
   }
 
   if (port() == com_port)
-    CancelRead(serial::ReceiveError::DEVICE_LOST);
+    CancelRead(mojom::SerialReceiveError::DEVICE_LOST);
 }
 
 bool SerialIoHandlerWin::PostOpen() {
@@ -278,7 +278,7 @@ void SerialIoHandlerWin::ReadImpl() {
       file().GetPlatformFile(), &event_mask_, &comm_context_->overlapped);
   if (!ok && GetLastError() != ERROR_IO_PENDING) {
     VPLOG(1) << "Failed to receive serial event";
-    QueueReadCompleted(0, serial::ReceiveError::SYSTEM_ERROR);
+    QueueReadCompleted(0, mojom::SerialReceiveError::SYSTEM_ERROR);
   }
   is_comm_pending_ = true;
 }
@@ -295,7 +295,7 @@ void SerialIoHandlerWin::WriteImpl() {
                         &write_context_->overlapped);
   if (!ok && GetLastError() != ERROR_IO_PENDING) {
     VPLOG(1) << "Write failed";
-    QueueWriteCompleted(0, serial::SendError::SYSTEM_ERROR);
+    QueueWriteCompleted(0, mojom::SerialSendError::SYSTEM_ERROR);
   }
 }
 
@@ -332,13 +332,13 @@ bool SerialIoHandlerWin::ConfigurePortImpl() {
   DCHECK(options().bitrate);
   config.BaudRate = BitrateToSpeedConstant(options().bitrate);
 
-  DCHECK(options().data_bits != serial::DataBits::NONE);
+  DCHECK(options().data_bits != mojom::SerialDataBits::NONE);
   config.ByteSize = DataBitsEnumToConstant(options().data_bits);
 
-  DCHECK(options().parity_bit != serial::ParityBit::NONE);
+  DCHECK(options().parity_bit != mojom::SerialParityBit::NONE);
   config.Parity = ParityBitEnumToConstant(options().parity_bit);
 
-  DCHECK(options().stop_bits != serial::StopBits::NONE);
+  DCHECK(options().stop_bits != mojom::SerialStopBits::NONE);
   config.StopBits = StopBitsEnumToConstant(options().stop_bits);
 
   DCHECK(options().has_cts_flow_control);
@@ -380,17 +380,17 @@ void SerialIoHandlerWin::OnIOCompleted(
     if (!ClearCommError(file().GetPlatformFile(), &errors, &status) ||
         errors != 0) {
       if (errors & CE_BREAK) {
-        ReadCompleted(0, serial::ReceiveError::BREAK);
+        ReadCompleted(0, mojom::SerialReceiveError::BREAK);
       } else if (errors & CE_FRAME) {
-        ReadCompleted(0, serial::ReceiveError::FRAME_ERROR);
+        ReadCompleted(0, mojom::SerialReceiveError::FRAME_ERROR);
       } else if (errors & CE_OVERRUN) {
-        ReadCompleted(0, serial::ReceiveError::OVERRUN);
+        ReadCompleted(0, mojom::SerialReceiveError::OVERRUN);
       } else if (errors & CE_RXOVER) {
-        ReadCompleted(0, serial::ReceiveError::BUFFER_OVERFLOW);
+        ReadCompleted(0, mojom::SerialReceiveError::BUFFER_OVERFLOW);
       } else if (errors & CE_RXPARITY) {
-        ReadCompleted(0, serial::ReceiveError::PARITY_ERROR);
+        ReadCompleted(0, mojom::SerialReceiveError::PARITY_ERROR);
       } else {
-        ReadCompleted(0, serial::ReceiveError::SYSTEM_ERROR);
+        ReadCompleted(0, mojom::SerialReceiveError::SYSTEM_ERROR);
       }
       return;
     }
@@ -398,7 +398,7 @@ void SerialIoHandlerWin::OnIOCompleted(
     if (read_canceled()) {
       ReadCompleted(bytes_transferred, read_cancel_reason());
     } else if (error != ERROR_SUCCESS && error != ERROR_OPERATION_ABORTED) {
-      ReadCompleted(0, serial::ReceiveError::SYSTEM_ERROR);
+      ReadCompleted(0, mojom::SerialReceiveError::SYSTEM_ERROR);
     } else if (pending_read_buffer()) {
       BOOL ok = ::ReadFile(file().GetPlatformFile(),
                            pending_read_buffer(),
@@ -407,26 +407,26 @@ void SerialIoHandlerWin::OnIOCompleted(
                            &read_context_->overlapped);
       if (!ok && GetLastError() != ERROR_IO_PENDING) {
         VPLOG(1) << "Read failed";
-        ReadCompleted(0, serial::ReceiveError::SYSTEM_ERROR);
+        ReadCompleted(0, mojom::SerialReceiveError::SYSTEM_ERROR);
       }
     }
   } else if (context == read_context_.get()) {
     if (read_canceled()) {
       ReadCompleted(bytes_transferred, read_cancel_reason());
     } else if (error != ERROR_SUCCESS && error != ERROR_OPERATION_ABORTED) {
-      ReadCompleted(0, serial::ReceiveError::SYSTEM_ERROR);
+      ReadCompleted(0, mojom::SerialReceiveError::SYSTEM_ERROR);
     } else {
       ReadCompleted(bytes_transferred,
                     error == ERROR_SUCCESS
-                        ? serial::ReceiveError::NONE
-                        : serial::ReceiveError::SYSTEM_ERROR);
+                        ? mojom::SerialReceiveError::NONE
+                        : mojom::SerialReceiveError::SYSTEM_ERROR);
     }
   } else if (context == write_context_.get()) {
     DCHECK(pending_write_buffer());
     if (write_canceled()) {
       WriteCompleted(0, write_cancel_reason());
     } else if (error != ERROR_SUCCESS && error != ERROR_OPERATION_ABORTED) {
-      WriteCompleted(0, serial::SendError::SYSTEM_ERROR);
+      WriteCompleted(0, mojom::SerialSendError::SYSTEM_ERROR);
       if (error == ERROR_GEN_FAILURE && IsReadPending()) {
         // For devices using drivers such as FTDI, CP2xxx, when device is
         // disconnected, the context is comm_context_ and the error is
@@ -435,14 +435,15 @@ void SerialIoHandlerWin::OnIOCompleted(
         // disconnected, the context is write_context_ and the error is
         // ERROR_GEN_FAILURE. In this situation, in addition to a write error
         // signal, also need to generate a read error signal
-        // serial::OnReceiveError which will notify the app about the
+        // mojom::SerialOnReceiveError which will notify the app about the
         // disconnection.
-        CancelRead(serial::ReceiveError::SYSTEM_ERROR);
+        CancelRead(mojom::SerialReceiveError::SYSTEM_ERROR);
       }
     } else {
-      WriteCompleted(bytes_transferred, error == ERROR_SUCCESS
-                                            ? serial::SendError::NONE
-                                            : serial::SendError::SYSTEM_ERROR);
+      WriteCompleted(bytes_transferred,
+                     error == ERROR_SUCCESS
+                         ? mojom::SerialSendError::NONE
+                         : mojom::SerialSendError::SYSTEM_ERROR);
     }
   } else {
     NOTREACHED() << "Invalid IOContext";
@@ -457,14 +458,16 @@ bool SerialIoHandlerWin::Flush() const {
   return true;
 }
 
-serial::DeviceControlSignalsPtr SerialIoHandlerWin::GetControlSignals() const {
+mojom::SerialDeviceControlSignalsPtr SerialIoHandlerWin::GetControlSignals()
+    const {
   DWORD status;
   if (!GetCommModemStatus(file().GetPlatformFile(), &status)) {
     VPLOG(1) << "Failed to get port control signals";
-    return serial::DeviceControlSignalsPtr();
+    return mojom::SerialDeviceControlSignalsPtr();
   }
 
-  serial::DeviceControlSignalsPtr signals(serial::DeviceControlSignals::New());
+  mojom::SerialDeviceControlSignalsPtr signals(
+      mojom::SerialDeviceControlSignals::New());
   signals->dcd = (status & MS_RLSD_ON) != 0;
   signals->cts = (status & MS_CTS_ON) != 0;
   signals->dsr = (status & MS_DSR_ON) != 0;
@@ -473,7 +476,7 @@ serial::DeviceControlSignalsPtr SerialIoHandlerWin::GetControlSignals() const {
 }
 
 bool SerialIoHandlerWin::SetControlSignals(
-    const serial::HostControlSignals& signals) {
+    const mojom::SerialHostControlSignals& signals) {
   if (signals.has_dtr) {
     if (!EscapeCommFunction(file().GetPlatformFile(),
                             signals.dtr ? SETDTR : CLRDTR)) {
@@ -491,14 +494,14 @@ bool SerialIoHandlerWin::SetControlSignals(
   return true;
 }
 
-serial::ConnectionInfoPtr SerialIoHandlerWin::GetPortInfo() const {
+mojom::SerialConnectionInfoPtr SerialIoHandlerWin::GetPortInfo() const {
   DCB config = {0};
   config.DCBlength = sizeof(config);
   if (!GetCommState(file().GetPlatformFile(), &config)) {
     VPLOG(1) << "Failed to get serial port info";
-    return serial::ConnectionInfoPtr();
+    return mojom::SerialConnectionInfoPtr();
   }
-  serial::ConnectionInfoPtr info(serial::ConnectionInfo::New());
+  mojom::SerialConnectionInfoPtr info(mojom::SerialConnectionInfo::New());
   info->bitrate = SpeedConstantToBitrate(config.BaudRate);
   info->data_bits = DataBitsConstantToEnum(config.ByteSize);
   info->parity_bit = ParityBitConstantToEnum(config.Parity);

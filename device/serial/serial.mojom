@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module device.serial;
+module device.mojom;
 
-struct DeviceInfo {
+struct SerialDeviceInfo {
   string path;
   uint16 vendor_id;
   bool has_vendor_id = false;
@@ -13,7 +13,7 @@ struct DeviceInfo {
   string? display_name;
 };
 
-enum SendError {
+enum SerialSendError {
   NONE,
   DISCONNECTED,
   PENDING,
@@ -21,7 +21,7 @@ enum SendError {
   SYSTEM_ERROR,
 };
 
-enum ReceiveError {
+enum SerialReceiveError {
   NONE,
   DISCONNECTED,
   TIMEOUT,
@@ -34,50 +34,50 @@ enum ReceiveError {
   SYSTEM_ERROR,
 };
 
-enum DataBits {
+enum SerialDataBits {
   NONE,
   SEVEN,
   EIGHT,
 };
 
-enum ParityBit {
+enum SerialParityBit {
   NONE,
   NO_PARITY,
   ODD,
   EVEN,
 };
 
-enum StopBits {
+enum SerialStopBits {
   NONE,
   ONE,
   TWO,
 };
 
-struct ConnectionOptions {
+struct SerialConnectionOptions {
   uint32 bitrate = 0;
-  DataBits data_bits = NONE;
-  ParityBit parity_bit = NONE;
-  StopBits stop_bits = NONE;
+  SerialDataBits data_bits = NONE;
+  SerialParityBit parity_bit = NONE;
+  SerialStopBits stop_bits = NONE;
   bool cts_flow_control;
   bool has_cts_flow_control = false;
 };
 
-struct ConnectionInfo {
+struct SerialConnectionInfo {
   uint32 bitrate = 0;
-  DataBits data_bits = NONE;
-  ParityBit parity_bit = NONE;
-  StopBits stop_bits = NONE;
+  SerialDataBits data_bits = NONE;
+  SerialParityBit parity_bit = NONE;
+  SerialStopBits stop_bits = NONE;
   bool cts_flow_control;
 };
 
-struct HostControlSignals {
+struct SerialHostControlSignals {
   bool dtr;
   bool has_dtr = false;
   bool rts;
   bool has_rts = false;
 };
 
-struct DeviceControlSignals {
+struct SerialDeviceControlSignals {
   bool dcd;
   bool cts;
   bool ri;
