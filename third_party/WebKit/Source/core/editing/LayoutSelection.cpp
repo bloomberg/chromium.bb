@@ -182,52 +182,44 @@ static EphemeralRangeInFlatTree CalcSelection(
   return {};
 }
 
-// Objects each have a single selection rect to examine.
-using SelectedObjectMap = HashMap<LayoutObject*, SelectionState>;
-// Blocks contain selected objects and fill gaps between them, either on the
-// left, right, or in between lines and blocks.
-// In order to get the visual rect right, we have to examine left, middle, and
-// right rects individually, since otherwise the union of those rects might
-// remain the same even when changes have occurred.
-using SelectedBlockMap = HashMap<LayoutBlock*, SelectionState>;
-struct SelectedMap {
+struct PaintInvalidationSet {
   STACK_ALLOCATED();
-  SelectedObjectMap object_map;
-  SelectedBlockMap block_map;
+  // Objects each have a single selection rect to invalidate.
+  HashSet<LayoutObject*> layout_objects;
+  // Ancestor Blocks of each |layout_object| and fill gaps between them, either
+  // on the left, right, or in between lines and blocks.
+  // In order to get the visual rect right, we have to examine left, middle, and
+  // right rects individually, since otherwise the union of those rects might
+  // remain the same even when changes have occurred.
+  HashSet<LayoutBlock*> layout_blocks;
 
-  SelectedMap() = default;
-  SelectedMap(SelectedMap&& other) {
-    object_map = std::move(other.object_map);
-    block_map = std::move(other.block_map);
+  PaintInvalidationSet() = default;
+  PaintInvalidationSet(PaintInvalidationSet&& other) {
+    layout_objects = std::move(other.layout_objects);
+    layout_blocks = std::move(other.layout_blocks);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SelectedMap);
+  DISALLOW_COPY_AND_ASSIGN(PaintInvalidationSet);
 };
 
-static SelectedMap CollectSelectedMap(const SelectionPaintRange& range) {
+static PaintInvalidationSet CollectInvalidationSet(
+    const SelectionPaintRange& range) {
   if (range.IsNull())
-    return SelectedMap();
+    return PaintInvalidationSet();
 
-  SelectedMap selected_map;
-
+  PaintInvalidationSet invalidation_set;
   for (LayoutObject* runner : range) {
-    if (runner->GetSelectionState() == SelectionState::kNone)
-      continue;
-
-    // Blocks are responsible for painting line gaps and margin gaps.  They
-    // must be examined as well.
-    selected_map.object_map.Set(runner, runner->GetSelectionState());
+    invalidation_set.layout_objects.insert(runner);
     for (LayoutBlock* containing_block = runner->ContainingBlock();
          containing_block && !containing_block->IsLayoutView();
          containing_block = containing_block->ContainingBlock()) {
-      SelectedBlockMap::AddResult result = selected_map.block_map.insert(
-          containing_block, containing_block->GetSelectionState());
+      auto result = invalidation_set.layout_blocks.insert(containing_block);
       if (!result.is_new_entry)
         break;
     }
   }
-  return selected_map;
+  return invalidation_set;
 }
 
 // This class represents a selection range in layout tree for marking
@@ -308,52 +300,38 @@ static void SetSelectionState(const SelectionMarkingRange& range) {
 // comparing them in |new_range| and |old_range|.
 static void UpdateLayoutObjectState(const SelectionMarkingRange& new_range,
                                     const SelectionPaintRange& old_range) {
-  const SelectedMap& old_selected_map = CollectSelectedMap(old_range);
-
-  // Now clear the selection.
-  for (auto layout_object : old_selected_map.object_map.Keys())
-    layout_object->SetSelectionStateIfNeeded(SelectionState::kNone);
-
   SetSelectionState(new_range);
+  const PaintInvalidationSet& new_invalidation_set =
+      CollectInvalidationSet(new_range.ToPaintRange());
+  PaintInvalidationSet old_invalidation_set = CollectInvalidationSet(old_range);
 
-  // Now that the selection state has been updated for the new objects, walk
-  // them again and put them in the new objects list.
-  // TODO(editing-dev): |new_selected_map| doesn't really need to store the
-  // SelectionState, it's just more convenient to have it use the same data
-  // structure as |old_selected_map|.
-  SelectedMap new_selected_map = CollectSelectedMap(new_range.ToPaintRange());
-
-  // Have any of the old selected objects changed compared to the new selection?
-  for (const auto& pair : old_selected_map.object_map) {
-    LayoutObject* obj = pair.key;
-    SelectionState new_selection_state = obj->GetSelectionState();
-    SelectionState old_selection_state = pair.value;
-    if (new_selection_state != old_selection_state) {
-      obj->SetShouldInvalidateSelection();
-      new_selected_map.object_map.erase(obj);
+  // We invalidate each LayoutObject which is
+  // - included in new selection range and has valid SelectionState(!= kNone).
+  // - included in old selection range
+  // Invalidate new selected LayoutObjects.
+  for (LayoutObject* layout_object : new_invalidation_set.layout_objects) {
+    if (layout_object->GetSelectionState() != SelectionState::kNone) {
+      layout_object->SetShouldInvalidateSelection();
+      old_invalidation_set.layout_objects.erase(layout_object);
+      continue;
+    }
+  }
+  for (LayoutBlock* layout_block : new_invalidation_set.layout_blocks) {
+    if (layout_block->GetSelectionState() != SelectionState::kNone) {
+      layout_block->SetShouldInvalidateSelection();
+      old_invalidation_set.layout_blocks.erase(layout_block);
+      continue;
     }
   }
 
-  // Any new objects that remain were not found in the old objects dict, and so
-  // they need to be updated.
-  for (auto layout_object : new_selected_map.object_map.Keys())
+  // Invalidate previous selected LayoutObjects except already invalidated
+  // above.
+  for (LayoutObject* layout_object : old_invalidation_set.layout_objects) {
+    layout_object->SetSelectionStateIfNeeded(SelectionState::kNone);
     layout_object->SetShouldInvalidateSelection();
-
-  // Have any of the old blocks changed?
-  for (const auto& pair : old_selected_map.block_map) {
-    LayoutBlock* block = pair.key;
-    SelectionState new_selection_state = block->GetSelectionState();
-    SelectionState old_selection_state = pair.value;
-    if (new_selection_state != old_selection_state) {
-      block->SetShouldInvalidateSelection();
-      new_selected_map.block_map.erase(block);
-    }
   }
-
-  // Any new blocks that remain were not found in the old blocks dict, and so
-  // they need to be updated.
-  for (auto layout_object : new_selected_map.block_map.Keys())
-    layout_object->SetShouldInvalidateSelection();
+  for (LayoutBlock* layout_block : old_invalidation_set.layout_blocks)
+    layout_block->SetShouldInvalidateSelection();
 }
 
 std::pair<int, int> LayoutSelection::SelectionStartEnd() {
@@ -472,10 +450,11 @@ IntRect LayoutSelection::SelectionBounds() {
 
   // Create a single bounding box rect that encloses the whole selection.
   LayoutRect selected_rect;
-  const SelectedMap& current_map = CollectSelectedMap(paint_range_);
-  for (auto layout_object : current_map.object_map.Keys())
+  const PaintInvalidationSet& current_map =
+      CollectInvalidationSet(paint_range_);
+  for (auto layout_object : current_map.layout_objects)
     selected_rect.Unite(SelectionRectForLayoutObject(layout_object));
-  for (auto layout_block : current_map.block_map.Keys())
+  for (auto layout_block : current_map.layout_blocks)
     selected_rect.Unite(SelectionRectForLayoutObject(layout_block));
 
   return PixelSnappedIntRect(selected_rect);
