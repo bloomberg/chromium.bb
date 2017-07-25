@@ -59,6 +59,12 @@ class ExtensionUninstallDialog
                                           gfx::NativeWindow parent,
                                           Delegate* delegate);
 
+  // Create the Views implementation of ExtensionUninstallDialog, for use on
+  // platforms where that is not the native platform implementation.
+  static ExtensionUninstallDialog* CreateViews(Profile* profile,
+                                               gfx::NativeWindow parent,
+                                               Delegate* delegate);
+
   ~ExtensionUninstallDialog() override;
 
   // This is called to verify whether the uninstallation should proceed.

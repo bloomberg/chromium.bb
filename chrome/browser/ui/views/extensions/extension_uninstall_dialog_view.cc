@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -17,6 +18,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_features.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
@@ -227,10 +229,22 @@ base::string16 ExtensionUninstallDialogDelegateView::GetWindowTitle() const {
 
 }  // namespace
 
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+
 // static
 extensions::ExtensionUninstallDialog*
 extensions::ExtensionUninstallDialog::Create(Profile* profile,
                                              gfx::NativeWindow parent,
                                              Delegate* delegate) {
+  return CreateViews(profile, parent, delegate);
+}
+
+#endif  // !OS_MACOSX || MAC_VIEWS_BROWSER
+
+// static
+extensions::ExtensionUninstallDialog*
+extensions::ExtensionUninstallDialog::CreateViews(Profile* profile,
+                                                  gfx::NativeWindow parent,
+                                                  Delegate* delegate) {
   return new ExtensionUninstallDialogViews(profile, parent, delegate);
 }
