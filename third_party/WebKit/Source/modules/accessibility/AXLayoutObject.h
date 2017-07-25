@@ -210,7 +210,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void AddRemoteSVGChildren();
   void AddInlineTextBoxChildren(bool force);
 
-  bool ElementAttributeValue(const QualifiedName&) const;
   LayoutRect ComputeElementRect() const;
   AXRange TextControlSelection() const;
   int IndexForVisiblePosition(const VisiblePosition&) const;
