@@ -81,10 +81,8 @@ public class ServiceTabLauncher {
         if (webApkPackageName != null) {
             Intent intent = WebApkNavigationClient.createLaunchWebApkIntent(
                     webApkPackageName, url, true /* forceNavigation */);
-            if (intent != null) {
-                intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
-                ContextUtils.getApplicationContext().startActivity(intent);
-            }
+            intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
+            ContextUtils.getApplicationContext().startActivity(intent);
             return;
         }
 
