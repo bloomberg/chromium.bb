@@ -114,6 +114,7 @@ class PageHandler : public DevToolsDomainHandler,
   Response SetControlNavigations(bool enabled) override;
   Response ProcessNavigation(const std::string& response,
                              int navigation_id) override;
+  Response BringToFront() override;
 
   std::unique_ptr<PageNavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
