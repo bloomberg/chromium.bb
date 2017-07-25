@@ -4,4 +4,4 @@
 
 # The name of the 64-bit win clang toolchain.
 # TODO(thakis): Remove this again soon, https://crbug.com/748501
-win_clang_x64_toolchain = "//build/toolchain/win:clang_x64"
+win_clang_x64_toolchain = "//build/toolchain/win:win_clang_x64"

@@ -62,7 +62,7 @@ if (current_cpu == "x64") {
   # directory.
   copy("copy_gcp_portmon_dll") {
     if (is_clang) {
-      gcp_portmon64_toolchain = "//build/toolchain/win:clang_x64"
+      gcp_portmon64_toolchain = "//build/toolchain/win:win_clang_x64"
     } else {
       gcp_portmon64_toolchain = "//build/toolchain/win:x64"
     }

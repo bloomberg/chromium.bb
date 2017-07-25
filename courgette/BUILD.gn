@@ -137,7 +137,7 @@ if (!is_ios) {
       # directory.
       copy("copy_courgette_binaries") {
         if (is_clang) {
-          courgette64_toolchain = "//build/toolchain/win:clang_x64"
+          courgette64_toolchain = "//build/toolchain/win:win_clang_x64"
         } else {
           courgette64_toolchain = "//build/toolchain/win:x64"
         }
