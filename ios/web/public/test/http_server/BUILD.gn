@@ -16,6 +16,8 @@ source_set("http_server") {
   ]
 
   sources = [
+    "blank_page_response_provider.h",
+    "blank_page_response_provider.mm",
     "data_response_provider.h",
     "data_response_provider.mm",
     "delayed_response_provider.h",
