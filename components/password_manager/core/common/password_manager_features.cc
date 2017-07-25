@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/common/password_manager_features.h"
 
+#include "build/build_config.h"
+
 namespace password_manager {
 
 namespace features {
@@ -47,7 +49,13 @@ const base::Feature kPasswordImportExport = {"password-import-export",
 // mobile, the desktop version of Chrome always allows users to view
 // passwords.
 const base::Feature kViewPasswords = {"view-passwords",
+// TODO(crbug.com/739404): Remove this ifdef once the feature spends a couple
+// of releases in stable on iOS or once it also gets enabled on Android.
+#if defined(OS_IOS)
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
+#else
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // Enables the experiment for the password manager to only fill on account
 // selection, rather than autofilling on page load, with highlighting of fields.
