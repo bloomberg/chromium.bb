@@ -464,11 +464,13 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
       requires_paint_invalidation = false;
   }
 
-  // Only the root layer can overlap non-composited fixed-position elements.
-  if (!requires_paint_invalidation && is_root_layer &&
-      frame_view->HasViewportConstrainedObjects()) {
-    if (!frame_view->InvalidateViewportConstrainedObjects())
-      requires_paint_invalidation = true;
+  if (!requires_paint_invalidation && is_root_layer) {
+    // Some special invalidations for the root layer.
+    frame_view->InvalidateBackgroundAttachmentFixedObjects();
+    if (frame_view->HasViewportConstrainedObjects()) {
+      if (!frame_view->InvalidateViewportConstrainedObjects())
+        requires_paint_invalidation = true;
+    }
   }
 
   // Just schedule a full paint invalidation of our object.
