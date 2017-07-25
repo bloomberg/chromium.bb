@@ -94,8 +94,6 @@ results from try jobs, by using the command-tool
 `third_party/WebKit/Tools/Scripts/webkit-patch rebaseline-cl`:
 
 1. First, upload a CL.
-   There is no need to add `[ NeedsRebaseline ]` lines in TestExpectations for
-   tests that are rebaselined by this method.
 2. Trigger try jobs by running `webkit-patch rebaseline-cl`. This should
    trigger jobs on
    [tryserver.blink](https://build.chromium.org/p/tryserver.blink/builders).
@@ -112,6 +110,8 @@ is no period of time when the layout test results are ignored.
 
 #### Options
 
+### Rebaselining with try jobs
+
 The tests which `webkit-patch rebaseline-cl` tries to download new baselines for
 depends on its arguments.
 
@@ -125,19 +125,6 @@ depends on its arguments.
   assuming that there are no platform-specific results for those platforms,
   you can add the flag `--fill-missing`.
 
-### Rebaselining with rebaseline-o-matic
-
-If the test is not already listed in
-[TestExpectations](../../third_party/WebKit/LayoutTests/TestExpectations), you
-can mark it as `[ NeedsRebaseline ]`. The
-[rebaseline-o-matic bot](https://build.chromium.org/p/chromium.infra.cron/builders/rebaseline-o-matic)
-will automatically detect when the bots have cycled (by looking at the blame on
-the file) and do the rebaseline for you. As long as the test doesn't timeout or
-crash, it won't turn the bots red if it has a `NeedsRebaseline` expectation.
-When  all of the continuous builders on the waterfall have cycled, the
-rebaseline-o-matic bot will commit a patch which includes the new baselines and
-removes the `[ NeedsRebaseline ]` entry from TestExpectations.
-
 ### Rebaselining manually
 
 1. If the tests is already listed in TestExpectations as flaky, mark the test
@@ -150,8 +137,8 @@ removes the `[ NeedsRebaseline ]` entry from TestExpectations.
 ## Kinds of expectations files
 
 * [TestExpectations](../../third_party/WebKit/LayoutTests/TestExpectations): The
-  main test failure suppression file. In theory, this should be used for flaky
-  lines and `NeedsRebaseline`/`NeedsManualRebaseline` lines.
+  main test failure suppression file. In theory, this should be used for
+  temporarily marking tests as flaky.
 * [ASANExpectations](../../third_party/WebKit/LayoutTests/ASANExpectations):
   Tests that fail under ASAN.
 * [LeakExpectations](../../third_party/WebKit/LayoutTests/LeakExpectations):
@@ -219,9 +206,9 @@ The syntax of a line is roughly:
   [third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/port/base.py](../../third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/port/base.py)
   for the meta keywords and which modifiers they represent.
 * Expectations can be one or more of `Crash`, `Failure`, `Pass`, `Rebaseline`,
-  `Slow`, `Skip`, `Timeout`, `WontFix`, `Missing`, `NeedsRebaseline`,
-  `NeedsManualRebaseline`. If multiple expectations are listed, the test is
-  considered "flaky" and any of those results will be considered as expected.
+  `Slow`, `Skip`, `Timeout`, `WontFix`, `Missing`, `NeedsManualRebaseline`.
+  If multiple expectations are listed, the test is considered "flaky" and any
+  of those results will be considered as expected.
 
 For example:
 
