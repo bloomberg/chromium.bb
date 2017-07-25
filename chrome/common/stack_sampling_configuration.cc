@@ -13,6 +13,10 @@
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace {
 
 base::LazyInstance<StackSamplingConfiguration>::Leaky g_configuration =
@@ -32,9 +36,11 @@ bool IsProfilerSupported() {
 #elif defined(OS_MACOSX)
   // Only run on canary for now.
   #if defined(GOOGLE_CHROME_BUILD)
-    return chrome::GetChannel() == version_info::Channel::CANARY;
+    // TODO(lgrey): Reenable for 10.13 when crbug.com/748254 is fixed.
+    return base::mac::IsAtMostOS10_12() &&
+         chrome::GetChannel() == version_info::Channel::CANARY;
   #else
-    return true;
+    return base::mac::IsAtMostOS10_12();
   #endif
 #else
   return false;
