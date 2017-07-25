@@ -36,7 +36,7 @@ void NGLineInfo::SetLineStyle(const NGInlineNode& node,
     // https://drafts.csswg.org/css-text-3/#valdef-text-indent-percentage
     // In our constraint space tree, parent constraint space is of its
     // containing block.
-    // TODO(kojii): ComputeMinMaxContentSize does not know parent constraint
+    // TODO(kojii): ComputeMinMaxSize does not know parent constraint
     // space that we cannot compute percent for text-indent.
     const Length& length = line_style_->TextIndent();
     LayoutUnit maximum_value;

@@ -31,6 +31,7 @@
 #include "core/layout/FlexibleBoxAlgorithm.h"
 
 #include "core/layout/LayoutBox.h"
+#include "core/layout/MinMaxSize.h"
 
 namespace blink {
 
@@ -38,24 +39,23 @@ FlexItem::FlexItem(LayoutBox* box,
                    LayoutUnit flex_base_content_size,
                    LayoutUnit hypothetical_main_content_size,
                    LayoutUnit main_axis_border_and_padding,
-                   LayoutUnit main_axis_min_size,
-                   LayoutUnit main_axis_max_size,
+                   MinMaxSize min_max_sizes,
                    LayoutUnit main_axis_margin)
     : box(box),
       flex_base_content_size(flex_base_content_size),
       hypothetical_main_content_size(hypothetical_main_content_size),
       main_axis_border_and_padding(main_axis_border_and_padding),
-      main_axis_min_size(main_axis_min_size),
-      main_axis_max_size(main_axis_max_size),
+      min_max_sizes(min_max_sizes),
       main_axis_margin(main_axis_margin),
       frozen(false) {
   DCHECK(!box->IsOutOfFlowPositioned());
-  DCHECK_GE(main_axis_max_size, LayoutUnit())
+  DCHECK_GE(min_max_sizes.max_size, LayoutUnit())
       << "Use LayoutUnit::Max() for no max size";
 }
 
 LayoutUnit FlexItem::ClampSizeToMinAndMax(LayoutUnit size) const {
-  return std::max(main_axis_min_size, std::min(size, main_axis_max_size));
+  return std::max(min_max_sizes.min_size,
+                  std::min(size, min_max_sizes.max_size));
 }
 
 void FlexLine::FreezeViolations(Vector<FlexItem*>& violations) {

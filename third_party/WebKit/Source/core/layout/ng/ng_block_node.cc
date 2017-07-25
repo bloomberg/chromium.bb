@@ -8,6 +8,7 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutMultiColumnSet.h"
+#include "core/layout/MinMaxSize.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
@@ -22,7 +23,6 @@
 #include "core/layout/ng/ng_layout_input_node.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_length_utils.h"
-#include "core/layout/ng/ng_min_max_content_size.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -95,21 +95,21 @@ RefPtr<NGLayoutResult> NGBlockNode::Layout(NGConstraintSpace* constraint_space,
   return layout_result;
 }
 
-MinMaxContentSize NGBlockNode::ComputeMinMaxContentSize() {
-  MinMaxContentSize sizes;
+MinMaxSize NGBlockNode::ComputeMinMaxSize() {
+  MinMaxSize sizes;
   if (!CanUseNewLayout()) {
     // TODO(layout-ng): This could be somewhat optimized by directly calling
     // computeIntrinsicLogicalWidths, but that function is currently private.
     // Consider doing that if this becomes a performance issue.
     LayoutUnit border_and_padding = box_->BorderAndPaddingLogicalWidth();
-    sizes.min_content = box_->ComputeLogicalWidthUsing(
-                            kMainOrPreferredSize, Length(kMinContent),
-                            LayoutUnit(), box_->ContainingBlock()) -
-                        border_and_padding;
-    sizes.max_content = box_->ComputeLogicalWidthUsing(
-                            kMainOrPreferredSize, Length(kMaxContent),
-                            LayoutUnit(), box_->ContainingBlock()) -
-                        border_and_padding;
+    sizes.min_size = box_->ComputeLogicalWidthUsing(
+                         kMainOrPreferredSize, Length(kMinContent),
+                         LayoutUnit(), box_->ContainingBlock()) -
+                     border_and_padding;
+    sizes.max_size = box_->ComputeLogicalWidthUsing(
+                         kMainOrPreferredSize, Length(kMaxContent),
+                         LayoutUnit(), box_->ContainingBlock()) -
+                     border_and_padding;
     return sizes;
   }
 
@@ -121,8 +121,7 @@ MinMaxContentSize NGBlockNode::ComputeMinMaxContentSize() {
 
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
   NGBlockLayoutAlgorithm minmax_algorithm(*this, constraint_space.Get());
-  Optional<MinMaxContentSize> maybe_sizes =
-      minmax_algorithm.ComputeMinMaxContentSize();
+  Optional<MinMaxSize> maybe_sizes = minmax_algorithm.ComputeMinMaxSize();
   if (maybe_sizes.has_value())
     return *maybe_sizes;
 
@@ -132,7 +131,7 @@ MinMaxContentSize NGBlockNode::ComputeMinMaxContentSize() {
       layout_result->PhysicalFragment().Get();
   NGBoxFragment min_fragment(FromPlatformWritingMode(Style().GetWritingMode()),
                              ToNGPhysicalBoxFragment(physical_fragment));
-  sizes.min_content = min_fragment.OverflowSize().inline_size;
+  sizes.min_size = min_fragment.OverflowSize().inline_size;
 
   // Now, redo with infinite space for max_content
   constraint_space =
@@ -147,7 +146,7 @@ MinMaxContentSize NGBlockNode::ComputeMinMaxContentSize() {
   physical_fragment = layout_result->PhysicalFragment().Get();
   NGBoxFragment max_fragment(FromPlatformWritingMode(Style().GetWritingMode()),
                              ToNGPhysicalBoxFragment(physical_fragment));
-  sizes.max_content = max_fragment.OverflowSize().inline_size;
+  sizes.max_size = max_fragment.OverflowSize().inline_size;
   return sizes;
 }
 

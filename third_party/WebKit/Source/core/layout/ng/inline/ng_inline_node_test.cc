@@ -325,24 +325,24 @@ TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   TEST_TEXT_FRAGMENT(fragments[4], node, 8u, 22u, 28u, TextDirection::kLtr);
 }
 
-TEST_F(NGInlineNodeTest, MinMaxContentSize) {
+TEST_F(NGInlineNodeTest, MinMaxSize) {
   LoadAhem();
   SetupHtml("t", "<div id=t style='font:10px Ahem'>AB CDEF</div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxContentSize sizes = node.ComputeMinMaxContentSize();
-  EXPECT_EQ(40, sizes.min_content);
-  EXPECT_EQ(70, sizes.max_content);
+  MinMaxSize sizes = node.ComputeMinMaxSize();
+  EXPECT_EQ(40, sizes.min_size);
+  EXPECT_EQ(70, sizes.max_size);
 }
 
-TEST_F(NGInlineNodeTest, MinMaxContentSizeElementBoundary) {
+TEST_F(NGInlineNodeTest, MinMaxSizeElementBoundary) {
   LoadAhem();
   SetupHtml("t", "<div id=t style='font:10px Ahem'>A B<span>C D</span></div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxContentSize sizes = node.ComputeMinMaxContentSize();
+  MinMaxSize sizes = node.ComputeMinMaxSize();
   // |min_content| should be the width of "BC" because there is an element
   // boundary between "B" and "C" but no break opportunities.
-  EXPECT_EQ(20, sizes.min_content);
-  EXPECT_EQ(60, sizes.max_content);
+  EXPECT_EQ(20, sizes.min_size);
+  EXPECT_EQ(60, sizes.max_size);
 }
 
 }  // namespace blink

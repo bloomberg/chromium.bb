@@ -131,9 +131,8 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(NGBlockNode node,
                                                NGBlockBreakToken* break_token)
     : NGLayoutAlgorithm(node, space, break_token) {}
 
-Optional<MinMaxContentSize> NGBlockLayoutAlgorithm::ComputeMinMaxContentSize()
-    const {
-  MinMaxContentSize sizes;
+Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize() const {
+  MinMaxSize sizes;
 
   // Size-contained elements don't consider their contents for intrinsic sizing.
   if (Style().ContainsSize())
@@ -144,7 +143,7 @@ Optional<MinMaxContentSize> NGBlockLayoutAlgorithm::ComputeMinMaxContentSize()
        node = node.NextSibling()) {
     if (node.IsOutOfFlowPositioned())
       continue;
-    MinMaxContentSize child_sizes;
+    MinMaxSize child_sizes;
     if (node.IsInline()) {
       // From |NGBlockLayoutAlgorithm| perspective, we can handle |NGInlineNode|
       // almost the same as |NGBlockNode|, because an |NGInlineNode| includes
@@ -152,22 +151,22 @@ Optional<MinMaxContentSize> NGBlockLayoutAlgorithm::ComputeMinMaxContentSize()
       // an anonymous box that contains all line boxes.
       // |NextSibling| returns the next block sibling, or nullptr, skipping all
       // following inline siblings and descendants.
-      child_sizes = node.ComputeMinMaxContentSize();
+      child_sizes = node.ComputeMinMaxSize();
     } else {
-      Optional<MinMaxContentSize> child_minmax;
-      if (NeedMinMaxContentSizeForContentContribution(node.Style())) {
-        child_minmax = node.ComputeMinMaxContentSize();
+      Optional<MinMaxSize> child_minmax;
+      if (NeedMinMaxSizeForContentContribution(node.Style())) {
+        child_minmax = node.ComputeMinMaxSize();
       }
 
       child_sizes =
           ComputeMinAndMaxContentContribution(node.Style(), child_minmax);
     }
 
-    sizes.min_content = std::max(sizes.min_content, child_sizes.min_content);
-    sizes.max_content = std::max(sizes.max_content, child_sizes.max_content);
+    sizes.min_size = std::max(sizes.min_size, child_sizes.min_size);
+    sizes.max_size = std::max(sizes.max_size, child_sizes.max_size);
   }
 
-  sizes.max_content = std::max(sizes.min_content, sizes.max_content);
+  sizes.max_size = std::max(sizes.min_size, sizes.max_size);
   return sizes;
 }
 
@@ -188,9 +187,9 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
 }
 
 RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
-  WTF::Optional<MinMaxContentSize> min_max_size;
-  if (NeedMinMaxContentSize(ConstraintSpace(), Style()))
-    min_max_size = ComputeMinMaxContentSize();
+  WTF::Optional<MinMaxSize> min_max_size;
+  if (NeedMinMaxSize(ConstraintSpace(), Style()))
+    min_max_size = ComputeMinMaxSize();
 
   border_scrollbar_padding_ = ComputeBorders(ConstraintSpace(), Style()) +
                               ComputePadding(ConstraintSpace(), Style()) +
@@ -859,9 +858,9 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(NGLayoutInputNode child) {
   // TODO(ikilpatrick): Move the auto margins calculation for different writing
   // modes to post-layout.
   if (!child.IsFloating()) {
-    WTF::Optional<MinMaxContentSize> sizes;
-    if (NeedMinMaxContentSize(*space, child_style))
-      sizes = child.ComputeMinMaxContentSize();
+    WTF::Optional<MinMaxSize> sizes;
+    if (NeedMinMaxSize(*space, child_style))
+      sizes = child.ComputeMinMaxSize();
 
     LayoutUnit child_inline_size =
         ComputeInlineSizeForFragment(*space, child_style, sizes);

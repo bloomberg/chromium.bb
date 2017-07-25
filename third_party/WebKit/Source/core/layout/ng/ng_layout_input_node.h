@@ -16,7 +16,7 @@ class LayoutBox;
 class NGBreakToken;
 class NGConstraintSpace;
 class NGLayoutResult;
-struct MinMaxContentSize;
+struct MinMaxSize;
 
 // Represents the input to a layout algorithm for a given node. The layout
 // engine should use the style, node type to determine which type of layout
@@ -43,7 +43,7 @@ class CORE_EXPORT NGLayoutInputNode {
   // Performs layout on this input node, will return the layout result.
   RefPtr<NGLayoutResult> Layout(NGConstraintSpace*, NGBreakToken*);
 
-  MinMaxContentSize ComputeMinMaxContentSize();
+  MinMaxSize ComputeMinMaxSize();
 
   // Returns the next sibling.
   NGLayoutInputNode NextSibling();
