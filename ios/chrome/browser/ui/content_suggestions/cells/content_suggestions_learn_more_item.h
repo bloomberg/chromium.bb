@@ -17,7 +17,10 @@
     : CollectionViewItem<SuggestedContent>
 
 // Returns the text to be displayed by the cell.
-- (NSString*)text;
+- (nonnull NSString*)text;
+
+// Accessibility identifier of the cells configured by the items.
++ (nonnull NSString*)accessibilityIdentifier;
 
 @end
 
@@ -25,10 +28,10 @@
 @interface ContentSuggestionsLearnMoreCell : MDCCollectionViewCell
 
 // Returns the height needed by a cell contained in |width| to display |text|.
-+ (CGFloat)heightForWidth:(CGFloat)width withText:(NSString*)text;
++ (CGFloat)heightForWidth:(CGFloat)width withText:(nonnull NSString*)text;
 
 // Sets the |text| to be displayed by this cell.
-- (void)setText:(NSString*)text;
+- (void)setText:(nonnull NSString*)text;
 
 @end
 

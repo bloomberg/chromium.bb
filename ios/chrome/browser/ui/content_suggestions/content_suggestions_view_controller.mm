@@ -259,7 +259,10 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
       [self dismissEntryAtIndexPath:indexPath];
       [self.suggestionCommandHandler handlePromoTapped];
       [self.collectionViewLayout invalidateLayout];
+      break;
     case ContentSuggestionTypeLearnMore:
+      [self.suggestionCommandHandler handleLearnMoreTapped];
+      break;
     case ContentSuggestionTypeEmpty:
       break;
   }
