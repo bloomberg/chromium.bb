@@ -93,7 +93,6 @@ class CSSPropertyParser {
   bool ConsumeBackgroundShorthand(const StylePropertyShorthand&,
                                   bool important);
 
-  bool ConsumeGridItemPositionShorthand(CSSPropertyID, bool important);
   bool ConsumeGridTemplateRowsAndAreasAndColumns(CSSPropertyID, bool important);
   bool ConsumeGridTemplateShorthand(CSSPropertyID, bool important);
   bool ConsumeGridShorthand(bool important);

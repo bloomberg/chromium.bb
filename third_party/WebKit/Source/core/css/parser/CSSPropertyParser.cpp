@@ -42,6 +42,7 @@
 #include "core/css/properties/CSSPropertyBoxShadowUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/css/properties/CSSPropertyFontUtils.h"
+#include "core/css/properties/CSSPropertyGridUtils.h"
 #include "core/css/properties/CSSPropertyLengthUtils.h"
 #include "core/css/properties/CSSPropertyMarginUtils.h"
 #include "core/css/properties/CSSPropertyPositionUtils.h"
@@ -696,69 +697,6 @@ static CSSValue* ConsumeFitContent(CSSParserTokenRange& range,
   return result;
 }
 
-static CSSCustomIdentValue* ConsumeCustomIdentForGridLine(
-    CSSParserTokenRange& range) {
-  if (range.Peek().Id() == CSSValueAuto || range.Peek().Id() == CSSValueSpan ||
-      range.Peek().Id() == CSSValueDefault)
-    return nullptr;
-  return ConsumeCustomIdent(range);
-}
-
-static CSSValue* ConsumeGridLine(CSSParserTokenRange& range) {
-  if (range.Peek().Id() == CSSValueAuto)
-    return ConsumeIdent(range);
-
-  CSSIdentifierValue* span_value = nullptr;
-  CSSCustomIdentValue* grid_line_name = nullptr;
-  CSSPrimitiveValue* numeric_value = ConsumeInteger(range);
-  if (numeric_value) {
-    grid_line_name = ConsumeCustomIdentForGridLine(range);
-    span_value = ConsumeIdent<CSSValueSpan>(range);
-  } else {
-    span_value = ConsumeIdent<CSSValueSpan>(range);
-    if (span_value) {
-      numeric_value = ConsumeInteger(range);
-      grid_line_name = ConsumeCustomIdentForGridLine(range);
-      if (!numeric_value)
-        numeric_value = ConsumeInteger(range);
-    } else {
-      grid_line_name = ConsumeCustomIdentForGridLine(range);
-      if (grid_line_name) {
-        numeric_value = ConsumeInteger(range);
-        span_value = ConsumeIdent<CSSValueSpan>(range);
-        if (!span_value && !numeric_value)
-          return grid_line_name;
-      } else {
-        return nullptr;
-      }
-    }
-  }
-
-  if (span_value && !numeric_value && !grid_line_name)
-    return nullptr;  // "span" keyword alone is invalid.
-  if (span_value && numeric_value && numeric_value->GetIntValue() < 0)
-    return nullptr;  // Negative numbers are not allowed for span.
-  if (numeric_value && numeric_value->GetIntValue() == 0)
-    return nullptr;  // An <integer> value of zero makes the declaration
-                     // invalid.
-
-  if (numeric_value) {
-    numeric_value = CSSPrimitiveValue::Create(
-        clampTo(numeric_value->GetIntValue(), -kGridMaxTracks, kGridMaxTracks),
-        CSSPrimitiveValue::UnitType::kInteger);
-  }
-
-  CSSValueList* values = CSSValueList::CreateSpaceSeparated();
-  if (span_value)
-    values->Append(*span_value);
-  if (numeric_value)
-    values->Append(*numeric_value);
-  if (grid_line_name)
-    values->Append(*grid_line_name);
-  DCHECK(values->length());
-  return values;
-}
-
 static bool IsGridBreadthFixedSized(const CSSValue& value) {
   if (value.IsIdentifierValue()) {
     CSSValueID value_id = ToCSSIdentifierValue(value).GetValueID();
@@ -959,7 +897,7 @@ static CSSGridLineNamesValue* ConsumeGridLineNames(
   if (!line_names)
     line_names = CSSGridLineNamesValue::Create();
   while (CSSCustomIdentValue* line_name =
-             ConsumeCustomIdentForGridLine(range_copy))
+             CSSPropertyGridUtils::ConsumeCustomIdentForGridLine(range_copy))
     line_names->Append(*line_name);
   if (range_copy.ConsumeIncludingWhitespace().GetType() != kRightBracketToken)
     return nullptr;
@@ -1224,7 +1162,7 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyGridRowEnd:
     case CSSPropertyGridRowStart:
       DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
-      return ConsumeGridLine(range_);
+      return CSSPropertyGridUtils::ConsumeGridLine(range_);
     case CSSPropertyGridAutoColumns:
     case CSSPropertyGridAutoRows:
       DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
@@ -1751,54 +1689,25 @@ bool CSSPropertyParser::ConsumeBackgroundShorthand(
   return true;
 }
 
-bool CSSPropertyParser::ConsumeGridItemPositionShorthand(
-    CSSPropertyID shorthand_id,
-    bool important) {
-  DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
-  const StylePropertyShorthand& shorthand = shorthandForProperty(shorthand_id);
-  DCHECK_EQ(shorthand.length(), 2u);
-  CSSValue* start_value = ConsumeGridLine(range_);
-  if (!start_value)
-    return false;
-
-  CSSValue* end_value = nullptr;
-  if (ConsumeSlashIncludingWhitespace(range_)) {
-    end_value = ConsumeGridLine(range_);
-    if (!end_value)
-      return false;
-  } else {
-    end_value = start_value->IsCustomIdentValue()
-                    ? start_value
-                    : CSSIdentifierValue::Create(CSSValueAuto);
-  }
-  if (!range_.AtEnd())
-    return false;
-  AddParsedProperty(shorthand.properties()[0], shorthand_id, *start_value,
-                    important);
-  AddParsedProperty(shorthand.properties()[1], shorthand_id, *end_value,
-                    important);
-  return true;
-}
-
 bool CSSPropertyParser::ConsumeGridAreaShorthand(bool important) {
   DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   DCHECK_EQ(gridAreaShorthand().length(), 4u);
-  CSSValue* row_start_value = ConsumeGridLine(range_);
+  CSSValue* row_start_value = CSSPropertyGridUtils::ConsumeGridLine(range_);
   if (!row_start_value)
     return false;
   CSSValue* column_start_value = nullptr;
   CSSValue* row_end_value = nullptr;
   CSSValue* column_end_value = nullptr;
   if (ConsumeSlashIncludingWhitespace(range_)) {
-    column_start_value = ConsumeGridLine(range_);
+    column_start_value = CSSPropertyGridUtils::ConsumeGridLine(range_);
     if (!column_start_value)
       return false;
     if (ConsumeSlashIncludingWhitespace(range_)) {
-      row_end_value = ConsumeGridLine(range_);
+      row_end_value = CSSPropertyGridUtils::ConsumeGridLine(range_);
       if (!row_end_value)
         return false;
       if (ConsumeSlashIncludingWhitespace(range_)) {
-        column_end_value = ConsumeGridLine(range_);
+        column_end_value = CSSPropertyGridUtils::ConsumeGridLine(range_);
         if (!column_end_value)
           return false;
       }
@@ -2228,9 +2137,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
                         *column_gap, important);
       return true;
     }
-    case CSSPropertyGridColumn:
-    case CSSPropertyGridRow:
-      return ConsumeGridItemPositionShorthand(property, important);
     case CSSPropertyGridArea:
       return ConsumeGridAreaShorthand(important);
     case CSSPropertyGridTemplate:

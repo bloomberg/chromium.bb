@@ -3815,6 +3815,8 @@
     {
       name: "grid-column",
       longhands: ["grid-column-start", "grid-column-end"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
       runtime_flag: "CSSGridLayout",
     },
     {
@@ -3825,6 +3827,8 @@
     {
       name: "grid-row",
       longhands: ["grid-row-start", "grid-row-end"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
       runtime_flag: "CSSGridLayout",
     },
     {
