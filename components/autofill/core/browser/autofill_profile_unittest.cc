@@ -1100,4 +1100,20 @@ TEST(AutofillProfileTest, SaveAdditionalInfo_Name_ComplementaryInformation) {
             a.GetRawInfo(NAME_FULL));
 }
 
+TEST(AutofillProfileTest, ValidityStates) {
+  AutofillProfile profile;
+
+  // The default validity state should be UNVALIDATED.
+  EXPECT_EQ(AutofillProfile::UNVALIDATED,
+            profile.GetValidityState(ADDRESS_HOME_LINE1));
+
+  // Make sure setting the validity state works.
+  profile.SetValidityState(ADDRESS_HOME_LINE1, AutofillProfile::VALID);
+  profile.SetValidityState(ADDRESS_HOME_CITY, AutofillProfile::INVALID);
+  EXPECT_EQ(AutofillProfile::VALID,
+            profile.GetValidityState(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(AutofillProfile::INVALID,
+            profile.GetValidityState(ADDRESS_HOME_CITY));
+}
+
 }  // namespace autofill
