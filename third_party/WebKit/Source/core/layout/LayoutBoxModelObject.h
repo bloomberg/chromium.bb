@@ -29,7 +29,6 @@
 #include "core/layout/BackgroundBleedAvoidance.h"
 #include "core/layout/ContentChangeType.h"
 #include "core/layout/LayoutObject.h"
-#include "core/page/scrolling/StickyPositionScrollingConstraints.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/wtf/PtrUtil.h"
 
@@ -59,16 +58,6 @@ enum LinePositionMode {
   kPositionOfInteriorLineBoxes
 };
 enum LineDirectionMode { kHorizontalLine, kVerticalLine };
-
-struct LayoutBoxModelObjectRareData {
-  WTF_MAKE_NONCOPYABLE(LayoutBoxModelObjectRareData);
-  USING_FAST_MALLOC(LayoutBoxModelObjectRareData);
-
- public:
-  LayoutBoxModelObjectRareData() {}
-
-  StickyPositionScrollingConstraints sticky_position_scrolling_constraints_;
-};
 
 // This class is the base class for all CSS objects.
 //
@@ -552,14 +541,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   LayoutUnit ComputedCSSPadding(const Length&) const;
   bool IsBoxModelObject() const final { return true; }
-
-  LayoutBoxModelObjectRareData& EnsureRareData() {
-    if (!rare_data_)
-      rare_data_ = WTF::MakeUnique<LayoutBoxModelObjectRareData>();
-    return *rare_data_.get();
-  }
-
-  std::unique_ptr<LayoutBoxModelObjectRareData> rare_data_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBoxModelObject, IsBoxModelObject());
