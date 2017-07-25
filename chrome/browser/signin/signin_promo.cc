@@ -316,7 +316,7 @@ bool ShouldShowAccountManagement(const GURL& url) {
           url, kSignInPromoQueryKeyShowAccountManagement, &value)) {
     int enabled = 0;
     if (base::StringToInt(value, &enabled) && enabled == 1)
-      return switches::IsAccountConsistencyMirrorEnabled();
+      return IsAccountConsistencyMirrorEnabled();
   }
   return false;
 }

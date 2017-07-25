@@ -52,7 +52,7 @@ ExtensionFunction::ResponseAction IdentityGetAccountsFunction::Run() {
   infos->Append(primary_account_info.ToValue());
 
   // If extensions are not multi-account, ignore any other accounts.
-  if (!switches::IsExtensionsMultiAccount())
+  if (!signin::IsExtensionsMultiAccount())
     return RespondNow(OneArgument(std::move(infos)));
 
   // Otherwise, add the other accounts.

@@ -54,8 +54,8 @@ void ProcessMirrorHeaderUIThread(
     const content::ResourceRequestInfo::WebContentsGetter&
         web_contents_getter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_EQ(switches::AccountConsistencyMethod::kMirror,
-            switches::GetAccountConsistencyMethod());
+  DCHECK_EQ(signin::AccountConsistencyMethod::kMirror,
+            signin::GetAccountConsistencyMethod());
 
   GAIAServiceType service_type = manage_accounts_params.service_type;
   DCHECK_NE(GAIA_SERVICE_TYPE_NONE, service_type);
@@ -115,8 +115,8 @@ void ProcessDiceHeaderUIThread(
     const content::ResourceRequestInfo::WebContentsGetter&
         web_contents_getter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_EQ(switches::AccountConsistencyMethod::kDice,
-            switches::GetAccountConsistencyMethod());
+  DCHECK_EQ(signin::AccountConsistencyMethod::kDice,
+            signin::GetAccountConsistencyMethod());
 
   content::WebContents* web_contents = web_contents_getter.Run();
   if (!web_contents)
@@ -163,8 +163,8 @@ void ProcessMirrorResponseHeaderIfExists(net::URLRequest* request,
     return;
   }
 
-  if (switches::GetAccountConsistencyMethod() !=
-      switches::AccountConsistencyMethod::kMirror) {
+  if (signin::GetAccountConsistencyMethod() !=
+      signin::AccountConsistencyMethod::kMirror) {
     NOTREACHED() << "Gaia should not send the X-Chrome-Manage-Accounts header "
                  << "when Mirror is disabled.";
     return;
@@ -198,8 +198,8 @@ void ProcessDiceResponseHeaderIfExists(net::URLRequest* request,
   if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
     return;
 
-  if (switches::GetAccountConsistencyMethod() !=
-      switches::AccountConsistencyMethod::kDice) {
+  if (signin::GetAccountConsistencyMethod() !=
+      signin::AccountConsistencyMethod::kDice) {
     return;
   }
 

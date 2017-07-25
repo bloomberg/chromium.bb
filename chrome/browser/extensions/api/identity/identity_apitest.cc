@@ -555,7 +555,7 @@ class IdentityGetAccountsFunctionTest : public IdentityTestWithSignin {
 };
 
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, MultiAccountOn) {
-  EXPECT_TRUE(switches::IsExtensionsMultiAccount());
+  EXPECT_TRUE(signin::IsExtensionsMultiAccount());
 }
 
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, NoneSignedIn) {
@@ -589,7 +589,7 @@ class IdentityOldProfilesGetAccountsFunctionTest
 
 IN_PROC_BROWSER_TEST_F(IdentityOldProfilesGetAccountsFunctionTest,
                        MultiAccountOff) {
-  EXPECT_FALSE(switches::IsExtensionsMultiAccount());
+  EXPECT_FALSE(signin::IsExtensionsMultiAccount());
 }
 
 IN_PROC_BROWSER_TEST_F(IdentityOldProfilesGetAccountsFunctionTest,

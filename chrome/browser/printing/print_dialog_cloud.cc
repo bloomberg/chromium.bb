@@ -71,7 +71,7 @@ void CreateCloudPrintSigninTab(Browser* browser,
                                bool add_account,
                                const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (switches::IsAccountConsistencyMirrorEnabled() &&
+  if (signin::IsAccountConsistencyMirrorEnabled() &&
       !browser->profile()->IsOffTheRecord()) {
     browser->window()->ShowAvatarBubbleFromAvatarButton(
         add_account ? BrowserWindow::AVATAR_BUBBLE_MODE_ADD_ACCOUNT

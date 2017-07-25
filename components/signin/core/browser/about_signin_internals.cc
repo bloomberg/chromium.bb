@@ -6,8 +6,10 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/hash.h"
@@ -131,7 +133,7 @@ std::string SigninStatusFieldToLabel(TimedSigninStatusField field) {
   NOTREACHED();
   return "Error";
 }
-#endif // !defined (OS_CHROMEOS)
+#endif  // !defined (OS_CHROMEOS)
 
 void SetPref(PrefService* prefs,
              TimedSigninStatusField field,
@@ -534,7 +536,7 @@ AboutSigninInternals::SigninStatus::ToValue(
   AddSectionEntry(basic_info, "Chrome Version", product_version);
   AddSectionEntry(
       basic_info, "Account Consistency?",
-      switches::IsAccountConsistencyMirrorEnabled() == true ? "On" : "Off");
+      signin::IsAccountConsistencyMirrorEnabled() == true ? "On" : "Off");
   AddSectionEntry(basic_info, "Signin Status",
       signin_manager->IsAuthenticated() ? "Signed In" : "Not Signed In");
   OAuth2TokenServiceDelegate::LoadCredentialsState load_tokens_state =
@@ -632,7 +634,7 @@ AboutSigninInternals::SigninStatus::ToValue(
                   "");
   }
 
-#endif // !defined(OS_CHROMEOS)
+#endif  // !defined(OS_CHROMEOS)
 
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.

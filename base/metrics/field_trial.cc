@@ -1112,7 +1112,7 @@ FieldTrialList::GetAllFieldTrialsFromPersistentAllocator(
 }
 
 // static
-bool FieldTrialList::IsFieldTrialListRegisteredForTesting() {
+bool FieldTrialList::IsGlobalSetForTesting() {
   return global_ != nullptr;
 }
 

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -21,6 +22,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -276,11 +278,11 @@ class DiceBrowserTest : public InProcessBrowserTest,
     command_line->AppendSwitchASCII(switches::kGaiaUrl, base_url.spec());
     command_line->AppendSwitchASCII(switches::kGoogleApisUrl, base_url.spec());
     command_line->AppendSwitchASCII(switches::kLsoUrl, base_url.spec());
-    switches::EnableAccountConsistencyDiceForTesting(command_line);
   }
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
+    scoped_dice_ = base::MakeUnique<signin::ScopedAccountConsistencyDice>();
     https_server_.StartAcceptingConnections();
     GetTokenService()->AddObserver(this);
   }
@@ -300,6 +302,7 @@ class DiceBrowserTest : public InProcessBrowserTest,
   }
 
   net::EmbeddedTestServer https_server_;
+  std::unique_ptr<signin::ScopedAccountConsistencyDice> scoped_dice_;
   bool token_requested_;
   bool refresh_token_available_;
   int token_revoked_notification_count_;

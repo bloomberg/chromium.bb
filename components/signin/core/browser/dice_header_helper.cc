@@ -127,8 +127,7 @@ DiceResponseParams DiceHeaderHelper::BuildDiceSignoutResponseParams(
 }
 
 bool DiceHeaderHelper::IsUrlEligibleForRequestHeader(const GURL& url) {
-  if (switches::GetAccountConsistencyMethod() !=
-      switches::AccountConsistencyMethod::kDice) {
+  if (GetAccountConsistencyMethod() != AccountConsistencyMethod::kDice) {
     return false;
   }
   return gaia::IsGaiaSignonRealm(url.GetOrigin());

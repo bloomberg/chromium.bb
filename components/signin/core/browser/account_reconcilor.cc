@@ -240,7 +240,7 @@ void AccountReconcilor::GoogleSignedOut(const std::string& account_id,
 }
 
 void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
-  if (!switches::IsAccountConsistencyMirrorEnabled()) {
+  if (!signin::IsAccountConsistencyMirrorEnabled()) {
     MarkAccountAsAddedToCookie(account_id);
     return;
   }
@@ -249,7 +249,7 @@ void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
 }
 
 void AccountReconcilor::PerformLogoutAllAccountsAction() {
-  if (!switches::IsAccountConsistencyMirrorEnabled())
+  if (!signin::IsAccountConsistencyMirrorEnabled())
     return;
   VLOG(1) << "AccountReconcilor::PerformLogoutAllAccountsAction";
   cookie_manager_service_->LogOutAllAccounts(kSource);

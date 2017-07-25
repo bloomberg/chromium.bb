@@ -7,25 +7,39 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
-#include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
+#include "components/signin/core/common/signin_features.h"
 #include "components/signin/core/common/signin_switches.h"
 
-namespace switches {
+namespace signin {
+
+// base::Feature definitions.
+const base::Feature kAccountConsistencyFeature{
+    "AccountConsistency", base::FEATURE_DISABLED_BY_DEFAULT};
+const char kAccountConsistencyFeatureMethodParameter[] = "method";
+const char kAccountConsistencyFeatureMethodMirror[] = "mirror";
+const char kAccountConsistencyFeatureMethodDiceFixAuthErrors[] =
+    "dice_fix_auth_errors";
+const char kAccountConsistencyFeatureMethodDice[] = "dice";
 
 AccountConsistencyMethod GetAccountConsistencyMethod() {
 #if BUILDFLAG(ENABLE_MIRROR)
-  // Mirror is enabled on Android and iOS.
+  // Mirror is always enabled on Android and iOS.
   return AccountConsistencyMethod::kMirror;
 #else
-  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  std::string method = cmd->GetSwitchValueASCII(switches::kAccountConsistency);
-  if (method == switches::kAccountConsistencyMirror)
-    return AccountConsistencyMethod::kMirror;
+  if (!base::FeatureList::IsEnabled(kAccountConsistencyFeature))
+    return AccountConsistencyMethod::kDisabled;
 
+  std::string method_value = base::GetFieldTrialParamValueByFeature(
+      kAccountConsistencyFeature, kAccountConsistencyFeatureMethodParameter);
+
+  if (method_value == kAccountConsistencyFeatureMethodMirror)
+    return AccountConsistencyMethod::kMirror;
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  if (method == switches::kAccountConsistencyDice)
+  else if (method_value == kAccountConsistencyFeatureMethodDiceFixAuthErrors)
+    return AccountConsistencyMethod::kDiceFixAuthErrors;
+  else if (method_value == kAccountConsistencyFeatureMethodDice)
     return AccountConsistencyMethod::kDice;
 #endif
 
@@ -38,7 +52,7 @@ bool IsAccountConsistencyMirrorEnabled() {
 }
 
 bool IsAccountConsistencyDiceEnabled() {
-  return GetAccountConsistencyMethod() == AccountConsistencyMethod::kDice;
+  return (GetAccountConsistencyMethod() == AccountConsistencyMethod::kDice);
 }
 
 bool IsExtensionsMultiAccount() {
@@ -53,18 +67,4 @@ bool IsExtensionsMultiAccount() {
          GetAccountConsistencyMethod() == AccountConsistencyMethod::kMirror;
 }
 
-void EnableAccountConsistencyMirrorForTesting(base::CommandLine* command_line) {
-#if !BUILDFLAG(ENABLE_MIRROR)
-  command_line->AppendSwitchASCII(switches::kAccountConsistency,
-                                  switches::kAccountConsistencyMirror);
-#endif
-}
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-void EnableAccountConsistencyDiceForTesting(base::CommandLine* command_line) {
-  command_line->AppendSwitchASCII(switches::kAccountConsistency,
-                                  switches::kAccountConsistencyDice);
-}
-#endif
-
-}  // namespace switches
+}  // namespace signin

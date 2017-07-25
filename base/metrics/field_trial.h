@@ -637,7 +637,7 @@ class BASE_EXPORT FieldTrialList {
       PersistentMemoryAllocator const& allocator);
 
   // Returns true if a global field trial list is set. Only used for testing.
-  static bool IsFieldTrialListRegisteredForTesting();
+  static bool IsGlobalSetForTesting();
 
  private:
   // Allow tests to access our innards for testing purposes.

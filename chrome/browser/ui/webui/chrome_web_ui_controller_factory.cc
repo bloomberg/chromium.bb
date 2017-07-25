@@ -574,8 +574,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   if (url.host() == chrome::kChromeUISigninDiceInternalsHost &&
-      !profile->IsOffTheRecord() &&
-      switches::IsAccountConsistencyDiceEnabled()) {
+      !profile->IsOffTheRecord() && signin::IsAccountConsistencyDiceEnabled()) {
     return &NewWebUI<SigninDiceInternalsUI>;
   }
 #endif

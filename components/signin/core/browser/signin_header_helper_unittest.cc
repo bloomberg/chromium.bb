@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
+#include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_features.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -113,8 +114,7 @@ class SigninHeaderHelperTest : public testing::Test {
 // Tests that no Mirror request is returned when the user is not signed in (no
 // account id).
 TEST_F(SigninHeaderHelperTest, TestNoMirrorRequestNoAccountId) {
-  switches::EnableAccountConsistencyMirrorForTesting(
-      base::CommandLine::ForCurrentProcess());
+  ScopedAccountConsistencyMirror scoped_mirror;
   CheckMirrorHeaderRequest(GURL("https://docs.google.com"), "", "");
   CheckMirrorCookieRequest(GURL("https://docs.google.com"), "", "");
 }
@@ -122,8 +122,7 @@ TEST_F(SigninHeaderHelperTest, TestNoMirrorRequestNoAccountId) {
 // Tests that no Mirror request is returned when the cookies aren't allowed to
 // be set.
 TEST_F(SigninHeaderHelperTest, TestNoMirrorRequestCookieSettingBlocked) {
-  switches::EnableAccountConsistencyMirrorForTesting(
-      base::CommandLine::ForCurrentProcess());
+  ScopedAccountConsistencyMirror scoped_mirror;
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
   CheckMirrorHeaderRequest(GURL("https://docs.google.com"), "0123456789", "");
   CheckMirrorCookieRequest(GURL("https://docs.google.com"), "0123456789", "");
@@ -131,8 +130,7 @@ TEST_F(SigninHeaderHelperTest, TestNoMirrorRequestCookieSettingBlocked) {
 
 // Tests that no Mirror request is returned when the target is a non-Google URL.
 TEST_F(SigninHeaderHelperTest, TestNoMirrorRequestExternalURL) {
-  switches::EnableAccountConsistencyMirrorForTesting(
-      base::CommandLine::ForCurrentProcess());
+  ScopedAccountConsistencyMirror scoped_mirror;
   CheckMirrorHeaderRequest(GURL("https://foo.com"), "0123456789", "");
   CheckMirrorCookieRequest(GURL("https://foo.com"), "0123456789", "");
 }
@@ -140,8 +138,7 @@ TEST_F(SigninHeaderHelperTest, TestNoMirrorRequestExternalURL) {
 // Tests that the Mirror request is returned without the GAIA Id when the target
 // is a google TLD domain.
 TEST_F(SigninHeaderHelperTest, TestMirrorRequestGoogleTLD) {
-  switches::EnableAccountConsistencyMirrorForTesting(
-      base::CommandLine::ForCurrentProcess());
+  ScopedAccountConsistencyMirror scoped_mirror;
   CheckMirrorHeaderRequest(GURL("https://google.fr"), "0123456789",
                            "mode=0,enable_account_consistency=true");
   CheckMirrorCookieRequest(GURL("https://google.de"), "0123456789",
@@ -151,8 +148,7 @@ TEST_F(SigninHeaderHelperTest, TestMirrorRequestGoogleTLD) {
 // Tests that the Mirror request is returned when the target is the domain
 // google.com, and that the GAIA Id is only attached for the cookie.
 TEST_F(SigninHeaderHelperTest, TestMirrorRequestGoogleCom) {
-  switches::EnableAccountConsistencyMirrorForTesting(
-      base::CommandLine::ForCurrentProcess());
+  ScopedAccountConsistencyMirror scoped_mirror;
   CheckMirrorHeaderRequest(GURL("https://www.google.com"), "0123456789",
                            "mode=0,enable_account_consistency=true");
   CheckMirrorCookieRequest(
@@ -167,7 +163,7 @@ TEST_F(SigninHeaderHelperTest, TestMirrorRequestGoogleCom) {
 // Tests that the Mirror request is returned when the target is a Gaia URL, even
 // if account consistency is disabled.
 TEST_F(SigninHeaderHelperTest, TestMirrorRequestGaiaURL) {
-  ASSERT_FALSE(switches::IsAccountConsistencyMirrorEnabled());
+  ASSERT_FALSE(IsAccountConsistencyMirrorEnabled());
   CheckMirrorHeaderRequest(GURL("https://accounts.google.com"), "0123456789",
                            "mode=0,enable_account_consistency=false");
   CheckMirrorCookieRequest(
@@ -177,8 +173,7 @@ TEST_F(SigninHeaderHelperTest, TestMirrorRequestGaiaURL) {
 
 // Tests Dice requests.
 TEST_F(SigninHeaderHelperTest, TestDiceRequest) {
-  switches::EnableAccountConsistencyDiceForTesting(
-      base::CommandLine::ForCurrentProcess());
+  ScopedAccountConsistencyDice scoped_dice;
   // ChromeConnected but no Dice for Docs URLs.
   CheckDiceHeaderRequest(
       GURL("https://docs.google.com"), "0123456789", false /* sync_enabled */,
@@ -206,8 +201,7 @@ TEST_F(SigninHeaderHelperTest, TestDiceRequest) {
 
 // Tests that no Dice request is returned when Dice is not enabled.
 TEST_F(SigninHeaderHelperTest, TestNoDiceRequestWhenDisabled) {
-  switches::EnableAccountConsistencyMirrorForTesting(
-      base::CommandLine::ForCurrentProcess());
+  ScopedAccountConsistencyMirror scoped_mirror;
   CheckDiceHeaderRequest(GURL("https://accounts.google.com"), "0123456789",
                          false /* sync_enabled */,
                          "mode=0,enable_account_consistency=true", "");
@@ -216,7 +210,7 @@ TEST_F(SigninHeaderHelperTest, TestNoDiceRequestWhenDisabled) {
 // Tests that the Mirror request is returned with the GAIA Id on Drive origin,
 // even if account consistency is disabled.
 TEST_F(SigninHeaderHelperTest, TestMirrorRequestDrive) {
-  ASSERT_FALSE(switches::IsAccountConsistencyMirrorEnabled());
+  ASSERT_FALSE(IsAccountConsistencyMirrorEnabled());
   CheckMirrorHeaderRequest(
       GURL("https://docs.google.com/document"), "0123456789",
       "id=0123456789,mode=0,enable_account_consistency=false");
@@ -225,8 +219,7 @@ TEST_F(SigninHeaderHelperTest, TestMirrorRequestDrive) {
       "id=0123456789:mode=0:enable_account_consistency=false");
 
   // Enable Account Consistency will override the disable.
-  switches::EnableAccountConsistencyMirrorForTesting(
-      base::CommandLine::ForCurrentProcess());
+  ScopedAccountConsistencyMirror scoped_mirror;
   CheckMirrorHeaderRequest(
       GURL("https://docs.google.com/document"), "0123456789",
       "id=0123456789,mode=0,enable_account_consistency=true");
@@ -329,8 +322,7 @@ TEST_F(SigninHeaderHelperTest, TestBuildDiceResponseParams) {
 // Tests that the Mirror header request is returned normally when the redirect
 // URL is eligible.
 TEST_F(SigninHeaderHelperTest, TestMirrorHeaderEligibleRedirectURL) {
-  switches::EnableAccountConsistencyMirrorForTesting(
-      base::CommandLine::ForCurrentProcess());
+  ScopedAccountConsistencyMirror scoped_mirror;
   const GURL url("https://docs.google.com/document");
   const GURL redirect_url("https://www.google.com");
   const std::string account_id = "0123456789";
@@ -347,8 +339,7 @@ TEST_F(SigninHeaderHelperTest, TestMirrorHeaderEligibleRedirectURL) {
 // Tests that the Mirror header request is stripped when the redirect URL is not
 // eligible.
 TEST_F(SigninHeaderHelperTest, TestMirrorHeaderNonEligibleRedirectURL) {
-  switches::EnableAccountConsistencyMirrorForTesting(
-      base::CommandLine::ForCurrentProcess());
+  ScopedAccountConsistencyMirror scoped_mirror;
   const GURL url("https://docs.google.com/document");
   const GURL redirect_url("http://www.foo.com");
   const std::string account_id = "0123456789";
@@ -365,8 +356,7 @@ TEST_F(SigninHeaderHelperTest, TestMirrorHeaderNonEligibleRedirectURL) {
 // Tests that the Mirror header, whatever its value is, is untouched when both
 // the current and the redirect URL are non-eligible.
 TEST_F(SigninHeaderHelperTest, TestIgnoreMirrorHeaderNonEligibleURLs) {
-  switches::EnableAccountConsistencyMirrorForTesting(
-      base::CommandLine::ForCurrentProcess());
+  ScopedAccountConsistencyMirror scoped_mirror;
   const GURL url("https://www.bar.com");
   const GURL redirect_url("http://www.foo.com");
   const std::string account_id = "0123456789";
