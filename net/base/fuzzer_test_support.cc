@@ -5,8 +5,8 @@
 #include "base/at_exit.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/test/scoped_task_environment.h"
 
 namespace {
 
@@ -15,7 +15,9 @@ namespace {
 // Note that in general static initializers are not allowed, however this is
 // just being used by test code.
 struct InitGlobals {
-  InitGlobals() {
+  InitGlobals()
+      : scoped_task_environment(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
     // Set up ICU. ICU is used internally by GURL, which is used throughout the
     // //net code. Initializing ICU is important to prevent fuzztests from
     // asserting when handling non-ASCII urls.
@@ -30,10 +32,10 @@ struct InitGlobals {
     logging::SetMinLogLevel(logging::LOG_FATAL);
   }
 
-  // A number of tests use async code which depends on there being a message
-  // loop.  Setting one up here allows tests to reuse the message loop between
-  // runs.
-  base::MessageLoopForIO message_loop;
+  // A number of tests use async code which depends on there being a
+  // ScopedTaskEnvironment.  Setting one up here allows tests to reuse the
+  // ScopedTaskEnvironment between runs.
+  base::test::ScopedTaskEnvironment scoped_task_environment;
 
   base::AtExitManager at_exit_manager;
 };
