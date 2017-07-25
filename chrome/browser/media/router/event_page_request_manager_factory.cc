@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"
 
 #include "chrome/browser/media/router/event_page_request_manager.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/process_manager_factory.h"
 
@@ -36,6 +37,11 @@ EventPageRequestManagerFactory::EventPageRequestManagerFactory()
 }
 
 EventPageRequestManagerFactory::~EventPageRequestManagerFactory() = default;
+
+content::BrowserContext* EventPageRequestManagerFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
+}
 
 KeyedService* EventPageRequestManagerFactory::BuildServiceInstanceFor(
     BrowserContext* context) const {
