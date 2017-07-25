@@ -292,11 +292,11 @@ class PLATFORM_EXPORT ResourceResponse final {
     was_fallback_required_by_service_worker_ = value;
   }
 
-  mojom::FetchResponseType ServiceWorkerResponseType() const {
-    return service_worker_response_type_;
+  mojom::FetchResponseType ResponseTypeViaServiceWorker() const {
+    return response_type_via_service_worker_;
   }
-  void SetServiceWorkerResponseType(mojom::FetchResponseType value) {
-    service_worker_response_type_ = value;
+  void SetResponseTypeViaServiceWorker(mojom::FetchResponseType value) {
+    response_type_via_service_worker_ = value;
   }
 
   // See ServiceWorkerResponseInfo::url_list_via_service_worker.
@@ -448,8 +448,8 @@ class PLATFORM_EXPORT ResourceResponse final {
   // the request for this resource.
   bool did_service_worker_navigation_preload_ : 1;
 
-  // The type of the response which was fetched by the ServiceWorker.
-  mojom::FetchResponseType service_worker_response_type_;
+  // The type of the response which was returned by the ServiceWorker.
+  mojom::FetchResponseType response_type_via_service_worker_;
 
   // HTTP version used in the response, if known.
   HTTPVersion http_version_;
@@ -576,7 +576,7 @@ struct CrossThreadResourceResponseData {
   bool was_fetched_via_service_worker_;
   bool was_fetched_via_foreign_fetch_;
   bool was_fallback_required_by_service_worker_;
-  mojom::FetchResponseType service_worker_response_type_;
+  mojom::FetchResponseType response_type_via_service_worker_;
   Vector<KURL> url_list_via_service_worker_;
   String cache_storage_cache_name_;
   bool did_service_worker_navigation_preload_;

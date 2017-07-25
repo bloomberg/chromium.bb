@@ -92,7 +92,7 @@ ResourceResponse::ResourceResponse()
       was_fetched_via_foreign_fetch_(false),
       was_fallback_required_by_service_worker_(false),
       did_service_worker_navigation_preload_(false),
-      service_worker_response_type_(mojom::FetchResponseType::kDefault),
+      response_type_via_service_worker_(mojom::FetchResponseType::kDefault),
       http_version_(kHTTPVersionUnknown),
       security_style_(kSecurityStyleUnknown),
       age_(0.0),
@@ -131,7 +131,7 @@ ResourceResponse::ResourceResponse(const KURL& url,
       was_fetched_via_foreign_fetch_(false),
       was_fallback_required_by_service_worker_(false),
       did_service_worker_navigation_preload_(false),
-      service_worker_response_type_(mojom::FetchResponseType::kDefault),
+      response_type_via_service_worker_(mojom::FetchResponseType::kDefault),
       http_version_(kHTTPVersionUnknown),
       security_style_(kSecurityStyleUnknown),
       age_(0.0),
@@ -166,7 +166,7 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
       data->was_fallback_required_by_service_worker_;
   did_service_worker_navigation_preload_ =
       data->did_service_worker_navigation_preload_;
-  service_worker_response_type_ = data->service_worker_response_type_;
+  response_type_via_service_worker_ = data->response_type_via_service_worker_;
   security_style_ = data->security_style_;
   security_details_.protocol = data->security_details_.protocol;
   security_details_.cipher = data->security_details_.cipher;
@@ -227,7 +227,7 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::CopyData()
       was_fallback_required_by_service_worker_;
   data->did_service_worker_navigation_preload_ =
       did_service_worker_navigation_preload_;
-  data->service_worker_response_type_ = service_worker_response_type_;
+  data->response_type_via_service_worker_ = response_type_via_service_worker_;
   data->security_style_ = security_style_;
   data->security_details_.protocol = security_details_.protocol.IsolatedCopy();
   data->security_details_.cipher = security_details_.cipher.IsolatedCopy();

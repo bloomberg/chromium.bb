@@ -397,7 +397,7 @@ void FetchManager::Loader::DidReceiveResponse(
     }
   }
   if (response.WasFetchedViaServiceWorker()) {
-    switch (response.ServiceWorkerResponseType()) {
+    switch (response.ResponseTypeViaServiceWorker()) {
       case mojom::FetchResponseType::kBasic:
       case mojom::FetchResponseType::kDefault:
         tainting = FetchRequestData::kBasicTainting;

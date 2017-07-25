@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_response_type.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -327,9 +328,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, LostActiveVersion) {
   base::RunLoop().RunUntilIdle();
 
   // Verify that the job errored.
-  EXPECT_EQ(
-      ServiceWorkerURLRequestJob::ResponseType::FAIL_DUE_TO_LOST_CONTROLLER,
-      sub_job->response_type_);
+  EXPECT_EQ(ServiceWorkerResponseType::FAIL_DUE_TO_LOST_CONTROLLER,
+            sub_job->response_type_);
 }
 
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoFetchHandler) {

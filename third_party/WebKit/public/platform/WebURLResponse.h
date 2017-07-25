@@ -225,8 +225,8 @@ class WebURLResponse {
   // details.
   BLINK_PLATFORM_EXPORT void SetWasFallbackRequiredByServiceWorker(bool);
 
-  // The type of the response which was served by the ServiceWorker.
-  BLINK_PLATFORM_EXPORT void SetServiceWorkerResponseType(
+  // The type of the response which was returned by the ServiceWorker.
+  BLINK_PLATFORM_EXPORT void SetResponseTypeViaServiceWorker(
       mojom::FetchResponseType);
 
   // The URL list of the Response object the ServiceWorker passed to

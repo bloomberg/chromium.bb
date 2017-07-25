@@ -244,10 +244,10 @@ class SubresourceIntegrityTest : public ::testing::Test {
       response.SetWasFetchedViaServiceWorker(true);
 
       if (service_worker_mode == kSWOpaqueResponse) {
-        response.SetServiceWorkerResponseType(
+        response.SetResponseTypeViaServiceWorker(
             mojom::FetchResponseType::kOpaque);
       } else {
-        response.SetServiceWorkerResponseType(
+        response.SetResponseTypeViaServiceWorker(
             mojom::FetchResponseType::kDefault);
       }
     }

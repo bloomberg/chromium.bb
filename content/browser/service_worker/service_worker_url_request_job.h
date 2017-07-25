@@ -144,8 +144,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            LostActiveVersion);
 
-  using ResponseType = ServiceWorkerResponseType;
-
   enum ResponseBodyType {
     UNKNOWN,
     BLOB,
@@ -277,7 +275,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
 
   std::unique_ptr<NavigationPreloadMetrics> nav_preload_metrics_;
 
-  ResponseType response_type_;
+  ServiceWorkerResponseType response_type_;
 
   // True if URLRequestJob::Start() has been called.
   bool is_started_;
@@ -288,7 +286,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   // Headers that have not yet been committed to |http_response_info_|.
   scoped_refptr<net::HttpResponseHeaders> http_response_headers_;
   std::vector<GURL> response_url_list_;
-  blink::mojom::FetchResponseType service_worker_response_type_;
+  blink::mojom::FetchResponseType fetch_response_type_;
 
   // Used when response type is FORWARD_TO_SERVICE_WORKER.
   std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
