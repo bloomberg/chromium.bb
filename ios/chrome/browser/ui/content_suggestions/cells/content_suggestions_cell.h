@@ -24,8 +24,7 @@
 // Sets the publisher |name| and |date| and add an icon to signal the offline
 // availability if |availableOffline| is YES.
 - (void)setAdditionalInformationWithPublisherName:(NSString*)publisherName
-                                             date:(NSString*)publishDate
-                              offlineAvailability:(BOOL)availableOffline;
+                                             date:(NSString*)publishDate;
 
 // Returns the height needed by a cell contained in |width| and containing the
 // listed informations.
@@ -33,8 +32,7 @@
                 withImage:(BOOL)hasImage
                     title:(NSString*)title
             publisherName:(NSString*)publisherName
-          publicationDate:(NSString*)publicationDate
-         availableOffline:(BOOL)availableOffline;
+          publicationDate:(NSString*)publicationDate;
 
 @end
 

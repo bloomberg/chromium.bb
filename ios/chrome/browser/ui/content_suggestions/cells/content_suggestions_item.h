@@ -44,8 +44,6 @@ class GURL;
 @property(nonatomic, strong) UIImage* image;
 // Whether the suggestion has an image associated.
 @property(nonatomic, assign) BOOL hasImage;
-// Whether the suggestion is available offline. If YES, an icon is displayed.
-@property(nonatomic, assign) BOOL availableOffline;
 // Attributes for favicon.
 @property(nonatomic, strong) FaviconAttributes* attributes;
 // URL for the favicon, if different of |URL|.

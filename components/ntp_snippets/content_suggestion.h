@@ -49,8 +49,6 @@ struct RecentTabSuggestionExtra {
 // ReadingListSuggestionExtra contains additional data which is only available
 // for Reading List suggestions.
 struct ReadingListSuggestionExtra {
-  // State of the distillation of the suggestion.
-  bool distilled = false;
   // URL of the page whose favicon should be displayed for this suggestion.
   GURL favicon_page_url;
 };

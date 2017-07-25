@@ -45,7 +45,6 @@
 @synthesize attributes = _attributes;
 @synthesize faviconURL = _faviconURL;
 @synthesize hasImage = _hasImage;
-@synthesize availableOffline = _availableOffline;
 @synthesize firstTimeWithImage = _firstTimeWithImage;
 
 - (instancetype)initWithType:(NSInteger)type
@@ -73,8 +72,7 @@
   [cell setContentImage:self.image animated:self.firstTimeWithImage];
   self.firstTimeWithImage = NO;
   [cell setAdditionalInformationWithPublisherName:self.publisher
-                                             date:[self relativeDate]
-                              offlineAvailability:self.availableOffline];
+                                             date:[self relativeDate]];
   cell.isAccessibilityElement = YES;
   cell.accessibilityLabel = [self accessibilityLabel];
 }
@@ -90,8 +88,7 @@
                               withImage:self.hasImage
                                   title:self.title
                           publisherName:self.publisher
-                        publicationDate:[self relativeDate]
-                       availableOffline:self.availableOffline];
+                        publicationDate:[self relativeDate]];
 }
 
 #pragma mark - Private
@@ -117,18 +114,11 @@
 
 // Returns the accessibility label.
 - (NSString*)accessibilityLabel {
-  NSString* offlineAvailability = @"";
-  if (self.availableOffline) {
-    offlineAvailability = l10n_util::GetNSString(
-        IDS_IOS_CONTENT_SUGGESTIONS_ACCESSIBILITY_AVAILABLE_OFFLINE);
-  }
-
   return l10n_util::GetNSStringF(
       IDS_IOS_CONTENT_SUGGESTIONS_ACCESSIBILITY_LABEL_SUGGESTION,
       base::SysNSStringToUTF16(self.title),
       base::SysNSStringToUTF16(self.publisher),
-      base::SysNSStringToUTF16([self relativeDate]),
-      base::SysNSStringToUTF16(offlineAvailability));
+      base::SysNSStringToUTF16([self relativeDate]));
 }
 
 @end
