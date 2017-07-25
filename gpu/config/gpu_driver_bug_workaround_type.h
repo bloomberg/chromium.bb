@@ -229,6 +229,8 @@
          wake_up_gpu_before_drawing)                         \
   GPU_OP(RELY_ON_IMPLICIT_SYNC_FOR_SWAP_BUFFERS,             \
          rely_on_implicit_sync_for_swap_buffers)             \
+  GPU_OP(AVOID_USING_IMAGE_FLUSH_EXTERNAL_WITH_EGL_CREATE_IMAGE, \
+         avoid_using_image_flush_external_with_egl_create_image) \
 // clang-format on
 
 namespace gpu {
