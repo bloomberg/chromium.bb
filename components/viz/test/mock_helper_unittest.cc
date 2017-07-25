@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/mock_helper.h"
+#include "components/viz/test/mock_helper.h"
 
 #include "testing/gtest/include/gtest/gtest-spi.h"
 
@@ -17,14 +17,16 @@ TEST(ExpectMockFailureTest, FailsWhenNoMock) {
 }
 
 TEST(ExpectMockFailureTest, FailsWhenMockSucceeds) {
-  EXPECT_NONFATAL_FAILURE({
-    EXPECT_MOCK_FAILURE({
-      ::testing::NiceMock<TestingMock> t1;
-      EXPECT_CALL(t1, Test());
+  EXPECT_NONFATAL_FAILURE(
+      {
+        EXPECT_MOCK_FAILURE({
+          ::testing::NiceMock<TestingMock> t1;
+          EXPECT_CALL(t1, Test());
 
-      t1.Test();
-    });
-  }, "");
+          t1.Test();
+        });
+      },
+      "");
 }
 
 TEST(ExpectMockFailureTest, PassesWhenMockFailsForMissing) {
