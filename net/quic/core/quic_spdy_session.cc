@@ -178,8 +178,7 @@ class QuicSpdySession::SpdyFramerVisitor
         session_->UpdateHeaderEncoderTableSize(value);
         break;
       case SETTINGS_ENABLE_PUSH:
-        if (FLAGS_quic_reloadable_flag_quic_enable_server_push_by_default &&
-            session_->perspective() == Perspective::IS_SERVER) {
+        if (session_->perspective() == Perspective::IS_SERVER) {
           // See rfc7540, Section 6.5.2.
           if (value > 1) {
             CloseConnection(
@@ -336,7 +335,7 @@ QuicSpdySession::QuicSpdySession(QuicConnection* connection,
                                  const QuicConfig& config)
     : QuicSession(connection, visitor, config),
       force_hol_blocking_(false),
-      server_push_enabled_(false),
+      server_push_enabled_(true),
       stream_id_(kInvalidStreamId),
       promised_stream_id_(kInvalidStreamId),
       fin_(false),
@@ -396,31 +395,23 @@ void QuicSpdySession::OnStreamHeaderList(QuicStreamId stream_id,
                                          const QuicHeaderList& header_list) {
   QuicSpdyStream* stream = GetSpdyDataStream(stream_id);
   if (stream == nullptr) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_final_offset_from_trailers, 1,
-                      3);
-    if (FLAGS_quic_reloadable_flag_quic_final_offset_from_trailers) {
-      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_final_offset_from_trailers, 2,
-                        3);
-      // The stream no longer exists, but trailing headers may contain the final
-      // byte offset necessary for flow control and open stream accounting.
-      size_t final_byte_offset = 0;
-      for (const auto& header : header_list) {
-        const string& header_key = header.first;
-        const string& header_value = header.second;
-        if (header_key == kFinalOffsetHeaderKey) {
-          if (!QuicTextUtils::StringToSizeT(header_value, &final_byte_offset)) {
-            connection()->CloseConnection(
-                QUIC_INVALID_HEADERS_STREAM_DATA,
-                "Trailers are malformed (no final offset)",
-                ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-            return;
-          }
-          DVLOG(1) << "Received final byte offset in trailers for stream "
-                   << stream_id << ", which no longer exists.";
-          OnFinalByteOffsetReceived(stream_id, final_byte_offset);
-          QUIC_FLAG_COUNT_N(
-              quic_reloadable_flag_quic_final_offset_from_trailers, 3, 3);
+    // The stream no longer exists, but trailing headers may contain the final
+    // byte offset necessary for flow control and open stream accounting.
+    size_t final_byte_offset = 0;
+    for (const auto& header : header_list) {
+      const string& header_key = header.first;
+      const string& header_value = header.second;
+      if (header_key == kFinalOffsetHeaderKey) {
+        if (!QuicTextUtils::StringToSizeT(header_value, &final_byte_offset)) {
+          connection()->CloseConnection(
+              QUIC_INVALID_HEADERS_STREAM_DATA,
+              "Trailers are malformed (no final offset)",
+              ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+          return;
         }
+        DVLOG(1) << "Received final byte offset in trailers for stream "
+                 << stream_id << ", which no longer exists.";
+        OnFinalByteOffsetReceived(stream_id, final_byte_offset);
       }
     }
 
@@ -626,7 +617,6 @@ void QuicSpdySession::OnConfigNegotiated() {
   }
   const QuicVersion version = connection()->version();
   if (!use_stream_notifier() &&
-      FLAGS_quic_reloadable_flag_quic_enable_force_hol_blocking &&
       version == QUIC_VERSION_36 && config()->ForceHolBlocking(perspective())) {
     force_hol_blocking_ = true;
     // Since all streams are tunneled through the headers stream, it
@@ -639,9 +629,6 @@ void QuicSpdySession::OnConfigNegotiated() {
     headers_stream_->flow_controller()->UpdateSendWindowOffset(
         kStreamReceiveWindowLimit);
   }
-
-  server_push_enabled_ =
-      FLAGS_quic_reloadable_flag_quic_enable_server_push_by_default;
 }
 
 void QuicSpdySession::OnStreamFrameData(QuicStreamId stream_id,
