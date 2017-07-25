@@ -122,52 +122,69 @@ final class JavaUrlRequest extends UrlRequestBase {
     }
 
     // Executor that runs one task at a time on an underlying Executor.
+    // NOTE: Do not use to wrap user supplied Executor as lock is held while underlying execute()
+    // is called.
     private static final class SerializingExecutor implements Executor {
         private final Executor mUnderlyingExecutor;
-        // Queue of tasks to run.  First element is the task currently executing.
-        // Task processing loop is running if queue is not empty.  Synchronized on itself.
-        @GuardedBy("mTaskQueue")
-        private final ArrayDeque<Runnable> mTaskQueue = new ArrayDeque<>();
-
-        SerializingExecutor(Executor underlyingExecutor) {
-            mUnderlyingExecutor = underlyingExecutor;
-        }
-
-        private void runTask(final Runnable task) {
-            try {
-                mUnderlyingExecutor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            task.run();
-                        } finally {
-                            Runnable nextTask;
-                            synchronized (mTaskQueue) {
-                                mTaskQueue.removeFirst();
-                                nextTask = mTaskQueue.peekFirst();
-                            }
-                            if (nextTask != null) {
-                                runTask(nextTask);
+        private final Runnable mRunTasks = new Runnable() {
+            @Override
+            public void run() {
+                Runnable task;
+                synchronized (mTaskQueue) {
+                    if (mRunning) {
+                        return;
+                    }
+                    task = mTaskQueue.pollFirst();
+                    mRunning = task != null;
+                }
+                while (task != null) {
+                    boolean threw = true;
+                    try {
+                        task.run();
+                        threw = false;
+                    } finally {
+                        synchronized (mTaskQueue) {
+                            if (threw) {
+                                // If task.run() threw, this method will abort without looping
+                                // again, so repost to keep running tasks.
+                                mRunning = false;
+                                try {
+                                    mUnderlyingExecutor.execute(mRunTasks);
+                                } catch (RejectedExecutionException e) {
+                                    // Give up if a task run at shutdown throws.
+                                }
+                            } else {
+                                task = mTaskQueue.pollFirst();
+                                mRunning = task != null;
                             }
                         }
                     }
-                });
-            } catch (RejectedExecutionException e) {
-                // This can happen if JavaCronetEngine.shutdown() was called.
-                // Ignore and cease processing this request.
+                }
             }
+        };
+        // Queue of tasks to run.  Tasks are added to the end and taken from the front.
+        // Synchronized on itself.
+        @GuardedBy("mTaskQueue")
+        private final ArrayDeque<Runnable> mTaskQueue = new ArrayDeque<>();
+        // Indicates if mRunTasks is actively running tasks.  Synchronized on mTaskQueue.
+        @GuardedBy("mTaskQueue")
+        private boolean mRunning;
+
+        SerializingExecutor(Executor underlyingExecutor) {
+            mUnderlyingExecutor = underlyingExecutor;
         }
 
         @Override
         public void execute(Runnable command) {
             synchronized (mTaskQueue) {
                 mTaskQueue.addLast(command);
-                // Task processing loop is already running if there are other items in mTaskQueue.
-                if (mTaskQueue.size() > 1) {
-                    return;
+                try {
+                    mUnderlyingExecutor.execute(mRunTasks);
+                } catch (RejectedExecutionException e) {
+                    // If shutting down, do not add new tasks to the queue.
+                    mTaskQueue.removeLast();
                 }
             }
-            runTask(command);
         };
     }
 
