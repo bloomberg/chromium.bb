@@ -208,13 +208,16 @@ bool IsTabStripAutoScrollNewTabsEnabled() {
   return !command_line->HasSwitch(switches::kDisableTabStripAutoScrollNewTabs);
 }
 
+// This feature is on by default. Finch and experimental settings can be used to
+// disable it.
+// TODO(crbug.com/739404): Remove this method and the experimental flag once the
+// feature spends a couple of releases in stable.
 bool IsViewCopyPasswordsEnabled() {
+  if (!base::FeatureList::IsEnabled(password_manager::features::kViewPasswords))
+    return false;
   NSString* viewCopyPasswordFlag = [[NSUserDefaults standardUserDefaults]
       objectForKey:kEnableViewCopyPasswords];
-  if ([viewCopyPasswordFlag isEqualToString:@"Enabled"])
-    return true;
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kViewPasswords);
+  return ![viewCopyPasswordFlag isEqualToString:@"Disabled"];
 }
 
 bool UseOnlyLocalHeuristicsForPasswordGeneration() {
