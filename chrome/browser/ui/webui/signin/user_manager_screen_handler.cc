@@ -703,7 +703,6 @@ void UserManagerScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getTouchViewState", kDoNothingCallback);
   // Unused callbacks from display_manager.js
   web_ui()->RegisterMessageCallback("showAddUser", kDoNothingCallback);
-  web_ui()->RegisterMessageCallback("loadWallpaper", kDoNothingCallback);
   web_ui()->RegisterMessageCallback("updateCurrentScreen", kDoNothingCallback);
   web_ui()->RegisterMessageCallback("loginVisible", kDoNothingCallback);
   // Unused callbacks from user_pod_row.js

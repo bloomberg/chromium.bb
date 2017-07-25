@@ -389,7 +389,6 @@ class SigninScreenHandler
                                  const std::string& input_method);
   void HandleOfflineLogin(const base::ListValue* args);
   void HandleShutdownSystem();
-  void HandleLoadWallpaper(const AccountId& account_id);
   void HandleRebootSystem();
   void HandleRemoveUser(const AccountId& account_id);
   void HandleShowAddUser(const base::ListValue* args);
@@ -413,7 +412,7 @@ class SigninScreenHandler
   void HandleLoginScreenUpdate();
   void HandleShowLoadingTimeoutError();
   void HandleShowSupervisedUserCreationScreen();
-  void HandleFocusPod(const AccountId& account_id);
+  void HandleFocusPod(const AccountId& account_id, bool load_wallpaper);
   void HandleNoPodFocused();
   void HandleHardlockPod(const std::string& user_id);
   void HandleLaunchKioskApp(const AccountId& app_account_id,

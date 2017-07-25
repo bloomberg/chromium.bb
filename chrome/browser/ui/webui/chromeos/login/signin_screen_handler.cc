@@ -493,7 +493,6 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("rebootSystem", &SigninScreenHandler::HandleRebootSystem);
   AddRawCallback("showAddUser", &SigninScreenHandler::HandleShowAddUser);
   AddCallback("shutdownSystem", &SigninScreenHandler::HandleShutdownSystem);
-  AddCallback("loadWallpaper", &SigninScreenHandler::HandleLoadWallpaper);
   AddCallback("removeUser", &SigninScreenHandler::HandleRemoveUser);
   AddCallback("toggleEnrollmentScreen",
               &SigninScreenHandler::HandleToggleEnrollmentScreen);
@@ -1198,11 +1197,6 @@ void SigninScreenHandler::HandleShutdownSystem() {
       ash::ShutdownReason::LOGIN_SHUT_DOWN_BUTTON);
 }
 
-void SigninScreenHandler::HandleLoadWallpaper(const AccountId& account_id) {
-  if (delegate_)
-    delegate_->LoadWallpaper(account_id);
-}
-
 void SigninScreenHandler::HandleRebootSystem() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
@@ -1401,7 +1395,8 @@ void SigninScreenHandler::HandleShowLoadingTimeoutError() {
   UpdateState(NetworkError::ERROR_REASON_LOADING_TIMEOUT);
 }
 
-void SigninScreenHandler::HandleFocusPod(const AccountId& account_id) {
+void SigninScreenHandler::HandleFocusPod(const AccountId& account_id,
+                                         bool load_wallpaper) {
   proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(account_id);
   if (delegate_)
     delegate_->CheckUserStatus(account_id);
@@ -1419,7 +1414,8 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id) {
     lock_screen_utils::SetUserInputMethod(account_id.GetUserEmail(),
                                           ime_state_.get());
     lock_screen_utils::SetKeyboardSettings(account_id);
-    WallpaperManager::Get()->SetUserWallpaperDelayed(account_id);
+    if (delegate_ && load_wallpaper)
+      delegate_->LoadWallpaper(account_id);
 
     bool use_24hour_clock = false;
     if (user_manager::known_user::GetBooleanPref(

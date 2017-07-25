@@ -414,6 +414,10 @@ cr.define('login', function() {
         validIcon = validIcon || this.iconId_ == icon.id;
       }, this);
       this.hidden = validIcon ? false : true;
+      // Update password container width based on the visibility of the
+      // custom icon container.
+      document.querySelector('.password-container')
+          .classList.toggle('custom-icon-shown', !this.hidden);
     },
 
     /**
@@ -3784,7 +3788,6 @@ cr.define('login', function() {
         // was added to ensure a symmetric layout.
         pod.style.paddingBottom = cr.ui.toCssPx(0);
       }
-      this.clearPodsAnimation_();
       this.hideEmptyArea_();
       // Clear error bubbles whenever pod placement is happening, i.e., after
       // orientation change, showing or hiding virtual keyboard, and user
@@ -4211,9 +4214,13 @@ cr.define('login', function() {
           podToFocus.focus();
         }
 
-        // focusPod() automatically loads wallpaper
-        if (!podToFocus.user.isApp)
-          chrome.send('focusPod', [podToFocus.user.username]);
+        if (!podToFocus.user.isApp) {
+          // Only updates wallpaper when the focused pod is in large style.
+          chrome.send('focusPod', [
+            podToFocus.user.username,
+            podToFocus.getPodStyle() == UserPod.Style.LARGE
+          ]);
+        }
         this.firstShown_ = false;
         this.lastFocusedPod_ = podToFocus;
         this.setUserPodFingerprintIcon(
@@ -4222,14 +4229,6 @@ cr.define('login', function() {
         chrome.send('noPodFocused');
       }
       this.insideFocusPod_ = false;
-    },
-
-    /**
-     * Resets wallpaper to the last active user's wallpaper, if any.
-     */
-    loadLastWallpaper: function() {
-      if (this.lastFocusedPod_ && !this.lastFocusedPod_.user.isApp)
-        chrome.send('loadWallpaper', [this.lastFocusedPod_.user.username]);
     },
 
     /**
@@ -4650,6 +4649,7 @@ cr.define('login', function() {
       }
 
       this.handleAfterPodPlacement_();
+      this.clearPodsAnimation_();
     },
 
     /**
