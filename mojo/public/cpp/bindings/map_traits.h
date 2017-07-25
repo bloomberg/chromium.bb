@@ -21,6 +21,8 @@ namespace mojo {
 //     using Value = V;
 //
 //     // These two methods are optional. Please see comments in struct_traits.h
+//     // Note that unlike with StructTraits, IsNull() is called *twice* during
+//     // serialization for MapTraits.
 //     static bool IsNull(const CustomMap<K, V>& input);
 //     static void SetToNull(CustomMap<K, V>* output);
 //

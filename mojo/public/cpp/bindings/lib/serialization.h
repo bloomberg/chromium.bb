@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/lib/string_serialization.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/bindings/map_traits_stl.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/string_traits_stl.h"
 #include "mojo/public/cpp/bindings/string_traits_string16.h"
 #include "mojo/public/cpp/bindings/string_traits_string_piece.h"
@@ -31,34 +32,16 @@ DataArrayType StructSerializeImpl(UserType* input) {
                 "Unexpected type.");
 
   SerializationContext context;
-  size_t size = PrepareToSerialize<MojomType>(*input, &context);
-  DCHECK_EQ(size, Align(size));
+  PrepareToSerialize<MojomType>(*input, &context);
 
+  Message message;
+  typename MojomTypeTraits<MojomType>::Data::BufferWriter writer;
+  context.PrepareMessage(0, 0, &message);
+  Serialize<MojomType>(*input, message.payload_buffer(), &writer, &context);
+  uint32_t size = message.payload_num_bytes();
   DataArrayType result(size);
-  if (size == 0)
-    return result;
-
-  void* result_buffer = &result.front();
-  // The serialization logic requires that the buffer is 8-byte aligned. If the
-  // result buffer is not properly aligned, we have to do an extra copy. In
-  // practice, this should never happen for std::vector.
-  bool need_copy = !IsAligned(result_buffer);
-
-  if (need_copy) {
-    // calloc sets the memory to all zero.
-    result_buffer = calloc(size, 1);
-    DCHECK(IsAligned(result_buffer));
-  }
-
-  Buffer buffer(result_buffer, size);
-  typename MojomTypeTraits<MojomType>::Data* data = nullptr;
-  Serialize<MojomType>(*input, &buffer, &data, &context);
-
-  if (need_copy) {
-    memcpy(&result.front(), result_buffer, size);
-    free(result_buffer);
-  }
-
+  if (size)
+    memcpy(&result.front(), message.payload(), size);
   return result;
 }
 
