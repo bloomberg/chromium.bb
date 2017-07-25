@@ -5,11 +5,11 @@
 #ifndef MEDIA_BASE_MIME_UTIL_INTERNAL_H_
 #define MEDIA_BASE_MIME_UTIL_INTERNAL_H_
 
-#include <map>
 #include <string>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/mime_util.h"
@@ -98,8 +98,8 @@ class MEDIA_EXPORT MimeUtil {
                                         const PlatformInfo& platform_info);
 
  private:
-  typedef base::hash_set<int> CodecSet;
-  typedef std::map<std::string, CodecSet> MediaFormatMappings;
+  typedef base::flat_set<int> CodecSet;
+  typedef base::flat_map<std::string, CodecSet> MediaFormatMappings;
 
   // Initializes the supported media types into hash sets for faster lookup.
   void InitializeMimeTypeMaps();
