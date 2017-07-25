@@ -108,10 +108,10 @@ class EncryptedMediaTest : public MediaBrowserTest,
     }
 
     base::StringPairs query_params;
-    query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
-    query_params.push_back(std::make_pair(
+    query_params.emplace_back("keySystem", CurrentKeySystem());
+    query_params.emplace_back(
         "configChangeType",
-        base::IntToString(static_cast<int>(config_change_type))));
+        base::IntToString(static_cast<int>(config_change_type)));
     RunMediaTestPage("mse_config_change.html", query_params, kEnded, true);
   }
 
@@ -122,11 +122,11 @@ class EncryptedMediaTest : public MediaBrowserTest,
                              SrcType src_type,
                              const std::string& expectation) {
     base::StringPairs query_params;
-    query_params.push_back(std::make_pair("mediaFile", media_file));
-    query_params.push_back(std::make_pair("mediaType", media_type));
-    query_params.push_back(std::make_pair("keySystem", key_system));
+    query_params.emplace_back("mediaFile", media_file);
+    query_params.emplace_back("mediaType", media_type);
+    query_params.emplace_back("keySystem", key_system);
     if (src_type == SrcType::MSE)
-      query_params.push_back(std::make_pair("useMSE", "1"));
+      query_params.emplace_back("useMSE", "1");
     RunMediaTestPage(html_page, query_params, expectation, true);
   }
 

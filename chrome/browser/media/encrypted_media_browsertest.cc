@@ -176,17 +176,17 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
                              PlayCount play_count,
                              const std::string& expected_title) {
     base::StringPairs query_params;
-    query_params.push_back(std::make_pair("mediaFile", media_file));
-    query_params.push_back(std::make_pair("mediaType", media_type));
-    query_params.push_back(std::make_pair("keySystem", key_system));
+    query_params.emplace_back("mediaFile", media_file);
+    query_params.emplace_back("mediaType", media_type);
+    query_params.emplace_back("keySystem", key_system);
     if (src_type == SrcType::MSE)
-      query_params.push_back(std::make_pair("useMSE", "1"));
+      query_params.emplace_back("useMSE", "1");
     if (force_invalid_response)
-      query_params.push_back(std::make_pair("forceInvalidResponse", "1"));
+      query_params.emplace_back("forceInvalidResponse", "1");
     if (!session_to_load.empty())
-      query_params.push_back(std::make_pair("sessionToLoad", session_to_load));
+      query_params.emplace_back("sessionToLoad", session_to_load);
     if (play_count == PlayCount::TWICE)
-      query_params.push_back(std::make_pair("playTwice", "1"));
+      query_params.emplace_back("playTwice", "1");
     RunEncryptedMediaTestPage(html_page, key_system, query_params,
                               expected_title);
   }
@@ -442,10 +442,10 @@ class EncryptedMediaTest
     }
 
     base::StringPairs query_params;
-    query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
-    query_params.push_back(std::make_pair(
+    query_params.emplace_back("keySystem", CurrentKeySystem());
+    query_params.emplace_back(
         "configChangeType",
-        base::IntToString(static_cast<int>(config_change_type))));
+        base::IntToString(static_cast<int>(config_change_type)));
     RunEncryptedMediaTestPage("mse_config_change.html", CurrentKeySystem(),
                               query_params, kEnded);
   }
@@ -453,12 +453,12 @@ class EncryptedMediaTest
   void TestPolicyCheck() {
     base::StringPairs query_params;
     // We do not care about playback so choose an arbitrary media file.
-    query_params.push_back(std::make_pair("mediaFile", "bear-a_enc-a.webm"));
-    query_params.push_back(std::make_pair("mediaType", kWebMVorbisAudioOnly));
+    query_params.emplace_back("mediaFile", "bear-a_enc-a.webm");
+    query_params.emplace_back("mediaType", kWebMVorbisAudioOnly);
     if (CurrentSourceType() == SrcType::MSE)
-      query_params.push_back(std::make_pair("useMSE", "1"));
-    query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
-    query_params.push_back(std::make_pair("policyCheck", "1"));
+      query_params.emplace_back("useMSE", "1");
+    query_params.emplace_back("keySystem", CurrentKeySystem());
+    query_params.emplace_back("policyCheck", "1");
     RunEncryptedMediaTestPage(kDefaultEmePlayer, CurrentKeySystem(),
                               query_params, kUnitTestSuccess);
   }
@@ -481,8 +481,8 @@ class EncryptedMediaTest
   void TestDifferentContainers(EncryptedContainer video_format,
                                EncryptedContainer audio_format) {
     base::StringPairs query_params;
-    query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
-    query_params.push_back(std::make_pair("runEncrypted", "1"));
+    query_params.emplace_back("keySystem", CurrentKeySystem());
+    query_params.emplace_back("runEncrypted", "1");
     query_params.push_back(
         std::make_pair("videoFormat", ConvertContainerFormat(video_format)));
     query_params.push_back(
