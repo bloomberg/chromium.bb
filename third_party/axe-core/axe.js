@@ -1,4 +1,4 @@
-/*! aXe v2.3.1
+/*! aXe v3.0.0-alpha-1
  * Copyright (c) 2017 Deque Systems, Inc.
  *
  * Your use of this Source Code Form is subject to the terms of the Mozilla Public
@@ -19,7 +19,7 @@
     return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? 'symbol' : typeof obj;
   };
   var axe = axe || {};
-  axe.version = '2.3.1';
+  axe.version = '3.0.0-alpha-1';
   if (typeof define === 'function' && define.amd) {
     define([], function() {
       'use strict';
@@ -144,7 +144,7 @@
   Audit.prototype.run = function(context, options, resolve, reject) {
     'use strict';
     this.validateOptions(options);
-    axe._tree = axe.utils.getFlattenedTree(document.body);
+    axe._tree = axe.utils.getFlattenedTree(document.documentElement);
     var q = axe.utils.queue();
     this.rules.forEach(function(rule) {
       if (axe.utils.ruleShouldRun(rule, context, options)) {
@@ -166,7 +166,7 @@
                 result: axe.constants.CANTTELL,
                 description: 'An error occured while running this rule',
                 message: err.message,
-                help: err.stack || err.message,
+                stack: err.stack,
                 error: err
               });
               res(errResult);
@@ -543,7 +543,7 @@
     var nodes = void 0;
     try {
       nodes = this.gather(context).filter(function(node) {
-        return _this.matches(node.actualNode);
+        return _this.matches(node.actualNode, node);
       });
     } catch (error) {
       reject(new SupportError({
@@ -1012,7 +1012,13 @@
       });
     }
     q.defer(function(res, rej) {
-      audit.run(context, options, res, rej);
+      if (options.restoreScroll) {
+        var scrollState = axe.utils.getScrollState();
+        audit.run(context, options, res, rej);
+        axe.utils.setScrollState(scrollState);
+      } else {
+        audit.run(context, options, res, rej);
+      }
     });
     q.then(function(data) {
       try {
@@ -2372,9 +2378,11 @@
     }
     nodeName = node.nodeName.toLowerCase();
     if (node.shadowRoot && nodeName !== 'marquee') {
+      retVal = virtualDOMfromNode(node, shadowId);
       shadowId = 'a' + Math.random().toString().substring(2);
       realArray = Array.from(node.shadowRoot.childNodes);
-      return realArray.reduce(reduceShadowDOM, []);
+      retVal.children = realArray.reduce(reduceShadowDOM, []);
+      return [ retVal ];
     } else {
       if (nodeName === 'content') {
         realArray = Array.from(node.getDistributedNodes());
@@ -2407,6 +2415,9 @@
   };
   axe.utils.getNodeFromTree = function(vNode, node) {
     var found;
+    if (vNode.actualNode === node) {
+      return vNode;
+    }
     vNode.children.forEach(function(candidate) {
       var retVal;
       if (candidate.actualNode === node) {
@@ -2627,11 +2638,11 @@
   }
   var createSelector = {
     getElmId: function getElmId(elm) {
-      if (!elm.id) {
+      if (!elm.getAttribute('id')) {
         return;
       }
       var doc = elm.getRootNode && elm.getRootNode() || document;
-      var id = '#' + escapeSelector(elm.id || '');
+      var id = '#' + escapeSelector(elm.getAttribute('id') || '');
       if (!id.match(/player_uid_/) && doc.querySelectorAll(id).length === 1) {
         return id;
       }
@@ -2658,7 +2669,7 @@
       }
     },
     getElmNameProp: function getElmNameProp(elm) {
-      if (!elm.id && elm.name) {
+      if (!elm.hasAttribute('id') && elm.name) {
         return '[name="' + escapeSelector(elm.name) + '"]';
       }
     },
@@ -2814,7 +2825,8 @@
     if (node.nodeType === 1) {
       var element = {};
       element.str = node.nodeName.toLowerCase();
-      if (node.getAttribute && node.getAttribute('id') && node.ownerDocument.querySelectorAll('#' + axe.utils.escapeSelector(node.id)).length === 1) {
+      var id = node.getAttribute && axe.utils.escapeSelector(node.getAttribute('id'));
+      if (id && node.ownerDocument.querySelectorAll('#' + id).length === 1) {
         element.id = node.getAttribute('id');
       }
       if (count > 1) {
@@ -3773,6 +3785,56 @@
     }
   };
   'use strict';
+  function getScroll(elm) {
+    var style = window.getComputedStyle(elm);
+    var visibleOverflowY = style.getPropertyValue('overflow-y') === 'visible';
+    var visibleOverflowX = style.getPropertyValue('overflow-x') === 'visible';
+    if (!visibleOverflowY && elm.scrollHeight > elm.clientHeight || !visibleOverflowX && elm.scrollWidth > elm.clientWidth) {
+      return {
+        elm: elm,
+        top: elm.scrollTop,
+        left: elm.scrollLeft
+      };
+    }
+  }
+  function setScroll(elm, top, left) {
+    if (elm === window) {
+      return elm.scroll(top, left);
+    } else {
+      elm.scrollTop = top;
+      elm.scrollLeft = left;
+    }
+  }
+  function getElmScrollRecursive(root) {
+    return Array.from(root.children).reduce(function(scrolls, elm) {
+      var scroll = getScroll(elm);
+      if (scroll) {
+        scrolls.push(scroll);
+      }
+      return scrolls.concat(getElmScrollRecursive(elm));
+    }, []);
+  }
+  axe.utils.getScrollState = function getScrollState() {
+    var win = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window;
+    var root = win.document.documentElement;
+    var windowScroll = [ win.pageXOffset !== undefined ? {
+      elm: win,
+      top: win.pageYOffset,
+      left: win.pageXOffset
+    } : {
+      elm: root,
+      top: root.scrollTop,
+      left: root.scrollLeft
+    } ];
+    return windowScroll.concat(getElmScrollRecursive(document.body));
+  };
+  axe.utils.setScrollState = function setScrollState(scrollState) {
+    scrollState.forEach(function(_ref) {
+      var elm = _ref.elm, top = _ref.top, left = _ref.left;
+      return setScroll(elm, top, left);
+    });
+  };
+  'use strict';
   function getDeepest(collection) {
     'use strict';
     return collection.sort(function(a, b) {
@@ -4176,7 +4238,7 @@
       },
       checks: {
         accesskeys: {
-          impact: 'critical',
+          impact: 'serious',
           messages: {
             pass: function anonymous(it) {
               var out = 'Accesskey attribute value is unique';
@@ -4202,7 +4264,7 @@
           }
         },
         'non-empty-title': {
-          impact: 'critical',
+          impact: 'serious',
           messages: {
             pass: function anonymous(it) {
               var out = 'Element has a title attribute';
@@ -4215,7 +4277,7 @@
           }
         },
         'aria-label': {
-          impact: 'critical',
+          impact: 'serious',
           messages: {
             pass: function anonymous(it) {
               var out = 'aria-label attribute exists and is not empty';
@@ -4228,7 +4290,7 @@
           }
         },
         'aria-labelledby': {
-          impact: 'critical',
+          impact: 'serious',
           messages: {
             pass: function anonymous(it) {
               var out = 'aria-labelledby attribute exists and references elements that are visible to screen readers';
@@ -4423,7 +4485,7 @@
           }
         },
         'is-on-screen': {
-          impact: 'minor',
+          impact: 'serious',
           messages: {
             pass: function anonymous(it) {
               var out = 'Element is not visible';
@@ -4480,7 +4542,7 @@
           }
         },
         'role-presentation': {
-          impact: 'moderate',
+          impact: 'minor',
           messages: {
             pass: function anonymous(it) {
               var out = 'Element\'s default semantics were overriden with role="presentation"';
@@ -4493,7 +4555,7 @@
           }
         },
         'role-none': {
-          impact: 'moderate',
+          impact: 'minor',
           messages: {
             pass: function anonymous(it) {
               var out = 'Element\'s default semantics were overriden with role="none"';
@@ -4519,7 +4581,7 @@
           }
         },
         'internal-link-present': {
-          impact: 'critical',
+          impact: 'serious',
           messages: {
             pass: function anonymous(it) {
               var out = 'Valid skip link found';
@@ -4532,7 +4594,7 @@
           }
         },
         'header-present': {
-          impact: 'moderate',
+          impact: 'serious',
           messages: {
             pass: function anonymous(it) {
               var out = 'Page has a header';
@@ -4660,7 +4722,7 @@
           }
         },
         'doc-has-title': {
-          impact: 'moderate',
+          impact: 'serious',
           messages: {
             pass: function anonymous(it) {
               var out = 'Document has a non-empty <title> element';
@@ -4686,7 +4748,7 @@
           }
         },
         'has-visible-text': {
-          impact: 'moderate',
+          impact: 'minor',
           messages: {
             pass: function anonymous(it) {
               var out = 'Element has text that is visible to screen readers';
@@ -4712,7 +4774,7 @@
           }
         },
         'heading-order': {
-          impact: 'minor',
+          impact: 'moderate',
           messages: {
             pass: function anonymous(it) {
               var out = 'Heading order valid';
@@ -4911,7 +4973,7 @@
           }
         },
         'link-in-text-block': {
-          impact: 'critical',
+          impact: 'serious',
           messages: {
             pass: function anonymous(it) {
               var out = 'Links can be distinguished from surrounding text in a way that does not rely on color';
@@ -4945,7 +5007,7 @@
           }
         },
         listitem: {
-          impact: 'critical',
+          impact: 'serious',
           messages: {
             pass: function anonymous(it) {
               var out = 'List item has a <ul>, <ol> or role="list" parent element';
@@ -4974,11 +5036,11 @@
           impact: 'minor',
           messages: {
             pass: function anonymous(it) {
-              var out = '<meta> tag does not prevent significant zooming';
+              var out = '<meta> tag does not prevent significant zooming on mobile devices';
               return out;
             },
             fail: function anonymous(it) {
-              var out = '<meta> tag limits zooming';
+              var out = '<meta> tag limits zooming on mobile devices';
               return out;
             }
           }
@@ -4987,17 +5049,17 @@
           impact: 'critical',
           messages: {
             pass: function anonymous(it) {
-              var out = '<meta> tag does not disable zooming';
+              var out = '<meta> tag does not disable zooming on mobile devices';
               return out;
             },
             fail: function anonymous(it) {
-              var out = '<meta> tag disables zooming';
+              var out = '<meta> tag disables zooming on mobile devices';
               return out;
             }
           }
         },
         'p-as-heading': {
-          impact: 'critical',
+          impact: 'serious',
           messages: {
             pass: function anonymous(it) {
               var out = '<p> elements are not styled as headings';
@@ -5023,7 +5085,7 @@
           }
         },
         'html5-scope': {
-          impact: 'serious',
+          impact: 'moderate',
           messages: {
             pass: function anonymous(it) {
               var out = 'Scope attribute is only used on table header elements (<th>)';
@@ -5062,7 +5124,7 @@
           }
         },
         'skip-link': {
-          impact: 'critical',
+          impact: 'moderate',
           messages: {
             pass: function anonymous(it) {
               var out = 'Valid skip link found';
@@ -5088,7 +5150,7 @@
           }
         },
         'same-caption-summary': {
-          impact: 'moderate',
+          impact: 'minor',
           messages: {
             pass: function anonymous(it) {
               var out = 'Content of summary attribute and <caption> are not duplicated';
@@ -5101,7 +5163,7 @@
           }
         },
         'caption-faked': {
-          impact: 'critical',
+          impact: 'serious',
           messages: {
             pass: function anonymous(it) {
               var out = 'The first row of a table is not used as a caption';
@@ -5140,7 +5202,7 @@
           }
         },
         'th-has-data-cells': {
-          impact: 'critical',
+          impact: 'serious',
           messages: {
             pass: function anonymous(it) {
               var out = 'All table header cells refer to data cells';
@@ -5157,7 +5219,7 @@
           }
         },
         description: {
-          impact: 'serious',
+          impact: 'critical',
           messages: {
             pass: function anonymous(it) {
               var out = 'The multimedia element has an audio description track';
@@ -5227,7 +5289,7 @@
       none: []
     }, {
       id: 'aria-allowed-attr',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         var role = node.getAttribute('role');
         if (!role) {
           role = axe.commons.aria.implicitRole(node);
@@ -5288,7 +5350,7 @@
       none: [ 'invalidrole', 'abstractrole' ]
     }, {
       id: 'aria-valid-attr-value',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         var aria = /^aria-/;
         if (node.hasAttributes()) {
           var attrs = node.attributes;
@@ -5309,7 +5371,7 @@
       none: []
     }, {
       id: 'aria-valid-attr',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         var aria = /^aria-/;
         if (node.hasAttributes()) {
           var attrs = node.attributes;
@@ -5355,7 +5417,7 @@
       id: 'bypass',
       selector: 'html',
       pageLevel: true,
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         return !!node.querySelector('a[href]');
       },
       tags: [ 'cat.keyboard', 'wcag2a', 'wcag241', 'section508', 'section508.22.o' ],
@@ -5371,8 +5433,8 @@
       none: []
     }, {
       id: 'color-contrast',
-      matches: function matches(node) {
-        var nodeName = node.nodeName.toUpperCase(), nodeType = node.type, doc = document;
+      matches: function matches(node, virtualNode) {
+        var nodeName = node.nodeName.toUpperCase(), nodeType = node.type;
         if (node.getAttribute('aria-disabled') === 'true' || axe.commons.dom.findUp(node, '[aria-disabled="true"]')) {
           return false;
         }
@@ -5400,29 +5462,32 @@
           if (nodeParentLabel) {
             relevantNode = nodeParentLabel;
           }
+          var doc = axe.commons.dom.getRootNode(relevantNode);
           var candidate = relevantNode.htmlFor && doc.getElementById(relevantNode.htmlFor);
           if (candidate && candidate.disabled) {
             return false;
           }
-          var candidate = node.querySelector('input:not([type="hidden"]):not([type="image"])' + ':not([type="button"]):not([type="submit"]):not([type="reset"]), select, textarea');
+          var candidate = axe.utils.querySelectorAll(virtualNode, 'input:not([type="hidden"]):not([type="image"])' + ':not([type="button"]):not([type="submit"]):not([type="reset"]), select, textarea');
+          if (candidate.length && candidate[0].actualNode.disabled) {
+            return false;
+          }
+        }
+        if (node.getAttribute('id')) {
+          var id = axe.commons.utils.escapeSelector(node.getAttribute('id'));
+          var _doc = axe.commons.dom.getRootNode(node);
+          var candidate = _doc.querySelector('[aria-labelledby~=' + id + ']');
           if (candidate && candidate.disabled) {
             return false;
           }
         }
-        if (node.id) {
-          var candidate = doc.querySelector('[aria-labelledby~=' + axe.commons.utils.escapeSelector(node.id) + ']');
-          if (candidate && candidate.disabled) {
-            return false;
-          }
-        }
-        if (axe.commons.text.visible(node, false, true) === '') {
+        if (axe.commons.text.visible(virtualNode, false, true) === '') {
           return false;
         }
-        var range = document.createRange(), childNodes = node.childNodes, length = childNodes.length, child, index;
+        var range = document.createRange(), childNodes = virtualNode.children, length = childNodes.length, child, index;
         for (index = 0; index < length; index++) {
           child = childNodes[index];
-          if (child.nodeType === 3 && axe.commons.text.sanitize(child.nodeValue) !== '') {
-            range.selectNodeContents(child);
+          if (child.actualNode.nodeType === 3 && axe.commons.text.sanitize(child.actualNode.nodeValue) !== '') {
+            range.selectNodeContents(child.actualNode);
           }
         }
         var rects = range.getClientRects();
@@ -5445,7 +5510,7 @@
     }, {
       id: 'definition-list',
       selector: 'dl',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         return !node.getAttribute('role');
       },
       tags: [ 'cat.structure', 'wcag2a', 'wcag131' ],
@@ -5455,7 +5520,7 @@
     }, {
       id: 'dlitem',
       selector: 'dd, dt',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         return !node.getAttribute('role');
       },
       tags: [ 'cat.structure', 'wcag2a', 'wcag131' ],
@@ -5465,7 +5530,7 @@
     }, {
       id: 'document-title',
       selector: 'html',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         return node.ownerDocument.defaultView.self === node.ownerDocument.defaultView.top;
       },
       tags: [ 'cat.text-alternatives', 'wcag2a', 'wcag242' ],
@@ -5491,7 +5556,7 @@
     }, {
       id: 'frame-title-unique',
       selector: 'frame[title], iframe[title]',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         var title = node.getAttribute('title');
         return !!(title ? axe.commons.text.sanitize(title).trim() : '');
       },
@@ -5569,7 +5634,7 @@
     }, {
       id: 'label-title-only',
       selector: 'input, select, textarea',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         if (node.nodeName.toLowerCase() !== 'input') {
           return true;
         }
@@ -5587,7 +5652,7 @@
     }, {
       id: 'label',
       selector: 'input, select, textarea',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         if (node.nodeName.toLowerCase() !== 'input') {
           return true;
         }
@@ -5604,7 +5669,7 @@
     }, {
       id: 'layout-table',
       selector: 'table',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         return !axe.commons.table.isDataTable(node);
       },
       tags: [ 'cat.semantics', 'wcag2a', 'wcag131' ],
@@ -5614,7 +5679,7 @@
     }, {
       id: 'link-in-text-block',
       selector: 'a[href], *[role=link]',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         var text = axe.commons.text.sanitize(node.textContent);
         var role = node.getAttribute('role');
         if (role && role !== 'link') {
@@ -5636,17 +5701,17 @@
     }, {
       id: 'link-name',
       selector: 'a[href], [role=link][href]',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         return node.getAttribute('role') !== 'button';
       },
-      tags: [ 'cat.name-role-value', 'wcag2a', 'wcag111', 'wcag412', 'section508', 'section508.22.a' ],
+      tags: [ 'cat.name-role-value', 'wcag2a', 'wcag111', 'wcag412', 'wcag244', 'section508', 'section508.22.a' ],
       all: [],
       any: [ 'has-visible-text', 'aria-label', 'aria-labelledby', 'role-presentation', 'role-none' ],
       none: [ 'focusable-no-name' ]
     }, {
       id: 'list',
       selector: 'ul, ol',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         return !node.getAttribute('role');
       },
       tags: [ 'cat.structure', 'wcag2a', 'wcag131' ],
@@ -5656,7 +5721,7 @@
     }, {
       id: 'listitem',
       selector: 'li',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         return !node.getAttribute('role');
       },
       tags: [ 'cat.structure', 'wcag2a', 'wcag131' ],
@@ -5716,7 +5781,7 @@
     }, {
       id: 'p-as-heading',
       selector: 'p',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         var children = Array.from(node.parentNode.childNodes);
         var nodeText = node.textContent.trim();
         var isSentence = /[.!?:;](?![.!?:;])/g;
@@ -5805,7 +5870,7 @@
     }, {
       id: 'table-fake-caption',
       selector: 'table',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         return axe.commons.table.isDataTable(node);
       },
       tags: [ 'cat.tables', 'experimental', 'wcag2a', 'wcag131', 'section508', 'section508.22.g' ],
@@ -5815,7 +5880,7 @@
     }, {
       id: 'td-has-header',
       selector: 'table',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         if (axe.commons.table.isDataTable(node)) {
           var tableArray = axe.commons.table.toArray(node);
           return tableArray.length >= 3 && tableArray[0].length >= 3 && tableArray[1].length >= 3 && tableArray[2].length >= 3;
@@ -5836,7 +5901,7 @@
     }, {
       id: 'th-has-data-cells',
       selector: 'table',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         return axe.commons.table.isDataTable(node);
       },
       tags: [ 'cat.tables', 'wcag2a', 'wcag131', 'section508', 'section508.22.g' ],
@@ -5846,7 +5911,7 @@
     }, {
       id: 'valid-lang',
       selector: '[lang], [xml\\:lang]',
-      matches: function matches(node) {
+      matches: function matches(node, virtualNode) {
         return node.nodeName.toLowerCase() !== 'html';
       },
       tags: [ 'cat.language', 'wcag2aa', 'wcag312' ],
@@ -5872,12 +5937,12 @@
     } ],
     checks: [ {
       id: 'abstractrole',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         return axe.commons.aria.getRoleType(node.getAttribute('role')) === 'abstract';
       }
     }, {
       id: 'aria-allowed-attr',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var invalid = [];
         var attr, attrName, allowed, role = node.getAttribute('role'), attrs = node.attributes;
         if (!role) {
@@ -5901,17 +5966,17 @@
       }
     }, {
       id: 'aria-hidden-body',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         return node.getAttribute('aria-hidden') !== 'true';
       }
     }, {
       id: 'invalidrole',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         return !axe.commons.aria.isValidRole(node.getAttribute('role'));
       }
     }, {
       id: 'aria-required-attr',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var missing = [];
         if (node.hasAttributes()) {
           var attr, role = node.getAttribute('role'), required = axe.commons.aria.requiredAttr(role);
@@ -5932,9 +5997,9 @@
       }
     }, {
       id: 'aria-required-children',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var requiredOwned = axe.commons.aria.requiredOwned, implicitNodes = axe.commons.aria.implicitNodes, matchesSelector = axe.commons.utils.matchesSelector, idrefs = axe.commons.dom.idrefs;
-        function owns(node, role, ariaOwned) {
+        function owns(node, virtualTree, role, ariaOwned) {
           if (node === null) {
             return false;
           }
@@ -5943,7 +6008,7 @@
             selector = selector.concat(implicit);
           }
           selector = selector.join(',');
-          return ariaOwned ? matchesSelector(node, selector) || !!node.querySelector(selector) : !!node.querySelector(selector);
+          return ariaOwned ? matchesSelector(node, selector) || !!axe.utils.querySelectorAll(virtualTree, selector)[0] : !!axe.utils.querySelectorAll(virtualTree, selector)[0];
         }
         function ariaOwns(nodes, role) {
           var index, length;
@@ -5951,7 +6016,8 @@
             if (nodes[index] === null) {
               continue;
             }
-            if (owns(nodes[index], role, true)) {
+            var virtualTree = axe.utils.getNodeFromTree(axe._tree[0], nodes[index]);
+            if (owns(nodes[index], virtualTree, role, true)) {
               return true;
             }
           }
@@ -5961,7 +6027,7 @@
           var i, l = childRoles.length, missing = [], ownedElements = idrefs(node, 'aria-owns');
           for (i = 0; i < l; i++) {
             var r = childRoles[i];
-            if (owns(node, r) || ariaOwns(ownedElements, r)) {
+            if (owns(node, virtualNode, r) || ariaOwns(ownedElements, r)) {
               if (!all) {
                 return null;
               }
@@ -5999,7 +6065,7 @@
       }
     }, {
       id: 'aria-required-parent',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         function getSelector(role) {
           var impliedNative = axe.commons.aria.implicitNodes(role) || [];
           return impliedNative.concat('[role="' + role + '"]').join(',');
@@ -6027,13 +6093,15 @@
         function getAriaOwners(element) {
           var owners = [], o = null;
           while (element) {
-            if (element.id) {
-              o = document.querySelector('[aria-owns~=' + axe.commons.utils.escapeSelector(element.id) + ']');
+            if (element.getAttribute('id')) {
+              var id = axe.commons.utils.escapeSelector(element.getAttribute('id'));
+              var doc = axe.commons.dom.getRootNode(element);
+              o = doc.querySelector('[aria-owns~=' + id + ']');
               if (o) {
                 owners.push(o);
               }
             }
-            element = element.parentNode;
+            element = element.parentElement;
           }
           return owners.length ? owners : null;
         }
@@ -6055,7 +6123,7 @@
       }
     }, {
       id: 'aria-valid-attr-value',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         options = Array.isArray(options) ? options : [];
         var invalid = [], aria = /^aria-/;
         var attr, attrName, attrs = node.attributes;
@@ -6075,7 +6143,7 @@
       options: []
     }, {
       id: 'aria-valid-attr',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         options = Array.isArray(options) ? options : [];
         var invalid = [], aria = /^aria-/;
         var attr, attrs = node.attributes;
@@ -6094,7 +6162,7 @@
       options: []
     }, {
       id: 'color-contrast',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         if (!axe.commons.dom.isVisible(node, false)) {
           return true;
         }
@@ -6124,20 +6192,20 @@
           missingData: missing
         };
         this.data(data);
-        if (!cr.isValid || equalRatio) {
-          this.relatedNodes(bgNodes);
-        }
         if (fgColor === null || bgColor === null || equalRatio) {
           missing = null;
           axe.commons.color.incompleteData.clear();
+          this.relatedNodes(bgNodes);
           return undefined;
+        } else if (!cr.isValid) {
+          this.relatedNodes(bgNodes);
         }
         return cr.isValid;
       }
     }, {
       id: 'link-in-text-block',
-      evaluate: function evaluate(node, options) {
-        var color = axe.commons.color;
+      evaluate: function evaluate(node, options, virtualNode) {
+        var _axe$commons = axe.commons, color = _axe$commons.color, dom = _axe$commons.dom;
         function getContrast(color1, color2) {
           var c1lum = color1.getRelativeLuminance();
           var c2lum = color2.getRelativeLuminance();
@@ -6151,10 +6219,11 @@
         if (isBlock(node)) {
           return false;
         }
-        var parentBlock = node.parentNode;
+        var parentBlock = dom.getComposedParent(node);
         while (parentBlock.nodeType === 1 && !isBlock(parentBlock)) {
-          parentBlock = parentBlock.parentNode;
+          parentBlock = dom.getComposedParent(parentBlock);
         }
+        this.relatedNodes([ parentBlock ]);
         if (color.elementIsDistinct(node, parentBlock)) {
           return true;
         } else {
@@ -6196,7 +6265,7 @@
       }
     }, {
       id: 'fieldset',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var failureCode, self = this;
         function getUnrelatedElements(parent, name) {
           return axe.commons.utils.toArray(parent.querySelectorAll('select,textarea,button,input:not([name="' + name + '"]):not([type="hidden"])'));
@@ -6246,7 +6315,8 @@
         }
         function runCheck(element) {
           var name = axe.commons.utils.escapeSelector(node.name);
-          var matchingNodes = document.querySelectorAll('input[type="' + axe.commons.utils.escapeSelector(node.type) + '"][name="' + name + '"]');
+          var root = axe.commons.dom.getRootNode(node);
+          var matchingNodes = root.querySelectorAll('input[type="' + axe.commons.utils.escapeSelector(node.type) + '"][name="' + name + '"]');
           if (matchingNodes.length < 2) {
             return true;
           }
@@ -6256,8 +6326,11 @@
             failureCode = 'no-group';
             self.relatedNodes(spliceCurrentNode(matchingNodes, element));
             return false;
+          } else if (fieldset) {
+            return checkFieldset(fieldset, name);
+          } else {
+            return checkARIAGroup(group, name);
           }
-          return fieldset ? checkFieldset(fieldset, name) : checkARIAGroup(group, name);
         }
         var data = {
           name: node.getAttribute('name'),
@@ -6296,12 +6369,13 @@
       }
     }, {
       id: 'group-labelledby',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         this.data({
           name: node.getAttribute('name'),
           type: node.getAttribute('type')
         });
-        var matchingNodes = document.querySelectorAll('input[type="' + axe.commons.utils.escapeSelector(node.type) + '"][name="' + axe.commons.utils.escapeSelector(node.name) + '"]');
+        var doc = axe.commons.dom.getRootNode(node);
+        var matchingNodes = doc.querySelectorAll('input[type="' + axe.commons.utils.escapeSelector(node.type) + '"][name="' + axe.commons.utils.escapeSelector(node.name) + '"]');
         if (matchingNodes.length <= 1) {
           return true;
         }
@@ -6310,10 +6384,10 @@
           return l ? l.split(/\s+/) : [];
         }).reduce(function(prev, curr) {
           return prev.filter(function(n) {
-            return curr.indexOf(n) !== -1;
+            return curr.includes(n);
           });
         }).filter(function(n) {
-          var labelNode = document.getElementById(n);
+          var labelNode = doc.getElementById(n);
           return labelNode && axe.commons.text.accessibleText(labelNode);
         }).length !== 0;
       },
@@ -6333,7 +6407,7 @@
       }
     }, {
       id: 'accesskeys',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         if (axe.commons.dom.isVisible(node, false)) {
           this.data(node.getAttribute('accesskey'));
           this.relatedNodes([ node ]);
@@ -6361,7 +6435,7 @@
       }
     }, {
       id: 'focusable-no-name',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var tabIndex = node.getAttribute('tabindex'), isFocusable = axe.commons.dom.isFocusable(node) && tabIndex > -1;
         if (!isFocusable) {
           return false;
@@ -6370,31 +6444,31 @@
       }
     }, {
       id: 'tabindex',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         return node.tabIndex <= 0;
       }
     }, {
       id: 'duplicate-img-label',
-      evaluate: function evaluate(node, options) {
-        var imgs = node.querySelectorAll('img');
-        var text = axe.commons.text.visible(node, true).toLowerCase();
+      evaluate: function evaluate(node, options, virtualNode) {
+        var text = axe.commons.text.visible(virtualNode, true).toLowerCase();
         if (text === '') {
           return false;
         }
-        for (var i = 0, len = imgs.length; i < len; i++) {
-          var img = imgs[i];
-          var imgAlt = axe.commons.text.accessibleText(img).toLowerCase();
-          if (imgAlt === text && img.getAttribute('role') !== 'presentation' && axe.commons.dom.isVisible(img)) {
-            return true;
-          }
-        }
-        return false;
+        var images = axe.utils.querySelectorAll(virtualNode, 'img').filter(function(_ref) {
+          var actualNode = _ref.actualNode;
+          return axe.commons.dom.isVisible(actualNode) && ![ 'none', 'presentation' ].includes(actualNode.getAttribute('role'));
+        });
+        return images.some(function(img) {
+          return text === axe.commons.text.accessibleText(img).toLowerCase();
+        });
       }
     }, {
       id: 'explicit-label',
-      evaluate: function evaluate(node, options) {
-        if (node.id) {
-          var label = document.querySelector('label[for="' + axe.commons.utils.escapeSelector(node.id) + '"]');
+      evaluate: function evaluate(node, options, virtualNode) {
+        if (node.getAttribute('id')) {
+          var root = axe.commons.dom.getRootNode(node);
+          var id = axe.commons.utils.escapeSelector(node.getAttribute('id'));
+          var label = root.querySelector('label[for="' + id + '"]');
           if (label) {
             return !!axe.commons.text.accessibleText(label);
           }
@@ -6403,8 +6477,8 @@
       }
     }, {
       id: 'help-same-as-label',
-      evaluate: function evaluate(node, options) {
-        var labelText = axe.commons.text.label(node), check = node.getAttribute('title');
+      evaluate: function evaluate(node, options, virtualNode) {
+        var labelText = axe.commons.text.label(virtualNode), check = node.getAttribute('title');
         if (!labelText) {
           return false;
         }
@@ -6422,7 +6496,7 @@
       enabled: false
     }, {
       id: 'implicit-label',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var label = axe.commons.dom.findUp(node, 'label');
         if (label) {
           return !!axe.commons.text.accessibleText(label);
@@ -6431,8 +6505,10 @@
       }
     }, {
       id: 'multiple-label',
-      evaluate: function evaluate(node, options) {
-        var labels = [].slice.call(document.querySelectorAll('label[for="' + axe.commons.utils.escapeSelector(node.id) + '"]')), parent = node.parentNode;
+      evaluate: function evaluate(node, options, virtualNode) {
+        var id = axe.commons.utils.escapeSelector(node.getAttribute('id'));
+        var labels = Array.from(document.querySelectorAll('label[for="' + id + '"]'));
+        var parent = node.parentNode;
         if (labels.length) {
           labels = labels.filter(function(label, index) {
             if (index === 0 && !axe.commons.dom.isVisible(label, true) || axe.commons.dom.isVisible(label, true)) {
@@ -6451,18 +6527,18 @@
       }
     }, {
       id: 'title-only',
-      evaluate: function evaluate(node, options) {
-        var labelText = axe.commons.text.label(node);
+      evaluate: function evaluate(node, options, virtualNode) {
+        var labelText = axe.commons.text.label(virtualNode);
         return !labelText && !!(node.getAttribute('title') || node.getAttribute('aria-describedby'));
       }
     }, {
       id: 'has-lang',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         return !!(node.getAttribute('lang') || node.getAttribute('xml:lang') || '').trim();
       }
     }, {
       id: 'valid-lang',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         function getBaseLang(lang) {
           return lang.trim().split('-')[0].toLowerCase();
         }
@@ -6487,44 +6563,37 @@
       }
     }, {
       id: 'dlitem',
-      evaluate: function evaluate(node, options) {
-        return node.parentNode.tagName === 'DL';
+      evaluate: function evaluate(node, options, virtualNode) {
+        var parent = axe.commons.dom.getComposedParent(node);
+        return parent.nodeName.toUpperCase() === 'DL';
       }
     }, {
       id: 'has-listitem',
-      evaluate: function evaluate(node, options) {
-        var children = node.children;
-        if (children.length === 0) {
-          return true;
-        }
-        for (var i = 0; i < children.length; i++) {
-          if (children[i].nodeName.toUpperCase() === 'LI') {
-            return false;
-          }
-        }
-        return true;
+      evaluate: function evaluate(node, options, virtualNode) {
+        return virtualNode.children.every(function(_ref2) {
+          var actualNode = _ref2.actualNode;
+          return actualNode.nodeName.toUpperCase() !== 'LI';
+        });
       }
     }, {
       id: 'listitem',
-      evaluate: function evaluate(node, options) {
-        if ([ 'UL', 'OL' ].indexOf(node.parentNode.nodeName.toUpperCase()) !== -1) {
-          return true;
-        }
-        return node.parentNode.getAttribute('role') === 'list';
+      evaluate: function evaluate(node, options, virtualNode) {
+        var parent = axe.commons.dom.getComposedParent(node);
+        return [ 'UL', 'OL' ].includes(parent.nodeName.toUpperCase()) || (parent.getAttribute('role') || '').toLowerCase() === 'list';
       }
     }, {
       id: 'only-dlitems',
-      evaluate: function evaluate(node, options) {
-        var child, nodeName, bad = [], children = node.childNodes, permitted = [ 'STYLE', 'META', 'LINK', 'MAP', 'AREA', 'SCRIPT', 'DATALIST', 'TEMPLATE' ], hasNonEmptyTextNode = false;
-        for (var i = 0; i < children.length; i++) {
-          child = children[i];
-          var nodeName = child.nodeName.toUpperCase();
-          if (child.nodeType === 1 && nodeName !== 'DT' && nodeName !== 'DD' && permitted.indexOf(nodeName) === -1) {
-            bad.push(child);
-          } else if (child.nodeType === 3 && child.nodeValue.trim() !== '') {
+      evaluate: function evaluate(node, options, virtualNode) {
+        var bad = [], permitted = [ 'STYLE', 'META', 'LINK', 'MAP', 'AREA', 'SCRIPT', 'DATALIST', 'TEMPLATE' ], hasNonEmptyTextNode = false;
+        virtualNode.children.forEach(function(_ref3) {
+          var actualNode = _ref3.actualNode;
+          var nodeName = actualNode.nodeName.toUpperCase();
+          if (actualNode.nodeType === 1 && nodeName !== 'DT' && nodeName !== 'DD' && permitted.indexOf(nodeName) === -1) {
+            bad.push(actualNode);
+          } else if (actualNode.nodeType === 3 && actualNode.nodeValue.trim() !== '') {
             hasNonEmptyTextNode = true;
           }
-        }
+        });
         if (bad.length) {
           this.relatedNodes(bad);
         }
@@ -6533,17 +6602,17 @@
       }
     }, {
       id: 'only-listitems',
-      evaluate: function evaluate(node, options) {
-        var child, nodeName, bad = [], children = node.childNodes, permitted = [ 'STYLE', 'META', 'LINK', 'MAP', 'AREA', 'SCRIPT', 'DATALIST', 'TEMPLATE' ], hasNonEmptyTextNode = false;
-        for (var i = 0; i < children.length; i++) {
-          child = children[i];
-          nodeName = child.nodeName.toUpperCase();
-          if (child.nodeType === 1 && nodeName !== 'LI' && permitted.indexOf(nodeName) === -1) {
-            bad.push(child);
-          } else if (child.nodeType === 3 && child.nodeValue.trim() !== '') {
+      evaluate: function evaluate(node, options, virtualNode) {
+        var bad = [], permitted = [ 'STYLE', 'META', 'LINK', 'MAP', 'AREA', 'SCRIPT', 'DATALIST', 'TEMPLATE' ], hasNonEmptyTextNode = false;
+        virtualNode.children.forEach(function(_ref4) {
+          var actualNode = _ref4.actualNode;
+          var nodeName = actualNode.nodeName.toUpperCase();
+          if (actualNode.nodeType === 1 && nodeName !== 'LI' && permitted.indexOf(nodeName) === -1) {
+            bad.push(actualNode);
+          } else if (actualNode.nodeType === 3 && actualNode.nodeValue.trim() !== '') {
             hasNonEmptyTextNode = true;
           }
-        }
+        });
         if (bad.length) {
           this.relatedNodes(bad);
         }
@@ -6551,14 +6620,14 @@
       }
     }, {
       id: 'structured-dlitems',
-      evaluate: function evaluate(node, options) {
-        var children = node.children;
+      evaluate: function evaluate(node, options, virtualNode) {
+        var children = virtualNode.children;
         if (!children || !children.length) {
           return false;
         }
         var hasDt = false, hasDd = false, nodeName;
         for (var i = 0; i < children.length; i++) {
-          nodeName = children[i].nodeName.toUpperCase();
+          nodeName = children[i].actualNode.nodeName.toUpperCase();
           if (nodeName === 'DT') {
             hasDt = true;
           }
@@ -6573,37 +6642,35 @@
       }
     }, {
       id: 'caption',
-      evaluate: function evaluate(node, options) {
-        var tracks = node.querySelectorAll('track');
+      evaluate: function evaluate(node, options, virtualNode) {
+        var tracks = axe.utils.querySelectorAll(virtualNode, 'track');
         if (tracks.length) {
-          for (var i = 0; i < tracks.length; i++) {
-            var kind = tracks[i].getAttribute('kind');
-            if (kind && kind === 'captions') {
-              return false;
-            }
-          }
-          return true;
+          return !tracks.some(function(_ref5) {
+            var actualNode = _ref5.actualNode;
+            return (actualNode.getAttribute('kind') || '').toLowerCase() === 'captions';
+          });
         }
         return undefined;
       }
     }, {
       id: 'description',
-      evaluate: function evaluate(node, options) {
-        var tracks = node.querySelectorAll('track');
+      evaluate: function evaluate(node, options, virtualNode) {
+        var tracks = axe.utils.querySelectorAll(virtualNode, 'track');
         if (tracks.length) {
-          for (var i = 0; i < tracks.length; i++) {
-            var kind = tracks[i].getAttribute('kind');
-            if (kind && kind === 'descriptions') {
-              return false;
-            }
-          }
-          return true;
+          var out = !tracks.some(function(_ref6) {
+            var actualNode = _ref6.actualNode;
+            return (actualNode.getAttribute('kind') || '').toLowerCase() === 'descriptions';
+          });
+          axe.log(tracks.map(function(t) {
+            return t.actualNode.getAttribute('kind');
+          }), out);
+          return out;
         }
         return undefined;
       }
     }, {
       id: 'meta-viewport-large',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         options = options || {};
         var params, content = node.getAttribute('content') || '', parsedParams = content.split(/[;,]/), result = {}, minimum = options.scaleMinimum || 2, lowerBound = options.lowerBound || false;
         for (var i = 0, l = parsedParams.length; i < l; i++) {
@@ -6630,7 +6697,7 @@
       }
     }, {
       id: 'meta-viewport',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         options = options || {};
         var params, content = node.getAttribute('content') || '', parsedParams = content.split(/[;,]/), result = {}, minimum = options.scaleMinimum || 2, lowerBound = options.lowerBound || false;
         for (var i = 0, l = parsedParams.length; i < l; i++) {
@@ -6656,12 +6723,12 @@
       }
     }, {
       id: 'header-present',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         return !!node.querySelector('h1, h2, h3, h4, h5, h6, [role="heading"]');
       }
     }, {
       id: 'heading-order',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var ariaHeadingLevel = node.getAttribute('aria-level');
         if (ariaHeadingLevel !== null) {
           this.data(parseInt(ariaHeadingLevel, 10));
@@ -6689,7 +6756,7 @@
       }
     }, {
       id: 'href-no-hash',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var href = node.getAttribute('href');
         if (href === '#') {
           return false;
@@ -6698,23 +6765,23 @@
       }
     }, {
       id: 'internal-link-present',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         return !!node.querySelector('a[href^="#"]');
       }
     }, {
       id: 'landmark',
-      evaluate: function evaluate(node, options) {
-        return node.getElementsByTagName('main').length > 0 || !!node.querySelector('[role="main"]');
+      evaluate: function evaluate(node, options, virtualNode) {
+        return axe.utils.querySelectorAll(virtualNode, 'main, [role="main"]').length > 0;
       }
     }, {
       id: 'meta-refresh',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var content = node.getAttribute('content') || '', parsedParams = content.split(/[;,]/);
         return content === '' || parsedParams[0] === '0';
       }
     }, {
       id: 'p-as-heading',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var siblings = Array.from(node.parentNode.children);
         var currentIndex = siblings.indexOf(node);
         options = options || {};
@@ -6804,48 +6871,58 @@
       }
     }, {
       id: 'region',
-      evaluate: function evaluate(node, options) {
-        var landmarkRoles = axe.commons.aria.getRolesByType('landmark'), firstLink = node.querySelector('a[href]');
-        function isSkipLink(n) {
-          return firstLink && axe.commons.dom.isFocusable(axe.commons.dom.getElementByReference(firstLink, 'href')) && firstLink === n;
-        }
-        function isLandmark(n) {
-          var role = n.getAttribute('role');
-          return role && landmarkRoles.indexOf(role) !== -1;
-        }
-        function checkRegion(n) {
-          if (isLandmark(n)) {
-            return null;
+      evaluate: function evaluate(node, options, virtualNode) {
+        var _axe$commons2 = axe.commons, dom = _axe$commons2.dom, aria = _axe$commons2.aria;
+        function getSkiplink(virtualNode) {
+          var firstLink = axe.utils.querySelectorAll(virtualNode, 'a[href]')[0];
+          if (firstLink && axe.commons.dom.getElementByReference(firstLink.actualNode, 'href')) {
+            return firstLink.actualNode;
           }
-          if (isSkipLink(n)) {
-            return getViolatingChildren(n);
-          }
-          if (axe.commons.dom.isVisible(n, true) && (axe.commons.text.visible(n, true, true) || axe.commons.dom.isVisualContent(n))) {
-            return n;
-          }
-          return getViolatingChildren(n);
         }
-        function getViolatingChildren(n) {
-          var children = axe.commons.utils.toArray(n.children);
-          if (children.length === 0) {
+        var skipLink = getSkiplink(virtualNode);
+        var landmarkRoles = aria.getRolesByType('landmark');
+        var implicitLandmarks = landmarkRoles.reduce(function(arr, role) {
+          return arr.concat(aria.implicitNodes(role));
+        }, []).filter(function(r) {
+          return r !== null;
+        }).map(function(r) {
+          return r.toUpperCase();
+        });
+        function isSkipLink(node) {
+          return skipLink && skipLink === node;
+        }
+        function isLandmark(node) {
+          if (node.hasAttribute('role')) {
+            return landmarkRoles.includes(node.getAttribute('role').toLowerCase());
+          } else {
+            return implicitLandmarks.includes(node.nodeName.toUpperCase());
+          }
+        }
+        function findRegionlessElms(virtualNode) {
+          var node = virtualNode.actualNode;
+          if (isLandmark(node) || isSkipLink(node) || !dom.isVisible(node, true)) {
             return [];
+          } else if (dom.hasContent(node, true)) {
+            return [ node ];
+          } else {
+            return virtualNode.children.filter(function(_ref7) {
+              var actualNode = _ref7.actualNode;
+              return actualNode.nodeType === 1;
+            }).map(findRegionlessElms).reduce(function(a, b) {
+              return a.concat(b);
+            }, []);
           }
-          return children.map(checkRegion).filter(function(c) {
-            return c !== null;
-          }).reduce(function(a, b) {
-            return a.concat(b);
-          }, []);
         }
-        var v = getViolatingChildren(node);
-        this.relatedNodes(v);
-        return !v.length;
+        var regionlessNodes = findRegionlessElms(virtualNode);
+        this.relatedNodes(regionlessNodes);
+        return regionlessNodes.length === 0;
       },
       after: function after(results, options) {
         return [ results[0] ];
       }
     }, {
       id: 'skip-link',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         return axe.commons.dom.isFocusable(axe.commons.dom.getElementByReference(node, 'href'));
       },
       after: function after(results, options) {
@@ -6853,7 +6930,7 @@
       }
     }, {
       id: 'unique-frame-title',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var title = axe.commons.text.sanitize(node.title).trim().toLowerCase();
         this.data(title);
         return true;
@@ -6870,13 +6947,13 @@
       }
     }, {
       id: 'aria-label',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var label = node.getAttribute('aria-label');
         return !!(label ? axe.commons.text.sanitize(label).trim() : '');
       }
     }, {
       id: 'aria-labelledby',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var getIdRefs = axe.commons.dom.idrefs;
         return getIdRefs(node, 'aria-labelledby').some(function(elm) {
           return elm && axe.commons.text.accessibleText(elm, true);
@@ -6884,7 +6961,7 @@
       }
     }, {
       id: 'button-has-visible-text',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var nodeName = node.nodeName.toUpperCase();
         var role = node.getAttribute('role');
         var label = void 0;
@@ -6898,17 +6975,18 @@
       }
     }, {
       id: 'doc-has-title',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var title = document.title;
         return !!(title ? axe.commons.text.sanitize(title).trim() : '');
       }
     }, {
       id: 'duplicate-id',
-      evaluate: function evaluate(node, options) {
-        if (!node.id.trim()) {
+      evaluate: function evaluate(node, options, virtualNode) {
+        if (!node.getAttribute('id').trim()) {
           return true;
         }
-        var matchingNodes = document.querySelectorAll('[id="' + axe.commons.utils.escapeSelector(node.id) + '"]');
+        var id = axe.commons.utils.escapeSelector(node.getAttribute('id'));
+        var matchingNodes = document.querySelectorAll('[id="' + id + '"]');
         var related = [];
         for (var i = 0; i < matchingNodes.length; i++) {
           if (matchingNodes[i] !== node) {
@@ -6933,34 +7011,34 @@
       }
     }, {
       id: 'exists',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         return true;
       }
     }, {
       id: 'has-alt',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var nn = node.nodeName.toLowerCase();
         return node.hasAttribute('alt') && (nn === 'img' || nn === 'input' || nn === 'area');
       }
     }, {
       id: 'has-visible-text',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         return axe.commons.text.accessibleText(node).length > 0;
       }
     }, {
       id: 'is-on-screen',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         return axe.commons.dom.isVisible(node, false) && !axe.commons.dom.isOffscreen(node);
       }
     }, {
       id: 'non-empty-alt',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var label = node.getAttribute('alt');
         return !!(label ? axe.commons.text.sanitize(label).trim() : '');
       }
     }, {
       id: 'non-empty-if-present',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var nodeName = node.nodeName.toUpperCase();
         var type = (node.getAttribute('type') || '').toLowerCase();
         var label = node.getAttribute('value');
@@ -6972,29 +7050,29 @@
       }
     }, {
       id: 'non-empty-title',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var title = node.getAttribute('title');
         return !!(title ? axe.commons.text.sanitize(title).trim() : '');
       }
     }, {
       id: 'non-empty-value',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var label = node.getAttribute('value');
         return !!(label ? axe.commons.text.sanitize(label).trim() : '');
       }
     }, {
       id: 'role-none',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         return node.getAttribute('role') === 'none';
       }
     }, {
       id: 'role-presentation',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         return node.getAttribute('role') === 'presentation';
       }
     }, {
       id: 'caption-faked',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var table = axe.commons.table.toGrid(node);
         var firstRow = table[0];
         if (table.length <= 1 || firstRow.length <= 1 || node.rows.length <= 1) {
@@ -7006,17 +7084,17 @@
       }
     }, {
       id: 'has-caption',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         return !!node.caption;
       }
     }, {
       id: 'has-summary',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         return !!node.summary;
       }
     }, {
       id: 'has-th',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var row, cell, badCells = [];
         for (var rowIndex = 0, rowLength = node.rows.length; rowIndex < rowLength; rowIndex++) {
           row = node.rows[rowIndex];
@@ -7035,7 +7113,7 @@
       }
     }, {
       id: 'html5-scope',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         if (!axe.commons.dom.isHTML5(document)) {
           return true;
         }
@@ -7043,12 +7121,12 @@
       }
     }, {
       id: 'same-caption-summary',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         return !!(node.summary && node.caption) && node.summary === axe.commons.text.accessibleText(node.caption);
       }
     }, {
       id: 'scope-value',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         options = options || {};
         var value = node.getAttribute('scope').toLowerCase();
         var validVals = [ 'row', 'col', 'rowgroup', 'colgroup' ] || options.values;
@@ -7056,7 +7134,7 @@
       }
     }, {
       id: 'td-has-header',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var tableUtils = axe.commons.table;
         var badCells = [];
         var cells = tableUtils.getAllCells(node);
@@ -7079,7 +7157,7 @@
       }
     }, {
       id: 'td-headers-attr',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var cells = [];
         for (var rowIndex = 0, rowLength = node.rows.length; rowIndex < rowLength; rowIndex++) {
           var row = node.rows[rowIndex];
@@ -7088,8 +7166,8 @@
           }
         }
         var ids = cells.reduce(function(ids, cell) {
-          if (cell.id) {
-            ids.push(cell.id);
+          if (cell.getAttribute('id')) {
+            ids.push(cell.getAttribute('id'));
           }
           return ids;
         }, []);
@@ -7103,8 +7181,8 @@
             return headers;
           }, []);
           if (headers.length !== 0) {
-            if (cell.id) {
-              isSelf = headers.indexOf(cell.id.trim()) !== -1;
+            if (cell.getAttribute('id')) {
+              isSelf = headers.indexOf(cell.getAttribute('id').trim()) !== -1;
             }
             notOfTable = headers.reduce(function(fail, header) {
               return fail || ids.indexOf(header) === -1;
@@ -7124,7 +7202,7 @@
       }
     }, {
       id: 'th-has-data-cells',
-      evaluate: function evaluate(node, options) {
+      evaluate: function evaluate(node, options, virtualNode) {
         var tableUtils = axe.commons.table;
         var cells = tableUtils.getAllCells(node);
         var checkResult = this;
@@ -7147,7 +7225,7 @@
         });
         var tableGrid = tableUtils.toGrid(node);
         var out = headers.reduce(function(res, header) {
-          if (header.id && reffedHeaders.indexOf(header.id) !== -1) {
+          if (header.getAttribute('id') && reffedHeaders.includes(header.getAttribute('id'))) {
             return !res ? res : true;
           }
           var hasCell = false;
@@ -7171,16 +7249,15 @@
       }
     }, {
       id: 'hidden-content',
-      evaluate: function evaluate(node, options) {
-        var styles = window.getComputedStyle(node);
+      evaluate: function evaluate(node, options, virtualNode) {
         var whitelist = [ 'SCRIPT', 'HEAD', 'TITLE', 'NOSCRIPT', 'STYLE', 'TEMPLATE' ];
-        if (!whitelist.includes(node.tagName.toUpperCase()) && axe.commons.dom.hasContent(node)) {
+        if (!whitelist.includes(node.tagName.toUpperCase()) && axe.commons.dom.hasContent(virtualNode)) {
+          var styles = window.getComputedStyle(node);
           if (styles.getPropertyValue('display') === 'none') {
             return undefined;
           } else if (styles.getPropertyValue('visibility') === 'hidden') {
-            if (node.parentNode) {
-              var parentStyle = window.getComputedStyle(node.parentNode);
-            }
+            var parent = axe.commons.dom.getComposedParent(node);
+            var parentStyle = parent && window.getComputedStyle(parent);
             if (!parentStyle || parentStyle.getPropertyValue('visibility') !== 'hidden') {
               return undefined;
             }
@@ -8117,6 +8194,9 @@
       };
       aria.label = function(node) {
         var ref, candidate;
+        if (node.actualNode instanceof Node === false) {
+          node = axe.utils.getNodeFromTree(axe._tree[0], node);
+        }
         if (node.actualNode.getAttribute('aria-labelledby')) {
           ref = dom.idrefs(node.actualNode, 'aria-labelledby');
           candidate = ref.map(function(thing) {
@@ -8464,7 +8544,8 @@
         var bgElms = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
         var noScroll = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
         if (noScroll !== true) {
-          elm.scrollIntoView();
+          var alignToTop = elm.clientHeight - 2 >= window.innerHeight * 2;
+          elm.scrollIntoView(alignToTop);
         }
         var bgColors = [];
         var elmStack = color.getBackgroundStack(elm);
@@ -8548,22 +8629,27 @@
         }
         return finalElements;
       };
+      dom.findElmsInContext = function(_ref8) {
+        var context = _ref8.context, value = _ref8.value, attr = _ref8.attr, _ref8$elm = _ref8.elm, elm = _ref8$elm === undefined ? '' : _ref8$elm;
+        var root = void 0;
+        context = context.actualNode || context;
+        var escapedValue = axe.utils.escapeSelector(value);
+        if (context.nodeType === 9 || context.nodeType === 11) {
+          root = context;
+        } else {
+          root = dom.getRootNode(context);
+        }
+        return Array.from(root.querySelectorAll(elm + '[' + attr + '=' + escapedValue + ']'));
+      };
       dom.findUp = function(element, target) {
-        'use strict';
-        var parent, doc = axe.commons.dom.getRootNode(element), matches;
-        matches = doc.querySelectorAll(target);
-        matches = axe.utils.toArray(matches);
-        if (doc === document && !matches.length) {
-          return null;
-        }
-        parent = element.assignedSlot ? element.assignedSlot : element.parentNode;
-        if (parent.nodeType === 11) {
-          parent = parent.host;
-        }
-        while (parent && matches.indexOf(parent) === -1) {
+        var doc = void 0, matches = void 0, parent = element;
+        do {
           parent = parent.assignedSlot ? parent.assignedSlot : parent.parentNode;
           if (parent && parent.nodeType === 11) {
+            matches = null;
             parent = parent.host;
+          }
+          if (!matches) {
             doc = axe.commons.dom.getRootNode(parent);
             matches = doc.querySelectorAll(target);
             matches = axe.utils.toArray(matches);
@@ -8571,19 +8657,31 @@
               return null;
             }
           }
-        }
+        } while (parent && !matches.includes(parent));
         return parent;
       };
+      dom.getComposedParent = function getComposedParent(element) {
+        if (element.assignedSlot) {
+          return getComposedParent(element.assignedSlot);
+        } else if (element.parentNode) {
+          var parentNode = element.parentNode;
+          if (parentNode.nodeType === 1) {
+            return parentNode;
+          } else if (parentNode.host) {
+            return parentNode.host;
+          }
+        }
+        return null;
+      };
       dom.getElementByReference = function(node, attr) {
-        'use strict';
-        var candidate, fragment = node.getAttribute(attr), doc = document;
+        var fragment = node.getAttribute(attr);
         if (fragment && fragment.charAt(0) === '#') {
           fragment = fragment.substring(1);
-          candidate = doc.getElementById(fragment);
+          var candidate = document.getElementById(fragment);
           if (candidate) {
             return candidate;
           }
-          candidate = doc.getElementsByName(fragment);
+          candidate = document.getElementsByName(fragment);
           if (candidate.length) {
             return candidate[0];
           }
@@ -8647,17 +8745,22 @@
           height: body.clientHeight
         };
       };
-      dom.hasContent = function hasContent(elm) {
-        if (elm.actualNode.textContent.trim() || aria.label(elm)) {
-          return true;
+      var hiddenTextElms = [ 'HEAD', 'TITLE', 'TEMPLATE', 'SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'VIDEO', 'AUDIO', 'NOSCRIPT' ];
+      function hasChildTextNodes(elm) {
+        if (!hiddenTextElms.includes(elm.actualNode.nodeName.toUpperCase())) {
+          return elm.children.some(function(_ref9) {
+            var actualNode = _ref9.actualNode;
+            return actualNode.nodeType === 3 && actualNode.nodeValue.trim();
+          });
         }
-        var contentElms = axe.utils.querySelectorAll(elm, '*');
-        for (var i = 0; i < contentElms.length; i++) {
-          if (aria.label(contentElms[i]) || dom.isVisualContent(contentElms[i].actualNode)) {
-            return true;
-          }
+      }
+      dom.hasContent = function hasContent(elm, noRecursion) {
+        if (!elm.actualNode) {
+          elm = axe.utils.getNodeFromTree(axe._tree[0], elm);
         }
-        return false;
+        return hasChildTextNodes(elm) || dom.isVisualContent(elm.actualNode) || !!aria.label(elm) || !noRecursion && elm.children.some(function(child) {
+          return child.actualNode.nodeType === 1 && dom.hasContent(child);
+        });
       };
       dom.idrefs = function(node, attr) {
         'use strict';
@@ -8706,35 +8809,33 @@
         return node.name === 'html' && !node.publicId && !node.systemId;
       };
       function walkDomNode(node, functor) {
-        'use strict';
-        var shouldWalk = functor(node);
-        node = node.firstChild;
-        while (node) {
-          if (shouldWalk !== false) {
-            walkDomNode(node, functor);
-          }
-          node = node.nextSibling;
+        if (functor(node.actualNode) !== false) {
+          node.children.forEach(function(child) {
+            return walkDomNode(child, functor);
+          });
         }
       }
       var blockLike = [ 'block', 'list-item', 'table', 'flex', 'grid', 'inline-block' ];
       function isBlock(elm) {
-        'use strict';
         var display = window.getComputedStyle(elm).getPropertyValue('display');
-        return blockLike.indexOf(display) !== -1 || display.substr(0, 6) === 'table-';
+        return blockLike.includes(display) || display.substr(0, 6) === 'table-';
+      }
+      function getBlockParent(node) {
+        var parentBlock = dom.getComposedParent(node);
+        while (parentBlock && !isBlock(parentBlock)) {
+          parentBlock = dom.getComposedParent(parentBlock);
+        }
+        return axe.utils.getNodeFromTree(axe._tree[0], parentBlock);
       }
       dom.isInTextBlock = function isInTextBlock(node) {
-        'use strict';
         if (isBlock(node)) {
           return false;
         }
-        var parentBlock = node.parentNode;
-        while (parentBlock.nodeType === 1 && !isBlock(parentBlock)) {
-          parentBlock = parentBlock.parentNode;
-        }
+        var virtualParent = getBlockParent(node);
         var parentText = '';
         var linkText = '';
         var inBrBlock = 0;
-        walkDomNode(parentBlock, function(currNode) {
+        walkDomNode(virtualParent, function(currNode) {
           if (inBrBlock === 2) {
             return false;
           }
@@ -8745,14 +8846,14 @@
             return;
           }
           var nodeName = (currNode.nodeName || '').toUpperCase();
-          if ([ 'BR', 'HR' ].indexOf(nodeName) !== -1) {
+          if ([ 'BR', 'HR' ].includes(nodeName)) {
             if (inBrBlock === 0) {
               parentText = '';
               linkText = '';
             } else {
               inBrBlock = 2;
             }
-          } else if (currNode.style.display === 'none' || currNode.style.overflow === 'hidden' || [ '', null, 'none' ].indexOf(currNode.style.float) === -1 || [ '', null, 'relative' ].indexOf(currNode.style.position) === -1) {
+          } else if (currNode.style.display === 'none' || currNode.style.overflow === 'hidden' || ![ '', null, 'none' ].includes(currNode.style.float) || ![ '', null, 'relative' ].includes(currNode.style.position)) {
             return false;
           } else if (nodeName === 'A' && currNode.href || (currNode.getAttribute('role') || '').toLowerCase() === 'link') {
             if (currNode === node) {
@@ -9099,8 +9200,9 @@
         if (table.isColumnHeader(cell) || table.isRowHeader(cell)) {
           return true;
         }
-        if (cell.id) {
-          return !!document.querySelector('[headers~="' + axe.utils.escapeSelector(cell.id) + '"]');
+        if (cell.getAttribute('id')) {
+          var id = axe.utils.escapeSelector(cell.getAttribute('id'));
+          return !!document.querySelector('[headers~="' + id + '"]');
         }
         return false;
       };
@@ -9202,40 +9304,49 @@
       };
       var inputTypes = [ 'text', 'search', 'tel', 'url', 'email', 'date', 'time', 'number', 'range', 'color' ];
       var phrasingElements = [ 'A', 'EM', 'STRONG', 'SMALL', 'MARK', 'ABBR', 'DFN', 'I', 'B', 'S', 'U', 'CODE', 'VAR', 'SAMP', 'KBD', 'SUP', 'SUB', 'Q', 'CITE', 'SPAN', 'BDO', 'BDI', 'BR', 'WBR', 'INS', 'DEL', 'IMG', 'EMBED', 'OBJECT', 'IFRAME', 'MAP', 'AREA', 'SCRIPT', 'NOSCRIPT', 'RUBY', 'VIDEO', 'AUDIO', 'INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'LABEL', 'OUTPUT', 'DATALIST', 'KEYGEN', 'PROGRESS', 'COMMAND', 'CANVAS', 'TIME', 'METER' ];
-      function findLabel(element) {
-        var ref = null;
-        if (element.id) {
-          ref = document.querySelector('label[for="' + axe.utils.escapeSelector(element.id) + '"]');
-          if (ref) {
-            return ref;
-          }
+      function findLabel(_ref10) {
+        var actualNode = _ref10.actualNode;
+        var label = void 0;
+        if (actualNode.id) {
+          label = dom.findElmsInContext({
+            elm: 'label',
+            attr: 'for',
+            value: actualNode.id,
+            context: actualNode
+          })[0];
+        } else {
+          label = dom.findUp(actualNode, 'label');
         }
-        ref = dom.findUp(element, 'label');
-        return ref;
+        return axe.utils.getNodeFromTree(axe._tree[0], label);
       }
-      function isButton(element) {
-        return [ 'button', 'reset', 'submit' ].indexOf(element.type) !== -1;
+      function isButton(_ref11) {
+        var actualNode = _ref11.actualNode;
+        return [ 'button', 'reset', 'submit' ].includes(actualNode.type.toLowerCase());
       }
-      function isInput(element) {
-        var nodeName = element.nodeName.toUpperCase();
-        return nodeName === 'TEXTAREA' || nodeName === 'SELECT' || nodeName === 'INPUT' && element.type.toLowerCase() !== 'hidden';
+      function isInput(_ref12) {
+        var actualNode = _ref12.actualNode;
+        var nodeName = actualNode.nodeName.toUpperCase();
+        return nodeName === 'TEXTAREA' || nodeName === 'SELECT' || nodeName === 'INPUT' && actualNode.type.toLowerCase() !== 'hidden';
       }
-      function shouldCheckSubtree(element) {
-        return [ 'BUTTON', 'SUMMARY', 'A' ].indexOf(element.nodeName.toUpperCase()) !== -1;
+      function shouldCheckSubtree(_ref13) {
+        var actualNode = _ref13.actualNode;
+        return [ 'BUTTON', 'SUMMARY', 'A' ].includes(actualNode.nodeName.toUpperCase());
       }
-      function shouldNeverCheckSubtree(element) {
-        return [ 'TABLE', 'FIGURE' ].indexOf(element.nodeName.toUpperCase()) !== -1;
+      function shouldNeverCheckSubtree(_ref14) {
+        var actualNode = _ref14.actualNode;
+        return [ 'TABLE', 'FIGURE' ].includes(actualNode.nodeName.toUpperCase());
       }
-      function formValueText(element) {
-        var nodeName = element.nodeName.toUpperCase();
+      function formValueText(_ref15) {
+        var actualNode = _ref15.actualNode;
+        var nodeName = actualNode.nodeName.toUpperCase();
         if (nodeName === 'INPUT') {
-          if (!element.hasAttribute('type') || inputTypes.indexOf(element.getAttribute('type').toLowerCase()) !== -1 && element.value) {
-            return element.value;
+          if (!actualNode.hasAttribute('type') || inputTypes.includes(actualNode.type.toLowerCase())) {
+            return actualNode.value;
           }
           return '';
         }
         if (nodeName === 'SELECT') {
-          var opts = element.options;
+          var opts = actualNode.options;
           if (opts && opts.length) {
             var returnText = '';
             for (var i = 0; i < opts.length; i++) {
@@ -9247,64 +9358,68 @@
           }
           return '';
         }
-        if (nodeName === 'TEXTAREA' && element.value) {
-          return element.value;
+        if (nodeName === 'TEXTAREA' && actualNode.value) {
+          return actualNode.value;
         }
         return '';
       }
-      function checkDescendant(element, nodeName) {
-        var candidate = element.querySelector(nodeName.toLowerCase());
+      function checkDescendant(_ref16, nodeName) {
+        var actualNode = _ref16.actualNode;
+        var candidate = actualNode.querySelector(nodeName.toLowerCase());
         if (candidate) {
           return text.accessibleText(candidate);
         }
         return '';
       }
-      function isEmbeddedControl(e) {
-        if (!e) {
+      function isEmbeddedControl(elm) {
+        if (!elm) {
           return false;
         }
-        switch (e.nodeName.toUpperCase()) {
+        var actualNode = elm.actualNode;
+        switch (actualNode.nodeName.toUpperCase()) {
          case 'SELECT':
          case 'TEXTAREA':
           return true;
 
          case 'INPUT':
-          return !e.hasAttribute('type') || inputTypes.indexOf(e.getAttribute('type').toLowerCase()) !== -1;
+          return !actualNode.hasAttribute('type') || inputTypes.includes(actualNode.getAttribute('type').toLowerCase());
 
          default:
           return false;
         }
       }
-      function shouldCheckAlt(element) {
-        var nodeName = element.nodeName.toUpperCase();
-        return nodeName === 'INPUT' && element.type.toLowerCase() === 'image' || [ 'IMG', 'APPLET', 'AREA' ].indexOf(nodeName) !== -1;
+      function shouldCheckAlt(_ref17) {
+        var actualNode = _ref17.actualNode;
+        var nodeName = actualNode.nodeName.toUpperCase();
+        return [ 'IMG', 'APPLET', 'AREA' ].includes(nodeName) || nodeName === 'INPUT' && actualNode.type.toLowerCase() === 'image';
       }
       function nonEmptyText(t) {
         return !!text.sanitize(t);
       }
       text.accessibleText = function(element, inLabelledByContext) {
-        var accessibleNameComputation;
+        var accessibleNameComputation = void 0;
         var encounteredNodes = [];
+        if (element instanceof Node) {
+          element = axe.utils.getNodeFromTree(axe._tree[0], element);
+        }
         function getInnerText(element, inLabelledByContext, inControlContext) {
-          var nodes = element.childNodes;
-          var returnText = '';
-          var node;
-          for (var i = 0; i < nodes.length; i++) {
-            node = nodes[i];
-            if (node.nodeType === 3) {
-              returnText += node.textContent;
-            } else if (node.nodeType === 1) {
-              if (phrasingElements.indexOf(node.nodeName.toUpperCase()) === -1) {
+          return element.children.reduce(function(returnText, child) {
+            var actualNode = child.actualNode;
+            if (actualNode.nodeType === 3) {
+              returnText += actualNode.nodeValue;
+            } else if (actualNode.nodeType === 1) {
+              if (!phrasingElements.includes(actualNode.nodeName.toUpperCase())) {
                 returnText += ' ';
               }
-              returnText += accessibleNameComputation(nodes[i], inLabelledByContext, inControlContext);
+              returnText += accessibleNameComputation(child, inLabelledByContext, inControlContext);
             }
-          }
-          return returnText;
+            return returnText;
+          }, '');
         }
         function checkNative(element, inLabelledByContext, inControlContext) {
           var returnText = '';
-          var nodeName = element.nodeName.toUpperCase();
+          var actualNode = element.actualNode;
+          var nodeName = actualNode.nodeName.toUpperCase();
           if (shouldCheckSubtree(element)) {
             returnText = getInnerText(element, false, false) || '';
             if (nonEmptyText(returnText)) {
@@ -9322,17 +9437,17 @@
             if (nonEmptyText(returnText)) {
               return returnText;
             }
-            returnText = element.getAttribute('title') || element.getAttribute('summary') || '';
+            returnText = actualNode.getAttribute('title') || actualNode.getAttribute('summary') || '';
             if (nonEmptyText(returnText)) {
               return returnText;
             }
           }
           if (shouldCheckAlt(element)) {
-            return element.getAttribute('alt') || '';
+            return actualNode.getAttribute('alt') || '';
           }
           if (isInput(element) && !inControlContext) {
             if (isButton(element)) {
-              return element.value || element.title || defaultButtonValues[element.type] || '';
+              return actualNode.value || actualNode.title || defaultButtonValues[actualNode.type] || '';
             }
             var labelElement = findLabel(element);
             if (labelElement) {
@@ -9342,29 +9457,37 @@
           return '';
         }
         function checkARIA(element, inLabelledByContext, inControlContext) {
-          if (!inLabelledByContext && element.hasAttribute('aria-labelledby')) {
-            return text.sanitize(dom.idrefs(element, 'aria-labelledby').map(function(l) {
-              if (element === l) {
-                encounteredNodes.pop();
+          var returnText = '';
+          var actualNode = element.actualNode;
+          if (!inLabelledByContext && actualNode.hasAttribute('aria-labelledby')) {
+            returnText = text.sanitize(dom.idrefs(actualNode, 'aria-labelledby').map(function(label) {
+              if (label !== null) {
+                if (actualNode === label) {
+                  encounteredNodes.pop();
+                }
+                var vLabel = axe.utils.getNodeFromTree(axe._tree[0], label);
+                return accessibleNameComputation(vLabel, true, actualNode !== label);
+              } else {
+                return '';
               }
-              return accessibleNameComputation(l, true, element !== l);
             }).join(' '));
           }
-          if (!(inControlContext && isEmbeddedControl(element)) && element.hasAttribute('aria-label')) {
-            return text.sanitize(element.getAttribute('aria-label'));
+          if (!returnText && !(inControlContext && isEmbeddedControl(element)) && actualNode.hasAttribute('aria-label')) {
+            return text.sanitize(actualNode.getAttribute('aria-label'));
           }
-          return '';
+          return returnText;
         }
         accessibleNameComputation = function accessibleNameComputation(element, inLabelledByContext, inControlContext) {
-          'use strict';
-          var returnText;
-          if (element === null || encounteredNodes.indexOf(element) !== -1) {
+          var returnText = void 0;
+          if (!element || encounteredNodes.includes(element)) {
             return '';
-          } else if (!inLabelledByContext && !dom.isVisible(element, true)) {
+          } else if (element !== null && element.actualNode instanceof Node !== true) {
+            throw new Error('Invalid argument. Virtual Node must be provided');
+          } else if (!inLabelledByContext && !dom.isVisible(element.actualNode, true)) {
             return '';
           }
           encounteredNodes.push(element);
-          var role = element.getAttribute('role');
+          var role = element.actualNode.getAttribute('role');
           returnText = checkARIA(element, inLabelledByContext, inControlContext);
           if (nonEmptyText(returnText)) {
             return returnText;
@@ -9385,8 +9508,8 @@
               return returnText;
             }
           }
-          if (element.hasAttribute('title')) {
-            return element.getAttribute('title');
+          if (element.actualNode.hasAttribute('title')) {
+            return element.actualNode.getAttribute('title');
           }
           return '';
         };
@@ -9399,8 +9522,9 @@
           return candidate;
         }
         if (node.actualNode.id) {
+          var id = axe.commons.utils.escapeSelector(node.actualNode.getAttribute('id'));
           doc = axe.commons.dom.getRootNode(node.actualNode);
-          ref = doc.querySelector('label[for="' + axe.utils.escapeSelector(node.actualNode.id) + '"]');
+          ref = doc.querySelector('label[for="' + id + '"]');
           ref = axe.utils.getNodeFromTree(axe._tree[0], ref);
           candidate = ref && text.visible(ref, true);
           if (candidate) {
