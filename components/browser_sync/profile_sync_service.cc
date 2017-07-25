@@ -1926,7 +1926,7 @@ void ProfileSyncService::GoogleSigninSucceeded(const std::string& account_id,
     is_auth_in_progress_ = true;
   }
 
-  if (switches::IsAccountConsistencyDiceEnabled() &&
+  if (signin::IsAccountConsistencyDiceEnabled() &&
       oauth2_token_service_->RefreshTokenIsAvailable(account_id)) {
     // When Dice is enabled, the refresh token may be available before the user
     // enables sync. Start sync if the refresh token is already available in the

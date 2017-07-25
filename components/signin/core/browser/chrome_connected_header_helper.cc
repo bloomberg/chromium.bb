@@ -131,8 +131,7 @@ bool ChromeConnectedHeaderHelper::IsUrlEligibleForRequestHeader(
     return false;
 
   GURL origin(url.GetOrigin());
-  bool is_enable_account_consistency =
-      switches::IsAccountConsistencyMirrorEnabled();
+  bool is_enable_account_consistency = IsAccountConsistencyMirrorEnabled();
   bool is_google_url = is_enable_account_consistency &&
                        (google_util::IsGoogleDomainUrl(
                             url, google_util::ALLOW_SUBDOMAIN,
@@ -163,7 +162,7 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
                          base::IntToString(profile_mode_mask).c_str()));
   parts.push_back(base::StringPrintf(
       "%s=%s", kEnableAccountConsistencyAttrName,
-      switches::IsAccountConsistencyMirrorEnabled() ? "true" : "false"));
+      IsAccountConsistencyMirrorEnabled() ? "true" : "false"));
 
   return base::JoinString(parts, is_header_request ? "," : ":");
 }

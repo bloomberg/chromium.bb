@@ -369,7 +369,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         viewMode == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
         viewMode == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {
       [controller_ initMenuContentsWithView:
-                       switches::IsAccountConsistencyMirrorEnabled()
+                       signin::IsAccountConsistencyMirrorEnabled()
                            ? profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT
                            : profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
     }
@@ -845,7 +845,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   std::string primaryAccount = SigninManagerFactory::GetForProfile(
       browser_->profile())->GetAuthenticatedAccountId();
   bool hasAccountManagement =
-      !primaryAccount.empty() && switches::IsAccountConsistencyMirrorEnabled();
+      !primaryAccount.empty() && signin::IsAccountConsistencyMirrorEnabled();
   [self initMenuContentsWithView:hasAccountManagement ?
       profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT :
       profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
@@ -992,7 +992,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     // ACCOUNT_MANAGEMENT mode.
     if (viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER &&
         HasAuthError(browser_->profile()) &&
-        switches::IsAccountConsistencyMirrorEnabled() &&
+        signin::IsAccountConsistencyMirrorEnabled() &&
         avatarMenu_->GetItemAt(avatarMenu_->GetActiveProfileIndex())
             .signed_in) {
       viewMode_ = profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT;
@@ -1313,7 +1313,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   SigninManagerBase* signinManager = SigninManagerFactory::GetForProfile(
       browser_->profile()->GetOriginalProfile());
   NSRect profileLinksBound = NSZeroRect;
-  if (item.signed_in && switches::IsAccountConsistencyMirrorEnabled()) {
+  if (item.signed_in && signin::IsAccountConsistencyMirrorEnabled()) {
     profileLinksBound = NSMakeRect(0, 0, kFixedMenuWidth, kVerticalSpacing);
   } else if (!item.signed_in && signinManager->IsSigninAllowed()) {
     profileLinksBound = NSMakeRect(xOffset, kRelatedControllVerticalSpacing,
@@ -1413,7 +1413,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   // Username, aligned to the leading edge of the  profile icon and
   // below the profile name.
-  if (item.signed_in && !switches::IsAccountConsistencyMirrorEnabled()) {
+  if (item.signed_in && !signin::IsAccountConsistencyMirrorEnabled()) {
     // Adjust the y-position of profile name to leave space for username.
     cardYOffset += kMdImageSide / 2 - [profileName frame].size.height;
     [profileName setFrameOrigin:NSMakePoint(xOffset, cardYOffset)];
@@ -1447,7 +1447,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // here.
   SigninManagerBase* signinManager = SigninManagerFactory::GetForProfile(
       browser_->profile()->GetOriginalProfile());
-  DCHECK((item.signed_in && switches::IsAccountConsistencyMirrorEnabled()) ||
+  DCHECK((item.signed_in && signin::IsAccountConsistencyMirrorEnabled()) ||
          (!item.signed_in && signinManager->IsSigninAllowed()));
 
   base::scoped_nsobject<NSView> container([[NSView alloc] initWithFrame:rect]);
@@ -1462,7 +1462,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // The available links depend on the type of profile that is active.
   if (item.signed_in) {
     NSButton* link = nil;
-    if (switches::IsAccountConsistencyMirrorEnabled()) {
+    if (signin::IsAccountConsistencyMirrorEnabled()) {
       NSString* linkTitle = l10n_util::GetNSString(
           viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER ?
               IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON :

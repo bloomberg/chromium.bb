@@ -14,6 +14,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -79,8 +80,6 @@ class DiceResponseHandlerTest : public testing::Test {
                                &account_tracker_service_) {
     loop_.SetTaskRunner(task_runner_);
     DCHECK_EQ(task_runner_, base::ThreadTaskRunnerHandle::Get());
-    switches::EnableAccountConsistencyDiceForTesting(
-        base::CommandLine::ForCurrentProcess());
     signin_client_.SetURLRequestContext(request_context_getter_.get());
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     SigninManager::RegisterProfilePrefs(pref_service_.registry());
@@ -109,6 +108,7 @@ class DiceResponseHandlerTest : public testing::Test {
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
+  signin::ScopedAccountConsistencyDice scoped_dice_;
   DiceTestSigninClient signin_client_;
   ProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_service_;

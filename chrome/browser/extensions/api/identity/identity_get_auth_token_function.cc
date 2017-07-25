@@ -4,6 +4,11 @@
 
 #include "chrome/browser/extensions/api/identity/identity_get_auth_token_function.h"
 
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
@@ -140,7 +145,7 @@ void IdentityGetAuthTokenFunction::OnReceivedPrimaryAccountInfo(
   // Detect and handle the case where the extension is using an account other
   // than the primary account.
   if (!extension_gaia_id.empty() && extension_gaia_id != primary_gaia_id) {
-    if (!switches::IsExtensionsMultiAccount()) {
+    if (!signin::IsExtensionsMultiAccount()) {
       // TODO(courage): should this be a different error?
       CompleteFunctionWithError(identity_constants::kUserNotSignedIn);
       return;

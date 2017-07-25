@@ -5,6 +5,9 @@
 #include "chrome/browser/signin/chrome_signin_client.h"
 
 #include <stddef.h>
+
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -197,7 +200,7 @@ net::URLRequestContextGetter* ChromeSigninClient::GetURLRequestContext() {
 }
 
 bool ChromeSigninClient::ShouldMergeSigninCredentialsIntoCookieJar() {
-  return !switches::IsAccountConsistencyMirrorEnabled();
+  return !signin::IsAccountConsistencyMirrorEnabled();
 }
 
 std::string ChromeSigninClient::GetProductVersion() {

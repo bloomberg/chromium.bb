@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_features.h"
 #include "content/public/browser/browser_thread.h"
@@ -145,8 +146,7 @@ class ChromeSigninHelperTest : public testing::Test {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Tests that Dice response headers are removed after being processed.
 TEST_F(ChromeSigninHelperTest, RemoveDiceSigninHeader) {
-  switches::EnableAccountConsistencyDiceForTesting(
-      base::CommandLine::ForCurrentProcess());
+  signin::ScopedAccountConsistencyDice scoped_dice;
 
   TestResponseHelper test_response_helper;
   test_response_helper.CreateRequestWithResponseHeaders();

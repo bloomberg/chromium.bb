@@ -84,11 +84,10 @@ void OverrideFeatures(const std::string& features,
 ScopedFeatureList::ScopedFeatureList() {}
 
 ScopedFeatureList::~ScopedFeatureList() {
-  if (field_trial_override_) {
+  if (field_trial_override_)
     base::FieldTrialParamAssociator::GetInstance()->ClearParamsForTesting(
         field_trial_override_->trial_name(),
         field_trial_override_->group_name());
-  }
 
   if (original_feature_list_) {
     FeatureList::ClearInstanceForTesting();
@@ -127,22 +126,10 @@ void ScopedFeatureList::InitAndEnableFeature(const Feature& feature) {
   InitWithFeaturesAndFieldTrials({feature}, {}, {});
 }
 
-void ScopedFeatureList::InitAndEnableFeatureWithParameters(
+void ScopedFeatureList::InitAndEnableFeatureWithFieldTrialOverride(
     const Feature& feature,
-    const std::map<std::string, std::string>& feature_parameters) {
-  if (!FieldTrialList::IsFieldTrialListRegisteredForTesting()) {
-    field_trial_list_ = base::MakeUnique<base::FieldTrialList>(nullptr);
-  }
-
-  std::string kTrialName = "scoped_feature_list_trial_name";
-  std::string kTrialGroup = "scoped_feature_list_trial_group";
-  field_trial_override_ =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kTrialGroup);
-  DCHECK(field_trial_override_);
-  FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
-      kTrialName, kTrialGroup, feature_parameters);
-  InitAndEnableFeatureWithFieldTrialOverride(feature,
-                                             field_trial_override_.get());
+    FieldTrial* trial) {
+  InitWithFeaturesAndFieldTrials({feature}, {trial}, {});
 }
 
 void ScopedFeatureList::InitAndDisableFeature(const Feature& feature) {
@@ -198,10 +185,22 @@ void ScopedFeatureList::InitWithFeaturesAndFieldTrials(
   InitFromCommandLine(enabled, disabled);
 }
 
-void ScopedFeatureList::InitAndEnableFeatureWithFieldTrialOverride(
+void ScopedFeatureList::InitAndEnableFeatureWithParameters(
     const Feature& feature,
-    FieldTrial* trial) {
-  InitWithFeaturesAndFieldTrials({feature}, {trial}, {});
+    const std::map<std::string, std::string>& feature_parameters) {
+  if (!FieldTrialList::IsGlobalSetForTesting()) {
+    field_trial_list_ = base::MakeUnique<base::FieldTrialList>(nullptr);
+  }
+
+  std::string kTrialName = "scoped_feature_list_trial_name";
+  std::string kTrialGroup = "scoped_feature_list_trial_group";
+  field_trial_override_ =
+      base::FieldTrialList::CreateFieldTrial(kTrialName, kTrialGroup);
+  DCHECK(field_trial_override_);
+  FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
+      kTrialName, kTrialGroup, feature_parameters);
+  InitAndEnableFeatureWithFieldTrialOverride(feature,
+                                             field_trial_override_.get());
 }
 
 }  // namespace test

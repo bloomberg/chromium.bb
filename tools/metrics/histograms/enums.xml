@@ -23291,6 +23291,7 @@ from previous Chrome versions.
   <int value="280644887" label="mash"/>
   <int value="283232244" label="OmniboxUIExperimentNarrowDropdown:enabled"/>
   <int value="301869874" label="NTPPhysicalWebPageSuggestions:disabled"/>
+  <int value="303058039" label="AccountConsistency:disabled"/>
   <int value="304901781" label="NewUsbBackend:enabled"/>
   <int value="313303258" label="WebPaymentsModifiers:disabled"/>
   <int value="316182183" label="MediaDocumentDownloadButton:disabled"/>
@@ -23496,6 +23497,7 @@ from previous Chrome versions.
   <int value="982032277" label="NTPOfflineBadge:disabled"/>
   <int value="982511393" label="NTPArticleSuggestions:disabled"/>
   <int value="983311394" label="tab-management-experiment-type"/>
+  <int value="986796748" label="AccountConsistency:enabled"/>
   <int value="988981463" label="ImageCaptureAPI:enabled"/>
   <int value="1000706989" label="AutomaticTabDiscarding:disabled"/>
   <int value="1002585107" label="emphasize-titles-in-omnibox-dropdown"/>
