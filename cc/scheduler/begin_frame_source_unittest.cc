@@ -516,8 +516,8 @@ TEST_F(DelayBasedBeginFrameSourceTest, DoubleTickMissedFrame) {
 
   // No missed frame received.
   EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
-  // This does not cause a missed BeginFrame, but the sequence number is
-  // incremented, because the possible missed frame has different time/interval.
+  // This does not cause a missed BeginFrame because of double ticking
+  // prevention. It does not produce a new sequence number.
   source_->AddObserver(&obs);
   source_->RemoveObserver(&obs);
 
@@ -526,9 +526,8 @@ TEST_F(DelayBasedBeginFrameSourceTest, DoubleTickMissedFrame) {
                                    base::TimeDelta::FromMicroseconds(10000));
   now_src_->Advance(base::TimeDelta::FromMicroseconds(5000));
   EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
-  // Sequence number is incremented again, because the missed frame has
-  // different time/interval.
-  EXPECT_BEGIN_FRAME_USED_MISSED(obs, source_->source_id(), 3, 10000, 20000,
+  // Sequence number is incremented again, because sufficient time has passed.
+  EXPECT_BEGIN_FRAME_USED_MISSED(obs, source_->source_id(), 2, 10000, 20000,
                                  10000);
   source_->AddObserver(&obs);
   source_->RemoveObserver(&obs);
