@@ -128,12 +128,21 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   // The strategy is to apply root element transform on the context and issue
   // draw commands in the local space, therefore we need to apply inverse
   // transform on the document rect to get to the root element space.
+  // Local / scroll positioned background images will be painted into scrolling
+  // contents layer with root layer scrolling. Therefore we need to switch both
+  // the background_rect and context to documentElement visual space.
   bool background_renderable = true;
   TransformationMatrix transform;
   IntRect paint_rect = background_rect;
   if (!root_object || !root_object->IsBox()) {
     background_renderable = false;
   } else if (root_object->HasLayer()) {
+    if (BoxModelObjectPainter::
+            IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
+                &layout_view_, paint_info)) {
+      transform.Translate(layout_view_.ScrolledContentOffset().Width(),
+                          layout_view_.ScrolledContentOffset().Height());
+    }
     const PaintLayer& root_layer =
         *ToLayoutBoxModelObject(root_object)->Layer();
     LayoutPoint offset;
