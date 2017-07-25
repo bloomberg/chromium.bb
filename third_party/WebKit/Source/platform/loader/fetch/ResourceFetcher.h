@@ -199,15 +199,25 @@ class PLATFORM_EXPORT ResourceFetcher
                                   const FetchParameters& params,
                                   Resource::Type);
 
-  bool IsReusableAlsoForPreloading(const FetchParameters&,
-                                   Resource*,
-                                   bool is_static_data) const;
+  bool IsImageResourceDisallowedToBeReused(const Resource&) const;
+
   // RevalidationPolicy enum values are used in UMAs https://crbug.com/579496.
   enum RevalidationPolicy { kUse, kRevalidate, kReload, kLoad };
-  RevalidationPolicy DetermineRevalidationPolicy(Resource::Type,
-                                                 const FetchParameters&,
-                                                 Resource* existing_resource,
-                                                 bool is_static_data) const;
+
+  // A wrapper just for placing a trace_event macro.
+  RevalidationPolicy DetermineRevalidationPolicy(
+      Resource::Type,
+      const FetchParameters&,
+      const Resource& existing_resource,
+      bool is_static_data) const;
+  // Determines a RevalidationPolicy given a FetchParameters and an existing
+  // resource retrieved from the memory cache (can be a newly constructed one
+  // for a static data).
+  RevalidationPolicy DetermineRevalidationPolicyInternal(
+      Resource::Type,
+      const FetchParameters&,
+      const Resource& existing_resource,
+      bool is_static_data) const;
 
   void MakePreloadedResourceBlockOnloadIfNeeded(Resource*,
                                                 const FetchParameters&);
