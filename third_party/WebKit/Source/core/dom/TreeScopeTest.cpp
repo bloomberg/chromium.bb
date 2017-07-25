@@ -13,7 +13,7 @@
 namespace blink {
 
 TEST(TreeScopeTest, CommonAncestorOfSameTrees) {
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   EXPECT_EQ(document, document->CommonAncestorTreeScope(*document));
 
   Element* html = document->createElement("html", StringOrDictionary());
@@ -28,7 +28,7 @@ TEST(TreeScopeTest, CommonAncestorOfInclusiveTrees) {
   //     |      : Common ancestor is document.
   // shadowRoot
 
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   Element* html = document->createElement("html", StringOrDictionary());
   document->AppendChild(html);
   ShadowRoot* shadow_root =
@@ -43,7 +43,7 @@ TEST(TreeScopeTest, CommonAncestorOfSiblingTrees) {
   //   /    \  : Common ancestor is document.
   //  A      B
 
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   Element* html = document->createElement("html", StringOrDictionary());
   document->AppendChild(html);
   Element* head = document->createElement("head", StringOrDictionary());
@@ -67,7 +67,7 @@ TEST(TreeScopeTest, CommonAncestorOfTreesAtDifferentDepths) {
   //  /
   // A
 
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   Element* html = document->createElement("html", StringOrDictionary());
   document->AppendChild(html);
   Element* head = document->createElement("head", StringOrDictionary());
@@ -90,8 +90,8 @@ TEST(TreeScopeTest, CommonAncestorOfTreesAtDifferentDepths) {
 }
 
 TEST(TreeScopeTest, CommonAncestorOfTreesInDifferentDocuments) {
-  Document* document1 = Document::Create();
-  Document* document2 = Document::Create();
+  Document* document1 = Document::CreateForTest();
+  Document* document2 = Document::CreateForTest();
   EXPECT_EQ(0, document1->CommonAncestorTreeScope(*document2));
   EXPECT_EQ(0, document2->CommonAncestorTreeScope(*document1));
 }

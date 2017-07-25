@@ -32,8 +32,7 @@ namespace blink {
 
 class SinkDocument final : public HTMLDocument {
  public:
-  static SinkDocument* Create(
-      const DocumentInit& initializer = DocumentInit()) {
+  static SinkDocument* Create(const DocumentInit& initializer) {
     return new SinkDocument(initializer);
   }
 

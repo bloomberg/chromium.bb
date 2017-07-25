@@ -64,16 +64,19 @@ Document* XSLTProcessor::CreateDocumentFromSource(
     const String& source_mime_type,
     Node* source_node,
     LocalFrame* frame) {
+  KURL url = NullURL();
   Document* owner_document = &source_node->GetDocument();
-  bool source_is_document = (source_node == owner_document);
+  if (owner_document == source_node)
+    url = owner_document->Url();
+
+  DocumentInit init = DocumentInit::Create().WithFrame(frame).WithURL(url);
+
   String document_source = source_string;
-
-  Document* result = nullptr;
-  DocumentInit init(source_is_document ? owner_document->Url() : KURL(), frame);
-
   bool force_xhtml = source_mime_type == "text/plain";
   if (force_xhtml)
     TransformTextStringToXHTMLDocumentString(document_source);
+
+  Document* result = nullptr;
 
   if (frame) {
     Document* old_document = frame->GetDocument();
@@ -120,7 +123,7 @@ Document* XSLTProcessor::transformToDocument(Node* source_node) {
                          result_encoding))
     return nullptr;
   return CreateDocumentFromSource(result_string, result_encoding,
-                                  result_mime_type, source_node, 0);
+                                  result_mime_type, source_node, nullptr);
 }
 
 DocumentFragment* XSLTProcessor::transformToFragment(Node* source_node,

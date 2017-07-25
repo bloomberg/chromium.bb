@@ -35,8 +35,7 @@ class PluginView;
 
 class CORE_EXPORT PluginDocument final : public HTMLDocument {
  public:
-  static PluginDocument* Create(
-      const DocumentInit& initializer = DocumentInit()) {
+  static PluginDocument* Create(const DocumentInit& initializer) {
     return new PluginDocument(initializer);
   }
 

@@ -83,18 +83,18 @@ XMLDocument* DOMImplementation::createDocument(
     ExceptionState& exception_state) {
   XMLDocument* doc = nullptr;
   DocumentInit init =
-      DocumentInit::FromContext(GetDocument().ContextDocument());
+      DocumentInit::Create().WithContextDocument(document_->ContextDocument());
   if (namespace_uri == SVGNames::svgNamespaceURI) {
     doc = XMLDocument::CreateSVG(init);
   } else if (namespace_uri == HTMLNames::xhtmlNamespaceURI) {
     doc = XMLDocument::CreateXHTML(
-        init.WithRegistrationContext(GetDocument().RegistrationContext()));
+        init.WithRegistrationContext(document_->RegistrationContext()));
   } else {
     doc = XMLDocument::Create(init);
   }
 
-  doc->SetSecurityOrigin(GetDocument().GetSecurityOrigin());
-  doc->SetContextFeatures(GetDocument().GetContextFeatures());
+  doc->SetSecurityOrigin(document_->GetSecurityOrigin());
+  doc->SetContextFeatures(document_->GetContextFeatures());
 
   Node* document_element = nullptr;
   if (!qualified_name.IsEmpty()) {
@@ -203,8 +203,9 @@ bool DOMImplementation::IsTextMIMEType(const String& mime_type) {
 
 HTMLDocument* DOMImplementation::createHTMLDocument(const String& title) {
   DocumentInit init =
-      DocumentInit::FromContext(GetDocument().ContextDocument())
-          .WithRegistrationContext(GetDocument().RegistrationContext());
+      DocumentInit::Create()
+          .WithContextDocument(document_->ContextDocument())
+          .WithRegistrationContext(document_->RegistrationContext());
   HTMLDocument* d = HTMLDocument::Create(init);
   d->open();
   d->write("<!doctype html><html><head></head><body></body></html>");
@@ -215,8 +216,8 @@ HTMLDocument* DOMImplementation::createHTMLDocument(const String& title) {
     head_element->AppendChild(title_element);
     title_element->AppendChild(d->createTextNode(title), ASSERT_NO_EXCEPTION);
   }
-  d->SetSecurityOrigin(GetDocument().GetSecurityOrigin());
-  d->SetContextFeatures(GetDocument().GetContextFeatures());
+  d->SetSecurityOrigin(document_->GetSecurityOrigin());
+  d->SetContextFeatures(document_->GetContextFeatures());
   return d;
 }
 

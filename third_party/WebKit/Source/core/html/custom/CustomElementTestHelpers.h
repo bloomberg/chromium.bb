@@ -123,7 +123,7 @@ class CreateElement {
   operator Element*() const {
     Document* document = document_.Get();
     if (!document)
-      document = HTMLDocument::Create();
+      document = HTMLDocument::CreateForTest();
     NonThrowableExceptionState no_exceptions;
     Element* element =
         document->createElementNS(namespace_uri_, local_name_, no_exceptions);

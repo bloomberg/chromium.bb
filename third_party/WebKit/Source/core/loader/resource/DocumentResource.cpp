@@ -79,7 +79,7 @@ bool DocumentResource::MimeTypeAllowed() const {
 Document* DocumentResource::CreateDocument(const KURL& url) {
   switch (GetType()) {
     case kSVGDocument:
-      return XMLDocument::CreateSVG(DocumentInit(url));
+      return XMLDocument::CreateSVG(DocumentInit::Create().WithURL(url));
     default:
       // FIXME: We'll add more types to support HTMLImports.
       NOTREACHED();

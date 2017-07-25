@@ -42,33 +42,30 @@ namespace blink {
 
 // FIXME: Broken with OOPI.
 static Document* ParentDocument(LocalFrame* frame) {
-  if (!frame)
-    return nullptr;
+  DCHECK(frame);
+
   Element* owner_element = frame->DeprecatedLocalOwner();
   if (!owner_element)
     return nullptr;
   return &owner_element->GetDocument();
 }
 
-DocumentInit::DocumentInit(const KURL& url,
-                           LocalFrame* frame,
-                           Document* context_document,
-                           HTMLImportsController* imports_controller)
-    : DocumentInit(nullptr, url, frame, context_document, imports_controller) {}
+DocumentInit DocumentInit::Create() {
+  return DocumentInit(nullptr);
+}
 
-DocumentInit::DocumentInit(Document* owner_document,
-                           const KURL& url,
-                           LocalFrame* frame,
-                           Document* context_document,
-                           HTMLImportsController* imports_controller)
-    : url_(url),
-      frame_(frame),
-      parent_(ParentDocument(frame)),
-      owner_(owner_document),
-      context_document_(context_document),
-      imports_controller_(imports_controller),
-      create_new_registration_context_(false),
-      should_reuse_default_view_(frame && frame->ShouldReuseDefaultView(url)) {}
+DocumentInit DocumentInit::CreateWithImportsController(
+    HTMLImportsController* controller) {
+  DCHECK(controller);
+  Document* master = controller->Master();
+  return DocumentInit(controller)
+      .WithContextDocument(master->ContextDocument())
+      .WithRegistrationContext(master->RegistrationContext());
+}
+
+DocumentInit::DocumentInit(HTMLImportsController* imports_controller)
+    : imports_controller_(imports_controller),
+      create_new_registration_context_(false) {}
 
 DocumentInit::DocumentInit(const DocumentInit&) = default;
 
@@ -80,7 +77,8 @@ bool DocumentInit::ShouldSetURL() const {
 }
 
 bool DocumentInit::ShouldTreatURLAsSrcdocDocument() const {
-  return parent_ && frame_->Loader().ShouldTreatURLAsSrcdocDocument(url_);
+  return parent_document_ &&
+         frame_->Loader().ShouldTreatURLAsSrcdocDocument(url_);
 }
 
 LocalFrame* DocumentInit::FrameForSecurityContext() const {
@@ -138,7 +136,34 @@ Settings* DocumentInit::GetSettings() const {
 }
 
 KURL DocumentInit::ParentBaseURL() const {
-  return parent_->BaseURL();
+  return parent_document_->BaseURL();
+}
+
+DocumentInit& DocumentInit::WithFrame(LocalFrame* frame) {
+  DCHECK(!frame_);
+  DCHECK(!imports_controller_);
+  frame_ = frame;
+  if (frame_)
+    parent_document_ = ParentDocument(frame_);
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithContextDocument(Document* context_document) {
+  DCHECK(!context_document_);
+  context_document_ = context_document;
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithURL(const KURL& url) {
+  DCHECK(url_.IsNull());
+  url_ = url;
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithOwnerDocument(Document* owner_document) {
+  DCHECK(!owner_document_);
+  owner_document_ = owner_document;
+  return *this;
 }
 
 DocumentInit& DocumentInit::WithRegistrationContext(
@@ -169,11 +194,6 @@ V0CustomElementRegistrationContext* DocumentInit::RegistrationContext(
 
 Document* DocumentInit::ContextDocument() const {
   return context_document_;
-}
-
-DocumentInit DocumentInit::FromContext(Document* context_document,
-                                       const KURL& url) {
-  return DocumentInit(url, 0, context_document, 0);
 }
 
 }  // namespace blink

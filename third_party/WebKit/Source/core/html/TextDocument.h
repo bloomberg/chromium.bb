@@ -31,8 +31,7 @@ namespace blink {
 
 class TextDocument final : public HTMLDocument {
  public:
-  static TextDocument* Create(
-      const DocumentInit& initializer = DocumentInit()) {
+  static TextDocument* Create(const DocumentInit& initializer) {
     return new TextDocument(initializer);
   }
 

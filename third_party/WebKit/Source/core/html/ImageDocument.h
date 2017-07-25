@@ -36,8 +36,7 @@ class ImageResource;
 
 class CORE_EXPORT ImageDocument final : public HTMLDocument {
  public:
-  static ImageDocument* Create(
-      const DocumentInit& initializer = DocumentInit()) {
+  static ImageDocument* Create(const DocumentInit& initializer) {
     return new ImageDocument(initializer);
   }
 

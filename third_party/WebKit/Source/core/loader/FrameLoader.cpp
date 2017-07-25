@@ -395,20 +395,21 @@ void FrameLoader::DidExplicitOpen() {
 void FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
     const String& source,
     Document* owner_document) {
-  if (!frame_->GetDocument()->Loader() ||
+  DocumentLoader* document_loader = frame_->GetDocument()->Loader();
+
+  if (!document_loader ||
       frame_->GetDocument()->PageDismissalEventBeingDispatched() !=
           Document::kNoDismissal)
     return;
 
-  DocumentLoader* document_loader(frame_->GetDocument()->Loader());
-
   UseCounter::Count(*frame_->GetDocument(),
                     WebFeature::kReplaceDocumentViaJavaScriptURL);
 
-  // Prepare a DocumentInit before clearing the frame, because it may need to
-  // inherit an aliased security context.
-  DocumentInit init(owner_document, frame_->GetDocument()->Url(), frame_);
-  init.WithNewRegistrationContext();
+  const KURL& url = frame_->GetDocument()->Url();
+
+  // Compute this before clearing the frame, because it may need to inherit an
+  // aliased security context.
+  bool should_reuse_default_view = frame_->ShouldReuseDefaultView(url);
 
   StopAllLoaders();
   // Don't allow any new child frames to load in this frame: attaching a new
@@ -424,7 +425,8 @@ void FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
     return;
 
   Client()->TransitionToCommittedForNewPage();
-  document_loader->ReplaceDocumentWhileExecutingJavaScriptURL(init, source);
+  document_loader->ReplaceDocumentWhileExecutingJavaScriptURL(
+      url, owner_document, should_reuse_default_view, source);
 }
 
 void FrameLoader::FinishedParsing() {

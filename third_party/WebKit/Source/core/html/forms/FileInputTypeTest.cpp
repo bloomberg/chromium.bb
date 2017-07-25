@@ -46,7 +46,7 @@ TEST(FileInputTypeTest, createFileList) {
 }
 
 TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles) {
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   HTMLInputElement* input = HTMLInputElement::Create(*document, false);
   InputType* file_input = FileInputType::Create(*input);
 
@@ -79,7 +79,7 @@ TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles) {
 }
 
 TEST(FileInputTypeTest, setFilesFromPaths) {
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   HTMLInputElement* input = HTMLInputElement::Create(*document, false);
   InputType* file_input = FileInputType::Create(*input);
   Vector<String> paths;

@@ -15,7 +15,7 @@ class HTMLFrameElementTest : public ::testing::Test {};
 // Frame elements do not have any container-policy related attributes, but the
 // fullscreen feature should be unconditionally disabled.
 TEST_F(HTMLFrameElementTest, DefaultContainerPolicy) {
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   KURL document_url = KURL(NullURL(), "http://example.com");
   document->SetURL(document_url);
   document->UpdateSecurityOrigin(SecurityOrigin::Create(document_url));

@@ -23,7 +23,7 @@ class AttrTest : public ::testing::Test {
 };
 
 void AttrTest::SetUp() {
-  document_ = Document::Create();
+  document_ = Document::CreateForTest();
   value_ = "value";
 }
 

@@ -124,7 +124,7 @@ MockScriptLoader* MockScriptLoader::SetupForNonStreaming() {
 
 class ScriptRunnerTest : public ::testing::Test {
  public:
-  ScriptRunnerTest() : document_(Document::Create()) {}
+  ScriptRunnerTest() : document_(Document::CreateForTest()) {}
 
   void SetUp() override {
     // We have to create ScriptRunner after initializing platform, because we

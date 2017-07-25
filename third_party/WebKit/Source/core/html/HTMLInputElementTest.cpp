@@ -97,7 +97,7 @@ TEST_F(HTMLInputElementTest, create) {
 }
 
 TEST_F(HTMLInputElementTest, NoAssertWhenMovedInNewDocument) {
-  Document* document_without_frame = Document::Create();
+  Document* document_without_frame = Document::CreateForTest();
   EXPECT_EQ(nullptr, document_without_frame->GetPage());
   HTMLHtmlElement* html = HTMLHtmlElement::Create(*document_without_frame);
   html->AppendChild(HTMLBodyElement::Create(*document_without_frame));

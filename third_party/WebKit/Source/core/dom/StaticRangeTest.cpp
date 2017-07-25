@@ -33,7 +33,7 @@ class StaticRangeTest : public ::testing::Test {
 };
 
 void StaticRangeTest::SetUp() {
-  document_ = HTMLDocument::Create();
+  document_ = HTMLDocument::CreateForTest();
   HTMLHtmlElement* html = HTMLHtmlElement::Create(*document_);
   html->AppendChild(HTMLBodyElement::Create(*document_));
   document_->AppendChild(html);

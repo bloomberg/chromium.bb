@@ -60,7 +60,7 @@ namespace blink {
 class ApplicationCacheHost;
 class SubresourceFilter;
 class ResourceFetcher;
-class DocumentInit;
+class Document;
 class HistoryItem;
 class LocalFrame;
 class LocalFrameClient;
@@ -95,8 +95,11 @@ class CORE_EXPORT DocumentLoader
 
   unsigned long MainResourceIdentifier() const;
 
-  void ReplaceDocumentWhileExecutingJavaScriptURL(const DocumentInit&,
-                                                  const String& source);
+  void ReplaceDocumentWhileExecutingJavaScriptURL(
+      const KURL&,
+      Document* owner_document,
+      bool should_reuse_default_view,
+      const String& source);
 
   const AtomicString& MimeType() const;
 
@@ -233,7 +236,9 @@ class CORE_EXPORT DocumentLoader
   // initalizes a bunch of state on the Document (e.g., the state based on
   // response headers).
   enum class InstallNewDocumentReason { kNavigation, kJavascriptURL };
-  void InstallNewDocument(const DocumentInit&,
+  void InstallNewDocument(const KURL&,
+                          Document* owner_document,
+                          bool should_reuse_default_view,
                           const AtomicString& mime_type,
                           const AtomicString& encoding,
                           InstallNewDocumentReason,

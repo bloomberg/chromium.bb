@@ -27,7 +27,8 @@ namespace blink {
 
 Document* DOMParser::parseFromString(const String& str, const String& type) {
   Document* doc = DOMImplementation::createDocument(
-      type, DocumentInit(NullURL(), nullptr, context_document_), false);
+      type, DocumentInit::Create().WithContextDocument(context_document_),
+      false);
   doc->SetContent(str);
   doc->SetMimeType(AtomicString(type));
   if (context_document_) {

@@ -721,7 +721,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
   WTF::OrdinalNumber context_line;
 
   // We need document for HTMLScriptElement tests.
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   document->SetSecurityOrigin(secure_origin);
 
   for (const auto& test : cases) {

@@ -82,7 +82,7 @@ TEST_F(DocumentMarkerControllerTest, DidMoveToNewDocument) {
   Element* parent = ToElement(GetDocument().body()->firstChild()->firstChild());
   MarkNodeContents(parent);
   EXPECT_EQ(1u, MarkerController().Markers().size());
-  Persistent<Document> another_document = Document::Create();
+  Persistent<Document> another_document = Document::CreateForTest();
   another_document->adoptNode(parent, ASSERT_NO_EXCEPTION);
 
   // No more reference to marked node.
