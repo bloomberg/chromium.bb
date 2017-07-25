@@ -298,7 +298,7 @@ int QuicHttpStream::ReadResponseBody(IOBuffer* buf,
 
   // If the stream is already closed, there is no body to read.
   if (stream_->IsDoneReading())
-    return GetResponseStatus();
+    return HandleReadComplete(OK);
 
   int rv = stream_->ReadBody(buf, buf_len,
                              base::Bind(&QuicHttpStream::OnReadBodyComplete,
