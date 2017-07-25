@@ -62,6 +62,10 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual void DidChangeThemeEngine() {}
 
   static void SetSizeIfAuto(ComputedStyle&, const IntSize&);
+  // SetMinimumSizeIfAuto must be called before SetSizeIfAuto, because we
+  // will not set a minimum size if an explicit size is set, and SetSizeIfAuto
+  // sets an explicit size.
+  static void SetMinimumSizeIfAuto(ComputedStyle&, const IntSize&);
 
   // This method is called whenever style has been computed for an element and
   // the appearance property has been set to a value other than "none".

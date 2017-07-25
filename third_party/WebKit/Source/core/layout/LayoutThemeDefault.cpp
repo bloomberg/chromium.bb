@@ -200,6 +200,7 @@ void LayoutThemeDefault::SetCheckboxSize(ComputedStyle& style) const {
   float zoom_level = style.EffectiveZoom();
   size.SetWidth(size.Width() * zoom_level);
   size.SetHeight(size.Height() * zoom_level);
+  SetMinimumSizeIfAuto(style, size);
   SetSizeIfAuto(style, size);
 }
 
@@ -213,6 +214,7 @@ void LayoutThemeDefault::SetRadioSize(ComputedStyle& style) const {
   float zoom_level = style.EffectiveZoom();
   size.SetWidth(size.Width() * zoom_level);
   size.SetHeight(size.Height() * zoom_level);
+  SetMinimumSizeIfAuto(style, size);
   SetSizeIfAuto(style, size);
 }
 
