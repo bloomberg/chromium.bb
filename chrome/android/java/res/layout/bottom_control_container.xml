@@ -9,6 +9,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content" >
 
+    <FrameLayout
+        android:id="@+id/bottom_sheet_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="@dimen/bottom_nav_height"
+        android:background="@color/default_primary_color"
+        android:visibility="invisible" />
+
     <org.chromium.chrome.browser.toolbar.ToolbarControlContainer
         android:id="@+id/control_container"
         android:layout_width="match_parent"
@@ -61,13 +69,6 @@
 
         </view>
     </org.chromium.chrome.browser.toolbar.ToolbarControlContainer>
-
-    <FrameLayout
-        android:id="@+id/bottom_sheet_content"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingBottom="@dimen/bottom_nav_height"
-        android:background="@color/default_primary_color" />
 
     <ViewStub
         android:id="@+id/bottom_omnibox_results_container_stub"
