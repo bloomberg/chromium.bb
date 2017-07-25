@@ -12,6 +12,8 @@
 
 namespace resource_coordinator {
 
+// Frame Coordination Units form a tree structure, each FrameCoordinationUnit at
+// most has one parent that is a FrameCoordinationUnit.
 class FrameCoordinationUnitImpl : public CoordinationUnitImpl {
  public:
   FrameCoordinationUnitImpl(

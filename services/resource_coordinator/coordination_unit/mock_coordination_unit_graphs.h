@@ -56,10 +56,10 @@ struct MockMultipleTabsInSingleProcessCoordinationUnitGraph
 // processes (e.g. out-of-process iFrames):
 //
 // T   P
-//  \ /
-//   F  OP
-//    \ /
-//    CF
+// |\ /
+// | F  OP
+// |  \ /
+// |__CF
 //
 // Where:
 // T: tab
@@ -79,11 +79,11 @@ struct MockSingleTabWithMultipleProcessesCoordinationUnitGraph
 // scenario where multiple tabs are utilizing multiple processes (e.g.
 // out-of-process iFrames and multiple tabs in a process):
 //
-// T   P  OT
-//  \ / \ /
-//  F    OF  OP
-//        \ /
-//         CF
+// T   P  OT____
+//  \ / \ /     |
+//   F   OF  OP |
+//        \ /   |
+//         CF___|
 //
 // Where:
 // T: tab_coordination_unit
