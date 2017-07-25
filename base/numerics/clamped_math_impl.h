@@ -61,11 +61,10 @@ struct ClampedAddOp<T,
       return ClampedAddFastOp<T, U>::template Do<V>(x, y);
 
     V result;
-    return CheckedAddOp<T, U>::Do(x, y, &result)
-               ? result
-               // Prefer a compile-time constant (if we have one).
-               : GetMaxOrMin<V>(IsCompileTimeConstant(x) ? IsValueNegative(x)
-                                                         : IsValueNegative(y));
+    // Prefer a compile-time constant (if we have one).
+    const V saturated = GetMaxOrMin<V>(
+        IsCompileTimeConstant(x) ? IsValueNegative(x) : IsValueNegative(y));
+    return CheckedAddOp<T, U>::Do(x, y, &result) ? result : saturated;
   }
 };
 
@@ -85,11 +84,10 @@ struct ClampedSubOp<T,
       return ClampedSubFastOp<T, U>::template Do<V>(x, y);
 
     V result;
-    return CheckedSubOp<T, U>::Do(x, y, &result)
-               ? result
-               // Prefer a compile-time constant (if we have one).
-               : GetMaxOrMin<V>(IsCompileTimeConstant(x) ? IsValueNegative(x)
-                                                         : !IsValueNegative(y));
+    // Prefer a compile-time constant (if we have one).
+    const V saturated = GetMaxOrMin<V>(
+        IsCompileTimeConstant(x) ? IsValueNegative(x) : !IsValueNegative(y));
+    return CheckedSubOp<T, U>::Do(x, y, &result) ? result : saturated;
   }
 };
 
@@ -109,9 +107,8 @@ struct ClampedMulOp<T,
       return ClampedMulFastOp<T, U>::template Do<V>(x, y);
 
     V result;
-    return CheckedMulOp<T, U>::Do(x, y, &result)
-               ? result
-               : GetMaxOrMin<V>(IsValueNegative(x) ^ IsValueNegative(y));
+    const V saturated = GetMaxOrMin<V>(IsValueNegative(x) ^ IsValueNegative(y));
+    return CheckedMulOp<T, U>::Do(x, y, &result) ? result : saturated;
   }
 };
 
@@ -126,10 +123,11 @@ struct ClampedDivOp<T,
   using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V = result_type>
   static V Do(T x, U y) {
-    V result = SaturationDefaultLimits<V>::NaN();
-    return !x || CheckedDivOp<T, U>::Do(x, y, &result)
-               ? result
-               : GetMaxOrMin<V>(IsValueNegative(x) ^ IsValueNegative(y));
+    V result;
+    if (CheckedDivOp<T, U>::Do(x, y, &result))
+      return result;
+    const V saturated = GetMaxOrMin<V>(IsValueNegative(x) ^ IsValueNegative(y));
+    return x ? saturated : SaturationDefaultLimits<V>::NaN();
   }
 };
 
@@ -165,10 +163,11 @@ struct ClampedLshOp<T,
   static V Do(T x, U shift) {
     static_assert(!std::is_signed<U>::value, "Shift value must be unsigned.");
     V result = x;
+    const V saturated = x ? GetMaxOrMin<V>(IsValueNegative(x)) : 0;
     return (shift < std::numeric_limits<T>::digits &&
             CheckedMulOp<T, T>::Do(x, T(1) << shift, &result))
                ? result
-               : (x ? GetMaxOrMin<V>(IsValueNegative(x)) : 0);
+               : saturated;
   }
 };
 
@@ -185,10 +184,10 @@ struct ClampedRshOp<T,
   template <typename V = result_type>
   static V Do(T x, U shift) {
     static_assert(!std::is_signed<U>::value, "Shift value must be unsigned.");
-    return shift < IntegerBitsPlusSign<T>::value
-               ? saturated_cast<V>(x >> shift)
-               // Signed right shift is odd, because it saturates to -1 or 0.
-               : as_unsigned(V(0)) - IsValueNegative(x);
+    // Signed right shift is odd, because it saturates to -1 or 0.
+    const V saturated = as_unsigned(V(0)) - IsValueNegative(x);
+    return shift < IntegerBitsPlusSign<T>::value ? saturated_cast<V>(x >> shift)
+                                                 : saturated;
   }
 };
 
