@@ -61,6 +61,7 @@
 #include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLSelectElement.h"
+#include "core/html/TextControlElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutFlexibleBox.h"
@@ -1904,6 +1905,20 @@ bool PaintLayerScrollableArea::ShouldScrollOnMainThread() const {
   return ScrollableArea::ShouldScrollOnMainThread();
 }
 
+static bool LayerNodeMayNeedCompositedScrolling(const PaintLayer* layer) {
+  // Don't force composite scroll for select or text input elements.
+  if (Node* node = layer->GetLayoutObject().GetNode()) {
+    if (isHTMLSelectElement(node))
+      return false;
+    if (TextControlElement* text_control = EnclosingTextControl(node)) {
+      if (isHTMLInputElement(text_control)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
     const LCDTextMode mode,
     const PaintLayer* layer) {
@@ -1921,6 +1936,9 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
     return false;
 
   if (layer->size().IsEmpty())
+    return false;
+
+  if (!LayerNodeMayNeedCompositedScrolling(layer))
     return false;
 
   bool needs_composited_scrolling = true;
