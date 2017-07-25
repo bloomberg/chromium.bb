@@ -1661,9 +1661,6 @@ bool PersonalDataManager::ImportCreditCard(
   // as the server card, upload is guaranteed to fail. There's no mechanism for
   // entries with the same number but different names or expiration dates as
   // there is for local cards.
-  // We can offer to save locally even if we already have this stored another
-  // masked server card with the same |TypeAndLastFourDigits| so that the user
-  // can enter the full card number without having to unmask the card.
   for (const auto& card : server_credit_cards_) {
     if (candidate_credit_card.HasSameNumberAs(*card)) {
       // Record metric on whether expiration dates matched.
@@ -1683,8 +1680,15 @@ bool PersonalDataManager::ImportCreditCard(
                       MASKED_SERVER_CARD_EXPIRATION_DATE_DID_NOT_MATCH);
       }
 
-      if (card->record_type() == CreditCard::FULL_SERVER_CARD)
+      // We can offer to save locally even if we already have this stored as
+      // another masked server card with the same |TypeAndLastFourDigits| as
+      // long as the AutofillOfferLocalSaveIfServerCardManuallyEntered flag is
+      // enabled. This will allow the user to fill the full card number in the
+      // future without having to unmask the card.
+      if (card->record_type() == CreditCard::FULL_SERVER_CARD ||
+          !IsAutofillOfferLocalSaveIfServerCardManuallyEnteredExperimentEnabled()) {
         return false;
+      }
       DCHECK_EQ(card->record_type(), CreditCard::MASKED_SERVER_CARD);
       *imported_credit_card_matches_masked_server_credit_card = true;
       break;

@@ -6407,7 +6407,7 @@ TEST_F(AutofillManagerTest, DuplicateMaskedCreditCard_ExperimentOff) {
   // The local save prompt should not be shown because the experiment is off.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(autofill_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 }
 
 // Verify that typing "gmail" will match "theking@gmail.com" and
