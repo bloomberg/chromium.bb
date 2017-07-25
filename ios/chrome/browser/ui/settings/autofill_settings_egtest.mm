@@ -4,6 +4,7 @@
 
 #import <XCTest/XCTest.h>
 
+#include "base/ios/ios_util.h"
 #import "base/mac/bind_objc_block.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -178,6 +179,11 @@ void ClearCountryValue() {
 // Test that editing country names is followed by validating the value and
 // replacing it with a canonical one.
 - (void)testAutofillProfileEditing {
+  // TODO(crbug.com/747431): re-enable this test on iOS 11.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   [self loadAndSubmitTheForm];
   [self openEditAddress:@"George Washington, 1600 Pennsylvania Ave NW"];
 
