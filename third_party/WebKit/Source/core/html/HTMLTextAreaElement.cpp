@@ -452,26 +452,7 @@ String HTMLTextAreaElement::defaultValue() const {
 }
 
 void HTMLTextAreaElement::setDefaultValue(const String& default_value) {
-  // To preserve comments, remove only the text nodes, then add a single text
-  // node.
-  HeapVector<Member<Node>> text_nodes;
-  for (Node* n = firstChild(); n; n = n->nextSibling()) {
-    if (n->IsTextNode())
-      text_nodes.push_back(n);
-  }
-  for (const auto& text : text_nodes)
-    RemoveChild(text.Get(), IGNORE_EXCEPTION_FOR_TESTING);
-
-  // Normalize line endings.
-  String value = default_value;
-  value.Replace("\r\n", "\n");
-  value.Replace('\r', '\n');
-
-  InsertBefore(GetDocument().createTextNode(value), firstChild(),
-               IGNORE_EXCEPTION_FOR_TESTING);
-
-  if (!is_dirty_)
-    SetNonDirtyValue(value);
+  setTextContent(default_value);
 }
 
 String HTMLTextAreaElement::SuggestedValue() const {
