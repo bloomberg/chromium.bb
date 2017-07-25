@@ -37,7 +37,6 @@ TEST(ContentSuggestionsItemTest, CellIsConfiguredWithoutImage) {
   item.hasImage = YES;
   item.publisher = publisher;
   item.publishDate = publishTime;
-  item.availableOffline = YES;
   OCMExpect([delegateMock loadImageForSuggestedItem:item]);
   ContentSuggestionsCell* cell = [[[item cellClass] alloc] init];
   ASSERT_EQ([ContentSuggestionsCell class], [cell class]);
@@ -45,9 +44,8 @@ TEST(ContentSuggestionsItemTest, CellIsConfiguredWithoutImage) {
   ASSERT_EQ(nil, item.image);
   id cellMock = OCMPartialMock(cell);
   OCMExpect([cellMock setContentImage:item.image animated:NO]);
-  OCMExpect([cellMock setAdditionalInformationWithPublisherName:publisher
-                                                           date:date
-                                            offlineAvailability:YES]);
+  OCMExpect(
+      [cellMock setAdditionalInformationWithPublisherName:publisher date:date]);
 
   // Action.
   [item configureCell:cell];

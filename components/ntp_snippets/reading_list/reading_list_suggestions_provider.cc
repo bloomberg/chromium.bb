@@ -227,7 +227,6 @@ ContentSuggestion ReadingListSuggestionsProvider::ConvertEntry(
       base::Time::FromDoubleT(entry_time / base::Time::kMicrosecondsPerSecond));
 
   auto extra = base::MakeUnique<ReadingListSuggestionExtra>();
-  extra->distilled = entry->DistilledState() == ReadingListEntry::PROCESSED;
   extra->favicon_page_url =
       entry->DistilledURL().is_valid() ? entry->DistilledURL() : entry->URL();
   suggestion.set_reading_list_suggestion_extra(std::move(extra));
