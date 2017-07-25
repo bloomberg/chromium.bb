@@ -144,12 +144,12 @@ TEST_F(SpellCheckerTest, GetSpellCheckMarkerUnderSelection_FirstCharSelected) {
           .SetBaseAndExtent(Position(text, 0), Position(text, 1))
           .Build());
 
-  Optional<std::pair<Node*, SpellCheckMarker*>> result =
+  std::pair<Node*, SpellCheckMarker*> result =
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_TRUE(result);
+  EXPECT_NE(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest, GetSpellCheckMarkerUnderSelection_LastCharSelected) {
@@ -168,12 +168,12 @@ TEST_F(SpellCheckerTest, GetSpellCheckMarkerUnderSelection_LastCharSelected) {
           .SetBaseAndExtent(Position(text, 7), Position(text, 8))
           .Build());
 
-  Optional<std::pair<Node*, SpellCheckMarker*>> result =
+  std::pair<Node*, SpellCheckMarker*> result =
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_TRUE(result);
+  EXPECT_NE(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest,
@@ -193,12 +193,12 @@ TEST_F(SpellCheckerTest,
           .SetBaseAndExtent(Position(text, 0), Position(text, 1))
           .Build());
 
-  Optional<std::pair<Node*, SpellCheckMarker*>> result =
+  std::pair<Node*, SpellCheckMarker*> result =
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_TRUE(result);
+  EXPECT_NE(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest,
@@ -218,12 +218,12 @@ TEST_F(SpellCheckerTest,
           .SetBaseAndExtent(Position(text, 0), Position(text, 0))
           .Build());
 
-  Optional<std::pair<Node*, SpellCheckMarker*>> result =
+  std::pair<Node*, SpellCheckMarker*> result =
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_FALSE(result);
+  EXPECT_EQ(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest,
@@ -243,12 +243,12 @@ TEST_F(SpellCheckerTest,
           .SetBaseAndExtent(Position(text, 1), Position(text, 1))
           .Build());
 
-  Optional<std::pair<Node*, SpellCheckMarker*>> result =
+  std::pair<Node*, SpellCheckMarker*> result =
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_FALSE(result);
+  EXPECT_EQ(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest,
@@ -268,12 +268,12 @@ TEST_F(SpellCheckerTest,
           .SetBaseAndExtent(Position(text, 0), Position(text, 0))
           .Build());
 
-  Optional<std::pair<Node*, SpellCheckMarker*>> result =
+  std::pair<Node*, SpellCheckMarker*> result =
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_FALSE(result);
+  EXPECT_EQ(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest,
@@ -293,12 +293,12 @@ TEST_F(SpellCheckerTest,
           .SetBaseAndExtent(Position(text, 8), Position(text, 8))
           .Build());
 
-  Optional<std::pair<Node*, SpellCheckMarker*>> result =
+  std::pair<Node*, SpellCheckMarker*> result =
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_FALSE(result);
+  EXPECT_EQ(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest, GetSpellCheckMarkerUnderSelection_CaretMiddleOfWord) {
@@ -317,12 +317,12 @@ TEST_F(SpellCheckerTest, GetSpellCheckMarkerUnderSelection_CaretMiddleOfWord) {
           .SetBaseAndExtent(Position(text, 4), Position(text, 4))
           .Build());
 
-  Optional<std::pair<Node*, SpellCheckMarker*>> result =
+  std::pair<Node*, SpellCheckMarker*> result =
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_TRUE(result);
+  EXPECT_NE(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest,
@@ -342,12 +342,12 @@ TEST_F(SpellCheckerTest,
           .SetBaseAndExtent(Position(text, 1), Position(text, 1))
           .Build());
 
-  Optional<std::pair<Node*, SpellCheckMarker*>> result =
+  std::pair<Node*, SpellCheckMarker*> result =
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_FALSE(result);
+  EXPECT_EQ(nullptr, result.first);
 }
 
 TEST_F(SpellCheckerTest,
@@ -367,12 +367,12 @@ TEST_F(SpellCheckerTest,
           .SetBaseAndExtent(Position(text, 9), Position(text, 9))
           .Build());
 
-  Optional<std::pair<Node*, SpellCheckMarker*>> result =
+  std::pair<Node*, SpellCheckMarker*> result =
       GetDocument()
           .GetFrame()
           ->GetSpellChecker()
           .GetSpellCheckMarkerUnderSelection();
-  EXPECT_FALSE(result);
+  EXPECT_EQ(nullptr, result.first);
 }
 
 }  // namespace blink
