@@ -43,6 +43,7 @@
 #include "content/common/navigation_params.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -911,6 +912,9 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
         browser_context_->GetResourceContext(),
         web_contents_->GetRenderProcessHost()->GetID());
     child_ids_.insert(web_contents_->GetRenderProcessHost()->GetID());
+    request_context_getter_ = new net::TestURLRequestContextGetter(
+        content::BrowserThread::GetTaskRunnerForThread(
+            content::BrowserThread::UI));
   }
 
   void TearDown() override {
@@ -1140,6 +1144,7 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
   std::unique_ptr<base::RunLoop> wait_for_request_complete_loop_;
   RenderViewHostTestEnabler render_view_host_test_enabler_;
   bool auto_advance_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
 };
 
 void ResourceDispatcherHostTest::MakeTestRequest(int render_view_id,
@@ -1938,7 +1943,8 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsOnRenderFrameDeleted) {
 
   TestResourceDispatcherHostDelegate delegate;
   host_.SetDelegate(&delegate);
-  host_.OnRenderViewHostCreated(filter_->child_id(), 0);
+  host_.OnRenderViewHostCreated(filter_->child_id(), 0,
+                                request_context_getter_.get());
 
   // One RenderView issues a high priority request and a low priority one. Both
   // should be started.
@@ -3691,7 +3697,8 @@ TEST_F(ResourceDispatcherHostTest, DidChangePriority) {
 
   // Needed to enable scheduling for this child.
   host_.OnRenderViewHostCreated(filter_->child_id(),  // child_id
-                                0);                   // route_id
+                                0,                    // route_id
+                                request_context_getter_.get());
 
   // Prevent any of these requests from completing.
   job_factory_->SetDelayedCompleteJobGeneration(true);

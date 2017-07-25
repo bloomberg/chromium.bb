@@ -228,9 +228,12 @@ RenderViewHostImpl::RenderViewHostImpl(
   if (ResourceDispatcherHostImpl::Get()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ResourceDispatcherHostImpl::OnRenderViewHostCreated,
-                   base::Unretained(ResourceDispatcherHostImpl::Get()),
-                   GetProcess()->GetID(), GetRoutingID()));
+        base::Bind(
+            &ResourceDispatcherHostImpl::OnRenderViewHostCreated,
+            base::Unretained(ResourceDispatcherHostImpl::Get()),
+            GetProcess()->GetID(), GetRoutingID(),
+            base::RetainedRef(
+                GetProcess()->GetStoragePartition()->GetURLRequestContext())));
   }
 
   close_timeout_.reset(new TimeoutMonitor(base::Bind(
