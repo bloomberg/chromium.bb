@@ -2014,15 +2014,23 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self instanceActive])
     return nil;
 
+  base::string16 text = browserAccessibility_->GetValue();
+  if (browserAccessibility_->IsTextOnlyObject() && text.empty())
+    text = browserAccessibility_->GetText();
+
   // We need to get the whole text because a spelling mistake might start or end
   // outside our range.
-  NSString* value = base::SysUTF16ToNSString(browserAccessibility_->GetValue());
+  NSString* value = base::SysUTF16ToNSString(text);
   NSMutableAttributedString* attributedValue =
       [[[NSMutableAttributedString alloc] initWithString:value] autorelease];
-  std::vector<const BrowserAccessibility*> textOnlyObjects =
-      BrowserAccessibilityManager::FindTextOnlyObjectsInRange(
-          *browserAccessibility_, *browserAccessibility_);
-  AddMisspelledTextAttributes(textOnlyObjects, attributedValue);
+
+  if (!browserAccessibility_->IsTextOnlyObject()) {
+    std::vector<const BrowserAccessibility*> textOnlyObjects =
+        BrowserAccessibilityManager::FindTextOnlyObjectsInRange(
+            *browserAccessibility_, *browserAccessibility_);
+    AddMisspelledTextAttributes(textOnlyObjects, attributedValue);
+  }
+
   return [attributedValue attributedSubstringFromRange:range];
 }
 
