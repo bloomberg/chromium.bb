@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/arc/notification/arc_notification_content_view.h"
 #include "ui/arc/notification/arc_notification_content_view_delegate.h"
 #include "ui/arc/notification/arc_notification_view.h"
 #include "ui/base/ime/dummy_text_input_client.h"
@@ -48,9 +47,6 @@ class TestNotificationContentsView : public views::View {
   }
 
   // views::View
-  const char* GetClassName() const override {
-    return ArcNotificationContentView::kViewClassName;
-  }
   bool OnMousePressed(const ui::MouseEvent& event) override {
     ++mouse_event_count_;
     return true;
@@ -78,6 +74,9 @@ class TestNotificationContentsView : public views::View {
 
 class TestContentViewDelegate : public ArcNotificationContentViewDelegate {
  public:
+  bool IsCloseButtonFocused() const override { return false; }
+  void RequestFocusOnCloseButton() override {}
+  void UpdateControlButtonsVisibility() override {}
   void OnSlideChanged() override {}
 };
 
