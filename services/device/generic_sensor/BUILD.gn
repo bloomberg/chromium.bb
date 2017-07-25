@@ -16,6 +16,8 @@ source_set("generic_sensor") {
     "generic_sensor_consts.h",
     "linux/sensor_data_linux.cc",
     "linux/sensor_data_linux.h",
+    "orientation_quaternion_fusion_algorithm_using_euler_angles.cc",
+    "orientation_quaternion_fusion_algorithm_using_euler_angles.h",
     "platform_sensor.cc",
     "platform_sensor.h",
     "platform_sensor_accelerometer_mac.cc",
