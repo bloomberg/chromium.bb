@@ -4,11 +4,11 @@
 
 #include <stddef.h>
 
-#include "cc/test/begin_frame_source_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_client.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/test/begin_frame_source_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
@@ -137,7 +137,7 @@ TEST_F(FrameSinkManagerTest, ClientRestart) {
 TEST_F(FrameSinkManagerTest, PrimaryBeginFrameSource) {
   // This PrimaryBeginFrameSource should track the first BeginFrameSource
   // registered with the SurfaceManager.
-  testing::NiceMock<cc::MockBeginFrameObserver> obs;
+  testing::NiceMock<MockBeginFrameObserver> obs;
   BeginFrameSource* begin_frame_source = manager_.GetPrimaryBeginFrameSource();
   begin_frame_source->AddObserver(&obs);
 

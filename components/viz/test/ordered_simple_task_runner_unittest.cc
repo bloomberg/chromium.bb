@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/ordered_simple_task_runner.h"
+#include "components/viz/test/ordered_simple_task_runner.h"
 
 #include <memory>
 #include <string>
@@ -17,10 +17,10 @@
 // We pass EXPECT_TRUE / EXPECT_FALSE macros rather than a boolean as on some
 // compilers EXPECT_EQ(false, XXXX) fails to compile as gtest tries to convert
 // the false value to null causing a -Werror=conversion-null error.
-#define RUN_AND_CHECK_RESULT(                             \
-    tasks_remain_expect_macro, run_func, expected_result) \
-  tasks_remain_expect_macro(task_runner_->run_func);      \
-  EXPECT_EQ(expected_result, executed_tasks_);            \
+#define RUN_AND_CHECK_RESULT(tasks_remain_expect_macro, run_func, \
+                             expected_result)                     \
+  tasks_remain_expect_macro(task_runner_->run_func);              \
+  EXPECT_EQ(expected_result, executed_tasks_);                    \
   executed_tasks_ = "";
 
 namespace {
@@ -32,7 +32,7 @@ bool ReturnTrue() {
 bool ReturnFalse() {
   return false;
 }
-};
+};  // namespace
 
 namespace cc {
 
@@ -68,16 +68,14 @@ class OrderedSimpleTaskRunnerTest : public testing::Test {
 
   void PostTask(int task_num, base::TimeDelta delay) {
     base::Closure test_task = base::Bind(&OrderedSimpleTaskRunnerTest::Task,
-                                         base::Unretained(this),
-                                         task_num);
+                                         base::Unretained(this), task_num);
     task_runner_->PostDelayedTask(FROM_HERE, test_task, delay);
   }
 
   void PostTaskWhichPostsInstantTask(int task_num, base::TimeDelta delay) {
     base::Closure test_task =
         base::Bind(&OrderedSimpleTaskRunnerTest::TaskWhichPostsInstantTask,
-                   base::Unretained(this),
-                   task_num);
+                   base::Unretained(this), task_num);
     task_runner_->PostDelayedTask(FROM_HERE, test_task, delay);
   }
 
@@ -86,26 +84,21 @@ class OrderedSimpleTaskRunnerTest : public testing::Test {
                                      base::TimeDelta delay2) {
     base::Closure test_task =
         base::Bind(&OrderedSimpleTaskRunnerTest::TaskWhichPostsDelayedTask,
-                   base::Unretained(this),
-                   task_num,
-                   delay2);
+                   base::Unretained(this), task_num, delay2);
     task_runner_->PostDelayedTask(FROM_HERE, test_task, delay1);
   }
 
   void PostTaskWhichCallsRun(int task_num, base::TimeDelta delay) {
     base::Closure test_task =
         base::Bind(&OrderedSimpleTaskRunnerTest::TaskWhichCallsRun,
-                   base::Unretained(this),
-                   task_num);
+                   base::Unretained(this), task_num);
     task_runner_->PostDelayedTask(FROM_HERE, test_task, delay);
   }
 
   void PostTaskWhichPostsTaskAgain(int task_num, base::TimeDelta delay) {
     base::Closure test_task =
         base::Bind(&OrderedSimpleTaskRunnerTest::TaskWhichPostsAgain,
-                   base::Unretained(this),
-                   task_num,
-                   delay);
+                   base::Unretained(this), task_num, delay);
     task_runner_->PostDelayedTask(FROM_HERE, test_task, delay);
   }
 
@@ -160,53 +153,47 @@ TEST_F(OrderedSimpleTaskRunnerTest, SimpleOrderingTestPostingTasks) {
   PostTaskWhichPostsInstantTask(3, base::TimeDelta());
 
   RUN_AND_CHECK_RESULT(EXPECT_TRUE, RunPendingTasks(), "1(0ms) 2(0ms) 3(0ms)");
-  RUN_AND_CHECK_RESULT(
-      EXPECT_FALSE, RunPendingTasks(), "-1(0ms) -2(0ms) -3(0ms)");
+  RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunPendingTasks(),
+                       "-1(0ms) -2(0ms) -3(0ms)");
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunPendingTasks(), "");
 }
 
 TEST_F(OrderedSimpleTaskRunnerTest, SimpleOrderingTestPostingDelayedTasks) {
-  PostTaskWhichPostsDelayedTask(
-      1, base::TimeDelta(), base::TimeDelta::FromMilliseconds(1));
-  PostTaskWhichPostsDelayedTask(
-      2, base::TimeDelta(), base::TimeDelta::FromMilliseconds(1));
-  PostTaskWhichPostsDelayedTask(
-      3, base::TimeDelta(), base::TimeDelta::FromMilliseconds(1));
+  PostTaskWhichPostsDelayedTask(1, base::TimeDelta(),
+                                base::TimeDelta::FromMilliseconds(1));
+  PostTaskWhichPostsDelayedTask(2, base::TimeDelta(),
+                                base::TimeDelta::FromMilliseconds(1));
+  PostTaskWhichPostsDelayedTask(3, base::TimeDelta(),
+                                base::TimeDelta::FromMilliseconds(1));
 
   RUN_AND_CHECK_RESULT(EXPECT_TRUE, RunPendingTasks(), "1(0ms) 2(0ms) 3(0ms)");
-  RUN_AND_CHECK_RESULT(
-      EXPECT_FALSE, RunPendingTasks(), "-1(1ms) -2(1ms) -3(1ms)");
+  RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunPendingTasks(),
+                       "-1(1ms) -2(1ms) -3(1ms)");
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunPendingTasks(), "");
 }
 
 TEST_F(OrderedSimpleTaskRunnerTest,
        SimpleOrderingTestPostingReordingDelayedTasks) {
-  PostTaskWhichPostsDelayedTask(1,
-                                base::TimeDelta::FromMilliseconds(1),
+  PostTaskWhichPostsDelayedTask(1, base::TimeDelta::FromMilliseconds(1),
                                 base::TimeDelta::FromMilliseconds(20));
-  PostTaskWhichPostsDelayedTask(2,
-                                base::TimeDelta::FromMilliseconds(2),
+  PostTaskWhichPostsDelayedTask(2, base::TimeDelta::FromMilliseconds(2),
                                 base::TimeDelta::FromMilliseconds(5));
-  PostTaskWhichPostsDelayedTask(3,
-                                base::TimeDelta::FromMilliseconds(3),
+  PostTaskWhichPostsDelayedTask(3, base::TimeDelta::FromMilliseconds(3),
                                 base::TimeDelta::FromMilliseconds(5));
 
   RUN_AND_CHECK_RESULT(EXPECT_TRUE, RunPendingTasks(), "1(1ms) 2(2ms) 3(3ms)");
-  RUN_AND_CHECK_RESULT(
-      EXPECT_FALSE, RunPendingTasks(), "-2(7ms) -3(8ms) -1(21ms)");
+  RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunPendingTasks(),
+                       "-2(7ms) -3(8ms) -1(21ms)");
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunPendingTasks(), "");
 }
 
 TEST_F(OrderedSimpleTaskRunnerTest,
        SimpleOrderingTestPostingReordingDelayedTasksOverlap) {
-  PostTaskWhichPostsDelayedTask(1,
-                                base::TimeDelta::FromMilliseconds(1),
+  PostTaskWhichPostsDelayedTask(1, base::TimeDelta::FromMilliseconds(1),
                                 base::TimeDelta::FromMilliseconds(5));
-  PostTaskWhichPostsDelayedTask(2,
-                                base::TimeDelta::FromMilliseconds(5),
+  PostTaskWhichPostsDelayedTask(2, base::TimeDelta::FromMilliseconds(5),
                                 base::TimeDelta::FromMilliseconds(10));
-  PostTaskWhichPostsDelayedTask(3,
-                                base::TimeDelta::FromMilliseconds(10),
+  PostTaskWhichPostsDelayedTask(3, base::TimeDelta::FromMilliseconds(10),
                                 base::TimeDelta::FromMilliseconds(1));
 
   RUN_AND_CHECK_RESULT(EXPECT_TRUE, RunPendingTasks(), "1(1ms) 2(5ms)");
@@ -227,11 +214,11 @@ TEST_F(OrderedSimpleTaskRunnerTest, SimpleOrderingTestPostingAndRentrantTasks) {
 
 TEST_F(OrderedSimpleTaskRunnerTest,
        SimpleOrderingTestPostingDelayedAndRentrantTasks) {
-  PostTaskWhichPostsDelayedTask(
-      1, base::TimeDelta(), base::TimeDelta::FromMilliseconds(1));
+  PostTaskWhichPostsDelayedTask(1, base::TimeDelta(),
+                                base::TimeDelta::FromMilliseconds(1));
   PostTaskWhichCallsRun(2, base::TimeDelta());
-  PostTaskWhichPostsDelayedTask(
-      3, base::TimeDelta(), base::TimeDelta::FromMilliseconds(1));
+  PostTaskWhichPostsDelayedTask(3, base::TimeDelta(),
+                                base::TimeDelta::FromMilliseconds(1));
 
   RUN_AND_CHECK_RESULT(EXPECT_TRUE, RunPendingTasks(), "1(0ms) 2(0ms) 3(0ms)");
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunPendingTasks(), "-1(1ms) -3(1ms)");
@@ -244,8 +231,8 @@ TEST_F(OrderedSimpleTaskRunnerTest, OrderingTestWithDelayedTasks) {
   PostTask(3, base::TimeDelta());
   PostTask(4, base::TimeDelta::FromMilliseconds(8));
 
-  RUN_AND_CHECK_RESULT(
-      EXPECT_FALSE, RunPendingTasks(), "1(0ms) 3(0ms) 4(8ms) 2(15ms)");
+  RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunPendingTasks(),
+                       "1(0ms) 3(0ms) 4(8ms) 2(15ms)");
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunPendingTasks(), "");
 }
 
@@ -256,8 +243,8 @@ TEST_F(OrderedSimpleTaskRunnerTest, OrderingTestWithDelayedPostingTasks) {
   PostTaskWhichPostsInstantTask(4, base::TimeDelta::FromMilliseconds(8));
 
   RUN_AND_CHECK_RESULT(EXPECT_TRUE, RunPendingTasks(), "1(0ms) 3(0ms)");
-  RUN_AND_CHECK_RESULT(
-      EXPECT_TRUE, RunPendingTasks(), "-1(0ms) -3(0ms) 4(8ms)");
+  RUN_AND_CHECK_RESULT(EXPECT_TRUE, RunPendingTasks(),
+                       "-1(0ms) -3(0ms) 4(8ms)");
   RUN_AND_CHECK_RESULT(EXPECT_TRUE, RunPendingTasks(), "-4(8ms) 2(15ms)");
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunPendingTasks(), "-2(15ms)");
   RUN_AND_CHECK_RESULT(EXPECT_FALSE, RunPendingTasks(), "");
@@ -299,8 +286,8 @@ TEST_F(OrderedSimpleTaskRunnerTest, RunUntilTimeAutoNow) {
   base::TimeTicks run_at = base::TimeTicks();
 
   run_at += base::TimeDelta::FromMilliseconds(2);
-  RUN_AND_CHECK_RESULT(
-      EXPECT_TRUE, RunUntilTime(run_at), "1(0ms) -1(0ms) 2(2ms) -2(2ms)");
+  RUN_AND_CHECK_RESULT(EXPECT_TRUE, RunUntilTime(run_at),
+                       "1(0ms) -1(0ms) 2(2ms) -2(2ms)");
   EXPECT_EQ(run_at, now_src_->NowTicks());
 
   run_at += base::TimeDelta::FromMilliseconds(1);
@@ -322,8 +309,8 @@ TEST_F(OrderedSimpleTaskRunnerTest, RunUntilTimeManualNow) {
   base::TimeTicks run_at = base::TimeTicks();
 
   run_at += base::TimeDelta::FromMilliseconds(2);
-  RUN_AND_CHECK_RESULT(
-      EXPECT_TRUE, RunUntilTime(run_at), "1(2ms) 2(2ms) -1(2ms) -2(2ms)");
+  RUN_AND_CHECK_RESULT(EXPECT_TRUE, RunUntilTime(run_at),
+                       "1(2ms) 2(2ms) -1(2ms) -2(2ms)");
   EXPECT_EQ(run_at, now_src_->NowTicks());
 
   run_at += base::TimeDelta::FromMilliseconds(1);
@@ -352,8 +339,8 @@ TEST_F(OrderedSimpleTaskRunnerTest, RunForPeriod) {
   EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromMilliseconds(3),
             now_src_->NowTicks());
 
-  RUN_AND_CHECK_RESULT(
-      EXPECT_FALSE, RunForPeriod(base::TimeDelta::FromMilliseconds(1)), "");
+  RUN_AND_CHECK_RESULT(EXPECT_FALSE,
+                       RunForPeriod(base::TimeDelta::FromMilliseconds(1)), "");
   EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromMilliseconds(4),
             now_src_->NowTicks());
 }
@@ -432,8 +419,8 @@ TEST_F(OrderedSimpleTaskRunnerTest, RunUntilTimeout) {
 
   EXPECT_EQ(base::TimeTicks(), now_src_->NowTicks());
   task_runner_->SetRunTaskLimit(3);
-  RUN_AND_CHECK_RESULT(
-      EXPECT_TRUE, RunUntilTime(run_to), "1(1ms) 2(2ms) 3(3ms)");
+  RUN_AND_CHECK_RESULT(EXPECT_TRUE, RunUntilTime(run_to),
+                       "1(1ms) 2(2ms) 3(3ms)");
   EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromMilliseconds(3),
             now_src_->NowTicks());
 

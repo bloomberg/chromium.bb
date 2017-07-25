@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_MOCK_HELPER_H_
-#define CC_TEST_MOCK_HELPER_H_
+#ifndef COMPONENTS_VIZ_TEST_MOCK_HELPER_H_
+#define COMPONENTS_VIZ_TEST_MOCK_HELPER_H_
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
@@ -26,4 +26,4 @@
     EXPECT_GT(gtest_failures.size(), 0);                          \
   } while (::testing::internal::AlwaysFalse())
 
-#endif  // CC_TEST_MOCK_HELPER_H_
+#endif  // COMPONENTS_VIZ_TEST_MOCK_HELPER_H_

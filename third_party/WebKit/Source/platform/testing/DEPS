@@ -12,5 +12,6 @@ include_rules = [
     "+base/metrics/statistics_recorder.h",
     "+base/test/test_io_thread.h",
     "+cc",
+    "+components/viz/test",
     "+mojo/edk/embedder",
 ]
