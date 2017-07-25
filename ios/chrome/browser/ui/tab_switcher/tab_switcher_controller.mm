@@ -14,6 +14,7 @@
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/feature_engagement_tracker/feature_engagement_tracker_util.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
@@ -411,6 +412,13 @@ enum class SnapshotViewOption {
                           : TabSwitcherSessionType::REGULAR_SESSION;
 
   TabModel* model = [self tabModelForSessionType:panelSessionType];
+
+  // Either send or don't send the "New Tab Opened" or "Incognito Tab Opened" to
+  // the FeatureEngagementTracker based on |command.userInitiated| and
+  // |command.incognito|.
+  feature_engagement_tracker::NotifyNewTabEventForCommand(model.browserState,
+                                                          command);
+
   [self dismissWithNewTabAnimation:GURL(kChromeUINewTabURL)
                            atIndex:NSNotFound
                         transition:ui::PAGE_TRANSITION_TYPED

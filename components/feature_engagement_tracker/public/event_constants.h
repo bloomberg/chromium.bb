@@ -39,7 +39,8 @@ extern const char kSessionTime[];
 // described above, but it is also used on iOS, so it must be compiled
 // separately.
 
-// The user has opened a new tab.
+// The user has explicitly opened a new tab via an entry point from inside of
+// Chrome.
 extern const char kNewTabOpened[];
 
 #endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_IOS)
