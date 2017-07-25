@@ -21,8 +21,8 @@ namespace viz {
 namespace test {
 namespace {
 
-constexpr FrameSinkId kFrameSinkId1(1, 1);
-constexpr FrameSinkId kFrameSinkId2(2, 1);
+constexpr FrameSinkId kParentFrameSinkId(1, 1);
+constexpr FrameSinkId kClientFrameSinkId(2, 1);
 
 ACTION_P(InvokeClosure, closure) {
   closure.Run();
@@ -39,6 +39,12 @@ class StubCompositorFrameSinkClient
     cc::mojom::CompositorFrameSinkClientPtr client;
     binding_.Bind(mojo::MakeRequest(&client));
     return client;
+  }
+
+  // Sets a callback to be called when the pipe for |binding_| is closed.
+  void SetConnectionClosedCallback(base::OnceClosure callback) {
+    EXPECT_TRUE(binding_.is_bound());
+    binding_.set_connection_error_handler(std::move(callback));
   }
 
  private:
@@ -85,7 +91,7 @@ class HostFrameSinkManagerTest : public testing::Test {
 
   MockFrameSinkManagerImpl& manager_impl() { return *manager_impl_; }
 
-  bool FrameSinkIdExists(const FrameSinkId& frame_sink_id) {
+  bool FrameSinkDataExists(const FrameSinkId& frame_sink_id) {
     return host_manager_->frame_sink_data_map_.count(frame_sink_id) > 0;
   }
 
@@ -105,37 +111,82 @@ class HostFrameSinkManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(HostFrameSinkManagerTest);
 };
 
-// Verify that when destroying a CompositorFrameSink with registered FrameSink
-// hierarchy, the hierarchy is automatically unregistered.
-TEST_F(HostFrameSinkManagerTest, UnregisterHierarchyOnDestroy) {
-  // Register is called explicitly.
-  EXPECT_CALL(manager_impl(),
-              RegisterFrameSinkHierarchy(kFrameSinkId2, kFrameSinkId1));
-
-  // Unregister should be called when DestroyCompositorFrameSink() is called.
-  EXPECT_CALL(manager_impl(),
-              UnregisterFrameSinkHierarchy(kFrameSinkId2, kFrameSinkId1));
+// Verify that creating and destroying a CompositorFrameSink using
+// mojom::CompositorFrameSink works correctly.
+TEST_F(HostFrameSinkManagerTest, CreateMojomCompositorFrameSink) {
+  base::RunLoop run_loop;
 
   cc::mojom::CompositorFrameSinkPtr frame_sink;
   StubCompositorFrameSinkClient frame_sink_client;
-  host_manager().CreateCompositorFrameSink(kFrameSinkId1,
+  host_manager().CreateCompositorFrameSink(kClientFrameSinkId,
                                            mojo::MakeRequest(&frame_sink),
                                            frame_sink_client.GetInterfacePtr());
-  host_manager().RegisterFrameSinkHierarchy(kFrameSinkId2, kFrameSinkId1);
-  host_manager().DestroyCompositorFrameSink(kFrameSinkId1);
+
+  EXPECT_TRUE(FrameSinkDataExists(kClientFrameSinkId));
+
+  // Register should call through to FrameSinkManagerImpl and should work even
+  // though |kParentFrameSinkId| was not created yet.
+  EXPECT_CALL(manager_impl(), RegisterFrameSinkHierarchy(kParentFrameSinkId,
+                                                         kClientFrameSinkId));
+  host_manager().RegisterFrameSinkHierarchy(kParentFrameSinkId,
+                                            kClientFrameSinkId);
+
+  // Destroying the CompositorFrameSink should close the client connection.
+  frame_sink_client.SetConnectionClosedCallback(run_loop.QuitClosure());
+  host_manager().DestroyCompositorFrameSink(kClientFrameSinkId);
+  run_loop.Run();
+
+  // We should still have the hierarchy data for |kClientFrameSinkId|.
+  EXPECT_TRUE(FrameSinkDataExists(kClientFrameSinkId));
+
+  // Unregister should work after the CompositorFrameSink is destroyed.
+  EXPECT_CALL(manager_impl(), UnregisterFrameSinkHierarchy(kParentFrameSinkId,
+                                                           kClientFrameSinkId));
+  host_manager().UnregisterFrameSinkHierarchy(kParentFrameSinkId,
+                                              kClientFrameSinkId);
+
+  // Data for |kClientFrameSinkId| should be deleted now.
+  EXPECT_FALSE(FrameSinkDataExists(kClientFrameSinkId));
 }
 
-// Checks that creating a CompositorFrameSinkSupport registers it and destroying
-// the CompositorFrameSinkSupport unregisters it.
-TEST_F(HostFrameSinkManagerTest, CreateDestroyCompositorFrameSinkSupport) {
-  auto support = host_manager().CreateCompositorFrameSinkSupport(
-      nullptr /* client */, kFrameSinkId1, true /* is_root */,
+// Verify that that creating two CompositorFrameSinkSupports work and that
+// FrameSink hierarchy registration is independent of the creation.
+TEST_F(HostFrameSinkManagerTest, CreateCompositorFrameSinkSupport) {
+  auto support_client = host_manager().CreateCompositorFrameSinkSupport(
+      nullptr /* client */, kClientFrameSinkId, false /* is_root */,
       true /* handles_frame_sink_id_invalidation */,
       false /* needs_sync_points */);
-  EXPECT_TRUE(FrameSinkIdExists(kFrameSinkId1));
+  EXPECT_TRUE(FrameSinkDataExists(kClientFrameSinkId));
 
-  support.reset();
-  EXPECT_FALSE(FrameSinkIdExists(kFrameSinkId1));
+  auto support_parent = host_manager().CreateCompositorFrameSinkSupport(
+      nullptr /* client */, kParentFrameSinkId, true /* is_root */,
+      true /* handles_frame_sink_id_invalidation */,
+      false /* needs_sync_points */);
+  EXPECT_TRUE(FrameSinkDataExists(kParentFrameSinkId));
+
+  // Register should call through to FrameSinkManagerImpl.
+  EXPECT_CALL(manager_impl(), RegisterFrameSinkHierarchy(kParentFrameSinkId,
+                                                         kClientFrameSinkId));
+  host_manager().RegisterFrameSinkHierarchy(kParentFrameSinkId,
+                                            kClientFrameSinkId);
+
+  EXPECT_CALL(manager_impl(), UnregisterFrameSinkHierarchy(kParentFrameSinkId,
+                                                           kClientFrameSinkId));
+  host_manager().UnregisterFrameSinkHierarchy(kParentFrameSinkId,
+                                              kClientFrameSinkId);
+
+  // We should still have the CompositorFrameSink data for |kClientFrameSinkId|.
+  EXPECT_TRUE(FrameSinkDataExists(kClientFrameSinkId));
+
+  support_client.reset();
+
+  // Data for |kClientFrameSinkId| should be deleted now.
+  EXPECT_FALSE(FrameSinkDataExists(kClientFrameSinkId));
+
+  support_parent.reset();
+
+  // Data for |kParentFrameSinkId| should be deleted now.
+  EXPECT_FALSE(FrameSinkDataExists(kParentFrameSinkId));
 }
 
 }  // namespace test

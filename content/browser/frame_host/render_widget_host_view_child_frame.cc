@@ -111,8 +111,8 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
   if (frame_connector_) {
     if (parent_frame_sink_id_.is_valid() &&
         !service_manager::ServiceManagerIsRemote()) {
-      GetFrameSinkManager()->UnregisterFrameSinkHierarchy(parent_frame_sink_id_,
-                                                          frame_sink_id_);
+      GetHostFrameSinkManager()->UnregisterFrameSinkHierarchy(
+          parent_frame_sink_id_, frame_sink_id_);
     }
     parent_frame_sink_id_ = viz::FrameSinkId();
     local_surface_id_ = viz::LocalSurfaceId();
@@ -129,8 +129,8 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
       parent_frame_sink_id_ = parent_view->GetFrameSinkId();
       DCHECK(parent_frame_sink_id_.is_valid());
       if (!service_manager::ServiceManagerIsRemote()) {
-        GetFrameSinkManager()->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
-                                                          frame_sink_id_);
+        GetHostFrameSinkManager()->RegisterFrameSinkHierarchy(
+            parent_frame_sink_id_, frame_sink_id_);
       }
     }
 
@@ -844,8 +844,8 @@ void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {
       this, frame_sink_id_, is_root, handles_frame_sink_id_invalidation,
       needs_sync_points);
   if (parent_frame_sink_id_.is_valid()) {
-    GetFrameSinkManager()->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
-                                                      frame_sink_id_);
+    GetHostFrameSinkManager()->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
+                                                          frame_sink_id_);
   }
   if (host_->needs_begin_frames())
     support_->SetNeedsBeginFrame(true);
@@ -855,8 +855,8 @@ void RenderWidgetHostViewChildFrame::ResetCompositorFrameSinkSupport() {
   if (!support_)
     return;
   if (parent_frame_sink_id_.is_valid()) {
-    GetFrameSinkManager()->UnregisterFrameSinkHierarchy(parent_frame_sink_id_,
-                                                        frame_sink_id_);
+    GetHostFrameSinkManager()->UnregisterFrameSinkHierarchy(
+        parent_frame_sink_id_, frame_sink_id_);
   }
   support_.reset();
 }

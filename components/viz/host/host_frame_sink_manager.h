@@ -38,7 +38,8 @@ class HostFrameSinkManagerTest;
 }
 
 // Browser side wrapper of mojom::FrameSinkManager, to be used from the
-// UI thread. Manages frame sinks and is intended to replace SurfaceManager.
+// UI thread. Manages frame sinks and is intended to replace all usage of
+// FrameSinkManagerImpl.
 class VIZ_HOST_EXPORT HostFrameSinkManager
     : public NON_EXPORTED_BASE(cc::mojom::FrameSinkManagerClient),
       public NON_EXPORTED_BASE(CompositorFrameSinkSupportManager) {
@@ -73,9 +74,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void DestroyCompositorFrameSink(const FrameSinkId& frame_sink_id);
 
   // Registers FrameSink hierarchy. Clients can call this multiple times to
-  // reparent without calling UnregisterFrameSinkHierarchy(). If a client uses
-  // CompositorFrameSink, then CreateCompositorFrameSink() should be called
-  // before this.
+  // reparent without calling UnregisterFrameSinkHierarchy().
   void RegisterFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
                                   const FrameSinkId& child_frame_sink_id);
 
@@ -101,11 +100,19 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
     ~FrameSinkData();
     FrameSinkData& operator=(FrameSinkData&& other);
 
+    bool HasCompositorFrameSinkData() const {
+      return private_interface.is_bound() || support;
+    }
+
+    // Returns true if there is nothing in FrameSinkData and it can be deleted.
+    bool IsEmpty() const {
+      return !HasCompositorFrameSinkData() && !parent.has_value();
+    }
+
     // If the frame sink is a root that corresponds to a Display.
     bool is_root = false;
 
     // The FrameSinkId registered as the parent in the BeginFrame hierarchy.
-    // This mirrors state in viz.
     base::Optional<FrameSinkId> parent;
 
     // The private interface that gives the host control over the
