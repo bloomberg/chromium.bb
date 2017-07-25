@@ -291,16 +291,12 @@ TEST_F(BaseFetchContextTest, CheckCSPForRequest) {
                            kContentSecurityPolicyHeaderSourceHTTP);
 
   KURL url(NullURL(), "http://baz.test");
-  ResourceRequest resource_request(url);
-  resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
-  resource_request.SetFetchCredentialsMode(
-      WebURLRequest::kFetchCredentialsModeOmit);
 
   ResourceLoaderOptions options;
 
   EXPECT_EQ(ResourceRequestBlockedReason::kNone,
             fetch_context_->CheckCSPForRequest(
-                resource_request, url, options,
+                WebURLRequest::kRequestContextScript, url, options,
                 SecurityViolationReportingPolicy::kReport,
                 ResourceRequest::RedirectStatus::kFollowedRedirect));
   EXPECT_EQ(1u, policy->violation_reports_sent_.size());

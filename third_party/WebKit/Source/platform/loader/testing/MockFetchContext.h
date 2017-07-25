@@ -62,7 +62,7 @@ class MockFetchContext : public FetchContext {
     return ResourceRequestBlockedReason::kNone;
   }
   ResourceRequestBlockedReason CheckCSPForRequest(
-      const ResourceRequest& request,
+      WebURLRequest::RequestContext,
       const KURL& url,
       const ResourceLoaderOptions& options,
       SecurityViolationReportingPolicy reporting_policy,

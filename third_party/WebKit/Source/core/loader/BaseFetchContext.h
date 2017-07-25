@@ -37,7 +37,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       FetchParameters::OriginRestriction,
       ResourceRequest::RedirectStatus) const override;
   ResourceRequestBlockedReason CheckCSPForRequest(
-      const ResourceRequest&,
+      WebURLRequest::RequestContext,
       const KURL&,
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,
@@ -95,7 +95,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
 
  private:
   ResourceRequestBlockedReason CheckCSPForRequestInternal(
-      const ResourceRequest&,
+      WebURLRequest::RequestContext,
       const KURL&,
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,
