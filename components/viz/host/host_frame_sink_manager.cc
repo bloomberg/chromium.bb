@@ -52,9 +52,9 @@ void HostFrameSinkManager::CreateCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
     cc::mojom::CompositorFrameSinkRequest request,
     cc::mojom::CompositorFrameSinkClientPtr client) {
-  DCHECK_EQ(frame_sink_data_map_.count(frame_sink_id), 0u);
-
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
+  DCHECK(!data.HasCompositorFrameSinkData());
+
   data.is_root = false;
 
   frame_sink_manager_->CreateCompositorFrameSink(
@@ -68,19 +68,21 @@ void HostFrameSinkManager::DestroyCompositorFrameSink(
   DCHECK(iter != frame_sink_data_map_.end());
 
   FrameSinkData& data = iter->second;
-  if (data.parent.has_value())
-    UnregisterFrameSinkHierarchy(data.parent.value(), frame_sink_id);
+  DCHECK(data.HasCompositorFrameSinkData());
+  if (data.private_interface.is_bound())
+    // This will close the message pipe and destroy the CompositorFrameSink.
+    data.private_interface.reset();
+  else
+    data.support = nullptr;
 
-  // This destroys the CompositorFrameSinkPrivatePtr and closes the pipe.
-  frame_sink_data_map_.erase(iter);
+  if (data.IsEmpty())
+    frame_sink_data_map_.erase(iter);
 }
 
 void HostFrameSinkManager::RegisterFrameSinkHierarchy(
     const FrameSinkId& parent_frame_sink_id,
     const FrameSinkId& child_frame_sink_id) {
-  DCHECK_EQ(frame_sink_data_map_.count(child_frame_sink_id), 1u);
-
-  // Register and store the parent, either directly or over Mojo.
+  // Register and store the parent.
   frame_sink_manager_->RegisterFrameSinkHierarchy(parent_frame_sink_id,
                                                   child_frame_sink_id);
 
@@ -95,12 +97,14 @@ void HostFrameSinkManager::UnregisterFrameSinkHierarchy(
 
   FrameSinkData& data = iter->second;
   DCHECK_EQ(data.parent.value(), parent_frame_sink_id);
+  data.parent.reset();
 
-  // Unregister and clear the stored parent, either directly or over Mojo.
+  // Unregister and clear the stored parent.
   frame_sink_manager_->UnregisterFrameSinkHierarchy(parent_frame_sink_id,
                                                     child_frame_sink_id);
 
-  data.parent.reset();
+  if (data.IsEmpty())
+    frame_sink_data_map_.erase(iter);
 }
 
 std::unique_ptr<CompositorFrameSinkSupport>
@@ -111,7 +115,9 @@ HostFrameSinkManager::CreateCompositorFrameSinkSupport(
     bool handles_frame_sink_id_invalidation,
     bool needs_sync_points) {
   DCHECK(frame_sink_manager_impl_);
-  DCHECK_EQ(frame_sink_data_map_.count(frame_sink_id), 0u);
+
+  FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
+  DCHECK(!data.HasCompositorFrameSinkData());
 
   auto support = CompositorFrameSinkSupport::Create(
       client, frame_sink_manager_impl_, frame_sink_id, is_root,
@@ -120,7 +126,6 @@ HostFrameSinkManager::CreateCompositorFrameSinkSupport(
       base::BindOnce(&HostFrameSinkManager::DestroyCompositorFrameSink,
                      weak_ptr_factory_.GetWeakPtr(), frame_sink_id));
 
-  FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
   data.support = support.get();
   data.is_root = is_root;
 
