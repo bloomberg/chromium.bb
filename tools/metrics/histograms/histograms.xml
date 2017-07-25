@@ -62905,6 +62905,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="RendererScheduler.NumberOfTasksPerQueueType2"
     enum="RendererSchedulerTaskQueueType">
+  <obsolete>
+    Replaced with RendererScheduler.TaskCountPerQueueType as of July 2017.
+  </obsolete>
   <owner>altimin@chromium.org,alexclarke@chromium.org</owner>
   <summary>
     The number of completed renderer tasks split per task queue type. Used to
@@ -62939,6 +62942,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     This metric is emitted when the renderer main thread task is completed or
     renderer is backgrounded or foregrounded, at most once per second per
     renderer amortized.
+  </summary>
+</histogram>
+
+<histogram name="RendererScheduler.TaskCountPerQueueType"
+    enum="RendererSchedulerTaskQueueType">
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    The number of completed renderer tasks split per task queue type. Used to
+    monitor usage of each type of task queue. Reported each time when task is
+    completed.
+
+    Note that this metric discards tasks longer than 30 seconds because they are
+    considered to be a result of measurement glitch.
   </summary>
 </histogram>
 
@@ -97525,6 +97541,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
              than one minute. Most of loading tasks are expected to complete
              by then."/>
   <affected-histogram name="RendererScheduler.RendererMainThreadLoad3"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="RendererScheduler.TaskCountPerTaskLength"
+    separator=".">
+  <suffix name="LongerThan16ms"/>
+  <suffix name="LongerThan50ms"/>
+  <suffix name="LongerThan100ms"/>
+  <suffix name="LongerThan150ms"/>
+  <suffix name="LongerThan1s"/>
+  <affected-histogram name="RendererScheduler.TaskCountPerQueueType"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="RendererScheduler.TaskDurationPerQueueTypeSplit"
