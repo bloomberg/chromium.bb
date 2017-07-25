@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/system/handle.h"
@@ -18,6 +19,28 @@ class ValidationContext;
 
 class MOJO_CPP_BINDINGS_EXPORT NativeStruct_Data {
  public:
+  class BufferWriter {
+   public:
+    BufferWriter() = default;
+
+    void Allocate(size_t num_bytes, Buffer* buffer) {
+      array_writer_.Allocate(num_bytes, buffer);
+    }
+
+    Array_Data<uint8_t>::BufferWriter& array_writer() { return array_writer_; }
+
+    bool is_null() const { return array_writer_.is_null(); }
+    NativeStruct_Data* data() {
+      return reinterpret_cast<NativeStruct_Data*>(array_writer_.data());
+    }
+    NativeStruct_Data* operator->() { return data(); }
+
+   private:
+    Array_Data<uint8_t>::BufferWriter array_writer_;
+
+    DISALLOW_COPY_AND_ASSIGN(BufferWriter);
+  };
+
   static bool Validate(const void* data, ValidationContext* validation_context);
 
   // Unlike normal structs, the memory layout is exactly the same as an array

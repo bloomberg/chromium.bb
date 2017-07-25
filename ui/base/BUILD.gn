@@ -881,6 +881,7 @@ test("ui_base_unittests") {
     ":ui_base_unittests_bundle_data",
     "//base",
     "//base/test:test_support",
+    "//mojo/edk/system",
     "//net",
     "//skia",
     "//testing/gmock",
