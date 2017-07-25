@@ -9,6 +9,7 @@ from __future__ import print_function
 import collections
 import datetime
 import json
+import re
 
 from chromite.cbuildbot import topology
 from chromite.lib import cidb
@@ -32,6 +33,8 @@ MAX_HISTORY_DAYS = 30
 MAX_CONSECUTIVE_BUILDS = 50
 # Last N builds to show as history.
 MAX_LAST_N_BUILDS = 10
+
+CROSLAND_VERSION_RE = re.compile(r'^\d+\.\d+\.\d+$')
 
 def GetParser():
   """Creates the argparse parser."""
@@ -233,6 +236,24 @@ def GenerateAlertStage(build, stage, exceptions, aborted,
                               logs_links, stage_links, notes)
 
 
+def GenerateBlameLink(old_version, new_version):
+  """Generates a link to show diffs between two versions.
+
+  Args:
+    old_version: version string.
+    new_version: version string.
+
+  Returns:
+    string of URL to generate blame list, or None if it cannot be generated.
+  """
+  if (CROSLAND_VERSION_RE.match(old_version) and
+      CROSLAND_VERSION_RE.match(new_version)):
+    return 'https://crosland.corp.google.com/log/%s..%s' % (old_version,
+                                                            new_version)
+  else:
+    return None
+
+
 def SummarizeHistory(build, db):
   """Summarizes recent history.
 
@@ -241,7 +262,7 @@ def SummarizeHistory(build, db):
     db: cidb.CIDBConnection object.
 
   Returns:
-    string describing recent history.
+    list of string describing recent history and diff links.
   """
   # Get all the recent builds of the same type.
   now = datetime.datetime.utcnow()
@@ -263,11 +284,31 @@ def SummarizeHistory(build, db):
   last_n, frequencies = SummarizeStatuses(history[:MAX_LAST_N_BUILDS])
 
   # Generate string.
+  notes = []
   note = 'History of %s: %d %s build(s) in a row' % (
       build['builder_name'], consecutive, MapCIDBToSOMStatus(build['status']))
   if len(frequencies) > 1:
     note += '; Last %d builds: %s' % (MAX_LAST_N_BUILDS, last_n)
-  return note
+  notes.append(note)
+
+  # Look for transition from most recent passing build.
+  if build['status'] != constants.BUILDER_STATUS_PASSED:
+    failure = None
+    for h in history:
+      if h['status'] == constants.BUILDER_STATUS_PASSED:
+        # Generate diff link from h .. failure
+        blame_link = GenerateBlameLink(h['platform_version'],
+                                       failure['platform_version'])
+        if blame_link:
+          note = ('Diff from last passed (%s:%d) to first failure (%s:%d): %s' %
+                  (h['builder_name'], h['build_number'],
+                   failure['builder_name'], failure['build_number'],
+                   blame_link))
+          notes.append(note)
+        break
+      failure = h
+
+  return notes
 
 
 def SummarizeStatuses(statuses):
@@ -283,6 +324,7 @@ def SummarizeStatuses(statuses):
   frequencies = collections.Counter([s['status'] for s in statuses])
   return ', '.join('%d %s' % (frequencies[h], MapCIDBToSOMStatus(h))
                    for h in frequencies), frequencies
+
 
 def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
                        siblings, severity, now, db,
@@ -343,7 +385,7 @@ def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
                    build['builder_name'], build['build_number'])),
   ]
 
-  notes = [SummarizeHistory(build, db)]
+  notes = SummarizeHistory(build, db)
   if len(siblings) > 1:
     notes.append('Siblings: %s' % SummarizeStatuses(siblings)[0])
   notes.extend([
