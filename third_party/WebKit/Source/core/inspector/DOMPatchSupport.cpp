@@ -62,14 +62,15 @@ DOMPatchSupport::DOMPatchSupport(DOMEditor* dom_editor, Document& document)
 
 void DOMPatchSupport::PatchDocument(const String& markup) {
   Document* new_document = nullptr;
+  DocumentInit init = DocumentInit::Create();
   if (GetDocument().IsHTMLDocument())
-    new_document = HTMLDocument::Create();
+    new_document = HTMLDocument::Create(init);
   else if (GetDocument().IsSVGDocument())
-    new_document = XMLDocument::CreateSVG();
+    new_document = XMLDocument::CreateSVG(init);
   else if (GetDocument().IsXHTMLDocument())
-    new_document = XMLDocument::CreateXHTML();
+    new_document = XMLDocument::CreateXHTML(init);
   else if (GetDocument().IsXMLDocument())
-    new_document = XMLDocument::Create();
+    new_document = XMLDocument::Create(init);
 
   DCHECK(new_document);
   new_document->SetContextFeatures(GetDocument().GetContextFeatures());

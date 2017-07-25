@@ -42,7 +42,7 @@ namespace blink {
 CSSTestHelper::~CSSTestHelper() {}
 
 CSSTestHelper::CSSTestHelper() {
-  document_ = Document::Create();
+  document_ = Document::CreateForTest();
   TextPosition position;
   style_sheet_ = CSSStyleSheet::CreateInline(*document_, NullURL(), position,
                                              UTF8Encoding());

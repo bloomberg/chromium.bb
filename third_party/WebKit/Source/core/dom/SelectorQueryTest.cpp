@@ -61,7 +61,7 @@ void RunTests(ContainerNode& scope, const QueryTest (&test_cases)[length]) {
 };  // namespace
 
 TEST(SelectorQueryTest, NotMatchingPseudoElement) {
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   HTMLHtmlElement* html = HTMLHtmlElement::Create(*document);
   document->AppendChild(html);
   document->documentElement()->setInnerHTML(
@@ -88,7 +88,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
 }
 
 TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
-  Document* document = HTMLDocument::Create();
+  Document* document = HTMLDocument::CreateForTest();
   HTMLHtmlElement* html = HTMLHtmlElement::Create(*document);
   document->AppendChild(html);
   document->documentElement()->setInnerHTML(
@@ -109,7 +109,7 @@ TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
 }
 
 TEST(SelectorQueryTest, StandardsModeFastPaths) {
-  Document* document = HTMLDocument::Create();
+  Document* document = HTMLDocument::CreateForTest();
   document->write(
       "<!DOCTYPE html>"
       "<html>"
@@ -220,7 +220,7 @@ TEST(SelectorQueryTest, StandardsModeFastPaths) {
 }
 
 TEST(SelectorQueryTest, FastPathScoped) {
-  Document* document = HTMLDocument::Create();
+  Document* document = HTMLDocument::CreateForTest();
   document->write(
       "<!DOCTYPE html>"
       "<html id=root-id class=root-class>"
@@ -289,7 +289,7 @@ TEST(SelectorQueryTest, FastPathScoped) {
 }
 
 TEST(SelectorQueryTest, QuirksModeSlowPath) {
-  Document* document = HTMLDocument::Create();
+  Document* document = HTMLDocument::CreateForTest();
   document->write(
       "<html>"
       "  <head></head>"
@@ -324,7 +324,7 @@ TEST(SelectorQueryTest, QuirksModeSlowPath) {
 }
 
 TEST(SelectorQueryTest, DisconnectedSubtree) {
-  Document* document = HTMLDocument::Create();
+  Document* document = HTMLDocument::CreateForTest();
   Element* scope = document->createElement("div");
   scope->setInnerHTML(
       "<section>"
@@ -350,7 +350,7 @@ TEST(SelectorQueryTest, DisconnectedSubtree) {
 }
 
 TEST(SelectorQueryTest, DisconnectedTreeScope) {
-  Document* document = HTMLDocument::Create();
+  Document* document = HTMLDocument::CreateForTest();
   Element* host = document->createElement("div");
   // TODO(esprehn): Element::attachShadow() should not require a ScriptState,
   // it should handle the use counting in the bindings layer instead of in the

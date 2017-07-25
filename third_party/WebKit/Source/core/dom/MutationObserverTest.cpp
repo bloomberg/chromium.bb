@@ -33,7 +33,7 @@ class EmptyMutationCallback : public MutationCallback {
 }
 
 TEST(MutationObserverTest, DisconnectCrash) {
-  Persistent<Document> document = HTMLDocument::Create();
+  Persistent<Document> document = HTMLDocument::CreateForTest();
   HTMLElement* root = ToHTMLElement(document->createElement("html"));
   document->AppendChild(root);
   root->setInnerHTML("<head><title>\n</title></head><body></body>");

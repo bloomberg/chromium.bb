@@ -15,14 +15,14 @@ namespace blink {
 // https://html.spec.whatwg.org/multipage/tables.html#dom-tr-rowindex
 
 TEST(HTMLTableRowElementTest, rowIndex_notInTable) {
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   HTMLTableRowElement* row = HTMLTableRowElement::Create(*document);
   EXPECT_EQ(-1, row->rowIndex())
       << "rows not in tables should have row index -1";
 }
 
 TEST(HTMLTableRowElementTest, rowIndex_directChildOfTable) {
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   HTMLTableElement* table = HTMLTableElement::Create(*document);
   HTMLTableRowElement* row = HTMLTableRowElement::Create(*document);
   table->AppendChild(row);
@@ -31,7 +31,7 @@ TEST(HTMLTableRowElementTest, rowIndex_directChildOfTable) {
 }
 
 TEST(HTMLTableRowElementTest, rowIndex_inUnrelatedElementInTable) {
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   HTMLTableElement* table = HTMLTableElement::Create(*document);
   // Almost any element will do; what's pertinent is that this is not
   // THEAD, TBODY or TFOOT.

@@ -14,7 +14,7 @@ using ::testing::UnorderedElementsAre;
 namespace blink {
 
 TEST(HTMLIFrameElementAllowTest, ParseAllowedFeatureNamesValid) {
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   HTMLIFrameElement* iframe = HTMLIFrameElement::Create(*document);
   HTMLIFrameElementAllow* allow =
       static_cast<HTMLIFrameElementAllow*>(iframe->allow());
@@ -37,7 +37,7 @@ TEST(HTMLIFrameElementAllowTest, ParseAllowedFeatureNamesValid) {
 }
 
 TEST(HTMLIFrameElementAllowTest, ParseAllowedFeatureNamesInvalid) {
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   HTMLIFrameElement* iframe = HTMLIFrameElement::Create(*document);
   HTMLIFrameElementAllow* allow =
       static_cast<HTMLIFrameElementAllow*>(iframe->allow());

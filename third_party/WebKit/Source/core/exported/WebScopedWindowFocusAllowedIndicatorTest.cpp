@@ -37,7 +37,7 @@
 namespace blink {
 
 TEST(WebScopedWindowFocusAllowedIndicatorTest, Basic) {
-  Persistent<Document> document = Document::Create();
+  Persistent<Document> document = Document::CreateForTest();
   WebDocument web_document(document);
 
   EXPECT_FALSE(document->IsWindowInteractionAllowed());

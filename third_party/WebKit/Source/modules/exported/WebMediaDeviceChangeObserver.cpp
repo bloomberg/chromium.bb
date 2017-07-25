@@ -15,7 +15,7 @@ WebMediaDeviceChangeObserver::WebMediaDeviceChangeObserver()
     : private_(nullptr) {}
 
 WebMediaDeviceChangeObserver::WebMediaDeviceChangeObserver(bool unused)
-    : private_(MediaDevices::Create(Document::Create())) {}
+    : private_(MediaDevices::Create(Document::CreateForTest())) {}
 
 WebMediaDeviceChangeObserver::WebMediaDeviceChangeObserver(
     const WebMediaDeviceChangeObserver& other) {

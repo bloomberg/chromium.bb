@@ -35,7 +35,7 @@ class ScriptStreamingTest : public ::testing::Test {
                                  ->Scheduler()
                                  ->LoadingTaskRunner()),
         settings_(Settings::Create()),
-        dummy_document_(Document::Create()) {
+        dummy_document_(Document::CreateForTest()) {
     resource_ = ScriptResource::CreateForTest(
         KURL(kParsedURLString, "http://www.streaming-test.com/"),
         UTF8Encoding());

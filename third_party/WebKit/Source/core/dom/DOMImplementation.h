@@ -46,8 +46,6 @@ class CORE_EXPORT DOMImplementation final
     return new DOMImplementation(document);
   }
 
-  Document& GetDocument() const { return *document_; }
-
   // DOM methods & attributes for DOMImplementation
   bool hasFeature() { return true; }
   DocumentType* createDocumentType(const AtomicString& qualified_name,

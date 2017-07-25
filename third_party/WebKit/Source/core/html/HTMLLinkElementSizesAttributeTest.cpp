@@ -15,7 +15,7 @@ class HTMLLinkElementSizesAttributeTest : public ::testing::Test {};
 
 TEST(HTMLLinkElementSizesAttributeTest,
      setSizesPropertyValue_updatesAttribute) {
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   HTMLLinkElement* link =
       HTMLLinkElement::Create(*document, /* createdByParser: */ false);
   DOMTokenList* sizes = link->sizes();
@@ -27,7 +27,7 @@ TEST(HTMLLinkElementSizesAttributeTest,
 
 TEST(HTMLLinkElementSizesAttributeTest,
      setSizesAttribute_updatesSizesPropertyValue) {
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   HTMLLinkElement* link =
       HTMLLinkElement::Create(*document, /* createdByParser: */ false);
   DOMTokenList* sizes = link->sizes();

@@ -31,7 +31,7 @@ class SourceListDirectiveTest : public ::testing::Test {
   virtual void SetUp() {
     KURL secure_url(kParsedURLString, "https://example.test/image.png");
     RefPtr<SecurityOrigin> secure_origin(SecurityOrigin::Create(secure_url));
-    document = Document::Create();
+    document = Document::CreateForTest();
     document->SetSecurityOrigin(secure_origin);
     csp->BindToExecutionContext(document.Get());
   }
@@ -39,7 +39,7 @@ class SourceListDirectiveTest : public ::testing::Test {
   ContentSecurityPolicy* SetUpWithOrigin(const String& origin) {
     KURL secure_url(kParsedURLString, origin);
     RefPtr<SecurityOrigin> secure_origin(SecurityOrigin::Create(secure_url));
-    Document* document = Document::Create();
+    Document* document = Document::CreateForTest();
     document->SetSecurityOrigin(secure_origin);
     ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
     csp->BindToExecutionContext(document);

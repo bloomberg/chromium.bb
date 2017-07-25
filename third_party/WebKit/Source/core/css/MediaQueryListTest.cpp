@@ -22,7 +22,7 @@ class TestListener : public MediaQueryListListener {
 }  // anonymous namespace
 
 TEST(MediaQueryListTest, CrashInStop) {
-  Document* document = Document::Create();
+  Document* document = Document::CreateForTest();
   MediaQueryList* list = MediaQueryList::Create(
       document, MediaQueryMatcher::Create(*document), MediaQuerySet::Create());
   list->AddListener(new TestListener());

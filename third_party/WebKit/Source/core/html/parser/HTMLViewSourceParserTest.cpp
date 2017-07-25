@@ -16,7 +16,7 @@ namespace blink {
 TEST(HTMLViewSourceParserTest, DetachThenFinish_ShouldNotCrash) {
   String mime_type("text/html");
   HTMLViewSourceDocument* document =
-      HTMLViewSourceDocument::Create(DocumentInit(), mime_type);
+      HTMLViewSourceDocument::Create(DocumentInit::Create(), mime_type);
   HTMLViewSourceParser* parser =
       HTMLViewSourceParser::Create(*document, mime_type);
   // A client may detach the parser from the document.

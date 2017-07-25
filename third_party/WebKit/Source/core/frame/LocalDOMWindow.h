@@ -113,7 +113,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   Document* InstallNewDocument(const String& mime_type,
                                const DocumentInit&,
-                               bool force_xhtml = false);
+                               bool force_xhtml);
 
   // EventTarget overrides:
   ExecutionContext* GetExecutionContext() const override;

@@ -108,7 +108,7 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
   RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(true);
   const ImageBitmapOptions default_options;
   HTMLImageElement* image_element =
-      HTMLImageElement::Create(*Document::Create());
+      HTMLImageElement::Create(*Document::CreateForTest());
   ImageResourceContent* image = ImageResourceContent::CreateLoaded(
       StaticBitmapImage::Create(image_).Get());
   image_element->SetImageForTest(image);
@@ -151,7 +151,8 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
 // reference to the original Image if the HTMLImageElement src is changed.
 TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
   RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(true);
-  HTMLImageElement* image = HTMLImageElement::Create(*Document::Create());
+  HTMLImageElement* image =
+      HTMLImageElement::Create(*Document::CreateForTest());
   ImageResourceContent* original_image_resource =
       ImageResourceContent::CreateLoaded(
           StaticBitmapImage::Create(image_).Get());
@@ -235,7 +236,7 @@ static ImageBitmapOptions PrepareBitmapOptionsAndSetRuntimeFlags(
 
 TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionHTMLImageElement) {
   HTMLImageElement* image_element =
-      HTMLImageElement::Create(*Document::Create());
+      HTMLImageElement::Create(*Document::CreateForTest());
 
   SkPaint p;
   p.setColor(SK_ColorRED);
@@ -362,7 +363,7 @@ TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionHTMLImageElement) {
 
 TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionImageBitmap) {
   HTMLImageElement* image_element =
-      HTMLImageElement::Create(*Document::Create());
+      HTMLImageElement::Create(*Document::CreateForTest());
 
   SkPaint p;
   p.setColor(SK_ColorRED);

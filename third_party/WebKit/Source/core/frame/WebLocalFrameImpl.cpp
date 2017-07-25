@@ -1826,6 +1826,8 @@ void WebLocalFrameImpl::SetInputEventsScaleForEmulation(
 }
 
 void WebLocalFrameImpl::LoadJavaScriptURL(const KURL& url) {
+  DCHECK(GetFrame());
+
   // This is copied from ScriptController::executeScriptIfJavaScriptURL.
   // Unfortunately, we cannot just use that method since it is private, and
   // it also doesn't quite behave as we require it to for bookmarklets. The
@@ -1834,21 +1836,21 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const KURL& url) {
   // location change. We also allow a JS URL to be loaded even if scripts on
   // the page are otherwise disabled.
 
-  if (!GetFrame()->GetDocument() || !GetFrame()->GetPage())
-    return;
+  Document* owner_document = GetFrame()->GetDocument();
 
-  Document* owner_document(GetFrame()->GetDocument());
+  if (!owner_document || !GetFrame()->GetPage())
+    return;
 
   // Protect privileged pages against bookmarklets and other javascript
   // manipulations.
   if (SchemeRegistry::ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
-          GetFrame()->GetDocument()->Url().Protocol()))
+          owner_document->Url().Protocol()))
     return;
 
   String script = DecodeURLEscapeSequences(
       url.GetString().Substring(strlen("javascript:")));
-  UserGestureIndicator gesture_indicator(UserGestureToken::Create(
-      GetFrame()->GetDocument(), UserGestureToken::kNewGesture));
+  UserGestureIndicator gesture_indicator(
+      UserGestureToken::Create(owner_document, UserGestureToken::kNewGesture));
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
   v8::Local<v8::Value> result =
       GetFrame()->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(

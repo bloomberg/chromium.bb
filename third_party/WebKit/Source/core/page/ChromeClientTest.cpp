@@ -39,7 +39,7 @@ TEST_F(ChromeClientTest, SetToolTipFlood) {
   ChromeClient* client = &logger;
   HitTestResult result(HitTestRequest(HitTestRequest::kMove),
                        LayoutPoint(10, 20));
-  Document* doc = Document::Create();
+  Document* doc = Document::CreateForTest();
   Element* element = HTMLElement::Create(HTMLNames::divTag, *doc);
   element->setAttribute(HTMLNames::titleAttr, "tooltip");
   result.SetInnerNode(element);

@@ -189,7 +189,7 @@ TEST_F(RangeTest, updateOwnerDocumentIfNeeded) {
   Range* range =
       Range::Create(GetDocument(), Position(bar, 0), Position(foo, 1));
 
-  Document* another_document = Document::Create();
+  Document* another_document = Document::CreateForTest();
   another_document->AppendChild(foo);
 
   EXPECT_EQ(bar, range->startContainer());

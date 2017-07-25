@@ -23,7 +23,7 @@ class XPathContext {
   STACK_ALLOCATED();
 
  public:
-  XPathContext() : document_(Document::Create()), context_(*document_) {}
+  XPathContext() : document_(Document::CreateForTest()), context_(*document_) {}
 
   XPath::EvaluationContext& Context() { return context_; }
   Document& GetDocument() { return *document_; }

@@ -32,8 +32,7 @@ namespace blink {
 
 class MediaDocument final : public HTMLDocument {
  public:
-  static MediaDocument* Create(
-      const DocumentInit& initializer = DocumentInit()) {
+  static MediaDocument* Create(const DocumentInit& initializer) {
     return new MediaDocument(initializer);
   }
 

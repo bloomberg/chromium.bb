@@ -261,8 +261,11 @@ class CORE_EXPORT Document : public ContainerNode,
   USING_GARBAGE_COLLECTED_MIXIN(Document);
 
  public:
-  static Document* Create(const DocumentInit& initializer = DocumentInit()) {
-    return new Document(initializer);
+  static Document* Create(const DocumentInit& init) {
+    return new Document(init);
+  }
+  static Document* CreateForTest() {
+    return new Document(DocumentInit::Create());
   }
   // Factory for web-exposed Document constructor. The argument document must be
   // a document instance representing window.document, and it works as the
