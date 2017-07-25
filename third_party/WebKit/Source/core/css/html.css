@@ -423,7 +423,6 @@ input {
     background-color: white;
     border: 2px inset;
     -webkit-rtl-ordering: logical;
-    -webkit-user-select: text;
     cursor: auto;
 }
 
@@ -475,7 +474,6 @@ input::-webkit-inner-spin-button {
     cursor: default;
     flex: none;
     align-self: stretch;
-    -webkit-user-select: none;
     -webkit-user-modify: read-only !important;
     opacity: 0;
     pointer-events: none;
@@ -495,7 +493,6 @@ textarea {
     background-color: white;
     border: 1px solid;
     -webkit-rtl-ordering: logical;
-    -webkit-user-select: text;
     flex-direction: column;
     resize: auto;
     cursor: auto;
@@ -760,7 +757,6 @@ select:-internal-list-box {
     overflow-x: hidden;
     overflow-y: scroll;
     vertical-align: text-bottom;
-    -webkit-user-select: none;
     white-space: nowrap;
 }
 

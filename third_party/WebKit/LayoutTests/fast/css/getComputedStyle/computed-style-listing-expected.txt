@@ -286,7 +286,7 @@ transition-property: all
 transition-timing-function: ease
 translate: none
 unicode-bidi: normal
-user-select: text
+user-select: auto
 vector-effect: none
 vertical-align: baseline
 visibility: visible

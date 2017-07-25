@@ -122,7 +122,7 @@ inline EDisplay CssValueIDToPlatformEnum(CSSValueID v) {
 template <>
 inline EUserSelect CssValueIDToPlatformEnum(CSSValueID v) {
   if (v == CSSValueAuto)
-    return EUserSelect::kText;
+    return EUserSelect::kAuto;
   return detail::cssValueIDToPlatformEnumGenerated<EUserSelect>(v);
 }
 

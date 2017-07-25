@@ -3354,8 +3354,8 @@
       name: "user-select",
       inherited: true,
       field_template: "keyword",
-      keywords: ["none", "text", "all"],
-      default_value: "text",
+      keywords: ["auto", "none", "text", "all"],
+      default_value: "auto",
       field_group: "rare-inherited",
     },
     {
