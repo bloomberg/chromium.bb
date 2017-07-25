@@ -2991,65 +2991,6 @@
       },
       {
         "args": [
-          "smoothness.scrolling_tough_ad_cases",
-          "-v",
-          "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "smoothness.scrolling_tough_ad_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:22b1",
-              "id": "build149-b1",
-              "os": "Windows-10-10586",
-              "pool": "Chrome-perf-fyi"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "smoothness.scrolling_tough_ad_cases",
-          "-v",
-          "--upload-results",
-          "--output-format=chartjson",
-          "--browser=reference",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "smoothness.scrolling_tough_ad_cases.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:22b1",
-              "id": "build149-b1",
-              "os": "Windows-10-10586",
-              "pool": "Chrome-perf-fyi"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
           "smoothness.top_25_smooth",
           "-v",
           "--upload-results",
@@ -7933,65 +7874,6 @@
             {
               "gpu": "1002:9874",
               "id": "build202-b4",
-              "os": "Windows-10-10586",
-              "pool": "Chrome-perf-fyi"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "smoothness.scrolling_tough_ad_cases",
-          "-v",
-          "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "smoothness.scrolling_tough_ad_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:9874",
-              "id": "build213-b4",
-              "os": "Windows-10-10586",
-              "pool": "Chrome-perf-fyi"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "smoothness.scrolling_tough_ad_cases",
-          "-v",
-          "--upload-results",
-          "--output-format=chartjson",
-          "--browser=reference",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "smoothness.scrolling_tough_ad_cases.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:9874",
-              "id": "build213-b4",
               "os": "Windows-10-10586",
               "pool": "Chrome-perf-fyi"
             }
