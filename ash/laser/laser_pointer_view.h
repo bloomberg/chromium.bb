@@ -5,8 +5,8 @@
 #ifndef ASH_LASER_LASER_POINTER_VIEW_H_
 #define ASH_LASER_LASER_POINTER_VIEW_H_
 
+#include "ash/fast_ink/fast_ink_points.h"
 #include "ash/fast_ink/fast_ink_view.h"
-#include "ash/laser/laser_pointer_points.h"
 #include "base/time/time.h"
 
 namespace gfx {
@@ -37,8 +37,8 @@ class LaserPointerView : public FastInkView {
 
   void OnRedraw(gfx::Canvas& canvas, const gfx::Vector2d& offset) override;
 
-  LaserPointerPoints laser_points_;
-  LaserPointerPoints predicted_laser_points_;
+  FastInkPoints laser_points_;
+  FastInkPoints predicted_laser_points_;
   const base::TimeDelta presentation_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(LaserPointerView);
