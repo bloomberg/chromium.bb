@@ -564,6 +564,9 @@
     'importer': {
       'filepath': 'import',
     },
+    'incident_reporting': {
+      'filepath': 'chrome/browser/safe_browsing/incident_reporting',
+    },
     'indexed_db': {
       'filepath': 'content/browser/indexed_db|'\
                   'content/child/indexed_db|'\
@@ -583,11 +586,12 @@
     'installable': {
       'filepath': 'chrome/browser/installable/',
     },
-    'installer': {
-      'filepath': 'chrome/install(_static|er)/',
-    },
     'installer_linux': {
       'filepath': 'chrome/installer/linux/',
+    },
+    'installer_win': {
+      'filepath': 'chrome/install_static/'\
+                  '|chrome/installer/(?!gcapi_mac/|linux/|mac/)',
     },
     'instant': {
       'filepath': 'instant|searchbox|'\
@@ -2063,15 +2067,16 @@
     'hotword': ['rlp+watch@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
     'importer': ['tfarina@chromium.org'],
+    'incident_reporting': ['grt+watch@chromium.org'],
     'indexed_db': ['cmumford@chromium.org',
                    'jsbell+idb@chromium.org'],
     'ink_drop': ['bruthig+ink_drop@chromium.org'],
     'input': ['dtapuska+chromiumwatch@chromium.org'],
     'installable': ['dominickn+watch@chromium.org'],
-    'installer': ['grt+watch@chromium.org',
-                  'pennymac+watch@chromium.org',
-                  'wfh+watch@chromium.org'],
     'installer_linux': [ 'mmoss@chromium.org'],
+    'installer_win': ['grt+watch@chromium.org',
+                      'pennymac+watch@chromium.org',
+                      'wfh+watch@chromium.org'],
     'instant': ['dcblack@chromium.org',
                 'donnd+watch@chromium.org',
                 'jered+watch@chromium.org',
@@ -2217,8 +2222,7 @@
     'rlz_id': ['alito+watch@chromium.org',
                'gab+watch@chromium.org',
                'robertshield+watch@chromium.org'],
-    'safe_browsing': ['grt+watch@chromium.org',
-                      'timvolodine@chromium.org',
+    'safe_browsing': ['timvolodine@chromium.org',
                       'vakh+watch@chromium.org'],
     'safe_browsing_db': ['timvolodine@chromium.org',
                          'vakh+watch@chromium.org'],
