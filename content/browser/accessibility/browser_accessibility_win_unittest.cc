@@ -22,6 +22,7 @@
 #include "content/common/accessibility_messages.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/base/win/atl_module.h"
 
 namespace content {
@@ -704,6 +705,11 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   manager.reset();
 }
 
+int32_t GetUniqueId(BrowserAccessibility* accessibility) {
+  BrowserAccessibilityWin* win_root = ToBrowserAccessibilityWin(accessibility);
+  return win_root->GetCOM()->unique_id();
+}
+
 // This is a regression test for a bug where the initial empty document
 // loaded by a BrowserAccessibilityManagerWin couldn't be looked up by
 // its UniqueIDWin, because the AX Tree was loaded in
@@ -721,8 +727,14 @@ TEST_F(BrowserAccessibilityTest, EmptyDocHasUniqueIdWin) {
   EXPECT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, root->GetRole());
   EXPECT_EQ(1 << ui::AX_STATE_BUSY, root->GetState());
 
-  int32_t unique_id = ToBrowserAccessibilityWin(root)->unique_id();
-  ASSERT_EQ(root, BrowserAccessibility::GetFromUniqueID(unique_id));
+  BrowserAccessibilityWin* win_root = ToBrowserAccessibilityWin(root);
+
+  ui::AXPlatformNode* node = static_cast<ui::AXPlatformNode*>(
+      ui::AXPlatformNodeWin::GetFromUniqueId(GetUniqueId(win_root)));
+
+  ui::AXPlatformNode* other_node =
+      static_cast<ui::AXPlatformNode*>(win_root->GetCOM());
+  ASSERT_EQ(node, other_node);
 }
 
 TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
@@ -2177,18 +2189,18 @@ TEST_F(BrowserAccessibilityTest, UniqueIdWinInvalidAfterDeletingTree) {
           new BrowserAccessibilityFactory()));
 
   BrowserAccessibility* root = manager->GetRoot();
-  int32_t root_unique_id = root->unique_id();
+  int32_t root_unique_id = GetUniqueId(root);
   BrowserAccessibility* child = root->PlatformGetChild(0);
-  int32_t child_unique_id = child->unique_id();
+  int32_t child_unique_id = GetUniqueId(child);
 
   // Now destroy that original tree and create a new tree.
   manager.reset(new BrowserAccessibilityManagerWin(
       MakeAXTreeUpdate(root_node, child_node), nullptr,
       new BrowserAccessibilityFactory()));
   root = manager->GetRoot();
-  int32_t root_unique_id_2 = root->unique_id();
+  int32_t root_unique_id_2 = GetUniqueId(root);
   child = root->PlatformGetChild(0);
-  int32_t child_unique_id_2 = child->unique_id();
+  int32_t child_unique_id_2 = GetUniqueId(child);
 
   // The nodes in the new tree should not have the same ids.
   EXPECT_NE(root_unique_id, root_unique_id_2);
@@ -2238,13 +2250,13 @@ TEST_F(BrowserAccessibilityTest, AccChildOnlyReturnsDescendants) {
   BrowserAccessibility* root = manager->GetRoot();
   BrowserAccessibility* child = root->PlatformGetChild(0);
 
-  base::win::ScopedVariant root_unique_id_variant(-root->unique_id());
+  base::win::ScopedVariant root_unique_id_variant(-GetUniqueId(root));
   base::win::ScopedComPtr<IDispatch> result;
   EXPECT_EQ(E_INVALIDARG,
             ToBrowserAccessibilityWin(child)->GetCOM()->get_accChild(
                 root_unique_id_variant, result.GetAddressOf()));
 
-  base::win::ScopedVariant child_unique_id_variant(-child->unique_id());
+  base::win::ScopedVariant child_unique_id_variant(-GetUniqueId(child));
   EXPECT_EQ(S_OK, ToBrowserAccessibilityWin(root)->GetCOM()->get_accChild(
                       child_unique_id_variant, result.GetAddressOf()));
 }
@@ -2308,7 +2320,7 @@ TEST_F(BrowserAccessibilityTest, TestIAccessible2Relations) {
       describedby_relation->get_target(0, target.GetAddressOf()));
   target.CopyTo(ax_target.GetAddressOf());
   EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
-  EXPECT_EQ(-ax_child1->unique_id(), unique_id);
+  EXPECT_EQ(-GetUniqueId(ax_child1), unique_id);
   ax_target.Reset();
   target.Reset();
 
@@ -2316,7 +2328,7 @@ TEST_F(BrowserAccessibilityTest, TestIAccessible2Relations) {
       describedby_relation->get_target(1, target.GetAddressOf()));
   target.CopyTo(ax_target.GetAddressOf());
   EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
-  EXPECT_EQ(-ax_child2->unique_id(), unique_id);
+  EXPECT_EQ(-GetUniqueId(ax_child2), unique_id);
   ax_target.Reset();
   target.Reset();
   describedby_relation.Reset();
@@ -2339,7 +2351,7 @@ TEST_F(BrowserAccessibilityTest, TestIAccessible2Relations) {
       description_for_relation->get_target(0, target.GetAddressOf()));
   target.CopyTo(ax_target.GetAddressOf());
   EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
-  EXPECT_EQ(-ax_root->unique_id(), unique_id);
+  EXPECT_EQ(-GetUniqueId(ax_root), unique_id);
   ax_target.Reset();
   target.Reset();
   description_for_relation.Reset();
@@ -2361,7 +2373,7 @@ TEST_F(BrowserAccessibilityTest, TestIAccessible2Relations) {
       description_for_relation->get_target(0, target.GetAddressOf()));
   target.CopyTo(ax_target.GetAddressOf());
   EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
-  EXPECT_EQ(-ax_root->unique_id(), unique_id);
+  EXPECT_EQ(-GetUniqueId(ax_root), unique_id);
   ax_target.Reset();
   target.Reset();
 
