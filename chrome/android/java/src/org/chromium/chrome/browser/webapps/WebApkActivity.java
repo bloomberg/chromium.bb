@@ -13,7 +13,6 @@ import android.os.SystemClock;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
@@ -29,7 +28,6 @@ import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.net.NetError;
 import org.chromium.net.NetworkChangeNotifier;
-import org.chromium.webapk.lib.client.WebApkServiceConnectionManager;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.concurrent.TimeUnit;
@@ -213,8 +211,7 @@ public class WebApkActivity extends WebappActivity {
     @Override
     public void onStop() {
         super.onStop();
-        WebApkServiceConnectionManager.getInstance().disconnect(
-                ContextUtils.getApplicationContext(), getWebApkPackageName());
+        WebApkServiceClient.getInstance().disconnect(getWebApkPackageName());
     }
 
     @Override

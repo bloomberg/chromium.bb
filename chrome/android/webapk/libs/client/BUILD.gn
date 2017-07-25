@@ -10,6 +10,7 @@ android_library("client_java") {
   java_files = [
     "src/org/chromium/webapk/lib/client/DexOptimizer.java",
     "src/org/chromium/webapk/lib/client/WebApkNavigationClient.java",
+    "src/org/chromium/webapk/lib/client/WebApkIdentityServiceClient.java",
     "src/org/chromium/webapk/lib/client/WebApkServiceConnectionManager.java",
     "src/org/chromium/webapk/lib/client/WebApkValidator.java",
     "src/org/chromium/webapk/lib/client/WebApkVerifySignature.java",
@@ -36,6 +37,7 @@ java_cpp_template("runtime_library_version_java") {
 
 junit_binary("webapk_client_junit_tests") {
   java_files = [
+    "junit/src/org/chromium/webapk/lib/client/WebApkIdentityServiceClientTest.java",
     "junit/src/org/chromium/webapk/lib/client/WebApkServiceConnectionManagerTest.java",
     "junit/src/org/chromium/webapk/lib/client/WebApkValidatorTest.java",
     "junit/src/org/chromium/webapk/lib/client/WebApkVerifySignatureTest.java",
@@ -47,6 +49,7 @@ junit_binary("webapk_client_junit_tests") {
     ":client_java",
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
+    "//chrome/android/webapk/test:junit_test_support",
     "//testing/android/junit:junit_test_support",
   ]
 }
