@@ -8,10 +8,13 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "cc/paint/paint_flags.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
+#include "content/browser/web_contents/aura/types.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/overscroll_configuration.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
@@ -89,6 +92,27 @@ bool ShouldNavigateBack(const NavigationController& controller,
                         OverscrollMode mode) {
   return mode == (base::i18n::IsRTL() ? OVERSCROLL_WEST : OVERSCROLL_EAST) &&
          controller.CanGoBack();
+}
+
+NavigationDirection GetDirectionFromMode(OverscrollMode mode) {
+  if (mode == (base::i18n::IsRTL() ? OVERSCROLL_WEST : OVERSCROLL_EAST))
+    return NavigationDirection::BACK;
+  if (mode == (base::i18n::IsRTL() ? OVERSCROLL_EAST : OVERSCROLL_WEST))
+    return NavigationDirection::FORWARD;
+  return NavigationDirection::NONE;
+}
+
+// Records UMA historgram and also user action for the cancelled overscroll.
+void RecordCancelled(NavigationDirection direction, OverscrollSource source) {
+  DCHECK_NE(direction, NavigationDirection::NONE);
+  DCHECK_NE(source, OverscrollSource::NONE);
+  UMA_HISTOGRAM_ENUMERATION("Overscroll.Cancelled3",
+                            GetUmaNavigationType(direction, source),
+                            NAVIGATION_TYPE_COUNT);
+  if (direction == NavigationDirection::BACK)
+    RecordAction(base::UserMetricsAction("Overscroll_Cancelled.Back"));
+  else
+    RecordAction(base::UserMetricsAction("Overscroll_Cancelled.Forward"));
 }
 
 }  // namespace
@@ -433,10 +457,28 @@ void GestureNavSimple::OnOverscrollComplete(OverscrollMode overscroll_mode) {
   CompleteGestureAnimation();
 
   NavigationControllerImpl& controller = web_contents_->GetController();
-  if (ShouldNavigateForward(controller, overscroll_mode))
+  NavigationDirection direction = NavigationDirection::NONE;
+  if (ShouldNavigateForward(controller, overscroll_mode)) {
     controller.GoForward();
-  else if (ShouldNavigateBack(controller, overscroll_mode))
+    direction = NavigationDirection::FORWARD;
+  } else if (ShouldNavigateBack(controller, overscroll_mode)) {
     controller.GoBack();
+    direction = NavigationDirection::BACK;
+  }
+
+  if (direction != NavigationDirection::NONE) {
+    UMA_HISTOGRAM_ENUMERATION("Overscroll.Navigated3",
+                              GetUmaNavigationType(direction, source_),
+                              UmaNavigationType::NAVIGATION_TYPE_COUNT);
+    if (direction == NavigationDirection::BACK)
+      RecordAction(base::UserMetricsAction("Overscroll_Navigated.Back"));
+    else
+      RecordAction(base::UserMetricsAction("Overscroll_Navigated.Forward"));
+  } else {
+    RecordCancelled(GetDirectionFromMode(overscroll_mode), source_);
+  }
+
+  source_ = OverscrollSource::NONE;
 }
 
 void GestureNavSimple::OnOverscrollModeChange(OverscrollMode old_mode,
@@ -445,11 +487,23 @@ void GestureNavSimple::OnOverscrollModeChange(OverscrollMode old_mode,
   NavigationControllerImpl& controller = web_contents_->GetController();
   if (!ShouldNavigateForward(controller, new_mode) &&
       !ShouldNavigateBack(controller, new_mode)) {
-    AbortGestureAnimation();
+    // If there is an overscroll in progress - record its cancellation.
+    if (affordance_) {
+      RecordCancelled(GetDirectionFromMode(old_mode), source_);
+      AbortGestureAnimation();
+    }
+    source_ = OverscrollSource::NONE;
     return;
   }
 
   DCHECK_NE(source, OverscrollSource::NONE);
+  source_ = source;
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Overscroll.Started3",
+      GetUmaNavigationType(GetDirectionFromMode(new_mode), source_),
+      UmaNavigationType::NAVIGATION_TYPE_COUNT);
+
   const float start_threshold = GetOverscrollConfig(
       source == OverscrollSource::TOUCHPAD
           ? OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHPAD
