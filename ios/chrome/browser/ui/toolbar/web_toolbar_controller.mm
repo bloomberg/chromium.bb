@@ -48,8 +48,8 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_view.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/toolbar/keyboard_accessory_view_delegate.h"
-#import "ios/chrome/browser/ui/toolbar/new_keyboard_accessory_view.h"
+#import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_delegate.h"
+#import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller+protected.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
@@ -228,7 +228,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 // switch the main bots to Xcode 8.
 #if defined(__IPHONE_10_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0)
 @interface WebToolbarController ()<CAAnimationDelegate,
-                                   KeyboardAccessoryViewDelegate>
+                                   ToolbarAssistiveKeyboardDelegate>
 @end
 #endif
 
@@ -328,11 +328,6 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 - (void)updateToolbarAlphaForFrame:(CGRect)frame;
 // Navigate to |query| from omnibox.
 - (void)loadURLForQuery:(NSString*)query;
-// Lazily instantiate the keyboard accessory view.
-- (UIView*)keyboardAccessoryView;
-// Configures the KeyboardAccessoryView and InputAssistantItem associated with
-// the omnibox.
-- (void)configureAssistiveKeyboardViews;
 - (void)preloadVoiceSearch:(id)sender;
 // Calculates the CGRect to use for the omnibox's frame. Also sets the frames
 // of some buttons and |_webToolbar|.
@@ -644,7 +639,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     [self.view addSubview:_determinateProgressView];
   }
 
-  [self configureAssistiveKeyboardViews];
+  ConfigureAssistiveKeyboardViews(_omniBox, kDotComTLD, self);
 
   // Add the handler to preload voice search when the voice search button is
   // tapped, but only if voice search is enabled.
@@ -1467,7 +1462,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 }
 
 #pragma mark -
-#pragma mark KeyboardAccessoryViewDelegate
+#pragma mark ToolbarAssistiveKeyboardDelegate
 
 - (void)keyboardAccessoryVoiceSearchTouchDown:(UIView*)view {
   if (ios::GetChromeBrowserProvider()
@@ -1852,23 +1847,6 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
                  transition:transition
           rendererInitiated:NO];
   }
-}
-
-- (UIView*)keyboardAccessoryView {
-  NSArray<NSString*>* buttonTitles = @[ @":", @"-", @"/", kDotComTLD ];
-  UIView* keyboardAccessoryView =
-      [[NewKeyboardAccessoryView alloc] initWithButtons:buttonTitles
-                                               delegate:self];
-  [keyboardAccessoryView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-  return keyboardAccessoryView;
-}
-
-- (void)configureAssistiveKeyboardViews {
-  // The InputAssistantItems are disabled when the new Keyboard Accessory View
-  // is enabled.
-  _omniBox.inputAssistantItem.leadingBarButtonGroups = @[];
-  _omniBox.inputAssistantItem.trailingBarButtonGroups = @[];
-  [_omniBox setInputAccessoryView:[self keyboardAccessoryView]];
 }
 
 - (void)preloadVoiceSearch:(id)sender {

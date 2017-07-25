@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views.h"
 
-#import "ios/chrome/browser/ui/toolbar/keyboard_accessory_view_delegate.h"
+#include "base/logging.h"
+#import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_delegate.h"
+#import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_keyboard_accessory_view.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 
@@ -33,7 +35,7 @@ UIButton* ButtonWitIcon(NSString* iconName) {
 }  // namespace
 
 NSArray<UIButton*>* ToolbarAssistiveKeyboardLeadingButtons(
-    id<KeyboardAccessoryViewDelegate> delegate) {
+    id<ToolbarAssistiveKeyboardDelegate> delegate) {
   UIButton* voiceSearchButton =
       ButtonWitIcon(@"keyboard_accessory_voice_search");
   [voiceSearchButton addTarget:delegate
@@ -56,4 +58,21 @@ NSArray<UIButton*>* ToolbarAssistiveKeyboardLeadingButtons(
       @"QR code Search");
 
   return @[ voiceSearchButton, cameraButton ];
+}
+
+void ConfigureAssistiveKeyboardViews(
+    UITextField* textField,
+    NSString* dotComTLD,
+    id<ToolbarAssistiveKeyboardDelegate> delegate) {
+  DCHECK(dotComTLD);
+  textField.inputAssistantItem.leadingBarButtonGroups = @[];
+  textField.inputAssistantItem.trailingBarButtonGroups = @[];
+
+  NSArray<NSString*>* buttonTitles = @[ @":", @"-", @"/", dotComTLD ];
+  UIView* keyboardAccessoryView =
+      [[ToolbarKeyboardAccessoryView alloc] initWithButtons:buttonTitles
+                                                   delegate:delegate];
+  [keyboardAccessoryView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+
+  [textField setInputAccessoryView:keyboardAccessoryView];
 }

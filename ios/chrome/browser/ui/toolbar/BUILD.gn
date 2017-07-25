@@ -5,11 +5,6 @@
 source_set("toolbar") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "keyboard_accessory_view_delegate.h",
-    "keyboard_assist/toolbar_assistive_keyboard_views.h",
-    "keyboard_assist/toolbar_assistive_keyboard_views.mm",
-    "new_keyboard_accessory_view.h",
-    "new_keyboard_accessory_view.mm",
     "new_tab_button.h",
     "new_tab_button.mm",
     "toolbar_button_tints.h",
@@ -38,8 +33,6 @@ source_set("toolbar") {
     "resources:collapse_pressed",
     "resources:collapse_pressed_incognito",
     "resources:incognito_marker_typing",
-    "resources:keyboard_accessory_qr_scanner",
-    "resources:keyboard_accessory_voice_search",
     "resources:toolbar_dark_newtab",
     "resources:toolbar_dark_newtab_active",
     "resources:toolbar_dark_newtab_incognito",
@@ -73,6 +66,7 @@ source_set("toolbar") {
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/popup_menu",
     "//ios/chrome/browser/ui/qr_scanner",
+    "//ios/chrome/browser/ui/toolbar/keyboard_assist",
     "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/voice",

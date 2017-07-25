@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_KEYBOARD_ACCESSORY_VIEW_DELEGATE_H_
-#define IOS_CHROME_BROWSER_UI_TOOLBAR_KEYBOARD_ACCESSORY_VIEW_DELEGATE_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_KEYBOARD_ASSIST_TOOLBAR_ASSISTIVE_KEYBOARD_DELEGATE_H_
+#define IOS_CHROME_BROWSER_UI_TOOLBAR_KEYBOARD_ASSIST_TOOLBAR_ASSISTIVE_KEYBOARD_DELEGATE_H_
 
 #import <UIKit/UIKIt.h>
 
 // Delegate protocol for the KeyboardAccessoryView.
-@protocol KeyboardAccessoryViewDelegate
+@protocol ToolbarAssistiveKeyboardDelegate
 
 // Notifies the delegate that the Voice Search button was pressed.
 - (void)keyboardAccessoryVoiceSearchTouchDown:(UIView*)view;
@@ -25,4 +25,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_KEYBOARD_ACCESSORY_VIEW_DELEGATE_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_KEYBOARD_ASSIST_TOOLBAR_ASSISTIVE_KEYBOARD_DELEGATE_H_
