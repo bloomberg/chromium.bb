@@ -8670,10 +8670,11 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (mbmi_ext->ref_mv_count[ref_frame_type] > 0) {
 #if CONFIG_COMPOUND_SINGLEREF
     if (this_mode == NEAREST_NEWMV ||  // this_mode == SR_NEAREST_NEWMV ||
-        this_mode == SR_NEAREST_NEARMV) {
+        this_mode == SR_NEAREST_NEARMV)
 #else   // !CONFIG_COMPOUND_SINGLEREF
-    if (this_mode == NEAREST_NEWMV) {
+    if (this_mode == NEAREST_NEWMV)
 #endif  // CONFIG_COMPOUND_SINGLEREF
+    {
       cur_mv[0] = mbmi_ext->ref_mv_stack[ref_frame_type][0].this_mv;
 
       lower_mv_precision(&cur_mv[0].as_mv, cm->allow_high_precision_mv);
@@ -8802,10 +8803,11 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
 #if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
 #if CONFIG_COMPOUND_SINGLEREF
-  if (is_comp_pred || is_singleref_comp_mode) {
+  if (is_comp_pred || is_singleref_comp_mode)
 #else
-  if (is_comp_pred) {
+  if (is_comp_pred)
 #endif  // CONFIG_COMPOUND_SINGLEREF
+  {
     int rate_sum, rs2;
     int64_t dist_sum;
     int64_t best_rd_compound = INT64_MAX, best_rd_cur = INT64_MAX;
@@ -10744,18 +10746,19 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
            mbmi_ext->ref_mv_count[ref_frame_type] > 2) ||
           ((mbmi->mode == NEWMV || mbmi->mode == SR_NEW_NEWMV ||
             mbmi->mode == NEW_NEWMV) &&
-           mbmi_ext->ref_mv_count[ref_frame_type] > 1)) {
+           mbmi_ext->ref_mv_count[ref_frame_type] > 1))
 #else   // !CONFIG_COMPOUND_SINGLEREF
       if ((have_nearmv_in_inter_mode(mbmi->mode) &&
            mbmi_ext->ref_mv_count[ref_frame_type] > 2) ||
           ((mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) &&
-           mbmi_ext->ref_mv_count[ref_frame_type] > 1)) {
+           mbmi_ext->ref_mv_count[ref_frame_type] > 1))
 #endif  // CONFIG_COMPOUND_SINGLEREF
 #else   // !CONFIG_EXT_INTER
       if ((mbmi->mode == NEARMV &&
            mbmi_ext->ref_mv_count[ref_frame_type] > 2) ||
-          (mbmi->mode == NEWMV && mbmi_ext->ref_mv_count[ref_frame_type] > 1)) {
+          (mbmi->mode == NEWMV && mbmi_ext->ref_mv_count[ref_frame_type] > 1))
 #endif  // CONFIG_EXT_INTER
+      {
         int_mv backup_mv = frame_mv[NEARMV][ref_frame];
         MB_MODE_INFO backup_mbmi = *mbmi;
         int backup_skip = x->skip;
@@ -11057,10 +11060,11 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-    if (ref_frame == INTRA_FRAME) {
+    if (ref_frame == INTRA_FRAME)
 #else
-    if (!disable_skip) {
+    if (!disable_skip)
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+    {
       if (skippable) {
         // Back out the coefficient coding costs
         rate2 -= (rate_y + rate_uv);
@@ -11565,8 +11569,9 @@ PALETTE_EXIT:
       }
 
       if (nearestmv[0].as_int == best_mbmode.mv[0].as_int &&
-          nearestmv[1].as_int == best_mbmode.mv[1].as_int) {
+          nearestmv[1].as_int == best_mbmode.mv[1].as_int)
 #if CONFIG_EXT_INTER
+      {
         best_mbmode.mode = NEAREST_NEARESTMV;
       } else {
         int ref_set = (mbmi_ext->ref_mv_count[rf_type] >= 2)
@@ -11591,6 +11596,7 @@ PALETTE_EXIT:
           best_mbmode.mode = ZERO_ZEROMV;
       }
 #else
+      {
         best_mbmode.mode = NEARESTMV;
       } else if (best_mbmode.mv[0].as_int == zeromv[0].as_int &&
                  best_mbmode.mv[1].as_int == zeromv[1].as_int) {
@@ -11607,14 +11613,15 @@ PALETTE_EXIT:
 #if CONFIG_COMPOUND_SINGLEREF
       !(best_mbmode.mode == NEWMV || best_mbmode.mode == SR_NEW_NEWMV ||
         best_mbmode.mode == NEW_NEWMV ||
-        have_nearmv_in_inter_mode(best_mbmode.mode))) {
+        have_nearmv_in_inter_mode(best_mbmode.mode)))
 #else   // !CONFIG_COMPOUND_SINGLEREF
       !(best_mbmode.mode == NEWMV || best_mbmode.mode == NEW_NEWMV ||
-        have_nearmv_in_inter_mode(best_mbmode.mode))) {
+        have_nearmv_in_inter_mode(best_mbmode.mode)))
 #endif  // CONFIG_COMPOUND_SINGLEREF
 #else   // !CONFIG_EXT_INTER
-      !(best_mbmode.mode == NEARMV || best_mbmode.mode == NEWMV)) {
+      !(best_mbmode.mode == NEARMV || best_mbmode.mode == NEWMV))
 #endif  // CONFIG_EXT_INTER
+  {
     best_mbmode.ref_mv_idx = 0;
   }
 
