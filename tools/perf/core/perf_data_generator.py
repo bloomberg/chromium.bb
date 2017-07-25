@@ -30,6 +30,8 @@ from py_utils import discover
 from core.sharding_map_generator import load_benchmark_sharding_map
 
 
+# TODO(rnephew): Remove when no tests disable using
+# expectations.PermanentlyDisableBenchmark()
 ANDROID_BOT_TO_DEVICE_TYPE_MAP = {
   'Android Swarming N5X Tester': 'Nexus 5X',
   'Android Nexus5X Perf': 'Nexus 5X',
@@ -694,6 +696,8 @@ def ShouldBenchmarkBeScheduled(benchmark, platform):
   return True
 
 
+# TODO(rnephew): Remove when no tests disable using
+# expectations.PermanentlyDisableBenchmark()
 def ShouldBenchmarksBeScheduledViaStoryExpectations(
     benchmark, name, os_name, browser_name):
   # StoryExpectations uses finder_options.browser_type, platform.GetOSName,
@@ -785,6 +789,8 @@ def generate_telemetry_tests(name, tester_config, benchmarks,
       swarming_dimensions.append(get_swarming_dimension(
           dimension, device))
 
+    # TODO(rnephew): Remove when no tests disable using
+    # expectations.PermanentlyDisableBenchmark()
     if not ShouldBenchmarksBeScheduledViaStoryExpectations(
         benchmark, name, swarming_dimensions[0]['os'], browser_name):
       continue
