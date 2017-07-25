@@ -366,16 +366,17 @@ void LayoutBox::UpdateBackgroundAttachmentFixedStatusAfterStyleChange() {
     return;
 
   // An object needs to be repainted on frame scroll when it has background-
-  // attachment:fixed. LayoutView is responsible for painting root background,
-  // thus the root element (and the body element if html element has no
-  // background) skips painting backgrounds.
+  // attachment:fixed, unless the background will be separately composited.
+  // LayoutView is responsible for painting root background, thus the root
+  // element (and the body element if html element has no background) skips
+  // painting backgrounds.
   bool is_background_attachment_fixed_object =
       !IsDocumentElement() && !BackgroundStolenForBeingBody() &&
       StyleRef().HasFixedBackgroundImage();
   if (IsLayoutView() &&
-      View()->Compositor()->SupportsFixedRootBackgroundCompositing()) {
-    if (StyleRef().HasEntirelyFixedBackground())
-      is_background_attachment_fixed_object = false;
+      View()->Compositor()->PreferCompositingToLCDTextEnabled() &&
+      StyleRef().HasEntirelyFixedBackground()) {
+    is_background_attachment_fixed_object = false;
   }
 
   SetIsBackgroundAttachmentFixedObject(is_background_attachment_fixed_object);

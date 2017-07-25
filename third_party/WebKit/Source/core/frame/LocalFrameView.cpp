@@ -1656,8 +1656,7 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
       // we wont perform a layout. If we have a fixed background image however,
       // the background layer needs to get resized so we should request a layout
       // explicitly.
-      PaintLayer* layer = GetLayoutView()->Layer();
-      if (GetLayoutView()->Compositor()->NeedsFixedRootBackgroundLayer(layer)) {
+      if (GetLayoutView()->Compositor()->NeedsFixedRootBackgroundLayer()) {
         SetNeedsLayout();
       } else {
         // If root layer scrolls is on, we've already issued a full invalidation

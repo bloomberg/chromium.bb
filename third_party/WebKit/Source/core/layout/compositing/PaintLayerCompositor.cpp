@@ -700,7 +700,7 @@ void PaintLayerCompositor::FrameViewScrollbarsExistenceDidChange() {
 }
 
 void PaintLayerCompositor::RootFixedBackgroundsChanged() {
-  if (!SupportsFixedRootBackgroundCompositing() || !container_layer_)
+  if (!container_layer_)
     return;
 
   // To avoid having to make the fixed root background layer fixed positioned to
@@ -981,18 +981,9 @@ Scrollbar* PaintLayerCompositor::GraphicsLayerToScrollbar(
   return nullptr;
 }
 
-bool PaintLayerCompositor::SupportsFixedRootBackgroundCompositing() const {
-  if (Settings* settings = layout_view_.GetDocument().GetSettings())
-    return settings->GetPreferCompositingToLCDTextEnabled();
-  return false;
-}
-
-bool PaintLayerCompositor::NeedsFixedRootBackgroundLayer(
-    const PaintLayer* layer) const {
-  if (layer != layout_view_.Layer())
-    return false;
-
-  return SupportsFixedRootBackgroundCompositing() &&
+bool PaintLayerCompositor::NeedsFixedRootBackgroundLayer() const {
+  return !RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
+         PreferCompositingToLCDTextEnabled() &&
          layout_view_.RootBackgroundIsEntirelyFixed();
 }
 

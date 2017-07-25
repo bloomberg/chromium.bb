@@ -122,8 +122,7 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   // Whether the given layer needs an extra 'contents' layer.
   bool NeedsContentsCompositingLayer(const PaintLayer*) const;
 
-  bool SupportsFixedRootBackgroundCompositing() const;
-  bool NeedsFixedRootBackgroundLayer(const PaintLayer*) const;
+  bool NeedsFixedRootBackgroundLayer() const;
   GraphicsLayer* FixedRootBackgroundLayer() const;
   void SetNeedsUpdateFixedBackground() {
     needs_update_fixed_background_ = true;
