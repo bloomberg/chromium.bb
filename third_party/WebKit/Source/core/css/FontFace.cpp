@@ -38,6 +38,7 @@
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSFontSelector.h"
+#include "core/css/CSSFontStyleRangeValue.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValueList.h"
@@ -496,6 +497,30 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
         default:
           break;
       }
+    } else if (stretch_->IsValueList()) {
+      // Transition FontFace interpretation of parsed values from
+      // CSSIdentifierValue to CSSValueList or CSSPrimitiveValue.
+      // TODO(drott) crbug.com/739139: Update the parser to only produce
+      // CSSPrimitiveValue or CSSValueList.
+      const CSSValueList* stretch_list = ToCSSValueList(stretch_);
+      if (stretch_list->length() != 2)
+        return normal_capabilities;
+      if (!stretch_list->Item(0).IsPrimitiveValue() ||
+          !stretch_list->Item(1).IsPrimitiveValue())
+        return normal_capabilities;
+      const CSSPrimitiveValue* stretch_from =
+          ToCSSPrimitiveValue(&stretch_list->Item(0));
+      const CSSPrimitiveValue* stretch_to =
+          ToCSSPrimitiveValue(&stretch_list->Item(1));
+      if (!stretch_from->IsPercentage() || !stretch_to->IsPercentage())
+        return normal_capabilities;
+      capabilities.width = {FontSelectionValue(stretch_from->GetFloatValue()),
+                            FontSelectionValue(stretch_to->GetFloatValue())};
+    } else if (stretch_->IsPrimitiveValue()) {
+      float stretch_value =
+          ToCSSPrimitiveValue(stretch_.Get())->GetFloatValue();
+      capabilities.width = {FontSelectionValue(stretch_value),
+                            FontSelectionValue(stretch_value)};
     } else {
       NOTREACHED();
       return normal_capabilities;
@@ -516,6 +541,39 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
           break;
         default:
           break;
+      }
+    } else if (style_->IsFontStyleRangeValue()) {
+      const CSSFontStyleRangeValue* range_value =
+          ToCSSFontStyleRangeValue(style_);
+      if (range_value->GetFontStyleValue()->IsIdentifierValue()) {
+        CSSValueID font_style_id =
+            range_value->GetFontStyleValue()->GetValueID();
+        if (!range_value->GetObliqueValues()) {
+          if (font_style_id == CSSValueNormal)
+            capabilities.slope = {NormalSlopeValue(), NormalSlopeValue()};
+          DCHECK(font_style_id == CSSValueItalic ||
+                 font_style_id == CSSValueOblique);
+          capabilities.slope = {ItalicSlopeValue(), ItalicSlopeValue()};
+        } else {
+          DCHECK(font_style_id == CSSValueOblique);
+          size_t oblique_values_size =
+              range_value->GetObliqueValues()->length();
+          if (oblique_values_size == 1) {
+            const CSSPrimitiveValue& range_start =
+                ToCSSPrimitiveValue(range_value->GetObliqueValues()->Item(0));
+            FontSelectionValue oblique_range(range_start.GetFloatValue());
+            capabilities.slope = {oblique_range, oblique_range};
+          } else {
+            DCHECK_EQ(oblique_values_size, 2u);
+            const CSSPrimitiveValue& range_start =
+                ToCSSPrimitiveValue(range_value->GetObliqueValues()->Item(0));
+            const CSSPrimitiveValue& range_end =
+                ToCSSPrimitiveValue(range_value->GetObliqueValues()->Item(1));
+            capabilities.slope = {
+                FontSelectionValue(range_start.GetFloatValue()),
+                FontSelectionValue(range_end.GetFloatValue())};
+          }
+        }
       }
     } else {
       NOTREACHED();
@@ -575,6 +633,28 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
           NOTREACHED();
           break;
       }
+    } else if (weight_->IsValueList()) {
+      const CSSValueList* weight_list = ToCSSValueList(weight_);
+      if (weight_list->length() != 2)
+        return normal_capabilities;
+      if (!weight_list->Item(0).IsPrimitiveValue() ||
+          !weight_list->Item(1).IsPrimitiveValue())
+        return normal_capabilities;
+      const CSSPrimitiveValue* weight_from =
+          ToCSSPrimitiveValue(&weight_list->Item(0));
+      const CSSPrimitiveValue* weight_to =
+          ToCSSPrimitiveValue(&weight_list->Item(1));
+      if (!weight_from->IsNumber() || !weight_to->IsNumber() ||
+          weight_from->GetFloatValue() < 1 || weight_to->GetFloatValue() > 1000)
+        return normal_capabilities;
+      capabilities.weight = {FontSelectionValue(weight_from->GetFloatValue()),
+                             FontSelectionValue(weight_to->GetFloatValue())};
+    } else if (weight_->IsPrimitiveValue()) {
+      float weight_value = ToCSSPrimitiveValue(weight_.Get())->GetFloatValue();
+      if (weight_value < 1 || weight_value > 1000)
+        return normal_capabilities;
+      capabilities.weight = {FontSelectionValue(weight_value),
+                             FontSelectionValue(weight_value)};
     } else {
       NOTREACHED();
       return normal_capabilities;
