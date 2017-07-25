@@ -102,6 +102,7 @@ function PDFViewer(browserApi) {
   this.delayedScriptingMessages_ = [];
 
   this.isPrintPreview_ = location.origin === 'chrome://print';
+  this.isPrintPreviewLoaded_ = false;
 
   // Parse open pdf parameters.
   this.paramsParser_ =
@@ -474,6 +475,8 @@ PDFViewer.prototype = {
   sendDocumentLoadedMessage_: function() {
     if (this.loadState_ == LoadState.LOADING)
       return;
+    if (this.isPrintPreview_ && !this.isPrintPreviewLoaded_)
+      return;
     this.sendScriptingMessage_(
         {type: 'documentLoaded', load_state: this.loadState_});
   },
@@ -617,6 +620,10 @@ PDFViewer.prototype = {
         } else {
           this.navigator_.navigate(message.data.url, message.data.disposition);
         }
+        break;
+      case 'printPreviewLoaded':
+        this.isPrintPreviewLoaded_ = true;
+        this.sendDocumentLoadedMessage_();
         break;
       case 'setScrollPosition':
         var position = this.viewport_.position;

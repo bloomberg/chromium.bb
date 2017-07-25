@@ -200,7 +200,7 @@ class OutOfProcessInstance : public pp::Instance,
   // Set new zoom scale.
   void SetZoom(double scale);
 
-  // Reduces the document to 1 page and appends |print_preview_page_count_|
+  // Reduces the document to 1 page and appends |print_preview_page_count_| - 1
   // blank pages to the document for print preview.
   void AppendBlankPrintPreviewPages();
 
@@ -215,6 +215,9 @@ class OutOfProcessInstance : public pp::Instance,
 
   // Called after a preview page has loaded or failed to load.
   void LoadNextPreviewPage();
+
+  // Send a notification that the print preview has loaded.
+  void SendPrintPreviewLoadedNotification();
 
   // Bound the given scroll offset to the document.
   pp::FloatPoint BoundScrollOffsetToDocument(
@@ -345,9 +348,13 @@ class OutOfProcessInstance : public pp::Instance,
   // spamming the stats if a document requested multiple substitutes.
   bool font_substitution_reported_;
 
-  // Number of pages in print preview mode, 0 if not in print preview mode.
+  // Number of pages in print preview mode for non-PDF source, 0 if print
+  // previewing a PDF, and -1 if not in print preview mode.
   int print_preview_page_count_;
-  std::vector<int> print_preview_page_numbers_;
+
+  // Number of pages loaded in print preview mode for non-PDF source. Always
+  // less than or equal to |print_preview_page_count_|.
+  int print_preview_loaded_page_count_;
 
   // Used to manage loaded print preview page information. A |PreviewPageInfo|
   // consists of data source URL string and the page index in the destination
