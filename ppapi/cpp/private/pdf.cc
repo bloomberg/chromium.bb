@@ -193,4 +193,16 @@ void PDF::SetCrashData(const InstanceHandle& instance,
   }
 }
 
+// static
+void PDF::SelectionChanged(const InstanceHandle& instance,
+                           const PP_FloatPoint& left,
+                           int32_t left_height,
+                           const PP_FloatPoint& right,
+                           int32_t right_height) {
+  if (has_interface<PPB_PDF>()) {
+    get_interface<PPB_PDF>()->SelectionChanged(
+        instance.pp_instance(), &left, left_height, &right, right_height);
+  }
+}
+
 }  // namespace pp

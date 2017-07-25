@@ -1465,6 +1465,42 @@ base::string16 PepperPluginInstanceImpl::GetLinkAtPosition(
   return link;
 }
 
+void PepperPluginInstanceImpl::SetCaretPosition(const gfx::PointF& position) {
+  if (!LoadPdfInterface())
+    return;
+
+  PP_FloatPoint p;
+  p.x = position.x();
+  p.y = position.y();
+  plugin_pdf_interface_->SetCaretPosition(pp_instance(), &p);
+}
+
+void PepperPluginInstanceImpl::MoveRangeSelectionExtent(
+    const gfx::PointF& extent) {
+  if (!LoadPdfInterface())
+    return;
+
+  PP_FloatPoint p;
+  p.x = extent.x();
+  p.y = extent.y();
+  plugin_pdf_interface_->MoveRangeSelectionExtent(pp_instance(), &p);
+}
+
+void PepperPluginInstanceImpl::SetSelectionBounds(const gfx::PointF& base,
+                                                  const gfx::PointF& extent) {
+  if (!LoadPdfInterface())
+    return;
+
+  PP_FloatPoint p_base;
+  p_base.x = base.x();
+  p_base.y = base.y();
+
+  PP_FloatPoint p_extent;
+  p_extent.x = extent.x();
+  p_extent.y = extent.y();
+  plugin_pdf_interface_->SetSelectionBounds(pp_instance(), &p_base, &p_extent);
+}
+
 void PepperPluginInstanceImpl::RequestSurroundingText(
     size_t desired_number_of_characters) {
   // Keep a reference on the stack. See NOTE above.
