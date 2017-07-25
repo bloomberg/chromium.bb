@@ -5,7 +5,6 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_DATA_INTERNAL_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_DATA_INTERNAL_H_
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/validate_params.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
@@ -19,29 +18,9 @@ namespace internal {
 template <typename Key, typename Value>
 class Map_Data {
  public:
-  class BufferWriter {
-   public:
-    BufferWriter() = default;
-
-    void Allocate(Buffer* buffer) {
-      buffer_ = buffer;
-      index_ = buffer_->Allocate(sizeof(Map_Data));
-      new (data()) Map_Data();
-    }
-
-    bool is_null() const { return !buffer_; }
-    Map_Data* data() {
-      DCHECK(!is_null());
-      return buffer_->Get<Map_Data>(index_);
-    }
-    Map_Data* operator->() { return data(); }
-
-   private:
-    Buffer* buffer_ = nullptr;
-    size_t index_ = 0;
-
-    DISALLOW_COPY_AND_ASSIGN(BufferWriter);
-  };
+  static Map_Data* New(Buffer* buf) {
+    return new (buf->Allocate(sizeof(Map_Data))) Map_Data();
+  }
 
   // |validate_params| must have non-null |key_validate_params| and
   // |element_validate_params| members.
