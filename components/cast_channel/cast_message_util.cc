@@ -68,7 +68,12 @@ void CreateAuthChallengeMessage(CastMessage* message_proto,
                                 const AuthContext& auth_context) {
   CHECK(message_proto);
   DeviceAuthMessage auth_message;
-  auth_message.mutable_challenge()->set_sender_nonce(auth_context.nonce());
+
+  AuthChallenge* challenge = auth_message.mutable_challenge();
+  DCHECK(challenge);
+  challenge->set_sender_nonce(auth_context.nonce());
+  challenge->set_hash_algorithm(SHA256);
+
   std::string auth_message_string;
   auth_message.SerializeToString(&auth_message_string);
 

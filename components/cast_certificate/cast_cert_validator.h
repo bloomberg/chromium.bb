@@ -16,6 +16,7 @@
 
 namespace net {
 class TrustStore;
+enum class DigestAlgorithm;
 }
 namespace cast_certificate {
 
@@ -68,11 +69,13 @@ class CertVerificationContext {
   virtual ~CertVerificationContext() {}
 
   // Use the public key from the verified certificate to verify a
-  // sha1WithRSAEncryption |signature| over arbitrary |data|. Both |signature|
-  // and |data| hold raw binary data. Returns true if the signature was
-  // correct.
-  virtual bool VerifySignatureOverData(const base::StringPiece& signature,
-                                       const base::StringPiece& data) const = 0;
+  // |digest_algorithm|WithRSAEncryption |signature| over arbitrary |data|.
+  // Both |signature| and |data| hold raw binary data. Returns true if the
+  // signature was correct.
+  virtual bool VerifySignatureOverData(
+      const base::StringPiece& signature,
+      const base::StringPiece& data,
+      net::DigestAlgorithm digest_algorithm) const = 0;
 
   // Retrieve the Common Name attribute of the subject's distinguished name from
   // the verified certificate, if present.  Returns an empty string if no Common

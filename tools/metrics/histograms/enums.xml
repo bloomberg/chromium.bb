@@ -4003,6 +4003,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="DEFAULT_PLAYER_FAILURE"/>
 </enum>
 
+<enum name="CastSignatureStatus">
+  <int value="0" label="OK"/>
+  <int value="1" label="SignatureEmpty"/>
+  <int value="2" label="SignatureDigestUnsupported"/>
+  <int value="3" label="SignatureVerificationFailed"/>
+</enum>
+
 <enum name="CatSixtyFour">
   <int value="0" label="Saber-Toothed Cat (&lt;10.6), 32-bit (?)"/>
   <int value="1" label="Saber-Toothed Cat (&lt;10.6), 64-bit (?)"/>

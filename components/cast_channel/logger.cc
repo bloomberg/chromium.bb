@@ -60,6 +60,10 @@ ChallengeReplyError AuthErrorToChallengeReplyError(
       return ChallengeReplyError::CERT_REVOKED;
     case AuthResult::ERROR_SENDER_NONCE_MISMATCH:
       return ChallengeReplyError::SENDER_NONCE_MISMATCH;
+    case AuthResult::ERROR_SIGNATURE_EMPTY:
+      return ChallengeReplyError::SIGNATURE_EMPTY;
+    case AuthResult::ERROR_DIGEST_UNSUPPORTED:
+      return ChallengeReplyError::DIGEST_UNSUPPORTED;
     default:
       NOTREACHED();
       return ChallengeReplyError::NONE;

@@ -20,6 +20,7 @@
 #include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "crypto/random.h"
+#include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/x509_certificate.h"
 #include "net/der/parse_values.h"
 
@@ -51,9 +52,15 @@ const base::Feature kEnforceRevocationChecking{
 // the one sent to the device. As a result, the nonce can be empty and omitted
 // from the signature. This allows backwards compatibility with legacy Cast
 // receivers.
-
 const base::Feature kEnforceNonceChecking{"CastNonceEnforced",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enforce the use of SHA256 digest for signatures.
+// If disabled, the device may respond with a signature with SHA1 digest even
+// though a signature with SHA256 digest was requested in the challenge. This
+// allows for backwards compatibility with legacy Cast receivers.
+const base::Feature kEnforceSHA256Checking{"CastSHA256Enforced",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace cast_crypto = ::cast_certificate;
 
@@ -154,6 +161,16 @@ enum NonceVerificationStatus {
   NONCE_COUNT,
 };
 
+// Must match with the histogram enum CastSignature.
+// This should never be reordered.
+enum SignatureStatus {
+  SIGNATURE_OK,
+  SIGNATURE_EMPTY,
+  SIGNATURE_VERIFY_FAILED,
+  SIGNATURE_ALGORITHM_UNSUPPORTED,
+  SIGNATURE_COUNT,
+};
+
 // Record certificate verification histogram events.
 void RecordCertificateEvent(CertVerificationStatus event) {
   UMA_HISTOGRAM_ENUMERATION("Cast.Channel.Certificate", event,
@@ -163,6 +180,11 @@ void RecordCertificateEvent(CertVerificationStatus event) {
 // Record nonce verification histogram events.
 void RecordNonceEvent(NonceVerificationStatus event) {
   UMA_HISTOGRAM_ENUMERATION("Cast.Channel.Nonce", event, NONCE_COUNT);
+}
+
+// Record signature verification histogram events.
+void RecordSignatureEvent(SignatureStatus event) {
+  UMA_HISTOGRAM_ENUMERATION("Cast.Channel.Signature", event, SIGNATURE_COUNT);
 }
 
 // Maps CastCertError to AuthResult.
@@ -254,6 +276,24 @@ AuthResult AuthContext::VerifySenderNonce(
     }
   } else {
     RecordNonceEvent(NONCE_MATCH);
+  }
+  return AuthResult();
+}
+
+AuthResult VerifyAndMapDigestAlgorithm(HashAlgorithm response_digest_algorithm,
+                                       net::DigestAlgorithm* digest_algorithm) {
+  switch (response_digest_algorithm) {
+    case SHA1:
+      RecordSignatureEvent(SIGNATURE_ALGORITHM_UNSUPPORTED);
+      *digest_algorithm = net::DigestAlgorithm::Sha1;
+      if (base::FeatureList::IsEnabled(kEnforceSHA256Checking)) {
+        return AuthResult("Unsupported digest algorithm.",
+                          AuthResult::ERROR_DIGEST_UNSUPPORTED);
+      }
+      break;
+    case SHA256:
+      *digest_algorithm = net::DigestAlgorithm::Sha256;
+      break;
   }
   return AuthResult();
 }
@@ -386,11 +426,24 @@ AuthResult VerifyCredentialsImpl(const AuthResponse& response,
 
   // The certificate is verified at this point.
   RecordCertificateEvent(CERT_STATUS_OK);
-  if (!verification_context->VerifySignatureOverData(response.signature(),
-                                                     signature_input)) {
-    return AuthResult("Failed verifying signature over data",
+
+  if (response.signature().empty() && !signature_input.empty()) {
+    RecordSignatureEvent(SIGNATURE_EMPTY);
+    return AuthResult("Signature is empty.", AuthResult::ERROR_SIGNATURE_EMPTY);
+  }
+  net::DigestAlgorithm digest_algorithm;
+  AuthResult digest_result =
+      VerifyAndMapDigestAlgorithm(response.hash_algorithm(), &digest_algorithm);
+  if (!digest_result.success())
+    return digest_result;
+
+  if (!verification_context->VerifySignatureOverData(
+          response.signature(), signature_input, digest_algorithm)) {
+    RecordSignatureEvent(SIGNATURE_VERIFY_FAILED);
+    return AuthResult("Failed verifying signature over data.",
                       AuthResult::ERROR_SIGNED_BLOBS_MISMATCH);
   }
+  RecordSignatureEvent(SIGNATURE_OK);
 
   AuthResult success;
 

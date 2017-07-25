@@ -7,6 +7,7 @@
 #include "components/cast_certificate/cast_cert_validator_test_helpers.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parsed_certificate.h"
+#include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/internal/trust_store_in_memory.h"
 #include "net/cert/x509_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -118,10 +119,12 @@ void RunTest(CastCertError expected_result,
   ASSERT_TRUE(context);
 
   // Test verification of some invalid signatures.
+  EXPECT_FALSE(context->VerifySignatureOverData("bogus signature", "bogus data",
+                                                net::DigestAlgorithm::Sha256));
+  EXPECT_FALSE(context->VerifySignatureOverData("", "bogus data",
+                                                net::DigestAlgorithm::Sha256));
   EXPECT_FALSE(
-      context->VerifySignatureOverData("bogus signature", "bogus data"));
-  EXPECT_FALSE(context->VerifySignatureOverData("", "bogus data"));
-  EXPECT_FALSE(context->VerifySignatureOverData("", ""));
+      context->VerifySignatureOverData("", "", net::DigestAlgorithm::Sha256));
 
   // If valid signatures are known for this device certificate, test them.
   if (!optional_signed_data_file_name.empty()) {
@@ -130,16 +133,13 @@ void RunTest(CastCertError expected_result,
 
     // Test verification of a valid SHA1 signature.
     EXPECT_TRUE(context->VerifySignatureOverData(signature_data.signature_sha1,
-                                                 signature_data.message));
+                                                 signature_data.message,
+                                                 net::DigestAlgorithm::Sha1));
 
-    // Test verification of a valid SHA256
-    //
-    // TODO(eroman): This fails because there isn't currently support
-    // for specifying a signature algorithm other than RSASSA PKCS#1 v1.5 with
-    // SHA1. Once support for different algorithms is added to the API this
-    // should be changed to expect success.
-    EXPECT_FALSE(context->VerifySignatureOverData(
-        signature_data.signature_sha256, signature_data.message));
+    // Test verification of a valid SHA256 signature.
+    EXPECT_TRUE(context->VerifySignatureOverData(
+        signature_data.signature_sha256, signature_data.message,
+        net::DigestAlgorithm::Sha256));
   }
 }
 
@@ -597,7 +597,8 @@ TEST(VerifyCastDeviceCertTest, VerifySignature1024BitRsa) {
       CertVerificationContextImplForTest(CreateString(kEx1PublicKeySpki));
 
   EXPECT_FALSE(context->VerifySignatureOverData(CreateString(kEx1Signature),
-                                                CreateString(kEx1Message)));
+                                                CreateString(kEx1Message),
+                                                net::DigestAlgorithm::Sha1));
 }
 
 // ------------------------------------------------------
@@ -671,7 +672,8 @@ TEST(VerifyCastDeviceCertTest, VerifySignature2048BitRsa) {
       CertVerificationContextImplForTest(CreateString(kEx2PublicKeySpki));
 
   EXPECT_TRUE(context->VerifySignatureOverData(CreateString(kEx2Signature),
-                                               CreateString(kEx2Message)));
+                                               CreateString(kEx2Message),
+                                               net::DigestAlgorithm::Sha1));
 }
 
 }  // namespace
