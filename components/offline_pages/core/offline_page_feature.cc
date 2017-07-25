@@ -51,9 +51,8 @@ const base::Feature kOfflinePagesAsyncDownloadFeature{
 const base::Feature kPrefetchingOfflinePagesFeature{
     "OfflinePagesPrefetching", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kNewBackgroundLoaderFeature {
-    "BackgroundLoader", base::FEATURE_DISABLED_BY_DEFAULT
-};
+const base::Feature kNewBackgroundLoaderFeature{
+    "BackgroundLoader", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOfflinePagesCTV2Feature{"OfflinePagesCTV2",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
