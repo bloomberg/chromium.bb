@@ -45,7 +45,7 @@ static const CGFloat kCellPadding = 22.f;
   _contentLabel.lineBreakMode = NSLineBreakByWordWrapping;
   _contentLabel.numberOfLines = 0;
 
-  _numberContainerView.backgroundColor = RemotingTheme.onlineHostColor;
+  _numberContainerView.backgroundColor = RemotingTheme.hostOnlineColor;
   _numberLabel.textColor = RemotingTheme.setupListNumberColor;
   _contentLabel.textColor = RemotingTheme.setupListTextColor;
   _numberLabel.font = MDCTypography.titleFont;
