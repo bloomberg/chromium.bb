@@ -32,6 +32,9 @@ class EventPageRequestManagerFactory
   EventPageRequestManagerFactory();
   ~EventPageRequestManagerFactory() override;
 
+  // BrowserContextKeyedServiceFactory:
+  content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const override;
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 

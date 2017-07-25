@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/media/router/event_page_request_manager.h"
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"
@@ -74,17 +75,19 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
   }
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_SHOW_IN_TOOLBAR,
                                   GetChangeVisibilityTextId());
-  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+
   if (!browser_->profile()->IsOffTheRecord()) {
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
     menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_MANAGE_DEVICES,
                                     IDS_MEDIA_ROUTER_MANAGE_DEVICES);
-  }
 #endif
-  menu_model_.AddCheckItemWithStringId(IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE,
-                                       IDS_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE);
-  menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_REPORT_ISSUE,
-                                  IDS_MEDIA_ROUTER_REPORT_ISSUE);
+    menu_model_.AddCheckItemWithStringId(
+        IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE,
+        IDS_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE);
+    menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_REPORT_ISSUE,
+                                    IDS_MEDIA_ROUTER_REPORT_ISSUE);
+  }
 }
 
 MediaRouterContextualMenu::~MediaRouterContextualMenu() {}
