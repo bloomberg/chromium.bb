@@ -128,7 +128,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   LayoutUnit MainAxisContentExtent(LayoutUnit content_logical_height);
   LayoutUnit ComputeMainAxisExtentForChild(const LayoutBox& child,
                                            SizeType,
-                                           const Length& size);
+                                           const Length& size) const;
   TransformedWritingMode GetTransformedWritingMode() const;
   StyleContentAlignmentData ResolvedJustifyContent() const;
   StyleContentAlignmentData ResolvedAlignContent() const;
@@ -187,10 +187,10 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   void PrepareOrderIteratorAndMargins();
   void ComputeMinAndMaxSizesForChild(const LayoutBox& child,
                                      LayoutUnit& min_extent,
-                                     LayoutUnit& max_extent);
+                                     LayoutUnit& max_extent) const;
   LayoutUnit AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
       const LayoutBox& child,
-      LayoutUnit child_size);
+      LayoutUnit child_size) const;
   FlexItem ConstructFlexItem(LayoutBox& child, ChildLayoutType);
 
   bool ResolveFlexibleLengths(FlexLine*,
