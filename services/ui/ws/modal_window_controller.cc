@@ -101,13 +101,24 @@ ServerWindow* ModalWindowController::GetActiveSystemModalWindow() const {
   return nullptr;
 }
 
-void ModalWindowController::OnWindowDestroyed(ServerWindow* window) {
+void ModalWindowController::RemoveWindow(ServerWindow* window) {
   window->RemoveObserver(this);
   auto it = std::find(system_modal_windows_.begin(),
                       system_modal_windows_.end(), window);
   DCHECK(it != system_modal_windows_.end());
   system_modal_windows_.erase(it);
   window_drawn_trackers_.erase(window);
+}
+
+void ModalWindowController::OnWindowDestroyed(ServerWindow* window) {
+  RemoveWindow(window);
+}
+
+void ModalWindowController::OnWindowModalTypeChanged(ServerWindow* window,
+                                                     ModalType old_modal_type) {
+  DCHECK_EQ(MODAL_TYPE_SYSTEM, old_modal_type);
+  DCHECK_NE(MODAL_TYPE_SYSTEM, window->modal_type());
+  RemoveWindow(window);
 }
 
 void ModalWindowController::OnDrawnStateChanged(ServerWindow* ancestor,
