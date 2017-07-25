@@ -77,8 +77,10 @@
 #include "chrome/browser/ui/webui/settings/chromeos/device_stylus_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/fingerprint_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/google_assistant_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_util.h"
 #else  // !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
@@ -164,6 +166,10 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
       base::MakeUnique<chromeos::settings::CupsPrintersHandler>(web_ui));
   AddSettingsPageUIHandler(
       base::MakeUnique<chromeos::settings::FingerprintHandler>(profile));
+  if (chromeos::switches::IsVoiceInteractionEnabled()) {
+    AddSettingsPageUIHandler(
+        base::MakeUnique<chromeos::settings::GoogleAssistantHandler>(profile));
+  }
   AddSettingsPageUIHandler(
       base::MakeUnique<chromeos::settings::KeyboardHandler>());
   AddSettingsPageUIHandler(
