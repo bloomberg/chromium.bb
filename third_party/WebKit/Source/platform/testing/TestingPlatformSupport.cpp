@@ -39,7 +39,7 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "cc/blink/web_compositor_support_impl.h"
-#include "components/viz/test/ordered_simple_task_runner.h"
+#include "cc/test/ordered_simple_task_runner.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/FontFamilyNames.h"
 #include "platform/HTTPNames.h"

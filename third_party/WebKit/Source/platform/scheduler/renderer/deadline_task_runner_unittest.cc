@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/test/simple_test_tick_clock.h"
-#include "components/viz/test/ordered_simple_task_runner.h"
+#include "cc/test/ordered_simple_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

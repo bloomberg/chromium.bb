@@ -20,7 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/blame_context.h"
 #include "base/trace_event/trace_buffer.h"
-#include "components/viz/test/ordered_simple_task_runner.h"
+#include "cc/test/ordered_simple_task_runner.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/task_queue_manager_delegate_for_test.h"
