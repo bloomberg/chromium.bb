@@ -717,9 +717,7 @@ Resource* ResourceFetcher::RequestResource(
         resource->SetLinkPreload(false);
       break;
   }
-  if (!resource)
-    return nullptr;
-
+  DCHECK(resource);
   // TODO(yoav): turn to a DCHECK. See https://crbug.com/690632
   CHECK_EQ(resource->GetType(), resource_type);
 
