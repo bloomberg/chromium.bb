@@ -758,8 +758,8 @@ FileTasks.prototype.updateShareMenuButton_ = function(shareMenuButton, tasks) {
   // Clear menu items except for drive share menu and a separator for it.
   // As querySelectorAll() returns live NodeList, we need to copy elements to
   // Array object to modify DOM in the for loop.
-  var itemsToRemove = [].slice.call(
-      shareMenuButton.menu.querySelectorAll('cr-menu-item[command~="share"]'));
+  var itemsToRemove = [].slice.call(shareMenuButton.menu.querySelectorAll(
+      'cr-menu-item:not([command="#share"])'));
   for (var i = 0; i < itemsToRemove.length; i++) {
     var item = itemsToRemove[i];
     item.parentNode.removeChild(item);
