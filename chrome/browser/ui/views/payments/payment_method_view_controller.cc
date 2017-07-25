@@ -91,6 +91,9 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
             static_cast<AutofillPaymentInstrument*>(instrument_)
                 ->credit_card());
         return;
+      case PaymentInstrument::Type::NATIVE_MOBILE_APP:
+        // We cannot edit a native mobile app instrument.
+        return;
     }
     NOTREACHED();
   }

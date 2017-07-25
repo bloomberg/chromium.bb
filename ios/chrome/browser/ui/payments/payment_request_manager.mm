@@ -27,6 +27,7 @@
 #include "components/payments/core/can_make_payment_query.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payment_address.h"
+#include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payment_request_data_util.h"
@@ -758,6 +759,14 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
                resultDelegate {
   [_paymentRequestCoordinator requestFullCreditCard:creditCard
                                      resultDelegate:resultDelegate];
+}
+
+- (void)launchAppWithUniversalLink:(std::string)universalLink
+                instrumentDelegate:
+                    (payments::PaymentInstrument::Delegate*)instrumentDelegate {
+  // TODO(crbug.com/748556): Implement this function to use a native app's
+  // universal link to open it from Chrome with several arguments supplied
+  // from the Payment Request object.
 }
 
 #pragma mark - PaymentRequestCoordinatorDelegate methods
