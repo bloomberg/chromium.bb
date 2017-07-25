@@ -1528,11 +1528,6 @@ component("base") {
 
   # Linux.
   if (is_linux) {
-    if (is_asan || is_lsan || is_msan || is_tsan) {
-      # For llvm-sanitizer.
-      data += [ "//third_party/llvm-build/Release+Asserts/lib/libstdc++.so.6" ]
-    }
-
     # TODO(brettw) this will need to be parameterized at some point.
     linux_configs = []
     if (use_glib) {

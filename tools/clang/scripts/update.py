@@ -34,7 +34,7 @@ if use_head_revision:
   CLANG_REVISION = 'HEAD'
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=1
+CLANG_SUB_REVISION=3
 
 PACKAGE_VERSION = "%s-%s" % (CLANG_REVISION, CLANG_SUB_REVISION)
 
@@ -289,8 +289,6 @@ def DownloadHostGcc(args):
   """Downloads gcc 4.8.5 and makes sure args.gcc_toolchain is set."""
   if not sys.platform.startswith('linux') or args.gcc_toolchain:
     return
-  # Unconditionally download a prebuilt gcc to guarantee the included libstdc++
-  # works on Ubuntu Precise.
   gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc485precise')
   if not os.path.exists(gcc_dir):
     print 'Downloading pre-built GCC 4.8.5...'
@@ -505,10 +503,6 @@ def UpdateClang(args):
         CopyDiaDllTo(os.path.join(LLVM_BOOTSTRAP_DIR, 'bin'))
       RunCommand(['ninja', 'check-all'], msvc_arch='x64')
     RunCommand(['ninja', 'install'], msvc_arch='x64')
-    if args.gcc_toolchain:
-      # Copy that gcc's stdlibc++.so.6 to the build dir, so the bootstrap
-      # compiler can start.
-      CopyFile(libstdcpp, os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'lib'))
 
     if sys.platform == 'win32':
       cc = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang-cl.exe')
@@ -624,15 +618,6 @@ def UpdateClang(args):
   RmCmakeCache('.')
   RunCommand(['cmake'] + cmake_args + [LLVM_DIR],
              msvc_arch='x64', env=deployment_env)
-
-  if args.gcc_toolchain:
-    # Copy in the right stdlibc++.so.6 so clang can start.
-    if not os.path.exists(os.path.join(LLVM_BUILD_DIR, 'lib')):
-      os.mkdir(os.path.join(LLVM_BUILD_DIR, 'lib'))
-    libstdcpp = subprocess.check_output(
-        [cxx] + cxxflags + ['-print-file-name=libstdc++.so.6']).rstrip()
-    CopyFile(libstdcpp, os.path.join(LLVM_BUILD_DIR, 'lib'))
-
   RunCommand(['ninja'], msvc_arch='x64')
 
   # Copy LTO-optimized lld, if any.
