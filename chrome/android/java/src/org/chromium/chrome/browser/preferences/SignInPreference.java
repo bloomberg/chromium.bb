@@ -6,11 +6,9 @@ package org.chromium.chrome.browser.preferences;
 
 import android.accounts.Account;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v7.content.res.AppCompatResources;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -18,7 +16,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.profiles.ProfileDownloader;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
@@ -34,24 +31,27 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 
+import java.util.Collections;
+
 /**
  * A preference that displays "Sign in to Chrome" when the user is not sign in, and displays
  * the user's name, email, profile image and sync error icon if necessary when the user is signed
  * in.
  */
 public class SignInPreference extends Preference
-        implements SignInAllowedObserver, ProfileDownloader.Observer,
+        implements SignInAllowedObserver, ProfileDataCache.Observer,
                    AndroidSyncSettings.AndroidSyncSettingsObserver, SyncStateChangedListener {
     private boolean mShowingPromo;
     private boolean mViewEnabled;
     private SigninPromoController mSigninPromoController;
+    private final ProfileDataCache mProfileDataCache;
 
     /**
      * Constructor for inflating from XML.
      */
     public SignInPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-        update();
+        mProfileDataCache = new ProfileDataCache(context, Profile.getLastUsedProfile());
     }
 
     @Override
@@ -60,20 +60,22 @@ public class SignInPreference extends Preference
 
         SigninManager manager = SigninManager.get(getContext());
         manager.addSignInAllowedObserver(this);
-        ProfileDownloader.addObserver(this);
+        mProfileDataCache.addObserver(this);
         FirstRunSignInProcessor.updateSigninManagerFirstRunCheckDone(getContext());
         AndroidSyncSettings.registerObserver(getContext(), this);
         ProfileSyncService syncService = ProfileSyncService.get();
         if (syncService != null) {
             syncService.addSyncStateChangedListener(this);
         }
+
+        update();
     }
 
     @Override
     protected void onPrepareForRemoval() {
         SigninManager manager = SigninManager.get(getContext());
         manager.removeSignInAllowedObserver(this);
-        ProfileDownloader.removeObserver(this);
+        mProfileDataCache.removeObserver(this);
         AndroidSyncSettings.unregisterObserver(getContext(), this);
         ProfileSyncService syncService = ProfileSyncService.get();
         if (syncService != null) {
@@ -133,11 +135,13 @@ public class SignInPreference extends Preference
         Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
         String defaultAccountName = accounts.length == 0 ? null : accounts[0].name;
 
+        if (defaultAccountName != null) {
+            mProfileDataCache.update(Collections.singletonList(defaultAccountName));
+        }
+
         if (mSigninPromoController == null) {
-            ProfileDataCache profileDataCache =
-                    new ProfileDataCache(getContext(), Profile.getLastUsedProfile());
             mSigninPromoController =
-                    new SigninPromoController(profileDataCache, SigninAccessPoint.SETTINGS);
+                    new SigninPromoController(mProfileDataCache, SigninAccessPoint.SETTINGS);
             mSigninPromoController.setAccountName(defaultAccountName);
             mSigninPromoController.recordSigninPromoImpression();
         } else {
@@ -167,22 +171,16 @@ public class SignInPreference extends Preference
     }
 
     private void setupSignedIn(String accountName) {
+        mProfileDataCache.update(Collections.singletonList(accountName));
+
         setLayoutResource(R.layout.account_management_account_row);
-        String title = AccountManagementFragment.getCachedUserName(accountName);
-        if (title == null) {
-            Profile profile = Profile.getLastUsedProfile();
-            String cachedName = ProfileDownloader.getCachedFullName(profile);
-            Bitmap cachedBitmap = ProfileDownloader.getCachedAvatar(profile);
-            if (TextUtils.isEmpty(cachedName) || cachedBitmap == null) {
-                AccountManagementFragment.startFetchingAccountInformation(
-                        getContext(), profile, accountName);
-            }
-            title = TextUtils.isEmpty(cachedName) ? accountName : cachedName;
-        }
+        String title = mProfileDataCache.getFullName(accountName);
+        if (title == null) title = accountName;
         setTitle(title);
         setSummary(SyncPreference.getSyncStatusSummary(getContext()));
         setFragment(AccountManagementFragment.class.getName());
-        setIcon(AccountManagementFragment.getUserPicture(getContext(), accountName));
+        setIcon(mProfileDataCache.getImage(accountName));
+
         setWidgetLayoutResource(
                 SyncPreference.showSyncErrorIcon(getContext()) ? R.layout.sync_error_widget : 0);
         setViewEnabled(true);
@@ -227,10 +225,7 @@ public class SignInPreference extends Preference
     // ProfileDownloader.Observer
 
     @Override
-    public void onProfileDownloaded(String accountId, String fullName, String givenName,
-            Bitmap bitmap) {
-        AccountManagementFragment.updateUserNamePictureCache(
-                getContext(), accountId, fullName, bitmap);
+    public void onProfileDataUpdated(String accountId) {
         update();
     }
 
