@@ -148,7 +148,7 @@ class CORE_EXPORT FrameSelection final
   bool Modify(SelectionModifyAlteration,
               SelectionModifyDirection,
               TextGranularity,
-              SetSelectionBy = SetSelectionBy::kSystem);
+              SetSelectionBy);
 
   // Moves the selection extent based on the selection granularity strategy.
   // This function does not allow the selection to collapse. If the new

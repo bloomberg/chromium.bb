@@ -173,8 +173,8 @@ TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree) {
               ToPositionInDOMTree(PositionInFlatTree(GetDocument().body(), 2)))
           .Build());
   Selection().Modify(SelectionModifyAlteration::kExtend,
-                     SelectionModifyDirection::kForward,
-                     TextGranularity::kWord);
+                     SelectionModifyDirection::kForward, TextGranularity::kWord,
+                     SetSelectionBy::kSystem);
   EXPECT_EQ(Position(two, 0), VisibleSelectionInDOMTree().Start());
   EXPECT_EQ(Position(two, 3), VisibleSelectionInDOMTree().End());
   EXPECT_EQ(PositionInFlatTree(two, 0),

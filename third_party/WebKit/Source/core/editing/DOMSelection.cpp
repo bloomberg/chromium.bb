@@ -462,7 +462,8 @@ void DOMSelection::modify(const String& alter_string,
   GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   Element* focused_element = GetFrame()->GetDocument()->FocusedElement();
-  GetFrame()->Selection().Modify(alter, direction, granularity);
+  GetFrame()->Selection().Modify(alter, direction, granularity,
+                                 SetSelectionBy::kSystem);
   if (GetFrame() && GetFrame()->GetDocument() &&
       focused_element != GetFrame()->GetDocument()->FocusedElement())
     UseCounter::Count(GetFrame(), WebFeature::kSelectionFuncionsChangeFocus);
