@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS Insecure resource loads inside Worker failes when 'AllowRunningInsecureContent' is not set. 
+Harness: the test ran to completion.
+
