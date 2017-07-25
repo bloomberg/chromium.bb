@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//cc/cc.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 cc_component("paint") {
   output_name = "cc_paint"
@@ -57,5 +58,17 @@ cc_component("paint") {
 
   deps = [
     "//base",
+  ]
+}
+
+fuzzer_test("paint_op_buffer_fuzzer") {
+  sources = [
+    "paint_op_buffer_fuzzer.cc",
+  ]
+
+  libfuzzer_options = [ "max_len=4096" ]
+
+  deps = [
+    "//cc/paint",
   ]
 }
