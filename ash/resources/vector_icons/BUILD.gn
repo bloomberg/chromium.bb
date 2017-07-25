@@ -88,6 +88,8 @@ aggregate_vector_icons("ash_vector_icons") {
     "palette_tray_icon_magnify.icon",
     "palette_tray_icon_metalayer.1x.icon",
     "palette_tray_icon_metalayer.icon",
+    "shelf_back.1x.icon",
+    "shelf_back.icon",
     "shelf_keyboard.1x.icon",
     "shelf_keyboard.icon",
     "shelf_logout.1x.icon",
