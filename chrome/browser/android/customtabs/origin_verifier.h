@@ -23,7 +23,9 @@ namespace customtabs {
 // JNI bridge for OriginVerifier.java
 class OriginVerifier {
  public:
-  OriginVerifier(JNIEnv* env, jobject obj, jobject jprofile);
+  OriginVerifier(JNIEnv* env,
+                 const base::android::JavaRef<jobject>& obj,
+                 const base::android::JavaRef<jobject>& jprofile);
   ~OriginVerifier();
 
   // Verify origin with the given parameters. No network requests can be made

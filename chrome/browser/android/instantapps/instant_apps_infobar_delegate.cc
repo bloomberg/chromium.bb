@@ -53,9 +53,7 @@ bool InstantAppsInfoBarDelegate::Accept() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::RecordAction(base::UserMetricsAction(
       "Android.InstantApps.BannerOpen"));
-  Java_InstantAppsInfoBarDelegate_openInstantApp(env,
-                                                 java_delegate_.obj(),
-                                                 data_.obj());
+  Java_InstantAppsInfoBarDelegate_openInstantApp(env, java_delegate_, data_);
   return true;
 }
 

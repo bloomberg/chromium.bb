@@ -133,7 +133,7 @@ void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env) {
 
     j_delegate_.Reset(Java_PermissionDialogDelegate_create(
         env, reinterpret_cast<uintptr_t>(this), tab_->GetJavaObject(),
-        base::android::ToJavaIntArray(env, content_settings_types).obj(),
+        base::android::ToJavaIntArray(env, content_settings_types),
         ResourceMapper::MapFromChromiumId(infobar_delegate_->GetIconId()),
         ConvertUTF16ToJavaString(env, infobar_delegate_->GetMessageText()),
         ConvertUTF16ToJavaString(env, infobar_delegate_->GetLinkText()),
@@ -150,7 +150,7 @@ void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env) {
 
   j_delegate_.Reset(Java_PermissionDialogDelegate_create(
       env, reinterpret_cast<uintptr_t>(this), tab_->GetJavaObject(),
-      base::android::ToJavaIntArray(env, content_settings_types).obj(),
+      base::android::ToJavaIntArray(env, content_settings_types),
       ResourceMapper::MapFromChromiumId(permission_prompt_->GetIconId()),
       ConvertUTF16ToJavaString(env, permission_prompt_->GetMessageText()),
       ConvertUTF16ToJavaString(env, permission_prompt_->GetLinkText()),
@@ -237,14 +237,14 @@ PermissionDialogDelegate::PermissionDialogDelegate(
   // Send the Java delegate to the Java PermissionDialogController for display.
   // The controller takes over lifetime management; when the Java delegate is no
   // longer needed it will in turn free the native delegate.
-  Java_PermissionDialogController_createDialog(env, j_delegate_.obj());
+  Java_PermissionDialogController_createDialog(env, j_delegate_);
 }
 
 PermissionDialogDelegate::~PermissionDialogDelegate() {}
 
 void PermissionDialogDelegate::DismissDialog() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_PermissionDialogDelegate_dismissFromNative(env, j_delegate_.obj());
+  Java_PermissionDialogDelegate_dismissFromNative(env, j_delegate_);
 }
 
 void PermissionDialogDelegate::DidFinishNavigation(

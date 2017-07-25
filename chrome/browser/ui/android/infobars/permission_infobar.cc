@@ -100,6 +100,7 @@ ScopedJavaLocalRef<jobject> PermissionInfoBar::CreateRenderInfoBarHelper(
       content_settings_types, show_persistence_toggle);
 }
 
-bool PermissionInfoBar::IsSwitchOn(JNIEnv* env, jobject info_bar_obj) {
+bool PermissionInfoBar::IsSwitchOn(JNIEnv* env,
+                                   const JavaRef<jobject>& info_bar_obj) {
   return Java_PermissionInfoBar_isPersistSwitchOn(env, info_bar_obj);
 }

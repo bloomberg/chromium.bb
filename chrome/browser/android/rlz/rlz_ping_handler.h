@@ -17,7 +17,7 @@ namespace android {
 // JNI bridge for   RlzPingHandler.java
 class RlzPingHandler : public net::URLFetcherDelegate {
  public:
-  explicit RlzPingHandler(jobject jprofile);
+  explicit RlzPingHandler(const base::android::JavaRef<jobject>& jprofile);
   ~RlzPingHandler() override;
 
   // Makes a GET request to the designated web end point with the given

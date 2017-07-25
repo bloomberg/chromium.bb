@@ -45,6 +45,7 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
@@ -180,7 +181,7 @@ void DuplicateCheckDone(const GURL& url,
 
 void ToJavaOfflinePageDownloadItemList(
     JNIEnv* env,
-    jobject j_result_obj,
+    const JavaRef<jobject>& j_result_obj,
     const std::vector<const DownloadUIItem*>& items) {
   for (const auto* item : items) {
     Java_OfflinePageDownloadBridge_createDownloadItemAndAddToList(

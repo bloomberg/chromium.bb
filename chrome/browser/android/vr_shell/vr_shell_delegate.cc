@@ -22,6 +22,7 @@
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 
@@ -74,12 +75,13 @@ device::GvrDelegateProvider* VrShellDelegate::CreateVrShellDelegate() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> jdelegate = Java_VrShellDelegate_getInstance(env);
   if (!jdelegate.is_null())
-    return GetNativeVrShellDelegate(env, jdelegate.obj());
+    return GetNativeVrShellDelegate(env, jdelegate);
   return nullptr;
 }
 
-VrShellDelegate* VrShellDelegate::GetNativeVrShellDelegate(JNIEnv* env,
-                                                           jobject jdelegate) {
+VrShellDelegate* VrShellDelegate::GetNativeVrShellDelegate(
+    JNIEnv* env,
+    const JavaRef<jobject>& jdelegate) {
   return reinterpret_cast<VrShellDelegate*>(
       Java_VrShellDelegate_getNativePointer(env, jdelegate));
 }
@@ -220,14 +222,14 @@ void VrShellDelegate::RequestWebVRPresent(
 
   // If/When VRShell is ready for use it will call SetPresentResult.
   JNIEnv* env = AttachCurrentThread();
-  Java_VrShellDelegate_presentRequested(env, j_vr_shell_delegate_.obj());
+  Java_VrShellDelegate_presentRequested(env, j_vr_shell_delegate_);
 }
 
 void VrShellDelegate::ExitWebVRPresent() {
   // VRShell is no longer needed by WebVR, allow it to shut down if it's not
   // being used elsewhere.
   JNIEnv* env = AttachCurrentThread();
-  if (Java_VrShellDelegate_exitWebVRPresent(env, j_vr_shell_delegate_.obj())) {
+  if (Java_VrShellDelegate_exitWebVRPresent(env, j_vr_shell_delegate_)) {
     if (device_provider_) {
       device_provider_->Device()->OnExitPresent();
     }
@@ -236,7 +238,7 @@ void VrShellDelegate::ExitWebVRPresent() {
 
 std::unique_ptr<VrCoreInfo> VrShellDelegate::MakeVrCoreInfo(JNIEnv* env) {
   return base::WrapUnique(reinterpret_cast<VrCoreInfo*>(
-      Java_VrShellDelegate_getVrCoreInfo(env, j_vr_shell_delegate_.obj())));
+      Java_VrShellDelegate_getVrCoreInfo(env, j_vr_shell_delegate_)));
 }
 
 void VrShellDelegate::OnActivateDisplayHandled(bool will_not_present) {
@@ -337,8 +339,8 @@ void VrShellDelegate::OnLostFocusedAndActivatable() {
 void VrShellDelegate::SetListeningForActivate(bool listening) {
   clear_activate_task_.Cancel();
   JNIEnv* env = AttachCurrentThread();
-  Java_VrShellDelegate_setListeningForWebVrActivate(
-      env, j_vr_shell_delegate_.obj(), listening);
+  Java_VrShellDelegate_setListeningForWebVrActivate(env, j_vr_shell_delegate_,
+                                                    listening);
 }
 
 void VrShellDelegate::GetNextMagicWindowPose(

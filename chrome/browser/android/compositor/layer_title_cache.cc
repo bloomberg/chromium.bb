@@ -20,12 +20,13 @@
 #include "ui/gfx/geometry/size.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 
 namespace android {
 
 // static
-LayerTitleCache* LayerTitleCache::FromJavaObject(jobject jobj) {
-  if (!jobj)
+LayerTitleCache* LayerTitleCache::FromJavaObject(const JavaRef<jobject>& jobj) {
+  if (jobj.is_null())
     return nullptr;
   return reinterpret_cast<LayerTitleCache*>(Java_LayerTitleCache_getNativePtr(
       base::android::AttachCurrentThread(), jobj));

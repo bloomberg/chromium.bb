@@ -33,7 +33,8 @@ class DecorationTitle;
 // the Java class.
 class LayerTitleCache {
  public:
-  static LayerTitleCache* FromJavaObject(jobject jobj);
+  static LayerTitleCache* FromJavaObject(
+      const base::android::JavaRef<jobject>& jobj);
 
   LayerTitleCache(JNIEnv* env,
                   jobject jobj,

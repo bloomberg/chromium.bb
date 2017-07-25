@@ -26,7 +26,8 @@ class ContextualSearchLayer;
 class ContextualSearchSceneLayer : public SceneLayer,
     public chrome::BitmapFetcherDelegate {
  public:
-  ContextualSearchSceneLayer(JNIEnv* env, jobject jobj);
+  ContextualSearchSceneLayer(JNIEnv* env,
+                             const base::android::JavaRef<jobject>& jobj);
   ~ContextualSearchSceneLayer() override;
 
   void CreateContextualSearchLayer(
@@ -103,7 +104,7 @@ class ContextualSearchSceneLayer : public SceneLayer,
       jint bar_handle_resource_id,
       jfloat bar_handle_offset_y,
       jfloat bar_padding_bottom,
-      jobject j_profile);
+      const base::android::JavaRef<jobject>& j_profile);
 
   // Inherited from BitmapFetcherDelegate
   void OnFetchComplete(
@@ -120,7 +121,7 @@ class ContextualSearchSceneLayer : public SceneLayer,
       const base::android::JavaParamRef<jobject>& jobj);
 
  private:
-  void FetchThumbnail(jobject j_profile);
+  void FetchThumbnail(const base::android::JavaRef<jobject>& j_profile);
 
   JNIEnv* env_;
   base::android::ScopedJavaGlobalRef<jobject> object_;

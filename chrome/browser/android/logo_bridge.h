@@ -19,7 +19,7 @@ class LogoService;
 // default search provider's logo.
 class LogoBridge {
  public:
-  explicit LogoBridge(jobject j_profile);
+  explicit LogoBridge(const base::android::JavaRef<jobject>& j_profile);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   // TODO(treib): Double-check the observer contract (esp. for LogoTracker).

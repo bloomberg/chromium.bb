@@ -30,7 +30,7 @@ class ContentLayer;
 // A SceneLayer to render a static tab.
 class StaticTabSceneLayer : public SceneLayer {
  public:
-  StaticTabSceneLayer(JNIEnv* env, jobject jobj);
+  StaticTabSceneLayer(JNIEnv* env, const base::android::JavaRef<jobject>& jobj);
   ~StaticTabSceneLayer() override;
 
   bool ShouldShowBackground() override;

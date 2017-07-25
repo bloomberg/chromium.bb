@@ -29,7 +29,8 @@ class PermissionInfoBar : public ConfirmInfoBar {
       std::vector<int>& content_settings,
       bool show_persistence_toggle);
 
-  static bool IsSwitchOn(JNIEnv* env, jobject info_bar_obj);
+  static bool IsSwitchOn(JNIEnv* env,
+                         const base::android::JavaRef<jobject>& info_bar_obj);
 
  protected:
   PermissionInfoBarDelegate* GetDelegate();

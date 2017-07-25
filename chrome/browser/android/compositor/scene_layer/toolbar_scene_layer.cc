@@ -14,10 +14,11 @@
 #include "ui/gfx/android/java_bitmap.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 
 namespace android {
 
-ToolbarSceneLayer::ToolbarSceneLayer(JNIEnv* env, jobject jobj)
+ToolbarSceneLayer::ToolbarSceneLayer(JNIEnv* env, const JavaRef<jobject>& jobj)
     : SceneLayer(env, jobj),
       should_show_background_(false),
       background_color_(SK_ColorWHITE),

@@ -35,6 +35,7 @@
 #include "url/gurl.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 
 namespace {
 
@@ -94,8 +95,9 @@ class TabContentManager::TabReadbackRequest {
 };
 
 // static
-TabContentManager* TabContentManager::FromJavaObject(jobject jobj) {
-  if (!jobj)
+TabContentManager* TabContentManager::FromJavaObject(
+    const JavaRef<jobject>& jobj) {
+  if (jobj.is_null())
     return nullptr;
   return reinterpret_cast<TabContentManager*>(
       Java_TabContentManager_getNativePtr(base::android::AttachCurrentThread(),

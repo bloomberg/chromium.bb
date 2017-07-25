@@ -14,8 +14,9 @@ namespace android {
 // DomDistillerServiceFactory.
 class DomDistillerServiceFactoryAndroid {
  public:
-  static base::android::ScopedJavaLocalRef<jobject>
-  GetForProfile(JNIEnv* env, jclass clazz, jobject j_profile);
+  static base::android::ScopedJavaLocalRef<jobject> GetForProfile(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& j_profile);
 };
 
 }  // namespace android

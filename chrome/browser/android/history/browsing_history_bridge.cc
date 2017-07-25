@@ -80,7 +80,7 @@ void BrowsingHistoryBridge::OnQueryComplete(
                                            entry.all_timestamps.end());
 
     Java_BrowsingHistoryBridge_createHistoryItemAndAddToList(
-        env, j_query_result_obj_.obj(),
+        env, j_query_result_obj_,
         base::android::ConvertUTF8ToJavaString(env, entry.url.spec()),
         base::android::ConvertUTF16ToJavaString(env, domain),
         base::android::ConvertUTF16ToJavaString(env, entry.title),
@@ -90,9 +90,7 @@ void BrowsingHistoryBridge::OnQueryComplete(
   }
 
   Java_BrowsingHistoryBridge_onQueryHistoryComplete(
-      env,
-      j_history_service_obj_.obj(),
-      j_query_result_obj_.obj(),
+      env, j_history_service_obj_, j_query_result_obj_,
       !(query_results_info->reached_beginning));
 }
 
@@ -106,7 +104,7 @@ void BrowsingHistoryBridge::MarkItemForRemoval(
   entry->url = GURL(base::android::ConvertJavaStringToUTF16(env, j_url));
 
   std::vector<int64_t> timestamps;
-  base::android::JavaLongArrayToInt64Vector(env, j_native_timestamps.obj(),
+  base::android::JavaLongArrayToInt64Vector(env, j_native_timestamps,
                                             &timestamps);
   entry->all_timestamps.insert(timestamps.begin(), timestamps.end());
 
@@ -121,26 +119,24 @@ void BrowsingHistoryBridge::RemoveItems(JNIEnv* env,
 
 void BrowsingHistoryBridge::OnRemoveVisitsComplete() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_BrowsingHistoryBridge_onRemoveComplete(env,
-                                              j_history_service_obj_.obj());
+  Java_BrowsingHistoryBridge_onRemoveComplete(env, j_history_service_obj_);
 }
 
 void BrowsingHistoryBridge::OnRemoveVisitsFailed() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_BrowsingHistoryBridge_onRemoveFailed(env, j_history_service_obj_.obj());
+  Java_BrowsingHistoryBridge_onRemoveFailed(env, j_history_service_obj_);
 }
 
 void BrowsingHistoryBridge::HistoryDeleted() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_BrowsingHistoryBridge_onHistoryDeleted(env,
-                                              j_history_service_obj_.obj());
+  Java_BrowsingHistoryBridge_onHistoryDeleted(env, j_history_service_obj_);
 }
 
 void BrowsingHistoryBridge::HasOtherFormsOfBrowsingHistory(
     bool has_other_forms, bool has_synced_results) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BrowsingHistoryBridge_hasOtherFormsOfBrowsingData(
-      env, j_history_service_obj_.obj(), has_other_forms, has_synced_results);
+      env, j_history_service_obj_, has_other_forms, has_synced_results);
 }
 
 static jlong Init(JNIEnv* env,

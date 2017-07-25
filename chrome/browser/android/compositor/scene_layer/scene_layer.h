@@ -21,13 +21,17 @@ namespace android {
 // counterpart.
 class SceneLayer {
  public:
-  static SceneLayer* FromJavaObject(JNIEnv* env, jobject jobj);
+  static SceneLayer* FromJavaObject(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj);
 
   // Create SceneLayer and creates an empty cc::Layer.
-  SceneLayer(JNIEnv* env, jobject jobj);
+  SceneLayer(JNIEnv* env, const base::android::JavaRef<jobject>& jobj);
   // Create SceneLayer with the already-instantiated |layer|.
 
-  SceneLayer(JNIEnv* env, jobject jobj, scoped_refptr<cc::Layer> layer);
+  SceneLayer(JNIEnv* env,
+             const base::android::JavaRef<jobject>& jobj,
+             scoped_refptr<cc::Layer> layer);
   virtual ~SceneLayer();
 
   // Notifies that this scene layer is about to be detached from its parent.

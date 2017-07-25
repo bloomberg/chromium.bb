@@ -31,7 +31,7 @@ class ChromeHttpAuthHandler {
   void SetObserver(LoginHandler* observer);
 
   // Show the dialog prompting for login credentials.
-  void ShowDialog(jobject window_android);
+  void ShowDialog(const base::android::JavaRef<jobject>& window_android);
 
   // Forwards the autofill data to the Java land object.
   void OnAutofillDataAvailable(

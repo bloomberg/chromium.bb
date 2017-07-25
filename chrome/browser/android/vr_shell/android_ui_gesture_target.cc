@@ -8,10 +8,11 @@
 
 namespace vr_shell {
 
-AndroidUiGestureTarget::AndroidUiGestureTarget(jobject event_synthesizer,
-                                               float scroll_ratio)
+AndroidUiGestureTarget::AndroidUiGestureTarget(
+    const base::android::JavaRef<jobject>& event_synthesizer,
+    float scroll_ratio)
     : event_synthesizer_(event_synthesizer), scroll_ratio_(scroll_ratio) {
-  DCHECK(event_synthesizer_);
+  DCHECK(!event_synthesizer_.is_null());
 }
 
 AndroidUiGestureTarget::~AndroidUiGestureTarget() = default;

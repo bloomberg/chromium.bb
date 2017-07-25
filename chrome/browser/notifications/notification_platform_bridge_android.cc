@@ -89,9 +89,8 @@ ScopedJavaLocalRef<jobjectArray> ConvertToJavaActionInfos(
     ScopedJavaLocalRef<jstring> placeholder =
         base::android::ConvertUTF16ToJavaString(env, button.placeholder);
     ScopedJavaLocalRef<jobject> icon = ConvertToJavaBitmap(env, button.icon);
-    ScopedJavaLocalRef<jobject> action_info =
-        Java_ActionInfo_createActionInfo(AttachCurrentThread(), title.obj(),
-                                         icon.obj(), type, placeholder.obj());
+    ScopedJavaLocalRef<jobject> action_info = Java_ActionInfo_createActionInfo(
+        AttachCurrentThread(), title, icon, type, placeholder);
     env->SetObjectArrayElement(actions, i, action_info.obj());
   }
 

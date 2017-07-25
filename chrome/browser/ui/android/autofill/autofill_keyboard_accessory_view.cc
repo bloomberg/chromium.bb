@@ -19,6 +19,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace autofill {
@@ -28,7 +29,7 @@ namespace {
 void AddToJavaArray(const Suggestion& suggestion,
                     int icon_id,
                     JNIEnv* env,
-                    jobjectArray data_array,
+                    const JavaRef<jobjectArray>& data_array,
                     size_t position,
                     bool deletable) {
   int android_icon_id = 0;
@@ -102,7 +103,7 @@ void AutofillKeyboardAccessoryView::OnSuggestionsChanged() {
       AddToJavaArray(
           suggestion,
           controller_->layout_model().GetIconResourceID(suggestion.icon), env,
-          data_array.obj(), position, false);
+          data_array, position, false);
       positions_[position++] = i;
     }
   }
@@ -115,9 +116,10 @@ void AutofillKeyboardAccessoryView::OnSuggestionsChanged() {
         suggestion.frontend_id != POPUP_ITEM_ID_CREATE_HINT) {
       bool deletable =
           controller_->GetRemovalConfirmationText(i, nullptr, nullptr);
-      AddToJavaArray(suggestion, controller_->layout_model().GetIconResourceID(
-                                     suggestion.icon),
-                     env, data_array.obj(), position, deletable);
+      AddToJavaArray(
+          suggestion,
+          controller_->layout_model().GetIconResourceID(suggestion.icon), env,
+          data_array, position, deletable);
       positions_[position++] = i;
     }
   }

@@ -21,6 +21,7 @@
 
 using base::android::ConvertJavaStringToUTF16;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 
 constexpr int kMaxRetries = 10;
 
@@ -31,7 +32,7 @@ const char kProtocolCgiVariable[] = "rep";
 namespace chrome {
 namespace android {
 
-RlzPingHandler::RlzPingHandler(jobject jprofile) {
+RlzPingHandler::RlzPingHandler(const JavaRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   DCHECK(profile);
   request_context_ = profile->GetRequestContext();

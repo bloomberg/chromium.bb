@@ -425,13 +425,13 @@ void NTPSnippetsBridge::OnSuggestionInvalidated(
     const ContentSuggestion::ID& suggestion_id) {
   JNIEnv* env = AttachCurrentThread();
   Java_SnippetsBridge_onSuggestionInvalidated(
-      env, bridge_.obj(), static_cast<int>(suggestion_id.category().id()),
-      ConvertUTF8ToJavaString(env, suggestion_id.id_within_category()).obj());
+      env, bridge_, static_cast<int>(suggestion_id.category().id()),
+      ConvertUTF8ToJavaString(env, suggestion_id.id_within_category()));
 }
 
 void NTPSnippetsBridge::OnFullRefreshRequired() {
   JNIEnv* env = AttachCurrentThread();
-  Java_SnippetsBridge_onFullRefreshRequired(env, bridge_.obj());
+  Java_SnippetsBridge_onFullRefreshRequired(env, bridge_);
 }
 
 void NTPSnippetsBridge::ContentSuggestionsServiceShutdown() {
