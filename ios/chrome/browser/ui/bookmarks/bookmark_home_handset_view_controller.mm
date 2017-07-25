@@ -193,6 +193,7 @@ using bookmarks::BookmarkNode;
   self.folderView.frame = self.panelView.contentView.bounds;
   [self.panelView.contentView addSubview:self.folderView];
   [self.panelView.menuView addSubview:self.menuView];
+  [self.menuView setFrame:self.panelView.menuView.bounds];
 
   // Load the last primary menu item which the user had active.
   BookmarkMenuItem* item = nil;
