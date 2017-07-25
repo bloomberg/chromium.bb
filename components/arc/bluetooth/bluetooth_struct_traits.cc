@@ -4,13 +4,13 @@
 
 #include "components/arc/bluetooth/bluetooth_struct_traits.h"
 
-#include <algorithm>
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -27,9 +27,7 @@ bool IsNonHex(char c) {
 
 std::string StripNonHex(const std::string& str) {
   std::string result = str;
-  result.erase(std::remove_if(result.begin(), result.end(), IsNonHex),
-               result.end());
-
+  base::EraseIf(result, IsNonHex);
   return result;
 }
 
