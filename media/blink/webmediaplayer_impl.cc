@@ -416,8 +416,6 @@ void WebMediaPlayerImpl::EnteredFullscreen() {
       DoesOverlaySupportMetadata()) {
     EnableOverlay();
   }
-  if (observer_)
-    observer_->OnEnteredFullscreen();
 
   // We send this only if we can send multiple calls.  Otherwise, either (a)
   // we already sent it and we don't have a callback anyway (we reset it when
@@ -437,8 +435,6 @@ void WebMediaPlayerImpl::ExitedFullscreen() {
   // overlay mode all the time.
   if (!force_video_overlays_ && overlay_enabled_)
     DisableOverlay();
-  if (observer_)
-    observer_->OnExitedFullscreen();
 
   // See EnteredFullscreen for why we do this.
   if (!decoder_requires_restart_for_overlay_)
