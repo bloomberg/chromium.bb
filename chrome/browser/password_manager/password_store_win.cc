@@ -186,11 +186,11 @@ void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
 
 PasswordStoreWin::PasswordStoreWin(
     scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
-    scoped_refptr<base::SequencedTaskRunner> db_thread_runner,
+    scoped_refptr<base::SequencedTaskRunner> background_thread_runner,
     std::unique_ptr<password_manager::LoginDatabase> login_db,
     const scoped_refptr<PasswordWebDataService>& web_data_service)
     : PasswordStoreDefault(main_thread_runner,
-                           db_thread_runner,
+                           background_thread_runner,
                            std::move(login_db)) {
   db_handler_.reset(new DBHandler(web_data_service, this));
 }
@@ -198,14 +198,15 @@ PasswordStoreWin::PasswordStoreWin(
 PasswordStoreWin::~PasswordStoreWin() {
 }
 
-void PasswordStoreWin::ShutdownOnDBThread() {
+void PasswordStoreWin::ShutdownOnBackgroundThread() {
   DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   db_handler_.reset();
 }
 
 void PasswordStoreWin::ShutdownOnUIThread() {
   GetBackgroundTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&PasswordStoreWin::ShutdownOnDBThread, this));
+      FROM_HERE,
+      base::Bind(&PasswordStoreWin::ShutdownOnBackgroundThread, this));
   PasswordStoreDefault::ShutdownOnUIThread();
 }
 
