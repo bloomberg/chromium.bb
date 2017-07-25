@@ -1862,6 +1862,7 @@ if (enable_java_templates) {
     android_manifest_target = "${_template_name}__merge_manifests"
     action(android_manifest_target) {
       script = "//build/android/gyp/merge_manifest.py"
+      depfile = "$target_gen_dir/$target_name.d"
 
       sources = [
         _android_root_manifest,
@@ -1872,6 +1873,8 @@ if (enable_java_templates) {
       ]
 
       args = [
+        "--depfile",
+        rebase_path(depfile, root_build_dir),
         "--build-vars",
         rebase_path(android_build_vars, root_build_dir),
         "--root-manifest",
