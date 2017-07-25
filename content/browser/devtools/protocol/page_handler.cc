@@ -574,6 +574,15 @@ Response PageHandler::ProcessNavigation(const std::string& response,
   return Response::InvalidParams("Unrecognized response");
 }
 
+Response PageHandler::BringToFront() {
+  WebContentsImpl* wc = GetWebContents();
+  if (wc) {
+    wc->Activate();
+    return Response::OK();
+  }
+  return Response::InternalError();
+}
+
 std::unique_ptr<PageNavigationThrottle>
 PageHandler::CreateThrottleForNavigation(NavigationHandle* navigation_handle) {
   if (!navigation_throttle_enabled_)
