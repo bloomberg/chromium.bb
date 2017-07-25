@@ -76,9 +76,10 @@ var TestSiteSettingsPrefsBrowserProxy = function() {
     'removeProtocolHandler',
     'removeUsbDevice',
     'removeZoomLevel',
-    'resetCategoryPermissionForOrigin',
-    'setCategoryPermissionForOrigin',
+    'resetCategoryPermissionForPattern',
+    'setCategoryPermissionForPattern',
     'setDefaultValueForContentType',
+    'setOriginPermissions',
     'setProtocolDefault',
     'updateIncognitoStatus',
   ]);
@@ -163,6 +164,12 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
   setDefaultValueForContentType: function(contentType, defaultValue) {
     this.methodCalled(
         'setDefaultValueForContentType', [contentType, defaultValue]);
+  },
+
+  /** @override */
+  setOriginPermissions: function(origin, contentTypes, blanketSetting) {
+    this.methodCalled(
+        'setOriginPermissions', [origin, contentTypes, blanketSetting]);
   },
 
   /** @override */
@@ -289,9 +296,10 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
   },
 
   /** @override */
-  resetCategoryPermissionForOrigin: function(
+  resetCategoryPermissionForPattern: function(
       primaryPattern, secondaryPattern, contentType, incognito) {
-    this.methodCalled('resetCategoryPermissionForOrigin',
+    this.methodCalled(
+        'resetCategoryPermissionForPattern',
         [primaryPattern, secondaryPattern, contentType, incognito]);
     return Promise.resolve();
   },
@@ -348,9 +356,10 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
   },
 
   /** @override */
-  setCategoryPermissionForOrigin: function(
+  setCategoryPermissionForPattern: function(
       primaryPattern, secondaryPattern, contentType, value, incognito) {
-    this.methodCalled('setCategoryPermissionForOrigin',
+    this.methodCalled(
+        'setCategoryPermissionForPattern',
         [primaryPattern, secondaryPattern, contentType, value, incognito]);
     return Promise.resolve();
   },

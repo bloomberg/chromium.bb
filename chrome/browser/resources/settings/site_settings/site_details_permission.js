@@ -90,26 +90,12 @@ Polymer({
   },
 
   /**
-   * Resets the category permission for this origin.
-   */
-  resetPermission: function() {
-    this.browserProxy.resetCategoryPermissionForOrigin(
-        this.site.origin, this.site.embeddingOrigin, this.category,
-        this.site.incognito);
-  },
-
-  /**
    * Handles the category permission changing for this origin.
    * @private
    */
   onPermissionSelectionChange_: function() {
-    if (this.$.permission.value == settings.ContentSetting.DEFAULT) {
-      this.resetPermission();
-      return;
-    }
-    this.browserProxy.setCategoryPermissionForOrigin(
-        this.site.origin, this.site.embeddingOrigin, this.category,
-        this.$.permission.value, this.site.incognito);
+    this.browserProxy.setOriginPermissions(
+        this.site.origin, [this.category], this.$.permission.value);
   },
 
   /**

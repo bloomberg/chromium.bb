@@ -204,6 +204,9 @@ ContentSettingsContentSettingSetFunction::Run() {
   ContentSetting setting;
   EXTENSION_FUNCTION_VALIDATE(
       content_settings::ContentSettingFromString(setting_str, &setting));
+  // The content settings extensions API does not support setting any content
+  // settings to |CONTENT_SETTING_DEFAULT|.
+  EXTENSION_FUNCTION_VALIDATE(CONTENT_SETTING_DEFAULT != setting);
   EXTENSION_FUNCTION_VALIDATE(
       content_settings::ContentSettingsRegistry::GetInstance()
           ->Get(content_type)

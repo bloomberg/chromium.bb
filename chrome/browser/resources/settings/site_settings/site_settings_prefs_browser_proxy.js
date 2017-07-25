@@ -121,41 +121,56 @@ cr.define('settings', function() {
     getExceptionList(contentType) {}
 
     /**
-     * Resets the category permission for a given origin (expressed as primary
-     *    and secondary patterns).
-     * @param {string} primaryPattern The origin to change (primary pattern).
-     * @param {string} secondaryPattern The embedding origin to change
-     *    (secondary pattern).
-     * @param {string} contentType The name of the category to reset.
-     * @param {boolean} incognito Whether this applies only to a current
-     *     incognito session exception.
-     */
-    resetCategoryPermissionForOrigin(
-        primaryPattern, secondaryPattern, contentType, incognito) {}
-
-    /**
      * Gets a list of category permissions for a given origin. Note that this
      * may be different to the results retrieved by getExceptionList(), since it
      * combines different sources of data to get a permission's value.
      * @param {string} origin The origin to look up permissions for.
-     * @param {!Array<string>} contentTypes A list of categories to retrieve
-     *     the ContentSetting for.
+     * @param {!Array<!settings.ContentSettingsTypes>} contentTypes A list of
+     *     categories to retrieve the ContentSetting for.
      * @return {!Promise<!NodeList<!RawSiteException>>}
      */
     getOriginPermissions(origin, contentTypes) {}
 
     /**
-     * Sets the category permission for a given origin (expressed as primary
-     *    and secondary patterns).
+     * Resets the permissions for a list of categories for a given origin. This
+     * does not support incognito settings or patterns.
+     * @param {string} origin The origin to reset permissions for.
+     * @param {!Array<!settings.ContentSettingsTypes>} contentTypes A list of
+     *     categories to set the permission for. Typically this would be a
+     *     single category, but sometimes it is useful to clear any permissions
+     *     set for all categories.
+     * @param {!settings.ContentSetting} blanketSetting The setting to set all
+     *     permissions listed in |contentTypes| to.
+     */
+    setOriginPermissions(origin, contentTypes, blanketSetting) {}
+
+    /**
+     * Resets the category permission for a given origin (expressed as primary
+     * and secondary patterns). Only use this if intending to remove an
+     * exception - use setOriginPermissions() for origin-scoped settings.
      * @param {string} primaryPattern The origin to change (primary pattern).
      * @param {string} secondaryPattern The embedding origin to change
-     *    (secondary pattern).
+     *     (secondary pattern).
+     * @param {string} contentType The name of the category to reset.
+     * @param {boolean} incognito Whether this applies only to a current
+     *     incognito session exception.
+     */
+    resetCategoryPermissionForPattern(
+        primaryPattern, secondaryPattern, contentType, incognito) {}
+
+    /**
+     * Sets the category permission for a given origin (expressed as primary and
+     * secondary patterns). Only use this if intending to set an exception - use
+     * setOriginPermissions() for origin-scoped settings.
+     * @param {string} primaryPattern The origin to change (primary pattern).
+     * @param {string} secondaryPattern The embedding origin to change
+     *     (secondary pattern).
      * @param {string} contentType The name of the category to change.
      * @param {string} value The value to change the permission to.
      * @param {boolean} incognito Whether this rule applies only to the current
      *     incognito session.
      */
-    setCategoryPermissionForOrigin(
+    setCategoryPermissionForPattern(
         primaryPattern, secondaryPattern, contentType, value, incognito) {}
 
     /**
@@ -307,26 +322,32 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    resetCategoryPermissionForOrigin(
-        primaryPattern, secondaryPattern, contentType, incognito) {
-      chrome.send(
-          'resetCategoryPermissionForOrigin',
-          [primaryPattern, secondaryPattern, contentType, incognito]);
-    }
-
-    /** @override */
     getOriginPermissions(origin, contentTypes) {
       return cr.sendWithPromise('getOriginPermissions', origin, contentTypes);
     }
 
     /** @override */
-    setCategoryPermissionForOrigin(
+    setOriginPermissions(origin, contentTypes, blanketSetting) {
+      chrome.send(
+          'setOriginPermissions', [origin, contentTypes, blanketSetting]);
+    }
+
+    /** @override */
+    resetCategoryPermissionForPattern(
+        primaryPattern, secondaryPattern, contentType, incognito) {
+      chrome.send(
+          'resetCategoryPermissionForPattern',
+          [primaryPattern, secondaryPattern, contentType, incognito]);
+    }
+
+    /** @override */
+    setCategoryPermissionForPattern(
         primaryPattern, secondaryPattern, contentType, value, incognito) {
       // TODO(dschuyler): It may be incorrect for JS to send the embeddingOrigin
       // pattern. Look into removing this parameter from site_settings_handler.
       // Ignoring the |secondaryPattern| and using '' instead is a quick-fix.
       chrome.send(
-          'setCategoryPermissionForOrigin',
+          'setCategoryPermissionForPattern',
           [primaryPattern, '', contentType, value, incognito]);
     }
 

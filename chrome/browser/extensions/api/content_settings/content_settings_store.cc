@@ -339,6 +339,9 @@ void ContentSettingsStore::SetExtensionContentSettingFromList(
     bool result = content_settings::ContentSettingFromString(
         content_setting_string, &setting);
     DCHECK(result);
+    // The content settings extensions API does not support setting any content
+    // settings to |CONTENT_SETTING_DEFAULT|.
+    DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
 
     SetExtensionContentSetting(extension_id,
                                primary_pattern,

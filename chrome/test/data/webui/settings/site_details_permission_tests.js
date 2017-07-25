@@ -59,25 +59,16 @@ suite('SiteDetailsPermission', function() {
   };
 
   function validatePermissionFlipWorks(origin, expectedContentSetting) {
-    // Flipping a permission typically calls setCategoryPermissionForOrigin, but
-    // clearing it should call resetCategoryPermissionForOrigin.
-    var isReset = expectedContentSetting == settings.ContentSetting.DEFAULT;
-    var expectedMethodCalled = isReset ? 'resetCategoryPermissionForOrigin' :
-                                         'setCategoryPermissionForOrigin';
-    browserProxy.resetResolver(expectedMethodCalled);
+    browserProxy.resetResolver('setOriginPermissions');
 
     // Simulate permission change initiated by the user.
     testElement.$.permission.value = expectedContentSetting;
     testElement.$.permission.dispatchEvent(new CustomEvent('change'));
 
-    return browserProxy.whenCalled(expectedMethodCalled).then(function(args) {
+    return browserProxy.whenCalled('setOriginPermissions').then(function(args) {
       assertEquals(origin, args[0]);
-      assertEquals('', args[1]);
-      assertEquals(testElement.category, args[2]);
-      // Since resetting the permission doesn't return its new value, don't
-      // test it here - checking that the correct method was called is fine.
-      if (!isReset)
-        assertEquals(expectedContentSetting, args[3]);
+      assertDeepEquals([testElement.category], args[1]);
+      assertEquals(expectedContentSetting, args[2]);
     });
   };
 
@@ -123,6 +114,55 @@ suite('SiteDetailsPermission', function() {
       origin: origin,
       embeddingOrigin: '',
       setting: settings.ContentSetting.ALLOW,
+    };
+
+    return browserProxy.whenCalled('getDefaultValueForContentType')
+        .then(function() {
+          // The default option will always be the first in the menu.
+          assertEquals(
+              'Allow (default)', testElement.$.permission.options[0].text,
+              'Default setting string should match prefs');
+          browserProxy.resetResolver('getDefaultValueForContentType');
+          prefs.defaults.camera.setting = settings.ContentSetting.BLOCK;
+          browserProxy.setPrefs(prefs);
+          // Trigger a call to siteChanged_() by touching |testElement.site|.
+          testElement.site = {
+            origin: origin,
+            embeddingOrigin: '',
+            setting: settings.ContentSetting.BLOCK
+          };
+          return browserProxy.whenCalled('getDefaultValueForContentType');
+        })
+        .then(function() {
+          assertEquals(
+              'Block (default)', testElement.$.permission.options[0].text,
+              'Default setting string should match prefs');
+          browserProxy.resetResolver('getDefaultValueForContentType');
+          prefs.defaults.camera.setting = settings.ContentSetting.ASK;
+          browserProxy.setPrefs(prefs);
+          // Trigger a call to siteChanged_() by touching |testElement.site|.
+          testElement.site = {
+            origin: origin,
+            embeddingOrigin: '',
+            setting: settings.ContentSetting.ASK
+          };
+          return browserProxy.whenCalled('getDefaultValueForContentType');
+        })
+        .then(function() {
+          assertEquals(
+              'Ask (default)', testElement.$.permission.options[0].text,
+              'Default setting string should match prefs');
+        });
+  });
+
+  test('default string is correct', function() {
+    var origin = 'https://www.example.com';
+    browserProxy.setPrefs(prefs)
+    testElement.category = settings.ContentSettingsTypes.CAMERA;
+    testElement.label = 'Camera';
+    testElement.site = {
+      origin: origin,
+      embeddingOrigin: '',
     };
 
     return browserProxy.whenCalled('getDefaultValueForContentType')

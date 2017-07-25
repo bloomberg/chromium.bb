@@ -49,11 +49,11 @@ Polymer({
   onActionButtonTap_: function() {
     if (this.model.origin != this.origin_) {
       // The way to "edit" an exception is to remove it and and a new one.
-      this.browserProxy_.resetCategoryPermissionForOrigin(
+      this.browserProxy_.resetCategoryPermissionForPattern(
           this.model.origin, this.model.embeddingOrigin, this.model.category,
           this.model.incognito);
 
-      this.browserProxy_.setCategoryPermissionForOrigin(
+      this.browserProxy_.setCategoryPermissionForPattern(
           this.origin_, this.origin_, this.model.category, this.model.setting,
           this.model.incognito);
     }
