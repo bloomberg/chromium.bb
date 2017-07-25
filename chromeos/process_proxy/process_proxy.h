@@ -45,6 +45,7 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
 
   bool StartWatchingOutput(
       const scoped_refptr<base::SingleThreadTaskRunner>& watcher_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& callback_runner,
       const OutputCallback& callback);
 
   // Sends some data to the process.
