@@ -248,8 +248,8 @@ const CGFloat kAnimationDuration = 0.3;
 
     // Additional Information.
     [_additionalInformationLabel.topAnchor
-        constraintEqualToAnchor:_titleLabel.bottomAnchor
-                       constant:kStandardSpacing],
+        constraintGreaterThanOrEqualToAnchor:_titleLabel.bottomAnchor
+                                    constant:kStandardSpacing],
     [_additionalInformationLabel.trailingAnchor
         constraintEqualToAnchor:_titleLabel.trailingAnchor],
     [_additionalInformationLabel.bottomAnchor
