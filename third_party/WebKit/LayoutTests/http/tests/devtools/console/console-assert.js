@@ -1,49 +1,39 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
-function b()
-{
-    console.assert(false, 1);
-    console.assert(false, "a", "b");
-}
+(async function() {
+  TestRunner.addResult('Tests that console.assert() will dump a message and stack trace with source URLs and line numbers.\n');
 
-function a()
-{
-    b();
-}
-//# sourceURL=console-assert.html
-</script>
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadPanel('console');
 
-<script>
-function test()
-{
-    var callCount = 0;
-    function callback()
+  await TestRunner.evaluateInPagePromise(`
+    function b()
     {
-        if (++callCount === 2)
-            InspectorTest.expandConsoleMessages(onExpandedMessages);
+        console.assert(false, 1);
+        console.assert(false, "a", "b");
     }
 
-    function onExpandedMessages()
+    function a()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        b();
     }
+    //# sourceURL=console-assert.js
+  `);
 
-    InspectorTest.evaluateInPage("setTimeout(a, 0)");
-    InspectorTest.addConsoleSniffer(callback, true);
-}
+  var callCount = 0;
 
-</script>
-</head>
+  function callback() {
+    if (++callCount === 2)
+      ConsoleTestRunner.expandConsoleMessages(onExpandedMessages);
+  }
 
-<body onload="runTest()">
-<p>
-Tests that console.assert() will dump a message and stack trace with source URLs and line numbers.
-</p>
+  function onExpandedMessages() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 
-</body>
-</html>
+  TestRunner.evaluateInPage('setTimeout(a, 0)');
+  ConsoleTestRunner.addConsoleSniffer(callback, true);
+})();

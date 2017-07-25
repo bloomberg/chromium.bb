@@ -1,54 +1,44 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function logToConsole()
-{
-    console.log(new Int8Array(10));
-    console.log(new Int16Array(10));
-    console.log(new Int32Array(10));
-    console.log(new Uint8Array(10));
-    console.log(new Uint16Array(10));
-    console.log(new Uint32Array(10));
-    console.log(new Float32Array(10));
-    console.log(new Float64Array(10));
+(async function() {
+  TestRunner.addResult('Tests that console logging detects external arrays as arrays.\n');
 
-    console.dir(new Int8Array(10));
-    console.dir(new Int16Array(10));
-    console.dir(new Int32Array(10));
-    console.dir(new Uint8Array(10));
-    console.dir(new Uint16Array(10));
-    console.dir(new Uint32Array(10));
-    console.dir(new Float32Array(10));
-    console.dir(new Float64Array(10));
-}
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadPanel('console');
 
-function test()
-{
-    InspectorTest.evaluateInPage("logToConsole()", onLoggedToConsole);
-
-
-    function onLoggedToConsole()
+  await TestRunner.evaluateInPagePromise(`
+    function logToConsole()
     {
-        InspectorTest.waitForRemoteObjectsConsoleMessages(onRemoteObjectsLoaded)
+        console.log(new Int8Array(10));
+        console.log(new Int16Array(10));
+        console.log(new Int32Array(10));
+        console.log(new Uint8Array(10));
+        console.log(new Uint16Array(10));
+        console.log(new Uint32Array(10));
+        console.log(new Float32Array(10));
+        console.log(new Float64Array(10));
+
+        console.dir(new Int8Array(10));
+        console.dir(new Int16Array(10));
+        console.dir(new Int32Array(10));
+        console.dir(new Uint8Array(10));
+        console.dir(new Uint16Array(10));
+        console.dir(new Uint32Array(10));
+        console.dir(new Float32Array(10));
+        console.dir(new Float64Array(10));
     }
+  `);
 
-    function onRemoteObjectsLoaded()
-    {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
-    }
-}
+  TestRunner.evaluateInPage('logToConsole()', onLoggedToConsole);
 
-</script>
-</head>
+  function onLoggedToConsole() {
+    ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(onRemoteObjectsLoaded);
+  }
 
-<body onload="runTest()">
-<p>
-Tests that console logging detects external arrays as arrays.
-</p>
-
-</body>
-</html>
+  function onRemoteObjectsLoaded() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
+})();

@@ -1,32 +1,26 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function logSymbolToConsoleWithError()
-{
-    Symbol.prototype.toString = function (arg) { throw new Error(); };
-    var smb = Symbol();
-    console.log(smb);
-}
+(async function() {
+  TestRunner.addResult('Tests that console properly displays information about ES6 Symbols.\n');
 
-function test()
-{
-    InspectorTest.evaluateInPage("logSymbolToConsoleWithError()", complete);
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadPanel('console');
 
-    function complete()
+  await TestRunner.evaluateInPagePromise(`
+    function logSymbolToConsoleWithError()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        Symbol.prototype.toString = function (arg) { throw new Error(); };
+        var smb = Symbol();
+        console.log(smb);
     }
-}
-</script>
-</head>
+  `);
 
-<body onload="runTest()">
-<p>
-Tests that console properly displays information about ES6 Symbols.
-</p>
-</body>
-</html>
+  TestRunner.evaluateInPage('logSymbolToConsoleWithError()', complete);
+
+  function complete() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
+})();

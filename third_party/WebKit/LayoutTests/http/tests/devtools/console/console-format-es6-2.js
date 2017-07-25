@@ -1,85 +1,74 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-var globals = [];
+(async function() {
+  TestRunner.addResult('Tests that console properly displays information about ES6 features.\n');
 
-function log(current)
-{
-    console.log(globals[current]);
-    console.log([globals[current]]);
-}
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadPanel('console');
 
-function onload()
-{
-    var map2 = new Map();
-    map2.set(41, 42);
-    map2.set({foo: 1}, {foo: 2});
-
-    var iter1 = map2.values();
-    iter1.next();
-
-    var set2 = new Set();
-    set2.add(41);
-    set2.add({foo: 1});
-
-    var iter2 = set2.keys();
-    iter2.next();
-
-    globals = [
-        map2.keys(), map2.values(), map2.entries(),
-        set2.keys(), set2.values(), set2.entries(),
-        iter1, iter2,
-    ];
-
-    runTest();
-}
-
-function test()
-{
-    InspectorTest.evaluateInPage("globals.length", loopOverGlobals.bind(this, 0));
-
-    function loopOverGlobals(current, total)
+  await TestRunner.evaluateInPagePromise(`
+    var globals = [];
+    function log(current)
     {
-        function advance()
-        {
-            var next = current + 1;
-            if (next == total.description)
-                finish();
-            else
-                loopOverGlobals(next, total);
-        }
-
-        function finish()
-        {
-            InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
-            InspectorTest.addResult("Expanded all messages");
-            InspectorTest.expandConsoleMessages(dumpConsoleMessages);
-        }
-
-        function dumpConsoleMessages()
-        {
-            InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
-            InspectorTest.completeTest();
-        }
-
-        InspectorTest.evaluateInPage("log(" + current + ")");
-        InspectorTest.deprecatedRunAfterPendingDispatches(evalInConsole);
-        function evalInConsole()
-        {
-            InspectorTest.evaluateInConsole("globals[" + current + "]");
-            InspectorTest.deprecatedRunAfterPendingDispatches(advance);
-        }
+        console.log(globals[current]);
+        console.log([globals[current]]);
     }
-}
-</script>
-</head>
+    (function onload()
+    {
+        var map2 = new Map();
+        map2.set(41, 42);
+        map2.set({foo: 1}, {foo: 2});
 
-<body onload="onload()">
-<p>
-Tests that console properly displays information about ES6 features.
-</p>
-</body>
-</html>
+        var iter1 = map2.values();
+        iter1.next();
+
+        var set2 = new Set();
+        set2.add(41);
+        set2.add({foo: 1});
+
+        var iter2 = set2.keys();
+        iter2.next();
+
+        globals = [
+            map2.keys(), map2.values(), map2.entries(),
+            set2.keys(), set2.values(), set2.entries(),
+            iter1, iter2,
+        ];
+
+    })();
+  `);
+
+  TestRunner.evaluateInPage('globals.length', loopOverGlobals.bind(this, 0));
+
+  function loopOverGlobals(current, total) {
+    function advance() {
+      var next = current + 1;
+
+      if (next == total.description)
+        finish();
+      else
+        loopOverGlobals(next, total);
+    }
+
+    function finish() {
+      ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+      TestRunner.addResult('Expanded all messages');
+      ConsoleTestRunner.expandConsoleMessages(dumpConsoleMessages);
+    }
+
+    function dumpConsoleMessages() {
+      ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+      TestRunner.completeTest();
+    }
+
+    TestRunner.evaluateInPage('log(' + current + ')');
+    TestRunner.deprecatedRunAfterPendingDispatches(evalInConsole);
+
+    function evalInConsole() {
+      ConsoleTestRunner.evaluateInConsole('globals[' + current + ']');
+      TestRunner.deprecatedRunAfterPendingDispatches(advance);
+    }
+  }
+})();
