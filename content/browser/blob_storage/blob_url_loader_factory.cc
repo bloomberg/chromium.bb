@@ -38,7 +38,7 @@ constexpr size_t kDefaultAllocationSize = 512 * 1024;
 // Note: some of this code is duplicated from storage::BlobURLRequestJob.
 class BlobURLLoader : public mojom::URLLoader {
  public:
-  BlobURLLoader(mojom::URLLoaderAssociatedRequest url_loader_request,
+  BlobURLLoader(mojom::URLLoaderRequest url_loader_request,
                 const ResourceRequest& request,
                 mojom::URLLoaderClientPtr client,
                 std::unique_ptr<storage::BlobDataHandle> blob_handle,
@@ -322,7 +322,7 @@ class BlobURLLoader : public mojom::URLLoader {
       delete this;
   }
 
-  mojo::AssociatedBinding<mojom::URLLoader> binding_;
+  mojo::Binding<mojom::URLLoader> binding_;
   mojom::URLLoaderClientPtr client_;
 
   bool byte_range_set_ = false;
@@ -389,7 +389,7 @@ void BlobURLLoaderFactory::BindOnIO(mojom::URLLoaderFactoryRequest request) {
 
 // static
 void BlobURLLoaderFactory::CreateLoaderAndStart(
-    mojom::URLLoaderAssociatedRequest loader,
+    mojom::URLLoaderRequest loader,
     const ResourceRequest& request,
     mojom::URLLoaderClientPtr client,
     std::unique_ptr<storage::BlobDataHandle> blob_handle,
@@ -399,7 +399,7 @@ void BlobURLLoaderFactory::CreateLoaderAndStart(
 }
 
 void BlobURLLoaderFactory::CreateLoaderAndStart(
-    mojom::URLLoaderAssociatedRequest loader,
+    mojom::URLLoaderRequest loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,

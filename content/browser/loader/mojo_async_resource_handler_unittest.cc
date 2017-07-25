@@ -208,7 +208,7 @@ class MojoAsyncResourceHandlerWithStubOperations
   MojoAsyncResourceHandlerWithStubOperations(
       net::URLRequest* request,
       ResourceDispatcherHostImpl* rdh,
-      mojom::URLLoaderAssociatedRequest mojo_request,
+      mojom::URLLoaderRequest mojo_request,
       mojom::URLLoaderClientPtr url_loader_client)
       : MojoAsyncResourceHandler(request,
                                  rdh,
@@ -291,7 +291,7 @@ class TestURLLoaderFactory final : public mojom::URLLoaderFactory {
   TestURLLoaderFactory() {}
   ~TestURLLoaderFactory() override {}
 
-  void CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest request,
+  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
@@ -303,7 +303,7 @@ class TestURLLoaderFactory final : public mojom::URLLoaderFactory {
     client_ptr_ = std::move(client_ptr);
   }
 
-  mojom::URLLoaderAssociatedRequest PassLoaderRequest() {
+  mojom::URLLoaderRequest PassLoaderRequest() {
     return std::move(loader_request_);
   }
 
@@ -317,7 +317,7 @@ class TestURLLoaderFactory final : public mojom::URLLoaderFactory {
   }
 
  private:
-  mojom::URLLoaderAssociatedRequest loader_request_;
+  mojom::URLLoaderRequest loader_request_;
   mojom::URLLoaderClientPtr client_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactory);
@@ -422,7 +422,7 @@ class MojoAsyncResourceHandlerTestBase {
   TestResourceDispatcherHostDelegate rdh_delegate_;
   ResourceDispatcherHostImpl rdh_;
   mojom::URLLoaderFactoryPtr url_loader_factory_;
-  mojom::URLLoaderAssociatedPtr url_loader_proxy_;
+  mojom::URLLoaderPtr url_loader_proxy_;
   TestURLLoaderClient url_loader_client_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   net::TestDelegate url_request_delegate_;

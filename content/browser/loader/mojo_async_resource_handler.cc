@@ -60,7 +60,7 @@ void InitializeResourceBufferConstants() {
   GetNumericArg("resource-buffer-size", &g_allocation_size);
 }
 
-void NotReached(mojom::URLLoaderAssociatedRequest mojo_request,
+void NotReached(mojom::URLLoaderRequest mojo_request,
                 mojom::URLLoaderClientPtr url_loader_client) {
   NOTREACHED();
 }
@@ -115,7 +115,7 @@ class MojoAsyncResourceHandler::WriterIOBuffer final
 MojoAsyncResourceHandler::MojoAsyncResourceHandler(
     net::URLRequest* request,
     ResourceDispatcherHostImpl* rdh,
-    mojom::URLLoaderAssociatedRequest mojo_request,
+    mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client,
     ResourceType resource_type)
     : ResourceHandler(request),
@@ -587,7 +587,7 @@ MojoAsyncResourceHandler::CreateUploadProgressTracker(
 }
 
 void MojoAsyncResourceHandler::OnTransfer(
-    mojom::URLLoaderAssociatedRequest mojo_request,
+    mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client) {
   binding_.Unbind();
   binding_.Bind(std::move(mojo_request));

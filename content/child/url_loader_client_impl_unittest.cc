@@ -12,8 +12,8 @@
 #include "content/child/test_request_peer.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "ipc/ipc_sender.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,7 +53,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
     return false;
   }
 
-  void CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest request,
+  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,

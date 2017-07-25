@@ -289,7 +289,7 @@ void ServiceWorkerURLLoaderJob::StartResponse(
   if (!response.blob_uuid.empty() && blob_storage_context_) {
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
         blob_storage_context_->GetBlobDataFromUUID(response.blob_uuid);
-    mojom::URLLoaderAssociatedRequest request;
+    mojom::URLLoaderRequest request;
     mojom::URLLoaderClientPtr client;
     blob_client_binding_.Bind(mojo::MakeRequest(&client));
     BlobURLLoaderFactory::CreateLoaderAndStart(

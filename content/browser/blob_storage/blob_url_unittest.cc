@@ -280,7 +280,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
       if (!extra_headers.IsEmpty())
         request.headers = extra_headers.ToString();
 
-      mojom::URLLoaderAssociatedPtr url_loader;
+      mojom::URLLoaderPtr url_loader;
       TestURLLoaderClient url_loader_client;
       scoped_refptr<BlobURLLoaderFactory> factory =
           BlobURLLoaderFactory::Create(

@@ -166,7 +166,7 @@ void ThrottlingURLLoader::StartNow(
   if (factory) {
     DCHECK(!start_loader_callback);
 
-    mojom::URLLoaderAssociatedPtr url_loader;
+    mojom::URLLoaderPtr url_loader;
     auto url_loader_request = mojo::MakeRequest(&url_loader);
     url_loader_ = std::move(url_loader);
     factory->CreateLoaderAndStart(

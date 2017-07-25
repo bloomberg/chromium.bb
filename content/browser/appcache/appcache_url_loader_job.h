@@ -19,7 +19,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/url_loader.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
@@ -36,7 +35,7 @@ struct SubresourceLoadInfo {
   SubresourceLoadInfo();
   ~SubresourceLoadInfo();
 
-  mojom::URLLoaderAssociatedRequest url_loader_request;
+  mojom::URLLoaderRequest url_loader_request;
   int32_t routing_id;
   int32_t request_id;
   uint32_t options;
@@ -198,13 +197,7 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   net::LoadTimingInfo load_timing_info_;
 
   // Used for subresource requests which go to the network.
-  mojom::URLLoaderAssociatedPtr network_loader_;
-
-  // Binds the subresource URLLoaderClient with us. We can use the regular
-  // binding_ member above when we remove the need for the associated requests
-  // issue with URLLoaderFactory.
-  std::unique_ptr<mojo::AssociatedBinding<mojom::URLLoader>>
-      associated_binding_;
+  mojom::URLLoaderPtr network_loader_;
 
   // Network URLLoaderClient binding for subresource requests.
   mojo::Binding<mojom::URLLoaderClient> network_loader_client_binding_;

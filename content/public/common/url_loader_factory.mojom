@@ -21,7 +21,7 @@ interface URLLoaderFactory {
   // method will be called when certain events related to that loading
   // (e.g., response arrival) happen. |request_id| is for compatibility with
   // the existing Chrome IPC.
-  CreateLoaderAndStart(associated URLLoader& loader,
+  CreateLoaderAndStart(URLLoader& loader,
                        int32 routing_id,
                        int32 request_id,
                        uint32 options,

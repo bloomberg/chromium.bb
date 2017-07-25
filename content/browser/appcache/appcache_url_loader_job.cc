@@ -215,9 +215,8 @@ void AppCacheURLLoaderJob::SetSubresourceLoadInfo(
     URLLoaderFactoryGetter* default_url_loader) {
   subresource_load_info_ = std::move(subresource_load_info);
 
-  associated_binding_.reset(new mojo::AssociatedBinding<mojom::URLLoader>(
-      this, std::move(subresource_load_info_->url_loader_request)));
-  associated_binding_->set_connection_error_handler(base::Bind(
+  binding_.Bind(std::move(subresource_load_info_->url_loader_request));
+  binding_.set_connection_error_handler(base::Bind(
       &AppCacheURLLoaderJob::OnConnectionError, StaticAsWeakPtr(this)));
 
   client_ = std::move(subresource_load_info_->client);

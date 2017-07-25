@@ -18,7 +18,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/io_buffer.h"
@@ -54,7 +54,7 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
  public:
   MojoAsyncResourceHandler(net::URLRequest* request,
                            ResourceDispatcherHostImpl* rdh,
-                           mojom::URLLoaderAssociatedRequest mojo_request,
+                           mojom::URLLoaderRequest mojo_request,
                            mojom::URLLoaderClientPtr url_loader_client,
                            ResourceType resource_type);
   ~MojoAsyncResourceHandler() override;
@@ -121,13 +121,13 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
       const tracked_objects::Location& from_here,
       UploadProgressTracker::UploadProgressReportCallback callback);
 
-  void OnTransfer(mojom::URLLoaderAssociatedRequest mojo_request,
+  void OnTransfer(mojom::URLLoaderRequest mojo_request,
                   mojom::URLLoaderClientPtr url_loader_client);
   void SendUploadProgress(const net::UploadProgress& progress);
   void OnUploadProgressACK();
 
   ResourceDispatcherHostImpl* rdh_;
-  mojo::AssociatedBinding<mojom::URLLoader> binding_;
+  mojo::Binding<mojom::URLLoader> binding_;
 
   bool has_checked_for_sufficient_resources_ = false;
   bool sent_received_response_message_ = false;

@@ -267,7 +267,7 @@ class CORSURLLoader : public mojom::URLLoader, public mojom::URLLoaderClient {
   mojom::URLLoaderFactory* network_loader_factory_;
 
   // For the actual request.
-  mojom::URLLoaderAssociatedPtr network_loader_;
+  mojom::URLLoaderPtr network_loader_;
   mojo::Binding<mojom::URLLoaderClient> network_client_binding_;
 
   // To be a URLLoader for the client.
@@ -292,7 +292,7 @@ class CORSURLLoaderFactory : public mojom::URLLoaderFactory {
       : network_loader_factory_(std::move(network_loader_factory)) {}
   ~CORSURLLoaderFactory() override = default;
 
-  void CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest request,
+  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
@@ -300,7 +300,7 @@ class CORSURLLoaderFactory : public mojom::URLLoaderFactory {
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
-    mojo::MakeStrongAssociatedBinding(
+    mojo::MakeStrongBinding(
         base::MakeUnique<CORSURLLoader>(routing_id, request_id, options,
                                         resource_request, std::move(client),
                                         traffic_annotation,
