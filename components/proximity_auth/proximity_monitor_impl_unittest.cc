@@ -17,9 +17,8 @@
 #include "base/time/time.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/remote_device.h"
-#include "components/prefs/testing_pref_service.h"
 #include "components/proximity_auth/logging/logging.h"
-#include "components/proximity_auth/proximity_auth_pref_manager.h"
+#include "components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "components/proximity_auth/proximity_monitor_observer.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -58,9 +57,9 @@ class MockProximityMonitorObserver : public ProximityMonitorObserver {
   DISALLOW_COPY_AND_ASSIGN(MockProximityMonitorObserver);
 };
 
-class MockProximityAuthPrefManager : public ProximityAuthPrefManager {
+class MockProximityAuthPrefManager : public ProximityAuthProfilePrefManager {
  public:
-  MockProximityAuthPrefManager() : ProximityAuthPrefManager(nullptr) {}
+  MockProximityAuthPrefManager() : ProximityAuthProfilePrefManager(nullptr) {}
   ~MockProximityAuthPrefManager() override {}
 
   MOCK_CONST_METHOD0(GetProximityThreshold,

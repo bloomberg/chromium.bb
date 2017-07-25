@@ -43,8 +43,8 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/promotion_manager.h"
-#include "components/proximity_auth/proximity_auth_pref_manager.h"
 #include "components/proximity_auth/proximity_auth_pref_names.h"
+#include "components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "components/proximity_auth/proximity_auth_system.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/switches.h"
@@ -508,6 +508,9 @@ void EasyUnlockServiceRegular::InitializeInternal() {
   registrar_.Add(proximity_auth::prefs::kEasyUnlockProximityThreshold,
                  base::Bind(&EasyUnlockServiceRegular::OnPrefsChanged,
                             base::Unretained(this)));
+  registrar_.Add(proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
+                 base::Bind(&EasyUnlockServiceRegular::OnPrefsChanged,
+                            base::Unretained(this)));
 
   OnPrefsChanged();
 
@@ -517,8 +520,8 @@ void EasyUnlockServiceRegular::InitializeInternal() {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
-    pref_manager_.reset(
-        new proximity_auth::ProximityAuthPrefManager(profile()->GetPrefs()));
+    pref_manager_.reset(new proximity_auth::ProximityAuthProfilePrefManager(
+        profile()->GetPrefs()));
     GetCryptAuthDeviceManager()->AddObserver(this);
     LoadRemoteDevices();
     StartPromotionManager();
@@ -674,12 +677,19 @@ void EasyUnlockServiceRegular::SyncProfilePrefsToLocalState() {
 
   // Create the dictionary of Easy Unlock preferences for the current user. The
   // items in the dictionary are the same profile prefs used for Easy Unlock.
+  // TODO(tengs): Instead of an ad-hoc method here, we should refactor
+  // ProximityAuthPrefManager to sync these prefs to local state instead. See
+  // crbug.com/747635.
   std::unique_ptr<base::DictionaryValue> user_prefs_dict(
       new base::DictionaryValue());
   user_prefs_dict->SetIntegerWithoutPathExpansion(
       proximity_auth::prefs::kEasyUnlockProximityThreshold,
       profile_prefs->GetInteger(
           proximity_auth::prefs::kEasyUnlockProximityThreshold));
+  user_prefs_dict->SetBooleanWithoutPathExpansion(
+      proximity_auth::prefs::kEasyUnlockProximityThreshold,
+      profile_prefs->GetBoolean(
+          proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled));
 
   DictionaryPrefUpdate update(local_state,
                               prefs::kEasyUnlockLocalStateUserPrefs);

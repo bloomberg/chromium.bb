@@ -1,8 +1,8 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/proximity_auth_pref_manager.h"
+#include "components/proximity_auth/proximity_auth_profile_pref_manager.h"
 
 #include <memory>
 #include <vector>
@@ -17,13 +17,14 @@
 
 namespace proximity_auth {
 
-ProximityAuthPrefManager::ProximityAuthPrefManager(PrefService* pref_service)
+ProximityAuthProfilePrefManager::ProximityAuthProfilePrefManager(
+    PrefService* pref_service)
     : pref_service_(pref_service) {}
 
-ProximityAuthPrefManager::~ProximityAuthPrefManager() {}
+ProximityAuthProfilePrefManager::~ProximityAuthProfilePrefManager() {}
 
 // static
-void ProximityAuthPrefManager::RegisterPrefs(
+void ProximityAuthProfilePrefManager::RegisterPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterInt64Pref(prefs::kProximityAuthLastPasswordEntryTimestampMs,
                               0L);
@@ -44,18 +45,18 @@ void ProximityAuthPrefManager::RegisterPrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
-bool ProximityAuthPrefManager::HasDeviceWithAddress(
+bool ProximityAuthProfilePrefManager::HasDeviceWithAddress(
     const std::string& bluetooth_address) const {
   return pref_service_->GetDictionary(prefs::kProximityAuthRemoteBleDevices)
       ->HasKey(bluetooth_address);
 }
 
-bool ProximityAuthPrefManager::HasDeviceWithPublicKey(
+bool ProximityAuthProfilePrefManager::HasDeviceWithPublicKey(
     const std::string& public_key) const {
   return !GetDeviceAddress(public_key).empty();
 }
 
-std::string ProximityAuthPrefManager::GetDevicePublicKey(
+std::string ProximityAuthProfilePrefManager::GetDevicePublicKey(
     const std::string& bluetooth_address) const {
   std::string public_key;
   GetRemoteBleDevices()->GetStringWithoutPathExpansion(bluetooth_address,
@@ -63,7 +64,7 @@ std::string ProximityAuthPrefManager::GetDevicePublicKey(
   return public_key;
 }
 
-std::string ProximityAuthPrefManager::GetDeviceAddress(
+std::string ProximityAuthProfilePrefManager::GetDeviceAddress(
     const std::string& public_key) const {
   const base::DictionaryValue* remote_ble_devices = GetRemoteBleDevices();
   for (base::DictionaryValue::Iterator it(*remote_ble_devices); !it.IsAtEnd();
@@ -76,7 +77,8 @@ std::string ProximityAuthPrefManager::GetDeviceAddress(
   return std::string();
 }
 
-std::vector<std::string> ProximityAuthPrefManager::GetPublicKeys() const {
+std::vector<std::string> ProximityAuthProfilePrefManager::GetPublicKeys()
+    const {
   std::vector<std::string> public_keys;
   const base::DictionaryValue* remote_ble_devices = GetRemoteBleDevices();
   for (base::DictionaryValue::Iterator it(*remote_ble_devices); !it.IsAtEnd();
@@ -89,7 +91,7 @@ std::vector<std::string> ProximityAuthPrefManager::GetPublicKeys() const {
   return public_keys;
 }
 
-void ProximityAuthPrefManager::AddOrUpdateDevice(
+void ProximityAuthProfilePrefManager::AddOrUpdateDevice(
     const std::string& bluetooth_address,
     const std::string& public_key) {
   PA_LOG(INFO) << "Adding " << public_key << " , " << bluetooth_address
@@ -108,7 +110,7 @@ void ProximityAuthPrefManager::AddOrUpdateDevice(
                                                            public_key);
 }
 
-bool ProximityAuthPrefManager::RemoveDeviceWithAddress(
+bool ProximityAuthProfilePrefManager::RemoveDeviceWithAddress(
     const std::string& bluetooth_address) {
   DictionaryPrefUpdate remote_ble_devices_update(
       pref_service_, prefs::kProximityAuthRemoteBleDevices);
@@ -116,54 +118,58 @@ bool ProximityAuthPrefManager::RemoveDeviceWithAddress(
       bluetooth_address, nullptr);
 }
 
-bool ProximityAuthPrefManager::RemoveDeviceWithPublicKey(
+bool ProximityAuthProfilePrefManager::RemoveDeviceWithPublicKey(
     const std::string& public_key) {
   return RemoveDeviceWithAddress(GetDeviceAddress(public_key));
 }
-void ProximityAuthPrefManager::SetLastPasswordEntryTimestampMs(
+void ProximityAuthProfilePrefManager::SetLastPasswordEntryTimestampMs(
     int64_t timestamp_ms) {
   pref_service_->SetInt64(prefs::kProximityAuthLastPasswordEntryTimestampMs,
                           timestamp_ms);
 }
 
-int64_t ProximityAuthPrefManager::GetLastPasswordEntryTimestampMs() const {
+int64_t ProximityAuthProfilePrefManager::GetLastPasswordEntryTimestampMs()
+    const {
   return pref_service_->GetInt64(
       prefs::kProximityAuthLastPasswordEntryTimestampMs);
 }
 
-const base::DictionaryValue* ProximityAuthPrefManager::GetRemoteBleDevices()
-    const {
+const base::DictionaryValue*
+ProximityAuthProfilePrefManager::GetRemoteBleDevices() const {
   return pref_service_->GetDictionary(prefs::kProximityAuthRemoteBleDevices);
 }
 
-void ProximityAuthPrefManager::SetLastPromotionCheckTimestampMs(
+void ProximityAuthProfilePrefManager::SetLastPromotionCheckTimestampMs(
     int64_t timestamp_ms) {
   pref_service_->SetInt64(prefs::kProximityAuthLastPromotionCheckTimestampMs,
                           timestamp_ms);
 }
 
-int64_t ProximityAuthPrefManager::GetLastPromotionCheckTimestampMs() const {
+int64_t ProximityAuthProfilePrefManager::GetLastPromotionCheckTimestampMs()
+    const {
   return pref_service_->GetInt64(
       prefs::kProximityAuthLastPromotionCheckTimestampMs);
 }
 
-void ProximityAuthPrefManager::SetProximityThreshold(ProximityThreshold value) {
+void ProximityAuthProfilePrefManager::SetProximityThreshold(
+    ProximityThreshold value) {
   pref_service_->SetInteger(prefs::kEasyUnlockProximityThreshold, value);
 }
 
-ProximityAuthPrefManager::ProximityThreshold
-ProximityAuthPrefManager::GetProximityThreshold() const {
+ProximityAuthProfilePrefManager::ProximityThreshold
+ProximityAuthProfilePrefManager::GetProximityThreshold() const {
   int pref_value =
       pref_service_->GetInteger(prefs::kEasyUnlockProximityThreshold);
   return static_cast<ProximityThreshold>(pref_value);
 }
 
-void ProximityAuthPrefManager::SetIsChromeOSLoginEnabled(bool is_enabled) {
+void ProximityAuthProfilePrefManager::SetIsChromeOSLoginEnabled(
+    bool is_enabled) {
   return pref_service_->SetBoolean(prefs::kProximityAuthIsChromeOSLoginEnabled,
                                    is_enabled);
 }
 
-bool ProximityAuthPrefManager::IsChromeOSLoginEnabled() {
+bool ProximityAuthProfilePrefManager::IsChromeOSLoginEnabled() {
   return pref_service_->GetBoolean(prefs::kProximityAuthIsChromeOSLoginEnabled);
 }
 

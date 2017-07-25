@@ -9,7 +9,7 @@
 #include "base/time/default_clock.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_auth_client.h"
-#include "components/proximity_auth/proximity_auth_pref_manager.h"
+#include "components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "components/proximity_auth/remote_device_life_cycle_impl.h"
 #include "components/proximity_auth/switches.h"
 #include "components/proximity_auth/unlock_manager_impl.h"
@@ -30,7 +30,7 @@ ProximityAuthSystem::ProximityAuthSystem(
     : screenlock_type_(screenlock_type),
       proximity_auth_client_(proximity_auth_client),
       clock_(new base::DefaultClock()),
-      pref_manager_(new ProximityAuthPrefManager(
+      pref_manager_(new ProximityAuthProfilePrefManager(
           proximity_auth_client->GetPrefService())),
       unlock_manager_(new UnlockManagerImpl(screenlock_type,
                                             proximity_auth_client_,
