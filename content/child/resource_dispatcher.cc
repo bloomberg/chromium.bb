@@ -65,15 +65,6 @@ void CrashOnMapFailure() {
   CHECK(false);
 }
 
-// Each resource request is assigned an ID scoped to this process.
-int MakeRequestID() {
-  // NOTE: The resource_dispatcher_host also needs probably unique
-  // request_ids, so they count down from -2 (-1 is a special we're
-  // screwed value), while the renderer process counts up.
-  static base::AtomicSequenceNumber sequence;
-  return sequence.GetNext();  // We start at zero.
-}
-
 void CheckSchemeForReferrerPolicy(const ResourceRequest& request) {
   if ((request.referrer_policy == blink::kWebReferrerPolicyDefault ||
        request.referrer_policy ==
@@ -88,6 +79,15 @@ void CheckSchemeForReferrerPolicy(const ResourceRequest& request) {
 }
 
 }  // namespace
+
+// static
+int ResourceDispatcher::MakeRequestID() {
+  // NOTE: The resource_dispatcher_host also needs probably unique
+  // request_ids, so they count down from -2 (-1 is a special "we're
+  // screwed value"), while the renderer process counts up.
+  static base::AtomicSequenceNumber sequence;
+  return sequence.GetNext();  // We start at zero.
+}
 
 ResourceDispatcher::ResourceDispatcher(
     IPC::Sender* sender,
