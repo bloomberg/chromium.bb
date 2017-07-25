@@ -49,6 +49,10 @@ class AX_EXPORT AXPlatformNode {
  protected:
   AXPlatformNode();
   virtual ~AXPlatformNode();
+
+  virtual AXPlatformNode* GetFromUniqueId(int32_t unique_id);
+
+  int32_t unique_id_;
 };
 
 }  // namespace ui
