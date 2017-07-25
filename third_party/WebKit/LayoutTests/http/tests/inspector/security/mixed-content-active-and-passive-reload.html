@@ -8,16 +8,23 @@ function test()
     /** @type {!Protocol.Security.InsecureContentStatus} */
     var insecureContentStatus = { ranMixedContent: true, displayedMixedContent: true, ranContentWithCertErrors: false, displayedContentWithCertErrors: false, ranInsecureContentStyle: Protocol.Security.SecurityState.Insecure, displayedInsecureContentStyle: Protocol.Security.SecurityState.Neutral };
 
-    InspectorTest.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Neutral, true, [], insecureContentStatus, null));
+    InspectorTest.addResult("\nBefore Refresh --------------");
+
+    var mixedExplanations = [
+        /** @type {!Protocol.Security.SecurityStateExplanation} */ ({"securityState": Protocol.Security.SecurityState.Neutral, "summary": "Neutral Test Summary", "description": "Neutral Test Description", mixedContentType: Protocol.Security.MixedContentType.OptionallyBlockable}),
+        /** @type {!Protocol.Security.SecurityStateExplanation} */ ({"securityState": Protocol.Security.SecurityState.Insecure, "summary": "Insecure Test Summary", "description": "Insecure Test Description", mixedContentType: Protocol.Security.MixedContentType.Blockable})
+    ];
+    InspectorTest.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Neutral, true, mixedExplanations, insecureContentStatus, null));
 
     // At this point, the page has mixed content but no mixed requests have been recorded, so the user should be prompted to refresh.
     var explanations = Security.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName("security-explanation");
     for (var i = 0; i < explanations.length; i++)
         InspectorTest.dumpDeepInnerHTML(explanations[i]);
 
-    // Now simulate a refresh.
+    InspectorTest.addResult("\nRefresh --------------");
 
-    InspectorTest.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Neutral, true, [], insecureContentStatus, null));
+    // Now simulate a refresh.
+    InspectorTest.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Neutral, true, mixedExplanations, insecureContentStatus, null));
 
     var passive = new SDK.NetworkRequest(0, "http://foo.test", "https://foo.test", 0, 0, null);
     passive.mixedContentType = "optionally-blockable";

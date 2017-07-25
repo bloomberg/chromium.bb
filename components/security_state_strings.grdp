@@ -82,4 +82,42 @@
   <message name="IDS_SSL_KEY_EXCHANGE_WITH_GROUP" desc="A phrase to describe an SSL/TLS ECDHE-based key exchange with a group." translateable="false">
     <ph name="A_KEY_EXCHANGE">$1<ex>ECDHE_RSA</ex></ph> with <ph name="A_GROUP">$2<ex>X25519</ex></ph>
   </message>
+
+  <!-- Mixed Content -->
+  <message name="IDS_SECURE_RESOURCES_SUMMARY" desc="" translateable="false">
+    Secure resources
+  </message>
+  <message name="IDS_SECURE_RESOURCES_DESCRIPTION" desc="" translateable="false">
+    All resources on this page are served securely.
+  </message>
+  <message name="IDS_MIXED_PASSIVE_CONTENT_SUMMARY" desc="" translateable="false">
+    Mixed content
+  </message>
+  <message name="IDS_MIXED_PASSIVE_CONTENT_DESCRIPTION" desc="" translateable="false">
+    This page includes HTTP resources.
+  </message>
+  <message name="IDS_MIXED_ACTIVE_CONTENT_SUMMARY" desc="" translateable="false">
+    Active mixed content
+  </message>
+  <message name="IDS_MIXED_ACTIVE_CONTENT_DESCRIPTION" desc="" translateable="false">
+    You have recently allowed non-secure content (such as scripts or iframes) to run on this site.
+  </message>
+  <message name="IDS_CERT_ERROR_PASSIVE_CONTENT_SUMMARY" desc="" translateable="false">
+    Content with certificate errors
+  </message>
+  <message name="IDS_CERT_ERROR_PASSIVE_CONTENT_DESCRIPTION" desc="" translateable="false">
+    This page includes resources that were loaded with certificate errors.
+  </message>
+  <message name="IDS_CERT_ERROR_ACTIVE_CONTENT_SUMMARY" desc="" translateable="false">
+    Active content with certificate errors
+  </message>
+  <message name="IDS_CERT_ERROR_ACTIVE_CONTENT_DESCRIPTION" desc="" translateable="false">
+    You have recently allowed content loaded with certificate errors (such as scripts or iframes) to run on this site.
+  </message>
+  <message name="IDS_NON_SECURE_FORM_SUMMARY" desc="" translateable="false">
+    Non-secure form
+  </message>
+  <message name="IDS_NON_SECURE_FORM_DESCRIPTION" desc="" translateable="false">
+    This page includes a form with a non-secure "action" attribute.
+  </message>
 </grit-part>
