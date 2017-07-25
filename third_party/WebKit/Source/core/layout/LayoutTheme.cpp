@@ -892,8 +892,20 @@ void LayoutTheme::AdjustStyleUsingFallbackTheme(ComputedStyle& style) {
 void LayoutTheme::SetSizeIfAuto(ComputedStyle& style, const IntSize& size) {
   if (style.Width().IsIntrinsicOrAuto())
     style.SetWidth(Length(size.Width(), kFixed));
-  if (style.Height().IsAuto())
+  if (style.Height().IsIntrinsicOrAuto())
     style.SetHeight(Length(size.Height(), kFixed));
+}
+
+// static
+void LayoutTheme::SetMinimumSizeIfAuto(ComputedStyle& style,
+                                       const IntSize& size) {
+  // We only want to set a minimum size if no explicit size is specified, to
+  // avoid overriding author intentions.
+  if (style.MinWidth().IsIntrinsicOrAuto() && style.Width().IsIntrinsicOrAuto())
+    style.SetMinWidth(Length(size.Width(), kFixed));
+  if (style.MinHeight().IsIntrinsicOrAuto() &&
+      style.Height().IsIntrinsicOrAuto())
+    style.SetMinHeight(Length(size.Height(), kFixed));
 }
 
 void LayoutTheme::AdjustCheckboxStyleUsingFallbackTheme(
@@ -907,6 +919,7 @@ void LayoutTheme::AdjustCheckboxStyleUsingFallbackTheme(
   float zoom_level = style.EffectiveZoom();
   size.SetWidth(size.Width() * zoom_level);
   size.SetHeight(size.Height() * zoom_level);
+  SetMinimumSizeIfAuto(style, size);
   SetSizeIfAuto(style, size);
 
   // padding - not honored by WinIE, needs to be removed.
@@ -929,6 +942,7 @@ void LayoutTheme::AdjustRadioStyleUsingFallbackTheme(
   float zoom_level = style.EffectiveZoom();
   size.SetWidth(size.Width() * zoom_level);
   size.SetHeight(size.Height() * zoom_level);
+  SetMinimumSizeIfAuto(style, size);
   SetSizeIfAuto(style, size);
 
   // padding - not honored by WinIE, needs to be removed.

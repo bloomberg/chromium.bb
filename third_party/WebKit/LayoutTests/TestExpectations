@@ -3116,6 +3116,9 @@ crbug.com/736056 [ Mac ] external/wpt/encoding/legacy-mb-korean [ Timeout Pass ]
 crbug.com/736056 [ Mac ] external/wpt/encoding/legacy-mb-tchinese [ Timeout Pass ]
 crbug.com/736056 external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-encode-form-errors-hangul.html [ Timeout Pass ]
 
+# Needs a mac person to fix the bug
+crbug.com/719737 [ Mac ] css3/flexbox/radiobutton-min-size.html [ Failure ]
+
 # module script lacks XHTML support
 crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
 
