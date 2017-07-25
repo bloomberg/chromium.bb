@@ -266,7 +266,7 @@ BlobDataHandle::BlobDataHandle()
     BlobRegistryPtr registry;
     Platform::Current()->GetInterfaceProvider()->GetInterface(
         MakeRequest(&registry));
-    registry->Register(MakeRequest(&blob_), uuid_, "", "", {});
+    registry->Register(MakeRequest(&blob_info_), uuid_, "", "", {});
   } else {
     BlobRegistry::RegisterBlobData(uuid_, BlobData::Create());
   }
@@ -362,8 +362,7 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
                   WTF::Time::FromDoubleT(item.expected_modification_time))));
           break;
         case BlobDataItem::kBlob: {
-          BlobPtr blob_clone;
-          item.blob_data_handle->blob_->Clone(MakeRequest(&blob_clone));
+          BlobPtr blob_clone = item.blob_data_handle->CloneBlobPtr();
           elements.push_back(DataElement::NewBlob(DataElementBlob::New(
               std::move(blob_clone), item.offset, item.length)));
           break;
@@ -371,8 +370,8 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
       }
     }
 
-    registry->Register(MakeRequest(&blob_), uuid_, type_.IsNull() ? "" : type_,
-                       "", std::move(elements));
+    registry->Register(MakeRequest(&blob_info_), uuid_,
+                       type_.IsNull() ? "" : type_, "", std::move(elements));
   } else {
     BlobRegistry::RegisterBlobData(uuid_, std::move(data));
   }
@@ -392,7 +391,7 @@ BlobDataHandle::BlobDataHandle(const String& uuid,
     storage::mojom::blink::BlobRegistryPtr registry;
     Platform::Current()->GetInterfaceProvider()->GetInterface(
         MakeRequest(&registry));
-    registry->GetBlobFromUUID(MakeRequest(&blob_), uuid_);
+    registry->GetBlobFromUUID(MakeRequest(&blob_info_), uuid_);
   } else {
     BlobRegistry::AddBlobDataRef(uuid_);
   }
@@ -401,6 +400,15 @@ BlobDataHandle::BlobDataHandle(const String& uuid,
 BlobDataHandle::~BlobDataHandle() {
   if (!RuntimeEnabledFeatures::MojoBlobsEnabled())
     BlobRegistry::RemoveBlobDataRef(uuid_);
+}
+
+BlobPtr BlobDataHandle::CloneBlobPtr() {
+  MutexLocker locker(blob_info_mutex_);
+  BlobPtr blob, blob_clone;
+  blob.Bind(std::move(blob_info_));
+  blob->Clone(MakeRequest(&blob_clone));
+  blob_info_ = blob.PassInterface();
+  return blob_clone;
 }
 
 }  // namespace blink
