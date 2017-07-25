@@ -147,7 +147,13 @@ void CoordinationUnitImpl::AddChild(const CoordinationUnitID& child_id) {
   auto child_iter = g_cu_map().find(child_id);
   if (child_iter != g_cu_map().end()) {
     CoordinationUnitImpl* child = child_iter->second;
-    if (HasParent(child) || HasChild(child)) {
+    // In order to avoid cyclic reference inside the coordination unit graph. If
+    // |child| is one of the ancestors of |this| coordination unit, then |child|
+    // should not be added, abort this operation. If |this| coordination unit is
+    // one of the descendants of child coordination unit, then abort this
+    // operation.
+    if (HasAncestor(child) || child->HasDescendant(this)) {
+      DCHECK(false) << "Cyclic reference in coordination unit graph detected!";
       return;
     }
 
@@ -181,9 +187,6 @@ void CoordinationUnitImpl::RemoveChild(const CoordinationUnitID& child_id) {
   }
 
   CoordinationUnitImpl* child = child_iter->second;
-  if (!HasChild(child)) {
-    return;
-  }
 
   DCHECK(child->id_ == child_id);
   DCHECK(child != this);
@@ -224,9 +227,9 @@ void CoordinationUnitImpl::RemoveParent(CoordinationUnitImpl* parent) {
   RecalcCoordinationPolicy();
 }
 
-bool CoordinationUnitImpl::HasParent(CoordinationUnitImpl* unit) {
+bool CoordinationUnitImpl::HasAncestor(CoordinationUnitImpl* ancestor) {
   for (CoordinationUnitImpl* parent : parents_) {
-    if (parent == unit || parent->HasParent(unit)) {
+    if (parent == ancestor || parent->HasAncestor(ancestor)) {
       return true;
     }
   }
@@ -234,9 +237,9 @@ bool CoordinationUnitImpl::HasParent(CoordinationUnitImpl* unit) {
   return false;
 }
 
-bool CoordinationUnitImpl::HasChild(CoordinationUnitImpl* unit) {
+bool CoordinationUnitImpl::HasDescendant(CoordinationUnitImpl* descendant) {
   for (CoordinationUnitImpl* child : children_) {
-    if (child == unit || child->HasChild(unit)) {
+    if (child == descendant || child->HasDescendant(descendant)) {
       return true;
     }
   }
@@ -266,10 +269,9 @@ CoordinationUnitImpl::GetChildCoordinationUnitsOfType(
   std::set<CoordinationUnitImpl*> coordination_units;
 
   for (auto* child : children()) {
-    if (child->id().type == type) {
-      coordination_units.insert(child);
-    }
-
+    if (child->id().type != type)
+      continue;
+    coordination_units.insert(child);
     for (auto* coordination_unit :
          child->GetChildCoordinationUnitsOfType(type)) {
       coordination_units.insert(coordination_unit);
@@ -285,10 +287,9 @@ CoordinationUnitImpl::GetParentCoordinationUnitsOfType(
   std::set<CoordinationUnitImpl*> coordination_units;
 
   for (auto* parent : parents()) {
-    if (parent->id().type == type) {
-      coordination_units.insert(parent);
-    }
-
+    if (parent->id().type != type)
+      continue;
+    coordination_units.insert(parent);
     for (auto* coordination_unit :
          parent->GetParentCoordinationUnitsOfType(type)) {
       coordination_units.insert(coordination_unit);

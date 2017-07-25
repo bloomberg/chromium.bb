@@ -73,6 +73,8 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
   }
 
  protected:
+  friend class FrameCoordinationUnitImpl;
+
   // Propagate property change to relevant |CoordinationUnitImpl| instances.
   virtual void PropagateProperty(mojom::PropertyType property_type,
                                  const base::Value& value) {}
@@ -100,8 +102,8 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
   bool RemoveChild(CoordinationUnitImpl* child);
   void AddParent(CoordinationUnitImpl* parent);
   void RemoveParent(CoordinationUnitImpl* parent);
-  bool HasParent(CoordinationUnitImpl* unit);
-  bool HasChild(CoordinationUnitImpl* unit);
+  bool HasAncestor(CoordinationUnitImpl* ancestor);
+  bool HasDescendant(CoordinationUnitImpl* descendant);
   bool SelfOrParentHasFlagSet(StateFlags state);
   // TODO(crbug.com/691886) Consider removing these.
   void RecalcCoordinationPolicy();
