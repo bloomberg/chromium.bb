@@ -790,9 +790,18 @@ TEST_F(ProcessUtilTest, LaunchProcess) {
 TEST_F(ProcessUtilTest, GetAppOutput) {
   std::string output;
 
-#if defined(OS_ANDROID)
+// There's no `true` or `false` on these platforms, so use exit 0/exit 1
+// instead.
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
   std::vector<std::string> argv;
+#if defined(OS_FUCHSIA)
+  // There's no sh in PATH on Fuchsia by default, so provide a full path to sh.
+  argv.push_back("/boot/bin/sh");
+#elif defined(OS_ANDROID)
   argv.push_back("sh");  // Instead of /bin/sh, force path search to find it.
+#else
+#error Port.
+#endif
   argv.push_back("-c");
 
   argv.push_back("exit 0");
