@@ -19,8 +19,6 @@
 
 namespace blink {
 
-static DocumentPaintDefinition* kInvalidDocumentDefinition = nullptr;
-
 // static
 PaintWorkletGlobalScope* PaintWorkletGlobalScope::Create(
     LocalFrame* frame,

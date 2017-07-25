@@ -13,7 +13,7 @@
 
 namespace blink {
 
-static const DocumentPaintDefinition* kInvalidDocumentDefinition = nullptr;
+DocumentPaintDefinition* const kInvalidDocumentDefinition = nullptr;
 
 // static
 PaintWorklet* PaintWorklet::Create(LocalFrame* frame) {
