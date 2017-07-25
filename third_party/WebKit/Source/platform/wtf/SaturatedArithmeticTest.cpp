@@ -6,11 +6,11 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/numerics/saturated_arithmetic.h"
 #include "build/build_config.h"
+#include "platform/wtf/SaturatedArithmetic.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace base {
+namespace WTF {
 
 TEST(SaturatedArithmeticTest, SetSigned) {
   int int_max = std::numeric_limits<int>::max();
@@ -66,4 +66,4 @@ TEST(SaturatedArithmeticTest, SetUnsigned) {
             SaturatedSet<kFractionBits>(kNotOverflowed));
 }
 
-}  // namespace base
+}  // namespace WTF
