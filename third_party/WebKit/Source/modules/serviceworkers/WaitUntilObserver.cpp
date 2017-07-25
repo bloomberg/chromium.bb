@@ -248,6 +248,10 @@ void WaitUntilObserver::MaybeCompleteEvent() {
           ? kWebServiceWorkerEventResultRejected
           : kWebServiceWorkerEventResultCompleted;
   switch (type_) {
+    case kAbortPayment:
+      client->DidHandleAbortPaymentEvent(event_id_, result,
+                                         event_dispatch_time_);
+      break;
     case kActivate:
       client->DidHandleActivateEvent(event_id_, result, event_dispatch_time_);
       break;
