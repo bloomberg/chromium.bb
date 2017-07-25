@@ -222,10 +222,10 @@ cr.define('print_preview', function() {
       this.tracker.add(
           this,
           print_preview.DestinationListItem.EventType.REGISTER_PROMO_CLICKED,
-          function() {
+          () => {
             this.metrics_.record(print_preview.Metrics.DestinationSearchBucket
                                      .REGISTER_PROMO_SELECTED);
-          }.bind(this));
+          });
 
       this.tracker.add(
           this.destinationStore_,
@@ -608,20 +608,17 @@ cr.define('print_preview', function() {
       this.destinationInConfiguring_ = destination;
       this.destinationStore_.resolveCrosDestination(destination)
           .then(
-              /**
-               * @param {!print_preview.PrinterSetupResponse} response
-               */
-              function(response) {
+              response => {
                 this.destinationInConfiguring_ = null;
                 this.localList_.getDestinationItem(destination.id)
                     .onConfigureResolved(response);
-              }.bind(this),
-              function() {
+              },
+              () => {
                 this.destinationInConfiguring_ = null;
                 this.localList_.getDestinationItem(destination.id)
                     .onConfigureResolved(
                         {printerId: destination.id, success: false});
-              }.bind(this));
+              });
     },
 
     /**
@@ -656,21 +653,15 @@ cr.define('print_preview', function() {
         var lastFocusedElement = document.activeElement;
         this.addChild(this.provisionalDestinationResolver_);
         this.provisionalDestinationResolver_.run(this.getElement())
-            .then(
-                /**
-                 * @param {!print_preview.Destination} resolvedDestination
-                 *    Destination to which the provisional destination was
-                 *    resolved.
-                 */
-                function(resolvedDestination) {
-                  this.handleOnDestinationSelect_(resolvedDestination);
-                }.bind(this))
+            .then(resolvedDestination => {
+              this.handleOnDestinationSelect_(resolvedDestination);
+            })
             .catch(function() {
               console.error(
                   'Failed to resolve provisional destination: ' +
                   destination.id);
             })
-            .then(function() {
+            .then(() => {
               this.removeChild(assert(this.provisionalDestinationResolver_));
               this.provisionalDestinationResolver_ = null;
 
@@ -681,7 +672,7 @@ cr.define('print_preview', function() {
                   this.getElement().contains(lastFocusedElement)) {
                 lastFocusedElement.focus();
               }
-            }.bind(this));
+            });
         return;
       }
 

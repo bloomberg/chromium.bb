@@ -189,11 +189,9 @@ cr.define('print_preview', function() {
           // No need to update the ticket, but change the display to match.
           this.inputField_.value = '1';
         } else {
-          setTimeout(
-              (function() {
-                this.copiesTicketItem_.updateValue('1');
-              }).bind(this),
-              0);
+          setTimeout(() => {
+            this.copiesTicketItem_.updateValue('1');
+          }, 0);
         }
       }
     },

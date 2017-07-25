@@ -9,7 +9,7 @@ cr.define('print_preview', function() {
    * Toggles visibility of the specified printing options sections.
    * @param {!print_preview.DestinationStore} destinationStore To listen for
    *     destination changes.
-   * @param {!Array<print_preview.SettingsSection>} settingsSections Sections
+   * @param {!Array<!print_preview.SettingsSection>} settingsSections Sections
    *     to toggle by this component.
    * @constructor
    * @extends {print_preview.Component}
@@ -20,7 +20,7 @@ cr.define('print_preview', function() {
     /** @private {!print_preview.DestinationStore} */
     this.destinationStore_ = destinationStore;
 
-    /** @private {!Array<print_preview.SettingsSection>} */
+    /** @private {!Array<!print_preview.SettingsSection>} */
     this.settingsSections_ = settingsSections;
 
     /** @private {boolean} */
@@ -61,12 +61,12 @@ cr.define('print_preview', function() {
           print_preview.DestinationStore.EventType
               .SELECTED_DESTINATION_CAPABILITIES_READY,
           this.onDestinationCapabilitiesReady_.bind(this));
-      this.settingsSections_.forEach(function(section) {
+      this.settingsSections_.forEach(section => {
         this.tracker.add(
             section,
             print_preview.SettingsSection.EventType.COLLAPSIBLE_CONTENT_CHANGED,
             this.updateState_.bind(this));
-      }.bind(this));
+      });
 
       this.updateState_(true);
     },

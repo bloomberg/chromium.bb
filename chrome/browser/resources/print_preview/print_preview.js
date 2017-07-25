@@ -579,9 +579,9 @@ cr.define('print_preview', function() {
                print_preview.Destination.GooglePromotedId.SAVE_AS_PDF)) {
         // Local printers resolve when print is ready to start. Hide the
         // dialog. Mac "Open in Preview" is treated as a local printer.
-        var boundHideDialog = function() {
+        var boundHideDialog = () => {
           this.nativeLayer_.hidePreview();
-        }.bind(this);
+        };
         whenPrintDone.then(boundHideDialog, boundHideDialog);
       } else if (!destination.isLocal) {
         // Cloud print resolves when print data is returned to submit to cloud

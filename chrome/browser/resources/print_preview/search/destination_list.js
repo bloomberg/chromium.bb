@@ -287,12 +287,12 @@ cr.define('print_preview', function() {
         setIsVisible(this.getChildElement('.destination-list > footer'), true);
       }
       // Remove obsolete list items (those with no corresponding destinations).
-      this.listItems_ = this.listItems_.filter(function(item) {
+      this.listItems_ = this.listItems_.filter(item => {
         var isValid = this.destinationIds_.hasOwnProperty(item.destination.id);
         if (!isValid)
           this.removeChild(item);
         return isValid;
-      }.bind(this));
+      });
       // Prepare id -> list item cache for visible destinations.
       var visibleListItems = {};
       for (var i = 0; i < numItems; i++)
