@@ -972,13 +972,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
-     * @return True if the currently active content view is shown in the normal interactive mode.
-     */
-    public boolean isTabInteractive() {
-        return false;
-    }
-
-    /**
      * @param e                 The {@link MotionEvent} to consider.
      * @param offsets           The current touch offsets that should be applied to the
      *                          {@link EventFilter}s.
