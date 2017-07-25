@@ -62,10 +62,10 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
   TabStripModel* model_;  // weak, owned by Browser
 };
 
-// A collection of methods which can be selectively implemented by any
-// Cocoa object to receive updates about changes to a tab strip model. It is
-// ok to not implement them, the calling code checks before calling.
-@interface NSObject(TabStripModelBridge)
+// A protocol which can be selectively implemented by any Cocoa object to
+// receive updates about changes to a tab strip model. All methods are optional.
+@protocol TabStripModelBridge
+@optional
 - (void)insertTabWithContents:(content::WebContents*)contents
                       atIndex:(NSInteger)index
                  inForeground:(bool)inForeground;
