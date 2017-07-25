@@ -13,7 +13,7 @@
 #include "components/proximity_auth/fake_remote_device_life_cycle.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/mock_proximity_auth_client.h"
-#include "components/proximity_auth/proximity_auth_pref_manager.h"
+#include "components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "components/proximity_auth/switches.h"
 #include "components/proximity_auth/unlock_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -72,10 +72,10 @@ class MockUnlockManager : public UnlockManager {
   DISALLOW_COPY_AND_ASSIGN(MockUnlockManager);
 };
 
-// Mock implementation of ProximityAuthPrefManager.
-class MockProximityAuthPrefManager : public ProximityAuthPrefManager {
+// Mock implementation of ProximityAuthProfilePrefManager.
+class MockProximityAuthPrefManager : public ProximityAuthProfilePrefManager {
  public:
-  MockProximityAuthPrefManager() : ProximityAuthPrefManager(nullptr) {}
+  MockProximityAuthPrefManager() : ProximityAuthProfilePrefManager(nullptr) {}
   ~MockProximityAuthPrefManager() override {}
   MOCK_CONST_METHOD0(GetLastPasswordEntryTimestampMs, int64_t());
 

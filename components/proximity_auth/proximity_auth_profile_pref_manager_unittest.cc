@@ -1,8 +1,8 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/proximity_auth_pref_manager.h"
+#include "components/proximity_auth/proximity_auth_profile_pref_manager.h"
 
 #include <algorithm>
 #include <memory>
@@ -30,24 +30,24 @@ const int64_t kPasswordEntryTimestampMs2 = 987654321L;
 const int64_t kPromotionCheckTimestampMs1 = 1111111111L;
 const int64_t kPromotionCheckTimestampMs2 = 2222222222L;
 
-const ProximityAuthPrefManager::ProximityThreshold kProximityThreshold1 =
-    ProximityAuthPrefManager::ProximityThreshold::kFar;
-const ProximityAuthPrefManager::ProximityThreshold kProximityThreshold2 =
-    ProximityAuthPrefManager::ProximityThreshold::kVeryFar;
+const ProximityAuthProfilePrefManager::ProximityThreshold kProximityThreshold1 =
+    ProximityAuthProfilePrefManager::ProximityThreshold::kFar;
+const ProximityAuthProfilePrefManager::ProximityThreshold kProximityThreshold2 =
+    ProximityAuthProfilePrefManager::ProximityThreshold::kVeryFar;
 
 }  //  namespace
 
-class ProximityAuthProximityAuthPrefManagerTest : public testing::Test {
+class ProximityAuthProfilePrefManagerTest : public testing::Test {
  protected:
-  ProximityAuthProximityAuthPrefManagerTest() {}
+  ProximityAuthProfilePrefManagerTest() {}
 
   void SetUp() override {
-    ProximityAuthPrefManager::RegisterPrefs(pref_service_.registry());
+    ProximityAuthProfilePrefManager::RegisterPrefs(pref_service_.registry());
   }
 
   void CheckRemoteBleDevice(const std::string& bluetooth_address,
                             const std::string& public_key,
-                            ProximityAuthPrefManager& pref_manager) {
+                            ProximityAuthProfilePrefManager& pref_manager) {
     EXPECT_TRUE(pref_manager.HasDeviceWithAddress(bluetooth_address));
     EXPECT_EQ(pref_manager.GetDevicePublicKey(bluetooth_address), public_key);
 
@@ -58,26 +58,26 @@ class ProximityAuthProximityAuthPrefManagerTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable pref_service_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ProximityAuthProximityAuthPrefManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(ProximityAuthProfilePrefManagerTest);
 };
 
-TEST_F(ProximityAuthProximityAuthPrefManagerTest, RegisterPrefs) {
+TEST_F(ProximityAuthProfilePrefManagerTest, RegisterPrefs) {
   sync_preferences::TestingPrefServiceSyncable pref_service;
-  ProximityAuthPrefManager::RegisterPrefs(pref_service.registry());
+  ProximityAuthProfilePrefManager::RegisterPrefs(pref_service.registry());
   EXPECT_TRUE(
       pref_service.FindPreference(prefs::kProximityAuthRemoteBleDevices));
 }
 
-TEST_F(ProximityAuthProximityAuthPrefManagerTest, AddDevice) {
-  ProximityAuthPrefManager pref_manager(&pref_service_);
+TEST_F(ProximityAuthProfilePrefManagerTest, AddDevice) {
+  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
 
   pref_manager.AddOrUpdateDevice(kBluetoothAddress1, kPublicKey1);
   CheckRemoteBleDevice(kBluetoothAddress1, kPublicKey1, pref_manager);
 }
 
-TEST_F(ProximityAuthProximityAuthPrefManagerTest,
+TEST_F(ProximityAuthProfilePrefManagerTest,
        AddDevice_TwoDevicesWithSameAddress) {
-  ProximityAuthPrefManager pref_manager(&pref_service_);
+  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
 
   pref_manager.AddOrUpdateDevice(kBluetoothAddress1, kPublicKey1);
   CheckRemoteBleDevice(kBluetoothAddress1, kPublicKey1, pref_manager);
@@ -88,9 +88,9 @@ TEST_F(ProximityAuthProximityAuthPrefManagerTest,
   EXPECT_FALSE(pref_manager.HasDeviceWithPublicKey(kPublicKey1));
 }
 
-TEST_F(ProximityAuthProximityAuthPrefManagerTest,
+TEST_F(ProximityAuthProfilePrefManagerTest,
        AddDevice_TwoDevicesWithSamePublicKey) {
-  ProximityAuthPrefManager pref_manager(&pref_service_);
+  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
 
   pref_manager.AddOrUpdateDevice(kBluetoothAddress1, kPublicKey1);
   CheckRemoteBleDevice(kBluetoothAddress1, kPublicKey1, pref_manager);
@@ -101,8 +101,8 @@ TEST_F(ProximityAuthProximityAuthPrefManagerTest,
   EXPECT_FALSE(pref_manager.HasDeviceWithAddress(kBluetoothAddress1));
 }
 
-TEST_F(ProximityAuthProximityAuthPrefManagerTest, RemoveDeviceWithAddress) {
-  ProximityAuthPrefManager pref_manager(&pref_service_);
+TEST_F(ProximityAuthProfilePrefManagerTest, RemoveDeviceWithAddress) {
+  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
 
   pref_manager.AddOrUpdateDevice(kBluetoothAddress1, kPublicKey1);
   CheckRemoteBleDevice(kBluetoothAddress1, kPublicKey1, pref_manager);
@@ -112,9 +112,9 @@ TEST_F(ProximityAuthProximityAuthPrefManagerTest, RemoveDeviceWithAddress) {
   EXPECT_FALSE(pref_manager.HasDeviceWithPublicKey(kPublicKey1));
 }
 
-TEST_F(ProximityAuthProximityAuthPrefManagerTest,
+TEST_F(ProximityAuthProfilePrefManagerTest,
        RemoveDeviceWithAddress_DeviceNotPresent) {
-  ProximityAuthPrefManager pref_manager(&pref_service_);
+  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
 
   pref_manager.AddOrUpdateDevice(kBluetoothAddress1, kPublicKey1);
   CheckRemoteBleDevice(kBluetoothAddress1, kPublicKey1, pref_manager);
@@ -124,8 +124,8 @@ TEST_F(ProximityAuthProximityAuthPrefManagerTest,
   EXPECT_TRUE(pref_manager.HasDeviceWithPublicKey(kPublicKey1));
 }
 
-TEST_F(ProximityAuthProximityAuthPrefManagerTest, RemoveDeviceWithPublicKey) {
-  ProximityAuthPrefManager pref_manager(&pref_service_);
+TEST_F(ProximityAuthProfilePrefManagerTest, RemoveDeviceWithPublicKey) {
+  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
 
   pref_manager.AddOrUpdateDevice(kBluetoothAddress1, kPublicKey1);
   CheckRemoteBleDevice(kBluetoothAddress1, kPublicKey1, pref_manager);
@@ -135,9 +135,9 @@ TEST_F(ProximityAuthProximityAuthPrefManagerTest, RemoveDeviceWithPublicKey) {
   EXPECT_FALSE(pref_manager.HasDeviceWithPublicKey(kPublicKey1));
 }
 
-TEST_F(ProximityAuthProximityAuthPrefManagerTest,
+TEST_F(ProximityAuthProfilePrefManagerTest,
        RemoveDeviceWithPublicKey_DeviceNotPresent) {
-  ProximityAuthPrefManager pref_manager(&pref_service_);
+  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
 
   pref_manager.AddOrUpdateDevice(kBluetoothAddress1, kPublicKey1);
   CheckRemoteBleDevice(kBluetoothAddress1, kPublicKey1, pref_manager);
@@ -147,8 +147,8 @@ TEST_F(ProximityAuthProximityAuthPrefManagerTest,
   EXPECT_TRUE(pref_manager.HasDeviceWithPublicKey(kPublicKey1));
 }
 
-TEST_F(ProximityAuthProximityAuthPrefManagerTest, GetPublicKeys) {
-  ProximityAuthPrefManager pref_manager(&pref_service_);
+TEST_F(ProximityAuthProfilePrefManagerTest, GetPublicKeys) {
+  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
 
   pref_manager.AddOrUpdateDevice(kBluetoothAddress1, kPublicKey1);
   CheckRemoteBleDevice(kBluetoothAddress1, kPublicKey1, pref_manager);
@@ -167,8 +167,8 @@ TEST_F(ProximityAuthProximityAuthPrefManagerTest, GetPublicKeys) {
               public_keys.end());
 }
 
-TEST_F(ProximityAuthProximityAuthPrefManagerTest, LastPasswordEntryTimestamp) {
-  ProximityAuthPrefManager pref_manager(&pref_service_);
+TEST_F(ProximityAuthProfilePrefManagerTest, LastPasswordEntryTimestamp) {
+  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
   EXPECT_EQ(0L, pref_manager.GetLastPasswordEntryTimestampMs());
   pref_manager.SetLastPasswordEntryTimestampMs(kPasswordEntryTimestampMs1);
   EXPECT_EQ(kPasswordEntryTimestampMs1,
@@ -178,8 +178,8 @@ TEST_F(ProximityAuthProximityAuthPrefManagerTest, LastPasswordEntryTimestamp) {
             pref_manager.GetLastPasswordEntryTimestampMs());
 }
 
-TEST_F(ProximityAuthProximityAuthPrefManagerTest, LastPromotionCheckTimestamp) {
-  ProximityAuthPrefManager pref_manager(&pref_service_);
+TEST_F(ProximityAuthProfilePrefManagerTest, LastPromotionCheckTimestamp) {
+  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
   EXPECT_EQ(0L, pref_manager.GetLastPromotionCheckTimestampMs());
   pref_manager.SetLastPromotionCheckTimestampMs(kPromotionCheckTimestampMs1);
   EXPECT_EQ(kPromotionCheckTimestampMs1,
@@ -189,8 +189,8 @@ TEST_F(ProximityAuthProximityAuthPrefManagerTest, LastPromotionCheckTimestamp) {
             pref_manager.GetLastPromotionCheckTimestampMs());
 }
 
-TEST_F(ProximityAuthProximityAuthPrefManagerTest, ProximityThreshold) {
-  ProximityAuthPrefManager pref_manager(&pref_service_);
+TEST_F(ProximityAuthProfilePrefManagerTest, ProximityThreshold) {
+  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
   EXPECT_EQ(1, pref_manager.GetProximityThreshold());
   pref_manager.SetProximityThreshold(kProximityThreshold1);
   EXPECT_EQ(kProximityThreshold1, pref_manager.GetProximityThreshold());
@@ -198,8 +198,8 @@ TEST_F(ProximityAuthProximityAuthPrefManagerTest, ProximityThreshold) {
   EXPECT_EQ(kProximityThreshold2, pref_manager.GetProximityThreshold());
 }
 
-TEST_F(ProximityAuthProximityAuthPrefManagerTest, IsChromeOSLoginEnabled) {
-  ProximityAuthPrefManager pref_manager(&pref_service_);
+TEST_F(ProximityAuthProfilePrefManagerTest, IsChromeOSLoginEnabled) {
+  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
   EXPECT_TRUE(pref_manager.IsChromeOSLoginEnabled());
 
   pref_manager.SetIsChromeOSLoginEnabled(false);

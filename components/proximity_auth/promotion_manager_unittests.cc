@@ -14,7 +14,7 @@
 #include "components/cryptauth/mock_cryptauth_client.h"
 #include "components/cryptauth/mock_local_device_data_provider.h"
 #include "components/proximity_auth/fake_lock_handler.h"
-#include "components/proximity_auth/proximity_auth_pref_manager.h"
+#include "components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,10 +38,10 @@ const bool kUnlockKey1 = true;
 const bool kUnlockable1 = false;
 }  // namespace
 
-// Mock implementation of ProximityAuthPrefManager.
-class MockProximityAuthPrefManager : public ProximityAuthPrefManager {
+// Mock implementation of ProximityAuthProfilePrefManager.
+class MockProximityAuthPrefManager : public ProximityAuthProfilePrefManager {
  public:
-  MockProximityAuthPrefManager() : ProximityAuthPrefManager(nullptr) {}
+  MockProximityAuthPrefManager() : ProximityAuthProfilePrefManager(nullptr) {}
   ~MockProximityAuthPrefManager() override {}
 
   MOCK_METHOD1(SetLastPromotionCheckTimestampMs, void(int64_t));

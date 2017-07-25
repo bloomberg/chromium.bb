@@ -41,7 +41,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/proximity_auth/logging/logging.h"
-#include "components/proximity_auth/proximity_auth_pref_manager.h"
+#include "components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "components/proximity_auth/proximity_auth_system.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/switches.h"
@@ -254,7 +254,7 @@ void EasyUnlockService::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(prefs::kEasyUnlockPairing,
                                    base::MakeUnique<base::DictionaryValue>());
 
-  proximity_auth::ProximityAuthPrefManager::RegisterPrefs(registry);
+  proximity_auth::ProximityAuthProfilePrefManager::RegisterPrefs(registry);
 }
 
 // static
