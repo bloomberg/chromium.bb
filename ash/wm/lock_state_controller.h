@@ -67,6 +67,9 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   // Starts usual lock animation, but locks immediately.
   void StartLockAnimationAndLockImmediately();
 
+  // Starts locking without slow animation.
+  void LockWithoutAnimation();
+
   // Returns true if we have requested system to lock, but haven't received
   // confirmation yet.
   bool LockRequested();

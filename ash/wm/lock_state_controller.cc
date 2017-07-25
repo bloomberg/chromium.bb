@@ -13,6 +13,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/shutdown.mojom.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_port.h"
@@ -112,6 +113,19 @@ void LockStateController::StartLockAnimationAndLockImmediately() {
   if (animating_lock_)
     return;
   StartImmediatePreLockAnimation(true /* request_lock_on_completion */);
+}
+
+void LockStateController::LockWithoutAnimation() {
+  if (animating_lock_)
+    return;
+  animating_lock_ = true;
+  // Before sending locking screen request, hide non lock screen containers
+  // immediately. TODO(warx): consider incorporating immediate post lock
+  // animation (crbug.com/746657).
+  animator_->StartAnimation(SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+                            SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY,
+                            SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
+  Shell::Get()->session_controller()->LockScreen();
 }
 
 bool LockStateController::LockRequested() {
@@ -301,8 +315,9 @@ void LockStateController::StartRealShutdownTimer(bool with_animation_time) {
   duration = std::max(duration, sound_duration);
 
   real_shutdown_timer_.Start(
-      FROM_HERE, duration, base::Bind(&LockStateController::OnRealPowerTimeout,
-                                      base::Unretained(this)));
+      FROM_HERE, duration,
+      base::Bind(&LockStateController::OnRealPowerTimeout,
+                 base::Unretained(this)));
 }
 
 void LockStateController::OnRealPowerTimeout() {

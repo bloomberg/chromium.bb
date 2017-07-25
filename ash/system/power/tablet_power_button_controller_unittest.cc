@@ -17,6 +17,7 @@
 #include "ash/wm/lock_state_controller_test_api.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/test_session_state_animator.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
@@ -149,8 +150,7 @@ class TabletPowerButtonControllerTest : public AshTestBase {
   }
 
   bool GetLockedState() {
-    // LockScreen is an async mojo call. Spin message loop to ensure it is
-    // delivered.
+    // LockScreen is an async mojo call.
     SessionController* const session_controller =
         Shell::Get()->session_controller();
     session_controller->FlushMojoForTest();
@@ -702,6 +702,29 @@ TEST_F(TabletPowerButtonControllerTest, SuspendDoneStopsForcingOff) {
   power_manager_client_->SendSuspendDone();
 
   EXPECT_FALSE(GetBacklightsForcedOff());
+}
+
+// Tests that for tablet power button, the animation type for hiding non lock
+// screen containers are immediate (crbug.com/746657).
+TEST_F(TabletPowerButtonControllerTest, NonLockScreenContainersHideAnimation) {
+  TestSessionStateAnimator* test_animator = new TestSessionStateAnimator;
+  lock_state_controller_->set_animator_for_test(test_animator);
+  Initialize(LoginStatus::USER);
+  SetShouldLockScreenAutomatically(true);
+  ASSERT_FALSE(GetLockedState());
+
+  PressPowerButton();
+  ReleasePowerButton();
+  EXPECT_TRUE(test_animator->AreContainersAnimated(
+      SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+      SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
+  EXPECT_TRUE(lock_state_test_api_->is_animating_lock());
+
+  EXPECT_TRUE(GetLockedState());
+  // Advance post lock animation to check animating lock gets reset.
+  test_animator->Advance(test_animator->GetDuration(
+      SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS));
+  EXPECT_FALSE(lock_state_test_api_->is_animating_lock());
 }
 
 }  // namespace ash
