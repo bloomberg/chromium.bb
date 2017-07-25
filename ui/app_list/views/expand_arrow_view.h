@@ -40,6 +40,7 @@ class ExpandArrowView : public views::CustomButton,
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // Overridden from views::InkDropHost:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
@@ -49,6 +50,8 @@ class ExpandArrowView : public views::CustomButton,
       const override;
 
  private:
+  void TransitToFullscreenAllAppsState();
+
   ContentsView* const contents_view_;
   AppListView* const app_list_view_;  // Owned by the views hierarchy.
 

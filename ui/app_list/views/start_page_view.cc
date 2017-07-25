@@ -325,9 +325,10 @@ bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
       expand_arrow_view_->SetSelected(false);
       suggestions_container_->SetSelectedIndex(
           suggestions_container_->num_results() - 1);
+      return true;
     }
 
-    return true;
+    return false;
   }
 
   if (custom_launcher_page_background_->selected()) {
