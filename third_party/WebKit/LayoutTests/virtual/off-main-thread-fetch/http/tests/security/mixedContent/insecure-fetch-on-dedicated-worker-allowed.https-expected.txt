@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Insecure resource loads inside Worker when 'AllowRunningInsecureContent' is set. assert_equals: expected "LOADED" but got "LOAD FAILED"
+Harness: the test ran to completion.
+

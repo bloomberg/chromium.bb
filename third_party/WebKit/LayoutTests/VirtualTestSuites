@@ -144,6 +144,11 @@
   },
   {
     "prefix": "off-main-thread-fetch",
+    "base": "http/tests/security/mixedContent",
+    "args": ["--enable-features=OffMainThreadFetch"]
+  },
+  {
+    "prefix": "off-main-thread-fetch",
     "base": "http/tests/security/cookies",
     "args": ["--enable-features=OffMainThreadFetch"]
   },
