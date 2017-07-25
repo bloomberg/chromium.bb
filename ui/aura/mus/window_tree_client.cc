@@ -1373,8 +1373,31 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
   // TODO(moshayedi): crbug.com/617222. No need to convert to ui::MouseEvent or
   // ui::TouchEvent once we have proper support for pointer events.
   std::unique_ptr<ui::Event> mapped_event = MapEvent(*event.get());
-  DispatchEventToTarget(mapped_event.get(), window);
-  ack_handler.set_handled(mapped_event->handled());
+  ui::Event* event_to_dispatch = mapped_event.get();
+// Ash wants the native events in one place (see ExtendedMouseWarpController).
+// By using the constructor that takes a MouseEvent we ensure the MouseEvent
+// has a NativeEvent that can be used to extract the pixel coordinates.
+//
+// TODO: this should really be covered by |root_location|. See 608547 for
+// details.
+#if defined(USE_OZONE)
+  std::unique_ptr<ui::MouseEvent> mapped_event_with_native;
+  if (mapped_event->type() == ui::ET_MOUSE_MOVED ||
+      mapped_event->type() == ui::ET_MOUSE_DRAGGED) {
+    mapped_event_with_native = base::MakeUnique<ui::MouseEvent>(
+        static_cast<const base::NativeEvent&>(mapped_event.get()));
+    // MouseEvent(NativeEvent) sets the root_location to location.
+    mapped_event_with_native->set_root_location_f(
+        mapped_event->AsMouseEvent()->root_location_f());
+    // |mapped_event| is now the NativeEvent. It's expected the location of the
+    // NativeEvent is the same as root_location.
+    mapped_event->AsMouseEvent()->set_location_f(
+        mapped_event->AsMouseEvent()->root_location_f());
+    event_to_dispatch = mapped_event_with_native.get();
+  }
+#endif
+  DispatchEventToTarget(event_to_dispatch, window);
+  ack_handler.set_handled(event_to_dispatch->handled());
 }
 
 void WindowTreeClient::OnPointerEventObserved(std::unique_ptr<ui::Event> event,

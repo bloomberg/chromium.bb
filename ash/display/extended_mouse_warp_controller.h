@@ -90,8 +90,6 @@ class ASH_EXPORT ExtendedMouseWarpController : public MouseWarpController {
     DISALLOW_COPY_AND_ASSIGN(WarpRegion);
   };
 
-  std::vector<std::unique_ptr<WarpRegion>> warp_regions_;
-
   // Registers the WarpRegion; also displays a drag indicator on the screen if
   // |has_drag_source| is true.
   void AddWarpRegion(std::unique_ptr<WarpRegion> region, bool has_drag_source);
@@ -122,6 +120,8 @@ class ASH_EXPORT ExtendedMouseWarpController : public MouseWarpController {
   bool enabled_;
 
   bool allow_non_native_event_;
+
+  std::vector<std::unique_ptr<WarpRegion>> warp_regions_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtendedMouseWarpController);
 };
