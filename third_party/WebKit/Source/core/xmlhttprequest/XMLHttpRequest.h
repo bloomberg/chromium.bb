@@ -243,7 +243,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   void send(DOMArrayBuffer*, ExceptionState&);
   void send(DOMArrayBufferView*, ExceptionState&);
 
-  const AtomicString& GetRequestHeader(const AtomicString& name) const;
+  bool HasContentTypeRequestHeader() const;
   void SetRequestHeaderInternal(const AtomicString& name,
                                 const AtomicString& value);
 
