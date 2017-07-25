@@ -263,14 +263,14 @@ void InnerBoundedLabel::SetCachedSize(std::pair<int, int> width_and_lines,
 
 BoundedLabel::BoundedLabel(const base::string16& text,
                            const gfx::FontList& font_list)
-    : line_limit_(-1) {
+    : line_limit_(-1), fixed_width_(0) {
   label_.reset(new InnerBoundedLabel(*this));
   label_->SetFontList(font_list);
   label_->SetText(text);
 }
 
 BoundedLabel::BoundedLabel(const base::string16& text)
-    : line_limit_(-1) {
+    : line_limit_(-1), fixed_width_(0) {
   label_.reset(new InnerBoundedLabel(*this));
   label_->SetText(text);
 }
@@ -312,12 +312,21 @@ gfx::Size BoundedLabel::GetSizeForWidthAndLines(int width, int lines) {
          label_->GetSizeForWidthAndLines(width, lines) : gfx::Size();
 }
 
+void BoundedLabel::SizeToFit(int fixed_width) {
+  fixed_width_ = fixed_width;
+  label_->SizeToFit(fixed_width);
+}
+
 int BoundedLabel::GetBaseline() const {
   return label_->GetBaseline();
 }
 
 gfx::Size BoundedLabel::CalculatePreferredSize() const {
-  return visible() ? label_->GetSizeForWidthAndLines(-1, -1) : gfx::Size();
+  if (!visible())
+    return gfx::Size();
+  return fixed_width_ != 0
+             ? label_->GetSizeForWidthAndLines(fixed_width_, line_limit_)
+             : label_->GetSizeForWidthAndLines(-1, -1);
 }
 
 int BoundedLabel::GetHeightForWidth(int width) const {

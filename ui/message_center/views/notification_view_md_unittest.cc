@@ -14,6 +14,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/message_center/views/bounded_label.h"
 #include "ui/message_center/views/message_center_controller.h"
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/proportional_image_view.h"
@@ -497,5 +498,38 @@ TEST_F(NotificationViewMDTest, Pinned) {
 }
 
 #endif  // defined(OS_CHROMEOS)
+
+TEST_F(NotificationViewMDTest, ExpandLongMessage) {
+  notification()->set_type(NotificationType::NOTIFICATION_TYPE_SIMPLE);
+  // Test in a case where left_content_ does not have views other than
+  // message_view_.
+  // Without doing this, inappropriate fix such as
+  // message_view_->GetPreferredSize() returning gfx::Size() can pass.
+  notification()->set_title(base::string16());
+  notification()->set_message(base::ASCIIToUTF16(
+      "consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore "
+      "et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud "
+      "exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."));
+
+  UpdateNotificationViews();
+  EXPECT_FALSE(notification_view()->expanded_);
+  const int collapsed_height = notification_view()->message_view_->height();
+  const int collapsed_preferred_height =
+      notification_view()->GetPreferredSize().height();
+  EXPECT_LT(0, collapsed_height);
+  EXPECT_LT(0, collapsed_preferred_height);
+
+  notification_view()->ToggleExpanded();
+  EXPECT_TRUE(notification_view()->expanded_);
+  EXPECT_LT(collapsed_height, notification_view()->message_view_->height());
+  EXPECT_LT(collapsed_preferred_height,
+            notification_view()->GetPreferredSize().height());
+
+  notification_view()->ToggleExpanded();
+  EXPECT_FALSE(notification_view()->expanded_);
+  EXPECT_EQ(collapsed_height, notification_view()->message_view_->height());
+  EXPECT_EQ(collapsed_preferred_height,
+            notification_view()->GetPreferredSize().height());
+}
 
 }  // namespace message_center
