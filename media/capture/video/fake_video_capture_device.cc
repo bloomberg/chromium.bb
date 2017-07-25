@@ -398,7 +398,7 @@ void FakePhotoDevice::TakePhoto(VideoCaptureDevice::TakePhotoCallback callback,
   DCHECK(result);
 
   blob->mime_type = "image/png";
-  callback.Run(std::move(blob));
+  std::move(callback).Run(std::move(blob));
 }
 
 FakeVideoCaptureDevice::FakeVideoCaptureDevice(
@@ -493,7 +493,7 @@ void FakePhotoDevice::GetPhotoState(
   photo_state->width->min = 96.0;
   photo_state->width->step = 1.0;
 
-  callback.Run(std::move(photo_state));
+  std::move(callback).Run(std::move(photo_state));
 }
 
 void FakeVideoCaptureDevice::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
@@ -515,7 +515,7 @@ void FakePhotoDevice::SetPhotoOptions(
         std::max(kMinZoom, std::min(settings->zoom, kMaxZoom));
   }
 
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void FakeVideoCaptureDevice::TakePhoto(TakePhotoCallback callback) {

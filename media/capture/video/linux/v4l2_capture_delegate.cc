@@ -643,7 +643,7 @@ void V4L2CaptureDelegate::GetPhotoState(
   photo_capabilities->sharpness =
       RetrieveUserControlRange(device_fd_.get(), V4L2_CID_SHARPNESS);
 
-  callback.Run(std::move(photo_capabilities));
+  std::move(callback).Run(std::move(photo_capabilities));
 }
 
 void V4L2CaptureDelegate::SetPhotoOptions(
@@ -740,7 +740,7 @@ void V4L2CaptureDelegate::SetPhotoOptions(
       DPLOG(ERROR) << "setting sharpness to " << settings->sharpness;
   }
 
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void V4L2CaptureDelegate::SetRotation(int rotation) {
@@ -849,7 +849,7 @@ void V4L2CaptureDelegate::DoCapture() {
       mojom::BlobPtr blob =
           Blobify(buffer_tracker->start(), buffer.bytesused, capture_format_);
       if (blob)
-        cb.Run(std::move(blob));
+        std::move(cb).Run(std::move(blob));
     }
 
     if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_QBUF, &buffer)) < 0) {

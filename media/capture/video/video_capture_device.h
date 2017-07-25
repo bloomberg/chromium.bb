@@ -29,7 +29,6 @@
 #include "media/base/video_frame.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/mojo/image_capture.mojom.h"
-#include "media/capture/video/scoped_result_callback.h"
 #include "media/capture/video/video_capture_buffer_handle.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
 #include "media/capture/video_capture_types.h"
@@ -274,14 +273,12 @@ class CAPTURE_EXPORT VideoCaptureDevice
   // Retrieve the photo capabilities and settings of the device (e.g. zoom
   // levels etc). On success, invokes |callback|. On failure, drops callback
   // without invoking it.
-  using GetPhotoStateCallback =
-      ScopedResultCallback<base::OnceCallback<void(mojom::PhotoStatePtr)>>;
+  using GetPhotoStateCallback = base::OnceCallback<void(mojom::PhotoStatePtr)>;
   virtual void GetPhotoState(GetPhotoStateCallback callback);
 
   // On success, invokes |callback| with value |true|. On failure, drops
   // callback without invoking it.
-  using SetPhotoOptionsCallback =
-      ScopedResultCallback<base::OnceCallback<void(bool)>>;
+  using SetPhotoOptionsCallback = base::OnceCallback<void(bool)>;
   virtual void SetPhotoOptions(mojom::PhotoSettingsPtr settings,
                                SetPhotoOptionsCallback callback);
 
@@ -289,8 +286,7 @@ class CAPTURE_EXPORT VideoCaptureDevice
   // and/or interrupting the capture flow. Runs |callback| on the thread
   // where TakePhoto() is called, if the photo was successfully taken. On
   // failure, drops callback without invoking it.
-  using TakePhotoCallback =
-      ScopedResultCallback<base::OnceCallback<void(mojom::BlobPtr blob)>>;
+  using TakePhotoCallback = base::OnceCallback<void(mojom::BlobPtr blob)>;
   virtual void TakePhoto(TakePhotoCallback callback);
 
   // Gets the power line frequency, either from the params if specified by the

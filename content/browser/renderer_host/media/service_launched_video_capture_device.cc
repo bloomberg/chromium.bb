@@ -88,7 +88,7 @@ void ServiceLaunchedVideoCaptureDevice::OnGetPhotoStateResponse(
     media::mojom::PhotoStatePtr capabilities) const {
   if (!capabilities)
     return;
-  callback.Run(std::move(capabilities));
+  std::move(callback).Run(std::move(capabilities));
 }
 
 void ServiceLaunchedVideoCaptureDevice::OnSetPhotoOptionsResponse(
@@ -96,7 +96,7 @@ void ServiceLaunchedVideoCaptureDevice::OnSetPhotoOptionsResponse(
     bool success) {
   if (!success)
     return;
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void ServiceLaunchedVideoCaptureDevice::OnTakePhotoResponse(
@@ -104,7 +104,7 @@ void ServiceLaunchedVideoCaptureDevice::OnTakePhotoResponse(
     media::mojom::BlobPtr blob) {
   if (!blob)
     return;
-  callback.Run(std::move(blob));
+  std::move(callback).Run(std::move(blob));
 }
 
 }  // namespace content

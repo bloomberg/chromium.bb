@@ -385,7 +385,7 @@ void VideoCaptureDeviceMac::TakePhoto(TakePhotoCallback callback) {
   if (photo_callback_)  // Only one picture can be in flight at a time.
     return;
 
-  photo_callback_.reset(new TakePhotoCallback(std::move(callback)));
+  photo_callback_ = std::move(callback);
   [capture_device_ takePhoto];
 }
 
@@ -414,7 +414,7 @@ void VideoCaptureDeviceMac::GetPhotoState(GetPhotoStateCallback callback) {
       capture_format_.frame_size.width(), 0 /* step */);
   photo_state->torch = false;
 
-  callback.Run(std::move(photo_state));
+  std::move(callback).Run(std::move(photo_state));
 }
 
 void VideoCaptureDeviceMac::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
@@ -429,7 +429,7 @@ void VideoCaptureDeviceMac::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
       settings->has_fill_light_mode || settings->has_red_eye_reduction) {
     return;
   }
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 bool VideoCaptureDeviceMac::Init(VideoCaptureApi capture_api_type) {
@@ -478,13 +478,12 @@ void VideoCaptureDeviceMac::OnPhotoTaken(const uint8_t* image_data,
   mojom::BlobPtr blob = mojom::Blob::New();
   blob->data.assign(image_data, image_data + image_length);
   blob->mime_type = mime_type;
-  photo_callback_->Run(std::move(blob));
-  photo_callback_.reset();
+  std::move(photo_callback_).Run(std::move(blob));
 }
 
 void VideoCaptureDeviceMac::OnPhotoError() {
   DLOG(ERROR) << __func__ << " error taking picture";
-  photo_callback_.reset();
+  photo_callback_.Reset();
 }
 
 void VideoCaptureDeviceMac::ReceiveError(

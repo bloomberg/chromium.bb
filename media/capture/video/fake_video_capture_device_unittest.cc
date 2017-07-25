@@ -164,23 +164,9 @@ class ImageCaptureClient : public base::RefCounted<ImageCaptureClient> {
   }
   MOCK_METHOD0(OnCorrectGetPhotoState, void(void));
 
-  void OnGetPhotoStateFailure(
-      mojom::ImageCapture::GetPhotoStateCallback callback) {
-    OnGetPhotoStateFailureInternal(callback);
-  }
-  MOCK_METHOD1(OnGetPhotoStateFailureInternal,
-               void(mojom::ImageCapture::GetPhotoStateCallback&));
-
   const mojom::PhotoState* state() { return state_.get(); }
 
   MOCK_METHOD1(OnCorrectSetPhotoOptions, void(bool));
-
-  void OnSetPhotoOptionsFailure(
-      mojom::ImageCapture::SetOptionsCallback callback) {
-    OnSetPhotoOptionsFailureInternal(callback);
-  }
-  MOCK_METHOD1(OnSetPhotoOptionsFailureInternal,
-               void(mojom::ImageCapture::SetOptionsCallback&));
 
   // GMock doesn't support move-only arguments, so we use this forward method.
   void DoOnPhotoTaken(mojom::BlobPtr blob) {
@@ -195,12 +181,6 @@ class ImageCaptureClient : public base::RefCounted<ImageCaptureClient> {
     OnCorrectPhotoTaken();
   }
   MOCK_METHOD0(OnCorrectPhotoTaken, void(void));
-
-  void OnTakePhotoFailure(mojom::ImageCapture::TakePhotoCallback callback) {
-    OnTakePhotoFailureInternal(callback);
-  }
-  MOCK_METHOD1(OnTakePhotoFailureInternal,
-               void(mojom::ImageCapture::TakePhotoCallback&));
 
  private:
   friend class base::RefCounted<ImageCaptureClient>;
@@ -391,11 +371,9 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   EXPECT_CALL(*client_, OnStarted());
   device->AllocateAndStart(capture_params, std::move(client_));
 
-  VideoCaptureDevice::GetPhotoStateCallback scoped_get_callback(
+  VideoCaptureDevice::GetPhotoStateCallback scoped_get_callback =
       base::BindOnce(&ImageCaptureClient::DoOnGetPhotoState,
-                     image_capture_client_),
-      base::BindOnce(&ImageCaptureClient::OnGetPhotoStateFailure,
-                     image_capture_client_));
+                     image_capture_client_);
 
   EXPECT_CALL(*image_capture_client_.get(), OnCorrectGetPhotoState()).Times(1);
   device->GetPhotoState(std::move(scoped_get_callback));
@@ -461,11 +439,9 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
 
   // Set options: zoom to the maximum value.
   const int max_zoom_value = state->zoom->max;
-  VideoCaptureDevice::SetPhotoOptionsCallback scoped_set_callback(
+  VideoCaptureDevice::SetPhotoOptionsCallback scoped_set_callback =
       base::BindOnce(&ImageCaptureClient::OnCorrectSetPhotoOptions,
-                     image_capture_client_),
-      base::BindOnce(&ImageCaptureClient::OnSetPhotoOptionsFailure,
-                     image_capture_client_));
+                     image_capture_client_);
 
   mojom::PhotoSettingsPtr settings = mojom::PhotoSettings::New();
   settings->zoom = max_zoom_value;
@@ -478,10 +454,9 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   run_loop_->Run();
 
   // Retrieve Capabilities again and check against the set values.
-  VideoCaptureDevice::GetPhotoStateCallback scoped_get_callback2(
-      base::Bind(&ImageCaptureClient::DoOnGetPhotoState, image_capture_client_),
-      base::Bind(&ImageCaptureClient::OnGetPhotoStateFailure,
-                 image_capture_client_));
+  VideoCaptureDevice::GetPhotoStateCallback scoped_get_callback2 =
+      base::BindOnce(&ImageCaptureClient::DoOnGetPhotoState,
+                     image_capture_client_);
 
   EXPECT_CALL(*image_capture_client_.get(), OnCorrectGetPhotoState()).Times(1);
   device->GetPhotoState(std::move(scoped_get_callback2));
@@ -506,11 +481,8 @@ TEST_F(FakeVideoCaptureDeviceTest, TakePhoto) {
   EXPECT_CALL(*client_, OnStarted());
   device->AllocateAndStart(capture_params, std::move(client_));
 
-  VideoCaptureDevice::TakePhotoCallback scoped_callback(
-      base::BindOnce(&ImageCaptureClient::DoOnPhotoTaken,
-                     image_capture_client_),
-      base::BindOnce(&ImageCaptureClient::OnTakePhotoFailure,
-                     image_capture_client_));
+  VideoCaptureDevice::TakePhotoCallback scoped_callback = base::BindOnce(
+      &ImageCaptureClient::DoOnPhotoTaken, image_capture_client_);
 
   EXPECT_CALL(*image_capture_client_.get(), OnCorrectPhotoTaken()).Times(1);
   device->TakePhoto(std::move(scoped_callback));

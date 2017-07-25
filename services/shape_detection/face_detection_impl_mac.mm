@@ -5,21 +5,12 @@
 #include "services/shape_detection/face_detection_impl_mac.h"
 
 #include "base/mac/scoped_cftyperef.h"
-#include "media/capture/video/scoped_result_callback.h"
+#include "media/base/scoped_callback_runner.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shape_detection/detection_utils_mac.h"
 #include "services/shape_detection/face_detection_provider_impl.h"
 
 namespace shape_detection {
-
-namespace {
-
-void RunCallbackWithNoFaces(
-    shape_detection::mojom::FaceDetection::DetectCallback callback) {
-  std::move(callback).Run({});
-}
-
-}  // anonymous namespace
 
 void FaceDetectionProviderImpl::CreateFaceDetection(
     shape_detection::mojom::FaceDetectionRequest request,
@@ -43,8 +34,8 @@ FaceDetectionImplMac::~FaceDetectionImplMac() {}
 
 void FaceDetectionImplMac::Detect(const SkBitmap& bitmap,
                                   DetectCallback callback) {
-  media::ScopedResultCallback<DetectCallback> scoped_callback(
-      std::move(callback), base::Bind(&RunCallbackWithNoFaces));
+  DetectCallback scoped_callback = media::ScopedCallbackRunner(
+      std::move(callback), std::vector<mojom::FaceDetectionResultPtr>());
 
   base::scoped_nsobject<CIImage> ci_image = CreateCIImageFromSkBitmap(bitmap);
   if (!ci_image)
@@ -89,7 +80,7 @@ void FaceDetectionImplMac::Detect(const SkBitmap& bitmap,
 
     results.push_back(std::move(face));
   }
-  scoped_callback.Run(std::move(results));
+  std::move(scoped_callback).Run(std::move(results));
 }
 
 }  // namespace shape_detection

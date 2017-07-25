@@ -415,7 +415,7 @@ void VideoCaptureDeviceAndroid::OnPhotoTaken(
   mojom::BlobPtr blob = mojom::Blob::New();
   base::android::JavaByteArrayToByteVector(env, data.obj(), &blob->data);
   blob->mime_type = blob->data.empty() ? "" : "image/jpeg";
-  cb->Run(std::move(blob));
+  std::move(*cb).Run(std::move(blob));
 
   photo_callbacks_.erase(reference_it);
 }
@@ -580,7 +580,7 @@ void VideoCaptureDeviceAndroid::DoGetPhotoState(
     modes.push_back(ToMojomFillLightMode(fill_light_mode));
   photo_capabilities->fill_light_mode = modes;
 
-  callback.Run(std::move(photo_capabilities));
+  std::move(callback).Run(std::move(photo_capabilities));
 }
 
 void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
@@ -647,7 +647,7 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
       static_cast<int>(fill_light_mode), settings->has_torch, settings->torch,
       color_temperature);
 
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 }  // namespace media
