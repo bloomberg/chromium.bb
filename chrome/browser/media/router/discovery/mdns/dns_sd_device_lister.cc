@@ -13,14 +13,15 @@ namespace {
 void FillServiceInfo(const ServiceDescription& service_description,
                      DnsSdService* service) {
   service->service_name = service_description.service_name;
-  service->service_host_port = service_description.address.ToString();
+  service->service_host_port = service_description.address;
   if (service_description.ip_address.IsValid()) {
     service->ip_address = service_description.ip_address.ToString();
   }
   service->service_data = service_description.metadata;
 
   VLOG(1) << "Found " << service->service_name << ", "
-          << service->service_host_port << ", " << service->ip_address;
+          << service->service_host_port.ToString() << ", "
+          << service->ip_address;
 }
 
 }  // namespace

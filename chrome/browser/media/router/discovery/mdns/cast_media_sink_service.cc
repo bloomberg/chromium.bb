@@ -150,13 +150,12 @@ void CastMediaSinkService::OnDnsSdEvent(
       DVLOG(2) << "Invalid ip_addresss: " << service.ip_address;
       continue;
     }
-    net::HostPortPair host_port_pair =
-        net::HostPortPair::FromString(service.service_host_port);
 
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&CastMediaSinkService::OpenChannelOnIOThread, this, service,
-                   net::IPEndPoint(ip_address, host_port_pair.port())));
+        base::Bind(
+            &CastMediaSinkService::OpenChannelOnIOThread, this, service,
+            net::IPEndPoint(ip_address, service.service_host_port.port())));
   }
 
   MediaSinkServiceBase::RestartTimer();
@@ -181,7 +180,7 @@ void CastMediaSinkService::OnChannelOpenedOnIOThread(
     cast_channel::ChannelError channel_error) {
   if (channel_error != cast_channel::ChannelError::NONE) {
     DVLOG(2) << "Fail to open channel " << service.ip_address << ": "
-             << service.service_host_port
+             << service.service_host_port.ToString()
              << " [ChannelError]: " << (int)channel_error;
     return;
   }

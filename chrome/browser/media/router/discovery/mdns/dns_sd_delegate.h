@@ -8,11 +8,13 @@
 #include <string>
 #include <vector>
 
+#include "net/base/host_port_pair.h"
+
 namespace media_router {
 
 struct DnsSdService {
   std::string service_name;
-  std::string service_host_port;
+  net::HostPortPair service_host_port;
   std::string ip_address;
   std::vector<std::string> service_data;
 
@@ -22,7 +24,7 @@ struct DnsSdService {
 
   bool operator==(const DnsSdService& other) const {
     return service_name == other.service_name &&
-           service_host_port == other.service_host_port &&
+           service_host_port.Equals(other.service_host_port) &&
            ip_address == other.ip_address && service_data == other.service_data;
   }
 

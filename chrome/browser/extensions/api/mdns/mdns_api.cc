@@ -167,7 +167,7 @@ void MDnsAPI::OnDnsSdEvent(const std::string& service_type,
     }
     mdns::MDnsService mdns_service;
     mdns_service.service_name = service.service_name;
-    mdns_service.service_host_port = service.service_host_port;
+    mdns_service.service_host_port = service.service_host_port.ToString();
     mdns_service.ip_address = service.ip_address;
     mdns_service.service_data = service.service_data;
     args.push_back(std::move(mdns_service));
