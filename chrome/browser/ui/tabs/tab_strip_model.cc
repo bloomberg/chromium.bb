@@ -13,7 +13,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/defaults.h"
@@ -30,12 +29,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
-#include "chrome/browser/feature_engagement_tracker/new_tab/new_tab_tracker.h"
-#include "chrome/browser/feature_engagement_tracker/new_tab/new_tab_tracker_factory.h"
-#endif
-
 using base::UserMetricsAction;
 using content::WebContents;
 
@@ -913,12 +906,6 @@ void TabStripModel::ExecuteContextMenuCommand(
       UMA_HISTOGRAM_ENUMERATION("Tab.NewTab",
                                 TabStripModel::NEW_TAB_CONTEXT_MENU,
                                 TabStripModel::NEW_TAB_ENUM_COUNT);
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
-      feature_engagement_tracker::NewTabTrackerFactory::GetInstance()
-          ->GetForProfile(profile_)
-          ->OnNewTabOpened();
-#endif
-
       delegate()->AddTabAt(GURL(), context_index + 1, true);
       break;
 
