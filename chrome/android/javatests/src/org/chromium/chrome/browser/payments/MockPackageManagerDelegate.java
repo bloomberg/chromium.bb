@@ -19,12 +19,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 /** Simulates a package manager in memory. */
 class MockPackageManagerDelegate extends PackageManagerDelegate {
+    private static final int STRING_ARRAY_RESOURCE_ID = 1;
+
     private final List<ResolveInfo> mActivities = new ArrayList<>();
     private final Map<String, PackageInfo> mPackages = new HashMap<>();
     private final Map<ResolveInfo, CharSequence> mLabels = new HashMap<>();
     private final List<ResolveInfo> mServices = new ArrayList<>();
+    private final Map<ApplicationInfo, String[]> mResources = new HashMap<>();
 
     /**
      * Simulates an installed payment app.
@@ -86,6 +91,26 @@ class MockPackageManagerDelegate extends PackageManagerDelegate {
         mServices.add(service);
     }
 
+    /**
+     * Simulates META_DATA_NAME_OF_PAYMENT_METHOD_NAMES metadata in a payment app.
+     *
+     * @param packageName The name of the simulated package that contains the metadata.
+     * @param metadata    The metadata to simulate.
+     */
+    public void setStringArrayMetaData(String packageName, String[] metadata) {
+        for (int i = 0; i < mActivities.size(); i++) {
+            ResolveInfo paymentApp = mActivities.get(i);
+            if (paymentApp.activityInfo.packageName.equals(packageName)) {
+                paymentApp.activityInfo.metaData.putInt(
+                        AndroidPaymentAppFinder.META_DATA_NAME_OF_PAYMENT_METHOD_NAMES,
+                        STRING_ARRAY_RESOURCE_ID);
+                mResources.put(paymentApp.activityInfo.applicationInfo, metadata);
+                return;
+            }
+        }
+        assert false : packageName + " package not found";
+    }
+
     /** Resets the package manager to the state of no installed apps. */
     public void reset() {
         mActivities.clear();
@@ -121,5 +146,13 @@ class MockPackageManagerDelegate extends PackageManagerDelegate {
     @Override
     public Drawable getAppIcon(ResolveInfo resolveInfo) {
         return null;
+    }
+
+    @Override
+    @Nullable
+    public String[] getStringArrayResourceForApplication(
+            ApplicationInfo applicationInfo, int resourceId) {
+        assert STRING_ARRAY_RESOURCE_ID == resourceId;
+        return mResources.get(applicationInfo);
     }
 }

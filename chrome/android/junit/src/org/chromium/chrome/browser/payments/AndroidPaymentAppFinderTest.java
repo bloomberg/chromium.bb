@@ -11,7 +11,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
-import android.content.res.Resources;
 import android.os.Bundle;
 
 import org.junit.Test;
@@ -100,7 +99,8 @@ public class AndroidPaymentAppFinderTest {
                 Mockito.mock(PaymentManifestParser.class), packageManagerDelegate, callback);
 
         Mockito.verify(packageManagerDelegate, Mockito.never())
-                .getResourcesForApplication(ArgumentMatchers.anyObject());
+                .getStringArrayResourceForApplication(
+                        ArgumentMatchers.any(ApplicationInfo.class), ArgumentMatchers.anyInt());
         Mockito.verify(callback, Mockito.never())
                 .onPaymentAppCreated(Mockito.any(PaymentApp.class));
         Mockito.verify(callback).onAllPaymentAppsCreated();
@@ -130,7 +130,8 @@ public class AndroidPaymentAppFinderTest {
                 Mockito.mock(PaymentManifestParser.class), packageManagerDelegate, callback);
 
         Mockito.verify(packageManagerDelegate, Mockito.never())
-                .getResourcesForApplication(ArgumentMatchers.anyObject());
+                .getStringArrayResourceForApplication(
+                        ArgumentMatchers.any(ApplicationInfo.class), ArgumentMatchers.anyInt());
         Mockito.verify(callback, Mockito.never())
                 .onPaymentAppCreated(Mockito.any(PaymentApp.class));
         Mockito.verify(callback).onAllPaymentAppsCreated();
@@ -165,7 +166,8 @@ public class AndroidPaymentAppFinderTest {
                 Mockito.mock(PaymentManifestParser.class), packageManagerDelegate, callback);
 
         Mockito.verify(packageManagerDelegate, Mockito.never())
-                .getResourcesForApplication(ArgumentMatchers.anyObject());
+                .getStringArrayResourceForApplication(
+                        ArgumentMatchers.any(ApplicationInfo.class), ArgumentMatchers.anyInt());
         Mockito.verify(callback, Mockito.never())
                 .onPaymentAppCreated(Mockito.any(PaymentApp.class));
         Mockito.verify(callback).onAllPaymentAppsCreated();
@@ -211,18 +213,14 @@ public class AndroidPaymentAppFinderTest {
                                      new Intent(AndroidPaymentAppFinder.ACTION_IS_READY_TO_PAY)))))
                 .thenReturn(new ArrayList<ResolveInfo>());
 
-        Resources resouces = Mockito.mock(Resources.class);
-        Mockito.when(resouces.getStringArray(ArgumentMatchers.eq(1)))
+        Mockito.when(packageManagerDelegate.getStringArrayResourceForApplication(
+                             ArgumentMatchers.eq(alicePay.activityInfo.applicationInfo),
+                             ArgumentMatchers.eq(1)))
                 .thenReturn(new String[] {"https://alicepay.com", "basic-card"});
-        Mockito.when(resouces.getStringArray(ArgumentMatchers.eq(2)))
+        Mockito.when(packageManagerDelegate.getStringArrayResourceForApplication(
+                             ArgumentMatchers.eq(bobPay.activityInfo.applicationInfo),
+                             ArgumentMatchers.eq(2)))
                 .thenReturn(new String[] {"https://bobpay.com", "basic-card"});
-
-        Mockito.when(packageManagerDelegate.getResourcesForApplication(
-                             ArgumentMatchers.eq(alicePay.activityInfo.applicationInfo)))
-                .thenReturn(resouces);
-        Mockito.when(packageManagerDelegate.getResourcesForApplication(
-                             ArgumentMatchers.eq(bobPay.activityInfo.applicationInfo)))
-                .thenReturn(resouces);
 
         Set<String> methodNames = new HashSet<>();
         methodNames.add("basic-card");
@@ -263,13 +261,10 @@ public class AndroidPaymentAppFinderTest {
                              ArgumentMatchers.argThat(sPayIntentArgumentMatcher)))
                 .thenReturn(activities);
 
-        Resources resouces = Mockito.mock(Resources.class);
-        Mockito.when(resouces.getStringArray(ArgumentMatchers.eq(1)))
+        Mockito.when(packageManagerDelegate.getStringArrayResourceForApplication(
+                             ArgumentMatchers.eq(bobPay.activityInfo.applicationInfo),
+                             ArgumentMatchers.eq(1)))
                 .thenReturn(new String[] {"https://bobpay.com", "basic-card"});
-
-        Mockito.when(packageManagerDelegate.getResourcesForApplication(
-                             ArgumentMatchers.eq(bobPay.activityInfo.applicationInfo)))
-                .thenReturn(resouces);
 
         List<ResolveInfo> services = new ArrayList<>();
         ResolveInfo isBobPayReadyToPay = new ResolveInfo();

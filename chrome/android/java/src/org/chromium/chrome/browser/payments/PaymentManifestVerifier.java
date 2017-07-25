@@ -20,7 +20,6 @@ import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,8 +38,6 @@ import java.util.Set;
 public class PaymentManifestVerifier
         implements ManifestDownloadCallback, ManifestParseCallback,
                    PaymentManifestWebDataService.PaymentManifestWebDataServiceCallback {
-    private static final String TAG = "PaymentManifest";
-
     /** Interface for the callback to invoke when finished verification. */
     public interface ManifestVerifyCallback {
         /**
@@ -94,6 +91,9 @@ public class PaymentManifestVerifier
          */
         public Set<String> sha256CertFingerprints;
     }
+
+    private static final String TAG = "PaymentManifest";
+    private static final String ALL_ORIGINS_SUPPORTED_INDICATOR = "*";
 
     private final PaymentManifestDownloader mDownloader;
     private final URI mMethodName;
@@ -247,18 +247,30 @@ public class PaymentManifestVerifier
 
     @Override
     public void onPaymentMethodManifestFetched(String[] appPackageNames) {
-        Set<String> fetchedApps = new HashSet<>(Arrays.asList(appPackageNames));
-        Set<String> matchingApps = mMatchingApps.keySet();
+        Set<String> fetchedApps = new HashSet<>();
+        for (int i = 0; i < appPackageNames.length; i++) {
+            fetchedApps.add(appPackageNames[i]);
+        }
+
+        if (fetchedApps.contains(ALL_ORIGINS_SUPPORTED_INDICATOR)) {
+            for (Map.Entry<String, AppInfo> app : mMatchingApps.entrySet()) {
+                mCallback.onValidPaymentApp(mMethodName, app.getValue().resolveInfo);
+            }
+            // Download and parse manifest to refresh cache.
+            mDownloader.downloadPaymentMethodManifest(mMethodName, this);
+            return;
+        }
+
         // The cache may be stale if it doesn't contain all matching apps, so switch to download the
         // manifest online immediately.
-        if (!fetchedApps.containsAll(matchingApps)) {
+        if (!fetchedApps.containsAll(mMatchingApps.keySet())) {
             mIsManifestCacheStaleOrUnusable = true;
             mDownloader.downloadPaymentMethodManifest(mMethodName, this);
             return;
         }
 
-        mPendingWebAppManifestsCount = matchingApps.size();
-        for (String matchingAppPackageName : matchingApps) {
+        mPendingWebAppManifestsCount = mMatchingApps.size();
+        for (String matchingAppPackageName : mMatchingApps.keySet()) {
             if (!mWebDataService.getPaymentWebAppManifest(matchingAppPackageName, this)) {
                 mIsManifestCacheStaleOrUnusable = true;
                 mPendingWebAppManifestsCount = 0;
@@ -306,12 +318,28 @@ public class PaymentManifestVerifier
     }
 
     @Override
-    public void onPaymentMethodManifestParseSuccess(URI[] webAppManifestUris,
-            URI[] unusedSupportedOrigins, boolean unusedAllOriginsSupported) {
+    public void onPaymentMethodManifestParseSuccess(
+            URI[] webAppManifestUris, URI[] unusedSupportedOrigins, boolean allOriginsSupported) {
         assert webAppManifestUris != null;
-        assert webAppManifestUris.length > 0;
+        assert unusedSupportedOrigins != null;
+        assert webAppManifestUris.length > 0 || unusedSupportedOrigins.length > 0
+                || allOriginsSupported;
         assert !mAtLeastOneManifestFailedToDownloadOrParse;
         assert mPendingWebAppManifestsCount == 0;
+
+        if (allOriginsSupported) {
+            // Verify payment apps only if they have not already been verified by the cached
+            // manifest.
+            if (mIsManifestCacheStaleOrUnusable) {
+                for (Map.Entry<String, AppInfo> app : mMatchingApps.entrySet()) {
+                    mCallback.onValidPaymentApp(mMethodName, app.getValue().resolveInfo);
+                }
+            }
+            mWebDataService.addPaymentMethodManifest(
+                    mMethodName.toString(), new String[] {ALL_ORIGINS_SUPPORTED_INDICATOR});
+            mCallback.onVerifyFinished(this);
+            return;
+        }
 
         mPendingWebAppManifestsCount = webAppManifestUris.length;
         for (int i = 0; i < webAppManifestUris.length; i++) {
