@@ -241,7 +241,7 @@ void DragController::DragExited(DragData* drag_data, LocalFrame& local_root) {
   file_input_element_under_mouse_ = nullptr;
 }
 
-bool DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
+void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
   DCHECK(drag_data);
   document_under_mouse_ =
       local_root.DocumentAtPoint(drag_data->ClientPosition());
@@ -277,26 +277,31 @@ bool DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
     if (prevented_default) {
       document_under_mouse_ = nullptr;
       CancelDrag();
-      return true;
+      return;
     }
   }
 
   if ((drag_destination_action_ & kDragDestinationActionEdit) &&
       ConcludeEditDrag(drag_data)) {
     document_under_mouse_ = nullptr;
-    return true;
+    return;
   }
 
   document_under_mouse_ = nullptr;
 
-  if (OperationForLoad(drag_data, local_root) == kDragOperationNone)
-    return false;
+  if (OperationForLoad(drag_data, local_root) != kDragOperationNone) {
+    if (page_->GetSettings().GetNavigateOnDragDrop()) {
+      page_->MainFrame()->Navigate(
+          FrameLoadRequest(nullptr, ResourceRequest(drag_data->AsURL())));
+    }
 
-  if (page_->GetSettings().GetNavigateOnDragDrop()) {
-    page_->MainFrame()->Navigate(
-        FrameLoadRequest(nullptr, ResourceRequest(drag_data->AsURL())));
+    // TODO(bokan): This case happens when we end a URL drag inside a guest
+    // process which doesn't navigate. We assume that since we'll navigate the
+    // page in the general case we don't end up sending `dragleave` and
+    // `dragend` events but for plugins we wont navigate so it seems we should
+    // be sending these events. crbug.com/748243.
+    local_root.GetEventHandler().ClearDragState();
   }
-  return true;
 }
 
 void DragController::MouseMovedIntoDocument(Document* new_document) {

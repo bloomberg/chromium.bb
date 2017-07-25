@@ -91,7 +91,11 @@ bool AutoscrollController::SelectionAutoscrollInProgress() const {
   return autoscroll_type_ == kAutoscrollForSelection;
 }
 
-bool AutoscrollController::AutoscrollInProgress(
+bool AutoscrollController::AutoscrollInProgress() const {
+  return autoscroll_layout_object_;
+}
+
+bool AutoscrollController::AutoscrollInProgressFor(
     const LayoutBox* layout_object) const {
   return autoscroll_layout_object_ == layout_object;
 }
