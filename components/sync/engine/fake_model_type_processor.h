@@ -19,6 +19,8 @@ class FakeModelTypeProcessor : public ModelTypeProcessor {
   // ModelTypeProcessor implementation.
   void ConnectSync(std::unique_ptr<CommitQueue> worker) override;
   void DisconnectSync() override;
+  void GetLocalChanges(size_t max_entries,
+                       const GetLocalChangesCallback& callback) override;
   void OnCommitCompleted(const sync_pb::ModelTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,

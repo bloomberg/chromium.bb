@@ -133,7 +133,7 @@ class SyncSchedulerImplTest : public testing::Test {
 
     model_type_registry_ = base::MakeUnique<ModelTypeRegistry>(
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
-        UssMigrator());
+        UssMigrator(), &cancelation_signal_);
     model_type_registry_->RegisterDirectoryType(NIGORI, GROUP_PASSIVE);
     model_type_registry_->RegisterDirectoryType(THEMES, GROUP_UI);
     model_type_registry_->RegisterDirectoryType(TYPED_URLS, GROUP_DB);

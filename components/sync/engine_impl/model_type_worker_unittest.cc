@@ -11,6 +11,8 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread.h"
+#include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/engine/model_type_processor.h"
@@ -219,7 +221,8 @@ class ModelTypeWorkerTest : public ::testing::Test {
     // TODO(maxbogue): crbug.com/529498: Inject pending updates somehow.
     worker_ = base::MakeUnique<ModelTypeWorker>(
         type, state, !state.initial_sync_done(), std::move(cryptographer_copy),
-        &mock_nudge_handler_, std::move(processor), emitter_.get());
+        &mock_nudge_handler_, std::move(processor), emitter_.get(),
+        &cancelation_signal_);
   }
 
   // Introduce a new key that the local cryptographer can't decrypt.
@@ -467,6 +470,8 @@ class ModelTypeWorkerTest : public ::testing::Test {
   // The number of the encryption key used to encrypt incoming updates. A zero
   // value implies no encryption.
   int update_encryption_filter_index_;
+
+  CancelationSignal cancelation_signal_;
 
   // The ModelTypeWorker being tested.
   std::unique_ptr<ModelTypeWorker> worker_;
@@ -1224,6 +1229,99 @@ TEST_F(ModelTypeWorkerTest, CommitOnly) {
       processor()->GetCommitResponse(kHash1);
   EXPECT_EQ(kHash1, commit_response.client_tag_hash);
   EXPECT_FALSE(commit_response.specifics_hash.empty());
+}
+
+class GetLocalChangesRequestTest : public testing::Test {
+ public:
+  GetLocalChangesRequestTest();
+  ~GetLocalChangesRequestTest() override;
+
+  void SetUp() override;
+  void TearDown() override;
+
+  scoped_refptr<GetLocalChangesRequest> MakeRequest();
+
+  void BlockingWaitForResponse(scoped_refptr<GetLocalChangesRequest> request);
+  void ScheduleBlockingWait(scoped_refptr<GetLocalChangesRequest> request);
+
+ protected:
+  CancelationSignal cancelation_signal_;
+  base::Thread blocking_thread_;
+  base::WaitableEvent start_event_;
+  base::WaitableEvent done_event_;
+};
+
+GetLocalChangesRequestTest::GetLocalChangesRequestTest()
+    : blocking_thread_("BlockingThread"),
+      start_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                   base::WaitableEvent::InitialState::NOT_SIGNALED),
+      done_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                  base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+
+GetLocalChangesRequestTest::~GetLocalChangesRequestTest() = default;
+
+void GetLocalChangesRequestTest::SetUp() {
+  blocking_thread_.Start();
+}
+
+void GetLocalChangesRequestTest::TearDown() {
+  blocking_thread_.Stop();
+}
+
+scoped_refptr<GetLocalChangesRequest>
+GetLocalChangesRequestTest::MakeRequest() {
+  return base::MakeRefCounted<GetLocalChangesRequest>(&cancelation_signal_);
+}
+
+void GetLocalChangesRequestTest::BlockingWaitForResponse(
+    scoped_refptr<GetLocalChangesRequest> request) {
+  start_event_.Signal();
+  request->WaitForResponse();
+  done_event_.Signal();
+}
+
+void GetLocalChangesRequestTest::ScheduleBlockingWait(
+    scoped_refptr<GetLocalChangesRequest> request) {
+  blocking_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&GetLocalChangesRequestTest::BlockingWaitForResponse,
+                 base::Unretained(this), request));
+}
+
+// Tests that request doesn't block when cancelation signal is already signaled.
+TEST_F(GetLocalChangesRequestTest, CancelationSignaledBeforeRequest) {
+  cancelation_signal_.Signal();
+  auto request = MakeRequest();
+  request->WaitForResponse();
+  EXPECT_TRUE(request->WasCancelled());
+}
+
+// Tests that signaling cancelation signal while request is blocked unblocks it.
+TEST_F(GetLocalChangesRequestTest, CancelationSignaledAfterRequest) {
+  auto request = MakeRequest();
+  ScheduleBlockingWait(request);
+  start_event_.Wait();
+  cancelation_signal_.Signal();
+  done_event_.Wait();
+  EXPECT_TRUE(request->WasCancelled());
+}
+
+// Tests that setting response unblocks request.
+TEST_F(GetLocalChangesRequestTest, SuccessfulRequest) {
+  auto request = MakeRequest();
+  ScheduleBlockingWait(request);
+  start_event_.Wait();
+  {
+    CommitRequestDataList response;
+    response.emplace_back();
+    response.back().specifics_hash = kHash1;
+    request->SetResponse(std::move(response));
+  }
+  done_event_.Wait();
+  EXPECT_FALSE(request->WasCancelled());
+  CommitRequestDataList response = request->ExtractResponse();
+  EXPECT_EQ(1U, response.size());
+  EXPECT_EQ(kHash1, response[0].specifics_hash);
 }
 
 }  // namespace syncer

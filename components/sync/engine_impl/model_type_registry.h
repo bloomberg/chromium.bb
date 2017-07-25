@@ -24,6 +24,7 @@
 
 namespace syncer {
 
+class CancelationSignal;
 class CommitContributor;
 class DataTypeDebugInfoEmitter;
 class DirectoryCommitContributor;
@@ -41,7 +42,8 @@ class ModelTypeRegistry : public ModelTypeConnector,
   ModelTypeRegistry(const std::vector<scoped_refptr<ModelSafeWorker>>& workers,
                     UserShare* user_share,
                     NudgeHandler* nudge_handler,
-                    const UssMigrator& uss_migrator);
+                    const UssMigrator& uss_migrator,
+                    CancelationSignal* cancelation_signal);
   ~ModelTypeRegistry() override;
 
   // Enables an off-thread type for syncing.  Connects the given proxy
@@ -155,6 +157,10 @@ class ModelTypeRegistry : public ModelTypeConnector,
 
   // Function to call to migrate data from the directory to USS.
   UssMigrator uss_migrator_;
+
+  // CancelationSignal is signalled on engine shutdown. It is passed to
+  // ModelTypeWorker to cancel blocking operation.
+  CancelationSignal* cancelation_signal_;
 
   // The set of observers of per-type debug info.
   //

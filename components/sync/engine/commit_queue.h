@@ -17,6 +17,9 @@ class CommitQueue {
 
   // Entry point for the ModelTypeProcessor to send commit requests.
   virtual void EnqueueForCommit(const CommitRequestDataList& list) = 0;
+
+  // Nudge sync engine to indicate the datatype has local changes to commit.
+  virtual void NudgeForCommit() = 0;
 };
 
 }  // namespace syncer

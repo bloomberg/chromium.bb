@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/gtest_util.h"
+#include "components/sync/base/cancelation_signal.h"
 #include "components/sync/engine/activation_context.h"
 #include "components/sync/engine/fake_model_type_processor.h"
 #include "components/sync/protocol/model_type_state.pb.h"
@@ -38,7 +39,8 @@ class ModelTypeRegistryTest : public ::testing::Test {
     registry_ = base::MakeUnique<ModelTypeRegistry>(
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
         base::Bind(&ModelTypeRegistryTest::MigrateDirectory,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        &cancelation_signal_);
   }
 
   void TearDown() override {
@@ -102,6 +104,7 @@ class ModelTypeRegistryTest : public ::testing::Test {
   base::MessageLoop message_loop_;
 
   TestUserShare test_user_share_;
+  CancelationSignal cancelation_signal_;
   std::vector<scoped_refptr<ModelSafeWorker>> workers_;
   std::unique_ptr<ModelTypeRegistry> registry_;
   MockNudgeHandler mock_nudge_handler_;
