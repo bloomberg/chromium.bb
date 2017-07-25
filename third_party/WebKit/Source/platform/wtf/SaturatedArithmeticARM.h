@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_NUMERICS_SATURATED_ARITHMETIC_ARM_H_
-#define BASE_NUMERICS_SATURATED_ARITHMETIC_ARM_H_
+#ifndef SaturatedArithmeticARM_h
+#define SaturatedArithmeticARM_h
 
 #include <limits>
 
-namespace base {
+namespace WTF {
 
 inline int GetMaxSaturatedSetResultForTesting(int fractional_shift) {
   // For ARM Asm version the set function maxes out to the biggest
@@ -73,6 +73,6 @@ inline int SaturatedSet(unsigned value) {
   return result;
 }
 
-}  // namespace base
+}  // namespace WTF
 
-#endif  // BASE_NUMERICS_SATURATED_ARITHMETIC_ARM_H_
+#endif  // SaturatedArithmeticARM_h
