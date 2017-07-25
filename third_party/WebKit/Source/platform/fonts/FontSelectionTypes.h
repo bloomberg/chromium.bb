@@ -105,10 +105,6 @@ class FontSelectionValueStretch : public FontSelectionValue {
 class FontSelectionValueStyle : public FontSelectionValue {
   using FontSelectionValue::FontSelectionValue;
 };
-class FontSelectionValueWeight : public FontSelectionValue {
-  using FontSelectionValue::FontSelectionValue;
-};
-
 inline FontSelectionValue FontSelectionValue::operator+(
     const FontSelectionValue other) const {
   return FontSelectionValue(backing_ + other.backing_, RawTag::RawTag);
@@ -195,27 +191,27 @@ static inline const FontSelectionValueStyle ItalicSlopeValue() {
   return italicValue;
 }
 
-static inline const FontSelectionValueWeight BoldThreshold() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValueWeight, boldThreshold,
+static inline const FontSelectionValue BoldThreshold() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, boldThreshold,
                                   (600));
   return boldThreshold;
 }
 
-static inline const FontSelectionValueWeight BoldWeightValue() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValueWeight,
-                                  boldWeightValue, (700));
+static inline const FontSelectionValue BoldWeightValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, boldWeightValue,
+                                  (700));
   return boldWeightValue;
 }
 
-static inline const FontSelectionValueWeight NormalWeightValue() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValueWeight,
-                                  normalWeightValue, (400));
+static inline const FontSelectionValue NormalWeightValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, normalWeightValue,
+                                  (400));
   return normalWeightValue;
 }
 
-static inline const FontSelectionValueWeight LightWeightValue() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValueWeight,
-                                  lightWeightValue, (200));
+static inline const FontSelectionValue LightWeightValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, lightWeightValue,
+                                  (200));
   return lightWeightValue;
 }
 

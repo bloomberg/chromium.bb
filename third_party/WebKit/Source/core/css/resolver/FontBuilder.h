@@ -114,10 +114,8 @@ class CORE_EXPORT FontBuilder {
   static FontSelectionValueStretch InitialStretch() {
     return NormalWidthValue();
   }
-  static FontSelectionValueWeight InitialWeight() {
-    return NormalWeightValue();
-  }
   static FontSelectionValueStyle InitialStyle() { return NormalSlopeValue(); }
+  static FontSelectionValue InitialWeight() { return NormalWeightValue(); }
 
  private:
   void SetFamilyDescription(FontDescription&,

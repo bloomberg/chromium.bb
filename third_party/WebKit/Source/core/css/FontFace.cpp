@@ -584,50 +584,18 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
   if (weight_) {
     if (weight_->IsIdentifierValue()) {
       switch (ToCSSIdentifierValue(weight_.Get())->GetValueID()) {
-        case CSSValue100:
-          capabilities.weight = {FontSelectionValue(100),
-                                 FontSelectionValue(100)};
-          break;
-        case CSSValue200:
-          capabilities.weight = {FontSelectionValue(200),
-                                 FontSelectionValue(200)};
-          break;
-        case CSSValue300:
-          capabilities.weight = {FontSelectionValue(300),
-                                 FontSelectionValue(300)};
-          break;
-        case CSSValueNormal:
-        case CSSValue400:
-          capabilities.weight = {FontSelectionValue(400),
-                                 FontSelectionValue(400)};
-          break;
-        case CSSValue500:
-          capabilities.weight = {FontSelectionValue(500),
-                                 FontSelectionValue(500)};
-          break;
-        case CSSValue600:
-          capabilities.weight = {FontSelectionValue(600),
-                                 FontSelectionValue(600)};
-          break;
-        case CSSValueBold:
-        case CSSValue700:
-          capabilities.weight = {FontSelectionValue(700),
-                                 FontSelectionValue(700)};
-          break;
-        case CSSValue800:
-          capabilities.weight = {FontSelectionValue(800),
-                                 FontSelectionValue(800)};
-          break;
-        case CSSValue900:
-          capabilities.weight = {FontSelectionValue(900),
-                                 FontSelectionValue(900)};
-          break;
         // Although 'lighter' and 'bolder' are valid keywords for
         // font-weights, they are invalid inside font-face rules so they are
         // ignored. Reference:
         // http://www.w3.org/TR/css3-fonts/#descdef-font-weight.
         case CSSValueLighter:
         case CSSValueBolder:
+          break;
+        case CSSValueNormal:
+          capabilities.weight = {NormalWeightValue(), NormalWeightValue()};
+          break;
+        case CSSValueBold:
+          capabilities.weight = {BoldWeightValue(), BoldWeightValue()};
           break;
         default:
           NOTREACHED();

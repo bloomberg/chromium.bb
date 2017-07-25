@@ -8145,7 +8145,7 @@ PASS [["backcolor","tan"],["hilitecolor","aqua"],["inserttext","a"]] "foo[]bar" 
 PASS [["delete",""],["inserttext","a"]] "foo<b>[bar]</b>baz": execCommand("delete", false, "") return value 
 PASS [["delete",""],["inserttext","a"]] "foo<b>[bar]</b>baz": execCommand("inserttext", false, "a") return value 
 PASS [["delete",""],["inserttext","a"]] "foo<b>[bar]</b>baz" checks for modifications to non-editable content 
-FAIL [["delete",""],["inserttext","a"]] "foo<b>[bar]</b>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<b>a</b>baz" but got "foo<span style=\"font-weight:bold\">a</span>baz"
+FAIL [["delete",""],["inserttext","a"]] "foo<b>[bar]</b>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<b>a</b>baz" but got "foo<span style=\"font-weight:700\">a</span>baz"
 PASS [["delete",""],["inserttext","a"]] "foo<b>[bar]</b>baz" queryCommandIndeterm("delete") before 
 PASS [["delete",""],["inserttext","a"]] "foo<b>[bar]</b>baz" queryCommandState("delete") before 
 PASS [["delete",""],["inserttext","a"]] "foo<b>[bar]</b>baz" queryCommandValue("delete") before 
@@ -8849,7 +8849,7 @@ PASS [["delete",""],["inserttext","a"]] "[foo<font size=3><sub>bar]</sub></font>
 PASS [["delete",""],["inserttext","a"]] "foo<b>[bar</b>baz]": execCommand("delete", false, "") return value 
 PASS [["delete",""],["inserttext","a"]] "foo<b>[bar</b>baz]": execCommand("inserttext", false, "a") return value 
 PASS [["delete",""],["inserttext","a"]] "foo<b>[bar</b>baz]" checks for modifications to non-editable content 
-FAIL [["delete",""],["inserttext","a"]] "foo<b>[bar</b>baz]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<b>a</b>" but got "foo<span style=\"font-weight:bold\">a</span>"
+FAIL [["delete",""],["inserttext","a"]] "foo<b>[bar</b>baz]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<b>a</b>" but got "foo<span style=\"font-weight:700\">a</span>"
 PASS [["delete",""],["inserttext","a"]] "foo<b>[bar</b>baz]" queryCommandIndeterm("delete") before 
 PASS [["delete",""],["inserttext","a"]] "foo<b>[bar</b>baz]" queryCommandState("delete") before 
 PASS [["delete",""],["inserttext","a"]] "foo<b>[bar</b>baz]" queryCommandValue("delete") before 
