@@ -213,6 +213,11 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
   }
 #endif
 
+  // crbug.com/701137
+  if (sysno == __NR_mincore) {
+    return Allow();
+  }
+
   if (SyscallSets::IsKill(sysno)) {
     return RestrictKillTarget(current_pid, sysno);
   }
