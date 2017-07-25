@@ -100,9 +100,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   bool IsNone() const { return GetSelectionType() == kNoSelection; }
   bool IsCaret() const { return GetSelectionType() == kCaretSelection; }
   bool IsRange() const { return GetSelectionType() == kRangeSelection; }
-  bool IsNonOrphanedRange() const {
-    return IsRange() && !Start().IsOrphan() && !End().IsOrphan();
-  }
   bool IsNonOrphanedCaretOrRange() const {
     return !IsNone() && !Start().IsOrphan() && !End().IsOrphan();
   }

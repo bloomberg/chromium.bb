@@ -1061,7 +1061,8 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
   if (!has_selection_to_delete_)
     selection_to_delete_ = EndingSelection();
 
-  if (!selection_to_delete_.IsNonOrphanedRange() ||
+  if (!selection_to_delete_.IsValidFor(GetDocument()) ||
+      !selection_to_delete_.IsRange() ||
       !selection_to_delete_.IsContentEditable()) {
     // editing/execCommand/delete-non-editable-range-crash.html reaches here.
     return;
