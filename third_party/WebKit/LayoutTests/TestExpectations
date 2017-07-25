@@ -733,6 +733,8 @@ crbug.com/520188 [ Win ] virtual/mojo-loading/http/tests/local/fileapi/file-last
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 
+crbug.com/233303 [ Win7 Debug ] inspector/sources/debugger-breakpoints/dom-breakpoints.html [ Pass Failure Timeout ]
+
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas-throw.html [ Pass Failure ]
