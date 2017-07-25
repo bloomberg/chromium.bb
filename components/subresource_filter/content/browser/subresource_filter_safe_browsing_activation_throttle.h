@@ -80,7 +80,6 @@ class SubresourceFilterSafeBrowsingActivationThrottle
 
   std::vector<SubresourceFilterSafeBrowsingClient::CheckResult> check_results_;
 
-  scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   std::unique_ptr<SubresourceFilterSafeBrowsingClient,
@@ -93,6 +92,10 @@ class SubresourceFilterSafeBrowsingActivationThrottle
   // Set to TimeTicks::Now() when the navigation is deferred in
   // WillProcessResponse. If deferral was not necessary, will remain null.
   base::TimeTicks defer_time_;
+
+  // Whether this throttle is deferring the navigation. Only set to true in
+  // WillProcessResponse if there are ongoing safe browsing checks.
+  bool deferring_ = false;
 
   // Added to investigate crbug.com/733099.
   bool will_start_request_called_ = false;

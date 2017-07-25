@@ -113,6 +113,8 @@ SubresourceFilterSafeBrowsingActivationThrottle::WillProcessResponse() {
     NotifyResult();
     return content::NavigationThrottle::ThrottleCheckResult::PROCEED;
   }
+  CHECK(!deferring_);
+  deferring_ = true;
   defer_time_ = base::TimeTicks::Now();
   return content::NavigationThrottle::ThrottleCheckResult::DEFER;
 }
@@ -129,10 +131,12 @@ void SubresourceFilterSafeBrowsingActivationThrottle::OnCheckUrlResultOnUI(
   DCHECK_LT(request_id, check_results_.size());
 
   auto& stored_result = check_results_.at(request_id);
-  DCHECK(!stored_result.finished);
+  CHECK(!stored_result.finished);
   stored_result = result;
-  if (!defer_time_.is_null() && request_id == check_results_.size() - 1) {
+  if (deferring_ && request_id == check_results_.size() - 1) {
     NotifyResult();
+
+    deferring_ = false;
     Resume();
   }
 }
