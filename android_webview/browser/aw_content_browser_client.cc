@@ -480,9 +480,9 @@ content::TracingDelegate* AwContentBrowserClient::GetTracingDelegate() {
 }
 
 void AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
-      const base::CommandLine& command_line,
-      int child_process_id,
-      content::FileDescriptorInfo* mappings) {
+    const base::CommandLine& command_line,
+    int child_process_id,
+    content::PosixFileDescriptorInfo* mappings) {
   base::MemoryMappedFile::Region region;
   int fd = ui::GetMainAndroidPackFd(&region);
   mappings->ShareWithRegion(kAndroidWebViewMainPakDescriptor, fd, region);

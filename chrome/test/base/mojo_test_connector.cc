@@ -60,16 +60,12 @@ class MojoTestState : public content::TestState {
                                         ? switches::kMash
                                         : switches::kMus);
 
-    platform_channel_->PrepareToPassClientHandleToChildProcess(
-        command_line, &handle_passing_info_);
 #if defined(OS_WIN)
-    test_launch_options->inherit_handles = true;
-    test_launch_options->handles_to_inherit = &handle_passing_info_;
-#if defined(OFFICIAL_BUILD)
-    CHECK(false) << "Launching mojo process with inherit_handles is insecure!";
-#endif
+    platform_channel_->PrepareToPassClientHandleToChildProcess(
+        command_line, &test_launch_options->handles_to_inherit);
 #elif defined(OS_POSIX)
-    test_launch_options->fds_to_remap = &handle_passing_info_;
+    platform_channel_->PrepareToPassClientHandleToChildProcess(
+        command_line, &test_launch_options->fds_to_remap);
 #else
 #error "Unsupported"
 #endif
@@ -135,10 +131,6 @@ class MojoTestState : public content::TestState {
   // can be set on the command line. It is held until SetupService is called at
   // which point |background_service_manager_| takes over ownership.
   service_manager::mojom::ServicePtr service_;
-
-  // NOTE: HandlePassingInformation must remain valid through process launch,
-  // hence it lives here instead of within Init()'s stack.
-  mojo::edk::HandlePassingInformation handle_passing_info_;
 
   std::unique_ptr<mojo::edk::PlatformChannelPair> platform_channel_;
   service_manager::mojom::PIDReceiverPtr pid_receiver_;

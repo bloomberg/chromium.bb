@@ -136,7 +136,8 @@ bool LaunchSetup(base::CommandLine* cmd_line, bool system_level_toast) {
       // Use handle inheritance to make sure the duplicated toast results key
       // gets inherited by the child process.
       base::LaunchOptions options;
-      options.inherit_handles = true;
+      // TODO(brettw) bug 748258: Share only explicit handles.
+      options.inherit_mode = base::LaunchOptions::Inherit::kAll;
       base::Process process = base::LaunchProcess(*cmd_line, options);
       return process.IsValid();
     }
@@ -239,7 +240,8 @@ bool LaunchSetupAsConsoleUser(base::CommandLine* cmd_line) {
   // able to use the duplicated handle above (Google Update results).
   base::LaunchOptions options;
   options.as_user = user_token;
-  options.inherit_handles = true;
+  // TODO(brettw) bug 748258: Share only explicit handles.
+  options.inherit_mode = base::LaunchOptions::Inherit::kAll;
   options.empty_desktop_name = true;
   VLOG(1) << __func__ << " launching " << cmd_line->GetCommandLineString();
   base::Process process = base::LaunchProcess(*cmd_line, options);

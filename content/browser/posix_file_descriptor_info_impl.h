@@ -13,21 +13,22 @@
 
 #include "base/files/memory_mapped_file.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/file_descriptor_info.h"
+#include "content/public/browser/posix_file_descriptor_info.h"
 
 namespace content {
 
-class FileDescriptorInfoImpl : public FileDescriptorInfo {
+class PosixFileDescriptorInfoImpl : public PosixFileDescriptorInfo {
  public:
-  CONTENT_EXPORT static std::unique_ptr<FileDescriptorInfo> Create();
+  CONTENT_EXPORT static std::unique_ptr<PosixFileDescriptorInfo> Create();
 
-  ~FileDescriptorInfoImpl() override;
+  ~PosixFileDescriptorInfoImpl() override;
   void Share(int id, base::PlatformFile fd) override;
-  void ShareWithRegion(int id, base::PlatformFile fd,
-      const base::MemoryMappedFile::Region& region) override;
+  void ShareWithRegion(int id,
+                       base::PlatformFile fd,
+                       const base::MemoryMappedFile::Region& region) override;
   void Transfer(int id, base::ScopedFD fd) override;
   const base::FileHandleMappingVector& GetMapping() const override;
-  std::unique_ptr<base::FileHandleMappingVector> GetMappingWithIDAdjustment(
+  base::FileHandleMappingVector GetMappingWithIDAdjustment(
       int delta) const override;
   base::PlatformFile GetFDAt(size_t i) const override;
   int GetIDAt(size_t i) const override;
@@ -37,10 +38,11 @@ class FileDescriptorInfoImpl : public FileDescriptorInfo {
   base::ScopedFD ReleaseFD(base::PlatformFile file) override;
 
  private:
-  FileDescriptorInfoImpl();
+  PosixFileDescriptorInfoImpl();
 
-  void AddToMapping(int id, base::PlatformFile fd,
-      const base::MemoryMappedFile::Region& region);
+  void AddToMapping(int id,
+                    base::PlatformFile fd,
+                    const base::MemoryMappedFile::Region& region);
   bool HasID(int id) const;
   base::FileHandleMappingVector mapping_;
   // Maps the ID of a FD to the region to use for that FD, the whole file if not
@@ -48,6 +50,6 @@ class FileDescriptorInfoImpl : public FileDescriptorInfo {
   std::map<int, base::MemoryMappedFile::Region> ids_to_regions_;
   std::vector<base::ScopedFD> owned_descriptors_;
 };
-}
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_FILE_DESCRIPTOR_INFO_IMPL_H_

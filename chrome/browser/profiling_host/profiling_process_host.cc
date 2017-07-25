@@ -144,12 +144,18 @@ void ProfilingProcessHost::RequestProcessDump(base::ProcessId pid) {
 
 void ProfilingProcessHost::Launch() {
   mojo::edk::PlatformChannelPair control_channel;
-  mojo::edk::HandlePassingInformation handle_passing_info;
+  base::LaunchOptions options;
+  mojo::edk::HandlePassingInformation* handle_passing_info =
+#if defined(OS_WIN)
+      &options.handles_to_inherit;
+#else
+      &options.fds_to_remap;
+#endif
 
   // Create the socketpair for the low level memlog pipe.
   mojo::edk::PlatformChannelPair data_channel;
   pipe_id_ = data_channel.PrepareToPassClientHandleToChildProcessAsString(
-      &handle_passing_info);
+      handle_passing_info);
 
   mojo::edk::ScopedPlatformHandle child_end = data_channel.PassClientHandle();
 
@@ -158,15 +164,12 @@ void ProfilingProcessHost::Launch() {
   // Keep the server handle, pass the client handle to the child.
   pending_control_connection_ = control_channel.PassServerHandle();
   control_channel.PrepareToPassClientHandleToChildProcess(&profiling_cmd,
-                                                          &handle_passing_info);
+                                                          handle_passing_info);
 
-  base::LaunchOptions options;
 #if defined(OS_WIN)
-  options.handles_to_inherit = &handle_passing_info;
   std::string local_pipe_string = base::IntToString(
       reinterpret_cast<int>(data_channel.PassServerHandle().release().handle));
 #elif defined(OS_POSIX)
-  options.fds_to_remap = &handle_passing_info;
   std::string local_pipe_string =
       base::IntToString(data_channel.PassServerHandle().release().handle);
 #if defined(OS_LINUX)

@@ -424,7 +424,7 @@ using message_center::NotifierId;
 using security_interstitials::SSLErrorUI;
 
 #if defined(OS_POSIX)
-using content::FileDescriptorInfo;
+using content::PosixFileDescriptorInfo;
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -2735,7 +2735,7 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
 void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
-    FileDescriptorInfo* mappings) {
+    PosixFileDescriptorInfo* mappings) {
 #if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);

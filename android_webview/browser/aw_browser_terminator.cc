@@ -102,8 +102,9 @@ AwBrowserTerminator::AwBrowserTerminator() {}
 
 AwBrowserTerminator::~AwBrowserTerminator() {}
 
-void AwBrowserTerminator::OnChildStart(int child_process_id,
-                                       content::FileDescriptorInfo* mappings) {
+void AwBrowserTerminator::OnChildStart(
+    int child_process_id,
+    content::PosixFileDescriptorInfo* mappings) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::PROCESS_LAUNCHER);
 
   base::AutoLock auto_lock(child_process_id_to_pipe_lock_);

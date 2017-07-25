@@ -130,11 +130,7 @@ void ServiceProcessLauncher::DoLaunch(
 
   base::LaunchOptions options;
 #if defined(OS_WIN)
-  options.handles_to_inherit = &handle_passing_info_;
-#if defined(OFFICIAL_BUILD)
-  CHECK(false) << "Launching mojo process with inherit_handles is insecure!";
-#endif
-  options.inherit_handles = true;
+  options.handles_to_inherit = handle_passing_info_;
   options.stdin_handle = INVALID_HANDLE_VALUE;
   options.stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
   options.stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
@@ -151,18 +147,18 @@ void ServiceProcessLauncher::DoLaunch(
   // inherited.
   if (options.stdout_handle &&
       GetFileType(options.stdout_handle) != FILE_TYPE_CHAR) {
-    handle_passing_info_.push_back(options.stdout_handle);
+    options.handles_to_inherit.push_back(options.stdout_handle);
   }
   if (options.stderr_handle &&
       GetFileType(options.stderr_handle) != FILE_TYPE_CHAR &&
       options.stdout_handle != options.stderr_handle) {
-    handle_passing_info_.push_back(options.stderr_handle);
+    options.handles_to_inherit.push_back(options.stderr_handle);
   }
 #elif defined(OS_POSIX)
   handle_passing_info_.push_back(std::make_pair(STDIN_FILENO, STDIN_FILENO));
   handle_passing_info_.push_back(std::make_pair(STDOUT_FILENO, STDOUT_FILENO));
   handle_passing_info_.push_back(std::make_pair(STDERR_FILENO, STDERR_FILENO));
-  options.fds_to_remap = &handle_passing_info_;
+  options.fds_to_remap = handle_passing_info_;
 #endif
   DVLOG(2) << "Launching child with command line: "
            << child_command_line->GetCommandLineString();

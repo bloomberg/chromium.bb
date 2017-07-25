@@ -86,9 +86,9 @@ mojom::ConnectResult LaunchAndConnectToProcess(
 
   base::LaunchOptions options;
 #if defined(OS_WIN)
-  options.handles_to_inherit = &handle_passing_info;
+  options.handles_to_inherit = handle_passing_info;
 #elif defined(OS_POSIX)
-  options.fds_to_remap = &handle_passing_info;
+  options.fds_to_remap = handle_passing_info;
 #endif
   *process = base::LaunchProcess(child_command_line, options);
   DCHECK(process->IsValid());

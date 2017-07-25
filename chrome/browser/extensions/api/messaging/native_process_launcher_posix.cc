@@ -55,7 +55,7 @@ bool NativeProcessLauncher::LaunchNativeProcess(
     base::Process* process,
     base::File* read_file,
     base::File* write_file) {
-  base::FileHandleMappingVector fd_map;
+  base::LaunchOptions options;
 
   int read_pipe_fds[2] = {0};
   if (HANDLE_EINTR(pipe(read_pipe_fds)) != 0) {
@@ -64,7 +64,8 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   }
   base::ScopedFD read_pipe_read_fd(read_pipe_fds[0]);
   base::ScopedFD read_pipe_write_fd(read_pipe_fds[1]);
-  fd_map.push_back(std::make_pair(read_pipe_write_fd.get(), STDOUT_FILENO));
+  options.fds_to_remap.push_back(
+      std::make_pair(read_pipe_write_fd.get(), STDOUT_FILENO));
 
   int write_pipe_fds[2] = {0};
   if (HANDLE_EINTR(pipe(write_pipe_fds)) != 0) {
@@ -73,11 +74,10 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   }
   base::ScopedFD write_pipe_read_fd(write_pipe_fds[0]);
   base::ScopedFD write_pipe_write_fd(write_pipe_fds[1]);
-  fd_map.push_back(std::make_pair(write_pipe_read_fd.get(), STDIN_FILENO));
+  options.fds_to_remap.push_back(
+      std::make_pair(write_pipe_read_fd.get(), STDIN_FILENO));
 
-  base::LaunchOptions options;
   options.current_directory = command_line.GetProgram().DirName();
-  options.fds_to_remap = &fd_map;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Don't use no_new_privs mode, e.g. in case the host needs to use sudo.

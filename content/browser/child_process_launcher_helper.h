@@ -25,7 +25,7 @@
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
 #else
-#include "content/public/browser/file_descriptor_info.h"
+#include "content/public/browser/posix_file_descriptor_info.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -43,16 +43,18 @@ class CommandLine;
 namespace content {
 
 class ChildProcessLauncher;
-class FileDescriptorInfo;
 class SandboxedProcessLauncherDelegate;
+
+#if defined(OS_POSIX)
+class PosixFileDescriptorInfo;
+#endif
 
 namespace internal {
 
-
-#if defined(OS_WIN)
-using FileMappedForLaunch = base::HandlesToInheritVector;
+#if defined(OS_POSIX)
+using FileMappedForLaunch = PosixFileDescriptorInfo;
 #else
-using FileMappedForLaunch = FileDescriptorInfo;
+using FileMappedForLaunch = base::HandlesToInheritVector;
 #endif
 
 // ChildProcessLauncherHelper is used by ChildProcessLauncher to start a

@@ -560,7 +560,7 @@ CastContentBrowserClient::GetServiceManifestOverlay(
 void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
-    content::FileDescriptorInfo* mappings) {
+    content::PosixFileDescriptorInfo* mappings) {
 #if defined(OS_ANDROID)
   mappings->ShareWithRegion(
       kAndroidPakDescriptor,

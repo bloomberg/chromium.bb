@@ -483,10 +483,8 @@ TEST_F(ProcessUtilTest, InheritSpecifiedHandles) {
   // Takes ownership of the event handle.
   base::WaitableEvent event(base::win::ScopedHandle(
       CreateEvent(&security_attributes, true, false, NULL)));
-  base::HandlesToInheritVector handles_to_inherit;
-  handles_to_inherit.push_back(event.handle());
   base::LaunchOptions options;
-  options.handles_to_inherit = &handles_to_inherit;
+  options.handles_to_inherit.push_back(event.handle());
 
   base::CommandLine cmd_line = MakeCmdLine("TriggerEventChildProcess");
   cmd_line.AppendSwitchASCII(
@@ -623,10 +621,8 @@ int ProcessUtilTest::CountOpenFDsInChild() {
   if (pipe(fds) < 0)
     NOTREACHED();
 
-  base::FileHandleMappingVector fd_mapping_vec;
-  fd_mapping_vec.push_back(std::pair<int, int>(fds[1], kChildPipe));
   base::LaunchOptions options;
-  options.fds_to_remap = &fd_mapping_vec;
+  options.fds_to_remap.push_back(std::pair<int, int>(fds[1], kChildPipe));
   base::SpawnChildResult spawn_child =
       SpawnChildWithOptions("ProcessUtilsLeakFDChildProcess", options);
   CHECK(spawn_child.process.IsValid());
@@ -690,17 +686,14 @@ std::string TestLaunchProcess(const std::vector<std::string>& args,
                               const base::EnvironmentMap& env_changes,
                               const bool clear_environ,
                               const int clone_flags) {
-  base::FileHandleMappingVector fds_to_remap;
-
   int fds[2];
   PCHECK(pipe(fds) == 0);
 
-  fds_to_remap.push_back(std::make_pair(fds[1], 1));
   base::LaunchOptions options;
   options.wait = true;
   options.environ = env_changes;
   options.clear_environ = clear_environ;
-  options.fds_to_remap = &fds_to_remap;
+  options.fds_to_remap.push_back(std::make_pair(fds[1], 1));
 #if defined(OS_LINUX)
   options.clone_flags = clone_flags;
 #else
@@ -944,12 +937,10 @@ TEST_F(ProcessUtilTest, PreExecHook) {
 
   base::ScopedFD read_fd(pipe_fds[0]);
   base::ScopedFD write_fd(pipe_fds[1]);
-  base::FileHandleMappingVector fds_to_remap;
-  fds_to_remap.push_back(std::make_pair(read_fd.get(), read_fd.get()));
 
   ReadFromPipeDelegate read_from_pipe_delegate(read_fd.get());
   base::LaunchOptions options;
-  options.fds_to_remap = &fds_to_remap;
+  options.fds_to_remap.push_back(std::make_pair(read_fd.get(), read_fd.get()));
   options.pre_exec_delegate = &read_from_pipe_delegate;
   base::SpawnChildResult spawn_child =
       SpawnChildWithOptions("SimpleChildProcess", options);

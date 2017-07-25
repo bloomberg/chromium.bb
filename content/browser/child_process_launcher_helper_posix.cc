@@ -9,7 +9,7 @@
 #include "base/posix/global_descriptors.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "content/browser/file_descriptor_info_impl.h"
+#include "content/browser/posix_file_descriptor_info_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_descriptors.h"
@@ -71,14 +71,14 @@ base::PlatformFile OpenFileIfNecessary(const base::FilePath& path,
 
 }  // namespace
 
-std::unique_ptr<FileDescriptorInfo> CreateDefaultPosixFilesToMap(
+std::unique_ptr<PosixFileDescriptorInfo> CreateDefaultPosixFilesToMap(
     int child_process_id,
     const mojo::edk::PlatformHandle& mojo_client_handle,
     bool include_service_required_files,
     const std::string& process_type,
     base::CommandLine* command_line) {
-  std::unique_ptr<FileDescriptorInfo> files_to_register(
-      FileDescriptorInfoImpl::Create());
+  std::unique_ptr<PosixFileDescriptorInfo> files_to_register(
+      PosixFileDescriptorInfoImpl::Create());
 
   base::SharedMemoryHandle shm = base::FieldTrialList::GetFieldTrialHandle();
   if (shm.IsValid()) {

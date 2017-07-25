@@ -108,10 +108,15 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
 
   PlatformChannelPair channel;
   NamedPlatformHandle named_pipe;
-  HandlePassingInformation handle_passing_info;
+  base::LaunchOptions options;
   if (launch_type == LaunchType::CHILD || launch_type == LaunchType::PEER) {
+#if defined(OS_POSIX)
     channel.PrepareToPassClientHandleToChildProcess(&command_line,
-                                                    &handle_passing_info);
+                                                    &options.fds_to_remap);
+#else  // Windows
+    channel.PrepareToPassClientHandleToChildProcess(
+        &command_line, &options.handles_to_inherit);
+#endif
   } else if (launch_type == LaunchType::NAMED_CHILD ||
              launch_type == LaunchType::NAMED_PEER) {
 #if defined(OS_POSIX)
@@ -133,17 +138,8 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
       command_line.AppendSwitch(switch_string);
   }
 
-  base::LaunchOptions options;
-#if defined(OS_POSIX)
-  options.fds_to_remap = &handle_passing_info;
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   options.start_hidden = true;
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-    options.handles_to_inherit = &handle_passing_info;
-  else
-    options.inherit_handles = true;
-#else
-#error "Not supported yet."
 #endif
 
   // NOTE: In the case of named pipes, it's important that the server handle be

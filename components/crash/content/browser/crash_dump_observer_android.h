@@ -14,9 +14,9 @@
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "content/public/browser/browser_child_process_observer.h"
-#include "content/public/browser/file_descriptor_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/posix_file_descriptor_info.h"
 #include "content/public/common/process_type.h"
 
 namespace breakpad {
@@ -36,7 +36,7 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
    public:
     // OnChildStart is called on the launcher thread.
     virtual void OnChildStart(int child_process_id,
-                              content::FileDescriptorInfo* mappings) = 0;
+                              content::PosixFileDescriptorInfo* mappings) = 0;
     // OnChildExit is called on the UI thread.
     // OnChildExit may be called twice (once for the child process
     // termination, and once for the IPC channel disconnection).
@@ -67,7 +67,7 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
   // creation, and to allow clients to register any fd mappings they
   // need.
   void BrowserChildProcessStarted(int child_process_id,
-                                  content::FileDescriptorInfo* mappings);
+                                  content::PosixFileDescriptorInfo* mappings);
 
  private:
   friend struct base::LazyInstanceTraitsBase<CrashDumpObserver>;

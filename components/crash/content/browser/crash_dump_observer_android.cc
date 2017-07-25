@@ -84,7 +84,7 @@ void CrashDumpObserver::OnChildExit(int child_process_id,
 
 void CrashDumpObserver::BrowserChildProcessStarted(
     int child_process_id,
-    content::FileDescriptorInfo* mappings) {
+    content::PosixFileDescriptorInfo* mappings) {
   std::vector<Client*> registered_clients_copy;
   {
     base::AutoLock auto_lock(registered_clients_lock_);

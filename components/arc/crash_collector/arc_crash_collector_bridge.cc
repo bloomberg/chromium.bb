@@ -28,11 +28,9 @@ void RunCrashReporter(const std::string& crash_type,
                       const std::string& board,
                       const std::string& cpu_abi,
                       mojo::edk::ScopedPlatformHandle pipe) {
-  base::FileHandleMappingVector fd_map = {
-      std::make_pair(pipe.get().handle, STDIN_FILENO)};
-
   base::LaunchOptions options;
-  options.fds_to_remap = &fd_map;
+  options.fds_to_remap.push_back(
+      std::make_pair(pipe.get().handle, STDIN_FILENO));
 
   auto process =
       base::LaunchProcess({kCrashReporterPath, "--arc_java_crash=" + crash_type,

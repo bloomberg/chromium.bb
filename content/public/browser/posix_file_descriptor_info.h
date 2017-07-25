@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_FILE_DESCRIPTOR_INFO_H_
-#define CONTENT_PUBLIC_BROWSER_FILE_DESCRIPTOR_INFO_H_
+#ifndef CONTENT_PUBLIC_BROWSER_POSIX_FILE_DESCRIPTOR_INFO_H_
+#define CONTENT_PUBLIC_BROWSER_POSIX_FILE_DESCRIPTOR_INFO_H_
 
 #include <stddef.h>
 
@@ -15,14 +15,15 @@
 
 namespace content {
 
-// FileDescriptorInfo is a collection of file descriptors which is needed to
-// launch a process. You should tell FileDescriptorInfo which FDs should be
-// closed and which shouldn't so that it can take care of the lifetime of FDs.
+// PoxisFileDescriptorInfo is a collection of file descriptors which is needed
+// to launch a process. You should tell PosixFileDescriptorInfo which FDs
+// should be closed and which shouldn't so that it can take care of the
+// lifetime of FDs.
 //
 // See base/process/launcher.h for more details about launching a process.
-class FileDescriptorInfo {
+class PosixFileDescriptorInfo {
  public:
-  virtual ~FileDescriptorInfo() {}
+  virtual ~PosixFileDescriptorInfo() {}
 
   // Adds an FD associated with an ID, without delegating the ownerhip of ID.
   virtual void Share(int id, base::PlatformFile fd) = 0;
@@ -43,8 +44,8 @@ class FileDescriptorInfo {
 
   // A GetMapping() variant that adjusts the ID value by |delta|.
   // Some environments need this trick.
-  virtual std::unique_ptr<base::FileHandleMappingVector>
-  GetMappingWithIDAdjustment(int delta) const = 0;
+  virtual base::FileHandleMappingVector GetMappingWithIDAdjustment(
+      int delta) const = 0;
 
   // API for iterating over the registered ID-FD pairs.
   virtual base::PlatformFile GetFDAt(size_t i) const = 0;
@@ -58,6 +59,6 @@ class FileDescriptorInfo {
   virtual base::ScopedFD ReleaseFD(base::PlatformFile file) = 0;
 };
 
-}
+}  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_FILE_DESCRIPTOR_INFO_H_
+#endif  // CONTENT_PUBLIC_BROWSER_POSIX_FILE_DESCRIPTOR_INFO_H_

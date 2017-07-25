@@ -359,7 +359,6 @@ Status LaunchDesktopChrome(URLRequestContextGetter* context_getter,
 #endif
 
 #if defined(OS_POSIX)
-  base::FileHandleMappingVector no_stderr;
   base::ScopedFD devnull;
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch("verbose")) {
     // Redirect stderr to /dev/null, so that Chrome log spew doesn't confuse
@@ -367,8 +366,8 @@ Status LaunchDesktopChrome(URLRequestContextGetter* context_getter,
     devnull.reset(HANDLE_EINTR(open("/dev/null", O_WRONLY)));
     if (!devnull.is_valid())
       return Status(kUnknownError, "couldn't open /dev/null");
-    no_stderr.push_back(std::make_pair(devnull.get(), STDERR_FILENO));
-    options.fds_to_remap = &no_stderr;
+    options.fds_to_remap.push_back(
+        std::make_pair(devnull.get(), STDERR_FILENO));
   }
 #elif defined(OS_WIN)
   if (!SwitchToUSKeyboardLayout())

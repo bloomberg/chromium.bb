@@ -75,7 +75,7 @@ void ImageWriter::UnmountVolumes(const base::Closure& continuation) {
 }
 
 bool ImageWriter::OpenDevice() {
-  base::LaunchOptions options = base::LaunchOptions();
+  base::LaunchOptions options;
   options.wait = false;
 
   // Create a socket pair for communication.
@@ -89,9 +89,8 @@ bool ImageWriter::OpenDevice() {
   base::ScopedFD child_socket(sockets[1]);
 
   // Map the client socket to the client's STDOUT.
-  base::FileHandleMappingVector fd_map;
-  fd_map.push_back(std::pair<int, int>(child_socket.get(), STDOUT_FILENO));
-  options.fds_to_remap = &fd_map;
+  options.fds_to_remap.push_back(
+      std::pair<int, int>(child_socket.get(), STDOUT_FILENO));
 
   // Find the file path to open.
   base::FilePath real_device_path;
