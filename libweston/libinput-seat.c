@@ -134,6 +134,8 @@ udev_input_disable(struct udev_input *input)
 	if (input->suspended)
 		return;
 
+	wl_event_source_remove(input->libinput_source);
+	input->libinput_source = NULL;
 	libinput_suspend(input->libinput);
 	process_events(input);
 	input->suspended = 1;
@@ -337,7 +339,8 @@ udev_input_destroy(struct udev_input *input)
 {
 	struct udev_seat *seat, *next;
 
-	wl_event_source_remove(input->libinput_source);
+	if (input->libinput_source)
+		wl_event_source_remove(input->libinput_source);
 	wl_list_for_each_safe(seat, next, &input->compositor->seat_list, base.link)
 		udev_seat_destroy(seat);
 	libinput_unref(input->libinput);
