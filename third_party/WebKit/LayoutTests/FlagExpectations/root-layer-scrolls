@@ -573,7 +573,6 @@ crbug.com/417782 paint/invalidation/composited-overflow-with-local-background.ht
 crbug.com/417782 paint/invalidation/composited-overflow-with-negative-offset-outline.html [ Failure Pass ]
 crbug.com/417782 paint/invalidation/composited-table-row.html [ Failure Pass ]
 crbug.com/417782 paint/invalidation/composited-vertical-rl-overflow.html [ Failure Pass ]
-crbug.com/417782 paint/invalidation/compositing/background-attachment-fixed-scrolled.html [ Failure Pass ]
 crbug.com/417782 paint/invalidation/compositing/background-attachment-local-composited.html [ Failure Pass ]
 crbug.com/417782 paint/invalidation/compositing/background-attachment-local-equivalent.html [ Failure Pass ]
 crbug.com/417782 paint/invalidation/compositing/clipping-should-not-repaint-composited-descendants.html [ Failure Pass ]
