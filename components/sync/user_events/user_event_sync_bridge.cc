@@ -6,6 +6,7 @@
 
 #include <set>
 #include <utility>
+#include <vector>
 
 #include "base/big_endian.h"
 #include "base/bind.h"
@@ -272,13 +273,21 @@ void UserEventSyncBridge::OnReadAllDataToDelete(
 void UserEventSyncBridge::HandleGlobalIdChange(int64_t old_global_id,
                                                int64_t new_global_id) {
   DCHECK_NE(old_global_id, new_global_id);
-  auto iter = in_flight_nav_linked_events_.find(old_global_id);
-  while (iter != in_flight_nav_linked_events_.end()) {
-    auto specifics = base::MakeUnique<UserEventSpecifics>(iter->second);
-    DCHECK_EQ(old_global_id, specifics->navigation_id());
 
+  // Store specifics in a temp vector while erasing, as |RecordUserEvent()| will
+  // insert new values into |in_flight_nav_linked_events_|. While insert should
+  // not invalidate a std::multimap's iterator, and the updated global_id should
+  // not be within our given range, this approach seems less error prone.
+  std::vector<std::unique_ptr<UserEventSpecifics>> affected;
+
+  auto range = in_flight_nav_linked_events_.equal_range(old_global_id);
+  for (auto iter = range.first; iter != range.second;) {
+    DCHECK_EQ(old_global_id, iter->second.navigation_id());
+    affected.emplace_back(base::MakeUnique<UserEventSpecifics>(iter->second));
     iter = in_flight_nav_linked_events_.erase(iter);
+  }
 
+  for (std::unique_ptr<UserEventSpecifics>& specifics : affected) {
     specifics->set_navigation_id(new_global_id);
     RecordUserEvent(std::move(specifics));
   }
