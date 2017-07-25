@@ -40,10 +40,15 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
   }
 
   void RegisterFocusObserver() override {
+    DCHECK(exo::WMHelper::HasInstance());
     exo::WMHelper::GetInstance()->AddFocusObserver(ime_service_);
   }
 
   void UnregisterFocusObserver() override {
+    // If WMHelper is already destroyed, do nothing.
+    // TODO(crbug.com/748380): Fix shutdown order.
+    if (!exo::WMHelper::HasInstance())
+      return;
     exo::WMHelper::GetInstance()->RemoveFocusObserver(ime_service_);
   }
 
