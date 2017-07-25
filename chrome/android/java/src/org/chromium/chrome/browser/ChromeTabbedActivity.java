@@ -2006,11 +2006,6 @@ public class ChromeTabbedActivity
         return getLayoutManager().getOverviewListLayout();
     }
 
-    @Override
-    public boolean isOverlayVisible() {
-        return getCompositorViewHolder() != null && !getCompositorViewHolder().isTabInteractive();
-    }
-
     // App Menu related code -----------------------------------------------------------------------
 
     @Override

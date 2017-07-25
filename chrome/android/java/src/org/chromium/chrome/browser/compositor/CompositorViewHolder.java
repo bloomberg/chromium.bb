@@ -734,15 +734,6 @@ public class CompositorViewHolder extends FrameLayout
         }
     }
 
-    /**
-     * @return True if the currently active content view is shown in the normal interactive mode.
-     */
-    public boolean isTabInteractive() {
-        return mLayoutManager != null && mLayoutManager.getActiveLayout() != null
-                && mLayoutManager.getActiveLayout().isTabInteractive() && mContentOverlayVisiblity
-                && mView != null;
-    }
-
     @Override
     public void hideKeyboard(Runnable postHideTask) {
         // When this is called we actually want to hide the keyboard whatever owns it.

@@ -979,9 +979,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 BeamController.registerForBeam(ChromeActivity.this, new BeamProvider() {
                     @Override
                     public String getTabUrlForBeam() {
-                        if (isOverlayVisible()) return null;
-                        if (getActivityTab() == null) return null;
-                        return getActivityTab().getUrl();
+                        Tab currentTab = getActivityTab();
+                        if (currentTab == null) return null;
+                        if (!currentTab.isUserInteractable()) return null;
+                        return currentTab.getUrl();
                     }
                 });
 
@@ -2115,14 +2116,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
         mDeferredStartupQueued = false;
         onDeferredStartup();
-    }
-
-    /**
-     * Determines whether the ContentView is currently visible and not hidden by an overlay
-     * @return true if the ContentView is fully hidden by another view (i.e. the tab stack)
-     */
-    public boolean isOverlayVisible() {
-        return false;
     }
 
     @Override
