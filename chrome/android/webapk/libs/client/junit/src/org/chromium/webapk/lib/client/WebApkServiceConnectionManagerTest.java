@@ -4,32 +4,36 @@
 
 package org.chromium.webapk.lib.client;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.ServiceConnection;
-
-import org.chromium.testing.local.CustomShadowAsyncTask;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
-import org.chromium.webapk.lib.runtime_library.IWebApkApi;
+import android.os.IBinder;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 
+import org.chromium.testing.local.CustomShadowAsyncTask;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
+
 /**
- * Unit tests for {@link org.chromium.libs.client.WebApkServiceConnectionManager}.
+ * Unit tests for {@link org.chromium.webapk.lib.client.WebApkServiceConnectionManager}.
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
 public class WebApkServiceConnectionManagerTest {
 
     private static final String WEB_APK_PACKAGE = "com.webapk.package";
+
+    private static final String CATEGORY_WEBAPK_SERVICE_API = "android.intent.category.WEBAPK_API";
 
     private ShadowApplication mShadowApplication;
     private WebApkServiceConnectionManager mConnectionManager;
@@ -38,7 +42,7 @@ public class WebApkServiceConnectionManagerTest {
         public boolean mGotResult = false;
 
         @Override
-        public void onConnected(IWebApkApi api) {
+        public void onConnected(IBinder service) {
             mGotResult = true;
         }
     }
@@ -46,7 +50,10 @@ public class WebApkServiceConnectionManagerTest {
     @Before
     public void setUp() {
         mShadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
-        mConnectionManager = new WebApkServiceConnectionManager();
+        mConnectionManager =
+                new WebApkServiceConnectionManager(CATEGORY_WEBAPK_SERVICE_API, null /* action*/);
+        mShadowApplication.setComponentNameAndServiceForBindService(
+                new ComponentName(WEB_APK_PACKAGE, ""), Mockito.mock(IBinder.class));
     }
 
     /**
@@ -134,7 +141,7 @@ public class WebApkServiceConnectionManagerTest {
         Assert.assertEquals(WEB_APK_PACKAGE, getNextStartedServicePackage());
         Assert.assertEquals(null, getNextStartedServicePackage());
 
-        mConnectionManager.disconnect(RuntimeEnvironment.application, WEB_APK_PACKAGE);
+        mConnectionManager.disconnectAll(RuntimeEnvironment.application);
         mConnectionManager.connect(
                 RuntimeEnvironment.application, WEB_APK_PACKAGE, new TestCallback());
         Assert.assertEquals(WEB_APK_PACKAGE, getNextStartedServicePackage());

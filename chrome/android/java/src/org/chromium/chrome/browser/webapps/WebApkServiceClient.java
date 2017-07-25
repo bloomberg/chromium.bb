@@ -1,49 +1,69 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.notifications;
+package org.chromium.chrome.browser.webapps;
 
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.os.IBinder;
 import android.os.RemoteException;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.webapk.lib.client.WebApkServiceConnectionManager;
 import org.chromium.webapk.lib.runtime_library.IWebApkApi;
 
 /**
- * WebApkNotificationClient provides an API to display and close notifications remotely in
- * context of a WebAPK, enriching the notification with the WebAPK's small icon when available.
+ * Provides APIs for browsers to communicate with WebAPK services. Each WebAPK has its own "WebAPK
+ * service".
  */
-public class WebApkNotificationClient {
-    private static final String TAG = "cr_WebApk";
-
+public class WebApkServiceClient {
     // Callback which catches RemoteExceptions thrown due to IWebApkApi failure.
     private abstract static class ApiUseCallback
             implements WebApkServiceConnectionManager.ConnectionCallback {
         public abstract void useApi(IWebApkApi api) throws RemoteException;
 
         @Override
-        public void onConnected(IWebApkApi api) {
+        public void onConnected(IBinder api) {
             try {
-                useApi(api);
+                useApi(IWebApkApi.Stub.asInterface(api));
             } catch (RemoteException e) {
                 Log.w(TAG, "WebApkAPI use failed.", e);
             }
         }
     }
 
+    private static final String CATEGORY_WEBAPK_API = "android.intent.category.WEBAPK_API";
+    private static final String TAG = "cr_WebApk";
+
+    private static WebApkServiceClient sInstance;
+
+    /** Manages connections between the browser application and WebAPK services. */
+    private WebApkServiceConnectionManager mConnectionManager;
+
+    public static WebApkServiceClient getInstance() {
+        if (sInstance == null) {
+            sInstance = new WebApkServiceClient();
+        }
+        return sInstance;
+    }
+
+    private WebApkServiceClient() {
+        mConnectionManager =
+                new WebApkServiceConnectionManager(CATEGORY_WEBAPK_API, null /* action */);
+    }
+
     /**
-     * Connect to a WebAPK's bound service, build a notification and hand it over to the WebAPK to
-     * display. Handing over the notification makes the notification look like it originated from
+     * Connects to a WebAPK's bound service, builds a notification and hands it over to the WebAPK
+     * to display. Handing over the notification makes the notification look like it originated from
      * the WebAPK - not Chrome - in the Android UI.
      */
-    public static void notifyNotification(final String webApkPackage,
+    public void notifyNotification(final String webApkPackage,
             final NotificationBuilderBase notificationBuilder, final String platformTag,
             final int platformID) {
         final ApiUseCallback connectionCallback = new ApiUseCallback() {
@@ -68,14 +88,12 @@ public class WebApkNotificationClient {
             }
         };
 
-        WebApkServiceConnectionManager.getInstance().connect(
+        mConnectionManager.connect(
                 ContextUtils.getApplicationContext(), webApkPackage, connectionCallback);
     }
 
-    /**
-     * Cancel notification previously shown by WebAPK.
-     */
-    public static void cancelNotification(
+    /** Cancels notification previously shown by WebAPK. */
+    public void cancelNotification(
             String webApkPackage, final String platformTag, final int platformID) {
         final ApiUseCallback connectionCallback = new ApiUseCallback() {
             @Override
@@ -83,8 +101,17 @@ public class WebApkNotificationClient {
                 api.cancelNotification(platformTag, platformID);
             }
         };
-        WebApkServiceConnectionManager.getInstance().connect(
+
+        mConnectionManager.connect(
                 ContextUtils.getApplicationContext(), webApkPackage, connectionCallback);
+    }
+
+    /**
+     * Disconnects Chrome application from the WebAPK service.
+     * @param webApkPackage WebAPK package for the service to disconnect from.
+     */
+    public void disconnect(String webApkPackage) {
+        mConnectionManager.disconnect(ContextUtils.getApplicationContext(), webApkPackage);
     }
 
     /** Decodes bitmap from WebAPK's resources. */
