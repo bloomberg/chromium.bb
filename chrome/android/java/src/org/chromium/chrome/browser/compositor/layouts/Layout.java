@@ -111,7 +111,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     private int mNextTabId = Tab.INVALID_TAB_ID;
 
     // The ratio of dp to px.
-    private final float mDpToPx;
+    protected final float mDpToPx;
 
     /**
      * The {@link Layout} is not usable until sizeChanged is called.
@@ -1081,5 +1081,16 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     @VisibleForTesting
     public void finishAnimationsForTests() {
         if (mLayoutAnimations != null) mLayoutAnimations.updateAndFinish();
+    }
+
+    /**
+     * Gets the full screen manager.
+     * @return The {@link ChromeFullscreenManager} manager, possibly null
+     */
+    public ChromeFullscreenManager getFullscreenManager() {
+        if (mTabModelSelector == null) return null;
+        if (mTabModelSelector.getCurrentTab() == null) return null;
+        if (mTabModelSelector.getCurrentTab().getActivity() == null) return null;
+        return mTabModelSelector.getCurrentTab().getActivity().getFullscreenManager();
     }
 }
