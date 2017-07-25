@@ -103,7 +103,7 @@ class ExecTest(unittest.TestCase):
   def test_var(self):
     local_scope = {}
     global_scope = {
-        'Var': lambda var_name: '{%s}' % var_name,
+        'Var': gclient.GClientKeywords.VarImpl({}, local_scope).Lookup,
     }
     gclient_eval.Exec('\n'.join([
         'vars = {',
@@ -115,7 +115,7 @@ class ExecTest(unittest.TestCase):
     ]), global_scope, local_scope, '<string>')
     self.assertEqual({
         'vars': collections.OrderedDict([('foo', 'bar')]),
-        'deps': collections.OrderedDict([('a_dep', 'a{foo}b')]),
+        'deps': collections.OrderedDict([('a_dep', 'abarb')]),
     }, local_scope)
 
 
