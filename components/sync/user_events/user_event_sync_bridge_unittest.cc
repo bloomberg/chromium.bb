@@ -107,6 +107,12 @@ class UserEventSyncBridgeTest : public testing::Test {
         &test_global_id_mapper_);
   }
 
+  std::string GetStorageKey(const UserEventSpecifics& specifics) {
+    EntityData entity_data;
+    *entity_data.specifics.mutable_user_event() = specifics;
+    return bridge()->GetStorageKey(entity_data);
+  }
+
   UserEventSyncBridge* bridge() { return bridge_.get(); }
   const RecordingModelTypeChangeProcessor& processor() { return *processor_; }
   TestGlobalIdMapper* mapper() { return &test_global_id_mapper_; }
@@ -198,6 +204,38 @@ TEST_F(UserEventSyncBridgeTest, HandleGlobalIdChange) {
   mapper()->ChangeId(third_id, fourth_id);
   EXPECT_EQ(2u, processor().put_multimap().size());
   bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 0));
+}
+
+TEST_F(UserEventSyncBridgeTest, MulipleEventsChanging) {
+  int64_t first_id = 11;
+  int64_t second_id = 12;
+  int64_t third_id = 13;
+  int64_t fourth_id = 14;
+  const UserEventSpecifics specifics1 = CreateSpecifics(1u, first_id, 2u);
+  const UserEventSpecifics specifics2 = CreateSpecifics(1u, first_id, 2u);
+  const UserEventSpecifics specifics3 = CreateSpecifics(1u, first_id, 2u);
+  const std::string key1 = GetStorageKey(specifics1);
+  const std::string key2 = GetStorageKey(specifics2);
+  const std::string key3 = GetStorageKey(specifics3);
+
+  bridge()->RecordUserEvent(base::MakeUnique<UserEventSpecifics>(specifics1));
+  bridge()->RecordUserEvent(base::MakeUnique<UserEventSpecifics>(specifics2));
+  bridge()->RecordUserEvent(base::MakeUnique<UserEventSpecifics>(specifics3));
+  bridge()->GetAllData(VerifyCallback(
+      {{key1, specifics1}, {key2, specifics2}, {key3, specifics3}}));
+
+  mapper()->ChangeId(second_id, fourth_id);
+  bridge()->GetAllData(
+      VerifyCallback({{key1, specifics1},
+                      {key2, CreateSpecifics(3u, fourth_id, 4u)},
+                      {key3, specifics3}}));
+
+  mapper()->ChangeId(first_id, fourth_id);
+  mapper()->ChangeId(third_id, fourth_id);
+  bridge()->GetAllData(
+      VerifyCallback({{key1, CreateSpecifics(1u, fourth_id, 2u)},
+                      {key2, CreateSpecifics(3u, fourth_id, 4u)},
+                      {key3, CreateSpecifics(5u, fourth_id, 6u)}}));
 }
 
 }  // namespace
