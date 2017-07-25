@@ -299,6 +299,15 @@ FaviconBitmapIDSize::FaviconBitmapIDSize() {}
 
 FaviconBitmapIDSize::~FaviconBitmapIDSize() {}
 
+// IconMappingsForExpiry ------------------------------------------------------
+
+IconMappingsForExpiry::IconMappingsForExpiry() {}
+
+IconMappingsForExpiry::IconMappingsForExpiry(
+    const IconMappingsForExpiry& other) = default;
+
+IconMappingsForExpiry::~IconMappingsForExpiry() {}
+
 // FaviconBitmap --------------------------------------------------------------
 
 FaviconBitmap::FaviconBitmap() {}

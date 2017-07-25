@@ -12,15 +12,24 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
+#include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "components/history/core/browser/thumbnail_database.h"
 #include "components/history/core/test/database_test_utils.h"
 #include "sql/connection.h"
 #include "sql/recovery.h"
 #include "sql/test/scoped_error_expecter.h"
 #include "sql/test/test_helpers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "url/gurl.h"
+
+using testing::AllOf;
+using testing::ElementsAre;
+using testing::Field;
+using testing::Pair;
+using testing::Return;
 
 namespace history {
 
@@ -365,6 +374,127 @@ TEST_F(ThumbnailDatabaseTest, TouchDoesNotUpdateStandardFavicons) {
                                   nullptr, nullptr));
   EXPECT_EQ(start, last_updated);           // Does not mess with last_updated.
   EXPECT_EQ(base::Time(), last_requested);  // No update.
+}
+
+// Test that ThumbnailDatabase::GetOldOnDemandFavicons() returns on-demand icons
+// which were requested prior to the passed in timestamp.
+TEST_F(ThumbnailDatabaseTest, GetOldOnDemandFaviconsReturnsOld) {
+  ThumbnailDatabase db(nullptr);
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
+  db.BeginTransaction();
+
+  base::Time start;
+  ASSERT_TRUE(base::Time::FromUTCExploded({2017, 5, 0, 1, 0, 0, 0, 0}, &start));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
+  scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
+
+  GURL url("http://google.com/favicon.ico");
+  favicon_base::FaviconID icon =
+      db.AddFavicon(url, favicon_base::FAVICON, favicon,
+                    FaviconBitmapType::ON_DEMAND, start, gfx::Size());
+  ASSERT_NE(0, icon);
+  // Associate two different URLs with the icon.
+  GURL page_url1("http://google.com/1");
+  ASSERT_NE(0, db.AddIconMapping(page_url1, icon));
+  GURL page_url2("http://google.com/2");
+  ASSERT_NE(0, db.AddIconMapping(page_url2, icon));
+
+  base::Time get_older_than = start + base::TimeDelta::FromSeconds(1);
+  auto map = db.GetOldOnDemandFavicons(get_older_than);
+
+  // The icon is returned.
+  EXPECT_THAT(map, ElementsAre(Pair(
+                       icon, AllOf(Field(&IconMappingsForExpiry::icon_url, url),
+                                   Field(&IconMappingsForExpiry::page_urls,
+                                         ElementsAre(page_url1, page_url2))))));
+}
+
+// Test that ThumbnailDatabase::GetOldOnDemandFavicons() returns on-visit icons
+// if the on-visit icons have expired. We need this behavior in order to delete
+// icons stored via HistoryService::SetOnDemandFavicons() prior to on-demand
+// icons setting the "last_requested" time.
+TEST_F(ThumbnailDatabaseTest, GetOldOnDemandFaviconsReturnsExpired) {
+  ThumbnailDatabase db(nullptr);
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
+  db.BeginTransaction();
+
+  base::Time start;
+  ASSERT_TRUE(base::Time::FromUTCExploded({2017, 5, 0, 1, 0, 0, 0, 0}, &start));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
+  scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
+
+  GURL url("http://google.com/favicon.ico");
+  favicon_base::FaviconID icon =
+      db.AddFavicon(url, favicon_base::FAVICON, favicon,
+                    FaviconBitmapType::ON_VISIT, start, gfx::Size());
+  ASSERT_NE(0, icon);
+  GURL page_url("http://google.com/");
+  ASSERT_NE(0, db.AddIconMapping(page_url, icon));
+  ASSERT_TRUE(db.SetFaviconOutOfDate(icon));
+
+  // The threshold is ignored for expired icons.
+  auto map = db.GetOldOnDemandFavicons(/*threshold=*/base::Time::Now());
+
+  // The icon is returned.
+  EXPECT_THAT(map, ElementsAre(Pair(
+                       icon, AllOf(Field(&IconMappingsForExpiry::icon_url, url),
+                                   Field(&IconMappingsForExpiry::page_urls,
+                                         ElementsAre(page_url))))));
+}
+
+// Test that ThumbnailDatabase::GetOldOnDemandFavicons() does not return
+// on-demand icons which were requested after the passed in timestamp.
+TEST_F(ThumbnailDatabaseTest, GetOldOnDemandFaviconsDoesNotReturnFresh) {
+  ThumbnailDatabase db(nullptr);
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
+  db.BeginTransaction();
+
+  base::Time start;
+  ASSERT_TRUE(base::Time::FromUTCExploded({2017, 5, 0, 1, 0, 0, 0, 0}, &start));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
+  scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
+
+  GURL url("http://google.com/favicon.ico");
+  favicon_base::FaviconID icon =
+      db.AddFavicon(url, favicon_base::FAVICON, favicon,
+                    FaviconBitmapType::ON_DEMAND, start, gfx::Size());
+  ASSERT_NE(0, icon);
+  ASSERT_NE(0, db.AddIconMapping(GURL("http://google.com/"), icon));
+
+  // Touch the icon 3 weeks later.
+  base::Time now = start + base::TimeDelta::FromDays(21);
+  EXPECT_TRUE(db.TouchOnDemandFavicon(url, now));
+
+  base::Time get_older_than = start + base::TimeDelta::FromSeconds(1);
+  auto map = db.GetOldOnDemandFavicons(get_older_than);
+
+  // No icon is returned.
+  EXPECT_TRUE(map.empty());
+}
+
+// Test that ThumbnailDatabase::GetOldOnDemandFavicons() does not return
+// non-expired on-visit icons.
+TEST_F(ThumbnailDatabaseTest, GetOldOnDemandFaviconsDoesNotDeleteStandard) {
+  ThumbnailDatabase db(nullptr);
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
+  db.BeginTransaction();
+
+  base::Time start;
+  ASSERT_TRUE(base::Time::FromUTCExploded({2017, 5, 0, 1, 0, 0, 0, 0}, &start));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
+  scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
+
+  favicon_base::FaviconID icon = db.AddFavicon(
+      GURL("http://google.com/favicon.ico"), favicon_base::FAVICON, favicon,
+      FaviconBitmapType::ON_VISIT, start, gfx::Size());
+  ASSERT_NE(0, icon);
+  ASSERT_NE(0, db.AddIconMapping(GURL("http://google.com/"), icon));
+
+  base::Time get_older_than = start + base::TimeDelta::FromSeconds(1);
+  auto map = db.GetOldOnDemandFavicons(get_older_than);
+
+  // No icon is returned.
+  EXPECT_TRUE(map.empty());
 }
 
 TEST_F(ThumbnailDatabaseTest, DeleteIconMappings) {
