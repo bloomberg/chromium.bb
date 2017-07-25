@@ -20,7 +20,7 @@ struct Feature;
 namespace feature_engagement_tracker {
 struct FeatureConfig;
 class AvailabilityModel;
-class Model;
+class EventModel;
 
 // A ConditionValidator checks the requred conditions for a given feature,
 // and checks if all conditions are met.
@@ -74,7 +74,7 @@ class ConditionValidator {
   // Returns a Result object that describes whether each condition has been met.
   virtual Result MeetsConditions(const base::Feature& feature,
                                  const FeatureConfig& config,
-                                 const Model& model,
+                                 const EventModel& event_model,
                                  const AvailabilityModel& availability_model,
                                  uint32_t current_day) const = 0;
 

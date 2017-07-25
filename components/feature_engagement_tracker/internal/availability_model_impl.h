@@ -15,20 +15,19 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/feature_engagement_tracker/internal/availability_model.h"
-#include "components/feature_engagement_tracker/internal/availability_store.h"
+#include "components/feature_engagement_tracker/internal/persistent_availability_store.h"
 
 namespace base {
 struct Feature;
 }  // namespace base
 
 namespace feature_engagement_tracker {
-class AvailabilityStore;
-
-// An AvailabilityModel which supports loading data from an AvailabilityStore.
+// An AvailabilityModel which supports loading data from an
+// PersistentAvailabilityStore.
 class AvailabilityModelImpl : public AvailabilityModel {
  public:
   using StoreLoadCallback =
-      base::OnceCallback<void(AvailabilityStore::OnLoadedCallback,
+      base::OnceCallback<void(PersistentAvailabilityStore::OnLoadedCallback,
                               uint32_t current_day)>;
 
   explicit AvailabilityModelImpl(StoreLoadCallback load_callback);
@@ -53,7 +52,7 @@ class AvailabilityModelImpl : public AvailabilityModel {
   // name.
   std::map<std::string, uint32_t> feature_availabilities_;
 
-  // Whether the model has successfully initialied.
+  // Whether the model has successfully initialized.
   bool ready_;
 
   // A callback for loading availability data from the store. This is reset

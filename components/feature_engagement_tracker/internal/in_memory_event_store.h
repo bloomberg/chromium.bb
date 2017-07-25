@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_IN_MEMORY_STORE_H_
-#define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_IN_MEMORY_STORE_H_
+#ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_IN_MEMORY_EVENT_STORE_H_
+#define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_IN_MEMORY_EVENT_STORE_H_
 
 #include <vector>
 
 #include "base/macros.h"
-#include "components/feature_engagement_tracker/internal/store.h"
+#include "components/feature_engagement_tracker/internal/event_store.h"
 
 namespace feature_engagement_tracker {
-// An InMemoryStore provides a DB layer that stores all data in-memory.
+// An InMemoryEventStore provides a DB layer that stores all data in-memory.
 // All data is made available to this class during construction, and can be
 // loaded once by a caller. All calls to WriteEvent(...) are ignored.
-class InMemoryStore : public Store {
+class InMemoryEventStore : public EventStore {
  public:
-  explicit InMemoryStore(std::unique_ptr<std::vector<Event>> events);
-  InMemoryStore();
-  ~InMemoryStore() override;
+  explicit InMemoryEventStore(std::unique_ptr<std::vector<Event>> events);
+  InMemoryEventStore();
+  ~InMemoryEventStore() override;
 
-  // Store implementation.
+  // EventStore implementation.
   void Load(const OnLoadedCallback& callback) override;
   bool IsReady() const override;
   void WriteEvent(const Event& event) override;
@@ -40,9 +40,9 @@ class InMemoryStore : public Store {
   // invoked.
   bool ready_;
 
-  DISALLOW_COPY_AND_ASSIGN(InMemoryStore);
+  DISALLOW_COPY_AND_ASSIGN(InMemoryEventStore);
 };
 
 }  // namespace feature_engagement_tracker
 
-#endif  // COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_IN_MEMORY_STORE_H_
+#endif  // COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_IN_MEMORY_EVENT_STORE_H_

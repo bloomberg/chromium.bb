@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_MODEL_IMPL_H_
-#define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_MODEL_IMPL_H_
+#ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_EVENT_MODEL_IMPL_H_
+#define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_EVENT_MODEL_IMPL_H_
 
 #include <map>
 #include <memory>
@@ -12,21 +12,21 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/feature_engagement_tracker/internal/model.h"
+#include "components/feature_engagement_tracker/internal/event_model.h"
 #include "components/feature_engagement_tracker/internal/proto/event.pb.h"
 
 namespace feature_engagement_tracker {
-class StorageValidator;
-class Store;
+class EventStorageValidator;
+class EventStore;
 
-// A ModelImpl provides the default implementation of the Model.
-class ModelImpl : public Model {
+// A EventModelImpl provides the default implementation of the EventModel.
+class EventModelImpl : public EventModel {
  public:
-  ModelImpl(std::unique_ptr<Store> store,
-            std::unique_ptr<StorageValidator> storage_validator);
-  ~ModelImpl() override;
+  EventModelImpl(std::unique_ptr<EventStore> store,
+                 std::unique_ptr<EventStorageValidator> storage_validator);
+  ~EventModelImpl() override;
 
-  // Model implementation.
+  // EventModel implementation.
   void Initialize(const OnModelInitializationFinished& callback,
                   uint32_t current_day) override;
   bool IsReady() const override;
@@ -46,11 +46,11 @@ class ModelImpl : public Model {
   Event& GetNonConstEvent(const std::string& event_name);
 
   // The underlying store for all events.
-  std::unique_ptr<Store> store_;
+  std::unique_ptr<EventStore> store_;
 
   // A utility for checking whether new events should be stored and for whether
   // old events should be kept.
-  std::unique_ptr<StorageValidator> storage_validator_;
+  std::unique_ptr<EventStorageValidator> storage_validator_;
 
   // An in-memory representation of all events.
   std::map<std::string, Event> events_;
@@ -58,11 +58,11 @@ class ModelImpl : public Model {
   // Whether the model has been fully initialized.
   bool ready_;
 
-  base::WeakPtrFactory<ModelImpl> weak_factory_;
+  base::WeakPtrFactory<EventModelImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ModelImpl);
+  DISALLOW_COPY_AND_ASSIGN(EventModelImpl);
 };
 
 }  // namespace feature_engagement_tracker
 
-#endif  // COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_MODEL_IMPL_H_
+#endif  // COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_EVENT_MODEL_IMPL_H_

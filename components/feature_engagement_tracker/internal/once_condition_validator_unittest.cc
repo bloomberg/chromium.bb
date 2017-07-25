@@ -8,7 +8,7 @@
 
 #include "base/feature_list.h"
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
-#include "components/feature_engagement_tracker/internal/model.h"
+#include "components/feature_engagement_tracker/internal/event_model.h"
 #include "components/feature_engagement_tracker/internal/never_availability_model.h"
 #include "components/feature_engagement_tracker/internal/proto/event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,10 +25,10 @@ const base::Feature kTestFeatureBar{"test_bar",
 FeatureConfig kValidFeatureConfig;
 FeatureConfig kInvalidFeatureConfig;
 
-// A Model that is easily configurable at runtime.
-class TestModel : public Model {
+// A EventModel that is easily configurable at runtime.
+class TestEventModel : public EventModel {
  public:
-  TestModel() : ready_(false) { kValidFeatureConfig.valid = true; }
+  TestEventModel() : ready_(false) { kValidFeatureConfig.valid = true; }
 
   void Initialize(const OnModelInitializationFinished& callback,
                   uint32_t current_day) override {}
@@ -50,13 +50,13 @@ class TestModel : public Model {
 class OnceConditionValidatorTest : public ::testing::Test {
  public:
   OnceConditionValidatorTest() {
-    // By default, model should be ready.
-    model_.SetIsReady(true);
+    // By default, event model should be ready.
+    event_model_.SetIsReady(true);
   }
 
  protected:
   EditableConfiguration configuration_;
-  TestModel model_;
+  TestEventModel event_model_;
   NeverAvailabilityModel availability_model_;
   OnceConditionValidator validator_;
 
@@ -69,12 +69,13 @@ class OnceConditionValidatorTest : public ::testing::Test {
 TEST_F(OnceConditionValidatorTest, EnabledFeatureShouldTriggerOnce) {
   // Only the first call to MeetsConditions() should lead to enlightenment.
   EXPECT_TRUE(validator_
-                  .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig, model_,
-                                   availability_model_, 0u)
+                  .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
+                                   event_model_, availability_model_, 0u)
                   .NoErrors());
   validator_.NotifyIsShowing(kTestFeatureFoo);
-  ConditionValidator::Result result = validator_.MeetsConditions(
-      kTestFeatureFoo, kValidFeatureConfig, model_, availability_model_, 0u);
+  ConditionValidator::Result result =
+      validator_.MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
+                                 event_model_, availability_model_, 0u);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.session_rate_ok);
 }
@@ -86,64 +87,67 @@ TEST_F(OnceConditionValidatorTest,
   // captures a different behavior than the
   // OnlyOneFeatureShouldTriggerPerSession test below.
   EXPECT_TRUE(validator_
-                  .MeetsConditions(kTestFeatureBar, kValidFeatureConfig, model_,
-                                   availability_model_, 0u)
+                  .MeetsConditions(kTestFeatureBar, kValidFeatureConfig,
+                                   event_model_, availability_model_, 0u)
                   .NoErrors());
   EXPECT_TRUE(validator_
-                  .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig, model_,
-                                   availability_model_, 0u)
+                  .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
+                                   event_model_, availability_model_, 0u)
                   .NoErrors());
 }
 
 TEST_F(OnceConditionValidatorTest, StillTriggerWhenAllFeaturesDisabled) {
   // No features should get to show enlightenment.
   EXPECT_TRUE(validator_
-                  .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig, model_,
-                                   availability_model_, 0u)
+                  .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
+                                   event_model_, availability_model_, 0u)
                   .NoErrors());
   EXPECT_TRUE(validator_
-                  .MeetsConditions(kTestFeatureBar, kValidFeatureConfig, model_,
-                                   availability_model_, 0u)
+                  .MeetsConditions(kTestFeatureBar, kValidFeatureConfig,
+                                   event_model_, availability_model_, 0u)
                   .NoErrors());
 }
 
 TEST_F(OnceConditionValidatorTest, OnlyTriggerWhenModelIsReady) {
-  model_.SetIsReady(false);
-  ConditionValidator::Result result = validator_.MeetsConditions(
-      kTestFeatureFoo, kValidFeatureConfig, model_, availability_model_, 0u);
+  event_model_.SetIsReady(false);
+  ConditionValidator::Result result =
+      validator_.MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
+                                 event_model_, availability_model_, 0u);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.event_model_ready_ok);
 
-  model_.SetIsReady(true);
+  event_model_.SetIsReady(true);
   EXPECT_TRUE(validator_
-                  .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig, model_,
-                                   availability_model_, 0u)
+                  .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
+                                   event_model_, availability_model_, 0u)
                   .NoErrors());
 }
 
 TEST_F(OnceConditionValidatorTest, OnlyTriggerIfNothingElseIsShowing) {
   validator_.NotifyIsShowing(kTestFeatureBar);
-  ConditionValidator::Result result = validator_.MeetsConditions(
-      kTestFeatureFoo, kValidFeatureConfig, model_, availability_model_, 0u);
+  ConditionValidator::Result result =
+      validator_.MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
+                                 event_model_, availability_model_, 0u);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.currently_showing_ok);
 
   validator_.NotifyDismissed(kTestFeatureBar);
   EXPECT_TRUE(validator_
-                  .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig, model_,
-                                   availability_model_, 0u)
+                  .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
+                                   event_model_, availability_model_, 0u)
                   .NoErrors());
 }
 
 TEST_F(OnceConditionValidatorTest, DoNotTriggerForInvalidConfig) {
-  ConditionValidator::Result result = validator_.MeetsConditions(
-      kTestFeatureFoo, kInvalidFeatureConfig, model_, availability_model_, 0u);
+  ConditionValidator::Result result =
+      validator_.MeetsConditions(kTestFeatureFoo, kInvalidFeatureConfig,
+                                 event_model_, availability_model_, 0u);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.config_ok);
 
   EXPECT_TRUE(validator_
-                  .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig, model_,
-                                   availability_model_, 0u)
+                  .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
+                                   event_model_, availability_model_, 0u)
                   .NoErrors());
 }
 

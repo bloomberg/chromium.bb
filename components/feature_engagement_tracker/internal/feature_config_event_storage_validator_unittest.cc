@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/feature_engagement_tracker/internal/feature_config_storage_validator.h"
+#include "components/feature_engagement_tracker/internal/feature_config_event_storage_validator.h"
 
 #include <string>
 
@@ -11,7 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement_tracker/internal/configuration.h"
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
-#include "components/feature_engagement_tracker/internal/model.h"
+#include "components/feature_engagement_tracker/internal/event_model.h"
 #include "components/feature_engagement_tracker/internal/proto/event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -98,9 +98,9 @@ void InitializeStorageFeatureConfigs() {
       EventConfig("unrelated_event", Comparator(ANY, 0), 0, 100));
 }
 
-class FeatureConfigStorageValidatorTest : public ::testing::Test {
+class FeatureConfigEventStorageValidatorTest : public ::testing::Test {
  public:
-  FeatureConfigStorageValidatorTest() : current_day_(100) {
+  FeatureConfigEventStorageValidatorTest() : current_day_(100) {
     InitializeStorageFeatureConfigs();
   }
 
@@ -169,17 +169,17 @@ class FeatureConfigStorageValidatorTest : public ::testing::Test {
   }
 
  protected:
-  FeatureConfigStorageValidator validator_;
+  FeatureConfigEventStorageValidator validator_;
   uint32_t current_day_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FeatureConfigStorageValidatorTest);
+  DISALLOW_COPY_AND_ASSIGN(FeatureConfigEventStorageValidatorTest);
 };
 
 }  // namespace
 
-TEST_F(FeatureConfigStorageValidatorTest,
+TEST_F(FeatureConfigEventStorageValidatorTest,
        ShouldOnlyUseConfigFromEnabledFeatures) {
   scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {kTestFeatureBar});
 
@@ -194,7 +194,7 @@ TEST_F(FeatureConfigStorageValidatorTest,
   EXPECT_FALSE(validator_.ShouldStore("barevent"));
 }
 
-TEST_F(FeatureConfigStorageValidatorTest,
+TEST_F(FeatureConfigEventStorageValidatorTest,
        ShouldStoreIfSingleConfigHasMinimum1DayStorage) {
   scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {});
 
@@ -213,7 +213,7 @@ TEST_F(FeatureConfigStorageValidatorTest,
   }
 }
 
-TEST_F(FeatureConfigStorageValidatorTest,
+TEST_F(FeatureConfigEventStorageValidatorTest,
        ShouldStoreIfAnyConfigHasMinimum1DayStorage) {
   scoped_feature_list_.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar}, {});
 
@@ -232,7 +232,7 @@ TEST_F(FeatureConfigStorageValidatorTest,
   }
 }
 
-TEST_F(FeatureConfigStorageValidatorTest,
+TEST_F(FeatureConfigEventStorageValidatorTest,
        ShouldKeepIfSingleConfigMeetsEventAge) {
   scoped_feature_list_.InitWithFeatures({kTestFeatureFoo}, {});
 
@@ -262,7 +262,8 @@ TEST_F(FeatureConfigStorageValidatorTest,
   }
 }
 
-TEST_F(FeatureConfigStorageValidatorTest, ShouldKeepIfAnyConfigMeetsEventAge) {
+TEST_F(FeatureConfigEventStorageValidatorTest,
+       ShouldKeepIfAnyConfigMeetsEventAge) {
   scoped_feature_list_.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar}, {});
 
   UseConfigs(kNeverStored, kNeverStored);

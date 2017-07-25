@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/feature_engagement_tracker/internal/feature_config_storage_validator.h"
+#include "components/feature_engagement_tracker/internal/feature_config_event_storage_validator.h"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -13,19 +13,22 @@
 
 namespace feature_engagement_tracker {
 
-FeatureConfigStorageValidator::FeatureConfigStorageValidator() = default;
+FeatureConfigEventStorageValidator::FeatureConfigEventStorageValidator() =
+    default;
 
-FeatureConfigStorageValidator::~FeatureConfigStorageValidator() = default;
+FeatureConfigEventStorageValidator::~FeatureConfigEventStorageValidator() =
+    default;
 
-bool FeatureConfigStorageValidator::ShouldStore(
+bool FeatureConfigEventStorageValidator::ShouldStore(
     const std::string& event_name) const {
   return should_store_event_names_.find(event_name) !=
          should_store_event_names_.end();
 }
 
-bool FeatureConfigStorageValidator::ShouldKeep(const std::string& event_name,
-                                               uint32_t event_day,
-                                               uint32_t current_day) const {
+bool FeatureConfigEventStorageValidator::ShouldKeep(
+    const std::string& event_name,
+    uint32_t event_day,
+    uint32_t current_day) const {
   // Should not keep events that will happen in the future.
   if (event_day > current_day)
     return false;
@@ -44,7 +47,7 @@ bool FeatureConfigStorageValidator::ShouldKeep(const std::string& event_name,
   return true;
 }
 
-void FeatureConfigStorageValidator::InitializeFeatures(
+void FeatureConfigEventStorageValidator::InitializeFeatures(
     FeatureVector features,
     const Configuration& configuration) {
   for (const auto* feature : features) {
@@ -55,12 +58,12 @@ void FeatureConfigStorageValidator::InitializeFeatures(
   }
 }
 
-void FeatureConfigStorageValidator::ClearForTesting() {
+void FeatureConfigEventStorageValidator::ClearForTesting() {
   should_store_event_names_.clear();
   longest_storage_times_.clear();
 }
 
-void FeatureConfigStorageValidator::InitializeFeatureConfig(
+void FeatureConfigEventStorageValidator::InitializeFeatureConfig(
     const FeatureConfig& feature_config) {
   InitializeEventConfig(feature_config.used);
   InitializeEventConfig(feature_config.trigger);
@@ -69,7 +72,7 @@ void FeatureConfigStorageValidator::InitializeFeatureConfig(
     InitializeEventConfig(event_config);
 }
 
-void FeatureConfigStorageValidator::InitializeEventConfig(
+void FeatureConfigEventStorageValidator::InitializeEventConfig(
     const EventConfig& event_config) {
   // Minimum storage time is 1 day.
   if (event_config.storage < 1u)

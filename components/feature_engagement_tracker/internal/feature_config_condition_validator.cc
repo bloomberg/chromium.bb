@@ -7,7 +7,7 @@
 #include "base/feature_list.h"
 #include "components/feature_engagement_tracker/internal/availability_model.h"
 #include "components/feature_engagement_tracker/internal/configuration.h"
-#include "components/feature_engagement_tracker/internal/model.h"
+#include "components/feature_engagement_tracker/internal/event_model.h"
 #include "components/feature_engagement_tracker/internal/proto/event.pb.h"
 #include "components/feature_engagement_tracker/public/feature_list.h"
 
@@ -21,21 +21,22 @@ FeatureConfigConditionValidator::~FeatureConfigConditionValidator() = default;
 ConditionValidator::Result FeatureConfigConditionValidator::MeetsConditions(
     const base::Feature& feature,
     const FeatureConfig& config,
-    const Model& model,
+    const EventModel& event_model,
     const AvailabilityModel& availability_model,
     uint32_t current_day) const {
   ConditionValidator::Result result(true);
-  result.event_model_ready_ok = model.IsReady();
+  result.event_model_ready_ok = event_model.IsReady();
   result.currently_showing_ok = !currently_showing_;
   result.feature_enabled_ok = base::FeatureList::IsEnabled(feature);
   result.config_ok = config.valid;
-  result.used_ok = EventConfigMeetsConditions(config.used, model, current_day);
+  result.used_ok =
+      EventConfigMeetsConditions(config.used, event_model, current_day);
   result.trigger_ok =
-      EventConfigMeetsConditions(config.trigger, model, current_day);
+      EventConfigMeetsConditions(config.trigger, event_model, current_day);
 
   for (const auto& event_config : config.event_configs) {
     result.preconditions_ok &=
-        EventConfigMeetsConditions(event_config, model, current_day);
+        EventConfigMeetsConditions(event_config, event_model, current_day);
   }
 
   result.session_rate_ok = config.session_rate.MeetsCriteria(times_shown_);
@@ -64,9 +65,9 @@ void FeatureConfigConditionValidator::NotifyDismissed(
 
 bool FeatureConfigConditionValidator::EventConfigMeetsConditions(
     const EventConfig& event_config,
-    const Model& model,
+    const EventModel& event_model,
     uint32_t current_day) const {
-  const Event* event = model.GetEvent(event_config.name);
+  const Event* event = event_model.GetEvent(event_config.name);
 
   // If no events are found, the requirement must be met with 0 elements.
   // Also, if the window is 0 days, there will never be any events.

@@ -63,7 +63,7 @@ class FeatureEngagementTracker : public KeyedService {
   virtual void Dismissed(const base::Feature& feature) = 0;
 
   // Returns whether the tracker has been successfully initialized. During
-  // startup, this will be false until the internal model has been loaded at
+  // startup, this will be false until the internal models have been loaded at
   // which point it is set to true if the initialization was successful. The
   // state will never change from initialized to uninitialized.
   // Callers can invoke AddOnInitializedCallback(...) to be notified when the

@@ -18,10 +18,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/feature_engagement_tracker/internal/availability_model_impl.h"
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
-#include "components/feature_engagement_tracker/internal/in_memory_store.h"
-#include "components/feature_engagement_tracker/internal/model_impl.h"
+#include "components/feature_engagement_tracker/internal/event_model_impl.h"
+#include "components/feature_engagement_tracker/internal/in_memory_event_store.h"
 #include "components/feature_engagement_tracker/internal/never_availability_model.h"
-#include "components/feature_engagement_tracker/internal/never_storage_validator.h"
+#include "components/feature_engagement_tracker/internal/never_event_storage_validator.h"
 #include "components/feature_engagement_tracker/internal/once_condition_validator.h"
 #include "components/feature_engagement_tracker/internal/stats.h"
 #include "components/feature_engagement_tracker/internal/time_provider.h"
@@ -70,12 +70,12 @@ class StoringInitializedCallback {
   DISALLOW_COPY_AND_ASSIGN(StoringInitializedCallback);
 };
 
-// An InMemoryStore that is able to fake successful and unsuccessful
+// An InMemoryEventStore that is able to fake successful and unsuccessful
 // loading of state.
-class TestInMemoryStore : public InMemoryStore {
+class TestInMemoryEventStore : public InMemoryEventStore {
  public:
-  explicit TestInMemoryStore(bool load_should_succeed)
-      : InMemoryStore(), load_should_succeed_(load_should_succeed) {}
+  explicit TestInMemoryEventStore(bool load_should_succeed)
+      : InMemoryEventStore(), load_should_succeed_(load_should_succeed) {}
 
   void Load(const OnLoadedCallback& callback) override {
     HandleLoadResult(callback, load_should_succeed_);
@@ -94,13 +94,13 @@ class TestInMemoryStore : public InMemoryStore {
 
   std::map<std::string, Event> events_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestInMemoryStore);
+  DISALLOW_COPY_AND_ASSIGN(TestInMemoryEventStore);
 };
 
-class StoreEverythingStorageValidator : public StorageValidator {
+class StoreEverythingEventStorageValidator : public EventStorageValidator {
  public:
-  StoreEverythingStorageValidator() = default;
-  ~StoreEverythingStorageValidator() override = default;
+  StoreEverythingEventStorageValidator() = default;
+  ~StoreEverythingEventStorageValidator() override = default;
 
   bool ShouldStore(const std::string& event_name) const override {
     return true;
@@ -113,7 +113,7 @@ class StoreEverythingStorageValidator : public StorageValidator {
   };
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(StoreEverythingStorageValidator);
+  DISALLOW_COPY_AND_ASSIGN(StoreEverythingEventStorageValidator);
 };
 
 class TestTimeProvider : public TimeProvider {
@@ -167,24 +167,25 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
     RegisterFeatureConfig(configuration.get(), kTestFeatureBar, true);
     RegisterFeatureConfig(configuration.get(), kTestFeatureQux, false);
 
-    std::unique_ptr<TestInMemoryStore> store = CreateStore();
-    store_ = store.get();
+    std::unique_ptr<TestInMemoryEventStore> event_store = CreateEventStore();
+    event_store_ = event_store.get();
 
-    auto model = base::MakeUnique<ModelImpl>(
-        std::move(store), base::MakeUnique<StoreEverythingStorageValidator>());
+    auto event_model = base::MakeUnique<EventModelImpl>(
+        std::move(event_store),
+        base::MakeUnique<StoreEverythingEventStorageValidator>());
 
     auto availability_model = base::MakeUnique<TestAvailabilityModel>();
     availability_model_ = availability_model.get();
     availability_model_->SetIsReady(ShouldAvailabilityStoreBeReady());
 
     tracker_.reset(new FeatureEngagementTrackerImpl(
-        std::move(model), std::move(availability_model),
+        std::move(event_model), std::move(availability_model),
         std::move(configuration), base::MakeUnique<OnceConditionValidator>(),
         base::MakeUnique<TestTimeProvider>()));
   }
 
   void VerifyEventTriggerEvents(const base::Feature& feature, uint32_t count) {
-    Event trigger_event = store_->GetEvent(
+    Event trigger_event = event_store_->GetEvent(
         configuration_->GetFeatureConfig(feature).trigger.name);
     if (count == 0) {
       EXPECT_EQ(0, trigger_event.events_size());
@@ -306,16 +307,16 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
   }
 
  protected:
-  virtual std::unique_ptr<TestInMemoryStore> CreateStore() {
-    // Returns a Store that will successfully initialize.
-    return base::MakeUnique<TestInMemoryStore>(true);
+  virtual std::unique_ptr<TestInMemoryEventStore> CreateEventStore() {
+    // Returns a EventStore that will successfully initialize.
+    return base::MakeUnique<TestInMemoryEventStore>(true);
   }
 
   virtual bool ShouldAvailabilityStoreBeReady() { return true; }
 
   base::MessageLoop message_loop_;
   std::unique_ptr<FeatureEngagementTrackerImpl> tracker_;
-  TestInMemoryStore* store_;
+  TestInMemoryEventStore* event_store_;
   TestAvailabilityModel* availability_model_;
   Configuration* configuration_;
   base::HistogramTester histogram_tester_;
@@ -331,9 +332,9 @@ class FailingStoreInitFeatureEngagementTrackerImplTest
   FailingStoreInitFeatureEngagementTrackerImplTest() = default;
 
  protected:
-  std::unique_ptr<TestInMemoryStore> CreateStore() override {
-    // Returns a Store that will fail to initialize.
-    return base::MakeUnique<TestInMemoryStore>(false);
+  std::unique_ptr<TestInMemoryEventStore> CreateEventStore() override {
+    // Returns a EventStore that will fail to initialize.
+    return base::MakeUnique<TestInMemoryEventStore>(false);
   }
 
  private:
@@ -592,12 +593,12 @@ TEST_F(FeatureEngagementTrackerImplTest, TestNotifyEvent) {
   EXPECT_EQ(0, user_action_tester.GetActionCount(
                    "InProductHelp.NotifyEvent.test_bar"));
 
-  Event foo_event = store_->GetEvent("foo");
+  Event foo_event = event_store_->GetEvent("foo");
   ASSERT_EQ(1, foo_event.events_size());
   EXPECT_EQ(1u, foo_event.events(0).day());
   EXPECT_EQ(2u, foo_event.events(0).count());
 
-  Event bar_event = store_->GetEvent("bar");
+  Event bar_event = event_store_->GetEvent("bar");
   ASSERT_EQ(1, bar_event.events_size());
   EXPECT_EQ(1u, bar_event.events(0).day());
   EXPECT_EQ(1u, bar_event.events(0).count());

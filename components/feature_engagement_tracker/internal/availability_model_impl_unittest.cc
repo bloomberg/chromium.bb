@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
-#include "components/feature_engagement_tracker/internal/availability_store.h"
+#include "components/feature_engagement_tracker/internal/persistent_availability_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feature_engagement_tracker {
@@ -54,7 +54,7 @@ class AvailabilityModelImplTest : public testing::Test {
   void StoreLoader(
       bool success,
       std::unique_ptr<std::map<std::string, uint32_t>> store_content,
-      AvailabilityStore::OnLoadedCallback callback,
+      PersistentAvailabilityStore::OnLoadedCallback callback,
       uint32_t current_day) {
     current_day_ = current_day;
     std::move(callback).Run(success, std::move(store_content));

@@ -15,7 +15,7 @@ struct Feature;
 
 namespace feature_engagement_tracker {
 class AvailabilityModel;
-class Model;
+class EventModel;
 
 // An ConditionValidator that never acknowledges that a feature has met its
 // conditions.
@@ -28,7 +28,7 @@ class NeverConditionValidator : public ConditionValidator {
   ConditionValidator::Result MeetsConditions(
       const base::Feature& feature,
       const FeatureConfig& config,
-      const Model& model,
+      const EventModel& event_model,
       const AvailabilityModel& availability_model,
       uint32_t current_day) const override;
   void NotifyIsShowing(const base::Feature& feature) override;

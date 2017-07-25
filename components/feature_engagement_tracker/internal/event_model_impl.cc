@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/feature_engagement_tracker/internal/model_impl.h"
+#include "components/feature_engagement_tracker/internal/event_model_impl.h"
 
 #include <map>
 #include <memory>
@@ -15,33 +15,34 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/feature_engagement_tracker/internal/model.h"
-#include "components/feature_engagement_tracker/internal/storage_validator.h"
-#include "components/feature_engagement_tracker/internal/store.h"
+#include "components/feature_engagement_tracker/internal/event_model.h"
+#include "components/feature_engagement_tracker/internal/event_storage_validator.h"
+#include "components/feature_engagement_tracker/internal/event_store.h"
 
 namespace feature_engagement_tracker {
 
-ModelImpl::ModelImpl(std::unique_ptr<Store> store,
-                     std::unique_ptr<StorageValidator> storage_validator)
-    : Model(),
+EventModelImpl::EventModelImpl(
+    std::unique_ptr<EventStore> store,
+    std::unique_ptr<EventStorageValidator> storage_validator)
+    : EventModel(),
       store_(std::move(store)),
       storage_validator_(std::move(storage_validator)),
       ready_(false),
       weak_factory_(this) {}
 
-ModelImpl::~ModelImpl() = default;
+EventModelImpl::~EventModelImpl() = default;
 
-void ModelImpl::Initialize(const OnModelInitializationFinished& callback,
-                           uint32_t current_day) {
-  store_->Load(base::Bind(&ModelImpl::OnStoreLoaded, weak_factory_.GetWeakPtr(),
-                          callback, current_day));
+void EventModelImpl::Initialize(const OnModelInitializationFinished& callback,
+                                uint32_t current_day) {
+  store_->Load(base::Bind(&EventModelImpl::OnStoreLoaded,
+                          weak_factory_.GetWeakPtr(), callback, current_day));
 }
 
-bool ModelImpl::IsReady() const {
+bool EventModelImpl::IsReady() const {
   return ready_;
 }
 
-const Event* ModelImpl::GetEvent(const std::string& event_name) const {
+const Event* EventModelImpl::GetEvent(const std::string& event_name) const {
   auto search = events_.find(event_name);
   if (search == events_.end())
     return nullptr;
@@ -49,8 +50,8 @@ const Event* ModelImpl::GetEvent(const std::string& event_name) const {
   return &search->second;
 }
 
-void ModelImpl::IncrementEvent(const std::string& event_name,
-                               uint32_t current_day) {
+void EventModelImpl::IncrementEvent(const std::string& event_name,
+                                    uint32_t current_day) {
   DCHECK(ready_);
 
   if (!storage_validator_->ShouldStore(event_name)) {
@@ -79,10 +80,11 @@ void ModelImpl::IncrementEvent(const std::string& event_name,
   store_->WriteEvent(event);
 }
 
-void ModelImpl::OnStoreLoaded(const OnModelInitializationFinished& callback,
-                              uint32_t current_day,
-                              bool success,
-                              std::unique_ptr<std::vector<Event>> events) {
+void EventModelImpl::OnStoreLoaded(
+    const OnModelInitializationFinished& callback,
+    uint32_t current_day,
+    bool success,
+    std::unique_ptr<std::vector<Event>> events) {
   if (!success) {
     callback.Run(false);
     return;
@@ -121,7 +123,7 @@ void ModelImpl::OnStoreLoaded(const OnModelInitializationFinished& callback,
   callback.Run(true);
 }
 
-Event& ModelImpl::GetNonConstEvent(const std::string& event_name) {
+Event& EventModelImpl::GetNonConstEvent(const std::string& event_name) {
   if (events_.find(event_name) == events_.end()) {
     // Event does not exist yet, so create it.
     events_[event_name].set_name(event_name);

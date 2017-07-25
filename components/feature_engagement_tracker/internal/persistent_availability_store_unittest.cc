@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/feature_engagement_tracker/internal/availability_store.h"
+#include "components/feature_engagement_tracker/internal/persistent_availability_store.h"
 
 #include <stdint.h>
 
@@ -43,16 +43,16 @@ Availability CreateAvailability(const base::Feature& feature, uint32_t day) {
   return availability;
 }
 
-class AvailabilityStoreTest : public testing::Test {
+class PersistentAvailabilityStoreTest : public testing::Test {
  public:
-  AvailabilityStoreTest()
+  PersistentAvailabilityStoreTest()
       : db_(nullptr),
         storage_dir_(FILE_PATH_LITERAL("/persistent/store/lalala")) {
-    load_callback_ = base::Bind(&AvailabilityStoreTest::LoadCallback,
+    load_callback_ = base::Bind(&PersistentAvailabilityStoreTest::LoadCallback,
                                 base::Unretained(this));
   }
 
-  ~AvailabilityStoreTest() override = default;
+  ~PersistentAvailabilityStoreTest() override = default;
 
   // Creates a DB and stores off a pointer to it as a member.
   std::unique_ptr<leveldb_proto::test::FakeDB<Availability>> CreateDB() {
@@ -73,7 +73,7 @@ class AvailabilityStoreTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
 
   // The end result of the store pipeline.
-  AvailabilityStore::OnLoadedCallback load_callback_;
+  PersistentAvailabilityStore::OnLoadedCallback load_callback_;
 
   // Callback results.
   base::Optional<bool> load_successful_;
@@ -90,15 +90,15 @@ class AvailabilityStoreTest : public testing::Test {
   base::FilePath storage_dir_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AvailabilityStoreTest);
+  DISALLOW_COPY_AND_ASSIGN(PersistentAvailabilityStoreTest);
 };
 
 }  // namespace
 
-TEST_F(AvailabilityStoreTest, StorageDirectory) {
-  AvailabilityStore::LoadAndUpdateStore(storage_dir_, CreateDB(),
-                                        FeatureVector(),
-                                        std::move(load_callback_), 14u);
+TEST_F(PersistentAvailabilityStoreTest, StorageDirectory) {
+  PersistentAvailabilityStore::LoadAndUpdateStore(
+      storage_dir_, CreateDB(), FeatureVector(), std::move(load_callback_),
+      14u);
   db_->InitCallback(true);
   EXPECT_EQ(storage_dir_, db_->GetDirectory());
 
@@ -106,10 +106,10 @@ TEST_F(AvailabilityStoreTest, StorageDirectory) {
   db_->LoadCallback(false);
 }
 
-TEST_F(AvailabilityStoreTest, InitFail) {
-  AvailabilityStore::LoadAndUpdateStore(storage_dir_, CreateDB(),
-                                        FeatureVector(),
-                                        std::move(load_callback_), 14u);
+TEST_F(PersistentAvailabilityStoreTest, InitFail) {
+  PersistentAvailabilityStore::LoadAndUpdateStore(
+      storage_dir_, CreateDB(), FeatureVector(), std::move(load_callback_),
+      14u);
 
   db_->InitCallback(false);
 
@@ -119,10 +119,10 @@ TEST_F(AvailabilityStoreTest, InitFail) {
   EXPECT_EQ(0u, db_availabilities_.size());
 }
 
-TEST_F(AvailabilityStoreTest, LoadFail) {
-  AvailabilityStore::LoadAndUpdateStore(storage_dir_, CreateDB(),
-                                        FeatureVector(),
-                                        std::move(load_callback_), 14u);
+TEST_F(PersistentAvailabilityStoreTest, LoadFail) {
+  PersistentAvailabilityStore::LoadAndUpdateStore(
+      storage_dir_, CreateDB(), FeatureVector(), std::move(load_callback_),
+      14u);
 
   db_->InitCallback(true);
   EXPECT_FALSE(load_successful_.has_value());
@@ -135,10 +135,10 @@ TEST_F(AvailabilityStoreTest, LoadFail) {
   EXPECT_EQ(0u, db_availabilities_.size());
 }
 
-TEST_F(AvailabilityStoreTest, EmptyDBEmptyFeatureFilterUpdateFailed) {
-  AvailabilityStore::LoadAndUpdateStore(storage_dir_, CreateDB(),
-                                        FeatureVector(),
-                                        std::move(load_callback_), 14u);
+TEST_F(PersistentAvailabilityStoreTest, EmptyDBEmptyFeatureFilterUpdateFailed) {
+  PersistentAvailabilityStore::LoadAndUpdateStore(
+      storage_dir_, CreateDB(), FeatureVector(), std::move(load_callback_),
+      14u);
 
   db_->InitCallback(true);
   EXPECT_FALSE(load_successful_.has_value());
@@ -154,10 +154,10 @@ TEST_F(AvailabilityStoreTest, EmptyDBEmptyFeatureFilterUpdateFailed) {
   EXPECT_EQ(0u, db_availabilities_.size());
 }
 
-TEST_F(AvailabilityStoreTest, EmptyDBEmptyFeatureFilterUpdateOK) {
-  AvailabilityStore::LoadAndUpdateStore(storage_dir_, CreateDB(),
-                                        FeatureVector(),
-                                        std::move(load_callback_), 14u);
+TEST_F(PersistentAvailabilityStoreTest, EmptyDBEmptyFeatureFilterUpdateOK) {
+  PersistentAvailabilityStore::LoadAndUpdateStore(
+      storage_dir_, CreateDB(), FeatureVector(), std::move(load_callback_),
+      14u);
 
   db_->InitCallback(true);
   EXPECT_FALSE(load_successful_.has_value());
@@ -173,7 +173,7 @@ TEST_F(AvailabilityStoreTest, EmptyDBEmptyFeatureFilterUpdateOK) {
   EXPECT_EQ(0u, db_availabilities_.size());
 }
 
-TEST_F(AvailabilityStoreTest, AllNewFeatures) {
+TEST_F(PersistentAvailabilityStoreTest, AllNewFeatures) {
   scoped_feature_list_.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar},
                                         {kTestFeatureQux});
 
@@ -182,7 +182,7 @@ TEST_F(AvailabilityStoreTest, AllNewFeatures) {
   feature_filter.push_back(&kTestFeatureBar);  // Enabled. Not in DB.
   feature_filter.push_back(&kTestFeatureQux);  // Disabled. Not in DB.
 
-  AvailabilityStore::LoadAndUpdateStore(
+  PersistentAvailabilityStore::LoadAndUpdateStore(
       storage_dir_, CreateDB(), feature_filter, std::move(load_callback_), 14u);
 
   db_->InitCallback(true);
@@ -213,7 +213,7 @@ TEST_F(AvailabilityStoreTest, AllNewFeatures) {
   EXPECT_EQ(14u, db_availabilities_[kTestFeatureBar.name].day());
 }
 
-TEST_F(AvailabilityStoreTest, TestAllFilterCombinations) {
+TEST_F(PersistentAvailabilityStoreTest, TestAllFilterCombinations) {
   scoped_feature_list_.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar},
                                         {kTestFeatureQux, kTestFeatureNop});
 
@@ -228,7 +228,7 @@ TEST_F(AvailabilityStoreTest, TestAllFilterCombinations) {
   db_availabilities_[kTestFeatureNop.name] =
       CreateAvailability(kTestFeatureNop, 8u);
 
-  AvailabilityStore::LoadAndUpdateStore(
+  PersistentAvailabilityStore::LoadAndUpdateStore(
       storage_dir_, CreateDB(), feature_filter, std::move(load_callback_), 14u);
 
   db_->InitCallback(true);
@@ -259,7 +259,7 @@ TEST_F(AvailabilityStoreTest, TestAllFilterCombinations) {
   EXPECT_EQ(10u, db_availabilities_[kTestFeatureBar.name].day());
 }
 
-TEST_F(AvailabilityStoreTest, TestAllCombinationsEmptyFilter) {
+TEST_F(PersistentAvailabilityStoreTest, TestAllCombinationsEmptyFilter) {
   scoped_feature_list_.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar},
                                         {kTestFeatureQux, kTestFeatureNop});
 
@@ -274,9 +274,9 @@ TEST_F(AvailabilityStoreTest, TestAllCombinationsEmptyFilter) {
   db_availabilities_[kTestFeatureNop.name] =
       CreateAvailability(kTestFeatureNop, 8u);
 
-  AvailabilityStore::LoadAndUpdateStore(storage_dir_, CreateDB(),
-                                        FeatureVector(),
-                                        std::move(load_callback_), 14u);
+  PersistentAvailabilityStore::LoadAndUpdateStore(
+      storage_dir_, CreateDB(), FeatureVector(), std::move(load_callback_),
+      14u);
 
   db_->InitCallback(true);
   EXPECT_FALSE(load_successful_.has_value());

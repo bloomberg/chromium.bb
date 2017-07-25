@@ -37,7 +37,7 @@ public interface FeatureEngagementTracker {
 
     /**
      * Returns whether the tracker has been successfully initialized. During startup, this will be
-     * false until the internal model has been loaded at which point it is set to true if the
+     * false until the internal models have been loaded at which point it is set to true if the
      * initialization was successful. The state will never change from initialized to uninitialized.
      * Callers can invoke AddOnInitializedCallback(...) to be notified when the result of the
      * initialization is ready.
