@@ -723,6 +723,8 @@ HWTEST_TOOLCHAIN_SUITE = 'toolchain-tests'
 HWTEST_PROVISION_SUITE = 'bvt-provision'
 HWTEST_CTS_QUAL_SUITE = 'arc-cts-qual'
 HWTEST_GTS_QUAL_SUITE = 'arc-gts-qual'
+HWTEST_CTS_PRIORITY = 8
+HWTEST_GTS_PRIORITY = 9
 # Non-blocking informational hardware tests for Chrome, run throughout the
 # day on tip-of-trunk Chrome rather than on the daily Chrome branch.
 HWTEST_CHROME_INFORMATIONAL = 'chrome-informational'
