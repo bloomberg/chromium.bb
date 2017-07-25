@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
+#include "chrome/browser/signin/easy_unlock_notification_controller.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -49,6 +50,22 @@ const char kTestUserPrimary[] = "primary_user@nowhere.com";
 const char kPrimaryGaiaId[] = "1111111111";
 const char kTestUserSecondary[] = "secondary_user@nowhere.com";
 const char kSecondaryGaiaId[] = "2222222222";
+
+class MockEasyUnlockNotificationController
+    : public EasyUnlockNotificationController {
+ public:
+  MockEasyUnlockNotificationController() {}
+  ~MockEasyUnlockNotificationController() override {}
+
+  // EasyUnlockNotificationController:
+  MOCK_METHOD0(ShowChromebookAddedNotification, void());
+  MOCK_METHOD0(ShowPairingChangeNotification, void());
+  MOCK_METHOD1(ShowPairingChangeAppliedNotification, void(const std::string&));
+  MOCK_METHOD0(ShowPromotionNotification, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockEasyUnlockNotificationController);
+};
 
 // App manager to be used in EasyUnlockService tests.
 // This effectivelly abstracts the extension system from the tests.
@@ -190,7 +207,9 @@ std::unique_ptr<KeyedService> CreateEasyUnlockServiceForTest(
     return nullptr;
 
   std::unique_ptr<EasyUnlockServiceRegular> service(
-      new EasyUnlockServiceRegular(Profile::FromBrowserContext(context)));
+      new EasyUnlockServiceRegular(
+          Profile::FromBrowserContext(context),
+          base::MakeUnique<MockEasyUnlockNotificationController>()));
   service->Initialize(std::move(app_manager));
   return std::move(service);
 }

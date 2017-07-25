@@ -23,6 +23,7 @@
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_proximity_auth_client.h"
+#include "chrome/browser/signin/easy_unlock_notification_controller.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_features.h"
@@ -83,11 +84,20 @@ const char kKeyDevices[] = "devices";
 }  // namespace
 
 EasyUnlockServiceRegular::EasyUnlockServiceRegular(Profile* profile)
+    : EasyUnlockServiceRegular(
+          profile,
+          EasyUnlockNotificationController::Create(profile)) {}
+
+EasyUnlockServiceRegular::EasyUnlockServiceRegular(
+    Profile* profile,
+    std::unique_ptr<EasyUnlockNotificationController> notification_controller)
     : EasyUnlockService(profile),
       turn_off_flow_status_(EasyUnlockService::IDLE),
       will_unlock_using_easy_unlock_(false),
       lock_screen_last_shown_timestamp_(base::TimeTicks::Now()),
       deferring_device_load_(false),
+      notification_controller_(std::move(notification_controller)),
+      shown_pairing_changed_notification_(false),
       weak_ptr_factory_(this) {}
 
 EasyUnlockServiceRegular::~EasyUnlockServiceRegular() {
@@ -572,13 +582,44 @@ void EasyUnlockServiceRegular::OnSuspendDoneInternal() {
   lock_screen_last_shown_timestamp_ = base::TimeTicks::Now();
 }
 
+void EasyUnlockServiceRegular::OnSyncStarted() {
+  unlock_keys_before_sync_ = GetCryptAuthDeviceManager()->GetUnlockKeys();
+}
+
 void EasyUnlockServiceRegular::OnSyncFinished(
     cryptauth::CryptAuthDeviceManager::SyncResult sync_result,
     cryptauth::CryptAuthDeviceManager::DeviceChangeResult
         device_change_result) {
-  if (device_change_result !=
-      cryptauth::CryptAuthDeviceManager::DeviceChangeResult::CHANGED)
+  if (sync_result == cryptauth::CryptAuthDeviceManager::SyncResult::FAILURE)
     return;
+
+  std::set<std::string> public_keys_before_sync;
+  for (const auto& device_info : unlock_keys_before_sync_) {
+    public_keys_before_sync.insert(device_info.public_key());
+  }
+  unlock_keys_before_sync_.clear();
+
+  std::vector<cryptauth::ExternalDeviceInfo> unlock_keys_after_sync =
+      GetCryptAuthDeviceManager()->GetUnlockKeys();
+  std::set<std::string> public_keys_after_sync;
+  for (const auto& device_info : unlock_keys_after_sync) {
+    public_keys_after_sync.insert(device_info.public_key());
+  }
+
+  if (public_keys_before_sync == public_keys_after_sync)
+    return;
+
+  // Show the appropriate notification if an unlock key is first synced or if it
+  // changes an existing key.
+  // Note: We do not show a notification when EasyUnlock is disabled by sync.
+  if (public_keys_after_sync.size() > 0) {
+    if (public_keys_before_sync.size() == 0) {
+      notification_controller_->ShowChromebookAddedNotification();
+    } else {
+      shown_pairing_changed_notification_ = true;
+      notification_controller_->ShowPairingChangeNotification();
+    }
+  }
 
   // The enrollment has finished when the sync is finished.
   StartPromotionManager();
@@ -613,6 +654,18 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
     PA_LOG(INFO) << "Loading deferred devices after screen unlock.";
     deferring_device_load_ = false;
     LoadRemoteDevices();
+  }
+
+  if (shown_pairing_changed_notification_) {
+    shown_pairing_changed_notification_ = false;
+    std::vector<cryptauth::ExternalDeviceInfo> unlock_keys =
+        GetCryptAuthDeviceManager()->GetUnlockKeys();
+    if (!unlock_keys.empty()) {
+      // TODO(tengs): Right now, we assume that there is only one possible
+      // unlock key. We need to update this notification be more generic.
+      notification_controller_->ShowPairingChangeAppliedNotification(
+          unlock_keys[0].friendly_device_name());
+    }
   }
 
   // Do not process events for the login screen.
