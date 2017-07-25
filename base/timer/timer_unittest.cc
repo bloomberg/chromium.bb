@@ -419,7 +419,7 @@ TEST(TimerTest, OneShotTimer_CustomTaskRunner) {
   OneShotTimerTester f(&did_run);
   f.SetTaskRunner(other_thread.task_runner());
   f.Start();
-  EXPECT_TRUE(f.IsRunning());
+  EXPECT_TRUE(f.IsRunning() || did_run.IsSignaled());
 
   f.WaitAndConfirmTimerFiredAfterDelay();
   EXPECT_TRUE(did_run.IsSignaled());
