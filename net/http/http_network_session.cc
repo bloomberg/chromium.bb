@@ -45,7 +45,7 @@ namespace net {
 
 namespace {
 
-base::StaticAtomicSequenceNumber g_next_shard_id;
+base::AtomicSequenceNumber g_next_shard_id;
 
 ClientSocketPoolManager* CreateSocketPoolManager(
     HttpNetworkSession::SocketPoolType pool_type,

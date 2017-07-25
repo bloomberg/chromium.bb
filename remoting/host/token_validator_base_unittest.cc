@@ -20,7 +20,7 @@ const char kTokenUrl[] = "https://example.com/token";
 const char kTokenValidationUrl[] = "https://example.com/validate";
 const char kTokenValidationCertIssuer[] = "*";
 
-base::StaticAtomicSequenceNumber g_serial_number;
+base::AtomicSequenceNumber g_serial_number;
 
 std::unique_ptr<net::FakeClientCertIdentity> CreateFakeCert(
     base::Time valid_start,
