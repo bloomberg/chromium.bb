@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/media/capture/mojo/image_capture.mojom.js"></script>
 <script src="resources/mock-imagecapture.js"></script>
 <body>
 <canvas id='canvas' width=10 height=10/>
@@ -16,34 +17,29 @@ context.fillRect(0, 0, 10, 10);
 // This test verifies that MediaStreamTrack.applyConstraints() rejects if any
 // passed constraint is unsupported or outside its allowed range.
 var makePromiseTest = function(getConstraint) {
-  promise_test(function(t) {
-    var theMock = null;
-    var videoTrack = null;
-    return mockImageCaptureReady
-      .then(mock => {
-        theMock = mock;
-        theMock.state().supports_torch = false;
+  promise_test(async function() {
+    mockImageCapture.state().supportsTorch = false;
 
-        var stream = canvas.captureStream();
-        videoTrack = stream.getVideoTracks()[0];
+    let stream = canvas.captureStream();
+    let videoTrack = stream.getVideoTracks()[0];
 
-        // |videoTrack|'s capabilities gathering, just like the actual capture,
-        // is a process kicked off right after creation, we introduce a small
-        // delay to allow for those to be collected, since they are needed to
-        // understand which constraints are supported in applyConstraints().
-        // TODO(mcasas): this shouldn't be needed, https://crbug.com/711524.
-        return new Promise(resolve => setTimeout(resolve, 100));
-      },
-      error => {
-        assert_unreached('Error creating MockImageCapture: ' + error);
-      })
-      .then(function() {
-        const constraints = {
-          advanced : [ getConstraint(theMock.state()) ]
-        };
-        return promise_rejects(t, 'NotSupportedError',
-                               videoTrack.applyConstraints(constraints));
-      });
+    // |videoTrack|'s capabilities gathering, just like the actual capture,
+    // is a process kicked off right after creation, we introduce a small
+    // delay to allow for those to be collected, since they are needed to
+    // understand which constraints are supported in applyConstraints().
+    // TODO(mcasas): this shouldn't be needed, https://crbug.com/711524.
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    try {
+      const constraints = {
+        advanced : [ getConstraint(mockImageCapture.state()) ]
+      };
+
+      await videoTrack.applyConstraints(constraints);
+      assert_unreached('expected applyConstraints to reject');
+    } catch (error) {
+      assert_equals(error.name, 'NotSupportedError');
+    }
   });
 };
 
@@ -52,16 +48,16 @@ const constraintGenerators = [
   capabilities => ({ exposureMode: 'manual' }),
   capabilities => ({ focusMode: 'continuous' }),
   capabilities => ({
-    exposureCompensation: capabilities.exposure_compensation.max + 1
+    exposureCompensation: capabilities.exposureCompensation.max + 1
   }),
   capabilities => ({
-    exposureCompensation: capabilities.exposure_compensation.min - 1
+    exposureCompensation: capabilities.exposureCompensation.min - 1
   }),
   capabilities => ({
-    colorTemperature: capabilities.color_temperature.max + 1
+    colorTemperature: capabilities.colorTemperature.max + 1
   }),
   capabilities => ({
-    colorTemperature: capabilities.color_temperature.min - 1
+    colorTemperature: capabilities.colorTemperature.min - 1
   }),
   capabilities => ({ iso: capabilities.iso.max + 1 }),
   capabilities => ({ iso: capabilities.iso.min - 1 }),

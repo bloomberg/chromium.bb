@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/media/capture/mojo/image_capture.mojom.js"></script>
 <script src="resources/imagecapture-helpers.js"></script>
 <script src="resources/mock-imagecapture.js"></script>
 <body>
@@ -14,9 +15,9 @@ const meteringModeNames = ['none', 'manual', 'single-shot', 'continuous'];
 // This test verifies that we can all MediaStreamTrack.applyConstraints(), with
 // a mock Mojo service implementation.
 
-async_test(function(t) {
-  var canvas = document.getElementById('canvas');
-  var context = canvas.getContext('2d');
+promise_test(async function() {
+  let canvas = document.getElementById('canvas');
+  let context = canvas.getContext('2d');
   context.fillStyle = 'red';
   context.fillRect(0, 0, 10, 10);
 
@@ -41,79 +42,70 @@ async_test(function(t) {
                                       torch                : true
                                     }]};
 
-  var theMock = null;
-  var videoTrack = null;
-  mockImageCaptureReady
-    .then(mock => {
-      theMock = mock;
-      var stream = canvas.captureStream();
-      videoTrack = stream.getVideoTracks()[0];
+    let stream = canvas.captureStream();
+    let videoTrack = stream.getVideoTracks()[0];
 
-      // |videoTrack|'s capabilities gathering, just like the actual capture, is
-      // a process kicked off right after creation, we introduce a small delay
-      // to allow for those to be collected, since they are needed to understand
-      // which constraints are supported in applyConstraints().
-      // TODO(mcasas): this shouldn't be needed, https://crbug.com/711524.
-      return new Promise(resolve => setTimeout(resolve, 100));
-    },
-    error => {
-      assert_unreached('Error creating MockImageCapture: ' + error);
-    })
-    .then(() => videoTrack.applyConstraints(constraints))
-    .then(appliedConstraints => {
+    // |videoTrack|'s capabilities gathering, just like the actual capture, is
+    // a process kicked off right after creation, we introduce a small delay
+    // to allow for those to be collected, since they are needed to understand
+    // which constraints are supported in applyConstraints().
+    // TODO(mcasas): this shouldn't be needed, https://crbug.com/711524.
+    await new Promise(resolve => setTimeout(resolve, 100));
 
-      const constraintsDict = constraints.advanced[0];
-      const appliedConstraintsDict = appliedConstraints.advanced[0];
-
-      // Check that |appliedConstraints| and |constraints| are equal.
-      assert_equals(constraintsDict.length, appliedConstraintsDict.length);
-      Object.keys(appliedConstraintsDict).forEach((key, value) => {
-        assert_not_equals(constraintsDict[key], undefined, 'key ' + key);
-        if (key != 'pointsOfInterest') {
-          assert_equals(constraintsDict[key], appliedConstraintsDict[key], key);
-        } else {
-          assert_point2d_array_approx_equals(constraintsDict[key],
-                                             appliedConstraintsDict[key], 0.01);
-        }
-      });
-
-      assert_equals(constraintsDict.whiteBalanceMode,
-                    meteringModeNames[theMock.options().white_balance_mode],
-                    'whiteBalanceMode');
-      assert_equals(constraintsDict.exposureMode,
-                    meteringModeNames[theMock.options().exposure_mode],
-                    'exposureMode');
-      assert_equals(constraintsDict.focusMode,
-                    meteringModeNames[theMock.options().focus_mode],
-                    'focusMode');
-
-      assert_point2d_array_approx_equals(constraintsDict.pointsOfInterest,
-                                         theMock.options().points_of_interest,
-                                         0.01);
-
-      assert_equals(constraintsDict.exposureCompensation,
-                    theMock.options().exposure_compensation,
-                    'exposureCompensation');
-      assert_equals(constraintsDict.colorTemperature,
-                    theMock.options().color_temperature, 'colorTemperature');
-      assert_equals(constraintsDict.iso, theMock.options().iso, 'iso');
-
-      assert_equals(constraintsDict.brightness, theMock.options().brightness,
-                    'brightness');
-      assert_equals(constraintsDict.contrast, theMock.options().contrast,
-                    'constrast');
-      assert_equals(constraintsDict.saturation, theMock.options().saturation,
-                    'saturation');
-      assert_equals(constraintsDict.sharpness, theMock.options().sharpness,
-                    'sharpness');
-
-      assert_equals(constraintsDict.torch, theMock.options().torch, 'torch');
-
-      t.done();
-    })
-    .catch(error => {
+    let appliedConstraints;
+    try {
+      appliedConstraints = await videoTrack.applyConstraints(constraints);
+    } catch (error) {
       assert_unreached('applyConstraints(): ' + error.message);
-    })
+    }
+
+    const constraintsDict = constraints.advanced[0];
+    const appliedConstraintsDict = appliedConstraints.advanced[0];
+
+    // Check that |appliedConstraints| and |constraints| are equal.
+    assert_equals(constraintsDict.length, appliedConstraintsDict.length);
+    Object.keys(appliedConstraintsDict).forEach((key, value) => {
+      assert_not_equals(constraintsDict[key], undefined, 'key ' + key);
+      if (key != 'pointsOfInterest') {
+        assert_equals(constraintsDict[key], appliedConstraintsDict[key], key);
+      } else {
+        assert_point2d_array_approx_equals(constraintsDict[key],
+                                           appliedConstraintsDict[key], 0.01);
+      }
+    });
+
+    let theMock = mockImageCapture;
+    assert_equals(constraintsDict.whiteBalanceMode,
+                  meteringModeNames[theMock.options().whiteBalanceMode],
+                  'whiteBalanceMode');
+    assert_equals(constraintsDict.exposureMode,
+                  meteringModeNames[theMock.options().exposureMode],
+                  'exposureMode');
+    assert_equals(constraintsDict.focusMode,
+                  meteringModeNames[theMock.options().focusMode],
+                  'focusMode');
+
+    assert_point2d_array_approx_equals(constraintsDict.pointsOfInterest,
+                                       theMock.options().pointsOfInterest,
+                                       0.01);
+
+    assert_equals(constraintsDict.exposureCompensation,
+                  theMock.options().exposureCompensation,
+                  'exposureCompensation');
+    assert_equals(constraintsDict.colorTemperature,
+                  theMock.options().colorTemperature, 'colorTemperature');
+    assert_equals(constraintsDict.iso, theMock.options().iso, 'iso');
+
+    assert_equals(constraintsDict.brightness, theMock.options().brightness,
+                  'brightness');
+    assert_equals(constraintsDict.contrast, theMock.options().contrast,
+                  'constrast');
+    assert_equals(constraintsDict.saturation, theMock.options().saturation,
+                  'saturation');
+    assert_equals(constraintsDict.sharpness, theMock.options().sharpness,
+                  'sharpness');
+
+    assert_equals(constraintsDict.torch, theMock.options().torch, 'torch');
 
 }, 'exercises MediaStreamTrack.applyConstraints(constraints)');
 

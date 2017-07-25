@@ -1,46 +1,38 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/media/capture/mojo/image_capture.mojom.js"></script>
 <script src="resources/mock-imagecapture.js"></script>
 <body>
 <canvas id='canvas' width=10 height=10/>
 </body>
 <script>
 
-var canvas = document.getElementById('canvas');
-var context = canvas.getContext('2d');
+let canvas = document.getElementById('canvas');
+let context = canvas.getContext('2d');
 context.fillStyle = 'red';
 context.fillRect(0, 0, 10, 10);
 
 // This test verifies that ImageCapture.setOptions() rejects if any passed
 // option is unsupported or outside its allowed range.
-var makePromiseTest = function(getOption) {
-  promise_test(function(t) {
-    var theMock = null;
-    var theCapturer = null;
-    return mockImageCaptureReady
-      .then(mock => {
-        theMock = mock;
-        theMock.state().red_eye_reduction = 0;
+function makePromiseTest(getOption) {
+  promise_test(async function() {
+    mockImageCapture.state().redEyeReduction = 0;
 
-        var stream = canvas.captureStream();
-        return new ImageCapture(stream.getVideoTracks()[0]);
-      },
-      error => {
-        assert_unreached('Error creating MockImageCapture: ' + error);
-      })
-      .then(capturer => {
-        theCapturer = capturer;
-        return capturer.getPhotoCapabilities();
-      })
-      .then(c => {
-        const options = getOption(theMock.state());
-        return promise_rejects(t, 'NotSupportedError',
-                               theCapturer.setOptions(options));
-      });
+    let stream = canvas.captureStream();
+    let capturer = new ImageCapture(stream.getVideoTracks()[0]);
+    await capturer.getPhotoCapabilities();
+    const options = getOption(mockImageCapture.state());
+
+    try {
+      await capturer.setOptions(options);
+      assert_unreached('expected setOptions to reject');
+    } catch (error) {
+      assert_equals(error.name, 'NotSupportedError');
+    }
   });
-};
+}
 
 const optionsGenerators = [
   capabilities => ({ redEyeReduction: true }),

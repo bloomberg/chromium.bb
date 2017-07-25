@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/media/capture/mojo/image_capture.mojom.js"></script>
 <script src="resources/mock-imagecapture.js"></script>
 <body>
 <canvas id='canvas' width=10 height=10/>
@@ -12,55 +13,41 @@ const fillLightModeNames = ['off', 'auto', 'flash'];
 
 // This test verifies that ImageCapture can call setOptions()s, with a mock Mojo
 // interface implementation.
-async_test(function(t) {
-  var canvas = document.getElementById('canvas');
-  var context = canvas.getContext('2d');
+promise_test(async function() {
+  let canvas = document.getElementById('canvas');
+  let context = canvas.getContext('2d');
   context.fillStyle = 'red';
   context.fillRect(0, 0, 10, 10);
-  var stream = canvas.captureStream();
+  let stream = canvas.captureStream();
 
-  var theMock = null;
   const optionsDict = { imageWidth : 1080,
                         imageHeight : 100,
                         redEyeReduction : true,
                         fillLightMode : 'flash'
                       };
-  mockImageCaptureReady
-    .then(mock => {
-      theMock = mock;
-      return new ImageCapture(stream.getVideoTracks()[0]);
-    },
-    error => {
-      assert_unreached('Error creating MockImageCapture: ' + error);
-    })
-    .then(capturer => {
-      return capturer.setOptions(optionsDict);
-    })
-    .then(function() {
-      assert_equals(true, theMock.options().has_width, 'has_width');
-      assert_equals(optionsDict.imageWidth, theMock.options().width, 'width');
-      assert_equals(true, theMock.options().has_height, 'has_height');
-      assert_equals(optionsDict.imageHeight, theMock.options().height,
-                    'height');
+  let capturer = new ImageCapture(stream.getVideoTracks()[0]);
+  await capturer.setOptions(optionsDict);
 
-      // Depending on how mojo boolean packing in integers is arranged, this can
-      // be a number instead of a boolean, compare directly.
-      // TODO(mcasas): Revert to assert_equals() when yzshen@ has sorted it out.
-      assert_true(
-          optionsDict.redEyeReduction == theMock.options().red_eye_reduction,
-          'red_eye_reduction');
+  assert_equals(true, mockImageCapture.options().hasWidth, 'has_width');
+  assert_equals(optionsDict.imageWidth, mockImageCapture.options().width,
+                'width');
+  assert_equals(true, mockImageCapture.options().hasHeight, 'has_height');
+  assert_equals(optionsDict.imageHeight, mockImageCapture.options().height,
+                'height');
 
-      assert_equals(true, theMock.options().has_fill_light_mode,
-                    'has_fill_light_mode');
-      assert_equals(optionsDict.fillLightMode,
-                    fillLightModeNames[theMock.options().fill_light_mode],
-                    'fillLightMode');
+  // Depending on how mojo boolean packing in integers is arranged, this can
+  // be a number instead of a boolean, compare directly.
+  // TODO(mcasas): Revert to assert_equals() when yzshen@ has sorted it out.
+  assert_true(
+      optionsDict.redEyeReduction == mockImageCapture.options().redEyeReduction,
+      'redEyeReduction');
 
-      t.done();
-    })
-    .catch(error => {
-      assert_unreached('Error during setOptions(): ' + error.message);
-    });
+  assert_equals(true, mockImageCapture.options().hasFillLightMode,
+                'hasFillLightMode');
+  assert_equals(optionsDict.fillLightMode,
+                fillLightModeNames[mockImageCapture.options().fillLightMode],
+                'fillLightMode');
+
 }, 'exercises ImageCapture.setOptions(options)');
 
 </script>

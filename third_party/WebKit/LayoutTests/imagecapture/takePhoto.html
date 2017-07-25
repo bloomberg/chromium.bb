@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/media/capture/mojo/image_capture.mojom.js"></script>
 <script src="resources/mock-imagecapture.js"></script>
 <body>
 <canvas id='canvas' width=10 height=10/>
@@ -11,32 +12,20 @@
 // This test verifies that ImageCapture can takePhoto()s, with a mock Mojo
 // interface implementation.
 
-async_test(function(t) {
-  var canvas = document.getElementById('canvas');
-  var context = canvas.getContext('2d');
+promise_test(async function() {
+  let canvas = document.getElementById('canvas');
+  let context = canvas.getContext('2d');
   context.fillStyle = 'red';
   context.fillRect(0, 0, 10, 10);
-  var stream = canvas.captureStream();
+  let stream = canvas.captureStream();
 
-  mockImageCaptureReady
-    .then(mock => {
-      return new ImageCapture(stream.getVideoTracks()[0]);
-    },
-    error => {
-      assert_unreached('Error creating MockImageCapture: ' + error);
-    })
-    .then(capturer => {
-      return capturer.takePhoto();
-    })
-    .then(blob => {
-      // JS Blob is almost-opaque, can only check |type| and |size|.
-      assert_equals(blob.type, 'image/cat');
-      assert_equals(blob.size, 2);
-      t.done();
-    })
-    .catch(error => {
-      assert_unreached('Error during takePhoto(): ' + error.message);
-    });
+  let capturer = new ImageCapture(stream.getVideoTracks()[0]);
+  let blob = await capturer.takePhoto();
+
+  // JS Blob is almost-opaque, can only check |type| and |size|.
+  assert_equals(blob.type, 'image/cat');
+  assert_equals(blob.size, 2);
+
 }, 'exercises ImageCapture.takePhoto()');
 
 </script>
