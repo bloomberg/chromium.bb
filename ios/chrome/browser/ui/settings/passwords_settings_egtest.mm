@@ -229,11 +229,12 @@ id<GREYMatcher> PopUpMenuItemWithLabel(int label) {
 scoped_refptr<password_manager::PasswordStore> GetPasswordStore() {
   // ServiceAccessType governs behaviour in Incognito: only modifications with
   // EXPLICIT_ACCESS, which correspond to user's explicit gesture, succeed.
-  // This test does not deal with Incognito, so the value of the argument is
-  // irrelevant.
+  // This test does not deal with Incognito, and should not run in Incognito
+  // context. Therefore IMPLICIT_ACCESS is used to let the test fail if in
+  // Incognito context.
   return IOSChromePasswordStoreFactory::GetForBrowserState(
       chrome_test_util::GetOriginalBrowserState(),
-      ServiceAccessType::EXPLICIT_ACCESS);
+      ServiceAccessType::IMPLICIT_ACCESS);
 }
 
 // This class is used to obtain results from the PasswordStore and hence both
