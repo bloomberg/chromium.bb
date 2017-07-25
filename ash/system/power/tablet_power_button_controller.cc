@@ -482,7 +482,7 @@ void TabletPowerButtonController::LockScreenIfRequired() {
       session_controller->CanLockScreen() &&
       !session_controller->IsUserSessionBlocked() &&
       !controller_->LockRequested()) {
-    session_controller->LockScreen();
+    controller_->LockWithoutAnimation();
   }
 }
 
