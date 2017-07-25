@@ -439,15 +439,6 @@ PositionInFlatTree ComputeEndRespectingGranularity(
   return ComputeEndRespectingGranularityAlgorithm(start, end, granularity);
 }
 
-template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::UpdateSelectionType() {
-  selection_type_ = ComputeSelectionType(start_, end_);
-
-  // Affinity only makes sense for a caret
-  if (selection_type_ != kCaretSelection)
-    affinity_ = TextAffinity::kDownstream;
-}
-
 // TODO(editing-dev): Once we move all static functions into anonymous
 // namespace, we should get rid of this forward declaration.
 template <typename Strategy>
@@ -470,7 +461,8 @@ void VisibleSelectionTemplate<Strategy>::Validate(
   if (canonicalized_selection.IsNone()) {
     base_ = extent_ = start_ = end_ = PositionTemplate<Strategy>();
     base_is_first_ = true;
-    UpdateSelectionType();
+    selection_type_ = kNoSelection;
+    affinity_ = TextAffinity::kDownstream;
     return;
   }
 
@@ -505,7 +497,7 @@ void VisibleSelectionTemplate<Strategy>::Validate(
           EphemeralRangeTemplate<Strategy>(start_, end_), base_);
   start_ = editing_adjusted_range.StartPosition();
   end_ = editing_adjusted_range.EndPosition();
-  UpdateSelectionType();
+  selection_type_ = ComputeSelectionType(start_, end_);
 
   if (GetSelectionType() == kRangeSelection) {
     // "Constrain" the selection to be the smallest equivalent range of
@@ -519,6 +511,8 @@ void VisibleSelectionTemplate<Strategy>::Validate(
     // |DeepEquivalent()|s above)?
     start_ = MostForwardCaretPosition(start_);
     end_ = MostBackwardCaretPosition(end_);
+    // Affinity only makes sense for a caret
+    affinity_ = TextAffinity::kDownstream;
   }
   base_ = base_is_first_ ? start_ : end_;
   extent_ = base_is_first_ ? end_ : start_;
