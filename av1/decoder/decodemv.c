@@ -2379,12 +2379,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     }
   }
 
-  if (mbmi->ref_mv_idx > 0) {
-    int_mv cur_mv =
-        xd->ref_mv_stack[mbmi->ref_frame[0]][1 + mbmi->ref_mv_idx].this_mv;
-    nearmv[0] = cur_mv;
-  }
-
 #if CONFIG_EXT_INTER
 #if CONFIG_COMPOUND_SINGLEREF
   if ((is_compound || is_singleref_comp_mode) &&
@@ -2462,6 +2456,10 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       nearmv[1] = xd->ref_mv_stack[ref_frame_type][ref_mv_idx].comp_mv;
     }
 #endif  // CONFIG_EXT_INTER
+  } else if (mbmi->ref_mv_idx > 0 && mbmi->mode == NEARMV) {
+    int_mv cur_mv =
+        xd->ref_mv_stack[mbmi->ref_frame[0]][1 + mbmi->ref_mv_idx].this_mv;
+    nearmv[0] = cur_mv;
   }
 
 #if !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION && !CONFIG_GLOBAL_MOTION
