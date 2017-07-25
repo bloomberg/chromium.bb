@@ -19,4 +19,8 @@
     <instrumentation android:name="android.test.InstrumentationTestRunner"
         android:targetPackage="org.chromium.net"
         android:label="Tests for org.chromium.net"/>
+    <instrumentation android:name="org.chromium.base.test.BaseChromiumAndroidJUnitRunner"
+        android:targetPackage="org.chromium.net"
+        android:label="Tests for org.chromium.net"
+        chromium-junit4="true" />
 </manifest>
