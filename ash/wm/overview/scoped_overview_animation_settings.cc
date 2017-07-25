@@ -48,6 +48,8 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
       return base::TimeDelta::FromMilliseconds(kCloseScaleMilliseconds);
     case OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM:
       return base::TimeDelta::FromMilliseconds(kCloseFadeOutMilliseconds);
+    case OVERVIEW_ANIMATION_DRAGGING_SELECTOR_ITEM:
+      return base::TimeDelta::FromMilliseconds(kTransitionMilliseconds);
   }
   NOTREACHED();
   return base::TimeDelta();
@@ -106,6 +108,7 @@ ui::AnimationMetricsReporter* GetMetricsReporter(
     OverviewAnimationType animation_type) {
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
+    case OVERVIEW_ANIMATION_DRAGGING_SELECTOR_ITEM:
       return nullptr;
     case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN:
     case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS:
@@ -154,6 +157,7 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       break;
     case OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM:
     case OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM:
+    case OVERVIEW_ANIMATION_DRAGGING_SELECTOR_ITEM:
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
       animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);

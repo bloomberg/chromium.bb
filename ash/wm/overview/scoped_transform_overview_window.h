@@ -34,6 +34,7 @@ class Widget;
 namespace ash {
 
 class ScopedOverviewAnimationSettings;
+class WindowSelectorItem;
 
 // Manages a window, and its transient children, in the overview mode. This
 // class allows transforming the windows with a helper to determine the best
@@ -65,7 +66,8 @@ class ASH_EXPORT ScopedTransformOverviewWindow : public ui::EventHandler {
   static gfx::Transform GetTransformForRect(const gfx::Rect& src_rect,
                                             const gfx::Rect& dst_rect);
 
-  explicit ScopedTransformOverviewWindow(aura::Window* window);
+  ScopedTransformOverviewWindow(WindowSelectorItem* selector_item,
+                                aura::Window* window);
   ~ScopedTransformOverviewWindow() override;
 
   // Starts an animation sequence which will use animation settings specified by
@@ -164,6 +166,9 @@ class ASH_EXPORT ScopedTransformOverviewWindow : public ui::EventHandler {
 
   // Makes Close() execute synchronously when used in tests.
   static void SetImmediateCloseForTests();
+
+  // A weak pointer to the window selector item that owns the transform window.
+  WindowSelectorItem* selector_item_;
 
   // A weak pointer to the real window in the overview.
   aura::Window* window_;
