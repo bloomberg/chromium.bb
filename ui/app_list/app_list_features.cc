@@ -37,7 +37,7 @@ bool IsFullscreenAppListEnabled() {
          base::FeatureList::IsEnabled(kEnableFullscreenAppList);
 }
 
-bool IsSearchResultsNewDesignEnabled() {
+bool IsTouchFriendlySearchResultsPageEnabled() {
   return IsFullscreenAppListEnabled() ||
          (IsAnswerCardEnabled() && !IsAnswerCardDarkRunEnabled());
 }

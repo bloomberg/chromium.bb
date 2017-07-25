@@ -23,6 +23,7 @@ class AnswerCardResult : public SearchResult {
   AnswerCardResult(Profile* profile,
                    AppListControllerDelegate* list_controller,
                    const std::string& result_url,
+                   const std::string& stripped_result_url,
                    const base::string16& result_title,
                    AnswerCardContents* contents);
 

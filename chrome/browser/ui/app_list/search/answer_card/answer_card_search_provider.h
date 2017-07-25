@@ -16,6 +16,7 @@
 
 class AppListControllerDelegate;
 class Profile;
+class TemplateURLService;
 
 namespace app_list {
 class AppListModel;
@@ -96,6 +97,9 @@ class AnswerCardSearchProvider : public SearchProvider,
 
   // Current preferred size of the contents.
   gfx::Size preferred_size_;
+
+  // Unowned pointer to template URL service.
+  TemplateURLService* const template_url_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AnswerCardSearchProvider);
 };
