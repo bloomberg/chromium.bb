@@ -1099,19 +1099,6 @@ static_library("browser_tests_runner") {
   }
 }
 
-# Used only by chrome/browser/ui/webui/bidi_checker_web_ui_test.cc
-chrome_repack_locales("repack_pseudo_locales") {
-  visibility = [ ":*" ]
-
-  input_locales = [ "fake-bidi" ]
-
-  if (is_mac) {
-    output_locales = [ "fake_bidi" ]  # Mac uses underscores.
-  } else {
-    output_locales = [ "fake-bidi" ]
-  }
-}
-
 test("browser_tests") {
   sources = [
     # TODO(jbudorick): Move tests here from other lists as Android support is
@@ -1122,7 +1109,6 @@ test("browser_tests") {
 
   deps = [
     ":browser_tests_runner",
-    ":repack_pseudo_locales",
     ":test_support",
     "//base",
     "//components/spellcheck:build_features",
@@ -1544,8 +1530,6 @@ test("browser_tests") {
       "../browser/ui/views/chrome_cleaner_dialog_browsertest_win.cc",
       "../browser/ui/views/extensions/chooser_dialog_view_browsertest.cc",
       "../browser/ui/views/hung_renderer_view_browsertest.cc",
-      "../browser/ui/webui/bidi_checker_web_ui_test.cc",
-      "../browser/ui/webui/bidi_checker_web_ui_test.h",
       "../browser/ui/webui/bookmarks_ui_browsertest.cc",
       "../browser/ui/webui/chrome_url_data_manager_browsertest.cc",
       "../browser/ui/webui/chromeos/bluetooth_pairing_ui_browsertest-inl.h",
