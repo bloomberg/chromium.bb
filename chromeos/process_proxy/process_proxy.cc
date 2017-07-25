@@ -65,6 +65,7 @@ int ProcessProxy::Open(const std::string& command) {
 
 bool ProcessProxy::StartWatchingOutput(
     const scoped_refptr<base::SingleThreadTaskRunner>& watcher_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& callback_runner,
     const OutputCallback& callback) {
   DCHECK(process_launched_);
   CHECK(!output_watcher_.get());
@@ -78,7 +79,7 @@ bool ProcessProxy::StartWatchingOutput(
 
   callback_set_ = true;
   callback_ = callback;
-  callback_runner_ = base::ThreadTaskRunnerHandle::Get();
+  callback_runner_ = callback_runner;
   watcher_runner_ = watcher_runner;
 
   // This object will delete itself once watching is stopped.
