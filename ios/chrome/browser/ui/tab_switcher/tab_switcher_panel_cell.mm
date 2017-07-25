@@ -24,6 +24,9 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kTabSwicherPanelCellCloseButtonAccessibilityID =
+    @"TabSwicherPanelCellCloseButton";
+
 namespace gfx {
 class ImageSkia;
 }
@@ -184,6 +187,8 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
 
     // Close button.
     _closeButton = [[UIButton alloc] initWithFrame:CGRectZero];
+    _closeButton.accessibilityIdentifier =
+        kTabSwicherPanelCellCloseButtonAccessibilityID;
     [_closeButton
         setImage:[[UIImage imageNamed:@"card_close_button"]
                      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]

@@ -18,6 +18,9 @@ class ChromeBrowserState;
 
 CGFloat tabSwitcherLocalSessionCellTopBarHeight();
 
+// The accessibility label for the close button for use in test automation.
+extern NSString* const kTabSwicherPanelCellCloseButtonAccessibilityID;
+
 @protocol SessionCellDelegate<NSObject>
 
 - (TabSwitcherCache*)tabSwitcherCache;

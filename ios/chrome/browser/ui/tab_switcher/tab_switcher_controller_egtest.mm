@@ -10,14 +10,20 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_cell.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/wait_util.h"
+#import "ios/web/public/test/http_server/blank_page_response_provider.h"
+#import "ios/web/public/test/http_server/http_server.h"
+#include "ios/web/public/test/http_server/http_server_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -27,6 +33,7 @@
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::StaticTextWithAccessibilityLabelId;
+using web::test::HttpServer;
 
 namespace {
 
@@ -295,4 +302,58 @@ void EnterTabSwitcherWithCommand() {
 
   [self assertTabSwitcherIsInactive];
 }
+
+// Tests that closing a Tab that has a queued dialog successfully cancels the
+// dialog.
+- (void)testCloseTabWithDialog {
+  // The TabSwitcherController is only used on iPhones.
+  if (!IsIPadIdiom())
+    EARL_GREY_TEST_SKIPPED(@"TabSwitcherController is only used on iPads.");
+
+  // Load the blank test page so that JavaScript can be executed.
+  const GURL kBlankPageURL = HttpServer::MakeUrl("http://blank-page");
+  web::test::AddResponseProvider(
+      web::test::CreateBlankPageResponseProvider(kBlankPageURL));
+  [ChromeEarlGrey loadURL:kBlankPageURL];
+
+  // Enter the tab switcher and show a dialog from the test page.
+  EnterTabSwitcherWithCommand();
+  NSString* const kCancelledMessageText = @"CANCELLED";
+  NSString* const kAlertFormat = @"alert(\"%@\");";
+  chrome_test_util::ExecuteJavaScript(
+      [NSString stringWithFormat:kAlertFormat, kCancelledMessageText], nil);
+
+  // Close the Tab that is attempting to display a dialog.
+  id<GREYMatcher> closeButton = grey_allOf(
+      grey_accessibilityID(kTabSwicherPanelCellCloseButtonAccessibilityID),
+      grey_sufficientlyVisible(), nil);
+  [[EarlGrey selectElementWithMatcher:closeButton] performAction:grey_tap()];
+
+  // Open a new tab.  This will exit the stack view and will make the non-
+  // incognito BrowserState active.  Attempt to present an alert with
+  // kMessageText to verify that there aren't any alerts still in the queue.
+  [[EarlGrey selectElementWithMatcher:TabSwitcherNewTabButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey loadURL:kBlankPageURL];
+  NSString* const kMessageText = @"MESSAGE";
+  chrome_test_util::ExecuteJavaScript(
+      [NSString stringWithFormat:kAlertFormat, kMessageText], nil);
+
+  // Wait for an alert with kMessageText.  If it is shown, then the dialog using
+  // kCancelledMessageText for the message was properly cancelled when the Tab
+  // was closed.
+  id<GREYMatcher> messageLabel =
+      chrome_test_util::StaticTextWithAccessibilityLabel(kMessageText);
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:messageLabel]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return !error;
+  };
+  GREYAssert(testing::WaitUntilConditionOrTimeout(
+                 testing::kWaitForUIElementTimeout, condition),
+             @"Alert with message was not found: %@", kMessageText);
+}
+
 @end
