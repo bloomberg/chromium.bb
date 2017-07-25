@@ -1,4 +1,4 @@
-# components/metrics OWNERS for review of Chromecast metrics code
-file://components/metrics/OWNERS
+# base/metrics OWNERS for review of Chromecast metrics code
+file://base/metrics/OWNERS
 
 # COMPONENT: Internals>Metrics
