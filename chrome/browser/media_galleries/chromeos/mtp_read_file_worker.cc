@@ -11,25 +11,26 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/media_galleries/chromeos/snapshot_file_details.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-using content::BrowserThread;
 using storage_monitor::StorageMonitor;
 
 namespace {
 
 // Appends |data| to the snapshot file specified by the |snapshot_file_path| on
-// the file thread.
-// Returns the number of bytes written to the snapshot file. In case of failure,
-// returns zero.
+// a background sequence that allows IO. Returns the number of bytes written to
+// the snapshot file. In case of failure, returns zero.
 uint32_t WriteDataChunkIntoSnapshotFileOnFileThread(
     const base::FilePath& snapshot_file_path,
     const std::string& data) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   return base::AppendToFile(snapshot_file_path, data.c_str(), data.size())
              ? base::checked_cast<uint32_t>(data.size())
              : 0;
@@ -92,12 +93,10 @@ void MTPReadFileWorker::OnDidReadDataChunkFromDeviceFile(
   // To avoid calling |snapshot_file_details| methods and passing ownership of
   // |snapshot_file_details| in the same_line.
   SnapshotFileDetails* snapshot_file_details_ptr = snapshot_file_details.get();
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE,
-      FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&WriteDataChunkIntoSnapshotFileOnFileThread,
-                 snapshot_file_details_ptr->snapshot_file_path(),
-                 data),
+                 snapshot_file_details_ptr->snapshot_file_path(), data),
       base::Bind(&MTPReadFileWorker::OnDidWriteDataChunkIntoSnapshotFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&snapshot_file_details)));
