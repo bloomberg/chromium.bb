@@ -613,11 +613,23 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
   enum ScreenshotEncoding { ENCODING_PNG, ENCODING_JPEG };
   void CaptureScreenshotAndCompareTo(const SkBitmap& expected_bitmap,
                                      ScreenshotEncoding encoding,
-                                     bool fromSurface) {
+                                     bool fromSurface,
+                                     const gfx::RectF& clip = gfx::RectF(),
+                                     float clip_scale = 0) {
     std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
     params->SetString("format", encoding == ENCODING_PNG ? "png" : "jpeg");
     params->SetInteger("quality", 100);
     params->SetBoolean("fromSurface", fromSurface);
+    if (clip_scale) {
+      std::unique_ptr<base::DictionaryValue> clip_value(
+          new base::DictionaryValue());
+      clip_value->SetDouble("x", clip.x());
+      clip_value->SetDouble("y", clip.y());
+      clip_value->SetDouble("width", clip.width());
+      clip_value->SetDouble("height", clip.height());
+      clip_value->SetDouble("scale", clip_scale);
+      params->Set("clip", std::move(clip_value));
+    }
     SendCommand("Page.captureScreenshot", std::move(params));
 
     std::string base64;
@@ -676,36 +688,30 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
     // Force frame size: The offset of the blue box within the frame shouldn't
     // change during screenshotting. This verifies that the page doesn't observe
     // a change in frame size as a side effect of screenshotting.
+
     params.reset(new base::DictionaryValue());
     params->SetInteger("width", frame_size.width());
     params->SetInteger("height", frame_size.height());
-    params->SetDouble("deviceScaleFactor", 0);
+    params->SetDouble("deviceScaleFactor", 1);
     params->SetBoolean("mobile", false);
-    params->SetBoolean("fitWindow", false);
     SendCommand("Emulation.setDeviceMetricsOverride", std::move(params));
 
     // Resize frame to scaled blue box size.
-    params.reset(new base::DictionaryValue());
-    params->SetInteger("width", scaled_box_size.width());
-    params->SetInteger("height", scaled_box_size.height());
-    SendCommand("Emulation.setVisibleSize", std::move(params));
-
-    // Force viewport to match scaled blue box.
-    params.reset(new base::DictionaryValue());
-    params->SetDouble("x", (frame_size.width() - box_size.width()) / 2.);
-    params->SetDouble("y", kBoxOffsetHeight);
-    params->SetDouble("scale", screenshot_scale);
-    SendCommand("Emulation.forceViewport", std::move(params));
+    gfx::RectF clip;
+    clip.set_width(box_size.width());
+    clip.set_height(box_size.height());
+    clip.set_x((frame_size.width() - box_size.width()) / 2.);
+    clip.set_y(kBoxOffsetHeight);
 
     // Capture screenshot and verify that it is indeed blue.
     SkBitmap expected_bitmap;
     expected_bitmap.allocN32Pixels(scaled_box_size.width(),
                                    scaled_box_size.height());
     expected_bitmap.eraseColor(SkColorSetRGB(0x00, 0x00, 0xff));
-    CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true);
+    CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true, clip,
+                                  screenshot_scale);
 
     // Reset for next screenshot.
-    SendCommand("Emulation.resetViewport", nullptr);
     SendCommand("Emulation.clearDeviceMetricsOverride", nullptr);
   }
 
@@ -766,8 +772,7 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshotJpeg) {
 #if defined(OS_ANDROID)
 #define MAYBE_CaptureScreenshotArea DISABLED_CaptureScreenshotArea
 #else
-// Temporarily disabled while protocol methods are being refactored.
-#define MAYBE_CaptureScreenshotArea DISABLED_CaptureScreenshotArea
+#define MAYBE_CaptureScreenshotArea CaptureScreenshotArea
 #endif
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
                        MAYBE_CaptureScreenshotArea) {
