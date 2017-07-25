@@ -356,7 +356,7 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
 
   base::win::ScopedComPtr<IDXGISwapChain1> swap_chain2 =
       surface->GetLayerSwapChainForTesting(1);
-  EXPECT_EQ(swap_chain2, swap_chain);
+  EXPECT_EQ(swap_chain2.Get(), swap_chain.Get());
 
   // It's the same image, so it should have the same swapchain.
   EXPECT_TRUE(SUCCEEDED(swap_chain->GetLastPresentCount(&last_present_count)));
@@ -374,7 +374,7 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
 
   base::win::ScopedComPtr<IDXGISwapChain1> swap_chain3 =
       surface->GetLayerSwapChainForTesting(1);
-  EXPECT_NE(swap_chain2, swap_chain3);
+  EXPECT_NE(swap_chain2.Get(), swap_chain3.Get());
 
   context = nullptr;
   DestroySurface(std::move(surface));
