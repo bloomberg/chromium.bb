@@ -243,6 +243,13 @@ double TestNetworkQualityEstimator::RandDouble() const {
   return rand_double_;
 }
 
+base::Optional<int32_t>
+TestNetworkQualityEstimator::GetBandwidthDelayProductKbits() const {
+  if (bandwidth_delay_product_kbits_.has_value())
+    return bandwidth_delay_product_kbits_.value();
+  return NetworkQualityEstimator::GetBandwidthDelayProductKbits();
+}
+
 int TestNetworkQualityEstimator::GetEntriesCount(NetLogEventType type) const {
   TestNetLogEntry::List entries;
   net_log_->GetEntries(&entries);

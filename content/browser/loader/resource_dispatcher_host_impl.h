@@ -51,8 +51,9 @@ class RepeatingTimer;
 }
 
 namespace net {
-class URLRequest;
 class HttpRequestHeaders;
+class URLRequest;
+class URLRequestContextGetter;
 }
 
 namespace storage {
@@ -162,8 +163,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   static const int kAvgBytesPerOutstandingRequest = 4400;
 
   // Called when a RenderViewHost is created.
-  void OnRenderViewHostCreated(int child_id,
-                               int route_id);
+  void OnRenderViewHostCreated(
+      int child_id,
+      int route_id,
+      net::URLRequestContextGetter* url_request_context_getter);
 
   // Called when a RenderViewHost is deleted.
   void OnRenderViewHostDeleted(int child_id, int route_id);
