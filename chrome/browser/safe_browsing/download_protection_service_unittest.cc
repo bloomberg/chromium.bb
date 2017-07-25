@@ -1522,6 +1522,7 @@ TEST_F(DownloadProtectionServiceTest,
   run_loop.Run();
 
   ASSERT_TRUE(HasClientDownloadRequest());
+  EXPECT_TRUE(GetClientDownloadRequest()->archive_valid());
   EXPECT_FALSE(GetClientDownloadRequest()->has_udif_code_signature());
 
   ClearClientDownloadRequest();
@@ -1592,6 +1593,45 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportDmgWithoutKoly) {
   run_loop.Run();
 
   ASSERT_TRUE(HasClientDownloadRequest());
+  EXPECT_FALSE(GetClientDownloadRequest()->archive_valid());
+  ClearClientDownloadRequest();
+
+  Mock::VerifyAndClearExpectations(sb_service_.get());
+  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+}
+
+// Test that a large DMG (size equals max value of 64 bit signed int) is not
+// unpacked for binary feature analysis.
+TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportLargeDmg) {
+  net::FakeURLFetcherFactory factory(NULL);
+  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+
+  base::FilePath unsigned_dmg;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &unsigned_dmg));
+  unsigned_dmg = unsigned_dmg.AppendASCII("chrome")
+                     .AppendASCII("safe_browsing_dmg")
+                     .AppendASCII("mach_o_in_dmg.dmg");
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItemWithFullPaths(
+      &item, {"http://www.evil.com/a.dmg"},                     // url_chain
+      "http://www.google.com/",                                 // referrer
+      unsigned_dmg,                                             // tmp_path
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("a.dmg")));  // final_path
+
+  EXPECT_CALL(item, GetTotalBytes())
+      .WillRepeatedly(Return(std::numeric_limits<int64_t>::max()));
+
+  RunLoop run_loop;
+  download_service_->CheckClientDownload(
+      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                        base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(HasClientDownloadRequest());
+  // Even though the test DMG is valid, it is not unpacked due to its large
+  // size.
   EXPECT_FALSE(GetClientDownloadRequest()->archive_valid());
   ClearClientDownloadRequest();
 

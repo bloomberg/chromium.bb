@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 11
+version_id: 12
 sampled_ping_probability: 0.01
 default_file_type {
   uma_value: 18
@@ -2281,6 +2281,7 @@ file_types {
     platform: PLATFORM_MAC
     danger_level: ALLOW_ON_USER_GESTURE
     auto_open_hint: DISALLOW_AUTO_OPEN
+    max_file_size_to_analyze: 52428800 # 50MB
   }
 }
 file_types {

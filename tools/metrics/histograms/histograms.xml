@@ -66446,6 +66446,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SBClientDownload.DmgTooBigToUnpack" enum="Boolean">
+  <owner>jialiul@chromium.org</owner>
+  <summary>
+    Records whether a given DMG download was too big to unpack, as specified by
+    configuration option set in SafeBrowsing download service. This metric is
+    logged each time the user downloads a DMG file on Mac.
+  </summary>
+</histogram>
+
 <histogram name="SBClientDownload.DownloadExtensions"
     enum="SBClientDownloadExtensions">
   <owner>mattm@chromium.org</owner>
