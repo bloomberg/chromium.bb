@@ -643,13 +643,14 @@ static bool IsDisallowedAutoscroll(HTMLFrameOwnerElement* owner_element,
   return false;
 }
 
-void LayoutBox::ScrollRectToVisible(const LayoutRect& rect,
-                                    const ScrollAlignment& align_x,
-                                    const ScrollAlignment& align_y,
-                                    ScrollType scroll_type,
-                                    bool make_visible_in_visual_viewport,
-                                    ScrollBehavior scroll_behavior,
-                                    bool is_for_scroll_sequence) {
+void LayoutBox::ScrollRectToVisibleRecursive(
+    const LayoutRect& rect,
+    const ScrollAlignment& align_x,
+    const ScrollAlignment& align_y,
+    ScrollType scroll_type,
+    bool make_visible_in_visual_viewport,
+    ScrollBehavior scroll_behavior,
+    bool is_for_scroll_sequence) {
   DCHECK(scroll_type == kProgrammaticScroll || scroll_type == kUserScroll);
   // Presumably the same issue as in setScrollTop. See crbug.com/343132.
   DisableCompositingQueryAsserts disabler;
@@ -738,9 +739,10 @@ void LayoutBox::ScrollRectToVisible(const LayoutRect& rect,
     parent_box = EnclosingScrollableBox();
 
   if (parent_box) {
-    parent_box->ScrollRectToVisible(new_rect, align_x, align_y, scroll_type,
-                                    make_visible_in_visual_viewport,
-                                    scroll_behavior, is_for_scroll_sequence);
+    parent_box->ScrollRectToVisibleRecursive(
+        new_rect, align_x, align_y, scroll_type,
+        make_visible_in_visual_viewport, scroll_behavior,
+        is_for_scroll_sequence);
   }
 }
 
@@ -1053,9 +1055,10 @@ void LayoutBox::Autoscroll(const IntPoint& position_in_root_frame) {
 
   IntPoint position_in_content =
       frame_view->RootFrameToContents(position_in_root_frame);
-  ScrollRectToVisible(LayoutRect(position_in_content, LayoutSize(1, 1)),
-                      ScrollAlignment::kAlignToEdgeIfNeeded,
-                      ScrollAlignment::kAlignToEdgeIfNeeded, kUserScroll);
+  ScrollRectToVisibleRecursive(
+      LayoutRect(position_in_content, LayoutSize(1, 1)),
+      ScrollAlignment::kAlignToEdgeIfNeeded,
+      ScrollAlignment::kAlignToEdgeIfNeeded, kUserScroll);
 }
 
 // There are two kinds of layoutObject that can autoscroll.
