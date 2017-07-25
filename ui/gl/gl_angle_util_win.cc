@@ -101,7 +101,7 @@ base::win::ScopedComPtr<IDCompositionDevice2> QueryDirectCompositionDevice(
 
   UINT data_size = sizeof(dcomp_device.Get());
   HRESULT hr = d3d11_device->GetPrivateData(kDirectCompositionGUID, &data_size,
-                                            &dcomp_device);
+                                            dcomp_device.GetAddressOf());
   if (SUCCEEDED(hr) && dcomp_device)
     return dcomp_device;
 

@@ -216,6 +216,11 @@ class ScopedComPtrRef {
   // Allows ScopedComPtr to be passed to functions as a pointer.
   operator T*() { return scoped_com_ptr_; }
 
+  // Equivalent to ComPtrRef's version of this operator.
+  operator typename T::InterfaceType**() {
+    return scoped_com_ptr_->GetAddressOf();
+  }
+
   // Allows IID_PPV_ARGS to perform __uuidof(**(ppType)).
   typename T::InterfaceType* operator*() { return scoped_com_ptr_->Get(); }
 
