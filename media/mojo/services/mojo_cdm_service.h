@@ -56,6 +56,8 @@ class MEDIA_MOJO_EXPORT MojoCdmService
                   InitializeCallback callback) final;
   void SetServerCertificate(const std::vector<uint8_t>& certificate_data,
                             SetServerCertificateCallback callback) final;
+  void GetStatusForPolicy(HdcpVersion min_hdcp_version,
+                          GetStatusForPolicyCallback callback) final;
   void CreateSessionAndGenerateRequest(
       CdmSessionType session_type,
       EmeInitDataType init_data_type,

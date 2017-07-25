@@ -162,6 +162,23 @@ void MojoCdm::SetServerCertificate(const std::vector<uint8_t>& certificate,
                               base::Unretained(this), promise_id));
 }
 
+void MojoCdm::GetStatusForPolicy(HdcpVersion min_hdcp_version,
+                                 std::unique_ptr<KeyStatusCdmPromise> promise) {
+  DVLOG(2) << __func__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!remote_cdm_) {
+    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+                    "CDM connection lost.");
+    return;
+  }
+
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
+  remote_cdm_->GetStatusForPolicy(
+      min_hdcp_version, base::Bind(&MojoCdm::OnKeyStatusCdmPromiseResult,
+                                   base::Unretained(this), promise_id));
+}
+
 void MojoCdm::CreateSessionAndGenerateRequest(
     CdmSessionType session_type,
     EmeInitDataType init_data_type,
@@ -378,6 +395,19 @@ void MojoCdm::OnSimpleCdmPromiseResult(uint32_t promise_id,
   if (result->success)
     cdm_promise_adapter_.ResolvePromise(promise_id);
   else {
+    cdm_promise_adapter_.RejectPromise(promise_id, result->exception,
+                                       result->system_code,
+                                       result->error_message);
+  }
+}
+
+void MojoCdm::OnKeyStatusCdmPromiseResult(
+    uint32_t promise_id,
+    mojom::CdmPromiseResultPtr result,
+    CdmKeyInformation::KeyStatus key_status) {
+  if (result->success) {
+    cdm_promise_adapter_.ResolvePromise(promise_id, key_status);
+  } else {
     cdm_promise_adapter_.RejectPromise(promise_id, result->exception,
                                        result->system_code,
                                        result->error_message);
