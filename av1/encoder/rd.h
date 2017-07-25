@@ -457,6 +457,8 @@ static INLINE void av1_init_rd_stats(RD_STATS *rd_stats) {
   rd_stats->rdcost = 0;
   rd_stats->sse = 0;
   rd_stats->skip = 1;
+  rd_stats->zero_rate = 0;
+  rd_stats->ref_rdcost = INT64_MAX;
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
   rd_stats->dist_y = 0;
 #endif
@@ -484,6 +486,8 @@ static INLINE void av1_invalid_rd_stats(RD_STATS *rd_stats) {
   rd_stats->rdcost = INT64_MAX;
   rd_stats->sse = INT64_MAX;
   rd_stats->skip = 0;
+  rd_stats->zero_rate = 0;
+  rd_stats->ref_rdcost = INT64_MAX;
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
   rd_stats->dist_y = INT64_MAX;
 #endif
