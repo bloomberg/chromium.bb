@@ -39,7 +39,7 @@
 #include "core/dom/DOMException.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/fonts/FontTraits.h"
+#include "platform/fonts/FontSelectionTypes.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -107,7 +107,7 @@ class CORE_EXPORT FontFace : public GarbageCollectedFinalized<FontFace>,
   void SetLoadStatus(LoadStatusType);
   void SetError(DOMException* = nullptr);
   DOMException* GetError() const { return error_; }
-  FontTraits Traits() const;
+  FontSelectionCapabilities GetFontSelectionCapabilities() const;
   CSSFontFace* CssFontFace() { return css_font_face_.Get(); }
   size_t ApproximateBlankCharacterCount() const;
 

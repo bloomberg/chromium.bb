@@ -33,44 +33,12 @@ namespace blink {
 
 namespace {
 
-const char* FontWeightToString(FontWeight weight) {
-  switch (weight) {
-    case kFontWeight100:
-      return "100";
-    case kFontWeight200:
-      return "200";
-    case kFontWeight300:
-      return "300";
-    case kFontWeight400:
-      return "400";
-    case kFontWeight500:
-      return "500";
-    case kFontWeight600:
-      return "600";
-    case kFontWeight700:
-      return "700";
-    case kFontWeight800:
-      return "800";
-    case kFontWeight900:
-      return "900";
-  }
-  NOTREACHED();
-  return nullptr;
-}
-
 // TODO crbug.com/516675 Add stretch to serialization
 
-const char* FontStyleToString(FontStyle style) {
-  switch (style) {
-    case kFontStyleNormal:
-      return "normal";
-    case kFontStyleOblique:
-      return "oblique";
-    case kFontStyleItalic:
-      return "italic";
-  }
-  NOTREACHED();
-  return nullptr;
+const char* FontStyleToString(FontSelectionValue slope) {
+  if (slope == ItalicSlopeValue())
+    return "italic";
+  return "normal";
 }
 
 const char* TextTransformToString(ETextTransform transform) {
@@ -367,9 +335,8 @@ void InternalPopupMenu::AddElementStyle(ItemIterationContext& context,
     AddProperty("fontSize", font_description.ComputedPixelSize(), data);
   }
   // Our UA stylesheet has font-weight:normal for OPTION.
-  if (kFontWeightNormal != font_description.Weight()) {
-    AddProperty("fontWeight",
-                String(FontWeightToString(font_description.Weight())), data);
+  if (NormalWeightValue() != font_description.Weight()) {
+    AddProperty("fontWeight", String::Number(font_description.Weight()), data);
   }
   if (base_font.Family() != font_description.Family()) {
     PagePopupClient::AddString("fontFamily: [\n", data);

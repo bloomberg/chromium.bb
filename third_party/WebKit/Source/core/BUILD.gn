@@ -1229,6 +1229,7 @@ jumbo_source_set("unit_tests") {
     "css/CSSTestHelper.h",
     "css/CSSValueTestHelper.h",
     "css/DragUpdateTest.cpp",
+    "css/FontFaceCacheTest.cpp",
     "css/MediaQueryEvaluatorTest.cpp",
     "css/MediaQueryListTest.cpp",
     "css/MediaQueryMatcherTest.cpp",

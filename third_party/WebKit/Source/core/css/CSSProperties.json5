@@ -472,7 +472,7 @@
       inherited: true,
       name_for_methods: "Stretch",
       priority: "High",
-      type_name: "FontStretch",
+      type_name: "FontSelectionValueStretch",
     },
     {
       name: "font-style",
@@ -481,7 +481,7 @@
       inherited: true,
       name_for_methods: "Style",
       priority: "High",
-      type_name: "FontStyle",
+      type_name: "FontSelectionValueStyle",
     },
     {
       name: "font-variant-ligatures",
@@ -525,7 +525,7 @@
       interpolable: true,
       name_for_methods: "Weight",
       priority: "High",
-      type_name: "FontWeight",
+      type_name: "FontSelectionValueWeight",
     },
     {
       name: "font-feature-settings",

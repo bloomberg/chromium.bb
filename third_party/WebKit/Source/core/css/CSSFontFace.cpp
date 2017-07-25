@@ -144,7 +144,6 @@ void CSSFontFace::Load() {
   FontFamily font_family;
   font_family.SetFamily(font_face_->family());
   font_description.SetFamily(font_family);
-  font_description.SetTraits(font_face_->Traits());
   Load(font_description);
 }
 
