@@ -82,29 +82,32 @@ bool SpellCheckerClientImpl::IsSpellCheckingEnabled() {
 void SpellCheckerClientImpl::ToggleSpellCheckingEnabled() {
   if (IsSpellCheckingEnabled()) {
     spell_check_this_field_status_ = kSpellCheckForcedOff;
-    if (Page* page = web_view_->GetPage()) {
-      for (Frame* frame = page->MainFrame(); frame;
-           frame = frame->Tree().TraverseNext()) {
-        if (!frame->IsLocalFrame())
-          continue;
-        ToLocalFrame(frame)->GetDocument()->Markers().RemoveMarkersOfTypes(
-            DocumentMarker::MisspellingMarkers());
-      }
+    Page* const page = web_view_->GetPage();
+    if (!page)
+      return;
+    for (Frame* frame = page->MainFrame(); frame;
+         frame = frame->Tree().TraverseNext()) {
+      if (!frame->IsLocalFrame())
+        continue;
+      ToLocalFrame(frame)->GetDocument()->Markers().RemoveMarkersOfTypes(
+          DocumentMarker::MisspellingMarkers());
     }
-  } else {
-    spell_check_this_field_status_ = kSpellCheckForcedOn;
-    if (web_view_->FocusedCoreFrame()->IsLocalFrame()) {
-      if (LocalFrame* frame = ToLocalFrame(web_view_->FocusedCoreFrame())) {
-        VisibleSelection frame_selection =
-            frame->Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
-        // If a selection is in an editable element spell check its content.
-        if (Element* root_editable_element =
-                frame_selection.RootEditableElement()) {
-          frame->GetSpellChecker().DidBeginEditing(root_editable_element);
-        }
-      }
-    }
+    return;
   }
+  spell_check_this_field_status_ = kSpellCheckForcedOn;
+  if (!web_view_->FocusedCoreFrame()->IsLocalFrame())
+    return;
+  LocalFrame* const frame = ToLocalFrame(web_view_->FocusedCoreFrame());
+  if (!frame)
+    return;
+  const VisibleSelection visible_selection =
+      frame->Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
+  // If a selection is in an editable element spell check its content.
+  Element* const root_editable_element =
+      visible_selection.RootEditableElement();
+  if (!root_editable_element)
+    return;
+  frame->GetSpellChecker().DidBeginEditing(root_editable_element);
 }
 
 }  // namespace blink
