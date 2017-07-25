@@ -303,9 +303,14 @@ bool ResourceFetcher::ResourceNeedsLoad(Resource* resource,
   // preload.
   if (resource->GetType() == Resource::kFont && !params.IsLinkPreload())
     return false;
+
+  // Defer loading images either when:
+  // - images are disabled
+  // - instructed to defer loading images from network
   if (resource->GetType() == Resource::kImage &&
       ShouldDeferImageLoad(resource->Url()))
     return false;
+
   return policy != kUse || resource->StillNeedsLoad();
 }
 
@@ -641,7 +646,6 @@ Resource* ResourceFetcher::RequestResource(
   TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url",
                UrlForTraceEvent(params.Url()));
 
-  Resource* resource = nullptr;
   ResourceRequestBlockedReason blocked_reason =
       ResourceRequestBlockedReason::kNone;
 
@@ -660,40 +664,40 @@ Resource* ResourceFetcher::RequestResource(
                                     params.Options().initiator_info.name);
   }
 
+  Resource* resource = nullptr;
+  RevalidationPolicy policy = kLoad;
+
   bool is_data_url = resource_request.Url().ProtocolIsData();
   bool is_static_data = is_data_url || substitute_data.IsValid() || archive_;
   if (is_static_data) {
     resource = ResourceForStaticData(params, factory, substitute_data);
-    // Abort the request if the archive doesn't contain the resource, except in
-    // the case of data URLs which might have resources such as fonts that need
-    // to be decoded only on demand. These data URLs are allowed to be
-    // processed using the normal ResourceFetcher machinery.
-    if (!resource && !is_data_url && archive_)
+    if (resource) {
+      policy =
+          DetermineRevalidationPolicy(resource_type, params, *resource, true);
+    } else if (!is_data_url && archive_) {
+      // Abort the request if the archive doesn't contain the resource, except
+      // in the case of data URLs which might have resources such as fonts that
+      // need to be decoded only on demand. These data URLs are allowed to be
+      // processed using the normal ResourceFetcher machinery.
       return nullptr;
+    }
   }
-  RevalidationPolicy policy = kLoad;
-  bool preload_found = false;
+
   if (!resource) {
     resource = MatchPreload(params, resource_type);
     if (resource) {
-      preload_found = true;
       policy = kUse;
-      // If |param| is for a blocking resource and a preloaded resource is
+      // If |params| is for a blocking resource and a preloaded resource is
       // found, we may need to make it block the onload event.
       MakePreloadedResourceBlockOnloadIfNeeded(resource, params);
-    }
-  }
-  if (!preload_found) {
-    if (!resource && IsMainThread()) {
+    } else if (IsMainThread()) {
       resource =
           GetMemoryCache()->ResourceForURL(params.Url(), GetCacheIdentifier());
+      if (resource) {
+        policy = DetermineRevalidationPolicy(resource_type, params, *resource,
+                                             is_static_data);
+      }
     }
-
-    policy = DetermineRevalidationPolicy(resource_type, params, resource,
-                                         is_static_data);
-    TRACE_EVENT_INSTANT1(
-        "blink", "ResourceFetcher::determineRevalidationPolicy",
-        TRACE_EVENT_SCOPE_THREAD, "revalidationPolicy", policy);
   }
 
   UpdateMemoryCacheStats(resource, policy, params, factory, is_static_data);
@@ -883,6 +887,29 @@ void ResourceFetcher::RecordResourceTimingOnRedirect(
   }
 }
 
+static bool IsDownloadOrStreamRequest(const ResourceRequest& request) {
+  // Never use cache entries for DownloadToFile / UseStreamOnResponse requests.
+  // The data will be delivered through other paths.
+  return request.DownloadToFile() || request.UseStreamOnResponse();
+}
+
+static bool IsReusableRegardingCORS(const ResourceRequest& request,
+                                    const Resource& existing_resource) {
+  // Never reuse opaque responses from a service worker for requests that are
+  // not no-cors. https://crbug.com/625575
+  // TODO(yhirano): Remove this.
+
+  if (!existing_resource.GetResponse().WasFetchedViaServiceWorker())
+    return true;
+
+  if (existing_resource.GetResponse().ResponseTypeViaServiceWorker() !=
+      mojom::FetchResponseType::kOpaque)
+    return true;
+
+  return request.GetFetchRequestMode() ==
+         WebURLRequest::kFetchRequestModeNoCORS;
+}
+
 Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
                                         Resource::Type type) {
   auto it = preloads_.find(PreloadKey(params.Url(), type));
@@ -901,7 +928,13 @@ Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
     return resource;
   }
 
-  if (!IsReusableAlsoForPreloading(params, resource, false))
+  const ResourceRequest& request = params.GetResourceRequest();
+  if (IsDownloadOrStreamRequest(request))
+    return nullptr;
+
+  if (IsImageResourceDisallowedToBeReused(*resource) ||
+      !IsReusableRegardingCORS(request, *resource) ||
+      !resource->CanReuse(params))
     return nullptr;
 
   resource->MatchPreload();
@@ -929,67 +962,59 @@ void ResourceFetcher::InsertAsPreloadIfNecessary(Resource* resource,
   }
 }
 
-bool ResourceFetcher::IsReusableAlsoForPreloading(const FetchParameters& params,
-                                                  Resource* existing_resource,
-                                                  bool is_static_data) const {
-  const ResourceRequest& request = params.GetResourceRequest();
-
-  // Do not load from cache if images are not enabled. There are two general
-  // cases:
+bool ResourceFetcher::IsImageResourceDisallowedToBeReused(
+    const Resource& existing_resource) const {
+  // When images are disabled, don't ever load images, even if the image is
+  // cached or it is a data: url. In this case:
+  // - remove the image from the memory cache, and
+  // - create a new resource but defer loading (this is done by
+  //   ResourceNeedsLoad()).
   //
-  // 1. Images are disabled. Don't ever load images, even if the image is cached
-  // or it is a data: url. In this case, we "Reload" the image, then defer it
-  // with resourceNeedsLoad() so that it never actually goes to the network.
-  //
-  // 2. Images are enabled, but not loaded automatically. In this case, we will
-  // Use cached resources or data: urls, but will similarly fall back to a
-  // deferred network load if we don't have the data available without a network
-  // request. We check allowImage() here, which is affected by m_imagesEnabled
-  // but not m_autoLoadImages, in order to allow for this differing behavior.
+  // This condition must be placed before the condition on |is_static_data| to
+  // prevent loading a data: URL.
   //
   // TODO(japhet): Can we get rid of one of these settings?
-  if (existing_resource->GetType() == Resource::kImage &&
-      !Context().AllowImage(images_enabled_, existing_resource->Url())) {
-    return false;
-  }
 
-  // Never use cache entries for downloadToFile / useStreamOnResponse requests.
-  // The data will be delivered through other paths.
-  if (request.DownloadToFile() || request.UseStreamOnResponse())
+  if (existing_resource.GetType() != Resource::kImage)
     return false;
 
-  // Never reuse opaque responses from a service worker for requests that are
-  // not no-cors. https://crbug.com/625575
-  // TODO(yhirano): Remove this.
-  if (existing_resource->GetResponse().WasFetchedViaServiceWorker() &&
-      existing_resource->GetResponse().ResponseTypeViaServiceWorker() ==
-          mojom::FetchResponseType::kOpaque &&
-      request.GetFetchRequestMode() != WebURLRequest::kFetchRequestModeNoCORS) {
-    return false;
-  }
-
-  if (is_static_data)
-    return true;
-
-  return existing_resource->CanReuse(params);
+  return !Context().AllowImage(images_enabled_, existing_resource.Url());
 }
 
 ResourceFetcher::RevalidationPolicy
 ResourceFetcher::DetermineRevalidationPolicy(
     Resource::Type type,
     const FetchParameters& fetch_params,
-    Resource* existing_resource,
+    const Resource& existing_resource,
+    bool is_static_data) const {
+  RevalidationPolicy policy = DetermineRevalidationPolicyInternal(
+      type, fetch_params, existing_resource, is_static_data);
+
+  TRACE_EVENT_INSTANT1("blink", "ResourceFetcher::DetermineRevalidationPolicy",
+                       TRACE_EVENT_SCOPE_THREAD, "revalidationPolicy", policy);
+
+  return policy;
+}
+
+ResourceFetcher::RevalidationPolicy
+ResourceFetcher::DetermineRevalidationPolicyInternal(
+    Resource::Type type,
+    const FetchParameters& fetch_params,
+    const Resource& existing_resource,
     bool is_static_data) const {
   const ResourceRequest& request = fetch_params.GetResourceRequest();
 
-  if (!existing_resource)
-    return kLoad;
+  if (IsDownloadOrStreamRequest(request))
+    return kReload;
+
+  if (IsImageResourceDisallowedToBeReused(existing_resource))
+    return kReload;
 
   // If the existing resource is loading and the associated fetcher is not equal
   // to |this|, we must not use the resource. Otherwise, CSP violation may
   // happen in redirect handling.
-  if (existing_resource->Loader() &&
-      existing_resource->Loader()->Fetcher() != this) {
+  if (existing_resource.Loader() &&
+      existing_resource.Loader()->Fetcher() != this) {
     return kReload;
   }
 
@@ -997,7 +1022,7 @@ ResourceFetcher::DetermineRevalidationPolicy(
   // A not-yet-matched preloads made by a foreign ResourceFetcher and stored in
   // the memory cache could be used without this block.
   if ((fetch_params.IsLinkPreload() || fetch_params.IsSpeculativePreload()) &&
-      existing_resource->IsUnusedPreload()) {
+      existing_resource.IsUnusedPreload()) {
     return kReload;
   }
 
@@ -1016,12 +1041,12 @@ ResourceFetcher::DetermineRevalidationPolicy(
   // resource must be made to get the raw data. This is expected to be an
   // uncommon case, however, as it implies two same-origin requests to the same
   // resource, but with different integrity metadata.
-  if (existing_resource->MustRefetchDueToIntegrityMetadata(fetch_params)) {
+  if (existing_resource.MustRefetchDueToIntegrityMetadata(fetch_params)) {
     return kReload;
   }
 
   // If the same URL has been loaded as a different type, we need to reload.
-  if (existing_resource->GetType() != type) {
+  if (existing_resource.GetType() != type) {
     // FIXME: If existingResource is a Preload and the new type is LinkPrefetch
     // We really should discard the new prefetch since the preload has more
     // specific type information! crbug.com/379893
@@ -1031,16 +1056,31 @@ ResourceFetcher::DetermineRevalidationPolicy(
     return kReload;
   }
 
-  // If |existing_resource| is not reusable as a preloaded resource, it should
-  // not be reusable as a normal resource as well.
-  if (!IsReusableAlsoForPreloading(fetch_params, existing_resource,
-                                   is_static_data)) {
+  // If resource was populated from a SubstituteData load or data: url, use it.
+  // This doesn't necessarily mean that |resource| was just created by using
+  // ResourceForStaticData().
+  if (is_static_data)
+    return kUse;
+
+  if (!IsReusableRegardingCORS(request, existing_resource))
+    return kReload;
+
+  // If credentials were sent with the previous request and won't be with this
+  // one, or vice versa, re-fetch the resource.
+  //
+  // This helps with the case where the server sends back
+  // "Access-Control-Allow-Origin: *" all the time, but some of the client's
+  // requests are made without CORS and some with.
+  if (existing_resource.GetResourceRequest().AllowStoredCredentials() !=
+      request.AllowStoredCredentials()) {
+    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy "
+                                 "reloading due to difference in credentials "
+                                 "settings.";
     return kReload;
   }
 
-  // If resource was populated from a SubstituteData load or data: url, use it.
-  if (is_static_data)
-    return kUse;
+  if (!existing_resource.CanReuse(fetch_params))
+    return kReload;
 
   // Don't reload resources while pasting.
   if (allow_stale_resources_)
@@ -1051,23 +1091,9 @@ ResourceFetcher::DetermineRevalidationPolicy(
     return kUse;
 
   // Don't reuse resources with Cache-control: no-store.
-  if (existing_resource->HasCacheControlNoStoreHeader()) {
+  if (existing_resource.HasCacheControlNoStoreHeader()) {
     RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy "
                                  "reloading due to Cache-control: no-store.";
-    return kReload;
-  }
-
-  // If credentials were sent with the previous request and won't be with this
-  // one, or vice versa, re-fetch the resource.
-  //
-  // This helps with the case where the server sends back
-  // "Access-Control-Allow-Origin: *" all the time, but some of the client's
-  // requests are made without CORS and some with.
-  if (existing_resource->GetResourceRequest().AllowStoredCredentials() !=
-      request.AllowStoredCredentials()) {
-    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy "
-                                 "reloading due to difference in credentials "
-                                 "settings.";
     return kReload;
   }
 
@@ -1078,9 +1104,9 @@ ResourceFetcher::DetermineRevalidationPolicy(
   // or other factors that require separate requests.
   if (type != Resource::kRaw) {
     if (!Context().IsLoadComplete() &&
-        validated_urls_.Contains(existing_resource->Url()))
+        validated_urls_.Contains(existing_resource.Url()))
       return kUse;
-    if (existing_resource->IsLoading())
+    if (existing_resource.IsLoading())
       return kUse;
   }
 
@@ -1093,7 +1119,7 @@ ResourceFetcher::DetermineRevalidationPolicy(
   }
 
   // We'll try to reload the resource if it failed last time.
-  if (existing_resource->ErrorOccurred()) {
+  if (existing_resource.ErrorOccurred()) {
     RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy "
                                  "reloading due to resource being in the error "
                                  "state";
@@ -1104,16 +1130,16 @@ ResourceFetcher::DetermineRevalidationPolicy(
   // validation. We restrict this only to images from memory cache which are the
   // same as the version in the current document.
   if (type == Resource::kImage &&
-      existing_resource == CachedResource(request.Url())) {
+      &existing_resource == CachedResource(request.Url())) {
     return kUse;
   }
 
-  if (existing_resource->MustReloadDueToVaryHeader(request))
+  if (existing_resource.MustReloadDueToVaryHeader(request))
     return kReload;
 
   // If any of the redirects in the chain to loading the resource were not
   // cacheable, we cannot reuse our cached resource.
-  if (!existing_resource->CanReuseRedirectChain()) {
+  if (!existing_resource.CanReuseRedirectChain()) {
     RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy "
                                  "reloading due to an uncacheable redirect";
     return kReload;
@@ -1122,23 +1148,23 @@ ResourceFetcher::DetermineRevalidationPolicy(
   // Check if the cache headers requires us to revalidate (cache expiration for
   // example).
   if (request.GetCachePolicy() == WebCachePolicy::kValidatingCacheData ||
-      existing_resource->MustRevalidateDueToCacheHeaders() ||
+      existing_resource.MustRevalidateDueToCacheHeaders() ||
       request.CacheControlContainsNoCache()) {
     // Revalidation is harmful for non-matched preloads because it may lead to
     // sharing one preloaded resource among multiple ResourceFetchers.
-    if (existing_resource->IsUnusedPreload())
+    if (existing_resource.IsUnusedPreload())
       return kReload;
 
     // See if the resource has usable ETag or Last-modified headers. If the page
     // is controlled by the ServiceWorker, we choose the Reload policy because
     // the revalidation headers should not be exposed to the
     // ServiceWorker.(crbug.com/429570)
-    if (existing_resource->CanUseCacheValidator() &&
+    if (existing_resource.CanUseCacheValidator() &&
         !Context().IsControlledByServiceWorker()) {
       // If the resource is already a cache validator but not started yet, the
       // |Use| policy should be applied to subsequent requests.
-      if (existing_resource->IsCacheValidator()) {
-        DCHECK(existing_resource->StillNeedsLoad());
+      if (existing_resource.IsCacheValidator()) {
+        DCHECK(existing_resource.StillNeedsLoad());
         return kUse;
       }
       return kRevalidate;
