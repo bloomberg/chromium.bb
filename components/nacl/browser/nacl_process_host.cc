@@ -268,14 +268,16 @@ NaClProcessHost::~NaClProcessHost() {
     // handles.
     base::File file(IPC::PlatformFileForTransitToFile(
         prefetched_resource_files_[i].file));
-    content::BrowserThread::GetBlockingPool()->PostTask(
-        FROM_HERE, base::Bind(&CloseFile, base::Passed(std::move(file))));
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+        base::Bind(&CloseFile, base::Passed(std::move(file))));
   }
 #endif
   // Open files need to be closed on the blocking pool.
   if (nexe_file_.IsValid()) {
-    content::BrowserThread::GetBlockingPool()->PostTask(
-        FROM_HERE, base::Bind(&CloseFile, base::Passed(std::move(nexe_file_))));
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+        base::Bind(&CloseFile, base::Passed(std::move(nexe_file_))));
   }
 
   if (reply_msg_) {
