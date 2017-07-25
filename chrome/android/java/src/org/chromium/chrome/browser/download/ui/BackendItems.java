@@ -35,7 +35,7 @@ public abstract class BackendItems extends ArrayList<DownloadHistoryItemWrapper>
             if (item.isVisibleToUser(DownloadFilter.FILTER_ALL) && !filePaths.contains(path)) {
                 totalSize += item.getFileSize();
             }
-            if (!path.isEmpty()) filePaths.add(path);
+            if (path != null && !path.isEmpty()) filePaths.add(path);
         }
         return totalSize;
     }
