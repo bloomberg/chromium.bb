@@ -113,7 +113,7 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   // Always send AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED to notify
   // the Android system that the accessibility hierarchy rooted at this
   // node has changed.
-  wcax->HandleContentChanged(android_node->unique_id());
+  wcax->HandleContentChanged(node->unique_id());
 
   // Ignore load complete events on iframes.
   if (event_type == ui::AX_EVENT_LOAD_COMPLETE &&
@@ -122,25 +122,23 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   }
 
   switch (event_type) {
-    case ui::AX_EVENT_LOAD_COMPLETE: {
-      auto* android_focused =
-          static_cast<BrowserAccessibilityAndroid*>(GetFocus());
-      wcax->HandlePageLoaded(android_focused->unique_id());
-    } break;
+    case ui::AX_EVENT_LOAD_COMPLETE:
+      wcax->HandlePageLoaded(GetFocus()->unique_id());
+      break;
     case ui::AX_EVENT_FOCUS:
-      wcax->HandleFocusChanged(android_node->unique_id());
+      wcax->HandleFocusChanged(node->unique_id());
       break;
     case ui::AX_EVENT_CHECKED_STATE_CHANGED:
-      wcax->HandleCheckStateChanged(android_node->unique_id());
+      wcax->HandleCheckStateChanged(node->unique_id());
       break;
     case ui::AX_EVENT_CLICKED:
-      wcax->HandleClicked(android_node->unique_id());
+      wcax->HandleClicked(node->unique_id());
       break;
     case ui::AX_EVENT_SCROLL_POSITION_CHANGED:
-      wcax->HandleScrollPositionChanged(android_node->unique_id());
+      wcax->HandleScrollPositionChanged(node->unique_id());
       break;
     case ui::AX_EVENT_SCROLLED_TO_ANCHOR:
-      wcax->HandleScrolledToAnchor(android_node->unique_id());
+      wcax->HandleScrolledToAnchor(node->unique_id());
       break;
     case ui::AX_EVENT_ALERT:
       // An alert is a special case of live region. Fall through to the
@@ -153,14 +151,14 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
       break;
     }
     case ui::AX_EVENT_TEXT_SELECTION_CHANGED:
-      wcax->HandleTextSelectionChanged(android_node->unique_id());
+      wcax->HandleTextSelectionChanged(node->unique_id());
       break;
     case ui::AX_EVENT_TEXT_CHANGED:
     case ui::AX_EVENT_VALUE_CHANGED:
       if (android_node->IsEditableText() && GetFocus() == node) {
-        wcax->HandleEditableTextChanged(android_node->unique_id());
+        wcax->HandleEditableTextChanged(node->unique_id());
       } else if (android_node->IsSlider()) {
-        wcax->HandleSliderChanged(android_node->unique_id());
+        wcax->HandleSliderChanged(node->unique_id());
       }
       break;
     default:
