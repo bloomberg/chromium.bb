@@ -9,6 +9,7 @@ from core.perf_data_generator import BenchmarkMetadata
 
 from telemetry import benchmark
 from telemetry import decorators
+from telemetry import story
 
 import mock
 
@@ -324,3 +325,42 @@ class PerfDataGeneratorTest(unittest.TestCase):
     self.assertTrue('Linux Perf' in tests)
     self.assertTrue('Mojo Linux Perf' in tests)
     self.assertFalse('comment' in tests)
+
+  def testShouldBenchmarksBeScheduledViaStoryExpectationsBadOS(self):
+    class RegularBenchmark(benchmark.Benchmark):
+      @classmethod
+      def Name(cls):
+        return 'regular'
+
+    with self.assertRaises(TypeError):
+      perf_data_generator.ShouldBenchmarksBeScheduledViaStoryExpectations(
+          RegularBenchmark, 'bot_name', 'os_name', None)
+
+  def testShouldBenchmarksBeScheduledViaStoryExpectationsShouldRun(self):
+    class RegularBenchmark(benchmark.Benchmark):
+      @classmethod
+      def Name(cls):
+        return 'regular'
+    valid_os_list = ['mac', 'android', 'windows', 'linux']
+    for os in valid_os_list:
+      self.assertTrue(
+          perf_data_generator.ShouldBenchmarksBeScheduledViaStoryExpectations(
+              RegularBenchmark, 'bot_name', os, None))
+
+  def testShouldBenchmarksBeScheduledViaStoryExpectationsShouldntRun(self):
+    class RegularBenchmark(benchmark.Benchmark):
+      @classmethod
+      def Name(cls):
+        return 'regular'
+
+      def GetExpectations(self):
+        class Expectations(story.expectations.StoryExpectations):
+          def SetExpectations(self):
+            self.PermanentlyDisableBenchmark([story.expectations.ALL], 'reason')
+        return Expectations()
+
+    valid_os_list = ['mac', 'android', 'windows', 'linux']
+    for os in valid_os_list:
+      self.assertFalse(
+          perf_data_generator.ShouldBenchmarksBeScheduledViaStoryExpectations(
+              RegularBenchmark, 'bot_name', os, None))
