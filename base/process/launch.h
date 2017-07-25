@@ -349,6 +349,9 @@ BASE_EXPORT LaunchOptions LaunchOptionsForTest();
 // threads could have been in any state (potentially holding locks, etc.).
 // Callers should most likely call execve() in the child soon after calling
 // this.
+//
+// It is unsafe to use any pthread APIs after ForkWithFlags().
+// However, performing an exec() will lift this restriction.
 BASE_EXPORT pid_t ForkWithFlags(unsigned long flags, pid_t* ptid, pid_t* ctid);
 #endif
 
