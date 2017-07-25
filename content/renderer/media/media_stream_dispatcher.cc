@@ -142,11 +142,8 @@ void MediaStreamDispatcher::OpenDevice(
   DVLOG(1) << "MediaStreamDispatcher::OpenDevice(" << request_id << ")";
 
   requests_.push_back(Request(event_handler, request_id, next_ipc_id_));
-  Send(new MediaStreamHostMsg_OpenDevice(routing_id(),
-                                         next_ipc_id_++,
-                                         device_id,
-                                         type,
-                                         security_origin));
+  GetMediaStreamDispatcherHost()->OpenDevice(routing_id(), next_ipc_id_++,
+                                             device_id, type, security_origin);
 }
 
 void MediaStreamDispatcher::CancelOpenDevice(
