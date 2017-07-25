@@ -115,7 +115,6 @@ class TestImporter(object):
             _log.info('Done: no changes to import.')
             return 0
 
-        self.run(['git', 'commit', '--all', '-F', '-'], stdin=commit_message)
         self._commit_changes(commit_message)
         _log.info('Changes imported and committed.')
 
