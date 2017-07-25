@@ -95,7 +95,7 @@
   font-family: Roboto2, Roboto, Noto Sans Hebrew, Sans-Serif;
 }
 .inputview-font[lang=jp] {
-  font-family: Roboto2, Roboto, MotoyaG04Gothic, IPAGothic, Sans-Serif;
+  font-family: Roboto2, Roboto, Noto Sans CJK JP, Sans-Serif;
 }
 .inputview-font[lang=ar] {
   font-family: Roboto2, Roboto, Noto Arabic Naskh ui, Sans-Serif;
@@ -128,14 +128,14 @@
   font-family: Roboto2, Roboto, Noto Sans Thai, Sans-Serif;
 }
 .inputview-font[lang=zh-CN] {
-  font-family: Roboto2, Roboto, MYingHeiGB18030, Droid Sans Fallback, Sans-Serif;
+  font-family: Roboto2, Roboto, Noto Sans CJK SC, Droid Sans Fallback, Sans-Serif;
 }
 .inputview-font[lang=zh-TW],
 .inputview-font[lang=zh-HK] {
-  font-family: Roboto2, Roboto, MYingHeiB5HK, Droid Sans Fallback, Sans-Serif;
+  font-family: Roboto2, Roboto, Noto Sans CJK TC, Droid Sans Fallback, Sans-Serif;
 }
 .inputview-font[lang=kr] {
-  font-family: Roboto2, Roboto, NanumGothic, Sans-Serif;
+  font-family: Roboto2, Roboto, Noto Sans CJK KR, Sans-Serif;
 }
 .inputview-emoji-font {
   font-family: Noto Color Emoji, Noto Emoji, Droid Emoji;

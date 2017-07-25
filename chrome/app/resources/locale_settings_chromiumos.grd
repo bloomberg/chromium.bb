@@ -209,7 +209,7 @@
       <!-- The default value for |WebPreference::serif_font_family_map| for
            Korean script. -->
       <message name="IDS_SERIF_FONT_FAMILY_KOREAN" use_name_for_id="true">
-        NanumMyeongjo
+        Noto Serif CJK KR
       </message>
 
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for

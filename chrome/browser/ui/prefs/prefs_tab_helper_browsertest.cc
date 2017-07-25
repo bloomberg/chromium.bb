@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest, WebPrefs) {
 
   EXPECT_EQ("windows-1251", prefs->GetString(prefs::kDefaultCharset));
   EXPECT_EQ(16, prefs->GetInteger(prefs::kWebKitDefaultFontSize));
-  EXPECT_EQ("Nanum Gothic",
+  EXPECT_EQ("Noto Sans CJK KR",
             prefs->GetString(prefs::kWebKitStandardFontFamilyKorean));
   EXPECT_EQ("Tinos", prefs->GetString(prefs::kWebKitStandardFontFamily));
   EXPECT_EQ("DejaVu Sans", prefs->GetString(prefs::kWebKitSansSerifFontFamily));
