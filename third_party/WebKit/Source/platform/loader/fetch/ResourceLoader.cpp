@@ -221,7 +221,7 @@ bool ResourceLoader::WillFollowRedirect(
     // CanRequest() checks only enforced CSP, so check report-only here to
     // ensure that violations are sent.
     Context().CheckCSPForRequest(
-        new_request, new_url, options, reporting_policy,
+        request.GetRequestContext(), new_url, options, reporting_policy,
         ResourceRequest::RedirectStatus::kFollowedRedirect);
 
     ResourceRequestBlockedReason blocked_reason = Context().CanRequest(
@@ -448,7 +448,7 @@ void ResourceLoader::DidReceiveResponse(
       // CanRequest() below only checks enforced policies: check report-only
       // here to ensure violations are sent.
       Context().CheckCSPForRequest(
-          request, original_url, options,
+          request.GetRequestContext(), original_url, options,
           SecurityViolationReportingPolicy::kReport,
           ResourceRequest::RedirectStatus::kFollowedRedirect);
 

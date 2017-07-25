@@ -46,6 +46,7 @@
 #include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLLoader.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace blink {
 
@@ -159,7 +160,7 @@ class PLATFORM_EXPORT FetchContext
     return ResourceRequestBlockedReason::kOther;
   }
   virtual ResourceRequestBlockedReason CheckCSPForRequest(
-      const ResourceRequest&,
+      WebURLRequest::RequestContext,
       const KURL&,
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,

@@ -551,7 +551,7 @@ ResourceFetcher::PrepareRequestResult ResourceFetcher::PrepareRequest(
   // allows site owners to learn about requests that are being modified
   // (e.g. mixed content that is being upgraded by upgrade-insecure-requests).
   Context().CheckCSPForRequest(
-      resource_request,
+      resource_request.GetRequestContext(),
       MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url()), options,
       reporting_policy, resource_request.GetRedirectStatus());
 
