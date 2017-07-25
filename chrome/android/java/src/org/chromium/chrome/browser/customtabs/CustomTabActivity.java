@@ -53,7 +53,6 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -81,7 +80,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -107,7 +105,6 @@ public class CustomTabActivity extends ChromeActivity {
 
     private static CustomTabContentHandler sActiveContentHandler;
 
-    private FindToolbarManager mFindToolbarManager;
     private CustomTabIntentDataProvider mIntentDataProvider;
     private CustomTabsSessionToken mSession;
     private CustomTabContentHandler mCustomTabContentHandler;
@@ -463,16 +460,9 @@ public class CustomTabActivity extends ChromeActivity {
         initializeCompositorContent(layoutDriver, findViewById(R.id.url_bar),
                 (ViewGroup) findViewById(android.R.id.content),
                 (ToolbarControlContainer) findViewById(R.id.control_container));
-        mFindToolbarManager = new FindToolbarManager(this,
-                getToolbarManager().getActionModeController().getActionModeCallback());
-        if (getContextualSearchManager() != null) {
-            getContextualSearchManager().setFindToolbarManager(mFindToolbarManager);
-        }
-        getToolbarManager().initializeWithNative(
-                getTabModelSelector(),
-                getFullscreenManager().getBrowserVisibilityDelegate(),
-                mFindToolbarManager, null, layoutDriver, null, null, null,
-                new OnClickListener() {
+        getToolbarManager().initializeWithNative(getTabModelSelector(),
+                getFullscreenManager().getBrowserVisibilityDelegate(), getFindToolbarManager(),
+                null, layoutDriver, null, null, null, new OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         RecordUserAction.record("CustomTabs.CloseButtonClicked");
@@ -988,16 +978,6 @@ public class CustomTabActivity extends ChromeActivity {
             addOrEditBookmark(getActivityTab());
             RecordUserAction.record("MobileMenuAddToBookmarks");
             return true;
-        } else if (id == R.id.find_in_page_id) {
-            mFindToolbarManager.showToolbar();
-            if (getContextualSearchManager() != null) {
-                getContextualSearchManager().hideContextualSearch(StateChangeReason.UNKNOWN);
-            }
-            if (fromMenu) {
-                RecordUserAction.record("MobileMenuFindInPage");
-            } else {
-                RecordUserAction.record("MobileShortcutFindInPage");
-            }
         } else if (id == R.id.open_in_browser_id) {
             openCurrentUrlInBrowser(false);
             RecordUserAction.record("CustomTabsMenuOpenInChrome");
