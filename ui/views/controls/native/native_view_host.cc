@@ -54,6 +54,10 @@ void NativeViewHost::SetPreferredSize(const gfx::Size& size) {
   PreferredSizeChanged();
 }
 
+bool NativeViewHost::SetCornerRadius(int corner_radius) {
+  return native_wrapper_->SetCornerRadius(corner_radius);
+}
+
 void NativeViewHost::NativeViewDestroyed() {
   // Detach so we can clear our state and notify the native_wrapper_ to release
   // ref on the native view.

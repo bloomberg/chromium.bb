@@ -6,6 +6,10 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/layer_delegate.h"
+#include "ui/compositor/layer_owner.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/insets_f.h"
@@ -186,6 +190,40 @@ void ImagePainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
   nine_painter_->Paint(canvas, gfx::Rect(size));
 }
 
+class PaintedLayer : public ui::LayerOwner, public ui::LayerDelegate {
+ public:
+  explicit PaintedLayer(std::unique_ptr<Painter> painter);
+  ~PaintedLayer() override;
+
+  // LayerDelegate:
+  void OnPaintLayer(const ui::PaintContext& context) override;
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+
+ private:
+  std::unique_ptr<Painter> painter_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintedLayer);
+};
+
+PaintedLayer::PaintedLayer(std::unique_ptr<Painter> painter)
+    : painter_(std::move(painter)) {
+  SetLayer(base::MakeUnique<ui::Layer>(ui::LAYER_TEXTURED));
+  layer()->set_delegate(this);
+}
+
+PaintedLayer::~PaintedLayer() {}
+
+void PaintedLayer::OnPaintLayer(const ui::PaintContext& context) {
+  ui::PaintRecorder recorder(context, layer()->size());
+  painter_->Paint(recorder.canvas(), layer()->size());
+}
+
+void PaintedLayer::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {
+}
+
+void PaintedLayer::OnDeviceScaleFactorChanged(float device_scale_factor) {}
+
 }  // namespace
 
 
@@ -275,6 +313,12 @@ std::unique_ptr<Painter> Painter::CreateSolidFocusPainter(
     int thickness,
     const gfx::InsetsF& insets) {
   return base::MakeUnique<SolidFocusPainter>(color, thickness, insets);
+}
+
+// static
+std::unique_ptr<ui::LayerOwner> Painter::CreatePaintedLayer(
+    std::unique_ptr<Painter> painter) {
+  return base::MakeUnique<PaintedLayer>(std::move(painter));
 }
 
 }  // namespace views
