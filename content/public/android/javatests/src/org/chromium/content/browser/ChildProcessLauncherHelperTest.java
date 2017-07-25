@@ -90,6 +90,8 @@ public class ChildProcessLauncherHelperTest {
     @Test
     @MediumTest
     @Feature({"ProcessManagement"})
+    @ChildProcessAllocatorSettings(
+            sandboxedServiceCount = 2, sandboxedServiceName = DEFAULT_SANDBOXED_PROCESS_SERVICE)
     public void testBindServiceFromMultipleProcesses() throws RemoteException {
         final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
@@ -176,11 +178,11 @@ public class ChildProcessLauncherHelperTest {
         ChildConnectionAllocator connectionAllocator =
                 launcher.getChildConnectionAllocatorForTesting();
 
-        // Check that only two connections are created.
+        // Check that only one connection is created.
         for (int i = 0; i < connectionAllocator.getNumberOfServices(); ++i) {
             ChildProcessConnection sandboxedConn =
                     connectionAllocator.getChildProcessConnectionAtSlotForTesting(i);
-            if (i <= 1) {
+            if (i == 1) {
                 Assert.assertNotNull(sandboxedConn);
                 Assert.assertNotNull(
                         ChildProcessLauncherTestUtils.getConnectionService(sandboxedConn));
@@ -191,12 +193,6 @@ public class ChildProcessLauncherHelperTest {
 
         Assert.assertEquals(
                 connectionAllocator.getChildProcessConnectionAtSlotForTesting(1), retryConnection);
-
-        ChildProcessConnection failedConnection =
-                connectionAllocator.getChildProcessConnectionAtSlotForTesting(0);
-        Assert.assertEquals(0, ChildProcessLauncherTestUtils.getConnectionPid(failedConnection));
-        Assert.assertFalse(ChildProcessLauncherTestUtils.getConnectionService(failedConnection)
-                                   .bindToCaller());
 
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Failed waiting retry connection to get pid") {
@@ -209,6 +205,28 @@ public class ChildProcessLauncherHelperTest {
                 != helperConnectionPid);
         Assert.assertTrue(
                 ChildProcessLauncherTestUtils.getConnectionService(retryConnection).bindToCaller());
+
+        // Unbind the service.
+        replyHandler.mMessage = null;
+        msg = Message.obtain(null, ChildProcessLauncherTestHelperService.MSG_UNBIND_SERVICE);
+        msg.replyTo = new Messenger(new Handler(Looper.getMainLooper(), replyHandler));
+        serviceConnection.mMessenger.send(msg);
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Failed waiting for helper service unbind reply") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return replyHandler.mMessage != null;
+                    }
+                });
+        Assert.assertEquals(ChildProcessLauncherTestHelperService.MSG_UNBIND_SERVICE_REPLY,
+                replyHandler.mMessage.what);
+
+        // The 0th connection should now be usable.
+        launcher = startSandboxedChildProcessWithCreationParams(
+                creationParams, BLOCK_UNTIL_SETUP, true /* doSetupConnection */);
+        ChildProcessConnection connection = ChildProcessLauncherTestUtils.getConnection(launcher);
+        Assert.assertEquals(
+                0, ChildProcessLauncherTestUtils.getConnectionServiceNumber(connection));
     }
 
     private static void warmUpOnUiThreadBlocking(final Context context) {

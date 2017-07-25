@@ -348,9 +348,11 @@ public class ChildProcessLauncherTest {
                                     }
 
                                     @Override
-                                    public void onChildStartFailed() {
+                                    public void onChildStartFailed(
+                                            ChildProcessConnection connection) {
                                         if (serviceCallbackWrapper.get() != null) {
-                                            serviceCallbackWrapper.get().onChildStartFailed();
+                                            serviceCallbackWrapper.get().onChildStartFailed(
+                                                    connection);
                                         }
                                     }
 

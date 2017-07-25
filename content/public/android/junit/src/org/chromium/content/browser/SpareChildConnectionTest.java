@@ -66,7 +66,7 @@ public class SpareChildConnectionTest {
         }
 
         public void simulateConnectionFailingToBind() {
-            mConnection.getServiceCallback().onChildStartFailed();
+            mConnection.getServiceCallback().onChildStartFailed(mConnection);
         }
 
         public void simulateConnectionDied() {
@@ -129,7 +129,7 @@ public class SpareChildConnectionTest {
         assertNull(connection);
         ShadowLooper.runUiThreadTasks();
         verify(mServiceCallback, times(0)).onChildStarted();
-        verify(mServiceCallback, times(0)).onChildStartFailed();
+        verify(mServiceCallback, times(0)).onChildStartFailed(any());
         verify(mServiceCallback, times(0)).onChildProcessDied(any());
     }
 
@@ -150,7 +150,7 @@ public class SpareChildConnectionTest {
 
         ShadowLooper.runUiThreadTasks();
         verify(mServiceCallback, times(1)).onChildStarted();
-        verify(mServiceCallback, times(0)).onChildStartFailed();
+        verify(mServiceCallback, times(0)).onChildStartFailed(any());
     }
 
     @Test
@@ -165,7 +165,7 @@ public class SpareChildConnectionTest {
         ShadowLooper.runUiThreadTasks();
         // No callbacks are called.
         verify(mServiceCallback, times(0)).onChildStarted();
-        verify(mServiceCallback, times(0)).onChildStartFailed();
+        verify(mServiceCallback, times(0)).onChildStartFailed(any());
 
         // No more connections are available.
         assertTrue(mSpareConnection.isEmpty());
@@ -173,7 +173,7 @@ public class SpareChildConnectionTest {
         // Simulate the connection getting bound, it should trigger the callback.
         mTestConnectionFactory.simulateConnectionBindingSuccessfully();
         verify(mServiceCallback, times(1)).onChildStarted();
-        verify(mServiceCallback, times(0)).onChildStartFailed();
+        verify(mServiceCallback, times(0)).onChildStartFailed(any());
     }
 
     @Test
@@ -199,7 +199,7 @@ public class SpareChildConnectionTest {
 
         // We should get a failure callback.
         verify(mServiceCallback, times(0)).onChildStarted();
-        verify(mServiceCallback, times(1)).onChildStartFailed();
+        verify(mServiceCallback, times(1)).onChildStartFailed(connection);
     }
 
     @Test
@@ -214,7 +214,7 @@ public class SpareChildConnectionTest {
 
         // We should get a failure callback.
         verify(mServiceCallback, times(0)).onChildStarted();
-        verify(mServiceCallback, times(0)).onChildStartFailed();
+        verify(mServiceCallback, times(0)).onChildStartFailed(any());
         verify(mServiceCallback, times(1)).onChildProcessDied(connection);
     }
 
