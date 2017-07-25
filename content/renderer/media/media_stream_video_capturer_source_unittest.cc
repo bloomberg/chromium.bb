@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
+#include "content/common/media/media_stream.mojom.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/video_track_adapter.h"
@@ -30,6 +31,24 @@ using ::testing::WithArgs;
 namespace content {
 
 namespace {
+
+class MockMojoMediaStreamDispatcherHost
+    : public mojom::MediaStreamDispatcherHost {
+ public:
+  MockMojoMediaStreamDispatcherHost() {}
+
+  MOCK_METHOD2(CancelGenerateStream, void(int32_t, int32_t));
+  MOCK_METHOD2(StopStreamDevice, void(int32_t, const std::string&));
+  MOCK_METHOD5(OpenDevice,
+               void(int32_t,
+                    int32_t,
+                    const std::string&,
+                    MediaStreamType,
+                    const url::Origin&));
+  MOCK_METHOD1(CloseDevice, void(const std::string&));
+  MOCK_METHOD3(SetCapturingLinkSecured, void(int32_t, MediaStreamType, bool));
+  MOCK_METHOD1(StreamStarted, void(const std::string&));
+};
 
 class MockVideoCapturerSource : public media::VideoCapturerSource {
  public:
@@ -102,6 +121,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
         base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
                    base::Unretained(this)),
         std::move(delegate));
+    source_->dispatcher_host_ = &mock_dispatcher_host_;
     source_->SetDeviceInfo(device_info);
 
     webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
@@ -146,6 +166,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   std::unique_ptr<ChildProcess> child_process_;
 
   blink::WebMediaStreamSource webkit_source_;
+  MockMojoMediaStreamDispatcherHost mock_dispatcher_host_;
   MediaStreamVideoCapturerSource* source_;  // owned by |webkit_source_|.
   MockVideoCapturerSource* delegate_;     // owned by |source|.
   blink::WebString webkit_source_id_;
@@ -161,6 +182,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, StartAndStop) {
       base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
                  base::Unretained(this)),
       std::move(delegate));
+  source_->dispatcher_host_ = &mock_dispatcher_host_;
   webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
                             blink::WebMediaStreamSource::kTypeVideo,
                             blink::WebString::FromASCII("dummy_source_name"),
@@ -199,6 +221,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
       base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
                  base::Unretained(this)),
       std::move(delegate));
+  source_->dispatcher_host_ = &mock_dispatcher_host_;
   webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
                             blink::WebMediaStreamSource::kTypeVideo,
                             blink::WebString::FromASCII("dummy_source_name"),

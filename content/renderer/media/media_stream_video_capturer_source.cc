@@ -13,7 +13,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/common/media/media_stream_messages.h"
+#include "content/child/child_thread_impl.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
@@ -159,7 +159,9 @@ void LocalVideoCapturerSource::OnStateUpdate(VideoCaptureState state) {
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     const SourceStoppedCallback& stop_callback,
     std::unique_ptr<media::VideoCapturerSource> source)
-    : RenderFrameObserver(nullptr), source_(std::move(source)) {
+    : RenderFrameObserver(nullptr),
+      dispatcher_host_(nullptr),
+      source_(std::move(source)) {
   media::VideoCaptureFormats preferred_formats = source_->GetPreferredFormats();
   if (!preferred_formats.empty())
     capture_params_.requested_format = preferred_formats.front();
@@ -172,6 +174,7 @@ MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     const media::VideoCaptureParams& capture_params,
     RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
+      dispatcher_host_(nullptr),
       source_(new LocalVideoCapturerSource(device_info)),
       capture_params_(capture_params) {
   SetStopCallback(stop_callback);
@@ -193,8 +196,8 @@ void MediaStreamVideoCapturerSource::OnHasConsumers(bool has_consumers) {
 }
 
 void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
-  Send(new MediaStreamHostMsg_SetCapturingLinkSecured(
-      device_info().session_id, device_info().device.type, is_secure));
+  GetMediaStreamDispatcherHost()->SetCapturingLinkSecured(
+      device_info().session_id, device_info().device.type, is_secure);
 }
 
 void MediaStreamVideoCapturerSource::StartSourceImpl(
@@ -225,5 +228,15 @@ void MediaStreamVideoCapturerSource::OnRunStateChanged(bool is_running) {
     StopSource();
   }
 }
+
+mojom::MediaStreamDispatcherHost*
+MediaStreamVideoCapturerSource::GetMediaStreamDispatcherHost() {
+  if (!dispatcher_host_) {
+    ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
+        &dispatcher_host_ptr_);
+    dispatcher_host_ = dispatcher_host_ptr_.get();
+  }
+  return dispatcher_host_;
+};
 
 }  // namespace content

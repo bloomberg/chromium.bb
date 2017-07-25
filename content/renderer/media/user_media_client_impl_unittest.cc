@@ -122,7 +122,14 @@ class MockMojoMediaStreamDispatcherHost
 
   MOCK_METHOD2(CancelGenerateStream, void(int32_t, int32_t));
   MOCK_METHOD2(StopStreamDevice, void(int32_t, const std::string&));
+  MOCK_METHOD5(OpenDevice,
+               void(int32_t,
+                    int32_t,
+                    const std::string&,
+                    MediaStreamType,
+                    const url::Origin&));
   MOCK_METHOD1(CloseDevice, void(const std::string&));
+  MOCK_METHOD3(SetCapturingLinkSecured, void(int32_t, MediaStreamType, bool));
   MOCK_METHOD1(StreamStarted, void(const std::string&));
 };
 

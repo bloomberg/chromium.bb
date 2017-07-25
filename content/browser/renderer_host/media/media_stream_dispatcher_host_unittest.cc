@@ -130,8 +130,8 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                     const url::Origin& security_origin,
                     const base::Closure& quit_closure) {
     quit_closures_.push(quit_closure);
-    MediaStreamDispatcherHost::OnOpenDevice(
-        render_frame_id, page_request_id, device_id, type, security_origin);
+    MediaStreamDispatcherHost::OpenDevice(render_frame_id, page_request_id,
+                                          device_id, type, security_origin);
   }
 
   void OnStreamStarted(const std::string label) {

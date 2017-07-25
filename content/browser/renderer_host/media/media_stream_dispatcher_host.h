@@ -69,22 +69,21 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                         const StreamControls& controls,
                         const url::Origin& security_origin,
                         bool user_gesture);
-  void OnOpenDevice(int render_frame_id,
-                    int page_request_id,
-                    const std::string& device_id,
-                    MediaStreamType type,
-                    const url::Origin& security_origin);
-  // Set if the video capturing is secure.
-  void OnSetCapturingLinkSecured(int session_id,
-                                 MediaStreamType type,
-                                 bool is_secure);
 
   // mojom::MediaStreamDispatcherHost implementation
   void CancelGenerateStream(int32_t render_frame_id,
                             int32_t request_id) override;
   void StopStreamDevice(int32_t render_frame_id,
                         const std::string& device_id) override;
+  void OpenDevice(int32_t render_frame_id,
+                  int32_t request_id,
+                  const std::string& device_id,
+                  MediaStreamType type,
+                  const url::Origin& security_origin) override;
   void CloseDevice(const std::string& label) override;
+  void SetCapturingLinkSecured(int32_t session_id,
+                               MediaStreamType type,
+                               bool is_secure) override;
   void StreamStarted(const std::string& label) override;
 
   int render_process_id_;

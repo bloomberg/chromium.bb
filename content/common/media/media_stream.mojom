@@ -4,6 +4,20 @@
 
 module content.mojom;
 
+import "url/mojo/origin.mojom";
+
+// Types of media streams (see content/public/common/media_stream_request.h).
+enum MediaStreamType {
+  MEDIA_NO_SERVICE,
+  MEDIA_DEVICE_AUDIO_CAPTURE,
+  MEDIA_DEVICE_VIDEO_CAPTURE,
+  MEDIA_TAB_AUDIO_CAPTURE,
+  MEDIA_TAB_VIDEO_CAPTURE,
+  MEDIA_DESKTOP_VIDEO_CAPTURE,
+  MEDIA_DESKTOP_AUDIO_CAPTURE,
+  NUM_MEDIA_TYPES
+};
+
 interface MediaStreamDispatcherHost {
   // TODO(c.padhi): Migrate the rest of the messages, https://crbug.com/742682.
 
@@ -13,8 +27,23 @@ interface MediaStreamDispatcherHost {
   // Closes a stream device that has been opened by GenerateStream.
   StopStreamDevice(int32 render_frame_id, string device_id);
 
+  // Opens a device identified by |device_id|.
+  OpenDevice(int32 render_frame_id, int32 request_id, string device_id,
+             MediaStreamType type, url.mojom.Origin security_origin);
+
   // Cancels an open request identified by |label|.
   CloseDevice(string label);
+
+  // Tells the browser process if the video capture is secure (i.e., all
+  // connected video sinks meet the requirement of output protection.).
+  // Note: the browser process only trusts the |is_secure| value in this Mojo
+  // message if it's comimg from a trusted, whitelisted extension. Extensions
+  // run in separate render processes. So it shouldn't be possible, for example,
+  // for a user's visit to a malicious web page to compromise a render process
+  // running a trusted extension to make it report falsehood in this Mojo
+  // message.
+  SetCapturingLinkSecured(int32 session_id, MediaStreamType type,
+                          bool is_secure);
 
   // Tells the browser process that the stream has been started successfully.
   StreamStarted(string label);
