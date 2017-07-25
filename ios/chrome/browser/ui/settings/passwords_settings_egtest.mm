@@ -408,10 +408,6 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 }
 
 // Verifies the UI elements are accessible on the Passwords page.
-// TODO(crbug.com/159166): This differs from testAccessibilityOnPasswords in
-// settings_egtest.mm in that here this tests the new UI (for viewing
-// passwords), where in settings_egtest.mm the default (old) UI is tested.
-// Once the new is the default, just remove the test in settings_egtest.mm.
 - (void)testAccessibilityOnPasswords {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
