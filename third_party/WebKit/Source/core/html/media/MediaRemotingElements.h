@@ -22,14 +22,14 @@ class MediaRemotingExitButtonElement final : public HTMLDivElement {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  class PointerEventsListener;
+  class MouseEventsListener;
 
   Member<MediaRemotingInterstitial> interstitial_;
   // A document event listener to listen to the mouse clicking events while
   // media remoting is ongoing. This listener is used instead of the
   // DefaultEventHandler() to avoid other web sites stopping propagating the
   // events. It will be removed once media remoting stops.
-  Member<PointerEventsListener> listener_;
+  Member<MouseEventsListener> listener_;
 };
 
 // A text message shown to indicate media remoting is ongoing.
