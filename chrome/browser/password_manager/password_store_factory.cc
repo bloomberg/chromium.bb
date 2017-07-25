@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -35,7 +36,6 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_manager_util_win.h"
@@ -157,13 +157,12 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 
   scoped_refptr<base::SequencedTaskRunner> main_thread_runner(
       base::SequencedTaskRunnerHandle::Get());
-  scoped_refptr<base::SequencedTaskRunner> db_thread_runner(
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::DB));
-
   scoped_refptr<PasswordStore> ps;
 #if defined(OS_WIN)
-  ps = new PasswordStoreWin(main_thread_runner, db_thread_runner,
+  scoped_refptr<base::SequencedTaskRunner> background_thread_runner(
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
+  ps = new PasswordStoreWin(main_thread_runner, background_thread_runner,
                             std::move(login_db),
                             WebDataServiceFactory::GetPasswordWebDataForProfile(
                                 profile, ServiceAccessType::EXPLICIT_ACCESS));
@@ -173,8 +172,11 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // For now, we use PasswordStoreDefault. We might want to make a native
   // backend for PasswordStoreX (see below) in the future though.
+  scoped_refptr<base::SequencedTaskRunner> background_thread_runner(
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
   ps = new password_manager::PasswordStoreDefault(
-      main_thread_runner, db_thread_runner, std::move(login_db));
+      main_thread_runner, background_thread_runner, std::move(login_db));
 #elif defined(USE_X11)
   // On POSIX systems, we try to use the "native" password management system of
   // the desktop environment currently running, allowing GNOME Keyring in XFCE.
@@ -260,8 +262,11 @@ PasswordStoreFactory::BuildServiceInstanceFor(
                           backend.release());
   RecordBackendStatistics(desktop_env, store_type, used_backend);
 #elif defined(USE_OZONE)
+  scoped_refptr<base::SequencedTaskRunner> background_thread_runner(
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
   ps = new password_manager::PasswordStoreDefault(
-      main_thread_runner, db_thread_runner, std::move(login_db));
+      main_thread_runner, background_thread_runner, std::move(login_db));
 #else
   NOTIMPLEMENTED();
 #endif

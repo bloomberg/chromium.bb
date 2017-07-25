@@ -26,7 +26,7 @@ class PasswordStoreWin : public password_manager::PasswordStoreDefault {
   // IE7 password fetching.
   PasswordStoreWin(
       scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
-      scoped_refptr<base::SequencedTaskRunner> db_thread_runner,
+      scoped_refptr<base::SequencedTaskRunner> background_thread_runner,
       std::unique_ptr<password_manager::LoginDatabase> login_db,
       const scoped_refptr<PasswordWebDataService>& web_data_service);
 
@@ -38,8 +38,8 @@ class PasswordStoreWin : public password_manager::PasswordStoreDefault {
 
   ~PasswordStoreWin() override;
 
-  // Invoked from ShutdownOnUIThread, but run on the DB thread.
-  void ShutdownOnDBThread();
+  // Invoked from ShutdownOnUIThread, but run on the background thread.
+  void ShutdownOnBackgroundThread();
 
   // password_manager::PasswordStore:
   void GetLoginsImpl(const password_manager::PasswordStore::FormDigest& form,
