@@ -42,6 +42,9 @@ const bool kXmppUseTls = true;
 // Interval at which to log performance statistics, if enabled.
 const int kPerfStatsIntervalMs = 60000;
 
+// Default DPI to assume for old clients that use notifyClientResolution.
+const int kDefaultDPI = 96;
+
 }  // namespace
 
 ChromotingSession::ChromotingSession(
@@ -233,6 +236,30 @@ void ChromotingSession::SendTouchEvent(
   }
 
   client_->input_stub()->InjectTouchEvent(touch_event);
+}
+
+void ChromotingSession::SendClientResolution(int dips_width,
+                                             int dips_height,
+                                             int scale) {
+  if (!runtime_->network_task_runner()->BelongsToCurrentThread()) {
+    runtime_->network_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&ChromotingSession::SendClientResolution,
+                              GetWeakPtr(), dips_width, dips_height, scale));
+    return;
+  }
+
+  protocol::ClientResolution client_resolution;
+  client_resolution.set_dips_width(dips_width);
+  client_resolution.set_dips_height(dips_height);
+  client_resolution.set_x_dpi(scale * kDefaultDPI);
+  client_resolution.set_y_dpi(scale * kDefaultDPI);
+
+  // Include the legacy width & height in physical pixels for use by older
+  // hosts.
+  client_resolution.set_width_deprecated(dips_width * scale);
+  client_resolution.set_height_deprecated(dips_height * scale);
+
+  client_->host_stub()->NotifyClientResolution(client_resolution);
 }
 
 void ChromotingSession::EnableVideoChannel(bool enable) {

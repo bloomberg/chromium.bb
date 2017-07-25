@@ -335,6 +335,11 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
                                             frame.size.height);
 }
 
+- (void)setHostResolution:(CGSize)dipsResolution scale:(int)scale {
+  _session->SendClientResolution(dipsResolution.width, dipsResolution.height,
+                                 scale);
+}
+
 #pragma mark - GlDisplayHandlerDelegate
 
 - (void)canvasSizeChanged:(CGSize)size {

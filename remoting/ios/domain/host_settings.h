@@ -19,6 +19,7 @@ typedef NS_ENUM(NSInteger, ClientInputMode) {
 // Various properties of the Remoting Settings.
 @property(nonatomic, copy) NSString* hostId;
 @property(nonatomic) ClientInputMode inputMode;
+@property(nonatomic) BOOL shouldResizeHostToFit;
 
 @end
 
