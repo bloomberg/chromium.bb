@@ -60,11 +60,12 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
  private:
   friend class SiteSettingsHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, DefaultSettingSource);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetDefault);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Origins);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ExceptionHelpers);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Patterns);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetDefault);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Incognito);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Origins);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Patterns);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetOriginPermissions);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ZoomLevels);
 
   // Asynchronously fetches the usage for a given origin. Replies back with
@@ -87,13 +88,15 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // Returns the list of site exceptions for a given content settings type.
   void HandleGetExceptionList(const base::ListValue* args);
 
-  // Handles setting and resetting an origin permission.
-  void HandleResetCategoryPermissionForOrigin(const base::ListValue* args);
-  void HandleSetCategoryPermissionForOrigin(const base::ListValue* args);
-
-  // Retrieves the content settings for a given list of ContentSettingTypes for
-  // an origin.
+  // Gets and sets a list of ContentSettingTypes for an origin.
+  // TODO(https://crbug.com/739241): Investigate replacing the
+  // '*CategoryPermissionForOrigin' equivalents below with these methods.
   void HandleGetOriginPermissions(const base::ListValue* args);
+  void HandleSetOriginPermissions(const base::ListValue* args);
+
+  // Handles setting and resetting an origin permission.
+  void HandleResetCategoryPermissionForPattern(const base::ListValue* args);
+  void HandleSetCategoryPermissionForPattern(const base::ListValue* args);
 
   // Returns whether a given pattern is valid.
   void HandleIsPatternValid(const base::ListValue* args);

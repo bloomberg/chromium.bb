@@ -74,13 +74,8 @@ TEST(ContentSettingsUtilsTest, ContentSettingsStringMap) {
     EXPECT_EQ(kContentSettingNames[i], setting_string);
 
     ContentSetting converted_setting;
-    if (i == 0) {
-      EXPECT_FALSE(ContentSettingFromString(
-          kContentSettingNames[i], &converted_setting));
-    } else {
-      EXPECT_TRUE(ContentSettingFromString(
-          kContentSettingNames[i], &converted_setting));
-    }
+    EXPECT_TRUE(
+        ContentSettingFromString(kContentSettingNames[i], &converted_setting));
     EXPECT_EQ(setting, converted_setting);
   }
 }

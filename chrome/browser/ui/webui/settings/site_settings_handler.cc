@@ -230,12 +230,16 @@ void SiteSettingsHandler::RegisterMessages() {
       base::Bind(&SiteSettingsHandler::HandleGetOriginPermissions,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "resetCategoryPermissionForOrigin",
-      base::Bind(&SiteSettingsHandler::HandleResetCategoryPermissionForOrigin,
+      "setOriginPermissions",
+      base::Bind(&SiteSettingsHandler::HandleSetOriginPermissions,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "setCategoryPermissionForOrigin",
-      base::Bind(&SiteSettingsHandler::HandleSetCategoryPermissionForOrigin,
+      "resetCategoryPermissionForPattern",
+      base::Bind(&SiteSettingsHandler::HandleResetCategoryPermissionForPattern,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setCategoryPermissionForPattern",
+      base::Bind(&SiteSettingsHandler::HandleSetCategoryPermissionForPattern,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "isPatternValid",
@@ -582,7 +586,38 @@ void SiteSettingsHandler::HandleGetOriginPermissions(
   ResolveJavascriptCallback(*callback_id, *exceptions);
 }
 
-void SiteSettingsHandler::HandleResetCategoryPermissionForOrigin(
+void SiteSettingsHandler::HandleSetOriginPermissions(
+    const base::ListValue* args) {
+  CHECK_EQ(3U, args->GetSize());
+  std::string origin;
+  CHECK(args->GetString(0, &origin));
+  const base::ListValue* types;
+  CHECK(args->GetList(1, &types));
+  std::string value;
+  CHECK(args->GetString(2, &value));
+
+  const GURL origin_url(origin);
+  ContentSetting setting;
+  CHECK(content_settings::ContentSettingFromString(value, &setting));
+  for (size_t i = 0; i < types->GetSize(); ++i) {
+    std::string type;
+    types->GetString(i, &type);
+
+    ContentSettingsType content_type =
+        site_settings::ContentSettingsTypeFromGroupName(type);
+    HostContentSettingsMap* map =
+        HostContentSettingsMapFactory::GetForProfile(profile_);
+
+    PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+        profile_, origin_url, origin_url, content_type,
+        PermissionSourceUI::SITE_SETTINGS);
+    map->SetContentSettingDefaultScope(origin_url, origin_url, content_type,
+                                       std::string(), setting);
+    WebSiteSettingsUmaUtil::LogPermissionChange(content_type, setting);
+  }
+}
+
+void SiteSettingsHandler::HandleResetCategoryPermissionForPattern(
     const base::ListValue* args) {
   CHECK_EQ(4U, args->GetSize());
   std::string primary_pattern_string;
@@ -626,7 +661,7 @@ void SiteSettingsHandler::HandleResetCategoryPermissionForOrigin(
       content_type, ContentSetting::CONTENT_SETTING_DEFAULT);
 }
 
-void SiteSettingsHandler::HandleSetCategoryPermissionForOrigin(
+void SiteSettingsHandler::HandleSetCategoryPermissionForPattern(
     const base::ListValue* args) {
   CHECK_EQ(5U, args->GetSize());
   std::string primary_pattern_string;

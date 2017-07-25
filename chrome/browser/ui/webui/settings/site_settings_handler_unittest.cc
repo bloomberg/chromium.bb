@@ -302,7 +302,7 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
     set_args.AppendString("block");
     set_args.AppendBoolean(false);  // Incognito.
     base::HistogramTester histograms;
-    handler()->HandleSetCategoryPermissionForOrigin(&set_args);
+    handler()->HandleSetCategoryPermissionForPattern(&set_args);
     EXPECT_EQ(1U, web_ui()->call_data().size());
     histograms.ExpectTotalCount(kUmaBase, 1);
     histograms.ExpectTotalCount(kUmaBase + ".Allowed", 0);
@@ -310,26 +310,12 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
     histograms.ExpectTotalCount(kUmaBase + ".Reset", 0);
   }
 
-  // If the change was successful, it should show up in the response from
-  // getExceptionList() as well as getOriginPermissions().
-  // Check getOriginPermissions().
-  base::ListValue get_origin_permissions_args;
-  get_origin_permissions_args.AppendString(kCallbackId);
-  get_origin_permissions_args.AppendString(google);
-  {
-    auto category_list = base::MakeUnique<base::ListValue>();
-    category_list->AppendString("notifications");
-    get_origin_permissions_args.Append(std::move(category_list));
-  }
-  handler()->HandleGetOriginPermissions(&get_origin_permissions_args);
-  ValidateOrigin(google, google, google, "block", "preference", 2U);
-
-  // Check getExceptionList().
+  // Check the blocked permission shows up in getExceptionList().
   base::ListValue get_exception_list_args;
   get_exception_list_args.AppendString(kCallbackId);
   get_exception_list_args.AppendString("notifications");
   handler()->HandleGetExceptionList(&get_exception_list_args);
-  ValidateOrigin(google, google, google, "block", "preference", 3U);
+  ValidateOrigin(google, google, google, "block", "preference", 2U);
 
   {
     // Reset things back to how they were.
@@ -339,8 +325,8 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
     reset_args.AppendString("notifications");
     reset_args.AppendBoolean(false);  // Incognito.
     base::HistogramTester histograms;
-    handler()->HandleResetCategoryPermissionForOrigin(&reset_args);
-    EXPECT_EQ(4U, web_ui()->call_data().size());
+    handler()->HandleResetCategoryPermissionForPattern(&reset_args);
+    EXPECT_EQ(3U, web_ui()->call_data().size());
     histograms.ExpectTotalCount(kUmaBase, 1);
     histograms.ExpectTotalCount(kUmaBase + ".Allowed", 0);
     histograms.ExpectTotalCount(kUmaBase + ".Blocked", 0);
@@ -349,11 +335,7 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
 
   // Verify the reset was successful.
   handler()->HandleGetExceptionList(&get_exception_list_args);
-  ValidateNoOrigin(5U);
-
-  handler()->HandleGetOriginPermissions(&get_origin_permissions_args);
-  // "Ask" is the default value for Notifications.
-  ValidateOrigin(google, google, google, "ask", "default", 6U);
+  ValidateNoOrigin(4U);
 }
 
 TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
@@ -386,7 +368,7 @@ TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
   set_notification_pattern_args.AppendString("notifications");
   set_notification_pattern_args.AppendString("allow");
   set_notification_pattern_args.AppendBoolean(false);
-  handler()->HandleSetCategoryPermissionForOrigin(
+  handler()->HandleSetCategoryPermissionForPattern(
       &set_notification_pattern_args);
   // A user-set pattern should not show up as default.
   handler()->HandleGetOriginPermissions(&get_origin_permissions_args);
@@ -398,7 +380,7 @@ TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
   set_notification_origin_args.AppendString("notifications");
   set_notification_origin_args.AppendString("block");
   set_notification_origin_args.AppendBoolean(false);
-  handler()->HandleSetCategoryPermissionForOrigin(
+  handler()->HandleSetCategoryPermissionForPattern(
       &set_notification_origin_args);
   // A user-set per-origin permission should not show up as default.
   handler()->HandleGetOriginPermissions(&get_origin_permissions_args);
@@ -408,6 +390,47 @@ TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
   source_setter.SetPolicyDefault(CONTENT_SETTING_ALLOW);
   handler()->HandleGetOriginPermissions(&get_origin_permissions_args);
   ValidateOrigin(google, google, google, "allow", "policy", 8U);
+}
+
+TEST_F(SiteSettingsHandlerTest, GetAndSetOriginPermissions) {
+  const std::string origin("https://www.example.com");
+  base::ListValue get_args;
+  get_args.AppendString(kCallbackId);
+  get_args.AppendString(origin);
+  {
+    auto category_list = base::MakeUnique<base::ListValue>();
+    category_list->AppendString("notifications");
+    get_args.Append(std::move(category_list));
+  }
+  handler()->HandleGetOriginPermissions(&get_args);
+  ValidateOrigin(origin, origin, origin, "ask", "default", 1U);
+
+  // Block notifications.
+  base::ListValue set_args;
+  set_args.AppendString(origin);
+  {
+    auto category_list = base::MakeUnique<base::ListValue>();
+    category_list->AppendString("notifications");
+    set_args.Append(std::move(category_list));
+  }
+  set_args.AppendString("block");
+  handler()->HandleSetOriginPermissions(&set_args);
+  EXPECT_EQ(2U, web_ui()->call_data().size());
+
+  // Reset things back to how they were.
+  base::ListValue reset_args;
+  reset_args.AppendString(origin);
+  auto category_list = base::MakeUnique<base::ListValue>();
+  category_list->AppendString("notifications");
+  reset_args.Append(std::move(category_list));
+  reset_args.AppendString("default");
+
+  handler()->HandleSetOriginPermissions(&reset_args);
+  EXPECT_EQ(3U, web_ui()->call_data().size());
+
+  // Verify the reset was successful.
+  handler()->HandleGetOriginPermissions(&get_args);
+  ValidateOrigin(origin, origin, origin, "ask", "default", 4U);
 }
 
 TEST_F(SiteSettingsHandlerTest, ExceptionHelpers) {
@@ -436,7 +459,7 @@ TEST_F(SiteSettingsHandlerTest, ExceptionHelpers) {
 
   // We don't need to check the results. This is just to make sure it doesn't
   // crash on the input.
-  handler()->HandleSetCategoryPermissionForOrigin(&args);
+  handler()->HandleSetCategoryPermissionForPattern(&args);
 
   scoped_refptr<const extensions::Extension> extension;
   extension = extensions::ExtensionBuilder()
@@ -462,7 +485,7 @@ TEST_F(SiteSettingsHandlerTest, ExceptionHelpers) {
   CHECK(dictionary->GetBoolean(site_settings::kIncognito, &incognito));
 
   // Again, don't need to check the results.
-  handler()->HandleSetCategoryPermissionForOrigin(&args);
+  handler()->HandleSetCategoryPermissionForPattern(&args);
 }
 
 TEST_F(SiteSettingsHandlerTest, Patterns) {

@@ -73,14 +73,14 @@ Polymer({
         /** @type{!NodeList<!SiteDetailsPermissionElement>} */
         (this.root.querySelectorAll('site-details-permission'));
     var categoryList =
-        /** @type{!Array<!string>} */ (
-            Array.prototype.map.call(siteDetailsPermissions, function(element) {
+        /** @type{!Array<string>} */ (
+            Array.prototype.map.call(siteDetailsPermissions, (element) => {
               return element.category;
             }));
 
     this.browserProxy.getOriginPermissions(this.origin, categoryList)
-        .then(function(exceptionList) {
-          exceptionList.forEach(function(exception, i) {
+        .then((exceptionList) => {
+          exceptionList.forEach((exception, i) => {
             // |exceptionList| should be in the same order as |categoryList|,
             // which is in the same order as |siteDetailsPermissions|.
             siteDetailsPermissions[i].site =
@@ -120,10 +120,8 @@ Polymer({
    * @private
    */
   onUsageDeleted_: function(event) {
-    if (event.detail.origin == this.toUrl(this.origin).href) {
+    if (event.detail.origin == this.toUrl(this.origin).href)
       this.storedData_ = '';
-      this.navigateBackIfNoData_();
-    }
   },
 
   /**
@@ -131,35 +129,14 @@ Polymer({
    * @private
    */
   onClearAndReset_: function() {
-    this.root.querySelectorAll('site-details-permission')
-        .forEach(function(element) {
-          element.resetPermission();
-        });
+    var categoryList = /** @type {!Array<string>} */ (Array.prototype.map.call(
+        this.root.querySelectorAll('site-details-permission'), (element) => {
+          return element.category;
+        }));
+    this.browserProxy.setOriginPermissions(
+        this.origin, categoryList, settings.ContentSetting.DEFAULT);
 
     if (this.storedData_ != '')
       this.onClearStorage_();
-    else
-      this.navigateBackIfNoData_();
-  },
-
-  /**
-   * Navigate back if the UI is empty (everything been cleared).
-   * @private
-   */
-  navigateBackIfNoData_: function() {
-    if (this.storedData_ == '' && !this.permissionShowing_())
-      settings.navigateToPreviousRoute();
-  },
-
-  /**
-   * Returns true if one or more permission is showing.
-   * @private
-   */
-  permissionShowing_: function() {
-    return Array.prototype.some.call(
-        this.root.querySelectorAll('site-details-permission'),
-        function(element) {
-          return element.offsetHeight > 0;
-        });
   },
 });

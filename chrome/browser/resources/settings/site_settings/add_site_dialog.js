@@ -85,7 +85,7 @@ Polymer({
   onSubmit_: function() {
     if (this.$.add.disabled)
       return;  // Can happen when Enter is pressed.
-    this.browserProxy.setCategoryPermissionForOrigin(
+    this.browserProxy.setCategoryPermissionForPattern(
         this.site_, this.site_, this.category, this.contentSetting,
         this.$.incognito.checked);
     this.$.dialog.close();
