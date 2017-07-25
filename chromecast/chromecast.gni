@@ -77,22 +77,37 @@ cast_locales = locales
 
 # These templates are a temporary fix fo link libc++ into shared libraries and
 # executables. These should be removed as soon as crbug.com/746091 is resolved.
-template("cast_shared_library") {
-  shared_library(target_name) {
-    forward_variables_from(invoker, "*")
-    if (!defined(deps)) {
-      deps = []
+foreach(target_type,
+        [
+          "executable",
+          "shared_library",
+          "loadable_module",
+        ]) {
+  template("cast_${target_type}") {
+    target(target_type, target_name) {
+      forward_variables_from(invoker, "*")
+      if (!defined(deps)) {
+        deps = []
+      }
+      deps += [ "//build/config:exe_and_shlib_deps" ]
     }
-    deps += [ "//build/config:exe_and_shlib_deps" ]
   }
 }
 
-template("cast_executable") {
-  executable(target_name) {
-    forward_variables_from(invoker, "*")
-    if (!defined(deps)) {
-      deps = []
-    }
-    deps += [ "//build/config:exe_and_shlib_deps" ]
+# Set the defaults for each target. The defaults for these target wrappers
+# should match their unwrapped counterparts in BUILDCONFIG.gn. The variables
+# referenced below are declared in BUILDCONFIG.gn.
+set_defaults("cast_executable") {
+  configs = default_executable_configs
+}
+
+set_defaults("cast_shared_library") {
+  configs = default_shared_library_configs
+}
+
+set_defaults("cast_loadable_module") {
+  configs = default_shared_library_configs
+  if (is_android) {
+    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
   }
 }
