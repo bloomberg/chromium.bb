@@ -47,11 +47,13 @@ message DownloadFileType {
     PLATFORM_WINDOWS = 5;
   }
 
-  // Next id: 4
+  // Next id: 5
   message PlatformSettings {
     optional PlatformType platform = 1 [default = PLATFORM_ANY];
     optional DangerLevel danger_level = 2;  // required
     optional AutoOpenHint auto_open_hint = 3;  // required
+    optional uint64 max_file_size_to_analyze = 4
+        [default = 18446744073709551615];  // (2^64)-1]
   };
 
   // Protos parsed by Chrome should have exactly one entry here.

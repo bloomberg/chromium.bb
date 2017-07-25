@@ -798,12 +798,24 @@ class DownloadProtectionService::CheckClientDownloadRequest
   void StartExtractDmgFeatures() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(item_);
-    dmg_analyzer_ = new SandboxedDMGAnalyzer(
-        item_->GetFullPath(),
-        base::Bind(&CheckClientDownloadRequest::OnDmgAnalysisFinished,
-                   weakptr_factory_.GetWeakPtr()));
-    dmg_analyzer_->Start();
-    dmg_analysis_start_time_ = base::TimeTicks::Now();
+
+    // Directly use 'dmg' extension since download file may not have any
+    // extension, but has still been deemed a DMG through file type sniffing.
+    bool too_big_to_unpack =
+        base::checked_cast<uint64_t>(item_->GetTotalBytes()) >
+        FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("dmg");
+    UMA_HISTOGRAM_BOOLEAN("SBClientDownload.DmgTooBigToUnpack",
+                          too_big_to_unpack);
+    if (too_big_to_unpack) {
+      OnFileFeatureExtractionDone();
+    } else {
+      dmg_analyzer_ = new SandboxedDMGAnalyzer(
+          item_->GetFullPath(),
+          base::Bind(&CheckClientDownloadRequest::OnDmgAnalysisFinished,
+                     weakptr_factory_.GetWeakPtr()));
+      dmg_analyzer_->Start();
+      dmg_analysis_start_time_ = base::TimeTicks::Now();
+    }
   }
 
   // Extracts DMG features if file has 'koly' signature, otherwise extracts
