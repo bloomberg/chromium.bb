@@ -145,8 +145,9 @@ public class ChildProcessLauncher {
                         public void onChildStarted() {}
 
                         @Override
-                        public void onChildStartFailed() {
+                        public void onChildStartFailed(ChildProcessConnection connection) {
                             assert isRunningOnLauncherThread();
+                            assert mConnection == connection;
                             Log.e(TAG, "ChildProcessConnection.start failed, trying again");
                             mLauncherHandler.post(new Runnable() {
                                 @Override
