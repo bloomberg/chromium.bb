@@ -199,7 +199,7 @@ cr.define('cr.ui', function() {
    * Show user-pods.
    */
   Oobe.showUserPods = function() {
-    $('pod-row').loadLastWallpaper();
+    $('pod-row').maybePreselectPod();
     Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
     Oobe.resetSigninUI(true);
   };

@@ -3519,9 +3519,10 @@ cr.define('login', function() {
           podToFocus.focus();
         }
 
-        // focusPod() automatically loads wallpaper
         if (!podToFocus.user.isApp)
-          chrome.send('focusPod', [podToFocus.user.username]);
+          chrome.send(
+              'focusPod',
+              [podToFocus.user.username, true /* loads wallpaper */]);
         this.firstShown_ = false;
         this.lastFocusedPod_ = podToFocus;
         this.scrollFocusedPodIntoView();
@@ -3531,14 +3532,6 @@ cr.define('login', function() {
         chrome.send('noPodFocused');
       }
       this.insideFocusPod_ = false;
-    },
-
-    /**
-     * Resets wallpaper to the last active user's wallpaper, if any.
-     */
-    loadLastWallpaper: function() {
-      if (this.lastFocusedPod_ && !this.lastFocusedPod_.user.isApp)
-        chrome.send('loadWallpaper', [this.lastFocusedPod_.user.username]);
     },
 
     /**
