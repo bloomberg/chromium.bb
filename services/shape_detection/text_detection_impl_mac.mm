@@ -8,20 +8,12 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
-#include "media/capture/video/scoped_result_callback.h"
+#include "media/base/scoped_callback_runner.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shape_detection/detection_utils_mac.h"
 #include "services/shape_detection/text_detection_impl.h"
 
 namespace shape_detection {
-
-namespace {
-
-void RunCallbackWithNoResults(mojom::TextDetection::DetectCallback callback) {
-  std::move(callback).Run({});
-}
-
-}  // anonymous namespace
 
 // static
 void TextDetectionImpl::Create(mojom::TextDetectionRequest request) {
@@ -44,8 +36,8 @@ TextDetectionImplMac::~TextDetectionImplMac() {}
 void TextDetectionImplMac::Detect(const SkBitmap& bitmap,
                                   DetectCallback callback) {
   DCHECK(base::mac::IsAtLeastOS10_11());
-  media::ScopedResultCallback<DetectCallback> scoped_callback(
-      std::move(callback), base::Bind(&RunCallbackWithNoResults));
+  DetectCallback scoped_callback = media::ScopedCallbackRunner(
+      std::move(callback), std::vector<mojom::TextDetectionResultPtr>());
 
   base::scoped_nsobject<CIImage> ci_image = CreateCIImageFromSkBitmap(bitmap);
   if (!ci_image)
@@ -67,7 +59,7 @@ void TextDetectionImplMac::Detect(const SkBitmap& bitmap,
     result->bounding_box = std::move(boundingbox);
     results.push_back(std::move(result));
   }
-  scoped_callback.Run(std::move(results));
+  std::move(scoped_callback).Run(std::move(results));
 }
 
 }  // namespace shape_detection

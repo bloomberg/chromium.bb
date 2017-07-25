@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/scoped_callback_runner.h"
 #include "media/capture/video/video_capture_device.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -22,9 +23,7 @@ namespace content {
 
 namespace {
 
-void RunFailedGetPhotoStateCallback(
-    ImageCaptureImpl::GetPhotoStateCallback cb) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+media::mojom::PhotoStatePtr MakeEmptyCapabilities() {
   media::mojom::PhotoStatePtr empty_capabilities =
       media::mojom::PhotoState::New();
   empty_capabilities->iso = media::mojom::Range::New();
@@ -37,24 +36,12 @@ void RunFailedGetPhotoStateCallback(
   empty_capabilities->contrast = media::mojom::Range::New();
   empty_capabilities->saturation = media::mojom::Range::New();
   empty_capabilities->sharpness = media::mojom::Range::New();
-  std::move(cb).Run(std::move(empty_capabilities));
+  return empty_capabilities;
 }
 
-void RunFailedSetOptionsCallback(ImageCaptureImpl::SetOptionsCallback cb) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::move(cb).Run(false);
-}
-
-void RunFailedTakePhotoCallback(ImageCaptureImpl::TakePhotoCallback cb) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::move(cb).Run(media::mojom::Blob::New());
-}
-
-void GetPhotoStateOnIOThread(
-    const std::string& source_id,
-    MediaStreamManager* media_stream_manager,
-    media::ScopedResultCallback<ImageCaptureImpl::GetPhotoStateCallback>
-        callback) {
+void GetPhotoStateOnIOThread(const std::string& source_id,
+                             MediaStreamManager* media_stream_manager,
+                             ImageCaptureImpl::GetPhotoStateCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
 // TODO(mcasas): Enable PhotoState collection in Windows when understood why it
@@ -70,12 +57,10 @@ void GetPhotoStateOnIOThread(
 #endif
 }
 
-void SetOptionsOnIOThread(
-    const std::string& source_id,
-    MediaStreamManager* media_stream_manager,
-    media::mojom::PhotoSettingsPtr settings,
-    media::ScopedResultCallback<ImageCaptureImpl::SetOptionsCallback>
-        callback) {
+void SetOptionsOnIOThread(const std::string& source_id,
+                          MediaStreamManager* media_stream_manager,
+                          media::mojom::PhotoSettingsPtr settings,
+                          ImageCaptureImpl::SetOptionsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const int session_id =
@@ -87,10 +72,9 @@ void SetOptionsOnIOThread(
       session_id, std::move(settings), std::move(callback));
 }
 
-void TakePhotoOnIOThread(
-    const std::string& source_id,
-    MediaStreamManager* media_stream_manager,
-    media::ScopedResultCallback<ImageCaptureImpl::TakePhotoCallback> callback) {
+void TakePhotoOnIOThread(const std::string& source_id,
+                         MediaStreamManager* media_stream_manager,
+                         ImageCaptureImpl::TakePhotoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const int session_id =
@@ -122,16 +106,13 @@ void ImageCaptureImpl::GetPhotoState(const std::string& source_id,
                                      GetPhotoStateCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  media::ScopedResultCallback<GetPhotoStateCallback> scoped_callback(
-      media::BindToCurrentLoop(std::move(callback)),
-      media::BindToCurrentLoop(
-          base::BindOnce(&RunFailedGetPhotoStateCallback)));
-
+  GetPhotoStateCallback scoped_callback = media::ScopedCallbackRunner(
+      media::BindToCurrentLoop(std::move(callback)), MakeEmptyCapabilities());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&GetPhotoStateOnIOThread, source_id,
-                 BrowserMainLoop::GetInstance()->media_stream_manager(),
-                 base::Passed(&scoped_callback)));
+      base::BindOnce(&GetPhotoStateOnIOThread, source_id,
+                     BrowserMainLoop::GetInstance()->media_stream_manager(),
+                     std::move(scoped_callback)));
 }
 
 void ImageCaptureImpl::SetOptions(const std::string& source_id,
@@ -139,30 +120,26 @@ void ImageCaptureImpl::SetOptions(const std::string& source_id,
                                   SetOptionsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  media::ScopedResultCallback<SetOptionsCallback> scoped_callback(
-      media::BindToCurrentLoop(std::move(callback)),
-      media::BindToCurrentLoop(base::Bind(&RunFailedSetOptionsCallback)));
-
+  SetOptionsCallback scoped_callback = media::ScopedCallbackRunner(
+      media::BindToCurrentLoop(std::move(callback)), false);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SetOptionsOnIOThread, source_id,
-                 BrowserMainLoop::GetInstance()->media_stream_manager(),
-                 base::Passed(&settings), base::Passed(&scoped_callback)));
+      base::BindOnce(&SetOptionsOnIOThread, source_id,
+                     BrowserMainLoop::GetInstance()->media_stream_manager(),
+                     std::move(settings), std::move(scoped_callback)));
 }
 
 void ImageCaptureImpl::TakePhoto(const std::string& source_id,
                                  TakePhotoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  media::ScopedResultCallback<TakePhotoCallback> scoped_callback(
-      media::BindToCurrentLoop(std::move(callback)),
-      media::BindToCurrentLoop(base::BindOnce(&RunFailedTakePhotoCallback)));
-
+  TakePhotoCallback scoped_callback = media::ScopedCallbackRunner(
+      media::BindToCurrentLoop(std::move(callback)), media::mojom::Blob::New());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&TakePhotoOnIOThread, source_id,
-                 BrowserMainLoop::GetInstance()->media_stream_manager(),
-                 base::Passed(&scoped_callback)));
+      base::BindOnce(&TakePhotoOnIOThread, source_id,
+                     BrowserMainLoop::GetInstance()->media_stream_manager(),
+                     std::move(scoped_callback)));
 }
 
 }  // namespace content

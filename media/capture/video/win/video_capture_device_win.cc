@@ -583,7 +583,7 @@ void VideoCaptureDeviceWin::GetPhotoState(GetPhotoStateCallback callback) {
       capture_format_.frame_size.width(), 0 /* step */);
   photo_capabilities->torch = false;
 
-  callback.Run(std::move(photo_capabilities));
+  std::move(callback).Run(std::move(photo_capabilities));
 }
 
 void VideoCaptureDeviceWin::SetPhotoOptions(
@@ -674,7 +674,7 @@ void VideoCaptureDeviceWin::SetPhotoOptions(
       return;
   }
 
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 bool VideoCaptureDeviceWin::InitializeVideoAndCameraControls() {
@@ -740,7 +740,7 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
 
     mojom::BlobPtr blob = Blobify(buffer, length, format);
     if (blob)
-      cb.Run(std::move(blob));
+      std::move(cb).Run(std::move(blob));
   }
 }
 
