@@ -63,6 +63,7 @@ AudioVideoMetadataExtractor::StreamInfo::~StreamInfo() {}
 
 AudioVideoMetadataExtractor::AudioVideoMetadataExtractor()
     : extracted_(false),
+      has_duration_(false),
       duration_(-1),
       width_(-1),
       height_(-1),
@@ -93,8 +94,10 @@ bool AudioVideoMetadataExtractor::Extract(DataSource* source,
   if (avformat_find_stream_info(format_context, NULL) < 0)
     return false;
 
-  if (format_context->duration != AV_NOPTS_VALUE)
+  if (format_context->duration != AV_NOPTS_VALUE) {
     duration_ = static_cast<double>(format_context->duration) / AV_TIME_BASE;
+    has_duration_ = true;
+  }
 
   stream_infos_.push_back(StreamInfo());
   StreamInfo& container_info = stream_infos_.back();
@@ -142,8 +145,14 @@ bool AudioVideoMetadataExtractor::Extract(DataSource* source,
   return true;
 }
 
+bool AudioVideoMetadataExtractor::has_duration() const {
+  DCHECK(extracted_);
+  return has_duration_;
+}
+
 double AudioVideoMetadataExtractor::duration() const {
   DCHECK(extracted_);
+  DCHECK(has_duration_);
   return duration_;
 }
 
