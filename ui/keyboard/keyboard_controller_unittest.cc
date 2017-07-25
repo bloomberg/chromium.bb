@@ -430,7 +430,6 @@ TEST_P(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   aura::Window* keyboard_container(controller()->GetContainerWindow());
 
   root_window()->AddChild(keyboard_container);
-  keyboard_container->Show();
 
   ShowKeyboard();
 
@@ -629,7 +628,6 @@ TEST_P(KeyboardControllerTest, CloseKeyboard) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
   aura::Window* keyboard_container(controller()->GetContainerWindow());
   root_window()->AddChild(keyboard_container);
-  keyboard_container->Show();
 
   ShowKeyboard();
   EXPECT_TRUE(keyboard_container->IsVisible());
