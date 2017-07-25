@@ -50,6 +50,11 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // Sets a preferred size for the native view attached to this View.
   void SetPreferredSize(const gfx::Size& size);
 
+  // Sets the corner radius for clipping gfx::NativeView. Returns true on
+  // success or false if the platform doesn't support the operation.
+  // NB: This does not interact nicely with fast_resize.
+  bool SetCornerRadius(int corner_radius);
+
   // Fast resizing will move the native view and clip its visible region, this
   // will result in white areas and will not resize the content (so scrollbars
   // will be all wrong and content will flow offscreen). Only use this
@@ -70,7 +75,6 @@ class VIEWS_EXPORT NativeViewHost : public View {
     return fast_resize_at_last_layout_;
   }
 
-  // Accessor for |native_view_|.
   gfx::NativeView native_view() const { return native_view_; }
 
   void NativeViewDestroyed();

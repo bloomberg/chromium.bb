@@ -15,8 +15,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/layer_delegate.h"
-#include "ui/compositor/paint_recorder.h"
+#include "ui/compositor/layer_owner.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -27,6 +26,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/bubble/bubble_window_targeter.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_types.h"
 
@@ -81,54 +81,6 @@ bool MouseMoveDetectorHost::Contains(const gfx::Point& screen_point,
   return false;
 }
 
-// This mask layer clips the bubble's content so that it does not overwrite the
-// rounded bubble corners.
-// TODO(miket): This does not work on Windows. Implement layer masking or
-// alternate solutions if the TrayBubbleView is needed there in the future.
-class TrayBubbleContentMask : public ui::LayerDelegate {
- public:
-  explicit TrayBubbleContentMask(int corner_radius);
-  ~TrayBubbleContentMask() override;
-
-  ui::Layer* layer() { return &layer_; }
-
-  // Overridden from LayerDelegate.
-  void OnPaintLayer(const ui::PaintContext& context) override;
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
-
- private:
-  ui::Layer layer_;
-  int corner_radius_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrayBubbleContentMask);
-};
-
-TrayBubbleContentMask::TrayBubbleContentMask(int corner_radius)
-    : layer_(ui::LAYER_TEXTURED),
-      corner_radius_(corner_radius) {
-  layer_.set_delegate(this);
-  layer_.SetFillsBoundsOpaquely(false);
-}
-
-TrayBubbleContentMask::~TrayBubbleContentMask() {
-  layer_.set_delegate(NULL);
-}
-
-void TrayBubbleContentMask::OnPaintLayer(const ui::PaintContext& context) {
-  ui::PaintRecorder recorder(context, layer()->size());
-  cc::PaintFlags flags;
-  flags.setAlpha(255);
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  gfx::Rect rect(layer()->bounds().size());
-  recorder.canvas()->DrawRoundRect(rect, corner_radius_, flags);
-}
-
-void TrayBubbleContentMask::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {
-  // Redrawing will take care of scale factor change.
-}
-
 // Custom layout for the bubble-view. Does the default box-layout if there is
 // enough height. Otherwise, makes sure the bottom rows are visible.
 class BottomAlignedBoxLayout : public BoxLayout {
@@ -166,7 +118,6 @@ class BottomAlignedBoxLayout : public BoxLayout {
 
 }  // namespace internal
 
-using internal::TrayBubbleContentMask;
 using internal::BottomAlignedBoxLayout;
 
 TrayBubbleView::Delegate::~Delegate() {}
@@ -228,8 +179,9 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   set_margins(gfx::Insets());
   SetPaintToLayer();
 
-  bubble_content_mask_.reset(
-      new TrayBubbleContentMask(bubble_border_->GetBorderCornerRadius()));
+  bubble_content_mask_ = views::Painter::CreatePaintedLayer(
+      views::Painter::CreateSolidRoundRectPainter(
+          SK_ColorBLACK, bubble_border_->GetBorderCornerRadius()));
 
   layout_->SetDefaultFlex(1);
   SetLayoutManager(layout_);

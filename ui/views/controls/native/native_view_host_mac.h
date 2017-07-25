@@ -15,7 +15,7 @@ namespace views {
 class NativeViewHost;
 
 // Mac implementation of NativeViewHostWrapper.
-class VIEWS_EXPORT NativeViewHostMac : public NativeViewHostWrapper {
+class NativeViewHostMac : public NativeViewHostWrapper {
  public:
   explicit NativeViewHostMac(NativeViewHost* host);
   ~NativeViewHostMac() override;
@@ -25,6 +25,7 @@ class VIEWS_EXPORT NativeViewHostMac : public NativeViewHostWrapper {
   void NativeViewDetaching(bool destroyed) override;
   void AddedToWidget() override;
   void RemovedFromWidget() override;
+  bool SetCornerRadius(int corner_radius) override;
   void InstallClip(int x, int y, int w, int h) override;
   bool HasInstalledClip() override;
   void UninstallClip() override;

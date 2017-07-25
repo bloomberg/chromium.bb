@@ -445,14 +445,13 @@ void Layer::SetLayerInverted(bool inverted) {
 }
 
 void Layer::SetMaskLayer(Layer* layer_mask) {
-  // The provided mask should not have a layer mask itself.
-  DCHECK(!layer_mask ||
-         (!layer_mask->layer_mask_layer() &&
-          layer_mask->children().empty() &&
-          !layer_mask->layer_mask_back_link_));
-  DCHECK(!layer_mask_back_link_);
   if (layer_mask_ == layer_mask)
     return;
+  // The provided mask should not have a layer mask itself.
+  DCHECK(!layer_mask ||
+         (!layer_mask->layer_mask_layer() && layer_mask->children().empty() &&
+          !layer_mask->layer_mask_back_link_));
+  DCHECK(!layer_mask_back_link_);
   // We need to de-reference the currently linked object so that no problem
   // arises if the mask layer gets deleted before this object.
   if (layer_mask_)

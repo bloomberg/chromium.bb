@@ -15,7 +15,7 @@ class NativeViewHost;
 // An interface that implemented by an object that wraps a gfx::NativeView on
 // a specific platform, used to perform platform specific operations on that
 // native view when attached, detached, moved and sized.
-class VIEWS_EXPORT NativeViewHostWrapper {
+class NativeViewHostWrapper {
  public:
   virtual ~NativeViewHostWrapper() {}
 
@@ -37,6 +37,10 @@ class VIEWS_EXPORT NativeViewHostWrapper {
   // Called when our associated NativeViewHost is removed from a View hierarchy
   // rooted at a valid Widget.
   virtual void RemovedFromWidget() = 0;
+
+  // Sets the corner radius for clipping gfx::NativeView. Returns true on
+  // success or false if the platform doesn't support the operation.
+  virtual bool SetCornerRadius(int corner_radius) = 0;
 
   // Installs a clip on the gfx::NativeView. These values are in the coordinate
   // space of the Widget, so if this method is called from ShowWidget
