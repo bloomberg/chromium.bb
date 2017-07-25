@@ -240,7 +240,7 @@ void PrintJobWorker::GetSettingsWithUI(
 
   // Running a dialog causes an exit to webpage-initiated fullscreen.
   // http://crbug.com/728276
-  if (web_contents->IsFullscreenForCurrentTab())
+  if (web_contents && web_contents->IsFullscreenForCurrentTab())
     web_contents->ExitFullscreen(true);
 
   // weak_factory_ creates pointers valid only on owner_ thread.
