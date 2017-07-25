@@ -75,8 +75,7 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   void RespondToChangedContents();
   void RespondToChangedSelection(const Position& old_selection_start,
                                  TypingContinuation);
-  Optional<std::pair<Node*, SpellCheckMarker*>>
-  GetSpellCheckMarkerUnderSelection();
+  std::pair<Node*, SpellCheckMarker*> GetSpellCheckMarkerUnderSelection() const;
   // The first String returned in the pair is the selected text.
   // The second String is the marker's description.
   std::pair<String, String> SelectMisspellingAsync();

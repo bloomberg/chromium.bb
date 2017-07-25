@@ -833,8 +833,8 @@ void SpellChecker::RemoveSpellingAndGrammarMarkers(const HTMLElement& element,
   }
 }
 
-Optional<std::pair<Node*, SpellCheckMarker*>>
-SpellChecker::GetSpellCheckMarkerUnderSelection() {
+std::pair<Node*, SpellCheckMarker*>
+SpellChecker::GetSpellCheckMarkerUnderSelection() const {
   const VisibleSelection& selection =
       GetFrame().Selection().ComputeVisibleSelectionInDOMTree();
   if (selection.IsNone())
@@ -926,13 +926,13 @@ std::pair<String, String> SpellChecker::SelectMisspellingAsync() {
 }
 
 void SpellChecker::ReplaceMisspelledRange(const String& text) {
-  const Optional<std::pair<Node*, SpellCheckMarker*>>& node_and_marker =
+  const std::pair<Node*, SpellCheckMarker*>& node_and_marker =
       GetSpellCheckMarkerUnderSelection();
-  if (!node_and_marker)
+  if (!node_and_marker.first)
     return;
 
-  Node* const container_node = node_and_marker.value().first;
-  const SpellCheckMarker* const marker = node_and_marker.value().second;
+  Node* const container_node = node_and_marker.first;
+  const SpellCheckMarker* const marker = node_and_marker.second;
 
   GetFrame().Selection().SetSelection(
       SelectionInDOMTree::Builder()
