@@ -92,7 +92,6 @@ class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
   // The web contents displayed in the constrained window.
   std::unique_ptr<content::WebContents> web_contents_;
   base::scoped_nsobject<ConstrainedWindowCustomWindow> window_;
-  Browser* browser_;
 
   // The dialog modal presentation type.
   ui::ModalType dialog_modal_type_;

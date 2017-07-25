@@ -24,6 +24,11 @@ void SigninViewController::ShowModalSignin(
   signin_view_controller_delegate_ =
       SigninViewControllerDelegate::CreateModalSigninDelegate(
           this, mode, browser, access_point);
+
+  // When the user has a proxy that requires HTTP auth, loading the sign-in
+  // dialog can trigger the HTTP auth dialog.  This means the signin view
+  // controller needs a dialog manager to handle any such dialog.
+  signin_view_controller_delegate_->AttachDialogManager();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGN_IN);
 }
 

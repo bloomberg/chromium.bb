@@ -83,7 +83,6 @@ class SigninViewControllerDelegateViews : public views::DialogDelegateView,
   views::WebView* content_view_;
   views::Widget* modal_signin_widget_;  // Not owned.
   ui::ModalType dialog_modal_type_;
-  Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninViewControllerDelegateViews);
 };
