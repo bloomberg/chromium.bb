@@ -16,7 +16,6 @@
 #include "base/strings/string16.h"
 #include "components/pdf/common/pdf.mojom.h"
 #include "ipc/ipc_platform_file.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/host/resource_host.h"
@@ -37,8 +36,7 @@ namespace pdf {
 
 class PdfAccessibilityTree;
 
-class PepperPDFHost : public ppapi::host::ResourceHost,
-                      public mojom::PdfListener {
+class PepperPDFHost : public ppapi::host::ResourceHost {
  public:
   class PrintClient {
    public:
@@ -73,12 +71,6 @@ class PepperPDFHost : public ppapi::host::ResourceHost,
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 
-  // mojom::PdfListener
-  void SetCaretPosition(const gfx::PointF& position) override;
-  void MoveRangeSelectionExtent(const gfx::PointF& extent) override;
-  void SetSelectionBounds(const gfx::PointF& base,
-                          const gfx::PointF& extent) override;
-
  private:
   int32_t OnHostMsgDidStartLoading(ppapi::host::HostMessageContext* context);
   int32_t OnHostMsgDidStopLoading(ppapi::host::HostMessageContext* context);
@@ -107,11 +99,6 @@ class PepperPDFHost : public ppapi::host::ResourceHost,
       const PP_PrivateAccessibilityPageInfo& page_info,
       const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars);
-  int32_t OnHostMsgSelectionChanged(ppapi::host::HostMessageContext* context,
-                                    const PP_FloatPoint& left,
-                                    int32_t left_height,
-                                    const PP_FloatPoint& right,
-                                    int32_t right_height);
 
   void CreatePdfAccessibilityTreeIfNeeded();
 
@@ -122,7 +109,6 @@ class PepperPDFHost : public ppapi::host::ResourceHost,
   std::unique_ptr<PdfAccessibilityTree> pdf_accessibility_tree_;
   content::RendererPpapiHost* const host_;
   mojom::PdfServiceAssociatedPtr remote_pdf_service_;
-  mojo::Binding<mojom::PdfListener> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPDFHost);
 };
