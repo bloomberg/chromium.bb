@@ -180,18 +180,6 @@ int GetQuicReducedPingTimeoutSeconds(
   return 0;
 }
 
-int GetQuicPacketReaderYieldAfterDurationMilliseconds(
-    const VariationParameters& quic_trial_params) {
-  int value;
-  if (base::StringToInt(
-          GetVariationParam(quic_trial_params,
-                            "packet_reader_yield_after_duration_milliseconds"),
-          &value)) {
-    return value;
-  }
-  return 0;
-}
-
 bool ShouldQuicRaceCertVerification(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -281,12 +269,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
     if (reduced_ping_timeout_seconds > 0 &&
         reduced_ping_timeout_seconds < net::kPingTimeoutSecs) {
       params->quic_reduced_ping_timeout_seconds = reduced_ping_timeout_seconds;
-    }
-    int packet_reader_yield_after_duration_milliseconds =
-        GetQuicPacketReaderYieldAfterDurationMilliseconds(quic_trial_params);
-    if (packet_reader_yield_after_duration_milliseconds != 0) {
-      params->quic_packet_reader_yield_after_duration_milliseconds =
-          packet_reader_yield_after_duration_milliseconds;
     }
     params->quic_race_cert_verification =
         ShouldQuicRaceCertVerification(quic_trial_params);
