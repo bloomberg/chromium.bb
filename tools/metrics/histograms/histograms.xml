@@ -38863,14 +38863,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Net.MimeSniffDeterminedFromFirstRead" enum="Boolean">
-  <owner>jam@chromium.org</owner>
-  <summary>
-    True counts the events when mime sniffing succeeded from the first read.
-    False means that it took more reads to determine the mime type.
-  </summary>
-</histogram>
-
 <histogram name="Net.MTPR_GetProxyForUrl_Thread_Wait_Time" units="ms">
   <obsolete>
     Removed in Chrome 39.

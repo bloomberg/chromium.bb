@@ -175,10 +175,6 @@ class CONTENT_EXPORT MimeSniffingResourceHandler
   int read_buffer_size_;
   int bytes_read_;
 
-  // The mime type that was sniffed the first time we had data.
-  bool sniffed_;
-  std::string first_sniffed_mime_type_;
-
   // Pointers to parent-owned read buffer and its size.  Only used for first
   // OnWillRead call.
   scoped_refptr<net::IOBuffer>* parent_read_buffer_;
