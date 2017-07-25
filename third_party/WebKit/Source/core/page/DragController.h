@@ -58,7 +58,7 @@ class CORE_EXPORT DragController final
 
   DragSession DragEnteredOrUpdated(DragData*, LocalFrame& local_root);
   void DragExited(DragData*, LocalFrame& local_root);
-  bool PerformDrag(DragData*, LocalFrame& local_root);
+  void PerformDrag(DragData*, LocalFrame& local_root);
 
   enum SelectionDragPolicy {
     kImmediateSelectionDragResolution,

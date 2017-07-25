@@ -265,6 +265,10 @@ class CORE_EXPORT EventHandler final
 
   bool IsTouchPointerIdActiveOnFrame(int, LocalFrame*) const;
 
+  // Clears drag target and related states. It is called when drag is done or
+  // canceled.
+  void ClearDragState();
+
  private:
   WebInputEventResult HandleMouseMoveOrLeaveEvent(
       const WebMouseEvent&,
@@ -316,10 +320,6 @@ class CORE_EXPORT EventHandler final
       const String& canvas_region_id,
       const WebMouseEvent&,
       const Vector<WebMouseEvent>& coalesced_events);
-
-  // Clears drag target and related states. It is called when drag is done or
-  // canceled.
-  void ClearDragState();
 
   WebInputEventResult PassMousePressEventToSubframe(
       MouseEventWithHitTestResults&,
