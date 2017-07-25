@@ -24,6 +24,11 @@ using testing::Mock;
 namespace cc {
 namespace {
 
+// An arbitrary size guaranteed to fit the size of any serialized op in this
+// unit test.  This can also be used for deserialized op size safely in this
+// unit test suite as generally deserialized ops are smaller.
+static constexpr size_t kBufferBytesPerOp = 1000 + sizeof(LargestPaintOp);
+
 void ExpectFlattenableEqual(SkFlattenable* expected, SkFlattenable* actual) {
   sk_sp<SkData> expected_data(SkValidatingSerializeFlattenable(expected));
   sk_sp<SkData> actual_data(SkValidatingSerializeFlattenable(actual));
@@ -1988,7 +1993,7 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
   void ResizeOutputBuffer() {
     // An arbitrary deserialization buffer size that should fit all the ops
     // in the buffer_.
-    output_size_ = (1000 + sizeof(LargestPaintOp)) * buffer_.size();
+    output_size_ = kBufferBytesPerOp * buffer_.size();
     output_.reset(static_cast<char*>(
         base::AlignedAlloc(output_size_, PaintOpBuffer::PaintOpAlign)));
   }
@@ -2097,7 +2102,7 @@ TEST_P(PaintOpSerializationTest, DeserializationFailures) {
   char* current = static_cast<char*>(output_.get());
 
   static constexpr size_t kAlign = PaintOpBuffer::PaintOpAlign;
-  static constexpr size_t kOutputOpSize = sizeof(LargestPaintOp) + 1000;
+  static constexpr size_t kOutputOpSize = kBufferBytesPerOp;
   std::unique_ptr<char, base::AlignedFreeDeleter> deserialize_buffer_(
       static_cast<char*>(base::AlignedAlloc(kOutputOpSize, kAlign)));
 
@@ -2182,6 +2187,125 @@ TEST(PaintOpBufferTest, PaintOpDeserialize) {
   serialized->type = static_cast<uint8_t>(PaintOpType::LastPaintOpType) + 1;
   EXPECT_FALSE(
       PaintOp::Deserialize(input_.get(), bytes_written, output_.get(), kSize));
+}
+
+// Test that deserializing invalid SkClipOp enums fails silently.
+// Skia release asserts on this in several places so these are not safe
+// to pass through to the SkCanvas API.
+TEST(PaintOpBufferTest, ValidateSkClip) {
+  size_t buffer_size = kBufferBytesPerOp;
+  std::unique_ptr<char, base::AlignedFreeDeleter> serialized(static_cast<char*>(
+      base::AlignedAlloc(buffer_size, PaintOpBuffer::PaintOpAlign)));
+  std::unique_ptr<char, base::AlignedFreeDeleter> deserialized(
+      static_cast<char*>(
+          base::AlignedAlloc(buffer_size, PaintOpBuffer::PaintOpAlign)));
+
+  PaintOpBuffer buffer;
+
+  // Successful first op.
+  SkPath path;
+  buffer.push<ClipPathOp>(path, SkClipOp::kMax_EnumValue, true);
+
+  // Bad other ops.
+  SkClipOp bad_clip = static_cast<SkClipOp>(
+      static_cast<uint32_t>(SkClipOp::kMax_EnumValue) + 1);
+
+  buffer.push<ClipPathOp>(path, bad_clip, true);
+  buffer.push<ClipRectOp>(test_rects[0], bad_clip, true);
+  buffer.push<ClipRRectOp>(test_rrects[0], bad_clip, false);
+
+  SkClipOp bad_clip_max = static_cast<SkClipOp>(~static_cast<uint32_t>(0));
+  buffer.push<ClipRectOp>(test_rects[1], bad_clip_max, false);
+
+  PaintOp::SerializeOptions options;
+
+  int op_idx = 0;
+  for (PaintOpBuffer::Iterator iter(&buffer); iter; ++iter) {
+    const PaintOp* op = *iter;
+    size_t bytes_written =
+        op->Serialize(serialized.get(), buffer_size, options);
+    ASSERT_GT(bytes_written, 0u);
+    PaintOp* written = PaintOp::Deserialize(serialized.get(), bytes_written,
+                                            deserialized.get(), buffer_size);
+    // First op should succeed.  Other ops with bad enums should
+    // serialize correctly but fail to deserialize due to the bad
+    // SkClipOp enum.
+    if (!op_idx) {
+      EXPECT_TRUE(written) << "op: " << op_idx;
+      written->DestroyThis();
+    } else {
+      EXPECT_FALSE(written) << "op: " << op_idx;
+    }
+
+    ++op_idx;
+  }
+}
+
+TEST(PaintOpBufferTest, ValidateSkBlendMode) {
+  size_t buffer_size = kBufferBytesPerOp;
+  std::unique_ptr<char, base::AlignedFreeDeleter> serialized(static_cast<char*>(
+      base::AlignedAlloc(buffer_size, PaintOpBuffer::PaintOpAlign)));
+  std::unique_ptr<char, base::AlignedFreeDeleter> deserialized(
+      static_cast<char*>(
+          base::AlignedAlloc(buffer_size, PaintOpBuffer::PaintOpAlign)));
+
+  PaintOpBuffer buffer;
+
+  // Successful first two ops.
+  buffer.push<DrawColorOp>(SK_ColorMAGENTA, SkBlendMode::kDstIn);
+  buffer.push<DrawRectOp>(test_rects[0], test_flags[0]);
+
+  // Modes that are not supported by drawColor or SkPaint.
+  SkBlendMode bad_modes[] = {
+      SkBlendMode::kOverlay,
+      SkBlendMode::kDarken,
+      SkBlendMode::kLighten,
+      SkBlendMode::kColorDodge,
+      SkBlendMode::kColorBurn,
+      SkBlendMode::kHardLight,
+      SkBlendMode::kSoftLight,
+      SkBlendMode::kDifference,
+      SkBlendMode::kExclusion,
+      SkBlendMode::kMultiply,
+      SkBlendMode::kHue,
+      SkBlendMode::kSaturation,
+      SkBlendMode::kColor,
+      SkBlendMode::kLuminosity,
+      static_cast<SkBlendMode>(static_cast<uint32_t>(SkBlendMode::kLastMode) +
+                               1),
+      static_cast<SkBlendMode>(static_cast<uint32_t>(~0)),
+  };
+
+  for (size_t i = 0; i < arraysize(bad_modes); ++i) {
+    buffer.push<DrawColorOp>(SK_ColorMAGENTA, bad_modes[i]);
+
+    PaintFlags flags = test_flags[i % test_flags.size()];
+    flags.setBlendMode(bad_modes[i]);
+    buffer.push<DrawRectOp>(test_rects[i % test_rects.size()], flags);
+  }
+
+  PaintOp::SerializeOptions options;
+
+  int op_idx = 0;
+  for (PaintOpBuffer::Iterator iter(&buffer); iter; ++iter) {
+    const PaintOp* op = *iter;
+    size_t bytes_written =
+        op->Serialize(serialized.get(), buffer_size, options);
+    ASSERT_GT(bytes_written, 0u);
+    PaintOp* written = PaintOp::Deserialize(serialized.get(), bytes_written,
+                                            deserialized.get(), buffer_size);
+    // First two ops should succeed.  Other ops with bad enums should
+    // serialize correctly but fail to deserialize due to the bad
+    // SkBlendMode enum.
+    if (op_idx < 2) {
+      EXPECT_TRUE(written) << "op: " << op_idx;
+      written->DestroyThis();
+    } else {
+      EXPECT_FALSE(written) << "op: " << op_idx;
+    }
+
+    ++op_idx;
+  }
 }
 
 }  // namespace cc

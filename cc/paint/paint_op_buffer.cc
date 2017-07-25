@@ -595,10 +595,10 @@ void UpdateTypeAndSkip(T* op) {
 }
 
 template <typename T>
-PaintOp* SimpleDeserialize(const void* input,
-                           size_t input_size,
-                           void* output,
-                           size_t output_size) {
+T* SimpleDeserialize(const void* input,
+                     size_t input_size,
+                     void* output,
+                     size_t output_size) {
   if (input_size < sizeof(T))
     return nullptr;
   memcpy(output, input, sizeof(T));
@@ -641,7 +641,7 @@ PaintOp* ClipPathOp::Deserialize(const void* input,
   helper.Read(&op->path);
   helper.Read(&op->op);
   helper.Read(&op->antialias);
-  if (!helper.valid()) {
+  if (!helper.valid() || !IsValidSkClipOp(op->op)) {
     op->~ClipPathOp();
     return nullptr;
   }
@@ -654,14 +654,18 @@ PaintOp* ClipRectOp::Deserialize(const void* input,
                                  size_t input_size,
                                  void* output,
                                  size_t output_size) {
-  return SimpleDeserialize<ClipRectOp>(input, input_size, output, output_size);
+  ClipRectOp* op =
+      SimpleDeserialize<ClipRectOp>(input, input_size, output, output_size);
+  return op && IsValidSkClipOp(op->op) ? op : nullptr;
 }
 
 PaintOp* ClipRRectOp::Deserialize(const void* input,
                                   size_t input_size,
                                   void* output,
                                   size_t output_size) {
-  return SimpleDeserialize<ClipRRectOp>(input, input_size, output, output_size);
+  ClipRRectOp* op =
+      SimpleDeserialize<ClipRRectOp>(input, input_size, output, output_size);
+  return op && IsValidSkClipOp(op->op) ? op : nullptr;
 }
 
 PaintOp* ConcatOp::Deserialize(const void* input,
@@ -716,7 +720,9 @@ PaintOp* DrawColorOp::Deserialize(const void* input,
                                   size_t input_size,
                                   void* output,
                                   size_t output_size) {
-  return SimpleDeserialize<DrawColorOp>(input, input_size, output, output_size);
+  DrawColorOp* op =
+      SimpleDeserialize<DrawColorOp>(input, input_size, output, output_size);
+  return op && IsValidSkBlendMode(op->mode) ? op : nullptr;
 }
 
 PaintOp* DrawDRRectOp::Deserialize(const void* input,
