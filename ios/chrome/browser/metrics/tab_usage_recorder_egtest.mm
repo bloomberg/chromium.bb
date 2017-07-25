@@ -41,6 +41,7 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::OpenLinkInNewTabButton;
 using chrome_test_util::SettingsMenuButton;
 using chrome_test_util::SettingsMenuPrivacyButton;
@@ -130,16 +131,6 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   GREYAssert(
       testing::WaitUntilConditionOrTimeout(kWaitElementTimeout, condition),
       @"Waiting for tab to close");
-}
-
-// Open the settings menu. Wait for the settings menu to appear.
-void OpenSettingsMenuUnsynced() {
-  id<GREYMatcher> tool_menu_matcher =
-      grey_accessibilityID(kToolbarToolsMenuButtonIdentifier);
-  WaitAndTap(tool_menu_matcher, @"Tool menu");
-
-  WaitAndTap(SettingsMenuButton(), @"Settings menu");
-  Wait(grey_accessibilityID(kSettingsCollectionViewId), @"Setting view");
 }
 
 // Select the tab with title |title| using UI (tab strip on iPad, stack view on
@@ -495,27 +486,14 @@ void SelectTabUsingUI(NSString* title) {
   };
 
   NewMainTabWithURL(slowURL, responses[slowURL]);
-
   OpenNewIncognitoTabUsingUIAndEvictMainTabs();
 
   SwitchToNormalMode();
-  // TODO(crbug.com/640977): EarlGrey synchronize on some animations when a
-  // page is loading. Need to handle synchronization manually for this test.
-  [[GREYConfiguration sharedInstance]
-          setValue:@(NO)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  OpenSettingsMenuUnsynced();
+  [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
-  Wait(grey_accessibilityID(kPrivacyCollectionViewId),
-       @"Privacy settings view.");
-
-  WaitAndTap(chrome_test_util::NavigationBarDoneButton(), @"Close settings");
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:responses[slowURL]];
-
-  [[GREYConfiguration sharedInstance]
-          setValue:@(YES)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
 
   histogramTester.ExpectBucketCount(kDidUserWaitForEvictedTabReload,
                                     TabUsageRecorder::USER_DID_NOT_WAIT, 0,
