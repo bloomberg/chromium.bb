@@ -182,6 +182,10 @@ bool GLSurface::SupportsDCLayers() const {
   return false;
 }
 
+bool GLSurface::UseOverlaysForVideo() const {
+  return false;
+}
+
 bool GLSurface::SetDrawRectangle(const gfx::Rect& rect) {
   return false;
 }
@@ -389,6 +393,10 @@ bool GLSurfaceAdapter::BuffersFlipped() const {
 
 bool GLSurfaceAdapter::SupportsDCLayers() const {
   return surface_->SupportsDCLayers();
+}
+
+bool GLSurfaceAdapter::UseOverlaysForVideo() const {
+  return surface_->UseOverlaysForVideo();
 }
 
 bool GLSurfaceAdapter::SetDrawRectangle(const gfx::Rect& rect) {

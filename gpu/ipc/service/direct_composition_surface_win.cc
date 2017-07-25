@@ -1013,10 +1013,20 @@ DirectCompositionSurfaceWin::~DirectCompositionSurfaceWin() {
 
 // static
 bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
-  if (!HardwareSupportsOverlays())
-    return false;
+  static bool initialized;
+  static bool overlays_supported;
+  if (initialized)
+    return overlays_supported;
 
-  return base::FeatureList::IsEnabled(switches::kDirectCompositionOverlays);
+  initialized = true;
+
+  overlays_supported =
+      HardwareSupportsOverlays() &&
+      base::FeatureList::IsEnabled(switches::kDirectCompositionOverlays);
+
+  UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.OverlaysSupported",
+                        overlays_supported);
+  return overlays_supported;
 }
 
 // static
@@ -1198,6 +1208,10 @@ bool DirectCompositionSurfaceWin::OnMakeCurrent(gl::GLContext* context) {
 
 bool DirectCompositionSurfaceWin::SupportsDCLayers() const {
   return true;
+}
+
+bool DirectCompositionSurfaceWin::UseOverlaysForVideo() const {
+  return AreOverlaysSupported();
 }
 
 bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {

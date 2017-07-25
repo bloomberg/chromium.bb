@@ -57,6 +57,7 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
   bool SupportsPostSubBuffer() override;
   bool OnMakeCurrent(gl::GLContext* context) override;
   bool SupportsDCLayers() const override;
+  bool UseOverlaysForVideo() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;
   void WaitForSnapshotRendering() override;
