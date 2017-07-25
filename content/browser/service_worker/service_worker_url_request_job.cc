@@ -337,7 +337,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       delegate_(delegate),
       response_type_(NOT_DETERMINED),
       is_started_(false),
-      service_worker_response_type_(blink::mojom::FetchResponseType::kDefault),
+      fetch_response_type_(blink::mojom::FetchResponseType::kDefault),
       client_id_(client_id),
       blob_storage_context_(blob_storage_context),
       resource_context_(resource_context),
@@ -772,7 +772,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
 void ServiceWorkerURLRequestJob::SetResponse(
     const ServiceWorkerResponse& response) {
   response_url_list_ = response.url_list;
-  service_worker_response_type_ = response.response_type;
+  fetch_response_type_ = response.response_type;
   cors_exposed_header_names_ = response.cors_exposed_header_names;
   response_time_ = response.response_time;
   CreateResponseHeader(response.status_code, response.status_text,
@@ -938,11 +938,10 @@ void ServiceWorkerURLRequestJob::OnStartCompleted() const {
           ->OnStartCompleted(
               true /* was_fetched_via_service_worker */,
               fetch_type_ == ServiceWorkerFetchType::FOREIGN_FETCH,
-              fall_back_required_, response_url_list_,
-              service_worker_response_type_, worker_start_time_,
-              worker_ready_time_, response_is_in_cache_storage_,
-              response_cache_storage_cache_name_, cors_exposed_header_names_,
-              did_navigation_preload_);
+              fall_back_required_, response_url_list_, fetch_response_type_,
+              worker_start_time_, worker_ready_time_,
+              response_is_in_cache_storage_, response_cache_storage_cache_name_,
+              cors_exposed_header_names_, did_navigation_preload_);
       break;
   }
 }

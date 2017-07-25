@@ -138,10 +138,10 @@ TEST_F(ResourceLoaderTest, DetermineCORSStatus) {
       response.SetWasFetchedViaServiceWorker(true);
 
       if (test.service_worker == kSWOpaque) {
-        response.SetServiceWorkerResponseType(
+        response.SetResponseTypeViaServiceWorker(
             mojom::FetchResponseType::kOpaque);
       } else {
-        response.SetServiceWorkerResponseType(
+        response.SetResponseTypeViaServiceWorker(
             mojom::FetchResponseType::kDefault);
       }
     }

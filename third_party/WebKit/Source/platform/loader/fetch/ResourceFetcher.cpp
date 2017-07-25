@@ -962,7 +962,7 @@ bool ResourceFetcher::IsReusableAlsoForPreloading(const FetchParameters& params,
   // not no-cors. https://crbug.com/625575
   // TODO(yhirano): Remove this.
   if (existing_resource->GetResponse().WasFetchedViaServiceWorker() &&
-      existing_resource->GetResponse().ServiceWorkerResponseType() ==
+      existing_resource->GetResponse().ResponseTypeViaServiceWorker() ==
           mojom::FetchResponseType::kOpaque &&
       request.GetFetchRequestMode() != WebURLRequest::kFetchRequestModeNoCORS) {
     return false;

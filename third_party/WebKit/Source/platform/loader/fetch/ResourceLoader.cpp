@@ -332,7 +332,7 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
                                                StringBuilder& error_msg) const {
   // Service workers handle CORS separately.
   if (response.WasFetchedViaServiceWorker()) {
-    switch (response.ServiceWorkerResponseType()) {
+    switch (response.ResponseTypeViaServiceWorker()) {
       case mojom::FetchResponseType::kBasic:
       case mojom::FetchResponseType::kCORS:
       case mojom::FetchResponseType::kDefault:

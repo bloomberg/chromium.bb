@@ -76,7 +76,7 @@ using MetadataCallback =
 // is controlled per-origin by the QuotaManager.
 const int kMaxCacheBytes = std::numeric_limits<int>::max();
 
-blink::mojom::FetchResponseType ProtoResponseTypeToServiceWorkerResponseType(
+blink::mojom::FetchResponseType ProtoResponseTypeToFetchResponseType(
     proto::CacheResponse::ResponseType response_type) {
   switch (response_type) {
     case proto::CacheResponse::BASIC_TYPE:
@@ -96,7 +96,7 @@ blink::mojom::FetchResponseType ProtoResponseTypeToServiceWorkerResponseType(
   return blink::mojom::FetchResponseType::kOpaque;
 }
 
-proto::CacheResponse::ResponseType ServiceWorkerResponseTypeToProtoResponseType(
+proto::CacheResponse::ResponseType FetchResponseTypeToProtoResponseType(
     blink::mojom::FetchResponseType response_type) {
   switch (response_type) {
     case blink::mojom::FetchResponseType::kBasic:
@@ -246,8 +246,7 @@ std::unique_ptr<ServiceWorkerResponse> CreateResponse(
   return base::MakeUnique<ServiceWorkerResponse>(
       std::move(url_list), metadata.response().status_code(),
       metadata.response().status_text(),
-      ProtoResponseTypeToServiceWorkerResponseType(
-          metadata.response().response_type()),
+      ProtoResponseTypeToFetchResponseType(metadata.response().response_type()),
       std::move(headers), "", 0, blink::kWebServiceWorkerResponseErrorUnknown,
       base::Time::FromInternalValue(metadata.response().response_time()),
       true /* is_in_cache_storage */, cache_name,
@@ -1161,9 +1160,8 @@ void CacheStorageCache::PutDidCreateEntry(
   proto::CacheResponse* response_metadata = metadata.mutable_response();
   response_metadata->set_status_code(put_context->response->status_code);
   response_metadata->set_status_text(put_context->response->status_text);
-  response_metadata->set_response_type(
-      ServiceWorkerResponseTypeToProtoResponseType(
-          put_context->response->response_type));
+  response_metadata->set_response_type(FetchResponseTypeToProtoResponseType(
+      put_context->response->response_type));
   for (const auto& url : put_context->response->url_list)
     response_metadata->add_url_list(url.spec());
   response_metadata->set_response_time(

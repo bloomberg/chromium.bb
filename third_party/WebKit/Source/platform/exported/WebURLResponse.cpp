@@ -290,9 +290,9 @@ void WebURLResponse::SetWasFallbackRequiredByServiceWorker(bool value) {
   resource_response_->SetWasFallbackRequiredByServiceWorker(value);
 }
 
-void WebURLResponse::SetServiceWorkerResponseType(
+void WebURLResponse::SetResponseTypeViaServiceWorker(
     mojom::FetchResponseType value) {
-  resource_response_->SetServiceWorkerResponseType(value);
+  resource_response_->SetResponseTypeViaServiceWorker(value);
 }
 
 void WebURLResponse::SetURLListViaServiceWorker(

@@ -1106,7 +1106,8 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   response->SetWasFetchedViaForeignFetch(info.was_fetched_via_foreign_fetch);
   response->SetWasFallbackRequiredByServiceWorker(
       info.was_fallback_required_by_service_worker);
-  response->SetServiceWorkerResponseType(info.response_type_via_service_worker);
+  response->SetResponseTypeViaServiceWorker(
+      info.response_type_via_service_worker);
   response->SetURLListViaServiceWorker(info.url_list_via_service_worker);
   response->SetCacheStorageCacheName(
       info.is_in_cache_storage
