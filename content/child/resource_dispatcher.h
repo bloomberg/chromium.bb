@@ -60,6 +60,15 @@ class URLLoaderFactory;
 // Virtual methods are for tests.
 class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
  public:
+  // Generates ids for requests initiated by child processes unique to the
+  // particular process, counted up from 0 (browser initiated requests count
+  // down from -2).
+  //
+  // Public to be used by URLLoaderFactory and/or URLLoader implementations with
+  // the need to perform additional requests besides the main request, e.g.,
+  // CORS preflight requests.
+  static int MakeRequestID();
+
   ResourceDispatcher(
       IPC::Sender* sender,
       scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner);
