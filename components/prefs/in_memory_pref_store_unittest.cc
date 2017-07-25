@@ -106,7 +106,7 @@ TEST_F(InMemoryPrefStoreTest, ReadPrefs) {
 }
 
 TEST_F(InMemoryPrefStoreTest, CommitPendingWriteWithCallback) {
-  TestCommitPendingWriteWithCallback(store_.get());
+  TestCommitPendingWriteWithCallback(store_.get(), &scoped_task_environment_);
 }
 
 }  // namespace
