@@ -185,7 +185,7 @@
       <!-- The default value for |WebPreference::serif_font_family_map| for
            Japanese script. -->
       <message name="IDS_SERIF_FONT_FAMILY_JAPANESE" use_name_for_id="true">
-        MotoyaG04Mincho
+        Noto Serif CJK JP
       </message>
 
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
@@ -209,7 +209,7 @@
       <!-- The default value for |WebPreference::serif_font_family_map| for
            Korean script. -->
       <message name="IDS_SERIF_FONT_FAMILY_KOREAN" use_name_for_id="true">
-        NanumMyeongjo
+        Noto CJK Serif KR
       </message>
 
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
@@ -233,7 +233,7 @@
       <!-- The default value for |WebPreference::serif_font_family_map| for
            Simplified Chinese script. -->
       <message name="IDS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
-        MSung GB18030
+        Noto Serif CJK SC
       </message>
 
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
@@ -257,7 +257,7 @@
       <!-- The default value for |WebPreference::serif_font_family_map| for
            Traditional Chinese script. -->
       <message name="IDS_SERIF_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
-        MSung B5HK
+        Noto Serif CJk TC
       </message>
 
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for

@@ -13,11 +13,7 @@ namespace ime {
 const int kFontSizeDelta = 2;
 
 // Currently the infolist window only supports Japanese font.
-#if defined(GOOGLE_CHROME_BUILD)
-const char kJapaneseFontName[] = "MotoyaG04Gothic";
-#else
-const char kJapaneseFontName[] = "IPAPGothic";
-#endif
+const char kJapaneseFontName[] = "Noto Sans CJK JP";
 
 // The minimum width of candidate labels in the vertical candidate
 // window. We use this value to prevent the candidate window from being

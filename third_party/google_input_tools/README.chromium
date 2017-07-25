@@ -30,3 +30,6 @@ update.py: Python script for updating revision of google-input-tools.
 
 Modified extendedlayout.js to fix size calculations for scrolling of the
 emoji layout.
+
+Modified chrome/os/inputview/common.css to use Noto Serif/Sans CJK instead of
+the proprietary fonts that do not exist on Chrome OS anymore.

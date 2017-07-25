@@ -7,7 +7,7 @@
       "default_font_size": 16,
       "fonts": {
         "standard": {
-          "Hang": "Nanum Gothic",
+          "Hang": "Noto Sans CJK KR",
           "Zyyy": "Tinos"
         },
         "sansserif": {
