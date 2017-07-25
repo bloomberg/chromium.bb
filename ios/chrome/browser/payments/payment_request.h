@@ -17,6 +17,7 @@
 #include "components/payments/core/address_normalization_manager.h"
 #include "components/payments/core/address_normalizer_impl.h"
 #include "components/payments/core/journey_logger.h"
+#include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_options_provider.h"
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payments_profile_comparator.h"
@@ -31,7 +32,6 @@ class RegionDataLoader;
 namespace payments {
 class AddressNormalizer;
 class CurrencyFormatter;
-class PaymentInstrument;
 class AutofillPaymentInstrument;
 }  // namespace payments
 
@@ -53,6 +53,10 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
        resultDelegate:
            (base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>)
                resultDelegate;
+
+- (void)launchAppWithUniversalLink:(std::string)universalLink
+                instrumentDelegate:
+                    (payments::PaymentInstrument::Delegate*)instrumentDelegate;
 
 @end
 

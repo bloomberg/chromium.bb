@@ -19,7 +19,7 @@ namespace payments {
 class PaymentInstrument {
  public:
   // The type of this instrument instance.
-  enum class Type { AUTOFILL };
+  enum class Type { AUTOFILL, NATIVE_MOBILE_APP };
 
   class Delegate {
    public:
