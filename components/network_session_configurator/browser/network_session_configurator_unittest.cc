@@ -87,8 +87,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_EQ(net::kIdleConnectionTimeoutSeconds,
             params_.quic_idle_connection_timeout_seconds);
   EXPECT_EQ(net::kPingTimeoutSecs, params_.quic_reduced_ping_timeout_seconds);
-  EXPECT_EQ(net::kQuicYieldAfterDurationMilliseconds,
-            params_.quic_packet_reader_yield_after_duration_milliseconds);
   EXPECT_FALSE(params_.quic_race_cert_verification);
   EXPECT_FALSE(params_.quic_estimate_initial_rtt);
   EXPECT_FALSE(params_.quic_migrate_sessions_on_network_change);
@@ -197,18 +195,6 @@ TEST_F(NetworkSessionConfiguratorTest,
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   ParseFieldTrials();
   EXPECT_EQ(10, params_.quic_reduced_ping_timeout_seconds);
-}
-
-TEST_F(NetworkSessionConfiguratorTest,
-       QuicPacketReaderYieldAfterDurationMillisecondsFieldTrialParams) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["packet_reader_yield_after_duration_milliseconds"] = "10";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_EQ(10, params_.quic_packet_reader_yield_after_duration_milliseconds);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicRaceCertVerification) {
