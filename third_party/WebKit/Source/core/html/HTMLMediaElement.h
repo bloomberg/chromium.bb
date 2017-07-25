@@ -538,13 +538,10 @@ class CORE_EXPORT HTMLMediaElement
 
   EnumerationHistogram& ShowControlsHistogram() const;
 
-  void ViewportFillDebouncerTimerFired(TimerBase*);
-
   TaskRunnerTimer<HTMLMediaElement> load_timer_;
   TaskRunnerTimer<HTMLMediaElement> progress_event_timer_;
   TaskRunnerTimer<HTMLMediaElement> playback_progress_timer_;
   TaskRunnerTimer<HTMLMediaElement> audio_tracks_timer_;
-  TaskRunnerTimer<HTMLMediaElement> viewport_fill_debouncer_timer_;
   TaskRunnerTimer<HTMLMediaElement> check_viewport_intersection_timer_;
 
   Member<TimeRanges> played_time_ranges_;

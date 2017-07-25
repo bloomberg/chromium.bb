@@ -126,7 +126,6 @@ using DocumentElementSetMap =
 namespace {
 
 constexpr float kMostlyFillViewportThreshold = 0.85f;
-constexpr double kMostlyFillViewportBecomeStableSeconds = 5;
 constexpr double kCheckViewportIntersectionIntervalSeconds = 1;
 
 // This enum is used to record histograms. Do not reorder.
@@ -451,10 +450,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
           TaskRunnerHelper::Get(TaskType::kUnthrottled, &document),
           this,
           &HTMLMediaElement::AudioTracksTimerFired),
-      viewport_fill_debouncer_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnthrottled, &document),
-          this,
-          &HTMLMediaElement::ViewportFillDebouncerTimerFired),
       check_viewport_intersection_timer_(
           TaskRunnerHelper::Get(TaskType::kUnthrottled, &document),
           this,
@@ -557,8 +552,6 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
   playback_progress_timer_.MoveToNewTaskRunner(
       TaskRunnerHelper::Get(TaskType::kUnthrottled, &GetDocument()));
   audio_tracks_timer_.MoveToNewTaskRunner(
-      TaskRunnerHelper::Get(TaskType::kUnthrottled, &GetDocument()));
-  viewport_fill_debouncer_timer_.MoveToNewTaskRunner(
       TaskRunnerHelper::Get(TaskType::kUnthrottled, &GetDocument()));
   check_viewport_intersection_timer_.MoveToNewTaskRunner(
       TaskRunnerHelper::Get(TaskType::kUnthrottled, &GetDocument()));
@@ -4115,28 +4108,13 @@ void HTMLMediaElement::CheckViewportIntersectionTimerFired(TimerBase*) {
     return;
 
   current_intersect_rect_ = intersect_rect;
-  // Reset on any intersection change, since this indicates the user is
-  // scrolling around in the document, the document is changing layout, etc.
-  viewport_fill_debouncer_timer_.Stop();
   bool is_mostly_filling_viewport =
       (current_intersect_rect_.Size().Area() >
        kMostlyFillViewportThreshold * geometry.RootIntRect().Size().Area());
   if (mostly_filling_viewport_ == is_mostly_filling_viewport)
     return;
 
-  if (!is_mostly_filling_viewport) {
-    mostly_filling_viewport_ = is_mostly_filling_viewport;
-    if (web_media_player_)
-      web_media_player_->BecameDominantVisibleContent(mostly_filling_viewport_);
-    return;
-  }
-
-  viewport_fill_debouncer_timer_.StartOneShot(
-      kMostlyFillViewportBecomeStableSeconds, BLINK_FROM_HERE);
-}
-
-void HTMLMediaElement::ViewportFillDebouncerTimerFired(TimerBase*) {
-  mostly_filling_viewport_ = true;
+  mostly_filling_viewport_ = is_mostly_filling_viewport;
   if (web_media_player_)
     web_media_player_->BecameDominantVisibleContent(mostly_filling_viewport_);
 }

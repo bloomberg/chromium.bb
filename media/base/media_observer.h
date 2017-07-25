@@ -35,10 +35,6 @@ class MEDIA_EXPORT MediaObserver {
   MediaObserver();
   virtual ~MediaObserver();
 
-  // Called when the media element entered/exited fullscreen.
-  virtual void OnEnteredFullscreen() = 0;
-  virtual void OnExitedFullscreen() = 0;
-
   // Called when the media element starts/stops being the dominant visible
   // content.
   virtual void OnBecameDominantVisibleContent(bool is_dominant) {}
