@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/ios/imageset.gni")
 import("//build/config/ios/rules.gni")
 import("//remoting/build/config/remoting_build.gni")
+import("//remoting/remoting_locales.gni")
 
 group("assets") {
   public_deps = [
@@ -90,4 +91,53 @@ bundle_data("remoting_icons") {
   outputs = [
     "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
+}
+
+# i18n
+
+action("infoplist_strings") {
+  _source = "InfoPlist.strings.jinja2"
+  sources = [
+    _source,
+  ]
+
+  script = "//remoting/tools/build/remoting_localize.py"
+  args = [
+           "--locale_dir",
+           rebase_path(webapp_locale_dir, root_build_dir),
+           "--variables",
+           rebase_path(branding_path, root_build_dir),
+           "--template",
+           rebase_path(_source, root_build_dir),
+           "--locale_output",
+           rebase_path(
+               "$root_gen_dir/remoting/ios/app/InfoPlist_Strings/@{json_suffix}.lproj/InfoPlist.strings",
+               root_build_dir),
+         ] + remoting_locales_with_underscores
+
+  outputs = []
+  foreach(locale, remoting_locales_with_underscores) {
+    outputs += [ "$root_gen_dir/remoting/ios/app/InfoPlist_Strings/$locale.lproj/InfoPlist.strings" ]
+  }
+
+  deps = [
+    "//remoting/resources",
+    "//remoting/resources:strings",
+  ]
+}
+
+foreach(locale, remoting_locales_with_underscores) {
+  bundle_data("locale_${locale}_bundle_data") {
+    sources = [
+      "$root_gen_dir/remoting/ios/app/InfoPlist_Strings/$locale.lproj/InfoPlist.strings",
+      "$root_out_dir/remoting/resources/$locale.lproj/locale.pak",
+    ]
+    outputs = [
+      "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}",
+    ]
+    public_deps = [
+      ":infoplist_strings",
+      "//remoting/resources:copy_locales",
+    ]
+  }
 }

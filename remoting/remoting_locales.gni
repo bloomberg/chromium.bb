@@ -87,7 +87,10 @@ remoting_locales_with_underscores += [
 ]
 
 # An additional locale "en-US" is generated for ChromeOS and Chrome on iOS.
-if (is_chromeos || is_ios) {
+# TODO(yuweih): Our build script doesn't seem to work with en-US and Chrome
+# on iOS doesn't seem to have en-US.lproj. Add is_ios back if we do need to
+# work with en-US.
+if (is_chromeos) {
   remoting_locales += [ "en-US" ]
   remoting_locales_with_underscores += [ "en_US" ]
 }

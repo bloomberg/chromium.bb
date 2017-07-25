@@ -17,7 +17,7 @@
     <output filename="remoting/resources/de.pak" lang="de" type="data_package"/>
     <output filename="remoting/resources/el.pak" lang="el" type="data_package"/>
     <output filename="remoting/resources/en-GB.pak" lang="en-GB" type="data_package"/>
-    <if expr="chromeos or is_ios">
+    <if expr="chromeos">
       <output filename="remoting/resources/en-US.pak" lang="en" type="data_package"/>
     </if>
     <output filename="remoting/resources/en.pak" lang="en" type="data_package"/>
@@ -90,8 +90,9 @@
     <output filename="remoting/webapp/_locales/fake_bidi/messages.json" lang="fake-bidi" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/el/messages.json" lang="el" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/en/messages.json" lang="en" type="chrome_messages_json"/>
-    <if expr="chromeos or is_ios">
-      <output filename="remoting/webapp/_locales/en_US/messages.json" lang="en-US" type="chrome_messages_json"/>
+    <if expr="chromeos">
+      <!-- lang="en-US" will create an empty json file. -->
+      <output filename="remoting/webapp/_locales/en_US/messages.json" lang="en" type="chrome_messages_json"/>
     </if>
     <output filename="remoting/webapp/_locales/en_GB/messages.json" lang="en-GB" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/es/messages.json" lang="es" type="chrome_messages_json"/>
@@ -264,6 +265,9 @@
           <message desc="The product name, as displayed on Android devices. Ideally this would be 'Chrome Remote Desktop', but that name is too long to be displayed in the Android Launcher. Try to keep the translation below 16 characters if possible." name="IDS_PRODUCT_NAME_ANDROID" formatter_data="android_java">
             Remote Desktop
           </message>
+          <message desc="The product name, as displayed on iOS devices. Ideally this would be 'Chrome Remote Desktop', but the iOS launcher can only show about 10 characters without being clipped. Event 'Remote Desktop' will be shown as 'Remote De...'. Try to keep the translation as short as possible." name="IDS_IOS_DISPLAY_NAME">
+            Remote Desktop
+          </message>
         </if>  <!-- is_android or is_ios -->
 
         <message desc="Message shown when the Chrome Remote Desktop client tab is closed while a connection is active." name="IDS_CLOSE_PROMPT">
@@ -364,6 +368,9 @@
             To use Chromoting, you'll need to add a Google Account to your device.
           </message>
           <message desc="The product name, as displayed on Android devices. Try to keep the translation below 16 characters if possible." name="IDS_PRODUCT_NAME_ANDROID" formatter_data="android_java">
+            Chromoting
+          </message>
+          <message desc="The product name, as displayed on iOS devices. Try to keep the translation below 10 characters if possible." name="IDS_IOS_DISPLAY_NAME">
             Chromoting
           </message>
         </if>  <!-- is_android or is_ios -->
