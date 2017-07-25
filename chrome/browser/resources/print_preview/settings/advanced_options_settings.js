@@ -60,10 +60,10 @@ cr.define('print_preview', function() {
     enterDocument: function() {
       print_preview.SettingsSection.prototype.enterDocument.call(this);
 
-      this.tracker.add(this.getButton_(), 'click', function() {
+      this.tracker.add(this.getButton_(), 'click', () => {
         cr.dispatchSimpleEvent(
             this, AdvancedOptionsSettings.EventType.BUTTON_ACTIVATED);
-      }.bind(this));
+      });
       this.tracker.add(
           this.destinationStore_,
           print_preview.DestinationStore.EventType.DESTINATION_SELECT,

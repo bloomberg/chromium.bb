@@ -163,9 +163,9 @@ cr.define('print_preview', function() {
      */
     renderSettings_: function() {
       // Remove all children settings elements.
-      this.items_.forEach(function(item) {
+      this.items_.forEach(item => {
         this.removeChild(item);
-      }.bind(this));
+      });
       this.items_ = [];
 
       var extraPadding = this.element_.querySelector(
@@ -182,13 +182,13 @@ cr.define('print_preview', function() {
       containerEl.style.maxHeight = availableHeight + 'px';
       var settingsEl = this.getChildElement('.settings');
 
-      vendorCapabilities.forEach(function(capability) {
+      vendorCapabilities.forEach(capability => {
         var item = new print_preview.AdvancedSettingsItem(
             this.printTicketStore_, capability);
         this.addChild(item);
         item.render(settingsEl);
         this.items_.push(item);
-      }.bind(this));
+      });
 
       var searchBoxArea = this.getChildElement('.search-box-area');
       if (this.items_.length <= 1) {
@@ -222,10 +222,10 @@ cr.define('print_preview', function() {
       this.setIsVisible(false);
 
       var values = {};
-      this.items_.forEach(function(item) {
+      this.items_.forEach(item => {
         if (item.isModified())
           values[item.id] = item.selectedValue;
-      }.bind(this));
+      });
 
       this.printTicketStore_.vendorItems.updateValue(values);
     }
