@@ -129,7 +129,7 @@ class WebStateObserverBridge : public web::WebStateObserver {
   void DidStopLoading() override;
 
  private:
-  base::WeakNSProtocol<id<CRWWebStateObserver>> observer_;
+  __unsafe_unretained id<CRWWebStateObserver> observer_;
   DISALLOW_COPY_AND_ASSIGN(WebStateObserverBridge);
 };
 
