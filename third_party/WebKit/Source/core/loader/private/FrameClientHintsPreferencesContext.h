@@ -20,6 +20,7 @@ class FrameClientHintsPreferencesContext final
   explicit FrameClientHintsPreferencesContext(LocalFrame*);
 
   void CountClientHints(WebClientHintsType) override;
+  void CountPersistentClientHintHeaders() override;
 
  private:
   Member<LocalFrame> frame_;

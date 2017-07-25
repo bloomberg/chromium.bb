@@ -216,6 +216,10 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   float GetDevicePixelRatio() const;
   bool ShouldSendClientHint(WebClientHintsType,
                             const ClientHintsPreferences&) const;
+  // Checks if the origin requested persisting the client hints, and notifies
+  // the |ContentSettingsClient| with the list of client hints and the
+  // persistence duration.
+  void ParseAndPersistClientHints(const ResourceResponse&);
 
   Member<DocumentLoader> document_loader_;
   Member<Document> document_;

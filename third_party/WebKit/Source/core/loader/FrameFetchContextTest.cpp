@@ -36,6 +36,7 @@
 #include "core/frame/FrameTypes.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
@@ -49,6 +50,7 @@
 #include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/loader/fetch/UniqueIdentifier.h"
 #include "platform/loader/testing/MockResource.h"
+#include "platform/testing/HistogramTester.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "public/platform/WebAddressSpace.h"
@@ -887,6 +889,30 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
                   ResourceResponse()));
   fetch_context->DispatchDidLoadResourceFromMemoryCache(
       CreateUniqueIdentifier(), resource_request, resource->GetResponse());
+}
+
+// Tests that the client hints lifetime header is parsed correctly.
+TEST_F(FrameFetchContextMockedLocalFrameClientTest, PersistClientHints) {
+  HistogramTester histogram_tester;
+  ResourceRequest resource_request(url);
+  resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
+  resource_request.SetFetchCredentialsMode(
+      WebURLRequest::kFetchCredentialsModeOmit);
+
+  ResourceResponse response;
+  response.SetHTTPHeaderField("accept-ch", "dpr");
+  response.SetHTTPHeaderField("accept-ch-lifetime", "3600");
+  response.SetURL(url);
+  Resource* resource = MockResource::Create(resource_request);
+  resource->SetResponse(response);
+  fetch_context->DispatchDidReceiveResponse(
+      CreateUniqueIdentifier(), response, resource_request.GetFrameType(),
+      resource_request.GetRequestContext(), resource,
+      FetchContext::ResourceResponseType::kNotFromMemoryCache);
+
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      static_cast<int>(WebFeature::kPersistentClientHintHeader), 1);
 }
 
 // Tests that when a resource with certificate errors is loaded from the memory

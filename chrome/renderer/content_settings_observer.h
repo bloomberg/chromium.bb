@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/gtest_prod_util.h"
+#include "base/time/time.h"
 #include "chrome/common/insecure_content_renderer.mojom.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -24,6 +25,7 @@
 #include "url/gurl.h"
 
 namespace blink {
+struct WebEnabledClientHints;
 class WebFrame;
 class WebSecurityOrigin;
 class WebURL;
@@ -88,6 +90,10 @@ class ContentSettingsObserver
                                    const blink::WebURL& url) override;
   bool AllowAutoplay(bool default_value) override;
   void PassiveInsecureContentFound(const blink::WebURL&) override;
+  void PersistClientHints(
+      const blink::WebEnabledClientHints& enabled_client_hints,
+      base::TimeDelta duration,
+      const blink::WebURL& url) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSettingsObserverTest, WhitelistedSchemes);

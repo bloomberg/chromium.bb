@@ -160,6 +160,10 @@
       status: "stable",
     },
     {
+      name: "ClientHintsPersistent",
+      status: "experimental",
+    },
+    {
       name: "ClientPlaceholdersForServerLoFi",
     },
     {

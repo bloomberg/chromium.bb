@@ -14,6 +14,7 @@
 #include "extensions/features/features.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
+#include "third_party/WebKit/public/platform/WebClientHintsType.h"
 #include "third_party/WebKit/public/platform/WebContentSettingCallbacks.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -438,6 +439,14 @@ void ContentSettingsObserver::PassiveInsecureContentFound(
   // Browser::PassiveInsecureContentFound.
   ReportInsecureContent(SslInsecureContentType::DISPLAY);
   FilteredReportInsecureContentDisplayed(GURL(resource_url));
+}
+
+void ContentSettingsObserver::PersistClientHints(
+    const blink::WebEnabledClientHints& enabled_client_hints,
+    base::TimeDelta duration,
+    const blink::WebURL& url) {
+  // TODO (tbansal): Send it back to browser which should persist the
+  // preferences.
 }
 
 void ContentSettingsObserver::DidNotAllowPlugins() {

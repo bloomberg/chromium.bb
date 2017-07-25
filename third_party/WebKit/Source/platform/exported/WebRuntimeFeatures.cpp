@@ -438,4 +438,8 @@ void WebRuntimeFeatures::EnableLazyInitializeMediaControls(bool enable) {
   RuntimeEnabledFeatures::SetLazyInitializeMediaControlsEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableClientHintsPersistent(bool enable) {
+  RuntimeEnabledFeatures::SetClientHintsPersistentEnabled(enable);
+}
+
 }  // namespace blink
