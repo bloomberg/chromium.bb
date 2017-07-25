@@ -37,6 +37,7 @@ ios_eg_test("ios_web_shell_egtests") {
     "//ios/web/public/test/fakes",
     "//ios/web/public/test/http_server",
     "//ios/web/shell",
+    "//ios/web/shell:shell_interfaces",
     "//net",
     "//services/service_manager/public/cpp",
     "//services/test/echo/public/interfaces",

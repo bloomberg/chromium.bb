@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #import "ios/web/public/web_client.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace web {
 class ShellBrowserState;
@@ -31,6 +32,10 @@ class ShellWebClient : public WebClient {
   void RegisterServices(StaticServiceMap* services) override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(
       base::StringPiece name) override;
+  void BindInterfaceRequestFromMainFrame(
+      WebState* web_state,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle interface_pipe) override;
   void AllowCertificateError(
       WebState* web_state,
       int cert_error,
@@ -42,7 +47,17 @@ class ShellWebClient : public WebClient {
   ShellBrowserState* browser_state() const;
 
  private:
+  void InitMainFrameInterfaces();
+
   ShellWebMainParts* web_main_parts_;
+
+  // Interfaces exposed to the main frame whose implementations do not need the
+  // WebState associated with that main frame as a creation argument.
+  std::unique_ptr<service_manager::BinderRegistry> main_frame_interfaces_;
+  // Interfaces exposed to the main frame whose implementations *do* need the
+  // WebState associated with that main frame as a creation argument.
+  std::unique_ptr<service_manager::BinderRegistryWithArgs<WebState*>>
+      main_frame_interfaces_parameterized_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWebClient);
 };

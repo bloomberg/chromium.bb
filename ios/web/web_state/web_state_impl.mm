@@ -536,6 +536,16 @@ WebStateInterfaceProvider* WebStateImpl::GetWebStateInterfaceProvider() {
   return web_state_interface_provider_.get();
 }
 
+void WebStateImpl::BindInterfaceRequestFromMainFrame(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  if (!GetWebStateInterfaceProvider()->registry()->TryBindInterface(
+          interface_name, &interface_pipe)) {
+    GetWebClient()->BindInterfaceRequestFromMainFrame(
+        this, interface_name, std::move(interface_pipe));
+  }
+}
+
 base::WeakPtr<WebState> WebStateImpl::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
