@@ -16,6 +16,7 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/mac/mac_util.h"
 #include "base/process/kill.h"
 #include "base/test/multiprocess_test.h"
@@ -40,11 +41,12 @@ MULTIPROCESS_TEST_MAIN(V2ProfileProcess) {
       "(define allowed-dir \"ALLOWED_READ_DIR\")\n"
       "(define temp-file \"ALLOWED_TEMP_FILE\")\n"
       "(define is-pre-10_10 \"IS_PRE_10_10\")\n"
+      "(define zone-tab \"ZONE_TAB\")\n"
       "; Make it easier to drop (literal) once we stop supporting 10.9\n"
       "(define (path x) (literal x))\n"
-      "(allow file-read-metadata (subpath \"/Applications\"))\n"
+      "(allow file-read-metadata (subpath \"/\"))\n"
       "(allow file-read* (subpath (param allowed-dir)))\n"
-      "(allow file-read-data (path \"/usr/share/zoneinfo/zone.tab\"))\n"
+      "(allow file-read-data (path (param zone-tab)))\n"
       "(allow file-write* (path (param temp-file)))\n"
       "(allow ipc-posix-shm-read-data (ipc-posix-name "
       "\"apple.shm.notification_center\"))\n"
@@ -59,6 +61,11 @@ MULTIPROCESS_TEST_MAIN(V2ProfileProcess) {
   CHECK(compiler.InsertStringParam("ALLOWED_TEMP_FILE", temp_file_path));
   CHECK(compiler.InsertBooleanParam("IS_PRE_10_10",
                                     !base::mac::IsAtLeastOS10_10()));
+
+  // crbug.com/748517: The zoneinfo folder is a symlink on 10.13.
+  base::FilePath zone_tab_path("/usr/share/zoneinfo/zone.tab");
+  zone_tab_path = base::MakeAbsoluteFilePath(zone_tab_path);
+  CHECK(compiler.InsertStringParam("ZONE_TAB", zone_tab_path.value()));
 
   std::string error;
   bool result = compiler.CompileAndApplyProfile(&error);
