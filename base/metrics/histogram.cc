@@ -354,12 +354,10 @@ uint32_t Histogram::FindCorruption(const HistogramSamples& samples) const {
     if (delta != delta64)
       delta = INT_MAX;  // Flag all giant errors as INT_MAX.
     if (delta > 0) {
-      UMA_HISTOGRAM_COUNTS("Histogram.InconsistentCountHigh", delta);
       if (delta > kCommonRaceBasedCountMismatch)
         inconsistencies |= COUNT_HIGH_ERROR;
     } else {
       DCHECK_GT(0, delta);
-      UMA_HISTOGRAM_COUNTS("Histogram.InconsistentCountLow", -delta);
       if (-delta > kCommonRaceBasedCountMismatch)
         inconsistencies |= COUNT_LOW_ERROR;
     }

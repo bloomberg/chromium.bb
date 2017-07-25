@@ -24828,6 +24828,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Histogram.InconsistentCountHigh">
+  <obsolete>
+    Deprecated 7/2017.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     The number of extra samples counted in the redundant_count in a histogram
@@ -24836,6 +24839,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Histogram.InconsistentCountLow">
+  <obsolete>
+    Deprecated 7/2017.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     The number of missing samples in the redundant_count in a histogram that
