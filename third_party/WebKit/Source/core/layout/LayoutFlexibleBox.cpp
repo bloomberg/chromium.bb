@@ -560,7 +560,7 @@ LayoutUnit LayoutFlexibleBox::MainAxisContentExtent(
 LayoutUnit LayoutFlexibleBox::ComputeMainAxisExtentForChild(
     const LayoutBox& child,
     SizeType size_type,
-    const Length& size) {
+    const Length& size) const {
   // If we have a horizontal flow, that means the main size is the width.
   // That's the logical width for horizontal writing modes, and the logical
   // height in vertical writing modes. For a vertical flow, main size is the
@@ -1188,9 +1188,10 @@ void LayoutFlexibleBox::PrepareOrderIteratorAndMargins() {
 }
 
 DISABLE_CFI_PERF
-void LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(const LayoutBox& child,
-                                                      LayoutUnit& min_extent,
-                                                      LayoutUnit& max_extent) {
+void LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
+    const LayoutBox& child,
+    LayoutUnit& min_extent,
+    LayoutUnit& max_extent) const {
   min_extent = LayoutUnit();
   max_extent = LayoutUnit::Max();
 
@@ -1308,7 +1309,7 @@ LayoutUnit LayoutFlexibleBox::ChildLogicalHeightForPercentageResolution(
 
 LayoutUnit LayoutFlexibleBox::AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
     const LayoutBox& child,
-    LayoutUnit child_size) {
+    LayoutUnit child_size) const {
   Length cross_min = IsHorizontalFlow() ? child.Style()->MinHeight()
                                         : child.Style()->MinWidth();
   Length cross_max = IsHorizontalFlow() ? child.Style()->MaxHeight()
