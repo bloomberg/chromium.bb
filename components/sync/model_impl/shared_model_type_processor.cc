@@ -315,6 +315,14 @@ void SharedModelTypeProcessor::FlushPendingCommitRequests() {
     worker_->EnqueueForCommit(commit_requests);
 }
 
+void SharedModelTypeProcessor::GetLocalChanges(
+    size_t max_entries,
+    const GetLocalChangesCallback& callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_GT(max_entries, 0U);
+  callback.Run(CommitRequestDataList());
+}
+
 void SharedModelTypeProcessor::OnCommitCompleted(
     const sync_pb::ModelTypeState& type_state,
     const CommitResponseDataList& response_list) {

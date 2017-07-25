@@ -295,7 +295,8 @@ void SyncManagerImpl::Init(InitArgs* args) {
   allstatus_.SetInvalidatorClientId(args->invalidator_client_id);
 
   model_type_registry_ = base::MakeUnique<ModelTypeRegistry>(
-      args->workers, &share_, this, base::Bind(&MigrateDirectoryData));
+      args->workers, &share_, this, base::Bind(&MigrateDirectoryData),
+      args->cancelation_signal);
   sync_encryption_handler_->AddObserver(model_type_registry_.get());
 
   // Build a SyncCycleContext and store the worker in it.

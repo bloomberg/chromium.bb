@@ -35,6 +35,7 @@ class MockModelTypeWorker : public CommitQueue {
 
   // Implementation of ModelTypeWorker.
   void EnqueueForCommit(const CommitRequestDataList& list) override;
+  void NudgeForCommit() override;
 
   // Getters to inspect the requests sent to this object.
   size_t GetNumPendingCommits() const;

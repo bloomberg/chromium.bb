@@ -28,6 +28,12 @@ void MockModelTypeProcessor::DisconnectSync() {
   }
 }
 
+void MockModelTypeProcessor::GetLocalChanges(
+    size_t max_entries,
+    const GetLocalChangesCallback& callback) {
+  callback.Run(CommitRequestDataList());
+}
+
 void MockModelTypeProcessor::OnCommitCompleted(
     const sync_pb::ModelTypeState& type_state,
     const CommitResponseDataList& response_list) {

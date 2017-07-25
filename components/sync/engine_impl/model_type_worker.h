@@ -11,8 +11,12 @@
 #include <memory>
 #include <string>
 
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
+#include "components/sync/base/cancelation_observer.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/commit_queue.h"
@@ -27,6 +31,7 @@
 
 namespace syncer {
 
+class CancelationSignal;
 class ModelTypeProcessor;
 class WorkerEntityTracker;
 
@@ -60,7 +65,8 @@ class ModelTypeWorker : public UpdateHandler,
                   std::unique_ptr<Cryptographer> cryptographer,
                   NudgeHandler* nudge_handler,
                   std::unique_ptr<ModelTypeProcessor> model_type_processor,
-                  DataTypeDebugInfoEmitter* debug_info_emitter);
+                  DataTypeDebugInfoEmitter* debug_info_emitter,
+                  CancelationSignal* cancelation_signal);
   ~ModelTypeWorker() override;
 
   ModelType GetModelType() const;
@@ -82,6 +88,7 @@ class ModelTypeWorker : public UpdateHandler,
 
   // CommitQueue implementation.
   void EnqueueForCommit(const CommitRequestDataList& request_list) override;
+  void NudgeForCommit() override;
 
   // CommitContributor implementation.
   std::unique_ptr<CommitContribution> GetContribution(
@@ -202,8 +209,64 @@ class ModelTypeWorker : public UpdateHandler,
   // Whether there are outstanding encrypted updates in |entities_|.
   bool has_encrypted_updates_ = false;
 
+  // Cancelation signal is used to cancel blocking operation on engine shutdown.
+  CancelationSignal* cancelation_signal_;
+
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<ModelTypeWorker> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ModelTypeWorker);
+};
+
+// GetLocalChangesRequest is a container for GetLocalChanges call response. It
+// allows sync thread to block waiting for model thread to call SetResponse.
+// This class supports cancelling blocking call through CancelationSignal during
+// sync engine shutdown.
+//
+// It should be used in the following manner:
+// scoped_refptr<GetLocalChangesRequest> request =
+//     base::MakeRefCounted<GetLocalChangesRequest>(cancelation_signal_);
+// model_type_processor_->GetLocalChanges(
+//     max_entries,
+//     base::Bind(&GetLocalChangesRequest::SetResponse, request));
+// request->WaitForResponse();
+// CommitRequestDataList response;
+// if (!request->WasCancelled())
+//   response = request->ExtractResponse();
+class GetLocalChangesRequest
+    : public base::RefCountedThreadSafe<GetLocalChangesRequest>,
+      public CancelationObserver {
+ public:
+  explicit GetLocalChangesRequest(CancelationSignal* cancelation_signal);
+
+  // CancelationObserver implementation.
+  void OnSignalReceived() override;
+
+  // Blocks current thread until either SetResponse is called or
+  // cancelation_signal_ is signalled.
+  void WaitForResponse();
+
+  // SetResponse takes ownership of |local_changes| and unblocks WaitForResponse
+  // call. It is called by model type through callback passed to
+  // GetLocalChanges.
+  void SetResponse(CommitRequestDataList&& local_changes);
+
+  // Checks if WaitForResponse was cancelled through CancelationSignal. When
+  // returns true calling ExtractResponse is unsafe.
+  bool WasCancelled();
+
+  // Returns response set by SetResponse().
+  CommitRequestDataList&& ExtractResponse();
+
+ private:
+  friend class base::RefCountedThreadSafe<GetLocalChangesRequest>;
+  ~GetLocalChangesRequest() override;
+
+  CancelationSignal* cancelation_signal_;
+  base::WaitableEvent response_accepted_;
+  CommitRequestDataList response_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetLocalChangesRequest);
 };
 
 }  // namespace syncer

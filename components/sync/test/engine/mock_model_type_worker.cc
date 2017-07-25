@@ -33,6 +33,8 @@ void MockModelTypeWorker::EnqueueForCommit(const CommitRequestDataList& list) {
   pending_commits_.push_back(list);
 }
 
+void MockModelTypeWorker::NudgeForCommit() {}
+
 size_t MockModelTypeWorker::GetNumPendingCommits() const {
   return pending_commits_.size();
 }

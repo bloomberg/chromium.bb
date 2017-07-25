@@ -275,7 +275,7 @@ class SyncerTest : public testing::Test,
 
     model_type_registry_ = base::MakeUnique<ModelTypeRegistry>(
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
-        UssMigrator());
+        UssMigrator(), &cancelation_signal_);
     model_type_registry_->RegisterDirectoryTypeDebugInfoObserver(
         &debug_info_cache_);
 
