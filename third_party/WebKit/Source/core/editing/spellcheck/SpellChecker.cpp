@@ -872,57 +872,30 @@ SpellChecker::GetSpellCheckMarkerUnderSelection() const {
 }
 
 std::pair<String, String> SpellChecker::SelectMisspellingAsync() {
-  VisibleSelection selection =
-      GetFrame().Selection().ComputeVisibleSelectionInDOMTree();
-  if (selection.IsNone())
+  const std::pair<Node*, SpellCheckMarker*>& node_and_marker =
+      GetSpellCheckMarkerUnderSelection();
+  if (!node_and_marker.first)
     return {};
 
-  // Caret and range selections always return valid normalized ranges.
+  Node* const marker_node = node_and_marker.first;
+  const SpellCheckMarker* const marker = node_and_marker.second;
+
+  const VisibleSelection& selection =
+      GetFrame().Selection().ComputeVisibleSelectionInDOMTree();
+  // Caret and range selections (one of which we must have since we found a
+  // marker) always return valid normalized ranges.
   const EphemeralRange& selection_range =
       selection.ToNormalizedEphemeralRange();
 
-  Node* const selection_start_container =
-      selection_range.StartPosition().ComputeContainerNode();
-  Node* const selection_end_container =
-      selection_range.EndPosition().ComputeContainerNode();
-
-  // We don't currently support the case where a misspelling spans multiple
-  // nodes. See crbug.com/720065
-  if (selection_start_container != selection_end_container)
+  const EphemeralRange marker_range(
+      Position(marker_node, marker->StartOffset()),
+      Position(marker_node, marker->EndOffset()));
+  const String& marked_text = PlainText(marker_range);
+  if (marked_text.StripWhiteSpace(&IsWhiteSpaceOrPunctuation) !=
+      PlainText(selection_range).StripWhiteSpace(&IsWhiteSpaceOrPunctuation))
     return {};
 
-  const unsigned selection_start_offset =
-      selection_range.StartPosition().ComputeOffsetInContainerNode();
-  const unsigned selection_end_offset =
-      selection_range.EndPosition().ComputeOffsetInContainerNode();
-
-  const DocumentMarkerVector& markers_in_node =
-      GetFrame().GetDocument()->Markers().MarkersFor(
-          selection_start_container, DocumentMarker::MisspellingMarkers());
-
-  const auto marker_it =
-      std::find_if(markers_in_node.begin(), markers_in_node.end(),
-                   [=](const DocumentMarker* marker) {
-                     return marker->StartOffset() < selection_end_offset &&
-                            marker->EndOffset() > selection_start_offset;
-                   });
-  if (marker_it == markers_in_node.end())
-    return {};
-
-  const SpellCheckMarker* const found_marker = ToSpellCheckMarker(*marker_it);
-
-  Range* const marker_range =
-      Range::Create(*GetFrame().GetDocument(), selection_start_container,
-                    found_marker->StartOffset(), selection_start_container,
-                    found_marker->EndOffset());
-
-  if (marker_range->GetText().StripWhiteSpace(&IsWhiteSpaceOrPunctuation) !=
-      CreateRange(selection_range)
-          ->GetText()
-          .StripWhiteSpace(&IsWhiteSpaceOrPunctuation))
-    return {};
-
-  return std::make_pair(marker_range->GetText(), found_marker->Description());
+  return std::make_pair(marked_text, marker->Description());
 }
 
 void SpellChecker::ReplaceMisspelledRange(const String& text) {
