@@ -774,7 +774,7 @@ class TimerSequenceTest : public testing::Test {
   }
 
   static void VerifyAffinity(const SequencedTaskRunner* task_runner) {
-    EXPECT_TRUE(task_runner->RunsTasksOnCurrentThread());
+    EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
   }
 
   // Delete the timer.

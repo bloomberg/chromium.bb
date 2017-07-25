@@ -61,7 +61,7 @@ scoped_refptr<SequencedTaskRunner> SequencedTaskRunnerHandle::Get() {
   DCHECK(sequence_token.IsValid());
   scoped_refptr<SequencedTaskRunner> sequenced_task_runner(
       pool->GetSequencedTaskRunner(sequence_token));
-  DCHECK(sequenced_task_runner->RunsTasksOnCurrentThread());
+  DCHECK(sequenced_task_runner->RunsTasksInCurrentSequence());
   return sequenced_task_runner;
 }
 
@@ -75,13 +75,13 @@ bool SequencedTaskRunnerHandle::IsSet() {
 SequencedTaskRunnerHandle::SequencedTaskRunnerHandle(
     scoped_refptr<SequencedTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!SequencedTaskRunnerHandle::IsSet());
   lazy_tls_ptr.Pointer()->Set(this);
 }
 
 SequencedTaskRunnerHandle::~SequencedTaskRunnerHandle() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(lazy_tls_ptr.Pointer()->Get(), this);
   lazy_tls_ptr.Pointer()->Set(nullptr);
 }
