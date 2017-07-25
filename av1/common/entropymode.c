@@ -1421,29 +1421,7 @@ static const aom_prob default_comp_inter_mode_p[COMP_INTER_MODE_CONTEXTS] = {
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 
 #if CONFIG_PALETTE
-
-// Tree to code palette size (number of colors in a palette) and the
-// corresponding probabilities for Y and UV planes.
-const aom_tree_index av1_palette_size_tree[TREE_SIZE(PALETTE_SIZES)] = {
-  -TWO_COLORS,  2, -THREE_COLORS, 4,  -FOUR_COLORS,  6,
-  -FIVE_COLORS, 8, -SIX_COLORS,   10, -SEVEN_COLORS, -EIGHT_COLORS,
-};
-
-// TODO(huisu): tune these probs
-const aom_prob
-    av1_default_palette_y_size_prob[PALETTE_BLOCK_SIZES][PALETTE_SIZES - 1] = {
-      { 96, 89, 100, 64, 77, 130 },   { 22, 15, 44, 16, 34, 82 },
-      { 30, 19, 57, 18, 38, 86 },     { 94, 36, 104, 23, 43, 92 },
-      { 116, 76, 107, 46, 65, 105 },  { 112, 82, 94, 40, 70, 112 },
-      { 147, 124, 123, 58, 69, 103 }, { 180, 113, 136, 49, 45, 114 },
-      { 107, 70, 87, 49, 154, 156 },  { 98, 105, 142, 63, 64, 152 },
-#if CONFIG_EXT_PARTITION
-      { 98, 105, 142, 63, 64, 152 },  { 98, 105, 142, 63, 64, 152 },
-      { 98, 105, 142, 63, 64, 152 },
-#endif  // CONFIG_EXT_PARTITION
-    };
-
-#if CONFIG_NEW_MULTISYMBOL
+// TODO(huisu): tune these cdfs
 const aom_cdf_prob
     default_palette_y_size_cdf[PALETTE_BLOCK_SIZES][CDF_SIZE(PALETTE_SIZES)] = {
       { AOM_ICDF(12288), AOM_ICDF(19408), AOM_ICDF(24627), AOM_ICDF(26662),
@@ -1475,22 +1453,7 @@ const aom_cdf_prob
         AOM_ICDF(29763), AOM_ICDF(31546), AOM_ICDF(32768), 0 },
 #endif
     };
-#endif  // CONFIG_NEW_MULTISYMBOL
 
-const aom_prob
-    av1_default_palette_uv_size_prob[PALETTE_BLOCK_SIZES][PALETTE_SIZES - 1] = {
-      { 160, 196, 228, 213, 175, 230 }, { 87, 148, 208, 141, 166, 163 },
-      { 72, 151, 204, 139, 155, 161 },  { 78, 135, 171, 104, 120, 173 },
-      { 59, 92, 131, 78, 92, 142 },     { 75, 118, 149, 84, 90, 128 },
-      { 89, 87, 92, 66, 66, 128 },      { 67, 53, 54, 55, 66, 93 },
-      { 120, 130, 83, 171, 75, 214 },   { 72, 55, 66, 68, 79, 107 },
-#if CONFIG_EXT_PARTITION
-      { 72, 55, 66, 68, 79, 107 },      { 72, 55, 66, 68, 79, 107 },
-      { 72, 55, 66, 68, 79, 107 },
-#endif  // CONFIG_EXT_PARTITION
-    };
-
-#if CONFIG_NEW_MULTISYMBOL
 const aom_cdf_prob default_palette_uv_size_cdf[PALETTE_BLOCK_SIZES][CDF_SIZE(
     PALETTE_SIZES)] = {
   { AOM_ICDF(20480), AOM_ICDF(29888), AOM_ICDF(32453), AOM_ICDF(32715),
@@ -1522,7 +1485,6 @@ const aom_cdf_prob default_palette_uv_size_cdf[PALETTE_BLOCK_SIZES][CDF_SIZE(
     AOM_ICDF(25799), AOM_ICDF(28712), AOM_ICDF(32768), 0 },
 #endif
 };
-#endif  // CONFIG_NEW_MULTISYMBOL
 
 // When palette mode is enabled, following probability tables indicate the
 // probabilities to code the "is_palette" bit (i.e. the bit that indicates
@@ -1542,107 +1504,6 @@ const aom_prob av1_default_palette_uv_mode_prob[PALETTE_UV_MODE_CONTEXTS] = {
   253, 229
 };
 
-// Trees to code palette color indices (for various palette sizes), and the
-// corresponding probability tables for Y and UV planes.
-const aom_tree_index
-    av1_palette_color_index_tree[PALETTE_SIZES][TREE_SIZE(PALETTE_COLORS)] = {
-      { // 2 colors
-        -PALETTE_COLOR_ONE, -PALETTE_COLOR_TWO },
-      { // 3 colors
-        -PALETTE_COLOR_ONE, 2, -PALETTE_COLOR_TWO, -PALETTE_COLOR_THREE },
-      { // 4 colors
-        -PALETTE_COLOR_ONE, 2, -PALETTE_COLOR_TWO, 4, -PALETTE_COLOR_THREE,
-        -PALETTE_COLOR_FOUR },
-      { // 5 colors
-        -PALETTE_COLOR_ONE, 2, -PALETTE_COLOR_TWO, 4, -PALETTE_COLOR_THREE, 6,
-        -PALETTE_COLOR_FOUR, -PALETTE_COLOR_FIVE },
-      { // 6 colors
-        -PALETTE_COLOR_ONE, 2, -PALETTE_COLOR_TWO, 4, -PALETTE_COLOR_THREE, 6,
-        -PALETTE_COLOR_FOUR, 8, -PALETTE_COLOR_FIVE, -PALETTE_COLOR_SIX },
-      { // 7 colors
-        -PALETTE_COLOR_ONE, 2, -PALETTE_COLOR_TWO, 4, -PALETTE_COLOR_THREE, 6,
-        -PALETTE_COLOR_FOUR, 8, -PALETTE_COLOR_FIVE, 10, -PALETTE_COLOR_SIX,
-        -PALETTE_COLOR_SEVEN },
-      { // 8 colors
-        -PALETTE_COLOR_ONE, 2, -PALETTE_COLOR_TWO, 4, -PALETTE_COLOR_THREE, 6,
-        -PALETTE_COLOR_FOUR, 8, -PALETTE_COLOR_FIVE, 10, -PALETTE_COLOR_SIX, 12,
-        -PALETTE_COLOR_SEVEN, -PALETTE_COLOR_EIGHT },
-    };
-
-// Note: Has to be non-zero to avoid any asserts triggering.
-#define UNUSED_PROB 128
-
-const aom_prob av1_default_palette_y_color_index_prob
-    [PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1] = {
-      {
-          // 2 colors
-          { 231, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 69, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 224, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 249, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-      },
-      {
-          // 3 colors
-          { 219, 124, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 91, 191, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 34, 237, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 184, 118, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 252, 124, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-      },
-      {
-          // 4 colors
-          { 204, 87, 97, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 74, 144, 129, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 52, 191, 134, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 151, 85, 147, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 248, 60, 115, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-      },
-      {
-          // 5 colors
-          { 218, 69, 62, 106, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 76, 143, 89, 127, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 21, 233, 94, 131, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 172, 72, 89, 112, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 253, 66, 65, 128, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-      },
-      {
-          // 6 colors
-          { 190, 60, 47, 54, 74, UNUSED_PROB, UNUSED_PROB },
-          { 62, 106, 51, 95, 110, UNUSED_PROB, UNUSED_PROB },
-          { 52, 180, 69, 72, 107, UNUSED_PROB, UNUSED_PROB },
-          { 156, 83, 72, 83, 101, UNUSED_PROB, UNUSED_PROB },
-          { 245, 45, 37, 52, 91, UNUSED_PROB, UNUSED_PROB },
-      },
-      {
-          // 7 colors
-          { 206, 56, 42, 42, 53, 85, UNUSED_PROB },
-          { 70, 100, 45, 68, 77, 94, UNUSED_PROB },
-          { 57, 169, 51, 62, 74, 119, UNUSED_PROB },
-          { 172, 76, 71, 40, 59, 76, UNUSED_PROB },
-          { 248, 47, 36, 53, 61, 110, UNUSED_PROB },
-      },
-      {
-          // 8 colors
-          { 208, 52, 38, 34, 34, 44, 66 },
-          { 52, 107, 34, 73, 69, 82, 87 },
-          { 28, 208, 53, 43, 62, 70, 102 },
-          { 184, 64, 45, 37, 37, 69, 105 },
-          { 251, 18, 31, 45, 47, 61, 104 },
-      },
-    };
-
-#if CONFIG_NEW_MULTISYMBOL
 const aom_cdf_prob default_palette_y_color_index_cdf
     [PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)] = {
       {
@@ -1730,79 +1591,7 @@ const aom_cdf_prob default_palette_y_color_index_cdf
             0 },
       },
     };
-#endif
 
-const aom_prob av1_default_palette_uv_color_index_prob
-    [PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1] = {
-      {
-          // 2 colors
-          { 233, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 69, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 240, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 248, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-      },
-      {
-          // 3 colors
-          { 216, 128, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 110, 171, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 40, 239, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 191, 104, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 247, 134, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-      },
-      {
-          // 4 colors
-          { 202, 89, 132, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 90, 132, 136, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 63, 195, 149, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 152, 84, 152, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 241, 87, 136, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-      },
-      {
-          // 5 colors
-          { 209, 54, 82, 134, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 94, 173, 180, 93, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 10, 251, 127, 84, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 183, 20, 150, 47, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 252, 73, 111, 150, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-      },
-      {
-          // 6 colors
-          { 192, 67, 59, 46, 184, UNUSED_PROB, UNUSED_PROB },
-          { 59, 92, 61, 100, 130, UNUSED_PROB, UNUSED_PROB },
-          { 49, 162, 68, 91, 150, UNUSED_PROB, UNUSED_PROB },
-          { 133, 29, 36, 153, 101, UNUSED_PROB, UNUSED_PROB },
-          { 247, 71, 44, 90, 129, UNUSED_PROB, UNUSED_PROB },
-      },
-      {
-          // 7 colors
-          { 182, 62, 80, 78, 46, 116, UNUSED_PROB },
-          { 59, 62, 39, 81, 65, 99, UNUSED_PROB },
-          { 54, 177, 48, 58, 93, 104, UNUSED_PROB },
-          { 137, 79, 54, 55, 44, 134, UNUSED_PROB },
-          { 239, 82, 79, 44, 69, 71, UNUSED_PROB },
-      },
-      {
-          // 8 colors
-          { 172, 53, 27, 67, 30, 79, 113 },
-          { 63, 57, 45, 81, 62, 35, 47 },
-          { 51, 200, 36, 47, 82, 165, 129 },
-          { 141, 100, 47, 29, 33, 37, 129 },
-          { 236, 42, 50, 91, 24, 154, 65 },
-      },
-    };
-
-#if CONFIG_NEW_MULTISYMBOL
 const aom_cdf_prob default_palette_uv_color_index_cdf
     [PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)] = {
       {
@@ -1890,8 +1679,6 @@ const aom_cdf_prob default_palette_uv_color_index_cdf
             0 },
       }
     };
-#endif  // CONFIG_NEW_MULTISYMBOL
-#undef UNUSED_PROB
 
 #define MAX_COLOR_CONTEXT_HASH 8
 // Negative values are invalid
@@ -5122,14 +4909,14 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->partition_prob, default_partition_probs);
   av1_copy(fc->intra_inter_prob, default_intra_inter_p);
   av1_copy(fc->comp_inter_prob, default_comp_inter_p);
-#if CONFIG_NEW_MULTISYMBOL
-  av1_copy(fc->comp_inter_cdf, default_comp_inter_cdf);
 #if CONFIG_PALETTE
   av1_copy(fc->palette_y_size_cdf, default_palette_y_size_cdf);
   av1_copy(fc->palette_uv_size_cdf, default_palette_uv_size_cdf);
   av1_copy(fc->palette_y_color_index_cdf, default_palette_y_color_index_cdf);
   av1_copy(fc->palette_uv_color_index_cdf, default_palette_uv_color_index_cdf);
-#endif
+#endif  // CONFIG_PALETTE
+#if CONFIG_NEW_MULTISYMBOL
+  av1_copy(fc->comp_inter_cdf, default_comp_inter_cdf);
 #endif  // CONFIG_NEW_MULTISYMBOL
 #if CONFIG_EXT_COMP_REFS
   av1_copy(fc->comp_ref_type_prob, default_comp_ref_type_p);

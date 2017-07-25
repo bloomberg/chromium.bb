@@ -234,7 +234,6 @@ typedef struct frame_contexts {
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   aom_prob intra_inter_prob[INTRA_INTER_CONTEXTS];
   aom_prob comp_inter_prob[COMP_INTER_CONTEXTS];
-#if CONFIG_NEW_MULTISYMBOL
 #if CONFIG_PALETTE
   aom_cdf_prob palette_y_size_cdf[PALETTE_BLOCK_SIZES][CDF_SIZE(PALETTE_SIZES)];
   aom_cdf_prob palette_uv_size_cdf[PALETTE_BLOCK_SIZES]
@@ -245,7 +244,8 @@ typedef struct frame_contexts {
   aom_cdf_prob palette_uv_color_index_cdf[PALETTE_SIZES]
                                          [PALETTE_COLOR_INDEX_CONTEXTS]
                                          [CDF_SIZE(PALETTE_COLORS)];
-#endif
+#endif  // CONFIG_PALETTE
+#if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob comp_inter_cdf[COMP_INTER_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1][CDF_SIZE(2)];
 #endif
@@ -520,14 +520,6 @@ extern const aom_prob av1_default_palette_y_mode_prob[PALETTE_BLOCK_SIZES]
                                                      [PALETTE_Y_MODE_CONTEXTS];
 extern const aom_prob
     av1_default_palette_uv_mode_prob[PALETTE_UV_MODE_CONTEXTS];
-extern const aom_prob av1_default_palette_y_size_prob[PALETTE_BLOCK_SIZES]
-                                                     [PALETTE_SIZES - 1];
-extern const aom_prob av1_default_palette_uv_size_prob[PALETTE_BLOCK_SIZES]
-                                                      [PALETTE_SIZES - 1];
-extern const aom_prob av1_default_palette_y_color_index_prob
-    [PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1];
-extern const aom_prob av1_default_palette_uv_color_index_prob
-    [PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1];
 #endif  // CONFIG_PALETTE
 
 extern const int av1_intra_mode_ind[INTRA_MODES];
@@ -560,7 +552,6 @@ extern const aom_tree_index
 extern const aom_tree_index
     av1_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)];
 #if CONFIG_PALETTE
-extern const aom_tree_index av1_palette_size_tree[TREE_SIZE(PALETTE_SIZES)];
 extern const aom_tree_index
     av1_palette_color_index_tree[PALETTE_SIZES][TREE_SIZE(PALETTE_COLORS)];
 #endif  // CONFIG_PALETTE

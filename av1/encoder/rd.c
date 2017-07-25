@@ -84,20 +84,18 @@ static void fill_mode_costs(AV1_COMP *cpi) {
 
 #if CONFIG_PALETTE
   for (i = 0; i < PALETTE_BLOCK_SIZES; ++i) {
-    av1_cost_tokens(cpi->palette_y_size_cost[i],
-                    av1_default_palette_y_size_prob[i], av1_palette_size_tree);
-    av1_cost_tokens(cpi->palette_uv_size_cost[i],
-                    av1_default_palette_uv_size_prob[i], av1_palette_size_tree);
+    av1_cost_tokens_from_cdf(cpi->palette_y_size_cost[i],
+                             fc->palette_y_size_cdf[i], NULL);
+    av1_cost_tokens_from_cdf(cpi->palette_uv_size_cost[i],
+                             fc->palette_uv_size_cdf[i], NULL);
   }
 
   for (i = 0; i < PALETTE_SIZES; ++i) {
     for (j = 0; j < PALETTE_COLOR_INDEX_CONTEXTS; ++j) {
-      av1_cost_tokens(cpi->palette_y_color_cost[i][j],
-                      av1_default_palette_y_color_index_prob[i][j],
-                      av1_palette_color_index_tree[i]);
-      av1_cost_tokens(cpi->palette_uv_color_cost[i][j],
-                      av1_default_palette_uv_color_index_prob[i][j],
-                      av1_palette_color_index_tree[i]);
+      av1_cost_tokens_from_cdf(cpi->palette_y_color_cost[i][j],
+                               fc->palette_y_color_index_cdf[i][j], NULL);
+      av1_cost_tokens_from_cdf(cpi->palette_uv_color_cost[i][j],
+                               fc->palette_uv_color_index_cdf[i][j], NULL);
     }
   }
 #endif  // CONFIG_PALETTE

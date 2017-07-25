@@ -37,9 +37,9 @@ typedef struct {
 typedef struct {
   aom_cdf_prob (*tail_cdf)[CDF_SIZE(ENTROPY_TOKENS)];
   aom_cdf_prob (*head_cdf)[CDF_SIZE(ENTROPY_TOKENS)];
-#if CONFIG_NEW_MULTISYMBOL && CONFIG_PALETTE
+#if CONFIG_PALETTE
   aom_cdf_prob *palette_cdf;
-#endif
+#endif  // CONFIG_PALETTE
   int eob_val;
   int first_val;
   const aom_prob *context_tree;
