@@ -30,6 +30,20 @@ from py_utils import discover
 from core.sharding_map_generator import load_benchmark_sharding_map
 
 
+ANDROID_BOT_TO_DEVICE_TYPE_MAP = {
+  'Android Swarming N5X Tester': 'Nexus 5X',
+  'Android Nexus5X Perf': 'Nexus 5X',
+  'Android Nexus5 Perf': 'Nexus 5',
+  'Android Nexus6 Perf': 'Nexus 6',
+  'Android Nexus7v2 Perf': 'Nexus 7',
+  'Android One Perf': 'W6210 (4560MMX_b fingerprint)',
+  'Android Nexus5X WebView Perf': 'Nexus 5X',
+  'Android Nexus6 WebView Tester': 'Nexus 6',
+}
+
+SVELTE_DEVICE_LIST = ['W6210 (4560MMX_b fingerprint)']
+
+
 def add_builder(waterfall, name, additional_compile_targets=None):
   waterfall['builders'][name] = added = {}
   if additional_compile_targets:
@@ -679,6 +693,60 @@ def ShouldBenchmarkBeScheduled(benchmark, platform):
 
   return True
 
+
+def ShouldBenchmarksBeScheduledViaStoryExpectations(
+    benchmark, name, os_name, browser_name):
+  # StoryExpectations uses finder_options.browser_type, platform.GetOSName,
+  # platform.GetDeviceTypeName, and platform.IsSvelte to determine if the
+  # the expectation test condition is true and the test should be disabled.
+  # This class is used as a placeholder for finder_options and platform since
+  # we do not have enough information to create those objection.
+  class ExpectationData(object):
+    def __init__(self, browser_type, os_name, device_type_name):
+      self._browser_type = browser_type
+      self._os_name = os_name
+      self._is_svelte = False
+      if os_name == 'android' and device_type_name in SVELTE_DEVICE_LIST:
+        self._is_svelte = True
+      self._device_type_name = device_type_name
+
+    def GetOSName(self):
+      return self._os_name
+
+    def GetDeviceTypeName(self):
+      return self._device_type_name if self._device_type_name else ''
+
+    @property
+    def browser_type(self):
+      return self._browser_type
+
+    def IsSvelte(self):
+      return self._is_svelte
+
+  # OS names are the exact OS names. We need ExpectationData to return OS names
+  # that are consistent with platform_backend in telemetry to work.
+  def sanitize_os_name(os_name):
+    lower_name = os_name.lower()
+    if 'win' in lower_name:
+      return 'win'
+    if 'mac' in lower_name:
+      return 'mac'
+    if 'android' in lower_name:
+      return 'android'
+    if 'ubuntu' in lower_name or 'linux' in lower_name:
+      return 'linux'
+    if lower_name == 'skynet':
+      print ('OS name appears to be for testing purposes. If this is in error '
+             'file a bug.')
+      return 'TEST'
+    raise TypeError('Unknown OS name detected.')
+
+  device_type_name = ANDROID_BOT_TO_DEVICE_TYPE_MAP.get(name)
+  os_name = sanitize_os_name(os_name)
+  e = ExpectationData(browser_name, os_name, device_type_name)
+  return not benchmark().GetExpectations().IsBenchmarkDisabled(e, e)
+
+
 def generate_telemetry_tests(name, tester_config, benchmarks,
                              benchmark_sharding_map,
                              benchmark_ref_build_blacklist):
@@ -716,6 +784,10 @@ def generate_telemetry_tests(name, tester_config, benchmarks,
                              benchmark.Name()))
       swarming_dimensions.append(get_swarming_dimension(
           dimension, device))
+
+    if not ShouldBenchmarksBeScheduledViaStoryExpectations(
+        benchmark, name, swarming_dimensions[0]['os'], browser_name):
+      continue
 
     test = generate_telemetry_test(
       swarming_dimensions, benchmark.Name(), browser_name)
