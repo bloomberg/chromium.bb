@@ -84,7 +84,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 
   _actionImageView =
       [[MDCActionImageView alloc] initWithFrame:_floatingButton.bounds
-                                   primaryImage:RemotingTheme.settingsIcon
+                                   primaryImage:RemotingTheme.menuIcon
                                     activeImage:RemotingTheme.closeIcon];
   [_floatingButton addSubview:_actionImageView];
   [self.view addSubview:_floatingButton];
