@@ -557,6 +557,7 @@ if (enable_vr) {
       "javatests/src/org/chromium/chrome/browser/vr_shell/EmulatedVrController.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/mock/MockVrCoreVersionCheckerImpl.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/mock/MockVrDaydreamApi.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/mock/MockVrIntentHandler.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/nfc_apk/SimNfcActivity.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/CardboardUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/NfcSimUtils.java",
@@ -591,6 +592,7 @@ if (enable_vr) {
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/android_tools:android_support_v7_appcompat_java",
       "//third_party/android_tools:android_support_v7_recyclerview_java",
+      "//third_party/custom_tabs_client:custom_tabs_support_java",
       "//third_party/gvr-android-sdk:controller_test_api_java",
       "//third_party/gvr-android-sdk:gvr_common_java",
       "//third_party/junit",
@@ -734,29 +736,29 @@ if (current_toolchain == default_toolchain) {
               "/libmonochrome$shlib_extension.whitelist"
       output = monochrome_resource_whitelist
     }
-    
+
     # Use custom resource ID list instead of android_webview's compiler
     # resource whitelist because //android_webview: generate_webui_resources
     # and //android_webview: generate_components_resources use hand-written
     # resource whitelists.
     action("system_webview_locale_resource_id_list") {
       script = "//tools/grit/pak_util.py"
-      
+
       _system_webview_en_US_locale_pak =
           "$root_out_dir/android_webview/locales/en-US.pak"
-      
+
       inputs = [
         _system_webview_en_US_locale_pak,
       ]
-      
+
       outputs = [
         system_webview_locale_resource_id_list,
       ]
-      
+
       deps = [
         "//android_webview:repack_locales",
       ]
-      
+
       args = [
         "list-id",
         "--output",
@@ -764,25 +766,25 @@ if (current_toolchain == default_toolchain) {
         rebase_path(_system_webview_en_US_locale_pak, root_build_dir),
       ]
     }
-    
+
     action("monochrome_locale_whitelist") {
       script = "//tools/resources/filter_resource_whitelist.py"
-      
+
       inputs = [
         monochrome_resource_whitelist,
         system_webview_locale_resource_id_list,
       ]
-      
+
       outputs = [
         monochrome_locale_whitelist,
       ]
-      
+
       deps = [
         ":monochrome_resource_whitelist",
         ":system_webview_locale_resource_id_list",
         "//android_webview:system_webview_pak_whitelist",
       ]
-      
+
       args = [
         "--input",
         rebase_path(monochrome_resource_whitelist, root_build_dir),
@@ -791,7 +793,7 @@ if (current_toolchain == default_toolchain) {
         "--output",
         rebase_path(monochrome_locale_whitelist, root_build_dir),
       ]
-    } 
+    }
   }
 
   chrome_paks("monochrome_paks") {
@@ -809,7 +811,7 @@ if (current_toolchain == default_toolchain) {
       deps += [ ":monochrome_locale_whitelist" ]
     }
   }
-  
+
   # This target is separate from monochrome_pak_assets because it does not
   # disable compression.
   android_assets("monochrome_locale_pak_assets") {
@@ -817,7 +819,7 @@ if (current_toolchain == default_toolchain) {
     foreach(_locale, locales - android_chrome_omitted_locales) {
       sources += [ "$target_gen_dir/monochrome_paks/locales/$_locale.pak" ]
     }
-  
+
     deps = [
       ":monochrome_paks",
     ]
