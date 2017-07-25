@@ -22,47 +22,18 @@
           "object": "LayoutTextControl INPUT id='root'",
           "rect": [0, 0, 48, 19],
           "reason": "full"
-        }
-      ]
-    },
-    {
-      "name": "Child Containment Layer",
-      "position": [5, 5],
-      "bounds": [44, 15]
-    },
-    {
-      "name": "LayoutBlockFlow DIV id='inner-editor'",
-      "position": [1, 1],
-      "bounds": [42, 13],
-      "shouldFlattenTransform": false,
-      "drawsContent": true
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [42, 13],
-      "shouldFlattenTransform": false
-    },
-    {
-      "name": "Scrolling Contents Layer",
-      "bounds": [68, 13],
-      "drawsContent": true,
-      "paintInvalidations": [
+        },
         {
           "object": "LayoutBlockFlow DIV id='inner-editor'",
-          "rect": [66, 0, 1, 13],
-          "reason": "caret"
+          "rect": [6, 6, 42, 13],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [6, 6, 42, 13],
+          "reason": "subtree"
         }
       ]
-    },
-    {
-      "name": "Overflow Controls Host Layer",
-      "bounds": [42, 13]
-    },
-    {
-      "name": "Horizontal Scrollbar Layer",
-      "position": [0, 13],
-      "bounds": [42, 0],
-      "drawsContent": true
     }
   ],
   "objectPaintInvalidations": [
@@ -71,8 +42,28 @@
       "reason": "subtree"
     },
     {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll control"
+    },
+    {
       "object": "Caret",
       "reason": "caret"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'test test test'",
+      "reason": "subtree"
     }
   ]
 }
