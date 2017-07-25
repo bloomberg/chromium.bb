@@ -37,6 +37,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/text/WTFString.h"
 #include "storage/public/interfaces/blobs.mojom-blink.h"
 
@@ -253,11 +254,18 @@ class PLATFORM_EXPORT BlobDataHandle
   BlobDataHandle(std::unique_ptr<BlobData>, long long size);
   BlobDataHandle(const String& uuid, const String& type, long long size);
 
+  storage::mojom::blink::BlobPtr CloneBlobPtr();
+
   const String uuid_;
   const String type_;
   const long long size_;
   const bool is_single_unknown_size_file_;
-  storage::mojom::blink::BlobPtr blob_;
+  // This class is supposed to be thread safe. So to be able to use the mojo
+  // Blob interface from multiple threads store a InterfacePtrInfo combined with
+  // a mutex, and make sure any access to the mojo interface is done protected
+  // by the mutex.
+  storage::mojom::blink::BlobPtrInfo blob_info_;
+  Mutex blob_info_mutex_;
 };
 
 }  // namespace blink
