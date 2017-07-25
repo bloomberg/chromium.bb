@@ -774,13 +774,19 @@ def RunTestsInPlatformMode(args):
   # result for each test run in that iteration.
   all_iteration_results = []
 
+  global_results_tags = set()
+
   @contextlib.contextmanager
   def write_json_file():
     try:
       yield
+    except Exception:
+      global_results_tags.add('UNRELIABLE_RESULTS')
+      raise
     finally:
       json_results.GenerateJsonResultsFile(
-          all_raw_results, args.json_results_file)
+          all_raw_results, args.json_results_file,
+          global_tags=list(global_results_tags))
 
   json_writer = contextlib_ext.Optional(
       write_json_file(),
