@@ -6,10 +6,8 @@ package org.chromium.chrome.browser.download;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.DownloadManager;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -24,7 +22,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.shapes.OvalShape;
 import android.os.Binder;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.service.notification.StatusBarNotification;
 import android.text.TextUtils;
@@ -47,8 +44,6 @@ import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotifi
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
-import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
@@ -101,20 +96,18 @@ public class DownloadNotificationService extends Service {
     public static final String ACTION_DOWNLOAD_FAIL_SAFE =
             "org.chromium.chrome.browser.download.ACTION_SUMMARY_FAIL_SAFE";
 
-    static final String NOTIFICATION_NAMESPACE = "DownloadNotificationService";
-    private static final String TAG = "DownloadNotification";
-    // Limit file name to 25 characters. TODO(qinmin): use different limit for different devices?
-    private static final int MAX_FILE_NAME_LENGTH = 25;
+    public static final String NOTIFICATION_NAMESPACE = "DownloadNotificationService";
 
-    /** Notification Id starting value, to avoid conflicts from IDs used in prior versions. */
-
-    private static final String EXTRA_NOTIFICATION_BUNDLE_ICON_ID =
+    public static final String EXTRA_NOTIFICATION_BUNDLE_ICON_ID =
             "Chrome.NotificationBundleIconIdExtra";
+    /** Notification Id starting value, to avoid conflicts from IDs used in prior versions. */
     private static final int STARTING_NOTIFICATION_ID = 1000000;
     private static final int MAX_RESUMPTION_ATTEMPT_LEFT = 5;
 
     private static final String KEY_AUTO_RESUMPTION_ATTEMPT_LEFT = "ResumptionAttemptLeft";
     private static final String KEY_NEXT_DOWNLOAD_NOTIFICATION_ID = "NextDownloadNotificationId";
+
+    private static final String TAG = "DownloadNotification";
 
     /**
      * An Observer interface that allows other classes to know when this class is canceling
@@ -235,8 +228,10 @@ public class DownloadNotificationService extends Service {
                 getSummaryIcon(context, manager, removedNotificationId, addedNotification);
         if (!icon.first || !hasDownloadNotifications(manager, removedNotificationId)) return;
 
-        manager.notify(NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY,
-                buildSummaryNotificationWithIcon(context, icon.second));
+        DownloadUpdate downloadUpdate = new DownloadUpdate.Builder().setIconId(icon.second).build();
+        Notification notification = DownloadNotificationFactory.buildNotification(
+                context, DownloadNotificationFactory.DownloadStatus.SUMMARY, downloadUpdate);
+        manager.notify(NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY, notification);
     }
 
     /**
@@ -351,41 +346,6 @@ public class DownloadNotificationService extends Service {
     }
 
     /**
-     * Builds a summary notification that represents all downloads.
-     * {@see #buildSummaryNotification(Context)}.
-     * @param context A context used to query Android strings and resources.
-     * @param iconId  The id of an icon to use for the notification.
-     * @return        a {@link Notification} that represents the summary icon for all downloads.
-     */
-    private static Notification buildSummaryNotificationWithIcon(Context context, int iconId) {
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelDefinitions.CHANNEL_ID_DOWNLOADS)
-                        .setContentTitle(
-                                context.getString(R.string.download_notification_summary_title))
-                        .setSubText(context.getString(R.string.menu_downloads))
-                        .setSmallIcon(iconId)
-                        .setLocalOnly(true)
-                        .setGroup(NotificationConstants.GROUP_DOWNLOADS)
-                        .setGroupSummary(true);
-        Bundle extras = new Bundle();
-        extras.putInt(EXTRA_NOTIFICATION_BUNDLE_ICON_ID, iconId);
-        builder.addExtras(extras);
-
-        // This notification should not actually be shown.  But if it is, set the click intent to
-        // open downloads home.
-        // TODO(dtrainor): Only do this if we have no transient downloads.
-        Intent downloadHomeIntent = buildActionIntent(
-                context, DownloadManager.ACTION_NOTIFICATION_CLICKED, null, false);
-        builder.setContentIntent(PendingIntent.getBroadcast(context,
-                NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY, downloadHomeIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT));
-
-        return builder.build();
-    }
-
-    /**
      * Builds a summary notification that represents downloads.  This is the notification passed to
      * {@link #startForeground(int, Notification)}, which keeps this service in the foreground.
      * @param context The context used to build the notification and pull specific resources.
@@ -395,7 +355,9 @@ public class DownloadNotificationService extends Service {
     private static Notification buildSummaryNotification(
             Context context, NotificationManager manager) {
         Pair<Boolean, Integer> icon = getSummaryIcon(context, manager, -1, null);
-        return buildSummaryNotificationWithIcon(context, icon.second);
+        DownloadUpdate downloadUpdate = new DownloadUpdate.Builder().setIconId(icon.second).build();
+        return DownloadNotificationFactory.buildNotification(
+                context, DownloadNotificationFactory.DownloadStatus.SUMMARY, downloadUpdate);
     }
 
     /**
@@ -802,62 +764,23 @@ public class DownloadNotificationService extends Service {
             long bytesReceived, long timeRemainingInMillis, long startTime, boolean isOffTheRecord,
             boolean canDownloadWhileMetered, boolean isDownloadPending, boolean isTransient,
             Bitmap icon) {
-        boolean indeterminate = (progress.isIndeterminate() || isDownloadPending);
-        String contentText = null;
-        if (isDownloadPending) {
-            contentText = mContext.getResources().getString(R.string.download_notification_pending);
-        } else if (indeterminate || timeRemainingInMillis < 0) {
-            // TODO(dimich): Enable the byte count back in M59. See bug 704049 for more info and
-            // details of what was temporarily reverted (for M58).
-            contentText = mContext.getResources().getString(R.string.download_started);
-        } else {
-            contentText = DownloadUtils.getTimeOrFilesLeftString(
-                    mContext, progress, timeRemainingInMillis);
-        }
-        int resId = isDownloadPending ? R.drawable.ic_download_pending
-                : android.R.drawable.stat_sys_download;
-        ChromeNotificationBuilder builder = buildNotification(resId, fileName, contentText);
-        builder.setOngoing(true);
-        builder.setPriority(Notification.PRIORITY_HIGH);
-
-        // Avoid animations while the download isn't progressing.
-        if (!isDownloadPending) {
-            builder.setProgress(100, indeterminate ? -1 : progress.getPercentage(), indeterminate);
-        }
-
-        if (!indeterminate && !LegacyHelpers.isLegacyOfflinePage(id)) {
-            String percentText = DownloadUtils.getPercentageString(progress.getPercentage());
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                builder.setSubText(percentText);
-            } else {
-                builder.setContentInfo(percentText);
-            }
-        }
         int notificationId = getNotificationId(id);
-        if (startTime > 0) builder.setWhen(startTime);
+        DownloadUpdate downloadUpdate = new DownloadUpdate.Builder()
+                                                .setContentId(id)
+                                                .setFileName(fileName)
+                                                .setProgress(progress)
+                                                .setTimeRemainingInMillis(timeRemainingInMillis)
+                                                .setStartTime(startTime)
+                                                .setIsOffTheRecord(isOffTheRecord)
+                                                .setIsDownloadPending(isDownloadPending)
+                                                .setIsTransient(isTransient)
+                                                .setIcon(icon)
+                                                .setNotificationId(notificationId)
+                                                .build();
+        Notification notification = DownloadNotificationFactory.buildNotification(
+                mContext, DownloadNotificationFactory.DownloadStatus.IN_PROGRESS, downloadUpdate);
 
-        if (!isTransient) {
-            // Clicking on an in-progress download sends the user to see all their downloads.
-            Intent downloadHomeIntent = buildActionIntent(
-                    mContext, DownloadManager.ACTION_NOTIFICATION_CLICKED, null, isOffTheRecord);
-            builder.setContentIntent(PendingIntent.getBroadcast(mContext, notificationId,
-                    downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
-        }
-        builder.setAutoCancel(false);
-        if (icon != null) builder.setLargeIcon(icon);
-
-        Intent pauseIntent = buildActionIntent(mContext, ACTION_DOWNLOAD_PAUSE, id, isOffTheRecord);
-        builder.addAction(R.drawable.ic_pause_white_24dp,
-                mContext.getResources().getString(R.string.download_notification_pause_button),
-                buildPendingIntent(pauseIntent, notificationId));
-
-        Intent cancelIntent =
-                buildActionIntent(mContext, ACTION_DOWNLOAD_CANCEL, id, isOffTheRecord);
-        builder.addAction(R.drawable.btn_close_white,
-                mContext.getResources().getString(R.string.download_notification_cancel_button),
-                buildPendingIntent(cancelIntent, notificationId));
-
-        updateNotification(notificationId, builder.build(), id,
+        updateNotification(notificationId, notification, id,
                 new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
                         canDownloadWhileMetered, fileName, true, isTransient));
         startTrackingInProgressDownload(id);
@@ -925,39 +848,21 @@ public class DownloadNotificationService extends Service {
             stopTrackingInProgressDownload(id, true);
             return;
         }
-
-        String contentText = mContext.getResources().getString(
-                R.string.download_notification_paused);
-        ChromeNotificationBuilder builder =
-                buildNotification(R.drawable.ic_download_pause, fileName, contentText);
         int notificationId = entry == null ? getNotificationId(id) : entry.notificationId;
-        if (!isTransient) {
-            // Clicking on an in-progress download sends the user to see all their downloads.
-            Intent downloadHomeIntent = buildActionIntent(
-                    mContext, DownloadManager.ACTION_NOTIFICATION_CLICKED, null, false);
-            builder.setContentIntent(PendingIntent.getBroadcast(mContext, notificationId,
-                    downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
-        }
-        builder.setAutoCancel(false);
-        if (icon != null) builder.setLargeIcon(icon);
 
-        Intent resumeIntent =
-                buildActionIntent(mContext, ACTION_DOWNLOAD_RESUME, id, isOffTheRecord);
-        builder.addAction(R.drawable.ic_file_download_white_24dp,
-                mContext.getResources().getString(R.string.download_notification_resume_button),
-                buildPendingIntent(resumeIntent, notificationId));
+        DownloadUpdate downloadUpdate = new DownloadUpdate.Builder()
+                                                .setContentId(id)
+                                                .setFileName(fileName)
+                                                .setIsOffTheRecord(isOffTheRecord)
+                                                .setIsTransient(isTransient)
+                                                .setIcon(icon)
+                                                .setNotificationId(notificationId)
+                                                .build();
 
-        Intent cancelIntent =
-                buildActionIntent(mContext, ACTION_DOWNLOAD_CANCEL, id, isOffTheRecord);
-        builder.addAction(R.drawable.btn_close_white,
-                mContext.getResources().getString(R.string.download_notification_cancel_button),
-                buildPendingIntent(cancelIntent, notificationId));
-        PendingIntent deleteIntent = isTransient
-                ? buildPendingIntent(cancelIntent, notificationId)
-                : buildSummaryIconIntent(notificationId);
-        builder.setDeleteIntent(deleteIntent);
+        Notification notification = DownloadNotificationFactory.buildNotification(
+                mContext, DownloadNotificationFactory.DownloadStatus.PAUSED, downloadUpdate);
 
-        updateNotification(notificationId, builder.build(), id,
+        updateNotification(notificationId, notification, id,
                 new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
                         canDownloadWhileMetered, fileName, isAutoResumable, isTransient));
         stopTrackingInProgressDownload(id, true);
@@ -982,40 +887,28 @@ public class DownloadNotificationService extends Service {
             long systemDownloadId, boolean isOffTheRecord, boolean isSupportedMimeType,
             boolean isOpenable, Bitmap icon, String originalUrl, String referrer) {
         int notificationId = getNotificationId(id);
-        ChromeNotificationBuilder builder = buildNotification(R.drawable.offline_pin, fileName,
-                mContext.getResources().getString(R.string.download_notification_completed));
-        ComponentName component = new ComponentName(
-                mContext.getPackageName(), DownloadBroadcastReceiver.class.getName());
-
-        if (isOpenable) {
-            Intent intent = null;
-            if (LegacyHelpers.isLegacyDownload(id)) {
-                intent = new Intent(DownloadManager.ACTION_NOTIFICATION_CLICKED);
-                long[] idArray = {systemDownloadId};
-                intent.putExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS, idArray);
-                intent.putExtra(EXTRA_DOWNLOAD_FILE_PATH, filePath);
-                intent.putExtra(EXTRA_IS_SUPPORTED_MIME_TYPE, isSupportedMimeType);
-                intent.putExtra(EXTRA_IS_OFF_THE_RECORD, isOffTheRecord);
-                intent.putExtra(EXTRA_DOWNLOAD_CONTENTID_ID, id.id);
-                intent.putExtra(EXTRA_DOWNLOAD_CONTENTID_NAMESPACE, id.namespace);
-                intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_ID, notificationId);
-                DownloadUtils.setOriginalUrlAndReferralExtraToIntent(intent, originalUrl, referrer);
-            } else {
-                intent = buildActionIntent(mContext, ACTION_DOWNLOAD_OPEN, id, false);
-            }
-
-            intent.setComponent(component);
-            builder.setContentIntent(PendingIntent.getBroadcast(
-                    mContext, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT));
-        }
         if (icon == null && mDownloadSuccessLargeIcon == null) {
             Bitmap bitmap = BitmapFactory.decodeResource(
                     mContext.getResources(), R.drawable.offline_pin);
             mDownloadSuccessLargeIcon = getLargeNotificationIcon(bitmap);
         }
-        builder.setDeleteIntent(buildSummaryIconIntent(notificationId));
-        builder.setLargeIcon(icon != null ? icon : mDownloadSuccessLargeIcon);
-        updateNotification(notificationId, builder.build(), id, null);
+        if (icon == null) icon = mDownloadSuccessLargeIcon;
+
+        DownloadUpdate downloadUpdate = new DownloadUpdate.Builder()
+                                                .setContentId(id)
+                                                .setFileName(fileName)
+                                                .setFilePath(filePath)
+                                                .setSystemDownload(systemDownloadId)
+                                                .setIsOffTheRecord(isOffTheRecord)
+                                                .setIsSupportedMimeType(isSupportedMimeType)
+                                                .setIsOpenable(isOpenable)
+                                                .setIcon(icon)
+                                                .setNotificationId(notificationId)
+                                                .build();
+        Notification notification = DownloadNotificationFactory.buildNotification(
+                mContext, DownloadNotificationFactory.DownloadStatus.SUCCESSFUL, downloadUpdate);
+
+        updateNotification(notificationId, notification, id, null);
         stopTrackingInProgressDownload(id, true);
         return notificationId;
     }
@@ -1038,75 +931,17 @@ public class DownloadNotificationService extends Service {
         }
 
         int notificationId = getNotificationId(id);
-        ChromeNotificationBuilder builder =
-                buildNotification(android.R.drawable.stat_sys_download_done, fileName,
-                        mContext.getResources().getString(R.string.download_notification_failed));
-        if (icon != null) builder.setLargeIcon(icon);
-        builder.setDeleteIntent(buildSummaryIconIntent(notificationId));
-        updateNotification(notificationId, builder.build(), id, null);
+
+        DownloadUpdate downloadUpdate = new DownloadUpdate.Builder()
+                                                .setContentId(id)
+                                                .setFileName(fileName)
+                                                .setIcon(icon)
+                                                .build();
+        Notification notification = DownloadNotificationFactory.buildNotification(
+                mContext, DownloadNotificationFactory.DownloadStatus.FAILED, downloadUpdate);
+
+        updateNotification(notificationId, notification, id, null);
         stopTrackingInProgressDownload(id, true);
-    }
-
-    /**
-     * Helper method to build a PendingIntent from the provided intent.
-     * @param intent Intent to broadcast.
-     * @param notificationId ID of the notification.
-     */
-    private PendingIntent buildPendingIntent(Intent intent, int notificationId) {
-        return PendingIntent.getBroadcast(
-                mContext, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-    }
-
-    private PendingIntent buildSummaryIconIntent(int notificationId) {
-        Intent intent = new Intent(mContext, DownloadBroadcastReceiver.class);
-        intent.setAction(ACTION_DOWNLOAD_UPDATE_SUMMARY_ICON);
-        return buildPendingIntent(intent, notificationId);
-    }
-
-    /**
-     * Helper method to build an download action Intent from the provided information.
-     * @param context {@link Context} to pull resources from.
-     * @param action Download action to perform.
-     * @param id The {@link ContentId} of the download.
-     * @param isOffTheRecord Whether the download is incognito.
-     */
-    static Intent buildActionIntent(
-            Context context, String action, ContentId id, boolean isOffTheRecord) {
-        ComponentName component = new ComponentName(
-                context.getPackageName(), DownloadBroadcastReceiver.class.getName());
-        Intent intent = new Intent(action);
-        intent.setComponent(component);
-        intent.putExtra(EXTRA_DOWNLOAD_CONTENTID_ID, id != null ? id.id : "");
-        intent.putExtra(EXTRA_DOWNLOAD_CONTENTID_NAMESPACE, id != null ? id.namespace : "");
-        intent.putExtra(EXTRA_IS_OFF_THE_RECORD, isOffTheRecord);
-        return intent;
-    }
-
-    /**
-     * Builds a notification to be displayed.
-     * @param iconId Id of the notification icon.
-     * @param title Title of the notification.
-     * @param contentText Notification content text to be displayed.
-     * @return notification builder that builds the notification to be displayed
-     */
-    private ChromeNotificationBuilder buildNotification(
-            int iconId, String title, String contentText) {
-        Bundle extras = new Bundle();
-        extras.putInt(EXTRA_NOTIFICATION_BUNDLE_ICON_ID, iconId);
-
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelDefinitions.CHANNEL_ID_DOWNLOADS)
-                        .setContentTitle(
-                                DownloadUtils.getAbbreviatedFileName(title, MAX_FILE_NAME_LENGTH))
-                        .setSmallIcon(iconId)
-                        .setLocalOnly(true)
-                        .setAutoCancel(true)
-                        .setContentText(contentText)
-                        .setGroup(NotificationConstants.GROUP_DOWNLOADS)
-                        .addExtras(extras);
-        return builder;
     }
 
     private Bitmap getLargeNotificationIcon(Bitmap bitmap) {
