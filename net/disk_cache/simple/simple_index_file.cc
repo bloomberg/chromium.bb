@@ -24,7 +24,6 @@
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
 #include "net/disk_cache/simple/simple_util.h"
-#include "third_party/zlib/zlib.h"
 
 using base::File;
 
@@ -43,9 +42,7 @@ const int64_t kMaxIndexFileSizeBytes =
     kMaxEntriesInIndex * (8 + EntryMetadata::kOnDiskSizeBytes);
 
 uint32_t CalculatePickleCRC(const base::Pickle& pickle) {
-  return crc32(crc32(0, Z_NULL, 0),
-               reinterpret_cast<const Bytef*>(pickle.payload()),
-               pickle.payload_size());
+  return simple_util::Crc32(pickle.payload(), pickle.payload_size());
 }
 
 // Used in histograms. Please only add new values at the end.
