@@ -14,6 +14,7 @@
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/custom_launcher_page_view.h"
@@ -425,10 +426,13 @@ bool ContentsView::Back() {
         SetActiveState(AppListModel::STATE_START);
       break;
     case AppListModel::STATE_APPS:
-      if (apps_container_view_->IsInFolderView())
+      if (apps_container_view_->IsInFolderView()) {
         apps_container_view_->app_list_folder_view()->CloseFolderPage();
-      else
-        SetActiveState(AppListModel::STATE_START);
+      } else {
+        is_fullscreen_app_list_enabled_
+            ? app_list_view_->SetState(AppListView::CLOSED)
+            : SetActiveState(AppListModel::STATE_START);
+      }
       break;
     case AppListModel::STATE_SEARCH_RESULTS:
       GetSearchBoxView()->ClearSearch();
