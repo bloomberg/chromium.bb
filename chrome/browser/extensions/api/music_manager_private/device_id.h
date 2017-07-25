@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/task_scheduler/task_traits.h"
 
 namespace extensions {
 namespace api {
@@ -42,6 +43,15 @@ class DeviceId {
   // identified as invalid, i.e. not unique. For example, some VM hosts assign a
   // new MAC addresses at each reboot.
   static bool IsValidMacAddress(const void* bytes, size_t size);
+
+  // The traits of the task that retrieves the device id.
+  //
+  // MayBlock(): Since this requires fetching disk.
+  // TaskPriority: USER_VISIBLE. Though this might be conservative, depending
+  //   on how GetDeviceId() is used.
+  static constexpr base::TaskTraits traits() {
+    return {base::MayBlock(), base::TaskPriority::USER_VISIBLE};
+  }
 };
 
 }  // namespace api
