@@ -292,6 +292,8 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
         Runnable onNativeFinished = new Runnable() {
             @Override
             public void run() {
+                if (isActivityDestroyed()) return;
+
                 onNativeDependenciesFullyInitialized();
             }
         };
