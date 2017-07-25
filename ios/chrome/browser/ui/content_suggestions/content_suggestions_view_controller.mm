@@ -73,9 +73,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   if (self) {
     _collectionUpdater = [[ContentSuggestionsCollectionUpdater alloc]
         initWithDataSource:dataSource];
-    if (base::ios::IsRunningOnIOS10OrLater()) {
-      self.collectionView.prefetchingEnabled = NO;
-    }
   }
   return self;
 }
@@ -163,6 +160,9 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  if (base::ios::IsRunningOnIOS10OrLater()) {
+    self.collectionView.prefetchingEnabled = NO;
+  }
   _collectionUpdater.collectionViewController = self;
 
   self.collectionView.delegate = self;
