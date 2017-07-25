@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import static org.chromium.chrome.browser.vr_shell.VrTestRule.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_CHECK_INTERVAL_SHORT_MS;
+import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DON_ENABLED;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
@@ -19,12 +21,16 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.vr_shell.mock.MockVrIntentHandler;
 import org.chromium.chrome.browser.vr_shell.util.NfcSimUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * End-to-end tests for transitioning between WebVR's magic window and
@@ -59,11 +65,12 @@ public class WebVrTransitionTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    @RetryOnFailure(message = "crbug.com/736527")
     public void testNfcFiresVrdisplayactivate() throws InterruptedException {
         mVrTestRule.loadUrlAndAwaitInitialization(
                 VrTestRule.getHtmlTestFile("test_nfc_fires_vrdisplayactivate"),
                 PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.runJavaScriptOrFail(
+                "addListener()", POLL_TIMEOUT_LONG_MS, mVrTestRule.getFirstTabWebContents());
         NfcSimUtils.simNfcScan(mVrTestRule.getActivity());
         mVrTestRule.waitOnJavaScriptStep(mVrTestRule.getFirstTabWebContents());
         mVrTestRule.endTest(mVrTestRule.getFirstTabWebContents());
@@ -83,5 +90,32 @@ public class WebVrTransitionTest {
         VrTransitionUtils.enterPresentationAndWait(
                 mVrTestRule.getFirstTabCvc(), mVrTestRule.getFirstTabWebContents());
         mVrTestRule.endTest(mVrTestRule.getFirstTabWebContents());
+    }
+
+    /**
+     * Tests that an intent from a trusted app such as Daydream Home allows WebVR content
+     * to auto present without the need for a user gesture.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    public void testTrustedIntentAllowsAutoPresent() throws InterruptedException {
+        VrIntentHandler.setInstanceForTesting(new MockVrIntentHandler(
+                true /* useMockImplementation */, true /* treatIntentsAsTrusted */));
+        VrTransitionUtils.sendDaydreamAutopresentIntent(
+                mVrTestRule.getHtmlTestFile("test_webvr_autopresent"), mVrTestRule.getActivity());
+
+        // Wait until the link is opened in a new tab
+        final ChromeActivity act = mVrTestRule.getActivity();
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return act.getTabModelSelector().getTotalTabCount() == 2;
+            }
+        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+
+        WebContents wc = mVrTestRule.getActivity().getActivityTab().getWebContents();
+        mVrTestRule.waitOnJavaScriptStep(wc);
+        mVrTestRule.endTest(wc);
     }
 }
