@@ -1023,6 +1023,8 @@ split_static_library("ui") {
       "webui/settings/chromeos/easy_unlock_settings_handler.h",
       "webui/settings/chromeos/fingerprint_handler.cc",
       "webui/settings/chromeos/fingerprint_handler.h",
+      "webui/settings/chromeos/google_assistant_handler.cc",
+      "webui/settings/chromeos/google_assistant_handler.h",
       "webui/settings/chromeos/internet_handler.cc",
       "webui/settings/chromeos/internet_handler.h",
       "webui/settings/downloads_handler.cc",

@@ -268,6 +268,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[::prefs::kArcEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
+  // Google Assistant.
+  (*s_whitelist)[::prefs::kVoiceInteractionEnabled] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kVoiceInteractionContextEnabled] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+
   // Misc.
   (*s_whitelist)[::prefs::kUse24HourClock] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;

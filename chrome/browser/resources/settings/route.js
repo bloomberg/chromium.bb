@@ -33,6 +33,7 @@
  *   EDIT_DICTIONARY: (undefined|!settings.Route),
  *   FINGERPRINT: (undefined|!settings.Route),
  *   FONTS: (undefined|!settings.Route),
+ *   GOOGLE_ASSISTANT: (undefined|!settings.Route),
  *   IMPORT_DATA: (undefined|!settings.Route),
  *   INPUT_METHODS: (undefined|!settings.Route),
  *   INTERNET: (undefined|!settings.Route),
@@ -224,6 +225,9 @@ cr.define('settings', function() {
 
     r.SEARCH = r.BASIC.createSection('/search', 'search');
     r.SEARCH_ENGINES = r.SEARCH.createChild('/searchEngines');
+    // <if expr="chromeos">
+    r.GOOGLE_ASSISTANT = r.SEARCH.createChild('/googleAssistant');
+    // </if>
 
     // <if expr="chromeos">
     r.ANDROID_APPS = r.BASIC.createSection('/androidApps', 'androidApps');

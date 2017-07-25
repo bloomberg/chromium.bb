@@ -1872,9 +1872,16 @@
   </message>
 
   <!-- Search Page -->
-  <message name="IDS_SETTINGS_SEARCH" desc="Name of the settings page which displays search engine preferences.">
-    Search engine
-  </message>
+  <if expr="chromeos">
+    <message name="IDS_SETTINGS_SEARCH" desc="Name of the settings page which displays search engine and assistant preferences on Chrome OS.">
+      Search engine and Google Assistant
+    </message>
+  </if>
+  <if expr="not chromeos">
+    <message name="IDS_SETTINGS_SEARCH" desc="Name of the settings page which displays search engine preferences.">
+      Search engine
+    </message>
+  </if>
   <message name="IDS_SETTINGS_SEARCH_EXPLANATION" desc="Explanation for the search engine dropdown setting.">
     Search engine used in the <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>address bar<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
@@ -1914,6 +1921,17 @@
   <message name="IDS_SETTINGS_SEARCH_ENABLE_GOOGLE_NOW" desc="Label for the checkbox which enables the Google Now in the launcher.">
     Show Google Now cards in the launcher
   </message>
+<if expr="chromeos">
+  <message name="IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT" desc="Label for the Google Assistant button.">
+    Google Assistant
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ENABLED" desc="Sub label for the Google Assistant button when Assistant is enabled.">
+    Enabled
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_DISABLED" desc="Sub label for the Google Assistant button when Assistant is disabled.">
+    Disabled
+  </message>
+</if>
 
   <!-- Search Engines Page -->
   <message name="IDS_SETTINGS_SEARCH_ENGINES" desc="Name of the settings page which manages search engines.">
@@ -1958,6 +1976,22 @@
   <message name="IDS_SETTINGS_SEARCH_ENGINES_MANAGE_EXTENSION" desc="Text displayed for a button that allows the user to manage a Chrome extension">
     Manage
   </message>
+
+  <!-- Google Assistant Page -->
+<if expr="chromeos">
+  <message name="IDS_SETTINGS_GOOGLE_ASSISTANT" desc="Name of the settings page for Google Assistant.">
+    Google Assistant
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_CONTEXT" desc="Title for a toggle that lets the assistant use whats on the screen.">
+    Let assistant use what's on your screen
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_CONTEXT_DESCRIPTION" desc="Sub label for context-enable toggle.">
+    Enables the assistant to show you related info, apps, and actions.
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_SETTINGS" desc="Title for a button that opens the Google Assistant app settings.">
+    Google Assistant settings
+  </message>
+</if>
 
   <!-- Site Settings Page -->
   <message name="IDS_SETTINGS_EXCEPTIONS_EMBEDDED_ON_HOST" desc="Template text for a child row in the content Exceptions page view. Controls the permission setting for the parent page when embedded on the specified site.">

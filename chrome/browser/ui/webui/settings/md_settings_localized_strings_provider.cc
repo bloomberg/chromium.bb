@@ -1677,19 +1677,26 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
 
 void AddSearchStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
-      {"searchPageTitle", IDS_SETTINGS_SEARCH},
-      {"searchEnginesManage", IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES},
-      {"searchOkGoogleLabel", IDS_SETTINGS_SEARCH_OK_GOOGLE_LABEL},
-      {"searchOkGoogleSubtextAlwaysOn",
-       IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_ALWAYS_ON},
-      {"searchOkGoogleSubtextNoHardware",
-       IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_NO_HARDWARE},
-      {"searchOkGoogleAudioHistoryLabel",
-       IDS_SETTINGS_SEARCH_OK_GOOGLE_AUDIO_HISTORY_LABEL},
-      {"searchOkGoogleAudioHistorySubtext",
-       IDS_SETTINGS_SEARCH_OK_GOOGLE_AUDIO_HISTORY_SUBTEXT},
-      {"searchOkGoogleRetrain", IDS_SETTINGS_SEARCH_OK_GOOGLE_RETRAIN},
-      {"searchEnableGoogleNowLabel", IDS_SETTINGS_SEARCH_ENABLE_GOOGLE_NOW},
+    {"searchPageTitle", IDS_SETTINGS_SEARCH},
+    {"searchEnginesManage", IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES},
+    {"searchOkGoogleLabel", IDS_SETTINGS_SEARCH_OK_GOOGLE_LABEL},
+#if defined(OS_CHROMEOS)
+    {"searchGoogleAssistant", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT},
+    {"searchGoogleAssistantEnabled",
+     IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ENABLED},
+    {"searchGoogleAssistantDisabled",
+     IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_DISABLED},
+#endif
+    {"searchOkGoogleSubtextAlwaysOn",
+     IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_ALWAYS_ON},
+    {"searchOkGoogleSubtextNoHardware",
+     IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_NO_HARDWARE},
+    {"searchOkGoogleAudioHistoryLabel",
+     IDS_SETTINGS_SEARCH_OK_GOOGLE_AUDIO_HISTORY_LABEL},
+    {"searchOkGoogleAudioHistorySubtext",
+     IDS_SETTINGS_SEARCH_OK_GOOGLE_AUDIO_HISTORY_SUBTEXT},
+    {"searchOkGoogleRetrain", IDS_SETTINGS_SEARCH_OK_GOOGLE_RETRAIN},
+    {"searchEnableGoogleNowLabel", IDS_SETTINGS_SEARCH_ENABLE_GOOGLE_NOW},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -1701,6 +1708,10 @@ void AddSearchStrings(content::WebUIDataSource* html_source) {
       IDS_SETTINGS_SEARCH_EXPLANATION,
       base::ASCIIToUTF16(chrome::kOmniboxLearnMoreURL));
   html_source->AddString("searchExplanation", search_explanation_text);
+#if defined(OS_CHROMEOS)
+  html_source->AddBoolean("enableVoiceInteraction",
+                          chromeos::switches::IsVoiceInteractionEnabled());
+#endif
 }
 
 void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
@@ -1730,6 +1741,21 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 }
+
+#if defined(OS_CHROMEOS)
+void AddGoogleAssistantStrings(content::WebUIDataSource* html_source) {
+  LocalizedString localized_strings[] = {
+      {"googleAssistantPageTitle", IDS_SETTINGS_GOOGLE_ASSISTANT},
+      {"googleAssistantEnableContext",
+       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_CONTEXT},
+      {"googleAssistantEnableContextDescription",
+       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_CONTEXT_DESCRIPTION},
+      {"googleAssistantSettings", IDS_SETTINGS_GOOGLE_ASSISTANT_SETTINGS},
+  };
+  AddLocalizedStringsBulk(html_source, localized_strings,
+                          arraysize(localized_strings));
+}
+#endif
 
 void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
                             Profile* profile) {
@@ -2205,6 +2231,9 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddPrivacyStrings(html_source, profile);
   AddResetStrings(html_source);
   AddSearchEnginesStrings(html_source);
+#if defined(OS_CHROMEOS)
+  AddGoogleAssistantStrings(html_source);
+#endif
   AddSearchInSettingsStrings(html_source);
   AddSearchStrings(html_source);
   AddSiteSettingsStrings(html_source, profile);
