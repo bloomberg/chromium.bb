@@ -507,7 +507,7 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
   return result;
 }
 
-MinMaxContentSize NGInlineNode::ComputeMinMaxContentSize() {
+MinMaxSize NGInlineNode::ComputeMinMaxSize() {
   // TODO(kojii): Invalidate PrepareLayout() more efficiently.
   InvalidatePrepareLayout();
   PrepareLayout();
@@ -520,17 +520,17 @@ MinMaxContentSize NGInlineNode::ComputeMinMaxContentSize() {
   // Compute the max of inline sizes of all line boxes with 0 available inline
   // size. This gives the min-content, the width where lines wrap at every
   // break opportunity.
-  MinMaxContentSize sizes;
-  sizes.min_content = ComputeContentSize(*this, LayoutUnit());
+  MinMaxSize sizes;
+  sizes.min_size = ComputeContentSize(*this, LayoutUnit());
 
   // Compute the sum of inline sizes of all inline boxes with no line breaks.
   // TODO(kojii): NGConstraintSpaceBuilder does not allow NGSizeIndefinite
   // inline available size. We can allow it, or make this more efficient
   // without using NGLineBreaker.
-  sizes.max_content = ComputeContentSize(*this, LayoutUnit::Max());
+  sizes.max_size = ComputeContentSize(*this, LayoutUnit::Max());
 
   // Negative text-indent can make min > max. Ensure min is the minimum size.
-  sizes.min_content = std::min(sizes.min_content, sizes.max_content);
+  sizes.min_size = std::min(sizes.min_size, sizes.max_size);
 
   return sizes;
 }

@@ -67,7 +67,7 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     return ToNGPhysicalBoxFragment(result->PhysicalFragment().Get());
   }
 
-  MinMaxContentSize RunComputeMinAndMax(NGBlockNode node) {
+  MinMaxSize RunComputeMinAndMax(NGBlockNode node) {
     // The constraint space is not used for min/max computation, but we need
     // it to create the algorithm.
     RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
@@ -75,8 +75,8 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
         NGLogicalSize(LayoutUnit(), LayoutUnit()));
 
     NGBlockLayoutAlgorithm algorithm(node, space.Get());
-    EXPECT_TRUE(algorithm.ComputeMinMaxContentSize().has_value());
-    return *algorithm.ComputeMinMaxContentSize();
+    EXPECT_TRUE(algorithm.ComputeMinMaxSize().has_value());
+    return *algorithm.ComputeMinMaxSize();
   }
 
   RefPtr<ComputedStyle> style_;
@@ -1304,9 +1304,9 @@ TEST_F(NGBlockLayoutAlgorithmTest, ComputeMinMaxContent) {
 
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
 
-  MinMaxContentSize sizes = RunComputeMinAndMax(container);
-  EXPECT_EQ(kSecondChildWidth, sizes.min_content);
-  EXPECT_EQ(kSecondChildWidth, sizes.max_content);
+  MinMaxSize sizes = RunComputeMinAndMax(container);
+  EXPECT_EQ(kSecondChildWidth, sizes.min_size);
+  EXPECT_EQ(kSecondChildWidth, sizes.max_size);
 }
 
 // Tests that we correctly handle shrink-to-fit

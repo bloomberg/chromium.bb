@@ -62,7 +62,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                          NGConstraintSpace* space,
                          NGBlockBreakToken* break_token = nullptr);
 
-  Optional<MinMaxContentSize> ComputeMinMaxContentSize() const override;
+  Optional<MinMaxSize> ComputeMinMaxSize() const override;
   virtual RefPtr<NGLayoutResult> Layout() override;
 
  private:

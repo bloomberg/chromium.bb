@@ -5,8 +5,8 @@
 #include "core/layout/ng/ng_block_node.h"
 
 #include "core/layout/LayoutTestHelper.h"
+#include "core/layout/MinMaxSize.h"
 #include "core/layout/ng/ng_box_fragment.h"
-#include "core/layout/ng/ng_min_max_content_size.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -165,9 +165,9 @@ TEST_F(NGBlockNodeForTest, MinAndMaxContent) {
   const int kWidth = 30;
 
   NGBlockNode box(ToLayoutBox(GetLayoutObjectByElementId("box")));
-  MinMaxContentSize sizes = box.ComputeMinMaxContentSize();
-  EXPECT_EQ(LayoutUnit(kWidth), sizes.min_content);
-  EXPECT_EQ(LayoutUnit(kWidth), sizes.max_content);
+  MinMaxSize sizes = box.ComputeMinMaxSize();
+  EXPECT_EQ(LayoutUnit(kWidth), sizes.min_size);
+  EXPECT_EQ(LayoutUnit(kWidth), sizes.max_size);
 }
 }  // namespace
 }  // namespace blink

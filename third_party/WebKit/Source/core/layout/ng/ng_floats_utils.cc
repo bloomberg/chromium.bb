@@ -4,12 +4,12 @@
 
 #include "core/layout/ng/ng_floats_utils.h"
 
+#include "core/layout/MinMaxSize.h"
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_length_utils.h"
-#include "core/layout/ng/ng_min_max_content_size.h"
 #include "core/layout/ng/ng_space_utils.h"
 
 namespace blink {
@@ -166,9 +166,9 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
   // shouldn't perform a full layout just yet. Our position may determine where
   // we fragment.
   if (is_same_writing_mode) {
-    WTF::Optional<MinMaxContentSize> min_max_size;
-    if (NeedMinMaxContentSize(*space.Get(), style))
-      min_max_size = unpositioned_float->node.ComputeMinMaxContentSize();
+    WTF::Optional<MinMaxSize> min_max_size;
+    if (NeedMinMaxSize(*space.Get(), style))
+      min_max_size = unpositioned_float->node.ComputeMinMaxSize();
     return ComputeInlineSizeForFragment(*space.Get(), style, min_max_size);
   }
 

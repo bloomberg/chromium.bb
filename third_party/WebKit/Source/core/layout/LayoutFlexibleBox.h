@@ -39,6 +39,7 @@ namespace blink {
 
 class FlexItem;
 class FlexLine;
+struct MinMaxSize;
 
 class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
  public:
@@ -185,9 +186,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   LayoutUnit ComputeChildMarginValue(Length margin);
   void PrepareOrderIteratorAndMargins();
-  void ComputeMinAndMaxSizesForChild(const LayoutBox& child,
-                                     LayoutUnit& min_extent,
-                                     LayoutUnit& max_extent) const;
+  MinMaxSize ComputeMinAndMaxSizesForChild(const LayoutBox& child) const;
   LayoutUnit AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
       const LayoutBox& child,
       LayoutUnit child_size) const;

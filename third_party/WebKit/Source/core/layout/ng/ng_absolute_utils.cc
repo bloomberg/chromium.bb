@@ -29,12 +29,12 @@ bool AbsoluteVerticalNeedsEstimate(const ComputedStyle& style) {
 LayoutUnit ResolveWidth(const Length& width,
                         const NGConstraintSpace& space,
                         const ComputedStyle& style,
-                        const Optional<MinMaxContentSize>& child_minmax,
+                        const Optional<MinMaxSize>& child_minmax,
                         LengthResolveType resolve_type) {
   if (space.WritingMode() == kHorizontalTopBottom)
     return ResolveInlineLength(space, style, child_minmax, width, resolve_type);
   LayoutUnit computed_width =
-      child_minmax.has_value() ? child_minmax->max_content : LayoutUnit();
+      child_minmax.has_value() ? child_minmax->max_size : LayoutUnit();
   return ResolveBlockLength(space, style, style.Width(), computed_width,
                             resolve_type);
 }
@@ -42,13 +42,13 @@ LayoutUnit ResolveWidth(const Length& width,
 LayoutUnit ResolveHeight(const Length& height,
                          const NGConstraintSpace& space,
                          const ComputedStyle& style,
-                         const Optional<MinMaxContentSize>& child_minmax,
+                         const Optional<MinMaxSize>& child_minmax,
                          LengthResolveType resolve_type) {
   if (space.WritingMode() != kHorizontalTopBottom)
     return ResolveInlineLength(space, style, child_minmax, height,
                                resolve_type);
   LayoutUnit computed_height =
-      child_minmax.has_value() ? child_minmax->max_content : LayoutUnit();
+      child_minmax.has_value() ? child_minmax->max_size : LayoutUnit();
   return ResolveBlockLength(space, style, height, computed_height,
                             resolve_type);
 }
@@ -59,7 +59,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
                                const ComputedStyle& style,
                                const Optional<LayoutUnit>& incoming_width,
                                const NGStaticPosition& static_position,
-                               const Optional<MinMaxContentSize>& child_minmax,
+                               const Optional<MinMaxSize>& child_minmax,
                                NGAbsolutePhysicalPosition* position) {
   NGLogicalSize percentage_logical = space.PercentageResolutionSize();
   NGPhysicalSize percentage_physical =
@@ -219,7 +219,7 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
                              const ComputedStyle& style,
                              const Optional<LayoutUnit>& incoming_height,
                              const NGStaticPosition& static_position,
-                             const Optional<MinMaxContentSize>& child_minmax,
+                             const Optional<MinMaxSize>& child_minmax,
                              NGAbsolutePhysicalPosition* position) {
   NGLogicalSize percentage_logical = space.PercentageResolutionSize();
   NGPhysicalSize percentage_physical =
@@ -382,7 +382,7 @@ NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
     const NGStaticPosition& static_position,
-    const Optional<MinMaxContentSize>& child_minmax) {
+    const Optional<MinMaxSize>& child_minmax) {
   NGAbsolutePhysicalPosition position;
   if (style.IsHorizontalWritingMode()) {
     Optional<LayoutUnit> width;
@@ -414,9 +414,9 @@ void ComputeFullAbsoluteWithChildBlockSize(
   // unknown, or fully computed, there is no minmax.
   // To express this, a 'fixed' minmax is created where
   // min and max are the same.
-  Optional<MinMaxContentSize> child_minmax;
+  Optional<MinMaxSize> child_minmax;
   if (child_block_size.has_value()) {
-    child_minmax = MinMaxContentSize{*child_block_size, *child_block_size};
+    child_minmax = MinMaxSize{*child_block_size, *child_block_size};
   }
   if (style.IsHorizontalWritingMode()) {
     Optional<LayoutUnit> height;

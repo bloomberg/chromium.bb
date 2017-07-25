@@ -21,7 +21,7 @@ class NGInlineItemsBuilderTemplate;
 class EmptyOffsetMappingBuilder;
 class LayoutBlockFlow;
 class LayoutNGBlockFlow;
-struct MinMaxContentSize;
+struct MinMaxSize;
 class NGConstraintSpace;
 class NGInlineItem;
 class NGInlineItemRange;
@@ -46,7 +46,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // Computes the value of min-content and max-content for this anonymous block
   // box. min-content is the inline size when lines wrap at every break
   // opportunity, and max-content is when lines do not wrap at all.
-  MinMaxContentSize ComputeMinMaxContentSize();
+  MinMaxSize ComputeMinMaxSize();
 
   // Copy fragment data of all lines to LayoutBlockFlow.
   void CopyFragmentDataToLayoutBox(const NGConstraintSpace&, NGLayoutResult*);

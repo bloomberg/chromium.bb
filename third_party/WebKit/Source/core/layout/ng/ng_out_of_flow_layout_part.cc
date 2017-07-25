@@ -102,7 +102,7 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   static_position.offset -= container_border_physical_offset_;
 
   // The block estimate is in the descendant's writing mode.
-  Optional<MinMaxContentSize> min_max_size;
+  Optional<MinMaxSize> min_max_size;
   Optional<LayoutUnit> block_estimate;
 
   RefPtr<NGLayoutResult> layout_result = nullptr;
@@ -110,8 +110,8 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
       FromPlatformWritingMode(descendant.Style().GetWritingMode()));
 
   if (AbsoluteNeedsChildInlineSize(descendant.Style()) ||
-      NeedMinMaxContentSize(descendant.Style())) {
-    min_max_size = descendant.ComputeMinMaxContentSize();
+      NeedMinMaxSize(descendant.Style())) {
+    min_max_size = descendant.ComputeMinMaxSize();
   }
 
   NGAbsolutePhysicalPosition node_position =

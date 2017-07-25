@@ -4,11 +4,11 @@
 
 #include "core/layout/ng/ng_layout_input_node.h"
 
+#include "core/layout/MinMaxSize.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_layout_result.h"
-#include "core/layout/ng/ng_min_max_content_size.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
 #include "platform/wtf/text/StringBuilder.h"
 
@@ -83,9 +83,9 @@ RefPtr<NGLayoutResult> NGLayoutInputNode::Layout(NGConstraintSpace* space,
                     : ToNGBlockNode(*this).Layout(space, break_token);
 }
 
-MinMaxContentSize NGLayoutInputNode::ComputeMinMaxContentSize() {
-  return IsInline() ? ToNGInlineNode(*this).ComputeMinMaxContentSize()
-                    : ToNGBlockNode(*this).ComputeMinMaxContentSize();
+MinMaxSize NGLayoutInputNode::ComputeMinMaxSize() {
+  return IsInline() ? ToNGInlineNode(*this).ComputeMinMaxSize()
+                    : ToNGBlockNode(*this).ComputeMinMaxSize();
 }
 
 NGLayoutInputNode NGLayoutInputNode::NextSibling() {

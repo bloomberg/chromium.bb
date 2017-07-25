@@ -35,6 +35,7 @@
 #include "core/layout/FlexibleBoxAlgorithm.h"
 #include "core/layout/LayoutState.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/MinMaxSize.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/PaintLayer.h"
@@ -1188,29 +1189,28 @@ void LayoutFlexibleBox::PrepareOrderIteratorAndMargins() {
 }
 
 DISABLE_CFI_PERF
-void LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
-    const LayoutBox& child,
-    LayoutUnit& min_extent,
-    LayoutUnit& max_extent) const {
-  min_extent = LayoutUnit();
-  max_extent = LayoutUnit::Max();
+MinMaxSize LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
+    const LayoutBox& child) const {
+  MinMaxSize sizes;
+  sizes.min_size = LayoutUnit();
+  sizes.max_size = LayoutUnit::Max();
 
   Length max = IsHorizontalFlow() ? child.Style()->MaxWidth()
                                   : child.Style()->MaxHeight();
   if (max.IsSpecifiedOrIntrinsic()) {
-    max_extent = ComputeMainAxisExtentForChild(child, kMaxSize, max);
-    if (max_extent == -1)
-      max_extent = LayoutUnit::Max();
-    DCHECK_GE(max_extent, LayoutUnit());
+    sizes.max_size = ComputeMainAxisExtentForChild(child, kMaxSize, max);
+    if (sizes.max_size == -1)
+      sizes.max_size = LayoutUnit::Max();
+    DCHECK_GE(sizes.max_size, LayoutUnit());
   }
 
   Length min = IsHorizontalFlow() ? child.Style()->MinWidth()
                                   : child.Style()->MinHeight();
   if (min.IsSpecifiedOrIntrinsic()) {
-    min_extent = ComputeMainAxisExtentForChild(child, kMinSize, min);
+    sizes.min_size = ComputeMainAxisExtentForChild(child, kMinSize, min);
     // computeMainAxisExtentForChild can return -1 when the child has a
     // percentage min size, but we have an indefinite size in that axis.
-    min_extent = std::max(LayoutUnit(), min_extent);
+    sizes.min_size = std::max(LayoutUnit(), sizes.min_size);
   } else if (min.IsAuto() && !child.StyleRef().ContainsSize() &&
              MainAxisOverflowForChild(child) == EOverflow::kVisible &&
              !(IsColumnFlow() && child.IsFlexibleBox())) {
@@ -1225,8 +1225,8 @@ void LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
     if (HasAspectRatio(child) && child.IntrinsicSize().Height() > 0)
       content_size =
           AdjustChildSizeForAspectRatioCrossAxisMinAndMax(child, content_size);
-    if (max_extent != -1 && content_size > max_extent)
-      content_size = max_extent;
+    if (sizes.max_size != -1 && content_size > sizes.max_size)
+      content_size = sizes.max_size;
 
     Length main_size = IsHorizontalFlow() ? child.StyleRef().Width()
                                           : child.StyleRef().Height();
@@ -1234,11 +1234,11 @@ void LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
       LayoutUnit resolved_main_size =
           ComputeMainAxisExtentForChild(child, kMainOrPreferredSize, main_size);
       DCHECK_GE(resolved_main_size, LayoutUnit());
-      LayoutUnit specified_size = max_extent != -1
-                                      ? std::min(resolved_main_size, max_extent)
-                                      : resolved_main_size;
+      LayoutUnit specified_size =
+          sizes.max_size != -1 ? std::min(resolved_main_size, sizes.max_size)
+                               : resolved_main_size;
 
-      min_extent = std::min(specified_size, content_size);
+      sizes.min_size = std::min(specified_size, content_size);
     } else if (UseChildAspectRatio(child)) {
       Length cross_size_length = IsHorizontalFlow() ? child.StyleRef().Height()
                                                     : child.StyleRef().Width();
@@ -1246,12 +1246,13 @@ void LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
           ComputeMainSizeFromAspectRatioUsing(child, cross_size_length);
       transferred_size = AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
           child, transferred_size);
-      min_extent = std::min(transferred_size, content_size);
+      sizes.min_size = std::min(transferred_size, content_size);
     } else {
-      min_extent = content_size;
+      sizes.min_size = content_size;
     }
   }
-  DCHECK_GE(min_extent, LayoutUnit());
+  DCHECK_GE(sizes.min_size, LayoutUnit());
+  return sizes;
 }
 
 LayoutUnit LayoutFlexibleBox::CrossSizeForPercentageResolution(
@@ -1346,21 +1347,20 @@ FlexItem LayoutFlexibleBox::ConstructFlexItem(LayoutBox& child,
     layout_type = kLayoutIfNeeded;
   }
 
-  LayoutUnit min_extent, max_extent;
-  ComputeMinAndMaxSizesForChild(child, min_extent, max_extent);
+  MinMaxSize sizes = ComputeMinAndMaxSizesForChild(child);
 
   LayoutUnit border_and_padding = IsHorizontalFlow()
                                       ? child.BorderAndPaddingWidth()
                                       : child.BorderAndPaddingHeight();
   LayoutUnit child_inner_flex_base_size =
       ComputeInnerFlexBaseSizeForChild(child, border_and_padding, layout_type);
-  LayoutUnit child_min_max_applied_main_axis_extent =
-      std::max(min_extent, std::min(child_inner_flex_base_size, max_extent));
+  LayoutUnit child_min_max_applied_main_axis_extent = std::max(
+      sizes.min_size, std::min(child_inner_flex_base_size, sizes.max_size));
   LayoutUnit margin =
       IsHorizontalFlow() ? child.MarginWidth() : child.MarginHeight();
   return FlexItem(&child, child_inner_flex_base_size,
                   child_min_max_applied_main_axis_extent, border_and_padding,
-                  min_extent, max_extent, margin);
+                  sizes, margin);
 }
 
 // Returns true if we successfully ran the algorithm and sized the flex items.

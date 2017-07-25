@@ -32,6 +32,7 @@
 #define FlexibleBoxAlgorithm_h
 
 #include "core/CoreExport.h"
+#include "core/layout/MinMaxSize.h"
 #include "core/layout/OrderIterator.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LayoutUnit.h"
@@ -41,6 +42,7 @@
 namespace blink {
 
 class LayoutBox;
+struct MinMaxSize;
 
 enum FlexSign {
   kPositiveFlexibility,
@@ -53,8 +55,7 @@ class FlexItem {
            LayoutUnit flex_base_content_size,
            LayoutUnit hypothetical_main_content_size,
            LayoutUnit main_axis_border_and_padding,
-           LayoutUnit main_axis_min_size,
-           LayoutUnit main_axis_max_size,
+           MinMaxSize min_max_sizes,
            LayoutUnit main_axis_margin);
 
   LayoutUnit HypotheticalMainAxisMarginBoxSize() const {
@@ -78,8 +79,7 @@ class FlexItem {
   const LayoutUnit flex_base_content_size;
   const LayoutUnit hypothetical_main_content_size;
   const LayoutUnit main_axis_border_and_padding;
-  const LayoutUnit main_axis_min_size;
-  const LayoutUnit main_axis_max_size;
+  const MinMaxSize min_max_sizes;
   const LayoutUnit main_axis_margin;
   LayoutUnit flexed_content_size;
   bool frozen;

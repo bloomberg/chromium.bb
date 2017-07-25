@@ -6,8 +6,8 @@
 #define NGLengthUtils_h
 
 #include "core/CoreExport.h"
+#include "core/layout/MinMaxSize.h"
 #include "core/layout/ng/geometry/ng_box_strut.h"
-#include "core/layout/ng/ng_min_max_content_size.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/text/TextDirection.h"
 #include "platform/wtf/Optional.h"
@@ -17,7 +17,7 @@ class ComputedStyle;
 class LayoutObject;
 class LayoutUnit;
 class Length;
-struct MinMaxContentSize;
+struct MinMaxSize;
 class NGConstraintSpace;
 struct NGBoxStrut;
 
@@ -31,25 +31,22 @@ enum class LengthResolveType {
 // Whether the caller needs to compute min-content and max-content sizes to
 // pass them to ResolveInlineLength / ComputeInlineSizeForFragment.
 // If this function returns false, it is safe to pass an empty
-// MinMaxContentSize struct to those functions.
-CORE_EXPORT bool NeedMinMaxContentSize(const NGConstraintSpace&,
-                                       const ComputedStyle&);
+// MinMaxSize struct to those functions.
+CORE_EXPORT bool NeedMinMaxSize(const NGConstraintSpace&, const ComputedStyle&);
 
-CORE_EXPORT bool NeedMinMaxContentSize(const ComputedStyle&);
+CORE_EXPORT bool NeedMinMaxSize(const ComputedStyle&);
 
-// Like NeedMinMaxContentSize, but for use when calling
+// Like NeedMinMaxSize, but for use when calling
 // ComputeMinAndMaxContentContribution.
-CORE_EXPORT bool NeedMinMaxContentSizeForContentContribution(
-    const ComputedStyle&);
+CORE_EXPORT bool NeedMinMaxSizeForContentContribution(const ComputedStyle&);
 
 // Convert an inline-axis length to a layout unit using the given constraint
 // space.
-CORE_EXPORT LayoutUnit
-ResolveInlineLength(const NGConstraintSpace&,
-                    const ComputedStyle&,
-                    const WTF::Optional<MinMaxContentSize>&,
-                    const Length&,
-                    LengthResolveType);
+CORE_EXPORT LayoutUnit ResolveInlineLength(const NGConstraintSpace&,
+                                           const ComputedStyle&,
+                                           const WTF::Optional<MinMaxSize>&,
+                                           const Length&,
+                                           LengthResolveType);
 
 // Convert a block-axis length to a layout unit using the given constraint
 // space and content size.
@@ -66,9 +63,9 @@ CORE_EXPORT LayoutUnit ResolveBlockLength(const NGConstraintSpace&,
 // to zero) and that an auto inline size resolves to the respective min/max
 // content size.
 // Also, the min/max contribution does include the inline margins as well.
-CORE_EXPORT MinMaxContentSize
+CORE_EXPORT MinMaxSize
 ComputeMinAndMaxContentContribution(const ComputedStyle&,
-                                    const WTF::Optional<MinMaxContentSize>&);
+                                    const WTF::Optional<MinMaxSize>&);
 
 // Resolves the given length to a layout unit, constraining it by the min
 // logical width and max logical width properties from the ComputedStyle
@@ -76,7 +73,7 @@ ComputeMinAndMaxContentContribution(const ComputedStyle&,
 CORE_EXPORT LayoutUnit
 ComputeInlineSizeForFragment(const NGConstraintSpace&,
                              const ComputedStyle&,
-                             const WTF::Optional<MinMaxContentSize>&);
+                             const WTF::Optional<MinMaxSize>&);
 
 // Resolves the given length to a layout unit, constraining it by the min
 // logical height and max logical height properties from the ComputedStyle
