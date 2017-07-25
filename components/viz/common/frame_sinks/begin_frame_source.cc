@@ -172,12 +172,12 @@ void DelayBasedBeginFrameSource::SetAuthoritativeVSyncInterval(
 }
 
 BeginFrameArgs DelayBasedBeginFrameSource::CreateBeginFrameArgs(
-    base::TimeTicks frame_time,
-    BeginFrameArgs::BeginFrameArgsType type) {
+    base::TimeTicks frame_time) {
   uint64_t sequence_number = next_sequence_number_++;
   return BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, source_id(), sequence_number, frame_time,
-      time_source_->NextTickTime(), time_source_->Interval(), type);
+      time_source_->NextTickTime(), time_source_->Interval(),
+      BeginFrameArgs::NORMAL);
 }
 
 void DelayBasedBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
@@ -188,37 +188,32 @@ void DelayBasedBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
   obs->OnBeginFrameSourcePausedChanged(false);
   time_source_->SetActive(true);
 
-  // Missed args should correspond to |current_begin_frame_args_| (particularly,
-  // have the same sequence number) if |current_begin_frame_args_| still
-  // correspond to the last time the time source should have ticked. This may
-  // not be the case if OnTimerTick() has never run yet, the time source was
-  // inactive before AddObserver() was called, or the interval changed. In such
-  // a case, we create new args with a new sequence number.
+  // Missed args should correspond to |last_begin_frame_args_| (particularly,
+  // have the same sequence number) if |last_begin_frame_args_| still correspond
+  // to the last time the time source should have ticked. This may not be the
+  // case if the time source was inactive before AddObserver() was called. In
+  // such a case, we create new args with a new sequence number only if
+  // sufficient time has passed since the last tick.
   base::TimeTicks last_or_missed_tick_time =
       time_source_->NextTickTime() - time_source_->Interval();
-  if (current_begin_frame_args_.IsValid() &&
-      current_begin_frame_args_.frame_time == last_or_missed_tick_time &&
-      current_begin_frame_args_.interval == time_source_->Interval()) {
-    // Ensure that the args have the right type.
-    current_begin_frame_args_.type = BeginFrameArgs::MISSED;
-  } else {
-    // The args are not up to date and we need to create new ones with the
-    // missed tick's time and a new sequence number.
-    current_begin_frame_args_ =
-        CreateBeginFrameArgs(last_or_missed_tick_time, BeginFrameArgs::MISSED);
+  if (!last_begin_frame_args_.IsValid() ||
+      last_or_missed_tick_time >
+          last_begin_frame_args_.frame_time +
+              last_begin_frame_args_.interval / kDoubleTickDivisor) {
+    last_begin_frame_args_ = CreateBeginFrameArgs(last_or_missed_tick_time);
   }
+  BeginFrameArgs missed_args = last_begin_frame_args_;
+  missed_args.type = BeginFrameArgs::MISSED;
 
   BeginFrameArgs last_args = obs->LastUsedBeginFrameArgs();
   if (!last_args.IsValid() ||
-      (current_begin_frame_args_.frame_time >
-       last_args.frame_time +
-           current_begin_frame_args_.interval / kDoubleTickDivisor)) {
-    DCHECK(current_begin_frame_args_.sequence_number >
-               last_args.sequence_number ||
-           current_begin_frame_args_.source_id != last_args.source_id)
-        << "current " << current_begin_frame_args_.AsValue()->ToString()
-        << ", last " << last_args.AsValue()->ToString();
-    obs->OnBeginFrame(current_begin_frame_args_);
+      (missed_args.frame_time >
+       last_args.frame_time + missed_args.interval / kDoubleTickDivisor)) {
+    DCHECK(missed_args.sequence_number > last_args.sequence_number ||
+           missed_args.source_id != last_args.source_id)
+        << "missed " << missed_args.AsValue()->ToString() << ", last "
+        << last_args.AsValue()->ToString();
+    obs->OnBeginFrame(missed_args);
   }
 }
 
@@ -236,16 +231,15 @@ bool DelayBasedBeginFrameSource::IsThrottled() const {
 }
 
 void DelayBasedBeginFrameSource::OnTimerTick() {
-  current_begin_frame_args_ = CreateBeginFrameArgs(time_source_->LastTickTime(),
-                                                   BeginFrameArgs::NORMAL);
+  last_begin_frame_args_ = CreateBeginFrameArgs(time_source_->LastTickTime());
   std::unordered_set<BeginFrameObserver*> observers(observers_);
   for (auto* obs : observers) {
     BeginFrameArgs last_args = obs->LastUsedBeginFrameArgs();
     if (!last_args.IsValid() ||
-        (current_begin_frame_args_.frame_time >
+        (last_begin_frame_args_.frame_time >
          last_args.frame_time +
-             current_begin_frame_args_.interval / kDoubleTickDivisor)) {
-      obs->OnBeginFrame(current_begin_frame_args_);
+             last_begin_frame_args_.interval / kDoubleTickDivisor)) {
+      obs->OnBeginFrame(last_begin_frame_args_);
     }
   }
 }
@@ -303,10 +297,8 @@ void ExternalBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
   DCHECK(observers_.find(obs) != observers_.end());
 
   observers_.erase(obs);
-  if (observers_.empty()) {
-    last_begin_frame_args_ = BeginFrameArgs();
+  if (observers_.empty())
     client_->OnNeedsBeginFrames(false);
-  }
 }
 
 bool ExternalBeginFrameSource::IsThrottled() const {
@@ -323,6 +315,14 @@ void ExternalBeginFrameSource::OnSetBeginFrameSourcePaused(bool paused) {
 }
 
 void ExternalBeginFrameSource::OnBeginFrame(const BeginFrameArgs& args) {
+  // Ignore out of order begin frames because of layer tree frame sink being
+  // recreated.
+  if (last_begin_frame_args_.IsValid() &&
+      (args.frame_time <= last_begin_frame_args_.frame_time ||
+       (args.source_id == last_begin_frame_args_.source_id &&
+        args.sequence_number <= last_begin_frame_args_.sequence_number)))
+    return;
+
   last_begin_frame_args_ = args;
   std::unordered_set<BeginFrameObserver*> observers(observers_);
   for (auto* obs : observers) {

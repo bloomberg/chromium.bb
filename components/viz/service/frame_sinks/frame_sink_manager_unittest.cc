@@ -12,11 +12,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
-
 namespace {
 
 constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
-}
 
 class FakeFrameSinkManagerClient : public FrameSinkManagerClient {
  public:
@@ -153,12 +151,11 @@ TEST_F(FrameSinkManagerTest, PrimaryBeginFrameSource) {
   manager_.RegisterBeginFrameSource(external_source2.get(),
                                     root2.frame_sink_id());
 
-  BeginFrameArgs args =
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
-
   // Ticking |external_source2| does not propagate to |begin_frame_source|.
   {
-    EXPECT_CALL(obs, OnBeginFrame(args)).Times(0);
+    BeginFrameArgs args = CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE, external_source2->source_id(), 1);
+    EXPECT_CALL(obs, OnBeginFrame(testing::_)).Times(0);
     external_source2->TestOnBeginFrame(args);
     testing::Mock::VerifyAndClearExpectations(&obs);
   }
@@ -166,7 +163,9 @@ TEST_F(FrameSinkManagerTest, PrimaryBeginFrameSource) {
   // Ticking |external_source1| does propagate to |begin_frame_source| and
   // |obs|.
   {
-    EXPECT_CALL(obs, OnBeginFrame(testing::_)).Times(1);
+    BeginFrameArgs args = CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE, external_source1->source_id(), 1);
+    EXPECT_CALL(obs, OnBeginFrame(args)).Times(1);
     external_source1->TestOnBeginFrame(args);
     testing::Mock::VerifyAndClearExpectations(&obs);
   }
@@ -175,11 +174,17 @@ TEST_F(FrameSinkManagerTest, PrimaryBeginFrameSource) {
   // propagate. Instead, |external_source2|'s BeginFrames will propagate
   // to |begin_frame_source|.
   {
+    BeginFrameArgs args = CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE, external_source1->source_id(), 2);
     manager_.UnregisterBeginFrameSource(external_source1.get());
     EXPECT_CALL(obs, OnBeginFrame(testing::_)).Times(0);
     external_source1->TestOnBeginFrame(args);
     testing::Mock::VerifyAndClearExpectations(&obs);
+  }
 
+  {
+    BeginFrameArgs args = CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE, external_source2->source_id(), 2);
     EXPECT_CALL(obs, OnBeginFrame(testing::_)).Times(1);
     external_source2->TestOnBeginFrame(args);
     testing::Mock::VerifyAndClearExpectations(&obs);
@@ -525,4 +530,5 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::ValuesIn(kUnregisterOrderList),
                        ::testing::ValuesIn(kBFSOrderList)));
 
+}  // namespace
 }  // namespace viz
