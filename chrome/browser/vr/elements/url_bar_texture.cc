@@ -97,6 +97,7 @@ void UrlBarTexture::SetToolbarState(const ToolbarState& state) {
   if (state_ == state)
     return;
   state_ = state;
+  url_dirty_ = true;
   set_dirty();
 }
 
@@ -166,6 +167,7 @@ SkColor UrlBarTexture::GetLeftCornerColor() const {
 }
 
 void UrlBarTexture::OnSetMode() {
+  url_dirty_ = true;
   set_dirty();
 }
 
@@ -311,16 +313,12 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
 
   if (state_.should_display_url) {
     float url_x = left_edge;
-    if (!url_render_text_ || last_drawn_gurl_ != state_.gurl ||
-        last_drawn_security_level_ != state_.security_level ||
-        last_drawn_url_x_position_ != url_x) {
+    if (!url_render_text_ || url_dirty_) {
       float url_width = kWidth - url_x - kUrlRightMargin;
       gfx::Rect text_bounds(ToPixels(url_x), 0, ToPixels(url_width),
                             ToPixels(kHeight));
       RenderUrl(texture_size, text_bounds);
-      last_drawn_gurl_ = state_.gurl;
-      last_drawn_security_level_ = state_.security_level;
-      last_drawn_url_x_position_ = url_x;
+      url_dirty_ = false;
     }
     url_render_text_->Draw(&gfx_canvas);
     rendered_url_text_ = url_render_text_->text();
@@ -332,9 +330,12 @@ void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
                               const gfx::Rect& bounds) {
   url::Parsed parsed;
 
+  url_formatter::FormatUrlTypes format_types = url_formatter::kFormatUrlOmitAll;
+  if (state_.offline_page)
+    format_types |= url_formatter::kFormatUrlExperimentalOmitHTTPS;
   const base::string16 text = url_formatter::FormatUrl(
-      state_.gurl, url_formatter::kFormatUrlOmitAll, net::UnescapeRule::NORMAL,
-      &parsed, nullptr, nullptr);
+      state_.gurl, format_types, net::UnescapeRule::NORMAL, &parsed, nullptr,
+      nullptr);
 
   int pixel_font_height = texture_size.height() * kFontHeight / kHeight;
 

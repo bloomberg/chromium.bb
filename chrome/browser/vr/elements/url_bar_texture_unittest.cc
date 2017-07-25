@@ -315,6 +315,7 @@ TEST(UrlBarTexture, OfflinePage) {
   EXPECT_GT(texture.url_rect().width(), 0);
   EXPECT_GT(texture.url_rect().height(), 0);
   EXPECT_TRUE(texture.security_text().empty());
+  EXPECT_EQ(texture.url_text(), base::UTF8ToUTF16("https://host.com/page"));
   gfx::Rect online_url_rect = texture.url_rect();
 
   // Go offline. Security text should be visible and displace the URL.
@@ -326,6 +327,7 @@ TEST(UrlBarTexture, OfflinePage) {
   EXPECT_GT(texture.url_rect().height(), 0);
   EXPECT_GT(texture.url_rect().x(), online_url_rect.x());
   EXPECT_EQ(texture.security_text(), base::UTF8ToUTF16("Offline"));
+  EXPECT_EQ(texture.url_text(), base::UTF8ToUTF16("host.com/page"));
 
   // Go back online.
   state.offline_page = false;
@@ -334,6 +336,7 @@ TEST(UrlBarTexture, OfflinePage) {
   EXPECT_EQ(texture.security_rect().height(), 0);
   EXPECT_EQ(texture.url_rect(), online_url_rect);
   EXPECT_TRUE(texture.security_text().empty());
+  EXPECT_EQ(texture.url_text(), base::UTF8ToUTF16("https://host.com/page"));
 }
 
 }  // namespace vr
