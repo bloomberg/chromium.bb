@@ -46,10 +46,6 @@ enum ShellWindowId {
   // The wallpaper (desktop background) window.
   kShellWindowId_WallpaperContainer,
 
-  // The virtual keyboard container.
-  // NOTE: this is lazily created.
-  kShellWindowId_VirtualKeyboardContainer,
-
   // The container for standard top-level windows.
   kShellWindowId_DefaultContainer,
 
@@ -96,6 +92,10 @@ enum ShellWindowId {
   // is stacked above most containers but below the mouse cursor and the power
   // off animation.
   kShellWindowId_ImeWindowParentContainer,
+
+  // The virtual keyboard container.
+  // NOTE: this is lazily created.
+  kShellWindowId_VirtualKeyboardContainer,
 
   // The container for menus.
   kShellWindowId_MenuContainer,

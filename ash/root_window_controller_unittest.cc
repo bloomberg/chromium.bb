@@ -115,7 +115,7 @@ class RootWindowControllerTest : public AshTestBase {
   }
 
   views::Widget* CreateModalWidgetWithParent(const gfx::Rect& bounds,
-                                             gfx::NativeWindow parent) {
+                                             aura::Window* parent) {
     views::Widget* widget = views::Widget::CreateWindowWithParentAndBounds(
         new TestDelegate(true), parent, bounds);
     widget->Show();
