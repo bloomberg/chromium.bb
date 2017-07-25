@@ -9,9 +9,15 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/storage_partition.h"
@@ -30,6 +36,47 @@ class SigninManagerAndroidTest : public ::testing::Test {
   }
 
   TestingProfile* profile() { return profile_; }
+
+  static std::unique_ptr<KeyedService> GetEmptyBrowsingDataRemoverDelegate(
+      content::BrowserContext* context) {
+    return nullptr;
+  }
+
+  // Adds two testing bookmarks to |profile_|.
+  bookmarks::BookmarkModel* AddTestBookmarks() {
+    profile_->CreateBookmarkModel(true);
+    bookmarks::BookmarkModel* bookmark_model =
+        BookmarkModelFactory::GetForBrowserContext(profile_);
+    bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
+
+    bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 0,
+                           base::ASCIIToUTF16("Example 1"),
+                           GURL("https://example.org/1"));
+    bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 1,
+                           base::ASCIIToUTF16("Example 2"),
+                           GURL("https://example.com/2"));
+
+    return bookmark_model;
+  }
+
+  // Calls SigninManager::WipeData(|all_data|) and waits for its completion.
+  void WipeData(bool all_data) {
+    // ChromeBrowsingDataRemoverDelegate deletes a lot of data storage backends
+    // that will not work correctly in a unittest. Remove it. Note that
+    // bookmarks deletion is currently not performed in the delegate, so this
+    // test remains valid.
+    // TODO(crbug.com/748484): Make ChromeBrowsingDataRemoverDelegate usable
+    // in unittests.
+    ChromeBrowsingDataRemoverDelegateFactory::GetInstance()
+        ->SetTestingFactoryAndUse(
+            profile(),
+            SigninManagerAndroidTest::GetEmptyBrowsingDataRemoverDelegate);
+
+    std::unique_ptr<base::RunLoop> run_loop(new base::RunLoop());
+    SigninManagerAndroid::WipeData(profile(), all_data,
+                                   run_loop->QuitClosure());
+    run_loop->Run();
+  }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -94,4 +141,22 @@ TEST_F(SigninManagerAndroidTest, DeleteGoogleServiceWorkerCaches) {
         << "be deleted, but it was"
         << (test_case.should_be_deleted ? "NOT" : "") << ".";
   }
+}
+
+// Tests that wiping all data also deletes bookmarks.
+TEST_F(SigninManagerAndroidTest, DeleteBookmarksWhenWipingAllData) {
+  bookmarks::BookmarkModel* bookmark_model = AddTestBookmarks();
+  ASSERT_GE(bookmark_model->bookmark_bar_node()->child_count(), 0);
+  WipeData(true);
+  EXPECT_EQ(0, bookmark_model->bookmark_bar_node()->child_count());
+}
+
+// Tests that wiping Google service worker caches does not delete bookmarks.
+TEST_F(SigninManagerAndroidTest, DontDeleteBookmarksWhenDeletingSWCaches) {
+  bookmarks::BookmarkModel* bookmark_model = AddTestBookmarks();
+  int bookmarks_count = bookmark_model->bookmark_bar_node()->child_count();
+  ASSERT_GE(bookmarks_count, 0);
+  WipeData(false);
+  EXPECT_EQ(bookmarks_count,
+            bookmark_model->bookmark_bar_node()->child_count());
 }
