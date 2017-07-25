@@ -40,6 +40,17 @@ class AutofillProfile : public AutofillDataModel {
     AUXILIARY_PROFILE,
   };
 
+  enum ValidityState {
+    // The field has not been validated.
+    UNVALIDATED,
+
+    // The field is invalid.
+    INVALID,
+
+    // The field is valid.
+    VALID,
+  };
+
   AutofillProfile(const std::string& guid, const std::string& origin);
 
   // Server profile constructor. The type must be SERVER_PROFILE (this serves
@@ -189,6 +200,12 @@ class AutofillProfile : public AutofillDataModel {
   bool has_converted() const { return has_converted_; }
   void set_has_converted(bool has_converted) { has_converted_ = has_converted; }
 
+  // Returns the validity state of the specified autofill type.
+  ValidityState GetValidityState(ServerFieldType type);
+
+  // Sets the validity state of the specified autofill type.
+  void SetValidityState(ServerFieldType type, ValidityState validity);
+
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
 
@@ -236,6 +253,9 @@ class AutofillProfile : public AutofillDataModel {
   // Only useful for SERVER_PROFILEs. Whether this server profile has been
   // converted to a local profile.
   bool has_converted_;
+
+  // A map identifying what fields are valid.
+  std::map<ServerFieldType, ValidityState> validity_states_;
 };
 
 // So we can compare AutofillProfiles with EXPECT_EQ().

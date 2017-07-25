@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
@@ -715,6 +716,26 @@ void AutofillProfile::RecordAndLogUse() {
   UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.Profile",
                             (AutofillClock::Now() - use_date()).InDays());
   RecordUse();
+}
+
+AutofillProfile::ValidityState AutofillProfile::GetValidityState(
+    ServerFieldType type) {
+  if (!base::ContainsKey(validity_states_, type))
+    return UNVALIDATED;
+
+  return validity_states_[type];
+}
+
+void AutofillProfile::SetValidityState(ServerFieldType type,
+                                       ValidityState validity) {
+  std::map<ServerFieldType, ValidityState>::iterator it =
+      validity_states_.find(type);
+
+  if (it != validity_states_.end()) {
+    it->second = validity;
+  } else {
+    validity_states_.insert(std::make_pair(type, validity));
+  }
 }
 
 // static
