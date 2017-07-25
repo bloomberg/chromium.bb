@@ -1286,10 +1286,12 @@ public class VrShellDelegate
     private void cancelPendingVrEntry() {
         // Ensure we can't asynchronously enter VR after trying to exit it.
         mEnterVrHandler.removeCallbacksAndMessages(null);
-        mDonSucceeded = false;
         removeBlackOverlayView();
-        mVrClassesWrapper.setVrModeEnabled(mActivity, false);
-        restoreWindowMode();
+        mDonSucceeded = false;
+        if (!mShowingDaydreamDoff) {
+            mVrClassesWrapper.setVrModeEnabled(mActivity, false);
+            restoreWindowMode();
+        }
     }
 
     /**
