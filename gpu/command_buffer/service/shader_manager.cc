@@ -121,8 +121,6 @@ void Shader::DoCompile() {
         << "\n--translated-shader--\n" << source_for_driver
         << "\n--info-log--\n" << log_info_;
   }
-
-  translator_ = nullptr;
 }
 
 void Shader::RefreshTranslatedShaderSource() {
