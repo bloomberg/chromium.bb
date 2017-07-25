@@ -62,6 +62,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
@@ -146,6 +147,7 @@ import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
@@ -267,6 +269,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private AppMenuHandler mAppMenuHandler;
     private ToolbarManager mToolbarManager;
+    private FindToolbarManager mFindToolbarManager;
     private BottomSheet mBottomSheet;
     private BottomSheetContentController mBottomSheetContentController;
     private FadingBackgroundView mFadingBackgroundView;
@@ -523,6 +526,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mToolbarManager = new ToolbarManager(this, toolbarContainer, mAppMenuHandler,
                 mAppMenuPropertiesDelegate, getCompositorViewHolder().getInvalidator(),
                 urlFocusChangedCallback);
+        mFindToolbarManager = new FindToolbarManager(
+                this, mToolbarManager.getActionModeController().getActionModeCallback());
+        if (getContextualSearchManager() != null) {
+            getContextualSearchManager().setFindToolbarManager(mFindToolbarManager);
+        }
         mAppMenuHandler.addObserver(new AppMenuObserver() {
             @Override
             public void onMenuVisibilityChanged(boolean isVisible) {
@@ -673,6 +681,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     public ToolbarManager getToolbarManager() {
         return mToolbarManager;
+    }
+
+    /**
+     * @return {@link FindToolbarManager} that belongs to this activity.
+     */
+    public FindToolbarManager getFindToolbarManager() {
+        return mFindToolbarManager;
     }
 
     /**
@@ -1387,6 +1402,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             return false;
         }
 
+        // Do not show the menu if we are in find in page view.
+        if (mFindToolbarManager != null && mFindToolbarManager.isShowing() && !isTablet()) {
+            return false;
+        }
+
         return true;
     }
 
@@ -1902,6 +1922,19 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             RecordUserAction.record("MobileMenuSettings");
         } else if (id == R.id.show_menu) {
             showAppMenuForKeyboardEvent();
+        } else if (id == R.id.find_in_page_id) {
+            if (mFindToolbarManager == null) return false;
+
+            mFindToolbarManager.showToolbar();
+            if (mContextualSearchManager != null) {
+                getContextualSearchManager().hideContextualSearch(StateChangeReason.UNKNOWN);
+            }
+            if (fromMenu) {
+                RecordUserAction.record("MobileMenuFindInPage");
+            } else {
+                RecordUserAction.record("MobileShortcutFindInPage");
+            }
+            return true;
         }
 
         if (id == R.id.update_menu_id) {

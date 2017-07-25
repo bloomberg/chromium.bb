@@ -54,7 +54,6 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.browseractions.BrowserActionsContextMenuItemDelegate;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
@@ -122,7 +121,6 @@ import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetMetrics;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
-import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
 import org.chromium.components.feature_engagement_tracker.EventConstants;
 import org.chromium.components.feature_engagement_tracker.FeatureConstants;
@@ -218,8 +216,6 @@ public class ChromeTabbedActivity
 
     private final ActivityStopMetrics mActivityStopMetrics;
     private final MainIntentBehaviorMetrics mMainIntentMetrics;
-
-    private FindToolbarManager mFindToolbarManager;
 
     private UndoBarController mUndoBarPopupController;
 
@@ -742,12 +738,6 @@ public class ChromeTabbedActivity
                         (int) controlHeight;
             }
 
-            mFindToolbarManager = new FindToolbarManager(this,
-                    getToolbarManager().getActionModeController().getActionModeCallback());
-            if (getContextualSearchManager() != null) {
-                getContextualSearchManager().setFindToolbarManager(mFindToolbarManager);
-            }
-
             OnClickListener tabSwitcherClickHandler = new OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -776,9 +766,9 @@ public class ChromeTabbedActivity
             };
 
             getToolbarManager().initializeWithNative(mTabModelSelectorImpl,
-                    getFullscreenManager().getBrowserVisibilityDelegate(),
-                    mFindToolbarManager, mLayoutManager, mLayoutManager,
-                    tabSwitcherClickHandler, newTabClickHandler, bookmarkClickHandler, null);
+                    getFullscreenManager().getBrowserVisibilityDelegate(), getFindToolbarManager(),
+                    mLayoutManager, mLayoutManager, tabSwitcherClickHandler, newTabClickHandler,
+                    bookmarkClickHandler, null);
 
             if (isTablet()) {
                 EmptyBackgroundViewWrapper bgViewWrapper = new EmptyBackgroundViewWrapper(
@@ -1663,16 +1653,6 @@ public class ChromeTabbedActivity
             getTabModelSelector().getModel(true).closeAllTabs();
             // TODO(nileshagrawal) Record unique action for this. See bug http://b/5542946.
             RecordUserAction.record("MobileMenuCloseAllTabs");
-        } else if (id == R.id.find_in_page_id) {
-            mFindToolbarManager.showToolbar();
-            if (getContextualSearchManager() != null) {
-                getContextualSearchManager().hideContextualSearch(StateChangeReason.UNKNOWN);
-            }
-            if (fromMenu) {
-                RecordUserAction.record("MobileMenuFindInPage");
-            } else {
-                RecordUserAction.record("MobileShortcutFindInPage");
-            }
         } else if (id == R.id.focus_url_bar) {
             boolean isUrlBarVisible = !mLayoutManager.overviewVisible()
                     && (!isTablet() || getCurrentTabModel().getCount() != 0);
@@ -2014,11 +1994,6 @@ public class ChromeTabbedActivity
         // attempt to show the menu until the UI creation has finished.
         if (!mUIInitialized) return false;
 
-        // Do not show the menu if we are in find in page view.
-        if (mFindToolbarManager != null && mFindToolbarManager.isShowing() && !isTablet()) {
-            return false;
-        }
-
         return super.shouldShowAppMenu();
     }
 
@@ -2051,7 +2026,7 @@ public class ChromeTabbedActivity
 
     @Override
     public void onOverviewModeStartedShowing(boolean showToolbar) {
-        if (mFindToolbarManager != null) mFindToolbarManager.hideToolbar();
+        if (getFindToolbarManager() != null) getFindToolbarManager().hideToolbar();
         if (getAssistStatusHandler() != null) getAssistStatusHandler().updateAssistState();
         if (getAppMenuHandler() != null) getAppMenuHandler().hideAppMenu();
         ApiCompatibilityUtils.setStatusBarColor(getWindow(), Color.BLACK);
