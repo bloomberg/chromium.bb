@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_AVAILABILITY_STORE_H_
-#define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_AVAILABILITY_STORE_H_
+#ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_PERSISTENT_AVAILABILITY_STORE_H_
+#define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_PERSISTENT_AVAILABILITY_STORE_H_
 
 #include <stdint.h>
 
@@ -22,9 +22,9 @@ class FilePath;
 
 namespace feature_engagement_tracker {
 
-// An AvailabilityStore provides a way to load and update the availability date
-// for all registered features.
-class AvailabilityStore {
+// An PersistentAvailabilityStore provides a way to load and update the
+// availability date for all registered features.
+class PersistentAvailabilityStore {
  public:
   // Invoked when the availability data has finished loading, and whether the
   // load was a success. In the case of a failure, the map argument will be
@@ -50,12 +50,12 @@ class AvailabilityStore {
       uint32_t current_day);
 
  private:
-  AvailabilityStore() = default;
-  ~AvailabilityStore() = default;
+  PersistentAvailabilityStore() = default;
+  ~PersistentAvailabilityStore() = default;
 
-  DISALLOW_COPY_AND_ASSIGN(AvailabilityStore);
+  DISALLOW_COPY_AND_ASSIGN(PersistentAvailabilityStore);
 };
 
 }  // namespace feature_engagement_tracker
 
-#endif  // COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_AVAILABILITY_STORE_H_
+#endif  // COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_PERSISTENT_AVAILABILITY_STORE_H_

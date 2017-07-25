@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/feature_engagement_tracker/internal/init_aware_model.h"
+#include "components/feature_engagement_tracker/internal/init_aware_event_model.h"
 
 #include <memory>
 
@@ -24,12 +24,12 @@ namespace feature_engagement_tracker {
 
 namespace {
 
-class MockModel : public Model {
+class MockEventModel : public EventModel {
  public:
-  MockModel() = default;
-  ~MockModel() override = default;
+  MockEventModel() = default;
+  ~MockEventModel() override = default;
 
-  // Model implementation.
+  // EventModel implementation.
   MOCK_METHOD2(Initialize,
                void(const OnModelInitializationFinished&, uint32_t));
   MOCK_CONST_METHOD0(IsReady, bool());
@@ -37,46 +37,46 @@ class MockModel : public Model {
   MOCK_METHOD2(IncrementEvent, void(const std::string&, uint32_t));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockModel);
+  DISALLOW_COPY_AND_ASSIGN(MockEventModel);
 };
 
-class InitAwareModelTest : public testing::Test {
+class InitAwareEventModelTest : public testing::Test {
  public:
-  InitAwareModelTest() : mocked_model_(nullptr) {
-    load_callback_ = base::Bind(&InitAwareModelTest::OnModelInitialized,
+  InitAwareEventModelTest() : mocked_model_(nullptr) {
+    load_callback_ = base::Bind(&InitAwareEventModelTest::OnModelInitialized,
                                 base::Unretained(this));
   }
 
-  ~InitAwareModelTest() override = default;
+  ~InitAwareEventModelTest() override = default;
 
   void SetUp() override {
-    auto mocked_model = base::MakeUnique<MockModel>();
+    auto mocked_model = base::MakeUnique<MockEventModel>();
     mocked_model_ = mocked_model.get();
-    model_ = base::MakeUnique<InitAwareModel>(std::move(mocked_model));
+    model_ = base::MakeUnique<InitAwareEventModel>(std::move(mocked_model));
   }
 
  protected:
   void OnModelInitialized(bool success) { load_success_ = success; }
 
-  std::unique_ptr<InitAwareModel> model_;
-  MockModel* mocked_model_;
+  std::unique_ptr<InitAwareEventModel> model_;
+  MockEventModel* mocked_model_;
 
   // Load callback tracking.
   base::Optional<bool> load_success_;
-  Model::OnModelInitializationFinished load_callback_;
+  EventModel::OnModelInitializationFinished load_callback_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(InitAwareModelTest);
+  DISALLOW_COPY_AND_ASSIGN(InitAwareEventModelTest);
 };
 
 }  // namespace
 
-TEST_F(InitAwareModelTest, PassThroughIsReady) {
+TEST_F(InitAwareEventModelTest, PassThroughIsReady) {
   EXPECT_CALL(*mocked_model_, IsReady()).Times(1);
   model_->IsReady();
 }
 
-TEST_F(InitAwareModelTest, PassThroughGetEvent) {
+TEST_F(InitAwareEventModelTest, PassThroughGetEvent) {
   Event foo;
   foo.set_name("foo");
   test::SetEventCountForDay(&foo, 1, 1);
@@ -89,7 +89,7 @@ TEST_F(InitAwareModelTest, PassThroughGetEvent) {
   EXPECT_EQ(nullptr, model_->GetEvent("bar"));
 }
 
-TEST_F(InitAwareModelTest, PassThroughIncrementEvent) {
+TEST_F(InitAwareEventModelTest, PassThroughIncrementEvent) {
   EXPECT_CALL(*mocked_model_, IsReady()).WillRepeatedly(Return(true));
 
   Sequence sequence;
@@ -101,7 +101,7 @@ TEST_F(InitAwareModelTest, PassThroughIncrementEvent) {
   EXPECT_EQ(0U, model_->GetQueuedEventCountForTesting());
 }
 
-TEST_F(InitAwareModelTest, QueuedIncrementEvent) {
+TEST_F(InitAwareEventModelTest, QueuedIncrementEvent) {
   {
     EXPECT_CALL(*mocked_model_, IsReady()).WillRepeatedly(Return(false));
     EXPECT_CALL(*mocked_model_, IncrementEvent(_, _)).Times(0);
@@ -110,7 +110,7 @@ TEST_F(InitAwareModelTest, QueuedIncrementEvent) {
     model_->IncrementEvent("bar", 1U);
   }
 
-  Model::OnModelInitializationFinished callback;
+  EventModel::OnModelInitializationFinished callback;
   EXPECT_CALL(*mocked_model_, Initialize(_, 2U))
       .WillOnce(SaveArg<0>(&callback));
   model_->Initialize(load_callback_, 2U);
@@ -134,7 +134,7 @@ TEST_F(InitAwareModelTest, QueuedIncrementEvent) {
   EXPECT_EQ(0U, model_->GetQueuedEventCountForTesting());
 }
 
-TEST_F(InitAwareModelTest, QueuedIncrementEventWithUnsuccessfulInit) {
+TEST_F(InitAwareEventModelTest, QueuedIncrementEventWithUnsuccessfulInit) {
   {
     EXPECT_CALL(*mocked_model_, IsReady()).WillRepeatedly(Return(false));
     EXPECT_CALL(*mocked_model_, IncrementEvent(_, _)).Times(0);
@@ -143,7 +143,7 @@ TEST_F(InitAwareModelTest, QueuedIncrementEventWithUnsuccessfulInit) {
     model_->IncrementEvent("bar", 1U);
   }
 
-  Model::OnModelInitializationFinished callback;
+  EventModel::OnModelInitializationFinished callback;
   EXPECT_CALL(*mocked_model_, Initialize(_, 2U))
       .WillOnce(SaveArg<0>(&callback));
   model_->Initialize(load_callback_, 2U);

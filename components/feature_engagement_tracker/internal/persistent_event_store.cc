@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/feature_engagement_tracker/internal/persistent_store.h"
+#include "components/feature_engagement_tracker/internal/persistent_event_store.h"
 
 #include <vector>
 
@@ -25,7 +25,7 @@ void NoopUpdateCallback(bool success) {
 
 }  // namespace
 
-PersistentStore::PersistentStore(
+PersistentEventStore::PersistentEventStore(
     const base::FilePath& storage_dir,
     std::unique_ptr<leveldb_proto::ProtoDatabase<Event>> db)
     : storage_dir_(storage_dir),
@@ -33,21 +33,21 @@ PersistentStore::PersistentStore(
       ready_(false),
       weak_ptr_factory_(this) {}
 
-PersistentStore::~PersistentStore() = default;
+PersistentEventStore::~PersistentEventStore() = default;
 
-void PersistentStore::Load(const OnLoadedCallback& callback) {
+void PersistentEventStore::Load(const OnLoadedCallback& callback) {
   DCHECK(!ready_);
 
   db_->Init(kDatabaseUMAName, storage_dir_,
-            base::Bind(&PersistentStore::OnInitComplete,
+            base::Bind(&PersistentEventStore::OnInitComplete,
                        weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-bool PersistentStore::IsReady() const {
+bool PersistentEventStore::IsReady() const {
   return ready_;
 }
 
-void PersistentStore::WriteEvent(const Event& event) {
+void PersistentEventStore::WriteEvent(const Event& event) {
   DCHECK(IsReady());
   std::unique_ptr<KeyEventList> entries = base::MakeUnique<KeyEventList>();
   entries->push_back(KeyEventPair(event.name(), event));
@@ -57,7 +57,7 @@ void PersistentStore::WriteEvent(const Event& event) {
                      base::Bind(&NoopUpdateCallback));
 }
 
-void PersistentStore::DeleteEvent(const std::string& event_name) {
+void PersistentEventStore::DeleteEvent(const std::string& event_name) {
   DCHECK(IsReady());
   auto deletes = base::MakeUnique<std::vector<std::string>>();
   deletes->push_back(event_name);
@@ -66,8 +66,8 @@ void PersistentStore::DeleteEvent(const std::string& event_name) {
                      base::Bind(&NoopUpdateCallback));
 }
 
-void PersistentStore::OnInitComplete(const OnLoadedCallback& callback,
-                                     bool success) {
+void PersistentEventStore::OnInitComplete(const OnLoadedCallback& callback,
+                                          bool success) {
   stats::RecordDbInitEvent(success, stats::StoreType::EVENTS_STORE);
 
   if (!success) {
@@ -75,11 +75,11 @@ void PersistentStore::OnInitComplete(const OnLoadedCallback& callback,
     return;
   }
 
-  db_->LoadEntries(base::Bind(&PersistentStore::OnLoadComplete,
+  db_->LoadEntries(base::Bind(&PersistentEventStore::OnLoadComplete,
                               weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void PersistentStore::OnLoadComplete(
+void PersistentEventStore::OnLoadComplete(
     const OnLoadedCallback& callback,
     bool success,
     std::unique_ptr<std::vector<Event>> entries) {

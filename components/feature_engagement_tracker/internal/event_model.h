@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_MODEL_H_
-#define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_MODEL_H_
+#ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_EVENT_MODEL_H_
+#define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_EVENT_MODEL_H_
 
 #include <map>
 #include <string>
@@ -14,15 +14,14 @@
 namespace feature_engagement_tracker {
 class Event;
 
-// A Model provides all necessary runtime state.
-// TODO(nyquist): Rename to EventModel.
-class Model {
+// A EventModel provides all necessary runtime state.
+class EventModel {
  public:
   // Callback for when model initialization has finished. The |success|
   // argument denotes whether the model was successfully initialized.
   using OnModelInitializationFinished = base::Callback<void(bool success)>;
 
-  virtual ~Model() = default;
+  virtual ~EventModel() = default;
 
   // Initialize the model, including all underlying sub systems. When all
   // required operations have been finished, a callback is posted.
@@ -35,7 +34,7 @@ class Model {
 
   // Retrieves the Event object for the event with the given name. If the event
   // is not found, a nullptr will be returned. Calling this before the
-  // Model has finished initializing will result in undefined behavior.
+  // EventModel has finished initializing will result in undefined behavior.
   virtual const Event* GetEvent(const std::string& event_name) const = 0;
 
   // Increments the counter for today for how many times the event has happened.
@@ -46,12 +45,12 @@ class Model {
                               uint32_t current_day) = 0;
 
  protected:
-  Model() = default;
+  EventModel() = default;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(Model);
+  DISALLOW_COPY_AND_ASSIGN(EventModel);
 };
 
 }  // namespace feature_engagement_tracker
 
-#endif  // COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_MODEL_H_
+#endif  // COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_EVENT_MODEL_H_

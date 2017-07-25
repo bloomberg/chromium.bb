@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "components/feature_engagement_tracker/internal/availability_store.h"
+#include "components/feature_engagement_tracker/internal/persistent_availability_store.h"
 
 namespace feature_engagement_tracker {
 

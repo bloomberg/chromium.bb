@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/feature_engagement_tracker/internal/in_memory_store.h"
+#include "components/feature_engagement_tracker/internal/in_memory_event_store.h"
 
 #include <memory>
 #include <utility>
@@ -19,9 +19,9 @@ namespace feature_engagement_tracker {
 
 namespace {
 
-class InMemoryStoreTest : public ::testing::Test {
+class InMemoryEventStoreTest : public ::testing::Test {
  public:
-  InMemoryStoreTest()
+  InMemoryEventStoreTest()
       : load_callback_has_been_invoked_(false), last_result_(false) {}
 
   void LoadCallback(bool success, std::unique_ptr<std::vector<Event>> events) {
@@ -38,7 +38,7 @@ class InMemoryStoreTest : public ::testing::Test {
 };
 }  // namespace
 
-TEST_F(InMemoryStoreTest, LoadShouldProvideEventsAsCallback) {
+TEST_F(InMemoryEventStoreTest, LoadShouldProvideEventsAsCallback) {
   std::unique_ptr<std::vector<Event>> events =
       base::MakeUnique<std::vector<Event>>();
   Event foo;
@@ -47,13 +47,13 @@ TEST_F(InMemoryStoreTest, LoadShouldProvideEventsAsCallback) {
   events->push_back(bar);
 
   // Create a new store and verify it's not ready yet.
-  InMemoryStore store(std::move(events));
+  InMemoryEventStore store(std::move(events));
   EXPECT_FALSE(store.IsReady());
 
   // Load the data and ensure the callback is not immediately invoked, since the
   // result should be posted.
-  store.Load(
-      base::Bind(&InMemoryStoreTest::LoadCallback, base::Unretained(this)));
+  store.Load(base::Bind(&InMemoryEventStoreTest::LoadCallback,
+                        base::Unretained(this)));
   EXPECT_FALSE(load_callback_has_been_invoked_);
 
   // Run the message loop until it's idle to finish to ensure the result is

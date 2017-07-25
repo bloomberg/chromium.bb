@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/feature_engagement_tracker/internal/availability_store.h"
+#include "components/feature_engagement_tracker/internal/persistent_availability_store.h"
 
 #include <memory>
 #include <string>
@@ -31,7 +31,7 @@ const char kDatabaseUMAName[] = "FeatureEngagementTrackerAvailabilityStore";
 
 void OnDBUpdateComplete(
     std::unique_ptr<leveldb_proto::ProtoDatabase<Availability>> db,
-    AvailabilityStore::OnLoadedCallback on_loaded_callback,
+    PersistentAvailabilityStore::OnLoadedCallback on_loaded_callback,
     std::unique_ptr<std::map<std::string, uint32_t>> feature_availabilities,
     bool success) {
   stats::RecordDbUpdate(success, stats::StoreType::AVAILABILITY_STORE);
@@ -41,7 +41,7 @@ void OnDBUpdateComplete(
 void OnDBLoadComplete(
     std::unique_ptr<leveldb_proto::ProtoDatabase<Availability>> db,
     FeatureVector feature_filter,
-    AvailabilityStore::OnLoadedCallback on_loaded_callback,
+    PersistentAvailabilityStore::OnLoadedCallback on_loaded_callback,
     uint32_t current_day,
     bool success,
     std::unique_ptr<std::vector<Availability>> availabilities) {
@@ -122,7 +122,7 @@ void OnDBLoadComplete(
 void OnDBInitComplete(
     std::unique_ptr<leveldb_proto::ProtoDatabase<Availability>> db,
     FeatureVector feature_filter,
-    AvailabilityStore::OnLoadedCallback on_loaded_callback,
+    PersistentAvailabilityStore::OnLoadedCallback on_loaded_callback,
     uint32_t current_day,
     bool success) {
   stats::RecordDbInitEvent(success, stats::StoreType::AVAILABILITY_STORE);
@@ -142,11 +142,11 @@ void OnDBInitComplete(
 }  // namespace
 
 // static
-void AvailabilityStore::LoadAndUpdateStore(
+void PersistentAvailabilityStore::LoadAndUpdateStore(
     const base::FilePath& storage_dir,
     std::unique_ptr<leveldb_proto::ProtoDatabase<Availability>> db,
     FeatureVector feature_filter,
-    AvailabilityStore::OnLoadedCallback on_loaded_callback,
+    PersistentAvailabilityStore::OnLoadedCallback on_loaded_callback,
     uint32_t current_day) {
   auto* db_ptr = db.get();
   db_ptr->Init(kDatabaseUMAName, storage_dir,

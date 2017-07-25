@@ -14,7 +14,7 @@ namespace feature_engagement_tracker {
 class AvailabilityModel;
 struct Comparator;
 struct EventConfig;
-class Model;
+class EventModel;
 
 // A ConditionValidator that uses the FeatureConfigs as the source of truth.
 class FeatureConfigConditionValidator : public ConditionValidator {
@@ -26,7 +26,7 @@ class FeatureConfigConditionValidator : public ConditionValidator {
   ConditionValidator::Result MeetsConditions(
       const base::Feature& feature,
       const FeatureConfig& config,
-      const Model& model,
+      const EventModel& event_model,
       const AvailabilityModel& availability_model,
       uint32_t current_day) const override;
   void NotifyIsShowing(const base::Feature& feature) override;
@@ -34,7 +34,7 @@ class FeatureConfigConditionValidator : public ConditionValidator {
 
  private:
   bool EventConfigMeetsConditions(const EventConfig& event_config,
-                                  const Model& model,
+                                  const EventModel& event_model,
                                   uint32_t current_day) const;
 
   bool AvailabilityMeetsConditions(const base::Feature& feature,

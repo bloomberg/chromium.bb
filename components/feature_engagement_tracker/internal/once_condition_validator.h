@@ -17,12 +17,12 @@ struct Feature;
 
 namespace feature_engagement_tracker {
 class AvailabilityModel;
-class Model;
+class EventModel;
 
 // An ConditionValidator that will ensure that each base::Feature will meet
 // conditions maximum one time for any given session.
 // It has the following requirements:
-// - The Model is ready.
+// - The EventModel is ready.
 // - No other in-product help is currently showing.
 // - FeatureConfig for the feature is valid.
 // - This is the first time the given base::Feature meets all above stated
@@ -41,7 +41,7 @@ class OnceConditionValidator : public ConditionValidator {
   ConditionValidator::Result MeetsConditions(
       const base::Feature& feature,
       const FeatureConfig& config,
-      const Model& model,
+      const EventModel& event_model,
       const AvailabilityModel& availability_model,
       uint32_t current_day) const override;
   void NotifyIsShowing(const base::Feature& feature) override;

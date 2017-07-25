@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_INIT_AWARE_MODEL_H_
-#define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_INIT_AWARE_MODEL_H_
+#ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_INIT_AWARE_EVENT_MODEL_H_
+#define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_INIT_AWARE_EVENT_MODEL_H_
 
 #include <stdint.h>
 
@@ -13,16 +13,16 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "components/feature_engagement_tracker/internal/model.h"
+#include "components/feature_engagement_tracker/internal/event_model.h"
 
 namespace feature_engagement_tracker {
 
-class InitAwareModel : public Model {
+class InitAwareEventModel : public EventModel {
  public:
-  InitAwareModel(std::unique_ptr<Model> model);
-  ~InitAwareModel() override;
+  InitAwareEventModel(std::unique_ptr<EventModel> event_model);
+  ~InitAwareEventModel() override;
 
-  // Model implementation.
+  // EventModel implementation.
   void Initialize(const OnModelInitializationFinished& callback,
                   uint32_t current_day) override;
   bool IsReady() const override;
@@ -36,19 +36,19 @@ class InitAwareModel : public Model {
   void OnInitializeComplete(const OnModelInitializationFinished& callback,
                             bool success);
 
-  std::unique_ptr<Model> model_;
+  std::unique_ptr<EventModel> event_model_;
   std::vector<std::tuple<std::string, uint32_t>> queued_events_;
 
   // Whether the initialization has completed. This will be set to true once
-  // the underlying model has been initialized, regardless of whether the
+  // the underlying event model has been initialized, regardless of whether the
   // result was a success or not.
   bool initialization_complete_;
 
-  base::WeakPtrFactory<InitAwareModel> weak_ptr_factory_;
+  base::WeakPtrFactory<InitAwareEventModel> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(InitAwareModel);
+  DISALLOW_COPY_AND_ASSIGN(InitAwareEventModel);
 };
 
 }  // namespace feature_engagement_tracker
 
-#endif  // COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_INIT_AWARE_MODEL_H_
+#endif  // COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_INIT_AWARE_EVENT_MODEL_H_

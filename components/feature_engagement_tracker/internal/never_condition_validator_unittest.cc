@@ -8,7 +8,7 @@
 
 #include "base/feature_list.h"
 #include "components/feature_engagement_tracker/internal/configuration.h"
-#include "components/feature_engagement_tracker/internal/model.h"
+#include "components/feature_engagement_tracker/internal/event_model.h"
 #include "components/feature_engagement_tracker/internal/never_availability_model.h"
 #include "components/feature_engagement_tracker/internal/proto/event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,10 +22,10 @@ const base::Feature kTestFeatureFoo{"test_foo",
 const base::Feature kTestFeatureBar{"test_bar",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// A Model that is always postive to show in-product help.
-class TestModel : public Model {
+// A EventModel that is always postive to show in-product help.
+class TestEventModel : public EventModel {
  public:
-  TestModel() = default;
+  TestEventModel() = default;
 
   void Initialize(const OnModelInitializationFinished& callback,
                   uint32_t current_day) override {}
@@ -39,7 +39,7 @@ class TestModel : public Model {
   void IncrementEvent(const std::string& event_name, uint32_t day) override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestModel);
+  DISALLOW_COPY_AND_ASSIGN(TestEventModel);
 };
 
 class NeverConditionValidatorTest : public ::testing::Test {
@@ -47,7 +47,7 @@ class NeverConditionValidatorTest : public ::testing::Test {
   NeverConditionValidatorTest() = default;
 
  protected:
-  TestModel model_;
+  TestEventModel event_model_;
   NeverAvailabilityModel availability_model_;
   NeverConditionValidator validator_;
 
@@ -59,12 +59,12 @@ class NeverConditionValidatorTest : public ::testing::Test {
 
 TEST_F(NeverConditionValidatorTest, ShouldNeverMeetConditions) {
   EXPECT_FALSE(validator_
-                   .MeetsConditions(kTestFeatureFoo, FeatureConfig(), model_,
-                                    availability_model_, 0u)
+                   .MeetsConditions(kTestFeatureFoo, FeatureConfig(),
+                                    event_model_, availability_model_, 0u)
                    .NoErrors());
   EXPECT_FALSE(validator_
-                   .MeetsConditions(kTestFeatureBar, FeatureConfig(), model_,
-                                    availability_model_, 0u)
+                   .MeetsConditions(kTestFeatureBar, FeatureConfig(),
+                                    event_model_, availability_model_, 0u)
                    .NoErrors());
 }
 

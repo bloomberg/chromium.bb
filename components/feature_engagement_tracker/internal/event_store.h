@@ -13,13 +13,13 @@
 
 namespace feature_engagement_tracker {
 
-// Store represents the storage engine behind the FeatureEngagementTracker.
-class Store {
+// EventStore represents the storage engine behind the FeatureEngagementTracker.
+class EventStore {
  public:
   using OnLoadedCallback =
       base::Callback<void(bool success, std::unique_ptr<std::vector<Event>>)>;
 
-  virtual ~Store() = default;
+  virtual ~EventStore() = default;
 
   // Loads the database from storage and asynchronously posts the result back
   // on the caller's thread.
@@ -37,10 +37,10 @@ class Store {
   virtual void DeleteEvent(const std::string& event_name) = 0;
 
  protected:
-  Store() = default;
+  EventStore() = default;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(Store);
+  DISALLOW_COPY_AND_ASSIGN(EventStore);
 };
 
 }  // namespace feature_engagement_tracker

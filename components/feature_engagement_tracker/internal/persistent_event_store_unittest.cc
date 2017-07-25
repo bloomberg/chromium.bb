@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/feature_engagement_tracker/internal/persistent_store.h"
+#include "components/feature_engagement_tracker/internal/persistent_event_store.h"
 
 #include <map>
 
@@ -32,13 +32,13 @@ void VerifyEventsInListAndMap(const std::map<std::string, Event>& map,
   }
 }
 
-class PersistentStoreTest : public ::testing::Test {
+class PersistentEventStoreTest : public ::testing::Test {
  public:
-  PersistentStoreTest()
+  PersistentEventStoreTest()
       : db_(nullptr),
         storage_dir_(FILE_PATH_LITERAL("/persistent/store/lalala")) {
-    load_callback_ =
-        base::Bind(&PersistentStoreTest::LoadCallback, base::Unretained(this));
+    load_callback_ = base::Bind(&PersistentEventStoreTest::LoadCallback,
+                                base::Unretained(this));
   }
 
   void TearDown() override {
@@ -54,7 +54,7 @@ class PersistentStoreTest : public ::testing::Test {
 
     auto db = base::MakeUnique<leveldb_proto::test::FakeDB<Event>>(&db_events_);
     db_ = db.get();
-    store_.reset(new PersistentStore(storage_dir_, std::move(db)));
+    store_.reset(new PersistentEventStore(storage_dir_, std::move(db)));
   }
 
   void LoadCallback(bool success, std::unique_ptr<std::vector<Event>> events) {
@@ -66,10 +66,10 @@ class PersistentStoreTest : public ::testing::Test {
   base::Optional<bool> load_successful_;
   std::unique_ptr<std::vector<Event>> load_results_;
 
-  Store::OnLoadedCallback load_callback_;
+  EventStore::OnLoadedCallback load_callback_;
   std::map<std::string, Event> db_events_;
   leveldb_proto::test::FakeDB<Event>* db_;
-  std::unique_ptr<Store> store_;
+  std::unique_ptr<EventStore> store_;
 
   // Constant test data.
   base::FilePath storage_dir_;
@@ -77,13 +77,13 @@ class PersistentStoreTest : public ::testing::Test {
 
 }  // namespace
 
-TEST_F(PersistentStoreTest, StorageDirectory) {
+TEST_F(PersistentEventStoreTest, StorageDirectory) {
   SetUpDB();
   store_->Load(load_callback_);
   EXPECT_EQ(storage_dir_, db_->GetDirectory());
 }
 
-TEST_F(PersistentStoreTest, SuccessfulInitAndLoadEmptyStore) {
+TEST_F(PersistentEventStoreTest, SuccessfulInitAndLoadEmptyStore) {
   SetUpDB();
 
   base::HistogramTester histogram_tester;
@@ -109,7 +109,7 @@ TEST_F(PersistentStoreTest, SuccessfulInitAndLoadEmptyStore) {
   histogram_tester.ExpectBucketCount("InProductHelp.Db.TotalEvents", 0, 1);
 }
 
-TEST_F(PersistentStoreTest, SuccessfulInitAndLoadWithEvents) {
+TEST_F(PersistentEventStoreTest, SuccessfulInitAndLoadWithEvents) {
   // Populate fake Event entries.
   Event event1;
   event1.set_name("event1");
@@ -148,7 +148,7 @@ TEST_F(PersistentStoreTest, SuccessfulInitAndLoadWithEvents) {
   histogram_tester.ExpectBucketCount("InProductHelp.Db.TotalEvents", 3, 1);
 }
 
-TEST_F(PersistentStoreTest, SuccessfulInitBadLoad) {
+TEST_F(PersistentEventStoreTest, SuccessfulInitBadLoad) {
   base::HistogramTester histogram_tester;
   SetUpDB();
 
@@ -171,7 +171,7 @@ TEST_F(PersistentStoreTest, SuccessfulInitBadLoad) {
   histogram_tester.ExpectTotalCount("InProductHelp.Db.TotalEvents", 0);
 }
 
-TEST_F(PersistentStoreTest, BadInit) {
+TEST_F(PersistentEventStoreTest, BadInit) {
   base::HistogramTester histogram_tester;
   SetUpDB();
 
@@ -190,7 +190,7 @@ TEST_F(PersistentStoreTest, BadInit) {
   histogram_tester.ExpectTotalCount("InProductHelp.Db.TotalEvents", 0);
 }
 
-TEST_F(PersistentStoreTest, IsReady) {
+TEST_F(PersistentEventStoreTest, IsReady) {
   SetUpDB();
   EXPECT_FALSE(store_->IsReady());
 
@@ -204,7 +204,7 @@ TEST_F(PersistentStoreTest, IsReady) {
   EXPECT_TRUE(store_->IsReady());
 }
 
-TEST_F(PersistentStoreTest, WriteEvent) {
+TEST_F(PersistentEventStoreTest, WriteEvent) {
   SetUpDB();
 
   store_->Load(load_callback_);
@@ -225,7 +225,7 @@ TEST_F(PersistentStoreTest, WriteEvent) {
   test::VerifyEventsEqual(&event, &it->second);
 }
 
-TEST_F(PersistentStoreTest, WriteAndDeleteEvent) {
+TEST_F(PersistentEventStoreTest, WriteAndDeleteEvent) {
   SetUpDB();
 
   store_->Load(load_callback_);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_STORAGE_VALIDATOR_H_
-#define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_STORAGE_VALIDATOR_H_
+#ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_EVENT_STORAGE_VALIDATOR_H_
+#define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_EVENT_STORAGE_VALIDATOR_H_
 
 #include <string>
 
@@ -11,11 +11,11 @@
 
 namespace feature_engagement_tracker {
 
-// A StorageValidator checks the required storage conditions for a given event,
-// and checks if all conditions are met for storing it.
-class StorageValidator {
+// A EventStorageValidator checks the required storage conditions for a given
+// event, and checks if all conditions are met for storing it.
+class EventStorageValidator {
  public:
-  virtual ~StorageValidator() = default;
+  virtual ~EventStorageValidator() = default;
 
   // Returns true iff new events of this type should be stored.
   // This is typically called before storing each incoming event.
@@ -29,12 +29,12 @@ class StorageValidator {
                           uint32_t current_day) const = 0;
 
  protected:
-  StorageValidator() = default;
+  EventStorageValidator() = default;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(StorageValidator);
+  DISALLOW_COPY_AND_ASSIGN(EventStorageValidator);
 };
 
 }  // namespace feature_engagement_tracker
 
-#endif  // COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_STORAGE_VALIDATOR_H_
+#endif  // COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_EVENT_STORAGE_VALIDATOR_H_

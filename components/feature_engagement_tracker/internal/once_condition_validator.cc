@@ -5,7 +5,7 @@
 #include "components/feature_engagement_tracker/internal/once_condition_validator.h"
 
 #include "components/feature_engagement_tracker/internal/configuration.h"
-#include "components/feature_engagement_tracker/internal/model.h"
+#include "components/feature_engagement_tracker/internal/event_model.h"
 
 namespace feature_engagement_tracker {
 
@@ -16,11 +16,11 @@ OnceConditionValidator::~OnceConditionValidator() = default;
 ConditionValidator::Result OnceConditionValidator::MeetsConditions(
     const base::Feature& feature,
     const FeatureConfig& config,
-    const Model& model,
+    const EventModel& event_model,
     const AvailabilityModel& availability_model,
     uint32_t current_day) const {
   ConditionValidator::Result result(true);
-  result.event_model_ready_ok = model.IsReady();
+  result.event_model_ready_ok = event_model.IsReady();
 
   result.currently_showing_ok = currently_showing_feature_.empty();
 
