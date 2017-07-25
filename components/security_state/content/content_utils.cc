@@ -254,21 +254,46 @@ void ExplainContentSecurity(
       SecurityLevelToSecurityStyle(
           security_state::kDisplayedInsecureContentLevel);
 
-  // Record the presence of mixed content (HTTP subresources on an HTTPS
-  // page).
+  // Add the secure explanation unless there is an issue.
+  bool add_secure_explanation = true;
+
   security_style_explanations->ran_mixed_content =
       security_info.mixed_content_status ==
           security_state::CONTENT_STATUS_RAN ||
       security_info.mixed_content_status ==
           security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
+  if (security_style_explanations->ran_mixed_content) {
+    add_secure_explanation = false;
+    security_style_explanations->insecure_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_MIXED_ACTIVE_CONTENT_SUMMARY),
+            l10n_util::GetStringUTF8(IDS_MIXED_ACTIVE_CONTENT_DESCRIPTION),
+            false, blink::WebMixedContentContextType::kBlockable));
+  }
+
   security_style_explanations->displayed_mixed_content =
       security_info.mixed_content_status ==
           security_state::CONTENT_STATUS_DISPLAYED ||
       security_info.mixed_content_status ==
           security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
+  if (security_style_explanations->displayed_mixed_content) {
+    add_secure_explanation = false;
+    security_style_explanations->neutral_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_MIXED_PASSIVE_CONTENT_SUMMARY),
+            l10n_util::GetStringUTF8(IDS_MIXED_PASSIVE_CONTENT_DESCRIPTION),
+            false, blink::WebMixedContentContextType::kOptionallyBlockable));
+  }
 
   security_style_explanations->contained_mixed_form =
       security_info.contained_mixed_form;
+  if (security_style_explanations->contained_mixed_form) {
+    add_secure_explanation = false;
+    security_style_explanations->neutral_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_NON_SECURE_FORM_SUMMARY),
+            l10n_util::GetStringUTF8(IDS_NON_SECURE_FORM_DESCRIPTION)));
+  }
 
   // If the main resource was loaded with no certificate errors or only minor
   // certificate errors, then record the presence of subresources with
@@ -285,11 +310,36 @@ void ExplainContentSecurity(
             security_state::CONTENT_STATUS_RAN ||
         security_info.content_with_cert_errors_status ==
             security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
+    if (security_style_explanations->ran_content_with_cert_errors) {
+      add_secure_explanation = false;
+      security_style_explanations->insecure_explanations.push_back(
+          content::SecurityStyleExplanation(
+              l10n_util::GetStringUTF8(IDS_CERT_ERROR_ACTIVE_CONTENT_SUMMARY),
+              l10n_util::GetStringUTF8(
+                  IDS_CERT_ERROR_ACTIVE_CONTENT_DESCRIPTION)));
+    }
+
     security_style_explanations->displayed_content_with_cert_errors =
         security_info.content_with_cert_errors_status ==
             security_state::CONTENT_STATUS_DISPLAYED ||
         security_info.content_with_cert_errors_status ==
             security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
+    if (security_style_explanations->displayed_content_with_cert_errors) {
+      add_secure_explanation = false;
+      security_style_explanations->neutral_explanations.push_back(
+          content::SecurityStyleExplanation(
+              l10n_util::GetStringUTF8(IDS_CERT_ERROR_PASSIVE_CONTENT_SUMMARY),
+              l10n_util::GetStringUTF8(
+                  IDS_CERT_ERROR_PASSIVE_CONTENT_DESCRIPTION)));
+    }
+  }
+
+  if (add_secure_explanation) {
+    DCHECK(security_info.scheme_is_cryptographic);
+    security_style_explanations->secure_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_SECURE_RESOURCES_SUMMARY),
+            l10n_util::GetStringUTF8(IDS_SECURE_RESOURCES_DESCRIPTION)));
   }
 }
 
