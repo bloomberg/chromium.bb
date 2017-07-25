@@ -2530,14 +2530,14 @@
     },
     {
       "id": 234,
-      "description": "Disable EGL_EXT_image_flush_external on NVIDIA",
+      "description": "Avoid using EGL_IMAGE_EXTERNAL_FLUSH_EXT with eglCreateImageKHR on NVIDIA",
       "cr_bugs": [727462],
       "os": {
         "type": "chromeos"
       },
       "gl_vendor": "NVIDIA.*",
-      "disabled_extensions": [
-        "EGL_EXT_image_flush_external"
+      "features": [
+        "avoid_using_image_flush_external_with_egl_create_image"
       ]
     },
     {
