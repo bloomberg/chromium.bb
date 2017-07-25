@@ -140,7 +140,6 @@ void BrowserAccessibilityEvent::VerboseLog(Result result) {
           << " " << event_name
           << " result=" << result_str
           << " source=" << source_str
-          << " unique_id=" << target_->unique_id()
           << " target=[["
           << ReplaceNewlines(target_->GetData().ToString()) << "]]"
           << original_target_str;
