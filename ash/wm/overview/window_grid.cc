@@ -257,14 +257,16 @@ bool IsMinimizedStateType(wm::WindowStateType type) {
 
 WindowGrid::WindowGrid(aura::Window* root_window,
                        const std::vector<aura::Window*>& windows,
-                       WindowSelector* window_selector)
+                       WindowSelector* window_selector,
+                       const gfx::Rect& bounds_in_screen)
     : root_window_(root_window),
       window_selector_(window_selector),
       window_observer_(this),
       window_state_observer_(this),
       selected_index_(0),
       num_columns_(0),
-      prepared_for_overview_(false) {
+      prepared_for_overview_(false),
+      bounds_(bounds_in_screen) {
   aura::Window::Windows windows_in_root;
   for (auto* window : windows) {
     if (window->GetRootWindow() == root_window)
@@ -275,7 +277,7 @@ WindowGrid::WindowGrid(aura::Window* root_window,
     window_observer_.Add(window);
     window_state_observer_.Add(wm::GetWindowState(window));
     window_list_.push_back(
-        base::MakeUnique<WindowSelectorItem>(window, window_selector_));
+        base::MakeUnique<WindowSelectorItem>(window, window_selector_, this));
   }
 }
 
@@ -326,9 +328,8 @@ void WindowGrid::PositionWindows(bool animate) {
   aura::Window* widget_window = shield_widget_->GetNativeWindow();
   const gfx::Rect bounds = widget_window->parent()->bounds();
   widget_window->SetBounds(bounds);
-  gfx::Rect total_bounds = ScreenUtil::GetDisplayWorkAreaBoundsInParent(
-      root_window_->GetChildById(kShellWindowId_DefaultContainer));
-  ::wm::ConvertRectToScreen(root_window_, &total_bounds);
+
+  gfx::Rect total_bounds = bounds_;
   // Windows occupy vertically centered area with additional vertical insets.
   int horizontal_inset =
       gfx::ToFlooredInt(std::min(kOverviewInsetRatio * total_bounds.width(),
@@ -518,6 +519,20 @@ bool WindowGrid::Contains(const aura::Window* window) const {
   return false;
 }
 
+void WindowGrid::RemoveItem(WindowSelectorItem* selector_item) {
+  auto iter =
+      std::find_if(window_list_.begin(), window_list_.end(),
+                   [selector_item](std::unique_ptr<WindowSelectorItem>& item) {
+                     return (item.get() == selector_item);
+                   });
+  if (iter != window_list_.end()) {
+    window_observer_.Remove(selector_item->GetWindow());
+    window_state_observer_.Remove(
+        wm::GetWindowState(selector_item->GetWindow()));
+    window_list_.erase(iter);
+  }
+}
+
 void WindowGrid::FilterItems(const base::string16& pattern) {
   base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents finder(pattern);
   for (const auto& window : window_list_) {
@@ -542,6 +557,11 @@ void WindowGrid::WindowClosing(WindowSelectorItem* window) {
       OverviewAnimationType::OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM,
       selection_widget_window);
   selection_widget_->SetOpacity(0.f);
+}
+
+void WindowGrid::SetBoundsAndUpdatePositions(const gfx::Rect& bounds) {
+  bounds_ = bounds;
+  PositionWindows(true /* animate */);
 }
 
 void WindowGrid::OnWindowDestroying(aura::Window* window) {
