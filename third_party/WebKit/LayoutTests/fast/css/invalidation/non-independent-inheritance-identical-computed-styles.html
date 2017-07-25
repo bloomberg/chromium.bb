@@ -51,24 +51,24 @@ test(function(t)
     inner.offsetTop; // Force recalc.
     assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 0);
 
-    assert_equals(getComputedStyle(outer).fontWeight, "normal");
-    assert_equals(getComputedStyle(inner).fontWeight, "normal");
+    assert_equals(getComputedStyle(outer).fontWeight, "400");
+    assert_equals(getComputedStyle(inner).fontWeight, "400");
     assert_equals(getComputedStyle(innermost).fontWeight, "100");
 
     inner.offsetTop; // Force recalc.
     inner.style.fontWeight = 'bolder';
     assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 2);
 
-    assert_equals(getComputedStyle(outer).fontWeight, "normal");
-    assert_equals(getComputedStyle(inner).fontWeight, "bold");
-    assert_equals(getComputedStyle(innermost).fontWeight, "normal");
+    assert_equals(getComputedStyle(outer).fontWeight, "400");
+    assert_equals(getComputedStyle(inner).fontWeight, "700");
+    assert_equals(getComputedStyle(innermost).fontWeight, "400");
 
     inner.offsetTop; // Force recalc.
     outer.style.fontWeight = 'bold';
     assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 3);
 
-    assert_equals(getComputedStyle(outer).fontWeight, "bold");
+    assert_equals(getComputedStyle(outer).fontWeight, "700");
     assert_equals(getComputedStyle(inner).fontWeight, "900");
-    assert_equals(getComputedStyle(innermost).fontWeight, "bold");
+    assert_equals(getComputedStyle(innermost).fontWeight, "700");
 }, "Changing font-weight (a non-independent inherited property) in a way that results in an identical ComputedStyle still triggers a style recalc for its children.");
 </script>
