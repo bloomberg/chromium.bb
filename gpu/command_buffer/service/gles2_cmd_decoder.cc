@@ -3842,6 +3842,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.multisample_compatibility =
       feature_info_->feature_flags().ext_multisample_compatibility;
   caps.dc_layers = supports_dc_layers_;
+  caps.use_dc_overlays_for_video = surface_->UseOverlaysForVideo();
 
   caps.blend_equation_advanced =
       feature_info_->feature_flags().blend_equation_advanced;

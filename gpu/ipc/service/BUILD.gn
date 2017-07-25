@@ -80,8 +80,6 @@ target(link_target_type, "ipc_service_sources") {
   libs = []
   if (is_win) {
     sources += [
-      "child_window_surface_win.cc",
-      "child_window_surface_win.h",
       "child_window_win.cc",
       "child_window_win.h",
       "direct_composition_child_surface_win.cc",

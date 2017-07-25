@@ -539,7 +539,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       } else {
         std::unique_ptr<viz::CompositorOverlayCandidateValidator> validator;
 #if defined(OS_WIN)
-        if (capabilities.dc_layers)
+        if (capabilities.dc_layers && capabilities.use_dc_overlays_for_video)
           validator = CreateOverlayCandidateValidator(compositor->widget());
 #elif !defined(OS_MACOSX)
         // Overlays are only supported on surfaceless output surfaces on Mac.
