@@ -15,10 +15,12 @@
 #include "ui/gfx/transform.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 
 namespace android {
 
-TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env, jobject jobj)
+TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env,
+                                       const JavaRef<jobject>& jobj)
     : SceneLayer(env, jobj),
       tab_strip_layer_(cc::SolidColorLayer::Create()),
       scrollable_strip_layer_(cc::Layer::Create()),

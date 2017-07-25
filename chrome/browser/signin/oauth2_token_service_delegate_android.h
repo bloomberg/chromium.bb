@@ -37,8 +37,9 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
   static OAuth2TokenServiceDelegateAndroid* Create();
 
   // Returns a reference to the Java instance of this service.
-  static base::android::ScopedJavaLocalRef<jobject>
-  GetForProfile(JNIEnv* env, jclass clazz, jobject j_profile_android);
+  static base::android::ScopedJavaLocalRef<jobject> GetForProfile(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& j_profile_android);
 
   // Called by the TestingProfile class to disable account validation in
   // tests.  This prevents the token service from trying to look up system

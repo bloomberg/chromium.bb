@@ -34,7 +34,8 @@ class ThumbnailLayer;
 // A native component of the Java TabContentManager class.
 class TabContentManager : public ThumbnailCacheObserver {
  public:
-  static TabContentManager* FromJavaObject(jobject jobj);
+  static TabContentManager* FromJavaObject(
+      const base::android::JavaRef<jobject>& jobj);
 
   TabContentManager(JNIEnv* env,
                     jobject obj,

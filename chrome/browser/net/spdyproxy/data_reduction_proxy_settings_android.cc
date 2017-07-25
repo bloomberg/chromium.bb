@@ -261,13 +261,13 @@ void DataReductionProxySettingsAndroid::OnQueryDataUsageComplete(
 
   for (const auto& site_bucket : per_site_usage_map) {
     Java_DataReductionProxySettings_createDataUseItemAndAddToList(
-        env, j_query_result_obj_.obj(),
+        env, j_query_result_obj_,
         ConvertUTF8ToJavaString(env, site_bucket.first),
         site_bucket.second.data_used, site_bucket.second.original_size);
   }
 
   Java_DataReductionProxySettings_onQueryDataUsageComplete(
-      env, j_settings_obj_.get(env), j_query_result_obj_.obj());
+      env, j_settings_obj_.get(env), j_query_result_obj_);
 
   j_query_result_obj_.Release();
 }

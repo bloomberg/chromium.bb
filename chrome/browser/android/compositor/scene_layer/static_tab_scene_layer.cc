@@ -14,15 +14,16 @@
 #include "ui/android/resources/resource_manager_impl.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 
 namespace android {
 
-StaticTabSceneLayer::StaticTabSceneLayer(JNIEnv* env, jobject jobj)
+StaticTabSceneLayer::StaticTabSceneLayer(JNIEnv* env,
+                                         const JavaRef<jobject>& jobj)
     : SceneLayer(env, jobj),
       last_set_tab_id_(-1),
       background_color_(SK_ColorWHITE),
-      brightness_(1.f) {
-}
+      brightness_(1.f) {}
 
 StaticTabSceneLayer::~StaticTabSceneLayer() {
 }

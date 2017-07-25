@@ -27,6 +27,7 @@
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaByteArray;
 
@@ -180,9 +181,8 @@ static jlong Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(logo_bridge);
 }
 
-LogoBridge::LogoBridge(jobject j_profile)
-    : logo_service_(nullptr),
-      weak_ptr_factory_(this) {
+LogoBridge::LogoBridge(const JavaRef<jobject>& j_profile)
+    : logo_service_(nullptr), weak_ptr_factory_(this) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   DCHECK(profile);
 

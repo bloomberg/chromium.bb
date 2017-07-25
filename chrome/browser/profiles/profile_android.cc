@@ -13,6 +13,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace {
@@ -34,8 +35,8 @@ ProfileAndroid* ProfileAndroid::FromProfile(Profile* profile) {
 }
 
 // static
-Profile* ProfileAndroid::FromProfileAndroid(jobject obj) {
-  if (!obj)
+Profile* ProfileAndroid::FromProfileAndroid(const JavaRef<jobject>& obj) {
+  if (obj.is_null())
     return NULL;
 
   ProfileAndroid* profile_android = reinterpret_cast<ProfileAndroid*>(

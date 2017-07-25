@@ -12,6 +12,7 @@
 #include "jni/DomDistillerServiceFactory_jni.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace dom_distiller {
@@ -19,8 +20,7 @@ namespace android {
 
 ScopedJavaLocalRef<jobject> DomDistillerServiceFactoryAndroid::GetForProfile(
     JNIEnv* env,
-    jclass clazz,
-    jobject j_profile) {
+    const JavaRef<jobject>& j_profile) {
   dom_distiller::DomDistillerService* service =
       dom_distiller::DomDistillerServiceFactory::GetForBrowserContext(
           ProfileAndroid::FromProfileAndroid(j_profile));
@@ -33,8 +33,7 @@ ScopedJavaLocalRef<jobject> GetForProfile(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& j_profile) {
-  return DomDistillerServiceFactoryAndroid::GetForProfile(env, clazz,
-                                                          j_profile);
+  return DomDistillerServiceFactoryAndroid::GetForProfile(env, j_profile);
 }
 
 }  // namespace android

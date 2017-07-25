@@ -25,7 +25,7 @@ class ToolbarLayer;
 
 class ToolbarSceneLayer : public SceneLayer {
  public:
-  ToolbarSceneLayer(JNIEnv* env, jobject jobj);
+  ToolbarSceneLayer(JNIEnv* env, const base::android::JavaRef<jobject>& jobj);
   ~ToolbarSceneLayer() override;
 
   // Update the compositor version of the toolbar.

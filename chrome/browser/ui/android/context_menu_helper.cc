@@ -33,6 +33,7 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ContextMenuHelper);
 
@@ -122,7 +123,7 @@ void ContextMenuHelper::OnContextMenuClosed(
   web_contents_->NotifyContextMenuClosed(context_menu_params_.custom_context);
 }
 
-void ContextMenuHelper::SetPopulator(jobject jpopulator) {
+void ContextMenuHelper::SetPopulator(const JavaRef<jobject>& jpopulator) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ContextMenuHelper_setPopulator(env, java_obj_, jpopulator);
 }

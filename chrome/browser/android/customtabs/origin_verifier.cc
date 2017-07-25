@@ -16,11 +16,14 @@
 
 using base::android::ConvertJavaStringToUTF16;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 
 namespace customtabs {
 
-OriginVerifier::OriginVerifier(JNIEnv* env, jobject obj, jobject jprofile) {
-  jobject_.Reset(env, obj);
+OriginVerifier::OriginVerifier(JNIEnv* env,
+                               const JavaRef<jobject>& obj,
+                               const JavaRef<jobject>& jprofile) {
+  jobject_.Reset(obj);
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   DCHECK(profile);
   asset_link_handler_ =

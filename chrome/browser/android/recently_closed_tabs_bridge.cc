@@ -20,13 +20,14 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 
 namespace {
 
 void AddTabToList(JNIEnv* env,
                   const sessions::TabRestoreService::Tab& tab,
-                  jobject jtabs_list) {
+                  const JavaRef<jobject>& jtabs_list) {
   const sessions::SerializedNavigationEntry& current_navigation =
       tab.navigations.at(tab.current_navigation_index);
   Java_RecentlyClosedBridge_pushTab(
@@ -37,7 +38,7 @@ void AddTabToList(JNIEnv* env,
 
 void AddTabsToList(JNIEnv* env,
                    const sessions::TabRestoreService::Entries& entries,
-                   jobject jtabs_list,
+                   const JavaRef<jobject>& jtabs_list,
                    int max_tab_count) {
   int added_count = 0;
   for (const auto& entry : entries) {

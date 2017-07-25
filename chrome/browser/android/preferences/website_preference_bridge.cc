@@ -118,7 +118,7 @@ typedef void (*InfoListInsertionFunction)(
 void GetOrigins(JNIEnv* env,
                 ContentSettingsType content_type,
                 InfoListInsertionFunction insertionFunc,
-                jobject list,
+                const JavaRef<jobject>& list,
                 jboolean managedOnly) {
   HostContentSettingsMap* content_settings_map =
       GetHostContentSettingsMap(false);  // is_incognito

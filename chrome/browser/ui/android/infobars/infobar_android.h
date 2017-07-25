@@ -40,7 +40,7 @@ class InfoBarAndroid : public infobars::InfoBar {
 
   virtual void SetJavaInfoBar(
       const base::android::JavaRef<jobject>& java_info_bar);
-  jobject GetJavaInfoBar();
+  const base::android::JavaRef<jobject>& GetJavaInfoBar();
   bool HasSetJavaInfoBar() const;
 
   // Tells the Java-side counterpart of this InfoBar to point to the replacement

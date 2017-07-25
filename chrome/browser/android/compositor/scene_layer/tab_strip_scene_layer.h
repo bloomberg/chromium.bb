@@ -29,7 +29,7 @@ class TabHandleLayer;
 // added as a subtree.
 class TabStripSceneLayer : public SceneLayer {
  public:
-  TabStripSceneLayer(JNIEnv* env, jobject jobj);
+  TabStripSceneLayer(JNIEnv* env, const base::android::JavaRef<jobject>& jobj);
   ~TabStripSceneLayer() override;
 
   void SetContentTree(

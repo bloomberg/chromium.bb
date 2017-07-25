@@ -210,8 +210,8 @@ static void FetchImportantSites(JNIEnv* env,
       base::android::ToJavaArrayOfStrings(env, important_domain_examples);
 
   Java_ImportantSitesCallback_onImportantRegisterableDomainsReady(
-      env, java_callback.obj(), java_domains.obj(), java_origins.obj(),
-      java_reasons.obj(), dialog_disabled);
+      env, java_callback, java_domains, java_origins, java_reasons,
+      dialog_disabled);
 }
 
 // This value should not change during a sessions, as it's used for UMA metrics.

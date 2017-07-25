@@ -51,6 +51,7 @@ using ::base::android::ConvertJavaStringToUTF8;
 using ::base::android::ConvertUTF16ToJavaString;
 using ::base::android::ConvertUTF8ToJavaString;
 using ::base::android::JavaParamRef;
+using ::base::android::JavaRef;
 using ::base::android::ScopedJavaGlobalRef;
 using ::base::android::ScopedJavaLocalRef;
 
@@ -157,7 +158,7 @@ ScopedJavaLocalRef<jobject> CreateJavaCreditCardFromNative(
       ConvertUTF8ToJavaString(env, card.server_id()));
 }
 
-void PopulateNativeCreditCardFromJava(const jobject& jcard,
+void PopulateNativeCreditCardFromJava(const JavaRef<jobject>& jcard,
                                       JNIEnv* env,
                                       CreditCard* card) {
   card->set_origin(

@@ -92,7 +92,7 @@ PrefetchBackgroundTask::PrefetchBackgroundTask(
 PrefetchBackgroundTask::~PrefetchBackgroundTask() {
   JNIEnv* env = base::android::AttachCurrentThread();
   prefetch::Java_PrefetchBackgroundTask_doneProcessing(
-      env, java_prefetch_background_task_.obj(), needs_reschedule_);
+      env, java_prefetch_background_task_, needs_reschedule_);
 
   if (needs_reschedule_) {
     // If the task is killed due to the system, it should be rescheduled without

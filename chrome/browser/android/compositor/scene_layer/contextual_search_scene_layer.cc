@@ -23,14 +23,16 @@
 #include "ui/gfx/android/java_bitmap.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 
 namespace android {
 
-ContextualSearchSceneLayer::ContextualSearchSceneLayer(JNIEnv* env,
-                                                       jobject jobj)
+ContextualSearchSceneLayer::ContextualSearchSceneLayer(
+    JNIEnv* env,
+    const JavaRef<jobject>& jobj)
     : SceneLayer(env, jobj),
       env_(env),
-      object_(env, jobj),
+      object_(jobj),
       base_page_brightness_(1.0f),
       content_container_(cc::Layer::Create()) {
   // Responsible for moving the base page without modifying the layer itself.
@@ -125,7 +127,7 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jint bar_handle_resource_id,
     jfloat bar_handle_offset_y,
     jfloat bar_padding_bottom,
-    jobject j_profile) {
+    const JavaRef<jobject>& j_profile) {
   // Load the thumbnail if necessary.
   std::string thumbnail_url =
       base::android::ConvertJavaStringToUTF8(env, j_thumbnail_url);
@@ -188,7 +190,8 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
   contextual_search_layer_->layer()->SetHideLayerAndSubtree(false);
 }
 
-void ContextualSearchSceneLayer::FetchThumbnail(jobject j_profile) {
+void ContextualSearchSceneLayer::FetchThumbnail(
+    const JavaRef<jobject>& j_profile) {
   if (thumbnail_url_.empty())
     return;
 
@@ -207,9 +210,7 @@ void ContextualSearchSceneLayer::FetchThumbnail(jobject j_profile) {
 void ContextualSearchSceneLayer::OnFetchComplete(const GURL& url,
                                                  const SkBitmap* bitmap) {
   bool success = bitmap && !bitmap->drawsNothing();
-  Java_ContextualSearchSceneLayer_onThumbnailFetched(env_,
-                                                     object_.obj(),
-                                                     success);
+  Java_ContextualSearchSceneLayer_onThumbnailFetched(env_, object_, success);
   if (success)
     contextual_search_layer_->SetThumbnail(bitmap);
 

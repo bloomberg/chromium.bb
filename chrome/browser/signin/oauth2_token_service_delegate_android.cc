@@ -25,6 +25,7 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
 
@@ -181,8 +182,7 @@ OAuth2TokenServiceDelegateAndroid::~OAuth2TokenServiceDelegateAndroid() {
 // static
 ScopedJavaLocalRef<jobject> OAuth2TokenServiceDelegateAndroid::GetForProfile(
     JNIEnv* env,
-    jclass clazz,
-    jobject j_profile_android) {
+    const JavaRef<jobject>& j_profile_android) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile_android);
   ProfileOAuth2TokenService* service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
@@ -195,7 +195,7 @@ static ScopedJavaLocalRef<jobject> GetForProfile(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& j_profile_android) {
-  return OAuth2TokenServiceDelegateAndroid::GetForProfile(env, clazz,
+  return OAuth2TokenServiceDelegateAndroid::GetForProfile(env,
                                                           j_profile_android);
 }
 

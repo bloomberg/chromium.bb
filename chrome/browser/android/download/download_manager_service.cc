@@ -302,8 +302,7 @@ void DownloadManagerService::OnDownloadCreated(
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_item = CreateJavaDownloadItem(env, item);
-  Java_DownloadManagerService_onDownloadItemCreated(
-      env, java_ref_.obj(), j_item);
+  Java_DownloadManagerService_onDownloadItemCreated(env, java_ref_, j_item);
 }
 
 void DownloadManagerService::OnDownloadUpdated(
@@ -316,8 +315,7 @@ void DownloadManagerService::OnDownloadUpdated(
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_item = CreateJavaDownloadItem(env, item);
-  Java_DownloadManagerService_onDownloadItemUpdated(
-      env, java_ref_.obj(), j_item);
+  Java_DownloadManagerService_onDownloadItemUpdated(env, java_ref_, j_item);
 }
 
 void DownloadManagerService::OnDownloadRemoved(
@@ -327,9 +325,7 @@ void DownloadManagerService::OnDownloadRemoved(
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_DownloadManagerService_onDownloadItemRemoved(
-      env,
-      java_ref_.obj(),
-      ConvertUTF8ToJavaString(env, item->GetGuid()),
+      env, java_ref_, ConvertUTF8ToJavaString(env, item->GetGuid()),
       item->GetBrowserContext()->IsOffTheRecord());
 }
 

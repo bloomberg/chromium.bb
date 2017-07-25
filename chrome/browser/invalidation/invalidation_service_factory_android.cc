@@ -20,7 +20,7 @@ namespace invalidation {
 
 ScopedJavaLocalRef<jobject> InvalidationServiceFactoryAndroid::GetForProfile(
     const JavaRef<jobject>& j_profile) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile.obj());
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   invalidation::ProfileInvalidationProvider* provider =
       ProfileInvalidationProviderFactory::GetForProfile(profile);
   InvalidationServiceAndroid* service_android =

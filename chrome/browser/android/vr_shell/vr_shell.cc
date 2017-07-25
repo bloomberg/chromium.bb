@@ -162,8 +162,8 @@ void VrShell::SwapContents(
 
   if (!web_contents_) {
     android_ui_gesture_target_ = base::MakeUnique<AndroidUiGestureTarget>(
-        j_motion_event_synthesizer_.obj(),
-        Java_VrShellImpl_getNativePageScrollRatio(env, j_vr_shell_.obj()));
+        j_motion_event_synthesizer_,
+        Java_VrShellImpl_getNativePageScrollRatio(env, j_vr_shell_));
     input_manager_ = nullptr;
     vr_web_contents_observer_ = nullptr;
     metrics_helper_ = nullptr;
@@ -258,12 +258,12 @@ void VrShell::OnContentPaused(bool paused) {
 
 void VrShell::NavigateBack() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShellImpl_navigateBack(env, j_vr_shell_.obj());
+  Java_VrShellImpl_navigateBack(env, j_vr_shell_);
 }
 
 void VrShell::ExitCct() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShellImpl_exitCct(env, j_vr_shell_.obj());
+  Java_VrShellImpl_exitCct(env, j_vr_shell_);
 }
 
 void VrShell::ToggleCardboardGamepad(bool enabled) {
@@ -359,7 +359,7 @@ void VrShell::SetWebVrMode(JNIEnv* env,
 
 void VrShell::OnFullscreenChanged(bool enabled) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShellImpl_onFullscreenChanged(env, j_vr_shell_.obj(), enabled);
+  Java_VrShellImpl_onFullscreenChanged(env, j_vr_shell_, enabled);
   ui_->SetFullscreen(enabled);
 }
 
@@ -479,7 +479,7 @@ void VrShell::RequestToExitVr(JNIEnv* env,
 void VrShell::ContentSurfaceChanged(jobject surface) {
   content_surface_ = surface;
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShellImpl_contentSurfaceChanged(env, j_vr_shell_.obj());
+  Java_VrShellImpl_contentSurfaceChanged(env, j_vr_shell_);
   compositor_->SurfaceChanged(content_surface_);
 }
 
@@ -529,20 +529,20 @@ void VrShell::DoUiAction(const UiAction action,
     case SHOW_TAB: {
       int id;
       CHECK(arguments->GetInteger("id", &id));
-      Java_VrShellImpl_showTab(env, j_vr_shell_.obj(), id);
+      Java_VrShellImpl_showTab(env, j_vr_shell_, id);
       return;
     }
     case OPEN_NEW_TAB: {
       bool incognito;
       CHECK(arguments->GetBoolean("incognito", &incognito));
-      Java_VrShellImpl_openNewTab(env, j_vr_shell_.obj(), incognito);
+      Java_VrShellImpl_openNewTab(env, j_vr_shell_, incognito);
       return;
     }
     case HISTORY_FORWARD:
-      Java_VrShellImpl_navigateForward(env, j_vr_shell_.obj());
+      Java_VrShellImpl_navigateForward(env, j_vr_shell_);
       break;
     case RELOAD:
-      Java_VrShellImpl_reload(env, j_vr_shell_.obj());
+      Java_VrShellImpl_reload(env, j_vr_shell_);
       break;
     default:
       NOTREACHED();
@@ -578,7 +578,7 @@ void VrShell::ContentWasShown() {
 
 void VrShell::ForceExitVr() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShellImpl_forceExitVr(env, j_vr_shell_.obj());
+  Java_VrShellImpl_forceExitVr(env, j_vr_shell_);
 }
 
 void VrShell::ExitPresent() {
@@ -617,7 +617,7 @@ void VrShell::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
   switch (mode) {
     case vr::UiUnsupportedMode::kUnhandledPageInfo: {
       JNIEnv* env = base::android::AttachCurrentThread();
-      Java_VrShellImpl_onUnhandledPageInfo(env, j_vr_shell_.obj());
+      Java_VrShellImpl_onUnhandledPageInfo(env, j_vr_shell_);
       break;
     }
     default:
@@ -641,7 +641,7 @@ void VrShell::OnExitVrPromptResult(vr::UiUnsupportedMode reason,
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShellImpl_onExitVrRequestResult(env, j_vr_shell_.obj(),
+  Java_VrShellImpl_onExitVrRequestResult(env, j_vr_shell_,
                                          static_cast<int>(reason), should_exit);
 }
 
@@ -732,8 +732,7 @@ void VrShell::SetHighAccuracyLocation(bool high_accuracy_location) {
 
 void VrShell::SetContentCssSize(float width, float height, float dpr) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShellImpl_setContentCssSize(env, j_vr_shell_.obj(), width, height,
-                                     dpr);
+  Java_VrShellImpl_setContentCssSize(env, j_vr_shell_, width, height, dpr);
 }
 
 void VrShell::ProcessContentGesture(
@@ -775,7 +774,7 @@ void VrShell::RegisterCardboardGamepadDataFetcher(
 }
 
 bool VrShell::HasDaydreamSupport(JNIEnv* env) {
-  return Java_VrShellImpl_hasDaydreamSupport(env, j_vr_shell_.obj());
+  return Java_VrShellImpl_hasDaydreamSupport(env, j_vr_shell_);
 }
 
 content::WebContents* VrShell::GetActiveWebContents() const {

@@ -16,6 +16,7 @@
 #include "jni/InfoBar_jni.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 
 // InfoBarAndroid -------------------------------------------------------------
 
@@ -47,8 +48,8 @@ void InfoBarAndroid::SetJavaInfoBar(
                                 reinterpret_cast<intptr_t>(this));
 }
 
-jobject InfoBarAndroid::GetJavaInfoBar() {
-  return java_info_bar_.obj();
+const JavaRef<jobject>& InfoBarAndroid::GetJavaInfoBar() {
+  return java_info_bar_;
 }
 
 bool InfoBarAndroid::HasSetJavaInfoBar() const {

@@ -81,7 +81,7 @@ std::unique_ptr<physical_web::MetadataList>
   JNIEnv* env = AttachCurrentThread();
 
   auto pw_collection = base::MakeUnique<PhysicalWebCollection>();
-  Java_UrlManager_getPwCollection(env, url_manager_.obj(),
+  Java_UrlManager_getPwCollection(env, url_manager_,
                                   reinterpret_cast<long>(pw_collection.get()));
 
   return pw_collection->GetMetadataList();

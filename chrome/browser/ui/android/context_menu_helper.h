@@ -40,7 +40,7 @@ class ContextMenuHelper
   void OnContextMenuClosed(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj);
 
-  void SetPopulator(jobject jpopulator);
+  void SetPopulator(const base::android::JavaRef<jobject>& jpopulator);
 
   // Methods called from Java via JNI ------------------------------------------
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents(

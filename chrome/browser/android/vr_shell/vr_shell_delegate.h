@@ -40,8 +40,9 @@ class VrShellDelegate : public device::GvrDelegateProvider {
 
   static device::GvrDelegateProvider* CreateVrShellDelegate();
 
-  static VrShellDelegate* GetNativeVrShellDelegate(JNIEnv* env,
-                                                   jobject jdelegate);
+  static VrShellDelegate* GetNativeVrShellDelegate(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jdelegate);
 
   void SetDelegate(device::GvrDelegate* delegate, gvr::ViewerType viewer_type);
   void RemoveDelegate();

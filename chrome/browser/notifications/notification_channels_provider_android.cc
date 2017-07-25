@@ -82,7 +82,8 @@ class NotificationChannelsBridgeImpl
     jsize num_channels = env->GetArrayLength(raw_channels.obj());
     std::vector<NotificationChannel> channels;
     for (jsize i = 0; i < num_channels; ++i) {
-      jobject jchannel = env->GetObjectArrayElement(raw_channels.obj(), i);
+      ScopedJavaLocalRef<jobject> jchannel(
+          env, env->GetObjectArrayElement(raw_channels.obj(), i));
       channels.push_back(NotificationChannel(
           ConvertJavaStringToUTF8(Java_SiteChannel_getId(env, jchannel)),
           ConvertJavaStringToUTF8(Java_SiteChannel_getOrigin(env, jchannel)),

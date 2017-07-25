@@ -21,7 +21,7 @@ InstantAppsInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   InstantAppsInfoBarDelegate* delegate =
       static_cast<InstantAppsInfoBarDelegate*>(GetDelegate());
   base::android::ScopedJavaLocalRef<jobject> infobar;
-  infobar.Reset(Java_InstantAppsInfoBar_create(env, delegate->data().obj()));
+  infobar.Reset(Java_InstantAppsInfoBar_create(env, delegate->data()));
 
   java_infobar_.Reset(env, infobar.obj());
   return infobar;
