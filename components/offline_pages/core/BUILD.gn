@@ -112,6 +112,7 @@ source_set("unit_tests") {
     ":test_support",
     "prefetch:unit_tests",
     "recent_tabs:unit_tests",
+    "renovations:unit_tests",
     "//base",
     "//base/test:test_support",
     "//sql:sql",
