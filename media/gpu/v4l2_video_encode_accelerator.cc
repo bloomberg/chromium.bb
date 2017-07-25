@@ -1081,19 +1081,35 @@ bool V4L2VideoEncodeAccelerator::SetFormats(VideoPixelFormat input_format,
   if (!NegotiateInputFormat(input_format))
     return false;
 
-  struct v4l2_crop crop;
-  memset(&crop, 0, sizeof(crop));
-  crop.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  crop.c.left = 0;
-  crop.c.top = 0;
-  crop.c.width = visible_size_.width();
-  crop.c.height = visible_size_.height();
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_CROP, &crop);
+  struct v4l2_rect visible_rect;
+  visible_rect.left = 0;
+  visible_rect.top = 0;
+  visible_rect.width = visible_size_.width();
+  visible_rect.height = visible_size_.height();
+
+  struct v4l2_selection selection_arg;
+  memset(&selection_arg, 0, sizeof(selection_arg));
+  selection_arg.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+  selection_arg.target = V4L2_SEL_TGT_CROP;
+  selection_arg.r = visible_rect;
 
   // The width and height might be adjusted by driver.
   // Need to read it back and set to visible_size_.
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_G_CROP, &crop);
-  visible_size_.SetSize(crop.c.width, crop.c.height);
+  if (device_->Ioctl(VIDIOC_S_SELECTION, &selection_arg) == 0) {
+    DVLOG(2) << "VIDIOC_S_SELECTION is supported";
+    visible_rect = selection_arg.r;
+  } else {
+    DVLOG(2) << "Fallback to VIDIOC_S/G_CROP";
+    struct v4l2_crop crop;
+    memset(&crop, 0, sizeof(crop));
+    crop.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+    crop.c = visible_rect;
+    IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_CROP, &crop);
+    IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_G_CROP, &crop);
+    visible_rect = crop.c;
+  }
+
+  visible_size_.SetSize(visible_rect.width, visible_rect.height);
   DVLOG(3) << "After adjusted by driver, visible_size_="
            << visible_size_.ToString();
 
