@@ -226,9 +226,6 @@ class WebServiceWorkerContextClient {
       const WebServiceWorkerResponse& response,
       WebServiceWorkerStreamHandle* body_as_stream,
       double event_dispatch_time) {}
-  virtual void RespondToCanMakePaymentEvent(int event_id,
-                                            bool can_make_payment,
-                                            double event_dispatch_time) {}
   virtual void DidHandleFetchEvent(int fetch_event_id,
                                    WebServiceWorkerEventResult result,
                                    double event_dispatch_time) {}
@@ -265,17 +262,42 @@ class WebServiceWorkerContextClient {
                                   WebServiceWorkerEventResult result,
                                   double event_dispatch_time) {}
 
-  virtual void RespondToPaymentRequestEvent(
-      int event_id,
-      const WebPaymentHandlerResponse& response,
-      double event_dispatch_time) {}
+  // RespondToAbortPaymentEvent will be called after the service worker
+  // returns a response to a AbortPaymentEvent, and DidHandleAbortPaymentEvent
+  // will be called after the end of AbortPaymentEvent's lifecycle.
+  // |event_id| is the id that was passed to DispatchAbortPaymentEvent.
+  virtual void RespondToAbortPaymentEvent(int event_id,
+                                          bool abort_payment,
+                                          double event_dispatch_time) {}
+  // Called after AbortPaymentEvent (dispatched
+  // via WebServiceWorkerContextProxy) is handled by the service worker.
+  virtual void DidHandleAbortPaymentEvent(int abort_payment_event_id,
+                                          WebServiceWorkerEventResult result,
+                                          double event_dispatch_time) {}
 
-  // Called after PaymentRequestEvent (dispatched
+  // RespondToCanMakePaymentEvent will be called after the service worker
+  // returns a response to a CanMakePaymentEvent, and
+  // DidHandleCanMakePaymentEvent will be called after the end of
+  // CanMakePaymentEvent's lifecycle. |event_id| is the id that was passed
+  // to DispatchCanMakePaymentEvent.
+  virtual void RespondToCanMakePaymentEvent(int event_id,
+                                            bool can_make_payment,
+                                            double event_dispatch_time) {}
+  // Called after CanMakePaymentEvent (dispatched
   // via WebServiceWorkerContextProxy) is handled by the service worker.
   virtual void DidHandleCanMakePaymentEvent(int payment_request_event_id,
                                             WebServiceWorkerEventResult result,
                                             double event_dispatch_time) {}
 
+  // RespondToPaymentRequestEvent will be called after the service worker
+  // returns a response to a PaymentRequestEvent, and
+  // DidHandlePaymentRequestEvent will be called after the end of
+  // PaymentRequestEvent's lifecycle. |event_id| is the id that was passed
+  // to DispatchPaymentRequestEvent.
+  virtual void RespondToPaymentRequestEvent(
+      int event_id,
+      const WebPaymentHandlerResponse& response,
+      double event_dispatch_time) {}
   // Called after PaymentRequestEvent (dispatched via
   // WebServiceWorkerContextProxy) is handled by the service worker.
   virtual void DidHandlePaymentRequestEvent(int payment_request_event_id,

@@ -55,6 +55,8 @@
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationEvent.h"
 #include "modules/notifications/NotificationEventInit.h"
+#include "modules/payments/AbortPaymentEvent.h"
+#include "modules/payments/AbortPaymentRespondWithObserver.h"
 #include "modules/payments/CanMakePaymentEvent.h"
 #include "modules/payments/CanMakePaymentRespondWithObserver.h"
 #include "modules/payments/PaymentEventDataConversion.h"
@@ -441,6 +443,21 @@ void ServiceWorkerGlobalScopeProxy::DispatchSyncEvent(
   Event* event = SyncEvent::Create(EventTypeNames::sync, tag,
                                    last_chance == kIsLastChance, observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
+}
+
+void ServiceWorkerGlobalScopeProxy::DispatchAbortPaymentEvent(int event_id) {
+  WaitUntilObserver* wait_until_observer = WaitUntilObserver::Create(
+      WorkerGlobalScope(), WaitUntilObserver::kAbortPayment, event_id);
+  AbortPaymentRespondWithObserver* respond_with_observer =
+      new AbortPaymentRespondWithObserver(WorkerGlobalScope(), event_id,
+                                          wait_until_observer);
+
+  Event* event = AbortPaymentEvent::Create(
+      EventTypeNames::abortpayment, ExtendableEventInit(),
+      respond_with_observer, wait_until_observer);
+
+  WorkerGlobalScope()->DispatchExtendableEventWithRespondWith(
+      event, wait_until_observer, respond_with_observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::DispatchCanMakePaymentEvent(

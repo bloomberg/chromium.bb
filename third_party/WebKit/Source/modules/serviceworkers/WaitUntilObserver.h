@@ -25,6 +25,7 @@ class MODULES_EXPORT WaitUntilObserver final
   using PromiseSettledCallback = Function<void(const ScriptValue&)>;
 
   enum EventType {
+    kAbortPayment,
     kActivate,
     kCanMakePayment,
     kFetch,
