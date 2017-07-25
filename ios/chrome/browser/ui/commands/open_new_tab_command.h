@@ -38,6 +38,12 @@
 
 @property(nonatomic, readonly) CGPoint originPoint;
 
+// Whether the new tab command was initiated by the user (e.g. by tapping the
+// new tab button in the tools menu) or not (e.g. opening a new tab via a
+// Javascript action). Defaults to |YES|.
+@property(nonatomic, readwrite, assign, getter=isUserInitiated)
+    BOOL userInitiated;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_OPEN_NEW_TAB_COMMAND_H_

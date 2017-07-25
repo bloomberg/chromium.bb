@@ -12,12 +12,14 @@
 
 @synthesize incognito = _incognito;
 @synthesize originPoint = _originPoint;
+@synthesize userInitiated = _userInitiated;
 
 - (instancetype)initWithIncognito:(BOOL)incognito
                       originPoint:(CGPoint)originPoint {
   if ((self = [super initWithTag:0])) {
     _incognito = incognito;
     _originPoint = originPoint;
+    _userInitiated = YES;
   }
   return self;
 }

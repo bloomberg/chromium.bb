@@ -941,8 +941,13 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
       MostVisitedCell* cell = (MostVisitedCell*)sender.view;
       [[strongSelf dataSource] logMostVisitedClick:index
                                           tileType:cell.tileType];
+      // GoogleLandingViewController is only displayed in non-incognito tabs,
+      // so |inIncognito| can be assumed to be NO. If it were displayed in an
+      // incognito state, then passing NO to |inIncognito| would open a tab in
+      // the wrong browser state.
       [[strongSelf dispatcher] webPageOrderedOpen:url
                                          referrer:web::Referrer()
+                                      inIncognito:NO
                                      inBackground:YES
                                          appendTo:kCurrentTab];
     };

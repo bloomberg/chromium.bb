@@ -21,8 +21,12 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/feature_engagement_tracker/public/event_constants.h"
+#include "components/feature_engagement_tracker/public/feature_engagement_tracker.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/feature_engagement_tracker/feature_engagement_tracker_factory.h"
+#include "ios/chrome/browser/feature_engagement_tracker/feature_engagement_tracker_util.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
@@ -2713,6 +2717,13 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   // Ensure that the right mode is showing.
   if ([self isCurrentSetIncognito] != command.incognito)
     [self setActiveCardSet:[self inactiveCardSet]];
+
+  // Either send or don't send the "New Tab Opened" or "Incognito Tab Opened" to
+  // the FeatureEngagementTracker based on |command.userInitiated| and
+  // |command.incognito|.
+  feature_engagement_tracker::NotifyNewTabEventForCommand(
+      _activeCardSet.tabModel.browserState, command);
+
   [self setLastTapPoint:command];
   [self dismissWithNewTabAnimation:GURL(kChromeUINewTabURL)
                            atIndex:NSNotFound

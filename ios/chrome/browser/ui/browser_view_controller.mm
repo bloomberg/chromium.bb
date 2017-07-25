@@ -38,6 +38,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/feature_engagement_tracker/public/event_constants.h"
+#include "components/feature_engagement_tracker/public/feature_engagement_tracker.h"
 #include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/payments/core/features.h"
@@ -56,6 +58,8 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#include "ios/chrome/browser/feature_engagement_tracker/feature_engagement_tracker_factory.h"
+#include "ios/chrome/browser/feature_engagement_tracker/feature_engagement_tracker_util.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
@@ -2573,8 +2577,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
           IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
       action = ^{
         Record(ACTION_OPEN_IN_NEW_TAB, isImage, isLink);
+        // The "New Tab" item in the context menu opens a new tab in the current
+        // browser state. |isOffTheRecord| indicates whether or not the current
+        // browser state is incognito.
         [weakSelf webPageOrderedOpen:link
                             referrer:referrer
+                         inIncognito:weakSelf.isOffTheRecord
                         inBackground:YES
                             appendTo:kCurrentTab];
       };
@@ -3780,6 +3788,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                inIncognito:(BOOL)inIncognito
               inBackground:(BOOL)inBackground
                   appendTo:(OpenPosition)appendTo {
+  // Send either the "New Tab Opened" or "New Incognito Tab" opened to the
+  // FeatureEngagementTracker based on |inIncognito|.
+  feature_engagement_tracker::NotifyNewTabEvent(_model.browserState,
+                                                inIncognito);
+
   if (inIncognito == _isOffTheRecord) {
     [self webPageOrderedOpen:url
                     referrer:referrer
@@ -4021,6 +4034,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [self.dispatcher switchModesAndOpenNewTab:command];
     return;
   }
+
+  // Either send or don't send the "New Tab Opened" or "Incognito Tab Opened"
+  // events to the FeatureEngagementTracker based on |command.userInitiated| and
+  // |command.incognito|.
+  feature_engagement_tracker::NotifyNewTabEventForCommand(_browserState,
+                                                          command);
 
   NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
   BOOL offTheRecord = self.isOffTheRecord;

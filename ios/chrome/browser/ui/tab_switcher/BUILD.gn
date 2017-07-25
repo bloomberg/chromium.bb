@@ -68,6 +68,7 @@ source_set("tab_switcher") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/favicon",
+    "//ios/chrome/browser/feature_engagement_tracker",
     "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/signin",
