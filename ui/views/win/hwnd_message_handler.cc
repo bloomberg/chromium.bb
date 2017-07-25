@@ -2704,6 +2704,7 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
     SetMsgHandled(FALSE);
     return -1;
   }
+  unsigned int mapped_pointer_id = id_generator_.GetGeneratedID(pointer_id);
 
   POINTER_INFO pointer_info = pointer_touch_info.pointerInfo;
 
@@ -2731,9 +2732,9 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
 
   ui::TouchEvent event(
       event_type, touch_point, event_time,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, pointer_id,
-                         radius_x, radius_y, pressure, 0.0f, 0.0f, 0.0f,
-                         pointer_touch_info.orientation),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                         mapped_pointer_id, radius_x, radius_y, pressure, 0.0f,
+                         0.0f, 0.0f, pointer_touch_info.orientation),
       ui::GetModifiersFromKeyState(), rotation_angle);
 
   event.latency()->AddLatencyNumberWithTimestamp(
@@ -2744,6 +2745,8 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
   base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
   delegate_->HandleTouchEvent(event);
 
+  if (event_type == ui::ET_TOUCH_RELEASED)
+    id_generator_.ReleaseNumber(pointer_id);
   if (ref)
     SetMsgHandled(TRUE);
   return 0;
@@ -2753,6 +2756,7 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypePen(UINT message,
                                                       WPARAM w_param,
                                                       LPARAM l_param) {
   UINT32 pointer_id = GET_POINTERID_WPARAM(w_param);
+  unsigned int mapped_pointer_id = id_generator_.GetGeneratedID(pointer_id);
   using GetPointerPenInfoFn = BOOL(WINAPI*)(UINT32, POINTER_PEN_INFO*);
   POINTER_PEN_INFO pointer_pen_info;
   static GetPointerPenInfoFn get_pointer_pen_info =
@@ -2803,6 +2807,7 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypePen(UINT message,
       } else {
         flag = ui::EF_LEFT_MOUSE_BUTTON;
       }
+      id_generator_.ReleaseNumber(pointer_id);
       click_count = 1;
       break;
     case WM_POINTERUPDATE:
@@ -2822,12 +2827,13 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypePen(UINT message,
       break;
     case WM_POINTERLEAVE:
       event_type = ui::ET_MOUSE_EXITED;
+      id_generator_.ReleaseNumber(pointer_id);
       break;
     default:
       NOTREACHED();
   }
   ui::PointerDetails pointer_details(
-      input_type, pointer_id, /* radius_x */ 0.0f, /* radius_y */ 0.0f,
+      input_type, mapped_pointer_id, /* radius_x */ 0.0f, /* radius_y */ 0.0f,
       pressure, tilt_x, tilt_y, /* tangential_pressure */ 0.0f, rotation);
   ui::MouseEvent event(event_type, point, point, base::TimeTicks::Now(), flag,
                        flag, pointer_details);
