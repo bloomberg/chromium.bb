@@ -42,7 +42,7 @@ MATCHER_P(EqualsJSON, json, "equals JSON") {
                      << "parse error: " << err_msg;
     return false;
   }
-  return base::Value::Equals(actual.get(), expected.get());
+  return *expected == *actual;
 }
 
 }  // namespace

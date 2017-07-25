@@ -231,42 +231,42 @@ TEST(ExtensionProxyApiHelpers, CreateProxyConfigDict) {
   std::unique_ptr<base::DictionaryValue> out_direct(CreateProxyConfigDict(
       ProxyPrefs::MODE_DIRECT, false, std::string(), std::string(),
       std::string(), std::string(), &error));
-  EXPECT_TRUE(base::Value::Equals(exp_direct.get(), out_direct.get()));
+  EXPECT_EQ(*exp_direct, *out_direct);
 
   std::unique_ptr<base::DictionaryValue> exp_auto =
       ProxyConfigDictionary::CreateAutoDetect();
   std::unique_ptr<base::DictionaryValue> out_auto(CreateProxyConfigDict(
       ProxyPrefs::MODE_AUTO_DETECT, false, std::string(), std::string(),
       std::string(), std::string(), &error));
-  EXPECT_TRUE(base::Value::Equals(exp_auto.get(), out_auto.get()));
+  EXPECT_EQ(*exp_auto, *out_auto);
 
   std::unique_ptr<base::DictionaryValue> exp_pac_url =
       ProxyConfigDictionary::CreatePacScript(kSamplePacScriptUrl, false);
   std::unique_ptr<base::DictionaryValue> out_pac_url(CreateProxyConfigDict(
       ProxyPrefs::MODE_PAC_SCRIPT, false, kSamplePacScriptUrl, std::string(),
       std::string(), std::string(), &error));
-  EXPECT_TRUE(base::Value::Equals(exp_pac_url.get(), out_pac_url.get()));
+  EXPECT_EQ(*exp_pac_url, *out_pac_url);
 
   std::unique_ptr<base::DictionaryValue> exp_pac_data =
       ProxyConfigDictionary::CreatePacScript(kSamplePacScriptAsDataUrl, false);
   std::unique_ptr<base::DictionaryValue> out_pac_data(CreateProxyConfigDict(
       ProxyPrefs::MODE_PAC_SCRIPT, false, std::string(), kSamplePacScript,
       std::string(), std::string(), &error));
-  EXPECT_TRUE(base::Value::Equals(exp_pac_data.get(), out_pac_data.get()));
+  EXPECT_EQ(*exp_pac_data, *out_pac_data);
 
   std::unique_ptr<base::DictionaryValue> exp_fixed =
       ProxyConfigDictionary::CreateFixedServers("foo:80", "localhost");
   std::unique_ptr<base::DictionaryValue> out_fixed(CreateProxyConfigDict(
       ProxyPrefs::MODE_FIXED_SERVERS, false, std::string(), std::string(),
       "foo:80", "localhost", &error));
-  EXPECT_TRUE(base::Value::Equals(exp_fixed.get(), out_fixed.get()));
+  EXPECT_EQ(*exp_fixed, *out_fixed);
 
   std::unique_ptr<base::DictionaryValue> exp_system =
       ProxyConfigDictionary::CreateSystem();
   std::unique_ptr<base::DictionaryValue> out_system(CreateProxyConfigDict(
       ProxyPrefs::MODE_SYSTEM, false, std::string(), std::string(),
       std::string(), std::string(), &error));
-  EXPECT_TRUE(base::Value::Equals(exp_system.get(), out_system.get()));
+  EXPECT_EQ(*exp_system, *out_system);
 
   // Neither of them should have set an error.
   EXPECT_EQ(std::string(), error);
@@ -334,7 +334,7 @@ TEST(ExtensionProxyApiHelpers, CreateProxyRulesDict) {
   bypass_list->AppendString("localhost");
   expected->Set(keys::kProxyConfigBypassList, std::move(bypass_list));
 
-  EXPECT_TRUE(base::Value::Equals(expected.get(), extension_pref.get()));
+  EXPECT_EQ(*expected, *extension_pref);
 }
 
 // Test multiple proxies per scheme -- expect that only the first is returned.
@@ -362,7 +362,7 @@ TEST(ExtensionProxyApiHelpers, CreateProxyRulesDictMultipleProxies) {
   bypass_list->AppendString("localhost");
   expected->Set(keys::kProxyConfigBypassList, std::move(bypass_list));
 
-  EXPECT_TRUE(base::Value::Equals(expected.get(), extension_pref.get()));
+  EXPECT_EQ(*expected, *extension_pref);
 }
 
 // Test if a PAC script URL is specified.
@@ -378,7 +378,7 @@ TEST(ExtensionProxyApiHelpers, CreatePacScriptDictWithUrl) {
   expected->SetString(keys::kProxyConfigPacScriptUrl, kSamplePacScriptUrl);
   expected->SetBoolean(keys::kProxyConfigPacScriptMandatory, false);
 
-  EXPECT_TRUE(base::Value::Equals(expected.get(), extension_pref.get()));
+  EXPECT_EQ(*expected, *extension_pref);
 }
 
 // Test if a PAC script is encoded in a data URL.
@@ -394,7 +394,7 @@ TEST(ExtensionProxyApiHelpers, CreatePacScriptDictWidthData) {
   expected->SetString(keys::kProxyConfigPacScriptData, kSamplePacScript);
   expected->SetBoolean(keys::kProxyConfigPacScriptMandatory, false);
 
-  EXPECT_TRUE(base::Value::Equals(expected.get(), extension_pref.get()));
+  EXPECT_EQ(*expected, *extension_pref);
 }
 
 TEST(ExtensionProxyApiHelpers, TokenizeToStringList) {
@@ -404,7 +404,7 @@ TEST(ExtensionProxyApiHelpers, TokenizeToStringList) {
   expected.AppendString("s3");
 
   std::unique_ptr<base::ListValue> out(TokenizeToStringList("s1;s2;s3", ";"));
-  EXPECT_TRUE(base::Value::Equals(&expected, out.get()));
+  EXPECT_EQ(expected, *out);
 }
 
 }  // namespace proxy_api_helpers

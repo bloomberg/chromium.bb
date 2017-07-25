@@ -49,7 +49,8 @@ bool PolicyMap::Entry::Equals(const PolicyMap::Entry& other) const {
   return level == other.level && scope == other.scope &&
          source == other.source &&  // Necessary for PolicyUIHandler observers.
                                     // They have to update when sources change.
-         base::Value::Equals(value.get(), other.value.get()) &&
+         ((!value && !other.value) ||
+          (value && other.value && *value == *other.value)) &&
          ExternalDataFetcher::Equals(external_data_fetcher.get(),
                                      other.external_data_fetcher.get());
 }

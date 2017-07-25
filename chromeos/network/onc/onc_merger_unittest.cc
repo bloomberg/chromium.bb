@@ -33,7 +33,7 @@ namespace {
         << "Second dictionary '" << b << "' doesn't contain " << path;
   }
 
-  if (base::Value::Equals(a_value, b_value)) {
+  if (*a_value == *b_value) {
     return ::testing::AssertionSuccess()
         << "Entries at '" << path << "' are equal";
   } else {

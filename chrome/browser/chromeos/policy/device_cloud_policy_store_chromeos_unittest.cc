@@ -88,10 +88,8 @@ class DeviceCloudPolicyStoreChromeOSTest
     EXPECT_TRUE(store_->is_managed());
     EXPECT_TRUE(store_->policy());
     base::Value expected(false);
-    EXPECT_TRUE(
-        base::Value::Equals(&expected,
-                            store_->policy_map().GetValue(
-                                key::kDeviceMetricsReportingEnabled)));
+    EXPECT_EQ(expected, *store_->policy_map().GetValue(
+                            key::kDeviceMetricsReportingEnabled));
     EXPECT_FALSE(store_->policy_signature_public_key().empty());
   }
 

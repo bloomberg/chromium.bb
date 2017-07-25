@@ -1397,7 +1397,7 @@ TEST_F(ExtensionSettingsSyncTest, Dots) {
       base::DictionaryValue expected_data;
       expected_data.SetWithoutPathExpansion(
           "key.with.dot", base::MakeUnique<base::Value>("value"));
-      EXPECT_TRUE(base::Value::Equals(&expected_data, &data->settings()));
+      EXPECT_EQ(expected_data, data->settings());
     }
 
     // Test dots in keys going to sync.

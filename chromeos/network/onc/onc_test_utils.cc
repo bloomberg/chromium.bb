@@ -73,7 +73,7 @@ std::unique_ptr<base::DictionaryValue> ReadTestDictionary(
   if (actual == NULL)
     return ::testing::AssertionFailure() << "Actual value pointer is NULL";
 
-  if (expected->Equals(actual))
+  if (*expected == *actual)
     return ::testing::AssertionSuccess() << "Values are equal";
 
   return ::testing::AssertionFailure() << "Values are unequal.\n"

@@ -105,7 +105,7 @@ TEST_F(ArcSupportMessageHostTest, SendMessage) {
   ASSERT_EQ(1u, client()->messages().size());
   std::unique_ptr<base::Value> recieved_value =
       base::JSONReader::Read(client()->messages()[0]);
-  EXPECT_TRUE(base::Value::Equals(&value, recieved_value.get()));
+  EXPECT_EQ(value, *recieved_value);
 }
 
 TEST_F(ArcSupportMessageHostTest, ReceiveMessage) {
@@ -123,7 +123,7 @@ TEST_F(ArcSupportMessageHostTest, ReceiveMessage) {
   message_host()->SetObserver(nullptr);
 
   ASSERT_EQ(1u, observer.values().size());
-  EXPECT_TRUE(base::Value::Equals(&value, observer.values()[0].get()));
+  EXPECT_EQ(value, *observer.values()[0]);
 }
 
 }  // namespace arc

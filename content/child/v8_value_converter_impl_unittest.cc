@@ -755,20 +755,17 @@ TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
 
   std::unique_ptr<base::Value> actual_object(
       converter.FromV8Value(object, context));
-  EXPECT_TRUE(base::Value::Equals(
-      base::test::ParseJson("{ \"bar\": null }").get(), actual_object.get()));
+  EXPECT_EQ(*base::test::ParseJson("{ \"bar\": null }"), *actual_object);
 
   // Everything is null because JSON stringification preserves array length.
   std::unique_ptr<base::Value> actual_array(
       converter.FromV8Value(array, context));
-  EXPECT_TRUE(base::Value::Equals(
-      base::test::ParseJson("[ null, null, null ]").get(), actual_array.get()));
+  EXPECT_EQ(*base::test::ParseJson("[ null, null, null ]"), *actual_array);
 
   std::unique_ptr<base::Value> actual_sparse_array(
       converter.FromV8Value(sparse_array, context));
-  EXPECT_TRUE(
-      base::Value::Equals(base::test::ParseJson("[ null, null, null ]").get(),
-                          actual_sparse_array.get()));
+  EXPECT_EQ(*base::test::ParseJson("[ null, null, null ]"),
+            *actual_sparse_array);
 }
 
 TEST_F(V8ValueConverterImplTest, ObjectsWithClashingIdentityHash) {
@@ -949,7 +946,7 @@ TEST_F(V8ValueConverterImplTest, MaxRecursionDepth) {
 
   // The leaf node shouldn't have any properties.
   base::DictionaryValue empty;
-  EXPECT_TRUE(base::Value::Equals(&empty, current)) << *current;
+  EXPECT_EQ(empty, *current) << *current;
 }
 
 TEST_F(V8ValueConverterImplTest, NegativeZero) {
@@ -1040,44 +1037,38 @@ TEST_F(V8ValueConverterImplTest, StrategyOverrides) {
   std::unique_ptr<base::Value> object_value(
       converter.FromV8Value(object, context));
   ASSERT_TRUE(object_value);
-  EXPECT_TRUE(
-      base::Value::Equals(strategy.reference_value(), object_value.get()));
+  EXPECT_EQ(*strategy.reference_value(), *object_value);
 
   v8::Local<v8::Array> array(v8::Array::New(isolate_));
   std::unique_ptr<base::Value> array_value(
       converter.FromV8Value(array, context));
   ASSERT_TRUE(array_value);
-  EXPECT_TRUE(
-      base::Value::Equals(strategy.reference_value(), array_value.get()));
+  EXPECT_EQ(*strategy.reference_value(), *array_value);
 
   v8::Local<v8::ArrayBuffer> array_buffer(v8::ArrayBuffer::New(isolate_, 0));
   std::unique_ptr<base::Value> array_buffer_value(
       converter.FromV8Value(array_buffer, context));
   ASSERT_TRUE(array_buffer_value);
-  EXPECT_TRUE(base::Value::Equals(strategy.reference_value(),
-                                  array_buffer_value.get()));
+  EXPECT_EQ(*strategy.reference_value(), *array_buffer_value);
 
   v8::Local<v8::ArrayBufferView> array_buffer_view(
       v8::Uint8Array::New(array_buffer, 0, 0));
   std::unique_ptr<base::Value> array_buffer_view_value(
       converter.FromV8Value(array_buffer_view, context));
   ASSERT_TRUE(array_buffer_view_value);
-  EXPECT_TRUE(base::Value::Equals(strategy.reference_value(),
-                                  array_buffer_view_value.get()));
+  EXPECT_EQ(*strategy.reference_value(), *array_buffer_view_value);
 
   v8::Local<v8::Number> number(v8::Number::New(isolate_, 0.0));
   std::unique_ptr<base::Value> number_value(
       converter.FromV8Value(number, context));
   ASSERT_TRUE(number_value);
-  EXPECT_TRUE(
-      base::Value::Equals(strategy.reference_value(), number_value.get()));
+  EXPECT_EQ(*strategy.reference_value(), *number_value);
 
   v8::Local<v8::Primitive> undefined(v8::Undefined(isolate_));
   std::unique_ptr<base::Value> undefined_value(
       converter.FromV8Value(undefined, context));
   ASSERT_TRUE(undefined_value);
-  EXPECT_TRUE(
-      base::Value::Equals(strategy.reference_value(), undefined_value.get()));
+  EXPECT_EQ(*strategy.reference_value(), *undefined_value);
 }
 
 class V8ValueConverterBypassStrategyForTesting
@@ -1127,8 +1118,7 @@ TEST_F(V8ValueConverterImplTest, StrategyBypass) {
   ASSERT_TRUE(object_value);
   std::unique_ptr<base::Value> reference_object_value(
       base::test::ParseJson("{}"));
-  EXPECT_TRUE(
-      base::Value::Equals(reference_object_value.get(), object_value.get()));
+  EXPECT_EQ(*reference_object_value, *object_value);
 
   v8::Local<v8::Array> array(v8::Array::New(isolate_));
   std::unique_ptr<base::Value> array_value(
@@ -1136,8 +1126,7 @@ TEST_F(V8ValueConverterImplTest, StrategyBypass) {
   ASSERT_TRUE(array_value);
   std::unique_ptr<base::Value> reference_array_value(
       base::test::ParseJson("[]"));
-  EXPECT_TRUE(
-      base::Value::Equals(reference_array_value.get(), array_value.get()));
+  EXPECT_EQ(*reference_array_value, *array_value);
 
   const char kExampleData[] = {1, 2, 3, 4, 5};
   v8::Local<v8::ArrayBuffer> array_buffer(
@@ -1149,8 +1138,7 @@ TEST_F(V8ValueConverterImplTest, StrategyBypass) {
   ASSERT_TRUE(binary_value);
   std::unique_ptr<base::Value> reference_binary_value(
       base::Value::CreateWithCopiedBuffer(kExampleData, sizeof(kExampleData)));
-  EXPECT_TRUE(
-      base::Value::Equals(reference_binary_value.get(), binary_value.get()));
+  EXPECT_EQ(*reference_binary_value, *binary_value);
 
   v8::Local<v8::ArrayBufferView> array_buffer_view(
       v8::Uint8Array::New(array_buffer, 1, 3));
@@ -1159,8 +1147,7 @@ TEST_F(V8ValueConverterImplTest, StrategyBypass) {
   ASSERT_TRUE(binary_view_value);
   std::unique_ptr<base::Value> reference_binary_view_value(
       base::Value::CreateWithCopiedBuffer(&kExampleData[1], 3));
-  EXPECT_TRUE(base::Value::Equals(reference_binary_view_value.get(),
-                                  binary_view_value.get()));
+  EXPECT_EQ(*reference_binary_view_value, *binary_view_value);
 
   v8::Local<v8::Number> number(v8::Number::New(isolate_, 0.0));
   std::unique_ptr<base::Value> number_value(
@@ -1168,8 +1155,7 @@ TEST_F(V8ValueConverterImplTest, StrategyBypass) {
   ASSERT_TRUE(number_value);
   std::unique_ptr<base::Value> reference_number_value(
       base::test::ParseJson("0"));
-  EXPECT_TRUE(
-      base::Value::Equals(reference_number_value.get(), number_value.get()));
+  EXPECT_EQ(*reference_number_value, *number_value);
 
   v8::Local<v8::Primitive> undefined(v8::Undefined(isolate_));
   std::unique_ptr<base::Value> undefined_value(

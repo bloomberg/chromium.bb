@@ -1984,7 +1984,7 @@ TEST_F(DriveApiRequestsTest, PermissionsInsertRequest) {
   std::unique_ptr<base::Value> result =
       base::JSONReader::Read(http_request_.content);
   EXPECT_TRUE(http_request_.has_content);
-  EXPECT_TRUE(base::Value::Equals(expected.get(), result.get()));
+  EXPECT_EQ(*expected, *result);
 
   // Add "can edit" permission to users in "example.com".
   error = DRIVE_OTHER_ERROR;
@@ -2015,7 +2015,7 @@ TEST_F(DriveApiRequestsTest, PermissionsInsertRequest) {
 
   result = base::JSONReader::Read(http_request_.content);
   EXPECT_TRUE(http_request_.has_content);
-  EXPECT_TRUE(base::Value::Equals(expected.get(), result.get()));
+  EXPECT_EQ(*expected, *result);
 }
 
 TEST_F(DriveApiRequestsTest, BatchUploadRequest) {
