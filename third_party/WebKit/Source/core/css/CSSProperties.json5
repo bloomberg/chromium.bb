@@ -3873,6 +3873,8 @@
     {
       name: "scroll-boundary-behavior",
       longhands: ["scroll-boundary-behavior-x", "scroll-boundary-behavior-y"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
       runtime_flag: "CSSScrollBoundaryBehavior",
     },
     {

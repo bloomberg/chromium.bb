@@ -1453,23 +1453,6 @@ bool CSSPropertyParser::ConsumeBorder(bool important) {
   return range_.AtEnd();
 }
 
-bool CSSPropertyParser::Consume2Values(const StylePropertyShorthand& shorthand,
-                                       bool important) {
-  DCHECK_EQ(shorthand.length(), 2u);
-  const CSSPropertyID* longhands = shorthand.properties();
-  const CSSValue* start = ParseSingleValue(longhands[0], shorthand.id());
-  if (!start)
-    return false;
-
-  const CSSValue* end = ParseSingleValue(longhands[1], shorthand.id());
-  if (!end)
-    end = start;
-  AddParsedProperty(longhands[0], shorthand.id(), *start, important);
-  AddParsedProperty(longhands[1], shorthand.id(), *end, important);
-
-  return range_.AtEnd();
-}
-
 static inline CSSValueID MapFromPageBreakBetween(CSSValueID value) {
   if (value == CSSValueAlways)
     return CSSValuePage;
@@ -2149,8 +2132,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
       return ConsumePlaceItemsShorthand(important);
     case CSSPropertyPlaceSelf:
       return ConsumePlaceSelfShorthand(important);
-    case CSSPropertyScrollBoundaryBehavior:
-      return Consume2Values(scrollBoundaryBehaviorShorthand(), important);
     default:
       return false;
   }
