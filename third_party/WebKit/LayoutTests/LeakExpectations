@@ -9,9 +9,6 @@
 # ask hajimehoshi@.                                                       #
 ###########################################################################
 
-# FIXME: The below tests crashes when the leak detector is run on debug builds
-crbug.com/366043 [ Debug ] fast/history/history-traversal-is-asynchronous.html [ Crash ]
-
 # FIXME: scroll customization leaks memory. See
 # codereview.chromium.org/1236913004/ for context.
 crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Leak ]
