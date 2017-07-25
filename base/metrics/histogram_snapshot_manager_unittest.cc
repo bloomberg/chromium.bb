@@ -32,19 +32,6 @@ class HistogramFlattenerDeltaRecorder : public HistogramFlattener {
     recorded_delta_histogram_sum_[histogram.histogram_name()] = snapshot.sum();
   }
 
-  void InconsistencyDetected(HistogramBase::Inconsistency problem) override {
-    ASSERT_TRUE(false);
-  }
-
-  void UniqueInconsistencyDetected(
-      HistogramBase::Inconsistency problem) override {
-    ASSERT_TRUE(false);
-  }
-
-  void InconsistencyDetectedInLoggedCount(int amount) override {
-    ASSERT_TRUE(false);
-  }
-
   void Reset() {
     recorded_delta_histogram_names_.clear();
     recorded_delta_histogram_sum_.clear();

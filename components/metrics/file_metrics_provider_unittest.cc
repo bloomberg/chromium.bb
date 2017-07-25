@@ -46,20 +46,6 @@ class HistogramFlattenerDeltaRecorder : public base::HistogramFlattener {
       recorded_delta_histogram_names_.push_back(histogram.histogram_name());
   }
 
-  void InconsistencyDetected(base::HistogramBase::Inconsistency problem)
-      override {
-    ASSERT_TRUE(false);
-  }
-
-  void UniqueInconsistencyDetected(
-      base::HistogramBase::Inconsistency problem) override {
-    ASSERT_TRUE(false);
-  }
-
-  void InconsistencyDetectedInLoggedCount(int amount) override {
-    ASSERT_TRUE(false);
-  }
-
   std::vector<std::string> GetRecordedDeltaHistogramNames() {
     return recorded_delta_histogram_names_;
   }

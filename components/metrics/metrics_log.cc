@@ -63,11 +63,6 @@ class IndependentFlattener : public base::HistogramFlattener {
                    const base::HistogramSamples& snapshot) override {
     log_->RecordHistogramDelta(histogram.histogram_name(), snapshot);
   }
-  void InconsistencyDetected(
-      base::HistogramBase::Inconsistency problem) override {}
-  void UniqueInconsistencyDetected(
-      base::HistogramBase::Inconsistency problem) override {}
-  void InconsistencyDetectedInLoggedCount(int amount) override {}
 
  private:
   MetricsLog* const log_;

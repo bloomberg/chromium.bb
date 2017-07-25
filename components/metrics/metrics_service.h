@@ -108,11 +108,6 @@ class MetricsService : public base::HistogramFlattener {
   // HistogramFlattener:
   void RecordDelta(const base::HistogramBase& histogram,
                    const base::HistogramSamples& snapshot) override;
-  void InconsistencyDetected(
-      base::HistogramBase::Inconsistency problem) override;
-  void UniqueInconsistencyDetected(
-      base::HistogramBase::Inconsistency problem) override;
-  void InconsistencyDetectedInLoggedCount(int amount) override;
 
   // This should be called when the application is not idle, i.e. the user seems
   // to be interacting with the application.
