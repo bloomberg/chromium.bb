@@ -829,7 +829,7 @@ void XMLHttpRequest::send(Document* document, ExceptionState& exception_state) {
     // FIXME: Per https://xhr.spec.whatwg.org/#dom-xmlhttprequest-send the
     // Content-Type header and whether to serialize as HTML or XML should
     // depend on |document->isHTMLDocument()|.
-    if (GetRequestHeader(HTTPNames::Content_Type).IsEmpty())
+    if (!HasContentTypeRequestHeader())
       SetRequestHeaderInternal(HTTPNames::Content_Type,
                                "application/xml;charset=UTF-8");
 
@@ -868,7 +868,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exception_state) {
   RefPtr<EncodedFormData> http_body;
 
   if (AreMethodAndURLValidForSend()) {
-    if (GetRequestHeader(HTTPNames::Content_Type).IsEmpty()) {
+    if (!HasContentTypeRequestHeader()) {
       const String& blob_type = FetchUtils::NormalizeHeaderValue(body->type());
       if (!blob_type.IsEmpty() && ParsedContentType(blob_type).IsValid()) {
         SetRequestHeaderInternal(HTTPNames::Content_Type,
@@ -907,7 +907,7 @@ void XMLHttpRequest::send(FormData* body, ExceptionState& exception_state) {
 
     // TODO (sof): override any author-provided charset= in the
     // content type value to UTF-8 ?
-    if (GetRequestHeader(HTTPNames::Content_Type).IsEmpty()) {
+    if (!HasContentTypeRequestHeader()) {
       AtomicString content_type =
           AtomicString("multipart/form-data; boundary=") +
           FetchUtils::NormalizeHeaderValue(http_body->Boundary().data());
@@ -1402,9 +1402,9 @@ void XMLHttpRequest::SetRequestHeaderInternal(const AtomicString& name,
   }
 }
 
-const AtomicString& XMLHttpRequest::GetRequestHeader(
-    const AtomicString& name) const {
-  return request_headers_.Get(name);
+bool XMLHttpRequest::HasContentTypeRequestHeader() const {
+  return request_headers_.Find(HTTPNames::Content_Type) !=
+         request_headers_.end();
 }
 
 String XMLHttpRequest::getAllResponseHeaders() const {
@@ -1508,7 +1508,7 @@ void XMLHttpRequest::UpdateContentTypeAndCharset(
     const String& charset) {
   // http://xhr.spec.whatwg.org/#the-send()-method step 4's concilliation of
   // "charset=" in any author-provided Content-Type: request header.
-  String content_type = GetRequestHeader(HTTPNames::Content_Type);
+  String content_type = request_headers_.Get(HTTPNames::Content_Type);
   if (content_type.IsEmpty()) {
     SetRequestHeaderInternal(HTTPNames::Content_Type, default_content_type);
     return;
