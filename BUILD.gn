@@ -739,7 +739,7 @@ if (is_win) {
 
     if (target_cpu == "x86") {
       if (is_clang) {
-        deps += [ "//courgette(//build/toolchain/win:clang_x64)" ]
+        deps += [ "//courgette(//build/toolchain/win:win_clang_x64)" ]
       } else {
         deps += [ "//courgette(//build/toolchain/win:x64)" ]
       }

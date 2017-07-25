@@ -208,7 +208,7 @@ if (host_toolchain == "") {
     # On Windows always use the target CPU for host builds. On the
     # configurations we support this will always work and it saves build steps.
     if (is_clang) {
-      host_toolchain = "//build/toolchain/win:clang_$target_cpu"
+      host_toolchain = "//build/toolchain/win:win_clang_$target_cpu"
     } else {
       host_toolchain = "//build/toolchain/win:$target_cpu"
     }
@@ -247,7 +247,7 @@ if (target_os == "android") {
   # On Windows we use the same toolchain for host and target by default.
   assert(target_os == host_os, "Win cross-compiles only work on win hosts.")
   if (is_clang) {
-    _default_toolchain = "//build/toolchain/win:clang_$target_cpu"
+    _default_toolchain = "//build/toolchain/win:win_clang_$target_cpu"
   } else {
     _default_toolchain = "//build/toolchain/win:$target_cpu"
   }
