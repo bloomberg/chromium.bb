@@ -36,7 +36,7 @@ media_router::DnsSdService CreateDnsService(int num) {
       "_myDevice." +
       std::string(media_router::CastMediaSinkService::kCastServiceType);
   service.ip_address = ip_endpoint.address().ToString();
-  service.service_host_port = ip_endpoint.ToString();
+  service.service_host_port = net::HostPortPair::FromIPEndPoint(ip_endpoint);
   service.service_data.push_back(base::StringPrintf("id=service %d", num));
   service.service_data.push_back(
       base::StringPrintf("fn=friendly name %d", num));
