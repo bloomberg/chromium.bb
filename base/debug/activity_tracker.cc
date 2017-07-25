@@ -1459,7 +1459,7 @@ void GlobalActivityTracker::RecordProcessExit(ProcessId process_id,
 
   // The persistent allocator is thread-safe so run the iteration and
   // adjustments on a worker thread if one was provided.
-  if (task_runner && !task_runner->RunsTasksOnCurrentThread()) {
+  if (task_runner && !task_runner->RunsTasksInCurrentSequence()) {
     task_runner->PostTask(
         FROM_HERE,
         BindOnce(&GlobalActivityTracker::CleanupAfterProcess, Unretained(this),

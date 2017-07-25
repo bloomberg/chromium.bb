@@ -158,7 +158,7 @@ class ThreadPostingTasks : public SimpleThread {
 
  private:
   void Run() override {
-    EXPECT_FALSE(factory_.task_runner()->RunsTasksOnCurrentThread());
+    EXPECT_FALSE(factory_.task_runner()->RunsTasksInCurrentSequence());
 
     for (size_t i = 0; i < kNumTasksPostedPerThread; ++i) {
       if (wait_before_post_task_ ==
@@ -342,12 +342,12 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostDelayedTask) {
             TimeDelta::FromMilliseconds(250) + TestTimeouts::tiny_timeout());
 }
 
-// Verify that the RunsTasksOnCurrentThread() method of a SEQUENCED TaskRunner
+// Verify that the RunsTasksInCurrentSequence() method of a SEQUENCED TaskRunner
 // returns false when called from a task that isn't part of the sequence. Note:
-// Tests that use TestTaskFactory already verify that RunsTasksOnCurrentThread()
-// returns true when appropriate so this method complements it to get full
-// coverage of that method.
-TEST_P(TaskSchedulerWorkerPoolImplTest, SequencedRunsTasksOnCurrentThread) {
+// Tests that use TestTaskFactory already verify that
+// RunsTasksInCurrentSequence() returns true when appropriate so this method
+// complements it to get full coverage of that method.
+TEST_P(TaskSchedulerWorkerPoolImplTest, SequencedRunsTasksInCurrentSequence) {
   auto task_runner =
       CreateTaskRunnerWithExecutionMode(worker_pool_.get(), GetParam());
   auto sequenced_task_runner =
@@ -360,7 +360,7 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, SequencedRunsTasksOnCurrentThread) {
       BindOnce(
           [](scoped_refptr<TaskRunner> sequenced_task_runner,
              WaitableEvent* task_ran) {
-            EXPECT_FALSE(sequenced_task_runner->RunsTasksOnCurrentThread());
+            EXPECT_FALSE(sequenced_task_runner->RunsTasksInCurrentSequence());
             task_ran->Signal();
           },
           sequenced_task_runner, Unretained(&task_ran)));
