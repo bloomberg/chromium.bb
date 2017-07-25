@@ -48,11 +48,6 @@ class TodayMetricsLogger : base::HistogramFlattener {
   // HistogramFlattener:
   void RecordDelta(const base::HistogramBase& histogram,
                    const base::HistogramSamples& snapshot) override;
-  void InconsistencyDetected(
-      base::HistogramBase::Inconsistency problem) override;
-  void UniqueInconsistencyDetected(
-      base::HistogramBase::Inconsistency problem) override;
-  void InconsistencyDetectedInLoggedCount(int amount) override;
 
  private:
   TodayMetricsLogger();

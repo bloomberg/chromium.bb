@@ -277,20 +277,3 @@ void TodayMetricsLogger::RecordDelta(const base::HistogramBase& histogram,
                                      const base::HistogramSamples& snapshot) {
   log_->RecordHistogramDelta(histogram.histogram_name(), snapshot);
 }
-
-void TodayMetricsLogger::InconsistencyDetected(
-    base::HistogramBase::Inconsistency problem) {
-  UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesBrowser", problem,
-                            base::HistogramBase::NEVER_EXCEEDED_VALUE);
-}
-
-void TodayMetricsLogger::UniqueInconsistencyDetected(
-    base::HistogramBase::Inconsistency problem) {
-  UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesBrowserUnique", problem,
-                            base::HistogramBase::NEVER_EXCEEDED_VALUE);
-}
-
-void TodayMetricsLogger::InconsistencyDetectedInLoggedCount(int amount) {
-  UMA_HISTOGRAM_COUNTS("Histogram.InconsistentSnapshotBrowser",
-                       std::abs(amount));
-}

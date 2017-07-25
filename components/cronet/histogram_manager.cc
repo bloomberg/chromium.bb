@@ -35,23 +35,6 @@ void HistogramManager::RecordDelta(const base::HistogramBase& histogram,
   EncodeHistogramDelta(histogram.histogram_name(), snapshot, &uma_proto_);
 }
 
-void HistogramManager::InconsistencyDetected(
-    base::HistogramBase::Inconsistency problem) {
-  UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesBrowser.Cronet",
-                            problem, base::HistogramBase::NEVER_EXCEEDED_VALUE);
-}
-
-void HistogramManager::UniqueInconsistencyDetected(
-    base::HistogramBase::Inconsistency problem) {
-  UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesBrowserUnique.Cronet",
-                            problem, base::HistogramBase::NEVER_EXCEEDED_VALUE);
-}
-
-void HistogramManager::InconsistencyDetectedInLoggedCount(int amount) {
-  UMA_HISTOGRAM_COUNTS("Histogram.InconsistentSnapshotBrowser.Cronet",
-                       std::abs(amount));
-}
-
 bool HistogramManager::GetDeltas(std::vector<uint8_t>* data) {
   if (get_deltas_lock_.Try()) {
     base::AutoLock lock(get_deltas_lock_, base::AutoLock::AlreadyAcquired());
