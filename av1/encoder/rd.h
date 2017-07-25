@@ -712,6 +712,9 @@ int av1_get_intra_cost_penalty(int qindex, int qdelta,
 void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                          FRAME_CONTEXT *fc);
 
+void av1_fill_token_costs_from_cdf(av1_coeff_cost *cost,
+                                   coeff_cdf_model (*cdf)[PLANE_TYPES]);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

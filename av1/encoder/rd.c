@@ -421,8 +421,8 @@ void av1_set_mvcost(MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame, int ref,
   x->nmvjointcost = x->nmv_vec_cost[nmv_ctx];
 }
 
-void fill_token_costs_from_cdf(av1_coeff_cost *cost,
-                               coeff_cdf_model (*cdf)[PLANE_TYPES]) {
+void av1_fill_token_costs_from_cdf(av1_coeff_cost *cost,
+                                   coeff_cdf_model (*cdf)[PLANE_TYPES]) {
   for (int tx = 0; tx < TX_SIZES; ++tx) {
     for (int pt = 0; pt < PLANE_TYPES; ++pt) {
       for (int rt = 0; rt < REF_TYPES; ++rt) {
@@ -471,15 +471,13 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   }
 #endif
 
-  if (cpi->oxcf.pass != 1) {
-    fill_token_costs_from_cdf(x->token_head_costs, cm->fc->coef_head_cdfs);
-    fill_token_costs_from_cdf(x->token_tail_costs, cm->fc->coef_tail_cdfs);
 #if CONFIG_GLOBAL_MOTION
+  if (cpi->oxcf.pass != 1) {
     for (int i = 0; i < TRANS_TYPES; ++i)
       cpi->gmtype_cost[i] = (1 + (i > 0 ? GLOBAL_TYPE_BITS : 0))
                             << AV1_PROB_COST_SHIFT;
-#endif  // CONFIG_GLOBAL_MOTION
   }
+#endif  // CONFIG_GLOBAL_MOTION
 }
 
 static void model_rd_norm(int xsq_q10, int *r_q10, int *d_q10) {
