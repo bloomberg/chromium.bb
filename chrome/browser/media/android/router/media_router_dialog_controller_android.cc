@@ -12,11 +12,12 @@
 #include "chrome/browser/media/android/router/media_router_android.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
-#include "chrome/browser/media/router/presentation_request.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/media_router/media_source.h"
+#include "chrome/common/media_router/media_source_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/presentation_request.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "device/vr/features/features.h"
@@ -52,7 +53,7 @@ void MediaRouterDialogControllerAndroid::OnSinkSelected(
   if (!create_connection_request)
     return;
 
-  const PresentationRequest& presentation_request =
+  const auto& presentation_request =
       create_connection_request->presentation_request();
 
   const MediaSource::Id source_id = ConvertJavaStringToUTF8(env, jsource_id);
@@ -60,8 +61,10 @@ void MediaRouterDialogControllerAndroid::OnSinkSelected(
 #ifndef NDEBUG
   // Verify that there was a request containing the source id the sink was
   // selected for.
+  auto sources =
+      MediaSourcesForPresentationUrls(presentation_request.presentation_urls);
   bool is_source_from_request = false;
-  for (const auto& source : presentation_request.GetMediaSources()) {
+  for (const auto& source : sources) {
     if (source.id() == source_id) {
       is_source_from_request = true;
       break;
@@ -69,8 +72,6 @@ void MediaRouterDialogControllerAndroid::OnSinkSelected(
   }
   DCHECK(is_source_from_request);
 #endif  // NDEBUG
-
-  const auto& origin = presentation_request.frame_origin();
 
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(
@@ -80,9 +81,10 @@ void MediaRouterDialogControllerAndroid::OnSinkSelected(
   content::BrowserContext* browser_context = initiator()->GetBrowserContext();
   MediaRouter* router = MediaRouterFactory::GetApiForBrowserContext(
       browser_context);
-  router->CreateRoute(source_id, ConvertJavaStringToUTF8(env, jsink_id), origin,
-                      initiator(), std::move(route_response_callbacks),
-                      base::TimeDelta(), browser_context->IsOffTheRecord());
+  router->CreateRoute(source_id, ConvertJavaStringToUTF8(env, jsink_id),
+                      presentation_request.frame_origin, initiator(),
+                      std::move(route_response_callbacks), base::TimeDelta(),
+                      browser_context->IsOffTheRecord());
 }
 
 void MediaRouterDialogControllerAndroid::OnRouteClosed(
@@ -148,8 +150,8 @@ void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog() {
 
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  const std::vector<MediaSource> sources =
-      create_connection_request()->presentation_request().GetMediaSources();
+  auto sources = MediaSourcesForPresentationUrls(
+      create_connection_request()->presentation_request().presentation_urls);
 
   // If it's a single route with the same source, show the controller dialog
   // instead of the device picker.

@@ -67,9 +67,10 @@ class MediaRouterDialogControllerTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<CreatePresentationConnectionRequest> GetRequest() {
     return std::unique_ptr<CreatePresentationConnectionRequest>(
         new CreatePresentationConnectionRequest(
-            RenderFrameHostId(1, 2),
-            {GURL("http://example.com"), GURL("http://example2.com")},
-            url::Origin(GURL("http://google.com")),
+            content::PresentationRequest(
+                {1, 2},
+                {GURL("http://example.com"), GURL("http://example2.com")},
+                url::Origin(GURL("http://google.com"))),
             base::BindOnce(&MediaRouterDialogControllerTest::RequestSuccess,
                            base::Unretained(this)),
             base::BindOnce(&MediaRouterDialogControllerTest::RequestError,
