@@ -158,7 +158,7 @@ void DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
       }
     }
   }
-  if (dcomp_surface_ == g_current_surface)
+  if (dcomp_surface_.Get() == g_current_surface)
     g_current_surface = nullptr;
 }
 
@@ -177,7 +177,7 @@ void DirectCompositionChildSurfaceWin::Destroy() {
     }
     real_surface_ = nullptr;
   }
-  if (dcomp_surface_ && (dcomp_surface_ == g_current_surface)) {
+  if (dcomp_surface_ && (dcomp_surface_.Get() == g_current_surface)) {
     HRESULT hr = dcomp_surface_->EndDraw();
     CHECK(SUCCEEDED(hr));
     g_current_surface = nullptr;
@@ -212,7 +212,7 @@ bool DirectCompositionChildSurfaceWin::SupportsPostSubBuffer() {
 }
 
 bool DirectCompositionChildSurfaceWin::OnMakeCurrent(gl::GLContext* context) {
-  if (g_current_surface != dcomp_surface_) {
+  if (g_current_surface != dcomp_surface_.Get()) {
     if (g_current_surface) {
       HRESULT hr = g_current_surface->SuspendDraw();
       CHECK(SUCCEEDED(hr));

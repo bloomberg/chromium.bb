@@ -230,11 +230,6 @@ class ScopedComPtrRef {
 
 }  // details
 
-template <typename T, typename U>
-bool operator==(const T* lhs, const ScopedComPtr<U>& rhs) {
-  return lhs == rhs.Get();
-}
-
 template <typename T>
 bool operator==(const ScopedComPtr<T>& lhs, std::nullptr_t null) {
   return !static_cast<bool>(lhs);
@@ -245,11 +240,6 @@ bool operator==(std::nullptr_t null, const ScopedComPtr<T>& rhs) {
   return !static_cast<bool>(rhs);
 }
 
-template <typename T, typename U>
-bool operator!=(const T* lhs, const ScopedComPtr<U>& rhs) {
-  return !operator==(lhs, rhs);
-}
-
 template <typename T>
 bool operator!=(const ScopedComPtr<T>& lhs, std::nullptr_t null) {
   return !operator==(lhs, null);
@@ -258,11 +248,6 @@ bool operator!=(const ScopedComPtr<T>& lhs, std::nullptr_t null) {
 template <typename T>
 bool operator!=(std::nullptr_t null, const ScopedComPtr<T>& rhs) {
   return !operator==(null, rhs);
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& out, const ScopedComPtr<T>& p) {
-  return out << p.Get();
 }
 
 // Helper to make IID_PPV_ARGS work with ScopedComPtr.

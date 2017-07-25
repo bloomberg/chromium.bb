@@ -180,7 +180,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
   hr = browser_accessible->get_accChild(childid_variant,
                                         dispatch.GetAddressOf());
   if (!SUCCEEDED(hr) || !dispatch) {
-    VLOG(1) << "Ignoring result " << hr << " and result " << dispatch
+    VLOG(1) << "Ignoring result " << hr << " and result " << dispatch.Get()
             << " from get_accChild";
     return;
   }
