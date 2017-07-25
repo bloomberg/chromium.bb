@@ -37,8 +37,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
                                 public base::SupportsUserData::Data {
  public:
   using TransferCallback =
-      base::Callback<void(mojom::URLLoaderAssociatedRequest,
-                          mojom::URLLoaderClientPtr)>;
+      base::Callback<void(mojom::URLLoaderRequest, mojom::URLLoaderClientPtr)>;
 
   // Returns the ResourceRequestInfoImpl associated with the given URLRequest.
   CONTENT_EXPORT static ResourceRequestInfoImpl* ForRequest(
@@ -128,7 +127,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
                          int origin_pid,
                          int request_id,
                          ResourceRequesterInfo* requester_info,
-                         mojom::URLLoaderAssociatedRequest url_loader_request,
+                         mojom::URLLoaderRequest url_loader_request,
                          mojom::URLLoaderClientPtr url_loader_client);
 
   // Whether this request is part of a navigation that should replace the

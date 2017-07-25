@@ -90,7 +90,7 @@ class NetworkContextConfigurationBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, BasicRequest) {
-  content::mojom::URLLoaderAssociatedPtr loader;
+  content::mojom::URLLoaderPtr loader;
   content::ResourceRequest request;
   content::TestURLLoaderClient client;
   request.url = embedded_test_server()->GetURL("/echo");

@@ -129,7 +129,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
   mojom::URLLoaderClient* forwarding_client_;
   mojo::Binding<mojom::URLLoaderClient> client_binding_;
 
-  PossiblyAssociatedInterfacePtr<mojom::URLLoader> url_loader_;
+  mojom::URLLoaderPtr url_loader_;
 
   struct StartInfo {
     StartInfo(mojom::URLLoaderFactory* in_url_loader_factory,

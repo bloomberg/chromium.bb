@@ -346,7 +346,7 @@ void ResourceRequestInfoImpl::UpdateForTransfer(
     int origin_pid,
     int request_id,
     ResourceRequesterInfo* requester_info,
-    mojom::URLLoaderAssociatedRequest url_loader_request,
+    mojom::URLLoaderRequest url_loader_request,
     mojom::URLLoaderClientPtr url_loader_client) {
   route_id_ = route_id;
   render_frame_id_ = render_frame_id;

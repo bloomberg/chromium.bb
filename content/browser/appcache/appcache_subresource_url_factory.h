@@ -38,15 +38,14 @@ class AppCacheSubresourceURLFactory : public mojom::URLLoaderFactory {
       mojom::URLLoaderFactoryPtr* loader_factory);
 
   // mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(
-      mojom::URLLoaderAssociatedRequest url_loader_request,
-      int32_t routing_id,
-      int32_t request_id,
-      uint32_t options,
-      const ResourceRequest& request,
-      mojom::URLLoaderClientPtr client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
-      override;
+  void CreateLoaderAndStart(mojom::URLLoaderRequest url_loader_request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const ResourceRequest& request,
+                            mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override;
   void SyncLoad(int32_t routing_id,
                 int32_t request_id,
                 const ResourceRequest& request,

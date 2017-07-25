@@ -46,7 +46,7 @@ namespace {
 // URLLoader implementation and delegates URLLoader calls to the wrapped loader.
 class DelegatingURLLoader final : public mojom::URLLoader {
  public:
-  explicit DelegatingURLLoader(mojom::URLLoaderAssociatedPtr loader)
+  explicit DelegatingURLLoader(mojom::URLLoaderPtr loader)
       : binding_(this), loader_(std::move(loader)) {}
   ~DelegatingURLLoader() override {}
 
@@ -75,7 +75,7 @@ class DelegatingURLLoader final : public mojom::URLLoader {
   }
 
   mojo::Binding<mojom::URLLoader> binding_;
-  mojom::URLLoaderAssociatedPtr loader_;
+  mojom::URLLoaderPtr loader_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatingURLLoader);
 };
@@ -661,7 +661,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
       std::move(url_loader_client_ptr), std::move(on_response), request);
   mojom::URLLoaderClientPtr url_loader_client_ptr_to_pass;
   url_loader_client->Bind(&url_loader_client_ptr_to_pass);
-  mojom::URLLoaderAssociatedPtr url_loader_associated_ptr;
+  mojom::URLLoaderPtr url_loader_associated_ptr;
 
   url_loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_associated_ptr),

@@ -149,7 +149,7 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   constexpr int32_t kRoutingId = 81;
   constexpr int32_t kRequestId = 28;
   NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
-  mojom::URLLoaderAssociatedPtr loader;
+  mojom::URLLoaderPtr loader;
   base::FilePath root;
   PathService::Get(DIR_TEST_DATA, &root);
   net::URLRequestMockHTTPJob::AddUrlHandlers(root);
@@ -228,7 +228,7 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
 
 TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
   NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
-  mojom::URLLoaderAssociatedPtr loader;
+  mojom::URLLoaderPtr loader;
   ResourceRequest request;
   TestURLLoaderClient client;
   net::URLRequestFailedJob::AddUrlHandler();
@@ -258,7 +258,7 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
 // In this case, the loading fails after receiving a response.
 TEST_P(URLLoaderFactoryImplTest, GetFailedResponse2) {
   NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
-  mojom::URLLoaderAssociatedPtr loader;
+  mojom::URLLoaderPtr loader;
   ResourceRequest request;
   TestURLLoaderClient client;
   net::URLRequestFailedJob::AddUrlHandler();
@@ -287,7 +287,7 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse2) {
 
 // This test tests a case where resource loading is cancelled before started.
 TEST_P(URLLoaderFactoryImplTest, InvalidURL) {
-  mojom::URLLoaderAssociatedPtr loader;
+  mojom::URLLoaderPtr loader;
   ResourceRequest request;
   TestURLLoaderClient client;
   request.url = GURL();
@@ -313,7 +313,7 @@ TEST_P(URLLoaderFactoryImplTest, InvalidURL) {
 
 // This test tests a case where resource loading is cancelled before started.
 TEST_P(URLLoaderFactoryImplTest, ShouldNotRequestURL) {
-  mojom::URLLoaderAssociatedPtr loader;
+  mojom::URLLoaderPtr loader;
   RejectingResourceDispatcherHostDelegate rdh_delegate;
   rdh_.SetDelegate(&rdh_delegate);
   ResourceRequest request;
@@ -344,7 +344,7 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFile) {
   constexpr int32_t kRoutingId = 1;
   constexpr int32_t kRequestId = 2;
 
-  mojom::URLLoaderAssociatedPtr loader;
+  mojom::URLLoaderPtr loader;
   base::FilePath root;
   PathService::Get(DIR_TEST_DATA, &root);
   net::URLRequestMockHTTPJob::AddUrlHandlers(root);
@@ -412,7 +412,7 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFileFailure) {
   constexpr int32_t kRoutingId = 1;
   constexpr int32_t kRequestId = 2;
 
-  mojom::URLLoaderAssociatedPtr loader;
+  mojom::URLLoaderPtr loader;
   base::FilePath root;
   PathService::Get(DIR_TEST_DATA, &root);
   net::URLRequestSlowDownloadJob::AddUrlHandler();
@@ -471,7 +471,7 @@ TEST_P(URLLoaderFactoryImplTest, OnTransferSizeUpdated) {
   constexpr int32_t kRoutingId = 81;
   constexpr int32_t kRequestId = 28;
   NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
-  mojom::URLLoaderAssociatedPtr loader;
+  mojom::URLLoaderPtr loader;
   base::FilePath root;
   PathService::Get(DIR_TEST_DATA, &root);
   net::URLRequestMockHTTPJob::AddUrlHandlers(root);
@@ -532,7 +532,7 @@ TEST_P(URLLoaderFactoryImplTest, CancelFromRenderer) {
   constexpr int32_t kRoutingId = 81;
   constexpr int32_t kRequestId = 28;
   NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
-  mojom::URLLoaderAssociatedPtr loader;
+  mojom::URLLoaderPtr loader;
   base::FilePath root;
   PathService::Get(DIR_TEST_DATA, &root);
   net::URLRequestFailedJob::AddUrlHandler();

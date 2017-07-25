@@ -31,6 +31,7 @@
 #include "content/public/common/origin_util.h"
 #include "content/public/common/resource_request_body.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/url_util.h"
 #include "storage/browser/blob/blob_storage_context.h"
 
@@ -94,46 +95,6 @@ void RemoveProviderHost(base::WeakPtr<ServiceWorkerContextCore> context,
   }
   context->RemoveProviderHost(process_id, provider_id);
 }
-
-// Wraps associated request for another associated request.
-// TODO(kinuko): This should be able to go away once URLLoader becomes
-// independent.
-class AssociatedURLLoaderRelay final : public mojom::URLLoader {
- public:
-  static void CreateLoaderAndStart(
-      mojom::URLLoaderFactory* factory,
-      mojom::URLLoaderAssociatedRequest request,
-      int routing_id,
-      int request_id,
-      uint32_t options,
-      const ResourceRequest& resource_request,
-      mojom::URLLoaderClientPtr client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-    mojom::URLLoaderAssociatedPtr associated_ptr;
-    mojom::URLLoaderAssociatedRequest associated_request =
-        mojo::MakeRequest(&associated_ptr);
-    factory->CreateLoaderAndStart(std::move(associated_request), routing_id,
-                                  request_id, options, resource_request,
-                                  std::move(client), traffic_annotation);
-    mojo::MakeStrongAssociatedBinding(
-        base::MakeUnique<AssociatedURLLoaderRelay>(std::move(associated_ptr)),
-        std::move(request));
-  }
-
-  explicit AssociatedURLLoaderRelay(
-      mojom::URLLoaderAssociatedPtr associated_ptr)
-      : associated_ptr_(std::move(associated_ptr)) {}
-  ~AssociatedURLLoaderRelay() override {}
-  void FollowRedirect() override { associated_ptr_->FollowRedirect(); }
-  void SetPriority(net::RequestPriority priority,
-                   int intra_priority_value) override {
-    associated_ptr_->SetPriority(priority, intra_priority_value);
-  }
-
- private:
-  mojom::URLLoaderAssociatedPtr associated_ptr_;
-  DISALLOW_COPY_AND_ASSIGN(AssociatedURLLoaderRelay);
-};
 
 // Used by a Service Worker for script loading only during the installation
 // time. For now this is just a proxy loader for the network loader.
@@ -225,7 +186,7 @@ class ScriptURLLoader : public mojom::URLLoader, public mojom::URLLoaderClient {
   }
 
  private:
-  mojom::URLLoaderAssociatedPtr network_loader_;
+  mojom::URLLoaderPtr network_loader_;
   mojo::Binding<mojom::URLLoaderClient> network_client_binding_;
   mojom::URLLoaderClientPtr forwarding_client_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
@@ -251,7 +212,7 @@ class ScriptURLLoaderFactory : public mojom::URLLoaderFactory {
   ~ScriptURLLoaderFactory() override {}
 
   // mojom::URLLoaderFactory:
-  void CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest request,
+  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
@@ -265,13 +226,13 @@ class ScriptURLLoaderFactory : public mojom::URLLoaderFactory {
       // associated message pipes.
       // TODO(kinuko): Record the reason like what we do with netlog in
       // ServiceWorkerContextRequestHandler.
-      AssociatedURLLoaderRelay::CreateLoaderAndStart(
-          loader_factory_getter_->GetNetworkFactory()->get(),
-          std::move(request), routing_id, request_id, options, resource_request,
-          std::move(client), traffic_annotation);
+      (*loader_factory_getter_->GetNetworkFactory())
+          ->CreateLoaderAndStart(std::move(request), routing_id, request_id,
+                                 options, resource_request, std::move(client),
+                                 traffic_annotation);
       return;
     }
-    mojo::MakeStrongAssociatedBinding(
+    mojo::MakeStrongBinding(
         base::MakeUnique<ScriptURLLoader>(
             routing_id, request_id, options, resource_request,
             std::move(client), context_, provider_host_, blob_storage_context_,

@@ -48,7 +48,7 @@ URLLoaderFactoryImpl::~URLLoaderFactoryImpl() {
 }
 
 void URLLoaderFactoryImpl::CreateLoaderAndStart(
-    mojom::URLLoaderAssociatedRequest request,
+    mojom::URLLoaderRequest request,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -73,7 +73,7 @@ void URLLoaderFactoryImpl::SyncLoad(int32_t routing_id,
 // static
 void URLLoaderFactoryImpl::CreateLoaderAndStart(
     ResourceRequesterInfo* requester_info,
-    mojom::URLLoaderAssociatedRequest request,
+    mojom::URLLoaderRequest request,
     int32_t routing_id,
     int32_t request_id,
     const ResourceRequest& url_request,

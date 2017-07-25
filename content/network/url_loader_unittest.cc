@@ -82,13 +82,13 @@ class URLLoaderImplTest : public testing::Test {
   void Load(const GURL& url,
             TestURLLoaderClient* client,
             uint32_t options = 0) {
-    mojom::URLLoaderAssociatedPtr loader;
+    mojom::URLLoaderPtr loader;
 
     ResourceRequest request =
         CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME, url);
 
-    URLLoaderImpl loader_impl(context(), mojo::MakeIsolatedRequest(&loader),
-                              options, request, client->CreateInterfacePtr(),
+    URLLoaderImpl loader_impl(context(), mojo::MakeRequest(&loader), options,
+                              request, client->CreateInterfacePtr(),
                               TRAFFIC_ANNOTATION_FOR_TESTS);
 
     client->RunUntilComplete();
@@ -175,12 +175,12 @@ TEST_F(URLLoaderImplTest, DestroyContextWithLiveRequest) {
   ResourceRequest request =
       CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME, url);
 
-  mojom::URLLoaderAssociatedPtr loader;
+  mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext, so
   // don't hold on to a pointer to it.
   base::WeakPtr<URLLoaderImpl> loader_impl =
-      (new URLLoaderImpl(context(), mojo::MakeIsolatedRequest(&loader), 0,
-                         request, client.CreateInterfacePtr(),
+      (new URLLoaderImpl(context(), mojo::MakeRequest(&loader), 0, request,
+                         client.CreateInterfacePtr(),
                          TRAFFIC_ANNOTATION_FOR_TESTS))
           ->GetWeakPtrForTests();
 

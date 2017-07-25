@@ -51,7 +51,7 @@ AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
 }
 
 void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
-    mojom::URLLoaderAssociatedRequest url_loader_request,
+    mojom::URLLoaderRequest url_loader_request,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
