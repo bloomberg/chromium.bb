@@ -219,13 +219,6 @@ void LegacyInputRouterImpl::SendGestureEventImmediately(
   FilterAndSendWebInputEvent(gesture_event.event, gesture_event.latency);
 }
 
-const NativeWebKeyboardEvent* LegacyInputRouterImpl::GetLastKeyboardEvent()
-    const {
-  if (key_queue_.empty())
-    return NULL;
-  return &key_queue_.front().event;
-}
-
 void LegacyInputRouterImpl::NotifySiteIsMobileOptimized(
     bool is_mobile_optimized) {
   touch_event_queue_->SetIsMobileOptimizedSite(is_mobile_optimized);

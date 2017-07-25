@@ -231,8 +231,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void GetSnapshotFromBrowser(const GetSnapshotFromBrowserCallback& callback,
                               bool from_surface);
 
-  const NativeWebKeyboardEvent* GetLastKeyboardEvent() const;
-
   // Sets the View of this RenderWidgetHost.
   void SetView(RenderWidgetHostViewBase* view);
 

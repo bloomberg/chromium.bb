@@ -40,6 +40,10 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
       skip_in_browser(false) {}
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(
+    const blink::WebKeyboardEvent& web_event)
+    : WebKeyboardEvent(web_event), os_event(nullptr), skip_in_browser(false) {}
+
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& android_key_event,
     blink::WebInputEvent::Type type,

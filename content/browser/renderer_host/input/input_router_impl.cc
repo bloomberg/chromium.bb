@@ -498,10 +498,6 @@ void InputRouterImpl::SetFrameTreeNodeId(int frame_tree_node_id) {
   frame_tree_node_id_ = frame_tree_node_id;
 }
 
-const NativeWebKeyboardEvent* InputRouterImpl::GetLastKeyboardEvent() const {
-  return nullptr;
-}
-
 cc::TouchAction InputRouterImpl::AllowedTouchAction() {
   return touch_action_filter_.allowed_touch_action();
 }
