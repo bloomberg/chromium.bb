@@ -527,7 +527,8 @@ ash::ShelfAction ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
     }
   }
 
-  if (window->IsActive() && allow_minimize) {
+  if (window->IsActive() && allow_minimize &&
+      !ash::Shell::Get()->IsAppListVisible()) {
     window->Minimize();
     return ash::SHELF_ACTION_WINDOW_MINIMIZED;
   }
