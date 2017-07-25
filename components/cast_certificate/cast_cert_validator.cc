@@ -114,13 +114,14 @@ class CertVerificationContextImpl : public CertVerificationContext {
                               const base::StringPiece& common_name)
       : spki_(spki.AsString()), common_name_(common_name.as_string()) {}
 
-  bool VerifySignatureOverData(const base::StringPiece& signature,
-                               const base::StringPiece& data) const override {
+  bool VerifySignatureOverData(
+      const base::StringPiece& signature,
+      const base::StringPiece& data,
+      net::DigestAlgorithm digest_algorithm) const override {
     // This code assumes the signature algorithm was RSASSA PKCS#1 v1.5 with
-    // SHA-1.
-    // TODO(eroman): Is it possible to use other hash algorithms?
+    // |digest_algorithm|.
     auto signature_algorithm =
-        net::SignatureAlgorithm::CreateRsaPkcs1(net::DigestAlgorithm::Sha1);
+        net::SignatureAlgorithm::CreateRsaPkcs1(digest_algorithm);
 
     // Use the same policy as was used for verifying signatures in
     // certificates. This will ensure for instance that the key used is at

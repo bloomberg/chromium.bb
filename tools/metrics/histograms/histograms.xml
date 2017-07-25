@@ -7174,6 +7174,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Cast.Channel.Signature" enum="CastSignatureStatus">
+  <owner>ryanchung@google.com</owner>
+  <summary>
+    Records whether the signature returned by the Cast receiver is verifiable
+    with the challenge and device certificate.
+  </summary>
+</histogram>
+
 <histogram name="Cast.Network.Down.Duration.In.Seconds" units="seconds">
   <owner>cast-analytics@google.com</owner>
   <summary>
