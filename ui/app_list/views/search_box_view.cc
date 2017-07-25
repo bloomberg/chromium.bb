@@ -100,7 +100,8 @@ class SearchBoxBackground : public views::Background {
 
 }  // namespace
 
-// To paint grey background on mic and back buttons
+// To paint grey background on mic and back buttons, and close buttons for
+// fullscreen launcher.
 class SearchBoxImageButton : public views::ImageButton {
  public:
   explicit SearchBoxImageButton(views::ButtonListener* listener)
@@ -132,8 +133,10 @@ class SearchBoxImageButton : public views::ImageButton {
  private:
   // views::View overrides:
   void OnPaintBackground(gfx::Canvas* canvas) override {
-    if (state() == STATE_HOVERED || state() == STATE_PRESSED || selected_)
+    if ((state() == STATE_HOVERED && !features::IsFullscreenAppListEnabled()) ||
+        state() == STATE_PRESSED || selected_) {
       canvas->FillRect(gfx::Rect(size()), kSelectedColor);
+    }
   }
 
   const char* GetClassName() const override { return "SearchBoxImageButton"; }
