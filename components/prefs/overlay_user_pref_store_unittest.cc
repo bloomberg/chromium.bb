@@ -275,7 +275,7 @@ TEST_F(OverlayUserPrefStoreTest, GetValues) {
 }
 
 TEST_F(OverlayUserPrefStoreTest, CommitPendingWriteWithCallback) {
-  TestCommitPendingWriteWithCallback(overlay_.get());
+  TestCommitPendingWriteWithCallback(overlay_.get(), &scoped_task_environment_);
 }
 
 }  // namespace base
