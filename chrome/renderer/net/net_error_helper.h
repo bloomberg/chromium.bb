@@ -18,7 +18,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/public/renderer/render_thread_observer.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 
 class GURL;
 
@@ -114,7 +114,6 @@ class NetErrorHelper
   void DownloadPageLater() override;
   void SetIsShowingDownloadButton(bool show) override;
 
-  void OnNetErrorInfo(int status);
   void OnSetNavigationCorrectionInfo(const GURL& navigation_correction_url,
                                      const std::string& language,
                                      const std::string& country_code,
@@ -132,14 +131,15 @@ class NetErrorHelper
 
   // chrome::mojom::NetworkDiagnosticsClient:
   void SetCanShowNetworkDiagnosticsDialog(bool can_show) override;
+  void DNSProbeStatus(int32_t) override;
 
   std::unique_ptr<content::ResourceFetcher> correction_fetcher_;
   std::unique_ptr<content::ResourceFetcher> tracking_fetcher_;
 
   std::unique_ptr<error_page::NetErrorHelperCore> core_;
 
-  mojo::AssociatedBinding<chrome::mojom::NetworkDiagnosticsClient>
-      network_diagnostics_client_binding_;
+  mojo::AssociatedBindingSet<chrome::mojom::NetworkDiagnosticsClient>
+      network_diagnostics_client_bindings_;
   chrome::mojom::NetworkDiagnosticsAssociatedPtr remote_network_diagnostics_;
 
   // Weak factory for vending a weak pointer to a NetErrorPageController. Weak

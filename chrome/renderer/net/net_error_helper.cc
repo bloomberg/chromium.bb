@@ -85,7 +85,6 @@ NetErrorHelperCore::FrameType GetFrameType(RenderFrame* render_frame) {
 NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<NetErrorHelper>(render_frame),
-      network_diagnostics_client_binding_(this),
       weak_controller_delegate_factory_(this) {
   RenderThread::Get()->AddObserver(this);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -161,7 +160,6 @@ bool NetErrorHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(NetErrorHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_NetErrorInfo, OnNetErrorInfo)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetNavigationCorrectionInfo,
                         OnSetNavigationCorrectionInfo);
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -347,7 +345,7 @@ void NetErrorHelper::SetIsShowingDownloadButton(bool show) {
 #endif  // defined(OS_ANDROID)
 }
 
-void NetErrorHelper::OnNetErrorInfo(int status_num) {
+void NetErrorHelper::DNSProbeStatus(int32_t status_num) {
   DCHECK(status_num >= 0 && status_num < error_page::DNS_PROBE_MAX);
 
   DVLOG(1) << "Received status " << DnsProbeStatusToString(status_num);
@@ -385,8 +383,7 @@ void NetErrorHelper::OnTrackingRequestComplete(
 
 void NetErrorHelper::OnNetworkDiagnosticsClientRequest(
     chrome::mojom::NetworkDiagnosticsClientAssociatedRequest request) {
-  DCHECK(!network_diagnostics_client_binding_.is_bound());
-  network_diagnostics_client_binding_.Bind(std::move(request));
+  network_diagnostics_client_bindings_.AddBinding(this, std::move(request));
 }
 
 void NetErrorHelper::SetCanShowNetworkDiagnosticsDialog(bool can_show) {

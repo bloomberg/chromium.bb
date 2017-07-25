@@ -14,4 +14,10 @@ interface NetworkDiagnosticsClient {
   // Tells the renderer whether or not there is a local diagnostics service that
   // can be run via calls to NetworkDiagnostics::RunNetworkDiagnostics.
   SetCanShowNetworkDiagnosticsDialog(bool can_show);
+
+  // Provides the renderer with the results of the browser's investigation into
+  // why a recent main frame load failed (currently, just DNS probe result).
+  // NetErrorHelper will receive this mesage and replace or update the error
+  // page with more specific troubleshooting suggestions.
+  DNSProbeStatus(int32 status);
 };
