@@ -211,6 +211,8 @@ public abstract class ChromeFeatureList {
     public static final String VR_CUSTOM_TAB_BROWSING = "VrCustomTabBrowsing";
     public static final String VR_SHELL = "VrShell";
     public static final String WEB_PAYMENTS = "WebPayments";
+    public static final String WEB_PAYMENTS_METHOD_SECTION_ORDER_V2 =
+            "WebPaymentsMethodSectionOrderV2";
     public static final String WEB_PAYMENTS_MODIFIERS = "WebPaymentsModifiers";
     public static final String WEB_PAYMENTS_SINGLE_APP_UI_SKIP = "WebPaymentsSingleAppUiSkip";
     public static final String WEBVR_AUTOPRESENT = "WebVrAutopresent";

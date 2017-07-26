@@ -22823,6 +22823,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1438279809" label="GamepadExtensions:disabled"/>
   <int value="-1433719718" label="enable-webrtc-stun-origin"/>
   <int value="-1433087548" label="enable-app-install-alerts"/>
+  <int value="-1431563697" label="WebPaymentsMethodSectionOrderV2:enabled"/>
   <int value="-1426034869" label="NoCreditCardAbort:enabled"/>
   <int value="-1419788257" label="enable-experimental-hotwording"/>
   <int value="-1416754663" label="enable-mac-views-native-app-windows"/>
@@ -23644,6 +23645,7 @@ from previous Chrome versions.
   <int value="1319725131" label="enable-distance-field-text"/>
   <int value="1320201920" label="enable-touchpad-three-finger-click"/>
   <int value="1330264457" label="OmniboxUIExperimentVerticalLayout:disabled"/>
+  <int value="1340690624" label="WebPaymentsMethodSectionOrderV2:disabled"/>
   <int value="1344833841" label="ImeThread:enabled"/>
   <int value="1351830811" label="do-not-ignore-autocomplete-off"/>
   <int value="1352447982" label="enable-lcd-text"/>
