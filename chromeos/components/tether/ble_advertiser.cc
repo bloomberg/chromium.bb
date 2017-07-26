@@ -26,9 +26,9 @@ uint8_t kInvertedConnectionFlag = 0x01;
 // BleAdvertiser::IndividualAdvertisement::OnAdvertisementRegistered().
 void OnAdvertisementUnregisteredAfterOwnerDestruction(
     const std::string& associated_device_id) {
-  PA_LOG(ERROR) << "Unregistered advertisement for device ID: "
-                << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
-                       associated_device_id);
+  PA_LOG(INFO) << "Unregistered advertisement for device ID: "
+               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
+                      associated_device_id);
 }
 
 // Handles the failed unregistration of a BluetoothAdvertisement in the case

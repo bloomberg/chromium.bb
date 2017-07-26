@@ -70,10 +70,10 @@ bool MasterHostScanCache::RemoveHostScanResult(
 
   if (active_host_->GetTetherNetworkGuid() == tether_network_guid) {
     DCHECK(ExistsInCache(tether_network_guid));
-    PA_LOG(ERROR) << "RemoveHostScanResult() called for Tether network with "
-                  << "GUID " << tether_network_guid << ", but the "
-                  << "corresponding device is the active host. Not removing "
-                  << "this scan result from the cache.";
+    PA_LOG(INFO) << "RemoveHostScanResult() called for Tether network with "
+                 << "GUID " << tether_network_guid << ", but the "
+                 << "corresponding device is the active host. Not removing "
+                 << "this scan result from the cache.";
     return false;
   }
 
