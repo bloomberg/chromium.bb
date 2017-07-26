@@ -191,7 +191,7 @@ void OfflineAudioDestinationHandler::DoOfflineRendering() {
         ProcessHeap::GetCrossThreadPersistentRegion(), true);
     if (!gc_lock.HasLock()) {
       // To ensure that the rendering step eventually happens, repost.
-      render_thread_->GetWebTaskRunner()->PostTask(
+      GetRenderingThread()->GetWebTaskRunner()->PostTask(
           BLINK_FROM_HERE,
           Bind(&OfflineAudioDestinationHandler::DoOfflineRendering,
                WrapPassRefPtr(this)));
