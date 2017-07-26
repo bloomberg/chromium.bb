@@ -55,6 +55,8 @@ class EnrollmentScreenHandler
   void Show() override;
   void Hide() override;
   void ShowSigninScreen() override;
+  void ShowLicenseTypeSelectionScreen(
+      const base::DictionaryValue& license_types) override;
   void ShowAdJoin() override;
   void ShowAttributePromptScreen(const std::string& asset_id,
                                  const std::string& location) override;
@@ -88,6 +90,7 @@ class EnrollmentScreenHandler
   void HandleDeviceAttributesProvided(const std::string& asset_id,
                                       const std::string& location);
   void HandleOnLearnMore();
+  void HandleLicenseTypeSelected(const std::string& licenseType);
 
   void UpdateStateInternal(NetworkError::ErrorReason reason, bool force_update);
   void SetupAndShowOfflineMessage(NetworkStateInformer::State state,

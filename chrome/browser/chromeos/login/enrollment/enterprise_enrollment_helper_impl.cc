@@ -433,6 +433,9 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
     case policy::EnrollmentStatus::DM_TOKEN_STORE_FAILED:
       UMA(policy::kMetricEnrollmentStoreDMTokenFailed);
       break;
+    case policy::EnrollmentStatus::LICENSE_REQUEST_FAILED:
+      UMA(policy::kMetricEnrollmentLicenseRequestFailed);
+      break;
   }
 }
 
