@@ -542,7 +542,6 @@ component("views") {
       "accessibility/ax_view_obj_wrapper.h",
       "accessibility/ax_widget_obj_wrapper.h",
       "accessibility/ax_window_obj_wrapper.h",
-      "bubble/bubble_window_targeter.h",
       "bubble/tray_bubble_view.h",
       "controls/menu/menu_pre_target_handler.h",
       "controls/native/native_view_host_aura.h",
@@ -575,7 +574,6 @@ component("views") {
       "accessibility/ax_view_obj_wrapper.cc",
       "accessibility/ax_widget_obj_wrapper.cc",
       "accessibility/ax_window_obj_wrapper.cc",
-      "bubble/bubble_window_targeter.cc",
       "bubble/tray_bubble_view.cc",
       "controls/menu/display_change_listener_aura.cc",
       "controls/menu/menu_pre_target_handler.cc",
@@ -889,7 +887,6 @@ source_set("views_unittests_sources") {
     "bubble/bubble_border_unittest.cc",
     "bubble/bubble_dialog_delegate_unittest.cc",
     "bubble/bubble_frame_view_unittest.cc",
-    "bubble/bubble_window_targeter_unittest.cc",
     "cocoa/bridged_native_widget_unittest.mm",
     "cocoa/cocoa_mouse_capture_unittest.mm",
     "cocoa/drag_drop_client_mac_unittest.mm",
@@ -1038,10 +1035,7 @@ source_set("views_unittests_sources") {
 
   if (is_mac) {
     # views_unittests not yet compiling on Mac. http://crbug.com/378134
-    sources -= [
-      "bubble/bubble_window_targeter_unittest.cc",
-      "controls/native/native_view_host_unittest.cc",
-    ]
+    sources -= [ "controls/native/native_view_host_unittest.cc" ]
     public_deps += [ "//ui/accelerated_widget_mac" ]
   }
 }
