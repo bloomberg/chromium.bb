@@ -393,6 +393,8 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   return ![self.collectionUpdater isMostVisitedSection:indexPath.section] &&
          ![self.collectionUpdater isHeaderSection:indexPath.section] &&
          [self.collectionUpdater contentSuggestionTypeForItem:item] !=
+             ContentSuggestionTypeLearnMore &&
+         [self.collectionUpdater contentSuggestionTypeForItem:item] !=
              ContentSuggestionTypeEmpty;
 }
 
