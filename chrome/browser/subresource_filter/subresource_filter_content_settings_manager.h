@@ -59,7 +59,13 @@ class SubresourceFilterContentSettingsManager
     should_use_smart_ui_ = should_use_smart_ui;
   }
 
-  void ClearSiteMetadata(const GURL& url);
+  // If the site is no longer activated, clear the metadata.
+  //
+  // If the site is activated, ensure that there is metadata. Don't log a
+  // timestamp since the timestamp implies that the UI has been shown.
+  //
+  // This is to maintain the invariant that metadata implies activated.
+  void ResetSiteMetadataBasedOnActivation(const GURL& url, bool is_activated);
 
   void set_clock_for_testing(std::unique_ptr<base::Clock> tick_clock) {
     clock_ = std::move(tick_clock);

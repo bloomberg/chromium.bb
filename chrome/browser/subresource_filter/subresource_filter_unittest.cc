@@ -160,3 +160,29 @@ TEST_F(SubresourceFilterTest, DisableRuleset_SubframeAllowed) {
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
 }
+
+TEST_F(SubresourceFilterTest, RefreshMetadataOnActivation) {
+  const GURL url("https://a.test");
+  ConfigureAsSubresourceFilterOnlyURL(url);
+  SimulateNavigateAndCommit(url, main_rfh());
+  EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
+  EXPECT_NE(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+
+  // Whitelist via content settings.
+  GetSettingsManager()->WhitelistSite(url);
+
+  // Remove from blacklist, will delete the metadata. Note that there is still
+  // an exception in content settings.
+  RemoveURLFromBlacklist(url);
+  SimulateNavigateAndCommit(url, main_rfh());
+  EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+
+  // Site re-added to the blacklist. Should not activate due to whitelist, but
+  // there should be page info / site details.
+  ConfigureAsSubresourceFilterOnlyURL(url);
+  SimulateNavigateAndCommit(url, main_rfh());
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            GetSettingsManager()->GetSitePermission(url));
+  EXPECT_NE(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+}

@@ -138,10 +138,8 @@ bool ChromeSubresourceFilterClient::OnPageActivationComputed(
   const GURL& url(navigation_handle->GetURL());
   DCHECK(navigation_handle->IsInMainFrame());
 
-  // If the site is no longer activated, clear the metadata. This is to maintain
-  // the invariant that metadata implies activated.
-  if (!activated && url.SchemeIsHTTPOrHTTPS())
-    settings_manager_->ClearSiteMetadata(url);
+  if (url.SchemeIsHTTPOrHTTPS())
+    settings_manager_->ResetSiteMetadataBasedOnActivation(url, activated);
 
   // Return whether the activation should be whitelisted.
   return whitelisted_hosts_.count(url.host()) ||
