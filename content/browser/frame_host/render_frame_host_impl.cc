@@ -119,6 +119,7 @@
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/device/public/interfaces/sensor_provider.mojom.h"
+#include "services/device/public/interfaces/vibration_manager.mojom.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 #include "services/device/public/interfaces/wake_lock_context.mojom.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
@@ -2979,6 +2980,10 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
         base::Bind(&ForwardRequest<device::mojom::SensorProvider>,
                    device::mojom::kServiceName));
   }
+
+  registry_->AddInterface(
+      base::Bind(&ForwardRequest<device::mojom::VibrationManager>,
+                 device::mojom::kServiceName));
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {

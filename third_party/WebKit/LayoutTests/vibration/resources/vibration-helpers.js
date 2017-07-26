@@ -1,70 +1,84 @@
 'use strict';
 
-function vibration_mocks(mojo) {
-  return define(
-      'VibrationManager mocks',
-      [
-        'mojo/public/js/bindings',
-        'services/device/public/interfaces/constants.mojom',
-        'services/device/public/interfaces/vibration_manager.mojom',
-      ],
-      (bindings, deviceConstants, vibrationManager) => {
-        class MockVibrationManager {
-          constructor() {
-            this.bindingSet =
-                new bindings.BindingSet(vibrationManager.VibrationManager);
+// A helper for forwarding MojoHandle instances from one frame to another.
+class CrossFrameHandleProxy {
+  constructor(callback) {
+    let {handle0, handle1} = Mojo.createMessagePipe();
+    this.sender_ = handle0;
+    this.receiver_ = handle1;
+    this.receiver_.watch({readable: true}, () => {
+      var message = this.receiver_.readMessage();
+      callback(message.handles[0]);
+    });
+  }
 
-            this.vibrate_milliseconds_ = -1;
-            this.cancelled_ = false;
-          }
-
-          vibrate(milliseconds) {
-            this.vibrate_milliseconds_ = milliseconds;
-            window.postMessage('Vibrate', '*');
-            return Promise.resolve();
-          }
-
-          cancel() {
-            this.cancelled_ = true;
-            window.postMessage('Cancel', '*');
-          }
-
-          getDuration() {
-            return this.vibrate_milliseconds_;
-          }
-
-          isCancelled() {
-            return this.cancelled_;
-          }
-
-          reset() {
-            this.vibrate_milliseconds_ = -1;
-            this.cancelled_ = false;
-          }
-        }
-
-        let mockVibrationManager = new MockVibrationManager;
-        mojo.connector.addInterfaceOverrideForTesting(
-            deviceConstants.kServiceName,
-            vibrationManager.VibrationManager.name, handle => {
-              mockVibrationManager.bindingSet.addBinding(
-                  mockVibrationManager, handle);
-            });
-
-        return Promise.resolve({
-          // Mock interface instance bound.
-          mockVibrationManager: mockVibrationManager,
-        });
-      });
+  forwardHandle(handle) {
+    this.sender_.writeMessage(new ArrayBuffer, [handle]);
+  }
 }
 
+class MockVibrationManager {
+  constructor() {
+    this.bindingSet_ =
+        new mojo.BindingSet(device.mojom.VibrationManager);
+
+    this.interceptor_ = new MojoInterfaceInterceptor(
+        device.mojom.VibrationManager.name);
+    this.interceptor_.oninterfacerequest =
+        e => this.bindingSet_.addBinding(this, e.handle);
+    this.interceptor_.start();
+    this.crossFrameHandleProxy_ = new CrossFrameHandleProxy(
+        handle => this.bindingSet_.addBinding(this, handle));
+
+    this.vibrate_milliseconds_ = -1;
+    this.cancelled_ = false;
+  }
+
+  attachToWindow(otherWindow) {
+    otherWindow.vibrationManagerInterceptor =
+        new otherWindow.MojoInterfaceInterceptor(
+            device.mojom.VibrationManager.name);
+    otherWindow.vibrationManagerInterceptor.oninterfacerequest =
+        e => this.crossFrameHandleProxy_.forwardHandle(e.handle);
+    otherWindow.vibrationManagerInterceptor.start();
+  }
+
+  vibrate(milliseconds) {
+    this.vibrate_milliseconds_ = milliseconds;
+    window.postMessage('Vibrate', '*');
+    return Promise.resolve();
+  }
+
+  cancel() {
+    this.cancelled_ = true;
+    window.postMessage('Cancel', '*');
+    return Promise.resolve();
+  }
+
+  getDuration() {
+    return this.vibrate_milliseconds_;
+  }
+
+  isCancelled() {
+    return this.cancelled_;
+  }
+
+  reset() {
+    this.vibrate_milliseconds_ = -1;
+    this.cancelled_ = false;
+  }
+}
+
+let mockVibrationManager = new MockVibrationManager();
+
 function vibration_test(func, name, properties) {
-  mojo_test(
-      mojo => vibration_mocks(mojo).then(vibration => {
-        let result = Promise.resolve(func(vibration));
-        let cleanUp = () => vibration.mockVibrationManager.reset();
-        result.then(cleanUp, cleanUp);
-        return result;
-      }),
-      name, properties);
+  promise_test(async function() {
+    try {
+      await Promise.resolve(func({
+        mockVibrationManager: mockVibrationManager
+      }));
+    } finally {
+      mockVibrationManager.reset();
+    }
+  }, name, properties);
 }

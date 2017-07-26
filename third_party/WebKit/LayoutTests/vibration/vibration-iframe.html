@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/device/public/interfaces/vibration_manager.mojom.js"></script>
 <script src="resources/vibration-helpers.js"></script>
+<body>
 <script>
 
 'use strict';
@@ -16,6 +18,10 @@ vibration_test(vibration => {
   let promise = new Promise(resolve => {
     let iframe = document.createElement('iframe');
     iframe.src = 'resources/vibrate-from-iframe.html';
+    iframe.onload = _ => {
+      vibration.mockVibrationManager.attachToWindow(iframe.contentWindow);
+      iframe.contentWindow.postMessage('Start', '*');
+    };
 
     document.body.appendChild(iframe);
 
@@ -32,7 +38,7 @@ vibration_test(vibration => {
 
   return promise.then(msgData => {
     assert_equals(msgData, 'Cancel');
-    assert_equals(vibration.mockVibrationManager.getDuration(), 1234);
+    assert_equals(vibration.mockVibrationManager.getDuration(), 200);
     assert_true(vibration.mockVibrationManager.isCancelled());
   });
 }, 'Iframe reload cancels vibration started by it before.');
@@ -41,6 +47,11 @@ vibration_test(vibration => {
   let promise = new Promise(resolve => {
     let iframe = document.createElement('iframe');
     iframe.src = 'resources/vibrate-from-iframe.html';
+    iframe.onload = _ => {
+      vibration.mockVibrationManager.attachToWindow(iframe.contentWindow);
+      iframe.contentWindow.postMessage('Start', '*');
+    };
+
     document.body.appendChild(iframe);
 
     window.onmessage = msg => {
@@ -56,9 +67,10 @@ vibration_test(vibration => {
 
   return promise.then(msgData => {
     assert_equals(msgData, 'Cancel');
-    assert_equals(vibration.mockVibrationManager.getDuration(), 1234);
+    assert_equals(vibration.mockVibrationManager.getDuration(), 200);
     assert_true(vibration.mockVibrationManager.isCancelled());
   });
 }, 'Iframe destroy cancels vibration started by it before.');
 
 </script>
+</body>
