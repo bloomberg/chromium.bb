@@ -283,23 +283,37 @@ class DBusServices {
         DBusThreadManager::Get()->GetPowerManagerClient());
 
     CrosDBusService::ServiceProviderList service_providers;
+    CrosDBusService::ServiceProviderList display_service_providers;
+
     if (GetAshConfig() == ash::Config::CLASSIC) {
-      // TODO(crbug.com/629707): revisit this with mustash dbus work.
+      // TODO(lannm): This will eventually be served by mus-ws.
+
+      // TODO(lannm): Remove this provider once all callers are using
+      // |display_service_| instead: http://crbug.com/644319
       service_providers.push_back(base::MakeUnique<DisplayPowerServiceProvider>(
+          kLibCrosServiceInterface,
           base::MakeUnique<ChromeDisplayPowerServiceProviderDelegate>()));
+
+      display_service_providers.push_back(
+          base::MakeUnique<DisplayPowerServiceProvider>(
+              kDisplayServiceInterface,
+              base::MakeUnique<ChromeDisplayPowerServiceProviderDelegate>()));
     }
     // TODO(teravest): Remove this provider once all callers are using
     // |liveness_service_| instead: http://crbug.com/644322
     service_providers.push_back(
         base::MakeUnique<LivenessServiceProvider>(kLibCrosServiceInterface));
     service_providers.push_back(base::MakeUnique<ScreenLockServiceProvider>());
-    std::unique_ptr<ChromeConsoleServiceProviderDelegate>
-        console_service_provider_delegate =
-            base::MakeUnique<ChromeConsoleServiceProviderDelegate>();
-    console_service_provider_delegate_ =
-        console_service_provider_delegate->AsWeakPtr();
+
+    // TODO(lannm): Remove this provider once all callers are using
+    // |display_service_| instead: http://crbug.com/644319
     service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
-        std::move(console_service_provider_delegate)));
+        kLibCrosServiceInterface, &console_service_provider_delegate_));
+
+    display_service_providers.push_back(
+        base::MakeUnique<ConsoleServiceProvider>(
+            kDisplayServiceInterface, &console_service_provider_delegate_));
+
     // TODO(teravest): Remove this provider once all callers are using
     // |kiosk_info_service_| instead: http://crbug.com/703229
     service_providers.push_back(base::MakeUnique<KioskInfoService>(
@@ -307,6 +321,10 @@ class DBusServices {
     cros_dbus_service_ = CrosDBusService::Create(
         kLibCrosServiceName, dbus::ObjectPath(kLibCrosServicePath),
         std::move(service_providers));
+
+    display_service_ = CrosDBusService::Create(
+        kDisplayServiceName, dbus::ObjectPath(kDisplayServicePath),
+        std::move(display_service_providers));
 
     proxy_resolution_service_ = CrosDBusService::Create(
         kNetworkProxyServiceName, dbus::ObjectPath(kNetworkProxyServicePath),
@@ -377,6 +395,7 @@ class DBusServices {
     CertLoader::Shutdown();
     TPMTokenLoader::Shutdown();
     cros_dbus_service_.reset();
+    display_service_.reset();
     proxy_resolution_service_.reset();
     kiosk_info_service_.reset();
     liveness_service_.reset();
@@ -391,8 +410,7 @@ class DBusServices {
 
   void ServiceManagerConnectionStarted(
       content::ServiceManagerConnection* connection) {
-    if (console_service_provider_delegate_)
-      console_service_provider_delegate_->Connect(connection->GetConnector());
+    console_service_provider_delegate_.Connect(connection->GetConnector());
   }
 
  private:
@@ -403,14 +421,14 @@ class DBusServices {
   // split between different processes: http://crbug.com/692246
   std::unique_ptr<CrosDBusService> cros_dbus_service_;
 
+  std::unique_ptr<CrosDBusService> display_service_;
   std::unique_ptr<CrosDBusService> proxy_resolution_service_;
   std::unique_ptr<CrosDBusService> kiosk_info_service_;
   std::unique_ptr<CrosDBusService> liveness_service_;
 
   std::unique_ptr<NetworkConnectDelegateChromeOS> network_connect_delegate_;
 
-  base::WeakPtr<ChromeConsoleServiceProviderDelegate>
-      console_service_provider_delegate_;
+  ChromeConsoleServiceProviderDelegate console_service_provider_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };
