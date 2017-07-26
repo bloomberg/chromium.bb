@@ -100,9 +100,6 @@ bool IsBookmarkReorderingEnabled();
 // Whether a new version of FeedbackKit is the preferred feedback UI provider.
 bool IsNewFeedbackKitEnabled();
 
-// Whether the keyboard accessory view with camera search is enabled.
-bool IsKeyboardAccessoryViewWithCameraSearchEnabled();
-
 // Whether the WKBackForwardList based navigation manager is enabled.
 bool IsSlimNavigationManagerEnabled();
 
