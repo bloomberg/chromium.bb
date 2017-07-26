@@ -207,7 +207,7 @@ blink_core_sources("layout") {
     "ListMarkerText.cpp",
     "ListMarkerText.h",
     "MapCoordinatesFlags.h",
-    "MinMaxSize.cc",
+    "MinMaxSize.cpp",
     "MinMaxSize.h",
     "MultiColumnFragmentainerGroup.cpp",
     "MultiColumnFragmentainerGroup.h",

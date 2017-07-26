@@ -37,25 +37,20 @@ namespace blink {
 
 FlexItem::FlexItem(LayoutBox* box,
                    LayoutUnit flex_base_content_size,
-                   LayoutUnit hypothetical_main_content_size,
-                   LayoutUnit main_axis_border_and_padding,
                    MinMaxSize min_max_sizes,
+                   LayoutUnit main_axis_border_and_padding,
                    LayoutUnit main_axis_margin)
     : box(box),
       flex_base_content_size(flex_base_content_size),
-      hypothetical_main_content_size(hypothetical_main_content_size),
-      main_axis_border_and_padding(main_axis_border_and_padding),
       min_max_sizes(min_max_sizes),
+      hypothetical_main_content_size(
+          min_max_sizes.ClampSizeToMinAndMax(flex_base_content_size)),
+      main_axis_border_and_padding(main_axis_border_and_padding),
       main_axis_margin(main_axis_margin),
       frozen(false) {
   DCHECK(!box->IsOutOfFlowPositioned());
   DCHECK_GE(min_max_sizes.max_size, LayoutUnit())
       << "Use LayoutUnit::Max() for no max size";
-}
-
-LayoutUnit FlexItem::ClampSizeToMinAndMax(LayoutUnit size) const {
-  return std::max(min_max_sizes.min_size,
-                  std::min(size, min_max_sizes.max_size));
 }
 
 void FlexLine::FreezeViolations(Vector<FlexItem*>& violations) {
