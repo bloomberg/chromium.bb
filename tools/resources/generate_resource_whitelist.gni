@@ -21,23 +21,16 @@
 #     output = "$target_gen_dir/pak_whitelist.txt"
 #   }
 template("generate_resource_whitelist") {
-  # Wrap the shared_library in an executable so that it does not get added
-  # as a data_dep.
-  # TODO(crbug/748113): Remove once GN has a way to specify compile-only deps.
-  executable("${target_name}__exec") {
-    forward_variables_from(invoker, [ "deps" ])
-    sources = [
-      "//tools/resources/dummy.c",
-    ]
-  }
   action(target_name) {
-    deps = [
-      ":${target_name}__exec",
-    ]
+    forward_variables_from(invoker, [ "deps" ])
     assert(is_android,
            "Resource whitelist currently implemented only on Android")
 
     script = "//tools/resources/generate_resource_whitelist.py"
+
+    inputs = [
+      invoker.input,
+    ]
 
     outputs = [
       invoker.output,
