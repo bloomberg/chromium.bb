@@ -46,12 +46,14 @@ bool GbmSurface::OnMakeCurrent(gl::GLContext* context) {
 
 bool GbmSurface::Resize(const gfx::Size& size,
                         float scale_factor,
+                        ColorSpace color_space,
                         bool has_alpha) {
   if (size == GetSize())
     return true;
   // Alpha value isn't actually used in allocating buffers yet, so always use
   // true instead.
-  return GbmSurfaceless::Resize(size, scale_factor, true) && CreatePixmaps();
+  return GbmSurfaceless::Resize(size, scale_factor, color_space, true) &&
+         CreatePixmaps();
 }
 
 bool GbmSurface::SupportsPostSubBuffer() {

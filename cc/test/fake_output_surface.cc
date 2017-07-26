@@ -10,6 +10,7 @@
 #include "cc/resources/returned_resource.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_utils.h"
 
 namespace cc {
 
@@ -34,7 +35,8 @@ void FakeOutputSurface::Reshape(const gfx::Size& size,
                                 bool use_stencil) {
   if (context_provider()) {
     context_provider()->ContextGL()->ResizeCHROMIUM(
-        size.width(), size.height(), device_scale_factor, has_alpha);
+        size.width(), size.height(), device_scale_factor,
+        gl::GetGLColorSpace(color_space), has_alpha);
   } else {
     software_device()->Resize(size, device_scale_factor);
   }

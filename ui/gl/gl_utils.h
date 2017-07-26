@@ -10,9 +10,15 @@
 #include "base/command_line.h"
 #include "ui/gl/gl_export.h"
 
+namespace gfx {
+class ColorSpace;
+}  // namespace gfx
+
 namespace gl {
 GL_EXPORT bool UsePassthroughCommandDecoder(
     const base::CommandLine* command_line);
-}
+
+GL_EXPORT int GetGLColorSpace(const gfx::ColorSpace& color_space);
+}  // namespace gl
 
 #endif  // UI_GL_GL_UTILS_H_

@@ -154,6 +154,7 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   void ResizeCHROMIUM(GLuint width,
                       GLuint height,
                       float device_scale,
+                      GLenum color_space,
                       GLboolean has_alpha) override;
   void LoseContextCHROMIUM(GLenum current, GLenum other) override;
   GLenum GetGraphicsResetStatusKHR() override;

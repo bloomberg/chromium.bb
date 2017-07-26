@@ -27,6 +27,7 @@ class GL_EXPORT NativeViewGLSurfaceEGLX11 : public NativeViewGLSurfaceEGL,
   void Destroy() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
+              ColorSpace color_space,
               bool has_alpha) override;
   bool InitializeNativeWindow() override;
 

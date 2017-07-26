@@ -5,6 +5,7 @@
 #include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
 
 #include "base/logging.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
@@ -51,7 +52,8 @@ int32_t PPB_Graphics3D_Shared::ResizeBuffers(int32_t width, int32_t height) {
   if ((width < 0) || (height < 0))
     return PP_ERROR_BADARGUMENT;
 
-  gles2_impl()->ResizeCHROMIUM(width, height, 1.f, true);
+  gles2_impl()->ResizeCHROMIUM(width, height, 1.f,
+                               GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM, true);
   size_ = gfx::Size(width, height);
   // TODO(alokp): Check if resize succeeded and return appropriate error code.
   return PP_OK;

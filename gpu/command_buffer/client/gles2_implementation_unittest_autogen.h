@@ -2695,9 +2695,9 @@ TEST_F(GLES2ImplementationTest, ResizeCHROMIUM) {
     cmds::ResizeCHROMIUM cmd;
   };
   Cmds expected;
-  expected.cmd.Init(1, 2, 3, true);
+  expected.cmd.Init(1, 2, 3, 4, true);
 
-  gl_->ResizeCHROMIUM(1, 2, 3, true);
+  gl_->ResizeCHROMIUM(1, 2, 3, 4, true);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

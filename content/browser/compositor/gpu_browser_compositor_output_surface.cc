@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "ui/gl/gl_utils.h"
 
 namespace content {
 
@@ -100,7 +101,8 @@ void GpuBrowserCompositorOutputSurface::Reshape(
   size_ = size;
   has_set_draw_rectangle_since_last_resize_ = false;
   context_provider()->ContextGL()->ResizeCHROMIUM(
-      size.width(), size.height(), device_scale_factor, has_alpha);
+      size.width(), size.height(), device_scale_factor,
+      gl::GetGLColorSpace(color_space), has_alpha);
 }
 
 void GpuBrowserCompositorOutputSurface::SwapBuffers(

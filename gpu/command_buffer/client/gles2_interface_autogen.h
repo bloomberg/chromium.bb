@@ -651,6 +651,7 @@ virtual void UnmapTexSubImage2DCHROMIUM(const void* mem) = 0;
 virtual void ResizeCHROMIUM(GLuint width,
                             GLuint height,
                             GLfloat scale_factor,
+                            GLenum color_space,
                             GLboolean alpha) = 0;
 virtual const GLchar* GetRequestableExtensionsCHROMIUM() = 0;
 virtual void RequestExtensionCHROMIUM(const char* extension) = 0;

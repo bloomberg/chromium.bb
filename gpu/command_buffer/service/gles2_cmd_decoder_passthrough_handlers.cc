@@ -1347,8 +1347,10 @@ error::Error GLES2DecoderPassthroughImpl::HandleResizeCHROMIUM(
   GLuint width = static_cast<GLuint>(c.width);
   GLuint height = static_cast<GLuint>(c.height);
   GLfloat scale_factor = static_cast<GLfloat>(c.scale_factor);
+  GLenum color_space = static_cast<GLenum>(c.color_space);
   GLboolean has_alpha = static_cast<GLboolean>(c.alpha);
-  error::Error error = DoResizeCHROMIUM(width, height, scale_factor, has_alpha);
+  error::Error error =
+      DoResizeCHROMIUM(width, height, scale_factor, color_space, has_alpha);
   if (error != error::kNoError) {
     return error;
   }

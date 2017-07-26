@@ -3358,7 +3358,7 @@ TEST_P(GLES2DecoderTest, ClearBackbufferBitsOnFlipSwap) {
 
   EXPECT_CALL(*gl_, Finish()).Times(AnyNumber());
   ResizeCHROMIUM& resize_cmd = *GetImmediateAs<ResizeCHROMIUM>();
-  resize_cmd.Init(1, 1, 1.0f, GL_TRUE);
+  resize_cmd.Init(1, 1, 1.0f, GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM, GL_TRUE);
   EXPECT_EQ(error::kNoError, ExecuteCmd(resize_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_EQ(static_cast<uint32_t>(GL_COLOR_BUFFER_BIT),

@@ -35,6 +35,7 @@
 #include "ui/display/display_switches.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
 #if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
@@ -84,7 +85,8 @@ class DirectOutputSurface : public cc::OutputSurface {
                bool has_alpha,
                bool use_stencil) override {
     context_provider()->ContextGL()->ResizeCHROMIUM(
-        size.width(), size.height(), device_scale_factor, has_alpha);
+        size.width(), size.height(), device_scale_factor,
+        gl::GetGLColorSpace(color_space), has_alpha);
   }
   void SwapBuffers(cc::OutputSurfaceFrame frame) override {
     DCHECK(context_provider_.get());

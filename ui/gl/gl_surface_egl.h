@@ -98,6 +98,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   void Destroy() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
+              ColorSpace color_space,
               bool has_alpha) override;
   bool Recreate() override;
   bool IsOffscreen() override;
@@ -160,6 +161,7 @@ class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
   gfx::Size GetSize() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
+              ColorSpace color_space,
               bool has_alpha) override;
   EGLSurface GetHandle() override;
   void* GetShareHandle() override;
@@ -190,6 +192,7 @@ class GL_EXPORT SurfacelessEGL : public GLSurfaceEGL {
   gfx::Size GetSize() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
+              ColorSpace color_space,
               bool has_alpha) override;
   EGLSurface GetHandle() override;
   void* GetShareHandle() override;

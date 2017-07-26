@@ -76,6 +76,7 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/color_space_switches.h"
 #include "ui/gfx/swap_result.h"
+#include "ui/gl/gl_utils.h"
 
 namespace gpu {
 struct GpuProcessHostedCALayerTreeParamsMac;
@@ -298,7 +299,8 @@ class AndroidOutputSurface : public cc::OutputSurface {
                bool has_alpha,
                bool use_stencil) override {
     context_provider()->ContextGL()->ResizeCHROMIUM(
-        size.width(), size.height(), device_scale_factor, has_alpha);
+        size.width(), size.height(), device_scale_factor,
+        gl::GetGLColorSpace(color_space), has_alpha);
   }
 
   cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
