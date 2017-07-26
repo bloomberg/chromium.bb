@@ -61,24 +61,24 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
                            int builderBitIndex,
                            const FieldGeneratorInfo* info,
                            ClassNameResolver* name_resolver,
-                           std::map<string, string>* variables) {
+                           map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
-  JavaType javaType = GetJavaType(descriptor);
-  (*variables)["type"] = PrimitiveTypeName(javaType);
-  (*variables)["boxed_type"] = BoxedPrimitiveTypeName(javaType);
+
+  (*variables)["type"] = PrimitiveTypeName(GetJavaType(descriptor));
+  (*variables)["boxed_type"] = BoxedPrimitiveTypeName(GetJavaType(descriptor));
   (*variables)["field_type"] = (*variables)["type"];
   (*variables)["default"] = ImmutableDefaultValue(descriptor, name_resolver);
+  (*variables)["default_init"] = IsDefaultValueJavaDefault(descriptor) ?
+      "" : ("= " + ImmutableDefaultValue(descriptor, name_resolver));
   (*variables)["capitalized_type"] =
       GetCapitalizedType(descriptor, /* immutable = */ true);
-  (*variables)["tag"] =
-      SimpleItoa(static_cast<int32>(WireFormat::MakeTag(descriptor)));
+  (*variables)["tag"] = SimpleItoa(WireFormat::MakeTag(descriptor));
   (*variables)["tag_size"] = SimpleItoa(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
-  (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
-  string capitalized_type = UnderscoresToCamelCase(PrimitiveTypeName(javaType),
-                                                   true /* cap_next_letter */);
-  switch (javaType) {
+  string capitalized_type = UnderscoresToCamelCase(PrimitiveTypeName(
+        GetJavaType(descriptor)), true /* cap_next_letter */);
+  switch (GetJavaType(descriptor)) {
     case JAVATYPE_INT:
     case JAVATYPE_LONG:
     case JAVATYPE_FLOAT:
@@ -112,12 +112,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       (*variables)["visit_type_list"] = "visitList";
   }
 
-  if (javaType == JAVATYPE_BYTES) {
-    (*variables)["bytes_default"] =
-        ToUpper((*variables)["name"]) + "_DEFAULT_VALUE";
-  }
-
-  if (IsReferenceType(javaType)) {
+  if (IsReferenceType(GetJavaType(descriptor))) {
     (*variables)["null_check"] =
         "  if (value == null) {\n"
         "    throw new NullPointerException();\n"
@@ -209,13 +204,6 @@ GenerateInterfaceMembers(io::Printer* printer) const {
 
 void ImmutablePrimitiveFieldLiteGenerator::
 GenerateMembers(io::Printer* printer) const {
-  if (IsByteStringWithCustomDefaultValue(descriptor_)) {
-    // allocate this once statically since we know ByteStrings are immutable
-    // values that can be reused.
-    printer->Print(
-        variables_,
-        "private static final $field_type$ $bytes_default$ = $default$;\n");
-  }
   printer->Print(variables_,
     "private $field_type$ $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
@@ -297,14 +285,9 @@ GenerateFieldBuilderInitializationCode(io::Printer* printer)  const {
   // noop for primitives
 }
 
-
 void ImmutablePrimitiveFieldLiteGenerator::
 GenerateInitializationCode(io::Printer* printer) const {
-  if (IsByteStringWithCustomDefaultValue(descriptor_)) {
-    printer->Print(variables_, "$name$_ = $bytes_default$;\n");
-  } else if (!IsDefaultValueJavaDefault(descriptor_)) {
-    printer->Print(variables_, "$name$_ = $default$;\n");
-  }
+  printer->Print(variables_, "$name$_ = $default$;\n");
 }
 
 void ImmutablePrimitiveFieldLiteGenerator::
@@ -748,7 +731,6 @@ GenerateFieldBuilderInitializationCode(io::Printer* printer)  const {
   // noop for primitives
 }
 
-
 void RepeatedImmutablePrimitiveFieldLiteGenerator::
 GenerateInitializationCode(io::Printer* printer) const {
   printer->Print(variables_, "$name$_ = $empty_list$;\n");
@@ -835,8 +817,8 @@ GenerateSerializationCode(io::Printer* printer) const {
     // That makes it safe to rely on the memoized size here.
     printer->Print(variables_,
       "if (get$capitalized_name$List().size() > 0) {\n"
-      "  output.writeUInt32NoTag($tag$);\n"
-      "  output.writeUInt32NoTag($name$MemoizedSerializedSize);\n"
+      "  output.writeRawVarint32($tag$);\n"
+      "  output.writeRawVarint32($name$MemoizedSerializedSize);\n"
       "}\n"
       "for (int i = 0; i < $name$_.size(); i++) {\n"
       "  output.write$capitalized_type$NoTag($repeated_get$(i));\n"

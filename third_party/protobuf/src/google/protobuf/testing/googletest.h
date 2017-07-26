@@ -85,7 +85,7 @@ class ScopedMemoryLog {
   const vector<string>& GetMessages(LogLevel error);
 
  private:
-  std::map<LogLevel, vector<string> > messages_;
+  map<LogLevel, vector<string> > messages_;
   LogHandler* old_handler_;
 
   static void HandleLog(LogLevel level, const char* filename, int line,

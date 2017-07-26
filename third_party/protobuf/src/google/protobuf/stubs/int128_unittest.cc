@@ -370,29 +370,29 @@ TEST(Int128, DivideAndMod) {
   EXPECT_EQ(r, result_r);
 
   // Try the other way around.
-  std::swap(q, b);
+  swap(q, b);
   result_q = a / b;
   result_r = a % b;
   EXPECT_EQ(q, result_q);
   EXPECT_EQ(r, result_r);
   // Restore.
-  std::swap(b, q);
+  swap(b, q);
 
   // Dividend < divisor; result should be q:0 r:<dividend>.
-  std::swap(a, b);
+  swap(a, b);
   result_q = a / b;
   result_r = a % b;
   EXPECT_EQ(0, result_q);
   EXPECT_EQ(a, result_r);
   // Try the other way around.
-  std::swap(a, q);
+  swap(a, q);
   result_q = a / b;
   result_r = a % b;
   EXPECT_EQ(0, result_q);
   EXPECT_EQ(a, result_r);
   // Restore.
-  std::swap(q, a);
-  std::swap(b, a);
+  swap(q, a);
+  swap(b, a);
 
   // Try a large remainder.
   b = a / 2 + 1;
@@ -501,7 +501,7 @@ TEST(Int128, OStream) {
         {uint128(12345), std::ios::dec | std::ios::left, 6, '_', "12345_"},
   };
   for (size_t i = 0; i < GOOGLE_ARRAYSIZE(cases); ++i) {
-    std::ostringstream os;
+    ostringstream os;
     os.flags(cases[i].flags);
     os.width(cases[i].width);
     os.fill(cases[i].fill);

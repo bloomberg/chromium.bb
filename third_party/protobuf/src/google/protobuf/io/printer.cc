@@ -70,8 +70,8 @@ Printer::~Printer() {
 }
 
 bool Printer::GetSubstitutionRange(const char* varname,
-                                   std::pair<size_t, size_t>* range) {
-  std::map<string, std::pair<size_t, size_t> >::const_iterator iter =
+                                   pair<size_t, size_t>* range) {
+  map<string, pair<size_t, size_t> >::const_iterator iter =
       substitutions_.find(varname);
   if (iter == substitutions_.end()) {
     GOOGLE_LOG(DFATAL) << " Undefined variable in annotation: " << varname;
@@ -87,12 +87,12 @@ bool Printer::GetSubstitutionRange(const char* varname,
 }
 
 void Printer::Annotate(const char* begin_varname, const char* end_varname,
-                       const string& file_path, const std::vector<int>& path) {
+                       const string& file_path, const vector<int>& path) {
   if (annotation_collector_ == NULL) {
     // Can't generate signatures with this Printer.
     return;
   }
-  std::pair<size_t, size_t> begin, end;
+  pair<size_t, size_t> begin, end;
   if (!GetSubstitutionRange(begin_varname, &begin) ||
       !GetSubstitutionRange(end_varname, &end)) {
     return;
@@ -106,8 +106,7 @@ void Printer::Annotate(const char* begin_varname, const char* end_varname,
   }
 }
 
-void Printer::Print(const std::map<string, string>& variables,
-                    const char* text) {
+void Printer::Print(const map<string, string>& variables, const char* text) {
   int size = strlen(text);
   int pos = 0;  // The number of bytes we've written so far.
   substitutions_.clear();
@@ -144,15 +143,14 @@ void Printer::Print(const std::map<string, string>& variables,
         WriteRaw(&variable_delimiter_, 1);
       } else {
         // Replace with the variable's value.
-        std::map<string, string>::const_iterator iter = variables.find(varname);
+        map<string, string>::const_iterator iter = variables.find(varname);
         if (iter == variables.end()) {
           GOOGLE_LOG(DFATAL) << " Undefined variable: " << varname;
         } else {
           size_t begin = offset_;
           WriteRaw(iter->second.data(), iter->second.size());
-          std::pair<std::map<string, std::pair<size_t, size_t> >::iterator,
-                    bool>
-              inserted = substitutions_.insert(
+          pair<map<string, pair<size_t, size_t> >::iterator, bool> inserted =
+              substitutions_.insert(
                   std::make_pair(varname, std::make_pair(begin, offset_)));
           if (!inserted.second) {
             // This variable was used multiple times.  Make its span have
@@ -174,13 +172,13 @@ void Printer::Print(const std::map<string, string>& variables,
 }
 
 void Printer::Print(const char* text) {
-  static std::map<string, string> empty;
+  static map<string, string> empty;
   Print(empty, text);
 }
 
 void Printer::Print(const char* text,
                     const char* variable, const string& value) {
-  std::map<string, string> vars;
+  map<string, string> vars;
   vars[variable] = value;
   Print(vars, text);
 }
@@ -188,7 +186,7 @@ void Printer::Print(const char* text,
 void Printer::Print(const char* text,
                     const char* variable1, const string& value1,
                     const char* variable2, const string& value2) {
-  std::map<string, string> vars;
+  map<string, string> vars;
   vars[variable1] = value1;
   vars[variable2] = value2;
   Print(vars, text);
@@ -198,7 +196,7 @@ void Printer::Print(const char* text,
                     const char* variable1, const string& value1,
                     const char* variable2, const string& value2,
                     const char* variable3, const string& value3) {
-  std::map<string, string> vars;
+  map<string, string> vars;
   vars[variable1] = value1;
   vars[variable2] = value2;
   vars[variable3] = value3;
@@ -210,7 +208,7 @@ void Printer::Print(const char* text,
                     const char* variable2, const string& value2,
                     const char* variable3, const string& value3,
                     const char* variable4, const string& value4) {
-  std::map<string, string> vars;
+  map<string, string> vars;
   vars[variable1] = value1;
   vars[variable2] = value2;
   vars[variable3] = value3;
@@ -224,7 +222,7 @@ void Printer::Print(const char* text,
                     const char* variable3, const string& value3,
                     const char* variable4, const string& value4,
                     const char* variable5, const string& value5) {
-  std::map<string, string> vars;
+  map<string, string> vars;
   vars[variable1] = value1;
   vars[variable2] = value2;
   vars[variable3] = value3;
@@ -240,7 +238,7 @@ void Printer::Print(const char* text,
                     const char* variable4, const string& value4,
                     const char* variable5, const string& value5,
                     const char* variable6, const string& value6) {
-  std::map<string, string> vars;
+  map<string, string> vars;
   vars[variable1] = value1;
   vars[variable2] = value2;
   vars[variable3] = value3;
@@ -258,7 +256,7 @@ void Printer::Print(const char* text,
                     const char* variable5, const string& value5,
                     const char* variable6, const string& value6,
                     const char* variable7, const string& value7) {
-  std::map<string, string> vars;
+  map<string, string> vars;
   vars[variable1] = value1;
   vars[variable2] = value2;
   vars[variable3] = value3;
@@ -278,7 +276,7 @@ void Printer::Print(const char* text,
                     const char* variable6, const string& value6,
                     const char* variable7, const string& value7,
                     const char* variable8, const string& value8) {
-  std::map<string, string> vars;
+  map<string, string> vars;
   vars[variable1] = value1;
   vars[variable2] = value2;
   vars[variable3] = value3;

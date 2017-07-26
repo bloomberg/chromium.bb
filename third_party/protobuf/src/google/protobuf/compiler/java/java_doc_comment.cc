@@ -115,7 +115,7 @@ static void WriteDocCommentBodyForLocation(
     // HTML-escape them so that they don't accidentally close the doc comment.
     comments = EscapeJavadoc(comments);
 
-    std::vector<string> lines = Split(comments, "\n");
+    vector<string> lines = Split(comments, "\n");
     while (!lines.empty() && lines.back().empty()) {
       lines.pop_back();
     }

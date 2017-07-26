@@ -37,6 +37,17 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+
+void ArenaStringPtr::AssignWithDefault(const ::std::string* default_value,
+                                       ArenaStringPtr value) {
+  const ::std::string* me = *UnsafeRawStringPointer();
+  const ::std::string* other = *value.UnsafeRawStringPointer();
+  // If the pointers are the same then do nothing.
+  if (me != other) {
+    SetNoArena(default_value, value.GetNoArena(default_value));
+  }
+}
+
 ::std::string* ArenaStringPtr::MutableNoArena(
      const ::std::string* default_value) {
   if (ptr_ == default_value) {
@@ -45,12 +56,14 @@ namespace internal {
   return ptr_;
 }
 
+
 void ArenaStringPtr::DestroyNoArena(const ::std::string* default_value) {
   if (ptr_ != default_value) {
     delete ptr_;
   }
   ptr_ = NULL;
 }
+
 
 }  // namespace internal
 }  // namespace protobuf

@@ -488,7 +488,7 @@ TEST_F(UnknownFieldSetTest, UnknownEnumValue) {
 TEST_F(UnknownFieldSetTest, SpaceUsedExcludingSelf) {
   UnknownFieldSet empty;
   empty.AddVarint(1, 0);
-  EXPECT_EQ(sizeof(std::vector<UnknownField>) + sizeof(UnknownField),
+  EXPECT_EQ(sizeof(vector<UnknownField>) + sizeof(UnknownField),
             empty.SpaceUsedExcludingSelf());
 }
 
@@ -559,9 +559,8 @@ TEST_F(UnknownFieldSetTest, DeleteSubrange) {
   }
 }
 
-void CheckDeleteByNumber(const std::vector<int>& field_numbers,
-                         int deleted_number,
-                         const std::vector<int>& expected_field_nubmers) {
+void CheckDeleteByNumber(const vector<int>& field_numbers, int deleted_number,
+                        const vector<int>& expected_field_nubmers) {
   UnknownFieldSet unknown_fields;
   for (int i = 0; i < field_numbers.size(); ++i) {
     unknown_fields.AddFixed32(field_numbers[i], i);
@@ -574,9 +573,9 @@ void CheckDeleteByNumber(const std::vector<int>& field_numbers,
   }
 }
 
-#define MAKE_VECTOR(x) std::vector<int>(x, x + GOOGLE_ARRAYSIZE(x))
+#define MAKE_VECTOR(x) vector<int>(x, x + GOOGLE_ARRAYSIZE(x))
 TEST_F(UnknownFieldSetTest, DeleteByNumber) {
-  CheckDeleteByNumber(std::vector<int>(), 1, std::vector<int>());
+  CheckDeleteByNumber(vector<int>(), 1, vector<int>());
   static const int kTestFieldNumbers1[] = {1, 2, 3};
   static const int kFieldNumberToDelete1 = 1;
   static const int kExpectedFieldNumbers1[] = {2, 3};

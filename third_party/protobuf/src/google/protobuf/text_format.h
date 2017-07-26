@@ -75,8 +75,6 @@ class LIBPROTOBUF_EXPORT TextFormat {
                                  io::ZeroCopyOutputStream* output);
 
   // Like Print(), but outputs directly to a string.
-  // Note: output will be cleared prior to printing, and will be left empty
-  // even if printing fails.
   static bool PrintToString(const Message& message, string* output);
 
   // Like PrintUnknownFields(), but outputs directly to a string.
@@ -303,8 +301,8 @@ class LIBPROTOBUF_EXPORT TextFormat {
     int64 truncate_string_field_longer_than_;
 
     google::protobuf::scoped_ptr<const FieldValuePrinter> default_field_value_printer_;
-    typedef std::map<const FieldDescriptor*,
-                     const FieldValuePrinter*> CustomPrinterMap;
+    typedef map<const FieldDescriptor*,
+                const FieldValuePrinter*> CustomPrinterMap;
     CustomPrinterMap custom_printers_;
   };
 
@@ -393,13 +391,11 @@ class LIBPROTOBUF_EXPORT TextFormat {
     ParseInfoTree* CreateNested(const FieldDescriptor* field);
 
     // Defines the map from the index-th field descriptor to its parse location.
-    typedef std::map<const FieldDescriptor*,
-                     std::vector<ParseLocation> > LocationMap;
+    typedef map<const FieldDescriptor*, vector<ParseLocation> > LocationMap;
 
     // Defines the map from the index-th field descriptor to the nested parse
     // info tree.
-    typedef std::map<const FieldDescriptor*,
-                     std::vector<ParseInfoTree*> > NestedMap;
+    typedef map<const FieldDescriptor*, vector<ParseInfoTree*> > NestedMap;
 
     LocationMap locations_;
     NestedMap nested_;

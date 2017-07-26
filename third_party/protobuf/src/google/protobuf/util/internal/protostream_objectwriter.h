@@ -76,28 +76,14 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
  public:
   // Options that control ProtoStreamObjectWriter class's behavior.
   struct Options {
-    // Treats numeric inputs in google.protobuf.Struct as strings. Normally,
-    // numeric values are returned in double field "number_value" of
+    // Treats integer inputs in google.protobuf.Struct as strings. Normally,
+    // integer values are returned in double field "number_value" of
     // google.protobuf.Struct. However, this can cause precision loss for
-    // int64/uint64/double inputs. This option is provided for cases that want
-    // to preserve number precision.
-    //
-    // TODO(skarvaje): Rename to struct_numbers_as_strings as it covers double
-    // as well.
+    // int64/uint64 inputs. This option is provided for cases that want to
+    // preserve integer precision.
     bool struct_integers_as_strings;
 
-    // Not treat unknown fields as an error. If there is an unknown fields,
-    // just ignore it and continue to process the rest.
-    bool ignore_unknown_fields;
-
-    // If true, check if enum name in camel case or without underscore matches
-    // the field name.
-    bool use_lower_camel_for_enums;
-
-    Options()
-        : struct_integers_as_strings(false),
-          ignore_unknown_fields(false),
-          use_lower_camel_for_enums(false) {}
+    Options() : struct_integers_as_strings(false) {}
 
     // Default instance of Options with all options set to defaults.
     static const Options& Defaults() {
@@ -154,57 +140,6 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     void RenderDataPiece(StringPiece name, const DataPiece& value);
 
    private:
-    // Before the "@type" field is encountered, we store all incoming data
-    // into this Event struct and replay them after we get the "@type" field.
-    class LIBPROTOBUF_EXPORT Event {
-     public:
-      enum Type {
-        START_OBJECT = 0,
-        END_OBJECT = 1,
-        START_LIST = 2,
-        END_LIST = 3,
-        RENDER_DATA_PIECE = 4,
-      };
-
-      // Constructor for END_OBJECT and END_LIST events.
-      explicit Event(Type type) : type_(type), value_(DataPiece::NullData()) {}
-
-      // Constructor for START_OBJECT and START_LIST events.
-      explicit Event(Type type, StringPiece name)
-          : type_(type),
-            name_(name.ToString()),
-            value_(DataPiece::NullData()) {}
-
-      // Constructor for RENDER_DATA_PIECE events.
-      explicit Event(StringPiece name, const DataPiece& value)
-          : type_(RENDER_DATA_PIECE), name_(name.ToString()), value_(value) {
-        DeepCopy();
-      }
-
-      Event(const Event& other)
-          : type_(other.type_), name_(other.name_), value_(other.value_) {
-        DeepCopy();
-      }
-
-      Event& operator=(const Event& other) {
-        type_ = other.type_;
-        name_ = other.name_;
-        value_ = other.value_;
-        DeepCopy();
-        return *this;
-      }
-
-      void Replay(AnyWriter* writer) const;
-
-     private:
-      void DeepCopy();
-
-      Type type_;
-      string name_;
-      DataPiece value_;
-      string value_storage_;
-    };
-
     // Handles starting up the any once we have a type.
     void StartAny(const DataPiece& value);
 
@@ -240,9 +175,6 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     // }
     bool is_well_known_type_;
     TypeRenderer* well_known_type_render_;
-
-    // Store data before the "@type" field.
-    std::vector<Event> uninterpreted_events_;
   };
 
   // Represents an item in a stack of items used to keep state between
@@ -299,7 +231,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
 
     // Set of map keys already seen for the type_. Used to validate incoming
     // messages so no map key appears more than once.
-    google::protobuf::scoped_ptr<hash_set<string> > map_keys_;
+    hash_set<string> map_keys_;
 
     // Conveys whether this Item is a placeholder or not. Placeholder items are
     // pushed to stack to account for special types.
@@ -317,19 +249,19 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
                           strings::ByteSink* output, ErrorListener* listener);
 
   // Returns true if the field is a map.
-  inline bool IsMap(const google::protobuf::Field& field);
+  bool IsMap(const google::protobuf::Field& field);
 
   // Returns true if the field is an any.
-  inline bool IsAny(const google::protobuf::Field& field);
+  bool IsAny(const google::protobuf::Field& field);
 
   // Returns true if the field is google.protobuf.Struct.
-  inline bool IsStruct(const google::protobuf::Field& field);
+  bool IsStruct(const google::protobuf::Field& field);
 
   // Returns true if the field is google.protobuf.Value.
-  inline bool IsStructValue(const google::protobuf::Field& field);
+  bool IsStructValue(const google::protobuf::Field& field);
 
   // Returns true if the field is google.protobuf.ListValue.
-  inline bool IsStructListValue(const google::protobuf::Field& field);
+  bool IsStructListValue(const google::protobuf::Field& field);
 
   // Renders google.protobuf.Value in struct.proto. It picks the right oneof
   // type based on value's type.

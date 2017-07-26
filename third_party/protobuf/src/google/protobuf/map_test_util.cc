@@ -744,22 +744,6 @@ void MapReflectionTester::SetMapFieldsViaMapReflection(
       sub_foreign_message, foreign_c_, 1);
 }
 
-void MapReflectionTester::GetMapValueViaMapReflection(Message* message,
-                                                      const string& field_name,
-                                                      const MapKey& map_key,
-                                                      MapValueRef* map_val) {
-  const Reflection* reflection = message->GetReflection();
-  EXPECT_FALSE(reflection->InsertOrLookupMapValue(message, F(field_name),
-                                                  map_key, map_val));
-}
-
-Message* MapReflectionTester::GetMapEntryViaReflection(Message* message,
-                                                       const string& field_name,
-                                                       int index) {
-  const Reflection* reflection = message->GetReflection();
-  return reflection->MutableRepeatedMessage(message, F(field_name), index);
-}
-
 void MapReflectionTester::ClearMapFieldsViaReflection(
     Message* message) {
   const Reflection* reflection = message->GetReflection();
@@ -883,7 +867,7 @@ void MapReflectionTester::RemoveLastMapsViaReflection(
     Message* message) {
   const Reflection* reflection = message->GetReflection();
 
-  std::vector<const FieldDescriptor*> output;
+  vector<const FieldDescriptor*> output;
   reflection->ListFields(*message, &output);
   for (int i = 0; i < output.size(); ++i) {
     const FieldDescriptor* field = output[i];
@@ -896,7 +880,7 @@ void MapReflectionTester::ReleaseLastMapsViaReflection(
     Message* message) {
   const Reflection* reflection = message->GetReflection();
 
-  std::vector<const FieldDescriptor*> output;
+  vector<const FieldDescriptor*> output;
   reflection->ListFields(*message, &output);
   for (int i = 0; i < output.size(); ++i) {
     const FieldDescriptor* field = output[i];
@@ -912,7 +896,7 @@ void MapReflectionTester::ReleaseLastMapsViaReflection(
 
 void MapReflectionTester::SwapMapsViaReflection(Message* message) {
   const Reflection* reflection = message->GetReflection();
-  std::vector<const FieldDescriptor*> output;
+  vector<const FieldDescriptor*> output;
   reflection->ListFields(*message, &output);
   for (int i = 0; i < output.size(); ++i) {
     const FieldDescriptor* field = output[i];

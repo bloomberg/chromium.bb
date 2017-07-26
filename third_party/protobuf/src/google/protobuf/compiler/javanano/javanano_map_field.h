@@ -58,7 +58,7 @@ class MapFieldGenerator : public FieldGenerator {
 
  private:
   const FieldDescriptor* descriptor_;
-  std::map<string, string> variables_;
+  map<string, string> variables_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapFieldGenerator);
 };

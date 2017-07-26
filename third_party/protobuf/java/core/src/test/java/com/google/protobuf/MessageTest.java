@@ -35,8 +35,10 @@ import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestRequiredForeign;
-import java.util.List;
+
 import junit.framework.TestCase;
+
+import java.util.List;
 
 /**
  * Misc. unit tests for message operations that apply to both generated

@@ -10,6 +10,7 @@ using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.WellKnownTypes {
 
   /// <summary>Holder for reflection information generated from google/protobuf/type.proto</summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class TypeReflection {
 
     #region Descriptor
@@ -54,10 +55,9 @@ namespace Google.Protobuf.WellKnownTypes {
             "ASgFEigKB29wdGlvbnMYAyADKAsyFy5nb29nbGUucHJvdG9idWYuT3B0aW9u",
             "IjsKBk9wdGlvbhIMCgRuYW1lGAEgASgJEiMKBXZhbHVlGAIgASgLMhQuZ29v",
             "Z2xlLnByb3RvYnVmLkFueSouCgZTeW50YXgSEQoNU1lOVEFYX1BST1RPMhAA",
-            "EhEKDVNZTlRBWF9QUk9UTzMQAUJ9ChNjb20uZ29vZ2xlLnByb3RvYnVmQglU",
-            "eXBlUHJvdG9QAVovZ29vZ2xlLmdvbGFuZy5vcmcvZ2VucHJvdG8vcHJvdG9i",
-            "dWYvcHR5cGU7cHR5cGX4AQGiAgNHUEKqAh5Hb29nbGUuUHJvdG9idWYuV2Vs",
-            "bEtub3duVHlwZXNiBnByb3RvMw=="));
+            "EhEKDVNZTlRBWF9QUk9UTzMQAUJMChNjb20uZ29vZ2xlLnByb3RvYnVmQglU",
+            "eXBlUHJvdG9QAaABAaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25v",
+            "d25UeXBlc2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.SourceContextReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.WellKnownTypes.Syntax), }, new pbr::GeneratedClrTypeInfo[] {
@@ -73,15 +73,15 @@ namespace Google.Protobuf.WellKnownTypes {
   }
   #region Enums
   /// <summary>
-  /// The syntax in which a protocol buffer element is defined.
+  ///  The syntax in which a protocol buffer element is defined.
   /// </summary>
   public enum Syntax {
     /// <summary>
-    /// Syntax `proto2`.
+    ///  Syntax `proto2`.
     /// </summary>
     [pbr::OriginalName("SYNTAX_PROTO2")] Proto2 = 0,
     /// <summary>
-    /// Syntax `proto3`.
+    ///  Syntax `proto3`.
     /// </summary>
     [pbr::OriginalName("SYNTAX_PROTO3")] Proto3 = 1,
   }
@@ -90,31 +90,27 @@ namespace Google.Protobuf.WellKnownTypes {
 
   #region Messages
   /// <summary>
-  /// A protocol buffer message type.
+  ///  A protocol buffer message type.
   /// </summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class Type : pb::IMessage<Type> {
     private static readonly pb::MessageParser<Type> _parser = new pb::MessageParser<Type>(() => new Type());
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Type> Parser { get { return _parser; } }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.TypeReflection.Descriptor.MessageTypes[0]; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Type() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Type(Type other) : this() {
       name_ = other.name_;
       fields_ = other.fields_.Clone();
@@ -124,7 +120,6 @@ namespace Google.Protobuf.WellKnownTypes {
       syntax_ = other.syntax_;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Type Clone() {
       return new Type(this);
     }
@@ -133,9 +128,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int NameFieldNumber = 1;
     private string name_ = "";
     /// <summary>
-    /// The fully qualified message name.
+    ///  The fully qualified message name.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Name {
       get { return name_; }
       set {
@@ -149,9 +143,8 @@ namespace Google.Protobuf.WellKnownTypes {
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Field.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Field> fields_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Field>();
     /// <summary>
-    /// The list of fields.
+    ///  The list of fields.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Field> Fields {
       get { return fields_; }
     }
@@ -162,9 +155,8 @@ namespace Google.Protobuf.WellKnownTypes {
         = pb::FieldCodec.ForString(26);
     private readonly pbc::RepeatedField<string> oneofs_ = new pbc::RepeatedField<string>();
     /// <summary>
-    /// The list of types appearing in `oneof` definitions in this type.
+    ///  The list of types appearing in `oneof` definitions in this type.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<string> Oneofs {
       get { return oneofs_; }
     }
@@ -175,9 +167,8 @@ namespace Google.Protobuf.WellKnownTypes {
         = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.WellKnownTypes.Option.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> options_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option>();
     /// <summary>
-    /// The protocol buffer options.
+    ///  The protocol buffer options.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> Options {
       get { return options_; }
     }
@@ -186,9 +177,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int SourceContextFieldNumber = 5;
     private global::Google.Protobuf.WellKnownTypes.SourceContext sourceContext_;
     /// <summary>
-    /// The source context.
+    ///  The source context.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.SourceContext SourceContext {
       get { return sourceContext_; }
       set {
@@ -200,9 +190,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int SyntaxFieldNumber = 6;
     private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = 0;
     /// <summary>
-    /// The source syntax.
+    ///  The source syntax.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.Syntax Syntax {
       get { return syntax_; }
       set {
@@ -210,12 +199,10 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Type);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(Type other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -232,7 +219,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
@@ -244,12 +230,10 @@ namespace Google.Protobuf.WellKnownTypes {
       return hash;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (Name.Length != 0) {
         output.WriteRawTag(10);
@@ -268,7 +252,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (Name.Length != 0) {
@@ -286,7 +269,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return size;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(Type other) {
       if (other == null) {
         return;
@@ -308,7 +290,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -350,31 +331,27 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  /// A single field of a message type.
+  ///  A single field of a message type.
   /// </summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class Field : pb::IMessage<Field> {
     private static readonly pb::MessageParser<Field> _parser = new pb::MessageParser<Field>(() => new Field());
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Field> Parser { get { return _parser; } }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.TypeReflection.Descriptor.MessageTypes[1]; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Field() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Field(Field other) : this() {
       kind_ = other.kind_;
       cardinality_ = other.cardinality_;
@@ -388,7 +365,6 @@ namespace Google.Protobuf.WellKnownTypes {
       defaultValue_ = other.defaultValue_;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Field Clone() {
       return new Field(this);
     }
@@ -397,9 +373,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int KindFieldNumber = 1;
     private global::Google.Protobuf.WellKnownTypes.Field.Types.Kind kind_ = 0;
     /// <summary>
-    /// The field type.
+    ///  The field type.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.Field.Types.Kind Kind {
       get { return kind_; }
       set {
@@ -411,9 +386,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int CardinalityFieldNumber = 2;
     private global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality cardinality_ = 0;
     /// <summary>
-    /// The field cardinality.
+    ///  The field cardinality.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality Cardinality {
       get { return cardinality_; }
       set {
@@ -425,9 +399,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int NumberFieldNumber = 3;
     private int number_;
     /// <summary>
-    /// The field number.
+    ///  The field number.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Number {
       get { return number_; }
       set {
@@ -439,9 +412,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int NameFieldNumber = 4;
     private string name_ = "";
     /// <summary>
-    /// The field name.
+    ///  The field name.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Name {
       get { return name_; }
       set {
@@ -453,10 +425,9 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int TypeUrlFieldNumber = 6;
     private string typeUrl_ = "";
     /// <summary>
-    /// The field type URL, without the scheme, for message or enumeration
-    /// types. Example: `"type.googleapis.com/google.protobuf.Timestamp"`.
+    ///  The field type URL, without the scheme, for message or enumeration
+    ///  types. Example: `"type.googleapis.com/google.protobuf.Timestamp"`.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string TypeUrl {
       get { return typeUrl_; }
       set {
@@ -468,10 +439,9 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int OneofIndexFieldNumber = 7;
     private int oneofIndex_;
     /// <summary>
-    /// The index of the field type in `Type.oneofs`, for message or enumeration
-    /// types. The first type has index 1; zero means the type is not in the list.
+    ///  The index of the field type in `Type.oneofs`, for message or enumeration
+    ///  types. The first type has index 1; zero means the type is not in the list.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int OneofIndex {
       get { return oneofIndex_; }
       set {
@@ -483,9 +453,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int PackedFieldNumber = 8;
     private bool packed_;
     /// <summary>
-    /// Whether to use alternative packed wire representation.
+    ///  Whether to use alternative packed wire representation.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Packed {
       get { return packed_; }
       set {
@@ -499,9 +468,8 @@ namespace Google.Protobuf.WellKnownTypes {
         = pb::FieldCodec.ForMessage(74, global::Google.Protobuf.WellKnownTypes.Option.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> options_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option>();
     /// <summary>
-    /// The protocol buffer options.
+    ///  The protocol buffer options.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> Options {
       get { return options_; }
     }
@@ -510,9 +478,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int JsonNameFieldNumber = 10;
     private string jsonName_ = "";
     /// <summary>
-    /// The field JSON name.
+    ///  The field JSON name.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string JsonName {
       get { return jsonName_; }
       set {
@@ -524,9 +491,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int DefaultValueFieldNumber = 11;
     private string defaultValue_ = "";
     /// <summary>
-    /// The string value of the default value of this field. Proto2 syntax only.
+    ///  The string value of the default value of this field. Proto2 syntax only.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string DefaultValue {
       get { return defaultValue_; }
       set {
@@ -534,12 +500,10 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Field);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(Field other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -560,7 +524,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (Kind != 0) hash ^= Kind.GetHashCode();
@@ -576,12 +539,10 @@ namespace Google.Protobuf.WellKnownTypes {
       return hash;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (Kind != 0) {
         output.WriteRawTag(8);
@@ -622,7 +583,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (Kind != 0) {
@@ -656,7 +616,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return size;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(Field other) {
       if (other == null) {
         return;
@@ -691,7 +650,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -745,108 +703,108 @@ namespace Google.Protobuf.WellKnownTypes {
 
     #region Nested types
     /// <summary>Container for nested types declared in the Field message type.</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       /// <summary>
-      /// Basic field types.
+      ///  Basic field types.
       /// </summary>
       public enum Kind {
         /// <summary>
-        /// Field type unknown.
+        ///  Field type unknown.
         /// </summary>
         [pbr::OriginalName("TYPE_UNKNOWN")] TypeUnknown = 0,
         /// <summary>
-        /// Field type double.
+        ///  Field type double.
         /// </summary>
         [pbr::OriginalName("TYPE_DOUBLE")] TypeDouble = 1,
         /// <summary>
-        /// Field type float.
+        ///  Field type float.
         /// </summary>
         [pbr::OriginalName("TYPE_FLOAT")] TypeFloat = 2,
         /// <summary>
-        /// Field type int64.
+        ///  Field type int64.
         /// </summary>
         [pbr::OriginalName("TYPE_INT64")] TypeInt64 = 3,
         /// <summary>
-        /// Field type uint64.
+        ///  Field type uint64.
         /// </summary>
         [pbr::OriginalName("TYPE_UINT64")] TypeUint64 = 4,
         /// <summary>
-        /// Field type int32.
+        ///  Field type int32.
         /// </summary>
         [pbr::OriginalName("TYPE_INT32")] TypeInt32 = 5,
         /// <summary>
-        /// Field type fixed64.
+        ///  Field type fixed64.
         /// </summary>
         [pbr::OriginalName("TYPE_FIXED64")] TypeFixed64 = 6,
         /// <summary>
-        /// Field type fixed32.
+        ///  Field type fixed32.
         /// </summary>
         [pbr::OriginalName("TYPE_FIXED32")] TypeFixed32 = 7,
         /// <summary>
-        /// Field type bool.
+        ///  Field type bool.
         /// </summary>
         [pbr::OriginalName("TYPE_BOOL")] TypeBool = 8,
         /// <summary>
-        /// Field type string.
+        ///  Field type string.
         /// </summary>
         [pbr::OriginalName("TYPE_STRING")] TypeString = 9,
         /// <summary>
-        /// Field type group. Proto2 syntax only, and deprecated.
+        ///  Field type group. Proto2 syntax only, and deprecated.
         /// </summary>
         [pbr::OriginalName("TYPE_GROUP")] TypeGroup = 10,
         /// <summary>
-        /// Field type message.
+        ///  Field type message.
         /// </summary>
         [pbr::OriginalName("TYPE_MESSAGE")] TypeMessage = 11,
         /// <summary>
-        /// Field type bytes.
+        ///  Field type bytes.
         /// </summary>
         [pbr::OriginalName("TYPE_BYTES")] TypeBytes = 12,
         /// <summary>
-        /// Field type uint32.
+        ///  Field type uint32.
         /// </summary>
         [pbr::OriginalName("TYPE_UINT32")] TypeUint32 = 13,
         /// <summary>
-        /// Field type enum.
+        ///  Field type enum.
         /// </summary>
         [pbr::OriginalName("TYPE_ENUM")] TypeEnum = 14,
         /// <summary>
-        /// Field type sfixed32.
+        ///  Field type sfixed32.
         /// </summary>
         [pbr::OriginalName("TYPE_SFIXED32")] TypeSfixed32 = 15,
         /// <summary>
-        /// Field type sfixed64.
+        ///  Field type sfixed64.
         /// </summary>
         [pbr::OriginalName("TYPE_SFIXED64")] TypeSfixed64 = 16,
         /// <summary>
-        /// Field type sint32.
+        ///  Field type sint32.
         /// </summary>
         [pbr::OriginalName("TYPE_SINT32")] TypeSint32 = 17,
         /// <summary>
-        /// Field type sint64.
+        ///  Field type sint64.
         /// </summary>
         [pbr::OriginalName("TYPE_SINT64")] TypeSint64 = 18,
       }
 
       /// <summary>
-      /// Whether a field is optional, required, or repeated.
+      ///  Whether a field is optional, required, or repeated.
       /// </summary>
       public enum Cardinality {
         /// <summary>
-        /// For fields with unknown cardinality.
+        ///  For fields with unknown cardinality.
         /// </summary>
         [pbr::OriginalName("CARDINALITY_UNKNOWN")] Unknown = 0,
         /// <summary>
-        /// For optional fields.
+        ///  For optional fields.
         /// </summary>
         [pbr::OriginalName("CARDINALITY_OPTIONAL")] Optional = 1,
         /// <summary>
-        /// For required fields. Proto2 syntax only.
+        ///  For required fields. Proto2 syntax only.
         /// </summary>
         [pbr::OriginalName("CARDINALITY_REQUIRED")] Required = 2,
         /// <summary>
-        /// For repeated fields.
+        ///  For repeated fields.
         /// </summary>
         [pbr::OriginalName("CARDINALITY_REPEATED")] Repeated = 3,
       }
@@ -857,31 +815,27 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  /// Enum type definition.
+  ///  Enum type definition.
   /// </summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class Enum : pb::IMessage<Enum> {
     private static readonly pb::MessageParser<Enum> _parser = new pb::MessageParser<Enum>(() => new Enum());
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Enum> Parser { get { return _parser; } }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.TypeReflection.Descriptor.MessageTypes[2]; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Enum() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Enum(Enum other) : this() {
       name_ = other.name_;
       enumvalue_ = other.enumvalue_.Clone();
@@ -890,7 +844,6 @@ namespace Google.Protobuf.WellKnownTypes {
       syntax_ = other.syntax_;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Enum Clone() {
       return new Enum(this);
     }
@@ -899,9 +852,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int NameFieldNumber = 1;
     private string name_ = "";
     /// <summary>
-    /// Enum type name.
+    ///  Enum type name.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Name {
       get { return name_; }
       set {
@@ -915,9 +867,8 @@ namespace Google.Protobuf.WellKnownTypes {
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.EnumValue.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.EnumValue> enumvalue_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.EnumValue>();
     /// <summary>
-    /// Enum value definitions.
+    ///  Enum value definitions.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.EnumValue> Enumvalue {
       get { return enumvalue_; }
     }
@@ -928,9 +879,8 @@ namespace Google.Protobuf.WellKnownTypes {
         = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.WellKnownTypes.Option.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> options_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option>();
     /// <summary>
-    /// Protocol buffer options.
+    ///  Protocol buffer options.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> Options {
       get { return options_; }
     }
@@ -939,9 +889,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int SourceContextFieldNumber = 4;
     private global::Google.Protobuf.WellKnownTypes.SourceContext sourceContext_;
     /// <summary>
-    /// The source context.
+    ///  The source context.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.SourceContext SourceContext {
       get { return sourceContext_; }
       set {
@@ -953,9 +902,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int SyntaxFieldNumber = 5;
     private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = 0;
     /// <summary>
-    /// The source syntax.
+    ///  The source syntax.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.Syntax Syntax {
       get { return syntax_; }
       set {
@@ -963,12 +911,10 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Enum);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(Enum other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -984,7 +930,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
@@ -995,12 +940,10 @@ namespace Google.Protobuf.WellKnownTypes {
       return hash;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (Name.Length != 0) {
         output.WriteRawTag(10);
@@ -1018,7 +961,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (Name.Length != 0) {
@@ -1035,7 +977,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return size;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(Enum other) {
       if (other == null) {
         return;
@@ -1056,7 +997,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -1094,38 +1034,33 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  /// Enum value definition.
+  ///  Enum value definition.
   /// </summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class EnumValue : pb::IMessage<EnumValue> {
     private static readonly pb::MessageParser<EnumValue> _parser = new pb::MessageParser<EnumValue>(() => new EnumValue());
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<EnumValue> Parser { get { return _parser; } }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.TypeReflection.Descriptor.MessageTypes[3]; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public EnumValue() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public EnumValue(EnumValue other) : this() {
       name_ = other.name_;
       number_ = other.number_;
       options_ = other.options_.Clone();
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public EnumValue Clone() {
       return new EnumValue(this);
     }
@@ -1134,9 +1069,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int NameFieldNumber = 1;
     private string name_ = "";
     /// <summary>
-    /// Enum value name.
+    ///  Enum value name.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Name {
       get { return name_; }
       set {
@@ -1148,9 +1082,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int NumberFieldNumber = 2;
     private int number_;
     /// <summary>
-    /// Enum value number.
+    ///  Enum value number.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Number {
       get { return number_; }
       set {
@@ -1164,19 +1097,16 @@ namespace Google.Protobuf.WellKnownTypes {
         = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.WellKnownTypes.Option.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> options_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option>();
     /// <summary>
-    /// Protocol buffer options.
+    ///  Protocol buffer options.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> Options {
       get { return options_; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as EnumValue);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(EnumValue other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -1190,7 +1120,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
@@ -1199,12 +1128,10 @@ namespace Google.Protobuf.WellKnownTypes {
       return hash;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (Name.Length != 0) {
         output.WriteRawTag(10);
@@ -1217,7 +1144,6 @@ namespace Google.Protobuf.WellKnownTypes {
       options_.WriteTo(output, _repeated_options_codec);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (Name.Length != 0) {
@@ -1230,7 +1156,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return size;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(EnumValue other) {
       if (other == null) {
         return;
@@ -1244,7 +1169,6 @@ namespace Google.Protobuf.WellKnownTypes {
       options_.Add(other.options_);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -1271,38 +1195,33 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  /// A protocol buffer option, which can be attached to a message, field,
-  /// enumeration, etc.
+  ///  A protocol buffer option, which can be attached to a message, field,
+  ///  enumeration, etc.
   /// </summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class Option : pb::IMessage<Option> {
     private static readonly pb::MessageParser<Option> _parser = new pb::MessageParser<Option>(() => new Option());
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Option> Parser { get { return _parser; } }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.TypeReflection.Descriptor.MessageTypes[4]; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Option() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Option(Option other) : this() {
       name_ = other.name_;
       Value = other.value_ != null ? other.Value.Clone() : null;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Option Clone() {
       return new Option(this);
     }
@@ -1311,12 +1230,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int NameFieldNumber = 1;
     private string name_ = "";
     /// <summary>
-    /// The option's name. For protobuf built-in options (options defined in
-    /// descriptor.proto), this is the short name. For example, `"map_entry"`.
-    /// For custom options, it should be the fully-qualified name. For example,
-    /// `"google.api.http"`.
+    ///  The option's name. For example, `"java_package"`.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Name {
       get { return name_; }
       set {
@@ -1328,12 +1243,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int ValueFieldNumber = 2;
     private global::Google.Protobuf.WellKnownTypes.Any value_;
     /// <summary>
-    /// The option's value packed in an Any message. If the value is a primitive,
-    /// the corresponding wrapper type defined in google/protobuf/wrappers.proto
-    /// should be used. If the value is an enum, it should be stored as an int32
-    /// value using the google.protobuf.Int32Value type.
+    ///  The option's value. For example, `"com.google.protobuf"`.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.Any Value {
       get { return value_; }
       set {
@@ -1341,12 +1252,10 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Option);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(Option other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -1359,7 +1268,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
@@ -1367,12 +1275,10 @@ namespace Google.Protobuf.WellKnownTypes {
       return hash;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (Name.Length != 0) {
         output.WriteRawTag(10);
@@ -1384,7 +1290,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (Name.Length != 0) {
@@ -1396,7 +1301,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return size;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(Option other) {
       if (other == null) {
         return;
@@ -1412,7 +1316,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {

@@ -35,13 +35,15 @@ import protobuf_unittest.UnittestProto.SparseEnumMessage;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestProto.TestSparseEnum;
+
+import junit.framework.TestCase;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import junit.framework.TestCase;
 
 /**
  * Unit test for {@link CodedOutputStream}.
@@ -149,21 +151,16 @@ public class CodedOutputStreamTest extends TestCase {
     private final int initialPosition;
     private final CodedOutputStream stream;
     private final ByteBuffer buffer;
-    private final boolean unsafe;
 
-    NioDirectCoder(int size, boolean unsafe) {
-      this(size, 0, unsafe);
+    NioDirectCoder(int size) {
+      this(size, 0);
     }
 
-    NioDirectCoder(int size, int initialPosition, boolean unsafe) {
-      this.unsafe = unsafe;
+    NioDirectCoder(int size, int initialPosition) {
       this.initialPosition = initialPosition;
       buffer = ByteBuffer.allocateDirect(size);
       buffer.position(initialPosition);
-      stream =
-          unsafe
-              ? CodedOutputStream.newUnsafeInstance(buffer)
-              : CodedOutputStream.newSafeInstance(buffer);
+      stream = CodedOutputStream.newInstance(buffer);
     }
 
     @Override
@@ -184,7 +181,7 @@ public class CodedOutputStreamTest extends TestCase {
 
     @Override
     public OutputType getOutputType() {
-      return unsafe ? OutputType.NIO_DIRECT_SAFE : OutputType.NIO_DIRECT_UNSAFE;
+      return OutputType.NIO_DIRECT;
     }
   }
 
@@ -201,16 +198,10 @@ public class CodedOutputStreamTest extends TestCase {
         return new NioHeapCoder(size);
       }
     },
-    NIO_DIRECT_SAFE() {
+    NIO_DIRECT() {
       @Override
       Coder newCoder(int size) {
-        return new NioDirectCoder(size, false);
-      }
-    },
-    NIO_DIRECT_UNSAFE() {
-      @Override
-      Coder newCoder(int size) {
-        return new NioDirectCoder(size, true);
+        return new NioDirectCoder(size);
       }
     },
     STREAM() {
@@ -398,7 +389,6 @@ public class CodedOutputStreamTest extends TestCase {
         != CodedOutputStream.computeUInt32SizeNoTag(string.length() * Utf8.MAX_BYTES_PER_CHAR));
 
     coder.stream().writeStringNoTag(string);
-    coder.stream().flush();
     int stringSize = CodedOutputStream.computeStringSizeNoTag(string);
 
     // Verify that the total bytes written is correct
@@ -488,12 +478,11 @@ public class CodedOutputStreamTest extends TestCase {
 
   public void testWriteByteArrayWithOffsets() throws Exception {
     byte[] fullArray = bytes(0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88);
-    for (OutputType type : new OutputType[] {OutputType.ARRAY}) {
-      Coder coder = type.newCoder(4);
-      coder.stream().writeByteArrayNoTag(fullArray, 2, 2);
-      assertEqualBytes(type, bytes(0x02, 0x33, 0x44), coder.toByteArray());
-      assertEquals(3, coder.stream().getTotalBytesWritten());
-    }
+    byte[] destination = new byte[4];
+    CodedOutputStream codedStream = CodedOutputStream.newInstance(destination);
+    codedStream.writeByteArrayNoTag(fullArray, 2, 2);
+    assertEqualBytes(OutputType.ARRAY, bytes(0x02, 0x33, 0x44, 0x00), destination);
+    assertEquals(3, codedStream.getTotalBytesWritten());
   }
 
   public void testSerializeUtf8_MultipleSmallWrites() throws Exception {
@@ -572,12 +561,7 @@ public class CodedOutputStreamTest extends TestCase {
     // Tag is one byte, varint describing string length is 1 byte, string length is 9 bytes.
     // An array of size 1 will cause a failure when trying to write the varint.
     for (OutputType outputType :
-        new OutputType[] {
-          OutputType.ARRAY,
-          OutputType.NIO_HEAP,
-          OutputType.NIO_DIRECT_SAFE,
-          OutputType.NIO_DIRECT_UNSAFE
-        }) {
+        new OutputType[] {OutputType.ARRAY, OutputType.NIO_HEAP, OutputType.NIO_DIRECT}) {
       for (int i = 0; i < 11; i++) {
         Coder coder = outputType.newCoder(i);
         try {
@@ -615,13 +599,10 @@ public class CodedOutputStreamTest extends TestCase {
 
   public void testNioEncodersWithInitialOffsets() throws Exception {
     String value = "abc";
-    for (Coder coder :
-        new Coder[] {
-          new NioHeapCoder(10, 2), new NioDirectCoder(10, 2, false), new NioDirectCoder(10, 2, true)
-        }) {
+    for (Coder coder : new Coder[] {new NioHeapCoder(10, 2), new NioDirectCoder(10, 2)}) {
       coder.stream().writeStringNoTag(value);
       coder.stream().flush();
-      assertEqualBytes(coder.getOutputType(), new byte[] {3, 'a', 'b', 'c'}, coder.toByteArray());
+      assertEqualBytes(coder.getOutputType(), new byte[]{3, 'a', 'b', 'c'}, coder.toByteArray());
     }
   }
 

@@ -40,27 +40,18 @@
 #endif
 #include <vector>
 
-#include <google/protobuf/stubs/strutil.h>
-
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
-#include <google/protobuf/compiler/plugin.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <gtest/gtest.h>
-
-#ifdef major		
-#undef major		
-#endif		
-#ifdef minor		
-#undef minor		
-#endif		
 
 namespace google {
 namespace protobuf {
@@ -68,9 +59,9 @@ namespace compiler {
 
 // Returns the list of the names of files in all_files in the form of a
 // comma-separated string.
-string CommaSeparatedList(const std::vector<const FileDescriptor*> all_files) {
-  std::vector<string> names;
-  for (size_t i = 0; i < all_files.size(); i++) {
+string CommaSeparatedList(const vector<const FileDescriptor*> all_files) {
+  vector<string> names;
+  for (int i = 0; i < all_files.size(); i++) {
     names.push_back(all_files[i]->name());
   }
   return Join(names, ",");
@@ -101,17 +92,16 @@ void MockCodeGenerator::ExpectGenerated(
       File::GetContents(output_directory + "/" + GetOutputFileName(name, file),
                         &content, true));
 
-  std::vector<string> lines =
-      Split(content, "\n", true);
+  vector<string> lines = Split(content, "\n", true);
 
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
   }
-  for (size_t i = 0; i < lines.size(); i++) {
+  for (int i = 0; i < lines.size(); i++) {
     lines[i] += "\n";
   }
 
-  std::vector<string> insertion_list;
+  vector<string> insertion_list;
   if (!insertions.empty()) {
     SplitStringUsing(insertions, ",", &insertion_list);
   }
@@ -124,7 +114,7 @@ void MockCodeGenerator::ExpectGenerated(
   EXPECT_EQ(kFirstInsertionPoint, lines[1 + insertion_list.size()]);
   EXPECT_EQ(kSecondInsertionPoint, lines[2 + insertion_list.size() * 2]);
 
-  for (size_t i = 0; i < insertion_list.size(); i++) {
+  for (int i = 0; i < insertion_list.size(); i++) {
     EXPECT_EQ(GetOutputFileContent(insertion_list[i], "first_insert",
                                    file, file, first_message_name),
               lines[1 + i]);
@@ -169,15 +159,6 @@ bool MockCodeGenerator::Generate(
         std::cerr << "Saw json_name: "
                   << field_descriptor_proto.has_json_name() << std::endl;
         abort();
-      } else if (command == "ShowVersionNumber") {
-        Version compiler_version;
-        context->GetCompilerVersion(&compiler_version);
-        std::cerr << "Saw compiler_version: "
-                  << compiler_version.major() * 1000000 +
-                     compiler_version.minor() * 1000 +
-                     compiler_version.patch()
-                  << " " << compiler_version.suffix() << std::endl;
-        abort();
       } else {
         GOOGLE_LOG(FATAL) << "Unknown MockCodeGenerator command: " << command;
       }
@@ -185,11 +166,11 @@ bool MockCodeGenerator::Generate(
   }
 
   if (HasPrefixString(parameter, "insert=")) {
-    std::vector<string> insert_into;
+    vector<string> insert_into;
     SplitStringUsing(StripPrefixString(parameter, "insert="),
                      ",", &insert_into);
 
-    for (size_t i = 0; i < insert_into.size(); i++) {
+    for (int i = 0; i < insert_into.size(); i++) {
       {
         google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(context->OpenForInsert(
             GetOutputFileName(insert_into[i], file), kFirstInsertionPointName));
@@ -249,7 +230,7 @@ string MockCodeGenerator::GetOutputFileContent(
     const string& parameter,
     const FileDescriptor* file,
     GeneratorContext *context) {
-  std::vector<const FileDescriptor*> all_files;
+  vector<const FileDescriptor*> all_files;
   context->ListParsedFiles(&all_files);
   return GetOutputFileContent(
       generator_name, parameter, file->name(),

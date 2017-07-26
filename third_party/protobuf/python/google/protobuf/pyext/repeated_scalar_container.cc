@@ -305,12 +305,10 @@ static PyObject* Subscript(RepeatedScalarContainer* self, PyObject* slice) {
     length = Len(self);
 #if PY_MAJOR_VERSION >= 3
     if (PySlice_GetIndicesEx(slice,
-                             length, &from, &to, &step, &slicelength) == -1) {
 #else
     if (PySlice_GetIndicesEx(reinterpret_cast<PySliceObject*>(slice),
-                             length, &from, &to, &step, &slicelength) == -1) {
-
 #endif
+                             length, &from, &to, &step, &slicelength) == -1) {
       return NULL;
     }
     return_list = true;
@@ -460,11 +458,10 @@ static int AssSubscript(RepeatedScalarContainer* self,
     length = reflection->FieldSize(*message, field_descriptor);
 #if PY_MAJOR_VERSION >= 3
     if (PySlice_GetIndicesEx(slice,
-                             length, &from, &to, &step, &slicelength) == -1) {
 #else
     if (PySlice_GetIndicesEx(reinterpret_cast<PySliceObject*>(slice),
-                             length, &from, &to, &step, &slicelength) == -1) {
 #endif
+                             length, &from, &to, &step, &slicelength) == -1) {
       return -1;
     }
     create_list = true;

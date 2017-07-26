@@ -7,9 +7,6 @@ Copyright 2008 Google Inc.
 
 This directory contains the Java Protocol Buffers Nano runtime library.
 
-**Nano is no longer supported by protobuf team. We recommend Android users to
-use protobuf lite runtime instead.**
-
 Installation - With Maven
 -------------------------
 

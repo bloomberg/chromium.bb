@@ -39,7 +39,6 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/metadata.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/stl_util.h>
 
@@ -70,20 +69,34 @@ const UnknownFieldSet* UnknownFieldSet::default_instance() {
   return default_unknown_field_set_instance_;
 }
 
-void UnknownFieldSet::ClearFallback() {
-  GOOGLE_DCHECK(fields_ != NULL && fields_->size() > 0);
-  int n = fields_->size();
-  do {
-    (*fields_)[--n].Delete();
-  } while (n > 0);
+UnknownFieldSet::UnknownFieldSet()
+    : fields_(NULL) {}
+
+UnknownFieldSet::~UnknownFieldSet() {
+  Clear();
   delete fields_;
-  fields_ = NULL;
+}
+
+void UnknownFieldSet::ClearFallback() {
+  if (fields_ != NULL) {
+    for (int i = 0; i < fields_->size(); i++) {
+      (*fields_)[i].Delete();
+    }
+    delete fields_;
+    fields_ = NULL;
+  }
+}
+
+void UnknownFieldSet::ClearAndFreeMemory() {
+  if (fields_ != NULL) {
+    Clear();
+  }
 }
 
 void UnknownFieldSet::InternalMergeFrom(const UnknownFieldSet& other) {
   int other_field_count = other.field_count();
   if (other_field_count > 0) {
-    fields_ = new std::vector<UnknownField>();
+    fields_ = new vector<UnknownField>();
     for (int i = 0; i < other_field_count; i++) {
       fields_->push_back((*other.fields_)[i]);
       fields_->back().DeepCopy((*other.fields_)[i]);
@@ -94,7 +107,7 @@ void UnknownFieldSet::InternalMergeFrom(const UnknownFieldSet& other) {
 void UnknownFieldSet::MergeFrom(const UnknownFieldSet& other) {
   int other_field_count = other.field_count();
   if (other_field_count > 0) {
-    if (fields_ == NULL) fields_ = new std::vector<UnknownField>();
+    if (fields_ == NULL) fields_ = new vector<UnknownField>();
     for (int i = 0; i < other_field_count; i++) {
       fields_->push_back((*other.fields_)[i]);
       fields_->back().DeepCopy((*other.fields_)[i]);
@@ -107,7 +120,7 @@ void UnknownFieldSet::MergeFrom(const UnknownFieldSet& other) {
 void UnknownFieldSet::MergeFromAndDestroy(UnknownFieldSet* other) {
   int other_field_count = other->field_count();
   if (other_field_count > 0) {
-    if (fields_ == NULL) fields_ = new std::vector<UnknownField>();
+    if (fields_ == NULL) fields_ = new vector<UnknownField>();
     for (int i = 0; i < other_field_count; i++) {
       fields_->push_back((*other->fields_)[i]);
       (*other->fields_)[i].Reset();
@@ -117,27 +130,21 @@ void UnknownFieldSet::MergeFromAndDestroy(UnknownFieldSet* other) {
   other->fields_ = NULL;
 }
 
-void UnknownFieldSet::MergeToInternalMetdata(
-    const UnknownFieldSet& other,
-    internal::InternalMetadataWithArena* metadata) {
-  metadata->mutable_unknown_fields()->MergeFrom(other);
-}
-
-size_t UnknownFieldSet::SpaceUsedExcludingSelfLong() const {
+int UnknownFieldSet::SpaceUsedExcludingSelf() const {
   if (fields_ == NULL) return 0;
 
-  size_t total_size = sizeof(*fields_) + sizeof(UnknownField) * fields_->size();
+  int total_size = sizeof(*fields_) + sizeof(UnknownField) * fields_->size();
 
   for (int i = 0; i < fields_->size(); i++) {
     const UnknownField& field = (*fields_)[i];
     switch (field.type()) {
       case UnknownField::TYPE_LENGTH_DELIMITED:
-        total_size += sizeof(*field.data_.length_delimited_.string_value_) +
-                      internal::StringSpaceUsedExcludingSelfLong(
-                          *field.data_.length_delimited_.string_value_);
+        total_size += sizeof(*field.length_delimited_.string_value_) +
+                      internal::StringSpaceUsedExcludingSelf(
+                          *field.length_delimited_.string_value_);
         break;
       case UnknownField::TYPE_GROUP:
-        total_size += field.data_.group_->SpaceUsedLong();
+        total_size += field.group_->SpaceUsed();
         break;
       default:
         break;
@@ -146,7 +153,7 @@ size_t UnknownFieldSet::SpaceUsedExcludingSelfLong() const {
   return total_size;
 }
 
-size_t UnknownFieldSet::SpaceUsedLong() const {
+int UnknownFieldSet::SpaceUsed() const {
   return sizeof(*this) + SpaceUsedExcludingSelf();
 }
 
@@ -154,8 +161,8 @@ void UnknownFieldSet::AddVarint(int number, uint64 value) {
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_VARINT);
-  field.data_.varint_ = value;
-  if (fields_ == NULL) fields_ = new std::vector<UnknownField>();
+  field.varint_ = value;
+  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
 }
 
@@ -163,8 +170,8 @@ void UnknownFieldSet::AddFixed32(int number, uint32 value) {
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_FIXED32);
-  field.data_.fixed32_ = value;
-  if (fields_ == NULL) fields_ = new std::vector<UnknownField>();
+  field.fixed32_ = value;
+  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
 }
 
@@ -172,8 +179,8 @@ void UnknownFieldSet::AddFixed64(int number, uint64 value) {
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_FIXED64);
-  field.data_.fixed64_ = value;
-  if (fields_ == NULL) fields_ = new std::vector<UnknownField>();
+  field.fixed64_ = value;
+  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
 }
 
@@ -181,10 +188,10 @@ string* UnknownFieldSet::AddLengthDelimited(int number) {
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_LENGTH_DELIMITED);
-  field.data_.length_delimited_.string_value_ = new string;
-  if (fields_ == NULL) fields_ = new std::vector<UnknownField>();
+  field.length_delimited_.string_value_ = new string;
+  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
-  return field.data_.length_delimited_.string_value_;
+  return field.length_delimited_.string_value_;
 }
 
 
@@ -192,14 +199,14 @@ UnknownFieldSet* UnknownFieldSet::AddGroup(int number) {
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_GROUP);
-  field.data_.group_ = new UnknownFieldSet;
-  if (fields_ == NULL) fields_ = new std::vector<UnknownField>();
+  field.group_ = new UnknownFieldSet;
+  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
-  return field.data_.group_;
+  return field.group_;
 }
 
 void UnknownFieldSet::AddField(const UnknownField& field) {
-  if (fields_ == NULL) fields_ = new std::vector<UnknownField>();
+  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
   fields_->back().DeepCopy(field);
 }
@@ -276,10 +283,10 @@ bool UnknownFieldSet::ParseFromArray(const void* data, int size) {
 void UnknownField::Delete() {
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
-      delete data_.length_delimited_.string_value_;
+      delete length_delimited_.string_value_;
       break;
     case UnknownField::TYPE_GROUP:
-      delete data_.group_;
+      delete group_;
       break;
     default:
       break;
@@ -291,10 +298,10 @@ void UnknownField::Delete() {
 void UnknownField::Reset() {
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
-      data_.length_delimited_.string_value_ = NULL;
+      length_delimited_.string_value_ = NULL;
       break;
     case UnknownField::TYPE_GROUP: {
-      data_.group_ = NULL;
+      group_ = NULL;
       break;
     }
     default:
@@ -305,13 +312,13 @@ void UnknownField::Reset() {
 void UnknownField::DeepCopy(const UnknownField& other) {
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
-      data_.length_delimited_.string_value_ = new string(
-          *data_.length_delimited_.string_value_);
+      length_delimited_.string_value_ = new string(
+          *length_delimited_.string_value_);
       break;
     case UnknownField::TYPE_GROUP: {
       UnknownFieldSet* group = new UnknownFieldSet();
-      group->InternalMergeFrom(*data_.group_);
-      data_.group_ = group;
+      group->InternalMergeFrom(*group_);
+      group_ = group;
       break;
     }
     default:
@@ -323,14 +330,14 @@ void UnknownField::DeepCopy(const UnknownField& other) {
 void UnknownField::SerializeLengthDelimitedNoTag(
     io::CodedOutputStream* output) const {
   GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
-  const string& data = *data_.length_delimited_.string_value_;
+  const string& data = *length_delimited_.string_value_;
   output->WriteVarint32(data.size());
   output->WriteRawMaybeAliased(data.data(), data.size());
 }
 
 uint8* UnknownField::SerializeLengthDelimitedNoTagToArray(uint8* target) const {
   GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
-  const string& data = *data_.length_delimited_.string_value_;
+  const string& data = *length_delimited_.string_value_;
   target = io::CodedOutputStream::WriteVarint32ToArray(data.size(), target);
   target = io::CodedOutputStream::WriteStringToArray(data, target);
   return target;

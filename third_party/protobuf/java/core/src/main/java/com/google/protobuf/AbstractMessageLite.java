@@ -30,8 +30,6 @@
 
 package com.google.protobuf;
 
-import static com.google.protobuf.Internal.checkNotNull;
-
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,9 +45,10 @@ import java.util.Collection;
  */
 public abstract class AbstractMessageLite<
     MessageType extends AbstractMessageLite<MessageType, BuilderType>,
-    BuilderType extends AbstractMessageLite.Builder<MessageType, BuilderType>>
+    BuilderType extends AbstractMessageLite.Builder<MessageType, BuilderType>> 
         implements MessageLite {
   protected int memoizedHashCode = 0;
+  
   @Override
   public ByteString toByteString() {
     try {
@@ -58,7 +57,9 @@ public abstract class AbstractMessageLite<
       writeTo(out.getCodedOutput());
       return out.build();
     } catch (IOException e) {
-      throw new RuntimeException(getSerializingExceptionMessage("ByteString"), e);
+      throw new RuntimeException(
+        "Serializing to a ByteString threw an IOException (should " +
+        "never happen).", e);
     }
   }
 
@@ -71,7 +72,9 @@ public abstract class AbstractMessageLite<
       output.checkNoSpaceLeft();
       return result;
     } catch (IOException e) {
-      throw new RuntimeException(getSerializingExceptionMessage("byte array"), e);
+      throw new RuntimeException(
+        "Serializing to a byte array threw an IOException " +
+        "(should never happen).", e);
     }
   }
 
@@ -106,11 +109,6 @@ public abstract class AbstractMessageLite<
     return new UninitializedMessageException(this);
   }
 
-  private String getSerializingExceptionMessage(String target) {
-    return "Serializing " + getClass().getName() + " to a " + target
-        + " threw an IOException (should never happen).";
-  }
-
   protected static void checkByteStringIsUtf8(ByteString byteString)
       throws IllegalArgumentException {
     if (!byteString.isValidUtf8()) {
@@ -122,7 +120,7 @@ public abstract class AbstractMessageLite<
       final Collection<? super T> list) {
     Builder.addAll(values, list);
   }
-
+  
   /**
    * A partial implementation of the {@link Message.Builder} interface which
    * implements as many methods of that interface as possible in terms of
@@ -158,7 +156,9 @@ public abstract class AbstractMessageLite<
       } catch (InvalidProtocolBufferException e) {
         throw e;
       } catch (IOException e) {
-        throw new RuntimeException(getReadingExceptionMessage("ByteString"), e);
+        throw new RuntimeException(
+          "Reading from a ByteString threw an IOException (should " +
+          "never happen).", e);
       }
     }
 
@@ -174,7 +174,9 @@ public abstract class AbstractMessageLite<
       } catch (InvalidProtocolBufferException e) {
         throw e;
       } catch (IOException e) {
-        throw new RuntimeException(getReadingExceptionMessage("ByteString"), e);
+        throw new RuntimeException(
+          "Reading from a ByteString threw an IOException (should " +
+          "never happen).", e);
       }
     }
 
@@ -195,7 +197,9 @@ public abstract class AbstractMessageLite<
       } catch (InvalidProtocolBufferException e) {
         throw e;
       } catch (IOException e) {
-        throw new RuntimeException(getReadingExceptionMessage("byte array"), e);
+        throw new RuntimeException(
+          "Reading from a byte array threw an IOException (should " +
+          "never happen).", e);
       }
     }
 
@@ -221,7 +225,9 @@ public abstract class AbstractMessageLite<
       } catch (InvalidProtocolBufferException e) {
         throw e;
       } catch (IOException e) {
-        throw new RuntimeException(getReadingExceptionMessage("byte array"), e);
+        throw new RuntimeException(
+          "Reading from a byte array threw an IOException (should " +
+          "never happen).", e);
       }
     }
 
@@ -315,7 +321,7 @@ public abstract class AbstractMessageLite<
       return mergeDelimitedFrom(input,
           ExtensionRegistryLite.getEmptyRegistry());
     }
-
+    
     @Override
     @SuppressWarnings("unchecked") // isInstance takes care of this
     public BuilderType mergeFrom(final MessageLite other) {
@@ -323,16 +329,11 @@ public abstract class AbstractMessageLite<
         throw new IllegalArgumentException(
             "mergeFrom(MessageLite) can only merge messages of the same type.");
       }
-
+        
       return internalMergeFrom((MessageType) other);
     }
-
+    
     protected abstract BuilderType internalMergeFrom(MessageType message);
-
-    private String getReadingExceptionMessage(String target) {
-      return "Reading " + getClass().getName() + " from a " + target
-          + " threw an IOException (should never happen).";
-    }
 
     /**
      * Construct an UninitializedMessageException reporting missing fields in
@@ -353,23 +354,22 @@ public abstract class AbstractMessageLite<
      */
     protected static <T> void addAll(final Iterable<T> values,
                                      final Collection<? super T> list) {
-      checkNotNull(values);
+      if (values == null) {
+        throw new NullPointerException();
+      }
       if (values instanceof LazyStringList) {
         // For StringOrByteStringLists, check the underlying elements to avoid
         // forcing conversions of ByteStrings to Strings.
-        // TODO(dweis): Could we just prohibit nulls in all protobuf lists and get rid of this? Is
-        // if even possible to hit this condition as all protobuf methods check for null first,
-        // right?
         checkForNullValues(((LazyStringList) values).getUnderlyingElements());
         list.addAll((Collection<T>) values);
       } else if (values instanceof Collection) {
-        if (!(values instanceof PrimitiveNonBoxingCollection)) {
-          checkForNullValues(values);
-        }
+        checkForNullValues(values);
         list.addAll((Collection<T>) values);
       } else {
         for (final T value : values) {
-          checkNotNull(value);
+          if (value == null) {
+            throw new NullPointerException();
+          }
           list.add(value);
         }
       }
@@ -377,7 +377,9 @@ public abstract class AbstractMessageLite<
 
     private static void checkForNullValues(final Iterable<?> values) {
       for (final Object value : values) {
-        checkNotNull(value);
+        if (value == null) {
+          throw new NullPointerException();
+        }
       }
     }
   }

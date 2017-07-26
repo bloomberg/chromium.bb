@@ -81,16 +81,12 @@ using util::Status;
 // For each test we split the input string on every possible character to ensure
 // the parser is able to handle arbitrarily split input for all cases. We also
 // do a final test of the entire test case one character at a time.
-//
-// It is verified that expected calls to the mocked objects are in sequence.
 class JsonStreamParserTest : public ::testing::Test {
  protected:
   JsonStreamParserTest() : mock_(), ow_(&mock_) {}
   virtual ~JsonStreamParserTest() {}
 
-  util::Status RunTest(StringPiece json, int split, bool coerce_utf8 = false,
-                       bool allow_empty_null = false,
-                       bool loose_float_number_conversion = false) {
+  util::Status RunTest(StringPiece json, int split, bool coerce_utf8 = false) {
     JsonStreamParser parser(&mock_);
 
     // Special case for split == length, test parsing one character at a time.
@@ -120,11 +116,8 @@ class JsonStreamParserTest : public ::testing::Test {
     return result;
   }
 
-  void DoTest(StringPiece json, int split, bool coerce_utf8 = false,
-              bool allow_empty_null = false,
-              bool loose_float_number_conversion = false) {
-    util::Status result = RunTest(json, split, coerce_utf8, allow_empty_null,
-                                  loose_float_number_conversion);
+  void DoTest(StringPiece json, int split, bool coerce_utf8 = false) {
+    util::Status result = RunTest(json, split, coerce_utf8);
     if (!result.ok()) {
       GOOGLE_LOG(WARNING) << result;
     }
@@ -132,21 +125,14 @@ class JsonStreamParserTest : public ::testing::Test {
   }
 
   void DoErrorTest(StringPiece json, int split, StringPiece error_prefix,
-                   bool coerce_utf8 = false, bool allow_empty_null = false) {
-    util::Status result =
-        RunTest(json, split, coerce_utf8, allow_empty_null);
+                   bool coerce_utf8 = false) {
+    util::Status result = RunTest(json, split, coerce_utf8);
     EXPECT_EQ(util::error::INVALID_ARGUMENT, result.error_code());
     StringPiece error_message(result.error_message());
     EXPECT_EQ(error_prefix, error_message.substr(0, error_prefix.size()));
   }
 
 
-#ifndef _MSC_VER
-  // TODO(xiaofeng): We have to disable InSequence check for MSVC because it
-  // causes stack overflow due to its use of a linked list that is desctructed
-  // recursively.
-  ::testing::InSequence in_sequence_;
-#endif  // !_MSC_VER
   MockObjectWriter mock_;
   ExpectingObjectWriter ow_;
 };
@@ -322,27 +308,18 @@ TEST_F(JsonStreamParserTest, ObjectKeyTypes) {
   }
 }
 
-// - array containing primitive values (true, false, null, num, string)
-TEST_F(JsonStreamParserTest, ArrayPrimitiveValues) {
-  StringPiece str = "[true, false, null, 'one', \"two\"]";
+// - array containing array, object, values (true, false, null, num, string)
+TEST_F(JsonStreamParserTest, ArrayValues) {
+  StringPiece str =
+      "[true, false, null, 'a string', \"another string\", [22, -127, 45.3, "
+      "-1056.4, 11779497823553162765], {'key': true}]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("")
         ->RenderBool("", true)
         ->RenderBool("", false)
         ->RenderNull("")
-        ->RenderString("", "one")
-        ->RenderString("", "two")
-        ->EndList();
-    DoTest(str, i);
-  }
-}
-
-// - array containing array, object
-TEST_F(JsonStreamParserTest, ArrayComplexValues) {
-  StringPiece str =
-      "[[22, -127, 45.3, -1056.4, 11779497823553162765], {'key': true}]";
-  for (int i = 0; i <= str.length(); ++i) {
-    ow_.StartList("")
+        ->RenderString("", "a string")
+        ->RenderString("", "another string")
         ->StartList("")
         ->RenderUint64("", 22)
         ->RenderInt64("", -127)
@@ -357,7 +334,6 @@ TEST_F(JsonStreamParserTest, ArrayComplexValues) {
     DoTest(str, i);
   }
 }
-
 
 // - object containing array, object, value (true, false, null, num, string)
 TEST_F(JsonStreamParserTest, ObjectValues) {
@@ -711,19 +687,17 @@ TEST_F(JsonStreamParserTest, NegativeNumberTooBig) {
   }
 }
 
+/*
+TODO(sven): Fail parsing when parsing a double that is too large.
+
 TEST_F(JsonStreamParserTest, DoubleTooBig) {
-  StringPiece str = "[1.89769e+308]";
+  StringPiece str = "[184464073709551232321616.45]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("");
-    DoErrorTest(str, i, "Number exceeds the range of double.");
-  }
-  str = "[-1.89769e+308]";
-  for (int i = 0; i <= str.length(); ++i) {
-    ow_.StartList("");
-    DoErrorTest(str, i, "Number exceeds the range of double.");
+    DoErrorTest(str, i, "Unable to parse number");
   }
 }
-
+*/
 
 // invalid bare backslash.
 TEST_F(JsonStreamParserTest, UnfinishedEscape) {

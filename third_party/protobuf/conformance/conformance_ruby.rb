@@ -30,22 +30,21 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require 'conformance_pb'
-require 'google/protobuf/test_messages_proto3_pb'
+require 'conformance'
 
 $test_count = 0
 $verbose = false
 
 def do_test(request)
-  test_message = ProtobufTestMessages::Proto3::TestAllTypes.new
+  test_message = Conformance::TestAllTypes.new
   response = Conformance::ConformanceResponse.new
 
   begin
     case request.payload
     when :protobuf_payload
       begin
-        test_message = ProtobufTestMessages::Proto3::TestAllTypes.decode(
-            request.protobuf_payload)
+        test_message =
+          Conformance::TestAllTypes.decode(request.protobuf_payload)
       rescue Google::Protobuf::ParseError => err
         response.parse_error = err.message.encode('utf-8')
         return response
@@ -53,8 +52,7 @@ def do_test(request)
 
     when :json_payload
       begin
-        test_message = ProtobufTestMessages::Proto3::TestAllTypes.decode_json(
-            request.json_payload)
+        test_message = Conformance::TestAllTypes.decode_json(request.json_payload)
       rescue Google::Protobuf::ParseError => err
         response.parse_error = err.message.encode('utf-8')
         return response

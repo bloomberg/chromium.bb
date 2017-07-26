@@ -32,7 +32,6 @@
 
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 
@@ -158,18 +157,15 @@ namespace Google.Protobuf
             {
                 // WriteTagAndValue ignores default values
                 var stream = new MemoryStream();
-                CodedOutputStream codedOutput;
-#if !NET35
-                codedOutput = new CodedOutputStream(stream);
+                var codedOutput = new CodedOutputStream(stream);
                 codec.WriteTagAndValue(codedOutput, codec.DefaultValue);
                 codedOutput.Flush();
                 Assert.AreEqual(0, stream.Position);
                 Assert.AreEqual(0, codec.CalculateSizeWithTag(codec.DefaultValue));
-                if (typeof(T).GetTypeInfo().IsValueType)
+                if (typeof(T).IsValueType)
                 {
                     Assert.AreEqual(default(T), codec.DefaultValue);
                 }
-#endif
 
                 // The plain ValueWriter/ValueReader delegates don't.
                 if (codec.DefaultValue != null) // This part isn't appropriate for message types.

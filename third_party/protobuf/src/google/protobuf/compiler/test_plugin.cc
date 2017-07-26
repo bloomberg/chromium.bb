@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/compiler/mock_code_generator.h>
+#include <google/protobuf/stubs/strutil.h>
 
 int main(int argc, char* argv[]) {
 #ifdef _MSC_VER

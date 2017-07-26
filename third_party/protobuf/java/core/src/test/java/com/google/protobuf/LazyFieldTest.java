@@ -32,7 +32,10 @@ package com.google.protobuf;
 
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
+
 import junit.framework.TestCase;
+
+import java.io.IOException;
 
 /**
  * Unit test for {@link LazyField}.
@@ -88,7 +91,6 @@ public class LazyFieldTest extends TestCase {
     assertFalse(message.equals(lazyField.getValue()));
   }
 
-  @SuppressWarnings("EqualsIncompatibleType") // LazyField.equals() is not symmetric
   public void testEqualsObjectEx() throws Exception {
     TestAllExtensions message = TestUtil.getAllExtensionsSet();
     LazyField lazyField = createLazyFieldFromMessage(message);

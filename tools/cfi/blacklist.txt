@@ -107,6 +107,3 @@ fun:*hasAspectRatio*
 fun:*nextBreakablePosition*
 fun:*supportsCachedOffsets*
 fun:*traceImpl*
-
-# b/64003142
-fun:*internal_default_instance*

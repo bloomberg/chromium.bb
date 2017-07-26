@@ -6,7 +6,6 @@ foreach(_library
   libprotoc)
   set_property(TARGET ${_library}
     PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-    $<BUILD_INTERFACE:${protobuf_source_dir}/src>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
   install(TARGETS ${_library} EXPORT protobuf-targets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${_library}
@@ -17,26 +16,34 @@ endforeach()
 install(TARGETS protoc EXPORT protobuf-targets
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protoc)
 
-file(STRINGS extract_includes.bat.in _extract_strings
-  REGEX "^copy")
-foreach(_extract_string ${_extract_strings})
-  string(REGEX REPLACE "^.* .+ include\\\\(.+)$" "\\1"
-    _header ${_extract_string})
-  string(REPLACE "\\" "/" _header ${_header})
-  get_filename_component(_extract_from "${protobuf_SOURCE_DIR}/../src/${_header}" ABSOLUTE)
-  get_filename_component(_extract_name ${_header} NAME)
-  get_filename_component(_extract_to "${CMAKE_INSTALL_INCLUDEDIR}/${_header}" PATH)
-  if(EXISTS "${_extract_from}")
-    install(FILES "${_extract_from}"
-      DESTINATION "${_extract_to}"
-      COMPONENT protobuf-headers
-      RENAME "${_extract_name}")
-  else()
-    message(AUTHOR_WARNING "The file \"${_extract_from}\" is listed in "
-      "\"${protobuf_SOURCE_DIR}/cmake/extract_includes.bat.in\" "
-      "but there not exists. The file will not be installed.")
-  endif()
-endforeach()
+if(TRUE)
+  file(STRINGS extract_includes.bat.in _extract_strings
+    REGEX "^copy")
+  foreach(_extract_string ${_extract_strings})
+    string(REPLACE "copy \${PROTOBUF_SOURCE_WIN32_PATH}\\" ""
+      _extract_string ${_extract_string})
+    string(REPLACE "\\" "/" _extract_string ${_extract_string})
+    string(REGEX MATCH "^[^ ]+"
+      _extract_from ${_extract_string})
+    string(REGEX REPLACE "^${_extract_from} ([^$]+)" "\\1"
+      _extract_to ${_extract_string})
+    get_filename_component(_extract_from "${protobuf_SOURCE_DIR}/${_extract_from}" ABSOLUTE)
+    get_filename_component(_extract_name ${_extract_to} NAME)
+    get_filename_component(_extract_to ${_extract_to} PATH)
+    string(REPLACE "include/" "${CMAKE_INSTALL_INCLUDEDIR}/"
+      _extract_to "${_extract_to}")
+    if(EXISTS "${_extract_from}")
+      install(FILES "${_extract_from}"
+        DESTINATION "${_extract_to}"
+        COMPONENT protobuf-headers
+        RENAME "${_extract_name}")
+    else()
+      message(AUTHOR_WARNING "The file \"${_extract_from}\" is listed in "
+        "\"${protobuf_SOURCE_DIR}/cmake/extract_includes.bat.in\" "
+        "but there not exists. The file will not be installed.")
+    endif()
+  endforeach()
+endif()
 
 # Internal function for parsing auto tools scripts
 function(_protobuf_auto_list FILE_NAME VARIABLE)
@@ -75,43 +82,22 @@ foreach(_file ${nobase_dist_proto_DATA})
   endif()
 endforeach()
 
-# Install configuration
-set(_cmakedir_desc "Directory relative to CMAKE_INSTALL to install the cmake configuration files")
-if(NOT MSVC)
-  set(CMAKE_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/protobuf" CACHE STRING "${_cmakedir_desc}")
-else()
-  set(CMAKE_INSTALL_CMAKEDIR "cmake" CACHE STRING "${_cmakedir_desc}")
-endif()
-mark_as_advanced(CMAKE_INSTALL_CMAKEDIR)
-
-configure_file(protobuf-config.cmake.in
-  ${CMAKE_INSTALL_CMAKEDIR}/protobuf-config.cmake @ONLY)
-configure_file(protobuf-config-version.cmake.in
-  ${CMAKE_INSTALL_CMAKEDIR}/protobuf-config-version.cmake @ONLY)
-configure_file(protobuf-module.cmake.in
-  ${CMAKE_INSTALL_CMAKEDIR}/protobuf-module.cmake @ONLY)
-configure_file(protobuf-options.cmake
-  ${CMAKE_INSTALL_CMAKEDIR}/protobuf-options.cmake @ONLY)
-
-# Allows the build directory to be used as a find directory.
-export(TARGETS libprotobuf-lite libprotobuf libprotoc protoc
-  NAMESPACE protobuf::
-  FILE ${CMAKE_INSTALL_CMAKEDIR}/protobuf-targets.cmake
-)
+# Export configuration
 
 install(EXPORT protobuf-targets
-  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
-  NAMESPACE protobuf::
+  DESTINATION "lib/cmake/protobuf"
   COMPONENT protobuf-export)
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}/
-  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
-  COMPONENT protobuf-export
-  PATTERN protobuf-targets.cmake EXCLUDE
-)
+configure_file(protobuf-config.cmake.in
+  protobuf-config.cmake @ONLY)
+configure_file(protobuf-config-version.cmake.in
+  protobuf-config-version.cmake @ONLY)
+configure_file(protobuf-module.cmake.in
+  protobuf-module.cmake @ONLY)
 
-option(protobuf_INSTALL_EXAMPLES "Install the examples folder" OFF)
-if(protobuf_INSTALL_EXAMPLES)
-  install(DIRECTORY ../examples/ DESTINATION examples
-    COMPONENT protobuf-examples)
-endif()
+install(FILES
+  "${protobuf_BINARY_DIR}/protobuf-config.cmake"
+  "${protobuf_BINARY_DIR}/protobuf-config-version.cmake"
+  "${protobuf_BINARY_DIR}/protobuf-module.cmake"
+  DESTINATION "lib/cmake/protobuf"
+  COMPONENT protobuf-export)

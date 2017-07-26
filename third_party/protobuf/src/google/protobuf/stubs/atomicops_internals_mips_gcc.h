@@ -125,8 +125,8 @@ inline Atomic32 Barrier_AtomicIncrement(volatile Atomic32* ptr,
 // ensure that no later memory access can be reordered ahead of the operation.
 // "Release" operations ensure that no previous memory access can be reordered
 // after the operation.  "Barrier" operations have both "Acquire" and "Release"
-// semantics.   A MemoryBarrierInternal() has "Barrier" semantics, but does no
-// memory access.
+// semantics.   A MemoryBarrier() has "Barrier" semantics, but does no memory
+// access.
 inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
                                        Atomic32 old_value,
                                        Atomic32 new_value) {
@@ -149,17 +149,17 @@ inline void NoBarrier_Store(volatile Atomic32* ptr, Atomic32 value) {
   *ptr = value;
 }
 
-inline void MemoryBarrierInternal() {
+inline void MemoryBarrier() {
   __asm__ __volatile__("sync" : : : "memory");
 }
 
 inline void Acquire_Store(volatile Atomic32* ptr, Atomic32 value) {
   *ptr = value;
-  MemoryBarrierInternal();
+  MemoryBarrier();
 }
 
 inline void Release_Store(volatile Atomic32* ptr, Atomic32 value) {
-  MemoryBarrierInternal();
+  MemoryBarrier();
   *ptr = value;
 }
 
@@ -169,12 +169,12 @@ inline Atomic32 NoBarrier_Load(volatile const Atomic32* ptr) {
 
 inline Atomic32 Acquire_Load(volatile const Atomic32* ptr) {
   Atomic32 value = *ptr;
-  MemoryBarrierInternal();
+  MemoryBarrier();
   return value;
 }
 
 inline Atomic32 Release_Load(volatile const Atomic32* ptr) {
-  MemoryBarrierInternal();
+  MemoryBarrier();
   return *ptr;
 }
 
@@ -247,9 +247,9 @@ inline Atomic64 NoBarrier_AtomicIncrement(volatile Atomic64* ptr,
 
 inline Atomic64 Barrier_AtomicIncrement(volatile Atomic64* ptr,
                                         Atomic64 increment) {
-  MemoryBarrierInternal();
+  MemoryBarrier();
   Atomic64 res = NoBarrier_AtomicIncrement(ptr, increment);
-  MemoryBarrierInternal();
+  MemoryBarrier();
   return res;
 }
 
@@ -257,20 +257,20 @@ inline Atomic64 Barrier_AtomicIncrement(volatile Atomic64* ptr,
 // ensure that no later memory access can be reordered ahead of the operation.
 // "Release" operations ensure that no previous memory access can be reordered
 // after the operation.  "Barrier" operations have both "Acquire" and "Release"
-// semantics.   A MemoryBarrierInternal() has "Barrier" semantics, but does no
-// memory access.
+// semantics.   A MemoryBarrier() has "Barrier" semantics, but does no memory
+// access.
 inline Atomic64 Acquire_CompareAndSwap(volatile Atomic64* ptr,
                                        Atomic64 old_value,
                                        Atomic64 new_value) {
   Atomic64 res = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
-  MemoryBarrierInternal();
+  MemoryBarrier();
   return res;
 }
 
 inline Atomic64 Release_CompareAndSwap(volatile Atomic64* ptr,
                                        Atomic64 old_value,
                                        Atomic64 new_value) {
-  MemoryBarrierInternal();
+  MemoryBarrier();
   return NoBarrier_CompareAndSwap(ptr, old_value, new_value);
 }
 
@@ -280,11 +280,11 @@ inline void NoBarrier_Store(volatile Atomic64* ptr, Atomic64 value) {
 
 inline void Acquire_Store(volatile Atomic64* ptr, Atomic64 value) {
   *ptr = value;
-  MemoryBarrierInternal();
+  MemoryBarrier();
 }
 
 inline void Release_Store(volatile Atomic64* ptr, Atomic64 value) {
-  MemoryBarrierInternal();
+  MemoryBarrier();
   *ptr = value;
 }
 
@@ -294,12 +294,12 @@ inline Atomic64 NoBarrier_Load(volatile const Atomic64* ptr) {
 
 inline Atomic64 Acquire_Load(volatile const Atomic64* ptr) {
   Atomic64 value = *ptr;
-  MemoryBarrierInternal();
+  MemoryBarrier();
   return value;
 }
 
 inline Atomic64 Release_Load(volatile const Atomic64* ptr) {
-  MemoryBarrierInternal();
+  MemoryBarrier();
   return *ptr;
 }
 #endif

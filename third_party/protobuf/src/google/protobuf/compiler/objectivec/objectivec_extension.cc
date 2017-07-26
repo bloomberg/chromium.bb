@@ -49,9 +49,9 @@ ExtensionGenerator::ExtensionGenerator(const string& root_class_name,
   if (descriptor->is_map()) {
     // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
     // error cases, so it seems to be ok to use as a back door for errors.
-    std::cerr << "error: Extension is a map<>!"
-         << " That used to be blocked by the compiler." << std::endl;
-    std::cerr.flush();
+    cerr << "error: Extension is a map<>!"
+         << " That used to be blocked by the compiler." << endl;
+    cerr.flush();
     abort();
   }
 }
@@ -59,25 +59,22 @@ ExtensionGenerator::ExtensionGenerator(const string& root_class_name,
 ExtensionGenerator::~ExtensionGenerator() {}
 
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
-  std::map<string, string> vars;
+  map<string, string> vars;
   vars["method_name"] = method_name_;
   SourceLocation location;
   if (descriptor_->GetSourceLocation(&location)) {
-    vars["comments"] = BuildCommentsString(location, true);
+    vars["comments"] = BuildCommentsString(location);
   } else {
     vars["comments"] = "";
   }
-  // Unlike normal message fields, check if the file for the extension was
-  // deprecated.
-  vars["deprecated_attribute"] = GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file());
   printer->Print(vars,
                  "$comments$"
-                 "+ (GPBExtensionDescriptor *)$method_name$$deprecated_attribute$;\n");
+                 "+ (GPBExtensionDescriptor *)$method_name$;\n");
 }
 
 void ExtensionGenerator::GenerateStaticVariablesInitialization(
     io::Printer* printer) {
-  std::map<string, string> vars;
+  map<string, string> vars;
   vars["root_class_and_method_name"] = root_class_and_method_name_;
   vars["extended_type"] = ClassName(descriptor_->containing_type());
   vars["number"] = SimpleItoa(descriptor_->number());
@@ -88,7 +85,7 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
   if (descriptor_->containing_type()->options().message_set_wire_format())
     options.push_back("GPBExtensionSetWireFormat");
 
-  vars["options"] = BuildFlagsString(FLAGTYPE_EXTENSION, options);
+  vars["options"] = BuildFlagsString(options);
 
   ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
   string singular_type;

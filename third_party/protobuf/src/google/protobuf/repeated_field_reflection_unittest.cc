@@ -189,29 +189,14 @@ TEST(RepeatedFieldReflectionTest, ExtensionFields) {
   }
 }
 
-template <typename Ref, typename MessageType, typename ValueType>
-void TestRepeatedFieldRefIteratorForPrimitive(
+template<typename Ref, typename MessageType, typename ValueType>
+void TestRepeatedFieldRefIterator(
     const Ref& handle, const MessageType& message,
     ValueType (MessageType::*GetFunc)(int) const) {
   int index = 0;
   for (typename Ref::const_iterator it = handle.begin();
        it != handle.end(); ++it) {
     EXPECT_EQ((message.*GetFunc)(index), *it);
-    ++index;
-  }
-  EXPECT_EQ(handle.size(), index);
-}
-
-template <typename MessageType, typename ValueType>
-void TestRepeatedFieldRefIteratorForString(
-    const RepeatedFieldRef<string>& handle, const MessageType& message,
-    ValueType (MessageType::*GetFunc)(int) const) {
-  int index = 0;
-  for (typename RepeatedFieldRef<string>::const_iterator it = handle.begin();
-       it != handle.end(); ++it) {
-    // Test both operator* and operator->
-    EXPECT_EQ((message.*GetFunc)(index), *it);
-    EXPECT_EQ((message.*GetFunc)(index).size(), it->size());
     ++index;
   }
   EXPECT_EQ(handle.size(), index);
@@ -327,12 +312,12 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForRegularFields) {
   }
 
   // Test iterators.
-  TestRepeatedFieldRefIteratorForPrimitive(rf_int32, message,
-                                           &TestAllTypes::repeated_int32);
-  TestRepeatedFieldRefIteratorForPrimitive(rf_double, message,
-                                           &TestAllTypes::repeated_double);
-  TestRepeatedFieldRefIteratorForString(rf_string, message,
-                                        &TestAllTypes::repeated_string);
+  TestRepeatedFieldRefIterator(rf_int32, message,
+                               &TestAllTypes::repeated_int32);
+  TestRepeatedFieldRefIterator(rf_double, message,
+                               &TestAllTypes::repeated_double);
+  TestRepeatedFieldRefIterator(rf_string, message,
+                               &TestAllTypes::repeated_string);
 
   // Test iterators for message fields.
   typedef RepeatedFieldRef<ForeignMessage>::iterator MessageIterator;
@@ -489,10 +474,10 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForEnums) {
     EXPECT_EQ(TestAllTypes::BAZ, message.repeated_nested_enum(i));
   }
 
-  TestRepeatedFieldRefIteratorForPrimitive(enum_ref, message,
-                                           &TestAllTypes::repeated_nested_enum);
-  TestRepeatedFieldRefIteratorForPrimitive(int32_ref, message,
-                                           &TestAllTypes::repeated_nested_enum);
+  TestRepeatedFieldRefIterator(enum_ref, message,
+                               &TestAllTypes::repeated_nested_enum);
+  TestRepeatedFieldRefIterator(int32_ref, message,
+                               &TestAllTypes::repeated_nested_enum);
 
   // Test Add()
   mutable_enum_ref.Add(TestAllTypes::FOO);

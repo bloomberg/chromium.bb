@@ -36,70 +36,61 @@
 #include <google/protobuf/stubs/common.h>
 
 #include <Python.h>
+
 namespace google {
-namespace protobuf {
-namespace python {
-
-// Owns a python object and decrements the reference count on destruction.
-// This class is not threadsafe.
-template <typename PyObjectStruct>
-class ScopedPythonPtr {
+class ScopedPyObjectPtr {
  public:
-  // Takes the ownership of the specified object to ScopedPythonPtr.
-  // The reference count of the specified py_object is not incremented.
-  explicit ScopedPythonPtr(PyObjectStruct* py_object = NULL)
-      : ptr_(py_object) {}
+  // Constructor.  Defaults to initializing with NULL.
+  // There is no way to create an uninitialized ScopedPyObjectPtr.
+  explicit ScopedPyObjectPtr(PyObject* p = NULL) : ptr_(p) { }
 
-  // If a PyObject is owned, decrement its reference count.
-  ~ScopedPythonPtr() { Py_XDECREF(ptr_); }
+  // Destructor.  If there is a PyObject object, delete it.
+  ~ScopedPyObjectPtr() {
+    Py_XDECREF(ptr_);
+  }
 
-  // Deletes the current owned object, if any.
-  // Then takes ownership of a new object without incrementing the reference
-  // count.
+  // Reset.  Deletes the current owned object, if any.
+  // Then takes ownership of a new object, if given.
   // This function must be called with a reference that you own.
   //   this->reset(this->get()) is wrong!
   //   this->reset(this->release()) is OK.
-  PyObjectStruct* reset(PyObjectStruct* p = NULL) {
+  PyObject* reset(PyObject* p = NULL) {
     Py_XDECREF(ptr_);
     ptr_ = p;
     return ptr_;
   }
 
-  // Releases ownership of the object without decrementing the reference count.
+  // Releases ownership of the object.
   // The caller now owns the returned reference.
-  PyObjectStruct* release() {
+  PyObject* release() {
     PyObject* p = ptr_;
     ptr_ = NULL;
     return p;
   }
 
-  PyObjectStruct* operator->() const {
+  PyObject* operator->() const  {
     assert(ptr_ != NULL);
     return ptr_;
   }
 
-  PyObjectStruct* get() const { return ptr_; }
+  PyObject* get() const { return ptr_; }
 
-  PyObject* as_pyobject() const { return reinterpret_cast<PyObject*>(ptr_); }
+  Py_ssize_t refcnt() const { return Py_REFCNT(ptr_); }
 
-  // Increments the reference count fo the current object.
-  // Should not be called when no object is held.
   void inc() const { Py_INCREF(ptr_); }
 
-  // True when a ScopedPyObjectPtr and a raw pointer refer to the same object.
-  // Comparison operators are non reflexive.
-  bool operator==(const PyObjectStruct* p) const { return ptr_ == p; }
-  bool operator!=(const PyObjectStruct* p) const { return ptr_ != p; }
+  // Comparison operators.
+  // These return whether a ScopedPyObjectPtr and a raw pointer
+  // refer to the same object, not just to two different but equal
+  // objects.
+  bool operator==(const PyObject* p) const { return ptr_ == p; }
+  bool operator!=(const PyObject* p) const { return ptr_ != p; }
 
  private:
-  PyObjectStruct* ptr_;
+  PyObject* ptr_;
 
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ScopedPythonPtr);
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ScopedPyObjectPtr);
 };
 
-typedef ScopedPythonPtr<PyObject> ScopedPyObjectPtr;
-
-}  // namespace python
-}  // namespace protobuf
 }  // namespace google
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_SCOPED_PYOBJECT_PTR_H__

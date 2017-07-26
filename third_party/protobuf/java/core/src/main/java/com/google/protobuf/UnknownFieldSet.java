@@ -31,6 +31,7 @@
 package com.google.protobuf;
 
 import com.google.protobuf.AbstractMessageLite.Builder.LimitedInputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -57,10 +57,7 @@ import java.util.TreeMap;
  * @author kenton@google.com Kenton Varda
  */
 public final class UnknownFieldSet implements MessageLite {
-
-  private UnknownFieldSet() {
-    fields = null;
-  }
+  private UnknownFieldSet() {}
 
   /** Create a new {@link Builder}. */
   public static Builder newBuilder() {
@@ -84,18 +81,16 @@ public final class UnknownFieldSet implements MessageLite {
     return defaultInstance;
   }
   private static final UnknownFieldSet defaultInstance =
-    new UnknownFieldSet(Collections.<Integer, Field>emptyMap(),
-        Collections.<Integer, Field>emptyMap());
+    new UnknownFieldSet(Collections.<Integer, Field>emptyMap());
 
   /**
    * Construct an {@code UnknownFieldSet} around the given map.  The map is
    * expected to be immutable.
    */
-  UnknownFieldSet(final Map<Integer, Field> fields,
-      final Map<Integer, Field> fieldsDescending) {
+  private UnknownFieldSet(final Map<Integer, Field> fields) {
     this.fields = fields;
   }
-  private final Map<Integer, Field> fields;
+  private Map<Integer, Field> fields;
 
 
   @Override
@@ -135,8 +130,7 @@ public final class UnknownFieldSet implements MessageLite {
   @Override
   public void writeTo(final CodedOutputStream output) throws IOException {
     for (final Map.Entry<Integer, Field> entry : fields.entrySet()) {
-      Field field = entry.getValue();
-      field.writeTo(entry.getKey(), output);
+      entry.getValue().writeTo(entry.getKey(), output);
     }
   }
 
@@ -228,8 +222,10 @@ public final class UnknownFieldSet implements MessageLite {
     }
   }
 
-
-  /** Get the number of bytes required to encode this set using {@code MessageSet} wire format. */
+  /**
+   * Get the number of bytes required to encode this set using
+   * {@code MessageSet} wire format.
+   */
   public int getSerializedSizeAsMessageSet() {
     int result = 0;
     for (final Map.Entry<Integer, Field> entry : fields.entrySet()) {
@@ -345,13 +341,12 @@ public final class UnknownFieldSet implements MessageLite {
      */
     @Override
     public UnknownFieldSet build() {
-      getFieldBuilder(0); // Force lastField to be built.
+      getFieldBuilder(0);  // Force lastField to be built.
       final UnknownFieldSet result;
       if (fields.isEmpty()) {
         result = getDefaultInstance();
       } else {
-        Map<Integer, Field> descendingFields = null;
-        result = new UnknownFieldSet(Collections.unmodifiableMap(fields), descendingFields);
+        result = new UnknownFieldSet(Collections.unmodifiableMap(fields));
       }
       fields = null;
       return result;
@@ -366,9 +361,8 @@ public final class UnknownFieldSet implements MessageLite {
     @Override
     public Builder clone() {
       getFieldBuilder(0);  // Force lastField to be built.
-      Map<Integer, Field> descendingFields = null;
       return UnknownFieldSet.newBuilder().mergeFrom(
-          new UnknownFieldSet(fields, descendingFields));
+          new UnknownFieldSet(fields));
     }
 
     @Override
@@ -715,7 +709,7 @@ public final class UnknownFieldSet implements MessageLite {
    * @see UnknownFieldSet
    */
   public static final class Field {
-    Field() {}
+    private Field() {}
 
     /** Construct a new {@link Builder}. */
     public static Builder newBuilder() {
@@ -845,10 +839,9 @@ public final class UnknownFieldSet implements MessageLite {
       }
     }
 
-
     /**
-     * Get the number of bytes required to encode this field, including field number, using {@code
-     * MessageSet} wire format.
+     * Get the number of bytes required to encode this field, including field
+     * number, using {@code MessageSet} wire format.
      */
     public int getSerializedSizeAsMessageSetExtension(final int fieldNumber) {
       int result = 0;
@@ -1027,7 +1020,7 @@ public final class UnknownFieldSet implements MessageLite {
       } catch (InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(builder.buildPartial());
       } catch (IOException e) {
-        throw new InvalidProtocolBufferException(e)
+        throw new InvalidProtocolBufferException(e.getMessage())
             .setUnfinishedMessage(builder.buildPartial());
       }
       return builder.buildPartial();
