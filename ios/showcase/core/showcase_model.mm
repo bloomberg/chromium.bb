@@ -94,7 +94,7 @@
     @{
       showcase::kClassForDisplayKey : @"TextBadgeView",
       showcase::kClassForInstantiationKey : @"SCTextBadgeViewController",
-      showcase::kUseCaseKey : @"Text badge view",
+      showcase::kUseCaseKey : @"Text badge",
     },
   ];
 }

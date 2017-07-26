@@ -14,11 +14,16 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.view.backgroundColor = [UIColor grayColor];
+  self.view.backgroundColor = [UIColor whiteColor];
   TextBadgeView* textBadge = [[TextBadgeView alloc] initWithText:@"TEXT"];
+  [textBadge setTranslatesAutoresizingMaskIntoConstraints:NO];
   [self.view addSubview:textBadge];
-  textBadge.bounds = CGRectMake(0.0f, 0.0f, 100.0f, 100.0f);
-  textBadge.center = self.view.center;
+  // Center badge on screen.
+  NSArray<NSLayoutConstraint*>* constraints = @[
+    [self.view.centerXAnchor constraintEqualToAnchor:textBadge.centerXAnchor],
+    [self.view.centerYAnchor constraintEqualToAnchor:textBadge.centerYAnchor]
+  ];
+  [NSLayoutConstraint activateConstraints:constraints];
 }
 
 @end
