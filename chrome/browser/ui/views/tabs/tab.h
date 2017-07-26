@@ -103,9 +103,9 @@ class Tab : public gfx::AnimationDelegate,
   void StartPulse();
   void StopPulse();
 
-  // Sets the visibility of the indicator shown when the tab title changes of
-  // an inactive pinned tab.
-  void SetPinnedTabTitleChangedIndicatorVisible(bool value);
+  // Sets the visibility of the indicator shown when the tab needs to indicate
+  // to the user that it needs their attention.
+  void SetTabNeedsAttention(bool value);
 
   // Set the background offset used to match the image in the inactive tab
   // to the frame image.
@@ -251,12 +251,11 @@ class Tab : public gfx::AnimationDelegate,
                                 bool active,
                                 SkColor color);
 
-  // Paints the pinned tab title changed indicator and |favicon_|. |favicon_|
-  // may be null. |favicon_draw_bounds| is |favicon_bounds_| adjusted for rtl
-  // and clipped to the bounds of the tab.
-  void PaintPinnedTabTitleChangedIndicatorAndIcon(
-      gfx::Canvas* canvas,
-      const gfx::Rect& favicon_draw_bounds);
+  // Paints the attention indicator and |favicon_|. |favicon_| may be null.
+  // |favicon_draw_bounds| is |favicon_bounds_| adjusted for rtl and clipped to
+  // the bounds of the tab.
+  void PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
+                                      const gfx::Rect& favicon_draw_bounds);
 
   // Paints the favicon, mirrored for RTL if needed.
   void PaintIcon(gfx::Canvas* canvas);
@@ -323,7 +322,7 @@ class Tab : public gfx::AnimationDelegate,
 
   bool should_display_crashed_favicon_;
 
-  bool showing_pinned_tab_title_changed_indicator_ = false;
+  bool showing_attention_indicator_ = false;
 
   // Whole-tab throbbing "pulse" animation.
   std::unique_ptr<gfx::ThrobAnimation> pulse_animation_;

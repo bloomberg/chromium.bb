@@ -234,7 +234,7 @@ static const CGFloat kTabElementYOrigin = 6;
   [tabView setTitle:title];
 
   if ([self pinned] && ![self active]) {
-    [tabView startAlert];
+    [tabView startOnceAlert];
   }
   [super setTitle:title];
 }
@@ -288,6 +288,10 @@ static const CGFloat kTabElementYOrigin = 6;
                                withAction:@selector(toggleMute:)];
   }
   [alertIndicatorButton_ transitionToAlertState:alertState];
+}
+
+- (void)setNeedsAttention {
+  [[self tabView] startInfiniteAlert];
 }
 
 - (HoverCloseButton*)closeButton {

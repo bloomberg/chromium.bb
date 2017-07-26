@@ -490,6 +490,10 @@ void BrowserTabStripController::TabBlockedStateChanged(WebContents* contents,
   SetTabDataAt(contents, model_index);
 }
 
+void BrowserTabStripController::TabNeedsAttentionAt(int index) {
+  tabstrip_->SetTabNeedsAttention(index);
+}
+
 void BrowserTabStripController::SetTabRendererDataFromModel(
     WebContents* contents,
     int model_index,

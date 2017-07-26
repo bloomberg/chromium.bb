@@ -640,7 +640,11 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& old_selection,
 void TabStrip::TabTitleChangedNotLoading(int model_index) {
   Tab* tab = tab_at(model_index);
   if (tab->data().pinned && !tab->IsActive())
-    tab->SetPinnedTabTitleChangedIndicatorVisible(true);
+    tab->SetTabNeedsAttention(true);
+}
+
+void TabStrip::SetTabNeedsAttention(int model_index) {
+  tab_at(model_index)->SetTabNeedsAttention(true);
 }
 
 int TabStrip::GetModelIndexOfTab(const Tab* tab) const {

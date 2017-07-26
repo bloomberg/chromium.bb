@@ -56,6 +56,7 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
                              content::WebContents* contents,
                              int index) override;
   void TabStripEmpty() override;
+  void TabNeedsAttentionAt(int index) override;
 
  private:
   id controller_;  // weak, owns me
@@ -91,6 +92,7 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
                                   atIndex:(NSInteger)index;
 - (void)tabStripEmpty;
 - (void)tabSelectionChanged;
+- (void)tabNeedsAttentionAt:(NSInteger)index;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TABS_TAB_STRIP_MODEL_OBSERVER_BRIDGE_H_

@@ -129,9 +129,8 @@ class TabStripTest : public views::ViewsTestBase {
   }
 
  protected:
-  bool IsShowingPinnedTabTitleChangedIndicator(int model_index) {
-    return tab_strip_->tab_at(model_index)
-        ->showing_pinned_tab_title_changed_indicator_;
+  bool IsShowingAttentionIndicator(int model_index) {
+    return tab_strip_->tab_at(model_index)->showing_attention_indicator_;
   }
 
   // Checks whether |tab| contains |point_in_tabstrip_coords|, where the point
@@ -523,7 +522,7 @@ TEST_F(TabStripTest, NewTabButtonStaysVisible) {
   EXPECT_LE(tab_strip_->GetNewTabButtonBounds().right(), kTabStripWidth);
 }
 
-TEST_F(TabStripTest, PinnedTabTitleChangedIndicatorHidesOnSelect) {
+TEST_F(TabStripTest, AttentionIndicatorHidesOnSelect) {
   for (int i = 0; i < 2; ++i)
     controller_->AddTab(i, (i == 0));
 
@@ -533,15 +532,15 @@ TEST_F(TabStripTest, PinnedTabTitleChangedIndicatorHidesOnSelect) {
   tab_strip_->SetTabData(0, pinned_data);
   tab_strip_->SetTabData(1, pinned_data);
 
-  EXPECT_FALSE(IsShowingPinnedTabTitleChangedIndicator(0));
-  EXPECT_FALSE(IsShowingPinnedTabTitleChangedIndicator(1));
+  EXPECT_FALSE(IsShowingAttentionIndicator(0));
+  EXPECT_FALSE(IsShowingAttentionIndicator(1));
 
   // Change the title of the second tab (first tab is selected).
   tab_strip_->TabTitleChangedNotLoading(1);
   // Indicator should be shown.
-  EXPECT_TRUE(IsShowingPinnedTabTitleChangedIndicator(1));
+  EXPECT_TRUE(IsShowingAttentionIndicator(1));
   // Select the second tab.
   controller_->SelectTab(1);
   // Indicator should hide.
-  EXPECT_FALSE(IsShowingPinnedTabTitleChangedIndicator(1));
+  EXPECT_FALSE(IsShowingAttentionIndicator(1));
 }
