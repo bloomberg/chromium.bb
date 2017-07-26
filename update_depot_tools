@@ -112,17 +112,11 @@ function update_git_repo {
 }
 
 # Update git checkouts.
-if [ "X$DEPOT_TOOLS_UPDATE" != "X0" ]; then
-  if [ -e "$base_dir/.git" ]; then
-    cd $base_dir
-    update_git_repo
-    cd - > /dev/null
-  fi
-
-  # Sync CIPD and CIPD client tools.
-  source "$base_dir/cipd_bin_setup.sh"
-  cipd_bin_setup
-
-  find "$base_dir" -iname "*.pyc" -exec rm -f {} \;
+if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/.git" ]
+then
+  cd $base_dir
+  update_git_repo
+  cd - > /dev/null
 fi
 
+find "$base_dir" -iname "*.pyc" -exec rm -f {} \;

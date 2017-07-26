@@ -7,6 +7,6 @@
 MYPATH=$(dirname "${BASH_SOURCE[0]}")
 
 source "$MYPATH/cipd_bin_setup.sh"
-cipd_bin_setup &> /dev/null
+cipd_bin_setup
 
 exec "$MYPATH/.cipd_bin/led" "$@"

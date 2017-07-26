@@ -9,7 +9,7 @@
 /*.py  recipes
 /*.sh  recipes
 
-# Extensionless tools we want and support scripts.
+# Extensionless tools we want
 /apply_issue                  recipes
 /clang*                       recipes
 /depot-tools-auth             recipes
