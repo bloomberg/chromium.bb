@@ -36,12 +36,6 @@
 
 namespace WTF {
 
-static const TextEncoding& UTF7Encoding() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, global_utf7_encoding,
-                                  ("UTF-7"));
-  return global_utf7_encoding;
-}
-
 TextEncoding::TextEncoding(const char* name)
     : name_(AtomicCanonicalTextEncodingName(name)) {
 }
@@ -98,13 +92,6 @@ bool TextEncoding::IsNonByteBasedEncoding() const {
          *this == UTF16BigEndianEncoding();
 }
 
-bool TextEncoding::IsUTF7Encoding() const {
-  if (NoExtendedTextEncodingNameUsed())
-    return false;
-
-  return *this == UTF7Encoding();
-}
-
 const TextEncoding& TextEncoding::ClosestByteBasedEquivalent() const {
   if (IsNonByteBasedEncoding())
     return UTF8Encoding();
@@ -113,10 +100,9 @@ const TextEncoding& TextEncoding::ClosestByteBasedEquivalent() const {
 
 // HTML5 specifies that UTF-8 be used in form submission when a form is is a
 // part of a document in UTF-16 probably because UTF-16 is not a byte-based
-// encoding and can contain 0x00. In case of UTF-7, it is a byte-based
-// encoding, but it's fraught with problems and we'd rather steer clear of it.
+// encoding and can contain 0x00.
 const TextEncoding& TextEncoding::EncodingForFormSubmission() const {
-  if (IsNonByteBasedEncoding() || IsUTF7Encoding())
+  if (IsNonByteBasedEncoding())
     return UTF8Encoding();
   return *this;
 }

@@ -123,12 +123,6 @@ var thai = {
 
 batchTestDecode(thai);
 
-// UTF-7 is expressly forbidden, so decoding it should not work correctly.
-// This attempts to decode '<' as UTF-7 (+AD4) but it ends up being decoded
-// as a '+AD4'.
-testDecode('UTF-7', '+AD4', 'U+002B/U+0041/U+0044/U+0034');
-testDecode('utf-7', '+AD4', 'U+002B/U+0041/U+0044/U+0034');
-
 // UTF-16LE and variants.
 testDecode('UTF-16LE', '%69%D8%D6%DE', 'U+D869/U+DED6');
 testDecode('unicodeFEFF', '%69%D8%D6%DE', 'U+D869/U+DED6');
@@ -142,20 +136,5 @@ testDecode('csUnicode', '%69%D8%D6%DE', 'U+D869/U+DED6');
 // UTF-16BE and variants.
 testDecode('UTF-16BE', '%D8%69%DE%D6', 'U+D869/U+DED6');
 testDecode('unicodeFFFE', '%D8%69%DE%D6', 'U+D869/U+DED6');
-
-// UTF-32 will be detected as UTF-16LE if leading BOM, or windows-1252 otherwise.
-testDecode('UTF-32', '%FF%FE%00%00%41%00%00%00%42%00%00%00', 'U+0000/U+0041/U+0000/U+0042/U+0000');
-testDecode('UTF-32', '%41%00%00%00%42%00%00%00', 'U+0041/U+0000/U+0000/U+0000/U+0042/U+0000/U+0000/U+0000');
-testDecode('UTF-32LE', '%41%00%00%00%42%00%00%00', 'U+0041/U+0000/U+0000/U+0000/U+0042/U+0000/U+0000/U+0000');
-testDecode('UTF-32LE', '%FF%FE%00%00%41%00%00%00%42%00%00%00', 'U+0000/U+0041/U+0000/U+0042/U+0000');
-testDecode('UTF-32BE', '%00%00%00%41%00%00%00%42', 'U+0000/U+0000/U+0000/U+0041/U+0000/U+0000/U+0000/U+0042');
-testDecode('UTF-32BE', '%00%00%FE%FF%00%00%00%41%00%00%00%42', 'U+0000/U+0000/U+00FE/U+00FF/U+0000/U+0000/U+0000/U+0041/U+0000/U+0000/U+0000/U+0042');
-
-// Replacement encodings should decode non-empty streams as replacement (U+FFFD) then EOF
-["replacement", "csiso2022kr", "hz-gb-2312", "iso-2022-cn", "iso-2022-cn-ext", "iso-2022-kr"]
-.forEach(function(encoding) {
-    testDecode(encoding, "", "");
-    testDecode(encoding, "%41%42%43%61%62%63%31%32%33%A0", "U+FFFD");
-});
 
 </script>
