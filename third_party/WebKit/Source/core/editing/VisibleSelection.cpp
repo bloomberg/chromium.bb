@@ -475,45 +475,60 @@ void VisibleSelectionTemplate<Strategy>::Validate(
       ComputeStartRespectingGranularity(
           PositionWithAffinityTemplate<Strategy>(start, affinity_),
           granularity);
-  start_ = new_start.IsNotNull() ? new_start : start;
+  const PositionTemplate<Strategy> expanded_start =
+      new_start.IsNotNull() ? new_start : start;
 
   const PositionTemplate<Strategy> end = base_is_first_ ? extent_ : base_;
   const PositionTemplate<Strategy> new_end = ComputeEndRespectingGranularity(
-      start_, PositionWithAffinityTemplate<Strategy>(end, affinity_),
+      expanded_start, PositionWithAffinityTemplate<Strategy>(end, affinity_),
       granularity);
-  end_ = new_end.IsNotNull() ? new_end : end;
+  const PositionTemplate<Strategy> expanded_end =
+      new_end.IsNotNull() ? new_end : end;
 
-  if (base_is_first_) {
-    end_ = SelectionAdjuster::AdjustSelectionEndToAvoidCrossingShadowBoundaries(
-        EphemeralRangeTemplate<Strategy>(start_, end_));
-  } else {
-    start_ =
-        SelectionAdjuster::AdjustSelectionStartToAvoidCrossingShadowBoundaries(
-            EphemeralRangeTemplate<Strategy>(start_, end_));
-  }
+  const EphemeralRangeTemplate<Strategy> expanded_range(expanded_start,
+                                                        expanded_end);
+
+  const EphemeralRangeTemplate<Strategy> shadow_adjusted_range =
+      base_is_first_
+          ? EphemeralRangeTemplate<Strategy>(
+                expanded_range.StartPosition(),
+                SelectionAdjuster::
+                    AdjustSelectionEndToAvoidCrossingShadowBoundaries(
+                        expanded_range))
+          : EphemeralRangeTemplate<Strategy>(
+                SelectionAdjuster::
+                    AdjustSelectionStartToAvoidCrossingShadowBoundaries(
+                        expanded_range),
+                expanded_range.EndPosition());
 
   const EphemeralRangeTemplate<Strategy> editing_adjusted_range =
-      AdjustSelectionToAvoidCrossingEditingBoundaries(
-          EphemeralRangeTemplate<Strategy>(start_, end_), base_);
-  start_ = editing_adjusted_range.StartPosition();
-  end_ = editing_adjusted_range.EndPosition();
-  selection_type_ = ComputeSelectionType(start_, end_);
+      AdjustSelectionToAvoidCrossingEditingBoundaries(shadow_adjusted_range,
+                                                      base_);
+  selection_type_ = ComputeSelectionType(editing_adjusted_range.StartPosition(),
+                                         editing_adjusted_range.EndPosition());
 
-  if (GetSelectionType() == kRangeSelection) {
-    // "Constrain" the selection to be the smallest equivalent range of
-    // nodes. This is a somewhat arbitrary choice, but experience shows that
-    // it is useful to make to make the selection "canonical" (if only for
-    // purposes of comparing selections). This is an ideal point of the code
-    // to do this operation, since all selection changes that result in a
-    // RANGE come through here before anyone uses it.
-    // TODO(yosin) Canonicalizing is good, but haven't we already done it
-    // (when we set these two positions to |VisiblePosition|
-    // |DeepEquivalent()|s above)?
-    start_ = MostForwardCaretPosition(start_);
-    end_ = MostBackwardCaretPosition(end_);
+  // "Constrain" the selection to be the smallest equivalent range of
+  // nodes. This is a somewhat arbitrary choice, but experience shows that
+  // it is useful to make to make the selection "canonical" (if only for
+  // purposes of comparing selections). This is an ideal point of the code
+  // to do this operation, since all selection changes that result in a
+  // RANGE come through here before anyone uses it.
+  // TODO(yosin) Canonicalizing is good, but haven't we already done it
+  // (when we set these two positions to |VisiblePosition|
+  // |DeepEquivalent()|s above)?
+  const EphemeralRangeTemplate<Strategy> range =
+      selection_type_ == kRangeSelection
+          ? EphemeralRangeTemplate<Strategy>(
+                MostForwardCaretPosition(
+                    editing_adjusted_range.StartPosition()),
+                MostBackwardCaretPosition(editing_adjusted_range.EndPosition()))
+          : editing_adjusted_range;
+  if (selection_type_ != kCaretSelection) {
     // Affinity only makes sense for a caret
     affinity_ = TextAffinity::kDownstream;
   }
+  start_ = range.StartPosition();
+  end_ = range.EndPosition();
   base_ = base_is_first_ ? start_ : end_;
   extent_ = base_is_first_ ? end_ : start_;
 }
