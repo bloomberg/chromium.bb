@@ -404,47 +404,37 @@ enum WorkerPoolType : size_t {
 
 std::unique_ptr<base::TaskScheduler::InitParams>
 GetDefaultTaskSchedulerInitParams() {
-  using StandbyThreadPolicy =
-      base::SchedulerWorkerPoolParams::StandbyThreadPolicy;
 #if defined(OS_ANDROID)
   // Mobile config, for iOS see ios/web/app/web_main_loop.cc.
   return base::MakeUnique<base::TaskScheduler::InitParams>(
       base::SchedulerWorkerPoolParams(
-          StandbyThreadPolicy::ONE,
           base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
           base::TimeDelta::FromSeconds(30)),
       base::SchedulerWorkerPoolParams(
-          StandbyThreadPolicy::ONE,
           base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
           base::TimeDelta::FromSeconds(30)),
       base::SchedulerWorkerPoolParams(
-          StandbyThreadPolicy::ONE,
           base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
           base::TimeDelta::FromSeconds(30)),
       base::SchedulerWorkerPoolParams(
-          StandbyThreadPolicy::ONE,
           base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
           base::TimeDelta::FromSeconds(60)));
 #else
   // Desktop config.
   return base::MakeUnique<base::TaskScheduler::InitParams>(
       base::SchedulerWorkerPoolParams(
-          StandbyThreadPolicy::ONE,
           base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
           base::TimeDelta::FromSeconds(30)),
       base::SchedulerWorkerPoolParams(
-          StandbyThreadPolicy::ONE,
           base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
           base::TimeDelta::FromSeconds(40)),
       base::SchedulerWorkerPoolParams(
-          StandbyThreadPolicy::ONE,
           base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
           base::TimeDelta::FromSeconds(30)),
       // Tasks posted to SequencedWorkerPool or BrowserThreadImpl may be
       // redirected to this pool. Since COM STA is initialized in these
       // environments, it must also be initialized in this pool.
       base::SchedulerWorkerPoolParams(
-          StandbyThreadPolicy::ONE,
           base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
           base::TimeDelta::FromSeconds(60),
           base::SchedulerBackwardCompatibility::INIT_COM_STA));
@@ -979,7 +969,6 @@ int BrowserMainLoop::CreateThreads() {
               task_scheduler_init_params->foreground_worker_pool_params);
       task_scheduler_init_params->foreground_worker_pool_params =
           base::SchedulerWorkerPoolParams(
-              current_foreground_worker_pool_params.standby_thread_policy(),
               std::max(GetMinThreadsInRendererTaskSchedulerForegroundPool(),
                        current_foreground_worker_pool_params.max_threads()),
               current_foreground_worker_pool_params.suggested_reclaim_time(),
