@@ -96,16 +96,10 @@ struct CustomContextHelper;
 template <typename Traits>
 struct CustomContextHelper<Traits, true> {
   template <typename MaybeConstUserType>
-  static void* SetUpAndPush(MaybeConstUserType& input,
-                            SerializationContext* context) {
-    void* custom_context = SetUp(input, context);
+  static void* SetUp(MaybeConstUserType& input, SerializationContext* context) {
+    void* custom_context = Traits::SetUpContext(input);
     context->PushCustomContext(custom_context);
     return custom_context;
-  }
-
-  template <typename MaybeConstUserType>
-  static void* SetUp(MaybeConstUserType& input, SerializationContext* context) {
-    return Traits::SetUpContext(input);
   }
 
   static void* GetNext(SerializationContext* context) {
@@ -120,12 +114,6 @@ struct CustomContextHelper<Traits, true> {
 
 template <typename Traits>
 struct CustomContextHelper<Traits, false> {
-  template <typename MaybeConstUserType>
-  static void* SetUpAndPush(MaybeConstUserType& input,
-                            SerializationContext* context) {
-    return nullptr;
-  }
-
   template <typename MaybeConstUserType>
   static void* SetUp(MaybeConstUserType& input, SerializationContext* context) {
     return nullptr;
