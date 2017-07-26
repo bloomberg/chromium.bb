@@ -54,8 +54,7 @@ void ProcessMirrorHeaderUIThread(
     const content::ResourceRequestInfo::WebContentsGetter&
         web_contents_getter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_EQ(signin::AccountConsistencyMethod::kMirror,
-            signin::GetAccountConsistencyMethod());
+  DCHECK(IsAccountConsistencyMirrorEnabled());
 
   GAIAServiceType service_type = manage_accounts_params.service_type;
   DCHECK_NE(GAIA_SERVICE_TYPE_NONE, service_type);
@@ -115,8 +114,7 @@ void ProcessDiceHeaderUIThread(
     const content::ResourceRequestInfo::WebContentsGetter&
         web_contents_getter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_EQ(signin::AccountConsistencyMethod::kDice,
-            signin::GetAccountConsistencyMethod());
+  DCHECK(IsDiceFixAuthErrorsEnabled());
 
   content::WebContents* web_contents = web_contents_getter.Run();
   if (!web_contents)
@@ -163,8 +161,7 @@ void ProcessMirrorResponseHeaderIfExists(net::URLRequest* request,
     return;
   }
 
-  if (signin::GetAccountConsistencyMethod() !=
-      signin::AccountConsistencyMethod::kMirror) {
+  if (!IsAccountConsistencyMirrorEnabled()) {
     NOTREACHED() << "Gaia should not send the X-Chrome-Manage-Accounts header "
                  << "when Mirror is disabled.";
     return;
@@ -198,8 +195,7 @@ void ProcessDiceResponseHeaderIfExists(net::URLRequest* request,
   if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
     return;
 
-  if (signin::GetAccountConsistencyMethod() !=
-      signin::AccountConsistencyMethod::kDice) {
+  if (!IsDiceFixAuthErrorsEnabled()) {
     return;
   }
 
@@ -269,7 +265,8 @@ void FixAccountConsistencyRequestHeader(net::URLRequest* request,
   // If new url is eligible to have the header, add it, otherwise remove it.
   AppendOrRemoveAccountConsistentyRequestHeader(
       request, redirect_url, account_id, io_data->IsSyncEnabled(),
-      io_data->GetCookieSettings(), profile_mode_mask);
+      io_data->SyncHasAuthError(), io_data->GetCookieSettings(),
+      profile_mode_mask);
 }
 
 void ProcessAccountConsistencyResponseHeaders(net::URLRequest* request,

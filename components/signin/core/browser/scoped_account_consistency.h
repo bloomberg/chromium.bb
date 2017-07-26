@@ -17,8 +17,7 @@ namespace signin {
 // tests.
 class ScopedAccountConsistency {
  public:
-  ScopedAccountConsistency(AccountConsistencyMethod method);
-
+  explicit ScopedAccountConsistency(AccountConsistencyMethod method);
   ~ScopedAccountConsistency();
 
  private:
@@ -27,25 +26,30 @@ class ScopedAccountConsistency {
   DISALLOW_COPY_AND_ASSIGN(ScopedAccountConsistency);
 };
 
-class ScopedAccountConsistencyMirror {
- public:
-  ScopedAccountConsistencyMirror();
+// Specialized helper classes for each account consistency method:
+// ScopedAccountConsistencyDice, ScopedAccountConsistencyMirror, ...
 
- private:
-  ScopedAccountConsistency scoped_mirror_;
+#define SCOPED_ACCOUNT_CONSISTENCY_SPECIALIZATION(method)             \
+  class ScopedAccountConsistency##method {                            \
+   public:                                                            \
+    ScopedAccountConsistency##method()                                \
+        : scoped_consistency_(AccountConsistencyMethod::k##method) {} \
+                                                                      \
+   private:                                                           \
+    ScopedAccountConsistency scoped_consistency_;                     \
+    DISALLOW_COPY_AND_ASSIGN(ScopedAccountConsistency##method);       \
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedAccountConsistencyMirror);
-};
+// ScopedAccountConsistencyDisabled:
+SCOPED_ACCOUNT_CONSISTENCY_SPECIALIZATION(Disabled);
+// ScopedAccountConsistencyMirror:
+SCOPED_ACCOUNT_CONSISTENCY_SPECIALIZATION(Mirror);
+// ScopedAccountConsistencyDiceFixAuthErrors:
+SCOPED_ACCOUNT_CONSISTENCY_SPECIALIZATION(DiceFixAuthErrors);
+// ScopedAccountConsistencyDice:
+SCOPED_ACCOUNT_CONSISTENCY_SPECIALIZATION(Dice);
 
-class ScopedAccountConsistencyDice {
- public:
-  ScopedAccountConsistencyDice();
-
- private:
-  ScopedAccountConsistency scoped_dice_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedAccountConsistencyDice);
-};
+#undef SCOPED_ACCOUNT_CONSISTENCY_SPECIALIZATION
 
 }  // namespace signin
 

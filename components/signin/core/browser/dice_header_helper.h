@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 
 class GURL;
@@ -16,7 +17,7 @@ namespace signin {
 // SigninHeaderHelper implementation managing the Dice header.
 class DiceHeaderHelper : public SigninHeaderHelper {
  public:
-  DiceHeaderHelper() {}
+  explicit DiceHeaderHelper(bool sync_has_auth_error);
   ~DiceHeaderHelper() override {}
 
   // Returns the parameters contained in the X-Chrome-ID-Consistency-Response
@@ -37,6 +38,10 @@ class DiceHeaderHelper : public SigninHeaderHelper {
  private:
   // SigninHeaderHelper implementation:
   bool IsUrlEligibleForRequestHeader(const GURL& url) override;
+
+  bool sync_has_auth_error_;
+
+  DISALLOW_COPY_AND_ASSIGN(DiceHeaderHelper);
 };
 
 }  // namespace signin

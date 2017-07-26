@@ -500,6 +500,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     sync_first_setup_complete_.Init(syncer::prefs::kSyncFirstSetupComplete,
                                     pref_service);
     sync_first_setup_complete_.MoveToThread(io_task_runner);
+    sync_has_auth_error_.Init(syncer::prefs::kSyncHasAuthError, pref_service);
+    sync_has_auth_error_.MoveToThread(io_task_runner);
   }
 
   network_prediction_options_.Init(prefs::kNetworkPredictionOptions,
@@ -904,6 +906,10 @@ HostContentSettingsMap* ProfileIOData::GetHostContentSettingsMap() const {
 bool ProfileIOData::IsSyncEnabled() const {
   return sync_first_setup_complete_.GetValue() &&
          !sync_suppress_start_.GetValue();
+}
+
+bool ProfileIOData::SyncHasAuthError() const {
+  return sync_has_auth_error_.GetValue();
 }
 
 bool ProfileIOData::IsOffTheRecord() const {
@@ -1369,6 +1375,7 @@ void ProfileIOData::ShutdownOnUIThread(
   google_services_user_account_id_.Destroy();
   sync_suppress_start_.Destroy();
   sync_first_setup_complete_.Destroy();
+  sync_has_auth_error_.Destroy();
   enable_referrers_.Destroy();
   enable_do_not_track_.Destroy();
   force_google_safesearch_.Destroy();

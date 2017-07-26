@@ -37,6 +37,9 @@ DiceAction GetDiceActionFromHeader(const std::string& value) {
 
 }  // namespace
 
+DiceHeaderHelper::DiceHeaderHelper(bool sync_has_auth_error)
+    : sync_has_auth_error_(sync_has_auth_error) {}
+
 // static
 DiceResponseParams DiceHeaderHelper::BuildDiceSigninResponseParams(
     const std::string& header_value) {
@@ -127,9 +130,14 @@ DiceResponseParams DiceHeaderHelper::BuildDiceSignoutResponseParams(
 }
 
 bool DiceHeaderHelper::IsUrlEligibleForRequestHeader(const GURL& url) {
-  if (GetAccountConsistencyMethod() != AccountConsistencyMethod::kDice) {
+  if (!IsDiceFixAuthErrorsEnabled())
+    return false;
+
+  if (!sync_has_auth_error_ && (GetAccountConsistencyMethod() ==
+                                AccountConsistencyMethod::kDiceFixAuthErrors)) {
     return false;
   }
+
   return gaia::IsGaiaSignonRealm(url.GetOrigin());
 }
 

@@ -159,9 +159,7 @@ DiceResponseHandler::~DiceResponseHandler() {}
 
 void DiceResponseHandler::ProcessDiceHeader(
     const signin::DiceResponseParams& dice_params) {
-  DCHECK_EQ(signin::AccountConsistencyMethod::kDice,
-            signin::GetAccountConsistencyMethod());
-
+  DCHECK(signin::IsDiceFixAuthErrorsEnabled());
   switch (dice_params.user_intention) {
     case signin::DiceAction::SIGNIN:
       ProcessDiceSigninHeader(dice_params.signin_info.gaia_id,
@@ -190,6 +188,24 @@ size_t DiceResponseHandler::GetPendingDiceTokenFetchersCountForTesting() const {
   return token_fetchers_.size();
 }
 
+bool DiceResponseHandler::CanGetTokenForAccount(const std::string& gaia_id,
+                                                const std::string& email) {
+  if (signin::IsAccountConsistencyDiceEnabled())
+    return true;
+
+  // When using kDiceFixAuthErrors, only get a token if the account matches
+  // the current Chrome account.
+  DCHECK_EQ(signin::AccountConsistencyMethod::kDiceFixAuthErrors,
+            signin::GetAccountConsistencyMethod());
+  std::string account =
+      account_tracker_service_->PickAccountIdForAccount(gaia_id, email);
+  std::string chrome_account = signin_manager_->GetAuthenticatedAccountId();
+  bool can_get_token = (chrome_account == account);
+  VLOG_IF(1, !can_get_token)
+      << "[Dice] Dropping Dice signin response for " << account;
+  return can_get_token;
+}
+
 void DiceResponseHandler::ProcessDiceSigninHeader(
     const std::string& gaia_id,
     const std::string& email,
@@ -197,6 +213,9 @@ void DiceResponseHandler::ProcessDiceSigninHeader(
   DCHECK(!gaia_id.empty());
   DCHECK(!email.empty());
   DCHECK(!authorization_code.empty());
+
+  if (!CanGetTokenForAccount(gaia_id, email))
+    return;
 
   for (auto it = token_fetchers_.begin(); it != token_fetchers_.end(); ++it) {
     if ((it->get()->gaia_id() == gaia_id) && (it->get()->email() == email) &&
@@ -213,6 +232,13 @@ void DiceResponseHandler::ProcessDiceSignoutHeader(
     const std::vector<std::string>& gaia_ids,
     const std::vector<std::string>& emails) {
   DCHECK_EQ(gaia_ids.size(), emails.size());
+  if (!signin::IsAccountConsistencyDiceEnabled()) {
+    // Ignore signout responses when using kDiceFixAuthErrors.
+    DCHECK_EQ(signin::AccountConsistencyMethod::kDiceFixAuthErrors,
+              signin::GetAccountConsistencyMethod());
+    return;
+  }
+
   // If one of the signed out accounts is the main Chrome account, then force a
   // complete signout. Otherwise simply revoke the corresponding tokens.
   std::string current_account = signin_manager_->GetAuthenticatedAccountId();
@@ -264,6 +290,9 @@ void DiceResponseHandler::OnTokenExchangeSuccess(
     const std::string& gaia_id,
     const std::string& email,
     const GaiaAuthConsumer::ClientOAuthResult& result) {
+  if (!CanGetTokenForAccount(gaia_id, email))
+    return;
+
   std::string account_id =
       account_tracker_service_->SeedAccountInfo(gaia_id, email);
   VLOG(1) << "[Dice] OAuth success for account: " << account_id;

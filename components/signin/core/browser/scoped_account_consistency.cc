@@ -60,10 +60,4 @@ ScopedAccountConsistency::ScopedAccountConsistency(
 
 ScopedAccountConsistency::~ScopedAccountConsistency() {}
 
-ScopedAccountConsistencyMirror::ScopedAccountConsistencyMirror()
-    : scoped_mirror_(AccountConsistencyMethod::kMirror) {}
-
-ScopedAccountConsistencyDice::ScopedAccountConsistencyDice()
-    : scoped_dice_(AccountConsistencyMethod::kDice) {}
-
 }  // namespace signin
