@@ -26,6 +26,7 @@
 #include "media/base/audio_converter.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
+#include "third_party/webrtc_overrides/webrtc/rtc_base/task_queue.h"
 
 // The audio repetition detector is by default only used on non-official
 // ChromeOS builds for debugging purposes. http://crbug.com/658719.
@@ -181,6 +182,11 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // Module to detect and report (to UMA) bit exact audio repetition.
   std::unique_ptr<AudioRepetitionDetector> audio_repetition_detector_;
 #endif  // ENABLE_AUDIO_REPETITION_DETECTOR
+
+  // Low-priority task queue for doing AEC dump recordings. It has to
+  // out-live audio_processing_ and be created/destroyed from the same
+  // thread.
+  std::unique_ptr<rtc::TaskQueue> worker_queue_;
 
   // Module to handle processing and format conversion.
   std::unique_ptr<webrtc::AudioProcessing> audio_processing_;
