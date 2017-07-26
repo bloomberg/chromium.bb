@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_USER_IMAGE_SOURCE_H_
-#define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_USER_IMAGE_SOURCE_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_USER_IMAGE_SOURCE_H_
+#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_USER_IMAGE_SOURCE_H_
 
 #include <string>
 #include <vector>
@@ -21,7 +21,6 @@ class RefCountedMemory;
 }
 
 namespace chromeos {
-namespace options {
 
 // UserImageSource is the data source that serves user images for users that
 // have it.
@@ -49,7 +48,6 @@ class UserImageSource : public content::URLDataSource {
   DISALLOW_COPY_AND_ASSIGN(UserImageSource);
 };
 
-}  // namespace options
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_USER_IMAGE_SOURCE_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_USER_IMAGE_SOURCE_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
+#include "chrome/browser/ui/webui/chromeos/user_image_source.h"
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -75,7 +75,6 @@ scoped_refptr<base::RefCountedMemory> GetUserImageInternal(
 }  // namespace
 
 namespace chromeos {
-namespace options {
 
 // Static.
 scoped_refptr<base::RefCountedMemory> UserImageSource::GetUserImage(
@@ -83,8 +82,7 @@ scoped_refptr<base::RefCountedMemory> UserImageSource::GetUserImage(
   return GetUserImageInternal(account_id);
 }
 
-UserImageSource::UserImageSource() {
-}
+UserImageSource::UserImageSource() {}
 
 UserImageSource::~UserImageSource() {}
 
@@ -109,5 +107,4 @@ std::string UserImageSource::GetMimeType(const std::string& path) const {
   return "image/png";
 }
 
-}  // namespace options
 }  // namespace chromeos
