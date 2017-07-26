@@ -120,6 +120,7 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   // settings. See HeadlessBrowser::Options for their meaning.
   Builder& SetProductNameAndVersion(
       const std::string& product_name_and_version);
+  Builder& SetAcceptLanguage(const std::string& accept_language);
   Builder& SetUserAgent(const std::string& user_agent);
   Builder& SetProxyConfig(std::unique_ptr<net::ProxyConfig> proxy_config);
   Builder& SetHostResolverRules(const std::string& host_resolver_rules);

@@ -84,6 +84,11 @@ Builder& Builder::SetUserAgent(const std::string& user_agent) {
   return *this;
 }
 
+Builder& Builder::SetAcceptLanguage(const std::string& accept_language) {
+  options_.accept_language = accept_language;
+  return *this;
+}
+
 Builder& Builder::EnableDevToolsServer(const net::IPEndPoint& endpoint) {
   options_.devtools_endpoint = endpoint;
   return *this;

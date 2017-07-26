@@ -57,6 +57,7 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
   // The |options| object given to the constructor is not guaranteed to outlive
   // this class, so we make copies of the parts we need to access on the IO
   // thread.
+  std::string accept_language_;
   std::string user_agent_;
   std::string host_resolver_rules_;
   const net::ProxyConfig* proxy_config_;  // Not owned.

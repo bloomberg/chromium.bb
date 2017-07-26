@@ -149,6 +149,7 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   // Default per-context options, can be specialized on per-context basis.
 
   std::string product_name_and_version;
+  std::string accept_language;
   std::string user_agent;
 
   // The ProxyConfig to use. The system proxy settings are used by default.
@@ -215,6 +216,7 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
 
   Builder& SetProductNameAndVersion(
       const std::string& product_name_and_version);
+  Builder& SetAcceptLanguage(const std::string& accept_language);
   Builder& SetUserAgent(const std::string& user_agent);
   Builder& SetProxyConfig(std::unique_ptr<net::ProxyConfig> proxy_config);
   Builder& SetHostResolverRules(const std::string& host_resolver_rules);

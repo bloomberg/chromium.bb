@@ -394,6 +394,13 @@ HeadlessBrowserContext::Builder::SetProductNameAndVersion(
 }
 
 HeadlessBrowserContext::Builder&
+HeadlessBrowserContext::Builder::SetAcceptLanguage(
+    const std::string& accept_language) {
+  options_->accept_language_ = accept_language;
+  return *this;
+}
+
+HeadlessBrowserContext::Builder&
 HeadlessBrowserContext::Builder::SetProxyConfig(
     std::unique_ptr<net::ProxyConfig> proxy_config) {
   options_->proxy_config_ = std::move(proxy_config);
