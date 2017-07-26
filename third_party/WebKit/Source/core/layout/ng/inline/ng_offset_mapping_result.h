@@ -6,6 +6,7 @@
 #define NGOffsetMappingResult_h
 
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -28,10 +29,26 @@ enum class NGOffsetMappingUnitType { kIdentity, kCollapsed, kExpanded };
 //   |text_content_end > text_content_start + 1|, indicating that the character
 //   in the dom range is expanded into multiple characters.
 // See design doc https://goo.gl/CJbxky for details.
-struct NGOffsetMappingUnit {
+class NGOffsetMappingUnit {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-  NGOffsetMappingUnitType type = NGOffsetMappingUnitType::kIdentity;
+ public:
+  NGOffsetMappingUnit(NGOffsetMappingUnitType,
+                      const LayoutText*,
+                      unsigned dom_start,
+                      unsigned dom_end,
+                      unsigned text_content_start,
+                      unsigned text_content_end);
+
+  NGOffsetMappingUnitType GetType() const { return type_; }
+  const LayoutText* GetOwner() const { return owner_; }
+  unsigned DOMStart() const { return dom_start_; }
+  unsigned DOMEnd() const { return dom_end_; }
+  unsigned TextContentStart() const { return text_content_start_; }
+  unsigned TextContentEnd() const { return text_content_end_; }
+
+ private:
+  const NGOffsetMappingUnitType type_ = NGOffsetMappingUnitType::kIdentity;
 
   // Ideally, we should store |Node| as owner, instead of |LayoutObject|.
   // However, we need to ensure the invariant that, units of the same owner are
@@ -41,12 +58,12 @@ struct NGOffsetMappingUnit {
   // the node.
   // TODO(xiaochengh): Figure out if this the issue really exists. If not, then
   // we should use |Node| as owner.
-  const LayoutText* owner = nullptr;
+  const LayoutText* const owner_;
 
-  unsigned dom_start = 0;
-  unsigned dom_end = 0;
-  unsigned text_content_start = 0;
-  unsigned text_content_end = 0;
+  const unsigned dom_start_;
+  const unsigned dom_end_;
+  const unsigned text_content_start_;
+  const unsigned text_content_end_;
 };
 
 // An NGOffsetMappingResult stores the units of a LayoutNGBlockFlow in sorted

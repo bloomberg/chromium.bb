@@ -704,15 +704,15 @@ const NGOffsetMappingUnit* NGInlineNode::GetMappingUnitForDOMOffset(
   unsigned range_end;
   std::tie(range_start, range_end) =
       result.ranges.at(ToLayoutText(layout_object));
-  if (range_start == range_end || result.units[range_start].dom_start > offset)
+  if (range_start == range_end || result.units[range_start].DOMStart() > offset)
     return nullptr;
   // Find the last unit where unit.dom_start <= offset
   const NGOffsetMappingUnit* unit = std::prev(std::upper_bound(
       result.units.begin() + range_start, result.units.begin() + range_end,
       offset, [](unsigned offset, const NGOffsetMappingUnit& unit) {
-        return offset < unit.dom_start;
+        return offset < unit.DOMStart();
       }));
-  if (unit->dom_end < offset)
+  if (unit->DOMEnd() < offset)
     return nullptr;
   return unit;
 }
@@ -724,19 +724,19 @@ size_t NGInlineNode::GetTextContentOffset(const Node& node, unsigned offset) {
 
   // TODO(xiaochengh): Wrap the code below into a member function of
   // NGOffsetMappingUnit.
-  DCHECK_GE(offset, unit->dom_start);
-  DCHECK_LE(offset, unit->dom_end);
+  DCHECK_GE(offset, unit->DOMStart());
+  DCHECK_LE(offset, unit->DOMEnd());
   // DOM start is always mapped to text content start.
-  if (offset == unit->dom_start)
-    return unit->text_content_start;
+  if (offset == unit->DOMStart())
+    return unit->TextContentStart();
   // DOM end is always mapped to text content end.
-  if (offset == unit->dom_end)
-    return unit->text_content_end;
+  if (offset == unit->DOMEnd())
+    return unit->TextContentEnd();
   // |unit| has collapsed mapping.
-  if (unit->text_content_start == unit->text_content_end)
-    return unit->text_content_start;
+  if (unit->TextContentStart() == unit->TextContentEnd())
+    return unit->TextContentStart();
   // |unit| has identity mapping.
-  return offset - unit->dom_start + unit->text_content_start;
+  return offset - unit->DOMStart() + unit->TextContentStart();
 }
 
 }  // namespace blink

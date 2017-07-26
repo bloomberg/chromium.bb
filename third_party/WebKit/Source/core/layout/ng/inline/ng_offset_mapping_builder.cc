@@ -126,16 +126,15 @@ NGOffsetMappingResult NGOffsetMappingBuilder::Build() const {
       continue;
     }
 
-    NGOffsetMappingUnit unit;
-    unsigned end;
-    std::tie(unit.type, end) =
-        GetMappingUnitTypeAndEnd(mapping_, annotation_, start);
-    unit.owner = current_node;
-    unit.dom_start = start - inline_start + current_node->TextStartOffset();
-    unit.dom_end = end - inline_start + current_node->TextStartOffset();
-    unit.text_content_start = mapping_[start];
-    unit.text_content_end = mapping_[end];
-    result.units.push_back(unit);
+    auto type_and_end = GetMappingUnitTypeAndEnd(mapping_, annotation_, start);
+    NGOffsetMappingUnitType type = type_and_end.first;
+    unsigned end = type_and_end.second;
+    unsigned dom_start = start - inline_start + current_node->TextStartOffset();
+    unsigned dom_end = end - inline_start + current_node->TextStartOffset();
+    unsigned text_content_start = mapping_[start];
+    unsigned text_content_end = mapping_[end];
+    result.units.emplace_back(type, current_node, dom_start, dom_end,
+                              text_content_start, text_content_end);
 
     start = end;
   }
