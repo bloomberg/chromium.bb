@@ -8623,6 +8623,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Compositing.Browser.GPUMemoryForTilingsInKb" units="Kb">
+  <owner>yigu@chromium.org</owner>
+  <summary>
+    The GPU memory allocated for tilings (in a browser process), summed over all
+    picture layers. Emitted once per drawing. Nothing is recorded if there are
+    no picture layers.
+
+    Tilings are used for decomposition of the layer's entire contents at a
+    picture screenspace resolution to do threaded rasterization.
+
+    Team: threaded-rendering-dev@chromium.org.
+  </summary>
+</histogram>
+
 <histogram base="true" name="Compositing.Browser.LayersUpdateTime"
     units="microseconds">
   <owner>threaded-rendering-dev@chromium.org</owner>
@@ -8946,6 +8960,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Time spent updating (i.e. recording) a display list, in microseconds.
     Recorded when display list is updated (in a renderer process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Renderer.GPUMemoryForTilingsInKb" units="Kb">
+  <owner>yigu@chromium.org</owner>
+  <summary>
+    The GPU memory allocated for tilings (in a renderer process), summed over
+    all picture layers. Emitted once per drawing. Nothing is recorded if there
+    are no picture layers.
+
+    Tilings are used for decomposition of the layer's entire contents at a
+    picture screenspace resolution to do threaded rasterization.
+
+    Team: threaded-rendering-dev@chromium.org.
   </summary>
 </histogram>
 
