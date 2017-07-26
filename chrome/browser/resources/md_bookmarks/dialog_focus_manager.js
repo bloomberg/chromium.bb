@@ -74,7 +74,7 @@ cr.define('bookmarks', function() {
      * @private
      */
     getCloseListener_: function(dialog) {
-      var closeListener = function(e) {
+      var closeListener = (e) => {
         // If the dialog is open, then it got reshown immediately and we
         // shouldn't clear it until it is closed again.
         if (dialog.open)
@@ -86,7 +86,7 @@ cr.define('bookmarks', function() {
           this.previousFocusElement_.focus();
 
         dialog.removeEventListener('close', closeListener);
-      }.bind(this);
+      };
 
       return closeListener;
     },

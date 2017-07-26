@@ -30,9 +30,9 @@ cr.define('bookmarks', function() {
     init: function(initialState) {
       this.data_ = initialState;
 
-      this.queuedActions_.forEach(function(action) {
+      this.queuedActions_.forEach((action) => {
         this.dispatchInternal_(action);
-      }.bind(this));
+      });
 
       this.initialized_ = true;
       this.notifyObservers_(this.data_);

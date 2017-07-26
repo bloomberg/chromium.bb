@@ -57,12 +57,8 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.watch('item_', function(state) {
-      return state.nodes[this.itemId];
-    }.bind(this));
-    this.watch('isClosed_', function(state) {
-      return state.closedFolders.has(this.itemId);
-    }.bind(this));
+    this.watch('item_', (state) => state.nodes[this.itemId]);
+    this.watch('isClosed_', (state) => state.closedFolders.has(this.itemId));
     this.watch('selectedFolder_', function(state) {
       return state.selectedFolder;
     });

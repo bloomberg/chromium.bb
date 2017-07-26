@@ -94,10 +94,10 @@ cr.define('bookmarks', function() {
       if (this.hideTimeoutId_ != null)
         this.timerProxy_.clearTimeout(this.hideTimeoutId_);
 
-      this.hideTimeoutId_ = this.timerProxy_.setTimeout(function() {
+      this.hideTimeoutId_ = this.timerProxy_.setTimeout(() => {
         this.hide();
         this.hideTimeoutId_ = null;
-      }.bind(this), this.duration);
+      }, this.duration);
     },
 
     hide: function() {
