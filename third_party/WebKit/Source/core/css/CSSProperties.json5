@@ -1184,6 +1184,7 @@
     {
       name: "cx",
       api_class: "CSSPropertyAPIStrokeOrLength",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
       svg: true,
@@ -1191,6 +1192,7 @@
     {
       name: "cy",
       api_class: "CSSPropertyAPIStrokeOrLength",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
       svg: true,
@@ -2083,6 +2085,7 @@
     {
       name: "r",
       api_class: "CSSPropertyAPIStrokeOrLength",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
       svg: true,
@@ -2432,6 +2435,7 @@
     {
       name: "stroke-dashoffset",
       api_class: "CSSPropertyAPIStrokeOrLength",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       inherited: true,
       interpolable: true,
@@ -2474,6 +2478,7 @@
     {
       name: "stroke-width",
       api_class: "CSSPropertyAPIStrokeOrLength",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertUnzoomedLength",
       inherited: true,
       interpolable: true,
@@ -2804,6 +2809,7 @@
     {
       name: "x",
       api_class: "CSSPropertyAPIStrokeOrLength",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
       svg: true,
@@ -2811,6 +2817,7 @@
     {
       name: "y",
       api_class: "CSSPropertyAPIStrokeOrLength",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
       svg: true,

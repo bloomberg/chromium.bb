@@ -907,15 +907,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
       return CSSPropertyPositionUtils::ConsumePositionLonghand<CSSValueTop,
                                                                CSSValueBottom>(
           range_, context_->Mode());
-    case CSSPropertyStrokeWidth:
-    case CSSPropertyStrokeDashoffset:
-    case CSSPropertyCx:
-    case CSSPropertyCy:
-    case CSSPropertyX:
-    case CSSPropertyY:
-    case CSSPropertyR:
-      return ConsumeLengthOrPercent(range_, kSVGAttributeMode, kValueRangeAll,
-                                    UnitlessQuirk::kForbid);
     case CSSPropertyBorderImageRepeat:
     case CSSPropertyWebkitMaskBoxImageRepeat:
       return CSSPropertyBorderImageUtils::ConsumeBorderImageRepeat(range_);
