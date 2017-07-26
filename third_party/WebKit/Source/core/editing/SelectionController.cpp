@@ -38,6 +38,7 @@
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/suggestion/TextSuggestionController.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -343,7 +344,8 @@ bool SelectionController::HandleSingleClick(
   }
 
   bool is_handle_visible = false;
-  if (HasEditableStyle(*inner_node)) {
+  const bool has_editable_style = HasEditableStyle(*inner_node);
+  if (has_editable_style) {
     const bool is_text_box_empty =
         CreateVisibleSelection(SelectionInFlatTree::Builder()
                                    .SelectAllChildren(*inner_node)
@@ -365,6 +367,12 @@ bool SelectionController::HandleSingleClick(
       TextGranularity::kCharacter,
       is_handle_visible ? HandleVisibility::kVisible
                         : HandleVisibility::kNotVisible);
+
+  if (has_editable_style && event.Event().FromTouch()) {
+    frame_->GetTextSuggestionController().HandlePotentialMisspelledWordTap(
+        visible_pos.DeepEquivalent());
+  }
+
   return false;
 }
 

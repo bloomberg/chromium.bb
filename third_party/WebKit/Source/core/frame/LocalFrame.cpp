@@ -44,6 +44,7 @@
 #include "core/editing/InputMethodController.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
+#include "core/editing/suggestion/TextSuggestionController.h"
 #include "core/events/Event.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/EventHandlerRegistry.h"
@@ -222,6 +223,7 @@ DEFINE_TRACE(LocalFrame) {
   visitor->Trace(console_);
   visitor->Trace(input_method_controller_);
   visitor->Trace(frame_resource_coordinator_);
+  visitor->Trace(text_suggestion_controller_);
   Frame::Trace(visitor);
   Supplementable<LocalFrame>::Trace(visitor);
 }
@@ -384,6 +386,7 @@ void LocalFrame::DocumentAttached() {
   Selection().DocumentAttached(GetDocument());
   GetInputMethodController().DocumentAttached(GetDocument());
   GetSpellChecker().DocumentAttached(GetDocument());
+  GetTextSuggestionController().DocumentAttached(GetDocument());
 }
 
 Frame* LocalFrame::FindFrameForNavigation(const AtomicString& name,
@@ -744,6 +747,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
       event_handler_(new EventHandler(*this)),
       console_(FrameConsole::Create(*this)),
       input_method_controller_(InputMethodController::Create(*this)),
+      text_suggestion_controller_(new TextSuggestionController(*this)),
       navigation_disable_count_(0),
       page_zoom_factor_(ParentPageZoomFactor(this)),
       text_zoom_factor_(ParentTextZoomFactor(this)),

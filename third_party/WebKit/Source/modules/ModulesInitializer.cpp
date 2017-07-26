@@ -8,6 +8,7 @@
 #include "core/EventTypeNames.h"
 #include "core/css/CSSPaintImageGenerator.h"
 #include "core/dom/Document.h"
+#include "core/editing/suggestion/TextSuggestionBackendImpl.h"
 #include "core/exported/WebSharedWorkerImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -137,6 +138,8 @@ void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
   // frame()->document().
   frame.GetInterfaceRegistry()->AddInterface(WTF::Bind(
       &AppBannerController::BindMojoRequest, WrapWeakPersistent(&frame)));
+  frame.GetInterfaceRegistry()->AddInterface(WTF::Bind(
+      &TextSuggestionBackendImpl::Create, WrapWeakPersistent(&frame)));
 }
 
 void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {

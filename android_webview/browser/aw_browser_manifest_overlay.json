@@ -6,6 +6,7 @@
         "renderer": [
           "autofill::mojom::AutofillDriver",
           "autofill::mojom::PasswordManagerDriver",
+          "blink::mojom::TextSuggestionHost",
           "web_restrictions::mojom::WebRestrictions"
         ]
       }

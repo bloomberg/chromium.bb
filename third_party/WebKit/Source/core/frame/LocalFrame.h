@@ -81,6 +81,7 @@ class PluginData;
 class ResourceRequest;
 class ScriptController;
 class SpellChecker;
+class TextSuggestionController;
 class WebFrameScheduler;
 class WebPluginContainerImpl;
 class WebTaskRunner;
@@ -154,6 +155,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   NavigationScheduler& GetNavigationScheduler() const;
   FrameSelection& Selection() const;
   InputMethodController& GetInputMethodController() const;
+  TextSuggestionController& GetTextSuggestionController() const;
   ScriptController& GetScriptController() const;
   SpellChecker& GetSpellChecker() const;
   FrameConsole& Console() const;
@@ -301,6 +303,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   const Member<EventHandler> event_handler_;
   const Member<FrameConsole> console_;
   const Member<InputMethodController> input_method_controller_;
+  const Member<TextSuggestionController> text_suggestion_controller_;
 
   int navigation_disable_count_;
 
@@ -353,6 +356,11 @@ inline FrameConsole& LocalFrame::Console() const {
 
 inline InputMethodController& LocalFrame::GetInputMethodController() const {
   return *input_method_controller_;
+}
+
+inline TextSuggestionController& LocalFrame::GetTextSuggestionController()
+    const {
+  return *text_suggestion_controller_;
 }
 
 inline bool LocalFrame::InViewSourceMode() const {

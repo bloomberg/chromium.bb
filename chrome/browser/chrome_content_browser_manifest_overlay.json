@@ -55,6 +55,7 @@
           "blink::mojom::BudgetService",
           "blink::mojom::InstalledAppProvider",
           "blink::mojom::ShareService",
+          "blink::mojom::TextSuggestionHost",
           "bluetooth::mojom::AdapterFactory",
           "chrome::mojom::OpenSearchDocumentDescriptionHandler",
           "chrome::mojom::PrerenderCanceler",
