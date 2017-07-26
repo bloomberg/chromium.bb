@@ -674,7 +674,7 @@ by a child template that "extends" this file.
         </activity>
 
         <!-- Activities for Browser Actions -->
-        {% if channel in ['default'] %}
+        {% if channel in ['dev', 'canary', 'default'] %}
         <activity android:name="org.chromium.chrome.browser.browseractions.BrowserActionActivity"
             android:theme="@style/FullscreenTransparentActivityTheme"
             android:exported="true"
