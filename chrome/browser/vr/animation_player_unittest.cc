@@ -15,6 +15,8 @@
 
 namespace vr {
 
+static constexpr float kNoise = 1e-6;
+
 class TestAnimationTarget : public cc::AnimationTarget {
  public:
   TestAnimationTarget() {
@@ -207,6 +209,12 @@ TEST(AnimationPlayerTest, OpacityTransitions) {
   EXPECT_EQ(from, target.opacity());
   player.Tick(start_time);
 
+  // Scheduling a redundant, approximately equal transition should be ignored.
+  int animation_id = player.animations().front()->id();
+  float nearby = to + kNoise;
+  player.TransitionFloatTo(start_time, TargetProperty::OPACITY, from, nearby);
+  EXPECT_EQ(animation_id, player.animations().front()->id());
+
   player.Tick(start_time + UsToDelta(5000));
   EXPECT_GT(from, target.opacity());
   EXPECT_LT(to, target.opacity());
@@ -249,6 +257,8 @@ TEST(AnimationPlayerTest, ReversedOpacityTransitions) {
 }
 
 TEST(AnimationPlayerTest, TransformTransitions) {
+  // In this test, we do expect exact equality.
+  float tolerance = 0.0f;
   TestAnimationTarget target;
   AnimationPlayer player;
   player.set_target(&target);
@@ -269,18 +279,28 @@ TEST(AnimationPlayerTest, TransformTransitions) {
   player.TransitionTransformOperationsTo(start_time, TargetProperty::TRANSFORM,
                                          from, to);
 
-  EXPECT_EQ(from, target.operations());
+  EXPECT_TRUE(from.ApproximatelyEqual(target.operations(), tolerance));
   player.Tick(start_time);
+
+  // Scheduling a redundant, approximately equal transition should be ignored.
+  int animation_id = player.animations().front()->id();
+  cc::TransformOperations nearby = to;
+  nearby.at(0).translate.x += kNoise;
+  player.TransitionTransformOperationsTo(start_time, TargetProperty::TRANSFORM,
+                                         from, nearby);
+  EXPECT_EQ(animation_id, player.animations().front()->id());
 
   player.Tick(start_time + UsToDelta(5000));
   EXPECT_LT(from.at(0).translate.x, target.operations().at(0).translate.x);
   EXPECT_GT(to.at(0).translate.x, target.operations().at(0).translate.x);
 
   player.Tick(start_time + UsToDelta(10000));
-  EXPECT_EQ(to, target.operations());
+  EXPECT_TRUE(to.ApproximatelyEqual(target.operations(), tolerance));
 }
 
 TEST(AnimationPlayerTest, ReversedTransformTransitions) {
+  // In this test, we do expect exact equality.
+  float tolerance = 0.0f;
   TestAnimationTarget target;
   AnimationPlayer player;
   player.set_target(&target);
@@ -301,7 +321,7 @@ TEST(AnimationPlayerTest, ReversedTransformTransitions) {
   player.TransitionTransformOperationsTo(start_time, TargetProperty::TRANSFORM,
                                          from, to);
 
-  EXPECT_EQ(from, target.operations());
+  EXPECT_TRUE(from.ApproximatelyEqual(target.operations(), tolerance));
   player.Tick(start_time);
 
   player.Tick(start_time + UsToDelta(1000));
@@ -313,10 +333,11 @@ TEST(AnimationPlayerTest, ReversedTransformTransitions) {
                                          TargetProperty::TRANSFORM,
                                          target.operations(), from);
   player.Tick(start_time + UsToDelta(1000));
-  EXPECT_EQ(value_before_reversing, target.operations());
+  EXPECT_TRUE(value_before_reversing.ApproximatelyEqual(target.operations(),
+                                                        tolerance));
 
   player.Tick(start_time + UsToDelta(2000));
-  EXPECT_EQ(from, target.operations());
+  EXPECT_TRUE(from.ApproximatelyEqual(target.operations(), tolerance));
 }
 
 TEST(AnimationPlayerTest, BoundsTransitions) {
@@ -337,6 +358,13 @@ TEST(AnimationPlayerTest, BoundsTransitions) {
 
   EXPECT_FLOAT_SIZE_EQ(from, target.size());
   player.Tick(start_time);
+
+  // Scheduling a redundant, approximately equal transition should be ignored.
+  int animation_id = player.animations().front()->id();
+  gfx::SizeF nearby = to;
+  nearby.set_width(to.width() + kNoise);
+  player.TransitionSizeTo(start_time, TargetProperty::BOUNDS, from, nearby);
+  EXPECT_EQ(animation_id, player.animations().front()->id());
 
   player.Tick(start_time + UsToDelta(5000));
   EXPECT_LT(from.width(), target.size().width());

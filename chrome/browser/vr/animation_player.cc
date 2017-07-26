@@ -14,9 +14,13 @@
 #include "cc/base/math_util.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 
+using cc::MathUtil;
+
 namespace vr {
 
 namespace {
+
+static constexpr float kTolerance = 1e-5;
 
 static int s_next_animation_id = 1;
 static int s_next_group_id = 1;
@@ -84,6 +88,11 @@ base::TimeDelta GetEndTime(cc::Animation* animation) {
     return base::TimeDelta();
   }
   return animation->curve()->Duration();
+}
+
+bool ApproximatelyEqual(const gfx::SizeF& lhs, const gfx::SizeF& rhs) {
+  return MathUtil::ApproximatelyEqual(lhs.width(), rhs.width(), kTolerance) &&
+         MathUtil::ApproximatelyEqual(lhs.width(), rhs.width(), kTolerance);
 }
 
 }  // namespace
@@ -183,14 +192,18 @@ void AnimationPlayer::TransitionFloatTo(base::TimeTicks monotonic_time,
   if (running_animation) {
     const cc::FloatAnimationCurve* curve =
         running_animation->curve()->ToFloatAnimationCurve();
-    if (target == curve->GetValue(GetEndTime(running_animation))) {
+    if (MathUtil::ApproximatelyEqual(
+            target, curve->GetValue(GetEndTime(running_animation)),
+            kTolerance)) {
       return;
     }
-    if (target == curve->GetValue(GetStartTime(running_animation))) {
+    if (MathUtil::ApproximatelyEqual(
+            target, curve->GetValue(GetStartTime(running_animation)),
+            kTolerance)) {
       ReverseAnimation(monotonic_time, running_animation);
       return;
     }
-  } else if (target == current) {
+  } else if (MathUtil::ApproximatelyEqual(target, current, kTolerance)) {
     return;
   }
 
@@ -231,14 +244,16 @@ void AnimationPlayer::TransitionTransformOperationsTo(
   if (running_animation) {
     const cc::TransformAnimationCurve* curve =
         running_animation->curve()->ToTransformAnimationCurve();
-    if (target == curve->GetValue(GetEndTime(running_animation))) {
+    if (target.ApproximatelyEqual(
+            curve->GetValue(GetEndTime(running_animation)), kTolerance)) {
       return;
     }
-    if (target == curve->GetValue(GetStartTime(running_animation))) {
+    if (target.ApproximatelyEqual(
+            curve->GetValue(GetStartTime(running_animation)), kTolerance)) {
       ReverseAnimation(monotonic_time, running_animation);
       return;
     }
-  } else if (target == current) {
+  } else if (target.ApproximatelyEqual(current, kTolerance)) {
     return;
   }
 
@@ -275,14 +290,16 @@ void AnimationPlayer::TransitionSizeTo(base::TimeTicks monotonic_time,
   if (running_animation) {
     const cc::SizeAnimationCurve* curve =
         running_animation->curve()->ToSizeAnimationCurve();
-    if (target == curve->GetValue(GetEndTime(running_animation))) {
+    if (ApproximatelyEqual(target,
+                           curve->GetValue(GetEndTime(running_animation)))) {
       return;
     }
-    if (target == curve->GetValue(GetStartTime(running_animation))) {
+    if (ApproximatelyEqual(target,
+                           curve->GetValue(GetStartTime(running_animation)))) {
       ReverseAnimation(monotonic_time, running_animation);
       return;
     }
-  } else if (target == current) {
+  } else if (ApproximatelyEqual(target, current)) {
     return;
   }
 

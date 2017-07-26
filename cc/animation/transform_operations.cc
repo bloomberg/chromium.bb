@@ -289,18 +289,15 @@ bool TransformOperations::IsIdentity() const {
   return true;
 }
 
-bool TransformOperations::operator==(const TransformOperations& other) const {
+bool TransformOperations::ApproximatelyEqual(const TransformOperations& other,
+                                             SkMScalar tolerance) const {
   if (size() != other.size())
     return false;
   for (size_t i = 0; i < operations_.size(); ++i) {
-    if (operations_[i] != other.operations_[i])
+    if (!operations_[i].ApproximatelyEqual(other.operations_[i], tolerance))
       return false;
   }
   return true;
-}
-
-bool TransformOperations::operator!=(const TransformOperations& other) const {
-  return !(*this == other);
 }
 
 bool TransformOperations::BlendInternal(const TransformOperations& from,
