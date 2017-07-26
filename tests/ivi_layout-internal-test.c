@@ -623,6 +623,73 @@ test_screen_add_layers(struct test_context *ctx)
 }
 
 static void
+test_screen_remove_layer(struct test_context *ctx)
+{
+	const struct ivi_layout_interface *lyt = ctx->layout_interface;
+	struct ivi_layout_layer *ivilayer;
+	struct weston_output *output;
+	struct ivi_layout_layer **array;
+	int32_t length = 0;
+
+	if (wl_list_empty(&ctx->compositor->output_list))
+		return;
+
+	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
+	iassert(ivilayer != NULL);
+
+	output = wl_container_of(ctx->compositor->output_list.next, output, link);
+
+	iassert(lyt->screen_add_layer(output, ivilayer) == IVI_SUCCEEDED);
+	lyt->commit_changes();
+
+	iassert(lyt->get_layers_on_screen(output, &length, &array) == IVI_SUCCEEDED);
+	iassert(length == 1);
+	iassert(array[0] == ivilayer);
+
+	iassert(lyt->screen_remove_layer(output, ivilayer) == IVI_SUCCEEDED);
+	lyt->commit_changes();
+
+	if (length > 0)
+		free(array);
+
+	array = NULL;
+
+	iassert(lyt->get_layers_on_screen(output, &length, &array) == IVI_SUCCEEDED);
+	iassert(length == 0);
+	iassert(array == NULL);
+
+	lyt->layer_destroy(ivilayer);
+}
+
+static void
+test_screen_bad_remove_layer(struct test_context *ctx)
+{
+	const struct ivi_layout_interface *lyt = ctx->layout_interface;
+	struct ivi_layout_layer *ivilayer;
+	struct weston_output *output;
+
+	if (wl_list_empty(&ctx->compositor->output_list))
+		return;
+
+	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
+	iassert(ivilayer != NULL);
+
+	output = wl_container_of(ctx->compositor->output_list.next, output, link);
+
+	iassert(lyt->screen_remove_layer(NULL, ivilayer) == IVI_FAILED);
+	lyt->commit_changes();
+
+	iassert(lyt->screen_remove_layer(output, NULL) == IVI_FAILED);
+	lyt->commit_changes();
+
+	iassert(lyt->screen_remove_layer(NULL, NULL) == IVI_FAILED);
+	lyt->commit_changes();
+
+	lyt->layer_destroy(ivilayer);
+}
+
+
+static void
 test_commit_changes_after_render_order_set_layer_destroy(
 	struct test_context *ctx)
 {
@@ -906,6 +973,8 @@ run_internal_tests(void *data)
 	test_screen_render_order(ctx);
 	test_screen_bad_render_order(ctx);
 	test_screen_add_layers(ctx);
+	test_screen_remove_layer(ctx);
+	test_screen_bad_remove_layer(ctx);
 	test_commit_changes_after_render_order_set_layer_destroy(ctx);
 
 	test_layer_properties_changed_notification(ctx);
