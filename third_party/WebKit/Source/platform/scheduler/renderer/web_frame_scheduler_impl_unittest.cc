@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "cc/test/ordered_simple_task_runner.h"
+#include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/scheduler/base/test_time_source.h"

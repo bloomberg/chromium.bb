@@ -9,10 +9,15 @@ viz_static_library("test_support") {
   sources = [
     "begin_frame_args_test.cc",
     "begin_frame_args_test.h",
+    "begin_frame_source_test.cc",
+    "begin_frame_source_test.h",
     "compositor_frame_helpers.cc",
     "compositor_frame_helpers.h",
     "fake_delay_based_time_source.cc",
     "fake_delay_based_time_source.h",
+    "mock_helper.h",
+    "ordered_simple_task_runner.cc",
+    "ordered_simple_task_runner.h",
     "paths.cc",
     "paths.h",
     "surface_hittest_test_helpers.cc",
@@ -25,6 +30,8 @@ viz_static_library("test_support") {
     "//base/test:test_support",
     "//cc",
     "//components/viz/service",
+    "//testing/gmock",
+    "//testing/gtest",
     "//ui/gfx/geometry",
   ]
 }
@@ -40,5 +47,21 @@ viz_source_set("test_suite") {
     "//base",
     "//base/test:test_support",
     "//ui/gl:test_support",
+  ]
+}
+
+viz_source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "begin_frame_source_test_unittest.cc",
+    "mock_helper_unittest.cc",
+    "ordered_simple_task_runner_unittest.cc",
+  ]
+  deps = [
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }
