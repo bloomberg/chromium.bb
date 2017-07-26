@@ -1106,8 +1106,10 @@ weston_desktop_xdg_surface_protocol_ack_configure(struct wl_client *wl_client,
 		} else if (configure->serial == serial) {
 			wl_list_remove(&configure->link);
 			found = true;
+			break;
+		} else {
+			break;
 		}
-		break;
 	}
 	if (!found) {
 		struct weston_desktop_client *client =
