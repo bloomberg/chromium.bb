@@ -39,6 +39,9 @@ class CHROMEOS_EXPORT FakeMediaAnalyticsClient : public MediaAnalyticsClient {
   // Sets the object to be returned from GetDiagnostics.
   void SetDiagnostics(const mri::Diagnostics& diagnostics);
 
+  // Sets the state of the media analytics process to SUSPENDED.
+  void SetStateSuspended();
+
   void set_process_running(bool running) { process_running_ = running; }
 
   bool process_running() const { return process_running_; }

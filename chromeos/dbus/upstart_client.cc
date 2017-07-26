@@ -64,6 +64,17 @@ class UpstartClientImpl : public UpstartClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
+  void RestartMediaAnalytics(const UpstartCallback& callback) override {
+    dbus::MethodCall method_call(kUpstartJobInterface, kUpstartRestartMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendArrayOfStrings(std::vector<std::string>());
+    writer.AppendBool(true);  // Wait for response.
+    ma_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&UpstartClientImpl::HandleStartMediaAnalyticsResponse,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
   void StopMediaAnalytics() override {
     dbus::MethodCall method_call(kUpstartJobInterface, kUpstartStopMethod);
     dbus::MessageWriter writer(&method_call);

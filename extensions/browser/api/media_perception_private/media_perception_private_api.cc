@@ -70,9 +70,10 @@ MediaPerceptionPrivateSetStateFunction::Run() {
       media_perception::SetState::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
   if (params->state.status != media_perception::STATUS_RUNNING &&
-      params->state.status != media_perception::STATUS_SUSPENDED) {
+      params->state.status != media_perception::STATUS_SUSPENDED &&
+      params->state.status != media_perception::STATUS_RESTARTING) {
     return RespondNow(
-        Error("Status can only be set to RUNNING and SUSPENDED."));
+        Error("Status can only be set to RUNNING, SUSPENDED or RESTARTING."));
   }
 
   // Check that device context is only provided with SetState RUNNING.

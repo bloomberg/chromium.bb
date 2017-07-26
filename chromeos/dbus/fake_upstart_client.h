@@ -23,6 +23,7 @@ class CHROMEOS_EXPORT FakeUpstartClient : public UpstartClient {
   void StartAuthPolicyService() override;
   void RestartAuthPolicyService() override;
   void StartMediaAnalytics(const UpstartCallback& callback) override;
+  void RestartMediaAnalytics(const UpstartCallback& callback) override;
   void StopMediaAnalytics() override;
 
  private:
