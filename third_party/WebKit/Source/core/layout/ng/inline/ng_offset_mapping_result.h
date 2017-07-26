@@ -47,6 +47,8 @@ class NGOffsetMappingUnit {
   unsigned TextContentStart() const { return text_content_start_; }
   unsigned TextContentEnd() const { return text_content_end_; }
 
+  unsigned ConvertDOMOffsetToTextContent(unsigned) const;
+
  private:
   const NGOffsetMappingUnitType type_ = NGOffsetMappingUnitType::kIdentity;
 
@@ -80,6 +82,9 @@ class NGOffsetMappingResult {
 
   const UnitVector& GetUnits() const { return units_; }
   const RangeMap& GetRanges() const { return ranges_; }
+
+  const NGOffsetMappingUnit* GetMappingUnitForDOMOffset(const LayoutText*,
+                                                        unsigned) const;
 
  private:
   UnitVector units_;

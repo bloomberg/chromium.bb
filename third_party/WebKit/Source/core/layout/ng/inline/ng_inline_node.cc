@@ -697,23 +697,24 @@ const NGOffsetMappingUnit* NGInlineNode::GetMappingUnitForDOMOffset(
 
   DCHECK_EQ(layout_object->EnclosingBox(), GetLayoutBlockFlow());
   const auto& result = ComputeOffsetMappingIfNeeded();
+  return result.GetMappingUnitForDOMOffset(ToLayoutText(layout_object), offset);
+}
 
-  // TODO(xiaochengh): Wrap the code below into a member function of
-  // NGOffsetMappingResult.
+// TODO(xiaochengh): Move this function body to ng_offset_mapping_result.cc
+const NGOffsetMappingUnit* NGOffsetMappingResult::GetMappingUnitForDOMOffset(
+    const LayoutText* layout_text,
+    unsigned offset) const {
   unsigned range_start;
   unsigned range_end;
-  std::tie(range_start, range_end) =
-      result.GetRanges().at(ToLayoutText(layout_object));
-  if (range_start == range_end ||
-      result.GetUnits()[range_start].DOMStart() > offset)
+  std::tie(range_start, range_end) = ranges_.at(layout_text);
+  if (range_start == range_end || units_[range_start].DOMStart() > offset)
     return nullptr;
   // Find the last unit where unit.dom_start <= offset
-  const NGOffsetMappingUnit* unit = std::prev(
-      std::upper_bound(result.GetUnits().begin() + range_start,
-                       result.GetUnits().begin() + range_end, offset,
-                       [](unsigned offset, const NGOffsetMappingUnit& unit) {
-                         return offset < unit.DOMStart();
-                       }));
+  const NGOffsetMappingUnit* unit = std::prev(std::upper_bound(
+      units_.begin() + range_start, units_.begin() + range_end, offset,
+      [](unsigned offset, const NGOffsetMappingUnit& unit) {
+        return offset < unit.DOMStart();
+      }));
   if (unit->DOMEnd() < offset)
     return nullptr;
   return unit;
@@ -723,22 +724,25 @@ size_t NGInlineNode::GetTextContentOffset(const Node& node, unsigned offset) {
   const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
   if (!unit)
     return kNotFound;
+  return unit->ConvertDOMOffsetToTextContent(offset);
+}
 
-  // TODO(xiaochengh): Wrap the code below into a member function of
-  // NGOffsetMappingUnit.
-  DCHECK_GE(offset, unit->DOMStart());
-  DCHECK_LE(offset, unit->DOMEnd());
+// TODO(xiaochengh): Move this function body to ng_offset_mapping_result.cc
+unsigned NGOffsetMappingUnit::ConvertDOMOffsetToTextContent(
+    unsigned offset) const {
+  DCHECK_GE(offset, dom_start_);
+  DCHECK_LE(offset, dom_end_);
   // DOM start is always mapped to text content start.
-  if (offset == unit->DOMStart())
-    return unit->TextContentStart();
+  if (offset == dom_start_)
+    return text_content_start_;
   // DOM end is always mapped to text content end.
-  if (offset == unit->DOMEnd())
-    return unit->TextContentEnd();
-  // |unit| has collapsed mapping.
-  if (unit->TextContentStart() == unit->TextContentEnd())
-    return unit->TextContentStart();
-  // |unit| has identity mapping.
-  return offset - unit->DOMStart() + unit->TextContentStart();
+  if (offset == dom_end_)
+    return text_content_end_;
+  // Handle collapsed mapping.
+  if (text_content_start_ == text_content_end_)
+    return text_content_start_;
+  // Handle has identity mapping.
+  return offset - dom_start_ + text_content_start_;
 }
 
 }  // namespace blink
