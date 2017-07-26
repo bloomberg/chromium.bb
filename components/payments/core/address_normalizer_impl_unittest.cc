@@ -6,9 +6,8 @@
 
 #include <utility>
 
-#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/null_storage.h"
@@ -119,7 +118,7 @@ class AddressNormalizerTest : public testing::Test {
 
   const std::unique_ptr<TestAddressNormalizer> normalizer_;
 
-  base::test::ScopedTaskScheduler scoped_task_scheduler_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AddressNormalizerTest);
@@ -170,7 +169,7 @@ TEST_F(AddressNormalizerTest, StartNormalization_RulesNotLoaded_WillNotLoad) {
   normalizer_->StartAddressNormalization(profile, kLocale, 0, &delegate);
 
   // Let the timeout execute.
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   // Since the rules are never loaded and the timeout is 0, the delegate should
   // get notified that the address could not be normalized.
@@ -234,7 +233,7 @@ TEST_F(AddressNormalizerTest, FormatPhone_AddressNotNormalized) {
   normalizer_->StartAddressNormalization(profile, kLocale, 0, &delegate);
 
   // Let the timeout execute.
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   // Make sure the address was not normalized.
   EXPECT_TRUE(delegate.not_normalized_called());
