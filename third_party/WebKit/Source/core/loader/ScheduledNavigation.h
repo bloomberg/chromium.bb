@@ -38,6 +38,8 @@ class ScheduledNavigation
 
   virtual void Fire(LocalFrame*) = 0;
 
+  virtual KURL Url() const = 0;
+
   virtual bool ShouldStartTimer(LocalFrame*) { return true; }
 
   Reason GetReason() const { return reason_; }

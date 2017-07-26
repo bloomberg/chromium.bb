@@ -8,10 +8,11 @@
     frame.src = '${testRunner.url('resources/navigation-chain1.html')}';
   `);
 
-  for (var i = 0; i < 3; i++) {
+  for (var i = 0; i < 5; i++) {
     var msg = await dp.Page.onceFrameScheduledNavigation();
     testRunner.log('Scheduled navigation with delay ' + msg.params.delay +
-                   ' and reason ' + msg.params.reason);
+                   ' and reason ' + msg.params.reason + ' to url ' +
+                   msg.params.url.split('/').pop());
     await dp.Page.onceFrameStartedLoading();
     // This event should be received before the scheduled navigation is cleared.
     testRunner.log('Started loading');
