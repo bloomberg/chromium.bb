@@ -63,7 +63,7 @@ var CrScrollableBehavior = {
    */
   updateScrollableContents: function() {
     if (this.intervalId_ !== null)
-      return;  // notifyResize is arelady in progress.
+      return;  // notifyResize is already in progress.
 
     this.requestUpdateScroll();
 
@@ -93,7 +93,7 @@ var CrScrollableBehavior = {
   },
 
   /**
-   * Setup the intial scrolling related classes for each scrollable container.
+   * Setup the initial scrolling related classes for each scrollable container.
    * Called from ready() and updateScrollableContents(). May also be called
    * directly when the contents change (e.g. when not using iron-list).
    */
@@ -119,7 +119,7 @@ var CrScrollableBehavior = {
     this.async(function() {
       var scrollTop = list.savedScrollTops.shift();
       // Ignore scrollTop of 0 in case it was intermittent (we do not need to
-      // explicity scroll to 0).
+      // explicitly scroll to 0).
       if (scrollTop != 0)
         list.scroll(0, scrollTop);
     });
@@ -136,7 +136,8 @@ var CrScrollableBehavior = {
   },
 
   /**
-   * This gets called once intially and any time a scrollable container scrolls.
+   * This gets called once initially and any time a scrollable container
+   * scrolls.
    * @param {!HTMLElement} scrollable
    * @private
    */

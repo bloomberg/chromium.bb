@@ -42,7 +42,7 @@ cr.define('settings_reset_page', function() {
       teardown(function() { resetPage.remove(); });
 
       /**
-       * @param {function(SettingsResetProfileDialogElemeent)}
+       * @param {function(SettingsResetProfileDialogElement)}
        *     closeDialogFn A function to call for closing the dialog.
        * @return {!Promise}
        */
@@ -153,7 +153,7 @@ cr.define('settings_reset_page', function() {
 
       if (cr.isChromeOS) {
         /**
-         * @param {function(SettingsPowerwashDialogElemeent):!Element}
+         * @param {function(SettingsPowerwashDialogElement):!Element}
          *     closeButtonFn A function that returns the button to be used for
          *     closing the dialog.
          * @return {!Promise}
