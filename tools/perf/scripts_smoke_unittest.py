@@ -2,14 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
 import os
 import subprocess
 import sys
-import tempfile
 import unittest
-
-from telemetry import benchmark
 
 
 class ScriptsSmokeTest(unittest.TestCase):
@@ -59,20 +55,3 @@ class ScriptsSmokeTest(unittest.TestCase):
       self.skipTest('small_profile_extender is missing')
     self.assertEquals(return_code, 0, stdout)
     self.assertIn('kraken', stdout)
-
-  # crbug.com/483212
-  @benchmark.Disabled('chromeos')
-  def testRunBenchmarkListJSONListsOutBenchmarks(self):
-    tmp_file = tempfile.NamedTemporaryFile(delete=False)
-    tmp_file_name = tmp_file.name
-    tmp_file.close()
-    try:
-      return_code, _ = self.RunPerfScript(
-          'run_benchmark list --json-output %s' % tmp_file_name)
-      self.assertEquals(return_code, 0)
-      with open(tmp_file_name, 'r') as f:
-        benchmark_data = json.load(f)
-        self.assertIn('dummy_benchmark.stable_benchmark_1',
-                      benchmark_data['steps'])
-    finally:
-      os.remove(tmp_file_name)
