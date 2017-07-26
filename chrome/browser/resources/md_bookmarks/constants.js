@@ -16,26 +16,31 @@ var DropPosition = {
 };
 
 /**
- * @enum {string}
+ * Commands which can be handled by the CommandManager. This enum is also used
+ * for metrics and should be kept in sync with BookmarkManagerCommand in
+ * enums.xml.
+ * @enum {number}
  * @const
  */
 var Command = {
-  EDIT: 'edit',
-  COPY_URL: 'copy-url',
-  SHOW_IN_FOLDER: 'show-in-folder',
-  DELETE: 'delete',
-  OPEN_NEW_TAB: 'open-new-tab',
-  OPEN_NEW_WINDOW: 'open-new-window',
-  OPEN_INCOGNITO: 'open-incognito',
-  UNDO: 'undo',
-  REDO: 'redo',
+  EDIT: 0,
+  COPY_URL: 1,
+  SHOW_IN_FOLDER: 2,
+  DELETE: 3,
+  OPEN_NEW_TAB: 4,
+  OPEN_NEW_WINDOW: 5,
+  OPEN_INCOGNITO: 6,
+  UNDO: 7,
+  REDO: 8,
   // OPEN triggers when you double-click an item.
-  OPEN: 'open',
-  SELECT_ALL: 'select-all',
-  DESELECT_ALL: 'deselect-all',
-  COPY: 'copy',
-  CUT: 'cut',
-  PASTE: 'paste',
+  OPEN: 9,
+  SELECT_ALL: 10,
+  DESELECT_ALL: 11,
+  COPY: 12,
+  CUT: 13,
+  PASTE: 14,
+  // Append new values to the end of the enum.
+  MAX_VALUE: 15,
 };
 
 /**
