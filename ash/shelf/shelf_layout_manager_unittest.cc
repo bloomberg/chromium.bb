@@ -56,6 +56,7 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace {
@@ -1761,6 +1762,19 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColor) {
 
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
+
+  std::unique_ptr<aura::Window> w3(CreateTestWindow());
+  w3->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  ::wm::AddTransientChild(w1.get(), w3.get());
+  w3->Show();
+  wm::ActivateWindow(w3.get());
+
+  wm::WorkspaceWindowState window_state =
+      RootWindowController::ForWindow(GetShelfWidget()->GetNativeWindow())
+          ->GetWorkspaceWindowState();
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_MAXIMIZED, window_state);
+
+  w3.reset();
   w1.reset();
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
 }
