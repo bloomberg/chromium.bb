@@ -2107,3 +2107,6 @@ Bug(none) webshare/share-nonutf8-encoding.html [ Timeout ]
 Bug(none) webshare/share-success.html [ Timeout ]
 Bug(none) webshare/share-types.html [ Timeout ]
 Bug(none) webshare/share-url-relative.html [ Timeout ]
+
+# Flaky with --enable-network-service.
+Bug(none) http/tests/misc/embed-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
