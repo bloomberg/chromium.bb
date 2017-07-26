@@ -520,6 +520,7 @@ post_process_cmdline() {
     soft_enable smooth_hv
     soft_enable parallel_deblocking
     soft_enable rect_intra_pred
+    soft_enable convolve_round
 
     # Backwards/jenkins compatibility with --enable-aom-highbitdepth
     enabled aom_highbitdepth && enable_feature highbitdepth

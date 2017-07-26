@@ -791,11 +791,11 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #if CONFIG_HIGHBITDEPTH
 #if CONFIG_CONVOLVE_ROUND
   DECLARE_ALIGNED(16, CONV_BUF_TYPE, tmp_dst2[MAX_SB_SQUARE]);
+  memset(tmp_dst2, 0, sizeof(tmp_dst2));
   int tmp_dst2_stride = MAX_SB_SIZE;
   CONV_BUF_TYPE *org_dst = conv_params->dst;
   int org_dst_stride = conv_params->dst_stride;
   if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
-    memset(tmp_dst2, 0, sizeof(tmp_dst2));
     conv_params->dst = tmp_dst2;
     conv_params->dst_stride = tmp_dst2_stride;
     // mask compound has its own average mechanism
