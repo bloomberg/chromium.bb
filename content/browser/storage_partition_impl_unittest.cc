@@ -632,7 +632,6 @@ class StoragePartitionImplTest : public testing::Test {
       quota_manager_ = new MockQuotaManager(
           browser_context_->IsOffTheRecord(), browser_context_->GetPath(),
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get(),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::DB).get(),
           browser_context_->GetSpecialStoragePolicy());
     }
     return quota_manager_.get();

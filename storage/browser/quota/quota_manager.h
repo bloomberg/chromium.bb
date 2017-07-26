@@ -127,7 +127,6 @@ class STORAGE_EXPORT QuotaManager
       bool is_incognito,
       const base::FilePath& profile_path,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_thread,
-      const scoped_refptr<base::SequencedTaskRunner>& db_thread,
       const scoped_refptr<SpecialStoragePolicy>& special_storage_policy,
       const GetQuotaSettingsFunc& get_settings_function);
 
@@ -432,7 +431,7 @@ class STORAGE_EXPORT QuotaManager
   bool db_disabled_;
   bool eviction_disabled_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
-  scoped_refptr<base::SequencedTaskRunner> db_thread_;
+  scoped_refptr<base::SequencedTaskRunner> db_runner_;
   mutable std::unique_ptr<QuotaDatabase> database_;
   bool is_database_bootstrapped_ = false;
 

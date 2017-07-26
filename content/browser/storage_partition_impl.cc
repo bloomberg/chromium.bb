@@ -445,7 +445,6 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   partition->quota_manager_ = new storage::QuotaManager(
       in_memory, partition_path,
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get(),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::DB).get(),
       context->GetSpecialStoragePolicy(),
       base::Bind(&StoragePartitionImpl::GetQuotaSettings,
                  partition->weak_factory_.GetWeakPtr()));

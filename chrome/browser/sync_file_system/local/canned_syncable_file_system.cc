@@ -241,8 +241,7 @@ void CannedSyncableFileSystem::SetUp(QuotaMode quota_mode) {
   if (quota_mode == QUOTA_ENABLED) {
     quota_manager_ = new QuotaManager(
         false /* is_incognito */, data_dir_.GetPath(), io_task_runner_.get(),
-        base::ThreadTaskRunnerHandle::Get().get(), storage_policy.get(),
-        storage::GetQuotaSettingsFunc());
+        storage_policy.get(), storage::GetQuotaSettingsFunc());
   }
 
   std::vector<std::string> additional_allowed_schemes;

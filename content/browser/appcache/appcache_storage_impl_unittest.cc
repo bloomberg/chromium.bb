@@ -280,7 +280,6 @@ class AppCacheStorageImplTest : public testing::Test {
         : QuotaManager(true /* is_incognito */,
                        base::FilePath(),
                        io_thread->task_runner().get(),
-                       background_thread->task_runner().get(),
                        nullptr,
                        storage::GetQuotaSettingsFunc()),
           async_(false) {}

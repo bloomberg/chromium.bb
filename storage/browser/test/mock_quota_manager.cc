@@ -38,12 +38,10 @@ MockQuotaManager::MockQuotaManager(
     bool is_incognito,
     const base::FilePath& profile_path,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread,
-    const scoped_refptr<base::SequencedTaskRunner>& db_thread,
     const scoped_refptr<SpecialStoragePolicy>& special_storage_policy)
     : QuotaManager(is_incognito,
                    profile_path,
                    io_thread,
-                   db_thread,
                    special_storage_policy,
                    storage::GetQuotaSettingsFunc()),
       weak_factory_(this) {}

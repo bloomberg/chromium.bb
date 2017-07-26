@@ -103,13 +103,12 @@ class QuotaManagerTest : public testing::Test {
   void TearDown() override {
     // Make sure the quota manager cleans up correctly.
     quota_manager_ = NULL;
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
 
  protected:
   void ResetQuotaManager(bool is_incognito) {
     quota_manager_ = new QuotaManager(is_incognito, data_dir_.GetPath(),
-                                      base::ThreadTaskRunnerHandle::Get().get(),
                                       base::ThreadTaskRunnerHandle::Get().get(),
                                       mock_special_storage_policy_.get(),
                                       storage::GetQuotaSettingsFunc());
@@ -482,13 +481,15 @@ class QuotaManagerTest : public testing::Test {
   int status_callback_count() const { return status_callback_count_; }
   void reset_status_callback_count() { status_callback_count_ = 0; }
 
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
  private:
   base::Time IncrementMockTime() {
     ++mock_time_counter_;
     return base::Time::FromDoubleT(mock_time_counter_ * 10.0);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir data_dir_;
 
   scoped_refptr<QuotaManager> quota_manager_;
@@ -539,7 +540,7 @@ TEST_F(QuotaManagerTest, GetUsageInfo) {
       QuotaClient::kDatabase));
 
   GetUsageInfo();
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(4U, usage_info().size());
   for (size_t i = 0; i < usage_info().size(); ++i) {
@@ -568,20 +569,20 @@ TEST_F(QuotaManagerTest, GetUsageAndQuota_Simple) {
       QuotaClient::kFileSystem));
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(80, usage());
   EXPECT_EQ(0, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10, usage());
   EXPECT_LE(0, quota());
   int64_t quota_returned_for_foo = quota();
 
   GetUsageAndQuotaForWebApps(GURL("http://bar.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(0, usage());
   EXPECT_EQ(quota_returned_for_foo, quota());
@@ -589,30 +590,30 @@ TEST_F(QuotaManagerTest, GetUsageAndQuota_Simple) {
 
 TEST_F(QuotaManagerTest, GetUsage_NoClient) {
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(0, usage());
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(0, usage());
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(0, usage());
 
   GetHostUsage("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(0, usage());
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(0, usage());
   EXPECT_EQ(0, unlimited_usage());
 
   GetGlobalUsage(kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(0, usage());
   EXPECT_EQ(0, unlimited_usage());
 }
@@ -620,30 +621,30 @@ TEST_F(QuotaManagerTest, GetUsage_NoClient) {
 TEST_F(QuotaManagerTest, GetUsage_EmptyClient) {
   RegisterClient(CreateClient(NULL, 0, QuotaClient::kFileSystem));
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(0, usage());
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(0, usage());
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(0, usage());
 
   GetHostUsage("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(0, usage());
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(0, usage());
   EXPECT_EQ(0, unlimited_usage());
 
   GetGlobalUsage(kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(0, usage());
   EXPECT_EQ(0, unlimited_usage());
 }
@@ -666,7 +667,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_MultiOrigins) {
   SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20, usage());
 
@@ -675,7 +676,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_MultiOrigins) {
   EXPECT_EQ(kPerHostQuota, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://bar.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(5 + 7, usage());
   EXPECT_EQ(kPerHostQuota, quota());
@@ -704,37 +705,37 @@ TEST_F(QuotaManagerTest, GetUsage_MultipleClients) {
   SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(1 + 128, usage());
   EXPECT_EQ(kPerHostQuota, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://bar.com/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(4, usage());
   EXPECT_EQ(0, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://unlimited/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(512, usage());
   EXPECT_EQ(kAvailableSpaceForApp + usage(), quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://unlimited/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(8, usage());
   EXPECT_EQ(kAvailableSpaceForApp + usage(), quota());
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(1 + 2 + 128 + 512, usage());
   EXPECT_EQ(512, unlimited_usage());
 
   GetGlobalUsage(kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(4 + 8 + 256, usage());
   EXPECT_EQ(8, unlimited_usage());
@@ -762,7 +763,7 @@ TEST_F(QuotaManagerTest, GetUsageWithBreakdown_Simple) {
   RegisterClient(client3);
 
   GetUsageAndQuotaWithBreakdown(GURL("http://foo.com/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(80, usage());
   usage_breakdown_expected[QuotaClient::kFileSystem] = 80;
@@ -771,7 +772,7 @@ TEST_F(QuotaManagerTest, GetUsageWithBreakdown_Simple) {
   EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
 
   GetUsageAndQuotaWithBreakdown(GURL("http://foo.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(1 + 4 + 8, usage());
   usage_breakdown_expected[QuotaClient::kFileSystem] = 1;
@@ -780,7 +781,7 @@ TEST_F(QuotaManagerTest, GetUsageWithBreakdown_Simple) {
   EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
 
   GetUsageAndQuotaWithBreakdown(GURL("http://bar.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(0, usage());
   usage_breakdown_expected[QuotaClient::kFileSystem] = 0;
@@ -793,24 +794,24 @@ TEST_F(QuotaManagerTest, GetUsageWithBreakdown_NoClient) {
   base::flat_map<QuotaClient::ID, int64_t> usage_breakdown_expected;
 
   GetUsageAndQuotaWithBreakdown(GURL("http://foo.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(0, usage());
   EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
 
   GetUsageAndQuotaWithBreakdown(GURL("http://foo.com/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(0, usage());
   EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
 
   GetHostUsageBreakdown("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(0, usage());
   EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
 
   GetHostUsageBreakdown("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(0, usage());
   EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
 }
@@ -826,14 +827,14 @@ TEST_F(QuotaManagerTest, GetUsageWithBreakdown_MultiOrigins) {
       CreateClient(kData, arraysize(kData), QuotaClient::kFileSystem));
 
   GetUsageAndQuotaWithBreakdown(GURL("http://foo.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20, usage());
   usage_breakdown_expected[QuotaClient::kFileSystem] = 10 + 20;
   EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
 
   GetUsageAndQuotaWithBreakdown(GURL("http://bar.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(5 + 7, usage());
   usage_breakdown_expected[QuotaClient::kFileSystem] = 5 + 7;
@@ -860,7 +861,7 @@ TEST_F(QuotaManagerTest, GetUsageWithBreakdown_MultipleClients) {
       CreateClient(kData2, arraysize(kData2), QuotaClient::kDatabase));
 
   GetUsageAndQuotaWithBreakdown(GURL("http://foo.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(1 + 128, usage());
   usage_breakdown_expected[QuotaClient::kFileSystem] = 1;
@@ -868,7 +869,7 @@ TEST_F(QuotaManagerTest, GetUsageWithBreakdown_MultipleClients) {
   EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
 
   GetUsageAndQuotaWithBreakdown(GURL("http://bar.com/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(4, usage());
   usage_breakdown_expected[QuotaClient::kFileSystem] = 4;
@@ -876,7 +877,7 @@ TEST_F(QuotaManagerTest, GetUsageWithBreakdown_MultipleClients) {
   EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
 
   GetUsageAndQuotaWithBreakdown(GURL("http://unlimited/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(512, usage());
   usage_breakdown_expected[QuotaClient::kFileSystem] = 0;
@@ -884,7 +885,7 @@ TEST_F(QuotaManagerTest, GetUsageWithBreakdown_MultipleClients) {
   EXPECT_EQ(usage_breakdown_expected, usage_breakdown());
 
   GetUsageAndQuotaWithBreakdown(GURL("http://unlimited/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(8, usage());
   usage_breakdown_expected[QuotaClient::kFileSystem] = 8;
@@ -902,7 +903,7 @@ void QuotaManagerTest::GetUsage_WithModifyTestBody(const StorageType type) {
   RegisterClient(client);
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), type);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20, usage());
 
@@ -911,19 +912,19 @@ void QuotaManagerTest::GetUsage_WithModifyTestBody(const StorageType type) {
   client->AddOriginAndNotify(GURL("https://foo.com/"), type, 1);
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), type);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20 + 30 - 5 + 1, usage());
   int foo_usage = usage();
 
   client->AddOriginAndNotify(GURL("http://bar.com/"), type, 40);
   GetUsageAndQuotaForWebApps(GURL("http://bar.com/"), type);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(40, usage());
 
   GetGlobalUsage(type);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(foo_usage + 40, usage());
   EXPECT_EQ(0, unlimited_usage());
 }
@@ -949,7 +950,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_WithAdditionalTasks) {
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20, usage());
   EXPECT_EQ(kPerHostQuota, quota());
@@ -959,7 +960,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_WithAdditionalTasks) {
                                  kTemp);
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
   RunAdditionalUsageAndQuotaTask(GURL("http://bar.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20, usage());
   EXPECT_EQ(kPerHostQuota, quota());
@@ -991,7 +992,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_NukeManager) {
 
   // Nuke before waiting for callbacks.
   set_quota_manager(NULL);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaErrorAbort, status());
 }
 
@@ -1011,23 +1012,23 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Overbudget) {
   // quota calculations for an individual origin, so despite global usage
   // in excess of our poolsize, we still get the nominal quota value.
   GetStorageCapacity();
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_LE(kMustRemainAvailableForSystem, available_space());
 
   GetUsageAndQuotaForWebApps(GURL("http://usage1/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(1, usage());
   EXPECT_EQ(kPerHostQuota, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://usage10/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10, usage());
   EXPECT_EQ(kPerHostQuota, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://usage200/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(200, usage());
   EXPECT_EQ(kPerHostQuota, quota());  // should be clamped to the nominal quota
@@ -1049,30 +1050,30 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Unlimited) {
   SetQuotaSettings(1000, kPerHostQuotaFor1000, kMustRemainAvailableForSystem);
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(10 + 50 + 4000, usage());
   EXPECT_EQ(4000, unlimited_usage());
 
   GetUsageAndQuotaForWebApps(GURL("http://usage10/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10, usage());
   EXPECT_EQ(kPerHostQuotaFor1000, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://usage50/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(50, usage());
   EXPECT_EQ(kPerHostQuotaFor1000, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://unlimited/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(4000, usage());
   EXPECT_EQ(kAvailableSpaceForApp + usage(), quota());
 
   GetUsageAndQuotaForStorageClient(GURL("http://unlimited/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(0, usage());
   EXPECT_EQ(QuotaManager::kNoLimit, quota());
@@ -1082,25 +1083,25 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Unlimited) {
   SetQuotaSettings(100, kPerHostQuotaFor100, kMustRemainAvailableForSystem);
 
   GetUsageAndQuotaForWebApps(GURL("http://usage10/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10, usage());
   EXPECT_EQ(kPerHostQuotaFor100, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://usage50/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(50, usage());
   EXPECT_EQ(kPerHostQuotaFor100, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://unlimited/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(4000, usage());
   EXPECT_EQ(kAvailableSpaceForApp + usage(), quota());
 
   GetUsageAndQuotaForStorageClient(GURL("http://unlimited/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(0, usage());
   EXPECT_EQ(QuotaManager::kNoLimit, quota());
@@ -1110,30 +1111,30 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Unlimited) {
   mock_special_storage_policy()->NotifyCleared();
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(10 + 50 + 4000, usage());
   EXPECT_EQ(0, unlimited_usage());
 
   GetUsageAndQuotaForWebApps(GURL("http://usage10/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10, usage());
   EXPECT_EQ(kPerHostQuotaFor100, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://usage50/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(50, usage());
   EXPECT_EQ(kPerHostQuotaFor100, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://unlimited/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(4000, usage());
   EXPECT_EQ(kPerHostQuotaFor100, quota());
 
   GetUsageAndQuotaForStorageClient(GURL("http://unlimited/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(4000, usage());
   EXPECT_EQ(kPerHostQuotaFor100, quota());
@@ -1165,11 +1166,11 @@ TEST_F(QuotaManagerTest, GetAndSetPerststentHostQuota) {
   RegisterClient(CreateClient(NULL, 0, QuotaClient::kFileSystem));
 
   GetPersistentHostQuota("foo.com");
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(0, quota());
 
   SetPersistentHostQuota("foo.com", 100);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(100, quota());
 
   GetPersistentHostQuota("foo.com");
@@ -1177,14 +1178,14 @@ TEST_F(QuotaManagerTest, GetAndSetPerststentHostQuota) {
   GetPersistentHostQuota("foo.com");
   SetPersistentHostQuota("foo.com", QuotaManager::kPerHostPersistentQuotaLimit);
   GetPersistentHostQuota("foo.com");
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaManager::kPerHostPersistentQuotaLimit, quota());
 
   // Persistent quota should be capped at the per-host quota limit.
   SetPersistentHostQuota("foo.com",
                          QuotaManager::kPerHostPersistentQuotaLimit + 100);
   GetPersistentHostQuota("foo.com");
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaManager::kPerHostPersistentQuotaLimit, quota());
 }
 
@@ -1192,14 +1193,14 @@ TEST_F(QuotaManagerTest, GetAndSetPersistentUsageAndQuota) {
   RegisterClient(CreateClient(NULL, 0, QuotaClient::kFileSystem));
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(0, usage());
   EXPECT_EQ(0, quota());
 
   SetPersistentHostQuota("foo.com", 100);
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(0, usage());
   EXPECT_EQ(100, quota());
@@ -1207,13 +1208,13 @@ TEST_F(QuotaManagerTest, GetAndSetPersistentUsageAndQuota) {
   // The actual space avaialble is given to 'unlimited' origins as their quota.
   mock_special_storage_policy()->AddUnlimited(GURL("http://unlimited/"));
   GetUsageAndQuotaForWebApps(GURL("http://unlimited/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kAvailableSpaceForApp, quota());
 
   // GetUsageAndQuotaForStorageClient should just return 0 usage and
   // kNoLimit quota.
   GetUsageAndQuotaForStorageClient(GURL("http://unlimited/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(0, usage());
   EXPECT_EQ(QuotaManager::kNoLimit, quota());
 }
@@ -1230,7 +1231,7 @@ TEST_F(QuotaManagerTest, GetSyncableQuota) {
   // kAvailableSpaceForApp as syncable quota (because of the pre-condition).
   mock_special_storage_policy()->AddUnlimited(GURL("http://unlimited/"));
   GetUsageAndQuotaForWebApps(GURL("http://unlimited/"), kSync);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(0, usage());
   EXPECT_EQ(kAvailableSpaceForApp, quota());
@@ -1252,7 +1253,7 @@ TEST_F(QuotaManagerTest, GetPersistentUsageAndQuota_MultiOrigins) {
 
   SetPersistentHostQuota("foo.com", 100);
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20 + 13 + 19, usage());
   EXPECT_EQ(100, quota());
@@ -1276,7 +1277,7 @@ TEST_F(QuotaManagerTest, GetPersistentUsageAndQuota_WithAdditionalTasks) {
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20, usage());
   EXPECT_EQ(100, quota());
@@ -1286,7 +1287,7 @@ TEST_F(QuotaManagerTest, GetPersistentUsageAndQuota_WithAdditionalTasks) {
                                  kPerm);
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
   RunAdditionalUsageAndQuotaTask(GURL("http://bar.com/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20, usage());
   EXPECT_EQ(2, additional_callback_count());
@@ -1310,7 +1311,7 @@ TEST_F(QuotaManagerTest, GetPersistentUsageAndQuota_NukeManager) {
 
   // Nuke before waiting for callbacks.
   set_quota_manager(NULL);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaErrorAbort, status());
 }
 
@@ -1328,21 +1329,21 @@ TEST_F(QuotaManagerTest, GetUsage_Simple) {
       QuotaClient::kFileSystem));
 
   GetGlobalUsage(kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(usage(), 1 + 20 + 600000);
   EXPECT_EQ(0, unlimited_usage());
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(usage(), 300 + 4000 + 50000 + 7000000);
   EXPECT_EQ(0, unlimited_usage());
 
   GetHostUsage("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(usage(), 1 + 20);
 
   GetHostUsage("buz.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(usage(), 4000 + 50000);
 }
 
@@ -1362,7 +1363,7 @@ TEST_F(QuotaManagerTest, GetUsage_WithModification) {
   RegisterClient(client);
 
   GetGlobalUsage(kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(usage(), 1 + 20 + 600000);
   EXPECT_EQ(0, unlimited_usage());
 
@@ -1370,12 +1371,12 @@ TEST_F(QuotaManagerTest, GetUsage_WithModification) {
       GURL("http://foo.com/"), kPerm, 80000000);
 
   GetGlobalUsage(kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(usage(), 1 + 20 + 600000 + 80000000);
   EXPECT_EQ(0, unlimited_usage());
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(usage(), 300 + 4000 + 50000 + 7000000);
   EXPECT_EQ(0, unlimited_usage());
 
@@ -1383,19 +1384,19 @@ TEST_F(QuotaManagerTest, GetUsage_WithModification) {
       GURL("http://foo.com/"), kTemp, 1);
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(usage(), 300 + 4000 + 50000 + 7000000 + 1);
   EXPECT_EQ(0, unlimited_usage());
 
   GetHostUsage("buz.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(usage(), 4000 + 50000);
 
   client->ModifyOriginAndNotify(
       GURL("http://buz.com/"), kTemp, 900000000);
 
   GetHostUsage("buz.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(usage(), 4000 + 50000 + 900000000);
 }
 
@@ -1411,38 +1412,38 @@ TEST_F(QuotaManagerTest, GetUsage_WithDeleteOrigin) {
   RegisterClient(client);
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   int64_t predelete_global_tmp = usage();
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   int64_t predelete_host_tmp = usage();
 
   GetHostUsage("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   int64_t predelete_host_pers = usage();
 
   DeleteClientOriginData(client, GURL("http://foo.com/"),
                          kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_global_tmp - 1, usage());
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_host_tmp - 1, usage());
 
   GetHostUsage("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_host_pers, usage());
 }
 
 TEST_F(QuotaManagerTest, GetStorageCapacity) {
   GetStorageCapacity();
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_LE(0, total_space());
   EXPECT_LE(0, available_space());
 }
@@ -1469,15 +1470,15 @@ TEST_F(QuotaManagerTest, EvictOriginData) {
   RegisterClient(client2);
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   int64_t predelete_global_tmp = usage();
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   int64_t predelete_host_tmp = usage();
 
   GetHostUsage("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   int64_t predelete_host_pers = usage();
 
   for (size_t i = 0; i < arraysize(kData1); ++i)
@@ -1486,13 +1487,13 @@ TEST_F(QuotaManagerTest, EvictOriginData) {
   for (size_t i = 0; i < arraysize(kData2); ++i)
     quota_manager()->NotifyStorageAccessed(QuotaClient::kUnknown,
         GURL(kData2[i].origin), kData2[i].type);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   EvictOriginData(GURL("http://foo.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   DumpOriginInfoTable();
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   typedef OriginInfoTableEntries::const_iterator iterator;
   for (iterator itr(origin_info_entries().begin()),
@@ -1503,15 +1504,15 @@ TEST_F(QuotaManagerTest, EvictOriginData) {
   }
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_global_tmp - (1 + 50000), usage());
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_host_tmp - (1 + 50000), usage());
 
   GetHostUsage("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_host_pers, usage());
 }
 
@@ -1527,10 +1528,10 @@ TEST_F(QuotaManagerTest, EvictOriginDataHistogram) {
   RegisterClient(client);
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   EvictOriginData(kOrigin, kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   // Ensure used count and time since access are recorded.
   histograms.ExpectTotalCount(
@@ -1549,13 +1550,13 @@ TEST_F(QuotaManagerTest, EvictOriginDataHistogram) {
   // Change the used count of the origin.
   quota_manager()->NotifyStorageAccessed(QuotaClient::kUnknown, GURL(kOrigin),
                                          kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   EvictOriginData(kOrigin, kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   // The new used count should be logged.
   histograms.ExpectTotalCount(
@@ -1572,7 +1573,7 @@ TEST_F(QuotaManagerTest, EvictOriginDataHistogram) {
   client->AddOriginAndNotify(kOrigin, kTemp, 100);
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   DeleteOriginFromDatabase(kOrigin, kTemp);
 
@@ -1594,20 +1595,20 @@ TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {
   RegisterClient(client);
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   int64_t predelete_global_tmp = usage();
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   int64_t predelete_host_tmp = usage();
 
   GetHostUsage("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   int64_t predelete_host_pers = usage();
 
   for (size_t i = 0; i < arraysize(kData); ++i)
     NotifyStorageAccessed(client, GURL(kData[i].origin), kData[i].type);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   client->AddOriginToErrorSet(GURL("http://foo.com/"), kTemp);
 
@@ -1615,12 +1616,12 @@ TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {
        i < QuotaManager::kThresholdOfErrorsToBeBlacklisted + 1;
        ++i) {
     EvictOriginData(GURL("http://foo.com/"), kTemp);
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
     EXPECT_EQ(kQuotaErrorInvalidModification, status());
   }
 
   DumpOriginInfoTable();
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   bool found_origin_in_database = false;
   typedef OriginInfoTableEntries::const_iterator iterator;
@@ -1637,31 +1638,31 @@ TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {
 
   for (size_t i = 0; i < kNumberOfTemporaryOrigins - 1; ++i) {
     GetEvictionOrigin(kTemp);
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
     EXPECT_FALSE(eviction_origin().is_empty());
     // The origin "http://foo.com/" should not be in the LRU list.
     EXPECT_NE(std::string("http://foo.com/"), eviction_origin().spec());
     DeleteOriginFromDatabase(eviction_origin(), kTemp);
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
 
   // Now the LRU list must be empty.
   GetEvictionOrigin(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(eviction_origin().is_empty());
 
   // Deleting origins from the database should not affect the results of the
   // following checks.
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_global_tmp, usage());
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_host_tmp, usage());
 
   GetHostUsage("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_host_pers, usage());
 }
 
@@ -1683,7 +1684,7 @@ TEST_F(QuotaManagerTest, GetEvictionRoundInfo) {
   SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
 
   GetEvictionRoundInfo();
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(21, usage());
   EXPECT_EQ(kPoolSize, settings().pool_size);
@@ -1699,47 +1700,47 @@ TEST_F(QuotaManagerTest, DeleteHostDataSimple) {
   RegisterClient(client);
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   const int64_t predelete_global_tmp = usage();
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   int64_t predelete_host_tmp = usage();
 
   GetHostUsage("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   int64_t predelete_host_pers = usage();
 
   DeleteHostData(std::string(), kTemp, kAllClients);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_global_tmp, usage());
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_host_tmp, usage());
 
   GetHostUsage("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_host_pers, usage());
 
   DeleteHostData("foo.com", kTemp, kAllClients);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_global_tmp - 1, usage());
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_host_tmp - 1, usage());
 
   GetHostUsage("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_host_pers, usage());
 }
 
@@ -1765,35 +1766,35 @@ TEST_F(QuotaManagerTest, DeleteHostDataMultiple) {
   RegisterClient(client2);
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   const int64_t predelete_global_tmp = usage();
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   const int64_t predelete_foo_tmp = usage();
 
   GetHostUsage("bar.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   const int64_t predelete_bar_tmp = usage();
 
   GetHostUsage("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   const int64_t predelete_foo_pers = usage();
 
   GetHostUsage("bar.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   const int64_t predelete_bar_pers = usage();
 
   reset_status_callback_count();
   DeleteHostData("foo.com", kTemp, kAllClients);
   DeleteHostData("bar.com", kTemp, kAllClients);
   DeleteHostData("foo.com", kTemp, kAllClients);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(3, status_callback_count());
 
   DumpOriginInfoTable();
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   typedef OriginInfoTableEntries::const_iterator iterator;
   for (iterator itr(origin_info_entries().begin()),
@@ -1808,24 +1809,24 @@ TEST_F(QuotaManagerTest, DeleteHostDataMultiple) {
   }
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_global_tmp - (1 + 20 + 4000 + 50000 + 6000 + 80 + 9),
             usage());
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - (1 + 20 + 50000 + 6000 + 80), usage());
 
   GetHostUsage("bar.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_bar_tmp - (4000 + 9), usage());
 
   GetHostUsage("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_pers, usage());
 
   GetHostUsage("bar.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_bar_pers, usage());
 }
 
@@ -1853,23 +1854,23 @@ TEST_F(QuotaManagerTest, DeleteOriginDataMultiple) {
   RegisterClient(client2);
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   const int64_t predelete_global_tmp = usage();
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   const int64_t predelete_foo_tmp = usage();
 
   GetHostUsage("bar.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   const int64_t predelete_bar_tmp = usage();
 
   GetHostUsage("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   const int64_t predelete_foo_pers = usage();
 
   GetHostUsage("bar.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   const int64_t predelete_bar_pers = usage();
 
   for (size_t i = 0; i < arraysize(kData1); ++i)
@@ -1878,18 +1879,18 @@ TEST_F(QuotaManagerTest, DeleteOriginDataMultiple) {
   for (size_t i = 0; i < arraysize(kData2); ++i)
     quota_manager()->NotifyStorageAccessed(QuotaClient::kUnknown,
         GURL(kData2[i].origin), kData2[i].type);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   reset_status_callback_count();
   DeleteOriginData(GURL("http://foo.com/"), kTemp, kAllClients);
   DeleteOriginData(GURL("http://bar.com/"), kTemp, kAllClients);
   DeleteOriginData(GURL("http://foo.com/"), kTemp, kAllClients);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(3, status_callback_count());
 
   DumpOriginInfoTable();
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   typedef OriginInfoTableEntries::const_iterator iterator;
   for (iterator itr(origin_info_entries().begin()),
@@ -1902,23 +1903,23 @@ TEST_F(QuotaManagerTest, DeleteOriginDataMultiple) {
   }
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_global_tmp - (1 + 4000 + 50000 + 9), usage());
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - (1 + 50000), usage());
 
   GetHostUsage("bar.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_bar_tmp - (4000 + 9), usage());
 
   GetHostUsage("foo.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_pers, usage());
 
   GetHostUsage("bar.com", kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_bar_pers, usage());
 }
 
@@ -1940,17 +1941,17 @@ TEST_F(QuotaManagerTest, GetCachedOrigins) {
   EXPECT_TRUE(origins.empty());
 
   GetHostUsage("a.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   GetCachedOrigins(kTemp, &origins);
   EXPECT_EQ(2U, origins.size());
 
   GetHostUsage("b.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   GetCachedOrigins(kTemp, &origins);
   EXPECT_EQ(2U, origins.size());
 
   GetHostUsage("c.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   GetCachedOrigins(kTemp, &origins);
   EXPECT_EQ(3U, origins.size());
 
@@ -1958,7 +1959,7 @@ TEST_F(QuotaManagerTest, GetCachedOrigins) {
   EXPECT_TRUE(origins.empty());
 
   GetGlobalUsage(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   GetCachedOrigins(kTemp, &origins);
   EXPECT_EQ(3U, origins.size());
 
@@ -1982,29 +1983,29 @@ TEST_F(QuotaManagerTest, NotifyAndLRUOrigin) {
 
   GURL origin;
   GetEvictionOrigin(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(eviction_origin().is_empty());
 
   NotifyStorageAccessed(client, GURL("http://a.com/"), kTemp);
   GetEvictionOrigin(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ("http://a.com/", eviction_origin().spec());
 
   NotifyStorageAccessed(client, GURL("http://b.com/"), kPerm);
   NotifyStorageAccessed(client, GURL("https://a.com/"), kTemp);
   NotifyStorageAccessed(client, GURL("http://c.com/"), kTemp);
   GetEvictionOrigin(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ("http://a.com/", eviction_origin().spec());
 
   DeleteOriginFromDatabase(eviction_origin(), kTemp);
   GetEvictionOrigin(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ("https://a.com/", eviction_origin().spec());
 
   DeleteOriginFromDatabase(eviction_origin(), kTemp);
   GetEvictionOrigin(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ("http://c.com/", eviction_origin().spec());
 }
 
@@ -2022,7 +2023,7 @@ TEST_F(QuotaManagerTest, GetLRUOriginWithOriginInUse) {
 
   GURL origin;
   GetEvictionOrigin(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(eviction_origin().is_empty());
 
   NotifyStorageAccessed(client, GURL("http://a.com/"), kTemp);
@@ -2031,19 +2032,19 @@ TEST_F(QuotaManagerTest, GetLRUOriginWithOriginInUse) {
   NotifyStorageAccessed(client, GURL("http://c.com/"), kTemp);
 
   GetEvictionOrigin(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ("http://a.com/", eviction_origin().spec());
 
   // Notify origin http://a.com is in use.
   NotifyOriginInUse(GURL("http://a.com/"));
   GetEvictionOrigin(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ("https://a.com/", eviction_origin().spec());
 
   // Notify origin https://a.com is in use while GetEvictionOrigin is running.
   GetEvictionOrigin(kTemp);
   NotifyOriginInUse(GURL("https://a.com/"));
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   // Post-filtering must have excluded the returned origin, so we will
   // see empty result here.
   EXPECT_TRUE(eviction_origin().is_empty());
@@ -2051,7 +2052,7 @@ TEST_F(QuotaManagerTest, GetLRUOriginWithOriginInUse) {
   // Notify access for http://c.com while GetEvictionOrigin is running.
   GetEvictionOrigin(kTemp);
   NotifyStorageAccessed(client, GURL("http://c.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   // Post-filtering must have excluded the returned origin, so we will
   // see empty result here.
   EXPECT_TRUE(eviction_origin().is_empty());
@@ -2059,7 +2060,7 @@ TEST_F(QuotaManagerTest, GetLRUOriginWithOriginInUse) {
   NotifyOriginNoLongerInUse(GURL("http://a.com/"));
   NotifyOriginNoLongerInUse(GURL("https://a.com/"));
   GetEvictionOrigin(kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ("http://a.com/", eviction_origin().spec());
 }
 
@@ -2076,7 +2077,7 @@ TEST_F(QuotaManagerTest, GetOriginsModifiedSince) {
   RegisterClient(client);
 
   GetOriginsModifiedSince(kTemp, base::Time());
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(modified_origins().empty());
   EXPECT_EQ(modified_origins_type(), kTemp);
 
@@ -2090,7 +2091,7 @@ TEST_F(QuotaManagerTest, GetOriginsModifiedSince) {
   base::Time time3 = client->IncrementMockTime();
 
   GetOriginsModifiedSince(kTemp, time1);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(4U, modified_origins().size());
   EXPECT_EQ(modified_origins_type(), kTemp);
   for (size_t i = 0; i < arraysize(kData); ++i) {
@@ -2099,18 +2100,18 @@ TEST_F(QuotaManagerTest, GetOriginsModifiedSince) {
   }
 
   GetOriginsModifiedSince(kTemp, time2);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(2U, modified_origins().size());
 
   GetOriginsModifiedSince(kTemp, time3);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(modified_origins().empty());
   EXPECT_EQ(modified_origins_type(), kTemp);
 
   client->ModifyOriginAndNotify(GURL("http://a.com/"), kTemp, 10);
 
   GetOriginsModifiedSince(kTemp, time3);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, modified_origins().size());
   EXPECT_EQ(1U, modified_origins().count(GURL("http://a.com/")));
   EXPECT_EQ(modified_origins_type(), kTemp);
@@ -2120,10 +2121,10 @@ TEST_F(QuotaManagerTest, DumpQuotaTable) {
   SetPersistentHostQuota("example1.com", 1);
   SetPersistentHostQuota("example2.com", 20);
   SetPersistentHostQuota("example3.com", 300);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   DumpQuotaTable();
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   const QuotaTableEntry kEntries[] = {
     QuotaTableEntry("example1.com", kPerm, 1),
@@ -2158,10 +2159,10 @@ TEST_F(QuotaManagerTest, DumpOriginInfoTable) {
       QuotaClient::kUnknown,
       GURL("http://example.com/"),
       kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   DumpOriginInfoTable();
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   typedef std::pair<GURL, StorageType> TypedOrigin;
   typedef std::pair<TypedOrigin, int> Entry;
@@ -2188,12 +2189,12 @@ TEST_F(QuotaManagerTest, DumpOriginInfoTable) {
 
 TEST_F(QuotaManagerTest, QuotaForEmptyHost) {
   GetPersistentHostQuota(std::string());
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(0, quota());
 
   SetPersistentHostQuota(std::string(), 10);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaErrorNotSupported, status());
 }
 
@@ -2224,32 +2225,32 @@ TEST_F(QuotaManagerTest, DeleteSpecificClientTypeSingleOrigin) {
   RegisterClient(client4);
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   const int64_t predelete_foo_tmp = usage();
 
   DeleteOriginData(GURL("http://foo.com/"), kTemp, QuotaClient::kFileSystem);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 1, usage());
 
   DeleteOriginData(GURL("http://foo.com/"), kTemp, QuotaClient::kAppcache);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 2 - 1, usage());
 
   DeleteOriginData(GURL("http://foo.com/"), kTemp, QuotaClient::kDatabase);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 4 - 2 - 1, usage());
 
   DeleteOriginData(GURL("http://foo.com/"), kTemp,
       QuotaClient::kIndexedDatabase);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 8 - 4 - 2 - 1, usage());
 }
 
@@ -2280,31 +2281,31 @@ TEST_F(QuotaManagerTest, DeleteSpecificClientTypeSingleHost) {
   RegisterClient(client4);
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   const int64_t predelete_foo_tmp = usage();
 
   DeleteHostData("foo.com", kTemp, QuotaClient::kFileSystem);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 1, usage());
 
   DeleteHostData("foo.com", kTemp, QuotaClient::kAppcache);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 2 - 1, usage());
 
   DeleteHostData("foo.com", kTemp, QuotaClient::kDatabase);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 4 - 2 - 1, usage());
 
   DeleteHostData("foo.com", kTemp, QuotaClient::kIndexedDatabase);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 8 - 4 - 2 - 1, usage());
 }
 
@@ -2335,21 +2336,21 @@ TEST_F(QuotaManagerTest, DeleteMultipleClientTypesSingleOrigin) {
   RegisterClient(client4);
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   const int64_t predelete_foo_tmp = usage();
 
   DeleteOriginData(GURL("http://foo.com/"), kTemp,
       QuotaClient::kFileSystem | QuotaClient::kDatabase);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 4 - 1, usage());
 
   DeleteOriginData(GURL("http://foo.com/"), kTemp,
       QuotaClient::kAppcache | QuotaClient::kIndexedDatabase);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 8 - 4 - 2 - 1, usage());
 }
 
@@ -2380,21 +2381,21 @@ TEST_F(QuotaManagerTest, DeleteMultipleClientTypesSingleHost) {
   RegisterClient(client4);
 
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   const int64_t predelete_foo_tmp = usage();
 
   DeleteHostData("foo.com", kTemp,
       QuotaClient::kFileSystem | QuotaClient::kAppcache);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 2 - 1, usage());
 
   DeleteHostData("foo.com", kTemp,
       QuotaClient::kDatabase | QuotaClient::kIndexedDatabase);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 8 - 4 - 2 - 1, usage());
 }
 
@@ -2411,10 +2412,10 @@ TEST_F(QuotaManagerTest, GetUsageAndQuota_Incognito) {
   // Query global usage to warmup the usage tracker caching.
   GetGlobalUsage(kTemp);
   GetGlobalUsage(kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(80, usage());
   EXPECT_EQ(0, quota());
@@ -2424,25 +2425,25 @@ TEST_F(QuotaManagerTest, GetUsageAndQuota_Incognito) {
   SetQuotaSettings(kPoolSize, kPerHostQuota, INT64_C(0));
 
   GetStorageCapacity();
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kPoolSize, total_space());
   EXPECT_EQ(kPoolSize - 80 - 10, available_space());
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10, usage());
   EXPECT_LE(kPerHostQuota, quota());
 
   mock_special_storage_policy()->AddUnlimited(GURL("http://foo.com/"));
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(80, usage());
   EXPECT_EQ(available_space() + usage(), quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10, usage());
   EXPECT_EQ(available_space() + usage(), quota());
@@ -2453,11 +2454,11 @@ TEST_F(QuotaManagerTest, GetUsageAndQuota_SessionOnly) {
   mock_special_storage_policy()->AddSessionOnly(kEpheremalOrigin);
 
   GetUsageAndQuotaForWebApps(kEpheremalOrigin, kTemp);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(quota_manager()->settings().session_only_per_host_quota, quota());
 
   GetUsageAndQuotaForWebApps(kEpheremalOrigin, kPerm);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(0, quota());
 }
 

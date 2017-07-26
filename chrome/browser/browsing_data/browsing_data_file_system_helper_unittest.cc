@@ -19,6 +19,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -58,11 +59,9 @@ typedef std::unique_ptr<FileSystemInfoList> ScopedFileSystemInfoList;
 
 // The FileSystem APIs are all asynchronous; this testing class wraps up the
 // boilerplate code necessary to deal with waiting for responses. In a nutshell,
-// any async call whose response we want to test ought to be followed by a call
-// to BlockUntilNotified(), which will (shockingly!) block until Notify() is
-// called. For this to work, you'll need to ensure that each async call is
-// implemented as a class method that that calls Notify() at an appropriate
-// point.
+// any async call whose response we want to test ought to create a base::RunLoop
+// instance to be followed by a call to BlockUntilQuit(), which will
+// (shockingly!) block until Quit() is called on the RunLoop.
 class BrowsingDataFileSystemHelperTest : public testing::Test {
  public:
   BrowsingDataFileSystemHelperTest() {
@@ -71,45 +70,47 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
     helper_ = BrowsingDataFileSystemHelper::Create(
         BrowserContext::GetDefaultStoragePartition(profile_.get())->
             GetFileSystemContext());
-    base::RunLoop().RunUntilIdle();
+    content::RunAllBlockingPoolTasksUntilIdle();
     canned_helper_ = new CannedBrowsingDataFileSystemHelper(profile_.get());
   }
   ~BrowsingDataFileSystemHelperTest() override {
     // Avoid memory leaks.
     profile_.reset();
-    base::RunLoop().RunUntilIdle();
+    content::RunAllBlockingPoolTasksUntilIdle();
   }
 
   TestingProfile* GetProfile() {
     return profile_.get();
   }
 
-  // Blocks on the current MessageLoop until Notify() is called.
-  void BlockUntilNotified() { base::RunLoop().Run(); }
-
-  // Unblocks the current MessageLoop. Should be called in response to some sort
-  // of async activity in a callback method.
-  void Notify() { base::RunLoop::QuitCurrentWhenIdleDeprecated(); }
+  // Blocks on the run_loop quits.
+  void BlockUntilQuit(base::RunLoop& run_loop) {
+    run_loop.Run();                               // Won't return until Quit().
+    content::RunAllBlockingPoolTasksUntilIdle();  // Flush other runners.
+  }
 
   // Callback that should be executed in response to
   // storage::FileSystemContext::OpenFileSystem.
-  void OpenFileSystemCallback(const GURL& root,
+  void OpenFileSystemCallback(base::RunLoop* run_loop,
+                              const GURL& root,
                               const std::string& name,
                               base::File::Error error) {
     open_file_system_result_ = error;
-    Notify();
+    run_loop->Quit();
   }
 
   bool OpenFileSystem(const GURL& origin,
                       storage::FileSystemType type,
                       storage::OpenFileSystemMode open_mode) {
-    BrowserContext::GetDefaultStoragePartition(profile_.get())->
-        GetFileSystemContext()->OpenFileSystem(
+    base::RunLoop run_loop;
+    BrowserContext::GetDefaultStoragePartition(profile_.get())
+        ->GetFileSystemContext()
+        ->OpenFileSystem(
             origin, type, open_mode,
             base::Bind(
                 &BrowsingDataFileSystemHelperTest::OpenFileSystemCallback,
-                base::Unretained(this)));
-    BlockUntilNotified();
+                base::Unretained(this), &run_loop));
+    BlockUntilQuit(run_loop);
     return open_file_system_result_ == base::File::FILE_OK;
   }
 
@@ -127,30 +128,33 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   // Callback that should be executed in response to StartFetching(), and stores
   // found file systems locally so that they are available via GetFileSystems().
   void CallbackStartFetching(
+      base::RunLoop* run_loop,
       const std::list<BrowsingDataFileSystemHelper::FileSystemInfo>&
           file_system_info_list) {
     file_system_info_list_.reset(
         new std::list<BrowsingDataFileSystemHelper::FileSystemInfo>(
             file_system_info_list));
-    Notify();
+    run_loop->Quit();
   }
 
   // Calls StartFetching() on the test's BrowsingDataFileSystemHelper
   // object, then blocks until the callback is executed.
   void FetchFileSystems() {
+    base::RunLoop run_loop;
     helper_->StartFetching(
         base::Bind(&BrowsingDataFileSystemHelperTest::CallbackStartFetching,
-                   base::Unretained(this)));
-    BlockUntilNotified();
+                   base::Unretained(this), &run_loop));
+    BlockUntilQuit(run_loop);
   }
 
   // Calls StartFetching() on the test's CannedBrowsingDataFileSystemHelper
   // object, then blocks until the callback is executed.
   void FetchCannedFileSystems() {
+    base::RunLoop run_loop;
     canned_helper_->StartFetching(
         base::Bind(&BrowsingDataFileSystemHelperTest::CallbackStartFetching,
-                   base::Unretained(this)));
-    BlockUntilNotified();
+                   base::Unretained(this), &run_loop));
+    BlockUntilQuit(run_loop);
   }
 
   // Sets up kOrigin1 with a temporary file system, kOrigin2 with a persistent
