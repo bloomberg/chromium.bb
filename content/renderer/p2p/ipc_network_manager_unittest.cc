@@ -4,6 +4,7 @@
 
 #include "content/renderer/p2p/ipc_network_manager.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "content/renderer/p2p/network_list_manager.h"
@@ -95,17 +96,25 @@ TEST_F(IpcNetworkManagerTest, TestMergeNetworkList) {
   // Verify we have 2 networks now.
   EXPECT_EQ(2uL, networks.size());
   // Verify the network with prefix length of 64 has 2 IP addresses.
-  EXPECT_EQ(64, networks[1]->prefix_length());
-  EXPECT_EQ(2uL, networks[1]->GetIPs().size());
+  auto network_with_two_ips = std::find_if(
+      networks.begin(), networks.end(),
+      [](rtc::Network* network) { return network->prefix_length() == 64; });
+  ASSERT_NE(networks.end(), network_with_two_ips);
+  EXPECT_EQ(2uL, (*network_with_two_ips)->GetIPs().size());
+  // IPs should be in the same order as the list passed into
+  // OnNetworkListChanged.
   EXPECT_TRUE(rtc::IPFromString(kIPv6PublicAddrString1, &ip_address));
-  EXPECT_EQ(networks[1]->GetIPs()[0], ip_address);
+  EXPECT_EQ((*network_with_two_ips)->GetIPs()[0], ip_address);
   EXPECT_TRUE(rtc::IPFromString(kIPv6PublicAddrString2, &ip_address));
-  EXPECT_EQ(networks[1]->GetIPs()[1], ip_address);
-  // Verify the network with prefix length of 48 has 2 IP addresses.
-  EXPECT_EQ(48, networks[0]->prefix_length());
-  EXPECT_EQ(1uL, networks[0]->GetIPs().size());
+  EXPECT_EQ((*network_with_two_ips)->GetIPs()[1], ip_address);
+  // Verify the network with prefix length of 48 has 1 IP address.
+  auto network_with_one_ip = std::find_if(
+      networks.begin(), networks.end(),
+      [](rtc::Network* network) { return network->prefix_length() == 48; });
+  ASSERT_NE(networks.end(), network_with_one_ip);
+  EXPECT_EQ(1uL, (*network_with_one_ip)->GetIPs().size());
   EXPECT_TRUE(rtc::IPFromString(kIPv6PublicAddrString2, &ip_address));
-  EXPECT_EQ(networks[0]->GetIPs()[0], ip_address);
+  EXPECT_EQ((*network_with_one_ip)->GetIPs()[0], ip_address);
 }
 
 }  // namespace content
