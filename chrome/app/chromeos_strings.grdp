@@ -5317,26 +5317,26 @@ All users must sign out to continue.
   <message name="IDS_FIRST_RUN_GREETING_STEP_BUTTON" desc="Text on the button located on the first dialog of first-run tutorial.">
     Take a tour
   </message>
-  <message name="IDS_FIRST_RUN_APP_LIST_STEP_HEADER" desc="Header of the first-run bubble pointing to application list button.">
-    Get to your apps fast
+  <message name="IDS_FIRST_RUN_APP_LIST_STEP_HEADER" desc="Header of the first-run bubble bubble pointing to application list button.">
+    Play, edit, share, get stuff done.
   </message>
   <message name="IDS_FIRST_RUN_APP_LIST_STEP_TEXT_1" desc="First part of message on the first-run tutorial bubble pointing to application list button.">
-    Use the Launcher to quickly get to new apps and activities.
+    Access all your apps from this handy launcher. Play games, video chat, listen to music, edit documents, or get more apps.
   </message>
-  <message name="IDS_FIRST_RUN_APP_LIST_STEP_TEXT_2" desc="Second part of message on the first-run tutorial bubble pointing to application list button. Only shown if the device is Google Assistant capable.">
-    Just hold the Launcher icon to talk to your Google Assistant.
+  <message name="IDS_FIRST_RUN_APP_LIST_STEP_TEXT_2" desc="Second part of message on the first-run tutorial bubble pointing to application list button. Part of the phrase &quot;Access all your apps from this handy launcher. Play games, video chat, listen to music, edit documents, or get more apps from the Chrome Web Store. It's all here.&quot;">
+    It's all here.
   </message>
   <message name="IDS_FIRST_RUN_TRAY_STEP_HEADER" desc="Header of the first-run tutorial bubble pointing to system tray bubble.">
-    Check your Chromebook status
+    Hassle-free goodness.
   </message>
   <message name="IDS_FIRST_RUN_TRAY_STEP_TEXT" desc="Text on the first-run tutorial bubble pointing to system tray bubble.">
-    Manage connections, updates, and settings with the status tray.
+    The status tray shows you the current state of your network, battery, and more.
   </message>
   <message name="IDS_FIRST_RUN_HELP_STEP_HEADER" desc="Header of the first-run tutorial bubble pointing to help button in system tray.">
-    Explore your Chromebook
+    Have fun! We're here for you.
   </message>
   <message name="IDS_FIRST_RUN_HELP_STEP_TEXT_1" desc="First part of text shown on the first-run tutorial bubble pointing to help button in system tray.">
-    Discover more features or get answers. Select “?” for help.
+    Enjoy your <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device. Questions? You can always get help by clicking the "?" in the status tray.
   </message>
   <message name="IDS_FIRST_RUN_HELP_STEP_TEXT_2" desc="Second part of text shown on the first-run tutorial bubble pointing to help button in system tray.">
     Want to discover more awesome features?
