@@ -25,7 +25,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
       gr_context.get(), SkBudgeted::kYes, image_info);
   SkCanvas* canvas = surface->getCanvas();
-  SkMatrix original_ctm = canvas->getTotalMatrix();
+
+  cc::PlaybackParams params(nullptr, canvas->getTotalMatrix());
 
   // Need 4 bytes to be able to read the type/skip.
   while (size >= 4) {
@@ -44,7 +45,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     if (!deserialized_op)
       break;
 
-    deserialized_op->Raster(canvas, original_ctm);
+    deserialized_op->Raster(canvas, params);
 
     deserialized_op->DestroyThis();
 

@@ -47,6 +47,7 @@ DisplayItemList::DisplayItemList(UsageHint usage_hint)
 DisplayItemList::~DisplayItemList() = default;
 
 void DisplayItemList::Raster(SkCanvas* canvas,
+                             ImageProvider* image_provider,
                              SkPicture::AbortCallback* callback) const {
   DCHECK(usage_hint_ == kTopLevelDisplayItemList);
   gfx::Rect canvas_playback_rect;
@@ -54,7 +55,7 @@ void DisplayItemList::Raster(SkCanvas* canvas,
     return;
 
   std::vector<size_t> offsets = rtree_.Search(canvas_playback_rect);
-  paint_op_buffer_.Playback(canvas, callback, &offsets);
+  paint_op_buffer_.Playback(canvas, image_provider, callback, &offsets);
 }
 
 void DisplayItemList::GrowCurrentBeginItemVisualRect(
@@ -120,13 +121,14 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
   if (include_items) {
     state->BeginArray("items");
 
+    PlaybackParams params(nullptr, SkMatrix::I());
     for (const PaintOp* op : PaintOpBuffer::Iterator(&paint_op_buffer_)) {
       state->BeginDictionary();
 
       SkPictureRecorder recorder;
       SkCanvas* canvas =
           recorder.beginRecording(gfx::RectToSkRect(rtree_.GetBounds()));
-      op->Raster(canvas, SkMatrix::I());
+      op->Raster(canvas, params);
       sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
 
       std::string b64_picture;

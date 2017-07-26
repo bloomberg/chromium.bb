@@ -27,8 +27,8 @@
 // See: third_party/skia/src/core/SkLiteDL.h.
 
 namespace cc {
-
 class ImageDecodeCache;
+class ImageProvider;
 
 class CC_PAINT_EXPORT ThreadsafeMatrix : public SkMatrix {
  public:
@@ -90,6 +90,12 @@ enum class PaintOpType : uint8_t {
 
 CC_PAINT_EXPORT std::string PaintOpTypeToString(PaintOpType type);
 
+struct CC_PAINT_EXPORT PlaybackParams {
+  PlaybackParams(ImageProvider* image_provider, const SkMatrix& original_ctm);
+  ImageProvider* image_provider;
+  const SkMatrix original_ctm;
+};
+
 class CC_PAINT_EXPORT PaintOp {
  public:
   uint32_t type : 8;
@@ -101,8 +107,9 @@ class CC_PAINT_EXPORT PaintOp {
   // here. The Raster method should take a const PaintOp* parameter. It is
   // static with a pointer to the base type so that we can use it as a function
   // pointer.
-  void Raster(SkCanvas* canvas, const SkMatrix& original_ctm) const;
+  void Raster(SkCanvas* canvas, const PlaybackParams& params) const;
   bool IsDrawOp() const;
+  bool IsPaintOpWithFlags() const;
 
   struct SerializeOptions {
     ImageDecodeCache* decode_cache = nullptr;
@@ -126,10 +133,9 @@ class CC_PAINT_EXPORT PaintOp {
                               void* output,
                               size_t output_size);
 
-  // Only valid for draw ops.
-  void RasterWithAlpha(SkCanvas* canvas,
-                       const SkRect& bounds,
-                       uint8_t alpha) const;
+  // For draw ops, returns true if a conservative bounding rect can be provided
+  // for the op.
+  static bool GetBounds(const PaintOp* op, SkRect* rect);
 
   int CountSlowPaths() const { return 0; }
   int CountSlowPathsFromFlags() const { return 0; }
@@ -180,8 +186,12 @@ class CC_PAINT_EXPORT PaintOpWithFlags : public PaintOp {
     return image && image->isLazyGenerated();
   }
 
+  void RasterWithFlags(SkCanvas* canvas,
+                       const PaintFlags* flags,
+                       const PlaybackParams& params) const;
+
   // Subclasses should provide a static RasterWithFlags() method which is called
-  // from the Raster() method. The RasterWithFlags() should use the PaintFlags
+  // from the Raster() method. The RasterWithFlags() should use the SkPaint
   // passed to it, instead of the |flags| member directly, as some callers may
   // provide a modified PaintFlags. The RasterWithFlags() method is static with
   // a const PaintOpWithFlags* parameter so that it can be used as a function
@@ -311,9 +321,9 @@ class CC_PAINT_EXPORT AnnotateOp final : public PaintOp {
              const SkRect& rect,
              sk_sp<SkData> data);
   ~AnnotateOp();
-  static void Raster(const PaintOp* op,
+  static void Raster(const AnnotateOp* op,
                      SkCanvas* canvas,
-                     const SkMatrix& original_ctm);
+                     const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   PaintCanvas::AnnotationType annotation_type;
@@ -329,9 +339,9 @@ class CC_PAINT_EXPORT ClipPathOp final : public PaintOp {
   static constexpr PaintOpType kType = PaintOpType::ClipPath;
   ClipPathOp(SkPath path, SkClipOp op, bool antialias)
       : path(path), op(op), antialias(antialias) {}
-  static void Raster(const PaintOp* op,
+  static void Raster(const ClipPathOp* op,
                      SkCanvas* canvas,
-                     const SkMatrix& original_ctm);
+                     const PlaybackParams& params);
   int CountSlowPaths() const;
   bool HasNonAAPaint() const { return !antialias; }
   HAS_SERIALIZATION_FUNCTIONS();
@@ -349,9 +359,9 @@ class CC_PAINT_EXPORT ClipRectOp final : public PaintOp {
   static constexpr PaintOpType kType = PaintOpType::ClipRect;
   ClipRectOp(const SkRect& rect, SkClipOp op, bool antialias)
       : rect(rect), op(op), antialias(antialias) {}
-  static void Raster(const PaintOp* op,
+  static void Raster(const ClipRectOp* op,
                      SkCanvas* canvas,
-                     const SkMatrix& original_ctm);
+                     const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkRect rect;
@@ -367,9 +377,9 @@ class CC_PAINT_EXPORT ClipRRectOp final : public PaintOp {
   static constexpr PaintOpType kType = PaintOpType::ClipRRect;
   ClipRRectOp(const SkRRect& rrect, SkClipOp op, bool antialias)
       : rrect(rrect), op(op), antialias(antialias) {}
-  static void Raster(const PaintOp* op,
+  static void Raster(const ClipRRectOp* op,
                      SkCanvas* canvas,
-                     const SkMatrix& original_ctm);
+                     const PlaybackParams& params);
   bool HasNonAAPaint() const { return !antialias; }
   HAS_SERIALIZATION_FUNCTIONS();
 
@@ -385,9 +395,9 @@ class CC_PAINT_EXPORT ConcatOp final : public PaintOp {
  public:
   static constexpr PaintOpType kType = PaintOpType::Concat;
   explicit ConcatOp(const SkMatrix& matrix) : matrix(matrix) {}
-  static void Raster(const PaintOp* op,
+  static void Raster(const ConcatOp* op,
                      SkCanvas* canvas,
-                     const SkMatrix& original_ctm);
+                     const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   ThreadsafeMatrix matrix;
@@ -410,16 +420,10 @@ class CC_PAINT_EXPORT DrawArcOp final : public PaintOpWithFlags {
         start_angle(start_angle),
         sweep_angle(sweep_angle),
         use_center(use_center) {}
-  static void Raster(const PaintOp* op,
-                     SkCanvas* canvas,
-                     const SkMatrix& original_ctm) {
-    auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-    RasterWithFlags(flags_op, &flags_op->flags, canvas, original_ctm);
-  }
-  static void RasterWithFlags(const PaintOpWithFlags* op,
+  static void RasterWithFlags(const DrawArcOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
-                              const SkMatrix& original_ctm);
+                              const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkRect oval;
@@ -440,16 +444,10 @@ class CC_PAINT_EXPORT DrawCircleOp final : public PaintOpWithFlags {
                SkScalar radius,
                const PaintFlags& flags)
       : PaintOpWithFlags(flags), cx(cx), cy(cy), radius(radius) {}
-  static void Raster(const PaintOp* op,
-                     SkCanvas* canvas,
-                     const SkMatrix& original_ctm) {
-    auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-    RasterWithFlags(flags_op, &flags_op->flags, canvas, original_ctm);
-  }
-  static void RasterWithFlags(const PaintOpWithFlags* op,
+  static void RasterWithFlags(const DrawCircleOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
-                              const SkMatrix& original_ctm);
+                              const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkScalar cx;
@@ -465,9 +463,9 @@ class CC_PAINT_EXPORT DrawColorOp final : public PaintOp {
   static constexpr PaintOpType kType = PaintOpType::DrawColor;
   static constexpr bool kIsDrawOp = true;
   DrawColorOp(SkColor color, SkBlendMode mode) : color(color), mode(mode) {}
-  static void Raster(const PaintOp* op,
+  static void Raster(const DrawColorOp* op,
                      SkCanvas* canvas,
-                     const SkMatrix& original_ctm);
+                     const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkColor color;
@@ -485,16 +483,10 @@ class CC_PAINT_EXPORT DrawDRRectOp final : public PaintOpWithFlags {
                const SkRRect& inner,
                const PaintFlags& flags)
       : PaintOpWithFlags(flags), outer(outer), inner(inner) {}
-  static void Raster(const PaintOp* op,
-                     SkCanvas* canvas,
-                     const SkMatrix& original_ctm) {
-    auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-    RasterWithFlags(flags_op, &flags_op->flags, canvas, original_ctm);
-  }
-  static void RasterWithFlags(const PaintOpWithFlags* op,
+  static void RasterWithFlags(const DrawDRRectOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
-                              const SkMatrix& original_ctm);
+                              const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkRRect outer;
@@ -513,16 +505,10 @@ class CC_PAINT_EXPORT DrawImageOp final : public PaintOpWithFlags {
               SkScalar top,
               const PaintFlags* flags);
   ~DrawImageOp();
-  static void Raster(const PaintOp* op,
-                     SkCanvas* canvas,
-                     const SkMatrix& original_ctm) {
-    auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-    RasterWithFlags(flags_op, &flags_op->flags, canvas, original_ctm);
-  }
-  static void RasterWithFlags(const PaintOpWithFlags* op,
+  static void RasterWithFlags(const DrawImageOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
-                              const SkMatrix& original_ctm);
+                              const PlaybackParams& params);
   bool HasDiscardableImages() const;
   bool HasNonAAPaint() const { return false; }
   HAS_SERIALIZATION_FUNCTIONS();
@@ -545,16 +531,10 @@ class CC_PAINT_EXPORT DrawImageRectOp final : public PaintOpWithFlags {
                   const PaintFlags* flags,
                   PaintCanvas::SrcRectConstraint constraint);
   ~DrawImageRectOp();
-  static void Raster(const PaintOp* op,
-                     SkCanvas* canvas,
-                     const SkMatrix& original_ctm) {
-    auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-    RasterWithFlags(flags_op, &flags_op->flags, canvas, original_ctm);
-  }
-  static void RasterWithFlags(const PaintOpWithFlags* op,
+  static void RasterWithFlags(const DrawImageRectOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
-                              const SkMatrix& original_ctm);
+                              const PlaybackParams& params);
   bool HasDiscardableImages() const;
   HAS_SERIALIZATION_FUNCTIONS();
 
@@ -573,16 +553,10 @@ class CC_PAINT_EXPORT DrawIRectOp final : public PaintOpWithFlags {
   static constexpr bool kIsDrawOp = true;
   DrawIRectOp(const SkIRect& rect, const PaintFlags& flags)
       : PaintOpWithFlags(flags), rect(rect) {}
-  static void Raster(const PaintOp* op,
-                     SkCanvas* canvas,
-                     const SkMatrix& original_ctm) {
-    auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-    RasterWithFlags(flags_op, &flags_op->flags, canvas, original_ctm);
-  }
-  static void RasterWithFlags(const PaintOpWithFlags* op,
+  static void RasterWithFlags(const DrawIRectOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
-                              const SkMatrix& original_ctm);
+                              const PlaybackParams& params);
   bool HasNonAAPaint() const { return false; }
   HAS_SERIALIZATION_FUNCTIONS();
 
@@ -602,16 +576,10 @@ class CC_PAINT_EXPORT DrawLineOp final : public PaintOpWithFlags {
              SkScalar y1,
              const PaintFlags& flags)
       : PaintOpWithFlags(flags), x0(x0), y0(y0), x1(x1), y1(y1) {}
-  static void Raster(const PaintOp* op,
-                     SkCanvas* canvas,
-                     const SkMatrix& original_ctm) {
-    auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-    RasterWithFlags(flags_op, &flags_op->flags, canvas, original_ctm);
-  }
-  static void RasterWithFlags(const PaintOpWithFlags* op,
+  static void RasterWithFlags(const DrawLineOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
-                              const SkMatrix& original_ctm);
+                              const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   int CountSlowPaths() const;
@@ -631,16 +599,10 @@ class CC_PAINT_EXPORT DrawOvalOp final : public PaintOpWithFlags {
   static constexpr bool kIsDrawOp = true;
   DrawOvalOp(const SkRect& oval, const PaintFlags& flags)
       : PaintOpWithFlags(flags), oval(oval) {}
-  static void Raster(const PaintOp* op,
-                     SkCanvas* canvas,
-                     const SkMatrix& original_ctm) {
-    auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-    RasterWithFlags(flags_op, &flags_op->flags, canvas, original_ctm);
-  }
-  static void RasterWithFlags(const PaintOpWithFlags* op,
+  static void RasterWithFlags(const DrawOvalOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
-                              const SkMatrix& original_ctm);
+                              const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkRect oval;
@@ -655,16 +617,10 @@ class CC_PAINT_EXPORT DrawPathOp final : public PaintOpWithFlags {
   static constexpr bool kIsDrawOp = true;
   DrawPathOp(const SkPath& path, const PaintFlags& flags)
       : PaintOpWithFlags(flags), path(path) {}
-  static void Raster(const PaintOp* op,
-                     SkCanvas* canvas,
-                     const SkMatrix& original_ctm) {
-    auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-    RasterWithFlags(flags_op, &flags_op->flags, canvas, original_ctm);
-  }
-  static void RasterWithFlags(const PaintOpWithFlags* op,
+  static void RasterWithFlags(const DrawPathOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
-                              const SkMatrix& original_ctm);
+                              const PlaybackParams& params);
   int CountSlowPaths() const;
   HAS_SERIALIZATION_FUNCTIONS();
 
@@ -680,16 +636,10 @@ class CC_PAINT_EXPORT DrawPosTextOp final : public PaintOpWithArray<SkPoint> {
   static constexpr bool kIsDrawOp = true;
   DrawPosTextOp(size_t bytes, size_t count, const PaintFlags& flags);
   ~DrawPosTextOp();
-  static void Raster(const PaintOp* op,
-                     SkCanvas* canvas,
-                     const SkMatrix& original_ctm) {
-    auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-    RasterWithFlags(flags_op, &flags_op->flags, canvas, original_ctm);
-  }
-  static void RasterWithFlags(const PaintOpWithFlags* op,
+  static void RasterWithFlags(const DrawPosTextOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
-                              const SkMatrix& original_ctm);
+                              const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   const void* GetData() const { return GetDataForThis(this); }
@@ -707,9 +657,9 @@ class CC_PAINT_EXPORT DrawRecordOp final : public PaintOp {
   static constexpr bool kIsDrawOp = true;
   explicit DrawRecordOp(sk_sp<const PaintRecord> record);
   ~DrawRecordOp();
-  static void Raster(const PaintOp* op,
+  static void Raster(const DrawRecordOp* op,
                      SkCanvas* canvas,
-                     const SkMatrix& original_ctm);
+                     const PlaybackParams& params);
   size_t AdditionalBytesUsed() const;
   bool HasDiscardableImages() const;
   int CountSlowPaths() const;
@@ -728,16 +678,10 @@ class CC_PAINT_EXPORT DrawRectOp final : public PaintOpWithFlags {
   static constexpr bool kIsDrawOp = true;
   DrawRectOp(const SkRect& rect, const PaintFlags& flags)
       : PaintOpWithFlags(flags), rect(rect) {}
-  static void Raster(const PaintOp* op,
-                     SkCanvas* canvas,
-                     const SkMatrix& original_ctm) {
-    auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-    RasterWithFlags(flags_op, &flags_op->flags, canvas, original_ctm);
-  }
-  static void RasterWithFlags(const PaintOpWithFlags* op,
+  static void RasterWithFlags(const DrawRectOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
-                              const SkMatrix& original_ctm);
+                              const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkRect rect;
@@ -752,16 +696,10 @@ class CC_PAINT_EXPORT DrawRRectOp final : public PaintOpWithFlags {
   static constexpr bool kIsDrawOp = true;
   DrawRRectOp(const SkRRect& rrect, const PaintFlags& flags)
       : PaintOpWithFlags(flags), rrect(rrect) {}
-  static void Raster(const PaintOp* op,
-                     SkCanvas* canvas,
-                     const SkMatrix& original_ctm) {
-    auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-    RasterWithFlags(flags_op, &flags_op->flags, canvas, original_ctm);
-  }
-  static void RasterWithFlags(const PaintOpWithFlags* op,
+  static void RasterWithFlags(const DrawRRectOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
-                              const SkMatrix& original_ctm);
+                              const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkRRect rrect;
@@ -776,16 +714,10 @@ class CC_PAINT_EXPORT DrawTextOp final : public PaintOpWithData {
   static constexpr bool kIsDrawOp = true;
   DrawTextOp(size_t bytes, SkScalar x, SkScalar y, const PaintFlags& flags)
       : PaintOpWithData(flags, bytes), x(x), y(y) {}
-  static void Raster(const PaintOp* op,
-                     SkCanvas* canvas,
-                     const SkMatrix& original_ctm) {
-    auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-    RasterWithFlags(flags_op, &flags_op->flags, canvas, original_ctm);
-  }
-  static void RasterWithFlags(const PaintOpWithFlags* op,
+  static void RasterWithFlags(const DrawTextOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
-                              const SkMatrix& original_ctm);
+                              const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   void* GetData() { return GetDataForThis(this); }
@@ -807,16 +739,10 @@ class CC_PAINT_EXPORT DrawTextBlobOp final : public PaintOpWithFlags {
                  SkScalar y,
                  const PaintFlags& flags);
   ~DrawTextBlobOp();
-  static void Raster(const PaintOp* op,
-                     SkCanvas* canvas,
-                     const SkMatrix& original_ctm) {
-    auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-    RasterWithFlags(flags_op, &flags_op->flags, canvas, original_ctm);
-  }
-  static void RasterWithFlags(const PaintOpWithFlags* op,
+  static void RasterWithFlags(const DrawTextBlobOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
-                              const SkMatrix& original_ctm);
+                              const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   sk_sp<SkTextBlob> blob;
@@ -830,18 +756,18 @@ class CC_PAINT_EXPORT DrawTextBlobOp final : public PaintOpWithFlags {
 class CC_PAINT_EXPORT NoopOp final : public PaintOp {
  public:
   static constexpr PaintOpType kType = PaintOpType::Noop;
-  static void Raster(const PaintOp* op,
+  static void Raster(const NoopOp* op,
                      SkCanvas* canvas,
-                     const SkMatrix& original_ctm) {}
+                     const PlaybackParams& params) {}
   HAS_SERIALIZATION_FUNCTIONS();
 };
 
 class CC_PAINT_EXPORT RestoreOp final : public PaintOp {
  public:
   static constexpr PaintOpType kType = PaintOpType::Restore;
-  static void Raster(const PaintOp* op,
+  static void Raster(const RestoreOp* op,
                      SkCanvas* canvas,
-                     const SkMatrix& original_ctm);
+                     const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 };
 
@@ -849,9 +775,9 @@ class CC_PAINT_EXPORT RotateOp final : public PaintOp {
  public:
   static constexpr PaintOpType kType = PaintOpType::Rotate;
   explicit RotateOp(SkScalar degrees) : degrees(degrees) {}
-  static void Raster(const PaintOp* op,
+  static void Raster(const RotateOp* op,
                      SkCanvas* canvas,
-                     const SkMatrix& original_ctm);
+                     const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkScalar degrees;
@@ -863,9 +789,9 @@ class CC_PAINT_EXPORT RotateOp final : public PaintOp {
 class CC_PAINT_EXPORT SaveOp final : public PaintOp {
  public:
   static constexpr PaintOpType kType = PaintOpType::Save;
-  static void Raster(const PaintOp* op,
+  static void Raster(const SaveOp* op,
                      SkCanvas* canvas,
-                     const SkMatrix& original_ctm);
+                     const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 };
 
@@ -875,16 +801,10 @@ class CC_PAINT_EXPORT SaveLayerOp final : public PaintOpWithFlags {
   SaveLayerOp(const SkRect* bounds, const PaintFlags* flags)
       : PaintOpWithFlags(flags ? *flags : PaintFlags()),
         bounds(bounds ? *bounds : kUnsetRect) {}
-  static void Raster(const PaintOp* op,
-                     SkCanvas* canvas,
-                     const SkMatrix& original_ctm) {
-    auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-    RasterWithFlags(flags_op, &flags_op->flags, canvas, original_ctm);
-  }
-  static void RasterWithFlags(const PaintOpWithFlags* op,
+  static void RasterWithFlags(const SaveLayerOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
-                              const SkMatrix& original_ctm);
+                              const PlaybackParams& params);
   bool HasNonAAPaint() const { return false; }
   HAS_SERIALIZATION_FUNCTIONS();
 
@@ -903,9 +823,9 @@ class CC_PAINT_EXPORT SaveLayerAlphaOp final : public PaintOp {
       : bounds(bounds ? *bounds : kUnsetRect),
         alpha(alpha),
         preserve_lcd_text_requests(preserve_lcd_text_requests) {}
-  static void Raster(const PaintOp* op,
+  static void Raster(const SaveLayerAlphaOp* op,
                      SkCanvas* canvas,
-                     const SkMatrix& original_ctm);
+                     const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkRect bounds;
@@ -920,9 +840,9 @@ class CC_PAINT_EXPORT ScaleOp final : public PaintOp {
  public:
   static constexpr PaintOpType kType = PaintOpType::Scale;
   ScaleOp(SkScalar sx, SkScalar sy) : sx(sx), sy(sy) {}
-  static void Raster(const PaintOp* op,
+  static void Raster(const ScaleOp* op,
                      SkCanvas* canvas,
-                     const SkMatrix& original_ctm);
+                     const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkScalar sx;
@@ -942,9 +862,9 @@ class CC_PAINT_EXPORT SetMatrixOp final : public PaintOp {
   //
   // TODO(enne): Find some cleaner way to do this, possibly by making
   // all SetMatrix calls Concat??
-  static void Raster(const PaintOp* op,
+  static void Raster(const SetMatrixOp* op,
                      SkCanvas* canvas,
-                     const SkMatrix& original_ctm);
+                     const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   ThreadsafeMatrix matrix;
@@ -957,9 +877,9 @@ class CC_PAINT_EXPORT TranslateOp final : public PaintOp {
  public:
   static constexpr PaintOpType kType = PaintOpType::Translate;
   TranslateOp(SkScalar dx, SkScalar dy) : dx(dx), dy(dy) {}
-  static void Raster(const PaintOp* op,
+  static void Raster(const TranslateOp* op,
                      SkCanvas* canvas,
-                     const SkMatrix& original_ctm);
+                     const PlaybackParams& params);
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkScalar dx;
@@ -990,6 +910,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
   // Replays the paint op buffer into the canvas.
   void Playback(SkCanvas* canvas,
+                ImageProvider* image_provider = nullptr,
                 SkPicture::AbortCallback* callback = nullptr) const;
 
   // Returns the size of the paint op buffer. That is, the number of ops
@@ -1226,6 +1147,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   // contains indices in an increasing order and only the indices specified in
   // the vector will be replayed.
   void Playback(SkCanvas* canvas,
+                ImageProvider* image_provider,
                 SkPicture::AbortCallback* callback,
                 const std::vector<size_t>* indices) const;
 

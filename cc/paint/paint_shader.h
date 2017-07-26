@@ -103,10 +103,13 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
     return local_matrix_ ? *local_matrix_ : SkMatrix::I();
   }
   Type shader_type() const { return shader_type_; }
-  const PaintImage& paint_image() {
+  const PaintImage& paint_image() const {
     DCHECK_EQ(Type::kImage, shader_type_);
     return image_;
   }
+
+  SkShader::TileMode tx() const { return tx_; }
+  SkShader::TileMode ty() const { return ty_; }
 
   bool IsOpaque() const;
 
