@@ -8544,7 +8544,7 @@ static int64_t motion_mode_rd(
 #if CONFIG_WARPED_MOTION && CONFIG_MOTION_VAR
       if (last_motion_mode_allowed == WARPED_CAUSAL)
 #endif  // CONFIG_WARPED_MOTION && CONFIG_MOTION_VAR
-        rd_stats->rate += cpi->motion_mode_cost[bsize][mbmi->motion_mode];
+        rd_stats->rate += x->motion_mode_cost[bsize][mbmi->motion_mode];
 #if CONFIG_WARPED_MOTION && CONFIG_MOTION_VAR
       else
         rd_stats->rate += cpi->motion_mode_cost1[bsize][mbmi->motion_mode];
@@ -10948,7 +10948,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         av1_init_rd_stats(&rd_stats);
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
         // While av1 master uses rd_stats_y.rate through out the codebase,
-        // which is set when handle_inter_moden is called, the daala-dist code
+        // which is set when handle_inter_mode is called, the daala-dist code
         // in rd_pick_partition() for cb4x4 and sub8x8 blocks need to know
         // .dist_y which comes from rd_stats_y.dist and rd_stats_y.sse.
         // The problem is rd_stats_y.dist and rd_stats_y.sse are sometimes not
@@ -11429,12 +11429,12 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif
             mi);
         if (motion_allowed == WARPED_CAUSAL)
-          *returnrate_nocoef -= cpi->motion_mode_cost[bsize][mbmi->motion_mode];
+          *returnrate_nocoef -= x->motion_mode_cost[bsize][mbmi->motion_mode];
         else if (motion_allowed == OBMC_CAUSAL)
           *returnrate_nocoef -=
               cpi->motion_mode_cost1[bsize][mbmi->motion_mode];
 #else
-        *returnrate_nocoef -= cpi->motion_mode_cost[bsize][mbmi->motion_mode];
+        *returnrate_nocoef -= x->motion_mode_cost[bsize][mbmi->motion_mode];
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 #endif  // CONFIG_SUPERTX

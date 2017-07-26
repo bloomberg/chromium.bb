@@ -464,8 +464,8 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
       for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
-        av1_cost_tokens((int *)cpi->motion_mode_cost[i],
-                        cm->fc->motion_mode_prob[i], av1_motion_mode_tree);
+        av1_cost_tokens_from_cdf(cpi->motion_mode_cost[i],
+                                 cm->fc->motion_mode_cdf[i], NULL);
       }
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
       for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {

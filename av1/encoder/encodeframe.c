@@ -1759,14 +1759,20 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
           {
-            if (motion_allowed == WARPED_CAUSAL)
+            if (motion_allowed == WARPED_CAUSAL) {
               counts->motion_mode[mbmi->sb_type][mbmi->motion_mode]++;
-            else if (motion_allowed == OBMC_CAUSAL)
+              update_cdf(xd->tile_ctx->motion_mode_cdf[mbmi->sb_type],
+                         mbmi->motion_mode, MOTION_MODES);
+            } else if (motion_allowed == OBMC_CAUSAL) {
               counts->obmc[mbmi->sb_type][mbmi->motion_mode == OBMC_CAUSAL]++;
+            }
           }
 #else
-        if (motion_allowed > SIMPLE_TRANSLATION)
+        if (motion_allowed > SIMPLE_TRANSLATION) {
           counts->motion_mode[mbmi->sb_type][mbmi->motion_mode]++;
+          update_cdf(xd->tile_ctx->motion_mode_cdf[mbmi->sb_type],
+                     mbmi->motion_mode, MOTION_MODES);
+        }
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
@@ -4633,6 +4639,11 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 #endif  // CONFIG_SPEED_REFS
     }
   }
+  // TODO(yuec) Suboptimal fix. Need to implement per-block update
+  for (int i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
+    av1_cost_tokens_from_cdf(x->motion_mode_cost[i],
+                             xd->tile_ctx->motion_mode_cdf[i], NULL);
+  }
 }
 
 static void init_encode_frame_mb_context(AV1_COMP *cpi) {
@@ -4874,6 +4885,10 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 
   av1_setup_across_tile_boundary_info(cm, tile_info);
 
+  for (int i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
+    av1_cost_tokens_from_cdf(td->mb.motion_mode_cost[i],
+                             cm->fc->motion_mode_cdf[i], NULL);
+  }
   for (mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
        mi_row += cm->mib_size) {
     encode_rd_sb_row(cpi, td, this_tile, mi_row, &tok);

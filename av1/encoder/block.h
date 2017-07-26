@@ -149,6 +149,15 @@ struct macroblock {
   uint8_t *above_pred_buf;
   uint8_t *left_pred_buf;
 #endif  // CONFIG_MOTION_VAR
+#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+  int motion_mode_cost[BLOCK_SIZES_ALL][MOTION_MODES];
+#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+  int motion_mode_cost1[BLOCK_SIZES_ALL][2];
+#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+#if CONFIG_MOTION_VAR && CONFIG_NCOBMC_ADAPT_WEIGHT
+  int ncobmc_mode_cost[ADAPT_OVERLAP_BLOCKS][MAX_NCOBMC_MODES];
+#endif  // CONFIG_MOTION_VAR && CONFIG_NCOBMC_ADAPT_WEIGHT
+#endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_PALETTE
   PALETTE_BUFFER *palette_buffer;
