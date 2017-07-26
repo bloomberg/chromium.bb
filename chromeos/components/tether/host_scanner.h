@@ -42,7 +42,8 @@ class HostScanner : public HostScannerOperation::Observer {
     void virtual ScanFinished() = 0;
   };
 
-  HostScanner(TetherHostFetcher* tether_host_fetcher,
+  HostScanner(NetworkStateHandler* network_state_handler,
+              TetherHostFetcher* tether_host_fetcher,
               BleConnectionManager* connection_manager,
               HostScanDevicePrioritizer* host_scan_device_prioritizer,
               TetherHostResponseRecorder* tether_host_response_recorder,
@@ -89,6 +90,7 @@ class HostScanner : public HostScannerOperation::Observer {
       std::vector<HostScannerOperation::ScannedDeviceInfo>& final_scan_results);
   void RecordHostScanResult(HostScanResultEventType event_type);
 
+  NetworkStateHandler* network_state_handler_;
   TetherHostFetcher* tether_host_fetcher_;
   BleConnectionManager* connection_manager_;
   HostScanDevicePrioritizer* host_scan_device_prioritizer_;

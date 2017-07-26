@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
@@ -25,8 +26,11 @@
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/components/tether/proto_test_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_shill_service_client.h"
+#include "chromeos/network/network_state_test.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
 
@@ -178,7 +182,7 @@ CreateFakeScannedDeviceInfos(
 
 }  // namespace
 
-class HostScannerTest : public testing::Test {
+class HostScannerTest : public NetworkStateTest {
  protected:
   HostScannerTest()
       : test_devices_(cryptauth::GenerateTestRemoteDevices(4)),
@@ -186,6 +190,10 @@ class HostScannerTest : public testing::Test {
   }
 
   void SetUp() override {
+    DBusThreadManager::Initialize();
+    NetworkHandler::Initialize();
+    NetworkStateTest::SetUp();
+
     scanned_device_infos_from_current_scan_.clear();
 
     fake_tether_host_fetcher_ = base::MakeUnique<FakeTetherHostFetcher>(
@@ -209,7 +217,8 @@ class HostScannerTest : public testing::Test {
     test_clock_ = base::MakeUnique<base::SimpleTestClock>();
 
     host_scanner_ = base::WrapUnique(new HostScanner(
-        fake_tether_host_fetcher_.get(), fake_ble_connection_manager_.get(),
+        network_state_handler(), fake_tether_host_fetcher_.get(),
+        fake_ble_connection_manager_.get(),
         fake_host_scan_device_prioritizer_.get(),
         mock_tether_host_response_recorder_.get(),
         fake_notification_presenter_.get(),
@@ -223,6 +232,10 @@ class HostScannerTest : public testing::Test {
   void TearDown() override {
     host_scanner_->RemoveObserver(test_observer_.get());
     HostScannerOperation::Factory::SetInstanceForTesting(nullptr);
+
+    NetworkStateTest::TearDown();
+    NetworkHandler::Shutdown();
+    DBusThreadManager::Shutdown();
   }
 
   // Causes |fake_operation| to receive the scan result in
@@ -231,7 +244,8 @@ class HostScannerTest : public testing::Test {
   void ReceiveScanResultAndVerifySuccess(
       FakeHostScannerOperation& fake_operation,
       size_t test_device_index,
-      bool is_final_scan_result) {
+      bool is_final_scan_result,
+      bool is_connected_to_internet) {
     bool already_in_list = false;
     for (auto& scanned_device_info : scanned_device_infos_from_current_scan_) {
       if (scanned_device_info.remote_device.GetDeviceId() ==
@@ -253,7 +267,11 @@ class HostScannerTest : public testing::Test {
     EXPECT_EQ(previous_scan_finished_count + (is_final_scan_result ? 1 : 0),
               test_observer_->scan_finished_count());
 
-    if (scanned_device_infos_from_current_scan_.size() == 1) {
+    if (is_connected_to_internet) {
+      EXPECT_EQ(FakeNotificationPresenter::PotentialHotspotNotificationState::
+                    NO_HOTSPOT_NOTIFICATION_SHOWN,
+                fake_notification_presenter_->potential_hotspot_state());
+    } else if (scanned_device_infos_from_current_scan_.size() == 1) {
       EXPECT_EQ(FakeNotificationPresenter::PotentialHotspotNotificationState::
                     SINGLE_HOTSPOT_NEARBY_SHOWN,
                 fake_notification_presenter_->potential_hotspot_state());
@@ -344,6 +362,19 @@ class HostScannerTest : public testing::Test {
     scanned_device_infos_from_current_scan_.clear();
   }
 
+  void AddWifiNetwork() {
+    std::stringstream ss;
+    ss << "{"
+       << "  \"GUID\": \"wifiNetworkGuid\","
+       << "  \"Type\": \"" << shill::kTypeWifi << "\","
+       << "  \"State\": \"" << shill::kStateOnline << "\""
+       << "}";
+
+    ConfigureService(ss.str());
+  }
+
+  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   const std::vector<cryptauth::RemoteDevice> test_devices_;
   const std::vector<HostScannerOperation::ScannedDeviceInfo>
       test_scanned_device_infos;
@@ -378,6 +409,41 @@ class HostScannerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(HostScannerTest);
 };
 
+TEST_F(HostScannerTest, TestScan_ConnectedToExistingNetwork) {
+  AddWifiNetwork();
+  EXPECT_TRUE(network_state_handler()->DefaultNetwork());
+
+  EXPECT_FALSE(host_scanner_->IsScanActive());
+  host_scanner_->StartScan();
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+
+  fake_tether_host_fetcher_->InvokePendingCallbacks();
+  ASSERT_EQ(1u,
+            fake_host_scanner_operation_factory_->created_operations().size());
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+
+  ReceiveScanResultAndVerifySuccess(
+      *fake_host_scanner_operation_factory_->created_operations()[0],
+      0u /* test_device_index */, false /* is_final_scan_result */,
+      true /* is_connected_to_internet */);
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+  ReceiveScanResultAndVerifySuccess(
+      *fake_host_scanner_operation_factory_->created_operations()[0],
+      1u /* test_device_index */, false /* is_final_scan_result */,
+      true /* is_connected_to_internet */);
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+  ReceiveScanResultAndVerifySuccess(
+      *fake_host_scanner_operation_factory_->created_operations()[0],
+      2u /* test_device_index */, false /* is_final_scan_result */,
+      true /* is_connected_to_internet */);
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+  ReceiveScanResultAndVerifySuccess(
+      *fake_host_scanner_operation_factory_->created_operations()[0],
+      3u /* test_device_index */, true /* is_final_scan_result */,
+      true /* is_connected_to_internet */);
+  EXPECT_FALSE(host_scanner_->IsScanActive());
+}
+
 TEST_F(HostScannerTest, TestScan_ResultsFromAllDevices) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
@@ -390,19 +456,23 @@ TEST_F(HostScannerTest, TestScan_ResultsFromAllDevices) {
 
   ReceiveScanResultAndVerifySuccess(
       *fake_host_scanner_operation_factory_->created_operations()[0],
-      0u /* test_device_index */, false /* is_final_scan_result */);
+      0u /* test_device_index */, false /* is_final_scan_result */,
+      false /* is_connected_to_internet */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
       *fake_host_scanner_operation_factory_->created_operations()[0],
-      1u /* test_device_index */, false /* is_final_scan_result */);
+      1u /* test_device_index */, false /* is_final_scan_result */,
+      false /* is_connected_to_internet */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
       *fake_host_scanner_operation_factory_->created_operations()[0],
-      2u /* test_device_index */, false /* is_final_scan_result */);
+      2u /* test_device_index */, false /* is_final_scan_result */,
+      false /* is_connected_to_internet */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
       *fake_host_scanner_operation_factory_->created_operations()[0],
-      3u /* test_device_index */, true /* is_final_scan_result */);
+      3u /* test_device_index */, true /* is_final_scan_result */,
+      false /* is_connected_to_internet */);
   EXPECT_FALSE(host_scanner_->IsScanActive());
 }
 
@@ -441,11 +511,13 @@ TEST_F(HostScannerTest, TestScan_ResultsFromSomeDevices) {
   // Only receive updates from the 0th and 1st device.
   ReceiveScanResultAndVerifySuccess(
       *fake_host_scanner_operation_factory_->created_operations()[0],
-      0u /* test_device_index */, false /* is_final_scan_result */);
+      0u /* test_device_index */, false /* is_final_scan_result */,
+      false /* is_connected_to_internet */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
       *fake_host_scanner_operation_factory_->created_operations()[0],
-      1u /* test_device_index */, false /* is_final_scan_result */);
+      1u /* test_device_index */, false /* is_final_scan_result */,
+      false /* is_connected_to_internet */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   fake_host_scanner_operation_factory_->created_operations()[0]
@@ -485,7 +557,8 @@ TEST_F(HostScannerTest, TestScan_MultipleScanCallsDuringOperation) {
   // Receive updates from the 0th device.
   ReceiveScanResultAndVerifySuccess(
       *fake_host_scanner_operation_factory_->created_operations()[0],
-      0u /* test_device_index */, false /* is_final_scan_result */);
+      0u /* test_device_index */, false /* is_final_scan_result */,
+      false /* is_connected_to_internet */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   // Call StartScan again after a scan result has been received but before
@@ -521,15 +594,18 @@ TEST_F(HostScannerTest, TestScan_MultipleCompleteScanSessions) {
   // Receive updates from devices 0-2.
   ReceiveScanResultAndVerifySuccess(
       *fake_host_scanner_operation_factory_->created_operations()[0],
-      0u /* test_device_index */, false /* is_final_scan_result */);
+      0u /* test_device_index */, false /* is_final_scan_result */,
+      false /* is_connected_to_internet */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
       *fake_host_scanner_operation_factory_->created_operations()[0],
-      1u /* test_device_index */, false /* is_final_scan_result */);
+      1u /* test_device_index */, false /* is_final_scan_result */,
+      false /* is_connected_to_internet */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
       *fake_host_scanner_operation_factory_->created_operations()[0],
-      2u /* test_device_index */, false /* is_final_scan_result */);
+      2u /* test_device_index */, false /* is_final_scan_result */,
+      false /* is_connected_to_internet */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   // Finish the first scan.
@@ -559,14 +635,17 @@ TEST_F(HostScannerTest, TestScan_MultipleCompleteScanSessions) {
   // device during this scan session.
   ReceiveScanResultAndVerifySuccess(
       *fake_host_scanner_operation_factory_->created_operations()[1],
-      0u /* test_device_index */, false /* is_final_scan_result */);
+      0u /* test_device_index */, false /* is_final_scan_result */,
+      false /* is_connected_to_internet */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
       *fake_host_scanner_operation_factory_->created_operations()[1],
-      2u /* test_device_index */, false /* is_final_scan_result */);
+      2u /* test_device_index */, false /* is_final_scan_result */,
+      false /* is_connected_to_internet */);
   ReceiveScanResultAndVerifySuccess(
       *fake_host_scanner_operation_factory_->created_operations()[1],
-      3u /* test_device_index */, false /* is_final_scan_result */);
+      3u /* test_device_index */, false /* is_final_scan_result */,
+      false /* is_connected_to_internet */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   VerifyScanResultsMatchCache();
 
