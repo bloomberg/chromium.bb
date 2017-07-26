@@ -62,8 +62,6 @@ class WTF_EXPORT TextEncoding final {
   bool IsNonByteBasedEncoding() const;
 
  private:
-  bool IsUTF7Encoding() const;
-
   const char* name_;
 };
 
