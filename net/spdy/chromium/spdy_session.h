@@ -805,10 +805,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // that |stream| may hold the last reference to the session.
   void DeleteStream(std::unique_ptr<SpdyStream> stream, int status);
 
-  // Returns the stream id of the push stream if it is not claimed yet, or 0
-  // otherwise.
-  SpdyStreamId GetStreamIdForPush(const GURL& url);
-
   // Check if we have a pending pushed-stream for this url
   // Returns the stream if found (and returns it from the pending
   // list). Returns NULL otherwise.
