@@ -2242,8 +2242,8 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_PERMISSIONS" desc="The Permissions header, used to group together permissions, such as Geolocation, on the Site Details page.">
     Permissions
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_CLEAR_BUTTON" desc="The Clear and Reset button, used to clear all permissions and storage for a given site.">
-    Clear and reset
+  <message name="IDS_SETTINGS_SITE_SETTINGS_RESET_BUTTON" desc="The Reset button, used to clear all permissions for a given site.">
+    Reset site settings
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_DELETE" desc="Label for the trashcan icon used to delete storage on the Site Details page.">
     Delete
@@ -2266,11 +2266,11 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_SUBPAGE" desc="A label for cookie subpage, stating which site we're showing data for.">
     <ph name="SITE">$1<ex>www.example.com</ex></ph> locally stored data
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_REMOVE_DIALOG_TITLE" desc="Title of the dialog that warns about deleting all site data and resetting permissions.">
-    Clear and reset site
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_RESET_DIALOG_TITLE" desc="Title of the dialog that warns about resetting all permissions for a site.">
+    Reset settings for this site?
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_REMOVE_CONFIRMATION" desc="Text for the dialog that warns about deleting all site data and permissions.">
-    This will delete any data <ph name="SITE">$1<ex>www.example.com</ex></ph> stored on your device, and reset any permissions you granted to run. Do you want to continue?
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_RESET_CONFIRMATION" desc="Text for the dialog that warns about resetting all permissions for a site.">
+    Chrome will reset permissions to their defaults
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_MULTIPLE" desc="Text for the dialog that warns about deleting all site data.">
     This will delete any data stored on your device for all the sites shown. Do you want to continue?
@@ -2281,8 +2281,8 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES_CLEAR_ALL" desc="Text for the button that clears all site data.">
     Clear all
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_CLEAR_ALL" desc="Text for the button that clears all site data and resets the site.">
-    Clear and reset
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_RESET_ALL" desc="Text for the button that resets the site's permissions back to the defaults.">
+    Reset
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_SEARCH" desc="A placeholder label shown inside the Cookie Data filter textbox as a hint that the user can enter a substring to search for.">
     Search cookies

@@ -22,19 +22,25 @@
       #storage {
         -webkit-padding-end: 0;
       }
+
+      #clearAndReset {
+        margin-top: 24px;
+      }
     </style>
     <!-- Confirm Delete dialog -->
     <dialog is="cr-dialog" id="confirmDeleteDialog" close-text="$i18n{close}">
       <div class="title" slot="title">
-        $i18n{siteSettingsSiteRemoveDialogTitle}
+        $i18n{siteSettingsSiteResetDialogTitle}
       </div>
-      <div class="body" slot="body">[[confirmationDeleteMsg_]]</div>
+      <div class="body" slot="body">
+        $i18n{siteSettingsSiteResetConfirmation}
+      </div>
       <div class="button-container" slot="button-container">
         <paper-button class="cancel-button" on-tap="onCloseDialog_">
           $i18n{cancel}
         </paper-button>
-        <paper-button class="action-button" on-tap="onClearStorage_">
-          $i18n{siteSettingsSiteClearAll}
+        <paper-button class="action-button" on-tap="onClearAndReset_">
+          $i18n{siteSettingsSiteResetAll}
         </paper-button>
       </div>
     </dialog>
@@ -113,12 +119,17 @@
           icon="cr:extension" id="unsandboxedPlugins"
           label="$i18n{siteSettingsUnsandboxedPlugins}">
       </site-details-permission>
+    </div>
 
-      <div class="list-item">
-        <a is="action-link" class="list-button" on-tap="onClearAndReset_" >
-          $i18n{siteSettingsClearAndReset}
-        </a>
+    <div id="clearAndReset" class="settings-box"
+        on-tap="onConfirmClearSettings_" actionable>
+      <div class="start">
+        $i18n{siteSettingsReset}
       </div>
+      <button class="subpage-arrow" is="paper-icon-button-light"
+          aria-label="$i18n{siteSettingsReset}"
+          aria-describedby="clearAndReset">
+      </button>
     </div>
     <website-usage-private-api id="usageApi"
         website-data-usage="{{storedData_}}"
