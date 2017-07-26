@@ -26,6 +26,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/test/dummy_render_widget_host_delegate.h"
 #include "content/test/fake_renderer_compositor_frame_sink.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -34,21 +35,6 @@
 
 namespace content {
 namespace {
-class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
- public:
-  MockRenderWidgetHostDelegate() {}
-  ~MockRenderWidgetHostDelegate() override {}
-
- private:
-  // RenderWidgetHostDelegate:
-  void ExecuteEditCommand(
-      const std::string& command,
-      const base::Optional<base::string16>& value) override {}
-  void Cut() override {}
-  void Copy() override {}
-  void Paste() override {}
-  void SelectAll() override {}
-};
 
 class RenderWidgetHostViewGuestTest : public testing::Test {
  public:
@@ -93,7 +79,7 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<BrowserContext> browser_context_;
-  MockRenderWidgetHostDelegate delegate_;
+  DummyRenderWidgetHostDelegate delegate_;
 
   // Tests should set these to NULL if they've already triggered their
   // destruction.
@@ -210,7 +196,7 @@ class RenderWidgetHostViewGuestSurfaceTest
  protected:
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<BrowserContext> browser_context_;
-  MockRenderWidgetHostDelegate delegate_;
+  DummyRenderWidgetHostDelegate delegate_;
   BrowserPluginGuestDelegate browser_plugin_guest_delegate_;
   std::unique_ptr<TestWebContents> web_contents_;
   TestBrowserPluginGuest* browser_plugin_guest_;

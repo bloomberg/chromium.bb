@@ -13,6 +13,7 @@
 #include "content/public/common/cursor_info.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/test/dummy_render_widget_host_delegate.h"
 #include "content/test/test_render_view_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,24 +23,6 @@
 namespace content {
 
 namespace {
-
-// TODO(kenrb): This mock is implemented in several unit test files, and
-// could be moved into a common header.
-class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
- public:
-  MockRenderWidgetHostDelegate() {}
-  ~MockRenderWidgetHostDelegate() override {}
-
- private:
-  // RenderWidgetHostDelegate:
-  void ExecuteEditCommand(
-      const std::string& command,
-      const base::Optional<base::string16>& value) override {}
-  void Cut() override {}
-  void Copy() override {}
-  void Paste() override {}
-  void SelectAll() override {}
-};
 
 class MockRenderWidgetHostViewForCursors : public TestRenderWidgetHostView {
  public:
@@ -101,7 +84,7 @@ class CursorManagerTest : public testing::Test {
   // destruction.
   MockRenderWidgetHostViewForCursors* top_view_;
 
-  MockRenderWidgetHostDelegate delegate_;
+  DummyRenderWidgetHostDelegate delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CursorManagerTest);
