@@ -399,6 +399,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   virtual bool GetURL(const GURL& url, URLRow* url_row);
 
+  bool GetURLByID(URLID url_id, URLRow* url_row);
+
   // Returns the syncable service for syncing typed urls. The returned service
   // is owned by |this| object.
   virtual TypedUrlSyncableService* GetTypedUrlSyncableService() const;
