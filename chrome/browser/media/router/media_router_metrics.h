@@ -11,6 +11,7 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
+#include "chrome/common/media_router/mojo/dial_device_description_parser.mojom.h"
 #include "media/base/container_names.h"
 
 namespace media_router {
@@ -65,6 +66,7 @@ class MediaRouterMetrics {
   // UMA histogram names.
   static const char kHistogramDialAvailableDeviceCount[];
   static const char kHistogramDialKnownDeviceCount[];
+  static const char kHistogramDialParsingError[];
   static const char kHistogramIconClickLocation[];
   static const char kHistogramMediaRouterCastingSource[];
   static const char kHistogramMediaRouterFileFormat[];
@@ -106,6 +108,10 @@ class MediaRouterMetrics {
 
   // Records the size of a cast file.
   static void RecordMediaRouterFileSize(int64_t size);
+
+  // Records why DIAL device description resolution failed.
+  static void RecordDialParsingError(
+      chrome::mojom::DialParsingError parsing_error);
 
   // Records device counts.
   // TODO(zhaobin): Move device count specific metrics and state into its own

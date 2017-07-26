@@ -124,7 +124,8 @@ class DeviceDescriptionServiceTest : public ::testing::Test {
         device_data, description_response_data);
     device_description_service_.OnParsedDeviceDescription(
         device_data, description_response_data.app_url,
-        CreateDialDeviceDescriptionPtr(num));
+        CreateDialDeviceDescriptionPtr(num),
+        chrome::mojom::DialParsingError::NONE);
   }
 
   void TestOnParsedDeviceDescription(
@@ -140,7 +141,8 @@ class DeviceDescriptionServiceTest : public ::testing::Test {
       EXPECT_CALL(mock_success_cb_, Run(device_data, description_data));
     }
     device_description_service()->OnParsedDeviceDescription(
-        device_data, app_url, std::move(description_ptr));
+        device_data, app_url, std::move(description_ptr),
+        chrome::mojom::DialParsingError::NONE);
   }
 
  protected:
