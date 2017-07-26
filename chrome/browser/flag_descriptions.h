@@ -1100,6 +1100,9 @@ extern const char
 extern const char kPullToRefreshEffectName[];
 extern const char kPullToRefreshEffectDescription[];
 
+extern const char kPwaPersistentNotificationName[];
+extern const char kPwaPersistentNotificationDescription[];
+
 extern const char kReaderModeHeuristicsName[];
 extern const char kReaderModeHeuristicsDescription[];
 extern const char kReaderModeHeuristicsMarkup[];

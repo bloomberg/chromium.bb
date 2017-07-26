@@ -3260,6 +3260,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kAndroidSigninPromos)},
 #endif  // OS_ANDROID
 
+#if defined(OS_ANDROID)
+    {"pwa-persistent-notification",
+     flag_descriptions::kPwaPersistentNotificationName,
+     flag_descriptions::kPwaPersistentNotificationDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kPwaPersistentNotification)},
+#endif  // OS_ANDROID
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.

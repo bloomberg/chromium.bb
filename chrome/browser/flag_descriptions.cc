@@ -1799,6 +1799,11 @@ const char kPullToRefreshEffectName[] = "The pull-to-refresh effect";
 const char kPullToRefreshEffectDescription[] =
     "Page reloads triggered by vertically overscrolling content.";
 
+const char kPwaPersistentNotificationName[] =
+    "Persistent notification in standalone PWA";
+const char kPwaPersistentNotificationDescription[] =
+    "Enables a persistent Android notification for standalone PWAs";
+
 const char kReaderModeHeuristicsName[] = "Reader Mode triggering";
 const char kReaderModeHeuristicsDescription[] =
     "Determines what pages the Reader Mode infobar is shown on.";
