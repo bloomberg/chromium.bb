@@ -6,6 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/testing/DummyPageHolder.h"
+#include "modules/webaudio/AudioWorkletThread.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebAudioDevice.h"
@@ -71,6 +72,10 @@ class AudioContextTestPlatform : public TestingPlatformSupport {
         AudioHardwareSampleRate(), buffer_size);
   }
 
+  std::unique_ptr<WebThread> CreateThread(const char* name) override {
+    return old_platform_->CreateThread(name);
+  }
+
   double AudioHardwareSampleRate() override { return 44100; }
   size_t AudioHardwareBufferSize() override { return 128; }
 };
@@ -79,17 +84,31 @@ class AudioContextTestPlatform : public TestingPlatformSupport {
 
 class AudioContextTest : public ::testing::Test {
  protected:
-  void SetUp() override { dummy_page_holder_ = DummyPageHolder::Create(); }
+  AudioContextTest() :
+      platform_(new ScopedTestingPlatformSupport<AudioContextTestPlatform>) {}
+
+  ~AudioContextTest() {
+    platform_.reset();
+  }
+
+  void SetUp() override {
+    AudioWorkletThread::CreateSharedBackingThreadForTest();
+    dummy_page_holder_ = DummyPageHolder::Create();
+  }
+
+  void TearDown() override {
+    AudioWorkletThread::ClearSharedBackingThread();
+  }
 
   Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
 
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  std::unique_ptr<ScopedTestingPlatformSupport<AudioContextTestPlatform>>
+      platform_;
 };
 
 TEST_F(AudioContextTest, AudioContextOptions_WebAudioLatencyHint) {
-  ScopedTestingPlatformSupport<AudioContextTestPlatform> platform;
-
   AudioContextOptions interactive_options;
   interactive_options.setLatencyHint(
       AudioContextLatencyCategoryOrDouble::fromAudioContextLatencyCategory(
