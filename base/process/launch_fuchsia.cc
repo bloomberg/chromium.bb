@@ -158,8 +158,10 @@ bool GetAppOutputAndError(const std::vector<std::string>& argv,
 bool GetAppOutputWithExitCode(const CommandLine& cl,
                               std::string* output,
                               int* exit_code) {
-  bool result = GetAppOutputInternal(cl.argv(), false, output, exit_code);
-  return result && *exit_code == EXIT_SUCCESS;
+  // Contrary to GetAppOutput(), |true| return here means that the process was
+  // launched and the exit code was waited upon successfully, but not
+  // necessarily that the exit code was EXIT_SUCCESS.
+  return GetAppOutputInternal(cl.argv(), false, output, exit_code);
 }
 
 }  // namespace base

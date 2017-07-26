@@ -74,7 +74,6 @@
 -ProcessTest.WaitForExitWithTimeout
 -ProcessUtilTest.DelayedTermination
 -ProcessUtilTest.FDRemapping
--ProcessUtilTest.GetAppOutputWithExitCode
 -ProcessUtilTest.GetTerminationStatusCrash
 -ProcessUtilTest.GetTerminationStatusSigKill
 -ProcessUtilTest.GetTerminationStatusSigTerm
