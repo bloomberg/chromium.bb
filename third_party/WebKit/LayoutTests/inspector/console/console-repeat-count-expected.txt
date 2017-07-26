@@ -1,39 +1,17 @@
-CONSOLE MESSAGE: line 10: Message
-CONSOLE MESSAGE: line 10: Message
-CONSOLE MESSAGE: line 13: Error: Message with error
-CONSOLE MESSAGE: line 13: Error: Message with error
-CONSOLE ERROR: line 16: [object Object]
-CONSOLE ERROR: line 16: [object Object]
-CONSOLE ERROR: line 26: Uncaught Primitive value
-CONSOLE ERROR: line 26: Uncaught Primitive value
-CONSOLE ERROR: line 21: Uncaught [object Object]
-CONSOLE ERROR: line 21: Uncaught [object Object]
+CONSOLE MESSAGE: line 10: Same message
+CONSOLE MESSAGE: line 10: Same message
+CONSOLE MESSAGE: line 10: Same message
+CONSOLE MESSAGE: line 10: Same message
+CONSOLE MESSAGE: line 10: Same message
+CONSOLE MESSAGE: line 10: Same message
+CONSOLE MESSAGE: line 10: Same message
+CONSOLE MESSAGE: line 10: Same message
+CONSOLE MESSAGE: line 10: Same message
+CONSOLE MESSAGE: line 10: Same message
 Tests that repeat count is properly updated.
 
-Message count: 7
-2console-repeat-count.html:6 Message
-2console-repeat-count.html:9 Error: Message with error
-    at dumpMessages (console-repeat-count.html:9)
-    at <anonymous>:1:1
-console-repeat-count.html:12 {a: 1}
-dumpMessages @ console-repeat-count.html:12
-(anonymous) @ VM:1
-console-repeat-count.html:12 {a: 1}
-dumpMessages @ console-repeat-count.html:12
-(anonymous) @ VM:1
-2console-repeat-count.html:22 Uncaught Primitive value
-setTimeout @ console-repeat-count.html:22
-setTimeout (async)
-throwPrimitiveValues @ console-repeat-count.html:22
-(anonymous) @ VM:1
-console-repeat-count.html:17 Uncaught {a: 1}
-setTimeout @ console-repeat-count.html:17
-setTimeout (async)
-throwObjects @ console-repeat-count.html:17
-(anonymous) @ VM:1
-console-repeat-count.html:17 Uncaught {a: 1}
-setTimeout @ console-repeat-count.html:17
-setTimeout (async)
-throwObjects @ console-repeat-count.html:17
-(anonymous) @ VM:1
+5console-repeat-count.html:6 Same message
+"Different message"
+"Different message"
+5console-repeat-count.html:6 Same message
 
