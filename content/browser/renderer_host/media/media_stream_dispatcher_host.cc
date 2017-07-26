@@ -71,12 +71,8 @@ void MediaStreamDispatcherHost::DeviceOpened(
 }
 
 bool MediaStreamDispatcherHost::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MediaStreamDispatcherHost, message)
-    IPC_MESSAGE_HANDLER(MediaStreamHostMsg_GenerateStream, OnGenerateStream)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+  NOTREACHED();
+  return true;
 }
 
 void MediaStreamDispatcherHost::OnChannelClosing() {
@@ -89,9 +85,9 @@ void MediaStreamDispatcherHost::OnChannelClosing() {
 MediaStreamDispatcherHost::~MediaStreamDispatcherHost() {
 }
 
-void MediaStreamDispatcherHost::OnGenerateStream(
-    int render_frame_id,
-    int page_request_id,
+void MediaStreamDispatcherHost::GenerateStream(
+    int32_t render_frame_id,
+    int32_t page_request_id,
     const StreamControls& controls,
     const url::Origin& security_origin,
     bool user_gesture) {
@@ -103,6 +99,8 @@ void MediaStreamDispatcherHost::OnGenerateStream(
            << " user_gesture=" << user_gesture;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  // TODO(c.padhi): Report GenerateStream failure to renderer, see
+  // https://crbug.com/742682.
   if (!MediaStreamManager::IsOriginAllowed(render_process_id_, security_origin))
     return;
 
@@ -153,7 +151,7 @@ void MediaStreamDispatcherHost::OpenDevice(int32_t render_frame_id,
 }
 
 void MediaStreamDispatcherHost::CloseDevice(const std::string& label) {
-  DVLOG(1) << __func__ << " label = " << label;
+  DVLOG(1) << __func__ << " label= " << label;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   media_stream_manager_->CancelRequest(label);
@@ -171,7 +169,7 @@ void MediaStreamDispatcherHost::SetCapturingLinkSecured(int32_t session_id,
 }
 
 void MediaStreamDispatcherHost::StreamStarted(const std::string& label) {
-  DVLOG(1) << __func__ << " label = " << label;
+  DVLOG(1) << __func__ << " label= " << label;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   media_stream_manager_->OnStreamStarted(label);

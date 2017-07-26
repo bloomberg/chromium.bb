@@ -114,8 +114,8 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                         const url::Origin& security_origin,
                         const base::Closure& quit_closure) {
     quit_closures_.push(quit_closure);
-    MediaStreamDispatcherHost::OnGenerateStream(
-        render_frame_id, page_request_id, controls, security_origin, false);
+    MediaStreamDispatcherHost::GenerateStream(render_frame_id, page_request_id,
+                                              controls, security_origin, false);
   }
 
   void OnStopStreamDevice(int render_frame_id,
@@ -832,8 +832,7 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
   StreamControls controls(false, true);
 
   base::Closure close_callback;
-  std::unique_ptr<MockMediaStreamUIProxy> stream_ui(
-      new MockMediaStreamUIProxy());
+  auto stream_ui = base::MakeUnique<MockMediaStreamUIProxy>();
   EXPECT_CALL(*stream_ui, MockOnStarted(_))
       .WillOnce(SaveArg<0>(&close_callback));
   media_stream_manager_->UseFakeUIForTests(std::move(stream_ui));

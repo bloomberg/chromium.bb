@@ -88,13 +88,3 @@ IPC_MESSAGE_ROUTED3(MediaStreamMsg_DeviceOpened,
 // The browser has failed to open a device.
 IPC_MESSAGE_ROUTED1(MediaStreamMsg_DeviceOpenFailed,
                     int /* request id */)
-
-// Messages sent from the renderer to the browser.
-
-// Request a new media stream.
-IPC_MESSAGE_CONTROL5(MediaStreamHostMsg_GenerateStream,
-                     int /* render frame id */,
-                     int /* request id */,
-                     content::StreamControls /* controls */,
-                     url::Origin /* security origin */,
-                     bool /* user_gesture */)

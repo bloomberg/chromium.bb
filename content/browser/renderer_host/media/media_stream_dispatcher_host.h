@@ -63,14 +63,12 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
  private:
   friend class MockMediaStreamDispatcherHost;
 
-  // IPC message handlers.
-  void OnGenerateStream(int render_frame_id,
-                        int page_request_id,
-                        const StreamControls& controls,
-                        const url::Origin& security_origin,
-                        bool user_gesture);
-
   // mojom::MediaStreamDispatcherHost implementation
+  void GenerateStream(int32_t render_frame_id,
+                      int32_t request_id,
+                      const StreamControls& controls,
+                      const url::Origin& security_origin,
+                      bool user_gesture) override;
   void CancelGenerateStream(int32_t render_frame_id,
                             int32_t request_id) override;
   void StopStreamDevice(int32_t render_frame_id,
