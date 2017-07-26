@@ -2169,7 +2169,8 @@ TEST(SchedulerStateMachineTest, NoImplSideInvalidationsWhileInvisible) {
 
   // No impl-side invalidations should be performed while we are not visible.
   state.SetVisible(false);
-  state.SetNeedsImplSideInvalidation();
+  bool needs_first_draw_on_activation = true;
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   state.IssueNextBeginImplFrame();
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -2184,7 +2185,8 @@ TEST(SchedulerStateMachineTest,
   // No impl-side invalidations should be performed while we can not make impl
   // frames.
   state.SetBeginFrameSourcePaused(true);
-  state.SetNeedsImplSideInvalidation();
+  bool needs_first_draw_on_activation = true;
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   state.IssueNextBeginImplFrame();
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -2195,7 +2197,8 @@ TEST(SchedulerStateMachineTest, ImplSideInvalidationOnlyInsideDeadline) {
   StateMachine state(settings);
   SET_UP_STATE(state);
 
-  state.SetNeedsImplSideInvalidation();
+  bool needs_first_draw_on_activation = true;
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   state.IssueNextBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
@@ -2217,7 +2220,8 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // No impl-side invalidations should be performed during frame sink creation.
-  state.SetNeedsImplSideInvalidation();
+  bool needs_first_draw_on_activation = true;
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   state.IssueNextBeginImplFrame();
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -2251,7 +2255,8 @@ TEST(SchedulerStateMachineTest, ImplSideInvalidationWhenPendingTreeExists) {
 
   // Request an impl-side invalidation after the commit. The request should wait
   // till the current pending tree is activated.
-  state.SetNeedsImplSideInvalidation();
+  bool needs_first_draw_on_activation = true;
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Activate the pending tree. Since the commit fills the impl-side
@@ -2286,7 +2291,8 @@ TEST(SchedulerStateMachineTest, ImplSideInvalidationWhileReadyToCommit) {
 
   // Request an impl-side invalidation. The request should wait till a response
   // is received from the main thread.
-  state.SetNeedsImplSideInvalidation();
+  bool needs_first_draw_on_activation = true;
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   EXPECT_TRUE(state.needs_impl_side_invalidation());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
@@ -2309,7 +2315,8 @@ TEST(SchedulerStateMachineTest,
   SET_UP_STATE(state);
 
   // Set up a request for impl-side invalidation.
-  state.SetNeedsImplSideInvalidation();
+  bool needs_first_draw_on_activation = true;
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   state.IssueNextBeginImplFrame();
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(
@@ -2318,7 +2325,7 @@ TEST(SchedulerStateMachineTest,
 
   // Request another invalidation, which should wait until the pending tree is
   // activated *and* we start the next BeginFrame.
-  state.SetNeedsImplSideInvalidation();
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.NotifyReadyToActivate();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
@@ -2359,7 +2366,8 @@ TEST(SchedulerStateMachineTest, ImplSideInvalidationsThrottledOnDraw) {
 
   // Request impl-side invalidation and start a new frame, which should be
   // blocked on the ack for the previous frame.
-  state.SetNeedsImplSideInvalidation();
+  bool needs_first_draw_on_activation = true;
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   state.IssueNextBeginImplFrame();
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -2389,7 +2397,8 @@ TEST(SchedulerStateMachineTest,
   // Request an impl-side invalidation and trigger the deadline, the
   // invalidation should run if the request is still pending when we enter the
   // deadline.
-  state.SetNeedsImplSideInvalidation();
+  bool needs_first_draw_on_activation = true;
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
@@ -2403,7 +2412,8 @@ TEST(SchedulerStateMachineTest, PrepareTilesWaitForImplSideInvalidation) {
 
   // Request a PrepareTiles and impl-side invalidation. The impl-side
   // invalidation should run first, since it will perform PrepareTiles as well.
-  state.SetNeedsImplSideInvalidation();
+  bool needs_first_draw_on_activation = true;
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   state.SetNeedsPrepareTiles();
   state.IssueNextBeginImplFrame();
   state.OnBeginImplFrameDeadline();
@@ -2520,6 +2530,37 @@ TEST(SchedulerStateMachineTest, TestFullPipelineMode) {
   EXPECT_MAIN_FRAME_STATE(SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE);
   EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_IMMEDIATE,
             state.CurrentBeginImplFrameDeadlineMode());
+}
+
+TEST(SchedulerStateMachineTest, AllowSkippingActiveTreeFirstDraws) {
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state)
+
+  // Impl-side invalidation creates a pending tree which is activated but not
+  // drawn in this frame.
+  bool needs_first_draw_on_activation = false;
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
+  state.OnBeginImplFrame(0, 1);
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
+  state.OnBeginImplFrameIdle();
+
+  // Now we have a main frame.
+  state.SetNeedsBeginMainFrame();
+  state.OnBeginImplFrame(0, 2);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+
+  // We should be able to activate this tree without drawing the active tree.
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
 }
 
 }  // namespace

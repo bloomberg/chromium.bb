@@ -1394,8 +1394,11 @@ gfx::ColorSpace LayerTreeHostImpl::GetRasterColorSpace() const {
   return result;
 }
 
-void LayerTreeHostImpl::RequestImplSideInvalidation() {
-  client_->NeedsImplSideInvalidation();
+void LayerTreeHostImpl::RequestImplSideInvalidationForCheckerImagedTiles() {
+  // When using impl-side invalidation for checker-imaging, a pending tree does
+  // not need to be flushed as an independent update through the pipeline.
+  bool needs_first_draw_on_activation = false;
+  client_->NeedsImplSideInvalidation(needs_first_draw_on_activation);
 }
 
 void LayerTreeHostImpl::NotifyReadyToActivate() {

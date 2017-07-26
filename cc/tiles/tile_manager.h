@@ -85,7 +85,7 @@ class CC_EXPORT TileManagerClient {
   // Requests that a pending tree be scheduled to invalidate content on the
   // pending on active tree. This is currently used when tiles that are
   // rasterized with missing images need to be invalidated.
-  virtual void RequestImplSideInvalidation() = 0;
+  virtual void RequestImplSideInvalidationForCheckerImagedTiles() = 0;
 
  protected:
   virtual ~TileManagerClient() {}

@@ -445,9 +445,11 @@ void SingleThreadProxy::OnDrawForLayerTreeFrameSink(
   NOTREACHED() << "Implemented by ThreadProxy for synchronous compositor.";
 }
 
-void SingleThreadProxy::NeedsImplSideInvalidation() {
+void SingleThreadProxy::NeedsImplSideInvalidation(
+    bool needs_first_draw_on_activation) {
   DCHECK(scheduler_on_impl_thread_);
-  scheduler_on_impl_thread_->SetNeedsImplSideInvalidation();
+  scheduler_on_impl_thread_->SetNeedsImplSideInvalidation(
+      needs_first_draw_on_activation);
 }
 
 void SingleThreadProxy::NotifyImageDecodeRequestFinished() {

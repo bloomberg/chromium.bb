@@ -3219,7 +3219,8 @@ TEST_F(SchedulerTest, ImplSideInvalidationsInDeadline) {
 
   // Request an impl-side invalidation and trigger the deadline. Ensure that the
   // invalidation runs inside the deadline.
-  scheduler_->SetNeedsImplSideInvalidation();
+  bool needs_first_draw_on_activation = true;
+  scheduler_->SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   client_->Reset();
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_ACTIONS("WillBeginImplFrame");
@@ -3236,7 +3237,8 @@ TEST_F(SchedulerTest, ImplSideInvalidationsMergedWithCommit) {
   // Request a main frame and invalidation, the only action run should be
   // sending the main frame.
   scheduler_->SetNeedsBeginMainFrame();
-  scheduler_->SetNeedsImplSideInvalidation();
+  bool needs_first_draw_on_activation = true;
+  scheduler_->SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   client_->Reset();
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame");
@@ -3261,7 +3263,8 @@ TEST_F(SchedulerTest, AbortedCommitsTriggerImplSideInvalidations) {
 
   // Request a main frame and invalidation.
   scheduler_->SetNeedsBeginMainFrame();
-  scheduler_->SetNeedsImplSideInvalidation();
+  bool needs_first_draw_on_activation = true;
+  scheduler_->SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   client_->Reset();
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame");

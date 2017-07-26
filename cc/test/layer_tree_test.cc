@@ -227,7 +227,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   void BlockImplSideInvalidationRequestsForTesting(bool block) override {
     block_impl_side_invalidation_ = block;
     if (!block_impl_side_invalidation_ && impl_side_invalidation_was_blocked_) {
-      RequestImplSideInvalidation();
+      RequestImplSideInvalidationForCheckerImagedTiles();
       impl_side_invalidation_was_blocked_ = false;
     }
   }
@@ -279,7 +279,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->DidInvalidateContentOnImplSide(this);
   }
 
-  void RequestImplSideInvalidation() override {
+  void RequestImplSideInvalidationForCheckerImagedTiles() override {
     test_hooks_->DidReceiveImplSideInvalidationRequest(this);
     if (block_impl_side_invalidation_) {
       impl_side_invalidation_was_blocked_ = true;
@@ -287,7 +287,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     }
 
     impl_side_invalidation_was_blocked_ = false;
-    LayerTreeHostImpl::RequestImplSideInvalidation();
+    LayerTreeHostImpl::RequestImplSideInvalidationForCheckerImagedTiles();
     test_hooks_->DidRequestImplSideInvalidation(this);
   }
 

@@ -100,7 +100,10 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   // ScheduledActionRunImplSideInvalidation.
   // If ScheduledActionCommit is performed, the impl-side invalidations should
   // be merged with the main frame and the request is assumed to be completed.
-  void SetNeedsImplSideInvalidation();
+  // If |needs_first_draw_on_activation| is set to true, an impl-side pending
+  // tree creates for this invalidation must be drawn at least once before a
+  // new tree can be activated.
+  void SetNeedsImplSideInvalidation(bool needs_first_draw_on_activation);
 
   // Drawing should result in submitting a CompositorFrame to the
   // LayerTreeFrameSink and then calling this.
