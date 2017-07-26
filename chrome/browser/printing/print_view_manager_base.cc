@@ -495,9 +495,10 @@ bool PrintViewManagerBase::RunInnerMessageLoop() {
   // memory-bound.
   static const int kPrinterSettingsTimeout = 60000;
   base::OneShotTimer quit_timer;
-  quit_timer.Start(
-      FROM_HERE, TimeDelta::FromMilliseconds(kPrinterSettingsTimeout),
-      base::MessageLoop::current(), &base::MessageLoop::QuitWhenIdle);
+  base::RunLoop run_loop;
+  quit_timer.Start(FROM_HERE,
+                   TimeDelta::FromMilliseconds(kPrinterSettingsTimeout),
+                   run_loop.QuitWhenIdleClosure());
 
   inside_inner_message_loop_ = true;
 
@@ -505,7 +506,7 @@ bool PrintViewManagerBase::RunInnerMessageLoop() {
   {
     base::MessageLoop::ScopedNestableTaskAllower allow(
         base::MessageLoop::current());
-    base::RunLoop().Run();
+    run_loop.Run();
   }
 
   bool success = true;
