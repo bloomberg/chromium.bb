@@ -196,7 +196,17 @@ Polymer({
   clearBrowsingData_: function() {
     this.clearingInProgress_ = true;
 
-    this.browserProxy_.clearBrowsingData(this.importantSites_)
+    var checkboxes = this.root.querySelectorAll('.browsing-data-checkbox');
+    var dataTypes = [];
+    checkboxes.forEach((checkbox) => {
+      if (checkbox.checked)
+        dataTypes.push(checkbox.pref.key);
+    });
+
+    var timePeriod = this.$.clearFrom.pref.value;
+
+    this.browserProxy_
+        .clearBrowsingData(dataTypes, timePeriod, this.importantSites_)
         .then(shouldShowNotice => {
           this.clearingInProgress_ = false;
           this.showHistoryDeletionDialog_ = shouldShowNotice;

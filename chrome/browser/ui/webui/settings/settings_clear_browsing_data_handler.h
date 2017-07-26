@@ -9,12 +9,14 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
 
 namespace base {
@@ -51,7 +53,9 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
 
   // Called when a clearing task finished. |webui_callback_id| is provided
   // by the WebUI action that initiated it.
-  void OnClearingTaskFinished(const std::string& webui_callback_id);
+  void OnClearingTaskFinished(
+      const std::string& webui_callback_id,
+      const base::flat_set<browsing_data::BrowsingDataType>& data_types);
 
   // Get important sites, called by Javascript.
   void HandleGetImportantSites(const base::ListValue* value);

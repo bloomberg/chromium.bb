@@ -34,6 +34,7 @@
 #include "ui/base/text/bytes_formatting.h"
 
 using ImportantReason = ImportantSitesUtil::ImportantReason;
+using BrowsingDataType = browsing_data::BrowsingDataType;
 
 namespace {
 
@@ -110,6 +111,10 @@ void ClearBrowsingDataHandler::OnJavascriptDisallowed() {
 
 void ClearBrowsingDataHandler::HandleClearBrowsingData(
     const base::ListValue* args) {
+  CHECK_EQ(4U, args->GetSize());
+  std::string webui_callback_id;
+  CHECK(args->GetString(0, &webui_callback_id));
+
   PrefService* prefs = profile_->GetPrefs();
 
   int site_data_mask = ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA;
@@ -118,44 +123,66 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
     site_data_mask &= ~ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA;
 
   int remove_mask = 0;
-  if (prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory)) {
-    if (prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistory))
-      remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY;
-    if (prefs->GetBoolean(browsing_data::prefs::kDeleteDownloadHistory))
-      remove_mask |= content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS;
-  }
-
-  if (prefs->GetBoolean(browsing_data::prefs::kDeleteCache))
-    remove_mask |= content::BrowsingDataRemover::DATA_TYPE_CACHE;
-
   int origin_mask = 0;
-  if (prefs->GetBoolean(browsing_data::prefs::kDeleteCookies)) {
-    remove_mask |= site_data_mask;
-    origin_mask |= content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
+  std::vector<BrowsingDataType> data_type_vector;
+  const base::ListValue* data_type_list = nullptr;
+  CHECK(args->GetList(1, &data_type_list));
+  for (const auto& type : *data_type_list) {
+    std::string pref_name;
+    CHECK(type.GetAsString(&pref_name));
+    BrowsingDataType data_type =
+        browsing_data::GetDataTypeFromDeletionPreference(pref_name);
+    data_type_vector.push_back(data_type);
+
+    switch (data_type) {
+      case BrowsingDataType::HISTORY:
+        if (prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory))
+          remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY;
+        break;
+      case BrowsingDataType::DOWNLOADS:
+        if (prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory))
+          remove_mask |= content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS;
+        break;
+      case BrowsingDataType::CACHE:
+        remove_mask |= content::BrowsingDataRemover::DATA_TYPE_CACHE;
+        break;
+      case BrowsingDataType::COOKIES:
+        remove_mask |= site_data_mask;
+        origin_mask |=
+            content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
+        break;
+      case BrowsingDataType::PASSWORDS:
+        remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS;
+        break;
+      case BrowsingDataType::FORM_DATA:
+        remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA;
+        break;
+      case BrowsingDataType::MEDIA_LICENSES:
+        remove_mask |= content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES;
+        break;
+      case BrowsingDataType::HOSTED_APPS_DATA:
+        remove_mask |= site_data_mask;
+        origin_mask |= content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
+        break;
+      case BrowsingDataType::BOOKMARKS:
+      case BrowsingDataType::SITE_SETTINGS:
+        // Only implemented on Android.
+        NOTREACHED();
+      case BrowsingDataType::NUM_TYPES:
+        NOTREACHED();
+    }
   }
 
-  if (prefs->GetBoolean(browsing_data::prefs::kDeletePasswords))
-    remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS;
-
-  if (prefs->GetBoolean(browsing_data::prefs::kDeleteFormData))
-    remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA;
-
-  if (prefs->GetBoolean(browsing_data::prefs::kDeleteMediaLicenses))
-    remove_mask |= content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES;
-
-  if (prefs->GetBoolean(browsing_data::prefs::kDeleteHostedAppsData)) {
-    remove_mask |= site_data_mask;
-    origin_mask |= content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
-  }
+  base::flat_set<BrowsingDataType> data_types(std::move(data_type_vector));
 
   // Record the deletion of cookies and cache.
   content::BrowsingDataRemover::CookieOrCacheDeletionChoice choice =
       content::BrowsingDataRemover::NEITHER_COOKIES_NOR_CACHE;
-  if (prefs->GetBoolean(browsing_data::prefs::kDeleteCookies)) {
-    choice = prefs->GetBoolean(browsing_data::prefs::kDeleteCache)
+  if (data_types.find(BrowsingDataType::COOKIES) != data_types.end()) {
+    choice = data_types.find(BrowsingDataType::CACHE) != data_types.end()
                  ? content::BrowsingDataRemover::BOTH_COOKIES_AND_CACHE
                  : content::BrowsingDataRemover::ONLY_COOKIES;
-  } else if (prefs->GetBoolean(browsing_data::prefs::kDeleteCache)) {
+  } else if (data_types.find(BrowsingDataType::CACHE) != data_types.end()) {
     choice = content::BrowsingDataRemover::ONLY_CACHE;
   }
 
@@ -164,43 +191,38 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
       content::BrowsingDataRemover::MAX_CHOICE_VALUE);
 
   // Record the circumstances under which passwords are deleted.
-  if (prefs->GetBoolean(browsing_data::prefs::kDeletePasswords)) {
-    static const char* other_types[] = {
-        browsing_data::prefs::kDeleteBrowsingHistory,
-        browsing_data::prefs::kDeleteDownloadHistory,
-        browsing_data::prefs::kDeleteCache,
-        browsing_data::prefs::kDeleteCookies,
-        browsing_data::prefs::kDeleteFormData,
-        browsing_data::prefs::kDeleteHostedAppsData,
-        browsing_data::prefs::kDeleteMediaLicenses,
+  if (data_types.find(BrowsingDataType::PASSWORDS) != data_types.end()) {
+    static const BrowsingDataType other_types[] = {
+        BrowsingDataType::HISTORY,        BrowsingDataType::DOWNLOADS,
+        BrowsingDataType::CACHE,          BrowsingDataType::COOKIES,
+        BrowsingDataType::FORM_DATA,      BrowsingDataType::HOSTED_APPS_DATA,
+        BrowsingDataType::MEDIA_LICENSES,
     };
     static size_t num_other_types = arraysize(other_types);
-    int checked_other_types = std::count_if(
-        other_types, other_types + num_other_types,
-        [prefs](const std::string& pref) { return prefs->GetBoolean(pref); });
+    int checked_other_types =
+        std::count_if(other_types, other_types + num_other_types,
+                      [&data_types](BrowsingDataType type) {
+                        return data_types.find(type) != data_types.end();
+                      });
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         "History.ClearBrowsingData.PasswordsDeletion.AdditionalDatatypesCount",
         checked_other_types);
   }
 
-  int period_selected =
-      prefs->GetInteger(browsing_data::prefs::kDeleteTimePeriod);
-
-  std::string webui_callback_id;
-  CHECK_EQ(2U, args->GetSize());
-  CHECK(args->GetString(0, &webui_callback_id));
+  int period_selected;
+  CHECK(args->GetInteger(2, &period_selected));
 
   const base::ListValue* important_sites = nullptr;
-  CHECK(args->GetList(1, &important_sites));
+  CHECK(args->GetList(3, &important_sites));
   std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder =
       ProcessImportantSites(important_sites);
 
   content::BrowsingDataRemover* remover =
       content::BrowserContext::GetBrowsingDataRemover(profile_);
 
-  base::OnceClosure callback =
-      base::BindOnce(&ClearBrowsingDataHandler::OnClearingTaskFinished,
-                     weak_ptr_factory_.GetWeakPtr(), webui_callback_id);
+  base::OnceClosure callback = base::BindOnce(
+      &ClearBrowsingDataHandler::OnClearingTaskFinished,
+      weak_ptr_factory_.GetWeakPtr(), webui_callback_id, std::move(data_types));
   browsing_data::TimePeriod time_period =
       static_cast<browsing_data::TimePeriod>(period_selected);
 
@@ -250,7 +272,8 @@ ClearBrowsingDataHandler::ProcessImportantSites(
 }
 
 void ClearBrowsingDataHandler::OnClearingTaskFinished(
-    const std::string& webui_callback_id) {
+    const std::string& webui_callback_id,
+    const base::flat_set<BrowsingDataType>& data_types) {
   PrefService* prefs = profile_->GetPrefs();
   int notice_shown_times = prefs->GetInteger(
       browsing_data::prefs::kClearBrowsingDataHistoryNoticeShownTimes);
@@ -263,7 +286,7 @@ void ClearBrowsingDataHandler::OnClearingTaskFinished(
       // 2. The notice has been shown less than |kMaxTimesHistoryNoticeShown|.
       notice_shown_times < kMaxTimesHistoryNoticeShown &&
       // 3. The selected data types contained browsing history.
-      prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistory);
+      data_types.find(BrowsingDataType::HISTORY) != data_types.end();
 
   if (show_notice) {
     // Increment the preference.
