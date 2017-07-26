@@ -80,12 +80,6 @@ void JourneyLoggerAndroid::SetCanMakePaymentValue(
   journey_logger_.SetCanMakePaymentValue(jvalue);
 }
 
-void JourneyLoggerAndroid::SetShowCalled(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller) {
-  journey_logger_.SetShowCalled();
-}
-
 void JourneyLoggerAndroid::SetEventOccurred(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,

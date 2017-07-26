@@ -672,7 +672,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             mDidRecordShowEvent = true;
             mShouldRecordAbortReason = true;
             mJourneyLogger.setEventOccurred(Event.SKIPPED_SHOW);
-            mJourneyLogger.setShowCalled();
 
             onPayClicked(null /* selectedShippingAddress */, null /* selectedShippingOption */,
                     mPaymentMethodsSection.getItem(0));
@@ -1044,7 +1043,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             mDidRecordShowEvent = true;
             mShouldRecordAbortReason = true;
             mJourneyLogger.setEventOccurred(Event.SHOWN);
-            mJourneyLogger.setShowCalled();
         }
     }
 

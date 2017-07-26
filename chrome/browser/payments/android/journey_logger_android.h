@@ -43,8 +43,6 @@ class JourneyLoggerAndroid {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
       jboolean jvalue);
-  void SetShowCalled(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& jcaller);
   void SetEventOccurred(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& jcaller,
                         jint jevent);

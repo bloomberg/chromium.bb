@@ -494,7 +494,6 @@ struct PendingPaymentResponse {
 
   _pendingPaymentRequest = paymentRequest;
 
-  paymentRequest->journey_logger().SetShowCalled();
   paymentRequest->journey_logger().SetEventOccurred(
       payments::JourneyLogger::EVENT_SHOWN);
   paymentRequest->journey_logger().SetRequestedInformation(

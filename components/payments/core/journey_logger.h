@@ -166,9 +166,6 @@ class JourneyLogger {
   // return value.
   void SetCanMakePaymentValue(bool value);
 
-  // Records the fact that the Payment Request was shown to the user.
-  void SetShowCalled();
-
   // Records that an event occurred.
   void SetEventOccurred(Event event);
 
@@ -266,7 +263,7 @@ class JourneyLogger {
   bool has_recorded_ = false;
   bool was_can_make_payments_used_ = false;
   bool could_make_payment_ = false;
-  bool was_show_called_ = false;
+  bool was_payment_request_triggered_ = false;
   bool is_incognito_;
 
   // Accumulates the many events that have happened during the Payment Request.
