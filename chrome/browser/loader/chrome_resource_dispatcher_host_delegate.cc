@@ -48,6 +48,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/offline_pages/features/features.h"
@@ -971,10 +972,12 @@ content::PreviewsState ChromeResourceDispatcherHostDelegate::GetPreviewsState(
       previews_state |= content::SERVER_LITE_PAGE_ON;
     }
 
-    // Check that data saver is enabled, the user isn't opted out of LoFi for
-    // the session, and the user is eligible for previews.
+    // Check that data saver is enabled and the user is eligible for Lo-Fi
+    // previews. If the user is not transitioned fully to the blacklist, respect
+    // the old prefs rules.
     if (data_reduction_proxy_io_data->IsEnabled() &&
-        !data_reduction_proxy_io_data->config()->lofi_off() &&
+        (!data_reduction_proxy_io_data->config()->lofi_off() ||
+         data_reduction_proxy::params::IsBlackListEnabledForServerPreviews()) &&
         previews::params::IsClientLoFiEnabled() &&
         previews_io_data->ShouldAllowPreviewAtECT(
             url_request, previews::PreviewsType::LOFI,

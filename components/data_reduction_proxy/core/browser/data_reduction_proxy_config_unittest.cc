@@ -1626,6 +1626,12 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
       switches::kDataReductionProxyLoFiValueAlwaysOn);
   EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
                                                   *previews_decider.get()));
+
+  // DataReductionProxyPreviewsBlackListTransition should not be affected by
+  // lofi being off by the prefs rules.
+  config()->SetLoFiModeOff();
+  EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
+                                                  *previews_decider.get()));
 }
 
 }  // namespace data_reduction_proxy
