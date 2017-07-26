@@ -121,7 +121,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Creates a new CodedInputStream reading data from the given byte array.
         /// </summary>
-        public CodedInputStream(byte[] buffer) : this(null, ProtoPreconditions.CheckNotNull(buffer, "buffer"), 0, buffer.Length, true)
+        public CodedInputStream(byte[] buffer) : this(null, ProtoPreconditions.CheckNotNull(buffer, "buffer"), 0, buffer.Length)
         {            
         }
 
@@ -129,7 +129,7 @@ namespace Google.Protobuf
         /// Creates a new <see cref="CodedInputStream"/> that reads from the given byte array slice.
         /// </summary>
         public CodedInputStream(byte[] buffer, int offset, int length)
-            : this(null, ProtoPreconditions.CheckNotNull(buffer, "buffer"), offset, offset + length, true)
+            : this(null, ProtoPreconditions.CheckNotNull(buffer, "buffer"), offset, offset + length)
         {            
             if (offset < 0 || offset > buffer.Length)
             {
@@ -158,15 +158,16 @@ namespace Google.Protobuf
         /// <c cref="CodedInputStream"/> is disposed; <c>false</c> to dispose of the given stream when the
         /// returned object is disposed.</param>
         public CodedInputStream(Stream input, bool leaveOpen)
-            : this(ProtoPreconditions.CheckNotNull(input, "input"), new byte[BufferSize], 0, 0, leaveOpen)
+            : this(ProtoPreconditions.CheckNotNull(input, "input"), new byte[BufferSize], 0, 0)
         {
+            this.leaveOpen = leaveOpen;
         }
         
         /// <summary>
         /// Creates a new CodedInputStream reading data from the given
         /// stream and buffer, using the default limits.
         /// </summary>
-        internal CodedInputStream(Stream input, byte[] buffer, int bufferPos, int bufferSize, bool leaveOpen)
+        internal CodedInputStream(Stream input, byte[] buffer, int bufferPos, int bufferSize)
         {
             this.input = input;
             this.buffer = buffer;
@@ -174,7 +175,6 @@ namespace Google.Protobuf
             this.bufferSize = bufferSize;
             this.sizeLimit = DefaultSizeLimit;
             this.recursionLimit = DefaultRecursionLimit;
-            this.leaveOpen = leaveOpen;
         }
 
         /// <summary>
@@ -185,8 +185,8 @@ namespace Google.Protobuf
         /// This chains to the version with the default limits instead of vice versa to avoid
         /// having to check that the default values are valid every time.
         /// </remarks>
-        internal CodedInputStream(Stream input, byte[] buffer, int bufferPos, int bufferSize, int sizeLimit, int recursionLimit, bool leaveOpen)
-            : this(input, buffer, bufferPos, bufferSize, leaveOpen)
+        internal CodedInputStream(Stream input, byte[] buffer, int bufferPos, int bufferSize, int sizeLimit, int recursionLimit)
+            : this(input, buffer, bufferPos, bufferSize)
         {
             if (sizeLimit <= 0)
             {
@@ -217,8 +217,7 @@ namespace Google.Protobuf
         /// and recursion limits.</returns>
         public static CodedInputStream CreateWithLimits(Stream input, int sizeLimit, int recursionLimit)
         {
-            // Note: we may want an overload accepting leaveOpen
-            return new CodedInputStream(input, new byte[BufferSize], 0, 0, sizeLimit, recursionLimit, false);
+            return new CodedInputStream(input, new byte[BufferSize], 0, 0, sizeLimit, recursionLimit);
         }
 
         /// <summary>
@@ -613,7 +612,9 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Reads an enum field value from the stream.
+        /// Reads an enum field value from the stream. If the enum is valid for type T,
+        /// then the ref value is set and it returns true.  Otherwise the unknown output
+        /// value is set and this method returns false.
         /// </summary>   
         public int ReadEnum()
         {

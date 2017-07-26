@@ -52,7 +52,6 @@ protobuf_lite_sources = [
   "src/google/protobuf/io/zero_copy_stream.h",
   "src/google/protobuf/io/zero_copy_stream_impl_lite.cc",
   "src/google/protobuf/io/zero_copy_stream_impl_lite.h",
-  "src/google/protobuf/has_bits.h",
   "src/google/protobuf/map.h",
   "src/google/protobuf/map_entry_lite.h",
   "src/google/protobuf/map_field_lite.h",
@@ -66,10 +65,10 @@ protobuf_lite_sources = [
   "src/google/protobuf/stubs/atomicops_internals_arm_gcc.h",
   "src/google/protobuf/stubs/atomicops_internals_arm_qnx.h",
   "src/google/protobuf/stubs/atomicops_internals_atomicword_compat.h",
-  "src/google/protobuf/stubs/atomicops_internals_generic_c11_atomic.h",
   "src/google/protobuf/stubs/atomicops_internals_generic_gcc.h",
   "src/google/protobuf/stubs/atomicops_internals_macosx.h",
   "src/google/protobuf/stubs/atomicops_internals_mips_gcc.h",
+  "src/google/protobuf/stubs/atomicops_internals_pnacl.h",
   "src/google/protobuf/stubs/atomicops_internals_power.h",
   "src/google/protobuf/stubs/atomicops_internals_ppc_gcc.h",
   "src/google/protobuf/stubs/atomicops_internals_solaris.h",
@@ -183,10 +182,6 @@ component("protobuf_lite") {
   deps = [
     "//build/config:exe_and_shlib_deps",
   ]
-
-  if (is_android) {
-    libs = [ "log" ]  # Used by src/google/protobuf/stubs/common.cc
-  }
 
   cflags = protobuf_lite_cflags
 
@@ -349,10 +344,6 @@ static_library("protobuf_full") {
     "//build/config:exe_and_shlib_deps",
   ]
 
-  if (is_android) {
-    libs = [ "log" ]  # Used by src/google/protobuf/stubs/common.cc
-  }
-
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     "//build/config/compiler:no_chromium_code",
@@ -493,7 +484,6 @@ if (current_toolchain == host_toolchain) {
       "src/google/protobuf/compiler/java/java_message_lite.h",
       "src/google/protobuf/compiler/java/java_name_resolver.cc",
       "src/google/protobuf/compiler/java/java_name_resolver.h",
-      "src/google/protobuf/compiler/java/java_options.h",
       "src/google/protobuf/compiler/java/java_primitive_field.cc",
       "src/google/protobuf/compiler/java/java_primitive_field.h",
       "src/google/protobuf/compiler/java/java_primitive_field_lite.cc",
@@ -530,8 +520,6 @@ if (current_toolchain == host_toolchain) {
       "src/google/protobuf/compiler/javanano/javanano_primitive_field.h",
       "src/google/protobuf/compiler/js/js_generator.cc",
       "src/google/protobuf/compiler/js/js_generator.h",
-      "src/google/protobuf/compiler/js/well_known_types_embed.cc",
-      "src/google/protobuf/compiler/js/well_known_types_embed.h",
       "src/google/protobuf/compiler/objectivec/objectivec_enum.cc",
       "src/google/protobuf/compiler/objectivec/objectivec_enum.h",
       "src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc",
@@ -556,8 +544,6 @@ if (current_toolchain == host_toolchain) {
       "src/google/protobuf/compiler/objectivec/objectivec_oneof.h",
       "src/google/protobuf/compiler/objectivec/objectivec_primitive_field.cc",
       "src/google/protobuf/compiler/objectivec/objectivec_primitive_field.h",
-      "src/google/protobuf/compiler/php/php_generator.cc",
-      "src/google/protobuf/compiler/php/php_generator.h",
       "src/google/protobuf/compiler/plugin.cc",
       "src/google/protobuf/compiler/plugin.h",
       "src/google/protobuf/compiler/plugin.pb.cc",
@@ -610,18 +596,6 @@ if (current_toolchain == host_toolchain) {
       # Default manifest on Windows (a no-op elsewhere).
       "//build/win:default_exe_manifest",
     ]
-  }
-
-  executable("js_embed") {
-    deps = [
-      "//build/config:exe_and_shlib_deps",
-    ]
-    sources = [
-      "src/google/protobuf/compiler/js/embed.cc",
-    ]
-
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
   }
 }
 

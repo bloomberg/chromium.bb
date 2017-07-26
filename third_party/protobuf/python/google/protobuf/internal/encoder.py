@@ -340,7 +340,7 @@ def MessageSetItemSizer(field_number):
 # Map is special: it needs custom logic to compute its size properly.
 
 
-def MapSizer(field_descriptor, is_message_map):
+def MapSizer(field_descriptor):
   """Returns a sizer for a map field."""
 
   # Can't look at field_descriptor.message_type._concrete_class because it may
@@ -355,12 +355,9 @@ def MapSizer(field_descriptor, is_message_map):
       # It's wasteful to create the messages and throw them away one second
       # later since we'll do the same for the actual encode.  But there's not an
       # obvious way to avoid this within the current design without tons of code
-      # duplication. For message map, value.ByteSize() should be called to
-      # update the status.
+      # duplication.
       entry_msg = message_type._concrete_class(key=key, value=value)
       total += message_sizer(entry_msg)
-      if is_message_map:
-        value.ByteSize()
     return total
 
   return FieldSize

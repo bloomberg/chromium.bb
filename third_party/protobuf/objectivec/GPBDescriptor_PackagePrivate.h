@@ -37,7 +37,6 @@
 
 // Describes attributes of the field.
 typedef NS_OPTIONS(uint16_t, GPBFieldFlags) {
-  GPBFieldNone            = 0,
   // These map to standard protobuf concepts.
   GPBFieldRequired        = 1 << 0,
   GPBFieldRepeated        = 1 << 1,
@@ -112,7 +111,6 @@ typedef struct GPBMessageFieldDescriptionWithDefault {
 
 // Describes attributes of the extension.
 typedef NS_OPTIONS(uint8_t, GPBExtensionOptions) {
-  GPBExtensionNone          = 0,
   // These map to standard protobuf concepts.
   GPBExtensionRepeated      = 1 << 0,
   GPBExtensionPacked        = 1 << 1,
@@ -132,7 +130,6 @@ typedef struct GPBExtensionDescription {
 } GPBExtensionDescription;
 
 typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
-  GPBDescriptorInitializationFlag_None              = 0,
   GPBDescriptorInitializationFlag_FieldsWithDefault = 1 << 0,
   GPBDescriptorInitializationFlag_WireFormat        = 1 << 1,
 };
@@ -168,15 +165,10 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
       firstHasIndex:(int32_t)firstHasIndex;
 - (void)setupExtraTextInfo:(const char *)extraTextFormatInfo;
 - (void)setupExtensionRanges:(const GPBExtensionRange *)ranges count:(int32_t)count;
-- (void)setupContainingMessageClassName:(const char *)msgClassName;
-- (void)setupMessageClassNameSuffix:(NSString *)suffix;
 
 @end
 
 @interface GPBFileDescriptor ()
-- (instancetype)initWithPackage:(NSString *)package
-                     objcPrefix:(NSString *)objcPrefix
-                         syntax:(GPBFileSyntax)syntax;
 - (instancetype)initWithPackage:(NSString *)package
                          syntax:(GPBFileSyntax)syntax;
 @end
@@ -253,12 +245,6 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
 
 CF_EXTERN_C_BEGIN
 
-// Direct access is use for speed, to avoid even internally declaring things
-// read/write, etc. The warning is enabled in the project to ensure code calling
-// protos can turn on -Wdirect-ivar-access without issues.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdirect-ivar-access"
-
 GPB_INLINE BOOL GPBFieldIsMapOrArray(GPBFieldDescriptor *field) {
   return (field->description_->flags &
           (GPBFieldRepeated | GPBFieldMapKeyMask)) != 0;
@@ -276,8 +262,6 @@ GPB_INLINE uint32_t GPBFieldNumber(GPBFieldDescriptor *field) {
   return field->description_->number;
 }
 
-#pragma clang diagnostic pop
-
 uint32_t GPBFieldTag(GPBFieldDescriptor *self);
 
 // For repeated fields, alternateWireType is the wireType with the opposite
@@ -285,6 +269,10 @@ uint32_t GPBFieldTag(GPBFieldDescriptor *self);
 // would be the wire type for unpacked; if the field was marked unpacked, it
 // would be the wire type for packed.
 uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self);
+
+GPB_INLINE BOOL GPBPreserveUnknownFields(GPBFileSyntax syntax) {
+  return syntax != GPBFileSyntaxProto3;
+}
 
 GPB_INLINE BOOL GPBHasPreservingUnknownEnumSemantics(GPBFileSyntax syntax) {
   return syntax == GPBFileSyntaxProto3;
@@ -303,23 +291,23 @@ GPB_INLINE BOOL GPBExtensionIsWireFormat(GPBExtensionDescription *description) {
 }
 
 // Helper for compile time assets.
-#ifndef GPBInternalCompileAssert
+#ifndef _GPBCompileAssert
   #if __has_feature(c_static_assert) || __has_extension(c_static_assert)
-    #define GPBInternalCompileAssert(test, msg) _Static_assert((test), #msg)
+    #define _GPBCompileAssert(test, msg) _Static_assert((test), #msg)
   #else
     // Pre-Xcode 7 support.
-    #define GPBInternalCompileAssertSymbolInner(line, msg) GPBInternalCompileAssert ## line ## __ ## msg
-    #define GPBInternalCompileAssertSymbol(line, msg) GPBInternalCompileAssertSymbolInner(line, msg)
-    #define GPBInternalCompileAssert(test, msg) \
-        typedef char GPBInternalCompileAssertSymbol(__LINE__, msg) [ ((test) ? 1 : -1) ]
+    #define _GPBCompileAssertSymbolInner(line, msg) _GPBCompileAssert ## line ## __ ## msg
+    #define _GPBCompileAssertSymbol(line, msg) _GPBCompileAssertSymbolInner(line, msg)
+    #define _GPBCompileAssert(test, msg) \
+        typedef char _GPBCompileAssertSymbol(__LINE__, msg) [ ((test) ? 1 : -1) ]
   #endif  // __has_feature(c_static_assert) || __has_extension(c_static_assert)
-#endif // GPBInternalCompileAssert
+#endif // _GPBCompileAssert
 
 // Sanity check that there isn't padding between the field description
 // structures with and without a default.
-GPBInternalCompileAssert(sizeof(GPBMessageFieldDescriptionWithDefault) ==
-                         (sizeof(GPBGenericValue) +
-                          sizeof(GPBMessageFieldDescription)),
-                         DescriptionsWithDefault_different_size_than_expected);
+_GPBCompileAssert(sizeof(GPBMessageFieldDescriptionWithDefault) ==
+                  (sizeof(GPBGenericValue) +
+                   sizeof(GPBMessageFieldDescription)),
+                  DescriptionsWithDefault_different_size_than_expected);
 
 CF_EXTERN_C_END

@@ -53,6 +53,7 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/scoped_ptr.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 
@@ -399,7 +400,7 @@ inline std::pair<char*, bool> as_string_data(string* s) {
 #ifdef LANG_CXX11
   return std::make_pair(p, true);
 #else
-  return std::make_pair(p, p != NULL);
+  return make_pair(p, p != NULL);
 #endif
 }
 

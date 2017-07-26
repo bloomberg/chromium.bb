@@ -1370,7 +1370,6 @@ def _CheckParseErrors(input_api, output_api):
   excluded_patterns = [
     r'test[\\\/]data[\\\/]',
     r'^components[\\\/]policy[\\\/]resources[\\\/]policy_templates\.json$',
-    r'^third_party[\\\/]protobuf[\\\/]',
   ]
   # Most JSON files are preprocessed and support comments, but these do not.
   json_no_comments_patterns = [

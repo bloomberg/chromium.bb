@@ -97,12 +97,11 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
 
   // Try to look up the symbol to make sure a super-symbol doesn't already
   // exist.
-  typename std::map<string, Value>::iterator iter = FindLastLessOrEqual(name);
+  typename map<string, Value>::iterator iter = FindLastLessOrEqual(name);
 
   if (iter == by_symbol_.end()) {
     // Apparently the map is currently empty.  Just insert and be done with it.
-    by_symbol_.insert(
-        typename std::map<string, Value>::value_type(name, value));
+    by_symbol_.insert(typename map<string, Value>::value_type(name, value));
     return true;
   }
 
@@ -129,8 +128,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
 
   // Insert the new symbol using the iterator as a hint, the new entry will
   // appear immediately before the one the iterator is pointing at.
-  by_symbol_.insert(iter,
-                    typename std::map<string, Value>::value_type(name, value));
+  by_symbol_.insert(iter, typename map<string, Value>::value_type(name, value));
 
   return true;
 }
@@ -181,7 +179,7 @@ Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindFile(
 template <typename Value>
 Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindSymbol(
     const string& name) {
-  typename std::map<string, Value>::iterator iter = FindLastLessOrEqual(name);
+  typename map<string, Value>::iterator iter = FindLastLessOrEqual(name);
 
   return (iter != by_symbol_.end() && IsSubSymbol(iter->first, name)) ?
          iter->second : Value();
@@ -198,8 +196,8 @@ Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindExtension(
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::FindAllExtensionNumbers(
     const string& containing_type,
-    std::vector<int>* output) {
-  typename std::map<std::pair<string, int>, Value>::const_iterator it =
+    vector<int>* output) {
+  typename map<pair<string, int>, Value>::const_iterator it =
       by_extension_.lower_bound(std::make_pair(containing_type, 0));
   bool success = false;
 
@@ -213,14 +211,13 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::FindAllExtensionNumbers(
 }
 
 template <typename Value>
-typename std::map<string, Value>::iterator
+typename map<string, Value>::iterator
 SimpleDescriptorDatabase::DescriptorIndex<Value>::FindLastLessOrEqual(
     const string& name) {
   // Find the last key in the map which sorts less than or equal to the
   // symbol name.  Since upper_bound() returns the *first* key that sorts
   // *greater* than the input, we want the element immediately before that.
-  typename std::map<string, Value>::iterator iter =
-      by_symbol_.upper_bound(name);
+  typename map<string, Value>::iterator iter = by_symbol_.upper_bound(name);
   if (iter != by_symbol_.begin()) --iter;
   return iter;
 }
@@ -287,7 +284,7 @@ bool SimpleDescriptorDatabase::FindFileContainingExtension(
 
 bool SimpleDescriptorDatabase::FindAllExtensionNumbers(
     const string& extendee_type,
-    std::vector<int>* output) {
+    vector<int>* output) {
   return index_.FindAllExtensionNumbers(extendee_type, output);
 }
 
@@ -343,7 +340,7 @@ bool EncodedDescriptorDatabase::FindFileContainingSymbol(
 bool EncodedDescriptorDatabase::FindNameOfFileContainingSymbol(
     const string& symbol_name,
     string* output) {
-  std::pair<const void*, int> encoded_file = index_.FindSymbol(symbol_name);
+  pair<const void*, int> encoded_file = index_.FindSymbol(symbol_name);
   if (encoded_file.first == NULL) return false;
 
   // Optimization:  The name should be the first field in the encoded message.
@@ -355,7 +352,7 @@ bool EncodedDescriptorDatabase::FindNameOfFileContainingSymbol(
       FileDescriptorProto::kNameFieldNumber,
       internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
 
-  if (input.ReadTagNoLastTag() == kNameTag) {
+  if (input.ReadTag() == kNameTag) {
     // Success!
     return internal::WireFormatLite::ReadString(&input, output);
   } else {
@@ -379,12 +376,12 @@ bool EncodedDescriptorDatabase::FindFileContainingExtension(
 
 bool EncodedDescriptorDatabase::FindAllExtensionNumbers(
     const string& extendee_type,
-    std::vector<int>* output) {
+    vector<int>* output) {
   return index_.FindAllExtensionNumbers(extendee_type, output);
 }
 
 bool EncodedDescriptorDatabase::MaybeParse(
-    std::pair<const void*, int> encoded_file,
+    pair<const void*, int> encoded_file,
     FileDescriptorProto* output) {
   if (encoded_file.first == NULL) return false;
   return output->ParseFromArray(encoded_file.first, encoded_file.second);
@@ -434,11 +431,11 @@ bool DescriptorPoolDatabase::FindFileContainingExtension(
 
 bool DescriptorPoolDatabase::FindAllExtensionNumbers(
     const string& extendee_type,
-    std::vector<int>* output) {
+    vector<int>* output) {
   const Descriptor* extendee = pool_.FindMessageTypeByName(extendee_type);
   if (extendee == NULL) return false;
 
-  std::vector<const FieldDescriptor*> extensions;
+  vector<const FieldDescriptor*> extensions;
   pool_.FindAllExtensions(extendee, &extensions);
 
   for (int i = 0; i < extensions.size(); ++i) {
@@ -457,7 +454,7 @@ MergedDescriptorDatabase::MergedDescriptorDatabase(
   sources_.push_back(source2);
 }
 MergedDescriptorDatabase::MergedDescriptorDatabase(
-    const std::vector<DescriptorDatabase*>& sources)
+    const vector<DescriptorDatabase*>& sources)
   : sources_(sources) {}
 MergedDescriptorDatabase::~MergedDescriptorDatabase() {}
 
@@ -520,23 +517,23 @@ bool MergedDescriptorDatabase::FindFileContainingExtension(
 
 bool MergedDescriptorDatabase::FindAllExtensionNumbers(
     const string& extendee_type,
-    std::vector<int>* output) {
-  std::set<int> merged_results;
-  std::vector<int> results;
+    vector<int>* output) {
+  set<int> merged_results;
+  vector<int> results;
   bool success = false;
 
   for (int i = 0; i < sources_.size(); i++) {
     if (sources_[i]->FindAllExtensionNumbers(extendee_type, &results)) {
-      std::copy(results.begin(), results.end(),
-                std::insert_iterator<std::set<int> >(merged_results,
-                                                     merged_results.begin()));
+      std::copy(
+          results.begin(), results.end(),
+          insert_iterator<set<int> >(merged_results, merged_results.begin()));
       success = true;
     }
     results.clear();
   }
 
   std::copy(merged_results.begin(), merged_results.end(),
-            std::insert_iterator<std::vector<int> >(*output, output->end()));
+            insert_iterator<vector<int> >(*output, output->end()));
 
   return success;
 }

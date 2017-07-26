@@ -67,7 +67,7 @@ class OneofGenerator {
 
  private:
   const OneofDescriptor* descriptor_;
-  std::map<string, string> variables_;
+  map<string, string> variables_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(OneofGenerator);
 };

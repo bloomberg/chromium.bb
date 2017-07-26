@@ -44,6 +44,11 @@ inline util::Status CallPathSink(PathSinkCallback path_sink,
   return path_sink->Run(arg);
 }
 
+util::Status CreatePublicError(util::error::Code code,
+                                 const string& message) {
+  return util::Status(code, message);
+}
+
 // Appends a FieldMask path segment to a prefix.
 string AppendPathSegmentToPrefix(StringPiece prefix, StringPiece segment) {
   if (prefix.empty()) {
@@ -107,7 +112,7 @@ string ConvertFieldMaskPath(const StringPiece path,
 
 util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
                                            PathSinkCallback path_sink) {
-  std::stack<string> prefix;
+  stack<string> prefix;
   int length = paths.length();
   int previous_position = 0;
   bool in_map_key = false;
@@ -211,7 +216,7 @@ util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
                           StrCat("Invalid FieldMask '", paths,
                                  "'. Cannot find matching ')' for all '('."));
   }
-  return util::Status();
+  return util::Status::OK;
 }
 
 }  // namespace converter

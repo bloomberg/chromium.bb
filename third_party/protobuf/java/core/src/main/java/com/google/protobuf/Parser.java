@@ -31,7 +31,6 @@
 package com.google.protobuf;
 
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 
 /**
  * Abstract interface for parsing Protocol Messages.
@@ -40,7 +39,7 @@ import java.nio.ByteBuffer;
  *
  * <p>All methods may throw {@link InvalidProtocolBufferException}. In the event of invalid data,
  * like an encoding error, the cause of the thrown exception will be {@code null}. However, if an
- * I/O problem occurs, an exception is thrown with an {@link java.io.IOException} cause.
+ * I/O problem occurs, an exception is thrown with an {@link IOException} cause.
  *
  * @author liujisi@google.com (Pherl Liu)
  */
@@ -93,18 +92,6 @@ public interface Parser<MessageType> {
   // ---------------------------------------------------------------
   // Convenience methods.
 
-  /**
-   * Parses {@code data} as a message of {@code MessageType}. This is just a small wrapper around
-   * {@link #parseFrom(CodedInputStream)}.
-   */
-  public MessageType parseFrom(ByteBuffer data) throws InvalidProtocolBufferException;
-
-  /**
-   * Parses {@code data} as a message of {@code MessageType}. This is just a small wrapper around
-   * {@link #parseFrom(CodedInputStream, ExtensionRegistryLite)}.
-   */
-  public MessageType parseFrom(ByteBuffer data, ExtensionRegistryLite extensionRegistry)
-      throws InvalidProtocolBufferException;
   /**
    * Parses {@code data} as a message of {@code MessageType}.
    * This is just a small wrapper around {@link #parseFrom(CodedInputStream)}.

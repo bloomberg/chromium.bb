@@ -882,7 +882,7 @@ TEST_F(IoTest, IostreamIo) {
   for (int i = 0; i < kBlockSizeCount; i++) {
     for (int j = 0; j < kBlockSizeCount; j++) {
       {
-        std::stringstream stream;
+        stringstream stream;
 
         {
           OstreamOutputStream output(&stream, kBlockSizes[i]);
@@ -898,7 +898,7 @@ TEST_F(IoTest, IostreamIo) {
       }
 
       {
-        std::stringstream stream;
+        stringstream stream;
 
         {
           OstreamOutputStream output(&stream, kBlockSizes[i]);

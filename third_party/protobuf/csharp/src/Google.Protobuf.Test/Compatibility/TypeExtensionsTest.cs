@@ -34,7 +34,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-#if !NET35
 namespace Google.Protobuf.Compatibility
 {
     public class TypeExtensionsTest
@@ -49,6 +48,24 @@ namespace Google.Protobuf.Compatibility
 
         private void PrivateMethod()
         {
+        }
+
+        [Test]
+        [TestCase(typeof(int), true)]
+        [TestCase(typeof(int?), true)]
+        [TestCase(typeof(Nullable<>), true)]
+        [TestCase(typeof(WireFormat.WireType), true)]
+        [TestCase(typeof(string), false)]
+        [TestCase(typeof(object), false)]
+        [TestCase(typeof(Enum), false)]
+        [TestCase(typeof(ValueType), false)]
+        [TestCase(typeof(TypeExtensionsTest), false)]
+        [TestCase(typeof(Action), false)]
+        [TestCase(typeof(Action<>), false)]
+        [TestCase(typeof(IDisposable), false)]
+        public void IsValueType(Type type, bool expected)
+        {
+            Assert.AreEqual(expected, TypeExtensions.IsValueType(type));
         }
 
         [Test]
@@ -114,4 +131,3 @@ namespace Google.Protobuf.Compatibility
         }
     }
 }
-#endif
