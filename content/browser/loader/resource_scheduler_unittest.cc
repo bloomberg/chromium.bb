@@ -278,9 +278,11 @@ class ResourceSchedulerTest : public testing::Test {
     params["MaxBDPKbits2"] = "160";
     params["MaxDelayableRequests2"] = "4";
 
-    base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
+    ASSERT_TRUE(
+        base::AssociateFieldTrialParams(kTrialName, kGroupName, params));
     base::FieldTrial* field_trial =
         base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+    ASSERT_TRUE(field_trial);
 
     std::unique_ptr<base::FeatureList> feature_list(
         base::MakeUnique<base::FeatureList>());
@@ -290,6 +292,78 @@ class ResourceSchedulerTest : public testing::Test {
                 : base::FeatureList::OVERRIDE_DISABLE_FEATURE,
         field_trial);
     scoped_feature_list->InitWithFeatureList(std::move(feature_list));
+  }
+
+  void RequestLimitOverrideConfigTestHelper(bool experiment_status) {
+    base::test::ScopedFeatureList scoped_feature_list;
+    InitializeMaxDelayableRequestsExperiment(&scoped_feature_list,
+                                             experiment_status);
+
+    // Set BDP to 120 kbits, which lies in the first configuration bucket. Set
+    // the effective connection type to Slow-2G, which is slower than the
+    // threshold configured in |InitializeMaxDelayableRequestsExperiment|. Needs
+    // to be done before initializing the scheduler because the client is
+    // created on the call to |InitializeScheduler|, which is where the initial
+    // limits for the delayable requests in flight are computed.
+    network_quality_estimator_.set_bandwidth_delay_product_kbits(120);
+    network_quality_estimator_.set_effective_connection_type(
+        net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+    // Initialize the scheduler.
+    InitializeScheduler();
+
+    // For 2G, the typical values of RTT and bandwidth should result in the
+    // override taking effect with the experiment enabled. For this case, the
+    // new limit is 2. The limit will matter only once the page has a body,
+    // since delayable requests are not loaded before that.
+    scheduler()->OnWillInsertBody(kChildId, kRouteId);
+
+    // Throw in one high priority request to ensure that it does not matter once
+    // a body exists.
+    std::unique_ptr<TestRequest> high2(
+        NewRequest("http://host/high2", net::HIGHEST));
+    EXPECT_TRUE(high2->started());
+
+    // Should match the configuration set by
+    // |InitializeMaxDelayableRequestsExperiment|
+    const int kOverriddenNumRequests = 2;
+
+    std::vector<std::unique_ptr<TestRequest>> lows_singlehost;
+    // Queue the maximum number of delayable requests that should be started
+    // before the resource scheduler starts throttling delayable requests.
+    for (int i = 0; i < kOverriddenNumRequests; ++i) {
+      std::string url = "http://host/low" + base::IntToString(i);
+      lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
+      EXPECT_TRUE(lows_singlehost[i]->started());
+    }
+
+    std::unique_ptr<TestRequest> second_last_singlehost(
+        NewRequest("http://host/s_last", net::LOWEST));
+    std::unique_ptr<TestRequest> last_singlehost(
+        NewRequest("http://host/last", net::LOWEST));
+
+    if (experiment_status) {
+      // Experiment enabled, hence requests should be limited.
+      // Second last should not start because there are |kOverridenNumRequests|
+      // delayable requests already in-flight.
+      EXPECT_FALSE(second_last_singlehost->started());
+
+      // Completion of a delayable request must result in starting of the
+      // second-last request.
+      lows_singlehost.erase(lows_singlehost.begin());
+      base::RunLoop().RunUntilIdle();
+      EXPECT_TRUE(second_last_singlehost->started());
+      EXPECT_FALSE(last_singlehost->started());
+
+      // Completion of another delayable request must result in starting of the
+      // last request.
+      lows_singlehost.erase(lows_singlehost.begin());
+      base::RunLoop().RunUntilIdle();
+      EXPECT_TRUE(last_singlehost->started());
+    } else {
+      // Requests should start because the default limit is 10.
+      EXPECT_TRUE(second_last_singlehost->started());
+      EXPECT_TRUE(last_singlehost->started());
+    }
   }
 
   void ReadConfigTestHelper(size_t num_bdp_ranges,
@@ -1074,98 +1148,34 @@ TEST_F(ResourceSchedulerTest, RequestStartedAfterClientDeletedManyDelayable) {
 }
 
 // Tests that the maximum number of delayable requests is overridden when the
-// experiment is enabled and not when it is disabled. The BDP buckets are
-// correct and the effective connection type is also in the configuration
-// bucket.
-TEST_F(ResourceSchedulerTest, RequestLimitOverrideConfigTest) {
-  for (bool experiment_status : {true, false}) {
-    base::test::ScopedFeatureList scoped_feature_list;
-    InitializeMaxDelayableRequestsExperiment(&scoped_feature_list,
-                                             experiment_status);
+// experiment is enabled. The BDP buckets are correct and the effective
+// connection type is also in the configuration bucket.
+TEST_F(ResourceSchedulerTest, RequestLimitOverrideEnabled) {
+  RequestLimitOverrideConfigTestHelper(true);
+}
 
-    // Set BDP to 120 kbits, which lies in the first configuration bucket. Set
-    // the effective connection type to Slow-2G, which is slower than the
-    // threshold configured in |InitializeMaxDelayableRequestsExperiment|. Needs
-    // to be done before initializing the scheduler because the client is
-    // created on the call to |InitializeScheduler|, which is where the initial
-    // limits for the delayable requests in flight are computed.
-    network_quality_estimator_.set_bandwidth_delay_product_kbits(120);
-    network_quality_estimator_.set_effective_connection_type(
-        net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-    // Initialize the scheduler.
-    InitializeScheduler();
-
-    // For 2G, the typical values of RTT and bandwidth should result in the
-    // override taking effect with the experiment enabled. For this case, the
-    // new limit is 2. The limit will matter only once the page has a body,
-    // since delayable requests are not loaded before that.
-    scheduler()->OnWillInsertBody(kChildId, kRouteId);
-
-    // Throw in one high priority request to ensure that it does not matter once
-    // a body exists.
-    std::unique_ptr<TestRequest> high2(
-        NewRequest("http://host/high2", net::HIGHEST));
-    EXPECT_TRUE(high2->started());
-
-    // Should match the configuration set by
-    // |InitializeMaxDelayableRequestsExperiment|
-    const int kOverriddenNumRequests = 2;
-
-    std::vector<std::unique_ptr<TestRequest>> lows_singlehost;
-    // Queue the maximum number of delayable requests that should be started
-    // before the resource scheduler starts throttling delayable requests.
-    for (int i = 0; i < kOverriddenNumRequests; ++i) {
-      std::string url = "http://host/low" + base::IntToString(i);
-      lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
-      EXPECT_TRUE(lows_singlehost[i]->started());
-    }
-
-    std::unique_ptr<TestRequest> second_last_singlehost(
-        NewRequest("http://host/s_last", net::LOWEST));
-    std::unique_ptr<TestRequest> last_singlehost(
-        NewRequest("http://host/last", net::LOWEST));
-
-    if (experiment_status) {
-      // Experiment enabled, hence requests should be limited.
-      // Second last should not start because there are |kOverridenNumRequests|
-      // delayable requests already in-flight.
-      EXPECT_FALSE(second_last_singlehost->started());
-
-      // Completion of a delayable request must result in starting of the
-      // second-last request.
-      lows_singlehost.erase(lows_singlehost.begin());
-      base::RunLoop().RunUntilIdle();
-      EXPECT_TRUE(second_last_singlehost->started());
-      EXPECT_FALSE(last_singlehost->started());
-
-      // Completion of another delayable request must result in starting of the
-      // last request.
-      lows_singlehost.erase(lows_singlehost.begin());
-      base::RunLoop().RunUntilIdle();
-      EXPECT_TRUE(last_singlehost->started());
-    } else {
-      // Requests should start because the default limit is 10.
-      EXPECT_TRUE(second_last_singlehost->started());
-      EXPECT_TRUE(last_singlehost->started());
-    }
-  }
+// Tests that the maximum number of delayable requests is not overridden when
+// the experiment is disabled. The BDP buckets are correct and the effective
+// connection type is also in the configuration bucket.
+TEST_F(ResourceSchedulerTest, RequestLimitOverrideDisabled) {
+  RequestLimitOverrideConfigTestHelper(false);
 }
 
 // Test that the limit is not overridden when the effective connection type is
 // not equal to any of the values provided in the experiment configuration.
 TEST_F(ResourceSchedulerTest, RequestLimitOverrideOutsideECTRange) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  InitializeMaxDelayableRequestsExperiment(&scoped_feature_list, true);
+  InitializeScheduler();
   for (net::EffectiveConnectionType ect :
        {net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
         net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
         net::EFFECTIVE_CONNECTION_TYPE_3G, net::EFFECTIVE_CONNECTION_TYPE_4G}) {
-    base::test::ScopedFeatureList scoped_feature_list;
-    InitializeMaxDelayableRequestsExperiment(&scoped_feature_list, true);
     // Set BDP to 120 kbits, which lies in the configuration bucket. Set the
     // effective connection type to a value for which the experiment should not
     // be run.
     network_quality_estimator_.set_bandwidth_delay_product_kbits(120);
     network_quality_estimator_.set_effective_connection_type(ect);
-    InitializeScheduler();
 
     // The limit will matter only once the page has a body, since delayable
     // requests are not loaded before that.
