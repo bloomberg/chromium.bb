@@ -17,6 +17,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_test_util.h"
@@ -150,8 +151,8 @@ TEST_F(ClearSiteDataThrottleTest, MaybeCreateThrottleForRequest) {
   // Create a URL request.
   GURL url("https://www.example.com");
   net::TestURLRequestContext context;
-  std::unique_ptr<net::URLRequest> request(
-      context.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr));
+  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
+      url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // We will not create the throttle for an empty ResourceRequestInfo.
   EXPECT_FALSE(
@@ -223,8 +224,8 @@ TEST_F(ClearSiteDataThrottleTest, ParseHeaderAndExecuteClearingTask) {
     // Test that a call with the above parameters actually reaches
     // ExecuteClearingTask().
     net::TestURLRequestContext context;
-    std::unique_ptr<net::URLRequest> request(
-        context.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr));
+    std::unique_ptr<net::URLRequest> request(context.CreateRequest(
+        url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
     TestThrottle throttle(request.get(),
                           base::MakeUnique<ConsoleMessagesDelegate>());
     MockResourceThrottleDelegate delegate;
@@ -291,7 +292,8 @@ TEST_F(ClearSiteDataThrottleTest, InvalidHeader) {
 TEST_F(ClearSiteDataThrottleTest, LoadDoNotSaveCookies) {
   net::TestURLRequestContext context;
   std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-      GURL("https://www.example.com"), net::DEFAULT_PRIORITY, nullptr));
+      GURL("https://www.example.com"), net::DEFAULT_PRIORITY, nullptr,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   std::unique_ptr<ConsoleMessagesDelegate> scoped_console_delegate(
       new ConsoleMessagesDelegate());
   const ConsoleMessagesDelegate* console_delegate =
@@ -352,8 +354,9 @@ TEST_F(ClearSiteDataThrottleTest, InvalidOrigin) {
   net::TestURLRequestContext context;
 
   for (const TestCase& test_case : kTestCases) {
-    std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-        GURL(test_case.origin), net::DEFAULT_PRIORITY, nullptr));
+    std::unique_ptr<net::URLRequest> request(
+        context.CreateRequest(GURL(test_case.origin), net::DEFAULT_PRIORITY,
+                              nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
     std::unique_ptr<ConsoleMessagesDelegate> scoped_console_delegate(
         new ConsoleMessagesDelegate());
     const ConsoleMessagesDelegate* console_delegate =
@@ -455,8 +458,9 @@ TEST_F(ClearSiteDataThrottleTest, DeferAndResume) {
                                       test_origin.origin, test_case.stage,
                                       test_case.response_headers.c_str()));
 
-      std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-          GURL(test_origin.origin), net::DEFAULT_PRIORITY, nullptr));
+      std::unique_ptr<net::URLRequest> request(
+          context.CreateRequest(GURL(test_origin.origin), net::DEFAULT_PRIORITY,
+                                nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
       TestThrottle throttle(request.get(),
                             base::MakeUnique<ConsoleMessagesDelegate>());
       throttle.SetResponseHeaders(test_case.response_headers);
@@ -560,8 +564,9 @@ TEST_F(ClearSiteDataThrottleTest, FormattedConsoleOutput) {
     SCOPED_TRACE(navigation ? "Navigation test." : "Subresource test.");
 
     net::TestURLRequestContext context;
-    std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-        GURL(kTestCases[0].url), net::DEFAULT_PRIORITY, nullptr));
+    std::unique_ptr<net::URLRequest> request(
+        context.CreateRequest(GURL(kTestCases[0].url), net::DEFAULT_PRIORITY,
+                              nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
     ResourceRequestInfo::AllocateForTesting(
         request.get(),
         navigation ? RESOURCE_TYPE_SUB_FRAME : RESOURCE_TYPE_IMAGE, nullptr, 0,
