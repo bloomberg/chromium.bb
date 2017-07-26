@@ -510,6 +510,15 @@ class AUTestStage(HWTestStage):
     super(AUTestStage, self).PerformStage()
 
 
+class ForgivenVMTestStage(VMTestStage, generic_stages.ForgivingBuilderStage):
+  """Stage that forgives vm test failures."""
+
+  stage_name = "ForgivenVMTest"
+
+  def __init__(self, *args, **kwargs):
+    super(ForgivenVMTestStage, self).__init__(*args, **kwargs)
+
+
 class ASyncHWTestStage(HWTestStage, generic_stages.ForgivingBuilderStage):
   """Stage that fires and forgets hw test suites to the Autotest lab."""
 
