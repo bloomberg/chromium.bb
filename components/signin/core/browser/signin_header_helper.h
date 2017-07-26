@@ -164,6 +164,7 @@ void AppendOrRemoveAccountConsistentyRequestHeader(
     const GURL& redirect_url,
     const std::string& account_id,
     bool sync_enabled,
+    bool sync_has_auth_error,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask);
 
