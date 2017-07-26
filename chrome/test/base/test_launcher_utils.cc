@@ -33,12 +33,14 @@ void PrepareBrowserCommandLineForTests(base::CommandLine* command_line) {
   // default browser) that could conflicts with some tests expectations.
   command_line->AppendSwitch(switches::kNoDefaultBrowserCheck);
 
-  // Enable info level logging to stderr by default so that we can see when
-  // bad stuff happens, but honor the flags specified from the command line.
+  // Enable info level logging to stderr by default so that we can see when bad
+  // stuff happens, but honor the flags specified from the command line. Use the
+  // default logging level (INFO) instead of explicitly passing
+  // switches::kLoggingLevel. Passing the switch explicitly resulted in data
+  // races in tests that start async operations (that use logging) prior to
+  // initializing the browser: https://crbug.com/749066.
   if (!command_line->HasSwitch(switches::kEnableLogging))
     command_line->AppendSwitchASCII(switches::kEnableLogging, "stderr");
-  if (!command_line->HasSwitch(switches::kLoggingLevel))
-    command_line->AppendSwitchASCII(switches::kLoggingLevel, "0");  // info
 
   // Disable safebrowsing autoupdate.
   command_line->AppendSwitch(safe_browsing::switches::kSbDisableAutoUpdate);
