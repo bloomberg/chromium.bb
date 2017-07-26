@@ -2168,6 +2168,33 @@ TEST_F(TabStripModelTest, DeleteTabStripFromDestroy) {
   EXPECT_TRUE(tab_strip_model_observer.empty());
 }
 
+// Ensure pinned tabs are not mixed with non-pinned tabs when using
+// MoveWebContentsAt.
+TEST_F(TabStripModelTest, MoveWebContentsAtWithPinned) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  ASSERT_NO_FATAL_FAILURE(PrepareTabstripForSelectionTest(&strip, 6, 3, "0"));
+  EXPECT_EQ("0p 1p 2p 3 4 5", GetTabStripStateString(strip));
+
+  // Move middle tabs into the wrong area.
+  strip.MoveWebContentsAt(1, 5, true);
+  EXPECT_EQ("0p 2p 1p 3 4 5", GetTabStripStateString(strip));
+  strip.MoveWebContentsAt(4, 1, true);
+  EXPECT_EQ("0p 2p 1p 4 3 5", GetTabStripStateString(strip));
+
+  // Test moving edge cases into the wrong area.
+  strip.MoveWebContentsAt(5, 0, true);
+  EXPECT_EQ("0p 2p 1p 5 4 3", GetTabStripStateString(strip));
+  strip.MoveWebContentsAt(0, 5, true);
+  EXPECT_EQ("2p 1p 0p 5 4 3", GetTabStripStateString(strip));
+
+  // Test moving edge cases in the correct area.
+  strip.MoveWebContentsAt(3, 5, true);
+  EXPECT_EQ("2p 1p 0p 4 3 5", GetTabStripStateString(strip));
+  strip.MoveWebContentsAt(2, 0, true);
+  EXPECT_EQ("0p 2p 1p 4 3 5", GetTabStripStateString(strip));
+}
+
 TEST_F(TabStripModelTest, MoveSelectedTabsTo) {
   struct TestData {
     // Number of tabs the tab strip should have.
