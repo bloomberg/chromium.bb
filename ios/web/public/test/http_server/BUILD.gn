@@ -9,7 +9,6 @@ source_set("http_server") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//ios/third_party/gcdwebserver",
     "//net",
     "//net:test_support",
     "//url",

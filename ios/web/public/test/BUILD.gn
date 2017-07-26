@@ -10,7 +10,6 @@ source_set("test") {
     "//base",
     "//base/test:test_support",
     "//ios/testing:ios_test_support",
-    "//ios/third_party/gcdwebserver",
     "//ios/web:web",
     "//ios/web:web_arc",
     "//ios/web/public/test/fakes",
