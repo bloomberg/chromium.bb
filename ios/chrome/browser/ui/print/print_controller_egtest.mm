@@ -6,6 +6,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#include "base/ios/ios_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
@@ -45,6 +46,12 @@ const char kHTMLURL[] = "http://test";
 // Tests that the AirPrint menu successfully loads when a normal web page is
 // loaded.
 - (void)testPrintNormalPage {
+  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
+  // interact with the share menu.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   GURL url = web::test::HttpServer::MakeUrl(kHTMLURL);
   std::map<GURL, std::string> responses;
   std::string response = "Test";
@@ -59,6 +66,12 @@ const char kHTMLURL[] = "http://test";
 
 // Tests that the AirPrint menu successfully loads when a PDF is loaded.
 - (void)testPrintPDF {
+  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
+  // interact with the share menu.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   web::test::SetUpFileBasedHttpServer();
   GURL url = web::test::HttpServer::MakeUrl(kPDFURL);
   chrome_test_util::LoadUrl(url);
