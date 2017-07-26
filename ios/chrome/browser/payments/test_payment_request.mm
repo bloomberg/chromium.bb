@@ -28,6 +28,15 @@ void TestPaymentRequest::ClearPaymentMethods() {
   payment_methods_.clear();
 }
 
+AddressNormalizer* TestPaymentRequest::GetAddressNormalizer() {
+  return &address_normalizer_;
+}
+
+AddressNormalizationManager*
+TestPaymentRequest::GetAddressNormalizationManager() {
+  return &address_normalization_manager_;
+}
+
 autofill::RegionDataLoader* TestPaymentRequest::GetRegionDataLoader() {
   if (region_data_loader_)
     return region_data_loader_;

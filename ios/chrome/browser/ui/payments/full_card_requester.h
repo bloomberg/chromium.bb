@@ -14,7 +14,6 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
-#include "components/payments/core/payment_instrument.h"
 
 namespace autofill {
 class AutofillManager;
@@ -25,24 +24,12 @@ namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
-@protocol FullCardRequesterConsumer
-
-// Called when a credit card has been successfully unmasked. Should be
-// called wth method name (e.g., "visa") and json-serialized details.
-- (void)fullCardRequestDidSucceedWithMethodName:(const std::string&)methodName
-                             stringifiedDetails:
-                                 (const std::string&)stringifiedDetails;
-
-@end
-
 // Receives the full credit card details. Also displays the unmask prompt UI.
 class FullCardRequester
-    : public payments::PaymentInstrument::Delegate,
-      public autofill::payments::FullCardRequest::UIDelegate,
+    : public autofill::payments::FullCardRequest::UIDelegate,
       public base::SupportsWeakPtr<FullCardRequester> {
  public:
-  FullCardRequester(id<FullCardRequesterConsumer> consumer,
-                    UIViewController* base_view_controller,
+  FullCardRequester(UIViewController* base_view_controller,
                     ios::ChromeBrowserState* browser_state);
 
   void GetFullCard(
@@ -50,12 +37,6 @@ class FullCardRequester
       autofill::AutofillManager* autofill_manager,
       base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
           result_delegate);
-
-  // payments::PaymentInstrument::Delegate:
-  void OnInstrumentDetailsReady(
-      const std::string& method_name,
-      const std::string& stringified_details) override;
-  void OnInstrumentDetailsError() override{};
 
   // payments::FullCardRequest::UIDelegate:
   void ShowUnmaskPrompt(
@@ -66,7 +47,6 @@ class FullCardRequester
       autofill::AutofillClient::PaymentsRpcResult result) override;
 
  private:
-  __weak id<FullCardRequesterConsumer> consumer_;
   __weak UIViewController* base_view_controller_;
   autofill::CardUnmaskPromptControllerImpl unmask_controller_;
 

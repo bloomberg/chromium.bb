@@ -15,7 +15,6 @@
 #import "ios/chrome/browser/ui/payments/contact_info_edit_coordinator.h"
 #import "ios/chrome/browser/ui/payments/contact_info_selection_coordinator.h"
 #import "ios/chrome/browser/ui/payments/credit_card_edit_coordinator.h"
-#include "ios/chrome/browser/ui/payments/full_card_requester.h"
 #import "ios/chrome/browser/ui/payments/payment_items_display_coordinator.h"
 #import "ios/chrome/browser/ui/payments/payment_method_selection_coordinator.h"
 #include "ios/chrome/browser/ui/payments/payment_request_error_coordinator.h"
@@ -45,6 +44,10 @@ class PaymentShippingOption;
 // Delegate protocol for PaymentRequestCoordinator.
 @protocol PaymentRequestCoordinatorDelegate<NSObject>
 
+// Notifies the delegate that the user has confirmed the payment request.
+- (void)paymentRequestCoordinatorDidConfirm:
+    (PaymentRequestCoordinator*)coordinator;
+
 // Notifies the delegate that the user has canceled the payment request.
 - (void)paymentRequestCoordinatorDidCancel:
     (PaymentRequestCoordinator*)coordinator;
@@ -53,12 +56,6 @@ class PaymentShippingOption;
 // address options page in Settings.
 - (void)paymentRequestCoordinatorDidSelectSettings:
     (PaymentRequestCoordinator*)coordinator;
-
-// Notifies the delegate that the full payment method name and details
-// have been receieved.
-- (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
-         didReceiveFullMethodName:(const std::string&)methodName
-               stringifiedDetails:(const std::string&)stringifiedDetails;
 
 // Notifies the delegate that the user has selected a shipping address.
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
@@ -80,7 +77,6 @@ class PaymentShippingOption;
                         ContactInfoEditCoordinatorDelegate,
                         ContactInfoSelectionCoordinatorDelegate,
                         CreditCardEditCoordinatorDelegate,
-                        FullCardRequesterConsumer,
                         PaymentItemsDisplayCoordinatorDelegate,
                         PaymentMethodSelectionCoordinatorDelegate,
                         PaymentRequestErrorCoordinatorDelegate,
@@ -115,6 +111,9 @@ class PaymentShippingOption;
 
 // Whether or not the connection is secure.
 @property(nonatomic, assign, getter=isConnectionSecure) BOOL connectionSecure;
+
+// Whether or not the PaymentRequest view controller is in a pending state.
+@property(nonatomic, assign, getter=isPending) BOOL pending;
 
 // The delegate to be notified when the user confirms or cancels the request.
 @property(nonatomic, weak) id<PaymentRequestCoordinatorDelegate> delegate;

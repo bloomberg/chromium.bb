@@ -354,7 +354,7 @@ TEST(PaymentRequestTest, PopulatedResponseDictionary) {
 
   PaymentResponse payment_response;
   payment_response.payment_request_id = "12345";
-  payment_response.method_name = base::ASCIIToUTF16("American Express");
+  payment_response.method_name = "American Express";
 
   payments::BasicCardResponse payment_response_details;
   payment_response_details.card_number =
@@ -695,11 +695,11 @@ TEST(PaymentRequestTest, PaymentResponseEquality) {
   PaymentResponse response2;
   EXPECT_EQ(response1, response2);
 
-  response1.method_name = base::ASCIIToUTF16("Visa");
+  response1.method_name = "Visa";
   EXPECT_NE(response1, response2);
-  response2.method_name = base::ASCIIToUTF16("Mastercard");
+  response2.method_name = "Mastercard";
   EXPECT_NE(response1, response2);
-  response2.method_name = base::ASCIIToUTF16("Visa");
+  response2.method_name = "Visa";
   EXPECT_EQ(response1, response2);
 
   payments::BasicCardResponse card_response1;
