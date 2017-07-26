@@ -367,8 +367,8 @@ class HistoryBackendTest : public HistoryBackendTestBase {
   // |did_replace| is true if the transition is non-user initiated and the
   // navigation entry for |url2| has replaced that for |url1|. The possibly
   // updated transition code of the visit records for |url1| and |url2| is
-  // returned by filling in |*transition1| and |*transition2|, respectively.
-  // |time| is a time of the redirect.
+  // returned by filling in |*transition1| and |*transition2|, respectively,
+  // unless null. |time| is a time of the redirect.
   void AddClientRedirect(const GURL& url1,
                          const GURL& url2,
                          bool did_replace,
@@ -387,8 +387,11 @@ class HistoryBackendTest : public HistoryBackendTestBase {
         history::SOURCE_BROWSED, did_replace, true);
     backend_->AddPage(request);
 
-    *transition1 = GetTransition(url1);
-    *transition2 = GetTransition(url2);
+    if (transition1)
+      *transition1 = GetTransition(url1);
+
+    if (transition2)
+      *transition2 = GetTransition(url2);
   }
 
   int GetTransition(const GURL& url) {
@@ -1808,7 +1811,6 @@ TEST_F(HistoryBackendTest, SetFaviconMappingsForPageAndRedirects) {
   EXPECT_EQ(1u, NumIconMappingsForPageURL(url2, favicon_base::FAVICON));
 }
 
-
 // Test that SetFaviconMappingsForPageAndRedirects correctly updates icon
 // mappings when the final URL has a fragment.
 TEST_F(HistoryBackendTest, SetFaviconMappingsForPageAndRedirectsWithFragment) {
@@ -1866,6 +1868,31 @@ TEST_F(HistoryBackendTest, SetFaviconMappingsForPageAndRedirectsWithFragment) {
   EXPECT_EQ(1u, NumIconMappingsForPageURL(url1, favicon_base::FAVICON));
   EXPECT_EQ(1u, NumIconMappingsForPageURL(url2, favicon_base::FAVICON));
   EXPECT_EQ(1u, NumIconMappingsForPageURL(url3, favicon_base::FAVICON));
+}
+
+// Test that |recent_redirects_| stores the full redirect chain in case of
+// client redirects. In this case, a server-side redirect is followed by a
+// client-side one.
+TEST_F(HistoryBackendTest, RecentRedirectsForClientRedirects) {
+  GURL server_redirect_url("http://google.com/a");
+  GURL client_redirect_url("http://google.com/b");
+  GURL landing_url("http://google.com/c");
+
+  // Page A is browsed by user and server redirects to B.
+  HistoryAddPageArgs request(
+      client_redirect_url, base::Time::Now(), NULL, 0, GURL(),
+      /*redirects=*/{server_redirect_url, client_redirect_url},
+      ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, false, true);
+  backend_->AddPage(request);
+
+  // Client redirect to page C.
+  AddClientRedirect(client_redirect_url, landing_url, /*did_replace=*/false,
+                    base::Time(), /*transition1=*/nullptr,
+                    /*transition2=*/nullptr);
+
+  EXPECT_THAT(
+      backend_->recent_redirects_.Get(landing_url)->second,
+      ElementsAre(server_redirect_url, client_redirect_url, landing_url));
 }
 
 // Test that there is no churn in icon mappings from calling

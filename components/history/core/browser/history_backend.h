@@ -525,6 +525,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            SetFaviconMappingsForPageAndRedirectsWithFragment);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
+                           RecentRedirectsForClientRedirects);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            SetFaviconMappingsForPageDuplicates);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFaviconsDeleteBitmaps);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFaviconsReplaceBitmapData);
