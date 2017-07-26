@@ -12,6 +12,12 @@ namespace blink {
 
 {% for feature in features %}
 {% if feature.origin_trial_feature_name %}
+const char OriginTrials::k{{feature.name}}TrialName[] = "{{feature.origin_trial_feature_name}}";
+{% endif %}
+{% endfor %}
+
+{% for feature in features %}
+{% if feature.origin_trial_feature_name %}
 
 bool OriginTrials::{{feature.first_lowered_name}}Enabled(ExecutionContext* executionContext) {
   if (RuntimeEnabledFeatures::{{feature.name}}Enabled())
@@ -26,7 +32,7 @@ bool OriginTrials::{{feature.first_lowered_name}}Enabled(ExecutionContext* execu
 
   OriginTrialContext* context = OriginTrialContext::From(executionContext,
       OriginTrialContext::kDontCreateIfNotExists);
-  return context && context->IsTrialEnabled("{{feature.origin_trial_feature_name}}");
+  return context && context->IsTrialEnabled(OriginTrials::k{{feature.name}}TrialName);
 {% if feature.origin_trial_os %}
 #else
   return false;

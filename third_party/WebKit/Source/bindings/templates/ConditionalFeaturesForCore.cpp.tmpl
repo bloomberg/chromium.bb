@@ -74,7 +74,7 @@ void InstallPendingConditionalFeatureForCore(const String& feature,
   const DOMWrapperWorld& world = script_state->World();
   V8PerContextData* context_data = script_state->PerContextData();
   {% for feature in installers_by_feature %}
-  if (feature == "{{feature.name}}") {
+  if (feature == {{feature.name_constant}}) {
     {% for installer in feature.installers %}
     if (context_data->GetExistingConstructorAndPrototypeForType(
             &{{installer.v8_class}}::wrapperTypeInfo, &prototype_object, &interface_object)) {
