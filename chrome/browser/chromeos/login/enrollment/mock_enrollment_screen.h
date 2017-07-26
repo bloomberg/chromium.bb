@@ -31,6 +31,8 @@ class MockEnrollmentScreenView : public EnrollmentScreenView {
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD0(ShowSigninScreen, void());
+  MOCK_METHOD1(ShowLicenseTypeSelectionScreen,
+               void(const base::DictionaryValue&));
   MOCK_METHOD0(ShowAdJoin, void());
   MOCK_METHOD2(ShowAttributePromptScreen,
                void(const std::string& asset_id, const std::string& location));

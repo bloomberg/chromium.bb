@@ -43,8 +43,9 @@ class EnrollmentStatus {
     ACTIVE_DIRECTORY_POLICY_FETCH_FAILED = 17,  // Failed to fetch Active
                                                 // Directory policy via
                                                 // authpolicyd.
-    DM_TOKEN_STORE_FAILED = 18,  // Failed to store DM token into the
-                                 // local state.
+    DM_TOKEN_STORE_FAILED = 18,   // Failed to store DM token into the
+                                  // local state.
+    LICENSE_REQUEST_FAILED = 19,  // Failed to get available license types.
   };
 
   // Helpers for constructing errors for relevant cases.

@@ -229,6 +229,8 @@ enum MetricEnrollment {
   kMetricEnrollmentActiveDirectoryPolicyFetchFailed = 55,
   // Failed to store DM token into the local state.
   kMetricEnrollmentStoreDMTokenFailed = 56,
+  // Failed to get available licenses.
+  kMetricEnrollmentLicenseRequestFailed = 57,
 };
 
 // Events related to policy refresh.

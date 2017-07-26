@@ -12,6 +12,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
   /** @const */ var STEP_SIGNIN = 'signin';
   /** @const */ var STEP_AD_JOIN = 'ad-join';
+  /** @const */ var STEP_LICENSE_TYPE = 'license';
   /** @const */ var STEP_WORKING = 'working';
   /** @const */ var STEP_ATTRIBUTE_PROMPT = 'attribute-prompt';
   /** @const */ var STEP_ERROR = 'error';
@@ -30,6 +31,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       'showStep',
       'showError',
       'doReload',
+      'setAvailableLicenseTypes',
       'showAttributePromptStep',
       'showAttestationBasedEnrollmentSuccess',
       'invalidateAd',
@@ -59,6 +61,13 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     },
 
     isManualEnrollment_: undefined,
+
+    /**
+     * An element containing UI for picking license type.
+     * @type {EnrollmentLicenseCard}
+     * @private
+     */
+    licenseUi_: undefined,
 
     /**
      * An element containg navigation buttons.
@@ -95,6 +104,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     decorate: function() {
       this.navigation_ = $('oauth-enroll-navigation');
       this.offlineAdUi_ = $('oauth-enroll-ad-join-ui');
+      this.licenseUi_ = $('oauth-enroll-license-ui');
 
       this.authenticator_ =
           new cr.login.Authenticator($('oauth-enroll-auth-view'));
@@ -228,6 +238,11 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       $('oauth-enroll-skip-button')
           .addEventListener('click', this.onSkipButtonClicked.bind(this));
+
+      this.licenseUi_.addEventListener('buttonclick', function() {
+        chrome.send('onLicenseTypeSelected', [this.licenseUi_.selected]);
+      }.bind(this));
+
     },
 
     /**
@@ -329,6 +344,39 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     },
 
     /**
+     * Updates the list of available license types in license selection dialog.
+     */
+    setAvailableLicenseTypes: function(licenseTypes) {
+      var licenses = [
+        {
+          id: 'perpetual',
+          label: 'perpetualLicenseTypeTitle',
+        },
+        {
+          id: 'annual',
+          label: 'annualLicenseTypeTitle',
+        },
+        {
+          id: 'kiosk',
+          label: 'kioskLicenseTypeTitle',
+        }
+      ];
+      for (var i = 0, item; item = licenses[i]; ++i) {
+        if (item.id in licenseTypes) {
+          item.count = parseInt(licenseTypes[item.id]);
+          item.disabled = item.count == 0;
+          item.hidden = false;
+        } else {
+          item.count = 0;
+          item.disabled = true;
+          item.hidden = true;
+        }
+      }
+      this.licenseUi_.disabled = false;
+      this.licenseUi_.licenses = licenses;
+    },
+
+    /**
      * Switches between the different steps in the enrollment flow.
      * @param {string} step the steps to show, one of "signin", "working",
      * "attribute-prompt", "error", "success".
@@ -339,6 +387,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       if (step == STEP_SIGNIN) {
         $('oauth-enroll-auth-view').focus();
+      } else if (step == STEP_LICENSE_TYPE) {
+        $('oauth-enroll-license-ui').submitButton.focus();
       } else if (step == STEP_ERROR) {
         $('oauth-enroll-error-card').submitButton.focus();
       } else if (step == STEP_SUCCESS) {

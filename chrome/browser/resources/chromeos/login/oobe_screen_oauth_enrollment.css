@@ -38,6 +38,7 @@
     #oauth-enroll-step-attribute-prompt-error,
 .oauth-enroll-state-signin #oauth-enroll-step-signin,
 .oauth-enroll-state-ad-join #oauth-enroll-step-ad-join,
+.oauth-enroll-state-license #oauth-enroll-step-license,
 .oauth-enroll-state-attribute-prompt
     #oauth-enroll-step-attribute-prompt {
   display: block;
