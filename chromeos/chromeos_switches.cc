@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
+#include "third_party/icu/source/common/unicode/locid.h"
 
 namespace chromeos {
 namespace switches {
@@ -511,6 +512,9 @@ const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";
 // Forces use of Chrome OS Gaia API v1.
 const char kCrosGaiaApiV1[] = "cros-gaia-api-v1";
 
+// List of locales supported by voice interaction.
+const char kVoiceInteractionLocales[] = "voice-interaction-supported-locales";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }
@@ -571,8 +575,21 @@ bool IsCellularFirstDevice() {
 }
 
 bool IsVoiceInteractionEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             kEnableVoiceInteraction) ||
+  // TODO(updowndota): Add DCHECK here to make sure the value never changes
+  // after all the use case for this method has been moved into user session.
+
+  // Disable voice interaction for non-supported locales.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  std::string locale = icu::Locale::getDefault().getName();
+  if (locale != ULOC_US &&
+      command_line
+              ->GetSwitchValueASCII(
+                  chromeos::switches::kVoiceInteractionLocales)
+              .find(locale) == std::string::npos) {
+    return false;
+  }
+
+  return command_line->HasSwitch(kEnableVoiceInteraction) ||
          base::FeatureList::IsEnabled(kVoiceInteractionFeature);
 }
 
