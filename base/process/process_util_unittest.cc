@@ -79,10 +79,10 @@ const char kSignalFileTerm[] = "TerminatedChildProcess.die";
 
 #if defined(OS_ANDROID)
 const char kShellPath[] = "/system/bin/sh";
-const char kPosixShell[] = "sh";
+#elif defined(OS_FUCHSIA)
+const char kShellPath[] = "/boot/bin/sh";
 #else
 const char kShellPath[] = "/bin/sh";
-const char kPosixShell[] = "sh";
 #endif
 #endif  // defined(OS_POSIX)
 
@@ -724,7 +724,7 @@ const char kLargeString[] =
 TEST_F(ProcessUtilTest, LaunchProcess) {
   base::EnvironmentMap env_changes;
   std::vector<std::string> echo_base_test;
-  echo_base_test.push_back(kPosixShell);
+  echo_base_test.push_back(kShellPath);
   echo_base_test.push_back("-c");
   echo_base_test.push_back("echo $BASE_TEST");
 

@@ -80,7 +80,6 @@
 -ProcessUtilTest.GetTerminationStatusSigTerm
 -ProcessUtilTest.ImmediateTermination
 -ProcessUtilTest.KillSlowChild
--ProcessUtilTest.LaunchProcess
 -ProcessUtilTest.PreExecHook
 -ProcessUtilTest.SpawnChild
 -SysInfoTest.AmountOfFreeDiskSpace
