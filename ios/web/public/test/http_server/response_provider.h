@@ -16,8 +16,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "url/gurl.h"
 
-@class GCDWebServerResponse;
-
 namespace web {
 
 // An abstract class for a provider that services a request and returns a
