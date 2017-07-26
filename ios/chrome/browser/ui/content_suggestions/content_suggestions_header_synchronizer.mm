@@ -125,7 +125,11 @@ initWithCollectionController:
   [UIView animateWithDuration:kShiftTilesUpAnimationDuration
       animations:^{
         if (self.collectionView.contentOffset.y < pinnedOffsetY) {
+          // Changing the contentOffset of the collection results in a scroll
+          // and a change in the constraints of the header.
           self.collectionView.contentOffset = CGPointMake(0, pinnedOffsetY);
+          // Layout the header for the constraints to be animated.
+          [self.headerController layoutHeader];
           [self.collectionView.collectionViewLayout invalidateLayout];
         }
       }

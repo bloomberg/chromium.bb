@@ -20,6 +20,9 @@
 // Unfocuses the omnibox.
 - (void)unfocusOmnibox;
 
+// Calls layoutIfNeeded on the header.
+- (void)layoutHeader;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_HEADER_CONTROLLING_H_
