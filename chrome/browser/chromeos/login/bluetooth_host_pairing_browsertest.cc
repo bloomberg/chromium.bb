@@ -58,9 +58,12 @@ class TestDelegate
 // The device will put itself in Bluetooth discoverable mode.
 class BluetoothHostPairingNoInputTest : public OobeBaseTest {
  public:
-  void OnConnectSuccess() { message_loop_.QuitWhenIdle(); }
-  void OnConnectFailed(device::BluetoothDevice::ConnectErrorCode error) {
-    message_loop_.QuitWhenIdle();
+  void OnConnectSuccess(base::OnceClosure continuation_callback) {
+    std::move(continuation_callback).Run();
+  }
+  void OnConnectFailed(base::OnceClosure continuation_callback,
+                       device::BluetoothDevice::ConnectErrorCode error) {
+    std::move(continuation_callback).Run();
   }
 
  protected:
@@ -212,12 +215,14 @@ IN_PROC_BROWSER_TEST_F(BluetoothHostPairingNoInputTest, ForgetDevice) {
   EXPECT_FALSE(device->IsPaired());
   EXPECT_EQ(3U, bluetooth_adapter()->GetDevices().size());
 
-  device->Connect(controller(),
-                  base::Bind(&BluetoothHostPairingNoInputTest::OnConnectSuccess,
-                             base::Unretained(this)),
-                  base::Bind(&BluetoothHostPairingNoInputTest::OnConnectFailed,
-                             base::Unretained(this)));
-  base::RunLoop().Run();
+  base::RunLoop run_loop;
+  device->Connect(
+      controller(),
+      base::Bind(&BluetoothHostPairingNoInputTest::OnConnectSuccess,
+                 base::Unretained(this), run_loop.QuitWhenIdleClosure()),
+      base::Bind(&BluetoothHostPairingNoInputTest::OnConnectFailed,
+                 base::Unretained(this), run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
   EXPECT_TRUE(device->IsPaired());
 
   ResetController();
