@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import collections
+import math
 import os
 
 from chromite.cbuildbot import afdo
@@ -429,6 +430,25 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
                      'and Chrome %s. Not generating it again',
                      arch, cpv.version_no_rev.split('_')[0])
         return
+
+    if self.suite_config.suite in [constants.HWTEST_CTS_QUAL_SUITE,
+                                   constants.HWTEST_GTS_QUAL_SUITE]:
+      # Increase the priority for CTS/GTS qualification suite as we want stable
+      # build to have higher priority than beta build (again higher than dev).
+      try:
+        cros_vers = self._run.GetVersionInfo().VersionString().split('.')
+        if not isinstance(self.suite_config.priority, (int, long)):
+          # Convert CTS/GTS priority to corresponding integer value.
+          self.suite_config.priority = constants.HWTEST_PRIORITIES_MAP[
+              self.suite_config.priority]
+        # We add 1/10 of the branch version to the priority. This results in a
+        # modest priority bump the older the branch is. Typically beta priority
+        # would be dev + [1..4] and stable priority dev + [5..9].
+        self.suite_config.priority += math.ceil(cros_vers[1] / 10.0)
+      except cbuildbot_run.VersionNotSetError:
+        logging.debug('Could not obtain version info. %s will use initial '
+                      'priority value: %d', self.suite_config.suite,
+                      self.suite_config.priority)
 
     build = '/'.join([self._bot_id, self.version])
     if (self._run.options.remote_trybot and (self._run.options.hwtest or

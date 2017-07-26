@@ -750,8 +750,9 @@ HWTEST_VALID_PRIORITIES = ['Weekly',
                            HWTEST_CQ_PRIORITY]
 
 # Creates a mapping of priorities to make easy comparsions.
-HWTEST_PRIORITIES_MAP = dict(
-    (p, i) for i, p in enumerate(HWTEST_VALID_PRIORITIES))
+# Use the same priorities mapping as autotest/client/common_lib/priorities.py
+HWTEST_PRIORITIES_MAP = {key: 10 + 10 * index
+                         for index, key in enumerate(HWTEST_VALID_PRIORITIES)}
 
 
 # HWTest result statuses
