@@ -86,8 +86,7 @@
     "matches": [
       "chrome://bluetooth-pairing/*",
       "chrome://md-settings/*",
-      "chrome://settings/*",
-      "chrome://settings-frame/*"
+      "chrome://settings/*"
     ]
   }],
   "bluetoothLowEnergy": {
@@ -104,8 +103,7 @@
     "matches": [
       "chrome://bluetooth-pairing/*",
       "chrome://md-settings/*",
-      "chrome://settings/*",
-      "chrome://settings-frame/*"
+      "chrome://settings/*"
     ]
   }],
   "bluetoothSocket": {
@@ -228,8 +226,7 @@
       "chrome://extensions-frame/*",
       "chrome://chrome/extensions/*",
       "chrome://md-settings/*",
-      "chrome://settings/*",
-      "chrome://settings-frame/*"
+      "chrome://settings/*"
     ]
   }],
   "management.getPermissionWarningsByManifest": {
@@ -261,8 +258,7 @@
     "matches": [
       "chrome://bookmarks/*",
       "chrome://md-settings/*",
-      "chrome://settings/*",
-      "chrome://settings-frame/*"
+      "chrome://settings/*"
     ]
   }],
   "metricsPrivate.getIsCrashReportingEnabled": {
@@ -337,8 +333,7 @@
       "chrome://md-settings/*",
       "chrome://network/*",
       "chrome://oobe/*",
-      "chrome://settings/*",
-      "chrome://settings-frame/*"
+      "chrome://settings/*"
     ]
   }],
   "power": {
@@ -472,8 +467,7 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://md-settings/*",
-      "chrome://settings/*",
-      "chrome://settings-frame/*"
+      "chrome://settings/*"
     ]
   }],
   "system.memory": {
