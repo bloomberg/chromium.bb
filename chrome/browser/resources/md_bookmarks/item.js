@@ -49,12 +49,9 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.watch('item_', function(store) {
-      return store.nodes[this.itemId];
-    }.bind(this));
-    this.watch('isSelectedItem_', function(store) {
-      return !!store.selection.items.has(this.itemId);
-    }.bind(this));
+    this.watch('item_', (store) => store.nodes[this.itemId]);
+    this.watch(
+        'isSelectedItem_', (store) => !!store.selection.items.has(this.itemId));
 
     this.updateFromStore();
   },

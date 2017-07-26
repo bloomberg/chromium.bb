@@ -283,10 +283,9 @@ cr.define('bookmarks', function() {
       // The use of a timeout is in order to reduce flickering as we move
       // between valid drop targets.
       this.timerProxy.clearTimeout(this.removeDropIndicatorTimeoutId_);
-      this.removeDropIndicatorTimeoutId_ =
-          this.timerProxy.setTimeout(function() {
-            this.removeDropIndicatorStyle();
-          }.bind(this), 100);
+      this.removeDropIndicatorTimeoutId_ = this.timerProxy.setTimeout(() => {
+        this.removeDropIndicatorStyle();
+      }, 100);
     },
   };
 
@@ -586,11 +585,11 @@ cr.define('bookmarks', function() {
       // Defer the clearing of the data so that the bookmark manager API's drop
       // event doesn't clear the drop data before the web drop event has a
       // chance to execute (on Mac).
-      this.timerProxy_.setTimeout(function() {
+      this.timerProxy_.setTimeout(() => {
         this.dragInfo_.clearDragData();
         this.dropDestination_ = null;
         this.dropIndicator_.finish();
-      }.bind(this), 0);
+      }, 0);
     },
 
     /**

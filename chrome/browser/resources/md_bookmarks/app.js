@@ -43,7 +43,7 @@ Polymer({
       return store.closedFolders;
     });
 
-    chrome.bookmarks.getTree(function(results) {
+    chrome.bookmarks.getTree((results) => {
       var nodeMap = bookmarks.util.normalizeNodes(results[0]);
       var initialState = bookmarks.util.createEmptyState();
       initialState.nodes = nodeMap;
@@ -64,7 +64,7 @@ Polymer({
             Math.floor(window.performance.now()));
       });
 
-    }.bind(this));
+    });
 
     this.boundUpdateSidebarWidth_ = this.updateSidebarWidth_.bind(this);
 
@@ -96,11 +96,11 @@ Polymer({
     this.sidebarWidth_ =
         /** @type {string} */ (getComputedStyle(splitterTarget).width);
 
-    splitter.addEventListener('resize', function(e) {
+    splitter.addEventListener('resize', (e) => {
       window.localStorage[LOCAL_STORAGE_TREE_WIDTH_KEY] =
           splitterTarget.style.width;
       this.updateSidebarWidth_();
-    }.bind(this));
+    });
 
     splitter.addEventListener('dragmove', this.boundUpdateSidebarWidth_);
     window.addEventListener('resize', this.boundUpdateSidebarWidth_);
@@ -117,7 +117,7 @@ Polymer({
     if (!this.searchTerm_)
       return;
 
-    chrome.bookmarks.search(this.searchTerm_, function(results) {
+    chrome.bookmarks.search(this.searchTerm_, (results) => {
       var ids = results.map(function(node) {
         return node.id;
       });
@@ -127,7 +127,7 @@ Polymer({
             loadTimeData.getStringF('searchResults', this.searchTerm_) :
             loadTimeData.getString('noSearchResults')
       });
-    }.bind(this));
+    });
   },
 
   /** @private */

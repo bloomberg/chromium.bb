@@ -66,9 +66,9 @@ cr.define('bookmarks', function() {
       document.addEventListener('open-item-menu', this.boundOnOpenItemMenu_);
 
       /** @private {function()} */
-      this.boundOnCommandUndo_ = function() {
+      this.boundOnCommandUndo_ = () => {
         this.handle(Command.UNDO, new Set());
-      }.bind(this);
+      };
       document.addEventListener('command-undo', this.boundOnCommandUndo_);
 
       /** @private {function(!Event)} */
@@ -268,7 +268,7 @@ cr.define('bookmarks', function() {
         case Command.COPY_URL:
         case Command.COPY:
           var idList = Array.from(itemIds);
-          chrome.bookmarkManagerPrivate.copy(idList, function() {
+          chrome.bookmarkManagerPrivate.copy(idList, () => {
             var labelPromise;
             if (command == Command.COPY_URL) {
               labelPromise =
@@ -283,7 +283,7 @@ cr.define('bookmarks', function() {
 
             this.showTitleToast_(
                 labelPromise, state.nodes[idList[0]].title, false);
-          }.bind(this));
+          });
           break;
         case Command.SHOW_IN_FOLDER:
           var id = Array.from(itemIds)[0];
@@ -303,9 +303,9 @@ cr.define('bookmarks', function() {
                 'getPluralString', 'toastItemsDeleted', idList.length);
           }
 
-          chrome.bookmarkManagerPrivate.removeTrees(idList, function() {
+          chrome.bookmarkManagerPrivate.removeTrees(idList, () => {
             this.showTitleToast_(labelPromise, title, true);
-          }.bind(this));
+          });
           break;
         case Command.UNDO:
           chrome.bookmarkManagerPrivate.undo();
@@ -587,9 +587,8 @@ cr.define('bookmarks', function() {
       if (!this.menuIds_)
         return;
 
-      this.hasAnySublabel_ = this.menuCommands_.some(function(command) {
-        return this.getCommandSublabel_(command) != '';
-      }.bind(this));
+      this.hasAnySublabel_ = this.menuCommands_.some(
+          (command) => this.getCommandSublabel_(command) != '');
     },
 
     /**

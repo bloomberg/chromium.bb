@@ -89,7 +89,7 @@ Polymer({
       var splices = Polymer.ArraySplice.calculateSplices(
           /** @type {!Array<string>} */ (newValue),
           /** @type {!Array<string>} */ (oldValue));
-      splices.forEach(function(splice) {
+      splices.forEach((splice) => {
         // TODO(calamity): Could use notifySplices to improve performance here.
         var additions =
             newValue.slice(splice.index, splice.index + splice.addedCount)
@@ -99,7 +99,7 @@ Polymer({
         this.splice.apply(this, [
           'displayedList_', splice.index, splice.removed.length
         ].concat(additions));
-      }.bind(this));
+      });
     }
   },
 

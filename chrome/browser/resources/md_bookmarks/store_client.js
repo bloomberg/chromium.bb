@@ -79,7 +79,7 @@ cr.define('bookmarks', function() {
 
     /** @param {string} newState */
     onStateChanged: function(newState) {
-      this.watches_.forEach(function(watch) {
+      this.watches_.forEach((watch) => {
         var oldValue = this[watch.localProperty];
         var newValue = watch.valueGetter(newState);
 
@@ -90,7 +90,7 @@ cr.define('bookmarks', function() {
           return;
 
         this[watch.localProperty] = newValue;
-      }.bind(this));
+      });
     },
 
     updateFromStore: function() {
