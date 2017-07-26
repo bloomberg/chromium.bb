@@ -3680,6 +3680,8 @@
     {
       name: "animation",
       longhands: ["animation-name", "animation-duration", "animation-timing-function", "animation-delay", "animation-iteration-count", "animation-direction", "animation-fill-mode", "animation-play-state"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "background",
@@ -3946,6 +3948,8 @@
     {
       name: "transition",
       longhands: ["transition-property", "transition-duration", "transition-timing-function", "transition-delay"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "-webkit-border-after",
