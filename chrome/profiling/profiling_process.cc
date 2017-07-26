@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/platform_file.h"
 #include "chrome/common/profiling/profiling_constants.h"
+#include "chrome/profiling/memlog_receiver_pipe.h"
 #include "chrome/profiling/profiling_globals.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -29,18 +30,16 @@ void ProfilingProcess::EnsureMojoStarted() {
       control_invitation_->ExtractMessagePipe(kProfilingControlPipeName)));
 }
 
-void ProfilingProcess::AttachPipeServer(
-    scoped_refptr<MemlogReceiverPipeServer> server) {
-  server_ = server;
-}
-
 void ProfilingProcess::AddNewSender(mojo::ScopedHandle sender_pipe,
                                     int32_t sender_pid) {
   base::PlatformFile sender_file;
   MojoResult result =
       mojo::UnwrapPlatformFile(std::move(sender_pipe), &sender_file);
   CHECK_EQ(result, MOJO_RESULT_OK);
-  server_->OnNewPipe(base::ScopedPlatformFile(sender_file), sender_pid);
+
+  ProfilingGlobals::Get()->GetMemlogConnectionManager()->OnNewConnection(
+      scoped_refptr<MemlogReceiverPipe>(new MemlogReceiverPipe(sender_file)),
+      sender_pid);
 }
 
 void ProfilingProcess::DumpProcess(int32_t pid) {}

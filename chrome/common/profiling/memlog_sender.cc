@@ -5,6 +5,7 @@
 #include "chrome/common/profiling/memlog_sender.h"
 
 #include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/profiling/memlog_allocator_shim.h"
@@ -30,10 +31,15 @@ MemlogSenderPipe* memlog_sender_pipe = nullptr;
 
 void InitMemlogSenderIfNecessary() {
   const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
-  std::string pipe_id = cmdline.GetSwitchValueASCII(switches::kMemlogPipe);
-  if (!pipe_id.empty()) {
+  std::string pipe_id_str = cmdline.GetSwitchValueASCII(switches::kMemlogPipe);
+  if (!pipe_id_str.empty()) {
+    int pipe_id = 0;
+    if (!base::StringToInt(pipe_id_str, &pipe_id))
+      return;
+
 #if defined(OS_WIN)
-    StartMemlogSender(pipe_id);
+    StartMemlogSender(mojo::edk::ScopedPlatformHandle(
+        mojo::edk::PlatformHandle(reinterpret_cast<HANDLE>(pipe_id))));
 #else
     // TODO(ajwong): The posix value of the kMemlogPipe is bogus. Fix? This
     // might be true for windows too if everything is done via the launch
@@ -50,18 +56,14 @@ void InitMemlogSenderIfNecessary() {
       return;
     }
 
-    base::ScopedFD fd(
-        base::GlobalDescriptors::GetInstance()->Get(kProfilingDataPipe));
-    // TODO(ajwong): Change the StartMemlogSender to take a Scoped-somthing
-    // instead of a string to make lifetimes more clear.
-    StartMemlogSender(base::IntToString(fd.release()));
+    StartMemlogSender(mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(
+        base::GlobalDescriptors::GetInstance()->Get(kProfilingDataPipe))));
 #endif
   }
 }
 
-void StartMemlogSender(const std::string& pipe_id) {
-  static MemlogSenderPipe pipe(pipe_id);
-  pipe.Connect();
+void StartMemlogSender(mojo::edk::ScopedPlatformHandle fd) {
+  static MemlogSenderPipe pipe(std::move(fd));
   memlog_sender_pipe = &pipe;
 
   StreamHeader header;

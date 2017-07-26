@@ -26,14 +26,29 @@ const int kReadBufferSize = 1024 * 64;
 
 }  // namespace
 
-MemlogReceiverPipe::MemlogReceiverPipe(base::ScopedFD fd)
-    : handle_(mojo::edk::PlatformHandle(fd.release())),
+MemlogReceiverPipe::MemlogReceiverPipe(int fd)
+    : handle_(mojo::edk::PlatformHandle(fd)),
       controller_(FROM_HERE),
-      read_buffer_(new char[kReadBufferSize]) {}
+      read_buffer_(new char[kReadBufferSize]) {
+  base::MessageLoopForIO::current()->WatchFileDescriptor(
+      handle_.get().handle, true, base::MessageLoopForIO::WATCH_READ,
+      &controller_, this);
+}
 
 MemlogReceiverPipe::~MemlogReceiverPipe() {}
 
-void MemlogReceiverPipe::ReadUntilBlocking() {
+void MemlogReceiverPipe::StartReadingOnIOThread() {
+  OnFileCanReadWithoutBlocking(handle_.get().handle);
+}
+
+void MemlogReceiverPipe::SetReceiver(
+    scoped_refptr<base::TaskRunner> task_runner,
+    scoped_refptr<MemlogStreamReceiver> receiver) {
+  receiver_task_runner_ = task_runner;
+  receiver_ = receiver;
+}
+
+void MemlogReceiverPipe::OnFileCanReadWithoutBlocking(int fd) {
   ssize_t bytes_read = 0;
   do {
     std::deque<mojo::edk::PlatformHandle> dummy_for_receive;
@@ -65,11 +80,8 @@ void MemlogReceiverPipe::ReadUntilBlocking() {
   } while (bytes_read > 0);
 }
 
-void MemlogReceiverPipe::SetReceiver(
-    scoped_refptr<base::TaskRunner> task_runner,
-    scoped_refptr<MemlogStreamReceiver> receiver) {
-  receiver_task_runner_ = task_runner;
-  receiver_ = receiver;
+void MemlogReceiverPipe::OnFileCanWriteWithoutBlocking(int fd) {
+  NOTREACHED();
 }
 
 }  // namespace profiling

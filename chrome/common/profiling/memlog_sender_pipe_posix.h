@@ -15,7 +15,7 @@ namespace profiling {
 
 class MemlogSenderPipe {
  public:
-  explicit MemlogSenderPipe(const std::string& pipe_id);
+  explicit MemlogSenderPipe(mojo::edk::ScopedPlatformHandle fd);
   ~MemlogSenderPipe();
 
   bool Connect();

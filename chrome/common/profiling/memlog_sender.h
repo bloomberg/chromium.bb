@@ -7,6 +7,9 @@
 
 #include <string>
 
+#include "base/files/platform_file.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
+
 namespace base {
 
 class CommandLine;
@@ -20,7 +23,7 @@ namespace profiling {
 void InitMemlogSenderIfNecessary();
 
 // Starts the memlog sender pipe with the given ID.
-void StartMemlogSender(const std::string& pipe_id);
+void StartMemlogSender(mojo::edk::ScopedPlatformHandle fd);
 
 // Tells the profiling process to try to connect to the profiling control
 // channel. This must be done after the browser is ready to accept such a

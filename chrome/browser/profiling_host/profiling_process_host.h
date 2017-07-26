@@ -24,7 +24,7 @@ class CommandLine;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 namespace content {
-class FileDescriptorInfo;
+class PosixFileDescriptorInfo;
 }  // namespace content
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
@@ -62,7 +62,7 @@ class ProfilingProcessHost {
   static void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
-      content::FileDescriptorInfo* mappings);
+      content::PosixFileDescriptorInfo* mappings);
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
   // Sends a message to the profiling process that it dump the given process'

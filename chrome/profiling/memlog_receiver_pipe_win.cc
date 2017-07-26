@@ -24,47 +24,18 @@ const int kReadBufferSize = 1024 * 64;
 
 }  // namespace
 
-MemlogReceiverPipe::CompletionThunk::CompletionThunk(HANDLE handle, Callback cb)
-    : handle_(handle), callback_(cb) {
-  base::MessageLoopForIO::current()->RegisterIOHandler(handle, this);
+MemlogReceiverPipe::MemlogReceiverPipe(HANDLE handle)
+    : handle_(handle), read_buffer_(new char[kReadBufferSize]) {
   ZeroOverlapped();
+  base::MessageLoopForIO::current()->RegisterIOHandler(handle_, this);
 }
 
-MemlogReceiverPipe::CompletionThunk::~CompletionThunk() {
-  if (handle_ != INVALID_HANDLE_VALUE)
-    ::CloseHandle(handle_);
+MemlogReceiverPipe::~MemlogReceiverPipe() {
+  ::CloseHandle(handle_);
 }
-
-void MemlogReceiverPipe::CompletionThunk::ZeroOverlapped() {
-  memset(overlapped(), 0, sizeof(OVERLAPPED));
-}
-
-void MemlogReceiverPipe::CompletionThunk::OnIOCompleted(
-    base::MessagePumpForIO::IOContext* context,
-    DWORD bytes_transfered,
-    DWORD error) {
-  // Note: any crashes with this on the stack are likely a result of destroying
-  // a relevant class while there is I/O pending.
-  callback_.Run(static_cast<size_t>(bytes_transfered), error);
-}
-
-MemlogReceiverPipe::MemlogReceiverPipe(std::unique_ptr<CompletionThunk> thunk)
-    : thunk_(std::move(thunk)), read_buffer_(new char[kReadBufferSize]) {
-  // Need Unretained to avoid a reference cycle.
-  thunk_->set_callback(base::BindRepeating(&MemlogReceiverPipe::OnIOCompleted,
-                                           base::Unretained(this)));
-}
-
-MemlogReceiverPipe::~MemlogReceiverPipe() {}
 
 void MemlogReceiverPipe::StartReadingOnIOThread() {
   ReadUntilBlocking();
-}
-
-int MemlogReceiverPipe::GetRemoteProcessID() {
-  ULONG id = 0;
-  ::GetNamedPipeClientProcessId(thunk_->handle(), &id);
-  return static_cast<int>(id);
 }
 
 void MemlogReceiverPipe::SetReceiver(
@@ -74,22 +45,6 @@ void MemlogReceiverPipe::SetReceiver(
   receiver_ = receiver;
 }
 
-void MemlogReceiverPipe::OnIOCompleted(size_t bytes_transfered, DWORD error) {
-  DCHECK(read_outstanding_);
-  read_outstanding_ = false;
-
-  // This will get called both for async completion of ConnectNamedPipe as well
-  // as async read completions.
-  if (bytes_transfered && receiver_) {
-    receiver_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&MemlogStreamReceiver::OnStreamData, receiver_,
-                       std::move(read_buffer_), bytes_transfered));
-    read_buffer_.reset(new char[kReadBufferSize]);
-  }
-  ReadUntilBlocking();
-}
-
 void MemlogReceiverPipe::ReadUntilBlocking() {
   // TODO(brettw) note that the IO completion callback will always be issued,
   // even for sync returns of ReadFile. If there is a lot of data ready to be
@@ -97,12 +52,12 @@ void MemlogReceiverPipe::ReadUntilBlocking() {
   // to go back to the message loop for each block, but that will require
   // different IOContext structures for each one.
   DWORD bytes_read = 0;
-  thunk_->ZeroOverlapped();
+  ZeroOverlapped();
 
   DCHECK(!read_outstanding_);
   read_outstanding_ = true;
-  if (!::ReadFile(thunk_->handle(), read_buffer_.get(), kReadBufferSize,
-                  &bytes_read, thunk_->overlapped())) {
+  if (!::ReadFile(handle_, read_buffer_.get(), kReadBufferSize, &bytes_read,
+                  &context_.overlapped)) {
     if (GetLastError() == ERROR_IO_PENDING) {
       return;
     } else {
@@ -114,6 +69,29 @@ void MemlogReceiverPipe::ReadUntilBlocking() {
       return;
     }
   }
+}
+
+void MemlogReceiverPipe::ZeroOverlapped() {
+  memset(&context_.overlapped, 0, sizeof(OVERLAPPED));
+}
+
+void MemlogReceiverPipe::OnIOCompleted(
+    base::MessagePumpForIO::IOContext* context,
+    DWORD bytes_transfered,
+    DWORD error) {
+  // Note: any crashes with this on the stack are likely a result of destroying
+  // a relevant class while there is I/O pending.
+  DCHECK(read_outstanding_);
+  read_outstanding_ = false;
+
+  if (bytes_transfered && receiver_) {
+    receiver_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&MemlogStreamReceiver::OnStreamData,
+                                  receiver_, std::move(read_buffer_),
+                                  static_cast<size_t>(bytes_transfered)));
+    read_buffer_.reset(new char[kReadBufferSize]);
+  }
+  ReadUntilBlocking();
 }
 
 }  // namespace profiling
