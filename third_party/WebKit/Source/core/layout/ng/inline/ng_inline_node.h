@@ -29,7 +29,7 @@ class NGInlineItemRange;
 using NGInlineItemsBuilder =
     NGInlineItemsBuilderTemplate<EmptyOffsetMappingBuilder>;
 class NGLayoutResult;
-struct NGOffsetMappingResult;
+class NGOffsetMappingResult;
 
 // Represents an anonymous block box to be laid out, that contains consecutive
 // inline nodes and their descendants.

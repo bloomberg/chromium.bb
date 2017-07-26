@@ -70,9 +70,22 @@ class NGOffsetMappingUnit {
 // order in a vector. For each text node, the index range of the units owned by
 // the node is also stored.
 // See design doc https://goo.gl/CJbxky for details.
-struct NGOffsetMappingResult {
-  Vector<NGOffsetMappingUnit> units;
-  HashMap<const LayoutText*, std::pair<unsigned, unsigned>> ranges;
+class NGOffsetMappingResult {
+ public:
+  using UnitVector = Vector<NGOffsetMappingUnit>;
+  using RangeMap = HashMap<const LayoutText*, std::pair<unsigned, unsigned>>;
+
+  NGOffsetMappingResult(NGOffsetMappingResult&&);
+  NGOffsetMappingResult(UnitVector&&, RangeMap&&);
+
+  const UnitVector& GetUnits() const { return units_; }
+  const RangeMap& GetRanges() const { return ranges_; }
+
+ private:
+  UnitVector units_;
+  RangeMap ranges_;
+
+  DISALLOW_COPY_AND_ASSIGN(NGOffsetMappingResult);
 };
 
 }  // namespace blink

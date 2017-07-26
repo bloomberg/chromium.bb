@@ -19,4 +19,12 @@ NGOffsetMappingUnit::NGOffsetMappingUnit(NGOffsetMappingUnitType type,
       text_content_start_(text_content_start),
       text_content_end_(text_content_end) {}
 
+NGOffsetMappingResult::NGOffsetMappingResult(NGOffsetMappingResult&& other)
+    : NGOffsetMappingResult(std::move(other.units_), std::move(other.ranges_)) {
+}
+
+NGOffsetMappingResult::NGOffsetMappingResult(UnitVector&& units,
+                                             RangeMap&& ranges)
+    : units_(units), ranges_(ranges) {}
+
 }  // namespace blink

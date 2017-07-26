@@ -13,7 +13,7 @@
 
 namespace blink {
 
-struct NGOffsetMappingResult;
+class NGOffsetMappingResult;
 
 // This is the helper class for constructing the DOM-to-TextContent offset
 // mapping. It holds an offset mapping, and provides APIs to modify the mapping
