@@ -4705,6 +4705,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
     assert(tx_size < TX_SIZES_ALL);
 
+    ref_best_rd = AOMMIN(this_rd, ref_best_rd);
+
     for (i = 0; i < 4 && this_cost_valid; ++i) {
       int offsetr = blk_row + (i >> 1) * bsl;
       int offsetc = blk_col + (i & 0x01) * bsl;
