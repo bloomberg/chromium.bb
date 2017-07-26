@@ -11,6 +11,7 @@
 #include "components/offline_pages/core/client_id.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
+#include "components/offline_pages/core/prefetch/prefetch_background_task_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
@@ -29,7 +30,9 @@ PrefetchServiceImpl::PrefetchServiceImpl(
     std::unique_ptr<PrefetchStore> prefetch_store,
     std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer,
     std::unique_ptr<PrefetchDownloader> prefetch_downloader,
-    std::unique_ptr<PrefetchImporter> prefetch_importer)
+    std::unique_ptr<PrefetchImporter> prefetch_importer,
+    std::unique_ptr<PrefetchBackgroundTaskHandler>
+        prefetch_background_task_handler)
     : offline_metrics_collector_(std::move(offline_metrics_collector)),
       prefetch_dispatcher_(std::move(dispatcher)),
       prefetch_gcm_handler_(std::move(gcm_handler)),
@@ -37,7 +40,9 @@ PrefetchServiceImpl::PrefetchServiceImpl(
       prefetch_store_(std::move(prefetch_store)),
       suggested_articles_observer_(std::move(suggested_articles_observer)),
       prefetch_downloader_(std::move(prefetch_downloader)),
-      prefetch_importer_(std::move(prefetch_importer)) {
+      prefetch_importer_(std::move(prefetch_importer)),
+      prefetch_background_task_handler_(
+          std::move(prefetch_background_task_handler)) {
   prefetch_dispatcher_->SetService(this);
   prefetch_gcm_handler_->SetService(this);
   suggested_articles_observer_->SetPrefetchService(this);
@@ -84,6 +89,11 @@ PrefetchDownloader* PrefetchServiceImpl::GetPrefetchDownloader() {
 
 PrefetchImporter* PrefetchServiceImpl::GetPrefetchImporter() {
   return prefetch_importer_.get();
+}
+
+PrefetchBackgroundTaskHandler*
+PrefetchServiceImpl::GetPrefetchBackgroundTaskHandler() {
+  return prefetch_background_task_handler_.get();
 }
 
 void PrefetchServiceImpl::Shutdown() {

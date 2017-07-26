@@ -18,7 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/android/offline_pages/prefetch/prefetch_background_task.h"
+#include "chrome/browser/offline_pages/android/prefetch_background_task_android.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
@@ -295,8 +295,10 @@ void OfflineInternalsUIMessageHandler::HandleScheduleNwake(
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
-  offline_pages::PrefetchBackgroundTask::Schedule(0);
-
+  if (prefetch_service_) {
+    prefetch_service_->GetPrefetchBackgroundTaskHandler()
+        ->EnsureTaskScheduled();
+  }
   ResolveJavascriptCallback(*callback_id, base::Value("Scheduled."));
 }
 
@@ -306,7 +308,10 @@ void OfflineInternalsUIMessageHandler::HandleCancelNwake(
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
-  offline_pages::PrefetchBackgroundTask::Cancel();
+  if (prefetch_service_) {
+    prefetch_service_->GetPrefetchBackgroundTaskHandler()
+        ->CancelBackgroundTask();
+  }
 
   ResolveJavascriptCallback(*callback_id, base::Value("Cancelled."));
 }

@@ -20,6 +20,7 @@ static_library("prefetch") {
     "get_operation_task.cc",
     "get_operation_task.h",
     "offline_metrics_collector.h",
+    "prefetch_background_task_handler.h",
     "prefetch_dispatcher.h",
     "prefetch_dispatcher_impl.cc",
     "prefetch_dispatcher_impl.h",
