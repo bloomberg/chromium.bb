@@ -900,7 +900,6 @@ PaintOp* DrawRecordOp::Deserialize(const void* input,
                                    size_t output_size) {
   // TODO(enne): these must be flattened and not sent directly.
   // TODO(enne): could also consider caching these service side.
-  NOTREACHED();
   return nullptr;
 }
 
