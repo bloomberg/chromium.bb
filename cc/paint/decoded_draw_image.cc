@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/tiles/decoded_draw_image.h"
+#include "cc/paint/decoded_draw_image.h"
 
 namespace cc {
 

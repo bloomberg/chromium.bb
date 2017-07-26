@@ -175,7 +175,7 @@ base::Optional<SkColor> SolidColorAnalyzer::DetermineIfSolidColor(
     }
 
     const PaintOp* op = *frame.iter;
-    const SkMatrix& original_ctm = frame.original_ctm;
+    PlaybackParams params(nullptr, frame.original_ctm);
     switch (op->GetType()) {
       case PaintOpType::DrawRecord: {
         const DrawRecordOp* record_op = static_cast<const DrawRecordOp*>(op);
@@ -239,7 +239,7 @@ base::Optional<SkColor> SolidColorAnalyzer::DetermineIfSolidColor(
       case PaintOpType::Save:
       case PaintOpType::Translate:
       case PaintOpType::Noop:
-        op->Raster(&canvas, original_ctm);
+        op->Raster(&canvas, params);
         break;
     }
     ++frame.iter;

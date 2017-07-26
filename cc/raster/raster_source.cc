@@ -12,8 +12,6 @@
 #include "cc/debug/debug_colors.h"
 #include "cc/debug/traced_value.h"
 #include "cc/paint/display_item_list.h"
-#include "cc/raster/image_hijack_canvas.h"
-#include "cc/raster/skip_image_canvas.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
@@ -34,8 +32,7 @@ RasterSource::RasterSource(const RecordingSource* other)
       size_(other->size_),
       clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
       slow_down_raster_scale_factor_for_debug_(
-          other->slow_down_raster_scale_factor_for_debug_),
-      image_decode_cache_(nullptr) {}
+          other->slow_down_raster_scale_factor_for_debug_) {}
 RasterSource::~RasterSource() = default;
 
 void RasterSource::PlaybackToCanvas(
@@ -76,26 +73,7 @@ void RasterSource::PlaybackToCanvas(SkCanvas* input_canvas,
   if (!settings.playback_to_shared_canvas)
     PrepareForPlaybackToCanvas(raster_canvas);
 
-  if (settings.skip_images) {
-    SkipImageCanvas canvas(raster_canvas);
-    RasterCommon(&canvas);
-  } else if (settings.use_image_hijack_canvas) {
-    const SkImageInfo& info = raster_canvas->imageInfo();
-    ImageHijackCanvas canvas(info.width(), info.height(), image_decode_cache_,
-                             &settings.images_to_skip, target_color_space);
-    // Before adding the canvas, make sure that the ImageHijackCanvas is aware
-    // of the current transform and clip, which may affect the clip bounds.
-    // Since we query the clip bounds of the current canvas to get the list of
-    // draw commands to process, this is important to produce correct content.
-    canvas.clipRect(
-        SkRect::MakeFromIRect(raster_canvas->getDeviceClipBounds()));
-    canvas.setMatrix(raster_canvas->getTotalMatrix());
-    canvas.addCanvas(raster_canvas);
-
-    RasterCommon(&canvas);
-  } else {
-    RasterCommon(raster_canvas);
-  }
+  RasterCommon(raster_canvas, settings.image_provider);
 }
 
 namespace {
@@ -188,11 +166,12 @@ void RasterSource::PrepareForPlaybackToCanvas(SkCanvas* canvas) const {
 }
 
 void RasterSource::RasterCommon(SkCanvas* raster_canvas,
+                                ImageProvider* image_provider,
                                 SkPicture::AbortCallback* callback) const {
   DCHECK(display_list_.get());
   int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
   for (int i = 0; i < repeat_count; ++i)
-    display_list_->Raster(raster_canvas, callback);
+    display_list_->Raster(raster_canvas, image_provider, callback);
 }
 
 sk_sp<SkPicture> RasterSource::GetFlattenedPicture() {
@@ -279,8 +258,6 @@ void RasterSource::DidBeginTracing() {
 
 RasterSource::PlaybackSettings::PlaybackSettings()
     : playback_to_shared_canvas(false),
-      skip_images(false),
-      use_image_hijack_canvas(true),
       use_lcd_text(true) {}
 
 RasterSource::PlaybackSettings::PlaybackSettings(const PlaybackSettings&) =

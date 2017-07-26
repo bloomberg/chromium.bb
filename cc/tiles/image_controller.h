@@ -65,6 +65,8 @@ class CC_EXPORT ImageController {
     image_cache_max_limit_bytes_ = bytes;
   }
 
+  ImageDecodeCache* cache() const { return cache_; }
+
  protected:
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
 

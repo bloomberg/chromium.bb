@@ -290,9 +290,7 @@ void RecordPaintCanvas::drawBitmap(const SkBitmap& bitmap,
   if (bitmap.drawsNothing())
     return;
   drawImage(
-      PaintImage(PaintImage::kNonLazyStableId, SkImage::MakeFromBitmap(bitmap),
-                 PaintImage::AnimationType::UNKNOWN,
-                 PaintImage::CompletionState::UNKNOWN),
+      PaintImage(PaintImage::kNonLazyStableId, SkImage::MakeFromBitmap(bitmap)),
       left, top, flags);
 }
 

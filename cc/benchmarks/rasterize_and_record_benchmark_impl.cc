@@ -13,6 +13,7 @@
 #include "cc/base/lap_timer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer_impl.h"
+#include "cc/raster/playback_image_provider.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -27,6 +28,7 @@ namespace {
 const int kDefaultRasterizeRepeatCount = 100;
 
 void RunBenchmark(RasterSource* raster_source,
+                  ImageDecodeCache* image_decode_cache,
                   const gfx::Rect& content_rect,
                   float contents_scale,
                   size_t repeat_count,
@@ -55,10 +57,15 @@ void RunBenchmark(RasterSource* raster_source,
       bitmap.allocPixels(SkImageInfo::MakeN32Premul(content_rect.width(),
                                                     content_rect.height()));
       SkCanvas canvas(bitmap);
+
+      PlaybackImageProvider image_provider(
+          false, PaintImageIdFlatSet(), image_decode_cache, gfx::ColorSpace());
+      RasterSource::PlaybackSettings settings;
+      settings.image_provider = &image_provider;
+
       raster_source->PlaybackToCanvas(
           &canvas, gfx::ColorSpace(), content_rect, content_rect,
-          gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()),
-          RasterSource::PlaybackSettings());
+          gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()), settings);
 
       timer.NextLap();
     } while (!timer.HasTimeLimitExpired());
@@ -195,8 +202,9 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
 
     base::TimeDelta min_time;
     bool is_solid_color = false;
-    RunBenchmark(raster_source, content_rect, contents_scale,
-                 rasterize_repeat_count_, &min_time, &is_solid_color);
+    RunBenchmark(raster_source, layer->layer_tree_impl()->image_decode_cache(),
+                 content_rect, contents_scale, rasterize_repeat_count_,
+                 &min_time, &is_solid_color);
 
     int tile_size = content_rect.width() * content_rect.height();
     if (layer->contents_opaque())

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TILES_DECODED_DRAW_IMAGE_H_
-#define CC_TILES_DECODED_DRAW_IMAGE_H_
+#ifndef CC_PAINT_DECODED_DRAW_IMAGE_H_
+#define CC_PAINT_DECODED_DRAW_IMAGE_H_
 
 #include <cfloat>
 #include <cmath>
 
-#include "cc/cc_export.h"
+#include "cc/paint/paint_export.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -16,7 +16,7 @@
 
 namespace cc {
 
-class CC_EXPORT DecodedDrawImage {
+class CC_PAINT_EXPORT DecodedDrawImage {
  public:
   DecodedDrawImage(sk_sp<const SkImage> image,
                    const SkSize& src_rect_offset,
@@ -50,4 +50,4 @@ class CC_EXPORT DecodedDrawImage {
 
 }  // namespace cc
 
-#endif  // CC_TILES_DECODED_DRAW_IMAGE_H_
+#endif  // CC_PAINT_DECODED_DRAW_IMAGE_H_

@@ -77,10 +77,7 @@ class TestRasterTaskImpl : public TileTask {
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
-    // Don't use the image hijack canvas for these tests, as they have no image
-    // decode controller.
     RasterSource::PlaybackSettings settings;
-    settings.use_image_hijack_canvas = false;
 
     uint64_t new_content_id = 0;
     raster_buffer_->Playback(raster_source_.get(), gfx::Rect(1, 1),

@@ -15,11 +15,6 @@ namespace cc {
 
 using PaintImageIdFlatSet = base::flat_set<PaintImage::Id>;
 
-// TODO(khushalsagar): These are only used by the hijack canvas since it uses
-// an SkCanvas to replace images. Remove once that moves to PaintOpBuffer.
-using SkImageId = uint32_t;
-using SkImageIdFlatSet = base::flat_set<SkImageId>;
-
 }  // namespace cc
 
 #endif  // CC_PAINT_IMAGE_ID_H_

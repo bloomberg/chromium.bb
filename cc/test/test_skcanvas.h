@@ -48,6 +48,17 @@ class MockCanvas : public SkNoDrawCanvas {
   MOCK_METHOD1(OnDrawRectWithColor, void(SkColor));
   MOCK_METHOD0(OnSaveLayer, void());
   MOCK_METHOD0(willRestore, void());
+  MOCK_METHOD0(willSave, void());
+  MOCK_METHOD4(onDrawImage,
+               void(const SkImage*, SkScalar, SkScalar, const SkPaint*));
+  MOCK_METHOD5(onDrawImageRect,
+               void(const SkImage*,
+                    const SkRect*,
+                    const SkRect&,
+                    const SkPaint*,
+                    SrcRectConstraint));
+  MOCK_METHOD1(didConcat, void(const SkMatrix&));
+  MOCK_METHOD2(onDrawOval, void(const SkRect&, const SkPaint&));
 };
 
 }  // namespace cc

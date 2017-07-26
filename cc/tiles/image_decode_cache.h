@@ -7,8 +7,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "cc/base/devtools_instrumentation.h"
+#include "cc/paint/decoded_draw_image.h"
 #include "cc/paint/draw_image.h"
-#include "cc/tiles/decoded_draw_image.h"
 #include "cc/tiles/tile_priority.h"
 
 namespace cc {

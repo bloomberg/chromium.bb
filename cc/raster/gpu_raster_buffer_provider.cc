@@ -14,7 +14,6 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/histograms.h"
 #include "cc/paint/paint_canvas.h"
-#include "cc/raster/image_hijack_canvas.h"
 #include "cc/raster/raster_source.h"
 #include "cc/raster/scoped_gpu_raster.h"
 #include "cc/resources/resource.h"
