@@ -501,6 +501,16 @@ void TabStripModel::UpdateWebContentsStateAt(int index,
     observer.TabChangedAt(GetWebContentsAtImpl(index), index, change_type);
 }
 
+void TabStripModel::TabNeedsAttentionAt(int index) {
+  DCHECK(ContainsIndex(index));
+
+  if (index == active_index())
+    return;
+
+  for (auto& observer : observers_)
+    observer.TabNeedsAttentionAt(index);
+}
+
 void TabStripModel::CloseAllTabs() {
   // Set state so that observers can adjust their behavior to suit this
   // specific condition when CloseWebContentsAt causes a flurry of

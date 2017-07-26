@@ -50,13 +50,13 @@ TEST_F(TabViewTest, Glow) {
   // TODO(viettrungluu): Figure out how to test this, which is timing-sensitive
   // and which moreover uses |-performSelector:withObject:afterDelay:|.
 
-  // Call |-startAlert|/|-cancelAlert| and make sure it doesn't crash.
+  // Call |-startOnceAlert|/|-cancelAlert| and make sure it doesn't crash.
   for (int i = 0; i < 5; i++) {
-    [view_ startAlert];
+    [view_ startOnceAlert];
     [view_ cancelAlert];
   }
-  [view_ startAlert];
-  [view_ startAlert];
+  [view_ startOnceAlert];
+  [view_ startOnceAlert];
   [view_ cancelAlert];
   [view_ cancelAlert];
 }

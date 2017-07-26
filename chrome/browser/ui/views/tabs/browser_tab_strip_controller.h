@@ -102,6 +102,7 @@ class BrowserTabStripController : public TabStripController,
                              int model_index) override;
   void TabBlockedStateChanged(content::WebContents* contents,
                               int model_index) override;
+  void TabNeedsAttentionAt(int index) override;
 
   const Browser* browser() const { return browser_view_->browser(); }
 

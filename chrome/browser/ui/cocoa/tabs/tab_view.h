@@ -28,7 +28,8 @@ enum AlertState {
   kAlertNone = 0,  // Obj-C initializes to this.
   kAlertRising,
   kAlertHolding,
-  kAlertFalling
+  kAlertFalling,
+  kAlertOff
 };
 
 // When the window doesn't have focus then we want to draw the button with a
@@ -59,6 +60,7 @@ const SkColor kDefaultTabTextColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
   BOOL closing_;
 
   BOOL isMouseInside_;  // Is the mouse hovering over?
+  BOOL isInfiniteAlert_;  // Valid only when alertState_ != kAlertNone.
   tabs::AlertState alertState_;
 
   CGFloat hoverAlpha_;  // How strong the hover glow is.
@@ -113,8 +115,13 @@ const SkColor kDefaultTabTextColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
 - (void)setTrackingEnabled:(BOOL)enabled;
 
 // Begin showing an "alert" glow (shown to call attention to an unselected
-// pinned tab whose title changed).
-- (void)startAlert;
+// pinned tab whose title changed). This glow cycles once and automatically
+// stops.
+- (void)startOnceAlert;
+
+// Begin showing an "alert" glow (shown to call attention to an alert dialog).
+// This glow cycles until stopped by -cancelAlert.
+- (void)startInfiniteAlert;
 
 // Stop showing the "alert" glow; this won't immediately wipe out any glow, but
 // will make it fade away.

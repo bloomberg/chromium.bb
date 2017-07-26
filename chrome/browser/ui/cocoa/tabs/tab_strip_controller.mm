@@ -1724,6 +1724,16 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   [self layoutTabs];
 }
 
+- (void)tabNeedsAttentionAt:(NSInteger)modelIndex {
+  // Take closing tabs into account.
+  NSInteger index = [self indexFromModelIndex:modelIndex];
+
+  TabController* tabController =
+      base::mac::ObjCCastStrict<TabController>([tabArray_ objectAtIndex:index]);
+
+  [tabController setNeedsAttention];
+}
+
 - (void)setFrame:(NSRect)frame ofTabView:(NSView*)view {
   NSValue* identifier = [NSValue valueWithPointer:view];
   [targetFrames_ setObject:[NSValue valueWithRect:frame]
