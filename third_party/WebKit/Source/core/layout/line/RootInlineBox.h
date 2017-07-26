@@ -145,9 +145,6 @@ class RootInlineBox : public InlineFlowBox {
                    LayoutUnit line_top,
                    LayoutUnit line_bottom) override;
 
-  using InlineBox::HasSelectedChildren;
-  using InlineBox::SetHasSelectedChildren;
-
   SelectionState GetSelectionState() const final;
   InlineBox* FirstSelectedBox() const;
   InlineBox* LastSelectedBox() const;

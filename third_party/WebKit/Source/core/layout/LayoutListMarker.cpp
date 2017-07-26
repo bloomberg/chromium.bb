@@ -483,11 +483,6 @@ void LayoutListMarker::SetSelectionState(SelectionState state) {
   // The selection state for our containing block hierarchy is updated by the
   // base class call.
   LayoutBox::SetSelectionState(state);
-
-  if (InlineBoxWrapper() && CanUpdateSelectionOnRootLineBoxes()) {
-    InlineBoxWrapper()->Root().SetHasSelectedChildren(state !=
-                                                      SelectionState::kNone);
-  }
 }
 
 void LayoutListMarker::ListItemStyleDidChange() {
