@@ -355,22 +355,17 @@ function sensorMocks() {
 }
 
 function sensor_test(func, name, properties) {
-  mojo_test(() => {
+  promise_test(async () => {
     let sensor = sensorMocks();
 
     // Clean up and reset mock sensor stubs asynchronously, so that the blink
     // side closes its proxies and notifies JS sensor objects before new test is
     // started.
-    let onSuccess = () => {
+    try {
+      await func(sensor);
+    } finally {
       sensor.mockSensorProvider.reset();
-      return new Promise((resolve, reject) => { setTimeout(resolve, 0); });
+      await new Promise(resolve => { setTimeout(resolve, 0); });
     };
-
-    let onFailure = error => {
-      sensor.mockSensorProvider.reset();
-      return new Promise((resolve, reject) => { setTimeout(() => {reject(error);}, 0); });
-    };
-
-    return Promise.resolve(func(sensor)).then(onSuccess, onFailure);
   }, name, properties);
 }
