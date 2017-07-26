@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/lazy_task_runner.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,11 +36,19 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
+using storage::FileSystemOptions;
+
 namespace content {
 
 namespace {
 
-using storage::FileSystemOptions;
+// All FileSystemContexts currently need to share the same sequence per sharing
+// global objects: https://codereview.chromium.org/2883403002#msg14.
+base::LazySequencedTaskRunner g_fileapi_task_runner =
+    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock(),
+                         base::TaskPriority::USER_VISIBLE,
+                         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
 
 FileSystemOptions CreateBrowserFileSystemOptions(bool is_incognito) {
   FileSystemOptions::ProfileMode profile_mode =
@@ -63,12 +71,6 @@ scoped_refptr<storage::FileSystemContext> CreateFileSystemContext(
     const base::FilePath& profile_path,
     bool is_incognito,
     storage::QuotaManagerProxy* quota_manager_proxy) {
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner =
-      pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          pool->GetNamedSequenceToken("FileAPI"),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-
   // Setting up additional filesystem backends.
   std::vector<std::unique_ptr<storage::FileSystemBackend>> additional_backends;
   GetContentClient()->browser()->GetAdditionalFileSystemBackends(
@@ -85,7 +87,7 @@ scoped_refptr<storage::FileSystemContext> CreateFileSystemContext(
   scoped_refptr<storage::FileSystemContext> file_system_context =
       new storage::FileSystemContext(
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get(),
-          file_task_runner.get(),
+          g_fileapi_task_runner.Get().get(),
           BrowserContext::GetMountPoints(browser_context),
           browser_context->GetSpecialStoragePolicy(), quota_manager_proxy,
           std::move(additional_backends), url_request_auto_mount_handlers,
