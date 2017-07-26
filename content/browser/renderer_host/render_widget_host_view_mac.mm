@@ -1796,6 +1796,13 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
+  // Update and cache the new input context. Otherwise,
+  // [NSTextInputContext currentInputContext] might still hold on to this
+  // view's NSTextInputContext even after it's deallocated.
+  // See http://crbug.com/684388.
+  [[self window] makeFirstResponder:nil];
+  [NSApp updateWindows];
+
   [super dealloc];
 }
 
