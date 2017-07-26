@@ -810,6 +810,27 @@ bool Resource::CanReuse(const FetchParameters& params) const {
   const ResourceRequest& new_request = params.GetResourceRequest();
   const ResourceLoaderOptions& new_options = params.Options();
 
+  // Never reuse opaque responses from a service worker for requests that are
+  // not no-cors. https://crbug.com/625575
+  // TODO(yhirano): Remove this.
+  if (GetResponse().WasFetchedViaServiceWorker() &&
+      GetResponse().ResponseTypeViaServiceWorker() ==
+          mojom::FetchResponseType::kOpaque &&
+      new_request.GetFetchRequestMode() !=
+          WebURLRequest::kFetchRequestModeNoCORS) {
+    return false;
+  }
+
+  // If credentials were sent with the previous request and won't be with this
+  // one, or vice versa, re-fetch the resource.
+  //
+  // This helps with the case where the server sends back
+  // "Access-Control-Allow-Origin: *" all the time, but some of the client's
+  // requests are made without CORS and some with.
+  if (GetResourceRequest().AllowStoredCredentials() !=
+      new_request.AllowStoredCredentials())
+    return false;
+
   // Certain requests (e.g., XHRs) might have manually set headers that require
   // revalidation. In theory, this should be a Revalidate case. In practice, the
   // MemoryCache revalidation path assumes a whole bunch of things about how

@@ -891,23 +891,6 @@ static bool IsDownloadOrStreamRequest(const ResourceRequest& request) {
   return request.DownloadToFile() || request.UseStreamOnResponse();
 }
 
-static bool IsReusableRegardingCORS(const ResourceRequest& request,
-                                    const Resource& existing_resource) {
-  // Never reuse opaque responses from a service worker for requests that are
-  // not no-cors. https://crbug.com/625575
-  // TODO(yhirano): Remove this.
-
-  if (!existing_resource.GetResponse().WasFetchedViaServiceWorker())
-    return true;
-
-  if (existing_resource.GetResponse().ResponseTypeViaServiceWorker() !=
-      mojom::FetchResponseType::kOpaque)
-    return true;
-
-  return request.GetFetchRequestMode() ==
-         WebURLRequest::kFetchRequestModeNoCORS;
-}
-
 Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
                                         Resource::Type type) {
   auto it = preloads_.find(PreloadKey(params.Url(), type));
@@ -931,7 +914,6 @@ Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
     return nullptr;
 
   if (IsImageResourceDisallowedToBeReused(*resource) ||
-      !IsReusableRegardingCORS(request, *resource) ||
       !resource->CanReuse(params))
     return nullptr;
 
@@ -1049,7 +1031,7 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
     // We really should discard the new prefetch since the preload has more
     // specific type information! crbug.com/379893
     // fast/dom/HTMLLinkElement/link-and-subresource-test hits this case.
-    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy "
+    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::DetermineRevalidationPolicy "
                                  "reloading due to type mismatch.";
     return kReload;
   }
@@ -1060,25 +1042,12 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   if (is_static_data)
     return kUse;
 
-  if (!IsReusableRegardingCORS(request, existing_resource))
-    return kReload;
-
-  // If credentials were sent with the previous request and won't be with this
-  // one, or vice versa, re-fetch the resource.
-  //
-  // This helps with the case where the server sends back
-  // "Access-Control-Allow-Origin: *" all the time, but some of the client's
-  // requests are made without CORS and some with.
-  if (existing_resource.GetResourceRequest().AllowStoredCredentials() !=
-      request.AllowStoredCredentials()) {
-    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy "
-                                 "reloading due to difference in credentials "
-                                 "settings.";
+  if (!existing_resource.CanReuse(fetch_params)) {
+    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::DetermineRevalidationPolicy "
+                                 "reloading due to Resource::CanReuse() "
+                                 "returning false.";
     return kReload;
   }
-
-  if (!existing_resource.CanReuse(fetch_params))
-    return kReload;
 
   // Don't reload resources while pasting.
   if (allow_stale_resources_)
@@ -1090,7 +1059,7 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
 
   // Don't reuse resources with Cache-control: no-store.
   if (existing_resource.HasCacheControlNoStoreHeader()) {
-    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy "
+    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::DetermineRevalidationPolicy "
                                  "reloading due to Cache-control: no-store.";
     return kReload;
   }
@@ -1110,7 +1079,7 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
 
   // WebCachePolicy::BypassingCache always reloads
   if (request.GetCachePolicy() == WebCachePolicy::kBypassingCache) {
-    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy "
+    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::DetermineRevalidationPolicy "
                                  "reloading due to "
                                  "WebCachePolicy::BypassingCache.";
     return kReload;
@@ -1118,7 +1087,7 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
 
   // We'll try to reload the resource if it failed last time.
   if (existing_resource.ErrorOccurred()) {
-    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy "
+    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::DetermineRevalidationPolicy "
                                  "reloading due to resource being in the error "
                                  "state";
     return kReload;
@@ -1138,7 +1107,7 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   // If any of the redirects in the chain to loading the resource were not
   // cacheable, we cannot reuse our cached resource.
   if (!existing_resource.CanReuseRedirectChain()) {
-    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy "
+    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::DetermineRevalidationPolicy "
                                  "reloading due to an uncacheable redirect";
     return kReload;
   }
@@ -1169,7 +1138,7 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
     }
 
     // No, must reload.
-    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy "
+    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::DetermineRevalidationPolicy "
                                  "reloading due to missing cache validators.";
     return kReload;
   }
