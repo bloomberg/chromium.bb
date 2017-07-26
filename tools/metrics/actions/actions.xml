@@ -16108,6 +16108,66 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="SoftwareReporter.PromptDialog.LogsPermissionCheckbox_Disabled">
+  <owner>alito@chromium.org</owner>
+  <description>
+    The user clicked the logs upload permission checkbox and disabled logs
+    uploading.
+  </description>
+</action>
+
+<action name="SoftwareReporter.PromptDialog.LogsPermissionCheckbox_Enabled">
+  <owner>alito@chromium.org</owner>
+  <description>
+    The user clicked the logs upload permission checkbox and enabled logs
+    uploading.
+  </description>
+</action>
+
+<action name="SoftwareReporter.PromptDialog_Accepted">
+  <owner>alito@chromium.org</owner>
+  <description>The user accepted the Chrome Cleaner prompt.</description>
+</action>
+
+<action name="SoftwareReporter.PromptDialog_Canceled">
+  <owner>alito@chromium.org</owner>
+  <description>
+    The user clicked the cancel button in the Chrome Cleaner prompt dialog.
+  </description>
+</action>
+
+<action name="SoftwareReporter.PromptDialog_ClosedWithoutUserInteraction">
+  <owner>alito@chromium.org</owner>
+  <description>
+    The Chrome Cleaner prompt dialog was closed without any user interaction.
+    This can happen, for example, if something goes wrong with the Chrome
+    Cleaner IPC or if the user interacts with the Chrome Cleaner webui page from
+    another browser window.
+  </description>
+</action>
+
+<action name="SoftwareReporter.PromptDialog_DetailsButtonClicked">
+  <owner>alito@chromium.org</owner>
+  <description>
+    The user clicked the 'Details' button in the Chrome Cleaner prompt dialog.
+  </description>
+</action>
+
+<action name="SoftwareReporter.PromptDialog_Dismissed">
+  <owner>alito@chromium.org</owner>
+  <description>
+    The user dismissed the Chrome Cleaner prompt dialog, for example by clicking
+    the x in the top right corner or pressing the Escape key.
+  </description>
+</action>
+
+<action name="SoftwareReporter.PromptDialog_Shown">
+  <owner>alito@chromium.org</owner>
+  <description>
+    The Chrome Cleaner prompt dialog was shown to the user.
+  </description>
+</action>
+
 <action name="StackedTab_DragActiveTab">
   <owner>bruthig@chromium.org</owner>
   <owner>tdanderson@chromium.org</owner>
