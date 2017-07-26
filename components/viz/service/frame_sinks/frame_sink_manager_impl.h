@@ -60,18 +60,18 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void SetLocalClient(cc::mojom::FrameSinkManagerClient* client);
 
   // cc::mojom::FrameSinkManager implementation:
+  void RegisterFrameSinkId(const FrameSinkId& frame_sink_id) override;
+  void InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) override;
   void CreateRootCompositorFrameSink(
       const FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
       cc::mojom::CompositorFrameSinkAssociatedRequest request,
-      cc::mojom::CompositorFrameSinkPrivateRequest private_request,
       cc::mojom::CompositorFrameSinkClientPtr client,
       cc::mojom::DisplayPrivateAssociatedRequest display_private_request)
       override;
   void CreateCompositorFrameSink(
       const FrameSinkId& frame_sink_id,
       cc::mojom::CompositorFrameSinkRequest request,
-      cc::mojom::CompositorFrameSinkPrivateRequest private_request,
       cc::mojom::CompositorFrameSinkClientPtr client) override;
   void RegisterFrameSinkHierarchy(
       const FrameSinkId& parent_frame_sink_id,
@@ -79,6 +79,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void UnregisterFrameSinkHierarchy(
       const FrameSinkId& parent_frame_sink_id,
       const FrameSinkId& child_frame_sink_id) override;
+  void AssignTemporaryReference(const SurfaceId& surface_id,
+                                const FrameSinkId& owner) override;
   void DropTemporaryReference(const SurfaceId& surface_id) override;
 
   // CompositorFrameSinkSupport, hierarchy, and BeginFrameSource can be
@@ -120,7 +122,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void OnSurfaceWillDraw(const SurfaceId& surface_id) override;
 
   void OnClientConnectionLost(const FrameSinkId& frame_sink_id);
-  void OnPrivateConnectionLost(const FrameSinkId& frame_sink_id);
 
   // It is necessary to pass |frame_sink_id| by value because the id
   // is owned by the GpuCompositorFrameSink in the map. When the sink is

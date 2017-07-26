@@ -27,7 +27,6 @@ class FrameSinkManagerImpl;
 class GpuRootCompositorFrameSink
     : public NON_EXPORTED_BASE(CompositorFrameSinkSupportClient),
       public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSink),
-      public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSinkPrivate),
       public NON_EXPORTED_BASE(cc::mojom::DisplayPrivate),
       public NON_EXPORTED_BASE(DisplayClient) {
  public:
@@ -37,7 +36,6 @@ class GpuRootCompositorFrameSink
       std::unique_ptr<Display> display,
       std::unique_ptr<BeginFrameSource> begin_frame_source,
       cc::mojom::CompositorFrameSinkAssociatedRequest request,
-      cc::mojom::CompositorFrameSinkPrivateRequest private_request,
       cc::mojom::CompositorFrameSinkClientPtr client,
       cc::mojom::DisplayPrivateAssociatedRequest display_private_request);
 
@@ -57,11 +55,6 @@ class GpuRootCompositorFrameSink
                              cc::CompositorFrame frame) override;
   void DidNotProduceFrame(const BeginFrameAck& begin_frame_ack) override;
 
-  // cc::mojom::CompositorFrameSinkPrivate:
-  void ClaimTemporaryReference(const SurfaceId& surface_id) override;
-  void RequestCopyOfSurface(
-      std::unique_ptr<CopyOutputRequest> request) override;
-
  private:
   // DisplayClient:
   void DisplayOutputSurfaceLost() override;
@@ -80,7 +73,6 @@ class GpuRootCompositorFrameSink
                        const gfx::Rect& damage_rect) override;
 
   void OnClientConnectionLost();
-  void OnPrivateConnectionLost();
 
   std::unique_ptr<CompositorFrameSinkSupport> support_;
 
@@ -92,8 +84,6 @@ class GpuRootCompositorFrameSink
   cc::mojom::CompositorFrameSinkClientPtr client_;
   mojo::AssociatedBinding<cc::mojom::CompositorFrameSink>
       compositor_frame_sink_binding_;
-  mojo::Binding<cc::mojom::CompositorFrameSinkPrivate>
-      compositor_frame_sink_private_binding_;
   mojo::AssociatedBinding<cc::mojom::DisplayPrivate> display_private_binding_;
 
   HitTestAggregator hit_test_aggregator_;

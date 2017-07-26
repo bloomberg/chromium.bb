@@ -22,7 +22,9 @@ class ServerWindow;
 // ServerWindow.
 class ServerWindowCompositorFrameSinkManager {
  public:
-  explicit ServerWindowCompositorFrameSinkManager(ServerWindow* window);
+  ServerWindowCompositorFrameSinkManager(
+      const viz::FrameSinkId& frame_sink_id,
+      cc::mojom::FrameSinkManager* frame_sink_manager);
   ~ServerWindowCompositorFrameSinkManager();
 
   // Creates a new CompositorFrameSink of the specified type, replacing the
@@ -41,11 +43,12 @@ class ServerWindowCompositorFrameSinkManager {
   // temporary reference to |surface_id|.
   void ClaimTemporaryReference(const viz::SurfaceId& surface_id);
 
+  // TODO(kylechar): Add method to reregister |frame_sink_id_| when viz service
+  // has crashed.
+
  private:
-  ServerWindow* const window_;
-  cc::mojom::CompositorFrameSinkPrivatePtr compositor_frame_sink_;
-  cc::mojom::CompositorFrameSinkPrivateRequest
-      pending_compositor_frame_sink_request_;
+  const viz::FrameSinkId frame_sink_id_;
+  cc::mojom::FrameSinkManager* const frame_sink_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerWindowCompositorFrameSinkManager);
 };

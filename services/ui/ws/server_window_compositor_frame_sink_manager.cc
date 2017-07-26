@@ -15,11 +15,15 @@ namespace ui {
 namespace ws {
 
 ServerWindowCompositorFrameSinkManager::ServerWindowCompositorFrameSinkManager(
-    ServerWindow* window)
-    : window_(window) {}
+    const viz::FrameSinkId& frame_sink_id,
+    cc::mojom::FrameSinkManager* frame_sink_manager)
+    : frame_sink_id_(frame_sink_id), frame_sink_manager_(frame_sink_manager) {
+  frame_sink_manager_->RegisterFrameSinkId(frame_sink_id_);
+}
 
 ServerWindowCompositorFrameSinkManager::
     ~ServerWindowCompositorFrameSinkManager() {
+  frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void ServerWindowCompositorFrameSinkManager::CreateRootCompositorFrameSink(
@@ -27,40 +31,24 @@ void ServerWindowCompositorFrameSinkManager::CreateRootCompositorFrameSink(
     cc::mojom::CompositorFrameSinkAssociatedRequest sink_request,
     cc::mojom::CompositorFrameSinkClientPtr client,
     cc::mojom::DisplayPrivateAssociatedRequest display_request) {
-  if (!pending_compositor_frame_sink_request_.is_pending()) {
-    pending_compositor_frame_sink_request_ =
-        mojo::MakeRequest(&compositor_frame_sink_);
-  }
-
   // TODO(fsamuel): AcceleratedWidget cannot be transported over IPC for Mac
   // or Android. We should instead use GpuSurfaceTracker here on those
   // platforms.
-  window_->delegate()->GetFrameSinkManager()->CreateRootCompositorFrameSink(
-      window_->frame_sink_id(), widget, std::move(sink_request),
-      std::move(pending_compositor_frame_sink_request_), std::move(client),
+  frame_sink_manager_->CreateRootCompositorFrameSink(
+      frame_sink_id_, widget, std::move(sink_request), std::move(client),
       std::move(display_request));
 }
 
 void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSink(
     cc::mojom::CompositorFrameSinkRequest request,
     cc::mojom::CompositorFrameSinkClientPtr client) {
-  if (!pending_compositor_frame_sink_request_.is_pending()) {
-    pending_compositor_frame_sink_request_ =
-        mojo::MakeRequest(&compositor_frame_sink_);
-  }
-
-  window_->delegate()->GetFrameSinkManager()->CreateCompositorFrameSink(
-      window_->frame_sink_id(), std::move(request),
-      std::move(pending_compositor_frame_sink_request_), std::move(client));
+  frame_sink_manager_->CreateCompositorFrameSink(
+      frame_sink_id_, std::move(request), std::move(client));
 }
 
 void ServerWindowCompositorFrameSinkManager::ClaimTemporaryReference(
     const viz::SurfaceId& surface_id) {
-  if (!compositor_frame_sink_.is_bound()) {
-    pending_compositor_frame_sink_request_ =
-        mojo::MakeRequest(&compositor_frame_sink_);
-  }
-  compositor_frame_sink_->ClaimTemporaryReference(surface_id);
+  frame_sink_manager_->AssignTemporaryReference(surface_id, frame_sink_id_);
 }
 
 }  // namespace ws

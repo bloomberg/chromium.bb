@@ -101,7 +101,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
     FrameSinkData& operator=(FrameSinkData&& other);
 
     bool HasCompositorFrameSinkData() const {
-      return private_interface.is_bound() || support;
+      return has_created_compositor_frame_sink || support;
     }
 
     // Returns true if there is nothing in FrameSinkData and it can be deleted.
@@ -115,10 +115,9 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
     // The FrameSinkId registered as the parent in the BeginFrame hierarchy.
     base::Optional<FrameSinkId> parent;
 
-    // The private interface that gives the host control over the
-    // CompositorFrameSink connection between the client and viz. This will be
-    // unbound if not using Mojo.
-    cc::mojom::CompositorFrameSinkPrivatePtr private_interface;
+    // If a mojom::CompositorFrameSink was created for this FrameSinkId. This
+    // will always be false if not using Mojo.
+    bool has_created_compositor_frame_sink = false;
 
     // This will be null if using Mojo.
     CompositorFrameSinkSupport* support = nullptr;

@@ -39,6 +39,16 @@ interface DisplayPrivate {
 // frame sink manager host which will forward the request to the frame sink
 // manager.
 interface FrameSinkManager {
+  // Registers |frame_sink_id| will be used. This must be called before
+  // Create(Root)CompositorFrameSink() is called.
+  RegisterFrameSinkId(cc.mojom.FrameSinkId frame_sink_id);
+
+  // Invalidates |frame_sink_id| which cleans up any unsatisified surface
+  // sequences or dangling temporary references assigned to it. If there is a
+  // CompositorFrameSink for |frame_sink_id| then it will be destroyed and the
+  // message pipe to the client will be closed.
+  InvalidateFrameSinkId(cc.mojom.FrameSinkId frame_sink_id);
+
   // Create a CompositorFrameSink for a privileged client (e.g. WindowServer).
   // This is only used by privileged clients. The client can call methods that
   // talks to the Display (e.g. ResizeDisplay(), SetDisplayVisible(), etc)
@@ -46,7 +56,6 @@ interface FrameSinkManager {
       cc.mojom.FrameSinkId frame_sink_id,
       gpu.mojom.SurfaceHandle widget,
       associated cc.mojom.CompositorFrameSink& compositor_frame_sink,
-      cc.mojom.CompositorFrameSinkPrivate& compositor_frame_sink_private,
       cc.mojom.CompositorFrameSinkClient compositor_frame_sink_client,
       associated DisplayPrivate& display_private);
 
@@ -56,7 +65,6 @@ interface FrameSinkManager {
   CreateCompositorFrameSink(
       cc.mojom.FrameSinkId frame_sink_id,
       cc.mojom.CompositorFrameSink& compositor_frame_sink,
-      cc.mojom.CompositorFrameSinkPrivate& compositor_frame_sink_private,
       cc.mojom.CompositorFrameSinkClient compositor_frame_sink_client);
 
   // Set up a BeginFrame relationship between two FrameSinkIds. In this case,
@@ -68,6 +76,12 @@ interface FrameSinkManager {
   // Removes a BeginFrame relationship between two FrameSinkIds.
   UnregisterFrameSinkHierarchy(cc.mojom.FrameSinkId parent_frame_sink_id,
                                cc.mojom.FrameSinkId child_frame_sink_id);
+
+  // Assigns the temporary reference for |surface_id| to FrameSinkId |owner|.
+  // If |owner| is invalidated before it converts the temporary reference to a
+  // surface reference then the temporary reference will be dropped.
+  AssignTemporaryReference(cc.mojom.SurfaceId surface_id,
+                           cc.mojom.FrameSinkId owner);
 
   // Drops the temporary reference for |surface_id|. This will get called when
   // the FrameSinkManagerClient doesn't think |surface_id| will be embedded.

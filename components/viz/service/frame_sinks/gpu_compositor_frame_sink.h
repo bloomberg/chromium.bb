@@ -22,14 +22,12 @@ namespace viz {
 // Server side representation of a WindowSurface.
 class GpuCompositorFrameSink
     : public NON_EXPORTED_BASE(CompositorFrameSinkSupportClient),
-      public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSink),
-      public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSinkPrivate) {
+      public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSink) {
  public:
   GpuCompositorFrameSink(
       FrameSinkManagerImpl* frame_sink_manager,
       const FrameSinkId& frame_sink_id,
       cc::mojom::CompositorFrameSinkRequest request,
-      cc::mojom::CompositorFrameSinkPrivateRequest private_request,
       cc::mojom::CompositorFrameSinkClientPtr client);
 
   ~GpuCompositorFrameSink() override;
@@ -39,11 +37,6 @@ class GpuCompositorFrameSink
   void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void DidNotProduceFrame(const BeginFrameAck& begin_frame_ack) override;
-
-  // cc::mojom::CompositorFrameSinkPrivate:
-  void ClaimTemporaryReference(const SurfaceId& surface_id) override;
-  void RequestCopyOfSurface(
-      std::unique_ptr<CopyOutputRequest> request) override;
 
  private:
   // CompositorFrameSinkSupportClient implementation:
@@ -57,14 +50,11 @@ class GpuCompositorFrameSink
                        const gfx::Rect& damage_rect) override;
 
   void OnClientConnectionLost();
-  void OnPrivateConnectionLost();
 
   std::unique_ptr<CompositorFrameSinkSupport> support_;
 
   cc::mojom::CompositorFrameSinkClientPtr client_;
   mojo::Binding<cc::mojom::CompositorFrameSink> compositor_frame_sink_binding_;
-  mojo::Binding<cc::mojom::CompositorFrameSinkPrivate>
-      compositor_frame_sink_private_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCompositorFrameSink);
 };
