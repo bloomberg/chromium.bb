@@ -67,17 +67,19 @@ public class SigninPromoController {
     }
 
     /**
-     * Records an impression for the promo.
+     * Records user actions for promo impressions.
      */
     public void recordSigninPromoImpression() {
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         int numImpressions = preferences.getInt(SIGNIN_PROMO_IMPRESSIONS_COUNT, 0);
         preferences.edit().putInt(SIGNIN_PROMO_IMPRESSIONS_COUNT, numImpressions + 1).apply();
-        RecordUserAction.record("Signin_Impression_FromSettings");
-        // TODO(iuliah): Add Signin_Impression_WithAccounts recording
-        // This method is later going to record impressions for whether the promo was configured
-        // to be in the hot state (there are accounts which are currently singed in on the device)
-        // or in the cold state, depending on the value of mAccountName.
+
+        recordSigninImpressionUserAction();
+        if (mAccountName == null) {
+            recordSigninImpressionWithNoAccountUserAction();
+        } else {
+            recordSigninImpressionWithAccountUserAction();
+        }
     }
 
     /**
@@ -117,6 +119,63 @@ public class SigninPromoController {
         mAccountName = accountName;
     }
 
+    private void recordSigninImpressionUserAction() {
+        switch (mAccessPoint) {
+            case SigninAccessPoint.BOOKMARK_MANAGER:
+                RecordUserAction.record("Signin_Impression_FromBookmarkManager");
+                break;
+            case SigninAccessPoint.NTP_CONTENT_SUGGESTIONS:
+                RecordUserAction.record("Signin_Impression_FromNTPContentSuggestions");
+                break;
+            case SigninAccessPoint.RECENT_TABS:
+                RecordUserAction.record("Signin_Impression_FromRecentTabs");
+                break;
+            case SigninAccessPoint.SETTINGS:
+                RecordUserAction.record("Signin_Impression_FromSettings");
+                break;
+            default:
+                throw new RuntimeException("Unexpected value for access point: " + mAccessPoint);
+        }
+    }
+
+    private void recordSigninImpressionWithAccountUserAction() {
+        switch (mAccessPoint) {
+            case SigninAccessPoint.BOOKMARK_MANAGER:
+                RecordUserAction.record("Signin_ImpressionWithAccount_FromBookmarkManager");
+                break;
+            case SigninAccessPoint.NTP_CONTENT_SUGGESTIONS:
+                // TODO(iuliah): record Signin_ImpressionWithAccount_FromNTPContentSuggestions.
+                break;
+            case SigninAccessPoint.RECENT_TABS:
+                RecordUserAction.record("Signin_ImpressionWithAccount_FromRecentTabs");
+                break;
+            case SigninAccessPoint.SETTINGS:
+                RecordUserAction.record("Signin_ImpressionWithAccount_FromSettings");
+                break;
+            default:
+                throw new RuntimeException("Unexpected value for access point: " + mAccessPoint);
+        }
+    }
+
+    private void recordSigninImpressionWithNoAccountUserAction() {
+        switch (mAccessPoint) {
+            case SigninAccessPoint.BOOKMARK_MANAGER:
+                RecordUserAction.record("Signin_ImpressionWithNoAccount_FromBookmarkManager");
+                break;
+            case SigninAccessPoint.NTP_CONTENT_SUGGESTIONS:
+                // TODO(iuliah): record Signin_ImpressionWithNoAccount_FromNTPContentSuggestions.
+                break;
+            case SigninAccessPoint.RECENT_TABS:
+                RecordUserAction.record("Signin_ImpressionWithNoAccount_FromRecentTabs");
+                break;
+            case SigninAccessPoint.SETTINGS:
+                RecordUserAction.record("Signin_ImpressionWithNoAccount_FromSettings");
+                break;
+            default:
+                throw new RuntimeException("Unexpected value for access point: " + mAccessPoint);
+        }
+    }
+
     private void setupColdState(final Context context, SigninPromoView view) {
         view.getImage().setImageResource(R.drawable.chrome_sync_logo);
         setImageSize(context, view, R.dimen.signin_promo_cold_state_image_size);
@@ -126,6 +185,7 @@ public class SigninPromoController {
             @Override
             public void onClick(View view) {
                 AccountSigninActivity.startAccountSigninActivity(context, mAccessPoint);
+                // TODO(iuliah): change to new account activity when available.
             }
         });
 
@@ -133,7 +193,6 @@ public class SigninPromoController {
     }
 
     private void setupHotState(final Context context, SigninPromoView view) {
-        // TODO (iuliah): Subscribe to ProfileDataCache
         Drawable accountImage = mProfileDataCache.getImage(mAccountName);
         view.getImage().setImageDrawable(accountImage);
         setImageSize(context, view, R.dimen.signin_promo_account_image_size);
@@ -145,9 +204,8 @@ public class SigninPromoController {
         view.getSigninButton().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                AccountSigninActivity.startAccountSigninActivity(context, mAccessPoint);
-                // TODO(iuliah):  use confirmation-only entry point in AccountSigninActivity
-                // as soon as it is available
+                AccountSigninActivity.startFromConfirmationPage(
+                        context, mAccessPoint, mAccountName, true);
             }
         });
 
