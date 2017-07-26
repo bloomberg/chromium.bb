@@ -125,7 +125,7 @@ ACTION_P4(VerifySameDocumentStartedContext,
   EXPECT_EQ(url, (*context)->GetUrl());
   EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
       page_transition, (*context)->GetPageTransition()));
-  EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_TRUE((*context)->IsSameDocument());
   EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->GetResponseHeaders());
