@@ -30,8 +30,7 @@ class WebViewURLRequestContextGetter : public net::URLRequestContextGetter {
   WebViewURLRequestContextGetter(
       const base::FilePath& base_path,
       const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& cache_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner);
 
   // net::URLRequestContextGetter implementation.
   net::URLRequestContext* GetURLRequestContext() override;
@@ -45,7 +44,6 @@ class WebViewURLRequestContextGetter : public net::URLRequestContextGetter {
   base::FilePath base_path_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> cache_task_runner_;
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   std::unique_ptr<net::NetworkDelegate> network_delegate_;
   std::unique_ptr<net::URLRequestContextStorage> storage_;

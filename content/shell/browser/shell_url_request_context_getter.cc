@@ -187,8 +187,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 #else
                   net::CACHE_BACKEND_DEFAULT,
 #endif
-                  cache_path, 0,
-                  BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE)));
+                  cache_path, 0));
 
     net::HttpNetworkSession::Context network_session_context;
     network_session_context.cert_verifier =
