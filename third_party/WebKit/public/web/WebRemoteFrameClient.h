@@ -11,7 +11,7 @@
 #include "public/web/WebFrame.h"
 
 namespace blink {
-enum class WebClientRedirectPolicy;
+enum class ClientRedirectPolicy;
 enum class WebFrameLoadType;
 class WebURLRequest;
 struct WebRect;
@@ -34,7 +34,7 @@ class WebRemoteFrameClient {
   // A remote frame was asked to start a navigation.
   virtual void Navigate(const WebURLRequest& request,
                         bool should_replace_current_entry) {}
-  virtual void Reload(WebFrameLoadType, WebClientRedirectPolicy) {}
+  virtual void Reload(WebFrameLoadType, ClientRedirectPolicy) {}
 
   virtual void FrameRectsChanged(const WebRect&) {}
 
