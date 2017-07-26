@@ -1231,9 +1231,13 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   SetupFieldTrials();
 
   // ChromeOS needs ResourceBundle::InitSharedInstance to be called before this.
-  // This also instantiates the IOThread which requests the metrics service and
-  // must be after |SetupMetrics()|.
   browser_process_->PreCreateThreads();
+
+  // This must occur in PreCreateThreads() because it initializes global state
+  // which is then read by all threads without synchronization. It must be after
+  // browser_process_->PreCreateThreads() as that instantiates the IOThread
+  // which is used in SetupMetrics().
+  SetupMetrics();
 
   return content::RESULT_CODE_NORMAL_EXIT;
 }
@@ -1425,10 +1429,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   SCOPED_UMA_HISTOGRAM_LONG_TIMER("Startup.PreMainMessageLoopRunImplLongTime");
   const base::TimeTicks start_time_step1 = base::TimeTicks::Now();
-
-  // This must occur at PreMainMessageLoopRun because |SetupMetrics()| uses the
-  // blocking pool, which is disabled until the CreateThreads phase of startup.
-  SetupMetrics();
 
   // Can't be in SetupFieldTrials() because it needs a task runner.
   MemoryAblationExperiment::MaybeStart(
