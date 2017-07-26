@@ -475,6 +475,16 @@ bool AXObject::HasAOMPropertyOrARIAAttribute(AOMFloatProperty property,
   return !is_null;
 }
 
+bool AXObject::HasAOMPropertyOrARIAAttribute(AOMStringProperty property,
+                                             AtomicString& result) const {
+  Element* element = this->GetElement();
+  if (!element)
+    return false;
+
+  result = AccessibleNode::GetPropertyOrARIAAttribute(element, property);
+  return !result.IsNull();
+}
+
 bool AXObject::IsARIATextControl() const {
   return AriaRoleAttribute() == kTextFieldRole ||
          AriaRoleAttribute() == kSearchBoxRole ||
@@ -1296,11 +1306,13 @@ AXDefaultActionVerb AXObject::Action() const {
   }
 }
 bool AXObject::AriaPressedIsPresent() const {
-  return !GetAttribute(aria_pressedAttr).IsEmpty();
+  AtomicString result;
+  return HasAOMPropertyOrARIAAttribute(AOMStringProperty::kPressed, result);
 }
 
 bool AXObject::AriaCheckedIsPresent() const {
-  return !GetAttribute(aria_checkedAttr).IsEmpty();
+  AtomicString result;
+  return HasAOMPropertyOrARIAAttribute(AOMStringProperty::kChecked, result);
 }
 
 bool AXObject::SupportsActiveDescendant() const {

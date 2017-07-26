@@ -821,6 +821,20 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaTreeGrid) {
   RunAriaTest(FILE_PATH_LITERAL("aria-treegrid.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaUndefined) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-undefined.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaUndefinedLiteral) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-undefined-literal.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaEmptyString) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-empty-string.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
     DISABLED_AccessibilityAriaValueMin) {
   RunAriaTest(FILE_PATH_LITERAL("aria-valuemin.html"));

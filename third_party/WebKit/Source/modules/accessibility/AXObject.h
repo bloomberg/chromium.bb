@@ -366,6 +366,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool HasAOMPropertyOrARIAAttribute(AOMUIntProperty, uint32_t& result) const;
   bool HasAOMPropertyOrARIAAttribute(AOMIntProperty, int32_t& result) const;
   bool HasAOMPropertyOrARIAAttribute(AOMFloatProperty, float& result) const;
+  bool HasAOMPropertyOrARIAAttribute(AOMStringProperty,
+                                     AtomicString& result) const;
 
   virtual void GetSparseAXAttributes(AXSparseAttributeClient&) const {}
 
