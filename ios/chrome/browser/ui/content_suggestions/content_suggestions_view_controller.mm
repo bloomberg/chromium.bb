@@ -409,8 +409,8 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
   [super scrollViewDidScroll:scrollView];
-  [self.overscrollActionsController scrollViewDidScroll:scrollView];
   [self.audience contentSuggestionsDidScroll];
+  [self.overscrollActionsController scrollViewDidScroll:scrollView];
   [self.headerCommandHandler updateFakeOmniboxForScrollView:scrollView];
   self.scrolledToTop =
       scrollView.contentOffset.y >= [self.suggestionsDelegate pinnedOffsetY];
