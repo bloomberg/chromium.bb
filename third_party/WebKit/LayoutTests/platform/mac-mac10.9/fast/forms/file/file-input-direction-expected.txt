@@ -21,25 +21,25 @@ layer at (0,0) size 800x600
             LayoutTableCell {TH} at (2,34) size 86x2 [r=1 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (90,24) size 241x22 [border: (1px solid #000000)] [r=1 c=1 rs=1 cs=1]
               LayoutFileUploadControl {INPUT} at (2,2) size 237x18 "No file chosen"
-                LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#FFFFFF]
                   LayoutBlockFlow (anonymous) at (8,2) size 61.56x13
                     LayoutText {#text} at (0,0) size 62x13
                       text run at (0,0) width 62: "Choose File"
             LayoutTableCell {TD} at (333,24) size 241x22 [border: (1px solid #000000)] [r=1 c=2 rs=1 cs=1]
               LayoutFileUploadControl {INPUT} at (2,2) size 237x18 "No file chosen"
-                LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#FFFFFF]
                   LayoutBlockFlow (anonymous) at (8,2) size 61.56x13
                     LayoutText {#text} at (0,0) size 62x13
                       text run at (0,0) width 62: "Choose File"
             LayoutTableCell {TD} at (576,24) size 241x22 [border: (1px solid #000000)] [r=1 c=3 rs=1 cs=1]
               LayoutFileUploadControl {INPUT} at (2,2) size 237x18 "No file chosen"
-                LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#FFFFFF]
                   LayoutBlockFlow (anonymous) at (8,2) size 61.56x13
                     LayoutText {#text} at (0,0) size 62x13
                       text run at (0,0) width 62: "Choose File"
             LayoutTableCell {TD} at (819,24) size 241x22 [border: (1px solid #000000)] [r=1 c=4 rs=1 cs=1]
               LayoutFileUploadControl {INPUT} at (2,2) size 237x18 "No file chosen"
-                LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#FFFFFF]
                   LayoutBlockFlow (anonymous) at (8,2) size 61.56x13
                     LayoutText {#text} at (0,0) size 62x13
                       text run at (0,0) width 62: "Choose File"
@@ -49,25 +49,25 @@ layer at (0,0) size 800x600
                 text run at (1,1) width 84: "direction:ltr"
             LayoutTableCell {TD} at (90,48) size 241x22 [border: (1px solid #000000)] [r=2 c=1 rs=1 cs=1]
               LayoutFileUploadControl {INPUT} at (2,2) size 237x18 "No file chosen"
-                LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#FFFFFF]
                   LayoutBlockFlow (anonymous) at (8,2) size 61.56x13
                     LayoutText {#text} at (0,0) size 62x13
                       text run at (0,0) width 62: "Choose File"
             LayoutTableCell {TD} at (333,48) size 241x22 [border: (1px solid #000000)] [r=2 c=2 rs=1 cs=1]
               LayoutFileUploadControl {INPUT} at (2,2) size 237x18 "No file chosen"
-                LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#FFFFFF]
                   LayoutBlockFlow (anonymous) at (8,2) size 61.56x13
                     LayoutText {#text} at (0,0) size 62x13
                       text run at (0,0) width 62: "Choose File"
             LayoutTableCell {TD} at (576,48) size 241x22 [border: (1px solid #000000)] [r=2 c=3 rs=1 cs=1]
               LayoutFileUploadControl {INPUT} at (2,2) size 237x18 "No file chosen"
-                LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#FFFFFF]
                   LayoutBlockFlow (anonymous) at (8,2) size 61.56x13
                     LayoutText {#text} at (0,0) size 62x13
                       text run at (0,0) width 62: "Choose File"
             LayoutTableCell {TD} at (819,48) size 241x22 [border: (1px solid #000000)] [r=2 c=4 rs=1 cs=1]
               LayoutFileUploadControl {INPUT} at (2,2) size 237x18 "No file chosen"
-                LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#FFFFFF]
                   LayoutBlockFlow (anonymous) at (8,2) size 61.56x13
                     LayoutText {#text} at (0,0) size 62x13
                       text run at (0,0) width 62: "Choose File"
@@ -77,25 +77,25 @@ layer at (0,0) size 800x600
                 text run at (1,1) width 84: "direction:rtl"
             LayoutTableCell {TD} at (90,72) size 241x22 [border: (1px solid #000000)] [r=3 c=1 rs=1 cs=1]
               LayoutFileUploadControl {INPUT} at (2,2) size 237x18 "No file chosen"
-                LayoutButton {INPUT} at (159.44,0) size 77.56x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (159.44,0) size 77.56x18 [bgcolor=#FFFFFF]
                   LayoutBlockFlow (anonymous) at (8,2) size 61.56x13
                     LayoutText {#text} at (0,0) size 62x13
                       text run at (0,0) width 62: "Choose File"
             LayoutTableCell {TD} at (333,72) size 241x22 [border: (1px solid #000000)] [r=3 c=2 rs=1 cs=1]
               LayoutFileUploadControl {INPUT} at (2,2) size 237x18 "No file chosen"
-                LayoutButton {INPUT} at (159.44,0) size 77.56x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (159.44,0) size 77.56x18 [bgcolor=#FFFFFF]
                   LayoutBlockFlow (anonymous) at (8,2) size 61.56x13
                     LayoutText {#text} at (0,0) size 62x13
                       text run at (0,0) width 62: "Choose File"
             LayoutTableCell {TD} at (576,72) size 241x22 [border: (1px solid #000000)] [r=3 c=3 rs=1 cs=1]
               LayoutFileUploadControl {INPUT} at (2,2) size 237x18 "No file chosen"
-                LayoutButton {INPUT} at (159.44,0) size 77.56x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (159.44,0) size 77.56x18 [bgcolor=#FFFFFF]
                   LayoutBlockFlow (anonymous) at (8,2) size 61.56x13
                     LayoutText {#text} at (0,0) size 62x13
                       text run at (0,0) width 62: "Choose File"
             LayoutTableCell {TD} at (819,72) size 241x22 [border: (1px solid #000000)] [r=3 c=4 rs=1 cs=1]
               LayoutFileUploadControl {INPUT} at (2,2) size 237x18 "No file chosen"
-                LayoutButton {INPUT} at (159.44,0) size 77.56x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (159.44,0) size 77.56x18 [bgcolor=#FFFFFF]
                   LayoutBlockFlow (anonymous) at (8,2) size 61.56x13
                     LayoutText {#text} at (0,0) size 62x13
                       text run at (0,0) width 62: "Choose File"

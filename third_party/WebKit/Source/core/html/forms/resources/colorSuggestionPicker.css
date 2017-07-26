@@ -47,6 +47,7 @@ body {
     margin: 1px;
     padding: 0;
     border: 1px solid #e0e0e0;
+    border-radius: 0;
     box-sizing: content-box;
 }
 

@@ -11,6 +11,6 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 68x18
             text run at (0,0) width 68: "and a link."
         LayoutBR {xhtml:br} at (67,0) size 1x18
-        LayoutButton {xhtml:input} at (0,18) size 16x18 [bgcolor=#C0C0C0]
+        LayoutButton {xhtml:input} at (0,18) size 16x18 [bgcolor=#FFFFFF]
         LayoutText {#text} at (0,0) size 0x0
     LayoutSVGRect {rect} at (10,10) size 580x380 [stroke={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=580.00] [height=380.00]

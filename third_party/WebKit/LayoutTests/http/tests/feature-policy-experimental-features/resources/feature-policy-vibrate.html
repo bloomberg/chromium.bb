@@ -7,8 +7,8 @@ function startTest(event) {
   // Simulates a user click for vibrate to be allowed.
   var element = document.getElementById('test');
   document.querySelector('button').addEventListener('click', testVibrate);
-  simulateUserClick(element.offsetLeft + event.data.x + 2,
-                    element.offsetTop + event.data.y + 2);
+  simulateUserClick(element.offsetLeft + event.data.x + 4,
+                    element.offsetTop + event.data.y + 4);
 }
 
 function testVibrate() {

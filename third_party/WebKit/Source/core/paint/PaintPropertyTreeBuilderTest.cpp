@@ -1068,6 +1068,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ControlClip) {
       "    margin: 0;"
       "  }"
       "  input {"
+      "    border-radius: 0;"
       "    border-width: 5px;"
       "    padding: 0;"
       "  }"

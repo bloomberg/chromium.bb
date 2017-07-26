@@ -28,7 +28,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,57) size 25x18
           text run at (0,57) width 25: "file "
         LayoutFileUploadControl {INPUT} at (24.44,58) size 237x18 "No file chosen"
-          LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#C0C0C0]
+          LayoutButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#FFFFFF]
             LayoutBlockFlow (anonymous) at (8,2) size 61.56x13
               LayoutText {#text} at (0,0) size 62x13
                 text run at (0,0) width 62: "Choose File"
@@ -58,7 +58,7 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (176,130) size 1x0
         LayoutText {#text} at (0,134) size 35x18
           text run at (0,134) width 35: "reset "
-        LayoutButton {INPUT} at (34.20,135) size 44.94x18 [bgcolor=#C0C0C0]
+        LayoutButton {INPUT} at (34.20,135) size 44.94x18 [bgcolor=#FFFFFF]
           LayoutBlockFlow (anonymous) at (8,2) size 28.94x13
             LayoutText {#text} at (0,0) size 29x13
               text run at (0,0) width 29: "Reset"
@@ -67,7 +67,7 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (83,148) size 1x0
         LayoutText {#text} at (0,153) size 48x18
           text run at (0,153) width 48: "submit "
-        LayoutButton {INPUT} at (47.56,154) size 53.25x18 [bgcolor=#C0C0C0]
+        LayoutButton {INPUT} at (47.56,154) size 53.25x18 [bgcolor=#FFFFFF]
           LayoutBlockFlow (anonymous) at (8,2) size 37.25x13
             LayoutText {#text} at (0,0) size 38x13
               text run at (0,0) width 38: "Submit"

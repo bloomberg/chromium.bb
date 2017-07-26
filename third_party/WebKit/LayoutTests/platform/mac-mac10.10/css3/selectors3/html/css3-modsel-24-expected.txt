@@ -4,7 +4,7 @@ layer at (0,0) size 800x73
   LayoutBlockFlow {HTML} at (0,0) size 800x73
     LayoutBlockFlow {BODY} at (8,16) size 784x41
       LayoutBlockFlow {P} at (0,0) size 784x41
-        LayoutButton {BUTTON} at (0,0) size 228.25x22 [color=#7F7F7F] [bgcolor=#00FF00] [border: (2px outset #C0C0C0)]
+        LayoutButton {BUTTON} at (0,0) size 228.25x22 [color=#7F7F7F] [bgcolor=#00FF00] [border: (2px solid #D8D8D8) (2px solid #D1D1D1) (2px solid #BABABA) (2px solid #D1D1D1)]
           LayoutBlockFlow (anonymous) at (8,4) size 212.25x13
             LayoutText {#text} at (0,0) size 213x13
               text run at (0,0) width 213: "A button (disabled) with green background"

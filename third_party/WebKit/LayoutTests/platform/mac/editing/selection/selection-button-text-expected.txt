@@ -13,7 +13,7 @@ layer at (0,0) size 800x132
           LayoutBR {BR} at (49,0) size 1x18
           LayoutText {#text} at (0,18) size 61x18
             text run at (0,18) width 61: "with text "
-          LayoutButton {INPUT} at (60.44,19) size 58.63x18 [bgcolor=#C0C0C0]
+          LayoutButton {INPUT} at (60.44,19) size 58.63x18 [bgcolor=#FFFFFF]
             LayoutBlockFlow (anonymous) at (8,2) size 42.63x13
               LayoutText {#text} at (0,0) size 43x13
                 text run at (0,0) width 43: "too little"
@@ -22,7 +22,7 @@ layer at (0,0) size 800x132
         LayoutBlockFlow {DIV} at (0,37) size 784x19
           LayoutText {#text} at (0,0) size 56x18
             text run at (0,0) width 56: "and text "
-          LayoutButton {INPUT} at (55.09,1) size 64.78x18 [bgcolor=#C0C0C0]
+          LayoutButton {INPUT} at (55.09,1) size 64.78x18 [bgcolor=#FFFFFF]
             LayoutBlockFlow (anonymous) at (8,2) size 48.78x13
               LayoutText {#text} at (0,0) size 49x13
                 text run at (0,0) width 49: "too much"

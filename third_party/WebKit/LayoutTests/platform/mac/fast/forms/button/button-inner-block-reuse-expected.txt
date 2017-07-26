@@ -22,7 +22,7 @@ layer at (0,0) size 800x600
           text run at (567,0) width 149: "all of the button's other"
           text run at (0,18) width 82: "descendants."
       LayoutBlockFlow (anonymous) at (0,114) size 784x15
-        LayoutButton {BUTTON} at (0,0) size 16x15 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+        LayoutButton {BUTTON} at (0,0) size 16x15 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
           LayoutBlockFlow (anonymous) at (8,7) size 0x0
             LayoutBlockFlow (anonymous) at (0,0) size 0x0
               LayoutInline {SPAN} at (0,0) size 0x0

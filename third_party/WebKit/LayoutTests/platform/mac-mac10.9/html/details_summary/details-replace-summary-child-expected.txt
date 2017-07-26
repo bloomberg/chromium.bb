@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow {DIV} at (0,18) size 784x0
       LayoutBlockFlow (anonymous) at (0,18) size 784x18
-        LayoutButton {INPUT} at (0,0) size 40.06x18 [bgcolor=#C0C0C0]
+        LayoutButton {INPUT} at (0,0) size 40.06x18 [bgcolor=#FFFFFF]
           LayoutBlockFlow (anonymous) at (8,2) size 24.06x13
             LayoutText {#text} at (0,0) size 25x13
               text run at (0,0) width 25: "click"

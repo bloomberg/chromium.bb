@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (299,18) size 4x18
         text run at (299,18) width 4: " "
       LayoutBR {BR} at (0,0) size 0x0
-      LayoutButton {INPUT} at (0,38) size 283.92x18 [bgcolor=#C0C0C0]
+      LayoutButton {INPUT} at (0,38) size 283.92x18 [bgcolor=#FFFFFF]
         LayoutBlockFlow (anonymous) at (8,2) size 267.92x13
           LayoutText {#text} at (0,0) size 268x13
             text run at (0,0) width 268: "This text should be centered vertically in the button"

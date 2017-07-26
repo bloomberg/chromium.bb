@@ -79,7 +79,7 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (1,1) size 228x18
                   text run at (1,1) width 228: "button with value property changed"
               LayoutTableCell {TD} at (396,90) size 238x20 [r=4 c=1 rs=1 cs=1]
-                LayoutButton {INPUT} at (1,1) size 40.45x18 [bgcolor=#C0C0C0]
+                LayoutButton {INPUT} at (1,1) size 40.45x18 [bgcolor=#FFFFFF]
                   LayoutBlockFlow (anonymous) at (8,2) size 24.45x13
                     LayoutText {#text} at (0,0) size 25x13
                       text run at (0,0) width 25: "after"
@@ -195,7 +195,7 @@ layer at (0,0) size 800x600
                   text run at (1,1) width 208: "file with value property changed"
               LayoutTableCell {TD} at (396,292) size 238x20 [r=13 c=1 rs=1 cs=1]
                 LayoutFileUploadControl {INPUT} at (1,1) size 236x18 "No file chosen"
-                  LayoutButton {INPUT} at (0,0) size 76.61x18 [bgcolor=#C0C0C0]
+                  LayoutButton {INPUT} at (0,0) size 76.61x18 [bgcolor=#FFFFFF]
                     LayoutBlockFlow (anonymous) at (8,2) size 60.61x13
                       LayoutText {#text} at (0,0) size 61x13
                         text run at (0,0) width 61: "Choose File"
