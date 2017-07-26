@@ -1,4 +1,0 @@
-include_rules = [
-  "+components/feature_engagement_tracker",
-  "+components/keyed_service",
-]

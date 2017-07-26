@@ -42,7 +42,7 @@ import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
-import org.chromium.chrome.browser.feature_engagement_tracker.FeatureEngagementTrackerFactory;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.offlinepages.DownloadUiActionFlags;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
@@ -53,8 +53,8 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.components.feature_engagement_tracker.EventConstants;
-import org.chromium.components.feature_engagement_tracker.FeatureEngagementTracker;
+import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 import org.chromium.content.browser.BrowserStartupController;
@@ -173,8 +173,7 @@ public class DownloadUtils {
         if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .isStartupSuccessfullyCompleted()) {
             Profile profile = (tab == null ? Profile.getLastUsedProfile() : tab.getProfile());
-            FeatureEngagementTracker tracker =
-                    FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(profile);
+            Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
             tracker.notifyEvent(EventConstants.DOWNLOAD_HOME_OPENED);
         }
 
@@ -246,9 +245,7 @@ public class DownloadUtils {
             DownloadUtils.recordDownloadPageMetrics(tab);
         }
 
-        FeatureEngagementTracker tracker =
-                FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
-                        tab.getProfile());
+        Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
         tracker.notifyEvent(EventConstants.DOWNLOAD_PAGE_STARTED);
     }
 

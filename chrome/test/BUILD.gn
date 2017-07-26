@@ -3847,8 +3847,9 @@ test("unit_tests") {
   }
 
   if ((is_linux && !is_chromeos) || is_win) {
-    sources += [ "../browser/feature_engagement_tracker/new_tab/new_tab_tracker_unittest.cc" ]
-    deps += [ "//components/feature_engagement_tracker/test:test_support" ]
+    sources +=
+        [ "../browser/feature_engagement/new_tab/new_tab_tracker_unittest.cc" ]
+    deps += [ "//components/feature_engagement/test:test_support" ]
   }
 
   if (is_linux || is_win) {

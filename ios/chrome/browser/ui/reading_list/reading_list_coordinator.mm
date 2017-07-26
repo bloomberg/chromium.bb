@@ -8,12 +8,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "components/feature_engagement_tracker/public/event_constants.h"
-#include "components/feature_engagement_tracker/public/feature_engagement_tracker.h"
+#include "components/feature_engagement/public/event_constants.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
-#include "ios/chrome/browser/feature_engagement_tracker/feature_engagement_tracker_factory.h"
+#include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service_factory.h"
@@ -115,10 +115,10 @@ enum UMAContextMenuAction {
                                         animated:YES
                                       completion:nil];
 
-  // Send the "Viewed Reading List" event to the FeatureEngagementTracker when
-  // the user opens their reading list.
-  FeatureEngagementTrackerFactory::GetForBrowserState(self.browserState)
-      ->NotifyEvent(feature_engagement_tracker::events::kViewedReadingList);
+  // Send the "Viewed Reading List" event to the feature_engagement::Tracker
+  // when the user opens their reading list.
+  feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
+      ->NotifyEvent(feature_engagement::events::kViewedReadingList);
 }
 
 - (void)stop {

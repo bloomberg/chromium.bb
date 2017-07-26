@@ -66,9 +66,9 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.download.DownloadUtils;
-import org.chromium.chrome.browser.feature_engagement_tracker.FeatureEngagementTrackerFactory;
-import org.chromium.chrome.browser.feature_engagement_tracker.ScreenshotMonitor;
-import org.chromium.chrome.browser.feature_engagement_tracker.ScreenshotMonitorDelegate;
+import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitor;
+import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitorDelegate;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -122,9 +122,9 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetMetrics;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
-import org.chromium.components.feature_engagement_tracker.EventConstants;
-import org.chromium.components.feature_engagement_tracker.FeatureConstants;
-import org.chromium.components.feature_engagement_tracker.FeatureEngagementTracker;
+import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.crypto.CipherFactory;
@@ -784,9 +784,8 @@ public class ChromeTabbedActivity
                 mLayoutManager.hideOverview(false);
             }
 
-            final FeatureEngagementTracker tracker =
-                    FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
-                            Profile.getLastUsedProfile());
+            final Tracker tracker =
+                    TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
             tracker.addOnInitializedCallback(new Callback<Boolean>() {
                 @Override
                 public void onResult(Boolean result) {
@@ -802,8 +801,7 @@ public class ChromeTabbedActivity
         }
     }
 
-    private void showFeatureEngagementTextBubbleForDownloadHome(
-            final FeatureEngagementTracker tracker) {
+    private void showFeatureEngagementTextBubbleForDownloadHome(final Tracker tracker) {
         if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_HOME_FEATURE)) return;
 
         ViewAnchoredTextBubble textBubble = new ViewAnchoredTextBubble(this,
@@ -2196,15 +2194,12 @@ public class ChromeTabbedActivity
         // Second part of the check to determine whether to trigger help UI
         if (isInOverviewMode() || !DownloadUtils.isAllowedToDownloadPage(getActivityTab())) return;
 
-        FeatureEngagementTracker tracker =
-                FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
-                        Profile.getLastUsedProfile());
+        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
         tracker.notifyEvent(EventConstants.SCREENSHOT_TAKEN_CHROME_IN_FOREGROUND);
         maybeShowFeatureEngagementTextBubbleForDownloadPage(tracker);
     }
 
-    private void maybeShowFeatureEngagementTextBubbleForDownloadPage(
-            final FeatureEngagementTracker tracker) {
+    private void maybeShowFeatureEngagementTextBubbleForDownloadPage(final Tracker tracker) {
         if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE)) return;
 
         ViewAnchoredTextBubble textBubble =

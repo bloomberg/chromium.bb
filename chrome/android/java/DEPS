@@ -5,7 +5,7 @@ include_rules = [
   "+components/crash/android/java",
   "+components/dom_distiller/content/browser/android/java/src/org/chromium/components/dom_distiller/content",
   "+components/dom_distiller/core/android/java/src/org/chromium/components/dom_distiller/core",
-  "+components/feature_engagement_tracker/public/android/java/src/org/chromium/components/feature_engagement_tracker",
+  "+components/feature_engagement/public/android/java/src/org/chromium/components/feature_engagement",
   "+components/gcm_driver/android/java/src/org/chromium/components/gcm_driver",
   "+components/location/android/java",
   "+components/minidump_uploader",
