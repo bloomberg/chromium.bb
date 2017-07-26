@@ -8,6 +8,7 @@
 #include "base/version.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
+#include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 
 namespace device {
 
@@ -32,8 +33,8 @@ void InitAmbientLightSensorData(SensorPathsLinux* data) {
       [](double scaling_value, double offset, SensorReading& reading) {
         reading.values[0] = scaling_value * (reading.values[0] + offset);
       });
-  data->default_configuration =
-      PlatformSensorConfiguration(kDefaultAmbientLightFrequencyHz);
+  data->default_configuration = PlatformSensorConfiguration(
+      SensorTraits<SensorType::AMBIENT_LIGHT>::kDefaultFrequency);
 }
 
 // Depending on a kernel version, CrOS has a different axes plane.
@@ -98,8 +99,8 @@ void InitAccelerometerSensorData(SensorPathsLinux* data) {
 
   MaybeCheckKernelVersionAndAssignFileNames(file_names_x, file_names_y,
                                             file_names_z, data);
-  data->default_configuration =
-      PlatformSensorConfiguration(kDefaultAccelerometerFrequencyHz);
+  data->default_configuration = PlatformSensorConfiguration(
+      SensorTraits<SensorType::ACCELEROMETER>::kDefaultFrequency);
 }
 
 void InitGyroscopeSensorData(SensorPathsLinux* data) {
@@ -134,8 +135,8 @@ void InitGyroscopeSensorData(SensorPathsLinux* data) {
 
   MaybeCheckKernelVersionAndAssignFileNames(file_names_x, file_names_y,
                                             file_names_z, data);
-  data->default_configuration =
-      PlatformSensorConfiguration(kDefaultGyroscopeFrequencyHz);
+  data->default_configuration = PlatformSensorConfiguration(
+      SensorTraits<SensorType::GYROSCOPE>::kDefaultFrequency);
 }
 
 // TODO(maksims): Verify magnitometer works correctly on a chromebook when
@@ -158,8 +159,8 @@ void InitMagnitometerSensorData(SensorPathsLinux* data) {
 
   MaybeCheckKernelVersionAndAssignFileNames(file_names_x, file_names_y,
                                             file_names_z, data);
-  data->default_configuration =
-      PlatformSensorConfiguration(kDefaultMagnetometerFrequencyHz);
+  data->default_configuration = PlatformSensorConfiguration(
+      SensorTraits<SensorType::MAGNETOMETER>::kDefaultFrequency);
 }
 
 }  // namespace

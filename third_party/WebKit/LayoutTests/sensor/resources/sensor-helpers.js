@@ -265,6 +265,13 @@ function sensorMocks() {
       assert_equals(rv.result, Mojo.RESULT_OK);
 
       let defaultConfig = {frequency: 5};
+      // Consider sensor traits to meet assertions in C++ code (see
+      // services/device/public/cpp/generic_sensor/sensor_traits.h)
+      if (type == device.mojom.SensorType.AMBIENT_LIGHT ||
+          type == device.mojom.SensorType.MAGNETOMETER) {
+        if (this.maxFrequency_ > 10)
+          this.maxFrequency_ = 10;
+      }
 
       let initParams =
           new device.mojom.SensorInitParams(

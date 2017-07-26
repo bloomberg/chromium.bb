@@ -12,6 +12,7 @@
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/generic_sensor/platform_sensor_provider_mac.h"
+#include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 
 namespace {
 
@@ -42,6 +43,8 @@ double LMUvalueToLux(uint64_t raw_value) {
 
 namespace device {
 
+using mojom::SensorType;
+
 enum LmuFunctionIndex {
   kGetSensorReadingID = 0,  // getSensorReading(int *, int *)
 };
@@ -49,9 +52,7 @@ enum LmuFunctionIndex {
 PlatformSensorAmbientLightMac::PlatformSensorAmbientLightMac(
     mojo::ScopedSharedBufferMapping mapping,
     PlatformSensorProvider* provider)
-    : PlatformSensor(mojom::SensorType::AMBIENT_LIGHT,
-                     std::move(mapping),
-                     provider),
+    : PlatformSensor(SensorType::AMBIENT_LIGHT, std::move(mapping), provider),
       light_sensor_port_(nullptr),
       current_lux_(0.0) {}
 
@@ -65,13 +66,14 @@ bool PlatformSensorAmbientLightMac::CheckSensorConfiguration(
     const PlatformSensorConfiguration& configuration) {
   return configuration.frequency() > 0 &&
          configuration.frequency() <=
-             mojom::SensorConfiguration::kMaxAllowedFrequency;
+             SensorTraits<SensorType::AMBIENT_LIGHT>::kMaxAllowedFrequency;
 }
 
 PlatformSensorConfiguration
 PlatformSensorAmbientLightMac::GetDefaultConfiguration() {
   PlatformSensorConfiguration default_configuration;
-  default_configuration.set_frequency(kDefaultAmbientLightFrequencyHz);
+  default_configuration.set_frequency(
+      SensorTraits<SensorType::AMBIENT_LIGHT>::kDefaultFrequency);
   return default_configuration;
 }
 

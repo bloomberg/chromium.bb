@@ -14,6 +14,7 @@
 #include "services/device/generic_sensor/linux/sensor_data_linux.h"
 #include "services/device/generic_sensor/linux/sensor_device_manager.h"
 #include "services/device/generic_sensor/platform_sensor_provider_linux.h"
+#include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -421,7 +422,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckAllSupportedSensors) {
   EXPECT_TRUE(als_sensor);
   EXPECT_EQ(als_sensor->GetType(), SensorType::AMBIENT_LIGHT);
   EXPECT_THAT(als_sensor->GetDefaultConfiguration().frequency(),
-              kDefaultAmbientLightFrequencyHz);
+              SensorTraits<SensorType::AMBIENT_LIGHT>::kDefaultFrequency);
 
   auto accel_sensor = CreateSensor(SensorType::ACCELEROMETER);
   EXPECT_TRUE(accel_sensor);
@@ -471,7 +472,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
   EXPECT_TRUE(sensor);
   EXPECT_EQ(SensorType::AMBIENT_LIGHT, sensor->GetType());
   EXPECT_THAT(sensor->GetMaximumSupportedFrequency(),
-              kDefaultAmbientLightFrequencyHz);
+              SensorTraits<SensorType::AMBIENT_LIGHT>::kDefaultFrequency);
 }
 
 // Tests that Ambient Light sensor is correctly read.

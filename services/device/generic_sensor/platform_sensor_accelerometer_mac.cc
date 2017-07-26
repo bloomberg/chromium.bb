@@ -12,6 +12,7 @@
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/generic_sensor/platform_sensor_provider_mac.h"
+#include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 #include "third_party/sudden_motion_sensor/sudden_motion_sensor_mac.h"
 
 namespace {
@@ -34,12 +35,12 @@ bool IsSignificantlyDifferent(const device::SensorReading& reading1,
 
 namespace device {
 
+using mojom::SensorType;
+
 PlatformSensorAccelerometerMac::PlatformSensorAccelerometerMac(
     mojo::ScopedSharedBufferMapping mapping,
     PlatformSensorProvider* provider)
-    : PlatformSensor(mojom::SensorType::ACCELEROMETER,
-                     std::move(mapping),
-                     provider),
+    : PlatformSensor(SensorType::ACCELEROMETER, std::move(mapping), provider),
       sudden_motion_sensor_(SuddenMotionSensor::Create()) {}
 
 PlatformSensorAccelerometerMac::~PlatformSensorAccelerometerMac() = default;
@@ -52,12 +53,13 @@ bool PlatformSensorAccelerometerMac::CheckSensorConfiguration(
     const PlatformSensorConfiguration& configuration) {
   return configuration.frequency() > 0 &&
          configuration.frequency() <=
-             mojom::SensorConfiguration::kMaxAllowedFrequency;
+             SensorTraits<SensorType::ACCELEROMETER>::kMaxAllowedFrequency;
 }
 
 PlatformSensorConfiguration
 PlatformSensorAccelerometerMac::GetDefaultConfiguration() {
-  return PlatformSensorConfiguration(kDefaultAccelerometerFrequencyHz);
+  return PlatformSensorConfiguration(
+      SensorTraits<SensorType::ACCELEROMETER>::kDefaultFrequency);
 }
 
 bool PlatformSensorAccelerometerMac::StartSensor(
