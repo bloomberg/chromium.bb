@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/login/screenshot_testing/SkDiffPixelsMetric.h"
 #include "chrome/browser/chromeos/login/screenshot_testing/SkImageDiffer.h"
 #include "chrome/browser/chromeos/login/screenshot_testing/SkPMetric.h"
@@ -200,11 +200,12 @@ bool ScreenshotTester::SaveImage(const base::FilePath& image_path,
   return true;
 }
 
-void ScreenshotTester::ReturnScreenshot(PNGFile* screenshot, PNGFile png_data) {
+void ScreenshotTester::ReturnScreenshot(base::RunLoop* run_loop,
+                                        PNGFile* screenshot,
+                                        PNGFile png_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   *screenshot = png_data;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE, run_loop_quitter_);
+  run_loop->Quit();
 }
 
 ScreenshotTester::PNGFile ScreenshotTester::TakeScreenshot() {
@@ -212,12 +213,15 @@ ScreenshotTester::PNGFile ScreenshotTester::TakeScreenshot() {
   aura::Window* primary_window = ash::Shell::GetPrimaryRootWindow();
   gfx::Rect rect = primary_window->bounds();
   PNGFile screenshot;
-  ui::GrabWindowSnapshotAsyncPNG(
-      primary_window, rect, content::BrowserThread::GetBlockingPool(),
-      base::Bind(&ScreenshotTester::ReturnScreenshot,
-                 weak_factory_.GetWeakPtr(), &screenshot));
   base::RunLoop run_loop;
-  run_loop_quitter_ = run_loop.QuitClosure();
+  ui::GrabWindowSnapshotAsyncPNG(
+      primary_window, rect,
+      base::CreateTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
+      base::Bind(&ScreenshotTester::ReturnScreenshot,
+                 weak_factory_.GetWeakPtr(), base::Unretained(&run_loop),
+                 &screenshot));
   run_loop.Run();
   return screenshot;
 }
