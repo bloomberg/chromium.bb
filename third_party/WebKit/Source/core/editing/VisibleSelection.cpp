@@ -766,11 +766,6 @@ bool VisibleSelectionTemplate<Strategy>::IsContentEditable() const {
 }
 
 template <typename Strategy>
-bool VisibleSelectionTemplate<Strategy>::HasEditableStyle() const {
-  return IsEditablePosition(Start());
-}
-
-template <typename Strategy>
 bool VisibleSelectionTemplate<Strategy>::IsContentRichlyEditable() const {
   return IsRichlyEditablePosition(ToPositionInDOMTree(Start()));
 }

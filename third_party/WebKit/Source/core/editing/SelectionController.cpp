@@ -937,9 +937,8 @@ bool SelectionController::HandleMousePressEvent(
     // effects, e.g., word selection, to editable regions.
     mouse_down_allows_multi_click_ =
         !event.Event().FromTouch() ||
-        Selection()
-            .ComputeVisibleSelectionInDOMTreeDeprecated()
-            .HasEditableStyle();
+        IsEditablePosition(
+            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start());
   }
 
   if (event.Event().click_count >= 3)
