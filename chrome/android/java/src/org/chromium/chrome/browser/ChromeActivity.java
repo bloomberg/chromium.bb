@@ -975,9 +975,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * super depending on whether the tasks should run before or after these ones.
      */
     protected void onDeferredStartup() {
-        if (mDeferredStartupPosted) return;
-
-        mDeferredStartupPosted = true;
         initDeferredStartupForActivity();
         ProcessInitializationHandler.getInstance().initializeDeferredStartupTasks();
         DeferredStartupHandler.getInstance().queueDeferredTasksOnIdleHandler();
@@ -2139,7 +2136,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             return;
         }
         mDeferredStartupQueued = false;
-        onDeferredStartup();
+
+        if (!mDeferredStartupPosted) {
+            mDeferredStartupPosted = true;
+            onDeferredStartup();
+        }
     }
 
     @Override
