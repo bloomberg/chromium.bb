@@ -73,8 +73,7 @@ RENDER_TEST_FEATURE_ANNOTATION = 'RenderTest'
 RE_RENDER_IMAGE_NAME = re.compile(
       r'(?P<test_class>\w+)\.'
       r'(?P<description>[-\w]+)\.'
-      r'(?P<device_model>\w+)\.'
-      r'(?P<orientation>port|land)\.png')
+      r'(?P<device_model_sdk>[-\w]+)\.png')
 
 @contextlib.contextmanager
 def _LogTestEndpoints(device, test_name):

@@ -4,13 +4,11 @@
 
 package org.chromium.chrome.test.util;
 
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
 import android.util.Pair;
 import android.view.View;
 
@@ -66,19 +64,11 @@ public class RenderTestRule extends TestWatcher {
     private static final String GOLDEN_FOLDER_RELATIVE = "/goldens";
 
     /**
-     * This is a list of devices that we maintain golden images for. If render tests are being run
-     * on a device in this list, golden images should exist and their absence is a test failure.
-     * The absence of golden images for devices not on this list doesn't necessarily mean that
-     * something is wrong - the tests are just being run on a device that we don't have goldens for.
+     * This is a list of model-SDK version identifiers for devices we maintain golden images for.
+     * If render tests are being run on a device of a model-sdk on this list, goldens should exist.
      */
-    private static final String[] RENDER_TEST_DEVICES = {"Nexus 5X", "Nexus 5"};
-
-    /**
-     * Before we know how flaky screenshot tests are going to be we don't want them to cause a
-     * full test failure every time they fail. If the tests prove their worth, this will be set to
-     * false/removed.
-     */
-    private static final boolean REPORT_ONLY_DO_NOT_FAIL = true;
+    // TODO(peconn): Add "Nexus_5X-23" once it's run on CQ - https://crbug.com/731759.
+    private static final String[] RENDER_TEST_MODEL_SDK_PAIRS = {"Nexus_5-19"};
 
     /** How many pixels can be different in an image before counting the images as different. */
     private static final int PIXEL_DIFF_THRESHOLD = 0;
@@ -125,8 +115,8 @@ public class RenderTestRule extends TestWatcher {
     /**
      * Renders the |view| and compares it to the golden view with the |id|. The RenderTestRule will
      * throw an exception after the test method has completed if the view does not match the
-     * golden or if a golden is missing on a render test device (see
-     * {@link RenderTestRule#RENDER_TEST_DEVICES}).
+     * golden or if a golden is missing on a device it should be present (see
+     * {@link RenderTestRule#RENDER_TEST_MODEL_SDK_PAIRS}).
      *
      * @throws IOException if the rendered image cannot be saved to the device.
      */
@@ -199,19 +189,15 @@ public class RenderTestRule extends TestWatcher {
             sb.append(TextUtils.join(", ", mMismatchIds));
         }
 
-        if (REPORT_ONLY_DO_NOT_FAIL) {
-            Log.w(TAG, sb.toString());
-        } else {
-            throw new RenderTestException(sb.toString());
-        }
+        throw new RenderTestException(sb.toString());
     }
 
     /**
      * Returns whether goldens should exist for the current device.
      */
     private static boolean onRenderTestDevice() {
-        for (String model : RENDER_TEST_DEVICES) {
-            if (model.equals(Build.MODEL)) return true;
+        for (String model : RENDER_TEST_MODEL_SDK_PAIRS) {
+            if (model.equals(modelSdkIdentifier())) return true;
         }
         return false;
     }
@@ -232,15 +218,18 @@ public class RenderTestRule extends TestWatcher {
      * src/build/android/pylib/local/device/local_device_instrumentation_test_run.py.
      */
     private static String imageName(String testClass, String variantPrefix, String desc) {
-        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
-        String orientation = metrics.widthPixels > metrics.heightPixels ? "land" : "port";
-
         if (!TextUtils.isEmpty(variantPrefix)) {
             desc = variantPrefix + "-" + desc;
         }
 
-        return String.format(
-                "%s.%s.%s.%s.png", testClass, desc, Build.MODEL.replace(' ', '_'), orientation);
+        return String.format("%s.%s.%s.png", testClass, desc, modelSdkIdentifier());
+    }
+
+    /**
+     * Returns a string encoding the device model and sdk. It is used to identify device goldens.
+     */
+    private static String modelSdkIdentifier() {
+        return Build.MODEL.replace(' ', '_') + "-" + Build.VERSION.SDK_INT;
     }
 
     /**
