@@ -151,6 +151,7 @@ TEST_P(ConvolveRoundTest, BitExactCheck) { ConvolveRoundingRun(); }
 using std::tr1::make_tuple;
 
 #if HAVE_AVX2
+#if CONFIG_HIGHBITDEPTH
 const ConvolveRoundParam kConvRndParamArray[] = {
   make_tuple(&av1_convolve_rounding_c, &av1_convolve_rounding_avx2,
              LOWBITDEPTH_TEST),
@@ -164,6 +165,10 @@ const ConvolveRoundParam kConvRndParamArray[] = {
              &highbd_convolve_rounding_12<av1_highbd_convolve_rounding_avx2>,
              HIGHBITDEPTH_TEST)
 };
+#else
+const ConvolveRoundParam kConvRndParamArray[] = { make_tuple(
+    &av1_convolve_rounding_c, &av1_convolve_rounding_avx2, LOWBITDEPTH_TEST) };
+#endif
 
 INSTANTIATE_TEST_CASE_P(AVX2, ConvolveRoundTest,
                         ::testing::ValuesIn(kConvRndParamArray));
