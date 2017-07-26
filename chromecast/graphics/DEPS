@@ -9,3 +9,9 @@ include_rules = [
   "+ui/views",
   "+ui/wm/public",
 ]
+
+specific_include_rules = {
+  "run_all_unittests\.cc": [
+      "+mojo/edk/embedder",
+  ]
+}
