@@ -78,8 +78,6 @@ extern const char kChromeUIQuitURL[];
 extern const char kChromeUIRestartURL[];
 extern const char kChromeUISettingsURL[];
 extern const char kChromeUIContentSettingsURL[];
-// TODO(dbeam): remove settings-frame.
-extern const char kChromeUISettingsFrameURL[];
 extern const char kChromeUISigninEmailConfirmationURL[];
 extern const char kChromeUISigninErrorURL[];
 extern const char kChromeUISiteDetailsPrefixURL[];
@@ -230,7 +228,6 @@ extern const char kChromeUIQuotaInternalsHost[];
 extern const char kChromeUIQuitHost[];
 extern const char kChromeUIRestartHost[];
 extern const char kChromeUISettingsHost[];
-extern const char kChromeUISettingsFrameHost[];
 extern const char kChromeUIShorthangHost[];
 extern const char kChromeUISigninEmailConfirmationHost[];
 extern const char kChromeUISigninErrorHost[];

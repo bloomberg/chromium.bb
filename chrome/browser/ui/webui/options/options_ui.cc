@@ -230,7 +230,11 @@ OptionsUIHTMLSource::OptionsUIHTMLSource(
 }
 
 std::string OptionsUIHTMLSource::GetSource() const {
-  return chrome::kChromeUISettingsFrameHost;
+  // TODO(stevenjb): Remove this file. Because everything in this directory
+  // depends on this, we will remove the entire directory at once after
+  // the old CrOS oobe/login UI dependencies are removed. crbug.com/748164.
+  NOTREACHED();
+  return "settings-frame";
 }
 
 void OptionsUIHTMLSource::StartDataRequest(
@@ -591,8 +595,7 @@ void OptionsUI::ReadyToCommitNavigation(
   load_start_time_ = base::Time::Now();
   if (navigation_handle->GetRenderFrameHost()->GetRenderViewHost() ==
           web_ui()->GetWebContents()->GetRenderViewHost() &&
-      navigation_handle->GetURL().host_piece() ==
-          chrome::kChromeUISettingsFrameHost) {
+      navigation_handle->GetURL().host_piece() == "settings-frame") {
     for (size_t i = 0; i < handlers_.size(); ++i)
       handlers_[i]->PageLoadStarted();
   }

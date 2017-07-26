@@ -250,8 +250,7 @@ GURL GetSettingsUrl(const std::string& sub_page) {
 
 bool IsSettingsSubPage(const GURL& url, const std::string& sub_page) {
   return (url.SchemeIs(content::kChromeUIScheme) &&
-          (url.host_piece() == chrome::kChromeUISettingsHost ||
-           url.host_piece() == chrome::kChromeUISettingsFrameHost) &&
+          (url.host_piece() == chrome::kChromeUISettingsHost) &&
           url.path_piece() == "/" + sub_page);
 }
 

@@ -641,7 +641,6 @@ bool IsURLAllowedInIncognito(const GURL& url,
   if (url.scheme() == content::kChromeUIScheme &&
       (url.host_piece() == chrome::kChromeUISettingsHost ||
        url.host_piece() == chrome::kChromeUIMdSettingsHost ||
-       url.host_piece() == chrome::kChromeUISettingsFrameHost ||
        url.host_piece() == chrome::kChromeUIHelpHost ||
        url.host_piece() == chrome::kChromeUIHistoryHost ||
        url.host_piece() == chrome::kChromeUIExtensionsHost ||

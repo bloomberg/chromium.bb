@@ -224,10 +224,6 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMediaStreamTest,
   EXPECT_EQ(GURL("chrome://settings/content#media-stream-mic"),
             GetActiveTab()->GetLastCommittedURL());
 
-  // In ChromeOS, we do not sanitize chrome://settings-frame to
-  // chrome://settings for same-document navigations. See crbug.com/416157. For
-  // this reason, order the tests so no same-document navigation occurs.
-
   // The camera bubble links to camera exceptions.
   ManageMediaStreamSettings(TabSpecificContentSettings::CAMERA_ACCESSED);
   EXPECT_EQ(GURL("chrome://settings/contentExceptions#media-stream-camera"),
