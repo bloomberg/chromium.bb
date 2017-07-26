@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_SERVICE_H_
 #define CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_SERVICE_H_
 
-#include <map>
 #include <memory>
 #include <set>
 #include <vector>
@@ -123,10 +122,6 @@ class SiteEngagementService : public KeyedService,
   // an engagement bonus to be applied.
   std::vector<mojom::SiteEngagementDetails> GetAllDetails() const;
 
-  // Returns a map of all stored origins and their engagement scores.
-  // TODO(703848): Migrate important sites impl off this and remove it
-  std::map<GURL, double> GetScoreMap() const;
-
   // Update the engagement score of |url| for a notification interaction.
   void HandleNotificationInteraction(const GURL& url);
 
@@ -240,8 +235,10 @@ class SiteEngagementService : public KeyedService,
   base::TimeDelta GetMaxDecayPeriod() const;
   base::TimeDelta GetStalePeriod() const;
 
-  // Returns the median engagement score of all recorded origins.
-  double GetMedianEngagement(const std::map<GURL, double>& score_map) const;
+  // Returns the median engagement score of all recorded origins. |details| must
+  // be sorted in ascending order of score.
+  double GetMedianEngagementFromSortedDetails(
+      const std::vector<mojom::SiteEngagementDetails>& details) const;
 
   // Update the engagement score of the origin loaded in |web_contents| for
   // media playing. The points awarded are discounted if the media is being
@@ -279,7 +276,8 @@ class SiteEngagementService : public KeyedService,
   // Returns the number of origins with maximum daily and total engagement
   // respectively.
   int OriginsWithMaxDailyEngagement() const;
-  int OriginsWithMaxEngagement(const std::map<GURL, double>& score_map) const;
+  int OriginsWithMaxEngagement(
+      const std::vector<mojom::SiteEngagementDetails>& details) const;
 
   // Callback for the history service when it is asked for a map of origins to
   // how many URLs corresponding to that origin remain in history.

@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_METRICS_H_
 #define CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_METRICS_H_
 
-#include <map>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "url/gurl.h"
+
+namespace mojom {
+class SiteEngagementDetails;
+}
 
 // Helper class managing the UMA histograms for the Site Engagement Service.
 class SiteEngagementMetrics {
@@ -35,7 +38,8 @@ class SiteEngagementMetrics {
   static void RecordTotalOriginsEngaged(int total_origins);
   static void RecordMeanEngagement(double mean_engagement);
   static void RecordMedianEngagement(double median_engagement);
-  static void RecordEngagementScores(const std::map<GURL, double>& score_map);
+  static void RecordEngagementScores(
+      const std::vector<mojom::SiteEngagementDetails>& details);
   static void RecordOriginsWithMaxEngagement(int total_origins);
   static void RecordOriginsWithMaxDailyEngagement(int total_origins);
   static void RecordPercentOriginsWithMaxEngagement(double percentage);
