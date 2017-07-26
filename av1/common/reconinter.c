@@ -1128,11 +1128,26 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
       for (idx = 0; idx < b8_w; idx += b4_w) {
         MB_MODE_INFO *this_mbmi = &xd->mi[row * xd->mi_stride + col]->mbmi;
         is_compound = has_second_ref(this_mbmi);
+#if CONFIG_CONVOLVE_ROUND
+        DECLARE_ALIGNED(16, int32_t, tmp_dst[8 * 8]);
+        av1_zero(tmp_dst);
+        int tmp_dst_stride = 8;
+        assert(w <= 8 && h <= 8);
+#endif  // CONFIG_CONVOLVE_ROUND
+#if CONFIG_CONVOLVE_ROUND
+        ConvolveParams conv_params =
+            get_conv_params_no_round(0, 0, plane, tmp_dst, tmp_dst_stride);
+#else
+        ConvolveParams conv_params = get_conv_params(0, 0, plane);
+#endif
+        struct buf_2d *const dst_buf = &pd->dst;
+        x = x_base + idx;
+        y = y_base + idy;
+        uint8_t *dst = dst_buf->buf + dst_buf->stride * y + x;
+
         // TODO(zoeliu): If single ref comp modes are considered here, a
         //               mismatch was caused. Need a further investigation.
         for (ref = 0; ref < 1 + is_compound; ++ref) {
-          struct buf_2d *const dst_buf = &pd->dst;
-
           const RefBuffer *ref_buf =
               &cm->frame_refs[this_mbmi->ref_frame[ref] - LAST_FRAME];
 
@@ -1156,7 +1171,6 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
           const struct scale_factors *const sf = &ref_buf->sf;
           struct buf_2d *const pre_buf = &pd->pre[ref];
 #endif  // CONFIG_INTRABC
-          uint8_t *dst = dst_buf->buf;
 
           const MV mv = this_mbmi->mv[ref].as_mv;
 
@@ -1173,11 +1187,6 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
               this_mbmi->motion_mode == WARPED_CAUSAL;
 #endif  // CONFIG_WARPED_MOTION
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-
-          x = x_base + idx;
-          y = y_base + idy;
-
-          dst += dst_buf->stride * y + x;
 
           if (is_scaled) {
             int ssx = pd->subsampling_x;
@@ -1218,12 +1227,17 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
                   (x + (mv_q4.col >> SUBPEL_BITS));
           }
 
-          ConvolveParams conv_params = get_conv_params(ref, ref, plane);
+          conv_params.ref = ref;
+          conv_params.do_average = ref;
 #if CONFIG_EXT_INTER
           if (is_masked_compound_type(mi->mbmi.interinter_compound_type)) {
-            // TODO(angiebird): use get_conv_params_no_round() here
             // masked compound type has its own average mechanism
+            conv_params.do_average = 0;
+#if CONFIG_CONVOLVE_ROUND && CONFIG_COMPOUND_SEGMENT && CONFIG_SUPERTX
+            // TODO(angiebird): convolve_round does not support compound_segment
+            // when supertx is on
             conv_params = get_conv_params(ref, 0, plane);
+#endif
           }
           if (ref && is_masked_compound_type(mi->mbmi.interinter_compound_type))
             av1_make_masked_inter_predictor(
@@ -1251,7 +1265,31 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
                 mi_col_offset, mi_row_offset,
 #endif  // CONFIG_MOTION_VAR
                 xs, ys, xd);
+        }  // for (ref = 0; ref < 1 + is_compound; ++ref)
+#if CONFIG_CONVOLVE_ROUND
+        if (conv_params.do_post_rounding) {
+#if CONFIG_HIGHBITDEPTH
+          if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+            av1_highbd_convolve_rounding(
+                tmp_dst, tmp_dst_stride, dst, dst_buf->stride, b4_w, b4_h,
+                FILTER_BITS * 2 + is_compound - conv_params.round_0 -
+                    conv_params.round_1,
+                xd->bd);
+          else
+#endif  // CONFIG_HIGHBITDEPTH
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+            av1_convolve_rounding(
+                tmp_dst, tmp_dst_stride, dst, dst_buf->stride, b4_w, b4_h,
+                FILTER_BITS * 2 + is_comp_mode_pred - conv_params.round_0 -
+                    conv_params.round_1);
+#else   // !(CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF)
+          av1_convolve_rounding(tmp_dst, tmp_dst_stride, dst, dst_buf->stride,
+                                b4_w, b4_h,
+                                FILTER_BITS * 2 + is_compound -
+                                    conv_params.round_0 - conv_params.round_1);
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
         }
+#endif  // CONFIG_CONVOLVE_ROUND
         ++col;
       }
       ++row;
