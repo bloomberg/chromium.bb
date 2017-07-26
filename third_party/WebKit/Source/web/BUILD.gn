@@ -76,7 +76,6 @@ test("webkit_unit_tests") {
     "tests/AccessibilityObjectModelTest.cpp",
     "tests/HTMLImportSheetsTest.cpp",
     "tests/LayoutGeometryMapTest.cpp",
-    "tests/LocalFrameClientImplTest.cpp",
     "tests/RunAllTests.cpp",
     "tests/ScrollMetricsTest.cpp",
     "tests/SmoothScrollTest.cpp",

@@ -1334,6 +1334,7 @@ jumbo_source_set("unit_tests") {
     "events/WebInputEventConversionTest.cpp",
     "exported/FakeWebPlugin.cpp",
     "exported/FakeWebPlugin.h",
+    "exported/LocalFrameClientImplTest.cpp",
     "exported/PrerenderingTest.cpp",
     "exported/WebAssociatedURLLoaderImplTest.cpp",
     "exported/WebDocumentSubresourceFilterTest.cpp",
