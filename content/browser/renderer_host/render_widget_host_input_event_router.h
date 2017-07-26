@@ -185,6 +185,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       hittest_data_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouter);
+  friend class RenderWidgetHostInputEventRouterTest;
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            InputEventRouterGestureTargetMapTest);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
