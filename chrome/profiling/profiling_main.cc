@@ -5,9 +5,11 @@
 #include "chrome/profiling/profiling_main.h"
 
 #include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/profiling/profiling_constants.h"
+#include "chrome/profiling/memlog_receiver_pipe.h"
 #include "chrome/profiling/profiling_globals.h"
 #include "chrome/profiling/profiling_process.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -29,8 +31,22 @@ int ProfilingMain(const base::CommandLine& cmdline) {
       globals.GetIORunner(),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
-  std::string pipe_id = cmdline.GetSwitchValueASCII(switches::kMemlogPipe);
-  globals.GetMemlogConnectionManager()->StartConnections(pipe_id);
+  // Connect the browser memlog pipe passed on the command line.
+  int pipe_int = 0;
+  base::StringToInt(cmdline.GetSwitchValueASCII(switches::kMemlogPipe),
+                    &pipe_int);
+#if defined(OS_WIN)
+  ULONG browser_pid = 0;
+  HANDLE pipe_handle = reinterpret_cast<HANDLE>(pipe_int);
+  ::GetNamedPipeClientProcessId(pipe_handle, &browser_pid);
+  globals.GetMemlogConnectionManager()->OnNewConnection(
+      scoped_refptr<MemlogReceiverPipe>(new MemlogReceiverPipe(pipe_handle)),
+      static_cast<int>(browser_pid));
+#else
+  // TODO(brettw) this uses 0 for the browser PID, figure this out on Posix.
+  globals.GetMemlogConnectionManager()->OnNewConnection(
+      scoped_refptr<MemlogReceiverPipe>(new MemlogReceiverPipe(pipe_int)), 0);
+#endif
 
   globals.RunMainMessageLoop();
 

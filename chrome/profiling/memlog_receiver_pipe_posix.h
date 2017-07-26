@@ -23,24 +23,24 @@ namespace profiling {
 class MemlogStreamReceiver;
 
 class MemlogReceiverPipe
-    : public base::RefCountedThreadSafe<MemlogReceiverPipe> {
+    : public base::RefCountedThreadSafe<MemlogReceiverPipe>,
+      public base::MessageLoopForIO::Watcher {
  public:
-  explicit MemlogReceiverPipe(base::ScopedFD fd);
+  explicit MemlogReceiverPipe(int fd);
 
-  void ReadUntilBlocking();
+  // Must be called on the IO thread.
+  void StartReadingOnIOThread();
 
   void SetReceiver(scoped_refptr<base::TaskRunner> task_runner,
                    scoped_refptr<MemlogStreamReceiver> receiver);
 
-  // TODO(ajwong): Remove when file watching is moved from the PipeServer to
-  // the MemlogReceiverPipe.
-  base::MessageLoopForIO::FileDescriptorWatcher* controller() {
-    return &controller_;
-  }
-
  private:
   friend class base::RefCountedThreadSafe<MemlogReceiverPipe>;
-  ~MemlogReceiverPipe();
+  ~MemlogReceiverPipe() override;
+
+  // MessageLoopForIO::Watcher implementation.
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
 
   mojo::edk::ScopedPlatformHandle handle_;
   base::MessageLoopForIO::FileDescriptorWatcher controller_;

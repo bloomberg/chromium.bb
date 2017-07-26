@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "chrome/profiling/allocation_tracker.h"
+#include "chrome/profiling/memlog_receiver_pipe.h"
 #include "chrome/profiling/memlog_stream_parser.h"
 #include "chrome/profiling/profiling_globals.h"
 
@@ -38,17 +39,6 @@ struct MemlogConnectionManager::Connection {
 MemlogConnectionManager::MemlogConnectionManager() {}
 
 MemlogConnectionManager::~MemlogConnectionManager() {
-  // Clear the callback since the server is refcounted and may outlive us.
-  server_->set_on_new_connection(
-      MemlogReceiverPipeServer::NewConnectionCallback());
-}
-
-void MemlogConnectionManager::StartConnections(const std::string& pipe_id) {
-  server_ = new MemlogReceiverPipeServer(
-      ProfilingGlobals::Get()->GetIORunner(), pipe_id,
-      base::BindRepeating(&MemlogConnectionManager::OnNewConnection,
-                          base::Unretained(this)));
-  server_->Start();
 }
 
 void MemlogConnectionManager::OnStartMojoControl() {
@@ -57,11 +47,6 @@ void MemlogConnectionManager::OnStartMojoControl() {
       base::Bind(
           &ProfilingProcess::EnsureMojoStarted,
           base::Unretained(ProfilingGlobals::Get()->GetProfilingProcess())));
-  ProfilingGlobals::Get()->GetIORunner()->PostTask(
-      FROM_HERE, base::Bind(&ProfilingProcess::AttachPipeServer,
-                            base::Unretained(
-                                ProfilingGlobals::Get()->GetProfilingProcess()),
-                            server_));
 }
 
 void MemlogConnectionManager::OnNewConnection(
@@ -82,6 +67,10 @@ void MemlogConnectionManager::OnNewConnection(
   new_pipe->SetReceiver(connection->thread.task_runner(), connection->parser);
 
   connections_[sender_pid] = std::move(connection);
+
+  ProfilingGlobals::Get()->GetIORunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&MemlogReceiverPipe::StartReadingOnIOThread, new_pipe));
 }
 
 void MemlogConnectionManager::OnConnectionComplete(int process_id) {

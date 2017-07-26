@@ -24,61 +24,36 @@ namespace profiling {
 class MemlogStreamReceiver;
 
 class MemlogReceiverPipe
-    : public base::RefCountedThreadSafe<MemlogReceiverPipe> {
+    : public base::RefCountedThreadSafe<MemlogReceiverPipe>,
+      public base::MessagePumpForIO::IOHandler {
  public:
-  // RegisterIOHandler can't change the callback ID of a handle once it has
-  // been registered. This class allows switching the callbacks from the
-  // server to the pipe once the pipe is created while keeping the IOHandler
-  // attached to the handle the same.
-  class CompletionThunk : public base::MessagePumpForIO::IOHandler {
-   public:
-    using Callback = base::RepeatingCallback<void(size_t, DWORD)>;
+  explicit MemlogReceiverPipe(HANDLE handle);
 
-    // Takes ownership of HANDLE and closes it when the class goes out of scope.
-    CompletionThunk(HANDLE handle, Callback cb);
-    ~CompletionThunk() override;
-
-    void set_callback(Callback cb) { callback_ = cb; }
-
-    HANDLE handle() { return handle_; }
-    OVERLAPPED* overlapped() { return &context_.overlapped; }
-
-    void ZeroOverlapped();
-
-   private:
-    // IOHandler implementation.
-    void OnIOCompleted(base::MessagePumpForIO::IOContext* context,
-                       DWORD bytes_transfered,
-                       DWORD error) override;
-
-    base::MessagePumpForIO::IOContext context_;
-
-    HANDLE handle_;
-    Callback callback_;
-
-    DISALLOW_COPY_AND_ASSIGN(CompletionThunk);
-  };
-
-  explicit MemlogReceiverPipe(std::unique_ptr<CompletionThunk> thunk);
-
+  // Must be called on the IO thread.
   void StartReadingOnIOThread();
 
-  int GetRemoteProcessID();
   void SetReceiver(scoped_refptr<base::TaskRunner> task_runner,
                    scoped_refptr<MemlogStreamReceiver> receiver);
 
  private:
   friend class base::RefCountedThreadSafe<MemlogReceiverPipe>;
-  ~MemlogReceiverPipe();
+  ~MemlogReceiverPipe() override;
 
   void OnIOCompleted(size_t bytes_transfered, DWORD error);
 
   void ReadUntilBlocking();
+  void ZeroOverlapped();
 
-  std::unique_ptr<CompletionThunk> thunk_;
+  // IOHandler implementation.
+  void OnIOCompleted(base::MessagePumpForIO::IOContext* context,
+                     DWORD bytes_transfered,
+                     DWORD error) override;
 
   scoped_refptr<base::TaskRunner> receiver_task_runner_;
   scoped_refptr<MemlogStreamReceiver> receiver_;
+
+  HANDLE handle_;
+  base::MessagePumpForIO::IOContext context_;
 
   bool read_outstanding_ = false;
 

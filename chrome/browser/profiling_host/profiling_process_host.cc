@@ -16,6 +16,7 @@
 #include "content/public/common/content_switches.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 #if defined(OS_POSIX)
@@ -23,7 +24,7 @@
 #include "base/process/process_metrics.h"
 #include "base/third_party/valgrind/valgrind.h"
 #include "chrome/common/profiling/profiling_constants.h"
-#include "content/public/browser/file_descriptor_info.h"
+#include "content/public/browser/posix_file_descriptor_info.h"
 #endif
 
 namespace profiling {
@@ -102,16 +103,24 @@ void ProfilingProcessHost::AddSwitchesToChildCmdLine(
     return;
   pph->EnsureControlChannelExists();
 
+  /* TODO(brettw) this currently doesn't work. Fix it.
+
+  // Create the socketpair for the low level memlog pipe.
+  mojo::edk::PlatformChannelPair data_channel;
+  pipe_id_ = data_channel.PrepareToPassClientHandleToChildProcessAsString(
+      &handle_passing_info);
+
   // TODO(brettw) this isn't correct for Posix. Redo when we can shave over
   // Mojo
   child_cmd_line->AppendSwitchASCII(switches::kMemlogPipe, pph->pipe_id_);
+  */
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 void ProfilingProcessHost::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
-    content::FileDescriptorInfo* mappings) {
+    content::PosixFileDescriptorInfo* mappings) {
   // TODO(ajwong): Figure out how to trace the zygote process.
   if (command_line.GetSwitchValueASCII(switches::kProcessType) ==
       switches::kZygoteProcess) {
@@ -166,21 +175,13 @@ void ProfilingProcessHost::Launch() {
   control_channel.PrepareToPassClientHandleToChildProcess(&profiling_cmd,
                                                           handle_passing_info);
 
-#if defined(OS_WIN)
-  std::string local_pipe_string = base::IntToString(
-      reinterpret_cast<int>(data_channel.PassServerHandle().release().handle));
-#elif defined(OS_POSIX)
-  std::string local_pipe_string =
-      base::IntToString(data_channel.PassServerHandle().release().handle);
+  mojo::edk::ScopedPlatformHandle local_pipe = data_channel.PassServerHandle();
 #if defined(OS_LINUX)
   options.kill_on_parent_death = true;
 #endif
-#else
-#error Unsupported OS.
-#endif
 
   process_ = base::LaunchProcess(profiling_cmd, options);
-  StartMemlogSender(local_pipe_string);
+  StartMemlogSender(std::move(local_pipe));
 }
 
 void ProfilingProcessHost::EnsureControlChannelExists() {
