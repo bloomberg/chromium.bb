@@ -600,8 +600,7 @@ component("base") {
     "posix/global_descriptors.h",
     "posix/safe_strerror.cc",
     "posix/safe_strerror.h",
-    "posix/unix_domain_socket_linux.cc",
-    "posix/unix_domain_socket_linux.h",
+    "posix/unix_domain_socket.h",
     "post_task_and_reply_with_result_internal.h",
     "power_monitor/power_monitor.cc",
     "power_monitor/power_monitor.h",
@@ -1087,6 +1086,7 @@ component("base") {
       "base_paths_posix.h",
       "base_paths_win.cc",
       "base_paths_win.h",
+      "posix/unix_domain_socket.cc",
     ]
 
     if (is_linux) {
@@ -1183,7 +1183,6 @@ component("base") {
     sources += [
       "debug/proc_maps_linux.cc",
       "files/file_path_watcher_linux.cc",
-      "posix/unix_domain_socket_linux.cc",
       "power_monitor/power_monitor_device_source_android.cc",
       "process/internal_linux.cc",
       "process/memory_linux.cc",
@@ -1311,7 +1310,7 @@ component("base") {
 
     if (is_nacl_nonsfi) {
       set_sources_assignment_filter([])
-      sources += [ "posix/unix_domain_socket_linux.cc" ]
+      sources += [ "posix/unix_domain_socket.cc" ]
       set_sources_assignment_filter(sources_assignment_filter)
       sources -= [ "rand_util_nacl.cc" ]
       configs += [ ":nacl_nonsfi_warnings" ]
@@ -2094,7 +2093,7 @@ test("base_unittests") {
     "pending_task_unittest.cc",
     "pickle_unittest.cc",
     "posix/file_descriptor_shuffle_unittest.cc",
-    "posix/unix_domain_socket_linux_unittest.cc",
+    "posix/unix_domain_socket_unittest.cc",
     "power_monitor/power_monitor_unittest.cc",
     "process/launch_unittest_win.cc",
     "process/memory_unittest.cc",

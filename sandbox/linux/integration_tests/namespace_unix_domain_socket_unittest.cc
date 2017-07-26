@@ -17,7 +17,7 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/posix/unix_domain_socket_linux.h"
+#include "base/posix/unix_domain_socket.h"
 #include "base/process/process.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/tests/unit_tests.h"

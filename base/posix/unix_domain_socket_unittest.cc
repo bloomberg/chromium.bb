@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
+
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/socket.h>
@@ -14,7 +16,7 @@
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/pickle.h"
-#include "base/posix/unix_domain_socket_linux.h"
+#include "base/posix/unix_domain_socket.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -24,12 +26,32 @@ namespace base {
 
 namespace {
 
+// Callers should use ASSERT_NO_FATAL_FAILURE with this function, to
+// ensure that execution is aborted if the function has assertion failure.
+void CreateSocketPair(int fds[2]) {
+#if defined(OS_MACOSX)
+  // Mac OS does not support SOCK_SEQPACKET.
+  int flags = SOCK_STREAM;
+#else
+  int flags = SOCK_SEQPACKET;
+#endif
+  ASSERT_EQ(0, socketpair(AF_UNIX, flags, 0, fds));
+#if defined(OS_MACOSX)
+  // On OSX an attempt to read or write to a closed socket may generate a
+  // SIGPIPE rather than returning -1, corrected with SO_NOSIGPIPE option.
+  int nosigpipe = 1;
+  ASSERT_EQ(0, setsockopt(fds[0], SOL_SOCKET, SO_NOSIGPIPE, &nosigpipe,
+                          sizeof(nosigpipe)));
+  ASSERT_EQ(0, setsockopt(fds[1], SOL_SOCKET, SO_NOSIGPIPE, &nosigpipe,
+                          sizeof(nosigpipe)));
+#endif
+}
+
 TEST(UnixDomainSocketTest, SendRecvMsgAbortOnReplyFDClose) {
   Thread message_thread("UnixDomainSocketTest");
   ASSERT_TRUE(message_thread.Start());
-
   int fds[2];
-  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
+  ASSERT_NO_FATAL_FAILURE(CreateSocketPair(fds));
   ScopedFD scoped_fd0(fds[0]);
   ScopedFD scoped_fd1(fds[1]);
 
@@ -43,9 +65,9 @@ TEST(UnixDomainSocketTest, SendRecvMsgAbortOnReplyFDClose) {
   // Receive the message.
   std::vector<ScopedFD> message_fds;
   uint8_t buffer[16];
-  ASSERT_EQ(static_cast<int>(request.size()),
-            UnixDomainSocket::RecvMsg(fds[0], buffer, sizeof(buffer),
-                                      &message_fds));
+  ASSERT_EQ(
+      static_cast<int>(request.size()),
+      UnixDomainSocket::RecvMsg(fds[0], buffer, sizeof(buffer), &message_fds));
   ASSERT_EQ(1U, message_fds.size());
 
   // Close the reply FD.
@@ -65,16 +87,16 @@ TEST(UnixDomainSocketTest, SendRecvMsgAvoidsSIGPIPE) {
   act.sa_handler = SIG_DFL;
   ASSERT_EQ(0, sigaction(SIGPIPE, &act, &oldact));
   int fds[2];
-  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
+  ASSERT_NO_FATAL_FAILURE(CreateSocketPair(fds));
   ScopedFD scoped_fd1(fds[1]);
   ASSERT_EQ(0, IGNORE_EINTR(close(fds[0])));
 
   // Have the thread send a synchronous message via the socket. Unless the
   // message is sent with MSG_NOSIGNAL, this shall result in SIGPIPE.
   Pickle request;
-  ASSERT_EQ(-1,
-      UnixDomainSocket::SendRecvMsg(fds[1], static_cast<uint8_t*>(NULL),
-                                    0U, static_cast<int*>(NULL), request));
+  ASSERT_EQ(
+      -1, UnixDomainSocket::SendRecvMsg(fds[1], static_cast<uint8_t*>(NULL), 0U,
+                                        static_cast<int*>(NULL), request));
   ASSERT_EQ(EPIPE, errno);
   // Restore the SIGPIPE handler.
   ASSERT_EQ(0, sigaction(SIGPIPE, &oldact, NULL));
@@ -83,15 +105,15 @@ TEST(UnixDomainSocketTest, SendRecvMsgAvoidsSIGPIPE) {
 // Simple sanity check within a single process that receiving PIDs works.
 TEST(UnixDomainSocketTest, RecvPid) {
   int fds[2];
-  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
+  ASSERT_NO_FATAL_FAILURE(CreateSocketPair(fds));
   ScopedFD recv_sock(fds[0]);
   ScopedFD send_sock(fds[1]);
 
   ASSERT_TRUE(UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
 
   static const char kHello[] = "hello";
-  ASSERT_TRUE(UnixDomainSocket::SendMsg(
-      send_sock.get(), kHello, sizeof(kHello), std::vector<int>()));
+  ASSERT_TRUE(UnixDomainSocket::SendMsg(send_sock.get(), kHello, sizeof(kHello),
+                                        std::vector<int>()));
 
   // Extra receiving buffer space to make sure we really received only
   // sizeof(kHello) bytes and it wasn't just truncated to fit the buffer.
@@ -110,7 +132,7 @@ TEST(UnixDomainSocketTest, RecvPid) {
 // Same as above, but send the max number of file descriptors too.
 TEST(UnixDomainSocketTest, RecvPidWithMaxDescriptors) {
   int fds[2];
-  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
+  ASSERT_NO_FATAL_FAILURE(CreateSocketPair(fds));
   ScopedFD recv_sock(fds[0]);
   ScopedFD send_sock(fds[1]);
 
@@ -119,8 +141,8 @@ TEST(UnixDomainSocketTest, RecvPidWithMaxDescriptors) {
   static const char kHello[] = "hello";
   std::vector<int> send_fds(UnixDomainSocket::kMaxFileDescriptors,
                             send_sock.get());
-  ASSERT_TRUE(UnixDomainSocket::SendMsg(
-      send_sock.get(), kHello, sizeof(kHello), send_fds));
+  ASSERT_TRUE(UnixDomainSocket::SendMsg(send_sock.get(), kHello, sizeof(kHello),
+                                        send_fds));
 
   // Extra receiving buffer space to make sure we really received only
   // sizeof(kHello) bytes and it wasn't just truncated to fit the buffer.
@@ -140,7 +162,7 @@ TEST(UnixDomainSocketTest, RecvPidWithMaxDescriptors) {
 // disconnected socket.
 TEST(UnixDomianSocketTest, RecvPidDisconnectedSocket) {
   int fds[2];
-  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
+  ASSERT_NO_FATAL_FAILURE(CreateSocketPair(fds));
   ScopedFD recv_sock(fds[0]);
   ScopedFD send_sock(fds[1]);
 

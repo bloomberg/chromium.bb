@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/posix/unix_domain_socket_linux.h"
 #include "base/threading/thread.h"
 #include "chrome/profiling/memlog_stream_receiver.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
