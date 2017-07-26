@@ -113,6 +113,10 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Changes the app list state.
   void SetState(AppListState new_state);
 
+  // Kicks off the proper animation for the state change. If an animation is
+  // in progress it will be interrupted.
+  void StartAnimationForState(AppListState new_state);
+
   // Changes the app list state depending on the current |app_list_state_| and
   // whether the search box is empty.
   void SetStateFromSearchBoxView(bool search_box_is_empty);
@@ -168,6 +172,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // release position and snap to the next state.
   void EndDrag(const gfx::Point& location);
 
+  // Gets the display nearest to the parent window.
+  display::Display GetDisplayNearestView() const;
+
   // Overridden from views::BubbleDialogDelegateView:
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override;
@@ -222,7 +229,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   bool processing_scroll_event_series_;
   // The state of the app list, controlled via SetState().
   AppListState app_list_state_;
-
   // An observer that notifies AppListView when the display has changed.
   ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
 
