@@ -560,6 +560,7 @@ modules_dictionary_idl_files =
                     "webaudio/PeriodicWaveOptions.idl",
                     "webaudio/OscillatorOptions.idl",
                     "webaudio/OfflineAudioCompletionEventInit.idl",
+                    "webaudio/OfflineAudioContextOptions.idl",
                     "webaudio/StereoPannerOptions.idl",
                     "webaudio/WaveShaperOptions.idl",
                     "webauth/AuthenticatorSelectionCriteria.idl",
