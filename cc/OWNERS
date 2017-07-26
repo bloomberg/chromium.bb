@@ -38,22 +38,19 @@ reveman@chromium.org
 vmpstr@chromium.org
 ericrk@chromium.org
 
-# math / geometry / layer_tree_host_common
-enne@chromium.org
+# math / geometry
+flackr@chromium.org
 vollick@chromium.org
 
 # property trees
 ajuma@chromium.org
-enne@chromium.org
+chrishtr@chromium.org
 vollick@chromium.org
 weiliangc@chromium.org
 
 # animation
 vollick@chromium.org
 ajuma@chromium.org
-
-# property trees
-chrishtr@chromium.org
 
 # we miss you
 # jamesr@chromium.org
