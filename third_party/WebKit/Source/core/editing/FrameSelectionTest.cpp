@@ -65,7 +65,7 @@ TEST_F(FrameSelectionTest, FirstEphemeralRangeOf) {
                                .SetBaseAndExtent(EphemeralRange(
                                    Position(text, 3), Position(text, 6)))
                                .Build(),
-                           0);
+                           SetSelectionData());
   sample->setAttribute(HTMLNames::styleAttr, "display:none");
   // Move |VisibleSelection| before "abc".
   UpdateAllLifecyclePhases();
@@ -364,7 +364,7 @@ TEST_F(FrameSelectionTest, SelectionOnRangeHidesHandles) {
                                .SetBaseAndExtent(EphemeralRange(
                                    Position(text, 0), Position(text, 12)))
                                .Build(),
-                           0);
+                           SetSelectionData());
 
   EXPECT_FALSE(Selection().IsHandleVisible())
       << "After SetSelection on Range, handles shouldn't be present.";
@@ -379,7 +379,7 @@ TEST_F(FrameSelectionTest, SelectionOnRangeHidesHandles) {
                                .SetBaseAndExtent(EphemeralRange(
                                    Position(text, 0), Position(text, 12)))
                                .Build(),
-                           0);
+                           SetSelectionData());
 
   EXPECT_FALSE(Selection().IsHandleVisible())
       << "After SetSelection on Range, handles shouldn't be present.";

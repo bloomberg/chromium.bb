@@ -31,6 +31,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/EphemeralRange.h"
+#include "core/editing/SetSelectionData.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/layout/ScrollAlignment.h"
@@ -54,10 +55,6 @@ enum class SelectionModifyAlteration;
 enum class SelectionModifyDirection;
 class TextIteratorBehavior;
 struct PaintInvalidatorContext;
-
-enum class CursorAlignOnScroll { kIfNeeded, kAlways };
-
-enum class SetSelectionBy { kSystem = 0, kUser = 1 };
 
 enum RevealExtentOption { kRevealExtent, kDoNotRevealExtent };
 
@@ -117,6 +114,10 @@ class CORE_EXPORT FrameSelection final
   // layout.
   const VisibleSelection& ComputeVisibleSelectionInDOMTreeDeprecated() const;
 
+  void SetSelection(const SelectionInDOMTree&, const SetSelectionData&);
+
+  // TODO(editing-dev): We should use |SetSelectionData| version of
+  // |SetSelection()|.
   void SetSelection(const SelectionInDOMTree&,
                     SetSelectionOptions = kCloseTyping | kClearTypingStyle,
                     CursorAlignOnScroll = CursorAlignOnScroll::kIfNeeded,
