@@ -6,32 +6,38 @@
 
 function dumpMessages()
 {
-    for (var i = 0; i < 5; ++i)
-        console.log("Same message");
+    for (var i = 0; i < 2; ++i)
+        console.log("Message");
+
+    for (var i = 0; i < 2; ++i)
+        console.log(new Error("Message with error"));
+
+    for (var i = 0; i < 2; ++i)
+        console.error({a: 1});
+}
+
+function throwObjects() {
+    for (var i = 0; i < 2; ++i)
+        setTimeout(() => { throw {a: 1}; }, 0);
+}
+
+function throwPrimitiveValues() {
+    for (var i = 0; i < 2; ++i)
+        setTimeout(() => { throw "Primitive value"; }, 0);
 }
 //# sourceURL=console-repeat-count.html
 </script>
 
 <script>
-function test()
+async function test()
 {
-    InspectorTest.evaluateInPage("dumpMessages()", step1);
-
-    function step1()
-    {
-        InspectorTest.evaluateInConsole("\"Different message\"", step2);
-    }
-
-    function step2()
-    {
-        InspectorTest.evaluateInPage("dumpMessages()", step3);
-    }
-
-    function step3()
-    {
+    await InspectorTest.evaluateInPagePromise("dumpMessages()");
+    await InspectorTest.evaluateInPagePromise("throwPrimitiveValues()");
+    await InspectorTest.evaluateInPagePromise("throwObjects()");
+    InspectorTest.waitForConsoleMessages(7, () => {
         InspectorTest.dumpConsoleMessages();
         InspectorTest.completeTest();
-    }
+    });
 }
 </script>
 </head>
