@@ -437,6 +437,7 @@ void MediaStreamAudioProcessor::Stop() {
 
   audio_processing_.get()->UpdateHistogramsOnCallEnd();
   StopEchoCancellationDump(audio_processing_.get());
+  worker_queue_.reset(nullptr);
 
   if (playout_data_source_) {
     playout_data_source_->RemovePlayoutSink(this);
@@ -462,9 +463,17 @@ void MediaStreamAudioProcessor::OnAecDumpFile(
   base::File file = IPC::PlatformFileForTransitToFile(file_handle);
   DCHECK(file.IsValid());
 
-  if (audio_processing_)
-    StartEchoCancellationDump(audio_processing_.get(), std::move(file));
-  else
+  if (audio_processing_) {
+    if (!worker_queue_) {
+      worker_queue_.reset(new rtc::TaskQueue("aecdump-worker-queue",
+                                             rtc::TaskQueue::Priority::LOW));
+    }
+    // Here tasks will be posted on the |worker_queue_|. It must be
+    // kept alive until StopEchoCancellationDump is called or the
+    // webrtc::AudioProcessing instance is destroyed.
+    StartEchoCancellationDump(audio_processing_.get(), std::move(file),
+                              worker_queue_.get());
+  } else
     file.Close();
 }
 
@@ -472,6 +481,10 @@ void MediaStreamAudioProcessor::OnDisableAecDump() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   if (audio_processing_)
     StopEchoCancellationDump(audio_processing_.get());
+
+  // Note that deleting an rtc::TaskQueue has to be done from the
+  // thread that created it.
+  worker_queue_.reset(nullptr);
 }
 
 void MediaStreamAudioProcessor::OnAec3Enable(bool enable) {

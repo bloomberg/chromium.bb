@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
@@ -484,6 +485,40 @@ TEST_F(MediaStreamAudioProcessorTest, GetAecDumpMessageFilter) {
   // Stop |audio_processor| so that it removes itself from
   // |webrtc_audio_device| and clears its pointer to it.
   audio_processor->Stop();
+}
+
+TEST_F(MediaStreamAudioProcessorTest, StartStopAecDump) {
+  scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
+      new WebRtcAudioDeviceImpl());
+  AudioProcessingProperties properties;
+
+  base::ScopedTempDir temp_directory;
+  ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
+  base::FilePath temp_file_path;
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory.GetPath(),
+                                             &temp_file_path));
+  {
+    scoped_refptr<MediaStreamAudioProcessor> audio_processor(
+        new rtc::RefCountedObject<MediaStreamAudioProcessor>(
+            properties, webrtc_audio_device.get()));
+
+    // Start and stop recording.
+    audio_processor->OnAecDumpFile(IPC::TakePlatformFileForTransit(base::File(
+        temp_file_path, base::File::FLAG_WRITE | base::File::FLAG_OPEN)));
+    audio_processor->OnDisableAecDump();
+
+    // Start and wait for d-tor.
+    audio_processor->OnAecDumpFile(IPC::TakePlatformFileForTransit(base::File(
+        temp_file_path, base::File::FLAG_WRITE | base::File::FLAG_OPEN)));
+  }
+
+  // Check that dump file is non-empty after audio processor has been
+  // destroyed. Note that this test fails when compiling WebRTC
+  // without protobuf support, rtc_enable_protobuf=false.
+  std::string output;
+  ASSERT_TRUE(base::ReadFileToString(temp_file_path, &output));
+  ASSERT_FALSE(output.empty());
+  // The tempory file is deleted when temp_directory exists scope.
 }
 
 TEST_F(MediaStreamAudioProcessorTest, TestStereoAudio) {
