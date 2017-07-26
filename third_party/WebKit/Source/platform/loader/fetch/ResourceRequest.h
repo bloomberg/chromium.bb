@@ -94,7 +94,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   std::unique_ptr<CrossThreadResourceRequestData> CopyData() const;
 
   bool IsNull() const;
-  bool IsEmpty() const;
 
   const KURL& Url() const;
   void SetURL(const KURL&);
@@ -141,9 +140,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   const AtomicString& HttpOrigin() const {
     return HttpHeaderField(HTTPNames::Origin);
   }
-  const AtomicString& HttpSuborigin() const {
-    return HttpHeaderField(HTTPNames::Suborigin);
-  }
   // Note that these will also set and clear, respectively, the
   // Suborigin header, if appropriate.
   void SetHTTPOrigin(const SecurityOrigin*);
@@ -152,9 +148,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   void AddHTTPOriginIfNeeded(const SecurityOrigin*);
   void AddHTTPOriginIfNeeded(const String&);
 
-  const AtomicString& HttpUserAgent() const {
-    return HttpHeaderField(HTTPNames::User_Agent);
-  }
   void SetHTTPUserAgent(const AtomicString& http_user_agent) {
     SetHTTPHeaderField(HTTPNames::User_Agent, http_user_agent);
   }
