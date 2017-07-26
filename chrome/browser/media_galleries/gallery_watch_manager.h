@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
@@ -20,6 +21,10 @@
 #include "components/storage_monitor/removable_storage_observer.h"
 
 class GalleryWatchManagerObserver;
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace content {
 class BrowserContext;
@@ -157,8 +162,11 @@ class GalleryWatchManager
   // Things that want to hear about gallery changes.
   ObserverMap observers_;
 
-  // Helper that does the watches on the FILE thread.
+  // Helper that does the watches on a sequenced task runner.
   std::unique_ptr<FileWatchManager> watch_manager_;
+
+  // The background task runner that |watch_manager_| lives on.
+  scoped_refptr<base::SequencedTaskRunner> watch_manager_task_runner_;
 
   // Removes watches when a browser context is shut down as watches contain raw
   // pointers.

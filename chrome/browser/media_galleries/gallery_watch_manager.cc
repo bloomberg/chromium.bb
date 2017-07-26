@@ -11,7 +11,11 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "base/stl_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager_observer.h"
@@ -60,11 +64,11 @@ const char GalleryWatchManager::kNoPermissionError[] =
 const char GalleryWatchManager::kCouldNotWatchGalleryError[] =
     "Could not watch gallery path.";
 
-// Manages a collection of file path watchers on the FILE thread and relays
-// the change events to |callback| on the UI thread. This file is constructed
-// on the UI thread, but operates and is destroyed on the FILE thread.
-// If |callback| is called with an error, all watches on that path have been
-// dropped.
+// Manages a collection of file path watchers on a sequenced task runner and
+// relays the change events to |callback| on the UI thread. This file is
+// constructed on the UI thread, but operates and is destroyed on a sequenced
+// task runner. If |callback| is called with an error, all watches on that path
+// have been dropped.
 class GalleryWatchManager::FileWatchManager {
  public:
   explicit FileWatchManager(const base::FilePathWatcher::Callback& callback);
@@ -88,6 +92,8 @@ class GalleryWatchManager::FileWatchManager {
 
   base::FilePathWatcher::Callback callback_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   base::WeakPtrFactory<FileWatchManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileWatchManager);
@@ -97,16 +103,20 @@ GalleryWatchManager::FileWatchManager::FileWatchManager(
     const base::FilePathWatcher::Callback& callback)
     : callback_(callback), weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Bind to the sequenced task runner, not the UI thread.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 GalleryWatchManager::FileWatchManager::~FileWatchManager() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void GalleryWatchManager::FileWatchManager::AddFileWatch(
     const base::FilePath& path,
     const base::Callback<void(bool)>& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   // This can occur if the GalleryWatchManager attempts to watch the same path
   // again before recieving the callback. It's benign.
@@ -131,7 +141,9 @@ void GalleryWatchManager::FileWatchManager::AddFileWatch(
 
 void GalleryWatchManager::FileWatchManager::RemoveFileWatch(
     const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::ThreadRestrictions::AssertIOAllowed();
+
   size_t erased = watchers_.erase(path);
   DCHECK_EQ(erased, 1u);
 }
@@ -144,7 +156,9 @@ GalleryWatchManager::FileWatchManager::GetWeakPtr() {
 void GalleryWatchManager::FileWatchManager::OnFilePathChanged(
     const base::FilePath& path,
     bool error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::ThreadRestrictions::AssertIOAllowed();
+
   if (error)
     RemoveFileWatch(path);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -175,7 +189,10 @@ GalleryWatchManager::NotificationInfo::~NotificationInfo() {
 }
 
 GalleryWatchManager::GalleryWatchManager()
-    : storage_monitor_observed_(false), weak_factory_(this) {
+    : storage_monitor_observed_(false),
+      watch_manager_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND})),
+      weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   watch_manager_.reset(new FileWatchManager(base::Bind(
       &GalleryWatchManager::OnFilePathChanged, weak_factory_.GetWeakPtr())));
@@ -189,8 +206,7 @@ GalleryWatchManager::~GalleryWatchManager() {
     storage_monitor::StorageMonitor::GetInstance()->RemoveObserver(this);
   }
 
-  BrowserThread::DeleteSoon(
-      BrowserThread::FILE, FROM_HERE, watch_manager_.release());
+  watch_manager_task_runner_->DeleteSoon(FROM_HERE, watch_manager_.release());
 }
 
 void GalleryWatchManager::AddObserver(BrowserContext* browser_context,
@@ -290,8 +306,8 @@ void GalleryWatchManager::AddWatch(BrowserContext* browser_context,
                    owner,
                    path,
                    callback);
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
+    watch_manager_task_runner_->PostTask(
+        FROM_HERE,
         base::BindOnce(&FileWatchManager::AddFileWatch,
                        watch_manager_->GetWeakPtr(), path, on_watch_added));
   }
@@ -367,9 +383,9 @@ void GalleryWatchManager::DeactivateFileWatch(const WatchOwner& owner,
   it->second.owners.erase(owner);
   if (it->second.owners.empty()) {
     watched_paths_.erase(it);
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::BindOnce(&FileWatchManager::RemoveFileWatch,
-                                           watch_manager_->GetWeakPtr(), path));
+    watch_manager_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&FileWatchManager::RemoveFileWatch,
+                                  watch_manager_->GetWeakPtr(), path));
   }
 }
 
