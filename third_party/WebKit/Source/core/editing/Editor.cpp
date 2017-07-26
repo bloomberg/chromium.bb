@@ -1415,15 +1415,20 @@ void Editor::RevealSelectionAfterEditingOperation(
   GetFrame().Selection().RevealSelection(alignment, reveal_extent_option);
 }
 
-void Editor::Transpose() {
-  if (!CanEdit())
+// TODO(yosin): We should move |Transpose()| into |ExecuteTranspose()| in
+// "EditorCommand.cpp"
+void Transpose(LocalFrame& frame) {
+  Editor& editor = frame.GetEditor();
+  if (!editor.CanEdit())
     return;
+
+  Document* const document = frame.GetDocument();
 
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited. see http://crbug.com/590369 for more details.
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  const EphemeralRange& range = ComputeRangeForTranspose(GetFrame());
+  const EphemeralRange& range = ComputeRangeForTranspose(frame);
   if (range.IsNull())
     return;
 
@@ -1434,23 +1439,23 @@ void Editor::Transpose() {
   const String& transposed = text.Right(1) + text.Left(1);
 
   if (DispatchBeforeInputInsertText(
-          EventTargetNodeForDocument(GetFrame().GetDocument()), transposed,
+          EventTargetNodeForDocument(document), transposed,
           InputEvent::InputType::kInsertTranspose,
           new StaticRangeVector(1, StaticRange::Create(range))) !=
       DispatchEventResult::kNotCanceled)
     return;
 
-  // 'beforeinput' event handler may destroy document.
-  if (frame_->GetDocument()->GetFrame() != frame_)
+  // 'beforeinput' event handler may destroy document->
+  if (frame.GetDocument() != document)
     return;
 
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited. see http://crbug.com/590369 for more details.
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // 'beforeinput' event handler may change selection, we need to re-calculate
   // range.
-  const EphemeralRange& new_range = ComputeRangeForTranspose(GetFrame());
+  const EphemeralRange& new_range = ComputeRangeForTranspose(frame);
   if (new_range.IsNull())
     return;
 
@@ -1464,12 +1469,12 @@ void Editor::Transpose() {
 
   // Select the two characters.
   if (CreateVisibleSelection(new_selection) !=
-      GetFrame().Selection().ComputeVisibleSelectionInDOMTree())
-    GetFrame().Selection().SetSelection(new_selection);
+      frame.Selection().ComputeVisibleSelectionInDOMTree())
+    frame.Selection().SetSelection(new_selection);
 
   // Insert the transposed characters.
-  ReplaceSelectionWithText(new_transposed, false, false,
-                           InputEvent::InputType::kInsertTranspose);
+  editor.ReplaceSelectionWithText(new_transposed, false, false,
+                                  InputEvent::InputType::kInsertTranspose);
 }
 
 void Editor::AddToKillRing(const EphemeralRange& range) {
