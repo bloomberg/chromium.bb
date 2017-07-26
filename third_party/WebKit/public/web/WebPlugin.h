@@ -159,6 +159,8 @@ class WebPlugin {
   virtual WebString SelectionAsText() const { return WebString(); }
   virtual WebString SelectionAsMarkup() const { return WebString(); }
 
+  virtual bool CanCut() const { return false; }
+
   virtual bool ExecuteEditCommand(const WebString& name) { return false; }
   virtual bool ExecuteEditCommand(const WebString& name,
                                   const WebString& value) {

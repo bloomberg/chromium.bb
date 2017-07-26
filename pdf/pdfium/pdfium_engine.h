@@ -72,6 +72,7 @@ class PDFiumEngine : public PDFEngine,
   void RotateClockwise() override;
   void RotateCounterclockwise() override;
   std::string GetSelectedText() override;
+  bool CanCut() override;
   std::string GetLinkAtPosition(const pp::Point& point) override;
   bool HasPermission(DocumentPermission permission) const override;
   void SelectAll() override;
@@ -675,6 +676,10 @@ class PDFiumEngine : public PDFEngine,
 
   // True if focus is in form text field or form combobox text field.
   bool in_form_text_area_;
+
+  // True if the form text area currently in focus is not read only, and is a
+  // form text field or user-editable form combobox text field.
+  bool editable_form_text_area_;
 
   // True if left mouse button is currently being held down.
   bool mouse_left_button_down_;

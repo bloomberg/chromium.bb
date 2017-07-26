@@ -801,6 +801,9 @@ IPC_MESSAGE_ROUTED3(PpapiMsg_PPPPdf_SetSelectionBounds,
                     PP_Instance /* instance */,
                     PP_FloatPoint /* base */,
                     PP_FloatPoint /* extent */)
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPPdf_CanCut,
+                           PP_Instance /* instance */,
+                           PP_Bool /* result */)
 
 // Find
 IPC_MESSAGE_ROUTED2(PpapiPluginMsg_PPPFind_StartFind,

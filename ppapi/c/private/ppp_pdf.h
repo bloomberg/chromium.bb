@@ -73,6 +73,8 @@ struct PPP_Pdf_1_1 {
   void (*SetSelectionBounds)(PP_Instance instance,
                              const struct PP_FloatPoint* base,
                              const struct PP_FloatPoint* extent);
+  // Return true if plugin text can be cut.
+  PP_Bool (*CanCut)(PP_Instance instance);
 };
 
 typedef PPP_Pdf_1_1 PPP_Pdf;

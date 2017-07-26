@@ -1501,6 +1501,10 @@ void PepperPluginInstanceImpl::SetSelectionBounds(const gfx::PointF& base,
   plugin_pdf_interface_->SetSelectionBounds(pp_instance(), &p_base, &p_extent);
 }
 
+bool PepperPluginInstanceImpl::CanCut() {
+  return PP_ToBool(plugin_pdf_interface_->CanCut(pp_instance()));
+}
+
 void PepperPluginInstanceImpl::RequestSurroundingText(
     size_t desired_number_of_characters) {
   // Keep a reference on the stack. See NOTE above.
