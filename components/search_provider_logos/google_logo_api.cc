@@ -152,13 +152,17 @@ std::unique_ptr<EncodedLogo> GoogleLegacyParseLogoResponse(
   }
 
   // Don't check return values since these fields are optional.
-  logo_dict->GetString("target", &logo->metadata.on_click_url);
+  std::string on_click_url;
+  logo_dict->GetString("target", &on_click_url);
+  logo->metadata.on_click_url = GURL(on_click_url);
   logo_dict->GetString("fingerprint", &logo->metadata.fingerprint);
   logo_dict->GetString("alt", &logo->metadata.alt_text);
 
   // Existance of url indicates |data| is a call to action image for an
   // animated doodle. |url| points to that animated doodle.
-  logo_dict->GetString("url", &logo->metadata.animated_url);
+  std::string animated_url;
+  logo_dict->GetString("url", &animated_url);
+  logo->metadata.animated_url = GURL(animated_url);
 
   base::TimeDelta time_to_live;
   int time_to_live_ms;
@@ -268,10 +272,9 @@ std::unique_ptr<EncodedLogo> GoogleNewParseLogoResponse(
 
     // If animated, get the URL for the animated image.
     if (is_animated) {
-      GURL animated_url = ParseUrl(*image, "url", base_url);
-      if (!animated_url.is_valid())
+      logo->metadata.animated_url = ParseUrl(*image, "url", base_url);
+      if (!logo->metadata.animated_url.is_valid())
         return nullptr;
-      logo->metadata.animated_url = animated_url.spec();
     }
   }
 
@@ -309,8 +312,7 @@ std::unique_ptr<EncodedLogo> GoogleNewParseLogoResponse(
       return nullptr;
   }
 
-  logo->metadata.on_click_url =
-      ParseUrl(*ddljson, "target_url", base_url).spec();
+  logo->metadata.on_click_url = ParseUrl(*ddljson, "target_url", base_url);
   ddljson->GetString("alt_text", &logo->metadata.alt_text);
 
   ddljson->GetString("fingerprint", &logo->metadata.fingerprint);

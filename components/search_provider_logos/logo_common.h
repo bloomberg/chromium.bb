@@ -15,8 +15,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace search_provider_logos {
 
@@ -31,7 +30,7 @@ struct LogoMetadata {
   // For use by the client ----------------------------------------------------
 
   // The URL to load when the logo is clicked.
-  std::string on_click_url;
+  GURL on_click_url;
   // The accessibility text for the logo.
   std::string alt_text;
   // The mime type of the logo image.
@@ -39,12 +38,12 @@ struct LogoMetadata {
   // The URL for an animated image to display when the call to action logo is
   // clicked. If |animated_url| is not empty, |encoded_image| refers to a call
   // to action image.
-  std::string animated_url;
+  GURL animated_url;
 
   // For use by LogoTracker ---------------------------------------------------
 
   // The URL from which the logo was downloaded (without the fingerprint param).
-  std::string source_url;
+  GURL source_url;
   // A fingerprint (i.e. hash) identifying the logo. Used when revalidating the
   // logo with the server.
   std::string fingerprint;

@@ -101,10 +101,10 @@ Logo GetSampleLogo(const GURL& logo_url, base::Time response_time) {
   logo.metadata.expiration_time =
       response_time + base::TimeDelta::FromHours(19);
   logo.metadata.fingerprint = "8bc33a80";
-  logo.metadata.source_url = logo_url.spec();
-  logo.metadata.on_click_url = "http://www.google.com/search?q=potato";
+  logo.metadata.source_url = logo_url;
+  logo.metadata.on_click_url = GURL("http://www.google.com/search?q=potato");
   logo.metadata.alt_text = "A logo about potatoes";
-  logo.metadata.animated_url = "http://www.google.com/logos/doodle.png";
+  logo.metadata.animated_url = GURL("http://www.google.com/logos/doodle.png");
   logo.metadata.mime_type = "image/png";
   return logo;
 }
@@ -115,8 +115,8 @@ Logo GetSampleLogo2(const GURL& logo_url, base::Time response_time) {
   logo.metadata.can_show_after_expiration = true;
   logo.metadata.expiration_time = base::Time();
   logo.metadata.fingerprint = "71082741021409127";
-  logo.metadata.source_url = logo_url.spec();
-  logo.metadata.on_click_url = "http://example.com/page25";
+  logo.metadata.source_url = logo_url;
+  logo.metadata.on_click_url = GURL("http://example.com/page25");
   logo.metadata.alt_text = "The logo for example.com";
   logo.metadata.mime_type = "image/jpeg";
   return logo;
@@ -151,13 +151,10 @@ std::string MakeServerResponse(
 }
 
 std::string MakeServerResponse(const Logo& logo, base::TimeDelta time_to_live) {
-  return MakeServerResponse(logo.image,
-                            logo.metadata.on_click_url,
-                            logo.metadata.alt_text,
-                            logo.metadata.animated_url,
-                            logo.metadata.mime_type,
-                            logo.metadata.fingerprint,
-                            time_to_live);
+  return MakeServerResponse(
+      logo.image, logo.metadata.on_click_url.spec(), logo.metadata.alt_text,
+      logo.metadata.animated_url.spec(), logo.metadata.mime_type,
+      logo.metadata.fingerprint, time_to_live);
 }
 
 void ExpectLogosEqual(const Logo* expected_logo,
@@ -457,7 +454,7 @@ TEST_F(LogoTrackerTest, EmptyCacheAndFailedDownload) {
 TEST_F(LogoTrackerTest, AcceptMinimalLogoResponse) {
   Logo logo;
   logo.image = MakeBitmap(1, 2);
-  logo.metadata.source_url = logo_url_.spec();
+  logo.metadata.source_url = logo_url_;
   logo.metadata.can_show_after_expiration = true;
   logo.metadata.mime_type = "image/png";
 
@@ -524,9 +521,9 @@ TEST_F(LogoTrackerTest, UpdateCachedLogoMetadata) {
   Logo fresh_logo = cached_logo;
   fresh_logo.image.reset();
   fresh_logo.metadata.mime_type.clear();
-  fresh_logo.metadata.on_click_url = "http://new.onclick.url";
+  fresh_logo.metadata.on_click_url = GURL("http://new.onclick.url");
   fresh_logo.metadata.alt_text = "new alt text";
-  fresh_logo.metadata.animated_url = "http://new.animated.url";
+  fresh_logo.metadata.animated_url = GURL("http://new.animated.url");
   fresh_logo.metadata.expiration_time =
       test_clock_->Now() + base::TimeDelta::FromDays(8);
   SetServerResponseWhenFingerprint(fresh_logo.metadata.fingerprint,

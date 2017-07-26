@@ -55,8 +55,7 @@ std::unique_ptr<EncodedLogo> GetLogoFromCacheOnFileThread(LogoCache* logo_cache,
   if (!metadata)
     return nullptr;
 
-  if (metadata->source_url != logo_url.spec() ||
-      !IsLogoOkToShow(*metadata, now)) {
+  if (metadata->source_url != logo_url || !IsLogoOkToShow(*metadata, now)) {
     logo_cache->SetCachedLogo(NULL);
     return nullptr;
   }
@@ -252,7 +251,7 @@ void LogoTracker::OnFreshLogoParsed(bool* parsing_failed,
   DCHECK(!is_idle_);
 
   if (logo)
-    logo->metadata.source_url = logo_url_.spec();
+    logo->metadata.source_url = logo_url_;
 
   if (!logo || !logo->encoded_image.get()) {
     OnFreshLogoAvailable(std::move(logo), *parsing_failed, from_http_cache,

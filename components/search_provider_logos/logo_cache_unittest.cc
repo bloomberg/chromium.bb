@@ -22,13 +22,13 @@ namespace search_provider_logos {
 
 LogoMetadata GetExampleMetadata() {
   LogoMetadata metadata;
-  metadata.source_url = "http://google.com/mylogo";
+  metadata.source_url = GURL("http://google.com/mylogo");
   metadata.fingerprint = "LC4JVIZ5HVITQFKH0V70";
   EXPECT_TRUE(base::Time::FromString("98-05-05 05:05:06 GMT",
                                      &metadata.expiration_time));
   metadata.can_show_after_expiration = true;
-  metadata.on_click_url = "https://www.google.com/search?q=chicken";
-  metadata.animated_url = "http://www.google.com/logos/doodle.png";
+  metadata.on_click_url = GURL("https://www.google.com/search?q=chicken");
+  metadata.animated_url = GURL("http://www.google.com/logos/doodle.png");
   metadata.alt_text = "A logo about chickens";
   metadata.mime_type = "image/jpeg";
   return metadata;
@@ -36,12 +36,12 @@ LogoMetadata GetExampleMetadata() {
 
 LogoMetadata GetExampleMetadata2() {
   LogoMetadata metadata;
-  metadata.source_url = "https://www.example.com/thebestlogo?size=large";
+  metadata.source_url = GURL("https://www.example.com/thebestlogo?size=large");
   metadata.fingerprint = "bh4PLHdnEaQAPxNGRyMao1rOmVFTXuOdVhdrMmPV";
   EXPECT_TRUE(base::Time::FromString("17-04-04 07:10:58 GMT",
                                      &metadata.expiration_time));
   metadata.can_show_after_expiration = false;
-  metadata.on_click_url = "http://www.example.co.uk/welcome.php#top";
+  metadata.on_click_url = GURL("http://www.example.co.uk/welcome.php#top");
   metadata.alt_text = "This is a logo";
   metadata.mime_type = "image/png";
   return metadata;
@@ -180,7 +180,7 @@ TEST_F(LogoCacheTest, StoreAndRetrieveMetadata) {
   ExpectMetadata(&metadata);
 
   // Update metadata.
-  metadata.on_click_url = "http://anotherwebsite.com";
+  metadata.on_click_url = GURL("http://anotherwebsite.com");
   cache_->UpdateCachedLogoMetadata(metadata);
   ExpectMetadata(&metadata);
 

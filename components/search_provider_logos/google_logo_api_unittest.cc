@@ -31,7 +31,7 @@ TEST(GoogleNewLogoApiTest, ResolvesRelativeUrl) {
 
   ASSERT_FALSE(failed);
   ASSERT_TRUE(logo);
-  EXPECT_EQ("https://base.doo/target", logo->metadata.on_click_url);
+  EXPECT_EQ(GURL("https://base.doo/target"), logo->metadata.on_click_url);
 }
 
 TEST(GoogleNewLogoApiTest, DoesNotResolveAbsoluteUrl) {
@@ -49,7 +49,7 @@ TEST(GoogleNewLogoApiTest, DoesNotResolveAbsoluteUrl) {
 
   ASSERT_FALSE(failed);
   ASSERT_TRUE(logo);
-  EXPECT_EQ("https://www.doodle.com/target", logo->metadata.on_click_url);
+  EXPECT_EQ(GURL("https://www.doodle.com/target"), logo->metadata.on_click_url);
 }
 
 TEST(GoogleNewLogoApiTest, ParsesStaticImage) {
@@ -93,7 +93,8 @@ TEST(GoogleNewLogoApiTest, ParsesAnimatedImage) {
 
   ASSERT_FALSE(failed);
   ASSERT_TRUE(logo);
-  EXPECT_EQ("https://www.doodle.com/image.gif", logo->metadata.animated_url);
+  EXPECT_EQ(GURL("https://www.doodle.com/image.gif"),
+            logo->metadata.animated_url);
   EXPECT_EQ("abc", logo->encoded_image->data());
 }
 
