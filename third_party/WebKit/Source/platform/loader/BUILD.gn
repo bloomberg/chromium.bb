@@ -156,6 +156,7 @@ source_set("test_support") {
   # Source files that can be called from blink_platform_unittests and
   # webkit_unit_tests.
   sources = [
+    "testing/CryptoTestingPlatformSupport.h",
     "testing/FetchTestingPlatformSupport.cpp",
     "testing/FetchTestingPlatformSupport.h",
     "testing/MockFetchContext.h",

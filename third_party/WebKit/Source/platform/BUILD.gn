@@ -1637,6 +1637,8 @@ static_library("test_support") {
     "testing/HistogramTester.cpp",
     "testing/HistogramTester.h",
     "testing/MessageLoopForMojo.h",
+    "testing/MockWebCrypto.cpp",
+    "testing/MockWebCrypto.h",
     "testing/PaintPrinters.cpp",
     "testing/PaintPrinters.h",
     "testing/PaintPropertyTestHelpers.h",
