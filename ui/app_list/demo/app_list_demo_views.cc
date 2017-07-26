@@ -84,7 +84,7 @@ void DemoAppListViewDelegate::Dismiss() {
 void DemoAppListViewDelegate::ViewClosing() {
   base::MessageLoop* message_loop = base::MessageLoopForUI::current();
   message_loop->task_runner()->DeleteSoon(FROM_HERE, this);
-  message_loop->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 views::View* DemoAppListViewDelegate::CreateStartPageWebView(
