@@ -16,7 +16,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     const String& source_code,
     std::unique_ptr<Vector<char>> cached_meta_data,
     WorkerThreadStartMode start_mode,
-    const Vector<CSPHeaderAndType>* content_security_policy_headers,
+    const Vector<CSPHeaderAndType>* content_security_policy_parsed_headers,
     const String& referrer_policy,
     const SecurityOrigin* starter_origin,
     WorkerClients* worker_clients,
@@ -36,13 +36,13 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
       address_space(address_space),
       worker_settings(std::move(worker_settings)),
       v8_cache_options(v8_cache_options) {
-  this->content_security_policy_headers =
+  this->content_security_policy_parsed_headers =
       WTF::MakeUnique<Vector<CSPHeaderAndType>>();
-  if (content_security_policy_headers) {
-    for (const auto& header : *content_security_policy_headers) {
+  if (content_security_policy_parsed_headers) {
+    for (const auto& header : *content_security_policy_parsed_headers) {
       CSPHeaderAndType copied_header(header.first.IsolatedCopy(),
                                      header.second);
-      this->content_security_policy_headers->push_back(copied_header);
+      this->content_security_policy_parsed_headers->push_back(copied_header);
     }
   }
 

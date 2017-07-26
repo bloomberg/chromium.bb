@@ -27,7 +27,7 @@ CompositorWorkerGlobalScope* CompositorWorkerGlobalScope::Create(
       time_origin, std::move(creation_params->starter_origin_privilege_data),
       creation_params->worker_clients);
   context->ApplyContentSecurityPolicyFromVector(
-      *creation_params->content_security_policy_headers);
+      *creation_params->content_security_policy_parsed_headers);
   if (!creation_params->referrer_policy.IsNull())
     context->ParseAndSetReferrerPolicy(creation_params->referrer_policy);
   context->SetAddressSpace(creation_params->address_space);

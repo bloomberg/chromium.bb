@@ -27,13 +27,26 @@
 
 #include "platform/HTTPNames.h"
 #include "platform/loader/fetch/ResourceResponse.h"
+#include "platform/network/HTTPHeaderMap.h"
 
 namespace blink {
 
 ContentSecurityPolicyResponseHeaders::ContentSecurityPolicyResponseHeaders(
     const ResourceResponse& response)
-    : content_security_policy_(
-          response.HttpHeaderField(HTTPNames::Content_Security_Policy)),
-      content_security_policy_report_only_(response.HttpHeaderField(
-          HTTPNames::Content_Security_Policy_Report_Only)) {}
+    : ContentSecurityPolicyResponseHeaders(response.HttpHeaderFields()) {}
+
+ContentSecurityPolicyResponseHeaders::ContentSecurityPolicyResponseHeaders(
+    const HTTPHeaderMap& headers)
+    : content_security_policy_(headers.Get(HTTPNames::Content_Security_Policy)),
+      content_security_policy_report_only_(
+          headers.Get(HTTPNames::Content_Security_Policy_Report_Only)) {}
+
+ContentSecurityPolicyResponseHeaders
+ContentSecurityPolicyResponseHeaders::IsolatedCopy() const {
+  ContentSecurityPolicyResponseHeaders headers;
+  headers.content_security_policy_ = content_security_policy_.IsolatedCopy();
+  headers.content_security_policy_report_only_ =
+      content_security_policy_report_only_.IsolatedCopy();
+  return headers;
+}
 }
