@@ -4,6 +4,7 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#include "base/ios/ios_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -175,6 +176,12 @@ class ScopedBlockPopupsPref {
 // use the cached page. Page reload should use cache-control in the request
 // header and show updated page.
 - (void)testCachingBehaviorOnNavigateBackAndPageReload {
+  // TODO(crbug.com/747436): re-enable this test on iOS 10.3.1 and afterwards
+  // once the bug is fixed.
+  if (base::ios::IsRunningOnOrLater(10, 3, 1)) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 10.3.1 and afterwards.");
+  }
+
   web::test::SetUpHttpServer(base::MakeUnique<CacheTestResponseProvider>());
 
   const GURL cacheTestFirstPageURL =
