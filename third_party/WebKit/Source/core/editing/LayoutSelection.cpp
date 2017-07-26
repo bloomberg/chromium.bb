@@ -198,6 +198,11 @@ struct PaintInvalidationSet {
     layout_objects = std::move(other.layout_objects);
     layout_blocks = std::move(other.layout_blocks);
   }
+  PaintInvalidationSet& operator=(PaintInvalidationSet&& other) {
+    layout_objects = std::move(other.layout_objects);
+    layout_blocks = std::move(other.layout_blocks);
+    return *this;
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaintInvalidationSet);
@@ -226,24 +231,34 @@ static PaintInvalidationSet CollectInvalidationSet(
 // SelectionState
 // TODO(yoichio): Remove unused functionality comparing to SelectionPaintRange.
 class SelectionMarkingRange {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
   SelectionMarkingRange() = default;
   SelectionMarkingRange(LayoutObject* start_layout_object,
                         int start_offset,
                         LayoutObject* end_layout_object,
-                        int end_offset)
+                        int end_offset,
+                        PaintInvalidationSet invalidation_set)
       : start_layout_object_(start_layout_object),
         start_offset_(start_offset),
         end_layout_object_(end_layout_object),
-        end_offset_(end_offset) {
+        end_offset_(end_offset),
+        invalidation_set_(std::move(invalidation_set)) {
     DCHECK(start_layout_object_);
     DCHECK(end_layout_object_);
     if (start_layout_object_ != end_layout_object_)
       return;
     DCHECK_LT(start_offset_, end_offset_);
   }
+  SelectionMarkingRange(SelectionMarkingRange&& other) {
+    start_layout_object_ = other.start_layout_object_;
+    start_offset_ = other.start_offset_;
+    end_layout_object_ = other.end_layout_object_;
+    end_offset_ = other.end_offset_;
+    invalidation_set_ = std::move(other.invalidation_set_);
+  }
+
   SelectionPaintRange ToPaintRange() const {
     return {start_layout_object_, start_offset_, end_layout_object_,
             end_offset_};
@@ -265,6 +280,9 @@ class SelectionMarkingRange {
     DCHECK(!IsNull());
     return end_offset_;
   }
+  const PaintInvalidationSet& InvalidationSet() const {
+    return invalidation_set_;
+  }
 
   bool IsNull() const { return !start_layout_object_; }
 
@@ -273,10 +291,14 @@ class SelectionMarkingRange {
   int start_offset_ = -1;
   LayoutObject* end_layout_object_ = nullptr;
   int end_offset_ = -1;
+  PaintInvalidationSet invalidation_set_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SelectionMarkingRange);
 };
 
-// Update the selection status of all LayoutObjects between |start| and |end|.
-static void SetSelectionState(const SelectionMarkingRange& range) {
+// Update the selection status of all LayoutObjects in |range|.
+static void SetSelectionState(const SelectionPaintRange& range) {
   if (range.IsNull())
     return;
 
@@ -289,20 +311,19 @@ static void SetSelectionState(const SelectionMarkingRange& range) {
     range.EndLayoutObject()->SetSelectionStateIfNeeded(SelectionState::kEnd);
   }
 
-  for (LayoutObject* runner : range.ToPaintRange()) {
+  for (LayoutObject* runner : range) {
     if (runner != range.StartLayoutObject() &&
         runner != range.EndLayoutObject() && runner->CanBeSelectionLeaf())
       runner->SetSelectionStateIfNeeded(SelectionState::kInside);
   }
 }
 
-// Set SetSelectionState and ShouldInvalidateSelection flag of LayoutObjects
+// Set ShouldInvalidateSelection flag of LayoutObjects
 // comparing them in |new_range| and |old_range|.
-static void UpdateLayoutObjectState(const SelectionMarkingRange& new_range,
-                                    const SelectionPaintRange& old_range) {
-  SetSelectionState(new_range);
+static void SetShouldInvalidateSelection(const SelectionMarkingRange& new_range,
+                                         const SelectionPaintRange& old_range) {
   const PaintInvalidationSet& new_invalidation_set =
-      CollectInvalidationSet(new_range.ToPaintRange());
+      new_range.InvalidationSet();
   PaintInvalidationSet old_invalidation_set = CollectInvalidationSet(old_range);
 
   // We invalidate each LayoutObject which is
@@ -377,7 +398,7 @@ void LayoutSelection::ClearSelection() {
   paint_range_ = SelectionPaintRange();
 }
 
-static SelectionMarkingRange CalcSelectionMarkingRange(
+static SelectionMarkingRange CalcSelectionRangeAndSetSelectionState(
     const FrameSelection& frame_selection) {
   const SelectionInDOMTree& selection_in_dom =
       frame_selection.GetSelectionInDOMTree();
@@ -399,8 +420,13 @@ static SelectionMarkingRange CalcSelectionMarkingRange(
   if (!start_layout_object || !end_layout_object)
     return {};
 
+  SelectionPaintRange range = {
+      start_layout_object, start_pos.ComputeEditingOffset(), end_layout_object,
+      end_pos.ComputeEditingOffset()};
+  SetSelectionState(range);
   return {start_layout_object, start_pos.ComputeEditingOffset(),
-          end_layout_object, end_pos.ComputeEditingOffset()};
+          end_layout_object, end_pos.ComputeEditingOffset(),
+          CollectInvalidationSet(range)};
 }
 
 void LayoutSelection::SetHasPendingSelection() {
@@ -413,7 +439,7 @@ void LayoutSelection::Commit() {
   has_pending_selection_ = false;
 
   const SelectionMarkingRange& new_range =
-      CalcSelectionMarkingRange(*frame_selection_);
+      CalcSelectionRangeAndSetSelectionState(*frame_selection_);
   if (new_range.IsNull()) {
     ClearSelection();
     return;
@@ -424,7 +450,7 @@ void LayoutSelection::Commit() {
 
   DCHECK(frame_selection_->GetDocument().GetLayoutView()->GetFrameView());
   DCHECK(!frame_selection_->GetDocument().NeedsLayoutTreeUpdate());
-  UpdateLayoutObjectState(new_range, paint_range_);
+  SetShouldInvalidateSelection(new_range, paint_range_);
   paint_range_ = new_range.ToPaintRange();
 }
 
