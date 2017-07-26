@@ -10,7 +10,6 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -103,7 +102,7 @@ class PermissionsUpdaterListener : public content::NotificationObserver {
 
     if (waiting_) {
       waiting_ = false;
-      base::MessageLoopForUI::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
     }
   }
 

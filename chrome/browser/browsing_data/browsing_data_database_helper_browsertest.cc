@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_helper_browsertest.h"
@@ -75,7 +76,7 @@ class StopTestOnCallback {
     ASSERT_EQ(1UL, database_info_list.size());
     EXPECT_EQ(std::string(kTestIdentifier1),
               database_info_list.begin()->identifier.ToString());
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
  private:

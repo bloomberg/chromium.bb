@@ -23,6 +23,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -1196,7 +1197,7 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
                             base::BindOnce(&TestSBClient::CheckDone, this));
   }
 
-  void CheckDone() { base::MessageLoopForUI::current()->QuitWhenIdle(); }
+  void CheckDone() { base::RunLoop::QuitCurrentWhenIdleDeprecated(); }
 
   SBThreatType threat_type_;
   std::string threat_hash_;
@@ -1570,7 +1571,7 @@ class SafeBrowsingServiceShutdownTest : public SafeBrowsingServiceTest {
                                   Profile::CreateStatus status) {
     if (status == Profile::CREATE_STATUS_INITIALIZED) {
       profile2_ = profile;
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
     }
   }
 

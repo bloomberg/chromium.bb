@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
@@ -51,7 +52,7 @@ namespace {
 void UnblockOnProfileCreation(Profile* profile,
                               Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED)
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 // Checks that the relaunch name, relaunch command and app icon for the given
@@ -97,7 +98,7 @@ void ValidateBrowserWindowProperties(
                 browser->profile()->GetPath()).value(),
             prop_var.get().pwszVal);
   prop_var.Reset();
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void ValidateHostedAppWindowProperties(const Browser* browser,
@@ -141,7 +142,7 @@ void ValidateHostedAppWindowProperties(const Browser* browser,
                 web_app_dir, base::UTF8ToUTF16(extension->name())).value(),
             prop_var.get().pwszVal);
   prop_var.Reset();
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void PostValidationTaskToUIThread(const base::Closure& validation_task) {

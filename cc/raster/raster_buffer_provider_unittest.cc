@@ -216,7 +216,7 @@ class RasterBufferProviderTest
 
   void AllTileTasksFinished() {
     tile_task_manager_->CheckForCompletedTasks();
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   void RunMessageLoopUntilAllTasksHaveCompleted() {
@@ -312,7 +312,7 @@ class RasterBufferProviderTest
 
   void OnTimeout() {
     timed_out_ = true;
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
  protected:

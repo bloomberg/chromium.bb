@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/input_method/textinput_test_helper.h"
 #include "ash/shell.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -83,13 +84,13 @@ void TextInputTestHelper::OnInputMethodDestroyed(
 void TextInputTestHelper::OnFocus() {
   focus_state_ = true;
   if (waiting_type_ == WAIT_ON_FOCUS)
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void TextInputTestHelper::OnBlur() {
   focus_state_ = false;
   if (waiting_type_ == WAIT_ON_BLUR)
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void TextInputTestHelper::OnCaretBoundsChanged(
@@ -103,7 +104,7 @@ void TextInputTestHelper::OnCaretBoundsChanged(
       return;
   }
   if (waiting_type_ == WAIT_ON_CARET_BOUNDS_CHANGED)
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void TextInputTestHelper::OnTextInputStateChanged(
@@ -111,7 +112,7 @@ void TextInputTestHelper::OnTextInputStateChanged(
   latest_text_input_type_ =
       client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
   if (waiting_type_ == WAIT_ON_TEXT_INPUT_TYPE_CHANGED)
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void TextInputTestHelper::WaitForTextInputStateChanged(

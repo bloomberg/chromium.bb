@@ -48,7 +48,7 @@ class AsyncMockGeolocationObserver : public MockGeolocationObserver {
  public:
   void OnLocationUpdate(const Geoposition& position) override {
     MockGeolocationObserver::OnLocationUpdate(position);
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 };
 

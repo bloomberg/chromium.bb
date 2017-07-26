@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/test/histogram_tester.h"
@@ -305,7 +304,7 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
     }
 
    private:
-    void Quit() { base::MessageLoop::current()->QuitWhenIdle(); }
+    void Quit() { base::RunLoop::QuitCurrentWhenIdleDeprecated(); }
 
     const int max_cnt_;
   };

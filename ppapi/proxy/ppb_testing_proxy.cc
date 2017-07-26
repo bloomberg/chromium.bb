@@ -64,7 +64,7 @@ void RunMessageLoop(PP_Instance instance) {
 void QuitMessageLoop(PP_Instance instance) {
   CHECK(PpapiGlobals::Get()->GetMainThreadMessageLoop()->
             BelongsToCurrentThread());
-  base::MessageLoop::current()->QuitNow();
+  base::RunLoop::QuitCurrentDeprecated();
 }
 
 uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {

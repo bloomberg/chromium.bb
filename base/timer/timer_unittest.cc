@@ -680,12 +680,12 @@ void ClearAllCallbackHappened() {
 
 void SetCallbackHappened1() {
   g_callback_happened1 = true;
-  MessageLoop::current()->QuitWhenIdle();
+  RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void SetCallbackHappened2() {
   g_callback_happened2 = true;
-  MessageLoop::current()->QuitWhenIdle();
+  RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 }  // namespace

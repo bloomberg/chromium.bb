@@ -188,7 +188,7 @@ class PasswordStoreWinTest : public testing::Test {
 };
 
 ACTION(QuitUIMessageLoop) {
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 MATCHER(EmptyWDResult, "") {

@@ -15,7 +15,6 @@
 
 #include "base/format_macros.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
@@ -103,7 +102,7 @@ class GetURLTask : public history::HistoryDBTask {
   }
 
   void DoneRunOnMainThread() override {
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
  private:

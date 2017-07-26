@@ -152,7 +152,7 @@ class ProvidedService : public Service,
 
   void OnConnectionError() {
     if (bindings_.empty())
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   const std::string title_;

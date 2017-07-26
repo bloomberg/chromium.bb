@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_entry.h"
@@ -30,7 +29,7 @@ void AppCacheTestHelper::OnGroupAndNewestCacheStored(
     bool success,
     bool /*would_exceed_quota*/) {
   ASSERT_TRUE(success);
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void AppCacheTestHelper::AddGroupAndCache(AppCacheServiceImpl*
@@ -75,7 +74,7 @@ void AppCacheTestHelper::OnGotAppCacheInfo(int rv) {
        origin != appcache_info_->infos_by_origin.end(); ++origin) {
     origins_->insert(origin->first);
   }
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 }  // namespace content

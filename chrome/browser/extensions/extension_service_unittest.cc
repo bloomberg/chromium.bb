@@ -753,7 +753,7 @@ void PackExtensionTestClient::OnPackSuccess(
   // on with the rest of the test.
   // This call to |Quit()| matches the call to |Run()| in the
   // |PackPunctuatedExtension| test.
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
   EXPECT_EQ(expected_crx_path_.value(), crx_path.value());
   EXPECT_EQ(expected_private_key_path_.value(), private_key_path.value());
   ASSERT_TRUE(base::PathExists(private_key_path));

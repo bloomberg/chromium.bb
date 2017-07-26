@@ -20,7 +20,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
@@ -1062,7 +1061,7 @@ void TestLauncher::RunTestIteration() {
       CommandLine::ForCurrentProcess()->HasSwitch(kGTestBreakOnFailure);
   if (cycles_ == 0 ||
       (stop_on_failure && test_success_count_ != test_finished_count_)) {
-    MessageLoop::current()->QuitWhenIdle();
+    RunLoop::QuitCurrentWhenIdleDeprecated();
     return;
   }
 

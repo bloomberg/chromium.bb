@@ -8,7 +8,6 @@
 
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_browser_context.h"
@@ -119,7 +118,7 @@ class ExtensionIconImageTest : public ExtensionsTest,
   void OnExtensionIconImageChanged(IconImage* image) override {
     image_loaded_count_++;
     if (quit_in_image_loaded_)
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   gfx::ImageSkia GetDefaultIcon() {

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/render_messages.h"
@@ -62,7 +63,7 @@ void WebUITestHandler::HandleTestResult(const base::ListValue* test_result) {
   // Quit the message loop if |is_waiting_| so waiting process can get result or
   // error. To ensure this gets done, do this before ASSERT* calls.
   if (is_waiting_)
-    base::MessageLoopForUI::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 
   SCOPED_TRACE("WebUITestHandler::HandleTestResult");
 
@@ -82,7 +83,7 @@ void WebUITestHandler::JavaScriptComplete(const base::Value* result) {
   // Quit the message loop if |is_waiting_| so waiting process can get result or
   // error. To ensure this gets done, do this before ASSERT* calls.
   if (is_waiting_)
-    base::MessageLoopForUI::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 
   SCOPED_TRACE("WebUITestHandler::JavaScriptComplete");
 

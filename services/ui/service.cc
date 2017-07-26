@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
@@ -357,7 +356,7 @@ void Service::OnFirstDisplayReady() {
 void Service::OnNoMoreDisplays() {
   // We may get here from the destructor, in which case there is no messageloop.
   if (base::RunLoop::IsRunningOnCurrentThread())
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 bool Service::IsTestConfig() const {

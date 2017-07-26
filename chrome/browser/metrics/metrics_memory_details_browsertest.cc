@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -29,7 +30,7 @@ class TestMemoryDetails : public MetricsMemoryDetails {
   void OnDetailsAvailable() override {
     MetricsMemoryDetails::OnDetailsAvailable();
     // Exit the loop initiated by StartFetchAndWait().
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   DISALLOW_COPY_AND_ASSIGN(TestMemoryDetails);

@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
@@ -449,7 +449,7 @@ void WindowTypeLauncher::RemoveWindow(views::Widget* window) {
   DCHECK(it != windows_.end());
   windows_.erase(it);
   if (windows_.empty())
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void WindowTypeLauncher::OnStart() {

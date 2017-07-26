@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
@@ -42,7 +41,7 @@ class TestClient: public DevToolsAgentHostClient {
       const std::string& message) override {
     if (waiting_for_reply_) {
       waiting_for_reply_ = false;
-      base::MessageLoop::current()->QuitNow();
+      base::RunLoop::QuitCurrentDeprecated();
     }
   }
 

@@ -67,7 +67,7 @@ void QuitLoopNow() {
   // indefinitely in the presence of repeated timers with low delays
   // and a slow test (e.g., ThrottlingDoesThrottle [which has a poll
   // delay of 5ms] run under TSAN on the trybots).
-  base::MessageLoop::current()->QuitNow();
+  base::RunLoop::QuitCurrentDeprecated();
 }
 
 void RunLoop() {

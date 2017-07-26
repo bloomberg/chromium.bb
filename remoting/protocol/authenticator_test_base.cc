@@ -34,7 +34,7 @@ ACTION_P(QuitThreadOnCounter, counter) {
   --(*counter);
   EXPECT_GE(*counter, 0);
   if (*counter == 0)
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 }  // namespace

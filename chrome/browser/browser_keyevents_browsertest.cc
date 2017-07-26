@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -119,7 +120,7 @@ class TestFinishObserver : public content::NotificationObserver {
     if (*dom_op_result.ptr() == "\"FINISHED\"") {
       finished_ = true;
       if (waiting_)
-        base::MessageLoopForUI::current()->QuitWhenIdle();
+        base::RunLoop::QuitCurrentWhenIdleDeprecated();
     }
   }
 

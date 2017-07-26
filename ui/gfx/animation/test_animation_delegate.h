@@ -6,7 +6,7 @@
 #define UI_GFX_ANIMATION_TEST_ANIMATION_DELEGATE_H_
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "ui/gfx/animation/animation_delegate.h"
 
 namespace gfx {
@@ -20,13 +20,13 @@ class TestAnimationDelegate : public AnimationDelegate {
 
   virtual void AnimationEnded(const Animation* animation) {
     finished_ = true;
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   virtual void AnimationCanceled(const Animation* animation) {
     finished_ = true;
     canceled_ = true;
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   bool finished() const {

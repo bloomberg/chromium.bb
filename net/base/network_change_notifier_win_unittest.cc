@@ -72,7 +72,7 @@ class TestIPAddressObserver : public NetworkChangeNotifier::IPAddressObserver {
 };
 
 bool ExitMessageLoopAndReturnFalse() {
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
   return false;
 }
 

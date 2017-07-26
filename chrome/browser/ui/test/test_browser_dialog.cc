@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/gtest_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -51,7 +51,7 @@ class WidgetCloser : public views::WidgetObserver {
   void OnWidgetDestroyed(views::Widget* widget) override {
     widget_->RemoveObserver(this);
     widget_ = nullptr;
-    base::MessageLoop::current()->QuitNow();
+    base::RunLoop::QuitCurrentDeprecated();
   }
 
  private:

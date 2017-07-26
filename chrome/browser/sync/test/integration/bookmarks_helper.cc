@@ -129,7 +129,7 @@ class FaviconChangeObserver : public bookmarks::BookmarkModelObserver {
                                   const BookmarkNode* node) override {
     if (model == model_ && node == node_) {
       if (!wait_for_load_ || (wait_for_load_ && node->is_favicon_loaded()))
-        base::MessageLoopForUI::current()->QuitWhenIdle();
+        base::RunLoop::QuitCurrentWhenIdleDeprecated();
     }
   }
 

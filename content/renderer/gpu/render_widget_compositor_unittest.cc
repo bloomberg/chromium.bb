@@ -216,7 +216,7 @@ class RenderWidgetLayerTreeFrameSink : public RenderWidgetCompositor {
     expected_requests_ += (expected_successes - 1);
   }
 
-  void EndTest() { base::MessageLoop::current()->QuitWhenIdle(); }
+  void EndTest() { base::RunLoop::QuitCurrentWhenIdleDeprecated(); }
 
   void AfterTest() {
     if (failure_mode_ == NO_FAILURE) {

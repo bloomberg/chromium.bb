@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -92,7 +93,7 @@ class UserGestureCatcher : public content::NotificationObserver {
             .ptr()
             ->user_gesture());
     if (waiting_)
-      base::MessageLoopForUI::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   content::NotificationRegistrar registrar_;

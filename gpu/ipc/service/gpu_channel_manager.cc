@@ -11,8 +11,8 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -189,7 +189,7 @@ void GpuChannelManager::MaybeExitOnContextLost() {
                << " from problems.";
     // Signal the message loop to quit to shut down other threads
     // gracefully.
-    base::MessageLoop::current()->QuitNow();
+    base::RunLoop::QuitCurrentDeprecated();
     exiting_for_lost_context_ = true;
   }
 }

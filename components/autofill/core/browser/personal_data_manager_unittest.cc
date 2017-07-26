@@ -73,7 +73,7 @@ const base::Time kSomeLaterTime = base::Time::FromDoubleT(1000);
 const base::Time kMuchLaterTime = base::Time::FromDoubleT(5000);
 
 ACTION(QuitMainMessageLoop) {
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 class PersonalDataLoadedObserverMock : public PersonalDataManagerObserver {

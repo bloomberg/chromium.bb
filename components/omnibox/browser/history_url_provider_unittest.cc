@@ -272,7 +272,7 @@ class HistoryURLProviderTestNoSearchProvider : public HistoryURLProviderTest {
 
 void HistoryURLProviderTest::OnProviderUpdate(bool updated_matches) {
   if (autocomplete_->done())
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 bool HistoryURLProviderTest::SetUpImpl(bool create_history_db) {

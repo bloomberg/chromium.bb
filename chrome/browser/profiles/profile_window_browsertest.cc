@@ -66,7 +66,7 @@ class WaitForHistoryTask : public history::HistoryDBTask {
   }
 
   void DoneRunOnMainThread() override {
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
  private:

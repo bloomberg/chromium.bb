@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/avatar_menu.h"
@@ -30,7 +31,7 @@ namespace {
 void OnUnblockOnProfileCreation(Profile* profile,
                                 Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED)
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 }  // namespace

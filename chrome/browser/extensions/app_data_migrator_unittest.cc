@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/callback_forward.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -118,7 +117,7 @@ void MigrationCallback() {
 }
 
 void DidWrite(base::File::Error status, int64_t bytes, bool complete) {
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void DidCreate(base::File::Error status) {
@@ -196,7 +195,7 @@ void VerifyFileContents(base::File file,
   file.Close();
   if (!on_close_callback.is_null())
     on_close_callback.Run();
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void VerifyTestFilesMigrated(content::StoragePartition* new_partition,

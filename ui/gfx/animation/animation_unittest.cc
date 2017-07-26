@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
@@ -79,7 +78,7 @@ class DeletingAnimationDelegate : public AnimationDelegate {
  public:
   void AnimationEnded(const Animation* animation) override {
     delete animation;
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 };
 

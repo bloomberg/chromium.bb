@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -459,7 +460,7 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
 
 void TimeoutCallback(const std::string& timeout_message) {
   ADD_FAILURE() << timeout_message;
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 // Base class for DevTools tests that test devtools functionality for
@@ -635,7 +636,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
                const content::NotificationDetails& details) override {
     DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
               type);
-    base::MessageLoopForUI::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   std::vector<std::unique_ptr<extensions::TestExtensionDir>>

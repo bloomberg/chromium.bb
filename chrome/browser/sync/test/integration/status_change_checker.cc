@@ -46,7 +46,7 @@ void StatusChangeChecker::StartBlockingWait() {
 }
 
 void StatusChangeChecker::StopWaiting() {
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void StatusChangeChecker::CheckExitCondition() {

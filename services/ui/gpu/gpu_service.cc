@@ -8,7 +8,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/in_process_context_provider.h"
@@ -295,7 +295,7 @@ void GpuService::RequestCompleteGpuInfo(
 #if defined(OS_WIN)
   if (!in_host_process_) {
     // The unsandboxed GPU process fulfilled its duty. Rest in peace.
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 #endif
 }
@@ -523,10 +523,10 @@ void GpuService::ThrowJavaException() {
 
 void GpuService::Stop(const StopCallback& callback) {
   DCHECK(io_runner_->BelongsToCurrentThread());
-  main_runner_->PostTaskAndReply(FROM_HERE, base::Bind([] {
-                                   base::MessageLoop::current()->QuitWhenIdle();
-                                 }),
-                                 callback);
+  main_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind([] { base::RunLoop::QuitCurrentWhenIdleDeprecated(); }),
+      callback);
 }
 
 }  // namespace ui

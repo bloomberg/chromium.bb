@@ -5,6 +5,7 @@
 #include "extensions/test/extension_test_message_listener.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/notification_service.h"
@@ -116,7 +117,7 @@ void ExtensionTestMessageListener::Observe(
 
     if (waiting_) {
       waiting_ = false;
-      base::MessageLoopForUI::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
     }
   }
 }

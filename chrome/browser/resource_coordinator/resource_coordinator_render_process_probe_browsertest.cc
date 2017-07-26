@@ -30,7 +30,7 @@ class MockResourceCoordinatorRenderProcessMetricsHandler
 
   bool HandleMetrics(
       const RenderProcessInfoMap& render_process_info_map) override {
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
     return false;
   }
 

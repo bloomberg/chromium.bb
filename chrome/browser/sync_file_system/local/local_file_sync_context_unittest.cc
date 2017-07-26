@@ -134,7 +134,7 @@ class LocalFileSyncContextTest : public testing::Test {
     *changes_out = sync_file_info.changes;
     if (snapshot_out)
       *snapshot_out = std::move(snapshot);
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   SyncStatusCode ApplyRemoteChange(FileSystemContext* file_system_context,

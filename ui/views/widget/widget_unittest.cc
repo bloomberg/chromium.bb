@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -2096,7 +2095,7 @@ class CloseDestroysWidget : public Widget {
   ~CloseDestroysWidget() override {
     if (destroyed_) {
       *destroyed_ = true;
-      base::MessageLoop::current()->QuitNow();
+      base::RunLoop::QuitCurrentDeprecated();
     }
   }
 

@@ -1352,7 +1352,7 @@ void BrowserProcessImpl::Unpin() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(ChromeBrowserMainPartsMac::DidEndMainMessageLoop));
 #endif
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 
 #if !defined(OS_ANDROID)
   chrome::ShutdownIfNeeded();

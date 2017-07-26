@@ -159,8 +159,7 @@ TEST_F(BrowserThreadTest, PostTaskAndReply) {
   // task runner test.  This just makes sure we get piped through at all.
   ASSERT_TRUE(BrowserThread::PostTaskAndReply(
       BrowserThread::FILE, FROM_HERE, base::Bind(&base::DoNothing),
-      base::Bind(&base::MessageLoop::QuitWhenIdle,
-                 base::Unretained(base::MessageLoop::current()->current()))));
+      base::Bind(&base::RunLoop::QuitCurrentWhenIdleDeprecated)));
   base::RunLoop().Run();
 }
 

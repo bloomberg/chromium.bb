@@ -18,6 +18,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -151,7 +152,7 @@ class SyncServerStatusChecker : public net::URLFetcherDelegate {
         (source->GetStatus().status() == net::URLRequestStatus::SUCCESS &&
          source->GetResponseCode() == 200 &&
          base::StartsWith(data, "ok", base::CompareCase::SENSITIVE));
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   bool running() const { return running_; }

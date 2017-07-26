@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -63,7 +64,7 @@ void ProfileCreationComplete(Profile* profile, Profile::CreateStatus status) {
   EXPECT_EQ(chrome::GetBrowserCount(profile), 0U);
   EXPECT_EQ(chrome::GetTotalBrowserCount(), 1U);
   if (status == Profile::CREATE_STATUS_INITIALIZED)
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 // An observer that returns back to test code after one or more profiles was

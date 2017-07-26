@@ -107,7 +107,7 @@ class AwaitCompletionHelper {
   void Notify() {
     if (start_) {
       DCHECK(!already_quit_);
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
       start_ = false;
     } else {
       DCHECK(!already_quit_);

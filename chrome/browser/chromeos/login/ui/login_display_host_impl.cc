@@ -16,7 +16,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1064,7 +1064,7 @@ void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
   registrar_.RemoveAll();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   if (post_quit_task)
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void LoginDisplayHostImpl::ScheduleWorkspaceAnimation() {

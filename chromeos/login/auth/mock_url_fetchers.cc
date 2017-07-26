@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -42,7 +43,7 @@ void ExpectCanceledFetcher::CompleteFetch() {
   ADD_FAILURE() << "Fetch completed in ExpectCanceledFetcher!";
 
   // Allow exiting even if we mess up.
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 GotCanceledFetcher::GotCanceledFetcher(

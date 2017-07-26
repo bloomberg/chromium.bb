@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
@@ -260,7 +261,7 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
 
   void DelayAndQuit(base::TimeDelta delay) {
     base::PlatformThread::Sleep(delay);
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   void WaitForAlertDialogAndQuitAfterDelay(base::TimeDelta delay) {

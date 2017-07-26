@@ -65,9 +65,7 @@ class QuitListener : public IPC::Listener {
     bad_message_received_ = true;
   }
 
-  void OnQuit() {
-    base::MessageLoop::current()->QuitWhenIdle();
-  }
+  void OnQuit() { base::RunLoop::QuitCurrentWhenIdleDeprecated(); }
 
   void OnBadMessage(const BadType& bad_type) {
     // Should never be called since IPC wouldn't be deserialized correctly.
@@ -113,7 +111,7 @@ class ChannelReflectorListener : public IPC::Listener {
 
   void OnQuit() {
     channel_->Send(new WorkerMsg_Quit());
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
  private:

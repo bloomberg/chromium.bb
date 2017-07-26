@@ -58,9 +58,7 @@ class Parent : public service_manager::Service,
     }
     std::move(callback).Run();
   }
-  void Quit() override {
-    base::MessageLoop::current()->QuitWhenIdle();
-  }
+  void Quit() override { base::RunLoop::QuitCurrentWhenIdleDeprecated(); }
 
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<service_manager::test::mojom::Parent> parent_bindings_;

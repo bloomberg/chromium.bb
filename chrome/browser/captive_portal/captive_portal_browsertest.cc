@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "base/strings/utf_string_conversions.h"
@@ -646,7 +647,7 @@ void MultiNavigationObserver::Observe(
   if (waiting_for_navigation_ &&
       num_navigations_to_wait_for_ == num_navigations_) {
     waiting_for_navigation_ = false;
-    base::MessageLoopForUI::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 }
 
@@ -736,7 +737,7 @@ void FailLoadsAfterLoginObserver::Observe(
       tabs_needing_navigation_.size() ==
           tabs_navigated_to_final_destination_.size()) {
     waiting_for_navigation_ = false;
-    base::MessageLoopForUI::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 }
 
@@ -830,7 +831,7 @@ void CaptivePortalObserver::Observe(
   if (waiting_for_result_ &&
       num_results_to_wait_for_ == num_results_received_) {
     waiting_for_result_ = false;
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 }
 

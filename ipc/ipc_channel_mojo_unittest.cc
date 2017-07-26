@@ -72,7 +72,7 @@ class ListenerThatExpectsOK : public IPC::Listener {
     EXPECT_TRUE(iter.ReadString(&should_be_ok));
     EXPECT_EQ(should_be_ok, "OK");
     received_ok_ = true;
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
     return true;
   }
 
@@ -152,7 +152,7 @@ class ListenerExpectingErrors : public IPC::Listener {
 
   void OnChannelError() override {
     has_error_ = true;
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   bool has_error() const { return has_error_; }
@@ -168,7 +168,7 @@ class ListenerThatQuits : public IPC::Listener {
   bool OnMessageReceived(const IPC::Message& message) override { return true; }
 
   void OnChannelConnected(int32_t peer_pid) override {
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 };
 
@@ -316,7 +316,7 @@ class ListenerThatExpectsMessagePipe : public IPC::Listener {
   }
 
   void OnChannelError() override {
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   void set_sender(IPC::Sender* sender) { sender_ = sender; }
@@ -390,7 +390,7 @@ class ListenerThatExpectsMessagePipeUsingParamTrait : public IPC::Listener {
   }
 
   void OnChannelError() override {
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   void set_sender(IPC::Sender* sender) { sender_ = sender; }
@@ -491,7 +491,7 @@ class ListenerSendingOneOk : public IPC::Listener {
 
   void OnChannelConnected(int32_t peer_pid) override {
     ListenerThatExpectsOK::SendOK(sender_);
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   void set_sender(IPC::Sender* sender) { sender_ = sender; }
@@ -555,7 +555,7 @@ class ListenerWithSimpleAssociatedInterface
     EXPECT_EQ(kNumMessages, num_messages_received_);
     received_quit_ = true;
     std::move(callback).Run();
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   void BindRequest(IPC::mojom::SimpleTestDriverAssociatedRequest request) {
@@ -596,7 +596,7 @@ class ListenerSendingAssociatedMessages : public IPC::Listener {
   void set_channel(IPC::Channel* channel) { channel_ = channel; }
 
  private:
-  static void OnQuitAck() { base::MessageLoop::current()->QuitWhenIdle(); }
+  static void OnQuitAck() { base::RunLoop::QuitCurrentWhenIdleDeprecated(); }
 
   IPC::Channel* channel_ = nullptr;
   IPC::mojom::SimpleTestDriverAssociatedPtr driver_;
@@ -743,7 +743,7 @@ class ListenerWithSimpleProxyAssociatedInterface
     received_quit_ = true;
     std::move(callback).Run();
     binding_.Close();
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   void BindRequest(IPC::mojom::SimpleTestDriverAssociatedRequest request) {
@@ -1225,7 +1225,7 @@ class ExpectValueSequenceListener : public IPC::Listener {
     EXPECT_EQ(expected_values_->front(), should_be_expected);
     expected_values_->pop();
     if (expected_values_->empty())
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
     return true;
   }
 
@@ -1314,7 +1314,7 @@ class ListenerThatExpectsFile : public IPC::Listener {
   }
 
   void OnChannelError() override {
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   void set_sender(IPC::Sender* sender) { sender_ = sender; }
@@ -1370,7 +1370,7 @@ class ListenerThatExpectsFileAndPipe : public IPC::Listener {
   }
 
   void OnChannelError() override {
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   void set_sender(IPC::Sender* sender) { sender_ = sender; }
@@ -1422,7 +1422,7 @@ class ListenerThatVerifiesPeerPid : public IPC::Listener {
  public:
   void OnChannelConnected(int32_t peer_pid) override {
     EXPECT_EQ(peer_pid, kMagicChildId);
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   bool OnMessageReceived(const IPC::Message& message) override {

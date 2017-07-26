@@ -62,7 +62,7 @@ class ExitLoopOnRelease : public View {
   // View:
   void OnMouseReleased(const ui::MouseEvent& event) override {
     GetWidget()->Close();
-    base::MessageLoop::current()->QuitNow();
+    base::RunLoop::QuitCurrentDeprecated();
   }
 
   DISALLOW_COPY_AND_ASSIGN(ExitLoopOnRelease);

@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/browser_process.h"
@@ -91,7 +92,7 @@ class TestMemoryDetails : public MetricsMemoryDetails {
   void OnDetailsAvailable() override {
     MetricsMemoryDetails::OnDetailsAvailable();
     // Exit the loop initiated by StartFetchAndWait().
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   std::unique_ptr<base::HistogramTester> uma_;

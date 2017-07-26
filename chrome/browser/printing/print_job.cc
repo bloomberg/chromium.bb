@@ -477,7 +477,7 @@ void PrintJob::HoldUntilStopIsCalled() {
 }
 
 void PrintJob::Quit() {
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 // Takes settings_ ownership and will be deleted in the receiving thread.

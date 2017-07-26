@@ -13,6 +13,7 @@
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/process/process_iterator.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
@@ -60,7 +61,7 @@ class ServiceProcessControlBrowserTest
   }
 
   static void QuitMessageLoop() {
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   static void CloudPrintInfoCallback(
