@@ -40,31 +40,31 @@ void NetErrorPageController::Install(content::RenderFrame* render_frame,
 }
 
 bool NetErrorPageController::ShowSavedCopyButtonClick() {
-  return ButtonClick(error_page::NetErrorHelperCore::SHOW_SAVED_COPY_BUTTON);
+  return ButtonClick(NetErrorHelperCore::SHOW_SAVED_COPY_BUTTON);
 }
 
 bool NetErrorPageController::DownloadButtonClick() {
-  return ButtonClick(error_page::NetErrorHelperCore::DOWNLOAD_BUTTON);
+  return ButtonClick(NetErrorHelperCore::DOWNLOAD_BUTTON);
 }
 
 bool NetErrorPageController::ReloadButtonClick() {
-  return ButtonClick(error_page::NetErrorHelperCore::RELOAD_BUTTON);
+  return ButtonClick(NetErrorHelperCore::RELOAD_BUTTON);
 }
 
 bool NetErrorPageController::DetailsButtonClick() {
-  return ButtonClick(error_page::NetErrorHelperCore::MORE_BUTTON);
+  return ButtonClick(NetErrorHelperCore::MORE_BUTTON);
 }
 
 bool NetErrorPageController::TrackEasterEgg() {
-  return ButtonClick(error_page::NetErrorHelperCore::EASTER_EGG);
+  return ButtonClick(NetErrorHelperCore::EASTER_EGG);
 }
 
 bool NetErrorPageController::DiagnoseErrorsButtonClick() {
-  return ButtonClick(error_page::NetErrorHelperCore::DIAGNOSE_ERROR);
+  return ButtonClick(NetErrorHelperCore::DIAGNOSE_ERROR);
 }
 
 bool NetErrorPageController::TrackCachedCopyButtonClick() {
-  return ButtonClick(error_page::NetErrorHelperCore::SHOW_CACHED_COPY_BUTTON);
+  return ButtonClick(NetErrorHelperCore::SHOW_CACHED_COPY_BUTTON);
 }
 
 bool NetErrorPageController::TrackClick(const gin::Arguments& args) {
@@ -76,8 +76,7 @@ bool NetErrorPageController::TrackClick(const gin::Arguments& args) {
   return true;
 }
 
-bool NetErrorPageController::ButtonClick(
-    error_page::NetErrorHelperCore::Button button) {
+bool NetErrorPageController::ButtonClick(NetErrorHelperCore::Button button) {
   if (delegate_)
     delegate_->ButtonPressed(button);
 

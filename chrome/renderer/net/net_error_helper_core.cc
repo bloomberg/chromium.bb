@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/error_page/renderer/net_error_helper_core.h"
+#include "chrome/renderer/net/net_error_helper_core.h"
 
 #include <stddef.h>
 
@@ -39,8 +39,6 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
-namespace error_page {
-
 namespace {
 
 // |NetErrorNavigationCorrectionTypes| enum id for Web search query.
@@ -58,24 +56,23 @@ struct CorrectionTypeToResourceTable {
 // Note: Ordering should be the same as |NetErrorNavigationCorrectionTypes| enum
 // in histograms.xml.
 const CorrectionTypeToResourceTable kCorrectionResourceTable[] = {
-  {IDS_ERRORPAGES_SUGGESTION_VISIT_GOOGLE_CACHE, "cachedPage"},
-  // "reloadPage" is has special handling.
-  {IDS_ERRORPAGES_SUGGESTION_CORRECTED_URL, "urlCorrection"},
-  {IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL, "siteDomain"},
-  {IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL, "host"},
-  {IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL, "sitemap"},
-  {IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL, "pathParentFolder"},
-  // "siteSearchQuery" is not yet supported.
-  // TODO(mmenke):  Figure out what format "siteSearchQuery" uses for its
-  // suggestions.
-  // "webSearchQuery" has special handling.
-  {IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL, "contentOverlap"},
-  {IDS_ERRORPAGES_SUGGESTION_CORRECTED_URL, "emphasizedUrlCorrection"},
+    {IDS_ERRORPAGES_SUGGESTION_VISIT_GOOGLE_CACHE, "cachedPage"},
+    // "reloadPage" is has special handling.
+    {IDS_ERRORPAGES_SUGGESTION_CORRECTED_URL, "urlCorrection"},
+    {IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL, "siteDomain"},
+    {IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL, "host"},
+    {IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL, "sitemap"},
+    {IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL, "pathParentFolder"},
+    // "siteSearchQuery" is not yet supported.
+    // TODO(mmenke):  Figure out what format "siteSearchQuery" uses for its
+    // suggestions.
+    // "webSearchQuery" has special handling.
+    {IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL, "contentOverlap"},
+    {IDS_ERRORPAGES_SUGGESTION_CORRECTED_URL, "emphasizedUrlCorrection"},
 };
 
 struct NavigationCorrection {
-  NavigationCorrection() : is_porn(false), is_soft_porn(false) {
-  }
+  NavigationCorrection() : is_porn(false), is_soft_porn(false) {}
 
   static void RegisterJSONConverter(
       base::JSONValueConverter<NavigationCorrection>* converter) {
@@ -112,15 +109,13 @@ struct NavigationCorrectionResponse {
     converter->RegisterStringField("result.fingerprint",
                                    &NavigationCorrectionResponse::fingerprint);
     converter->RegisterRepeatedMessage(
-        "result.UrlCorrections",
-        &NavigationCorrectionResponse::corrections);
+        "result.UrlCorrections", &NavigationCorrectionResponse::corrections);
   }
 };
 
 base::TimeDelta GetAutoReloadTime(size_t reload_count) {
-  static const int kDelaysMs[] = {
-    0, 5000, 30000, 60000, 300000, 600000, 1800000
-  };
+  static const int kDelaysMs[] = {0,      5000,   30000,  60000,
+                                  300000, 600000, 1800000};
   if (reload_count >= arraysize(kDelaysMs))
     reload_count = arraysize(kDelaysMs) - 1;
   return base::TimeDelta::FromMilliseconds(kDelaysMs[reload_count]);
@@ -263,8 +258,8 @@ std::string CreateClickTrackingUrlRequestBody(
 base::string16 FormatURLForDisplay(const GURL& url, bool is_rtl) {
   // Translate punycode into UTF8, unescape UTF8 URLs.
   base::string16 url_for_display(url_formatter::FormatUrl(
-      url, url_formatter::kFormatUrlOmitNothing,
-      net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
+      url, url_formatter::kFormatUrlOmitNothing, net::UnescapeRule::NORMAL,
+      nullptr, nullptr, nullptr));
   // URLs are always LTR.
   if (is_rtl)
     base::i18n::WrapStringWithLTRFormatting(&url_for_display);
@@ -289,7 +284,7 @@ void LogCorrectionTypeShown(int type_id) {
       kWebSearchQueryUMAId + 1);
 }
 
-std::unique_ptr<ErrorPageParams> CreateErrorPageParams(
+std::unique_ptr<error_page::ErrorPageParams> CreateErrorPageParams(
     const NavigationCorrectionResponse& response,
     const blink::WebURLError& error,
     const NetErrorHelperCore::NavigationCorrectionParams& correction_params,
@@ -299,7 +294,8 @@ std::unique_ptr<ErrorPageParams> CreateErrorPageParams(
   base::string16 original_url_for_display =
       FormatURLForDisplay(SanitizeURL(GURL(error.unreachable_url)), is_rtl);
 
-  std::unique_ptr<ErrorPageParams> params(new ErrorPageParams());
+  std::unique_ptr<error_page::ErrorPageParams> params(
+      new error_page::ErrorPageParams());
   params->override_suggestions.reset(new base::ListValue());
   std::unique_ptr<base::ListValue> parsed_corrections(new base::ListValue());
   for (auto it = response.corrections.begin(); it != response.corrections.end();
@@ -331,7 +327,7 @@ std::unique_ptr<ErrorPageParams> CreateErrorPageParams(
     // links.
     if ((*it)->url_correction.empty() ||
         (params->override_suggestions->GetSize() >=
-            kMaxUrlCorrectionsToDisplay)) {
+         kMaxUrlCorrectionsToDisplay)) {
       continue;
     }
 
@@ -340,12 +336,13 @@ std::unique_ptr<ErrorPageParams> CreateErrorPageParams(
          correction_index < arraysize(kCorrectionResourceTable);
          ++correction_index) {
       if ((*it)->correction_type !=
-              kCorrectionResourceTable[correction_index].correction_type) {
+          kCorrectionResourceTable[correction_index].correction_type) {
         continue;
       }
       std::unique_ptr<base::DictionaryValue> suggest(
           new base::DictionaryValue());
-      suggest->SetString("summary",
+      suggest->SetString(
+          "summary",
           l10n_util::GetStringUTF16(
               kCorrectionResourceTable[correction_index].resource_id));
       suggest->SetString("urlCorrection", (*it)->url_correction);
@@ -393,8 +390,8 @@ void TrackClickUMA(std::string type_id) {
   // Web search suggestion isn't in |kCorrectionResourceTable| array.
   if (type_id == "webSearchQuery") {
     UMA_HISTOGRAM_ENUMERATION(
-       "Net.ErrorPageCounts.NavigationCorrectionLinksUsed",
-       kWebSearchQueryUMAId, kWebSearchQueryUMAId + 1);
+        "Net.ErrorPageCounts.NavigationCorrectionLinksUsed",
+        kWebSearchQueryUMAId, kWebSearchQueryUMAId + 1);
     return;
   }
 
@@ -402,11 +399,10 @@ void TrackClickUMA(std::string type_id) {
   for (correction_index = 0;
        correction_index < arraysize(kCorrectionResourceTable);
        ++correction_index) {
-    if (kCorrectionResourceTable[correction_index].correction_type ==
-        type_id) {
+    if (kCorrectionResourceTable[correction_index].correction_type == type_id) {
       UMA_HISTOGRAM_ENUMERATION(
-         "Net.ErrorPageCounts.NavigationCorrectionLinksUsed",
-         static_cast<int>(correction_index), kWebSearchQueryUMAId + 1);
+          "Net.ErrorPageCounts.NavigationCorrectionLinksUsed",
+          static_cast<int>(correction_index), kWebSearchQueryUMAId + 1);
       break;
     }
   }
@@ -472,14 +468,12 @@ struct NetErrorHelperCore::ErrorPageInfo {
   bool auto_reload_triggered;
 };
 
-NetErrorHelperCore::NavigationCorrectionParams::NavigationCorrectionParams() {
-}
+NetErrorHelperCore::NavigationCorrectionParams::NavigationCorrectionParams() {}
 
 NetErrorHelperCore::NavigationCorrectionParams::NavigationCorrectionParams(
     const NavigationCorrectionParams& other) = default;
 
-NetErrorHelperCore::NavigationCorrectionParams::~NavigationCorrectionParams() {
-}
+NetErrorHelperCore::NavigationCorrectionParams::~NavigationCorrectionParams() {}
 
 bool NetErrorHelperCore::IsReloadableError(
     const NetErrorHelperCore::ErrorPageInfo& info) {
@@ -509,7 +503,7 @@ NetErrorHelperCore::NetErrorHelperCore(Delegate* delegate,
                                        bool auto_reload_visible_only,
                                        bool is_visible)
     : delegate_(delegate),
-      last_probe_status_(DNS_PROBE_POSSIBLE),
+      last_probe_status_(error_page::DNS_PROBE_POSSIBLE),
       can_show_network_diagnostics_dialog_(false),
       auto_reload_enabled_(auto_reload_enabled),
       auto_reload_visible_only_(auto_reload_visible_only),
@@ -521,8 +515,7 @@ NetErrorHelperCore::NetErrorHelperCore(Delegate* delegate,
       online_(true),
       visible_(is_visible),
       auto_reload_count_(0),
-      navigation_from_button_(NO_BUTTON) {
-}
+      navigation_from_button_(NO_BUTTON) {}
 
 NetErrorHelperCore::~NetErrorHelperCore() {
   if (committed_error_page_info_ &&
@@ -609,9 +602,10 @@ void NetErrorHelperCore::OnCommitLoad(FrameType frame_type, const GURL& url) {
           pending_error_page_info_->error.unreachable_url) {
     DCHECK(navigation_from_button_ == RELOAD_BUTTON ||
            navigation_from_button_ == SHOW_SAVED_COPY_BUTTON);
-    RecordEvent(navigation_from_button_ == RELOAD_BUTTON ?
-        NETWORK_ERROR_PAGE_RELOAD_BUTTON_ERROR :
-        NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_ERROR);
+    RecordEvent(
+        navigation_from_button_ == RELOAD_BUTTON
+            ? error_page::NETWORK_ERROR_PAGE_RELOAD_BUTTON_ERROR
+            : error_page::NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_ERROR);
   }
   navigation_from_button_ = NO_BUTTON;
 
@@ -639,22 +633,22 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
 
   committed_error_page_info_->is_finished_loading = true;
 
-  RecordEvent(NETWORK_ERROR_PAGE_SHOWN);
+  RecordEvent(error_page::NETWORK_ERROR_PAGE_SHOWN);
   if (committed_error_page_info_->reload_button_in_page) {
-    RecordEvent(NETWORK_ERROR_PAGE_RELOAD_BUTTON_SHOWN);
+    RecordEvent(error_page::NETWORK_ERROR_PAGE_RELOAD_BUTTON_SHOWN);
   }
   if (committed_error_page_info_->show_saved_copy_button_in_page) {
-    RecordEvent(NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_SHOWN);
+    RecordEvent(error_page::NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_SHOWN);
   }
   if (committed_error_page_info_->download_button_in_page) {
-    RecordEvent(NETWORK_ERROR_PAGE_DOWNLOAD_BUTTON_SHOWN);
+    RecordEvent(error_page::NETWORK_ERROR_PAGE_DOWNLOAD_BUTTON_SHOWN);
   }
   if (committed_error_page_info_->reload_button_in_page &&
       committed_error_page_info_->show_saved_copy_button_in_page) {
-    RecordEvent(NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN);
+    RecordEvent(error_page::NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN);
   }
   if (committed_error_page_info_->show_cached_copy_button_in_page) {
-    RecordEvent(NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_SHOWN);
+    RecordEvent(error_page::NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_SHOWN);
   }
 
   delegate_->SetIsShowingDownloadButton(
@@ -678,7 +672,7 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
   }
 
   if (!committed_error_page_info_->needs_dns_updates ||
-      last_probe_status_ == DNS_PROBE_POSSIBLE) {
+      last_probe_status_ == error_page::DNS_PROBE_POSSIBLE) {
     return;
   }
   DVLOG(1) << "Error page finished loading; sending saved status.";
@@ -712,13 +706,12 @@ void NetErrorHelperCore::GetErrorHTML(FrameType frame_type,
         error, is_failed_post,
         false /* No diagnostics dialogs allowed for subframes. */, nullptr,
         &reload_button_in_page, &show_saved_copy_button_in_page,
-        &show_cached_copy_button_in_page, &download_button_in_page,
-        error_html);
+        &show_cached_copy_button_in_page, &download_button_in_page, error_html);
   }
 }
 
-void NetErrorHelperCore::OnNetErrorInfo(DnsProbeStatus status) {
-  DCHECK_NE(DNS_PROBE_POSSIBLE, status);
+void NetErrorHelperCore::OnNetErrorInfo(error_page::DnsProbeStatus status) {
+  DCHECK_NE(error_page::DNS_PROBE_POSSIBLE, status);
 
   last_probe_status_ = status;
 
@@ -768,7 +761,7 @@ void NetErrorHelperCore::GetErrorHtmlForMainFrame(
     // loading, a DNS probe status scheduled to be sent to it may be thrown
     // out, but since the new error page should trigger a new DNS probe, it
     // will just get the results for the next page load.
-    last_probe_status_ = DNS_PROBE_POSSIBLE;
+    last_probe_status_ = error_page::DNS_PROBE_POSSIBLE;
     pending_error_page_info->needs_dns_updates = true;
     error = GetUpdatedError(error);
   }
@@ -785,24 +778,22 @@ void NetErrorHelperCore::GetErrorHtmlForMainFrame(
 void NetErrorHelperCore::UpdateErrorPage() {
   DCHECK(committed_error_page_info_->needs_dns_updates);
   DCHECK(committed_error_page_info_->is_finished_loading);
-  DCHECK_NE(DNS_PROBE_POSSIBLE, last_probe_status_);
+  DCHECK_NE(error_page::DNS_PROBE_POSSIBLE, last_probe_status_);
 
   UMA_HISTOGRAM_ENUMERATION("DnsProbe.ErrorPageUpdateStatus",
-                            last_probe_status_,
-                            DNS_PROBE_MAX);
-  // Every status other than DNS_PROBE_POSSIBLE and DNS_PROBE_STARTED is a
-  // final status code.  Once one is reached, the page does not need further
-  // updates.
-  if (last_probe_status_ != DNS_PROBE_STARTED)
+                            last_probe_status_, error_page::DNS_PROBE_MAX);
+  // Every status other than error_page::DNS_PROBE_POSSIBLE and
+  // error_page::DNS_PROBE_STARTED is a final status code.  Once one is reached,
+  // the page does not need further updates.
+  if (last_probe_status_ != error_page::DNS_PROBE_STARTED)
     committed_error_page_info_->needs_dns_updates = false;
 
   // There is no need to worry about the button display statistics here because
   // the presentation of the reload and show saved copy buttons can't be changed
   // by a DNS error update.
-  delegate_->UpdateErrorPage(
-      GetUpdatedError(committed_error_page_info_->error),
-      committed_error_page_info_->was_failed_post,
-      can_show_network_diagnostics_dialog_);
+  delegate_->UpdateErrorPage(GetUpdatedError(committed_error_page_info_->error),
+                             committed_error_page_info_->was_failed_post,
+                             can_show_network_diagnostics_dialog_);
 }
 
 void NetErrorHelperCore::OnNavigationCorrectionsFetched(
@@ -815,15 +806,15 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
   DCHECK(committed_error_page_info_->needs_load_navigation_corrections);
   DCHECK(committed_error_page_info_->navigation_correction_params);
 
-  pending_error_page_info_.reset(new ErrorPageInfo(
-      committed_error_page_info_->error,
-      committed_error_page_info_->was_failed_post,
-      committed_error_page_info_->was_ignoring_cache));
+  pending_error_page_info_.reset(
+      new ErrorPageInfo(committed_error_page_info_->error,
+                        committed_error_page_info_->was_failed_post,
+                        committed_error_page_info_->was_ignoring_cache));
   pending_error_page_info_->navigation_correction_response =
       ParseNavigationCorrectionResponse(corrections);
 
   std::string error_html;
-  std::unique_ptr<ErrorPageParams> params;
+  std::unique_ptr<error_page::ErrorPageParams> params;
   if (pending_error_page_info_->navigation_correction_response) {
     // Copy navigation correction parameters used for the request, so tracking
     // requests can still be sent if the configuration changes.
@@ -831,18 +822,17 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
         new NavigationCorrectionParams(
             *committed_error_page_info_->navigation_correction_params));
     params = CreateErrorPageParams(
-          *pending_error_page_info_->navigation_correction_response,
-          pending_error_page_info_->error,
-          *pending_error_page_info_->navigation_correction_params, is_rtl);
+        *pending_error_page_info_->navigation_correction_response,
+        pending_error_page_info_->error,
+        *pending_error_page_info_->navigation_correction_params, is_rtl);
     delegate_->GenerateLocalizedErrorPage(
         pending_error_page_info_->error,
         pending_error_page_info_->was_failed_post,
-        can_show_network_diagnostics_dialog_,
-        std::move(params), &pending_error_page_info_->reload_button_in_page,
+        can_show_network_diagnostics_dialog_, std::move(params),
+        &pending_error_page_info_->reload_button_in_page,
         &pending_error_page_info_->show_saved_copy_button_in_page,
         &pending_error_page_info_->show_cached_copy_button_in_page,
-        &pending_error_page_info_->download_button_in_page,
-        &error_html);
+        &pending_error_page_info_->download_button_in_page, &error_html);
   } else {
     // Since |navigation_correction_params| in |pending_error_page_info_| is
     // NULL, this won't trigger another attempt to load corrections.
@@ -859,13 +849,14 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
 blink::WebURLError NetErrorHelperCore::GetUpdatedError(
     const blink::WebURLError& error) const {
   // If a probe didn't run or wasn't conclusive, restore the original error.
-  if (last_probe_status_ == DNS_PROBE_NOT_RUN ||
-      last_probe_status_ == DNS_PROBE_FINISHED_INCONCLUSIVE) {
+  if (last_probe_status_ == error_page::DNS_PROBE_NOT_RUN ||
+      last_probe_status_ == error_page::DNS_PROBE_FINISHED_INCONCLUSIVE) {
     return error;
   }
 
   blink::WebURLError updated_error;
-  updated_error.domain = blink::WebString::FromUTF8(kDnsProbeErrorDomain);
+  updated_error.domain =
+      blink::WebString::FromUTF8(error_page::kDnsProbeErrorDomain);
   updated_error.reason = last_probe_status_;
   updated_error.unreachable_url = error.unreachable_url;
   updated_error.stale_copy_in_cache = error.stale_copy_in_cache;
@@ -883,8 +874,7 @@ void NetErrorHelperCore::Reload(bool bypass_cache) {
 bool NetErrorHelperCore::MaybeStartAutoReloadTimer() {
   if (!committed_error_page_info_ ||
       !committed_error_page_info_->is_finished_loading ||
-      pending_error_page_info_ ||
-      uncommitted_load_started_) {
+      pending_error_page_info_ || uncommitted_load_started_) {
     return false;
   }
 
@@ -906,7 +896,8 @@ void NetErrorHelperCore::StartAutoReloadTimer() {
   auto_reload_paused_ = false;
   base::TimeDelta delay = GetAutoReloadTime(auto_reload_count_);
   auto_reload_timer_->Stop();
-  auto_reload_timer_->Start(FROM_HERE, delay,
+  auto_reload_timer_->Start(
+      FROM_HERE, delay,
       base::Bind(&NetErrorHelperCore::AutoReloadTimerFired,
                  base::Unretained(this)));
 }
@@ -975,39 +966,42 @@ void NetErrorHelperCore::ExecuteButtonPress(Button button) {
 
   switch (button) {
     case RELOAD_BUTTON:
-      RecordEvent(NETWORK_ERROR_PAGE_RELOAD_BUTTON_CLICKED);
+      RecordEvent(error_page::NETWORK_ERROR_PAGE_RELOAD_BUTTON_CLICKED);
       if (committed_error_page_info_->show_saved_copy_button_in_page) {
-        RecordEvent(NETWORK_ERROR_PAGE_BOTH_BUTTONS_RELOAD_CLICKED);
+        RecordEvent(error_page::NETWORK_ERROR_PAGE_BOTH_BUTTONS_RELOAD_CLICKED);
       }
       navigation_from_button_ = RELOAD_BUTTON;
       Reload(false);
       return;
     case SHOW_SAVED_COPY_BUTTON:
-      RecordEvent(NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_CLICKED);
+      RecordEvent(
+          error_page::NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_CLICKED);
       navigation_from_button_ = SHOW_SAVED_COPY_BUTTON;
       if (committed_error_page_info_->reload_button_in_page) {
-        RecordEvent(NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN_SAVED_COPY_CLICKED);
+        RecordEvent(
+            error_page::
+                NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN_SAVED_COPY_CLICKED);
       }
       delegate_->LoadPageFromCache(
           committed_error_page_info_->error.unreachable_url);
       return;
     case MORE_BUTTON:
       // Visual effects on page are handled in Javascript code.
-      RecordEvent(NETWORK_ERROR_PAGE_MORE_BUTTON_CLICKED);
+      RecordEvent(error_page::NETWORK_ERROR_PAGE_MORE_BUTTON_CLICKED);
       return;
     case EASTER_EGG:
-      RecordEvent(NETWORK_ERROR_EASTER_EGG_ACTIVATED);
+      RecordEvent(error_page::NETWORK_ERROR_EASTER_EGG_ACTIVATED);
       return;
     case SHOW_CACHED_COPY_BUTTON:
-      RecordEvent(NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_CLICKED);
+      RecordEvent(error_page::NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_CLICKED);
       return;
     case DIAGNOSE_ERROR:
-      RecordEvent(NETWORK_ERROR_DIAGNOSE_BUTTON_CLICKED);
+      RecordEvent(error_page::NETWORK_ERROR_DIAGNOSE_BUTTON_CLICKED);
       delegate_->DiagnoseError(
           committed_error_page_info_->error.unreachable_url);
       return;
     case DOWNLOAD_BUTTON:
-      RecordEvent(NETWORK_ERROR_PAGE_DOWNLOAD_BUTTON_CLICKED);
+      RecordEvent(error_page::NETWORK_ERROR_PAGE_DOWNLOAD_BUTTON_CLICKED);
       delegate_->DownloadPageLater();
       return;
     case NO_BUTTON:
@@ -1046,12 +1040,9 @@ void NetErrorHelperCore::TrackClick(int tracking_id) {
   committed_error_page_info_->clicked_corrections.insert(tracking_id);
   std::string request_body = CreateClickTrackingUrlRequestBody(
       committed_error_page_info_->error,
-      *committed_error_page_info_->navigation_correction_params,
-      *response,
+      *committed_error_page_info_->navigation_correction_params, *response,
       *response->corrections[tracking_id]);
   delegate_->SendTrackingRequest(
       committed_error_page_info_->navigation_correction_params->url,
       request_body);
 }
-
-}  // namespace error_page
