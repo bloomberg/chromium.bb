@@ -115,6 +115,9 @@ class WindowSizer {
   // opened windows.  This value may be different on each platform.
   static const int kWindowTilePixels;
 
+  // The maximum default window width. This value may differ between platforms.
+  static const int kWindowMaxDefaultWidth;
+
  private:
   // The edge of the screen to check for out-of-bounds.
   enum Edge { TOP, LEFT, BOTTOM, RIGHT };

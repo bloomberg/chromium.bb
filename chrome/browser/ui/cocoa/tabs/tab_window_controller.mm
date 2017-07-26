@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_background_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#include "chrome/browser/ui/window_sizer/window_sizer.h"
 #import "ui/base/cocoa/focus_tracker.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
@@ -87,7 +88,7 @@
 
 - (id)initTabWindowControllerWithTabStrip:(BOOL)hasTabStrip
                                  titleBar:(BOOL)hasTitleBar {
-  const CGFloat kDefaultWidth = 750;
+  const CGFloat kDefaultWidth = WindowSizer::kWindowMaxDefaultWidth;
   const CGFloat kDefaultHeight = 600;
 
   NSRect contentRect = NSMakeRect(60, 229, kDefaultWidth, kDefaultHeight);
