@@ -254,10 +254,6 @@ void ToolbarActionsModel::OnReady() {
   actions_initialized_ = true;
   for (Observer& observer : observers_)
     observer.OnToolbarModelInitialized();
-
-  component_actions_factory_->UnloadMigratedExtensions(
-      extensions::ExtensionSystem::Get(profile_)->extension_service(),
-      extension_registry_);
 }
 
 size_t ToolbarActionsModel::FindNewPositionFromLastKnownGood(

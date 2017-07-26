@@ -32,49 +32,11 @@ class ComponentToolbarActionsFactoryTest
   }
 
  protected:
-  scoped_refptr<const extensions::Extension> CreateExtensionWithId(
-      const std::string& extension_id) {
-    extensions::DictionaryBuilder manifest;
-    manifest.Set(extensions::manifest_keys::kName, "test name")
-        .Set(extensions::manifest_keys::kDescription, "test description")
-        .Set(extensions::manifest_keys::kManifestVersion, 1)
-        .Set(extensions::manifest_keys::kVersion, "1.0.0")
-        .Set(extensions::manifest_keys::kBrowserAction,
-             extensions::DictionaryBuilder().Build());
-
-    return extensions::ExtensionBuilder()
-        .SetManifest(manifest.Build())
-        .SetID(extension_id)
-        .SetLocation(extensions::Manifest::INTERNAL)
-        .Build();
-  }
-
-  // Adds |extension| and unloads migrated extensions. Returns true if
-  // |extension| was unloaded.
-  bool TestUnloadingMigratedExtensions(
-      scoped_refptr<const extensions::Extension> extension) {
-    service()->AddExtension(extension.get());
-    CHECK(registry()->enabled_extensions().Contains(extension->id()));
-    actions_factory_->UnloadMigratedExtensions(service(), registry());
-    return !registry()->enabled_extensions().Contains(extension->id());
-  }
-
   ComponentToolbarActionsFactory* actions_factory_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ComponentToolbarActionsFactoryTest);
 };
-
-TEST_F(ComponentToolbarActionsFactoryTest, UnloadMigratedExtensions) {
-  EXPECT_TRUE(TestUnloadingMigratedExtensions(
-      CreateExtensionWithId(ComponentToolbarActionsFactory::kCastExtensionId)));
-  EXPECT_TRUE(TestUnloadingMigratedExtensions(CreateExtensionWithId(
-      ComponentToolbarActionsFactory::kCastBetaExtensionId)));
-  EXPECT_FALSE(TestUnloadingMigratedExtensions(
-      extensions::extension_action_test_util::CreateActionExtension(
-          "not_migrated_extension",
-          extensions::extension_action_test_util::BROWSER_ACTION)));
-}
 
 TEST_F(ComponentToolbarActionsFactoryTest, GetInitialIds) {
   std::string id1("id1");
