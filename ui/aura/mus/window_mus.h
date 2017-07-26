@@ -14,10 +14,6 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/mus/mus_types.h"
 
-namespace cc {
-class SurfaceInfo;
-}
-
 namespace gfx {
 class Rect;
 class Transform;
@@ -27,6 +23,10 @@ namespace ui {
 namespace mojom {
 enum class OrderDirection;
 }
+}
+
+namespace viz {
+class SurfaceInfo;
 }
 
 namespace aura {
