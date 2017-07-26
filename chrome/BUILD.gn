@@ -480,7 +480,6 @@ if (is_win) {
       sources = [
         as_invoker_manifest,
       ]
-      type = "dll"
     }
 
     shared_library("chrome_child") {
@@ -1488,7 +1487,6 @@ if (is_win) {
       as_invoker_manifest,
       common_controls_manifest,
     ]
-    type = "dll"
   }
 
   process_version_rc_template("nacl64_exe_version") {
