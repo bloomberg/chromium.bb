@@ -51,6 +51,7 @@ class CookieStore;
 class CTPolicyEnforcer;
 class CTVerifier;
 class HttpAuthHandlerFactory;
+class HttpTransactionFactory;
 class HttpUserAgentSettings;
 class HttpServerProperties;
 class NetworkQualityEstimator;
@@ -80,6 +81,12 @@ class NET_EXPORT URLRequestContextBuilder {
   using CreateInterceptingJobFactory =
       base::OnceCallback<std::unique_ptr<net::URLRequestJobFactory>(
           std::unique_ptr<net::URLRequestJobFactory> inner_job_factory)>;
+
+  // Creates an HttpNetworkTransactionFactory given an HttpNetworkSession. Does
+  // not take ownership of the session.
+  using CreateHttpTransactionFactoryCallback =
+      base::OnceCallback<std::unique_ptr<net::HttpTransactionFactory>(
+          net::HttpNetworkSession* session)>;
 
   struct NET_EXPORT HttpCacheParams {
     enum Type {
@@ -343,6 +350,14 @@ class NET_EXPORT URLRequestContextBuilder {
   void SetHttpServerProperties(
       std::unique_ptr<HttpServerProperties> http_server_properties);
 
+  // Sets a callback that will be used to create the
+  // HttpNetworkTransactionFactory. If a cache is enabled, the cache's
+  // HttpTransactionFactory will wrap the one this creates.
+  // TODO(mmenke): Get rid of this. See https://crbug.com/721408
+  void SetCreateHttpTransactionFactoryCallback(
+      CreateHttpTransactionFactoryCallback
+          create_http_network_transaction_factory);
+
   // Creates a mostly self-contained URLRequestContext. May only be called once
   // per URLRequestContextBuilder. After this is called, the Builder can be
   // safely destroyed.
@@ -385,6 +400,7 @@ class NET_EXPORT URLRequestContextBuilder {
 
   HttpCacheParams http_cache_params_;
   HttpNetworkSession::Params http_network_session_params_;
+  CreateHttpTransactionFactoryCallback create_http_network_transaction_factory_;
   base::FilePath transport_security_persister_path_;
   bool transport_security_persister_readonly_;
   NetLog* net_log_;

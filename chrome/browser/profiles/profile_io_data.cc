@@ -244,6 +244,13 @@ class DebugDevToolsInterceptor : public net::URLRequestInterceptor {
 };
 #endif  // BUILDFLAG(DEBUG_DEVTOOLS)
 
+std::unique_ptr<net::HttpTransactionFactory> CreateDevToolsTransactionFactory(
+    DevToolsNetworkController* devtools_network_controller,
+    net::HttpNetworkSession* session) {
+  return base::WrapUnique(new DevToolsNetworkTransactionFactory(
+      devtools_network_controller, session));
+}
+
 #if defined(OS_CHROMEOS)
 // The following four functions are responsible for initializing NSS for each
 // profile on ChromeOS, which has a separate NSS database and TPM slot
@@ -1165,6 +1172,10 @@ void ProfileIOData::Init(
 
   InitializeInternal(builder.get(), profile_params_.get(), protocol_handlers,
                      std::move(request_interceptors));
+
+  builder->SetCreateHttpTransactionFactoryCallback(
+      base::BindOnce(&CreateDevToolsTransactionFactory,
+                     network_controller_handle_.GetController()));
 
   main_network_context_ =
       io_thread_globals->network_service->CreateNetworkContextWithBuilder(
