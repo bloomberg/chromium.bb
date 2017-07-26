@@ -140,7 +140,6 @@ void PaymentRequest::Show() {
     return;
   }
 
-  journey_logger_.SetShowCalled();
   journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
   journey_logger_.SetRequestedInformation(
       spec_->request_shipping(), spec_->request_payer_email(),
