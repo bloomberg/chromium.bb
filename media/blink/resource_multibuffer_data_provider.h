@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "media/blink/active_loader.h"
 #include "media/blink/media_blink_export.h"
 #include "media/blink/multibuffer.h"
 #include "media/blink/url_index.h"
@@ -110,8 +109,8 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   // const to make it obvious that redirects cannot change it.
   const GURL origin_;
 
-  // Keeps track of an active WebAssociatedURLLoader and associated state.
-  std::unique_ptr<ActiveLoader> active_loader_;
+  // Keeps track of an active WebAssociatedURLLoader.
+  std::unique_ptr<blink::WebAssociatedURLLoader> active_loader_;
 
   // Injected WebAssociatedURLLoader instance for testing purposes.
   std::unique_ptr<blink::WebAssociatedURLLoader> test_loader_;

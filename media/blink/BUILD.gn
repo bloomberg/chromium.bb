@@ -9,8 +9,6 @@ component("blink") {
   output_name = "media_blink"
 
   sources = [
-    "active_loader.cc",
-    "active_loader.h",
     "buffered_data_source_host_impl.cc",
     "buffered_data_source_host_impl.h",
     "cache_util.cc",

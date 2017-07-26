@@ -195,8 +195,6 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
   }
 
   void StopWhenLoad() {
-    InSequence s;
-    EXPECT_CALL(*url_loader_, Cancel());
     loader_ = nullptr;
     url_data_ = nullptr;
   }
