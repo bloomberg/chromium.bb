@@ -448,12 +448,10 @@ css_properties("make_core_generated_computed_style_base") {
 
 css_properties("make_core_generated_css_value_id_mappings") {
   script = "../build/scripts/make_css_value_id_mappings.py"
-  in_files = [
-        "css/CSSValueKeywords.json5"
-  ]
+  in_files = [ "css/CSSValueKeywords.json5" ]
   other_inputs = [
-        "../build/scripts/templates/CSSValueIDMappingsGenerated.h.tmpl",
-        "../build/scripts/keyword_utils.py",
+    "../build/scripts/templates/CSSValueIDMappingsGenerated.h.tmpl",
+    "../build/scripts/keyword_utils.py",
   ]
   outputs = [
     "$blink_core_output_dir/CSSValueIDMappingsGenerated.h",
@@ -605,7 +603,10 @@ code_generator("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSPropertyDescriptor.cpp",
     "$blink_core_output_dir/css/properties/CSSPropertyDescriptor.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIAnimation.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIBackground.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIBackgroundPosition.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIBackgroundRepeat.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIBorder.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIBorderBottom.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIBorderColor.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIBorderImage.h",
@@ -622,15 +623,26 @@ code_generator("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIFlexFlow.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIFont.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIFontVariant.h",
-    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIListStyle.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIGrid.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIGridArea.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIGridColumn.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIGridGap.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIGridRow.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIGridTemplate.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIListStyle.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIMargin.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIMarker.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIOutline.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIOverflow.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIOffset.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIPadding.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIScrollBoundaryBehavior.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIPageBreakAfter.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIPageBreakBefore.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIPageBreakInside.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIPlaceContent.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIPlaceItems.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIPlaceSelf.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIScrollPadding.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIScrollPaddingBlock.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIScrollPaddingInline.h",
@@ -643,9 +655,14 @@ code_generator("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitBorderBefore.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitBorderEnd.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitBorderStart.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitColumnBreakAfter.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitColumnBreakBefore.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitColumnBreakInside.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMarginCollapse.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMask.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMaskBoxImage.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMaskPosition.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMaskRepeat.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitTextEmphasis.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitTextStroke.h",
   ]
