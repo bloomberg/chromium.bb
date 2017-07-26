@@ -113,10 +113,6 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
 
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(user_profile);
 
-    TetherService* tether_service = TetherService::Get(user_profile);
-    if (tether_service)
-      tether_service->StartTetherIfEnabled();
-
     // Send the PROFILE_PREPARED notification and call SessionStarted()
     // so that the Launcher and other Profile dependent classes are created.
     content::NotificationService::current()->Notify(
@@ -144,6 +140,10 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
     // restore Sync.
     UserSessionManager::GetInstance()->RestoreAuthenticationSession(
         user_profile);
+
+    TetherService* tether_service = TetherService::Get(user_profile);
+    if (tether_service)
+      tether_service->StartTetherIfEnabled();
   }
 }
 

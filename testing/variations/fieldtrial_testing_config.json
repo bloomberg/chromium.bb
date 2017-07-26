@@ -1401,6 +1401,21 @@
             ]
         }
     ],
+    "InstantTethering": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "InstantTethering"
+                    ]
+                }
+            ]
+        }
+    ],
     "IntelligentSessionRestore": [
         {
             "platforms": [
