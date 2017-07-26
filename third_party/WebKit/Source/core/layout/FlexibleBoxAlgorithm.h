@@ -137,7 +137,7 @@ class FlexLine {
   LayoutUnit initial_free_space;
   LayoutUnit remaining_free_space;
 
-  // These get filled in by LayoutAndPlaceChildren (for now)
+  // These get filled in by PlaceLineItems (for now)
   // TODO(cbiesinger): Move that to FlexibleBoxAlgorithm.
   LayoutUnit cross_axis_offset;
   LayoutUnit cross_axis_extent;
