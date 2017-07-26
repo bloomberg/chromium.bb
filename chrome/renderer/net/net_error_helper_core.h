@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ERROR_PAGE_RENDERER_NET_ERROR_HELPER_CORE_H_
-#define COMPONENTS_ERROR_PAGE_RENDERER_NET_ERROR_HELPER_CORE_H_
+#ifndef CHROME_RENDERER_NET_NET_ERROR_HELPER_CORE_H_
+#define CHROME_RENDERER_NET_NET_ERROR_HELPER_CORE_H_
 
 #include <memory>
 #include <string>
@@ -20,8 +20,8 @@ struct WebURLError;
 }
 
 namespace error_page {
-
 struct ErrorPageParams;
+}
 
 // Class that contains the logic for how the NetErrorHelper.  This allows for
 // testing the logic without a RenderView or WebFrame, which are difficult to
@@ -59,7 +59,7 @@ class NetErrorHelperCore {
         const blink::WebURLError& error,
         bool is_failed_post,
         bool can_show_network_diagnostics_dialog,
-        std::unique_ptr<ErrorPageParams> params,
+        std::unique_ptr<error_page::ErrorPageParams> params,
         bool* reload_button_shown,
         bool* show_saved_copy_button_shown,
         bool* show_cached_copy_button_shown,
@@ -163,7 +163,7 @@ class NetErrorHelperCore {
 
   // Notifies |this| that network error information from the browser process
   // has been received.
-  void OnNetErrorInfo(DnsProbeStatus status);
+  void OnNetErrorInfo(error_page::DnsProbeStatus status);
 
   // Notifies |this| if it can use a local error diagnostics service through its
   // delegate.
@@ -235,7 +235,7 @@ class NetErrorHelperCore {
   Delegate* delegate_;
 
   // The last DnsProbeStatus received from the browser.
-  DnsProbeStatus last_probe_status_;
+  error_page::DnsProbeStatus last_probe_status_;
 
   // Information for the provisional / "pre-provisional" error page.  NULL when
   // there's no page pending, or the pending page is not an error page.
@@ -288,6 +288,4 @@ class NetErrorHelperCore {
   Button navigation_from_button_;
 };
 
-}  // namespace error_page
-
-#endif  // COMPONENTS_ERROR_PAGE_RENDERER_NET_ERROR_HELPER_CORE_H_
+#endif  // CHROME_RENDERER_NET_NET_ERROR_HELPER_CORE_H_

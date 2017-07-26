@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/error_page/renderer/net_error_helper_core.h"
+#include "chrome/renderer/net/net_error_helper_core.h"
 
 #include <stddef.h>
 
@@ -32,7 +32,6 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "url/gurl.h"
 
-namespace error_page {
 namespace {
 
 using blink::WebURLError;
@@ -71,15 +70,15 @@ struct NavigationCorrection {
 };
 
 const NavigationCorrection kDefaultCorrections[] = {
-  {"reloadPage", kFailedUrl, "rld", "data1", false, false},
-  {"urlCorrection", "http://somewhere_else/", "btn", "data2", false, false},
-  {"contentOverlap", "http://pony_island/", "btn", "data3", false, false},
+    {"reloadPage", kFailedUrl, "rld", "data1", false, false},
+    {"urlCorrection", "http://somewhere_else/", "btn", "data2", false, false},
+    {"contentOverlap", "http://pony_island/", "btn", "data3", false, false},
 
-  // Porn should be ignored.
-  {"emphasizedUrlCorrection", "http://porn/", "btn", "data4", true, false},
-  {"sitemap", "http://more_porn/", "btn", "data5", false, true},
+    // Porn should be ignored.
+    {"emphasizedUrlCorrection", "http://porn/", "btn", "data4", true, false},
+    {"sitemap", "http://more_porn/", "btn", "data5", false, true},
 
-  {"webSearchQuery", kSuggestedSearchTerms, "frm", "data6", false, false},
+    {"webSearchQuery", kSuggestedSearchTerms, "frm", "data6", false, false},
 };
 
 std::string SuggestionsToResponse(const NavigationCorrection* corrections,
@@ -98,16 +97,15 @@ std::string SuggestionsToResponse(const NavigationCorrection* corrections,
   return json;
 }
 
-testing::AssertionResult StringValueEquals(
-    const base::DictionaryValue& dict,
-    const std::string& key,
-    const std::string& expected_value) {
+testing::AssertionResult StringValueEquals(const base::DictionaryValue& dict,
+                                           const std::string& key,
+                                           const std::string& expected_value) {
   std::string actual_value;
   if (!dict.GetString(key, &actual_value))
     return testing::AssertionFailure() << key << " not found.";
   if (actual_value != expected_value) {
     return testing::AssertionFailure()
-        << "actual: " << actual_value << "\n expected: " << expected_value;
+           << "actual: " << actual_value << "\n expected: " << expected_value;
   }
   return testing::AssertionSuccess();
 }
@@ -121,10 +119,10 @@ std::string ErrorToString(const WebURLError& error, bool is_failed_post) {
                             is_failed_post ? "POST" : "NOT POST");
 }
 
-WebURLError ProbeError(DnsProbeStatus status) {
+WebURLError ProbeError(error_page::DnsProbeStatus status) {
   WebURLError error;
   error.unreachable_url = GURL(kFailedUrl);
-  error.domain = blink::WebString::FromUTF8(kDnsProbeErrorDomain);
+  error.domain = blink::WebString::FromUTF8(error_page::kDnsProbeErrorDomain);
   error.reason = status;
   return error;
 }
@@ -143,7 +141,7 @@ WebURLError NetError(net::Error net_error) {
 
 // Convenience functions that create an error string for a non-POST request.
 
-std::string ProbeErrorString(DnsProbeStatus status) {
+std::string ProbeErrorString(error_page::DnsProbeStatus status) {
   return ErrorToString(ProbeError(status), false);
 }
 
@@ -187,10 +185,8 @@ class NetErrorHelperCoreTest : public testing::Test,
     // The old value of timer_, if any, will be freed by the old core_ being
     // destructed, since core_ takes ownership of the timer.
     timer_ = new base::MockTimer(false, false);
-    core_.reset(new NetErrorHelperCore(this,
-                                       auto_reload_enabled,
-                                       auto_reload_visible_only,
-                                       visible));
+    core_.reset(new NetErrorHelperCore(this, auto_reload_enabled,
+                                       auto_reload_visible_only, visible));
     core_->set_timer_for_testing(std::unique_ptr<base::Timer>(timer_));
   }
 
@@ -199,46 +195,32 @@ class NetErrorHelperCoreTest : public testing::Test,
   const GURL& url_being_fetched() const { return url_being_fetched_; }
   bool is_url_being_fetched() const { return !url_being_fetched_.is_empty(); }
 
-  int reload_count() const {
-    return reload_count_;
-  }
+  int reload_count() const { return reload_count_; }
 
   int reload_bypassing_cache_count() const {
     return reload_bypassing_cache_count_;
   }
 
-  int show_saved_copy_count() const {
-    return show_saved_copy_count_;
-  }
+  int show_saved_copy_count() const { return show_saved_copy_count_; }
 
-  const GURL& show_saved_copy_url() const {
-    return show_saved_copy_url_;
-  }
+  const GURL& show_saved_copy_url() const { return show_saved_copy_url_; }
 
-  int diagnose_error_count() const {
-    return diagnose_error_count_;
-  }
+  int diagnose_error_count() const { return diagnose_error_count_; }
 
-  const GURL& diagnose_error_url() const {
-    return diagnose_error_url_;
-  }
+  const GURL& diagnose_error_url() const { return diagnose_error_url_; }
 
   int download_count() const { return download_count_; }
 
-  const GURL& default_url() const {
-    return default_url_;
-  }
+  const GURL& default_url() const { return default_url_; }
 
-  const GURL& error_url() const {
-    return error_url_;
-  }
+  const GURL& error_url() const { return error_url_; }
 
   int enable_page_helper_functions_count() const {
     return enable_page_helper_functions_count_;
   }
 
   const std::string& last_update_string() const { return last_update_string_; }
-  int update_count() const { return update_count_;  }
+  int update_count() const { return update_count_; }
 
   const std::string& last_error_html() const { return last_error_html_; }
   int error_html_update_count() const { return error_html_update_count_; }
@@ -247,7 +229,7 @@ class NetErrorHelperCoreTest : public testing::Test,
     return last_can_show_network_diagnostics_dialog_;
   }
 
-  const ErrorPageParams* last_error_page_params() const {
+  const error_page::ErrorPageParams* last_error_page_params() const {
     return last_error_page_params_.get();
   }
 
@@ -259,8 +241,8 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   base::MockTimer* timer() { return timer_; }
 
-  void NavigationCorrectionsLoadSuccess(
-      const NavigationCorrection* corrections, int num_corrections) {
+  void NavigationCorrectionsLoadSuccess(const NavigationCorrection* corrections,
+                                        int num_corrections) {
     NavigationCorrectionsLoadFinished(
         SuggestionsToResponse(corrections, num_corrections));
   }
@@ -286,8 +268,7 @@ class NetErrorHelperCoreTest : public testing::Test,
 
     core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                         NetErrorHelperCore::ERROR_PAGE);
-    core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME,
-                         error_url());
+    core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
     core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   }
 
@@ -319,8 +300,8 @@ class NetErrorHelperCoreTest : public testing::Test,
     core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   }
 
-  void DoDnsProbe(DnsProbeStatus final_status) {
-    core()->OnNetErrorInfo(DNS_PROBE_STARTED);
+  void DoDnsProbe(error_page::DnsProbeStatus final_status) {
+    core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
     core()->OnNetErrorInfo(final_status);
   }
 
@@ -328,9 +309,7 @@ class NetErrorHelperCoreTest : public testing::Test,
     SetNavigationCorrectionURL(GURL(kNavigationCorrectionUrl));
   }
 
-  void DisableNavigationCorrections() {
-    SetNavigationCorrectionURL(GURL());
-  }
+  void DisableNavigationCorrections() { SetNavigationCorrectionURL(GURL()); }
 
   void ExpectDefaultNavigationCorrections() const {
     // Checks that the last error page params correspond to kDefaultSuggestions.
@@ -343,21 +322,21 @@ class NetErrorHelperCoreTest : public testing::Test,
 
  private:
   void SetNavigationCorrectionURL(const GURL& navigation_correction_url) {
-    core()->OnSetNavigationCorrectionInfo(navigation_correction_url,
-                                          kLanguage, kCountry, kApiKey,
-                                          GURL(kSearchUrl));
+    core()->OnSetNavigationCorrectionInfo(navigation_correction_url, kLanguage,
+                                          kCountry, kApiKey, GURL(kSearchUrl));
   }
 
   // NetErrorHelperCore::Delegate implementation:
-  void GenerateLocalizedErrorPage(const WebURLError& error,
-                                  bool is_failed_post,
-                                  bool can_show_network_diagnostics_dialog,
-                                  std::unique_ptr<ErrorPageParams> params,
-                                  bool* reload_button_shown,
-                                  bool* show_saved_copy_button_shown,
-                                  bool* show_cached_copy_button_shown,
-                                  bool* download_button_shown,
-                                  std::string* html) const override {
+  void GenerateLocalizedErrorPage(
+      const WebURLError& error,
+      bool is_failed_post,
+      bool can_show_network_diagnostics_dialog,
+      std::unique_ptr<error_page::ErrorPageParams> params,
+      bool* reload_button_shown,
+      bool* show_saved_copy_button_shown,
+      bool* show_cached_copy_button_shown,
+      bool* download_button_shown,
+      std::string* html) const override {
     last_can_show_network_diagnostics_dialog_ =
         can_show_network_diagnostics_dialog;
     last_error_page_params_ = std::move(params);
@@ -433,9 +412,7 @@ class NetErrorHelperCoreTest : public testing::Test,
     diagnose_error_url_ = page_url;
   }
 
-  void DownloadPageLater() override {
-    download_count_++;
-  }
+  void DownloadPageLater() override { download_count_++; }
 
   void SetIsShowingDownloadButton(bool show) override {}
 
@@ -454,8 +431,8 @@ class NetErrorHelperCoreTest : public testing::Test,
     base::DictionaryValue* dict = NULL;
     ASSERT_TRUE(parsed_body->GetAsDictionary(&dict));
 
-    EXPECT_TRUE(StringValueEquals(*dict, "params.originalUrlQuery",
-                                  kFailedUrl));
+    EXPECT_TRUE(
+        StringValueEquals(*dict, "params.originalUrlQuery", kFailedUrl));
     EXPECT_TRUE(StringValueEquals(*dict, "params.language", kLanguage));
     EXPECT_TRUE(StringValueEquals(*dict, "params.originCountry", kCountry));
     EXPECT_TRUE(StringValueEquals(*dict, "params.key", kApiKey));
@@ -482,7 +459,7 @@ class NetErrorHelperCoreTest : public testing::Test,
   // Values passed in to the last call of GenerateLocalizedErrorPage or
   // UpdateErrorPage.  Mutable because GenerateLocalizedErrorPage is const.
   mutable bool last_can_show_network_diagnostics_dialog_;
-  mutable std::unique_ptr<ErrorPageParams> last_error_page_params_;
+  mutable std::unique_ptr<error_page::ErrorPageParams> last_error_page_params_;
 
   int reload_count_;
   int reload_bypassing_cache_count_;
@@ -507,8 +484,7 @@ class NetErrorHelperCoreTest : public testing::Test,
 // corrections.
 //------------------------------------------------------------------------------
 
-TEST_F(NetErrorHelperCoreTest, Null) {
-}
+TEST_F(NetErrorHelperCoreTest, Null) {}
 
 TEST_F(NetErrorHelperCoreTest, SuccessfulPageLoad) {
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
@@ -585,30 +561,30 @@ TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsErrorSpuriousStatus) {
   // Original page starts loading.
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                       NetErrorHelperCore::NON_ERROR_PAGE);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 
   // It fails, and an error page is requested.
   std::string html;
   core()->GetErrorHTML(
       NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_CONNECTION_RESET),
       false /* is_failed_post */, false /* is_ignoring_cache */, &html);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 
   // Should have returned a local error page.
   EXPECT_FALSE(html.empty());
-  EXPECT_EQ(NetErrorString(net::ERR_CONNECTION_RESET),  html);
+  EXPECT_EQ(NetErrorString(net::ERR_CONNECTION_RESET), html);
 
   // Error page loads.
 
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                       NetErrorHelperCore::ERROR_PAGE);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(0, error_html_update_count());
@@ -666,14 +642,14 @@ TEST_F(NetErrorHelperCoreTest, SubFrameDnsErrorSpuriousStatus) {
   // Original page starts loading.
   core()->OnStartLoad(NetErrorHelperCore::SUB_FRAME,
                       NetErrorHelperCore::NON_ERROR_PAGE);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 
   // It fails, and an error page is requested.
   std::string html;
   core()->GetErrorHTML(
       NetErrorHelperCore::SUB_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
       false /* is_failed_post */, false /* is_ignoring_cache */, &html);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 
   // Should have returned a local error page.
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), html);
@@ -682,13 +658,13 @@ TEST_F(NetErrorHelperCoreTest, SubFrameDnsErrorSpuriousStatus) {
 
   core()->OnStartLoad(NetErrorHelperCore::SUB_FRAME,
                       NetErrorHelperCore::ERROR_PAGE);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 
   core()->OnCommitLoad(NetErrorHelperCore::SUB_FRAME, error_url());
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 
   core()->OnFinishLoad(NetErrorHelperCore::SUB_FRAME);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(0, error_html_update_count());
@@ -712,7 +688,7 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbe) {
       NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
       false /* is_failed_post */, false /* is_ignoring_cache */, &html);
   // Should have returned a local error page indicating a probe may run.
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_POSSIBLE), html);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
@@ -721,17 +697,18 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbe) {
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
 
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
   EXPECT_EQ(1, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_STARTED), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_STARTED), last_error_html());
 
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_FINISHED_NXDOMAIN), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NXDOMAIN),
+            last_error_html());
 
   // Any other probe updates should be ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -748,7 +725,7 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNotRun) {
       NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
       false /* is_failed_post */, false /* is_ignoring_cache */, &html);
   // Should have returned a local error page indicating a probe may run.
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_POSSIBLE), html);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
@@ -759,13 +736,13 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNotRun) {
 
   // When the not run status arrives, the page should revert to the normal dns
   // error page.
-  core()->OnNetErrorInfo(DNS_PROBE_NOT_RUN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_NOT_RUN);
   EXPECT_EQ(1, update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
 
   // Any other probe updates should be ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(1, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -782,7 +759,7 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeInconclusive) {
       NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
       false /* is_failed_post */, false /* is_ignoring_cache */, &html);
   // Should have returned a local error page indicating a probe may run.
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_POSSIBLE), html);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
@@ -791,18 +768,18 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeInconclusive) {
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
 
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
   EXPECT_EQ(1, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_STARTED), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_STARTED), last_error_html());
 
   // When the inconclusive status arrives, the page should revert to the normal
   // dns error page.
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_INCONCLUSIVE);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_INCONCLUSIVE);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
 
   // Any other probe updates should be ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_INCONCLUSIVE);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_INCONCLUSIVE);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -819,7 +796,7 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNoInternet) {
       NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
       false /* is_failed_post */, false /* is_ignoring_cache */, &html);
   // Should have returned a local error page indicating a probe may run.
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_POSSIBLE), html);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
@@ -828,19 +805,19 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNoInternet) {
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
 
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
   EXPECT_EQ(1, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_STARTED), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_STARTED), last_error_html());
 
   // When the inconclusive status arrives, the page should revert to the normal
   // dns error page.
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NO_INTERNET);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NO_INTERNET);
   EXPECT_EQ(2, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_FINISHED_NO_INTERNET),
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NO_INTERNET),
             last_error_html());
 
   // Any other probe updates should be ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NO_INTERNET);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NO_INTERNET);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -857,7 +834,7 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeBadConfig) {
       NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
       false /* is_failed_post */, false /* is_ignoring_cache */, &html);
   // Should have returned a local error page indicating a probe may run.
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_POSSIBLE), html);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
@@ -866,18 +843,19 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeBadConfig) {
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
 
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
   EXPECT_EQ(1, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_STARTED), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_STARTED), last_error_html());
 
   // When the inconclusive status arrives, the page should revert to the normal
   // dns error page.
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_BAD_CONFIG);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_BAD_CONFIG);
   EXPECT_EQ(2, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_FINISHED_BAD_CONFIG), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_BAD_CONFIG),
+            last_error_html());
 
   // Any other probe updates should be ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_BAD_CONFIG);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_BAD_CONFIG);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -895,7 +873,7 @@ TEST_F(NetErrorHelperCoreTest, FinishedAfterStartProbe) {
       NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
       false /* is_failed_post */, false /* is_ignoring_cache */, &html);
   // Should have returned a local error page indicating a probe may run.
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_POSSIBLE), html);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
@@ -904,22 +882,23 @@ TEST_F(NetErrorHelperCoreTest, FinishedAfterStartProbe) {
 
   // Nothing should be done when a probe status comes in before loading
   // finishes.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
   EXPECT_EQ(0, update_count());
 
   // When loading finishes, however, the buffered probe status should be sent
   // to the page.
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(1, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_STARTED), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_STARTED), last_error_html());
 
   // Should update the page again when the probe result comes in.
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_FINISHED_NXDOMAIN), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NXDOMAIN),
+            last_error_html());
 
   // Any other probe updates should be ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_NOT_RUN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_NOT_RUN);
   EXPECT_EQ(2, update_count());
 }
 
@@ -936,7 +915,8 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbePost) {
       NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
       true /* is_failed_post */, false /* is_ignoring_cache */, &html);
   // Should have returned a local error page indicating a probe may run.
-  EXPECT_EQ(ErrorToString(ProbeError(DNS_PROBE_POSSIBLE), true), html);
+  EXPECT_EQ(ErrorToString(ProbeError(error_page::DNS_PROBE_POSSIBLE), true),
+            html);
 
   // Error page loads.
   EXPECT_EQ(0, enable_page_helper_functions_count());
@@ -947,15 +927,16 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbePost) {
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(1, enable_page_helper_functions_count());
 
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
   EXPECT_EQ(1, update_count());
-  EXPECT_EQ(ErrorToString(ProbeError(DNS_PROBE_STARTED), true),
+  EXPECT_EQ(ErrorToString(ProbeError(error_page::DNS_PROBE_STARTED), true),
             last_error_html());
 
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
-  EXPECT_EQ(ErrorToString(ProbeError(DNS_PROBE_FINISHED_NXDOMAIN), true),
-            last_error_html());
+  EXPECT_EQ(
+      ErrorToString(ProbeError(error_page::DNS_PROBE_FINISHED_NXDOMAIN), true),
+      last_error_html());
   EXPECT_EQ(0, error_html_update_count());
 }
 
@@ -971,7 +952,7 @@ TEST_F(NetErrorHelperCoreTest, ProbeFinishesEarly) {
       NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
       false /* is_failed_post */, false /* is_ignoring_cache */, &html);
   // Should have returned a local error page indicating a probe may run.
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_POSSIBLE), html);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page starts loading.
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
@@ -979,8 +960,8 @@ TEST_F(NetErrorHelperCoreTest, ProbeFinishesEarly) {
 
   // Nothing should be done when the probe statuses come in before loading
   // finishes.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
 
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
@@ -990,11 +971,12 @@ TEST_F(NetErrorHelperCoreTest, ProbeFinishesEarly) {
   // to the page.
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(1, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_FINISHED_NXDOMAIN), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NXDOMAIN),
+            last_error_html());
 
   // Any other probe updates should be ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(1, update_count());
 }
 
@@ -1011,7 +993,7 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbes) {
       NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
       false /* is_failed_post */, false /* is_ignoring_cache */, &html);
   // Should have returned a local error page indicating a probe may run.
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_POSSIBLE), html);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
@@ -1020,10 +1002,11 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbes) {
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Probe results come in.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_FINISHED_NXDOMAIN), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NXDOMAIN),
+            last_error_html());
 
   // The process starts again.
 
@@ -1036,7 +1019,7 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbes) {
       NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
       false /* is_failed_post */, false /* is_ignoring_cache */, &html);
   // Should have returned a local error page indicating a probe may run.
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_POSSIBLE), html);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
@@ -1045,14 +1028,14 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbes) {
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(2, update_count());
 
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
   EXPECT_EQ(3, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_STARTED), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_STARTED), last_error_html());
 
   // The probe returns a different result this time.
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NO_INTERNET);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NO_INTERNET);
   EXPECT_EQ(4, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_FINISHED_NO_INTERNET),
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NO_INTERNET),
             last_error_html());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -1071,7 +1054,7 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbesAfterSecondStarts) {
       NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
       false /* is_failed_post */, false /* is_ignoring_cache */, &html);
   // Should have returned a local error page indicating a probe may run.
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_POSSIBLE), html);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
@@ -1090,26 +1073,28 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbesAfterSecondStarts) {
       NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
       false /* is_failed_post */, false /* is_ignoring_cache */, &html);
   // Should have returned a local error page indicating a probe may run.
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_POSSIBLE), html);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page starts to load.
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                       NetErrorHelperCore::ERROR_PAGE);
 
   // Probe results come in, and the first page is updated.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_FINISHED_NXDOMAIN), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NXDOMAIN),
+            last_error_html());
 
   // Second page finishes loading, and is updated using the same probe result.
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(3, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_FINISHED_NXDOMAIN), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NXDOMAIN),
+            last_error_html());
 
   // Other probe results should be ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NO_INTERNET);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NO_INTERNET);
   EXPECT_EQ(3, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -1126,14 +1111,14 @@ TEST_F(NetErrorHelperCoreTest, ErrorPageLoadInterrupted) {
       NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
       false /* is_failed_post */, false /* is_ignoring_cache */, &html);
   // Should have returned a local error page indicating a probe may run.
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_POSSIBLE), html);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page starts loading.
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                       NetErrorHelperCore::ERROR_PAGE);
   // Probe statuses come in, but should be ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
 
   // A new navigation begins while the error page is loading.
@@ -1145,21 +1130,20 @@ TEST_F(NetErrorHelperCoreTest, ErrorPageLoadInterrupted) {
       NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
       false /* is_failed_post */, false /* is_ignoring_cache */, &html);
   // Should have returned a local error page indicating a probe may run.
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_POSSIBLE), html);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page finishes loading.
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Probe results come in.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
   EXPECT_EQ(1, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_STARTED),
-            last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_STARTED), last_error_html());
 
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NO_INTERNET);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NO_INTERNET);
   EXPECT_EQ(2, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_FINISHED_NO_INTERNET),
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NO_INTERNET),
             last_error_html());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -1183,7 +1167,7 @@ TEST_F(NetErrorHelperCoreTest, NoCorrectionsForHttps) {
                        false /* is_failed_post */,
                        false /* is_ignoring_cache */, &html);
 
-  blink::WebURLError probe_error = ProbeError(DNS_PROBE_POSSIBLE);
+  blink::WebURLError probe_error = ProbeError(error_page::DNS_PROBE_POSSIBLE);
   probe_error.unreachable_url = GURL(kFailedHttpsUrl);
   EXPECT_EQ(ErrorToString(probe_error, false), html);
   EXPECT_FALSE(is_url_being_fetched());
@@ -1199,12 +1183,12 @@ TEST_F(NetErrorHelperCoreTest, NoCorrectionsForHttps) {
 
   // Page is updated in response to DNS probes as normal.
   EXPECT_EQ(0, update_count());
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
   EXPECT_FALSE(last_error_page_params());
   blink::WebURLError final_probe_error =
-      ProbeError(DNS_PROBE_FINISHED_NXDOMAIN);
+      ProbeError(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   final_probe_error.unreachable_url = GURL(kFailedHttpsUrl);
   EXPECT_EQ(ErrorToString(final_probe_error, false), last_error_html());
 }
@@ -1253,8 +1237,8 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsReceivedBeforeProbe) {
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Any probe statuses should be ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(1, error_html_update_count());
@@ -1284,8 +1268,8 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsRetrievedAfterProbes) {
   EXPECT_FALSE(last_error_page_params());
 
   // Probe statuses should be ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(0, error_html_update_count());
   EXPECT_FALSE(last_error_page_params());
@@ -1346,8 +1330,8 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsFailLoadNoProbes) {
 
   // If probe statuses come in last from another page load, they should be
   // ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(1, error_html_update_count());
 }
@@ -1378,7 +1362,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsFailLoadBeforeProbe) {
   NavigationCorrectionsLoadFailure();
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(last_error_html(),
-            ProbeErrorString(DNS_PROBE_POSSIBLE));
+            ProbeErrorString(error_page::DNS_PROBE_POSSIBLE));
   EXPECT_FALSE(is_url_being_fetched());
   EXPECT_EQ(0, update_count());
 
@@ -1389,16 +1373,17 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsFailLoadBeforeProbe) {
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Probe statuses comes in, and page is updated.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
   EXPECT_EQ(1, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_STARTED), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_STARTED), last_error_html());
 
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_FINISHED_NXDOMAIN), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NXDOMAIN),
+            last_error_html());
 
   // The commit results in sending a second probe status, which is ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(1, error_html_update_count());
 }
@@ -1424,15 +1409,16 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsFailAfterProbe) {
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Results come in, but end up being ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
 
   // Corrections request fails, probe pending page shown.
   EXPECT_TRUE(is_url_being_fetched());
   NavigationCorrectionsLoadFailure();
   EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(last_error_html(), ProbeErrorString(DNS_PROBE_POSSIBLE));
+  EXPECT_EQ(last_error_html(),
+            ProbeErrorString(error_page::DNS_PROBE_POSSIBLE));
   EXPECT_FALSE(is_url_being_fetched());
   EXPECT_EQ(0, update_count());
 
@@ -1443,9 +1429,10 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsFailAfterProbe) {
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Probe statuses comes in, and page is updated.
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(1, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_FINISHED_NXDOMAIN), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NXDOMAIN),
+            last_error_html());
   EXPECT_EQ(1, error_html_update_count());
 }
 
@@ -1544,8 +1531,8 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsInterrupted) {
   EXPECT_TRUE(is_url_being_fetched());
 
   // Results come in, but end up being ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
 
   // A new load appears!
@@ -1574,8 +1561,8 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsInterrupted) {
   EXPECT_FALSE(is_url_being_fetched());
 
   // Probe statuses come in, and are ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
 }
 
@@ -1606,8 +1593,8 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsStopped) {
   EXPECT_FALSE(is_url_being_fetched());
 
   // Results come in, but end up being ignored.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
 
   // Cross process navigation must have been cancelled, and a new load appears!
@@ -1630,7 +1617,8 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsStopped) {
   // Corrections request fails, probe pending page shown.
   NavigationCorrectionsLoadFailure();
   EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(last_error_html(), ProbeErrorString(DNS_PROBE_POSSIBLE));
+  EXPECT_EQ(last_error_html(),
+            ProbeErrorString(error_page::DNS_PROBE_POSSIBLE));
   EXPECT_FALSE(is_url_being_fetched());
 
   // Probe page loads.
@@ -1640,13 +1628,14 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsStopped) {
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Probe statuses comes in, and page is updated.
-  core()->OnNetErrorInfo(DNS_PROBE_STARTED);
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_STARTED), last_error_html());
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_STARTED), last_error_html());
   EXPECT_EQ(1, update_count());
 
-  core()->OnNetErrorInfo(DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
-  EXPECT_EQ(ProbeErrorString(DNS_PROBE_FINISHED_NXDOMAIN), last_error_html());
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NXDOMAIN),
+            last_error_html());
   EXPECT_EQ(1, error_html_update_count());
 }
 
@@ -1738,7 +1727,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsDisabledDuringFetch) {
 // Checks corrections are is used when there are no search suggestions.
 TEST_F(NetErrorHelperCoreTest, CorrectionsWithoutSearch) {
   const NavigationCorrection kCorrections[] = {
-    {"urlCorrection", "http://somewhere_else/", "btn", "data", false, false},
+      {"urlCorrection", "http://somewhere_else/", "btn", "data", false, false},
   };
 
   // Original page starts loading.
@@ -1786,7 +1775,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsWithoutSearch) {
 // Checks corrections are used when there are only search suggestions.
 TEST_F(NetErrorHelperCoreTest, CorrectionsOnlySearchSuggestion) {
   const NavigationCorrection kCorrections[] = {
-    {"webSearchQuery", kSuggestedSearchTerms, "frm", "data", false, false},
+      {"webSearchQuery", kSuggestedSearchTerms, "frm", "data", false, false},
   };
 
   // Original page starts loading.
@@ -1967,14 +1956,14 @@ TEST_F(NetErrorHelperCoreTest, CorrectionClickTracking) {
     // Make sure all expected strings appear in output.
     EXPECT_TRUE(last_tracking_request_body().find(
         kDefaultCorrections[i].url_correction));
-    EXPECT_TRUE(last_tracking_request_body().find(
-        kDefaultCorrections[i].click_data));
-    EXPECT_TRUE(last_tracking_request_body().find(
-        kDefaultCorrections[i].click_type));
-    EXPECT_TRUE(last_tracking_request_body().find(
-        kNavigationCorrectionEventId));
-    EXPECT_TRUE(last_tracking_request_body().find(
-        kNavigationCorrectionFingerprint));
+    EXPECT_TRUE(
+        last_tracking_request_body().find(kDefaultCorrections[i].click_data));
+    EXPECT_TRUE(
+        last_tracking_request_body().find(kDefaultCorrections[i].click_type));
+    EXPECT_TRUE(
+        last_tracking_request_body().find(kNavigationCorrectionEventId));
+    EXPECT_TRUE(
+        last_tracking_request_body().find(kNavigationCorrectionFingerprint));
   }
 
   // Make sure duplicate tracking requests are ignored.
@@ -2144,7 +2133,7 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, DoesNotRestartOnOnlineAfterStop) {
 
 TEST_F(NetErrorHelperCoreAutoReloadTest, WithDnsProbes) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
-  DoDnsProbe(DNS_PROBE_FINISHED_NXDOMAIN);
+  DoDnsProbe(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   timer()->Fire();
   EXPECT_EQ(1, reload_count());
 }
@@ -2457,8 +2446,7 @@ TEST_F(NetErrorHelperCoreHistogramTest, OtherPageLoadedAfterTimerFires) {
   timer()->Fire();
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                       NetErrorHelperCore::NON_ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME,
-                       kTestUrl);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, kTestUrl);
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   histogram_tester_.ExpectTotalCount(kCountAtSuccess, 0);
@@ -2520,8 +2508,7 @@ TEST_F(NetErrorHelperCoreHistogramTest, SuccessPageLoadedBeforeTimerFires) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                       NetErrorHelperCore::NON_ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME,
-                       GURL(kFailedHttpsUrl));
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, GURL(kFailedHttpsUrl));
 
   histogram_tester_.ExpectTotalCount(kCountAtSuccess, 0);
   histogram_tester_.ExpectTotalCount(kErrorAtSuccess, 0);
@@ -2582,4 +2569,3 @@ TEST_F(NetErrorHelperCoreTest, Download) {
 #endif  // defined(OS_ANDROID)
 
 }  // namespace
-}  // namespace error_page

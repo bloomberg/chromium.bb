@@ -12,9 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/common/network_diagnostics.mojom.h"
+#include "chrome/renderer/net/net_error_helper_core.h"
 #include "chrome/renderer/net/net_error_page_controller.h"
 #include "components/error_page/common/net_error_info.h"
-#include "components/error_page/renderer/net_error_helper_core.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/public/renderer/render_thread_observer.h"
@@ -44,7 +44,7 @@ class NetErrorHelper
     : public content::RenderFrameObserver,
       public content::RenderFrameObserverTracker<NetErrorHelper>,
       public content::RenderThreadObserver,
-      public error_page::NetErrorHelperCore::Delegate,
+      public NetErrorHelperCore::Delegate,
       public NetErrorPageController::Delegate,
       public chrome::mojom::NetworkDiagnosticsClient {
  public:
@@ -52,7 +52,7 @@ class NetErrorHelper
   ~NetErrorHelper() override;
 
   // NetErrorPageController::Delegate implementation
-  void ButtonPressed(error_page::NetErrorHelperCore::Button button) override;
+  void ButtonPressed(NetErrorHelperCore::Button button) override;
   void TrackClick(int tracking_id) override;
 
   // RenderFrameObserver implementation.
@@ -136,7 +136,7 @@ class NetErrorHelper
   std::unique_ptr<content::ResourceFetcher> correction_fetcher_;
   std::unique_ptr<content::ResourceFetcher> tracking_fetcher_;
 
-  std::unique_ptr<error_page::NetErrorHelperCore> core_;
+  std::unique_ptr<NetErrorHelperCore> core_;
 
   mojo::AssociatedBindingSet<chrome::mojom::NetworkDiagnosticsClient>
       network_diagnostics_client_bindings_;

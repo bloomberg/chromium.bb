@@ -1,8 +1,0 @@
-include_rules = [
-  "+components/strings/grit/components_strings.h",
-  "+components/url_formatter",
-  "+content/public/common",
-  "+net",
-  "+third_party/WebKit/public/platform",
-  "+ui/base",
-]

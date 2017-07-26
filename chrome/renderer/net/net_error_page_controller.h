@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/error_page/renderer/net_error_helper_core.h"
+#include "chrome/renderer/net/net_error_helper_core.h"
 #include "gin/arguments.h"
 #include "gin/wrappable.h"
 
@@ -27,8 +27,7 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
   class Delegate {
    public:
     // Button press notification from error page.
-    virtual void ButtonPressed(
-        error_page::NetErrorHelperCore::Button button) = 0;
+    virtual void ButtonPressed(NetErrorHelperCore::Button button) = 0;
 
     // Called when a link with the given tracking ID is pressed.
     virtual void TrackClick(int tracking_id) = 0;
@@ -77,7 +76,7 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
   bool TrackClick(const gin::Arguments& args);
 
   // Used internally by other button click methods.
-  bool ButtonClick(error_page::NetErrorHelperCore::Button button);
+  bool ButtonClick(NetErrorHelperCore::Button button);
 
   // gin::WrappableBase
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
