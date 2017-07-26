@@ -11,10 +11,12 @@ namespace mediaPerceptionPrivate {
 
     // The analytics process is running and the media processing pipeline is
     // started, but it is not yet receiving image frames. This is a
-    // transitional state between SUSPENDED and RUNNING for the time it takes
-    // to warm up the media processing pipeline, which can take anywhere from
-    // a few seconds to a minute.
-    // Note: STARTED is the initial reply to SetState RUNNING.
+    // transitional state between <code>SUSPENDED</code> and
+    // <code>RUNNING</code> for the time it takes to warm up the media
+    // processing pipeline, which can take anywhere from a few seconds to a
+    // minute.
+    // Note: <code>STARTED</code> is the initial reply to SetState
+    // <code>RUNNING</code>.
     STARTED,
 
     // The analytics process is running and the media processing pipeling is
@@ -23,9 +25,16 @@ namespace mediaPerceptionPrivate {
     RUNNING,
 
     // Analytics process is running and the media processing pipeline is ready
-    // to be set to state RUNNING. The D-Bus communications are enabled but
+    // to be set to state <code>RUNNING</code>. The D-Bus communications are enabled but
     // the media processing pipeline is suspended.
-    SUSPENDED
+    SUSPENDED,
+
+    // Enum for restarting the media analytics process using upstart.
+    // Calling SetState <code>RESTARTING</code> will restart the media process
+    // to the <code>SUSPENDED</code> state. The app has to set the state to
+    // <code>RUNNING</code> in order to start receiving media perception
+    // information again.
+    RESTARTING
   };
 
   // The system and configuration state of the analytics process.
@@ -34,7 +43,7 @@ namespace mediaPerceptionPrivate {
 
     // Optional $(ref:setState) parameter. Specifies the video device the media
     // analytics process should open while the media processing pipeline is
-    // starting. To set this parameter, status has to be RUNNING.
+    // starting. To set this parameter, status has to be <code>RUNNING</code>.
     DOMString? deviceContext;
   };
 
@@ -165,7 +174,8 @@ namespace mediaPerceptionPrivate {
 
     // Sets the desired state of the system.
     // |state| : A dictionary with the desired new state. The only settable
-    // states are RUNNING and SUSPENDED.
+    // states are <code>RUNNING</code>, <code>SUSPENDED</code>, and
+    // <code>RESTARTING</code>.
     // |callback| : Invoked with the State of the system after setting it. Can
     // be used to verify the state was set as desired.
     static void setState(State state, StateCallback callback);

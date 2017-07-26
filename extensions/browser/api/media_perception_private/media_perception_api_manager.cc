@@ -79,17 +79,31 @@ void MediaPerceptionAPIManager::SetState(const media_perception::State& state,
                                          const APIStateCallback& callback) {
   mri::State state_proto = StateIdlToProto(state);
   DCHECK(state_proto.status() == mri::State::RUNNING ||
-         state_proto.status() == mri::State::SUSPENDED)
-      << "Cannot set state to something other than RUNNING or SUSPENDED.";
-
-  if (analytics_process_state_ == AnalyticsProcessState::RUNNING) {
-    SetStateInternal(callback, state_proto);
-    return;
-  }
+         state_proto.status() == mri::State::SUSPENDED ||
+         state_proto.status() == mri::State::RESTARTING)
+      << "Cannot set state to something other than RUNNING, SUSPENDED "
+         "or RESTARTING.";
 
   if (analytics_process_state_ == AnalyticsProcessState::LAUNCHING) {
     callback.Run(CallbackStatus::PROCESS_LAUNCHING_ERROR,
                  media_perception::State());
+    return;
+  }
+
+  // If the media analytics process is running or not and restart is requested,
+  // then send restart upstart command.
+  if (state_proto.status() == mri::State::RESTARTING) {
+    analytics_process_state_ = AnalyticsProcessState::LAUNCHING;
+    chromeos::UpstartClient* dbus_client =
+        chromeos::DBusThreadManager::Get()->GetUpstartClient();
+    dbus_client->RestartMediaAnalytics(
+        base::Bind(&MediaPerceptionAPIManager::UpstartRestartCallback,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+    return;
+  }
+
+  if (analytics_process_state_ == AnalyticsProcessState::RUNNING) {
+    SetStateInternal(callback, state_proto);
     return;
   }
 
@@ -99,7 +113,7 @@ void MediaPerceptionAPIManager::SetState(const media_perception::State& state,
     chromeos::UpstartClient* dbus_client =
         chromeos::DBusThreadManager::Get()->GetUpstartClient();
     dbus_client->StartMediaAnalytics(
-        base::Bind(&MediaPerceptionAPIManager::UpstartCallback,
+        base::Bind(&MediaPerceptionAPIManager::UpstartStartCallback,
                    weak_ptr_factory_.GetWeakPtr(), callback, state_proto));
     return;
   }
@@ -126,7 +140,7 @@ void MediaPerceptionAPIManager::GetDiagnostics(
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void MediaPerceptionAPIManager::UpstartCallback(
+void MediaPerceptionAPIManager::UpstartStartCallback(
     const APIStateCallback& callback,
     const mri::State& state,
     bool succeeded) {
@@ -137,6 +151,18 @@ void MediaPerceptionAPIManager::UpstartCallback(
   }
   analytics_process_state_ = AnalyticsProcessState::RUNNING;
   SetStateInternal(callback, state);
+}
+
+void MediaPerceptionAPIManager::UpstartRestartCallback(
+    const APIStateCallback& callback,
+    bool succeeded) {
+  if (!succeeded) {
+    analytics_process_state_ = AnalyticsProcessState::IDLE;
+    callback.Run(CallbackStatus::PROCESS_IDLE_ERROR, media_perception::State());
+    return;
+  }
+  analytics_process_state_ = AnalyticsProcessState::RUNNING;
+  GetState(callback);
 }
 
 void MediaPerceptionAPIManager::StateCallback(const APIStateCallback& callback,

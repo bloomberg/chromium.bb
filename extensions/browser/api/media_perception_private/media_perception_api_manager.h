@@ -88,9 +88,12 @@ class MediaPerceptionAPIManager : public BrowserContextKeyedAPI {
                               const mri::Diagnostics& diagnostics);
 
   // Callback for Upstart command to start media analytics process.
-  void UpstartCallback(const APIStateCallback& callback,
-                       const mri::State& state,
-                       bool succeeded);
+  void UpstartStartCallback(const APIStateCallback& callback,
+                            const mri::State& state,
+                            bool succeeded);
+
+  // Callback for Upstart command to restart media analytics process.
+  void UpstartRestartCallback(const APIStateCallback& callback, bool succeeded);
 
   content::BrowserContext* const browser_context_;
 

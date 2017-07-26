@@ -33,6 +33,9 @@ class CHROMEOS_EXPORT UpstartClient : public DBusClient {
   // Starts the media analytics process.
   virtual void StartMediaAnalytics(const UpstartCallback& callback) = 0;
 
+  // Restarts the media analytics process.
+  virtual void RestartMediaAnalytics(const UpstartCallback& callback) = 0;
+
   // Stops the media analytics process.
   virtual void StopMediaAnalytics() = 0;
 
