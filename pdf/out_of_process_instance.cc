@@ -251,10 +251,21 @@ void SetSelectionBounds(PP_Instance instance,
   }
 }
 
+PP_Bool CanCut(PP_Instance instance) {
+  void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
+  if (!object)
+    return PP_FALSE;
+
+  OutOfProcessInstance* obj_instance =
+      static_cast<OutOfProcessInstance*>(object);
+  return PP_FromBool(obj_instance->CanCut());
+}
+
 const PPP_Pdf ppp_private = {
     &GetLinkAtPosition,   &Transform,        &GetPrintPresetOptionsFromDocument,
     &EnableAccessibility, &SetCaretPosition, &MoveRangeSelectionExtent,
-    &SetSelectionBounds};
+    &SetSelectionBounds,  &CanCut,
+};
 
 int ExtractPrintPreviewPageIndex(base::StringPiece src_url) {
   // Sample |src_url| format: chrome://print/id/page_index/print.pdf
@@ -923,6 +934,10 @@ pp::Var OutOfProcessInstance::GetLinkAtPosition(const pp::Point& point) {
   ScalePoint(device_scale_, &offset_point);
   offset_point.set_x(offset_point.x() - available_area_.x());
   return engine_->GetLinkAtPosition(offset_point);
+}
+
+bool OutOfProcessInstance::CanCut() {
+  return engine_->CanCut();
 }
 
 uint32_t OutOfProcessInstance::QuerySupportedPrintOutputFormats() {

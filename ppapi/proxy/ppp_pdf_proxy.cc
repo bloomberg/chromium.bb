@@ -62,10 +62,17 @@ void SetSelectionBounds(PP_Instance instance,
                                              *extent));
 }
 
+PP_Bool CanCut(PP_Instance instance) {
+  PP_Bool ret = PP_FALSE;
+  HostDispatcher::GetForInstance(instance)->Send(
+      new PpapiMsg_PPPPdf_CanCut(API_ID_PPP_PDF, instance, &ret));
+  return ret;
+}
+
 const PPP_Pdf ppp_pdf_interface = {
     &GetLinkAtPosition,   &Transform,        &GetPrintPresetOptionsFromDocument,
     &EnableAccessibility, &SetCaretPosition, &MoveRangeSelectionExtent,
-    &SetSelectionBounds,
+    &SetSelectionBounds,  &CanCut,
 };
 #else
 // The NaCl plugin doesn't need the host side interface - stub it out.
@@ -108,6 +115,7 @@ bool PPP_Pdf_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnPluginMsgMoveRangeSelectionExtent)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_SetSelectionBounds,
                         OnPluginMsgSetSelectionBounds)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_CanCut, OnPluginMsgCanCut)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -154,6 +162,11 @@ void PPP_Pdf_Proxy::OnPluginMsgSetSelectionBounds(PP_Instance instance,
                                                   const PP_FloatPoint& extent) {
   if (ppp_pdf_)
     CallWhileUnlocked(ppp_pdf_->SetSelectionBounds, instance, &base, &extent);
+}
+
+void PPP_Pdf_Proxy::OnPluginMsgCanCut(PP_Instance instance, PP_Bool* result) {
+  *result =
+      PP_FromBool(ppp_pdf_ && CallWhileUnlocked(ppp_pdf_->CanCut, instance));
 }
 
 }  // namespace proxy
