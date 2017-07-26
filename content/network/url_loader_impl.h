@@ -72,6 +72,8 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
 
   mojo::ScopedDataPipeProducerHandle response_body_stream_;
   scoped_refptr<NetToMojoPendingBuffer> pending_write_;
+  uint32_t pending_write_buffer_size_ = 0;
+  uint32_t pending_write_buffer_offset_ = 0;
   mojo::SimpleWatcher writable_handle_watcher_;
   mojo::SimpleWatcher peer_closed_handle_watcher_;
 

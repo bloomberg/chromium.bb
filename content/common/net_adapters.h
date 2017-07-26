@@ -59,11 +59,15 @@ class NetToMojoPendingBuffer
 // copied into the buffer associated with the pending mojo write.
 class NetToMojoIOBuffer : public net::WrappedIOBuffer {
  public:
-  explicit NetToMojoIOBuffer(NetToMojoPendingBuffer* pending_buffer);
+  // If |offset| is specified then the memory buffer passed to the Net layer
+  // will be offset by that many bytes.
+  NetToMojoIOBuffer(NetToMojoPendingBuffer* pending_buffer, int offset = 0);
 
  private:
   ~NetToMojoIOBuffer() override;
   scoped_refptr<NetToMojoPendingBuffer> pending_buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetToMojoIOBuffer);
 };
 
 }  // namespace content
