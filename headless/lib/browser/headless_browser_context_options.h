@@ -27,6 +27,7 @@ class HeadlessBrowserContextOptions {
       HeadlessBrowserContextOptions&& options);
 
   const std::string& product_name_and_version() const;
+  const std::string& accept_language() const;
   const std::string& user_agent() const;
 
   // See HeadlessBrowser::Options::proxy_config.
@@ -62,6 +63,7 @@ class HeadlessBrowserContextOptions {
   HeadlessBrowser::Options* browser_options_;
 
   base::Optional<std::string> product_name_and_version_;
+  base::Optional<std::string> accept_language_;
   std::unique_ptr<net::ProxyConfig> proxy_config_;
   base::Optional<std::string> host_resolver_rules_;
   base::Optional<gfx::Size> window_size_;
