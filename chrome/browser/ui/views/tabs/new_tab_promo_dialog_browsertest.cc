@@ -23,8 +23,8 @@ class NewTabPromoDialogTest : public DialogBrowserTest {
 };
 
 // Test that calls ShowDialog("default"). Interactive when run via
-// browser_tests --gtest_filter=BrowserDialogTest.Invoke --interactive
-// --dialog=NewTabPromoDialogTest.InvokeDialog_NewTabPromo
+// ../browser_tests --gtest_filter=BrowserDialogTest.Invoke
+// --interactive --dialog=NewTabPromoDialogTest.InvokeDialog_NewTabPromo
 IN_PROC_BROWSER_TEST_F(NewTabPromoDialogTest, InvokeDialog_NewTabPromo) {
   RunDialog();
 }
