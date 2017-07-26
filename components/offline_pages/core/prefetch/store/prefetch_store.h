@@ -49,18 +49,21 @@ class PrefetchStore {
   template <typename T>
   using ResultCallback = base::OnceCallback<void(T)>;
 
+  // Creates an instance of |PrefetchStore| with an in-memory SQLite database.
   explicit PrefetchStore(
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+
+  // Creates an instance of |PrefetchStore| with a SQLite database stored in
+  // |database_dir|.
   PrefetchStore(scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                 const base::FilePath& database_dir);
+
   ~PrefetchStore();
 
   // Executes a |run_callback| on SQL store on the blocking thread, and posts
-  // its result back to calling thread through |result_callback|. The work will
-  // be postponed if the store is in NOT_INITIALIZED or INITIALIZING, in which
-  // case the work will have to wait until initialization is completed. Calling
-  // |Execute| when store is NOT_INITIALIZED will cause the store initialization
-  // to start.
+  // its result back to calling thread through |result_callback|.
+  // Calling |Execute| when store is NOT_INITIALIZED will cause the store
+  // initialization to start.
   // Store initialization status needs to be SUCCESS for test task to run, or
   // FAILURE, in which case the |db| pointer passed to |run_callback| will be
   // null and such case should be gracefully handled.

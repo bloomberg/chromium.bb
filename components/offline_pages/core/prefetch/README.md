@@ -32,6 +32,9 @@ They implement TaskQueue's Task API so that they can be exclusively executed.
   commands they require to do their work.
 * Tasks receive a pointer to the store to be able to execute their SQL commands.
 
+More detailed instructions of how to use Prefetch store can be found [here](
+store/README.md)
+
 ## Development guidelines
 
 * Implementations that are injected dependencies during service creation should
