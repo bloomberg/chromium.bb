@@ -15,9 +15,6 @@ TEST(TextEncoding, NonByteBased) {
   EXPECT_TRUE(TextEncoding("utf-16").IsNonByteBasedEncoding());
   EXPECT_TRUE(TextEncoding("utf-16le").IsNonByteBasedEncoding());
   EXPECT_TRUE(TextEncoding("utf-16be").IsNonByteBasedEncoding());
-  EXPECT_TRUE(TextEncoding("utf-32").IsNonByteBasedEncoding());
-  EXPECT_TRUE(TextEncoding("utf-32le").IsNonByteBasedEncoding());
-  EXPECT_TRUE(TextEncoding("utf-32be").IsNonByteBasedEncoding());
   EXPECT_FALSE(TextEncoding("windows-1252").IsNonByteBasedEncoding());
   EXPECT_FALSE(TextEncoding("gbk").IsNonByteBasedEncoding());
   EXPECT_FALSE(TextEncoding("utf-7").IsNonByteBasedEncoding());
@@ -32,12 +29,6 @@ TEST(TextEncoding, ClosestByteBased) {
                TextEncoding("utf-16le").ClosestByteBasedEquivalent().GetName());
   EXPECT_STREQ("UTF-8",
                TextEncoding("utf-16be").ClosestByteBasedEquivalent().GetName());
-  EXPECT_STREQ("UTF-8",
-               TextEncoding("utf-32").ClosestByteBasedEquivalent().GetName());
-  EXPECT_STREQ("UTF-8",
-               TextEncoding("utf-32le").ClosestByteBasedEquivalent().GetName());
-  EXPECT_STREQ("UTF-8",
-               TextEncoding("utf-32be").ClosestByteBasedEquivalent().GetName());
   EXPECT_STREQ(
       "windows-1252",
       TextEncoding("windows-1252").ClosestByteBasedEquivalent().GetName());
@@ -56,12 +47,6 @@ TEST(TextEncoding, EncodingForFormSubmission) {
                TextEncoding("utf-16le").EncodingForFormSubmission().GetName());
   EXPECT_STREQ("UTF-8",
                TextEncoding("utf-16be").EncodingForFormSubmission().GetName());
-  EXPECT_STREQ("UTF-8",
-               TextEncoding("utf-32").EncodingForFormSubmission().GetName());
-  EXPECT_STREQ("UTF-8",
-               TextEncoding("utf-32le").EncodingForFormSubmission().GetName());
-  EXPECT_STREQ("UTF-8",
-               TextEncoding("utf-32be").EncodingForFormSubmission().GetName());
   EXPECT_STREQ(
       "windows-1252",
       TextEncoding("windows-1252").EncodingForFormSubmission().GetName());

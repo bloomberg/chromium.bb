@@ -1247,26 +1247,23 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, RuntimeChanges) {
 // Test for saving frames with various encodings:
 // - iso-8859-2: encoding declared via <meta> element
 // - utf16-le-bom.htm, utf16-be-bom.htm: encoding detected via BOM
-// - utf16-le-nobom.htm, utf16-le-nobom.htm, utf32.htm - encoding declared via
-//                                                       mocked http headers
+// - utf16-le-nobom.htm, utf16-le-nobom.htm - encoding declared via
+//                                            mocked http headers
 IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, Encoding) {
   content::SavePageType save_page_type = GetParam();
 
   std::string arr[] = {
       "frames-encodings.htm: f53295dd-a95b-4b32-85f5-b6e15377fb20",
       "iso-8859-2.htm: Za\xc5\xbc\xc3\xb3\xc5\x82\xc4\x87 "
-          "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
+      "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
       "utf16-le-nobom.htm: Za\xc5\xbc\xc3\xb3\xc5\x82\xc4\x87 "
-          "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
+      "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
       "utf16-le-bom.htm: Za\xc5\xbc\xc3\xb3\xc5\x82\xc4\x87 "
-          "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
+      "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
       "utf16-be-nobom.htm: Za\xc5\xbc\xc3\xb3\xc5\x82\xc4\x87 "
-          "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
+      "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
       "utf16-be-bom.htm: Za\xc5\xbc\xc3\xb3\xc5\x82\xc4\x87 "
-          "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
-      "utf32.htm: Za\xc5\xbc\xc3\xb3\xc5\x82\xc4\x87 "
-          "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
-  };
+      "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84"};
   std::vector<std::string> expected_substrings(std::begin(arr), std::end(arr));
 
   GURL url(embedded_test_server()->GetURL("a.com",
@@ -1281,7 +1278,7 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, Encoding) {
   if (save_page_type == content::SAVE_PAGE_TYPE_AS_MHTML)
     return;
 
-  TestOriginalVsSavedPage(save_page_type, url, 7, 7, expected_substrings);
+  TestOriginalVsSavedPage(save_page_type, url, 6, 6, expected_substrings);
 }
 
 // Test for saving style element and attribute (see also crbug.com/568293).

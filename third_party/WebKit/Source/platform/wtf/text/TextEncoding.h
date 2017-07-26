@@ -78,9 +78,6 @@ WTF_EXPORT const TextEncoding& ASCIIEncoding();
 WTF_EXPORT const TextEncoding& Latin1Encoding();
 WTF_EXPORT const TextEncoding& UTF16BigEndianEncoding();
 WTF_EXPORT const TextEncoding& UTF16LittleEndianEncoding();
-WTF_EXPORT const TextEncoding& UTF32Encoding();
-WTF_EXPORT const TextEncoding& UTF32BigEndianEncoding();
-WTF_EXPORT const TextEncoding& UTF32LittleEndianEncoding();
 WTF_EXPORT const TextEncoding& UTF8Encoding();
 WTF_EXPORT const TextEncoding& WindowsLatin1Encoding();
 
@@ -90,9 +87,6 @@ using WTF::ASCIIEncoding;
 using WTF::Latin1Encoding;
 using WTF::UTF16BigEndianEncoding;
 using WTF::UTF16LittleEndianEncoding;
-using WTF::UTF32Encoding;
-using WTF::UTF32BigEndianEncoding;
-using WTF::UTF32LittleEndianEncoding;
 using WTF::UTF8Encoding;
 using WTF::WindowsLatin1Encoding;
 

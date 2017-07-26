@@ -30,11 +30,14 @@
 
 #include "platform/graphics/LoggingCanvas.h"
 
+#include <unicode/unistr.h>
+#include "build/build_config.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/skia/ImagePixelLocker.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-encoders/ImageEncoder.h"
+#include "platform/wtf/ByteSwap.h"
 #include "platform/wtf/HexNumber.h"
 #include "platform/wtf/text/Base64.h"
 #include "platform/wtf/text/TextEncoding.h"
@@ -510,19 +513,22 @@ String SaveLayerFlagsToString(SkCanvas::SaveLayerFlags flags) {
   return flags_string;
 }
 
-String TextEncodingCanonicalName(SkPaint::TextEncoding encoding) {
-  String name = TextEncodingName(encoding);
-  if (encoding == SkPaint::kUTF16_TextEncoding ||
-      encoding == SkPaint::kUTF32_TextEncoding)
-    name.append("LE");
-  return name;
-}
-
-String StringForUTFText(const void* text,
-                        size_t length,
-                        SkPaint::TextEncoding encoding) {
-  return WTF::TextEncoding(TextEncodingCanonicalName(encoding))
-      .Decode((const char*)text, length);
+String StringForUTF32LEText(const void* text, size_t byte_length) {
+  icu::UnicodeString utf16;
+#if defined(ARCH_CPU_BIG_ENDIAN)
+  // Swap LE to BE
+  size_t char_length = length / sizeof(UChar32);
+  WTF::Vector<UChar32> utf32be(char_length);
+  for (size_t i = 0; i < char_length; ++i)
+    utf32be[i] = WTF::Bswap32(static_cast<UChar32*>(text)[i]);
+  utf16 = icu::UnicodeString::fromUTF32(utf32be.data(),
+                                        static_cast<int32_t>(byte_length));
+#else
+  utf16 = icu::UnicodeString::fromUTF32(reinterpret_cast<const UChar32*>(text),
+                                        static_cast<int32_t>(byte_length));
+#endif
+  return String(icu::toUCharPtr(utf16.getBuffer()),
+                static_cast<unsigned>(utf16.length()));
 }
 
 String StringForText(const void* text,
@@ -531,16 +537,19 @@ String StringForText(const void* text,
   SkPaint::TextEncoding encoding = paint.getTextEncoding();
   switch (encoding) {
     case SkPaint::kUTF8_TextEncoding:
+      return WTF::TextEncoding("UTF-8").Decode(
+          reinterpret_cast<const char*>(text), byte_length);
     case SkPaint::kUTF16_TextEncoding:
+      return WTF::TextEncoding("UTF-16LE")
+          .Decode(reinterpret_cast<const char*>(text), byte_length);
     case SkPaint::kUTF32_TextEncoding:
-      return StringForUTFText(text, byte_length, encoding);
+      return StringForUTF32LEText(text, byte_length);
     case SkPaint::kGlyphID_TextEncoding: {
       WTF::Vector<SkUnichar> data_vector(byte_length / 2);
       SkUnichar* text_data = data_vector.data();
       paint.glyphsToUnichars(static_cast<const uint16_t*>(text),
                              byte_length / 2, text_data);
-      return WTF::UTF32LittleEndianEncoding().Decode(
-          reinterpret_cast<const char*>(text_data), byte_length * 2);
+      return StringForUTF32LEText(text, byte_length);
     }
     default:
       NOTREACHED();
