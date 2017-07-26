@@ -28,8 +28,6 @@ windows_manifest("chrome_exe_manifest") {
     version_assembly_output_file,
   ]
 
-  type = "exe"
-
   deps = [
     ":chrome_exe_version_manifest",
   ]

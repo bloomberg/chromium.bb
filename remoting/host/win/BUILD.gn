@@ -37,7 +37,6 @@ windows_manifest("dpi_aware_exe_manifest") {
     default_compatibility_manifest,
     dpi_aware_manifest,
   ]
-  type = "exe"
 }
 
 # Depending on this target gives a default executable manifest with the addition
@@ -49,7 +48,6 @@ windows_manifest("dpi_aware_elevated_exe_manifest") {
     dpi_aware_manifest,
     require_administrator_manifest,
   ]
-  type = "exe"
 }
 
 # Depending on this target gives the executable a default manifest with the
@@ -61,7 +59,6 @@ windows_manifest("dpi_aware_uiaccess_exe_manifest") {
     dpi_aware_manifest,
     enable_uiaccess_manifest,
   ]
-  type = "exe"
 }
 
 # Depending on this target gives the executable a default manifest with the
@@ -73,7 +70,6 @@ windows_manifest("dpi_aware_uiaccess_require_admin_exe_manifest") {
     dpi_aware_manifest,
     enable_uiaccess_require_admin_manifest,
   ]
-  type = "exe"
 }
 
 source_set("win") {

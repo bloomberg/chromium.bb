@@ -26,7 +26,6 @@ windows_manifest("chrome_elf_manifest") {
   sources = [
     as_invoker_manifest,
   ]
-  type = "dll"
 }
 
 # We should move chrome_result_codes.h to another target which does not bring
