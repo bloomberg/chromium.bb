@@ -420,7 +420,7 @@ WKWebView* AccountConsistencyService::BuildWKWebView() {
 void AccountConsistencyService::ResetWKWebView() {
   [web_view_ setNavigationDelegate:nil];
   [web_view_ stopLoading];
-  if (base::ios::IsRunningOnIOS10OrLater()) {
+  if (base::ios::IsRunningOnIOS11OrLater()) {
     // On iOS 11 WKWebView load is broken if view is not a part of the
     // hierarchy. Add view to the hierarchy, but place it offscreen to
     // workaround iOS bug (rdar://33184203 and crbug.com/738435)
