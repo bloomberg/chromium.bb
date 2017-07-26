@@ -236,7 +236,7 @@ cr.define('settings', function() {
 
     if (pageVisibility.onStartup !== false) {
       r.ON_STARTUP = r.BASIC.createSection('/onStartup', 'onStartup');
-      r.STARTUP_URLS = r.ON_STARTUP.createChild('/startupUrls');
+      r.STARTUP_PAGES = r.ON_STARTUP.createChild('/startupPages');
     }
 
     if (pageVisibility.people !== false) {
