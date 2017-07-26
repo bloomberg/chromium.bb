@@ -128,51 +128,51 @@
              history is disabled (i.e. supervised users, policy), so it's OK to
              have a hidden checkbox that's also checked (as the C++ accounts for
              whether a user is allowed to delete history independently). -->
-        <settings-checkbox id="browsingCheckbox"
+        <settings-checkbox id="browsingCheckbox" class="browsing-data-checkbox"
             pref="{{prefs.browser.clear_data.browsing_history}}"
             label="$i18n{clearBrowsingHistory}"
             sub-label="[[counters_.browsing_history]]"
             disabled="[[clearingInProgress_]]"
             hidden="[[isSupervised_]]">
         </settings-checkbox>
-        <settings-checkbox id="downloadCheckbox"
+        <settings-checkbox id="downloadCheckbox" class="browsing-data-checkbox"
             pref="{{prefs.browser.clear_data.download_history}}"
             label="$i18n{clearDownloadHistory}"
             sub-label="[[counters_.download_history]]"
             disabled="[[clearingInProgress_]]"
             hidden="[[isSupervised_]]">
         </settings-checkbox>
-        <settings-checkbox id="cacheCheckbox"
+        <settings-checkbox id="cacheCheckbox" class="browsing-data-checkbox"
             pref="{{prefs.browser.clear_data.cache}}"
             label="$i18n{clearCache}"
             sub-label="[[counters_.cache]]"
             disabled="[[clearingInProgress_]]">
         </settings-checkbox>
-        <settings-checkbox id="cookiesCheckbox"
+        <settings-checkbox id="cookiesCheckbox" class="browsing-data-checkbox"
             pref="{{prefs.browser.clear_data.cookies}}"
             label="$i18n{clearCookies}"
             sub-label="$i18n{clearCookiesCounter}"
             disabled="[[clearingInProgress_]]">
         </settings-checkbox>
-        <settings-checkbox
+        <settings-checkbox class="browsing-data-checkbox"
             pref="{{prefs.browser.clear_data.passwords}}"
             label="$i18n{clearPasswords}"
             sub-label="[[counters_.passwords]]"
             disabled="[[clearingInProgress_]]">
         </settings-checkbox>
-        <settings-checkbox
+        <settings-checkbox class="browsing-data-checkbox"
             pref="{{prefs.browser.clear_data.form_data}}"
             label="$i18n{clearFormData}"
             sub-label="[[counters_.form_data]]"
             disabled="[[clearingInProgress_]]">
         </settings-checkbox>
-        <settings-checkbox
+        <settings-checkbox class="browsing-data-checkbox"
             pref="{{prefs.browser.clear_data.hosted_apps_data}}"
             label="$i18n{clearHostedAppData}"
             sub-label="[[counters_.hosted_apps_data]]"
             disabled="[[clearingInProgress_]]">
         </settings-checkbox>
-        <settings-checkbox
+        <settings-checkbox class="browsing-data-checkbox"
             pref="{{prefs.browser.clear_data.media_licenses}}"
             label="$i18n{clearMediaLicenses}"
             sub-label="[[counters_.media_licenses]]"
