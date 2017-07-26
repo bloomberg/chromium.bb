@@ -64,14 +64,14 @@ class NGInlineNodeOffsetMappingTest : public RenderingTest {
   FontCachePurgePreventer purge_preventer_;
 };
 
-#define TEST_UNIT(unit, _type, _owner, domstart, domend, textcontentstart, \
-                  textcontentend)                                          \
-  EXPECT_EQ(_type, unit.type);                                             \
-  EXPECT_EQ(_owner, unit.owner);                                           \
-  EXPECT_EQ(domstart, unit.dom_start);                                     \
-  EXPECT_EQ(domend, unit.dom_end);                                         \
-  EXPECT_EQ(textcontentstart, unit.text_content_start);                    \
-  EXPECT_EQ(textcontentend, unit.text_content_end)
+#define TEST_UNIT(unit, type, owner, dom_start, dom_end, text_content_start, \
+                  text_content_end)                                          \
+  EXPECT_EQ(type, unit.GetType());                                           \
+  EXPECT_EQ(owner, unit.GetOwner());                                         \
+  EXPECT_EQ(dom_start, unit.DOMStart());                                     \
+  EXPECT_EQ(dom_end, unit.DOMEnd());                                         \
+  EXPECT_EQ(text_content_start, unit.TextContentStart());                    \
+  EXPECT_EQ(text_content_end, unit.TextContentEnd())
 
 #define TEST_RANGE(ranges, owner, start, end) \
   ASSERT_TRUE(ranges.Contains(owner));        \
