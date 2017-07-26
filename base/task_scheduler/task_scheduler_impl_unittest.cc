@@ -192,8 +192,6 @@ class TaskSchedulerImplTest
   TaskSchedulerImplTest() : scheduler_("Test") {}
 
   void StartTaskScheduler() {
-    using StandbyThreadPolicy = SchedulerWorkerPoolParams::StandbyThreadPolicy;
-
     constexpr TimeDelta kSuggestedReclaimTime = TimeDelta::FromSeconds(30);
     constexpr int kMaxNumBackgroundThreads = 1;
     constexpr int kMaxNumBackgroundBlockingThreads = 3;
@@ -201,14 +199,10 @@ class TaskSchedulerImplTest
     constexpr int kMaxNumForegroundBlockingThreads = 12;
 
     scheduler_.Start(
-        {{StandbyThreadPolicy::LAZY, kMaxNumBackgroundThreads,
-          kSuggestedReclaimTime},
-         {StandbyThreadPolicy::LAZY, kMaxNumBackgroundBlockingThreads,
-          kSuggestedReclaimTime},
-         {StandbyThreadPolicy::LAZY, kMaxNumForegroundThreads,
-          kSuggestedReclaimTime},
-         {StandbyThreadPolicy::LAZY, kMaxNumForegroundBlockingThreads,
-          kSuggestedReclaimTime}});
+        {{kMaxNumBackgroundThreads, kSuggestedReclaimTime},
+         {kMaxNumBackgroundBlockingThreads, kSuggestedReclaimTime},
+         {kMaxNumForegroundThreads, kSuggestedReclaimTime},
+         {kMaxNumForegroundBlockingThreads, kSuggestedReclaimTime}});
   }
 
   void TearDown() override { scheduler_.JoinForTesting(); }

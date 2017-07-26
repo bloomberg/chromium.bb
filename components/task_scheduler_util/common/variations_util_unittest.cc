@@ -21,8 +21,6 @@ namespace task_scheduler_util {
 
 namespace {
 
-using StandbyThreadPolicy =
-    base::SchedulerWorkerPoolParams::StandbyThreadPolicy;
 using SchedulerBackwardCompatibility = base::SchedulerBackwardCompatibility;
 
 #if !defined(OS_IOS)
@@ -62,8 +60,6 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams5) {
       base::SchedulerBackwardCompatibility::INIT_COM_STA);
   ASSERT_TRUE(init_params);
 
-  EXPECT_EQ(StandbyThreadPolicy::ONE,
-            init_params->background_worker_pool_params.standby_thread_policy());
   EXPECT_EQ(1, init_params->background_worker_pool_params.max_threads());
   EXPECT_EQ(
       base::TimeDelta::FromMilliseconds(42),
@@ -72,9 +68,6 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams5) {
       base::SchedulerBackwardCompatibility::DISABLED,
       init_params->background_worker_pool_params.backward_compatibility());
 
-  EXPECT_EQ(StandbyThreadPolicy::ONE,
-            init_params->background_blocking_worker_pool_params
-                .standby_thread_policy());
   EXPECT_EQ(2,
             init_params->background_blocking_worker_pool_params.max_threads());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(52),
@@ -84,8 +77,6 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams5) {
             init_params->background_blocking_worker_pool_params
                 .backward_compatibility());
 
-  EXPECT_EQ(StandbyThreadPolicy::ONE,
-            init_params->foreground_worker_pool_params.standby_thread_policy());
   EXPECT_EQ(4, init_params->foreground_worker_pool_params.max_threads());
   EXPECT_EQ(
       base::TimeDelta::FromMilliseconds(62),
@@ -94,66 +85,6 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams5) {
       base::SchedulerBackwardCompatibility::DISABLED,
       init_params->foreground_worker_pool_params.backward_compatibility());
 
-  EXPECT_EQ(StandbyThreadPolicy::ONE,
-            init_params->foreground_blocking_worker_pool_params
-                .standby_thread_policy());
-  EXPECT_EQ(8,
-            init_params->foreground_blocking_worker_pool_params.max_threads());
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(72),
-            init_params->foreground_blocking_worker_pool_params
-                .suggested_reclaim_time());
-  EXPECT_EQ(base::SchedulerBackwardCompatibility::INIT_COM_STA,
-            init_params->foreground_blocking_worker_pool_params
-                .backward_compatibility());
-}
-
-TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams6) {
-  std::map<std::string, std::string> variation_params;
-  variation_params["RendererBackground"] = "1;1;1;0;42;lazy";
-  variation_params["RendererBackgroundBlocking"] = "2;2;1;0;52;one";
-  variation_params["RendererForeground"] = "4;4;1;0;62;lazy";
-  variation_params["RendererForegroundBlocking"] = "8;8;1;0;72;one";
-
-  auto init_params = GetTaskSchedulerInitParams(
-      "Renderer", variation_params,
-      base::SchedulerBackwardCompatibility::INIT_COM_STA);
-  ASSERT_TRUE(init_params);
-
-  EXPECT_EQ(StandbyThreadPolicy::LAZY,
-            init_params->background_worker_pool_params.standby_thread_policy());
-  EXPECT_EQ(1, init_params->background_worker_pool_params.max_threads());
-  EXPECT_EQ(
-      base::TimeDelta::FromMilliseconds(42),
-      init_params->background_worker_pool_params.suggested_reclaim_time());
-  EXPECT_EQ(
-      base::SchedulerBackwardCompatibility::DISABLED,
-      init_params->background_worker_pool_params.backward_compatibility());
-
-  EXPECT_EQ(StandbyThreadPolicy::ONE,
-            init_params->background_blocking_worker_pool_params
-                .standby_thread_policy());
-  EXPECT_EQ(2,
-            init_params->background_blocking_worker_pool_params.max_threads());
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(52),
-            init_params->background_blocking_worker_pool_params
-                .suggested_reclaim_time());
-  EXPECT_EQ(base::SchedulerBackwardCompatibility::DISABLED,
-            init_params->background_blocking_worker_pool_params
-                .backward_compatibility());
-
-  EXPECT_EQ(StandbyThreadPolicy::LAZY,
-            init_params->foreground_worker_pool_params.standby_thread_policy());
-  EXPECT_EQ(4, init_params->foreground_worker_pool_params.max_threads());
-  EXPECT_EQ(
-      base::TimeDelta::FromMilliseconds(62),
-      init_params->foreground_worker_pool_params.suggested_reclaim_time());
-  EXPECT_EQ(
-      base::SchedulerBackwardCompatibility::DISABLED,
-      init_params->foreground_worker_pool_params.backward_compatibility());
-
-  EXPECT_EQ(StandbyThreadPolicy::ONE,
-            init_params->foreground_blocking_worker_pool_params
-                .standby_thread_policy());
   EXPECT_EQ(8,
             init_params->foreground_blocking_worker_pool_params.max_threads());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(72),
@@ -191,10 +122,10 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, ZeroMaxThreads) {
   // The Background pool has a maximum number of threads equal to zero, which is
   // invalid.
   std::map<std::string, std::string> variation_params;
-  variation_params["RendererBackground"] = "0;0;0;0;0;lazy";
-  variation_params["RendererBackgroundBlocking"] = "2;2;1;0;52;one";
-  variation_params["RendererForeground"] = "4;4;1;0;62;lazy";
-  variation_params["RendererForegroundBlocking"] = "8;8;1;0;72;one";
+  variation_params["RendererBackground"] = "0;0;0;0;0";
+  variation_params["RendererBackgroundBlocking"] = "2;2;1;0;52";
+  variation_params["RendererForeground"] = "4;4;1;0;62";
+  variation_params["RendererForegroundBlocking"] = "8;8;1;0;72";
   EXPECT_FALSE(GetTaskSchedulerInitParams("Renderer", variation_params));
 }
 
@@ -202,10 +133,10 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, NegativeMaxThreads) {
   // The Background pool has a negative maximum number of threads, which is
   // invalid.
   std::map<std::string, std::string> variation_params;
-  variation_params["RendererBackground"] = "-5;-5;0;0;0;lazy";
-  variation_params["RendererBackgroundBlocking"] = "2;2;1;0;52;one";
-  variation_params["RendererForeground"] = "4;4;1;0;62;lazy";
-  variation_params["RendererForegroundBlocking"] = "8;8;1;0;72;one";
+  variation_params["RendererBackground"] = "-5;-5;0;0;0";
+  variation_params["RendererBackgroundBlocking"] = "2;2;1;0;52";
+  variation_params["RendererForeground"] = "4;4;1;0;62";
+  variation_params["RendererForegroundBlocking"] = "8;8;1;0;72";
   EXPECT_FALSE(GetTaskSchedulerInitParams("Renderer", variation_params));
 }
 
@@ -213,10 +144,10 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, NegativeSuggestedReclaimTime) {
   // The Background pool has a negative suggested reclaim time, which is
   // invalid.
   std::map<std::string, std::string> variation_params;
-  variation_params["RendererBackground"] = "1;1;1;0;-5;lazy";
-  variation_params["RendererBackgroundBlocking"] = "2;2;1;0;52;one";
-  variation_params["RendererForeground"] = "4;4;1;0;62;lazy";
-  variation_params["RendererForegroundBlocking"] = "8;8;1;0;72;one";
+  variation_params["RendererBackground"] = "1;1;1;0;-5";
+  variation_params["RendererBackgroundBlocking"] = "2;2;1;0;52";
+  variation_params["RendererForeground"] = "4;4;1;0;62";
+  variation_params["RendererForegroundBlocking"] = "8;8;1;0;72";
   EXPECT_FALSE(GetTaskSchedulerInitParams("Renderer", variation_params));
 }
 

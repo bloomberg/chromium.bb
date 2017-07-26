@@ -41,7 +41,6 @@ bool ContainsSeparator(const std::string& str) {
 // 2. Thread Count Multiplier (double)
 // 3. Thread Count Offset (int)
 // 4. Detach Time in Milliseconds (int)
-// 5. Standby Thread Policy (string)
 // Additional values may appear as necessary and will be ignored.
 std::unique_ptr<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
     base::StringPiece variation_param_prefix,
@@ -49,8 +48,6 @@ std::unique_ptr<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
     const std::map<std::string, std::string>& variation_params,
     base::SchedulerBackwardCompatibility backward_compatibility =
         base::SchedulerBackwardCompatibility::DISABLED) {
-  using StandbyThreadPolicy =
-      base::SchedulerWorkerPoolParams::StandbyThreadPolicy;
 
   auto pool_descriptor_it = variation_params.find(
       base::JoinString({variation_param_prefix, pool_name}, ""));
@@ -80,8 +77,6 @@ std::unique_ptr<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
   }
 
   auto params = base::MakeUnique<base::SchedulerWorkerPoolParams>(
-      (tokens.size() >= 6 && tokens[5] == "lazy") ? StandbyThreadPolicy::LAZY
-                                                  : StandbyThreadPolicy::ONE,
       base::RecommendedMaxNumberOfThreadsInPool(min, max, cores_multiplier,
                                                 offset),
       base::TimeDelta::FromMilliseconds(detach_milliseconds),

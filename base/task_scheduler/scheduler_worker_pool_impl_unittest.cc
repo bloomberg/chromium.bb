@@ -58,8 +58,6 @@ constexpr TimeDelta kReclaimTimeForDetachTests =
 constexpr TimeDelta kExtraTimeToWaitForDetach =
     TimeDelta::FromSeconds(1);
 
-using StandbyThreadPolicy = SchedulerWorkerPoolParams::StandbyThreadPolicy;
-
 class TaskSchedulerWorkerPoolImplTest
     : public testing::TestWithParam<test::ExecutionMode> {
  protected:
@@ -88,8 +86,8 @@ class TaskSchedulerWorkerPoolImplTest
 
   void StartWorkerPool(TimeDelta suggested_reclaim_time, size_t num_workers) {
     ASSERT_TRUE(worker_pool_);
-    worker_pool_->Start(SchedulerWorkerPoolParams(
-        StandbyThreadPolicy::LAZY, num_workers, suggested_reclaim_time));
+    worker_pool_->Start(
+        SchedulerWorkerPoolParams(num_workers, suggested_reclaim_time));
   }
 
   void CreateAndStartWorkerPool(TimeDelta suggested_reclaim_time,
@@ -769,24 +767,6 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeDetach) {
   EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
 }
 
-TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitLazy) {
-  TaskTracker task_tracker;
-  DelayedTaskManager delayed_task_manager;
-  delayed_task_manager.Start(make_scoped_refptr(new TestSimpleTaskRunner));
-  auto worker_pool = MakeUnique<SchedulerWorkerPoolImpl>(
-      "LazyPolicyWorkerPool", ThreadPriority::NORMAL, &task_tracker,
-      &delayed_task_manager);
-  worker_pool->Start(SchedulerWorkerPoolParams(StandbyThreadPolicy::LAZY, 8U,
-                                               TimeDelta::Max()));
-  ASSERT_TRUE(worker_pool);
-
-  // Start will only create live workers now, so there's a minimum of 1
-  // worker started at the beginning. This test will be removed anyways when
-  // StandbyThreadPolicy is removed.
-  EXPECT_EQ(1U, worker_pool->NumberOfAliveWorkersForTesting());
-  worker_pool->JoinForTesting();
-}
-
 TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitOne) {
   TaskTracker task_tracker;
   DelayedTaskManager delayed_task_manager;
@@ -794,8 +774,7 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitOne) {
   auto worker_pool = MakeUnique<SchedulerWorkerPoolImpl>(
       "OnePolicyWorkerPool", ThreadPriority::NORMAL, &task_tracker,
       &delayed_task_manager);
-  worker_pool->Start(SchedulerWorkerPoolParams(StandbyThreadPolicy::ONE, 8U,
-                                               TimeDelta::Max()));
+  worker_pool->Start(SchedulerWorkerPoolParams(8U, TimeDelta::Max()));
   ASSERT_TRUE(worker_pool);
   EXPECT_EQ(1U, worker_pool->NumberOfAliveWorkersForTesting());
   worker_pool->JoinForTesting();
