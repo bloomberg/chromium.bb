@@ -459,7 +459,7 @@ CHAR-LIMIT guidelines:
         Password copied
       </message>
       <message name="IDS_PASSWORD_ENTRY_EDITOR_SET_LOCK_SCREEN" desc='Text prompting user to set device lock in order to view/copy passwords'>
-        In order to view and copy passwords you must set up a device lock in your device's security settings.
+        To view or copy your password here, set screen lock on this device.
       </message>
       <message name="IDS_PASSWORD_ENTRY_EDITOR_NOT_AVAILABLE_ON_PRE_LOLLIPOP" desc='Text that announced user that password viewing is not possible on pre-Lollipop devices'>
         Password viewing and copying are not available on your version of Android.
