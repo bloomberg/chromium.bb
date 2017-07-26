@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
 
 #include "base/logging.h"
+#import "base/mac/mac_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
@@ -425,6 +426,10 @@ const CGFloat kKernAmount = 0.2;
     cellFrame.origin.y -= 2;
   } else if ([self visibleTitle].length > 0) {
     cellFrame.origin.x += 4;
+  }
+  // On Sierra and higher the focus ring needs to move down 1pt.
+  if (base::mac::IsAtLeastOS10_12()) {
+    cellFrame.origin.y += 1.0;
   }
   if ([controlView cr_lineWidth] < 1) {
     cellFrame.origin.y -= 0.5;
