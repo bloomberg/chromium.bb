@@ -674,4 +674,69 @@ String NGInlineNode::ToString() const {
   return String::Format("NGInlineNode");
 }
 
+// static
+Optional<NGInlineNode> GetNGInlineNodeFor(const Node& node) {
+  LayoutObject* layout_object = node.GetLayoutObject();
+  if (!layout_object || !layout_object->IsInline())
+    return WTF::nullopt;
+  LayoutBox* box = layout_object->EnclosingBox();
+  if (!box->IsLayoutNGBlockFlow())
+    return WTF::nullopt;
+  DCHECK(box);
+  DCHECK(box->ChildrenInline());
+  return NGInlineNode(ToLayoutNGBlockFlow(box));
+}
+
+const NGOffsetMappingUnit* NGInlineNode::GetMappingUnitForDOMOffset(
+    const Node& node,
+    unsigned offset) {
+  // TODO(xiaochengh): Move/Reimplement AssociatedLayoutObjectOf in core/layout.
+  LayoutObject* layout_object = AssociatedLayoutObjectOf(node, offset);
+  if (!layout_object || !layout_object->IsText())
+    return nullptr;
+
+  DCHECK_EQ(layout_object->EnclosingBox(), GetLayoutBlockFlow());
+  const auto& result = ComputeOffsetMappingIfNeeded();
+
+  // TODO(xiaochengh): Wrap the code below into a member function of
+  // NGOffsetMappingResult.
+  unsigned range_start;
+  unsigned range_end;
+  std::tie(range_start, range_end) =
+      result.ranges.at(ToLayoutText(layout_object));
+  if (range_start == range_end || result.units[range_start].dom_start > offset)
+    return nullptr;
+  // Find the last unit where unit.dom_start <= offset
+  const NGOffsetMappingUnit* unit = std::prev(std::upper_bound(
+      result.units.begin() + range_start, result.units.begin() + range_end,
+      offset, [](unsigned offset, const NGOffsetMappingUnit& unit) {
+        return offset < unit.dom_start;
+      }));
+  if (unit->dom_end < offset)
+    return nullptr;
+  return unit;
+}
+
+size_t NGInlineNode::GetTextContentOffset(const Node& node, unsigned offset) {
+  const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
+  if (!unit)
+    return kNotFound;
+
+  // TODO(xiaochengh): Wrap the code below into a member function of
+  // NGOffsetMappingUnit.
+  DCHECK_GE(offset, unit->dom_start);
+  DCHECK_LE(offset, unit->dom_end);
+  // DOM start is always mapped to text content start.
+  if (offset == unit->dom_start)
+    return unit->text_content_start;
+  // DOM end is always mapped to text content end.
+  if (offset == unit->dom_end)
+    return unit->text_content_end;
+  // |unit| has collapsed mapping.
+  if (unit->text_content_start == unit->text_content_end)
+    return unit->text_content_start;
+  // |unit| has identity mapping.
+  return offset - unit->dom_start + unit->text_content_start;
+}
+
 }  // namespace blink
