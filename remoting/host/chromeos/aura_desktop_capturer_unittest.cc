@@ -9,7 +9,7 @@
 
 #include <utility>
 
-#include "cc/output/copy_output_result.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -66,7 +66,7 @@ class AuraDesktopCapturerTest : public testing::Test,
     bitmap->installPixels(info, const_cast<unsigned char*>(frame_data), 12);
 
     capturer_->OnFrameCaptured(
-        cc::CopyOutputResult::CreateBitmapResult(std::move(bitmap)));
+        viz::CopyOutputResult::CreateBitmapResult(std::move(bitmap)));
   }
 
   std::unique_ptr<AuraDesktopCapturer> capturer_;

@@ -9,6 +9,7 @@ include_rules = [
   "+components/ui_devtools",
   "+components/user_manager",
   "+components/vector_icons",
+  "+components/viz/common",
   "+components/wallpaper",
   "+gpu/config",
   "+media",

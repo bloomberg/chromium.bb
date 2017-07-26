@@ -689,7 +689,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, CopyRequest) {
 
   SubmitCompositorFrame(embedded_support.get(), embedded_passes,
                         arraysize(embedded_passes), embedded_local_surface_id);
-  auto copy_request = cc::CopyOutputRequest::CreateEmptyRequest();
+  auto copy_request = CopyOutputRequest::CreateEmptyRequest();
   auto* copy_request_ptr = copy_request.get();
   embedded_support->RequestCopyOfSurface(std::move(copy_request));
 
@@ -744,9 +744,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RootCopyRequest) {
 
   SubmitCompositorFrame(embedded_support.get(), embedded_passes,
                         arraysize(embedded_passes), embedded_local_surface_id);
-  auto copy_request(cc::CopyOutputRequest::CreateEmptyRequest());
+  auto copy_request(CopyOutputRequest::CreateEmptyRequest());
   auto* copy_request_ptr = copy_request.get();
-  auto copy_request2(cc::CopyOutputRequest::CreateEmptyRequest());
+  auto copy_request2(CopyOutputRequest::CreateEmptyRequest());
   auto* copy_request2_ptr = copy_request2.get();
 
   Quad root_quads[] = {
@@ -825,7 +825,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UnreferencedSurface) {
 
   SubmitCompositorFrame(embedded_support.get(), embedded_passes,
                         arraysize(embedded_passes), embedded_local_surface_id);
-  auto copy_request(cc::CopyOutputRequest::CreateEmptyRequest());
+  auto copy_request(CopyOutputRequest::CreateEmptyRequest());
   auto* copy_request_ptr = copy_request.get();
   embedded_support->RequestCopyOfSurface(std::move(copy_request));
 
@@ -1940,7 +1940,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     auto* child_root_pass = child_pass_list[1].get();
 
     child_root_pass->copy_requests.push_back(
-        cc::CopyOutputRequest::CreateEmptyRequest());
+        CopyOutputRequest::CreateEmptyRequest());
     child_root_pass->damage_rect = gfx::Rect();
     SubmitPassListAsFrame(child_support_.get(), child_local_surface_id,
                           &child_pass_list);
@@ -2433,7 +2433,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
     surface_quad->SetNew(sqs, gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1),
                          surface1_id, cc::SurfaceDrawQuadType::PRIMARY,
                          nullptr);
-    pass->copy_requests.push_back(cc::CopyOutputRequest::CreateEmptyRequest());
+    pass->copy_requests.push_back(CopyOutputRequest::CreateEmptyRequest());
 
     cc::CompositorFrame frame = test::MakeEmptyCompositorFrame();
     frame.render_pass_list.push_back(std::move(pass));

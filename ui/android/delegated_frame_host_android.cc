@@ -10,7 +10,7 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/copy_output_result.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -42,8 +42,8 @@ scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
 
 void CopyOutputRequestCallback(
     scoped_refptr<cc::Layer> readback_layer,
-    cc::CopyOutputRequest::CopyOutputRequestCallback result_callback,
-    std::unique_ptr<cc::CopyOutputResult> copy_output_result) {
+    viz::CopyOutputRequest::CopyOutputRequestCallback result_callback,
+    std::unique_ptr<viz::CopyOutputResult> copy_output_result) {
   readback_layer->RemoveFromParent();
   std::move(result_callback).Run(std::move(copy_output_result));
 }
@@ -114,7 +114,7 @@ viz::FrameSinkId DelegatedFrameHostAndroid::GetFrameSinkId() const {
 void DelegatedFrameHostAndroid::RequestCopyOfSurface(
     WindowAndroidCompositor* compositor,
     const gfx::Rect& src_subrect_in_pixel,
-    cc::CopyOutputRequest::CopyOutputRequestCallback result_callback) {
+    viz::CopyOutputRequest::CopyOutputRequestCallback result_callback) {
   DCHECK(surface_info_.is_valid());
   DCHECK(!result_callback.is_null());
 
@@ -123,8 +123,8 @@ void DelegatedFrameHostAndroid::RequestCopyOfSurface(
                          !has_transparent_background_);
   readback_layer->SetHideLayerAndSubtree(true);
   compositor->AttachLayerForReadback(readback_layer);
-  std::unique_ptr<cc::CopyOutputRequest> copy_output_request =
-      cc::CopyOutputRequest::CreateRequest(
+  std::unique_ptr<viz::CopyOutputRequest> copy_output_request =
+      viz::CopyOutputRequest::CreateRequest(
           base::BindOnce(&CopyOutputRequestCallback, readback_layer,
                          std::move(result_callback)));
 

@@ -34,12 +34,15 @@
 #include "ui/gfx/transform.h"
 
 namespace cc {
-class CopyOutputRequest;
 class Layer;
 class NinePatchLayer;
 class SolidColorLayer;
 class SurfaceLayer;
 class TextureLayer;
+}
+
+namespace viz {
+class CopyOutputRequest;
 }
 
 namespace ui {
@@ -299,7 +302,7 @@ class COMPOSITOR_EXPORT Layer
   // shared memory resource or an actual mailbox for a texture.
   void SetTextureMailbox(
       const viz::TextureMailbox& mailbox,
-      std::unique_ptr<cc::SingleReleaseCallback> release_callback,
+      std::unique_ptr<viz::SingleReleaseCallback> release_callback,
       gfx::Size texture_size_in_dip);
   void SetTextureSize(gfx::Size texture_size_in_dip);
   void SetTextureFlipped(bool flipped);
@@ -366,7 +369,7 @@ class COMPOSITOR_EXPORT Layer
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip);
 
   // Requets a copy of the layer's output as a texture or bitmap.
-  void RequestCopyOfOutput(std::unique_ptr<cc::CopyOutputRequest> request);
+  void RequestCopyOfOutput(std::unique_ptr<viz::CopyOutputRequest> request);
 
   // Invoked when scrolling performed by the cc::InputHandler is committed. This
   // will only occur if the Layer has set scroll container bounds.
@@ -394,7 +397,7 @@ class COMPOSITOR_EXPORT Layer
   // TextureLayerClient
   bool PrepareTextureMailbox(
       viz::TextureMailbox* mailbox,
-      std::unique_ptr<cc::SingleReleaseCallback>* release_callback) override;
+      std::unique_ptr<viz::SingleReleaseCallback>* release_callback) override;
 
   float device_scale_factor() const { return device_scale_factor_; }
 
@@ -574,7 +577,7 @@ class COMPOSITOR_EXPORT Layer
 
   // The callback to release the mailbox. This is only set after
   // SetTextureMailbox is called, before we give it to the TextureLayer.
-  std::unique_ptr<cc::SingleReleaseCallback> mailbox_release_callback_;
+  std::unique_ptr<viz::SingleReleaseCallback> mailbox_release_callback_;
 
   // The size of the frame or texture in DIP, set when SetShowDelegatedContent
   // or SetTextureMailbox was called.

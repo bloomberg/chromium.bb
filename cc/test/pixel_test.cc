@@ -11,8 +11,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
@@ -28,6 +26,8 @@
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/blocking_task_runner.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/test/paths.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,8 +66,8 @@ bool PixelTest::RunPixelTestWithReadbackTargetAndArea(
     const gfx::Rect* copy_rect) {
   base::RunLoop run_loop;
 
-  std::unique_ptr<CopyOutputRequest> request =
-      CopyOutputRequest::CreateBitmapRequest(
+  std::unique_ptr<viz::CopyOutputRequest> request =
+      viz::CopyOutputRequest::CreateBitmapRequest(
           base::BindOnce(&PixelTest::ReadbackResult, base::Unretained(this),
                          run_loop.QuitClosure()));
   if (copy_rect)
@@ -97,8 +97,8 @@ bool PixelTest::RunPixelTest(RenderPassList* pass_list,
   base::RunLoop run_loop;
   RenderPass* target = pass_list->back().get();
 
-  std::unique_ptr<CopyOutputRequest> request =
-      CopyOutputRequest::CreateBitmapRequest(
+  std::unique_ptr<viz::CopyOutputRequest> request =
+      viz::CopyOutputRequest::CreateBitmapRequest(
           base::BindOnce(&PixelTest::ReadbackResult, base::Unretained(this),
                          run_loop.QuitClosure()));
   target->copy_requests.push_back(std::move(request));
@@ -129,7 +129,7 @@ bool PixelTest::RunPixelTest(RenderPassList* pass_list,
 }
 
 void PixelTest::ReadbackResult(base::Closure quit_run_loop,
-                               std::unique_ptr<CopyOutputResult> result) {
+                               std::unique_ptr<viz::CopyOutputResult> result) {
   ASSERT_TRUE(result->HasBitmap());
   result_bitmap_ = result->TakeBitmap();
   quit_run_loop.Run();

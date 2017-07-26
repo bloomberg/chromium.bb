@@ -17,7 +17,7 @@ namespace {
 class TextureMailboxReleaserImpl : public cc::mojom::TextureMailboxReleaser {
  public:
   TextureMailboxReleaserImpl(
-      std::unique_ptr<cc::SingleReleaseCallback> release_callback)
+      std::unique_ptr<viz::SingleReleaseCallback> release_callback)
       : release_callback_(std::move(release_callback)) {
     DCHECK(release_callback_);
   }
@@ -38,7 +38,7 @@ class TextureMailboxReleaserImpl : public cc::mojom::TextureMailboxReleaser {
   }
 
  private:
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback_;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback_;
 };
 
 void Release(cc::mojom::TextureMailboxReleaserPtr ptr,
@@ -53,8 +53,8 @@ namespace mojo {
 
 // static
 const SkBitmap& StructTraits<cc::mojom::CopyOutputResultDataView,
-                             std::unique_ptr<cc::CopyOutputResult>>::
-    bitmap(const std::unique_ptr<cc::CopyOutputResult>& result) {
+                             std::unique_ptr<viz::CopyOutputResult>>::
+    bitmap(const std::unique_ptr<viz::CopyOutputResult>& result) {
   static SkBitmap* null_bitmap = new SkBitmap();
   if (!result->bitmap_)
     return *null_bitmap;
@@ -64,8 +64,8 @@ const SkBitmap& StructTraits<cc::mojom::CopyOutputResultDataView,
 // static
 cc::mojom::TextureMailboxReleaserPtr
 StructTraits<cc::mojom::CopyOutputResultDataView,
-             std::unique_ptr<cc::CopyOutputResult>>::
-    releaser(const std::unique_ptr<cc::CopyOutputResult>& result) {
+             std::unique_ptr<viz::CopyOutputResult>>::
+    releaser(const std::unique_ptr<viz::CopyOutputResult>& result) {
   if (!result->release_callback_)
     return {};
   cc::mojom::TextureMailboxReleaserPtr releaser;
@@ -77,15 +77,15 @@ StructTraits<cc::mojom::CopyOutputResultDataView,
 
 // static
 bool StructTraits<cc::mojom::CopyOutputResultDataView,
-                  std::unique_ptr<cc::CopyOutputResult>>::
+                  std::unique_ptr<viz::CopyOutputResult>>::
     Read(cc::mojom::CopyOutputResultDataView data,
-         std::unique_ptr<cc::CopyOutputResult>* out_p) {
+         std::unique_ptr<viz::CopyOutputResult>* out_p) {
   // We first read into local variables and then call the appropriate
-  // constructor of cc::CopyOutputResult.
+  // constructor of viz::CopyOutputResult.
   gfx::Size size;
   auto bitmap = base::MakeUnique<SkBitmap>();
   viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
 
   if (!data.ReadSize(&size))
     return false;
@@ -100,14 +100,14 @@ bool StructTraits<cc::mojom::CopyOutputResultDataView,
   if (releaser) {
     // CopyOutputResult does not have a TextureMailboxReleaserPtr member.
     // We use base::Bind to turn TextureMailboxReleaser::Release into a
-    // ReleaseCallback.
-    release_callback = cc::SingleReleaseCallback::Create(
+    // viz::ReleaseCallback.
+    release_callback = viz::SingleReleaseCallback::Create(
         base::Bind(Release, base::Passed(&releaser)));
   }
 
   // Empty result.
   if (bitmap->isNull() && !texture_mailbox.IsTexture()) {
-    *out_p = cc::CopyOutputResult::CreateEmptyResult();
+    *out_p = viz::CopyOutputResult::CreateEmptyResult();
     return true;
   }
 
@@ -116,7 +116,7 @@ bool StructTraits<cc::mojom::CopyOutputResultDataView,
     // We can't have both a bitmap and a texture.
     if (texture_mailbox.IsTexture())
       return false;
-    *out_p = cc::CopyOutputResult::CreateBitmapResult(std::move(bitmap));
+    *out_p = viz::CopyOutputResult::CreateBitmapResult(std::move(bitmap));
     return true;
   }
 
@@ -126,7 +126,7 @@ bool StructTraits<cc::mojom::CopyOutputResultDataView,
     return false;
   if (!release_callback)
     return false;
-  *out_p = cc::CopyOutputResult::CreateTextureResult(
+  *out_p = viz::CopyOutputResult::CreateTextureResult(
       size, texture_mailbox, std::move(release_callback));
   return true;
 }

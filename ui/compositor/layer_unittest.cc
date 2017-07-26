@@ -24,9 +24,9 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/animation/animation_player.h"
 #include "cc/layers/layer.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
 #include "cc/test/pixel_test_utils.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/surfaces/sequence_surface_reference_factory.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_reference_factory.h"
@@ -197,8 +197,8 @@ class LayerWithRealCompositorTest : public testing::Test {
 
   void ReadPixels(SkBitmap* bitmap, gfx::Rect source_rect) {
     scoped_refptr<ReadbackHolder> holder(new ReadbackHolder);
-    std::unique_ptr<cc::CopyOutputRequest> request =
-        cc::CopyOutputRequest::CreateBitmapRequest(
+    std::unique_ptr<viz::CopyOutputRequest> request =
+        viz::CopyOutputRequest::CreateBitmapRequest(
             base::BindOnce(&ReadbackHolder::OutputRequestCallback, holder));
     request->set_area(source_rect);
 
@@ -245,7 +245,7 @@ class LayerWithRealCompositorTest : public testing::Test {
    public:
     ReadbackHolder() : run_loop_(new base::RunLoop) {}
 
-    void OutputRequestCallback(std::unique_ptr<cc::CopyOutputResult> result) {
+    void OutputRequestCallback(std::unique_ptr<viz::CopyOutputResult> result) {
       result_ = result->TakeBitmap();
       run_loop_->Quit();
     }
@@ -550,7 +550,7 @@ TEST(LayerStandaloneTest, ReleaseMailboxOnDestruction) {
   bool callback_run = false;
   viz::TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), 0);
   layer->SetTextureMailbox(mailbox,
-                           cc::SingleReleaseCallback::Create(
+                           viz::SingleReleaseCallback::Create(
                                base::Bind(ReturnMailbox, &callback_run)),
                            gfx::Size(10, 10));
   EXPECT_FALSE(callback_run);
@@ -940,8 +940,9 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
 
   bool callback1_run = false;
   viz::TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), 0);
-  l1->SetTextureMailbox(mailbox, cc::SingleReleaseCallback::Create(
-                                     base::Bind(ReturnMailbox, &callback1_run)),
+  l1->SetTextureMailbox(mailbox,
+                        viz::SingleReleaseCallback::Create(
+                            base::Bind(ReturnMailbox, &callback1_run)),
                         gfx::Size(10, 10));
 
   EXPECT_NE(before_layer, l1->cc_layer_for_testing());
@@ -955,8 +956,9 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
 
   bool callback2_run = false;
   mailbox = viz::TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), 0);
-  l1->SetTextureMailbox(mailbox, cc::SingleReleaseCallback::Create(
-                                     base::Bind(ReturnMailbox, &callback2_run)),
+  l1->SetTextureMailbox(mailbox,
+                        viz::SingleReleaseCallback::Create(
+                            base::Bind(ReturnMailbox, &callback2_run)),
                         gfx::Size(10, 10));
   EXPECT_TRUE(callback1_run);
   EXPECT_FALSE(callback2_run);
@@ -975,8 +977,9 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   // Back to a texture, without changing the bounds of the layer or the texture.
   bool callback3_run = false;
   mailbox = viz::TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), 0);
-  l1->SetTextureMailbox(mailbox, cc::SingleReleaseCallback::Create(
-                                     base::Bind(ReturnMailbox, &callback3_run)),
+  l1->SetTextureMailbox(mailbox,
+                        viz::SingleReleaseCallback::Create(
+                            base::Bind(ReturnMailbox, &callback3_run)),
                         gfx::Size(10, 10));
 
   EXPECT_NE(before_layer, l1->cc_layer_for_testing());
@@ -1122,7 +1125,7 @@ TEST_F(LayerWithNullDelegateTest, SetBoundsSchedulesPaint) {
 // Checks that the damage rect for a TextureLayer is empty after a commit.
 TEST_F(LayerWithNullDelegateTest, EmptyDamagedRect) {
   base::RunLoop run_loop;
-  cc::ReleaseCallback callback =
+  viz::ReleaseCallback callback =
       base::Bind([](base::RunLoop* run_loop, const gpu::SyncToken& sync_token,
                     bool is_lost) { run_loop->Quit(); },
                  base::Unretained(&run_loop));
@@ -1130,7 +1133,7 @@ TEST_F(LayerWithNullDelegateTest, EmptyDamagedRect) {
   std::unique_ptr<Layer> root(CreateLayer(LAYER_SOLID_COLOR));
   viz::TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
                               GL_TEXTURE_2D);
-  root->SetTextureMailbox(mailbox, cc::SingleReleaseCallback::Create(callback),
+  root->SetTextureMailbox(mailbox, viz::SingleReleaseCallback::Create(callback),
                           gfx::Size(10, 10));
   compositor()->SetRootLayer(root.get());
 

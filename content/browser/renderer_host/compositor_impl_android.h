@@ -115,7 +115,7 @@ class CONTENT_EXPORT CompositorImpl
   // WindowAndroidCompositor implementation.
   void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) override;
   void RequestCopyOfOutputOnRootLayer(
-      std::unique_ptr<cc::CopyOutputRequest> request) override;
+      std::unique_ptr<viz::CopyOutputRequest> request) override;
   void SetNeedsAnimate() override;
   viz::FrameSinkId GetFrameSinkId() override;
   void AddChildFrameSink(const viz::FrameSinkId& frame_sink_id) override;

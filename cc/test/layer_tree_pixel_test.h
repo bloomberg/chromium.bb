@@ -10,19 +10,19 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "cc/resources/single_release_callback.h"
 #include "cc/test/layer_tree_test.h"
+#include "components/viz/common/quads/single_release_callback.h"
 #include "ui/gl/gl_implementation.h"
 
 class SkBitmap;
 
 namespace viz {
+class CopyOutputRequest;
+class CopyOutputResult;
 class TextureMailbox;
 }
 
 namespace cc {
-class CopyOutputRequest;
-class CopyOutputResult;
 class PixelComparator;
 class SolidColorLayer;
 class TextureLayer;
@@ -47,9 +47,9 @@ class LayerTreePixelTest : public LayerTreeTest {
   std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider) override;
 
-  virtual std::unique_ptr<CopyOutputRequest> CreateCopyOutputRequest();
+  virtual std::unique_ptr<viz::CopyOutputRequest> CreateCopyOutputRequest();
 
-  void ReadbackResult(std::unique_ptr<CopyOutputResult> result);
+  void ReadbackResult(std::unique_ptr<viz::CopyOutputResult> result);
 
   void BeginTest() override;
   void SetupTree() override;

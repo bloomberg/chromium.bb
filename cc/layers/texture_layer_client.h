@@ -5,7 +5,7 @@
 #ifndef CC_LAYERS_TEXTURE_LAYER_CLIENT_H_
 #define CC_LAYERS_TEXTURE_LAYER_CLIENT_H_
 
-#include "cc/resources/single_release_callback.h"
+#include "components/viz/common/quads/single_release_callback.h"
 
 namespace viz {
 class TextureMailbox;
@@ -20,7 +20,7 @@ class TextureLayerClient {
   // and the old mailbox is to be reused.
   virtual bool PrepareTextureMailbox(
       viz::TextureMailbox* mailbox,
-      std::unique_ptr<SingleReleaseCallback>* release_callback) = 0;
+      std::unique_ptr<viz::SingleReleaseCallback>* release_callback) = 0;
 
  protected:
   virtual ~TextureLayerClient() {}

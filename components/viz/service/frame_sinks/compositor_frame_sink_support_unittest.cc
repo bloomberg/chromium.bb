@@ -6,12 +6,12 @@
 
 #include "base/macros.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_surface_observer.h"
 #include "cc/test/mock_compositor_frame_sink_support_client.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
@@ -717,7 +717,7 @@ TEST_F(CompositorFrameSinkSupportTest, DestroyCycle) {
 }
 
 void CopyRequestTestCallback(bool* called,
-                             std::unique_ptr<cc::CopyOutputResult> result) {
+                             std::unique_ptr<CopyOutputResult> result) {
   *called = true;
 }
 
@@ -732,7 +732,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   }
 
   bool called1 = false;
-  auto request = cc::CopyOutputRequest::CreateRequest(
+  auto request = CopyOutputRequest::CreateRequest(
       base::BindOnce(&CopyRequestTestCallback, &called1));
   request->set_source(kArbitrarySourceId1);
 
@@ -740,7 +740,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   EXPECT_FALSE(called1);
 
   bool called2 = false;
-  request = cc::CopyOutputRequest::CreateRequest(
+  request = CopyOutputRequest::CreateRequest(
       base::BindOnce(&CopyRequestTestCallback, &called2));
   request->set_source(kArbitrarySourceId2);
 
@@ -750,7 +750,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   EXPECT_FALSE(called2);
 
   bool called3 = false;
-  request = cc::CopyOutputRequest::CreateRequest(
+  request = CopyOutputRequest::CreateRequest(
       base::BindOnce(&CopyRequestTestCallback, &called3));
   request->set_source(kArbitrarySourceId1);
 

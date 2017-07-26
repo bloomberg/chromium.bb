@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/output/copy_output_request.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -20,6 +19,7 @@
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
+#include "components/viz/common/quads/copy_output_request.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace cc {
@@ -915,8 +915,9 @@ void EffectTree::UpdateEffects(int id) {
   UpdateSurfaceContentsScale(node);
 }
 
-void EffectTree::AddCopyRequest(int node_id,
-                                std::unique_ptr<CopyOutputRequest> request) {
+void EffectTree::AddCopyRequest(
+    int node_id,
+    std::unique_ptr<viz::CopyOutputRequest> request) {
   copy_requests_.insert(std::make_pair(node_id, std::move(request)));
 }
 
@@ -948,7 +949,7 @@ void EffectTree::PushCopyRequestsTo(EffectTree* other_tree) {
 
 void EffectTree::TakeCopyRequestsAndTransformToSurface(
     int node_id,
-    std::vector<std::unique_ptr<CopyOutputRequest>>* requests) {
+    std::vector<std::unique_ptr<viz::CopyOutputRequest>>* requests) {
   EffectNode* effect_node = Node(node_id);
   DCHECK(effect_node->has_render_surface);
   DCHECK(effect_node->has_copy_request);

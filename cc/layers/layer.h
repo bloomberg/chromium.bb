@@ -44,9 +44,12 @@ class ConvertableToTraceFormat;
 }
 }
 
+namespace viz {
+class CopyOutputRequest;
+}
+
 namespace cc {
 
-class CopyOutputRequest;
 class LayerClient;
 class LayerImpl;
 class LayerTreeHost;
@@ -94,14 +97,14 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // first), then the callback is called with a nullptr/empty result. If the
   // request's source property is set, any prior uncommitted requests having the
   // same source will be aborted.
-  void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> request);
+  void RequestCopyOfOutput(std::unique_ptr<viz::CopyOutputRequest> request);
   bool HasCopyRequest() const { return !inputs_.copy_requests.empty(); }
 
   void SetSubtreeHasCopyRequest(bool subtree_has_copy_request);
   bool SubtreeHasCopyRequest() const;
 
   void TakeCopyRequests(
-      std::vector<std::unique_ptr<CopyOutputRequest>>* requests);
+      std::vector<std::unique_ptr<viz::CopyOutputRequest>>* requests);
 
   virtual void SetBackgroundColor(SkColor background_color);
   SkColor background_color() const { return inputs_.background_color; }
@@ -611,7 +614,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     // The following elements can not and are not serialized.
     LayerClient* client;
     base::Callback<void(const gfx::ScrollOffset&)> did_scroll_callback;
-    std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
+    std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_requests;
 
     ScrollBoundaryBehavior scroll_boundary_behavior;
   };

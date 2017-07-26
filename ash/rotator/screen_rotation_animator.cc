@@ -14,8 +14,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer.h"
@@ -197,8 +197,8 @@ void ScreenRotationAnimator::StartRotationAnimation(
   if (has_switch_ash_disable_smooth_screen_rotation_) {
     StartSlowAnimation(std::move(rotation_request));
   } else {
-    std::unique_ptr<cc::CopyOutputRequest> copy_output_request =
-        cc::CopyOutputRequest::CreateRequest(
+    std::unique_ptr<viz::CopyOutputRequest> copy_output_request =
+        viz::CopyOutputRequest::CreateRequest(
             CreateAfterCopyCallbackBeforeRotation(std::move(rotation_request)));
     RequestCopyScreenRotationContainerLayer(std::move(copy_output_request));
     screen_rotation_state_ = COPY_REQUESTED;
@@ -234,7 +234,7 @@ void ScreenRotationAnimator::SetRotation(
 }
 
 void ScreenRotationAnimator::RequestCopyScreenRotationContainerLayer(
-    std::unique_ptr<cc::CopyOutputRequest> copy_output_request) {
+    std::unique_ptr<viz::CopyOutputRequest> copy_output_request) {
   ui::Layer* screen_rotation_container_layer =
       GetScreenRotationContainer(root_window_)->layer();
   copy_output_request->set_area(
@@ -263,7 +263,7 @@ ScreenRotationAnimator::CreateAfterCopyCallbackAfterRotation(
 
 void ScreenRotationAnimator::OnScreenRotationContainerLayerCopiedBeforeRotation(
     std::unique_ptr<ScreenRotationRequest> rotation_request,
-    std::unique_ptr<cc::CopyOutputResult> result) {
+    std::unique_ptr<viz::CopyOutputResult> result) {
   if (IgnoreCopyResult(rotation_request->id, rotation_request_id_))
     return;
   // Abort rotation and animation if the display was removed or the
@@ -289,15 +289,15 @@ void ScreenRotationAnimator::OnScreenRotationContainerLayerCopiedBeforeRotation(
   AddLayerAtTopOfWindowLayers(root_window_, old_layer_tree_owner_->root());
   SetRotation(rotation_request->display_id, rotation_request->old_rotation,
               rotation_request->new_rotation, rotation_request->source);
-  std::unique_ptr<cc::CopyOutputRequest> copy_output_request =
-      cc::CopyOutputRequest::CreateRequest(
+  std::unique_ptr<viz::CopyOutputRequest> copy_output_request =
+      viz::CopyOutputRequest::CreateRequest(
           CreateAfterCopyCallbackAfterRotation(std::move(rotation_request)));
   RequestCopyScreenRotationContainerLayer(std::move(copy_output_request));
 }
 
 void ScreenRotationAnimator::OnScreenRotationContainerLayerCopiedAfterRotation(
     std::unique_ptr<ScreenRotationRequest> rotation_request,
-    std::unique_ptr<cc::CopyOutputResult> result) {
+    std::unique_ptr<viz::CopyOutputResult> result) {
   if (IgnoreCopyResult(rotation_request->id, rotation_request_id_))
     return;
   // In the following cases, abort animation:
@@ -326,9 +326,9 @@ void ScreenRotationAnimator::CreateOldLayerTreeForSlowAnimation() {
 }
 
 std::unique_ptr<ui::LayerTreeOwner> ScreenRotationAnimator::CopyLayerTree(
-    std::unique_ptr<cc::CopyOutputResult> result) {
+    std::unique_ptr<viz::CopyOutputResult> result) {
   viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
   result->TakeTexture(&texture_mailbox, &release_callback);
   DCHECK(texture_mailbox.IsTexture());
   const gfx::Rect rect(

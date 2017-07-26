@@ -280,7 +280,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
       int32_t routing_id,
-      std::unique_ptr<cc::CopyOutputRequest> request);
+      std::unique_ptr<viz::CopyOutputRequest> request);
 
   // True if we are running layout tests. This currently disables forwarding
   // various status messages to the console, skips network error pages, and

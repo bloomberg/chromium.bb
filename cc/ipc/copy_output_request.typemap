@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 mojom = "//cc/ipc/copy_output_request.mojom"
-public_headers = [ "//cc/output/copy_output_request.h" ]
+public_headers = [ "//components/viz/common/quads/copy_output_request.h" ]
 traits_headers = [ "//cc/ipc/copy_output_request_struct_traits.h" ]
 sources = [
   "copy_output_request_struct_traits.cc",
 ]
-type_mappings = [ "cc.mojom.CopyOutputRequest=std::unique_ptr<cc::CopyOutputRequest>[move_only]" ]
+type_mappings = [ "cc.mojom.CopyOutputRequest=std::unique_ptr<viz::CopyOutputRequest>[move_only]" ]

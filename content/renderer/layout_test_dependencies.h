@@ -43,7 +43,7 @@ class LayoutTestDependencies {
   // Returns a SwapPromise which should be queued for the next compositor frame.
   virtual std::unique_ptr<cc::SwapPromise> RequestCopyOfOutput(
       int32_t routing_id,
-      std::unique_ptr<cc::CopyOutputRequest> request) = 0;
+      std::unique_ptr<viz::CopyOutputRequest> request) = 0;
 };
 
 }  // namespace content

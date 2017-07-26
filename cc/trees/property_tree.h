@@ -28,9 +28,12 @@ class TracedValue;
 }
 }
 
+namespace viz {
+class CopyOutputRequest;
+}
+
 namespace cc {
 
-class CopyOutputRequest;
 class LayerTreeImpl;
 class MutatorHost;
 class RenderSurfaceImpl;
@@ -330,11 +333,12 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
   void UpdateEffectChanged(EffectNode* node, EffectNode* parent_node);
 
-  void AddCopyRequest(int node_id, std::unique_ptr<CopyOutputRequest> request);
+  void AddCopyRequest(int node_id,
+                      std::unique_ptr<viz::CopyOutputRequest> request);
   void PushCopyRequestsTo(EffectTree* other_tree);
   void TakeCopyRequestsAndTransformToSurface(
       int node_id,
-      std::vector<std::unique_ptr<CopyOutputRequest>>* requests);
+      std::vector<std::unique_ptr<viz::CopyOutputRequest>>* requests);
   bool HasCopyRequests() const;
   void ClearCopyRequests();
 
@@ -375,7 +379,7 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   void UpdateBackfaceVisibility(EffectNode* node, EffectNode* parent_node);
 
   // Stores copy requests, keyed by node id.
-  std::unordered_multimap<int, std::unique_ptr<CopyOutputRequest>>
+  std::unordered_multimap<int, std::unique_ptr<viz::CopyOutputRequest>>
       copy_requests_;
 
   // Unsorted list of all mask layer ids that effect nodes refer to.

@@ -19,13 +19,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "cc/resources/returned_resource.h"
-#include "cc/resources/single_release_callback.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_texture.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/blocking_task_runner.h"
+#include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
@@ -2724,7 +2724,7 @@ TEST_P(ResourceProviderTest, LostContext) {
   BlockingTaskRunner* main_thread_task_runner = nullptr;
   std::unique_ptr<SingleReleaseCallbackImpl> callback =
       SingleReleaseCallbackImpl::Create(
-          base::Bind(ReleaseCallback, &release_sync_token, &lost_resource,
+          base::Bind(&ReleaseCallback, &release_sync_token, &lost_resource,
                      &main_thread_task_runner));
   resource_provider_->CreateResourceFromTextureMailbox(
       viz::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D),

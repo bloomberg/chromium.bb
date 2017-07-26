@@ -5,8 +5,8 @@
 #include "cc/layers/layer_impl_test_properties.h"
 
 #include "cc/layers/layer_impl.h"
-#include "cc/output/copy_output_request.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "components/viz/common/quads/copy_output_request.h"
 
 namespace cc {
 

@@ -2,32 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_COPY_OUTPUT_RESULT_H_
-#define CC_OUTPUT_COPY_OUTPUT_RESULT_H_
+#ifndef COMPONENTS_VIZ_COMMON_QUADS_COPY_OUTPUT_RESULT_H_
+#define COMPONENTS_VIZ_COMMON_QUADS_COPY_OUTPUT_RESULT_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "cc/cc_export.h"
-#include "cc/resources/single_release_callback.h"
+#include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/quads/texture_mailbox.h"
+#include "components/viz/common/viz_common_export.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 
 class SkBitmap;
 
-namespace viz {
-class TextureMailbox;
-}
-
 namespace cc {
-
 namespace mojom {
 class CopyOutputResultDataView;
 }
+}  // namespace cc
 
-class CC_EXPORT CopyOutputResult {
+namespace viz {
+
+class TextureMailbox;
+
+class VIZ_COMMON_EXPORT CopyOutputResult {
  public:
   static std::unique_ptr<CopyOutputResult> CreateEmptyResult() {
     return base::WrapUnique(new CopyOutputResult);
@@ -38,7 +38,7 @@ class CC_EXPORT CopyOutputResult {
   }
   static std::unique_ptr<CopyOutputResult> CreateTextureResult(
       const gfx::Size& size,
-      const viz::TextureMailbox& texture_mailbox,
+      const TextureMailbox& texture_mailbox,
       std::unique_ptr<SingleReleaseCallback> release_callback) {
     return base::WrapUnique(new CopyOutputResult(size, texture_mailbox,
                                                  std::move(release_callback)));
@@ -52,28 +52,28 @@ class CC_EXPORT CopyOutputResult {
 
   gfx::Size size() const { return size_; }
   std::unique_ptr<SkBitmap> TakeBitmap();
-  void TakeTexture(viz::TextureMailbox* texture_mailbox,
+  void TakeTexture(TextureMailbox* texture_mailbox,
                    std::unique_ptr<SingleReleaseCallback>* release_callback);
 
  private:
-  friend struct mojo::StructTraits<mojom::CopyOutputResultDataView,
+  friend struct mojo::StructTraits<cc::mojom::CopyOutputResultDataView,
                                    std::unique_ptr<CopyOutputResult>>;
 
   CopyOutputResult();
   explicit CopyOutputResult(std::unique_ptr<SkBitmap> bitmap);
   explicit CopyOutputResult(
       const gfx::Size& size,
-      const viz::TextureMailbox& texture_mailbox,
+      const TextureMailbox& texture_mailbox,
       std::unique_ptr<SingleReleaseCallback> release_callback);
 
   gfx::Size size_;
   std::unique_ptr<SkBitmap> bitmap_;
-  viz::TextureMailbox texture_mailbox_;
+  TextureMailbox texture_mailbox_;
   std::unique_ptr<SingleReleaseCallback> release_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyOutputResult);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_COPY_OUTPUT_RESULT_H_
+#endif  // COMPONENTS_VIZ_COMMON_QUADS_COPY_OUTPUT_RESULT_H_

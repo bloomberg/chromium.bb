@@ -284,11 +284,11 @@ void PepperCompositorHost::UpdateLayer(
       viz::TextureMailbox mailbox(new_layer->texture->mailbox,
                                   new_layer->texture->sync_token,
                                   new_layer->texture->target);
-      texture_layer->SetTextureMailbox(mailbox,
-          cc::SingleReleaseCallback::Create(
-              base::Bind(&PepperCompositorHost::ResourceReleased,
-                         weak_factory_.GetWeakPtr(),
-                         new_layer->common.resource_id)));
+      texture_layer->SetTextureMailbox(
+          mailbox,
+          viz::SingleReleaseCallback::Create(base::Bind(
+              &PepperCompositorHost::ResourceReleased,
+              weak_factory_.GetWeakPtr(), new_layer->common.resource_id)));
       // TODO(penghuang): get a damage region from the application and
       // pass it to SetNeedsDisplayRect().
       texture_layer->SetNeedsDisplay();
@@ -322,7 +322,7 @@ void PepperCompositorHost::UpdateLayer(
       viz::TextureMailbox mailbox(bitmap.get(), PP_ToGfxSize(desc.size));
       image_layer->SetTextureMailbox(
           mailbox,
-          cc::SingleReleaseCallback::Create(base::Bind(
+          viz::SingleReleaseCallback::Create(base::Bind(
               &PepperCompositorHost::ImageReleased, weak_factory_.GetWeakPtr(),
               new_layer->common.resource_id, base::Passed(&image_shm),
               base::Passed(&bitmap))));

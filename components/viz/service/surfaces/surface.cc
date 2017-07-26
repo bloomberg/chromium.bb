@@ -10,9 +10,9 @@
 #include <algorithm>
 
 #include "base/stl_util.h"
-#include "cc/output/copy_output_request.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
+#include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/surfaces/surface_manager.h"
@@ -163,13 +163,13 @@ bool Surface::QueueFrame(cc::CompositorFrame frame,
 }
 
 void Surface::RequestCopyOfOutput(
-    std::unique_ptr<cc::CopyOutputRequest> copy_request) {
+    std::unique_ptr<CopyOutputRequest> copy_request) {
   if (!active_frame_data_) {
     copy_request->SendEmptyResult();
     return;
   }
 
-  std::vector<std::unique_ptr<cc::CopyOutputRequest>>& copy_requests =
+  std::vector<std::unique_ptr<CopyOutputRequest>>& copy_requests =
       active_frame_data_->frame.render_pass_list.back()->copy_requests;
 
   if (copy_request->has_source()) {
@@ -177,7 +177,7 @@ void Surface::RequestCopyOfOutput(
     // Remove existing CopyOutputRequests made on the Surface by the same
     // source.
     base::EraseIf(copy_requests,
-                  [&source](const std::unique_ptr<cc::CopyOutputRequest>& x) {
+                  [&source](const std::unique_ptr<CopyOutputRequest>& x) {
                     return x->has_source() && x->source() == source;
                   });
   }
@@ -238,7 +238,7 @@ void Surface::ActivateFrame(FrameData frame_data) {
   deadline_.Cancel();
 
   // Save root pass copy requests.
-  std::vector<std::unique_ptr<cc::CopyOutputRequest>> old_copy_requests;
+  std::vector<std::unique_ptr<CopyOutputRequest>> old_copy_requests;
   if (active_frame_data_) {
     std::swap(old_copy_requests,
               active_frame_data_->frame.render_pass_list.back()->copy_requests);

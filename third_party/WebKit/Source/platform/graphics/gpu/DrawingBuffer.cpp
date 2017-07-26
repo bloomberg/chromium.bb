@@ -253,7 +253,7 @@ std::unique_ptr<viz::SharedBitmap> DrawingBuffer::CreateOrRecycleBitmap() {
 
 bool DrawingBuffer::PrepareTextureMailbox(
     viz::TextureMailbox* out_mailbox,
-    std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback) {
+    std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   ScopedStateRestorer scoped_state_restorer(this);
   bool force_gpu_result = false;
   return PrepareTextureMailboxInternal(out_mailbox, out_release_callback,
@@ -262,7 +262,7 @@ bool DrawingBuffer::PrepareTextureMailbox(
 
 bool DrawingBuffer::PrepareTextureMailboxInternal(
     viz::TextureMailbox* out_mailbox,
-    std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback,
+    std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback,
     bool force_gpu_result) {
   DCHECK(state_restorer_);
   if (destruction_in_progress_) {
@@ -298,7 +298,7 @@ bool DrawingBuffer::PrepareTextureMailboxInternal(
 
 bool DrawingBuffer::FinishPrepareTextureMailboxSoftware(
     viz::TextureMailbox* out_mailbox,
-    std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback) {
+    std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   DCHECK(state_restorer_);
   std::unique_ptr<viz::SharedBitmap> bitmap = CreateOrRecycleBitmap();
   if (!bitmap)
@@ -327,8 +327,8 @@ bool DrawingBuffer::FinishPrepareTextureMailboxSoftware(
   auto func = WTF::Bind(&DrawingBuffer::MailboxReleasedSoftware,
                         RefPtr<DrawingBuffer>(this),
                         WTF::Passed(std::move(bitmap)), size_);
-  *out_release_callback =
-      cc::SingleReleaseCallback::Create(ConvertToBaseCallback(std::move(func)));
+  *out_release_callback = viz::SingleReleaseCallback::Create(
+      ConvertToBaseCallback(std::move(func)));
 
   if (preserve_drawing_buffer_ == kDiscard) {
     SetBufferClearNeeded(true);
@@ -339,7 +339,7 @@ bool DrawingBuffer::FinishPrepareTextureMailboxSoftware(
 
 bool DrawingBuffer::FinishPrepareTextureMailboxGpu(
     viz::TextureMailbox* out_mailbox,
-    std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback) {
+    std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   DCHECK(state_restorer_);
   if (webgl_version_ > kWebGL1) {
     state_restorer_->SetPixelUnpackBufferBindingDirty();
@@ -408,7 +408,7 @@ bool DrawingBuffer::FinishPrepareTextureMailboxGpu(
     auto func =
         WTF::Bind(&DrawingBuffer::MailboxReleasedGpu,
                   RefPtr<DrawingBuffer>(this), color_buffer_for_mailbox);
-    *out_release_callback = cc::SingleReleaseCallback::Create(
+    *out_release_callback = viz::SingleReleaseCallback::Create(
         ConvertToBaseCallback(std::move(func)));
   }
 
@@ -470,7 +470,7 @@ PassRefPtr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
   GrContext* gr_context = ContextProvider()->GetGrContext();
 
   viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
   bool success = false;
   if (gr_context) {
     bool force_gpu_result = true;

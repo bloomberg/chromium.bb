@@ -17,7 +17,7 @@ namespace {
 class CopyOutputResultSenderImpl : public cc::mojom::CopyOutputResultSender {
  public:
   CopyOutputResultSenderImpl(
-      cc::CopyOutputRequest::CopyOutputRequestCallback result_callback)
+      viz::CopyOutputRequest::CopyOutputRequestCallback result_callback)
       : result_callback_(std::move(result_callback)) {
     DCHECK(result_callback_);
   }
@@ -25,23 +25,23 @@ class CopyOutputResultSenderImpl : public cc::mojom::CopyOutputResultSender {
   ~CopyOutputResultSenderImpl() override {
     if (result_callback_) {
       std::move(result_callback_)
-          .Run(cc::CopyOutputResult::CreateEmptyResult());
+          .Run(viz::CopyOutputResult::CreateEmptyResult());
     }
   }
 
   // mojom::TextureMailboxReleaser implementation:
-  void SendResult(std::unique_ptr<cc::CopyOutputResult> result) override {
+  void SendResult(std::unique_ptr<viz::CopyOutputResult> result) override {
     if (!result_callback_)
       return;
     std::move(result_callback_).Run(std::move(result));
   }
 
  private:
-  cc::CopyOutputRequest::CopyOutputRequestCallback result_callback_;
+  viz::CopyOutputRequest::CopyOutputRequestCallback result_callback_;
 };
 
 void SendResult(cc::mojom::CopyOutputResultSenderPtr ptr,
-                std::unique_ptr<cc::CopyOutputResult> result) {
+                std::unique_ptr<viz::CopyOutputResult> result) {
   ptr->SendResult(std::move(result));
 }
 
@@ -52,8 +52,8 @@ namespace mojo {
 // static
 cc::mojom::CopyOutputResultSenderPtr
 StructTraits<cc::mojom::CopyOutputRequestDataView,
-             std::unique_ptr<cc::CopyOutputRequest>>::
-    result_sender(const std::unique_ptr<cc::CopyOutputRequest>& request) {
+             std::unique_ptr<viz::CopyOutputRequest>>::
+    result_sender(const std::unique_ptr<viz::CopyOutputRequest>& request) {
   cc::mojom::CopyOutputResultSenderPtr result_sender;
   auto impl = base::MakeUnique<CopyOutputResultSenderImpl>(
       std::move(request->result_callback_));
@@ -63,10 +63,10 @@ StructTraits<cc::mojom::CopyOutputRequestDataView,
 
 // static
 bool StructTraits<cc::mojom::CopyOutputRequestDataView,
-                  std::unique_ptr<cc::CopyOutputRequest>>::
+                  std::unique_ptr<viz::CopyOutputRequest>>::
     Read(cc::mojom::CopyOutputRequestDataView data,
-         std::unique_ptr<cc::CopyOutputRequest>* out_p) {
-  auto request = cc::CopyOutputRequest::CreateEmptyRequest();
+         std::unique_ptr<viz::CopyOutputRequest>* out_p) {
+  auto request = viz::CopyOutputRequest::CreateEmptyRequest();
 
   request->force_bitmap_result_ = data.force_bitmap_result();
 

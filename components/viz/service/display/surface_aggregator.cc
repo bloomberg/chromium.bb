@@ -45,9 +45,9 @@ const char kUmaNoActiveFrame[] =
 
 void MoveMatchingRequests(
     cc::RenderPassId render_pass_id,
-    std::multimap<cc::RenderPassId, std::unique_ptr<cc::CopyOutputRequest>>*
+    std::multimap<cc::RenderPassId, std::unique_ptr<CopyOutputRequest>>*
         copy_requests,
-    std::vector<std::unique_ptr<cc::CopyOutputRequest>>* output_requests) {
+    std::vector<std::unique_ptr<CopyOutputRequest>>* output_requests) {
   auto request_range = copy_requests->equal_range(render_pass_id);
   for (auto it = request_range.first; it != request_range.second; ++it) {
     DCHECK(it->second);

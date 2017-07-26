@@ -15,8 +15,11 @@
 #ifndef CC_TEST_PIXEL_TEST_H_
 #define CC_TEST_PIXEL_TEST_H_
 
-namespace cc {
+namespace viz {
 class CopyOutputResult;
+}
+
+namespace cc {
 class DirectRenderer;
 class FakeOutputSurfaceClient;
 class OutputSurface;
@@ -76,7 +79,7 @@ class PixelTest : public testing::Test {
 
  private:
   void ReadbackResult(base::Closure quit_run_loop,
-                      std::unique_ptr<CopyOutputResult> result);
+                      std::unique_ptr<viz::CopyOutputResult> result);
 
   bool PixelsMatchReference(const base::FilePath& ref_file,
                             const PixelComparator& comparator);

@@ -25,8 +25,6 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/video_layer.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/swap_promise.h"
 #include "cc/quads/draw_quad.h"
@@ -62,6 +60,8 @@
 #include "cc/trees/swap_promise_manager.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -6834,7 +6834,8 @@ class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
   }
 
-  static void CopyOutputCallback(std::unique_ptr<CopyOutputResult> result) {}
+  static void CopyOutputCallback(
+      std::unique_ptr<viz::CopyOutputResult> result) {}
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
@@ -6850,7 +6851,7 @@ class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
     gfx::Transform transform;
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
-        child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
+        child->RequestCopyOfOutput(viz::CopyOutputRequest::CreateBitmapRequest(
             base::BindOnce(CopyOutputCallback)));
         transform.Scale(2.0, 2.0);
         child->SetTransform(transform);

@@ -13,7 +13,6 @@
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/output/copy_output_request.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
@@ -23,6 +22,7 @@
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
+#include "components/viz/common/quads/copy_output_request.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
@@ -804,13 +804,13 @@ bool ShouldCreateRenderSurface(LayerType* layer,
 
 static void TakeCopyRequests(
     Layer* layer,
-    std::vector<std::unique_ptr<CopyOutputRequest>>* copy_requests) {
+    std::vector<std::unique_ptr<viz::CopyOutputRequest>>* copy_requests) {
   layer->TakeCopyRequests(copy_requests);
 }
 
 static void TakeCopyRequests(
     LayerImpl* layer,
-    std::vector<std::unique_ptr<CopyOutputRequest>>* copy_requests) {
+    std::vector<std::unique_ptr<viz::CopyOutputRequest>>* copy_requests) {
   for (auto& request : layer->test_properties()->copy_requests)
     copy_requests->push_back(std::move(request));
   layer->test_properties()->copy_requests.clear();
@@ -958,7 +958,7 @@ bool AddEffectNodeIfNeeded(
         ->element_id_to_effect_node_index[layer->element_id()] = node_id;
   }
 
-  std::vector<std::unique_ptr<CopyOutputRequest>> layer_copy_requests;
+  std::vector<std::unique_ptr<viz::CopyOutputRequest>> layer_copy_requests;
   TakeCopyRequests(layer, &layer_copy_requests);
   for (auto& it : layer_copy_requests) {
     effect_tree.AddCopyRequest(node_id, std::move(it));

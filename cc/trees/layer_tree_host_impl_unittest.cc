@@ -36,8 +36,6 @@
 #include "cc/layers/video_layer_impl.h"
 #include "cc/layers/viewport.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/output/latency_info_swap_promise.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -69,6 +67,8 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "media/base/media.h"
@@ -3867,11 +3867,11 @@ class DidDrawCheckLayer : public LayerImpl {
     did_draw_called_ = false;
   }
 
-  static void IgnoreResult(std::unique_ptr<CopyOutputResult> result) {}
+  static void IgnoreResult(std::unique_ptr<viz::CopyOutputResult> result) {}
 
   void AddCopyRequest() {
     test_properties()->copy_requests.push_back(
-        CopyOutputRequest::CreateRequest(base::BindOnce(&IgnoreResult)));
+        viz::CopyOutputRequest::CreateRequest(base::BindOnce(&IgnoreResult)));
   }
 
  protected:
@@ -8892,7 +8892,7 @@ TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
 }
 
 void ShutdownReleasesContext_Callback(
-    std::unique_ptr<CopyOutputResult> result) {}
+    std::unique_ptr<viz::CopyOutputResult> result) {}
 
 class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
  public:
@@ -8937,7 +8937,7 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
 
   LayerImpl* root = host_impl_->active_tree()->root_layer_for_testing();
   root->test_properties()->copy_requests.push_back(
-      CopyOutputRequest::CreateRequest(
+      viz::CopyOutputRequest::CreateRequest(
           base::BindOnce(&ShutdownReleasesContext_Callback)));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 

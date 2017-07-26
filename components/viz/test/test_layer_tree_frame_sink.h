@@ -78,7 +78,7 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   Display* display() const { return display_.get(); }
 
   // Will be included with the next SubmitCompositorFrame.
-  void RequestCopyOfOutput(std::unique_ptr<cc::CopyOutputRequest> request);
+  void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> request);
 
   // LayerTreeFrameSink implementation.
   bool BindToClient(cc::LayerTreeFrameSinkClient* client) override;
@@ -137,7 +137,7 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   TestLayerTreeFrameSinkClient* test_client_ = nullptr;
   gfx::Size enlarge_pass_texture_amount_;
 
-  std::vector<std::unique_ptr<cc::CopyOutputRequest>> copy_requests_;
+  std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests_;
 
   base::WeakPtrFactory<TestLayerTreeFrameSink> weak_ptr_factory_;
 };

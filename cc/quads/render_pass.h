@@ -29,10 +29,13 @@ class TracedValue;
 }
 }
 
+namespace viz {
+class CopyOutputRequest;
+}
+
 namespace cc {
 
 class DrawQuad;
-class CopyOutputRequest;
 class RenderPassDrawQuad;
 class SharedQuadState;
 
@@ -133,7 +136,7 @@ class CC_EXPORT RenderPass {
   // contents as a bitmap, and give a copy of the bitmap to each callback in
   // this list. This property should not be serialized between compositors, as
   // it only makes sense in the root compositor.
-  std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
+  std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_requests;
 
   QuadList quad_list;
   SharedQuadStateList shared_quad_state_list;

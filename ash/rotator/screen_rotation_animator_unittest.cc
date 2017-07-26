@@ -20,8 +20,8 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -82,9 +82,9 @@ class TestScreenRotationAnimator : public ScreenRotationAnimator {
       std::unique_ptr<ScreenRotationRequest> rotation_request) override;
 
   void IntersectBefore(CopyCallback next_callback,
-                       std::unique_ptr<cc::CopyOutputResult> result);
+                       std::unique_ptr<viz::CopyOutputResult> result);
   void IntersectAfter(CopyCallback next_callback,
-                      std::unique_ptr<cc::CopyOutputResult> result);
+                      std::unique_ptr<viz::CopyOutputResult> result);
 
   base::Closure intersect_before_callback_;
   base::Closure intersect_after_callback_;
@@ -122,14 +122,14 @@ TestScreenRotationAnimator::CreateAfterCopyCallbackAfterRotation(
 
 void TestScreenRotationAnimator::IntersectBefore(
     CopyCallback next_callback,
-    std::unique_ptr<cc::CopyOutputResult> result) {
+    std::unique_ptr<viz::CopyOutputResult> result) {
   intersect_before_callback_.Run();
   std::move(next_callback).Run(std::move(result));
 }
 
 void TestScreenRotationAnimator::IntersectAfter(
     CopyCallback next_callback,
-    std::unique_ptr<cc::CopyOutputResult> result) {
+    std::unique_ptr<viz::CopyOutputResult> result) {
   intersect_after_callback_.Run();
   std::move(next_callback).Run(std::move(result));
 }

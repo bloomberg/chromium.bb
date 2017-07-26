@@ -16,7 +16,6 @@
 #include "cc/layers/video_layer.h"
 #include "cc/layers/video_layer_impl.h"
 #include "cc/paint/paint_flags.h"
-#include "cc/resources/single_release_callback.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -36,6 +35,7 @@
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
+#include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/media.h"
@@ -921,7 +921,7 @@ class LayerTreeHostContextTestDontUseLostResources
     texture->SetIsDrawable(true);
     texture->SetTextureMailbox(
         viz::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D),
-        SingleReleaseCallback::Create(
+        viz::SingleReleaseCallback::Create(
             base::Bind(&LayerTreeHostContextTestDontUseLostResources::
                            EmptyReleaseCallback)));
     root->AddChild(texture);

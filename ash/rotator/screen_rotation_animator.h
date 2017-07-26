@@ -18,7 +18,7 @@ namespace aura {
 class Window;
 }  // namesapce aura
 
-namespace cc {
+namespace viz {
 class CopyOutputRequest;
 class CopyOutputResult;
 }  // namespace cc
@@ -67,7 +67,7 @@ class ASH_EXPORT ScreenRotationAnimator {
 
  protected:
   using CopyCallback =
-      base::OnceCallback<void(std::unique_ptr<cc::CopyOutputResult> result)>;
+      base::OnceCallback<void(std::unique_ptr<viz::CopyOutputResult> result)>;
   struct ScreenRotationRequest {
     ScreenRotationRequest(int64_t id,
                           int64_t display_id,
@@ -119,26 +119,26 @@ class ASH_EXPORT ScreenRotationAnimator {
 
   // This is an asynchronous call to request copy output of root layer.
   void RequestCopyScreenRotationContainerLayer(
-      std::unique_ptr<cc::CopyOutputRequest> copy_output_request);
+      std::unique_ptr<viz::CopyOutputRequest> copy_output_request);
 
   // The callback in |RequestCopyScreenRotationContainerLayer()| before screen
   // rotation.
   void OnScreenRotationContainerLayerCopiedBeforeRotation(
       std::unique_ptr<ScreenRotationRequest> rotation_request,
-      std::unique_ptr<cc::CopyOutputResult> result);
+      std::unique_ptr<viz::CopyOutputResult> result);
 
   // The callback in |RequestCopyScreenRotationContainerLayer()| after screen
   // rotation.
   void OnScreenRotationContainerLayerCopiedAfterRotation(
       std::unique_ptr<ScreenRotationRequest> rotation_request,
-      std::unique_ptr<cc::CopyOutputResult> result);
+      std::unique_ptr<viz::CopyOutputResult> result);
 
   // Recreates all |root_window| layers and their layer tree owner.
   void CreateOldLayerTreeForSlowAnimation();
 
   // Creates a new layer and its layer tree owner from |CopyOutputResult|.
   std::unique_ptr<ui::LayerTreeOwner> CopyLayerTree(
-      std::unique_ptr<cc::CopyOutputResult> result);
+      std::unique_ptr<viz::CopyOutputResult> result);
 
   // Note: Only call this function when the |old_layer_tree_owner_| is set up
   // properly.

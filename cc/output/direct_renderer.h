@@ -173,7 +173,7 @@ class CC_EXPORT DirectRenderer {
   virtual void EnsureScissorTestDisabled() = 0;
   virtual void DidChangeVisibility() = 0;
   virtual void CopyCurrentRenderPassToBitmap(
-      std::unique_ptr<CopyOutputRequest> request) = 0;
+      std::unique_ptr<viz::CopyOutputRequest> request) = 0;
   virtual void SetEnableDCLayers(bool enable) = 0;
 
   gfx::Size surface_size_for_swap_buffers() const {

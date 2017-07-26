@@ -782,8 +782,8 @@ void PepperPluginInstanceImpl::PassCommittedTextureToTextureLayer() {
   if (!committed_texture_.IsValid())
     return;
 
-  std::unique_ptr<cc::SingleReleaseCallback> callback(
-      cc::SingleReleaseCallback::Create(base::Bind(
+  std::unique_ptr<viz::SingleReleaseCallback> callback(
+      viz::SingleReleaseCallback::Create(base::Bind(
           &PepperPluginInstanceImpl::FinishedConsumingCommittedTexture,
           weak_factory_.GetWeakPtr(), committed_texture_,
           committed_texture_graphics_3d_)));
@@ -2210,7 +2210,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
 
 bool PepperPluginInstanceImpl::PrepareTextureMailbox(
     viz::TextureMailbox* mailbox,
-    std::unique_ptr<cc::SingleReleaseCallback>* release_callback) {
+    std::unique_ptr<viz::SingleReleaseCallback>* release_callback) {
   if (!bound_graphics_2d_platform_)
     return false;
   return bound_graphics_2d_platform_->PrepareTextureMailbox(mailbox,
