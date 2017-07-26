@@ -5,6 +5,7 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
+#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -130,6 +131,11 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // Tests that opening the sign-in screen from the Settings and signing in works
 // correctly when there is already an identity on the device.
 - (void)testSignInOneUser {
+  // TODO(crbug.com/747444): Re-enable this test on iOS 11.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   // Set up a fake identity.
   ChromeIdentity* identity = GetFakeIdentity1();
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
@@ -155,6 +161,11 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // Tests signing in with one account, switching sync account to a second and
 // choosing to keep the browsing data separate during the switch.
 - (void)testSignInSwitchAccountsAndKeepDataSeparate {
+  // TODO(crbug.com/747444): Re-enable this test on iOS 11.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   // Set up the fake identities.
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
@@ -194,6 +205,11 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // Tests signing in with one account, switching sync account to a second and
 // choosing to import the browsing data during the switch.
 - (void)testSignInSwitchAccountsAndImportData {
+  // TODO(crbug.com/747444): Re-enable this test on iOS 11.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   // Set up the fake identities.
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
@@ -233,6 +249,11 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // Tests that switching from a managed account to a non-managed account works
 // correctly and displays the expected warnings.
 - (void)testSignInSwitchManagedAccount {
+  // TODO(crbug.com/747444): Re-enable this test on iOS 11.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   if (!experimental_flags::IsMDMIntegrationEnabled()) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with MDM integration.");
   }
@@ -282,6 +303,11 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 
 // Tests that signing out from the Settings works correctly.
 - (void)testSignInDisconnectFromChrome {
+  // TODO(crbug.com/747444): Re-enable this test on iOS 11.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   ChromeIdentity* identity = GetFakeIdentity1();
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
@@ -317,6 +343,11 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // Tests that signing out of a managed account from the Settings works
 // correctly.
 - (void)testSignInDisconnectFromChromeManaged {
+  // TODO(crbug.com/747444): Re-enable this test on iOS 11.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   if (!experimental_flags::IsMDMIntegrationEnabled()) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with MDM integration.");
   }
@@ -465,6 +496,11 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // that the authentication flow is correctly canceled and dismissed.
 // crbug.com/462202
 - (void)testSignInCancelAuthenticationFlow {
+  // TODO(crbug.com/747444): Re-enable this test on iOS 11.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   // Set up the fake identities.
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
