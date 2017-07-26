@@ -2036,7 +2036,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Device cannot open the content to be downloaded.
       </message>
       <message name="IDS_OMA_DOWNLOAD_FAILED" desc="Error message displayed when the device cannot download the OMA request.">
-        An error occured while downloading the content.
+        An error occurred while downloading the content.
       </message>
       <message name="IDS_OMA_DOWNLOAD_NAME_LABEL" desc="A text label to display the name of the OMA download.">
         Name:

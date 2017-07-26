@@ -682,7 +682,7 @@ Press any key to continue exploring.
     Deleting <ph name="COUNT">$1<ex>10</ex></ph> items...
   </message>
   <message name="IDS_FILE_BROWSER_DELETE_ERROR" desc="Message informing about error while deleting an item or items.">
-    An error occured. Some items may not have been deleted.
+    An error occurred. Some items may not have been deleted.
   </message>
 
   <message name="IDS_FILE_BROWSER_COPY_PROGRESS_SUMMARY" desc="Summary message for multiple copying tasks above the progress bar.">
@@ -1259,7 +1259,7 @@ Press any key to continue exploring.
   <message name="IDS_VIDEO_PLAYER_VIDEO_FILE_UNSUPPORTED_FOR_CAST" desc="Error message which is shown when the video which an user tried to play is not supported by the current cast device.">
     Sorry, this video is not supported by your cast device.
   </message>
-  <message name="IDS_VIDEO_PLAYER_PLAYBACK_ERROR" desc="In the video player app, message informing that an error occured while playing the movie.">
+  <message name="IDS_VIDEO_PLAYER_PLAYBACK_ERROR" desc="In the video player app, message informing that an error occurred while playing the movie.">
     An error occurred. Click to restart from the beginning.
   </message>
   <message name="IDS_VIDEO_PLAYER_LOOPED_MODE" desc="In the video player app, message informing that the movie will be played in a loop.">

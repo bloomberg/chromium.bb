@@ -64,7 +64,7 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
         READING_DONE,
         /* Stream is canceled. */
         CANCELED,
-        /* Error has occured, stream is closed. */
+        /* Error has occurred, stream is closed. */
         ERROR,
         /* Reading and writing are done, and the stream is closed successfully. */
         SUCCESS,
