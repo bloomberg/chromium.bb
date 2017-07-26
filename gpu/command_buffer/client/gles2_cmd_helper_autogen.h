@@ -2425,10 +2425,11 @@ void FlushMappedBufferRange(GLenum target, GLintptr offset, GLsizeiptr size) {
 void ResizeCHROMIUM(GLuint width,
                     GLuint height,
                     GLfloat scale_factor,
+                    GLenum color_space,
                     GLboolean alpha) {
   gles2::cmds::ResizeCHROMIUM* c = GetCmdSpace<gles2::cmds::ResizeCHROMIUM>();
   if (c) {
-    c->Init(width, height, scale_factor, alpha);
+    c->Init(width, height, scale_factor, color_space, alpha);
   }
 }
 

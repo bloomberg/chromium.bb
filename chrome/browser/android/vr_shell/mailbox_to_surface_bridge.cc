@@ -244,7 +244,8 @@ void MailboxToSurfaceBridge::ResizeSurface(int width, int height) {
   }
   DVLOG(1) << __FUNCTION__ << ": resize Surface to " <<
       width << "x" << height;
-  gl_->ResizeCHROMIUM(width, height, 1.f, false);
+  gl_->ResizeCHROMIUM(width, height, 1.f, GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM,
+                      false);
   gl_->Viewport(0, 0, width, height);
 }
 

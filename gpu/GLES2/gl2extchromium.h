@@ -621,10 +621,32 @@ typedef void (GL_APIENTRYP PFNGLDRAWBUFFERSEXTPROC) (
 GL_APICALL void GL_APIENTRY glResizeCHROMIUM(GLuint width,
                                              GLuint height,
                                              GLfloat scale_factor,
+                                             GLenum color_space,
                                              GLboolean alpha);
+
 #endif
-typedef void (GL_APIENTRYP PFNGLRESIZECHROMIUMPROC) (
-    GLuint width, GLuint height);
+typedef void(GL_APIENTRYP PFNGLRESIZECHROMIUMPROC)(GLuint width,
+                                                   GLuint height,
+                                                   GLfloat scale_factor,
+                                                   GLenum color_space,
+                                                   GLboolean alpha);
+
+#ifndef GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM
+#define GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM 0x8AF1
+#endif
+
+#ifndef GL_COLOR_SPACE_SCRGB_LINEAR_CHROMIUM
+#define GL_COLOR_SPACE_SCRGB_LINEAR_CHROMIUM 0x8AF2
+#endif
+
+#ifndef GL_COLOR_SPACE_SRGB_CHROMIUM
+#define GL_COLOR_SPACE_SRGB_CHROMIUM 0x8AF3
+#endif
+
+#ifndef GL_COLOR_SPACE_DISPLAY_P3_CHROMIUM
+#define GL_COLOR_SPACE_DISPLAY_P3_CHROMIUM 0x8AF4
+#endif
+
 #endif  /* GL_CHROMIUM_resize */
 
 /* GL_CHROMIUM_get_multiple */

@@ -28,6 +28,7 @@ class GLSurfaceCast : public gl::NativeViewGLSurfaceEGL {
       const std::vector<gfx::Rect>& rects) override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
+              ColorSpace color_space,
               bool has_alpha) override;
   bool ScheduleOverlayPlane(int z_order,
                             gfx::OverlayTransform transform,

@@ -1138,6 +1138,7 @@ void* DirectCompositionSurfaceWin::GetHandle() {
 
 bool DirectCompositionSurfaceWin::Resize(const gfx::Size& size,
                                          float scale_factor,
+                                         ColorSpace color_space,
                                          bool has_alpha) {
   if ((size == GetSize()) && (has_alpha == has_alpha_))
     return true;

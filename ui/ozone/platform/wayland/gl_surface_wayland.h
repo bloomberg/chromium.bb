@@ -34,6 +34,7 @@ class GLSurfaceWayland : public gl::NativeViewGLSurfaceEGL {
   // gl::GLSurface:
   bool Resize(const gfx::Size& size,
               float scale_factor,
+              ColorSpace color_space,
               bool has_alpha) override;
   EGLConfig GetConfig() override;
 

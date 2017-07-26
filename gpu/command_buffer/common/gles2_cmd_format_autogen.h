@@ -12047,11 +12047,13 @@ struct ResizeCHROMIUM {
   void Init(GLuint _width,
             GLuint _height,
             GLfloat _scale_factor,
+            GLenum _color_space,
             GLboolean _alpha) {
     SetHeader();
     width = _width;
     height = _height;
     scale_factor = _scale_factor;
+    color_space = _color_space;
     alpha = _alpha;
   }
 
@@ -12059,8 +12061,10 @@ struct ResizeCHROMIUM {
             GLuint _width,
             GLuint _height,
             GLfloat _scale_factor,
+            GLenum _color_space,
             GLboolean _alpha) {
-    static_cast<ValueType*>(cmd)->Init(_width, _height, _scale_factor, _alpha);
+    static_cast<ValueType*>(cmd)->Init(_width, _height, _scale_factor,
+                                       _color_space, _alpha);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -12068,11 +12072,12 @@ struct ResizeCHROMIUM {
   uint32_t width;
   uint32_t height;
   float scale_factor;
+  uint32_t color_space;
   uint32_t alpha;
 };
 
-static_assert(sizeof(ResizeCHROMIUM) == 20,
-              "size of ResizeCHROMIUM should be 20");
+static_assert(sizeof(ResizeCHROMIUM) == 24,
+              "size of ResizeCHROMIUM should be 24");
 static_assert(offsetof(ResizeCHROMIUM, header) == 0,
               "offset of ResizeCHROMIUM header should be 0");
 static_assert(offsetof(ResizeCHROMIUM, width) == 4,
@@ -12081,8 +12086,10 @@ static_assert(offsetof(ResizeCHROMIUM, height) == 8,
               "offset of ResizeCHROMIUM height should be 8");
 static_assert(offsetof(ResizeCHROMIUM, scale_factor) == 12,
               "offset of ResizeCHROMIUM scale_factor should be 12");
-static_assert(offsetof(ResizeCHROMIUM, alpha) == 16,
-              "offset of ResizeCHROMIUM alpha should be 16");
+static_assert(offsetof(ResizeCHROMIUM, color_space) == 16,
+              "offset of ResizeCHROMIUM color_space should be 16");
+static_assert(offsetof(ResizeCHROMIUM, alpha) == 20,
+              "offset of ResizeCHROMIUM alpha should be 20");
 
 struct GetRequestableExtensionsCHROMIUM {
   typedef GetRequestableExtensionsCHROMIUM ValueType;
