@@ -6,6 +6,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#include "base/ios/ios_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -399,6 +400,12 @@ void AssertIsShowingDistillablePage(bool online) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version via context menu.
 - (void)testSavingToReadingListAndLoadDistilled {
+  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
+  // interact with the share menu.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   auto network_change_disabler =
       base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
@@ -447,6 +454,12 @@ void AssertIsShowingDistillablePage(bool online) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads online version by tapping on entry.
 - (void)testSavingToReadingListAndLoadNormal {
+  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
+  // interact with the share menu.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   auto network_change_disabler =
       base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
@@ -486,6 +499,12 @@ void AssertIsShowingDistillablePage(bool online) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry without web server.
 - (void)testSavingToReadingListAndLoadNoNetwork {
+  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
+  // interact with the share menu.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   auto network_change_disabler =
       base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
@@ -530,6 +549,12 @@ void AssertIsShowingDistillablePage(bool online) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry with delayed web server.
 - (void)testSavingToReadingListAndLoadBadNetwork {
+  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
+  // interact with the share menu.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   auto network_change_disabler =
       base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
