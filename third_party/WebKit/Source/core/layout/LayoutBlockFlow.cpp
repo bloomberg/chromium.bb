@@ -1063,8 +1063,8 @@ LayoutUnit LayoutBlockFlow::AdjustFloatLogicalTopForPagination(
         LayoutUnit remaining_space = PageRemainingLogicalHeightForOffset(
             logical_top_margin_edge, kAssociateWithLatterPage);
         if (remaining_space <= margin_before) {
-          strut += CalculatePaginationStrutToFitContent(
-              logical_top_margin_edge, remaining_space, margin_before);
+          strut += CalculatePaginationStrutToFitContent(logical_top_margin_edge,
+                                                        margin_before);
         }
       }
     }
@@ -1154,8 +1154,8 @@ void LayoutBlockFlow::AdjustLinePositionForPagination(RootInlineBox& line_box,
   if (remaining_logical_height < line_height ||
       (ShouldBreakAtLineToAvoidWidow() &&
        LineBreakToAvoidWidow() == line_index)) {
-    LayoutUnit pagination_strut = CalculatePaginationStrutToFitContent(
-        logical_offset, remaining_logical_height, line_height);
+    LayoutUnit pagination_strut =
+        CalculatePaginationStrutToFitContent(logical_offset, line_height);
     LayoutUnit new_logical_offset = logical_offset + pagination_strut;
     // Moving to a different page or column may mean that its height is
     // different.
@@ -1261,7 +1261,7 @@ LayoutUnit LayoutBlockFlow::AdjustForUnsplittableChild(
   if (remaining_logical_height >= child_logical_height)
     return logical_offset;  // It fits fine where it is. No need to break.
   LayoutUnit pagination_strut = CalculatePaginationStrutToFitContent(
-      logical_offset, remaining_logical_height, child_logical_height);
+      logical_offset, child_logical_height);
   if (pagination_strut == remaining_logical_height &&
       remaining_logical_height == PageLogicalHeightForOffset(logical_offset)) {
     // Don't break if we were at the top of a page, and we failed to fit the

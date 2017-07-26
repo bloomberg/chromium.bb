@@ -821,13 +821,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool CrossesPageBoundary(LayoutUnit offset, LayoutUnit logical_height) const;
 
   // Calculate the strut to insert in order fit content of size
-  // |contentLogicalHeight|. |strutToNextPage| is the strut to add to |offset|
-  // to merely get to the top of the next page or column. This is what will be
-  // returned if the content can actually fit there. Otherwise, return the
-  // distance to the next fragmentainer that can fit this piece of content.
-  virtual LayoutUnit CalculatePaginationStrutToFitContent(
+  // |content_logical_height|. Usually this will merely return the distance to
+  // the next fragmentainer. However, in cases where the next fragmentainer
+  // isn't tall enough to fit the content, and there's a likelihood of taller
+  // fragmentainers further ahead, we'll search for one and return the distance
+  // to the first fragmentainer that can fit this piece of content.
+  LayoutUnit CalculatePaginationStrutToFitContent(
       LayoutUnit offset,
-      LayoutUnit strut_to_next_page,
       LayoutUnit content_logical_height) const;
 
   void PositionLineBox(InlineBox*);

@@ -5862,10 +5862,10 @@ bool LayoutBox::CrossesPageBoundary(LayoutUnit offset,
 
 LayoutUnit LayoutBox::CalculatePaginationStrutToFitContent(
     LayoutUnit offset,
-    LayoutUnit strut_to_next_page,
     LayoutUnit content_logical_height) const {
-  DCHECK_EQ(strut_to_next_page, PageRemainingLogicalHeightForOffset(
-                                    offset, kAssociateWithLatterPage));
+  LayoutUnit strut_to_next_page =
+      PageRemainingLogicalHeightForOffset(offset, kAssociateWithLatterPage);
+
   // If we're inside a cell in a row that straddles a page then avoid the
   // repeating header group if necessary. If we're a table section we're
   // already accounting for it.
