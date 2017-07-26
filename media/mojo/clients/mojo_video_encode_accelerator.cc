@@ -110,6 +110,8 @@ bool MojoVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
            << ", output_profile=" << GetProfileName(output_profile)
            << ", initial_bitrate=" << initial_bitrate;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!client)
+    return false;
 
   // Get a mojom::VideoEncodeAcceleratorClient bound to a local implementation
   // (VideoEncodeAcceleratorClient) and send the pointer remotely.

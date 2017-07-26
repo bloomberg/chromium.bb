@@ -27,6 +27,7 @@ source_set("gpu") {
     "//gpu/ipc/service",
     "//ipc",
     "//media/gpu/ipc/service",
+    "//media/mojo/services",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/ui/gpu/interfaces",

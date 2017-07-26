@@ -29,10 +29,12 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator_factory_provider.h"
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
 #include "media/gpu/ipc/service/gpu_video_encode_accelerator.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
+#include "media/mojo/services/mojo_video_encode_accelerator_service.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
@@ -232,8 +234,10 @@ void GpuService::CreateJpegDecodeAccelerator(
 void GpuService::CreateVideoEncodeAccelerator(
     media::mojom::VideoEncodeAcceleratorRequest vea_request) {
   DCHECK(io_runner_->BelongsToCurrentThread());
-  // TODO(mcasas): Create a mojom::VideoEncodeAccelerator implementation,
-  // https://crbug.com/736517.
+  media::MojoVideoEncodeAcceleratorService::Create(
+      std::move(vea_request),
+      base::Bind(&media::GpuVideoEncodeAcceleratorFactory::CreateVEA),
+      gpu_preferences_);
 }
 
 void GpuService::CreateGpuMemoryBuffer(
