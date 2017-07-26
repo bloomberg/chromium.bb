@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/ios/ios_util.h"
 #include "testing/gtest_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -113,6 +114,9 @@ TEST(MainViewControllerTest, SetActiveVC) {
 }
 
 TEST(MainViewControllerTest, StatusBar) {
+  // TODO(crbug.com/748738) This is broken with iOS11/Xcode 9 beta 4.
+  if (base::ios::IsRunningOnIOS11OrLater())
+    return;
   MainViewController* main_view_controller = [[MainViewController alloc] init];
   // MVC needs to be the root view controller for this to work, so save the
   // current one and restore it at the end of the test.
