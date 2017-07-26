@@ -48,7 +48,7 @@ class CC_EXPORT OverlayProcessor {
   // or CALayers. This must be called every frame.
   void ProcessForOverlays(
       ResourceProvider* resource_provider,
-      RenderPass* root_render_pass,
+      RenderPassList* render_passes,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_background_filters,
       OverlayCandidateList* overlay_candidates,
@@ -74,7 +74,7 @@ class CC_EXPORT OverlayProcessor {
       gfx::Rect* damage_rect);
   bool ProcessForDCLayers(
       ResourceProvider* resource_provider,
-      RenderPass* render_pass,
+      RenderPassList* render_passes,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_background_filters,
       OverlayCandidateList* overlay_candidates,
