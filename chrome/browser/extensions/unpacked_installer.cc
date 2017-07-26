@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -50,6 +51,11 @@ const char kImportMinVersionNewer[] =
     "'import' version requested is newer than what is installed.";
 const char kImportMissing[] = "'import' extension is not installed.";
 const char kImportNotSharedModule[] = "'import' is not a shared module.";
+
+constexpr base::TaskTraits kTraits = {
+    base::MayBlock(),                   // Needs file access.
+    base::TaskPriority::USER_BLOCKING,  // Install is triggered by UI.
+    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
 // Manages an ExtensionInstallPrompt for a particular extension.
 class SimpleExtensionLoadPrompt {
@@ -129,8 +135,8 @@ UnpackedInstaller::~UnpackedInstaller() {
 void UnpackedInstaller::Load(const base::FilePath& path_in) {
   DCHECK(extension_path_.empty());
   extension_path_ = path_in;
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, kTraits,
       base::BindOnce(&UnpackedInstaller::GetAbsolutePath, this));
 }
 
@@ -301,7 +307,7 @@ bool UnpackedInstaller::IsLoadingUnpackedAllowed() const {
 }
 
 void UnpackedInstaller::GetAbsolutePath() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   extension_path_ = base::MakeAbsoluteFilePath(extension_path_);
 
@@ -328,13 +334,13 @@ void UnpackedInstaller::CheckExtensionFileAccess() {
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, kTraits,
       base::BindOnce(&UnpackedInstaller::LoadWithFileAccess, this, GetFlags()));
 }
 
 void UnpackedInstaller::LoadWithFileAccess(int flags) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   std::string error;
   extension_ = file_util::LoadExtension(extension_path_, Manifest::UNPACKED,

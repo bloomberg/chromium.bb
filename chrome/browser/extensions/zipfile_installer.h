@@ -40,8 +40,7 @@ class ZipFileInstaller : public base::RefCountedThreadSafe<ZipFileInstaller> {
   ~ZipFileInstaller();
 
   // Unzip an extension into |unzip_dir| and load it with an UnpackedInstaller.
-  void PrepareUnzipDir(const base::FilePath& zip_file);
-  void Unzip(const base::FilePath& unzip_dir);
+  void Unzip(base::Optional<base::FilePath> unzip_dir);
   void UnzipDone(const base::FilePath& unzip_dir, bool success);
 
   // On failure, report the |error| reason.
