@@ -62,7 +62,6 @@ class PLATFORM_EXPORT SchemeRegistry {
   static void RegisterURLSchemeAsSecure(const String&);
   static bool ShouldTreatURLSchemeAsSecure(const String&);
 
-  static void RegisterURLSchemeAsNoAccess(const String&);
   static bool ShouldTreatURLSchemeAsNoAccess(const String&);
 
   // Display-isolated schemes can only be displayed (in the sense of
@@ -88,7 +87,6 @@ class PLATFORM_EXPORT SchemeRegistry {
       const String& scheme);
 
   // Allow non-HTTP schemes to be registered to allow CORS requests.
-  static void RegisterURLSchemeAsCORSEnabled(const String& scheme);
   static bool ShouldTreatURLSchemeAsCORSEnabled(const String& scheme);
 
   // Serialize the registered schemes in a comma-separated list.
