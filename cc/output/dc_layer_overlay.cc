@@ -124,11 +124,25 @@ DCLayerOverlayProcessor::DCLayerResult DCLayerOverlayProcessor::FromDrawQuad(
 
 void DCLayerOverlayProcessor::Process(ResourceProvider* resource_provider,
                                       const gfx::RectF& display_rect,
-                                      QuadList* quad_list,
+                                      RenderPassList* render_passes,
                                       gfx::Rect* overlay_damage_rect,
                                       gfx::Rect* damage_rect,
                                       DCLayerOverlayList* ca_layer_overlays) {
+  ProcessRenderPass(resource_provider, display_rect,
+                    render_passes->back().get(), true, overlay_damage_rect,
+                    damage_rect, ca_layer_overlays);
+}
+
+void DCLayerOverlayProcessor::ProcessRenderPass(
+    ResourceProvider* resource_provider,
+    const gfx::RectF& display_rect,
+    RenderPass* render_pass,
+    bool is_root,
+    gfx::Rect* overlay_damage_rect,
+    gfx::Rect* damage_rect,
+    DCLayerOverlayList* ca_layer_overlays) {
   gfx::Rect this_frame_underlay_rect;
+  QuadList* quad_list = &render_pass->quad_list;
   for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
     DCLayerOverlay dc_layer;
     DCLayerResult result = FromDrawQuad(resource_provider, display_rect,
@@ -146,15 +160,19 @@ void DCLayerOverlayProcessor::Process(ResourceProvider* resource_provider,
       continue;
     }
 
+    dc_layer.shared_state->transform.postConcat(
+        render_pass->transform_to_root_target.matrix());
+
     gfx::Rect quad_rectangle = gfx::ToEnclosingRect(ClippedQuadRectangle(*it));
     gfx::RectF occlusion_bounding_box =
         GetOcclusionBounds(gfx::RectF(quad_rectangle), quad_list->begin(), it);
 
     // Underlays are less efficient, so attempt regular overlays first.
-    if (ProcessForOverlay(display_rect, quad_list, quad_rectangle,
-                          occlusion_bounding_box, it, damage_rect) ||
-        ProcessForUnderlay(display_rect, quad_list, quad_rectangle,
-                           occlusion_bounding_box, it, damage_rect,
+    if ((is_root &&
+         ProcessForOverlay(display_rect, quad_list, quad_rectangle,
+                           occlusion_bounding_box, it, damage_rect)) ||
+        ProcessForUnderlay(display_rect, render_pass, quad_rectangle,
+                           occlusion_bounding_box, it, is_root, damage_rect,
                            &this_frame_underlay_rect, &dc_layer)) {
       overlay_damage_rect->Union(quad_rectangle);
 
@@ -192,15 +210,24 @@ bool DCLayerOverlayProcessor::ProcessForOverlay(
 
 bool DCLayerOverlayProcessor::ProcessForUnderlay(
     const gfx::RectF& display_rect,
-    QuadList* quad_list,
+    RenderPass* render_pass,
     const gfx::Rect& quad_rectangle,
     const gfx::RectF& occlusion_bounding_box,
     const QuadList::Iterator& it,
+    bool is_root,
     gfx::Rect* damage_rect,
     gfx::Rect* this_frame_underlay_rect,
     DCLayerOverlay* dc_layer) {
   if (!base::FeatureList::IsEnabled(features::kDirectCompositionUnderlays)) {
     RecordDCLayerResult(DC_LAYER_FAILED_OCCLUDED);
+    return false;
+  }
+  if (!is_root) {
+    RecordDCLayerResult(DC_LAYER_FAILED_NON_ROOT);
+    return false;
+  }
+  if ((it->shared_quad_state->opacity < 1.0)) {
+    RecordDCLayerResult(DC_LAYER_FAILED_TRANSPARENT);
     return false;
   }
   bool display_rect_changed = (display_rect != previous_display_rect_);
@@ -214,11 +241,11 @@ bool DCLayerOverlayProcessor::ProcessForUnderlay(
   const SharedQuadState* shared_quad_state = it->shared_quad_state;
   gfx::Rect rect = it->visible_rect;
   SolidColorDrawQuad* replacement =
-      quad_list->ReplaceExistingElement<SolidColorDrawQuad>(it);
+      render_pass->quad_list.ReplaceExistingElement<SolidColorDrawQuad>(it);
   replacement->SetAll(shared_quad_state, rect, rect, rect, false,
                       SK_ColorTRANSPARENT, true);
 
-  if (*this_frame_underlay_rect == previous_frame_underlay_rect_) {
+  if (*this_frame_underlay_rect == previous_frame_underlay_rect_ && is_root) {
     // If this underlay rect is the same as for last frame, subtract its
     // area from the damage of the main surface, as the cleared area was
     // already cleared last frame. Add back the damage from the occluded
