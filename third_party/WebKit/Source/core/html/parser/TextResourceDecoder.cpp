@@ -64,19 +64,6 @@ static inline bool BytesEqual(const char* p,
                               char b4,
                               char b5,
                               char b6,
-                              char b7) {
-  return p[0] == b0 && p[1] == b1 && p[2] == b2 && p[3] == b3 && p[4] == b4 &&
-         p[5] == b5 && p[6] == b6 && p[7] == b7;
-}
-
-static inline bool BytesEqual(const char* p,
-                              char b0,
-                              char b1,
-                              char b2,
-                              char b3,
-                              char b4,
-                              char b5,
-                              char b6,
                               char b7,
                               char b8,
                               char b9) {
@@ -217,11 +204,12 @@ static int FindXMLEncoding(const char* str, int len, int& encoding_length) {
 }
 
 size_t TextResourceDecoder::CheckForBOM(const char* data, size_t len) {
-  // Check for UTF-16/32 or UTF-8 BOM mark at the beginning, which is a sure
+  // Check for UTF-16 or UTF-8 BOM mark at the beginning, which is a sure
   // sign of a Unicode encoding. We let it override even a user-chosen encoding.
   DCHECK(!checked_for_bom_);
 
   size_t length_of_bom = 0;
+  const size_t max_bom_length = 3;
 
   size_t buffer_length = buffer_.size();
 
@@ -234,9 +222,7 @@ size_t TextResourceDecoder::CheckForBOM(const char* data, size_t len) {
       buf1_len ? (--buf1_len, *buf1++) : buf2_len ? (--buf2_len, *buf2++) : 0;
   unsigned char c2 =
       buf1_len ? (--buf1_len, *buf1++) : buf2_len ? (--buf2_len, *buf2++) : 0;
-  unsigned char c3 =
-      buf1_len ? (--buf1_len, *buf1++) : buf2_len ? (--buf2_len, *buf2++) : 0;
-  unsigned char c4 = buf2_len ? (--buf2_len, *buf2++) : 0;
+  unsigned char c3 = buf1_len ? *buf1 : buf2_len ? *buf2 : 0;
 
   // Check for the BOM.
   if (c1 == 0xEF && c2 == 0xBB && c3 == 0xBF) {
@@ -244,24 +230,16 @@ size_t TextResourceDecoder::CheckForBOM(const char* data, size_t len) {
     length_of_bom = 3;
   } else if (options_.GetEncodingDetectionOption() !=
              TextResourceDecoderOptions::kAlwaysUseUTF8ForText) {
-    if (c1 == 0xFF && c2 == 0xFE && buffer_length + len >= 4) {
-      if (c3 || c4) {
-        SetEncoding(UTF16LittleEndianEncoding(), kAutoDetectedEncoding);
-        length_of_bom = 2;
-      } else {
-        SetEncoding(UTF32LittleEndianEncoding(), kAutoDetectedEncoding);
-        length_of_bom = 4;
-      }
-    } else if (c1 == 0xFE && c2 == 0xFF) {
+    if (c1 == 0xFE && c2 == 0xFF) {
       SetEncoding(UTF16BigEndianEncoding(), kAutoDetectedEncoding);
       length_of_bom = 2;
-    } else if (!c1 && !c2 && c3 == 0xFE && c4 == 0xFF) {
-      SetEncoding(UTF32BigEndianEncoding(), kAutoDetectedEncoding);
-      length_of_bom = 4;
+    } else if (c1 == 0xFF && c2 == 0xFE) {
+      SetEncoding(UTF16LittleEndianEncoding(), kAutoDetectedEncoding);
+      length_of_bom = 2;
     }
   }
 
-  if (length_of_bom || buffer_length + len >= 4)
+  if (length_of_bom || buffer_length + len >= max_bom_length)
     checked_for_bom_ = true;
 
   return length_of_bom;
@@ -358,10 +336,6 @@ bool TextResourceDecoder::CheckForXMLCharset(const char* data,
     SetEncoding(UTF16LittleEndianEncoding(), kAutoDetectedEncoding);
   } else if (BytesEqual(ptr, 0, '<', 0, '?', 0, 'x')) {
     SetEncoding(UTF16BigEndianEncoding(), kAutoDetectedEncoding);
-  } else if (BytesEqual(ptr, '<', 0, 0, 0, '?', 0, 0, 0)) {
-    SetEncoding(UTF32LittleEndianEncoding(), kAutoDetectedEncoding);
-  } else if (BytesEqual(ptr, 0, 0, 0, '<', 0, 0, 0, '?')) {
-    SetEncoding(UTF32BigEndianEncoding(), kAutoDetectedEncoding);
   }
 
   checked_for_xml_charset_ = true;

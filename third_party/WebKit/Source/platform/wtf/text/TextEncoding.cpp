@@ -95,9 +95,7 @@ bool TextEncoding::IsNonByteBasedEncoding() const {
   }
 
   return *this == UTF16LittleEndianEncoding() ||
-         *this == UTF16BigEndianEncoding() || *this == UTF32Encoding() ||
-         *this == UTF32BigEndianEncoding() ||
-         *this == UTF32LittleEndianEncoding();
+         *this == UTF16BigEndianEncoding();
 }
 
 bool TextEncoding::IsUTF7Encoding() const {
@@ -113,11 +111,10 @@ const TextEncoding& TextEncoding::ClosestByteBasedEquivalent() const {
   return *this;
 }
 
-// HTML5 specifies that UTF-8 be used in form submission when a form is
-// is a part of a document in UTF-16 probably because UTF-16 is not a
-// byte-based encoding and can contain 0x00. By extension, the same
-// should be done for UTF-32. In case of UTF-7, it is a byte-based encoding,
-// but it's fraught with problems and we'd rather steer clear of it.
+// HTML5 specifies that UTF-8 be used in form submission when a form is is a
+// part of a document in UTF-16 probably because UTF-16 is not a byte-based
+// encoding and can contain 0x00. In case of UTF-7, it is a byte-based
+// encoding, but it's fraught with problems and we'd rather steer clear of it.
 const TextEncoding& TextEncoding::EncodingForFormSubmission() const {
   if (IsNonByteBasedEncoding() || IsUTF7Encoding())
     return UTF8Encoding();
@@ -146,25 +143,6 @@ const TextEncoding& UTF16LittleEndianEncoding() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       const TextEncoding, global_utf16_little_endian_encoding, ("UTF-16LE"));
   return global_utf16_little_endian_encoding;
-}
-
-// UTF-32 is UTF-32LE with an implicit BOM.
-const TextEncoding& UTF32Encoding() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, global_utf32_encoding,
-                                  ("UTF-32"));
-  return global_utf32_encoding;
-}
-
-const TextEncoding& UTF32BigEndianEncoding() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      const TextEncoding, global_utf32_big_endian_encoding, ("UTF-32BE"));
-  return global_utf32_big_endian_encoding;
-}
-
-const TextEncoding& UTF32LittleEndianEncoding() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      const TextEncoding, global_utf32_little_endian_encoding, ("UTF-32LE"));
-  return global_utf32_little_endian_encoding;
 }
 
 const TextEncoding& UTF8Encoding() {
