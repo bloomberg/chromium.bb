@@ -6459,16 +6459,6 @@
             "chrome_internal"
         ]
     },
-    "cyan-android-mnc-pre-flight-branch": {
-        "_template": "pre_flight_branch",
-        "android_import_branch": "git_mnc-dr-arc-dev",
-        "android_package": "android-container",
-        "android_rev": "latest_release",
-        "boards": [
-            "cyan"
-        ],
-        "sync_chrome": true
-    },
     "cyan-chrome-pfq": {
         "_template": "chrome_pfq",
         "active_waterfall": "chromeos",
@@ -27577,6 +27567,16 @@
             "chrome_internal"
         ],
         "vm_tests": []
+    },
+    "veyron_tiger-android-mnc-pre-flight-branch": {
+        "_template": "pre_flight_branch",
+        "android_import_branch": "git_mnc-dr-arc-dev",
+        "android_package": "android-container",
+        "android_rev": "latest_release",
+        "boards": [
+            "veyron_tiger"
+        ],
+        "sync_chrome": true
     },
     "veyron_tiger-android-pfq": {
         "_template": "android_pfq",

@@ -3669,9 +3669,9 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.Add(
-      'cyan-android-mnc-pre-flight-branch',
+      'veyron_tiger-android-mnc-pre-flight-branch',
       site_config.templates.pre_flight_branch,
-      boards=['cyan'],
+      boards=['veyron_tiger'],
       sync_chrome=True,
       android_rev=constants.ANDROID_REV_LATEST,
       android_package='android-container',
