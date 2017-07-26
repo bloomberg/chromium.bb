@@ -79,6 +79,7 @@ class SelectionModifier {
   VisiblePosition ModifyMovingForward(TextGranularity);
   VisiblePosition ModifyExtendingLeft(TextGranularity);
   VisiblePosition ModifyExtendingBackward(TextGranularity);
+  VisiblePosition ModifyExtendingBackwardInternal(TextGranularity);
   VisiblePosition ModifyMovingLeft(TextGranularity);
   VisiblePosition ModifyMovingBackward(TextGranularity);
   VisiblePosition NextWordPositionForPlatform(const VisiblePosition&);
