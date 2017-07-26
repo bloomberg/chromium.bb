@@ -358,6 +358,35 @@ TEST_F(AppListViewFullscreenTest, EscapeKeySideShelfSearchToFullscreen) {
   ASSERT_EQ(view_->app_list_state(), AppListView::FULLSCREEN_ALL_APPS);
 }
 
+// Tests that in fullscreen, the app list has multiple pages with enough apps.
+TEST_F(AppListViewFullscreenTest, PopulateAppsCreatesAnotherPage) {
+  Initialize(0, false, false);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+
+  Show();
+
+  ASSERT_EQ(GetPaginationModel()->total_pages(), 2);
+}
+
+// Tests that even if initialize is called again with a different initial page,
+// that for fullscreen we always select the first page.
+TEST_F(AppListViewFullscreenTest, MultiplePagesAlwaysReinitializeOnFirstPage) {
+  Initialize(0, false, false);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+
+  // Show and close the widget once.
+  Show();
+  view_->GetWidget()->Close();
+  // Set it up again with a nonzero initial page.
+  view_ = new AppListView(delegate_.get());
+  view_->Initialize(GetContext(), 1, false, false);
+  const gfx::Size size = view_->bounds().size();
+  view_->MaybeSetAnchorPoint(gfx::Point(size.width() / 2, size.height() / 2));
+  Show();
+
+  ASSERT_EQ(view_->GetAppsPaginationModel()->selected_page(), 0);
+}
+
 // Tests the focus change in search box view and start page view triggered by
 // tab key .
 TEST_F(AppListViewFullscreenTest, StartPageTabFocusTest) {
@@ -696,6 +725,24 @@ TEST_F(AppListViewTest, AppListOverlayTest) {
   EXPECT_TRUE(search_box_view->enabled());
   EXPECT_EQ(search_box_view->search_box(),
             view_->GetWidget()->GetFocusManager()->GetFocusedView());
+}
+
+// Tests that even if initialize is called again with a different initial page,
+// that different initial page is respected.
+TEST_F(AppListViewTest, MultiplePagesReinitializeOnInputPage) {
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+
+  // Show and close the widget once.
+  Show();
+  view_->GetWidget()->Close();
+  // Set it up again with a nonzero initial page.
+  view_ = new AppListView(delegate_.get());
+  view_->Initialize(GetContext(), 1, false, false);
+  const gfx::Size size = view_->bounds().size();
+  view_->MaybeSetAnchorPoint(gfx::Point(size.width() / 2, size.height() / 2));
+  Show();
+
+  ASSERT_EQ(view_->GetAppsPaginationModel()->selected_page(), 1);
 }
 
 }  // namespace test
