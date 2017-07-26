@@ -12,7 +12,7 @@
 
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/posix/unix_domain_socket_linux.h"
+#include "base/posix/unix_domain_socket.h"
 #include "base/sys_byteorder.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"

@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/posix/unix_domain_socket_linux.h"
+#include "base/posix/unix_domain_socket.h"
 
 #include <errno.h>
 #include <sys/socket.h>
+#if !defined(OS_NACL_NONSFI)
+#include <sys/un.h>
+#endif
 #include <unistd.h>
 
 #include <vector>
@@ -28,8 +31,24 @@ const size_t UnixDomainSocket::kMaxFileDescriptors = 16;
 #if !defined(OS_NACL_NONSFI)
 bool CreateSocketPair(ScopedFD* one, ScopedFD* two) {
   int raw_socks[2];
-  if (socketpair(AF_UNIX, SOCK_SEQPACKET, 0, raw_socks) == -1)
+#if defined(OS_MACOSX)
+  // macOS does not support SEQPACKET.
+  const int flags = SOCK_STREAM;
+#else
+  const int flags = SOCK_SEQPACKET;
+#endif
+  if (socketpair(AF_UNIX, flags, 0, raw_socks) == -1)
     return false;
+#if defined(OS_MACOSX)
+  // On macOS, preventing SIGPIPE is done with socket option.
+  const int no_sigpipe = 1;
+  if (setsockopt(raw_socks[0], SOL_SOCKET, SO_NOSIGPIPE, &no_sigpipe,
+                 sizeof(no_sigpipe)) != 0)
+    return false;
+  if (setsockopt(raw_socks[1], SOL_SOCKET, SO_NOSIGPIPE, &no_sigpipe,
+                 sizeof(no_sigpipe)) != 0)
+    return false;
+#endif
   one->reset(raw_socks[0]);
   two->reset(raw_socks[1]);
   return true;
@@ -37,8 +56,13 @@ bool CreateSocketPair(ScopedFD* one, ScopedFD* two) {
 
 // static
 bool UnixDomainSocket::EnableReceiveProcessId(int fd) {
+#if !defined(OS_MACOSX)
   const int enable = 1;
   return setsockopt(fd, SOL_SOCKET, SO_PASSCRED, &enable, sizeof(enable)) == 0;
+#else
+  // SO_PASSCRED is not supported on macOS.
+  return true;
+#endif  // OS_MACOSX
 }
 #endif  // !defined(OS_NACL_NONSFI)
 
@@ -48,7 +72,7 @@ bool UnixDomainSocket::SendMsg(int fd,
                                size_t length,
                                const std::vector<int>& fds) {
   struct msghdr msg = {};
-  struct iovec iov = { const_cast<void*>(buf), length };
+  struct iovec iov = {const_cast<void*>(buf), length};
   msg.msg_iov = &iov;
   msg.msg_iovlen = 1;
 
@@ -68,11 +92,22 @@ bool UnixDomainSocket::SendMsg(int fd,
     msg.msg_controllen = cmsg->cmsg_len;
   }
 
-  // Avoid a SIGPIPE if the other end breaks the connection.
-  // Due to a bug in the Linux kernel (net/unix/af_unix.c) MSG_NOSIGNAL isn't
-  // regarded for SOCK_SEQPACKET in the AF_UNIX domain, but it is mandated by
-  // POSIX.
+// Avoid a SIGPIPE if the other end breaks the connection.
+// Due to a bug in the Linux kernel (net/unix/af_unix.c) MSG_NOSIGNAL isn't
+// regarded for SOCK_SEQPACKET in the AF_UNIX domain, but it is mandated by
+// POSIX. On Mac MSG_NOSIGNAL is not supported, so we need to ensure that
+// SO_NOSIGPIPE is set during socket creation.
+#if defined(OS_MACOSX)
+  const int flags = 0;
+  int no_sigpipe = 0;
+  socklen_t no_sigpipe_len = sizeof(no_sigpipe);
+  DPCHECK(getsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &no_sigpipe,
+                     &no_sigpipe_len) == 0)
+      << "Failed ot get socket option.";
+  DCHECK(no_sigpipe) << "SO_NOSIGPIPE not set on the socket.";
+#else
   const int flags = MSG_NOSIGNAL;
+#endif  // OS_MACOSX
   const ssize_t r = HANDLE_EINTR(sendmsg(fd, &msg, flags));
   const bool ret = static_cast<ssize_t>(length) == r;
   delete[] control_buffer;
@@ -106,16 +141,17 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
   fds->clear();
 
   struct msghdr msg = {};
-  struct iovec iov = { buf, length };
+  struct iovec iov = {buf, length};
   msg.msg_iov = &iov;
   msg.msg_iovlen = 1;
 
   const size_t kControlBufferSize =
       CMSG_SPACE(sizeof(int) * kMaxFileDescriptors)
-#if !defined(OS_NACL_NONSFI)
-      // The PNaCl toolchain for Non-SFI binary build does not support ucred.
+#if !defined(OS_NACL_NONSFI) && !defined(OS_MACOSX)
+      // The PNaCl toolchain for Non-SFI binary build and macOS do not support
+      // ucred. macOS supports xucred, but this structure is insufficient.
       + CMSG_SPACE(sizeof(struct ucred))
-#endif
+#endif  // OS_NACL_NONSFI or OS_MACOSX
       ;
   char control_buffer[kControlBufferSize];
   msg.msg_control = control_buffer;
@@ -133,15 +169,14 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
     struct cmsghdr* cmsg;
     for (cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
       const unsigned payload_len = cmsg->cmsg_len - CMSG_LEN(0);
-      if (cmsg->cmsg_level == SOL_SOCKET &&
-          cmsg->cmsg_type == SCM_RIGHTS) {
+      if (cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SCM_RIGHTS) {
         DCHECK_EQ(payload_len % sizeof(int), 0u);
         DCHECK_EQ(wire_fds, static_cast<void*>(nullptr));
         wire_fds = reinterpret_cast<int*>(CMSG_DATA(cmsg));
         wire_fds_len = payload_len / sizeof(int);
       }
-#if !defined(OS_NACL_NONSFI)
-      // The PNaCl toolchain for Non-SFI binary build does not support
+#if !defined(OS_NACL_NONSFI) && !defined(OS_MACOSX)
+      // The PNaCl toolchain for Non-SFI binary build and macOS do not support
       // SCM_CREDENTIALS.
       if (cmsg->cmsg_level == SOL_SOCKET &&
           cmsg->cmsg_type == SCM_CREDENTIALS) {
@@ -149,7 +184,7 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
         DCHECK_EQ(pid, -1);
         pid = reinterpret_cast<struct ucred*>(CMSG_DATA(cmsg))->pid;
       }
-#endif
+#endif  // !defined(OS_NACL_NONSFI) && !defined(OS_MACOSX)
     }
   }
 
@@ -166,12 +201,18 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
   }
 
   if (out_pid) {
+#if defined(OS_MACOSX)
+    socklen_t pid_size = sizeof(pid);
+    if (getsockopt(fd, SOL_LOCAL, LOCAL_PEERPID, &pid, &pid_size) != 0)
+      pid = -1;
+#else
     // |pid| will legitimately be -1 if we read EOF, so only DCHECK if we
     // actually received a message.  Unfortunately, Linux allows sending zero
     // length messages, which are indistinguishable from EOF, so this check
     // has false negatives.
     if (r > 0 || msg.msg_controllen > 0)
       DCHECK_GE(pid, 0);
+#endif
 
     *out_pid = pid;
   }
@@ -187,7 +228,7 @@ ssize_t UnixDomainSocket::SendRecvMsg(int fd,
                                       int* result_fd,
                                       const Pickle& request) {
   return UnixDomainSocket::SendRecvMsgWithFlags(fd, reply, max_reply_len,
-                                                0,  /* recvmsg_flags */
+                                                0, /* recvmsg_flags */
                                                 result_fd, request);
 }
 

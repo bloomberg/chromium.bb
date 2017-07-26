@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_POSIX_UNIX_DOMAIN_SOCKET_LINUX_H_
-#define BASE_POSIX_UNIX_DOMAIN_SOCKET_LINUX_H_
+#ifndef BASE_POSIX_UNIX_DOMAIN_SOCKET_H_
+#define BASE_POSIX_UNIX_DOMAIN_SOCKET_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -108,4 +108,4 @@ class BASE_EXPORT UnixDomainSocket {
 
 }  // namespace base
 
-#endif  // BASE_POSIX_UNIX_DOMAIN_SOCKET_LINUX_H_
+#endif  // BASE_POSIX_UNIX_DOMAIN_SOCKET_H_

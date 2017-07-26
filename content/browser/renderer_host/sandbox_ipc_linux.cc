@@ -18,7 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/posix/unix_domain_socket_linux.h"
+#include "base/posix/unix_domain_socket.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/font_utils_linux.h"
