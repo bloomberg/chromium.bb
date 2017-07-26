@@ -10,6 +10,9 @@
 // Pill-shaped view that displays white text.
 @interface TextBadgeView : UIView
 
+// Text displayed on the badge.
+@property(nonatomic, copy) NSString* text;
+
 // Initialize the text badge with the given display text.
 - (instancetype)initWithText:(NSString*)text NS_DESIGNATED_INITIALIZER;
 
