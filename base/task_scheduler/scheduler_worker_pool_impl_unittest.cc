@@ -779,7 +779,11 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitLazy) {
   worker_pool->Start(SchedulerWorkerPoolParams(StandbyThreadPolicy::LAZY, 8U,
                                                TimeDelta::Max()));
   ASSERT_TRUE(worker_pool);
-  EXPECT_EQ(0U, worker_pool->NumberOfAliveWorkersForTesting());
+
+  // Start will only create live workers now, so there's a minimum of 1
+  // worker started at the beginning. This test will be removed anyways when
+  // StandbyThreadPolicy is removed.
+  EXPECT_EQ(1U, worker_pool->NumberOfAliveWorkersForTesting());
   worker_pool->JoinForTesting();
 }
 
