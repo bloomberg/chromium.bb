@@ -7,7 +7,6 @@
 
 #include <string.h>
 
-#include "base/numerics/safe_math.h"
 #include "mojo/public/cpp/bindings/array_traits_carray.h"
 #include "mojo/public/cpp/bindings/array_traits_stl.h"
 #include "mojo/public/cpp/bindings/lib/array_serialization.h"
@@ -27,22 +26,18 @@
 namespace mojo {
 namespace internal {
 
-template <typename MojomType, typename UserType>
-mojo::Message StructSerializeAsMessageImpl(UserType* input) {
-  SerializationContext context;
-  PrepareToSerialize<MojomType>(*input, &context);
-  mojo::Message message;
-  context.PrepareMessage(0, 0, &message);
-  typename MojomTypeTraits<MojomType>::Data::BufferWriter writer;
-  Serialize<MojomType>(*input, message.payload_buffer(), &writer, &context);
-  return message;
-}
-
 template <typename MojomType, typename DataArrayType, typename UserType>
 DataArrayType StructSerializeImpl(UserType* input) {
   static_assert(BelongsTo<MojomType, MojomTypeCategory::STRUCT>::value,
                 "Unexpected type.");
-  Message message = StructSerializeAsMessageImpl<MojomType>(input);
+
+  SerializationContext context;
+  PrepareToSerialize<MojomType>(*input, &context);
+
+  Message message;
+  typename MojomTypeTraits<MojomType>::Data::BufferWriter writer;
+  context.PrepareMessage(0, 0, &message);
+  Serialize<MojomType>(*input, message.payload_buffer(), &writer, &context);
   uint32_t size = message.payload_num_bytes();
   DataArrayType result(size);
   if (size)
@@ -50,9 +45,8 @@ DataArrayType StructSerializeImpl(UserType* input) {
   return result;
 }
 
-template <typename MojomType, typename UserType>
-bool StructDeserializeImpl(const void* data,
-                           size_t data_num_bytes,
+template <typename MojomType, typename DataArrayType, typename UserType>
+bool StructDeserializeImpl(const DataArrayType& input,
                            UserType* output,
                            bool (*validate_func)(const void*,
                                                  ValidationContext*)) {
@@ -60,33 +54,31 @@ bool StructDeserializeImpl(const void* data,
                 "Unexpected type.");
   using DataType = typename MojomTypeTraits<MojomType>::Data;
 
-  const void* input_buffer = data_num_bytes == 0 ? nullptr : data;
-  void* aligned_input_buffer = nullptr;
+  // TODO(sammc): Use DataArrayType::empty() once WTF::Vector::empty() exists.
+  void* input_buffer =
+      input.size() == 0
+          ? nullptr
+          : const_cast<void*>(reinterpret_cast<const void*>(&input.front()));
 
-  // Validation code will insist that the input buffer is aligned, so we ensure
-  // that here. If the input data is not aligned, we (sadly) copy into an
-  // aligned buffer. In practice this should happen only rarely if ever.
+  // Please see comments in StructSerializeImpl.
   bool need_copy = !IsAligned(input_buffer);
+
   if (need_copy) {
-    aligned_input_buffer = malloc(data_num_bytes);
-    DCHECK(IsAligned(aligned_input_buffer));
-    memcpy(aligned_input_buffer, data, data_num_bytes);
-    input_buffer = aligned_input_buffer;
+    input_buffer = malloc(input.size());
+    DCHECK(IsAligned(input_buffer));
+    memcpy(input_buffer, &input.front(), input.size());
   }
 
-  DCHECK(base::IsValueInRangeForNumericType<uint32_t>(data_num_bytes));
-  ValidationContext validation_context(
-      input_buffer, static_cast<uint32_t>(data_num_bytes), 0, 0);
+  ValidationContext validation_context(input_buffer, input.size(), 0, 0);
   bool result = false;
   if (validate_func(input_buffer, &validation_context)) {
+    auto data = reinterpret_cast<DataType*>(input_buffer);
     SerializationContext context;
-    result = Deserialize<MojomType>(
-        reinterpret_cast<DataType*>(const_cast<void*>(input_buffer)), output,
-        &context);
+    result = Deserialize<MojomType>(data, output, &context);
   }
 
-  if (aligned_input_buffer)
-    free(aligned_input_buffer);
+  if (need_copy)
+    free(input_buffer);
 
   return result;
 }

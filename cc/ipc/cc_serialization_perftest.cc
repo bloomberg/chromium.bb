@@ -22,7 +22,6 @@
 #include "gpu/ipc/common/mailbox_struct_traits.h"
 #include "gpu/ipc/common/sync_token_struct_traits.h"
 #include "ipc/ipc_message.h"
-#include "mojo/public/cpp/bindings/message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
@@ -141,11 +140,11 @@ class CCSerializationPerfTest : public testing::Test {
       const std::string& test_name,
       const CompositorFrame& frame,
       UseSingleSharedQuadState single_sqs) {
-    mojo::Message message = mojom::CompositorFrame::SerializeAsMessage(&frame);
+    auto data = mojom::CompositorFrame::Serialize(&frame);
+    DCHECK_GT(data.size(), 0u);
     for (int i = 0; i < kNumWarmupRuns; ++i) {
       CompositorFrame compositor_frame;
-      mojom::CompositorFrame::Deserialize(
-          message.payload(), message.payload_num_bytes(), &compositor_frame);
+      mojom::CompositorFrame::Deserialize(data, &compositor_frame);
     }
 
     base::TimeTicks start = base::TimeTicks::Now();
@@ -157,8 +156,7 @@ class CCSerializationPerfTest : public testing::Test {
     while (start < end) {
       for (int i = 0; i < kTimeCheckInterval; ++i) {
         CompositorFrame compositor_frame;
-        mojom::CompositorFrame::Deserialize(
-            message.payload(), message.payload_num_bytes(), &compositor_frame);
+        mojom::CompositorFrame::Deserialize(data, &compositor_frame);
         now = base::TimeTicks::Now();
         // We don't count iterations after the end time.
         if (now < end)
@@ -190,8 +188,8 @@ class CCSerializationPerfTest : public testing::Test {
       const CompositorFrame& frame,
       UseSingleSharedQuadState single_sqs) {
     for (int i = 0; i < kNumWarmupRuns; ++i) {
-      mojo::Message message =
-          mojom::CompositorFrame::SerializeAsMessage(&frame);
+      auto data = mojom::CompositorFrame::Serialize(&frame);
+      DCHECK_GT(data.size(), 0u);
     }
 
     base::TimeTicks start = base::TimeTicks::Now();
@@ -202,8 +200,8 @@ class CCSerializationPerfTest : public testing::Test {
     size_t count = 0;
     while (start < end) {
       for (int i = 0; i < kTimeCheckInterval; ++i) {
-        mojo::Message message =
-            mojom::CompositorFrame::SerializeAsMessage(&frame);
+        auto data = mojom::CompositorFrame::Serialize(&frame);
+        DCHECK_GT(data.size(), 0u);
         now = base::TimeTicks::Now();
         // We don't count iterations after the end time.
         if (now < end)
