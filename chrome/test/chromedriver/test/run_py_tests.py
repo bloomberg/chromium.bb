@@ -646,6 +646,19 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEquals('prickly pete', self._driver.ExecuteScript(
         'return arguments[0].value;', second))
 
+  def testSendKeysToInputFileElement(self):
+    file_name = os.path.join(_TEST_DATA_DIR, 'anchor_download_test.png')
+    self._driver.Load(ChromeDriverTest.GetHttpUrlForFile(
+        '/chromedriver/file_input.html'))
+    elem = self._driver.FindElement('id', 'id_file')
+    elem.SendKeys(file_name)
+    text = self._driver.ExecuteScript(
+        'var input = document.getElementById("id_file").value;'
+        'return input;')
+    self.assertEquals('C:\\fakepath\\anchor_download_test.png', text);
+    self.assertRaises(chromedriver.InvalidArgument,
+                                  elem.SendKeys, "/blah/blah/blah")
+
   def testGetElementAttribute(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/attribute_colon_test.html'))
