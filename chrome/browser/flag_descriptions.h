@@ -998,6 +998,9 @@ extern const char kEnableWebapkDescription[];
 extern const char kEnableWebNfcName[];
 extern const char kEnableWebNfcDescription[];
 
+extern const char kEnableWebPaymentsMethodSectionOrderV2Name[];
+extern const char kEnableWebPaymentsMethodSectionOrderV2Description[];
+
 extern const char kEnableWebPaymentsSingleAppUiSkipName[];
 extern const char kEnableWebPaymentsSingleAppUiSkipDescription[];
 

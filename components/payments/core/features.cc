@@ -12,6 +12,9 @@ const base::Feature kWebPayments{"WebPayments",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+const base::Feature kWebPaymentsMethodSectionOrderV2{
+    "WebPaymentsMethodSectionOrderV2", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kWebPaymentsModifiers{"WebPaymentsModifiers",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
