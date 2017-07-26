@@ -39,7 +39,7 @@ class CORE_EXPORT CSSScale final : public CSSTransformComponent {
 
   // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const final { return kScaleType; }
-  const DOMMatrix* AsMatrix() const final {
+  const DOMMatrix* AsMatrix(ExceptionState&) const final {
     DOMMatrix* result = DOMMatrix::Create();
     return result->scaleSelf(x_, y_, z_);
   }
