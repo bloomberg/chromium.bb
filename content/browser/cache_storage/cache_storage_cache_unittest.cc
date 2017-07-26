@@ -354,7 +354,7 @@ class CacheStorageCacheTest : public testing::Test {
     quota_policy_ = new MockSpecialStoragePolicy;
     mock_quota_manager_ = new MockQuotaManager(
         is_incognito, temp_dir_path, base::ThreadTaskRunnerHandle::Get().get(),
-        base::ThreadTaskRunnerHandle::Get().get(), quota_policy_.get());
+        quota_policy_.get());
     mock_quota_manager_->SetQuota(GURL(kOrigin), storage::kStorageTypeTemporary,
                                   1024 * 1024 * 100);
 

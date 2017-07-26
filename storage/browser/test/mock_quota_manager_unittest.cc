@@ -50,7 +50,6 @@ class MockQuotaManagerTest : public testing::Test {
     policy_ = new MockSpecialStoragePolicy;
     manager_ = new MockQuotaManager(
         false /* is_incognito */, data_dir_.GetPath(),
-        base::ThreadTaskRunnerHandle::Get().get(),
         base::ThreadTaskRunnerHandle::Get().get(), policy_.get());
   }
 

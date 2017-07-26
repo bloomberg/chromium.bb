@@ -27,6 +27,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -816,7 +817,6 @@ QuotaManager::QuotaManager(
     bool is_incognito,
     const base::FilePath& profile_path,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread,
-    const scoped_refptr<base::SequencedTaskRunner>& db_thread,
     const scoped_refptr<SpecialStoragePolicy>& special_storage_policy,
     const GetQuotaSettingsFunc& get_settings_function)
     : is_incognito_(is_incognito),
@@ -825,7 +825,9 @@ QuotaManager::QuotaManager(
       db_disabled_(false),
       eviction_disabled_(false),
       io_thread_(io_thread),
-      db_thread_(db_thread),
+      db_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       get_settings_function_(get_settings_function),
       is_getting_eviction_origin_(false),
       special_storage_policy_(special_storage_policy),
@@ -1149,7 +1151,7 @@ QuotaManager::~QuotaManager() {
   for (auto* client : clients_)
     client->OnQuotaManagerDestroyed();
   if (database_)
-    db_thread_->DeleteSoon(FROM_HERE, database_.release());
+    db_runner_->DeleteSoon(FROM_HERE, database_.release());
 }
 
 QuotaManager::EvictionContext::EvictionContext()
@@ -1187,7 +1189,7 @@ void QuotaManager::LazyInitialize() {
   }
 
   base::PostTaskAndReplyWithResult(
-      db_thread_.get(), FROM_HERE,
+      db_runner_.get(), FROM_HERE,
       base::Bind(&QuotaDatabase::IsOriginDatabaseBootstrapped,
                  base::Unretained(database_.get())),
       base::Bind(&QuotaManager::FinishLazyInitialize,
@@ -1639,7 +1641,7 @@ void QuotaManager::GetStorageCapacity(const StorageCapacityCallback& callback) {
     return;
   }
   base::PostTaskAndReplyWithResult(
-      db_thread_.get(), FROM_HERE,
+      db_runner_.get(), FROM_HERE,
       base::Bind(&QuotaManager::CallGetVolumeInfo, get_volume_info_fn_,
                  profile_path_),
       base::Bind(&QuotaManager::DidGetStorageCapacity,
@@ -1678,11 +1680,11 @@ void QuotaManager::PostTaskAndReplyWithResultForDBThread(
     const tracked_objects::Location& from_here,
     base::Callback<bool(QuotaDatabase*)> task,
     base::Callback<void(bool)> reply) {
-  // Deleting manager will post another task to DB thread to delete
+  // Deleting manager will post another task to DB sequence to delete
   // |database_|, therefore we can be sure that database_ is alive when this
   // task runs.
   base::PostTaskAndReplyWithResult(
-      db_thread_.get(), from_here,
+      db_runner_.get(), from_here,
       base::Bind(std::move(task), base::Unretained(database_.get())),
       std::move(reply));
 }

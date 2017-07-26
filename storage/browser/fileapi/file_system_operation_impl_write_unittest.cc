@@ -73,7 +73,6 @@ class FileSystemOperationImplWriteTest : public testing::Test {
     quota_manager_ =
         new MockQuotaManager(false /* is_incognito */, dir_.GetPath(),
                              base::ThreadTaskRunnerHandle::Get().get(),
-                             base::ThreadTaskRunnerHandle::Get().get(),
                              NULL /* special storage policy */);
     virtual_path_ = base::FilePath(FILE_PATH_LITERAL("temporary file"));
 

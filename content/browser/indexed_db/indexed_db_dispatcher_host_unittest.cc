@@ -144,7 +144,6 @@ class IndexedDBDispatcherHostTest : public testing::Test {
             false /*is_incognito*/,
             browser_context_.GetPath(),
             BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-            base::ThreadTaskRunnerHandle::Get().get(),
             special_storage_policy_)),
         context_impl_(base::MakeRefCounted<IndexedDBContextImpl>(
             CreateAndReturnTempDir(&temp_dir_),
