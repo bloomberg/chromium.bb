@@ -72,7 +72,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame);
   void RequestCopyOfSurface(std::unique_ptr<CopyOutputRequest> request);
-  void ClaimTemporaryReference(const SurfaceId& surface_id);
 
   Surface* GetCurrentSurfaceForTesting();
 

@@ -19,8 +19,6 @@ GpuRootCompositorFrameSink::GpuRootCompositorFrameSink(
     std::unique_ptr<Display> display,
     std::unique_ptr<BeginFrameSource> begin_frame_source,
     cc::mojom::CompositorFrameSinkAssociatedRequest request,
-    cc::mojom::CompositorFrameSinkPrivateRequest
-        compositor_frame_sink_private_request,
     cc::mojom::CompositorFrameSinkClientPtr client,
     cc::mojom::DisplayPrivateAssociatedRequest display_private_request)
     : support_(CompositorFrameSinkSupport::Create(
@@ -28,22 +26,16 @@ GpuRootCompositorFrameSink::GpuRootCompositorFrameSink(
           frame_sink_manager,
           frame_sink_id,
           true /* is_root */,
-          true /* handles_frame_sink_id_invalidation */,
+          false /* handles_frame_sink_id_invalidation */,
           true /* needs_sync_points */)),
       display_begin_frame_source_(std::move(begin_frame_source)),
       display_(std::move(display)),
       client_(std::move(client)),
       compositor_frame_sink_binding_(this, std::move(request)),
-      compositor_frame_sink_private_binding_(
-          this,
-          std::move(compositor_frame_sink_private_request)),
       display_private_binding_(this, std::move(display_private_request)) {
   DCHECK(display_begin_frame_source_);
   compositor_frame_sink_binding_.set_connection_error_handler(
       base::Bind(&GpuRootCompositorFrameSink::OnClientConnectionLost,
-                 base::Unretained(this)));
-  compositor_frame_sink_private_binding_.set_connection_error_handler(
-      base::Bind(&GpuRootCompositorFrameSink::OnPrivateConnectionLost,
                  base::Unretained(this)));
   frame_sink_manager->RegisterBeginFrameSource(
       display_begin_frame_source_.get(), frame_sink_id);
@@ -100,16 +92,6 @@ void GpuRootCompositorFrameSink::DidNotProduceFrame(
   support_->DidNotProduceFrame(begin_frame_ack);
 }
 
-void GpuRootCompositorFrameSink::ClaimTemporaryReference(
-    const SurfaceId& surface_id) {
-  support_->ClaimTemporaryReference(surface_id);
-}
-
-void GpuRootCompositorFrameSink::RequestCopyOfSurface(
-    std::unique_ptr<CopyOutputRequest> request) {
-  support_->RequestCopyOfSurface(std::move(request));
-}
-
 void GpuRootCompositorFrameSink::DisplayOutputSurfaceLost() {
   // TODO(staraz): Implement this. Client should hear about context/output
   // surface lost.
@@ -152,11 +134,6 @@ void GpuRootCompositorFrameSink::WillDrawSurface(
 
 void GpuRootCompositorFrameSink::OnClientConnectionLost() {
   support_->frame_sink_manager()->OnClientConnectionLost(
-      support_->frame_sink_id());
-}
-
-void GpuRootCompositorFrameSink::OnPrivateConnectionLost() {
-  support_->frame_sink_manager()->OnPrivateConnectionLost(
       support_->frame_sink_id());
 }
 

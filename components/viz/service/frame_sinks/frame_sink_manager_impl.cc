@@ -68,11 +68,23 @@ void FrameSinkManagerImpl::SetLocalClient(
   client_ = client;
 }
 
+void FrameSinkManagerImpl::RegisterFrameSinkId(
+    const FrameSinkId& frame_sink_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  surface_manager_.RegisterFrameSinkId(frame_sink_id);
+}
+
+void FrameSinkManagerImpl::InvalidateFrameSinkId(
+    const FrameSinkId& frame_sink_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  compositor_frame_sinks_.erase(frame_sink_id);
+  surface_manager_.InvalidateFrameSinkId(frame_sink_id);
+}
+
 void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
     cc::mojom::CompositorFrameSinkAssociatedRequest request,
-    cc::mojom::CompositorFrameSinkPrivateRequest private_request,
     cc::mojom::CompositorFrameSinkClientPtr client,
     cc::mojom::DisplayPrivateAssociatedRequest display_private_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -87,23 +99,20 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
   compositor_frame_sinks_[frame_sink_id] =
       base::MakeUnique<GpuRootCompositorFrameSink>(
           this, frame_sink_id, std::move(display),
-          std::move(begin_frame_source), std::move(request),
-          std::move(private_request), std::move(client),
+          std::move(begin_frame_source), std::move(request), std::move(client),
           std::move(display_private_request));
 }
 
 void FrameSinkManagerImpl::CreateCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
     cc::mojom::CompositorFrameSinkRequest request,
-    cc::mojom::CompositorFrameSinkPrivateRequest private_request,
     cc::mojom::CompositorFrameSinkClientPtr client) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(0u, compositor_frame_sinks_.count(frame_sink_id));
 
   compositor_frame_sinks_[frame_sink_id] =
       base::MakeUnique<GpuCompositorFrameSink>(
-          this, frame_sink_id, std::move(request), std::move(private_request),
-          std::move(client));
+          this, frame_sink_id, std::move(request), std::move(client));
 }
 
 void FrameSinkManagerImpl::RegisterFrameSinkHierarchy(
@@ -173,6 +182,11 @@ void FrameSinkManagerImpl::UnregisterFrameSinkHierarchy(
   RecursivelyDetachBeginFrameSource(child_frame_sink_id, parent_source);
   for (auto source_iter : registered_sources_)
     RecursivelyAttachBeginFrameSource(source_iter.second, source_iter.first);
+}
+
+void FrameSinkManagerImpl::AssignTemporaryReference(const SurfaceId& surface_id,
+                                                    const FrameSinkId& owner) {
+  surface_manager_.AssignTemporaryReference(surface_id, owner);
 }
 
 void FrameSinkManagerImpl::DropTemporaryReference(const SurfaceId& surface_id) {
@@ -338,16 +352,6 @@ void FrameSinkManagerImpl::OnClientConnectionLost(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (client_)
     client_->OnClientConnectionClosed(frame_sink_id);
-}
-
-void FrameSinkManagerImpl::OnPrivateConnectionLost(
-    const FrameSinkId& frame_sink_id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DestroyCompositorFrameSink(frame_sink_id);
-}
-
-void FrameSinkManagerImpl::DestroyCompositorFrameSink(FrameSinkId sink_id) {
-  compositor_frame_sinks_.erase(sink_id);
 }
 
 }  // namespace viz

@@ -59,18 +59,3 @@ interface CompositorFrameSinkClient {
   // Returns resources sent to SubmitCompositorFrame to be reused or freed.
   ReclaimResources(array<ReturnedResource> resources);
 };
-
-// CompositorFrameSinkPrivate connects the host process to viz and allows the
-// host process to perform priviledged operations for a CompositorFrameSink such
-// as add CopyOutputRequests. The corresponding CompositorFrameSink pipe will be
-// closed when this pipe is closed.
-interface CompositorFrameSinkPrivate {
-  // Claims this FrameSinkId will embed |surface_id| so it should own the
-  // temporary reference to |surface_id|.
-  ClaimTemporaryReference(SurfaceId surface_id);
-
-  // Requests that the renderer send back a copy of the surface that this
-  // CompositorFrameSink submits to. The result can be in form of a bitmap
-  // or a texture. See cc::CopyOutputRequest.
-  RequestCopyOfSurface(cc.mojom.CopyOutputRequest request);
-};

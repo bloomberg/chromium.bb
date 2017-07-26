@@ -21,27 +21,33 @@ FrameSinkManagerClientBinding::FrameSinkManagerClientBinding(
 
 FrameSinkManagerClientBinding::~FrameSinkManagerClientBinding() = default;
 
+void FrameSinkManagerClientBinding::RegisterFrameSinkId(
+    const viz::FrameSinkId& frame_sink_id) {
+  frame_sink_manager_->RegisterFrameSinkId(frame_sink_id);
+}
+
+void FrameSinkManagerClientBinding::InvalidateFrameSinkId(
+    const viz::FrameSinkId& frame_sink_id) {
+  frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id);
+}
+
 void FrameSinkManagerClientBinding::CreateRootCompositorFrameSink(
     const viz::FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
     cc::mojom::CompositorFrameSinkAssociatedRequest request,
-    cc::mojom::CompositorFrameSinkPrivateRequest private_request,
     cc::mojom::CompositorFrameSinkClientPtr client,
     cc::mojom::DisplayPrivateAssociatedRequest display_private_request) {
   frame_sink_manager_->CreateRootCompositorFrameSink(
-      frame_sink_id, surface_handle, std::move(request),
-      std::move(private_request), std::move(client),
+      frame_sink_id, surface_handle, std::move(request), std::move(client),
       std::move(display_private_request));
 }
 
 void FrameSinkManagerClientBinding::CreateCompositorFrameSink(
     const viz::FrameSinkId& frame_sink_id,
     cc::mojom::CompositorFrameSinkRequest request,
-    cc::mojom::CompositorFrameSinkPrivateRequest private_request,
     cc::mojom::CompositorFrameSinkClientPtr client) {
   frame_sink_manager_->CreateCompositorFrameSink(
-      frame_sink_id, std::move(request), std::move(private_request),
-      std::move(client));
+      frame_sink_id, std::move(request), std::move(client));
 }
 
 void FrameSinkManagerClientBinding::RegisterFrameSinkHierarchy(
@@ -56,6 +62,12 @@ void FrameSinkManagerClientBinding::UnregisterFrameSinkHierarchy(
     const viz::FrameSinkId& child_frame_sink_id) {
   frame_sink_manager_->UnregisterFrameSinkHierarchy(parent_frame_sink_id,
                                                     child_frame_sink_id);
+}
+
+void FrameSinkManagerClientBinding::AssignTemporaryReference(
+    const viz::SurfaceId& surface_id,
+    const viz::FrameSinkId& owner) {
+  frame_sink_manager_->AssignTemporaryReference(surface_id, owner);
 }
 
 void FrameSinkManagerClientBinding::DropTemporaryReference(

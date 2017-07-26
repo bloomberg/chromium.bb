@@ -56,10 +56,11 @@ void HostFrameSinkManager::CreateCompositorFrameSink(
   DCHECK(!data.HasCompositorFrameSinkData());
 
   data.is_root = false;
+  data.has_created_compositor_frame_sink = true;
 
   frame_sink_manager_->CreateCompositorFrameSink(
-      frame_sink_id, std::move(request),
-      mojo::MakeRequest(&data.private_interface), std::move(client));
+      frame_sink_id, std::move(request), std::move(client));
+  frame_sink_manager_->RegisterFrameSinkId(frame_sink_id);
 }
 
 void HostFrameSinkManager::DestroyCompositorFrameSink(
@@ -69,11 +70,13 @@ void HostFrameSinkManager::DestroyCompositorFrameSink(
 
   FrameSinkData& data = iter->second;
   DCHECK(data.HasCompositorFrameSinkData());
-  if (data.private_interface.is_bound())
-    // This will close the message pipe and destroy the CompositorFrameSink.
-    data.private_interface.reset();
-  else
+  if (data.has_created_compositor_frame_sink) {
+    // This will also destroy the CompositorFrameSink pipe to the client.
+    frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id);
+    data.has_created_compositor_frame_sink = false;
+  } else {
     data.support = nullptr;
+  }
 
   if (data.IsEmpty())
     frame_sink_data_map_.erase(iter);
