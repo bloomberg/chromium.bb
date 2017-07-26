@@ -1191,9 +1191,7 @@ void LayoutFlexibleBox::PrepareOrderIteratorAndMargins() {
 DISABLE_CFI_PERF
 MinMaxSize LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
     const LayoutBox& child) const {
-  MinMaxSize sizes;
-  sizes.min_size = LayoutUnit();
-  sizes.max_size = LayoutUnit::Max();
+  MinMaxSize sizes{LayoutUnit(), LayoutUnit::Max()};
 
   Length max = IsHorizontalFlow() ? child.Style()->MaxWidth()
                                   : child.Style()->MaxHeight();
@@ -1354,13 +1352,10 @@ FlexItem LayoutFlexibleBox::ConstructFlexItem(LayoutBox& child,
                                       : child.BorderAndPaddingHeight();
   LayoutUnit child_inner_flex_base_size =
       ComputeInnerFlexBaseSizeForChild(child, border_and_padding, layout_type);
-  LayoutUnit child_min_max_applied_main_axis_extent = std::max(
-      sizes.min_size, std::min(child_inner_flex_base_size, sizes.max_size));
   LayoutUnit margin =
       IsHorizontalFlow() ? child.MarginWidth() : child.MarginHeight();
-  return FlexItem(&child, child_inner_flex_base_size,
-                  child_min_max_applied_main_axis_extent, border_and_padding,
-                  sizes, margin);
+  return FlexItem(&child, child_inner_flex_base_size, sizes, border_and_padding,
+                  margin);
 }
 
 // Returns true if we successfully ran the algorithm and sized the flex items.

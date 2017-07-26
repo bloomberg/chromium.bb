@@ -16,10 +16,18 @@ namespace blink {
 struct CORE_EXPORT MinMaxSize {
   LayoutUnit min_size;
   LayoutUnit max_size;
+
   // Interprets the sizes as a min-content/max-content pair and computes the
   // "shrink-to-fit" size based on them for the given available size.
   LayoutUnit ShrinkToFit(LayoutUnit available_size) const;
-  bool operator==(const MinMaxSize& other) const;
+
+  // Interprets the sizes as a {min-max}-size pair and clamps the given input
+  // size to that.
+  LayoutUnit ClampSizeToMinAndMax(LayoutUnit) const;
+
+  bool operator==(const MinMaxSize& other) const {
+    return min_size == other.min_size && max_size == other.max_size;
+  }
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const MinMaxSize&);
