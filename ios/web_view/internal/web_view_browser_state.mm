@@ -47,8 +47,7 @@ WebViewBrowserState::WebViewBrowserState(bool off_the_record)
   request_context_getter_ = new WebViewURLRequestContextGetter(
       GetStatePath(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE),
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::CACHE));
+      web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE));
 
   BrowserState::Initialize(this, path_);
 

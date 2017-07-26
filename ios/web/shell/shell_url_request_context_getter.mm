@@ -48,12 +48,10 @@ namespace web {
 ShellURLRequestContextGetter::ShellURLRequestContextGetter(
     const base::FilePath& base_path,
     const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& cache_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
     : base_path_(base_path),
       file_task_runner_(file_task_runner),
       network_task_runner_(network_task_runner),
-      cache_task_runner_(cache_task_runner),
       proxy_config_service_(new net::ProxyConfigServiceIOS),
       net_log_(new net::NetLog()) {}
 
@@ -145,9 +143,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 
     base::FilePath cache_path = base_path_.Append(FILE_PATH_LITERAL("Cache"));
     std::unique_ptr<net::HttpCache::DefaultBackend> main_backend(
-        new net::HttpCache::DefaultBackend(net::DISK_CACHE,
-                                           net::CACHE_BACKEND_DEFAULT,
-                                           cache_path, 0, cache_task_runner_));
+        new net::HttpCache::DefaultBackend(
+            net::DISK_CACHE, net::CACHE_BACKEND_DEFAULT, cache_path, 0));
 
     storage_->set_http_network_session(
         base::MakeUnique<net::HttpNetworkSession>(

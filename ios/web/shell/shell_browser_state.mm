@@ -25,8 +25,7 @@ ShellBrowserState::ShellBrowserState() : BrowserState() {
   request_context_getter_ = new ShellURLRequestContextGetter(
       GetStatePath(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE),
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::CACHE));
+      web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE));
 
   BrowserState::Initialize(this, path_);
 }

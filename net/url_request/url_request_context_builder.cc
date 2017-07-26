@@ -326,11 +326,6 @@ void URLRequestContextBuilder::SetCookieAndChannelIdStores(
   channel_id_service_ = std::move(channel_id_service);
 }
 
-void URLRequestContextBuilder::SetCacheThreadTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> cache_thread_task_runner) {
-  cache_thread_task_runner_ = std::move(cache_thread_task_runner);
-}
-
 void URLRequestContextBuilder::SetProtocolHandler(
     const std::string& scheme,
     std::unique_ptr<URLRequestJobFactory::ProtocolHandler> protocol_handler) {
@@ -549,12 +544,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (http_cache_enabled_) {
     std::unique_ptr<HttpCache::BackendFactory> http_cache_backend;
     if (http_cache_params_.type != HttpCacheParams::IN_MEMORY) {
-      if (!cache_thread_task_runner_) {
-        cache_thread_task_runner_ =
-            base::CreateSingleThreadTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
-                 base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
-      }
       // TODO(mmenke): Maybe merge BackendType and HttpCacheParams::Type? The
       // first doesn't include in memory, so may require some work.
       BackendType backend_type = CACHE_BACKEND_DEFAULT;
@@ -574,7 +563,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       }
       http_cache_backend.reset(new HttpCache::DefaultBackend(
           DISK_CACHE, backend_type, http_cache_params_.path,
-          http_cache_params_.max_size, cache_thread_task_runner_));
+          http_cache_params_.max_size));
     } else {
       http_cache_backend =
           HttpCache::DefaultBackend::InMemory(http_cache_params_.max_size);

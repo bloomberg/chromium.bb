@@ -254,8 +254,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   cache_params.max_size = 20 * 1024 * 1024;  // 20M
   cache_params.path = cache_path_;
   builder.EnableHttpCache(cache_params);
-  builder.SetCacheThreadTaskRunner(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE));
 
   net::HttpNetworkSession::Params network_session_params;
   ApplyCmdlineOverridesToNetworkSessionParams(&network_session_params);

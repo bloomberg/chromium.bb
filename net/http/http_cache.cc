@@ -53,27 +53,22 @@
 
 namespace net {
 
-HttpCache::DefaultBackend::DefaultBackend(
-    CacheType type,
-    BackendType backend_type,
-    const base::FilePath& path,
-    int max_bytes,
-    const scoped_refptr<base::SingleThreadTaskRunner>& thread)
+HttpCache::DefaultBackend::DefaultBackend(CacheType type,
+                                          BackendType backend_type,
+                                          const base::FilePath& path,
+                                          int max_bytes)
     : type_(type),
       backend_type_(backend_type),
       path_(path),
-      max_bytes_(max_bytes),
-      thread_(thread) {
-}
+      max_bytes_(max_bytes) {}
 
 HttpCache::DefaultBackend::~DefaultBackend() {}
 
 // static
 std::unique_ptr<HttpCache::BackendFactory> HttpCache::DefaultBackend::InMemory(
     int max_bytes) {
-  return base::WrapUnique(
-      new DefaultBackend(MEMORY_CACHE, CACHE_BACKEND_DEFAULT, base::FilePath(),
-                         max_bytes, nullptr));
+  return base::WrapUnique(new DefaultBackend(
+      MEMORY_CACHE, CACHE_BACKEND_DEFAULT, base::FilePath(), max_bytes));
 }
 
 int HttpCache::DefaultBackend::CreateBackend(
@@ -86,7 +81,6 @@ int HttpCache::DefaultBackend::CreateBackend(
                                         path_,
                                         max_bytes_,
                                         true,
-                                        thread_,
                                         net_log,
                                         backend,
                                         callback);

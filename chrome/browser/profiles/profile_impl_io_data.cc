@@ -536,8 +536,6 @@ void ProfileImplIOData::InitializeInternal(
   cache_params.path = lazy_params_->cache_path;
   cache_params.max_size = lazy_params_->cache_max_size;
   builder->EnableHttpCache(cache_params);
-  builder->SetCacheThreadTaskRunner(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE));
 
   AddProtocolHandlersToBuilder(builder, protocol_handlers);
 
@@ -622,8 +620,7 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
   } else {
     app_backend.reset(new net::HttpCache::DefaultBackend(
         net::DISK_CACHE, ChooseCacheBackendType(), cache_path,
-        app_cache_max_size_,
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE)));
+        app_cache_max_size_));
   }
 
   std::unique_ptr<net::CookieStore> cookie_store;
@@ -730,10 +727,9 @@ net::URLRequestContext* ProfileImplIOData::InitializeMediaRequestContext(
 
   // Use a separate HTTP disk cache for isolated apps.
   std::unique_ptr<net::HttpCache::BackendFactory> media_backend(
-      new net::HttpCache::DefaultBackend(
-          net::MEDIA_CACHE, ChooseCacheBackendType(), cache_path,
-          cache_max_size,
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE)));
+      new net::HttpCache::DefaultBackend(net::MEDIA_CACHE,
+                                         ChooseCacheBackendType(), cache_path,
+                                         cache_max_size));
   std::unique_ptr<net::HttpCache> media_http_cache = CreateHttpFactory(
       main_request_context()->http_transaction_factory(),
       std::move(media_backend));
