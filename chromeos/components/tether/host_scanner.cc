@@ -21,6 +21,7 @@ namespace chromeos {
 namespace tether {
 
 HostScanner::HostScanner(
+    NetworkStateHandler* network_state_handler,
     TetherHostFetcher* tether_host_fetcher,
     BleConnectionManager* connection_manager,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
@@ -29,7 +30,8 @@ HostScanner::HostScanner(
     DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
     HostScanCache* host_scan_cache,
     base::Clock* clock)
-    : tether_host_fetcher_(tether_host_fetcher),
+    : network_state_handler_(network_state_handler),
+      tether_host_fetcher_(tether_host_fetcher),
       connection_manager_(connection_manager),
       host_scan_device_prioritizer_(host_scan_device_prioritizer),
       tether_host_response_recorder_(tether_host_response_recorder),
@@ -80,20 +82,23 @@ void HostScanner::OnTetherAvailabilityResponse(
     SetCacheEntry(scanned_device_info);
   }
 
-  if (scanned_device_list_so_far.size() == 1u) {
-    const cryptauth::RemoteDevice& remote_device =
-        scanned_device_list_so_far.at(0).remote_device;
-    int32_t signal_strength;
-    NormalizeDeviceStatus(scanned_device_list_so_far.at(0).device_status,
-                          nullptr /* carrier */,
-                          nullptr /* battery_percentage */, &signal_strength);
-    notification_presenter_->NotifyPotentialHotspotNearby(remote_device,
-                                                          signal_strength);
-  } else if (scanned_device_list_so_far.size() > 1u) {
-    // Note: If a single-device notification was previously displayed, calling
-    // NotifyMultiplePotentialHotspotsNearby() will reuse the existing
-    // notification.
-    notification_presenter_->NotifyMultiplePotentialHotspotsNearby();
+  if (!network_state_handler_->DefaultNetwork() &&
+      !scanned_device_list_so_far.empty()) {
+    if (scanned_device_list_so_far.size() == 1u) {
+      const cryptauth::RemoteDevice& remote_device =
+          scanned_device_list_so_far.at(0).remote_device;
+      int32_t signal_strength;
+      NormalizeDeviceStatus(scanned_device_list_so_far.at(0).device_status,
+                            nullptr /* carrier */,
+                            nullptr /* battery_percentage */, &signal_strength);
+      notification_presenter_->NotifyPotentialHotspotNearby(remote_device,
+                                                            signal_strength);
+    } else {
+      // Note: If a single-device notification was previously displayed, calling
+      // NotifyMultiplePotentialHotspotsNearby() will reuse the existing
+      // notification.
+      notification_presenter_->NotifyMultiplePotentialHotspotsNearby();
+    }
   }
 
   if (is_final_scan_result) {
