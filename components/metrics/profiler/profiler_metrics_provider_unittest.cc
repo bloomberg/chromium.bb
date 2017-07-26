@@ -145,7 +145,7 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
 
   // Capture the data and verify that it is as expected.
   ChromeUserMetricsExtension uma_proto;
-  profiler_metrics_provider.ProvideGeneralMetrics(&uma_proto);
+  profiler_metrics_provider.ProvideCurrentSessionData(&uma_proto);
 
   // Phase 0
   ASSERT_EQ(2, uma_proto.profiler_event_size());

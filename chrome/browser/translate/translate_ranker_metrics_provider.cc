@@ -13,7 +13,7 @@
 
 namespace translate {
 
-void TranslateRankerMetricsProvider::ProvideGeneralMetrics(
+void TranslateRankerMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
   std::vector<Profile*> loaded_profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();

@@ -98,8 +98,8 @@ ProfilesState& ProfilesState::operator=(ProfilesState&&) = default;
 
 // Singleton class responsible for retaining profiles received via the callback
 // created by GetProfilerCallback(). These are then sent to UMA on the
-// invocation of CallStackProfileMetricsProvider::ProvideGeneralMetrics(). We
-// need to store the profiles outside of a CallStackProfileMetricsProvider
+// invocation of CallStackProfileMetricsProvider::ProvideCurrentSessionData().
+// We need to store the profiles outside of a CallStackProfileMetricsProvider
 // instance since callers may start profiling before the
 // CallStackProfileMetricsProvider is created.
 //
@@ -521,7 +521,7 @@ void CallStackProfileMetricsProvider::OnRecordingDisabled() {
   PendingProfiles::GetInstance()->SetCollectionEnabled(false);
 }
 
-void CallStackProfileMetricsProvider::ProvideGeneralMetrics(
+void CallStackProfileMetricsProvider::ProvideCurrentSessionData(
     ChromeUserMetricsExtension* uma_proto) {
   std::vector<ProfilesState> pending_profiles;
   PendingProfiles::GetInstance()->Swap(&pending_profiles);

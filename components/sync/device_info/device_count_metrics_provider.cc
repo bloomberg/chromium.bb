@@ -27,7 +27,7 @@ int DeviceCountMetricsProvider::MaxActiveDeviceCount() const {
   return max;
 }
 
-void DeviceCountMetricsProvider::ProvideGeneralMetrics(
+void DeviceCountMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Sync.DeviceCount",
                               std::min(MaxActiveDeviceCount(), 100));

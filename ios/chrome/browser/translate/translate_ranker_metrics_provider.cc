@@ -15,7 +15,7 @@
 
 namespace translate {
 
-void TranslateRankerMetricsProvider::ProvideGeneralMetrics(
+void TranslateRankerMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
   std::vector<ios::ChromeBrowserState*> browser_states =
       GetApplicationContext()

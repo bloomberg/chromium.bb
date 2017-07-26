@@ -17,7 +17,7 @@ class HttpsEngagementMetricsProvider : public metrics::MetricsProvider {
   ~HttpsEngagementMetricsProvider() override;
 
   // metrics:MetricsProvider:
-  void ProvideGeneralMetrics(
+  void ProvideCurrentSessionData(
       metrics::ChromeUserMetricsExtension* uma_proto) override;
 };
 

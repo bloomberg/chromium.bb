@@ -98,7 +98,7 @@ void OmniboxMetricsProvider::OnRecordingDisabled() {
   subscription_.reset();
 }
 
-void OmniboxMetricsProvider::ProvideGeneralMetrics(
+void OmniboxMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
   uma_proto->mutable_omnibox_event()->Swap(
       omnibox_events_cache.mutable_omnibox_event());

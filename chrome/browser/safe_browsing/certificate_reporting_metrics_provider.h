@@ -21,7 +21,7 @@ class CertificateReportingMetricsProvider : public metrics::MetricsProvider {
   ~CertificateReportingMetricsProvider() override;
 
   // metrics:MetricsProvider:
-  void ProvideGeneralMetrics(
+  void ProvideCurrentSessionData(
       metrics::ChromeUserMetricsExtension* unused) override;
 };
 

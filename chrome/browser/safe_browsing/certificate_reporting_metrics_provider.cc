@@ -13,11 +13,12 @@ CertificateReportingMetricsProvider::CertificateReportingMetricsProvider() {}
 
 CertificateReportingMetricsProvider::~CertificateReportingMetricsProvider() {}
 
-void CertificateReportingMetricsProvider::ProvideGeneralMetrics(
+void CertificateReportingMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* unused) {
-  // When ProvideGeneralMetrics is called, this class is being asked to provide
-  // metrics to the metrics service. It doesn't provide any metrics though,
-  // instead it tells CertificateReportingService to upload any pending reports.
+  // When ProvideCurrentSessionData is called, this class is being asked to
+  // provide metrics to the metrics service. It doesn't provide any metrics
+  // though, instead it tells CertificateReportingService to upload any pending
+  // reports.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (!profile_manager)
     return;

@@ -185,11 +185,11 @@ NetworkMetricsProvider::~NetworkMetricsProvider() {
   }
 }
 
-void NetworkMetricsProvider::ProvideGeneralMetrics(
+void NetworkMetricsProvider::ProvideCurrentSessionData(
     ChromeUserMetricsExtension*) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // ProvideGeneralMetrics is called on the main thread, at the time a metrics
-  // record is being finalized.
+  // ProvideCurrentSessionData is called on the main thread, at the time a
+  // metrics record is being finalized.
   net::NetworkChangeNotifier::FinalizingMetricsLogRecord();
   LogAggregatedMetrics();
 }

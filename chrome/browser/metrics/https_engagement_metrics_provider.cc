@@ -13,7 +13,7 @@ HttpsEngagementMetricsProvider::HttpsEngagementMetricsProvider() {}
 
 HttpsEngagementMetricsProvider::~HttpsEngagementMetricsProvider() {}
 
-void HttpsEngagementMetricsProvider::ProvideGeneralMetrics(
+void HttpsEngagementMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (!profile_manager)

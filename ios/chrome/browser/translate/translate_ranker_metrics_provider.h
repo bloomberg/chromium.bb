@@ -16,7 +16,7 @@ class TranslateRankerMetricsProvider : public metrics::MetricsProvider {
   ~TranslateRankerMetricsProvider() override {}
 
   // From metrics::MetricsProvider...
-  void ProvideGeneralMetrics(
+  void ProvideCurrentSessionData(
       metrics::ChromeUserMetricsExtension* uma_proto) override;
   void OnRecordingEnabled() override;
   void OnRecordingDisabled() override;

@@ -154,7 +154,7 @@ class HttpsEngagementPageLoadMetricsBrowserTest : public InProcessBrowserTest {
   }
 
   void FakeUserMetricsUpload() {
-    metrics_provider_->ProvideGeneralMetrics(NULL);
+    metrics_provider_->ProvideCurrentSessionData(NULL);
   }
 
  protected:
