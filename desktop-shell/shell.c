@@ -1852,7 +1852,7 @@ handle_keyboard_focus(struct wl_listener *listener, void *data)
 			shell_surface_lose_keyboard_focus(shsurf);
 	}
 
-	seat->focused_surface = keyboard->focus;
+	seat->focused_surface = weston_surface_get_main_surface(keyboard->focus);
 
 	if (seat->focused_surface) {
 		struct shell_surface *shsurf = get_shell_surface(seat->focused_surface);
