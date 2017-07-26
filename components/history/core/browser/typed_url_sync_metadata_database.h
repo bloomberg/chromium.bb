@@ -6,6 +6,7 @@
 #define COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_SYNC_METADATA_DATABASE_H_
 
 #include "base/macros.h"
+#include "components/history/core/browser/url_row.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/sync_metadata_store.h"
@@ -42,6 +43,8 @@ class TypedURLSyncMetadataDatabase : public syncer::SyncMetadataStore {
       syncer::ModelType model_type,
       const sync_pb::ModelTypeState& model_type_state) override;
   bool ClearModelTypeState(syncer::ModelType model_type) override;
+
+  static URLID StorageKeyToURLID(const std::string& storage_key);
 
  protected:
   // Returns the database for the functions in this interface.

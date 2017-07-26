@@ -1057,6 +1057,12 @@ bool HistoryBackend::GetURL(const GURL& url, URLRow* url_row) {
   return false;
 }
 
+bool HistoryBackend::GetURLByID(URLID url_id, URLRow* url_row) {
+  if (db_)
+    return db_->GetURLRow(url_id, url_row);
+  return false;
+}
+
 void HistoryBackend::QueryURL(const GURL& url,
                               bool want_visits,
                               QueryURLResult* result) {

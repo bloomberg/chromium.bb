@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "components/sync/model/fake_model_type_sync_bridge.h"
 #include "components/sync/model/metadata_batch.h"
 
 namespace syncer {
@@ -45,6 +46,19 @@ void RecordingModelTypeChangeProcessor::Delete(
     const std::string& storage_key,
     MetadataChangeList* metadata_changes) {
   delete_set_.insert(storage_key);
+}
+
+void RecordingModelTypeChangeProcessor::UpdateStorageKey(
+    const EntityData& entity_data,
+    const std::string& storage_key,
+    MetadataChangeList* metadata_change_list) {
+  update_multimap_.insert(std::make_pair(
+      storage_key, FakeModelTypeSyncBridge::CopyEntityData(entity_data)));
+}
+
+void RecordingModelTypeChangeProcessor::UntrackEntity(
+    const EntityData& entity_data) {
+  untrack_set_.insert(FakeModelTypeSyncBridge::CopyEntityData(entity_data));
 }
 
 void RecordingModelTypeChangeProcessor::ModelReadyToSync(
