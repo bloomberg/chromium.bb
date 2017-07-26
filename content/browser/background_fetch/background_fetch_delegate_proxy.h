@@ -5,12 +5,14 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_DELEGATE_PROXY_H_
 #define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_DELEGATE_PROXY_H_
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -69,9 +71,6 @@ class BackgroundFetchDelegateProxy {
 
   std::unique_ptr<Core, BrowserThread::DeleteOnUIThread> ui_core_;
   base::WeakPtr<Core> ui_core_ptr_;
-
-  // Traffic annotation for network request.
-  const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   base::WeakPtrFactory<BackgroundFetchDelegateProxy> weak_ptr_factory_;
 
