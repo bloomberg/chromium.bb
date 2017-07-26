@@ -63,6 +63,26 @@ class TranslateCompactInfoBar
   void SetJavaInfoBar(
       const base::android::JavaRef<jobject>& java_info_bar) override;
 
+  // Get the value of a specified finch parameter in TranslateCompactUI.  If the
+  // finch parameter does not exist, default_value will be returned.
+  int GetParam(const std::string& paramName, int default_value);
+  // Get the value of the finch parameter: translate_auto_always_threshold.
+  // If the number of times a user consecutively translates is equal to this
+  // number, infobar will automatically trigger "Always Translate".
+  int AutoAlwaysThreshold();
+  // Get the value of the finch parameter: translate_auto_never_threshold.
+  // If the number of times a user consecutively denies the translate infobar is
+  // equal to this number, infobar will automatically trigger "Never Translate".
+  int AutoNeverThreshold();
+  // Get the value of the finch parameter: translate_max_number_of_auto_always.
+  // This is the maximum number of times to trigger "Always Translate"
+  // automatically.
+  int MaxNumberOfAutoAlways();
+  // Get the value of the finch parameter: translate_max_number_of_auto_never.
+  // This is the maximum number of times to trigger "Never Translate"
+  // automatically.
+  int MaxNumberOfAutoNever();
+
   translate::TranslateInfoBarDelegate* GetDelegate();
 
   // Bits for trace user's affirmative actions.
@@ -78,17 +98,6 @@ class TranslateCompactInfoBar
     FLAG_NEVER_SITE = 1 << 4,
     FLAG_EXPAND_MENU = 1 << 5,
   };
-
-  // If number of consecutive translations is equal to this number, infobar will
-  // automatically trigger "Always Translate".
-  const int kAcceptCountThreshold = 5;
-  // If number of consecutive denied is equal to this number, infobar will
-  // automatically trigger "Never Translate Language".
-  const int kDeniedCountThreshold = 7;
-  // Maximum number of times to trigger "Always Translate" automatically.
-  const int kMaxNumberOfAutoAlways = 2;
-  // Maximum number of times to trigger "Never Translate" automatically.
-  const int kMaxNumberOfAutoNever = 2;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateCompactInfoBar);
 };
