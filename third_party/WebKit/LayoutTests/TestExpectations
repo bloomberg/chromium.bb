@@ -833,6 +833,7 @@ crbug.com/627706 external/wpt/html/semantics/embedded-content/the-img-element/in
 crbug.com/698135 external/wpt/editing/run/delete.html [ Crash Failure Timeout ]
 crbug.com/698165 external/wpt/editing/run/forwarddelete.html [ Pass Timeout ]
 crbug.com/698165 external/wpt/editing/run/justifycenter.html [ Pass Timeout ]
+crbug.com/698165 [ Win7 Debug ] external/wpt/editing/run/multitest.html [ Pass Timeout ]
 
 crbug.com/688613 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
 
