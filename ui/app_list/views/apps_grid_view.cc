@@ -33,11 +33,13 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
+#include "ui/gfx/skia_paint_util.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -97,6 +99,9 @@ constexpr int kSuggestionsAllAppsIndicatorPadding = 28;
 // Extra padding needed between all apps indicator and all apps tiles on
 // non-first page.
 constexpr int kAllAppsIndicatorExtraPadding = 2;
+
+// The height of gradient fade-out zones.
+constexpr int kFadeoutZoneHeight = 21;
 
 // Returns the size of a tile view excluding its padding.
 gfx::Size GetTileViewSize() {
@@ -223,6 +228,53 @@ int ClampToRange(int value, int min, int max) {
 
 }  // namespace
 
+// A layer delegate used for AppsGridView's mask layer, with top and bottom
+// gradient fading out zones.
+class AppsGridView::FadeoutLayerDelegate : public ui::LayerDelegate {
+ public:
+  explicit FadeoutLayerDelegate() : layer_(ui::LAYER_TEXTURED) {
+    layer_.set_delegate(this);
+    layer_.SetFillsBoundsOpaquely(false);
+  }
+
+  ~FadeoutLayerDelegate() override { layer_.set_delegate(nullptr); }
+
+  ui::Layer* layer() { return &layer_; }
+
+ private:
+  // ui::LayerDelegate overrides:
+  // TODO(warx): using a mask is expensive. It would be more efficient to avoid
+  // the mask for the central area and only use it for top/bottom areas.
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    const gfx::Size size = layer()->size();
+    gfx::Rect top_rect(0, 0, size.width(), kFadeoutZoneHeight);
+    gfx::Rect bottom_rect(0, size.height() - kFadeoutZoneHeight, size.width(),
+                          kFadeoutZoneHeight);
+    ui::PaintRecorder recorder(context, size);
+    gfx::Canvas* canvas = recorder.canvas();
+    // Clear the canvas.
+    canvas->DrawColor(SK_ColorBLACK, SkBlendMode::kSrc);
+    // Draw top gradient zone.
+    cc::PaintFlags flags;
+    flags.setBlendMode(SkBlendMode::kSrc);
+    flags.setAntiAlias(false);
+    flags.setShader(gfx::CreateGradientShader(
+        0, kFadeoutZoneHeight, SK_ColorTRANSPARENT, SK_ColorBLACK));
+    canvas->DrawRect(top_rect, flags);
+    // Draw bottom gradient zone.
+    flags.setShader(gfx::CreateGradientShader(
+        size.height() - kFadeoutZoneHeight, size.height(), SK_ColorBLACK,
+        SK_ColorTRANSPARENT));
+    canvas->DrawRect(bottom_rect, flags);
+  }
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+
+  ui::Layer layer_;
+
+  DISALLOW_COPY_AND_ASSIGN(FadeoutLayerDelegate);
+};
+
 AppsGridView::AppsGridView(ContentsView* contents_view)
     : contents_view_(contents_view),
       page_flip_delay_in_ms_(kPageFlipDelayInMs),
@@ -240,6 +292,8 @@ AppsGridView::AppsGridView(ContentsView* contents_view)
 
     suggestions_container_ =
         new SuggestionsContainerView(contents_view_, nullptr);
+    suggestions_container_->SetPaintToLayer();
+    suggestions_container_->layer()->SetFillsBoundsOpaquely(false);
     AddChildView(suggestions_container_);
     UpdateSuggestions();
 
@@ -261,6 +315,11 @@ AppsGridView::AppsGridView(ContentsView* contents_view)
         &pagination_model_, PaginationController::SCROLL_AXIS_HORIZONTAL));
   }
   AddChildView(page_switcher_view_);
+
+  if (is_fullscreen_app_list_enabled_) {
+    fadeout_layer_delegate_.reset(new FadeoutLayerDelegate);
+    layer()->SetMaskLayer(fadeout_layer_delegate_->layer());
+  }
 }
 
 AppsGridView::~AppsGridView() {
@@ -697,6 +756,13 @@ void AppsGridView::Layout() {
     bounds_animator_.Cancel();
 
   gfx::Rect rect(GetContentsBounds());
+  if (rect.IsEmpty())
+    return;
+
+  if (is_fullscreen_app_list_enabled_) {
+    fadeout_layer_delegate_->layer()->SetBounds(layer()->bounds());
+    rect.Inset(0, kSearchBoxBottomPadding, 0, 0);
+  }
 
   if (!folder_delegate_) {
     gfx::Rect indicator_rect(rect);
@@ -862,6 +928,8 @@ IndicatorChipView* AppsGridView::CreateIndicator(
     int indicator_text_message_id) {
   IndicatorChipView* indicator = new IndicatorChipView(
       l10n_util::GetStringUTF16(indicator_text_message_id));
+  indicator->SetPaintToLayer();
+  indicator->layer()->SetFillsBoundsOpaquely(false);
   AddChildView(indicator);
   return indicator;
 }
@@ -2135,13 +2203,15 @@ int AppsGridView::GetHeightOnTopOfAllAppsTiles() const {
     return 0;
 
   if (pagination_model_.selected_page() == 0) {
-    return suggested_apps_indicator_->GetPreferredSize().height() +
+    return kSearchBoxBottomPadding +
+           suggested_apps_indicator_->GetPreferredSize().height() +
            suggestions_container_->GetPreferredSize().height() +
            kSuggestionsAllAppsIndicatorPadding +
            all_apps_indicator_->GetPreferredSize().height() -
            kTileTopPaddingFullscreen;
   }
-  return all_apps_indicator_->GetPreferredSize().height() +
+  return kSearchBoxBottomPadding +
+         all_apps_indicator_->GetPreferredSize().height() +
          kAllAppsIndicatorExtraPadding;
 }
 
