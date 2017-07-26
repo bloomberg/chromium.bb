@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -64,6 +65,7 @@ public class BrowsingDataBridgeTest {
      */
     @Test
     @SmallTest
+    @RetryOnFailure
     public void testNoCalls() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
