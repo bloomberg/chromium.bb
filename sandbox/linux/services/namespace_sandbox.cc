@@ -105,11 +105,10 @@ struct glibc_pthread {
 };
 
 pid_t GetGlibcCachedTid() {
-  pid_t tid;
-  pthread_mutex_t lock;
+  pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
   CHECK_EQ(0, pthread_mutex_init(&lock, nullptr));
   CHECK_EQ(0, pthread_mutex_lock(&lock));
-  tid = lock.__data.__owner;
+  pid_t tid = lock.__data.__owner;
   CHECK_EQ(0, pthread_mutex_unlock(&lock));
   CHECK_EQ(0, pthread_mutex_destroy(&lock));
   return tid;
