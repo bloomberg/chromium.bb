@@ -24,7 +24,7 @@ namespace ppapi {
 
 namespace proxy {
 
-struct Connection;
+class Connection;
 class Dispatcher;
 
 class ResourceCreationProxy : public InterfaceProxy,

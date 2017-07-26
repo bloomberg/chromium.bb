@@ -387,7 +387,8 @@ Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
     return it->second.get();
 
   scoped_refptr<Resource> new_singleton;
-  Connection connection(PluginGlobals::Get()->GetBrowserSender(), dispatcher());
+  Connection connection(PluginGlobals::Get()->GetBrowserSender(),
+                        static_cast<PluginDispatcher*>(dispatcher())->sender());
 
   switch (id) {
     case BROKER_SINGLETON_ID:

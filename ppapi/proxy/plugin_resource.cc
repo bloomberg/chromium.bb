@@ -26,11 +26,11 @@ PluginResource::PluginResource(Connection connection, PP_Instance instance)
 
 PluginResource::~PluginResource() {
   if (sent_create_to_browser_) {
-    connection_.browser_sender->Send(
+    connection_.browser_sender()->Send(
         new PpapiHostMsg_ResourceDestroyed(pp_resource()));
   }
   if (sent_create_to_renderer_) {
-    connection_.renderer_sender->Send(
+    connection_.GetRendererSender()->Send(
         new PpapiHostMsg_ResourceDestroyed(pp_resource()));
   }
 
@@ -124,11 +124,9 @@ bool PluginResource::SendResourceCall(
   // For in-process plugins, we need to send the routing ID with the request.
   // The browser then uses that routing ID when sending the reply so it will be
   // routed back to the correct RenderFrameImpl.
-  if (dest == BROWSER && connection_.in_process) {
+  if (dest == BROWSER && connection_.in_process()) {
     return GetSender(dest)->Send(new PpapiHostMsg_InProcessResourceCall(
-        connection_.browser_sender_routing_id,
-        call_params,
-        nested_msg));
+        connection_.browser_sender_routing_id(), call_params, nested_msg));
   } else {
     return GetSender(dest)->Send(
         new PpapiHostMsg_ResourceCall(call_params, nested_msg));

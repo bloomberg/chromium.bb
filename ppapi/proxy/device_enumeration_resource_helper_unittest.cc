@@ -36,7 +36,7 @@ Connection GetConnection(PluginProxyTestHarness* harness) {
 
   return Connection(
       static_cast<PluginGlobals*>(harness->GetGlobals())->GetBrowserSender(),
-      harness->plugin_dispatcher());
+      harness->plugin_dispatcher(), 0);
 }
 
 bool CompareDeviceRef(PluginVarTracker* var_tracker,
