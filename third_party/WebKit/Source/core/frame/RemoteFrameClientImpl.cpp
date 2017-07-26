@@ -118,9 +118,8 @@ void RemoteFrameClientImpl::Reload(
     ClientRedirectPolicy client_redirect_policy) {
   DCHECK(IsReloadLoadType(load_type));
   if (web_frame_->Client()) {
-    web_frame_->Client()->Reload(
-        static_cast<WebFrameLoadType>(load_type),
-        static_cast<WebClientRedirectPolicy>(client_redirect_policy));
+    web_frame_->Client()->Reload(static_cast<WebFrameLoadType>(load_type),
+                                 client_redirect_policy);
   }
 }
 

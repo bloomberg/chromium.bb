@@ -472,7 +472,6 @@ source_set("blink_headers") {
     "web/WebAutofillClient.h",
     "web/WebBlob.h",
     "web/WebCSSParser.h",
-    "web/WebClientRedirectPolicy.h",
     "web/WebColorChooser.h",
     "web/WebColorChooserClient.h",
     "web/WebColorSuggestion.h",

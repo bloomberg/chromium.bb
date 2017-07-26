@@ -107,7 +107,6 @@
 #include "public/platform/modules/indexeddb/WebIDBKeyPath.h"
 #include "public/platform/modules/indexeddb/WebIDBMetadata.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
-#include "public/web/WebClientRedirectPolicy.h"
 #include "public/web/WebConsoleMessage.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebFrameLoadType.h"
@@ -129,15 +128,6 @@
 #include "public/web/WebView.h"
 
 namespace blink {
-
-
-STATIC_ASSERT_ENUM(WebClientRedirectPolicy::kNotClientRedirect,
-                   ClientRedirectPolicy::kNotClientRedirect);
-STATIC_ASSERT_ENUM(WebClientRedirectPolicy::kClientRedirect,
-                   ClientRedirectPolicy::kClientRedirect);
-
-
-
 
 STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAuto,
                    kScrollbarAuto);
