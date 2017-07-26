@@ -60,6 +60,11 @@ def AddWprToPath():
     sys.path.insert(1, wpr_path)
 
 
+def GetWprGoDir():
+  return os.path.join(
+      GetChromiumSrcDir(), 'third_party', 'catapult', 'web_page_replay_go')
+
+
 # Modify shutil.rmtree to print the last call stacks that invoke shutil.rmtree
 # TODO(nedn): remove these after crbug.com/742422 is addressed.
 import shutil

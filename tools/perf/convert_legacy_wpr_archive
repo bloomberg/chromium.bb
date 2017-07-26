@@ -71,6 +71,8 @@ def main():
     option_parser.error('file "%s" does not exist' % page_sets_json_file)
 
   dir_path = os.path.abspath(os.path.dirname(page_sets_json_file))
+  cert_file = os.path.join(path_util.GetWprGoDir(), 'wpr_cert.pem')
+  key_file = os.path.join(path_util.GetWprGoDir(), 'wpr_key.pem')
   with open(page_sets_json_file, 'r+') as json_file:
     content = json_file.read()
     m = re.findall(r'"(\w*).wpr"', content)
@@ -99,11 +101,13 @@ def main():
                                                 py_utils.GetHostArchName(),
                                                 py_utils.GetHostOsName())
       go_cmd = [go_binary_path,
-                'convert '
-                '--input_file=' + temp_file,
-                '--output_file=' + wprgo_file,
+                'convert',
+                '--input_file=%s' % temp_file,
+                '--output_file=%s' % wprgo_file,
                 '--http_port=8080',
-                '--https_port=8089']
+                '--https_port=8089',
+                '--https_cert_file=%s' % cert_file,
+                '--https_key_file=%s' % key_file]
       return_code = subprocess.call(go_cmd)
       wpr_server.terminate()
       if return_code != 0:
