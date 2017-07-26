@@ -11,14 +11,14 @@ namespace cc {
 
 struct CC_EXPORT ScrollBoundaryBehavior {
   enum ScrollBoundaryBehaviorType {
+    // Same as contain but also hint that no overscroll affordance should be
+    // triggered.
+    kScrollBoundaryBehaviorTypeNone,
     // Allows the default behavior for the user agent.
     kScrollBoundaryBehaviorTypeAuto,
     // Hint to disable scroll chaining. The user agent may show an appropriate
     // overscroll affordance.
-    kScrollBoundaryBehaviorTypeContain,
-    // Same as contain but also hint that no overscroll affordance should be
-    // triggered.
-    kScrollBoundaryBehaviorTypeNone
+    kScrollBoundaryBehaviorTypeContain
   };
 
   ScrollBoundaryBehavior()

@@ -2532,7 +2532,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       }
     }
     void ClearPositionedState() {
-      positioned_state_ = static_cast<unsigned>(EPosition::kStatic);
+      positioned_state_ = kIsStaticallyPositioned;
     }
 
     ALWAYS_INLINE SelectionState GetSelectionState() const {
