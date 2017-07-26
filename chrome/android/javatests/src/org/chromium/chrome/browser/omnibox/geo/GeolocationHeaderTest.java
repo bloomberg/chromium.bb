@@ -32,14 +32,11 @@ import java.util.Locale;
 public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String SEARCH_URL_1 = "https://www.google.com/search?q=potatoes";
     private static final String SEARCH_URL_2 = "https://www.google.co.jp/webhp?#q=dinosaurs";
-    private static final String ENABLE_CONSISTENT_GEOLOCATION_FEATURE =
-            "enable-features=ConsistentOmniboxGeolocation";
-    private static final String DISABLE_CONSISTENT_GEOLOCATION_FEATURE =
-            "disable-features=ConsistentOmniboxGeolocation";
-    private static final String ENABLE_XGEO_VISIBLE_NETWORKS =
-            "enable-features=XGEOVisibleNetworks";
-    private static final String DISABLE_XGEO_VISIBLE_NETWORKS =
-            "disable-features=XGEOVisibleNetworks";
+    private static final String DISABLE_FEATURES = "disable-features=";
+    private static final String ENABLE_FEATURES = "enable-features=";
+    private static final String FEATURE_SEPARATOR = ",";
+    private static final String CONSISTENT_GEOLOCATION_FEATURE = "ConsistentOmniboxGeolocation";
+    private static final String XGEO_VISIBLE_NETWORKS_FEATURE = "XGEOVisibleNetworks";
     private static final String GOOGLE_BASE_URL_SWITCH = "google-base-url=https://www.google.com";
     private static final double LOCATION_LAT = 20.3;
     private static final double LOCATION_LONG = 155.8;
@@ -53,7 +50,8 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @SmallTest
     @Feature({"Location"})
-    @CommandLineFlags.Add({DISABLE_CONSISTENT_GEOLOCATION_FEATURE, DISABLE_XGEO_VISIBLE_NETWORKS})
+    @CommandLineFlags.Add({DISABLE_FEATURES + CONSISTENT_GEOLOCATION_FEATURE + FEATURE_SEPARATOR
+            + XGEO_VISIBLE_NETWORKS_FEATURE})
     public void testGeolocationHeader() throws ProcessInitException {
         long now = setMockLocationNow();
 
@@ -77,8 +75,8 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @SmallTest
     @Feature({"Location"})
-    @CommandLineFlags.Add({ENABLE_CONSISTENT_GEOLOCATION_FEATURE, GOOGLE_BASE_URL_SWITCH,
-            DISABLE_XGEO_VISIBLE_NETWORKS})
+    @CommandLineFlags.Add({ENABLE_FEATURES + CONSISTENT_GEOLOCATION_FEATURE, GOOGLE_BASE_URL_SWITCH,
+            DISABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
     public void testConsistentHeader() throws ProcessInitException {
         long now = setMockLocationNow();
 
@@ -104,7 +102,8 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @SmallTest
     @Feature({"Location"})
-    @CommandLineFlags.Add(DISABLE_CONSISTENT_GEOLOCATION_FEATURE)
+    @CommandLineFlags.Add(DISABLE_FEATURES + CONSISTENT_GEOLOCATION_FEATURE + FEATURE_SEPARATOR
+            + XGEO_VISIBLE_NETWORKS_FEATURE)
     public void testPermissions() throws ProcessInitException {
         long now = setMockLocationNow();
 
@@ -116,8 +115,8 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @SmallTest
     @Feature({"Location"})
-    @CommandLineFlags.Add({ENABLE_CONSISTENT_GEOLOCATION_FEATURE, GOOGLE_BASE_URL_SWITCH,
-            DISABLE_XGEO_VISIBLE_NETWORKS})
+    @CommandLineFlags.Add({ENABLE_FEATURES + CONSISTENT_GEOLOCATION_FEATURE, GOOGLE_BASE_URL_SWITCH,
+            DISABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
     public void testPermissionAndSetting() throws ProcessInitException {
         long now = setMockLocationNow();
 
@@ -131,7 +130,8 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @SmallTest
     @Feature({"Location"})
-    @CommandLineFlags.Add({DISABLE_CONSISTENT_GEOLOCATION_FEATURE, DISABLE_XGEO_VISIBLE_NETWORKS})
+    @CommandLineFlags.Add({DISABLE_FEATURES + CONSISTENT_GEOLOCATION_FEATURE + FEATURE_SEPARATOR
+            + XGEO_VISIBLE_NETWORKS_FEATURE})
     public void testOnlyNonStale() throws ProcessInitException {
         // X-Geo should be sent only with non-stale locations.
         long now = System.currentTimeMillis();
@@ -148,7 +148,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @SmallTest
     @Feature({"Location"})
-    @CommandLineFlags.Add({DISABLE_XGEO_VISIBLE_NETWORKS})
+    @CommandLineFlags.Add({DISABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
     public void testAsciiEncoding() throws ProcessInitException {
         long now = setMockLocationNow();
 
@@ -158,7 +158,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @SmallTest
     @Feature({"Location"})
-    @CommandLineFlags.Add({ENABLE_XGEO_VISIBLE_NETWORKS})
+    @CommandLineFlags.Add({ENABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
     public void testProtoEncoding() throws ProcessInitException {
         long now = setMockLocationNow();
 
@@ -168,7 +168,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @SmallTest
     @Feature({"Location"})
-    @CommandLineFlags.Add({DISABLE_XGEO_VISIBLE_NETWORKS})
+    @CommandLineFlags.Add({DISABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
     public void testGpsFallbackNotEnabled() throws ProcessInitException {
         // Only GPS location, should not be sent when flag is off.
         long now = System.currentTimeMillis();
@@ -180,7 +180,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @SmallTest
     @Feature({"Location"})
-    @CommandLineFlags.Add({ENABLE_XGEO_VISIBLE_NETWORKS})
+    @CommandLineFlags.Add({ENABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
     public void testGpsFallbackEnabled() throws ProcessInitException {
         // Only GPS location, should be sent when flag is on.
         long now = System.currentTimeMillis();
@@ -192,7 +192,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @SmallTest
     @Feature({"Location"})
-    @CommandLineFlags.Add({ENABLE_XGEO_VISIBLE_NETWORKS})
+    @CommandLineFlags.Add({ENABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
     public void testGpsFallbackYounger() throws ProcessInitException {
         long now = System.currentTimeMillis();
         // GPS location is younger.
@@ -207,7 +207,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @SmallTest
     @Feature({"Location"})
-    @CommandLineFlags.Add({ENABLE_XGEO_VISIBLE_NETWORKS})
+    @CommandLineFlags.Add({ENABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
     public void testGpsFallbackOlder() throws ProcessInitException {
         long now = System.currentTimeMillis();
         // GPS location is older.

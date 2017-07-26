@@ -3671,6 +3671,21 @@
             ]
         }
     ],
+    "XGEOVisibleNetworks": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Experiment",
+                    "enable_features": [
+                        "XGEOVisibleNetworks"
+                    ]
+                }
+            ]
+        }
+    ],
     "use-new-media-cache": [
         {
             "platforms": [
