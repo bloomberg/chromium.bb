@@ -108,17 +108,17 @@ TEST_F(NGInlineNodeOffsetMappingTest, OneTextNode) {
   const Node* foo_node = layout_object_->GetNode();
   const NGOffsetMappingResult& result = GetOffsetMapping();
 
-  ASSERT_EQ(1u, result.units.size());
-  TEST_UNIT(result.units[0], NGOffsetMappingUnitType::kIdentity, layout_object_,
-            0u, 3u, 0u, 3u);
+  ASSERT_EQ(1u, result.GetUnits().size());
+  TEST_UNIT(result.GetUnits()[0], NGOffsetMappingUnitType::kIdentity,
+            layout_object_, 0u, 3u, 0u, 3u);
 
-  ASSERT_EQ(1u, result.ranges.size());
-  TEST_RANGE(result.ranges, ToLayoutText(layout_object_), 0u, 1u);
+  ASSERT_EQ(1u, result.GetRanges().size());
+  TEST_RANGE(result.GetRanges(), ToLayoutText(layout_object_), 0u, 1u);
 
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 0));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 1));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 2));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 3));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 0));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 1));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 2));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 3));
 
   EXPECT_EQ(0u, GetTextContentOffset(*foo_node, 0));
   EXPECT_EQ(1u, GetTextContentOffset(*foo_node, 1));
@@ -134,24 +134,24 @@ TEST_F(NGInlineNodeOffsetMappingTest, TwoTextNodes) {
   const Node* bar_node = bar->GetNode();
   const NGOffsetMappingResult& result = GetOffsetMapping();
 
-  ASSERT_EQ(2u, result.units.size());
-  TEST_UNIT(result.units[0], NGOffsetMappingUnitType::kIdentity, foo, 0u, 3u,
-            0u, 3u);
-  TEST_UNIT(result.units[1], NGOffsetMappingUnitType::kIdentity, bar, 0u, 3u,
-            3u, 6u);
+  ASSERT_EQ(2u, result.GetUnits().size());
+  TEST_UNIT(result.GetUnits()[0], NGOffsetMappingUnitType::kIdentity, foo, 0u,
+            3u, 0u, 3u);
+  TEST_UNIT(result.GetUnits()[1], NGOffsetMappingUnitType::kIdentity, bar, 0u,
+            3u, 3u, 6u);
 
-  ASSERT_EQ(2u, result.ranges.size());
-  TEST_RANGE(result.ranges, foo, 0u, 1u);
-  TEST_RANGE(result.ranges, bar, 1u, 2u);
+  ASSERT_EQ(2u, result.GetRanges().size());
+  TEST_RANGE(result.GetRanges(), foo, 0u, 1u);
+  TEST_RANGE(result.GetRanges(), bar, 1u, 2u);
 
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 0));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 1));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 2));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 3));
-  EXPECT_EQ(&result.units[1], GetUnitForDOMOffset(*bar_node, 0));
-  EXPECT_EQ(&result.units[1], GetUnitForDOMOffset(*bar_node, 1));
-  EXPECT_EQ(&result.units[1], GetUnitForDOMOffset(*bar_node, 2));
-  EXPECT_EQ(&result.units[1], GetUnitForDOMOffset(*bar_node, 3));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 0));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 1));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 2));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 3));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*bar_node, 0));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*bar_node, 1));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*bar_node, 2));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*bar_node, 3));
 
   EXPECT_EQ(0u, GetTextContentOffset(*foo_node, 0));
   EXPECT_EQ(1u, GetTextContentOffset(*foo_node, 1));
@@ -172,27 +172,27 @@ TEST_F(NGInlineNodeOffsetMappingTest, BRBetweenTextNodes) {
   const Node* bar_node = bar->GetNode();
   const NGOffsetMappingResult& result = GetOffsetMapping();
 
-  ASSERT_EQ(3u, result.units.size());
-  TEST_UNIT(result.units[0], NGOffsetMappingUnitType::kIdentity, foo, 0u, 3u,
-            0u, 3u);
-  TEST_UNIT(result.units[1], NGOffsetMappingUnitType::kIdentity, br, 0u, 1u, 3u,
-            4u);
-  TEST_UNIT(result.units[2], NGOffsetMappingUnitType::kIdentity, bar, 0u, 3u,
-            4u, 7u);
+  ASSERT_EQ(3u, result.GetUnits().size());
+  TEST_UNIT(result.GetUnits()[0], NGOffsetMappingUnitType::kIdentity, foo, 0u,
+            3u, 0u, 3u);
+  TEST_UNIT(result.GetUnits()[1], NGOffsetMappingUnitType::kIdentity, br, 0u,
+            1u, 3u, 4u);
+  TEST_UNIT(result.GetUnits()[2], NGOffsetMappingUnitType::kIdentity, bar, 0u,
+            3u, 4u, 7u);
 
-  ASSERT_EQ(3u, result.ranges.size());
-  TEST_RANGE(result.ranges, foo, 0u, 1u);
-  TEST_RANGE(result.ranges, br, 1u, 2u);
-  TEST_RANGE(result.ranges, bar, 2u, 3u);
+  ASSERT_EQ(3u, result.GetRanges().size());
+  TEST_RANGE(result.GetRanges(), foo, 0u, 1u);
+  TEST_RANGE(result.GetRanges(), br, 1u, 2u);
+  TEST_RANGE(result.GetRanges(), bar, 2u, 3u);
 
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 0));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 1));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 2));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 3));
-  EXPECT_EQ(&result.units[2], GetUnitForDOMOffset(*bar_node, 0));
-  EXPECT_EQ(&result.units[2], GetUnitForDOMOffset(*bar_node, 1));
-  EXPECT_EQ(&result.units[2], GetUnitForDOMOffset(*bar_node, 2));
-  EXPECT_EQ(&result.units[2], GetUnitForDOMOffset(*bar_node, 3));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 0));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 1));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 2));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 3));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*bar_node, 0));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*bar_node, 1));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*bar_node, 2));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*bar_node, 3));
 
   EXPECT_EQ(0u, GetTextContentOffset(*foo_node, 0));
   EXPECT_EQ(1u, GetTextContentOffset(*foo_node, 1));
@@ -209,26 +209,26 @@ TEST_F(NGInlineNodeOffsetMappingTest, OneTextNodeWithCollapsedSpace) {
   const Node* node = layout_object_->GetNode();
   const NGOffsetMappingResult& result = GetOffsetMapping();
 
-  ASSERT_EQ(3u, result.units.size());
-  TEST_UNIT(result.units[0], NGOffsetMappingUnitType::kIdentity, layout_object_,
-            0u, 4u, 0u, 4u);
-  TEST_UNIT(result.units[1], NGOffsetMappingUnitType::kCollapsed,
+  ASSERT_EQ(3u, result.GetUnits().size());
+  TEST_UNIT(result.GetUnits()[0], NGOffsetMappingUnitType::kIdentity,
+            layout_object_, 0u, 4u, 0u, 4u);
+  TEST_UNIT(result.GetUnits()[1], NGOffsetMappingUnitType::kCollapsed,
             layout_object_, 4u, 5u, 4u, 4u);
-  TEST_UNIT(result.units[2], NGOffsetMappingUnitType::kIdentity, layout_object_,
-            5u, 8u, 4u, 7u);
+  TEST_UNIT(result.GetUnits()[2], NGOffsetMappingUnitType::kIdentity,
+            layout_object_, 5u, 8u, 4u, 7u);
 
-  ASSERT_EQ(1u, result.ranges.size());
-  TEST_RANGE(result.ranges, ToLayoutText(layout_object_), 0u, 3u);
+  ASSERT_EQ(1u, result.GetRanges().size());
+  TEST_RANGE(result.GetRanges(), ToLayoutText(layout_object_), 0u, 3u);
 
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*node, 0));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*node, 1));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*node, 2));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*node, 3));
-  EXPECT_EQ(&result.units[1], GetUnitForDOMOffset(*node, 4));
-  EXPECT_EQ(&result.units[2], GetUnitForDOMOffset(*node, 5));
-  EXPECT_EQ(&result.units[2], GetUnitForDOMOffset(*node, 6));
-  EXPECT_EQ(&result.units[2], GetUnitForDOMOffset(*node, 7));
-  EXPECT_EQ(&result.units[2], GetUnitForDOMOffset(*node, 8));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*node, 0));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*node, 1));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*node, 2));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*node, 3));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*node, 4));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*node, 5));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*node, 6));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*node, 7));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*node, 8));
 
   EXPECT_EQ(0u, GetTextContentOffset(*node, 0));
   EXPECT_EQ(1u, GetTextContentOffset(*node, 1));
@@ -256,30 +256,30 @@ TEST_F(NGInlineNodeOffsetMappingTest, FullyCollapsedWhiteSpaceNode) {
   const Node* space_node = space->GetNode();
   const NGOffsetMappingResult& result = GetOffsetMapping();
 
-  ASSERT_EQ(3u, result.units.size());
-  TEST_UNIT(result.units[0], NGOffsetMappingUnitType::kIdentity, foo, 0u, 4u,
-            0u, 4u);
-  TEST_UNIT(result.units[1], NGOffsetMappingUnitType::kCollapsed, space, 0u, 1u,
-            4u, 4u);
-  TEST_UNIT(result.units[2], NGOffsetMappingUnitType::kIdentity, bar, 0u, 3u,
-            4u, 7u);
+  ASSERT_EQ(3u, result.GetUnits().size());
+  TEST_UNIT(result.GetUnits()[0], NGOffsetMappingUnitType::kIdentity, foo, 0u,
+            4u, 0u, 4u);
+  TEST_UNIT(result.GetUnits()[1], NGOffsetMappingUnitType::kCollapsed, space,
+            0u, 1u, 4u, 4u);
+  TEST_UNIT(result.GetUnits()[2], NGOffsetMappingUnitType::kIdentity, bar, 0u,
+            3u, 4u, 7u);
 
-  ASSERT_EQ(3u, result.ranges.size());
-  TEST_RANGE(result.ranges, foo, 0u, 1u);
-  TEST_RANGE(result.ranges, space, 1u, 2u);
-  TEST_RANGE(result.ranges, bar, 2u, 3u);
+  ASSERT_EQ(3u, result.GetRanges().size());
+  TEST_RANGE(result.GetRanges(), foo, 0u, 1u);
+  TEST_RANGE(result.GetRanges(), space, 1u, 2u);
+  TEST_RANGE(result.GetRanges(), bar, 2u, 3u);
 
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 0));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 1));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 2));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 3));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 4));
-  EXPECT_EQ(&result.units[1], GetUnitForDOMOffset(*space_node, 0));
-  EXPECT_EQ(&result.units[1], GetUnitForDOMOffset(*space_node, 1));
-  EXPECT_EQ(&result.units[2], GetUnitForDOMOffset(*bar_node, 0));
-  EXPECT_EQ(&result.units[2], GetUnitForDOMOffset(*bar_node, 1));
-  EXPECT_EQ(&result.units[2], GetUnitForDOMOffset(*bar_node, 2));
-  EXPECT_EQ(&result.units[2], GetUnitForDOMOffset(*bar_node, 3));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 0));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 1));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 2));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 3));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 4));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*space_node, 0));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*space_node, 1));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*bar_node, 0));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*bar_node, 1));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*bar_node, 2));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*bar_node, 3));
 
   EXPECT_EQ(0u, GetTextContentOffset(*foo_node, 0));
   EXPECT_EQ(1u, GetTextContentOffset(*foo_node, 1));
@@ -302,26 +302,26 @@ TEST_F(NGInlineNodeOffsetMappingTest, ReplacedElement) {
   const Node* bar_node = bar->GetNode();
   const NGOffsetMappingResult& result = GetOffsetMapping();
 
-  ASSERT_EQ(2u, result.units.size());
-  TEST_UNIT(result.units[0], NGOffsetMappingUnitType::kIdentity, foo, 0u, 4u,
-            0u, 4u);
-  TEST_UNIT(result.units[1], NGOffsetMappingUnitType::kIdentity, bar, 0u, 4u,
-            5u, 9u);
+  ASSERT_EQ(2u, result.GetUnits().size());
+  TEST_UNIT(result.GetUnits()[0], NGOffsetMappingUnitType::kIdentity, foo, 0u,
+            4u, 0u, 4u);
+  TEST_UNIT(result.GetUnits()[1], NGOffsetMappingUnitType::kIdentity, bar, 0u,
+            4u, 5u, 9u);
 
-  ASSERT_EQ(2u, result.ranges.size());
-  TEST_RANGE(result.ranges, foo, 0u, 1u);
-  TEST_RANGE(result.ranges, bar, 1u, 2u);
+  ASSERT_EQ(2u, result.GetRanges().size());
+  TEST_RANGE(result.GetRanges(), foo, 0u, 1u);
+  TEST_RANGE(result.GetRanges(), bar, 1u, 2u);
 
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 0));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 1));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 2));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 3));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 4));
-  EXPECT_EQ(&result.units[1], GetUnitForDOMOffset(*bar_node, 0));
-  EXPECT_EQ(&result.units[1], GetUnitForDOMOffset(*bar_node, 1));
-  EXPECT_EQ(&result.units[1], GetUnitForDOMOffset(*bar_node, 2));
-  EXPECT_EQ(&result.units[1], GetUnitForDOMOffset(*bar_node, 3));
-  EXPECT_EQ(&result.units[1], GetUnitForDOMOffset(*bar_node, 4));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 0));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 1));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 2));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 3));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 4));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*bar_node, 0));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*bar_node, 1));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*bar_node, 2));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*bar_node, 3));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*bar_node, 4));
 
   EXPECT_EQ(0u, GetTextContentOffset(*foo_node, 0));
   EXPECT_EQ(1u, GetTextContentOffset(*foo_node, 1));
@@ -350,19 +350,19 @@ TEST_F(NGInlineNodeOffsetMappingTest, FirstLetter) {
   const Node* foo_node = div->firstChild();
   const NGOffsetMappingResult& result = GetOffsetMapping();
 
-  ASSERT_EQ(2u, result.units.size());
-  TEST_UNIT(result.units[0], NGOffsetMappingUnitType::kIdentity, first_letter,
-            0u, 1u, 0u, 1u);
-  TEST_UNIT(result.units[1], NGOffsetMappingUnitType::kIdentity, remaining_text,
-            1u, 3u, 1u, 3u);
+  ASSERT_EQ(2u, result.GetUnits().size());
+  TEST_UNIT(result.GetUnits()[0], NGOffsetMappingUnitType::kIdentity,
+            first_letter, 0u, 1u, 0u, 1u);
+  TEST_UNIT(result.GetUnits()[1], NGOffsetMappingUnitType::kIdentity,
+            remaining_text, 1u, 3u, 1u, 3u);
 
-  ASSERT_EQ(2u, result.ranges.size());
-  TEST_RANGE(result.ranges, first_letter, 0u, 1u);
-  TEST_RANGE(result.ranges, remaining_text, 1u, 2u);
+  ASSERT_EQ(2u, result.GetRanges().size());
+  TEST_RANGE(result.GetRanges(), first_letter, 0u, 1u);
+  TEST_RANGE(result.GetRanges(), remaining_text, 1u, 2u);
 
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 0));
-  EXPECT_EQ(&result.units[1], GetUnitForDOMOffset(*foo_node, 1));
-  EXPECT_EQ(&result.units[1], GetUnitForDOMOffset(*foo_node, 2));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 0));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*foo_node, 1));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*foo_node, 2));
 
   EXPECT_EQ(0u, GetTextContentOffset(*foo_node, 0));
   EXPECT_EQ(1u, GetTextContentOffset(*foo_node, 1));
@@ -384,23 +384,23 @@ TEST_F(NGInlineNodeOffsetMappingTest, FirstLetterWithLeadingSpace) {
   const Node* foo_node = div->firstChild();
   const NGOffsetMappingResult& result = GetOffsetMapping();
 
-  ASSERT_EQ(3u, result.units.size());
-  TEST_UNIT(result.units[0], NGOffsetMappingUnitType::kCollapsed, first_letter,
-            0u, 2u, 0u, 0u);
-  TEST_UNIT(result.units[1], NGOffsetMappingUnitType::kIdentity, first_letter,
-            2u, 3u, 0u, 1u);
-  TEST_UNIT(result.units[2], NGOffsetMappingUnitType::kIdentity, remaining_text,
-            3u, 5u, 1u, 3u);
+  ASSERT_EQ(3u, result.GetUnits().size());
+  TEST_UNIT(result.GetUnits()[0], NGOffsetMappingUnitType::kCollapsed,
+            first_letter, 0u, 2u, 0u, 0u);
+  TEST_UNIT(result.GetUnits()[1], NGOffsetMappingUnitType::kIdentity,
+            first_letter, 2u, 3u, 0u, 1u);
+  TEST_UNIT(result.GetUnits()[2], NGOffsetMappingUnitType::kIdentity,
+            remaining_text, 3u, 5u, 1u, 3u);
 
-  ASSERT_EQ(2u, result.ranges.size());
-  TEST_RANGE(result.ranges, first_letter, 0u, 2u);
-  TEST_RANGE(result.ranges, remaining_text, 2u, 3u);
+  ASSERT_EQ(2u, result.GetRanges().size());
+  TEST_RANGE(result.GetRanges(), first_letter, 0u, 2u);
+  TEST_RANGE(result.GetRanges(), remaining_text, 2u, 3u);
 
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 0));
-  EXPECT_EQ(&result.units[0], GetUnitForDOMOffset(*foo_node, 1));
-  EXPECT_EQ(&result.units[1], GetUnitForDOMOffset(*foo_node, 2));
-  EXPECT_EQ(&result.units[2], GetUnitForDOMOffset(*foo_node, 3));
-  EXPECT_EQ(&result.units[2], GetUnitForDOMOffset(*foo_node, 4));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 0));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 1));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*foo_node, 2));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*foo_node, 3));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*foo_node, 4));
 
   EXPECT_EQ(0u, GetTextContentOffset(*foo_node, 0));
   EXPECT_EQ(0u, GetTextContentOffset(*foo_node, 1));

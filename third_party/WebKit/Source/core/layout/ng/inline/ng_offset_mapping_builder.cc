@@ -103,7 +103,8 @@ void NGOffsetMappingBuilder::Composite(const NGOffsetMappingBuilder& other) {
 }
 
 NGOffsetMappingResult NGOffsetMappingBuilder::Build() const {
-  NGOffsetMappingResult result;
+  NGOffsetMappingResult::UnitVector units;
+  NGOffsetMappingResult::RangeMap ranges;
 
   const LayoutText* current_node = nullptr;
   unsigned inline_start = 0;
@@ -111,12 +112,12 @@ NGOffsetMappingResult NGOffsetMappingBuilder::Build() const {
   for (unsigned start = 0; start + 1 < mapping_.size();) {
     if (annotation_[start] != current_node) {
       if (current_node) {
-        result.ranges.insert(current_node, std::make_pair(unit_range_start,
-                                                          result.units.size()));
+        ranges.insert(current_node,
+                      std::make_pair(unit_range_start, units.size()));
       }
       current_node = annotation_[start];
       inline_start = start;
-      unit_range_start = result.units.size();
+      unit_range_start = units.size();
     }
 
     if (!annotation_[start]) {
@@ -133,16 +134,15 @@ NGOffsetMappingResult NGOffsetMappingBuilder::Build() const {
     unsigned dom_end = end - inline_start + current_node->TextStartOffset();
     unsigned text_content_start = mapping_[start];
     unsigned text_content_end = mapping_[end];
-    result.units.emplace_back(type, current_node, dom_start, dom_end,
-                              text_content_start, text_content_end);
+    units.emplace_back(type, current_node, dom_start, dom_end,
+                       text_content_start, text_content_end);
 
     start = end;
   }
   if (current_node) {
-    result.ranges.insert(current_node,
-                         std::make_pair(unit_range_start, result.units.size()));
+    ranges.insert(current_node, std::make_pair(unit_range_start, units.size()));
   }
-  return result;
+  return NGOffsetMappingResult(std::move(units), std::move(ranges));
 }
 
 Vector<unsigned> NGOffsetMappingBuilder::DumpOffsetMappingForTesting() const {

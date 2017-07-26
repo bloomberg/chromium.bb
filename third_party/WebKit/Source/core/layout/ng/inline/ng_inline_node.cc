@@ -703,15 +703,17 @@ const NGOffsetMappingUnit* NGInlineNode::GetMappingUnitForDOMOffset(
   unsigned range_start;
   unsigned range_end;
   std::tie(range_start, range_end) =
-      result.ranges.at(ToLayoutText(layout_object));
-  if (range_start == range_end || result.units[range_start].DOMStart() > offset)
+      result.GetRanges().at(ToLayoutText(layout_object));
+  if (range_start == range_end ||
+      result.GetUnits()[range_start].DOMStart() > offset)
     return nullptr;
   // Find the last unit where unit.dom_start <= offset
-  const NGOffsetMappingUnit* unit = std::prev(std::upper_bound(
-      result.units.begin() + range_start, result.units.begin() + range_end,
-      offset, [](unsigned offset, const NGOffsetMappingUnit& unit) {
-        return offset < unit.DOMStart();
-      }));
+  const NGOffsetMappingUnit* unit = std::prev(
+      std::upper_bound(result.GetUnits().begin() + range_start,
+                       result.GetUnits().begin() + range_end, offset,
+                       [](unsigned offset, const NGOffsetMappingUnit& unit) {
+                         return offset < unit.DOMStart();
+                       }));
   if (unit->DOMEnd() < offset)
     return nullptr;
   return unit;
