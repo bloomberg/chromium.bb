@@ -1221,6 +1221,7 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
           ConvolveParams conv_params = get_conv_params(ref, ref, plane);
 #if CONFIG_EXT_INTER
           if (is_masked_compound_type(mi->mbmi.interinter_compound_type)) {
+            // TODO(angiebird): use get_conv_params_no_round() here
             // masked compound type has its own average mechanism
             conv_params = get_conv_params(ref, 0, plane);
           }
@@ -1387,6 +1388,11 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
       if (is_masked_compound_type(mi->mbmi.interinter_compound_type)) {
         // masked compound type has its own average mechanism
         conv_params.do_average = 0;
+#if CONFIG_CONVOLVE_ROUND && CONFIG_COMPOUND_SEGMENT && CONFIG_SUPERTX
+        // TODO(angiebird): convolve_round does not support compound_segment
+        // when supertx is on
+        conv_params = get_conv_params(ref, 0, plane);
+#endif
       }
 
       if (ref && is_masked_compound_type(mi->mbmi.interinter_compound_type))
