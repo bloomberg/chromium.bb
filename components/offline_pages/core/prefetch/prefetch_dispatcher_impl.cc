@@ -17,6 +17,7 @@
 #include "components/offline_pages/core/prefetch/add_unique_urls_task.h"
 #include "components/offline_pages/core/prefetch/generate_page_bundle_task.h"
 #include "components/offline_pages/core/prefetch/get_operation_task.h"
+#include "components/offline_pages/core/prefetch/prefetch_background_task_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
@@ -55,7 +56,7 @@ void PrefetchDispatcherImpl::AddCandidatePrefetchURLs(
   task_queue_.AddTask(std::move(add_task));
 
   // TODO(dewittj): Remove when we have proper scheduling.
-  BeginBackgroundTask(nullptr);
+  service_->GetPrefetchBackgroundTaskHandler()->EnsureTaskScheduled();
 }
 
 void PrefetchDispatcherImpl::RemoveAllUnprocessedPrefetchURLs(

@@ -60,7 +60,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
      * TODO(dewittj): Handle skipping work if the battery percentage is too low.
      */
     @CalledByNative
-    public static void scheduleTask(int additionalDelaySeconds) {
+    public static void scheduleTask(int additionalDelaySeconds, boolean updateCurrent) {
         TaskInfo taskInfo =
                 TaskInfo.createOneOffTask(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID,
                                 PrefetchBackgroundTask.class,
@@ -72,7 +72,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
                                 TimeUnit.DAYS.toMillis(7))
                         .setRequiredNetworkType(TaskInfo.NETWORK_TYPE_UNMETERED)
                         .setIsPersisted(true)
-                        .setUpdateCurrent(true)
+                        .setUpdateCurrent(updateCurrent)
                         .build();
         getScheduler().schedule(ContextUtils.getApplicationContext(), taskInfo);
     }
@@ -125,7 +125,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     @Override
     public void reschedule(Context context) {
         // TODO(dewittj): Set the backoff time appropriately.
-        scheduleTask(0);
+        scheduleTask(0, true);
     }
 
     /**
@@ -170,8 +170,8 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     @VisibleForTesting
     native boolean nativeStartPrefetchTask(Profile profile);
     @VisibleForTesting
-    native boolean nativeOnStopTask(long nativePrefetchBackgroundTask);
+    native boolean nativeOnStopTask(long nativePrefetchBackgroundTaskAndroid);
     native void nativeSetTaskReschedulingForTesting(
-            long nativePrefetchBackgroundTask, boolean reschedule, boolean backoff);
-    native void nativeSignalTaskFinishedForTesting(long nativePrefetchBackgroundTask);
+            long nativePrefetchBackgroundTaskAndroid, boolean reschedule, boolean backoff);
+    native void nativeSignalTaskFinishedForTesting(long nativePrefetchBackgroundTaskAndroid);
 }

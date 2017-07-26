@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
+#include "components/offline_pages/core/prefetch/prefetch_background_task_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
@@ -26,7 +28,23 @@
 namespace offline_pages {
 
 namespace {
+
 const version_info::Channel kTestChannel = version_info::Channel::UNKNOWN;
+
+class StubPrefetchBackgroundTaskHandler : public PrefetchBackgroundTaskHandler {
+ public:
+  StubPrefetchBackgroundTaskHandler() = default;
+  ~StubPrefetchBackgroundTaskHandler() override = default;
+  void CancelBackgroundTask() override {}
+  void EnsureTaskScheduled() override {}
+  void Backoff() override {}
+  void ResetBackoff() override {}
+  int GetAdditionalBackoffSeconds() const override { return 0; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StubPrefetchBackgroundTaskHandler);
+};
+
 }  // namespace
 
 PrefetchServiceTestTaco::PrefetchServiceTestTaco() {
@@ -46,6 +64,8 @@ PrefetchServiceTestTaco::PrefetchServiceTestTaco() {
   // This sets up the testing articles as an empty vector, we can ignore the
   // result here.  This allows us to not create a ContentSuggestionsService.
   suggested_articles_observer_->GetTestingArticles();
+  prefetch_background_task_handler_ =
+      base::MakeUnique<StubPrefetchBackgroundTaskHandler>();
 }
 
 PrefetchServiceTestTaco::~PrefetchServiceTestTaco() = default;
@@ -98,6 +118,14 @@ void PrefetchServiceTestTaco::SetPrefetchImporter(
   prefetch_importer_ = std::move(prefetch_importer);
 }
 
+void PrefetchServiceTestTaco::SetPrefetchBackgroundTaskHandler(
+    std::unique_ptr<PrefetchBackgroundTaskHandler>
+        prefetch_background_task_handler) {
+  CHECK(!prefetch_service_);
+  prefetch_background_task_handler_ =
+      std::move(prefetch_background_task_handler);
+}
+
 void PrefetchServiceTestTaco::CreatePrefetchService() {
   CHECK(metrics_collector_ && dispatcher_ && gcm_handler_ &&
         network_request_factory_ && prefetch_store_sql_ &&
@@ -107,7 +135,8 @@ void PrefetchServiceTestTaco::CreatePrefetchService() {
       std::move(metrics_collector_), std::move(dispatcher_),
       std::move(gcm_handler_), std::move(network_request_factory_),
       std::move(prefetch_store_sql_), std::move(suggested_articles_observer_),
-      std::move(prefetch_downloader_), std::move(prefetch_importer_));
+      std::move(prefetch_downloader_), std::move(prefetch_importer_),
+      std::move(prefetch_background_task_handler_));
 }
 
 std::unique_ptr<PrefetchService>
