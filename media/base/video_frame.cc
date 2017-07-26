@@ -790,7 +790,7 @@ void VideoFrame::AddDestructionObserver(base::OnceClosure callback) {
   done_callbacks_.push_back(std::move(callback));
 }
 
-void VideoFrame::UpdateReleaseSyncToken(SyncTokenClient* client) {
+gpu::SyncToken VideoFrame::UpdateReleaseSyncToken(SyncTokenClient* client) {
   DCHECK(HasTextures());
   base::AutoLock locker(release_sync_token_lock_);
   // Must wait on the previous sync point before inserting a new sync point so
@@ -799,6 +799,7 @@ void VideoFrame::UpdateReleaseSyncToken(SyncTokenClient* client) {
   if (release_sync_token_.HasData())
     client->WaitSyncToken(release_sync_token_);
   client->GenerateSyncToken(&release_sync_token_);
+  return release_sync_token_;
 }
 
 std::string VideoFrame::AsHumanReadableString() {
