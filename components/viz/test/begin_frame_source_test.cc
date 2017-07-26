@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/begin_frame_source_test.h"
+#include "components/viz/test/begin_frame_source_test.h"
 
 #include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace cc {
+namespace viz {
 
 void MockBeginFrameObserver::AsValueInto(
     base::trace_event::TracedValue* dict) const {
@@ -26,18 +26,18 @@ MockBeginFrameObserver::MockBeginFrameObserver()
 
 MockBeginFrameObserver::~MockBeginFrameObserver() {}
 
-const viz::BeginFrameArgs MockBeginFrameObserver::kDefaultBeginFrameArgs =
-    viz::CreateBeginFrameArgsForTesting(
+const BeginFrameArgs MockBeginFrameObserver::kDefaultBeginFrameArgs =
+    CreateBeginFrameArgsForTesting(
 #ifdef NDEBUG
         nullptr,
 #else
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "MockBeginFrameObserver::kDefaultBeginFrameArgs"),
 #endif
-        viz::BeginFrameArgs::kManualSourceId,
-        viz::BeginFrameArgs::kStartingFrameNumber,
+        BeginFrameArgs::kManualSourceId,
+        BeginFrameArgs::kStartingFrameNumber,
         -1,
         -1,
         -1);
 
-}  // namespace cc
+}  // namespace viz

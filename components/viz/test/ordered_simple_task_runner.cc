@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/ordered_simple_task_runner.h"
+#include "components/viz/test/ordered_simple_task_runner.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -20,9 +20,9 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 
-#define TRACE_TASK(function, task) \
-  TRACE_EVENT_INSTANT1(            \
-      "cc", function, TRACE_EVENT_SCOPE_THREAD, "task", task.AsValue());
+#define TRACE_TASK(function, task)                                       \
+  TRACE_EVENT_INSTANT1("cc", function, TRACE_EVENT_SCOPE_THREAD, "task", \
+                       task.AsValue());
 
 #define TRACE_TASK_RUN(function, tag, task)
 
@@ -31,8 +31,7 @@ namespace cc {
 // TestOrderablePendingTask implementation
 TestOrderablePendingTask::TestOrderablePendingTask()
     : base::TestPendingTask(),
-      task_id_(TestOrderablePendingTask::task_id_counter++) {
-}
+      task_id_(TestOrderablePendingTask::task_id_counter++) {}
 
 TestOrderablePendingTask::TestOrderablePendingTask(
     const tracked_objects::Location& location,
@@ -55,8 +54,7 @@ TestOrderablePendingTask& TestOrderablePendingTask::operator=(
 
 size_t TestOrderablePendingTask::task_id_counter = 0;
 
-TestOrderablePendingTask::~TestOrderablePendingTask() {
-}
+TestOrderablePendingTask::~TestOrderablePendingTask() {}
 
 bool TestOrderablePendingTask::operator==(
     const TestOrderablePendingTask& other) const {
@@ -95,8 +93,7 @@ OrderedSimpleTaskRunner::OrderedSimpleTaskRunner(
     : advance_now_(advance_now),
       now_src_(now_src),
       max_tasks_(kAbsoluteMaxTasks),
-      inside_run_tasks_until_(false) {
-}
+      inside_run_tasks_until_(false) {}
 
 OrderedSimpleTaskRunner::~OrderedSimpleTaskRunner() {}
 
@@ -176,12 +173,8 @@ bool OrderedSimpleTaskRunner::RunTasksWhile(
 
 bool OrderedSimpleTaskRunner::RunTasksWhile(
     const std::vector<base::Callback<bool(void)>>& conditions) {
-  TRACE_EVENT2("cc",
-               "OrderedSimpleTaskRunner::RunPendingTasks",
-               "this",
-               AsValue(),
-               "nested",
-               inside_run_tasks_until_);
+  TRACE_EVENT2("cc", "OrderedSimpleTaskRunner::RunPendingTasks", "this",
+               AsValue(), "nested", inside_run_tasks_until_);
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (inside_run_tasks_until_)
@@ -214,8 +207,7 @@ bool OrderedSimpleTaskRunner::RunTasksWhile(
     bool condition_success = true;
     for (std::vector<base::Callback<bool(void)>>::iterator it =
              modifiable_conditions.begin();
-         it != modifiable_conditions.end();
-         it++) {
+         it != modifiable_conditions.end(); it++) {
       condition_success = it->Run();
       if (!condition_success)
         break;
@@ -230,10 +222,8 @@ bool OrderedSimpleTaskRunner::RunTasksWhile(
     std::set<TestOrderablePendingTask>::iterator task_to_run =
         pending_tasks_.begin();
     {
-      TRACE_EVENT1("cc",
-                   "OrderedSimpleTaskRunner::RunPendingTasks running",
-                   "task",
-                   task_to_run->AsValue());
+      TRACE_EVENT1("cc", "OrderedSimpleTaskRunner::RunPendingTasks running",
+                   "task", task_to_run->AsValue());
       // It's safe to remove const and consume |task| here, since |task| is not
       // used for ordering the item.
       base::OnceClosure& task =
@@ -295,8 +285,7 @@ void OrderedSimpleTaskRunner::AsValueInto(
   state->BeginArray("tasks");
   for (std::set<TestOrderablePendingTask>::const_iterator it =
            pending_tasks_.begin();
-       it != pending_tasks_.end();
-       ++it) {
+       it != pending_tasks_.end(); ++it) {
     state->BeginDictionary();
     it->AsValueInto(state);
     state->EndDictionary();
@@ -316,8 +305,7 @@ void OrderedSimpleTaskRunner::AsValueInto(
 base::Callback<bool(void)> OrderedSimpleTaskRunner::TaskRunCountBelow(
     size_t max_tasks) {
   return base::Bind(&OrderedSimpleTaskRunner::TaskRunCountBelowCallback,
-                    max_tasks,
-                    base::Owned(new size_t(0)));
+                    max_tasks, base::Owned(new size_t(0)));
 }
 
 bool OrderedSimpleTaskRunner::TaskRunCountBelowCallback(size_t max_tasks,
@@ -343,8 +331,7 @@ bool OrderedSimpleTaskRunner::TaskExistedInitiallyCallback(
 base::Callback<bool(void)> OrderedSimpleTaskRunner::NowBefore(
     base::TimeTicks stop_at) {
   return base::Bind(&OrderedSimpleTaskRunner::NowBeforeCallback,
-                    base::Unretained(this),
-                    stop_at);
+                    base::Unretained(this), stop_at);
 }
 bool OrderedSimpleTaskRunner::NowBeforeCallback(base::TimeTicks stop_at) {
   return NextTaskTime() <= stop_at;

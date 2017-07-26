@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_ORDERED_SIMPLE_TASK_RUNNER_H_
-#define CC_TEST_ORDERED_SIMPLE_TASK_RUNNER_H_
+#ifndef COMPONENTS_VIZ_TEST_ORDERED_SIMPLE_TASK_RUNNER_H_
+#define COMPONENTS_VIZ_TEST_ORDERED_SIMPLE_TASK_RUNNER_H_
 
 #include <stddef.h>
 
@@ -164,4 +164,4 @@ class OrderedSimpleTaskRunner : public base::SingleThreadTaskRunner {
 
 }  // namespace cc
 
-#endif  // CC_TEST_ORDERED_SIMPLE_TASK_RUNNER_H_
+#endif  // COMPONENTS_VIZ_TEST_ORDERED_SIMPLE_TASK_RUNNER_H_
