@@ -338,6 +338,24 @@ void StatisticsRecorder::PrepareDeltas(
 }
 
 // static
+void StatisticsRecorder::ValidateAllHistograms() {
+  base::AutoLock auto_lock(lock_.Get());
+
+  HistogramBase* last_invalid_histogram = nullptr;
+  int invalid_count = 0;
+  HistogramIterator end_it = end();
+  for (HistogramIterator it = begin(true); it != end_it; ++it) {
+    const bool is_valid = (*it)->ValidateHistogramContents(false, 0);
+    if (!is_valid) {
+      ++invalid_count;
+      last_invalid_histogram = *it;
+    }
+  }
+  if (last_invalid_histogram)
+    last_invalid_histogram->ValidateHistogramContents(true, invalid_count);
+}
+
+// static
 void StatisticsRecorder::InitLogOnShutdown() {
   if (!histograms_)
     return;
