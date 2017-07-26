@@ -4,6 +4,7 @@
 
 #include "chrome/browser/engagement/site_engagement_service.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/files/scoped_temp_dir.h"
@@ -215,6 +216,32 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     return score;
   }
 
+  void CheckMedian(SiteEngagementService* service,
+                   size_t expected_size,
+                   double expected_median) {
+    std::vector<mojom::SiteEngagementDetails> details =
+        service->GetAllDetails();
+    std::sort(details.begin(), details.end(),
+              [](const mojom::SiteEngagementDetails& lhs,
+                 const mojom::SiteEngagementDetails& rhs) {
+                return lhs.total_score < rhs.total_score;
+              });
+    EXPECT_EQ(expected_size, details.size());
+    EXPECT_DOUBLE_EQ(expected_median,
+                     service->GetMedianEngagementFromSortedDetails(details));
+  }
+
+  std::map<GURL, double> GetScoreMap(SiteEngagementService* service) {
+    std::vector<mojom::SiteEngagementDetails> details =
+        service->GetAllDetails();
+    std::map<GURL, double> score_map;
+
+    for (const auto& detail : details)
+      score_map[detail.origin] = detail.total_score;
+
+    return score_map;
+  }
+
  protected:
   void CheckScoreFromSettings(HostContentSettingsMap* settings_map,
                               const GURL& url,
@@ -238,56 +265,28 @@ TEST_F(SiteEngagementServiceTest, GetMedianEngagement) {
   GURL url5("https://youtube.com/");
   GURL url6("https://images.google.com/");
 
-  {
-    // For zero total sites, the median is 0.
-    std::map<GURL, double> score_map = service->GetScoreMap();
-    EXPECT_TRUE(0 == score_map.size());
-    EXPECT_DOUBLE_EQ(0, service->GetMedianEngagement(score_map));
-  }
+  // For zero total sites, the median is 0.
+  CheckMedian(service, 0, 0);
 
-  {
-    // For odd total sites, the median is the middle score.
-    service->AddPoints(url1, 1);
-    std::map<GURL, double> score_map = service->GetScoreMap();
-    EXPECT_TRUE(1 == score_map.size());
-    EXPECT_DOUBLE_EQ(1, service->GetMedianEngagement(score_map));
-  }
+  // For odd total sites, the median is the middle score.
+  service->AddPoints(url1, 1);
+  CheckMedian(service, 1, 1);
 
-  {
-    // For even total sites, the median is the mean of the middle two scores.
-    service->AddPoints(url2, 2);
-    std::map<GURL, double> score_map = service->GetScoreMap();
-    EXPECT_TRUE(2 == score_map.size());
-    EXPECT_DOUBLE_EQ(1.5, service->GetMedianEngagement(score_map));
-  }
+  // For even total sites, the median is the mean of the middle two scores.
+  service->AddPoints(url2, 2);
+  CheckMedian(service, 2, 1.5);
 
-  {
-    service->AddPoints(url3, 1.4);
-    std::map<GURL, double> score_map = service->GetScoreMap();
-    EXPECT_TRUE(3 == score_map.size());
-    EXPECT_DOUBLE_EQ(1.4, service->GetMedianEngagement(score_map));
-  }
+  service->AddPoints(url3, 1.4);
+  CheckMedian(service, 3, 1.4);
 
-  {
-    service->AddPoints(url4, 1.8);
-    std::map<GURL, double> score_map = service->GetScoreMap();
-    EXPECT_TRUE(4 == score_map.size());
-    EXPECT_DOUBLE_EQ(1.6, service->GetMedianEngagement(score_map));
-  }
+  service->AddPoints(url4, 1.8);
+  CheckMedian(service, 4, 1.6);
 
-  {
-    service->AddPoints(url5, 2.5);
-    std::map<GURL, double> score_map = service->GetScoreMap();
-    EXPECT_TRUE(5 == score_map.size());
-    EXPECT_DOUBLE_EQ(1.8, service->GetMedianEngagement(score_map));
-  }
+  service->AddPoints(url5, 2.5);
+  CheckMedian(service, 5, 1.8);
 
-  {
-    service->AddPoints(url6, 3);
-    std::map<GURL, double> score_map = service->GetScoreMap();
-    EXPECT_TRUE(6 == score_map.size());
-    EXPECT_DOUBLE_EQ(1.9, service->GetMedianEngagement(score_map));
-  }
+  service->AddPoints(url6, 3);
+  CheckMedian(service, 6, 1.9);
 }
 
 // Tests that the Site Engagement service is hooked up properly to navigations
@@ -930,7 +929,7 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
     service_->CleanupEngagementScores(true);
     ASSERT_FALSE(service_->IsLastEngagementStale());
 
-    std::map<GURL, double> score_map = service_->GetScoreMap();
+    std::map<GURL, double> score_map = GetScoreMap(service_.get());
     EXPECT_EQ(3u, score_map.size());
     EXPECT_EQ(8.5, score_map[url1]);
     EXPECT_EQ(2.0, score_map[url2]);
@@ -953,7 +952,7 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
     clock_->SetNow(base_time);
     ASSERT_TRUE(service_->IsLastEngagementStale());
 
-    std::map<GURL, double> score_map = service_->GetScoreMap();
+    std::map<GURL, double> score_map = GetScoreMap(service_.get());
     EXPECT_EQ(3u, score_map.size());
     EXPECT_EQ(8.5, score_map[url1]);
     EXPECT_EQ(2.0, score_map[url2]);
@@ -975,7 +974,7 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
     service_->AddPoints(url2, 0.5);
     service_->AddPoints(url4, 1);
 
-    std::map<GURL, double> score_map = service_->GetScoreMap();
+    std::map<GURL, double> score_map = GetScoreMap(service_.get());
     EXPECT_EQ(3u, score_map.size());
     EXPECT_EQ(9.0, score_map[url1]);
     EXPECT_EQ(2.5, score_map[url2]);
@@ -996,7 +995,7 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
     clock_->SetNow(base_time);
     ASSERT_FALSE(service_->IsLastEngagementStale());
 
-    std::map<GURL, double> score_map = service_->GetScoreMap();
+    std::map<GURL, double> score_map = GetScoreMap(service_.get());
     EXPECT_EQ(3u, score_map.size());
     EXPECT_EQ(4, score_map[url1]);
     EXPECT_EQ(0, score_map[url2]);
@@ -1005,7 +1004,7 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
     service_->CleanupEngagementScores(false);
     ASSERT_FALSE(service_->IsLastEngagementStale());
 
-    score_map = service_->GetScoreMap();
+    score_map = GetScoreMap(service_.get());
     EXPECT_EQ(1u, score_map.size());
     EXPECT_EQ(4, score_map[url1]);
     EXPECT_EQ(0, service_->GetScore(url2));
@@ -1019,7 +1018,7 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
     // Add points to commit the decay.
     service_->AddPoints(url1, 0.5);
 
-    std::map<GURL, double> score_map = service_->GetScoreMap();
+    std::map<GURL, double> score_map = GetScoreMap(service_.get());
     EXPECT_EQ(1u, score_map.size());
     EXPECT_EQ(4.5, score_map[url1]);
     EXPECT_EQ(clock_->Now(),
@@ -1032,7 +1031,7 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
     clock_->SetNow(clock_->Now() + decay_period);
     ASSERT_FALSE(service_->IsLastEngagementStale());
 
-    std::map<GURL, double> score_map = service_->GetScoreMap();
+    std::map<GURL, double> score_map = GetScoreMap(service_.get());
     EXPECT_EQ(1u, score_map.size());
     EXPECT_EQ(0, score_map[url1]);
     EXPECT_EQ(clock_->Now() - decay_period,
@@ -1042,7 +1041,7 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
     service_->CleanupEngagementScores(false);
     ASSERT_FALSE(service_->IsLastEngagementStale());
 
-    score_map = service_->GetScoreMap();
+    score_map = GetScoreMap(service_.get());
     EXPECT_EQ(0u, score_map.size());
     EXPECT_EQ(0, service_->GetScore(url1));
     EXPECT_EQ(clock_->Now() - decay_period, service_->GetLastEngagementTime());
@@ -1065,13 +1064,13 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScoresProportional) {
 
   current_day += base::TimeDelta::FromDays(7);
   clock_->SetNow(current_day);
-  std::map<GURL, double> score_map = service_->GetScoreMap();
+  std::map<GURL, double> score_map = GetScoreMap(service_.get());
   EXPECT_EQ(2u, score_map.size());
   AssertInRange(0.5, service_->GetScore(url1));
   AssertInRange(0.6, service_->GetScore(url2));
 
   service_->CleanupEngagementScores(false);
-  score_map = service_->GetScoreMap();
+  score_map = GetScoreMap(service_.get());
   EXPECT_EQ(1u, score_map.size());
   EXPECT_EQ(0, service_->GetScore(url1));
   AssertInRange(0.6, service_->GetScore(url2));

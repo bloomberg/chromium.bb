@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/engagement/site_engagement_details.mojom.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 
 namespace {
@@ -78,8 +79,8 @@ void SiteEngagementMetrics::RecordMedianEngagement(double median_engagement) {
 }
 
 void SiteEngagementMetrics::RecordEngagementScores(
-    const std::map<GURL, double>& score_map) {
-  if (score_map.size() == 0)
+    const std::vector<mojom::SiteEngagementDetails>& details) {
+  if (details.size() == 0)
     return;
 
   std::map<int, int> score_buckets;
@@ -87,8 +88,8 @@ void SiteEngagementMetrics::RecordEngagementScores(
     score_buckets[kEngagementBucketHistogramBuckets[i]] = 0;
 
   const double threshold_0 = std::numeric_limits<double>::epsilon();;
-  for (const auto& value : score_map) {
-    double score = value.second;
+  for (const auto& detail : details) {
+    double score = detail.total_score;
     UMA_HISTOGRAM_COUNTS_100(kEngagementScoreHistogram, score);
     UMA_HISTOGRAM_BOOLEAN(kEngagementScoreHistogramIsZero, score < threshold_0);
 
@@ -106,7 +107,7 @@ void SiteEngagementMetrics::RecordEngagementScores(
     base::LinearHistogram::FactoryGet(
         histogram_name, 1, 100, 10,
         base::HistogramBase::kUmaTargetedHistogramFlag)
-        ->Add(b.second * 100 / score_map.size());
+        ->Add(b.second * 100 / details.size());
   }
 }
 

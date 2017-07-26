@@ -223,28 +223,38 @@ base::hash_set<std::string> GetBlacklistedImportantDomains(Profile* profile) {
   return ignoring_domains;
 }
 
-void PopulateInfoMapWithSiteEngagement(
+void PopulateInfoMapWithSiteEngagementAndNotifications(
     Profile* profile,
     blink::mojom::EngagementLevel minimum_engagement,
     std::map<GURL, double>* engagement_map,
     std::map<std::string, ImportantDomainInfo>* output) {
   SiteEngagementService* service = SiteEngagementService::Get(profile);
-  *engagement_map = service->GetScoreMap();
+  std::vector<mojom::SiteEngagementDetails> engagement_details =
+      service->GetAllDetails();
+  std::set<GURL> content_origins;
+
   // We can have multiple origins for a single domain, so we record the one
   // with the highest engagement score.
-  for (const auto& url_engagement_pair : *engagement_map) {
-    if (!service->IsEngagementAtLeast(url_engagement_pair.first,
-                                      minimum_engagement)) {
-      continue;
+  for (const auto& detail : engagement_details) {
+    if (detail.notifications_bonus > 0) {
+      // This origin has notifications enabled.
+      MaybePopulateImportantInfoForReason(detail.origin, &content_origins,
+                                          ImportantReason::NOTIFICATIONS,
+                                          output);
     }
+
+    (*engagement_map)[detail.origin] = detail.total_score;
+
+    if (!service->IsEngagementAtLeast(detail.origin, minimum_engagement))
+      continue;
+
     std::string registerable_domain =
-        ImportantSitesUtil::GetRegisterableDomainOrIP(
-            url_engagement_pair.first);
+        ImportantSitesUtil::GetRegisterableDomainOrIP(detail.origin);
     ImportantDomainInfo& info = (*output)[registerable_domain];
-    if (url_engagement_pair.second > info.engagement_score) {
+    if (detail.total_score > info.engagement_score) {
       info.registerable_domain = registerable_domain;
-      info.engagement_score = url_engagement_pair.second;
-      info.example_origin = url_engagement_pair.first;
+      info.engagement_score = detail.total_score;
+      info.example_origin = detail.origin;
       info.reason_bitfield |= 1 << ImportantReason::ENGAGEMENT;
     }
   }
@@ -373,13 +383,9 @@ ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
   std::map<std::string, ImportantDomainInfo> important_info;
   std::map<GURL, double> engagement_map;
 
-  PopulateInfoMapWithSiteEngagement(
+  PopulateInfoMapWithSiteEngagementAndNotifications(
       profile, blink::mojom::EngagementLevel::MEDIUM, &engagement_map,
       &important_info);
-
-  PopulateInfoMapWithContentTypeAllowed(
-      profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      ImportantReason::NOTIFICATIONS, &important_info);
 
   PopulateInfoMapWithContentTypeAllowed(
       profile, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, ImportantReason::DURABLE,
