@@ -87,12 +87,14 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
                   const base::FilePath& cache_directory);
   virtual ~SimpleIndexFile();
 
-  // Get index entries based on current disk context.
+  // Gets index entries based on current disk context. On error it may leave
+  // |out_result.did_load| untouched, but still return partial and consistent
+  // results in |out_result.entries|.
   virtual void LoadIndexEntries(base::Time cache_last_modified,
                                 const base::Closure& callback,
                                 SimpleIndexLoadResult* out_result);
 
-  // Write the specified set of entries to disk.
+  // Writes the specified set of entries to disk.
   virtual void WriteToDisk(SimpleIndex::IndexWriteToDiskReason reason,
                            const SimpleIndex::EntrySet& entry_set,
                            uint64_t cache_size,
