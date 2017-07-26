@@ -628,6 +628,9 @@ CHROOT_BUILDER_BOARD = 'amd64-host'
 # Use for builds that don't requite a type.
 GENERIC_TYPE = 'generic'
 
+# Build type of Pre-CQs
+PRE_CQ_TYPE = 'pre_cq'
+
 VALID_BUILD_TYPES = (
     PALADIN_TYPE,
     INCREMENTAL_TYPE,
@@ -643,6 +646,7 @@ VALID_BUILD_TYPES = (
     TOOLCHAIN_TYPE,
     TRYJOB_TYPE,
     GENERIC_TYPE,
+    PRE_CQ_TYPE
 )
 
 # The default list of pre-cq configs to use.

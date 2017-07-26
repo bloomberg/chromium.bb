@@ -1874,7 +1874,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       'pre_cq',
       site_config.templates.paladin,
       active_waterfall=constants.WATERFALL_TRYBOT,
-      build_type=constants.INCREMENTAL_TYPE,
+      build_type=constants.PRE_CQ_TYPE,
       build_packages_in_background=True,
       pre_cq=True,
       archive=False,
