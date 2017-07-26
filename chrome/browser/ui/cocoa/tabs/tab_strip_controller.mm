@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -1689,8 +1690,8 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   [tabContentsArray_ insertObject:movedTabContentsController.get()
                           atIndex:to];
   base::scoped_nsobject<TabController> movedTabController(
-      [[tabArray_ objectAtIndex:from] retain]);
-  DCHECK([movedTabController isKindOfClass:[TabController class]]);
+      base::mac::ObjCCastStrict<TabController>(
+          [[tabArray_ objectAtIndex:from] retain]));
   [tabArray_ removeObjectAtIndex:from];
   [tabArray_ insertObject:movedTabController.get() atIndex:to];
 
@@ -1707,8 +1708,8 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
 
-  TabController* tabController = [tabArray_ objectAtIndex:index];
-  DCHECK([tabController isKindOfClass:[TabController class]]);
+  TabController* tabController =
+      base::mac::ObjCCastStrict<TabController>([tabArray_ objectAtIndex:index]);
 
   // Don't do anything if the change was already picked up by the move event.
   if (tabStripModel_->IsTabPinned(modelIndex) == [tabController pinned])
@@ -1866,7 +1867,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 }
 
 - (void)mouseMoved:(NSEvent*)event {
-  // We don't want the draggged tab to repeatedly redraw its glow unnecessarily.
+  // We don't want the dragged tab to repeatedly redraw its glow unnecessarily.
   // We also want the dragged tab to keep the glow even when it slides behind
   // another tab.
   if ([dragController_ draggedTab])
@@ -1879,14 +1880,9 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   BOOL shouldShowHoverImage = [targetView isKindOfClass:[NewTabButton class]];
   [self setNewTabButtonHoverState:shouldShowHoverImage];
 
-  TabView* tabView = (TabView*)targetView;
-  if (![tabView isKindOfClass:[TabView class]]) {
-    if ([[tabView superview] isKindOfClass:[TabView class]]) {
-      tabView = (TabView*)[targetView superview];
-    } else {
-      tabView = nil;
-    }
-  }
+  TabView* tabView = base::mac::ObjCCast<TabView>(targetView);
+  if (!tabView)
+    tabView = base::mac::ObjCCast<TabView>([targetView superview]);
 
   if (hoveredTab_ != tabView) {
     [self setHoveredTab:tabView];
@@ -2051,8 +2047,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   NSInteger i = 0;
   BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
   for (TabController* tab in tabArray_.get()) {
-    NSView* view = [tab view];
-    DCHECK([view isKindOfClass:[TabView class]]);
+    TabView* view = base::mac::ObjCCastStrict<TabView>([tab view]);
 
     // Recall that |-[NSView frame]| is in its superview's coordinates, so a
     // |TabView|'s frame is in the coordinates of the |TabStripView| (which
