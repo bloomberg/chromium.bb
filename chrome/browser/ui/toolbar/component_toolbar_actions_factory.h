@@ -12,14 +12,9 @@
 #include "base/macros.h"
 
 class Browser;
-class ExtensionService;
 class Profile;
 class ToolbarActionsBar;
 class ToolbarActionViewController;
-
-namespace extensions {
-class ExtensionRegistry;
-}
 
 // The registry for all component toolbar actions. Component toolbar actions
 // are actions that live in the toolbar (like extension actions), but are for
@@ -27,8 +22,6 @@ class ExtensionRegistry;
 class ComponentToolbarActionsFactory {
  public:
   // Extension and component action IDs.
-  static const char kCastBetaExtensionId[];
-  static const char kCastExtensionId[];
   static const char kMediaRouterActionId[];
 
   explicit ComponentToolbarActionsFactory(Profile* profile);
@@ -50,20 +43,7 @@ class ComponentToolbarActionsFactory {
   GetComponentToolbarActionForId(const std::string& action_id,
                                  Browser* browser,
                                  ToolbarActionsBar* bar);
-
-  // Unloads extensions that were migrated to component actions and therefore
-  // are no longer needed.
-  void UnloadMigratedExtensions(ExtensionService* service,
-                                extensions::ExtensionRegistry* registry);
-
  private:
-  // Unloads an extension if it is active.
-  void UnloadExtension(ExtensionService* service,
-                       extensions::ExtensionRegistry* registry,
-                       const std::string& extension_id);
-
-  Profile* profile_;
-
   // IDs of component actions that should be added to the toolbar model when it
   // gets initialized.
   std::set<std::string> initial_ids_;
