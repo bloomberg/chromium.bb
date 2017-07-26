@@ -52,8 +52,7 @@ gfx::RenderText* CreateRenderText(const base::string16& text,
   render_text->SetText(text);
   render_text->SetColor(kResultDefaultTextColor);
 
-  for (SearchResult::Tags::const_iterator it = tags.begin();
-       it != tags.end();
+  for (SearchResult::Tags::const_iterator it = tags.begin(); it != tags.end();
        ++it) {
     // NONE means default style so do nothing.
     if (it->styles == SearchResult::Tag::NONE)
@@ -130,8 +129,8 @@ void SearchResultView::UpdateTitleText() {
   if (!result_ || result_->title().empty()) {
     title_text_.reset();
   } else {
-    title_text_.reset(CreateRenderText(result_->title(),
-                                       result_->title_tags()));
+    title_text_.reset(
+        CreateRenderText(result_->title(), result_->title_tags()));
   }
 
   UpdateAccessibleName();
@@ -141,8 +140,8 @@ void SearchResultView::UpdateDetailsText() {
   if (!result_ || result_->details().empty()) {
     details_text_.reset();
   } else {
-    details_text_.reset(CreateRenderText(result_->details(),
-                                         result_->details_tags()));
+    details_text_.reset(
+        CreateRenderText(result_->details(), result_->details_tags()));
   }
 
   UpdateAccessibleName();
@@ -196,8 +195,8 @@ void SearchResultView::Layout() {
 
   const int max_actions_width =
       (rect.right() - kActionButtonRightMargin - icon_bounds.right()) / 2;
-  int actions_width = std::min(max_actions_width,
-                               actions_view_->GetPreferredSize().width());
+  int actions_width =
+      std::min(max_actions_width, actions_view_->GetPreferredSize().width());
 
   gfx::Rect actions_bounds(rect);
   actions_bounds.set_x(rect.right() - kActionButtonRightMargin - actions_width);
@@ -208,8 +207,7 @@ void SearchResultView::Layout() {
   const int progress_height = progress_bar_->GetPreferredSize().height();
   const gfx::Rect progress_bounds(
       rect.right() - kActionButtonRightMargin - progress_width,
-      rect.y() + (rect.height() - progress_height) / 2,
-      progress_width,
+      rect.y() + (rect.height() - progress_height) / 2, progress_width,
       progress_height);
   progress_bar_->SetBoundsRect(progress_bounds);
 }
@@ -221,8 +219,8 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
 
   switch (event.key_code()) {
     case ui::VKEY_TAB: {
-      int new_selected = actions_view_->selected_action()
-          + (event.IsShiftDown() ? -1 : 1);
+      int new_selected =
+          actions_view_->selected_action() + (event.IsShiftDown() ? -1 : 1);
       actions_view_->SetSelectedAction(new_selected);
       return actions_view_->IsValidActionIndex(new_selected);
     }
@@ -255,8 +253,7 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
   const bool selected = list_view_->IsResultViewSelected(this);
   const bool hover = state() == STATE_HOVERED || state() == STATE_PRESSED;
 
-  if (!is_fullscreen_app_list_enabled_)
-    canvas->FillRect(content_rect, kCardBackgroundColor);
+  canvas->FillRect(content_rect, kCardBackgroundColor);
 
   // Possibly call FillRect a second time (these colours are partially
   // transparent, so the previous FillRect is not redundant).
@@ -288,24 +285,24 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
                           kTextTrailPadding - progress_bar_->bounds().width() -
                           kActionButtonRightMargin);
   }
-  text_bounds.set_x(GetMirroredXWithWidthInView(text_bounds.x(),
-                                                text_bounds.width()));
+  text_bounds.set_x(
+      GetMirroredXWithWidthInView(text_bounds.x(), text_bounds.width()));
 
   if (title_text_ && details_text_) {
     gfx::Size title_size(text_bounds.width(),
                          title_text_->GetStringSize().height());
     gfx::Size details_size(text_bounds.width(),
                            details_text_->GetStringSize().height());
-    int total_height = title_size.height() + + details_size.height();
+    int total_height = title_size.height() + +details_size.height();
     int y = text_bounds.y() + (text_bounds.height() - total_height) / 2;
 
-    title_text_->SetDisplayRect(gfx::Rect(gfx::Point(text_bounds.x(), y),
-                                          title_size));
+    title_text_->SetDisplayRect(
+        gfx::Rect(gfx::Point(text_bounds.x(), y), title_size));
     title_text_->Draw(canvas);
 
     y += title_size.height();
-    details_text_->SetDisplayRect(gfx::Rect(gfx::Point(text_bounds.x(), y),
-                                            details_size));
+    details_text_->SetDisplayRect(
+        gfx::Rect(gfx::Point(text_bounds.x(), y), details_size));
     details_text_->Draw(canvas);
   } else if (title_text_) {
     gfx::Size title_size(text_bounds.width(),
