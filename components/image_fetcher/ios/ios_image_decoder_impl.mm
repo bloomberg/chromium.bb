@@ -66,16 +66,20 @@ void IOSImageDecoderImpl::DecodeImage(const std::string& image_data,
 
   // The WebP image format is not supported by iOS natively. Therefore WebP
   // images need to be decoded explicitly,
+  NSData* (^decodeBlock)();
   if (webp_transcode::WebpDecoder::IsWebpImage(image_data)) {
-    base::PostTaskAndReplyWithResult(
-        task_runner_.get(), FROM_HERE, base::BindBlockArc(^NSData*() {
-          return webp_transcode::WebpDecoder::DecodeWebpImage(data);
-        }),
-        base::Bind(&IOSImageDecoderImpl::CreateUIImageAndRunCallback,
-                   weak_factory_.GetWeakPtr(), callback));
+    decodeBlock = ^NSData*() {
+      return webp_transcode::WebpDecoder::DecodeWebpImage(data);
+    };
   } else {
-    CreateUIImageAndRunCallback(callback, data);
+    // Use block to prevent |data| from being released.
+    decodeBlock = ^NSData*() { return data; };
   }
+
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE, base::BindBlockArc(decodeBlock),
+      base::Bind(&IOSImageDecoderImpl::CreateUIImageAndRunCallback,
+                 weak_factory_.GetWeakPtr(), callback));
 }
 
 void IOSImageDecoderImpl::CreateUIImageAndRunCallback(
