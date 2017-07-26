@@ -5304,6 +5304,11 @@ interface RemotePlayback : EventTarget
     setter onconnect
     setter onconnecting
     setter ondisconnect
+interface ReportingObserver
+    attribute @@toStringTag
+    method constructor
+    method disconnect
+    method observe
 interface Request
     attribute @@toStringTag
     getter bodyUsed

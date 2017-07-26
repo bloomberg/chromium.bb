@@ -111,6 +111,8 @@ generated_core_callback_function_files = [
   "$bindings_core_v8_output_dir/MojoWatchCallback.h",
   "$bindings_core_v8_output_dir/PerformanceObserverCallback.cpp",
   "$bindings_core_v8_output_dir/PerformanceObserverCallback.h",
+  "$bindings_core_v8_output_dir/ReportingObserverCallback.cpp",
+  "$bindings_core_v8_output_dir/ReportingObserverCallback.h",
   "$bindings_core_v8_output_dir/ResizeObserverCallback.cpp",
   "$bindings_core_v8_output_dir/ResizeObserverCallback.h",
 ]
