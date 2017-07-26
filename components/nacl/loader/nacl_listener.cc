@@ -42,7 +42,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 
 #if defined(OS_LINUX)
-#include "content/public/child/child_process_sandbox_support_linux.h"
+#include "content/public/common/common_sandbox_support_linux.h"
 #endif
 
 #if defined(OS_WIN)
