@@ -27,6 +27,7 @@
 #include "components/download/internal/test/test_device_status_listener.h"
 #include "components/download/internal/test/test_download_driver.h"
 #include "components/download/internal/test/test_store.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1008,7 +1009,7 @@ TEST_F(DownloadServiceControllerImplTest, DownloadCompletionTest) {
               OnDownloadFailed(entry2.guid, Client::FailureReason::ABORTED))
       .Times(1);
   driver_->Start(RequestParams(), entry2.guid, entry2.target_file_path,
-                 NO_TRAFFIC_ANNOTATION_YET);
+                 TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // Test FailureReason::NETWORK.
   EXPECT_CALL(*client_,
@@ -1264,7 +1265,7 @@ TEST_F(DownloadServiceControllerImplTest, NewExternalDownload) {
 
   // Simulate a newly created external download.
   driver_->Start(RequestParams(), dentry2.guid, dentry2.current_file_path,
-                 NO_TRAFFIC_ANNOTATION_YET);
+                 TRAFFIC_ANNOTATION_FOR_TESTS);
 
   EXPECT_TRUE(driver_->Find(entry1.guid).value().paused);
   EXPECT_FALSE(driver_->Find(entry2.guid).value().paused);
@@ -1293,7 +1294,7 @@ TEST_F(DownloadServiceControllerImplTest, NewExternalDownload) {
   // Rebuild the download so we can simulate more.
   dentry2.state = DriverEntry::State::IN_PROGRESS;
   driver_->Start(RequestParams(), dentry2.guid, dentry2.current_file_path,
-                 NO_TRAFFIC_ANNOTATION_YET);
+                 TRAFFIC_ANNOTATION_FOR_TESTS);
 
   EXPECT_TRUE(driver_->Find(entry1.guid).value().paused);
   EXPECT_FALSE(driver_->Find(entry2.guid).value().paused);

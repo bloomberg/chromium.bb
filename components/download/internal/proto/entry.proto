@@ -52,4 +52,7 @@ message Entry {
   optional int64 completion_time = 8;
 
   optional uint32 attempt_count = 9;
+
+  // Representation of a net::NetworkTrafficAnnotationTag.
+  optional int32 traffic_annotation = 10;
 }

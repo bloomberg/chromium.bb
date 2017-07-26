@@ -90,6 +90,7 @@ source_set("unit_tests") {
     "//components/download/internal/proto",
     "//components/download/internal/test:test_support",
     "//components/leveldb_proto:test_support",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

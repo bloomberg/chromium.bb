@@ -8,6 +8,7 @@
 #include "base/time/time.h"
 #include "components/download/internal/proto_conversions.h"
 #include "net/http/http_request_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace download {
 
@@ -262,6 +263,8 @@ Entry ProtoConversions::EntryFromProto(const protodb::Entry& proto) {
   entry.completion_time =
       base::Time::FromInternalValue(proto.completion_time());
   entry.attempt_count = proto.attempt_count();
+  entry.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag({proto.traffic_annotation()});
 
   return entry;
 }
@@ -279,6 +282,7 @@ protodb::Entry ProtoConversions::EntryToProto(const Entry& entry) {
   proto.set_create_time(entry.create_time.ToInternalValue());
   proto.set_completion_time(entry.completion_time.ToInternalValue());
   proto.set_attempt_count(entry.attempt_count);
+  proto.set_traffic_annotation(entry.traffic_annotation.unique_id_hash_code);
 
   return proto;
 }
