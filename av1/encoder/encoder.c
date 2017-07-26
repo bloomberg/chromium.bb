@@ -5298,7 +5298,7 @@ static void compute_internal_stats(AV1_COMP *cpi, int frame_bytes) {
   uint32_t bit_depth = 8;
 
 #if CONFIG_INTER_STATS_ONLY
-  if (cm->current_video_frame <= 1) return;  // skip key frame
+  if (cm->frame_type == KEY_FRAME) return;  // skip key frame
 #endif
   cpi->bytes += frame_bytes;
 
