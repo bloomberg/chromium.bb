@@ -51,7 +51,8 @@ CSSPerspective* CSSPerspective::FromCSSValue(const CSSFunctionValue& value) {
   return new CSSPerspective(length);
 }
 
-const DOMMatrix* CSSPerspective::AsMatrix() const {
+const DOMMatrix* CSSPerspective::AsMatrix(
+    ExceptionState& exception_state) const {
   if (!length_->IsCalculated() && ToCSSUnitValue(length_)->value() < 0) {
     // Negative values are invalid.
     // https://github.com/w3c/css-houdini-drafts/issues/420
@@ -59,9 +60,8 @@ const DOMMatrix* CSSPerspective::AsMatrix() const {
   }
   CSSUnitValue* length = length_->to(CSSPrimitiveValue::UnitType::kPixels);
   if (!length) {
-    // This can happen if there are relative units. TODO(meade): How to resolve
-    // relative units here?
-    // https://github.com/w3c/css-houdini-drafts/issues/421
+    exception_state.ThrowTypeError(
+        "Cannot create matrix if units are not compatible with px");
     return nullptr;
   }
   DOMMatrix* matrix = DOMMatrix::Create();

@@ -35,10 +35,11 @@ bool CSSTransformValue::is2D() const {
   return true;
 }
 
-DOMMatrix* CSSTransformValue::toMatrix() const {
+DOMMatrix* CSSTransformValue::toMatrix(ExceptionState& exception_state) const {
   DOMMatrix* matrix = DOMMatrix::Create();
   for (size_t i = 0; i < transform_components_.size(); i++) {
-    const DOMMatrix* matrixComponent = transform_components_[i]->AsMatrix();
+    const DOMMatrix* matrixComponent =
+        transform_components_[i]->AsMatrix(exception_state);
     if (matrixComponent) {
       matrix->multiplySelf(*matrixComponent);
     }

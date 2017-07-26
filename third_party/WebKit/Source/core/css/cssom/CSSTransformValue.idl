@@ -13,5 +13,5 @@
     iterable<CSSTransformComponent>;
 
     readonly attribute boolean is2D;
-    [RuntimeEnabled=GeometryInterfaces] DOMMatrix toMatrix();
+    [RaisesException, RuntimeEnabled=GeometryInterfaces] DOMMatrix toMatrix();
 };

@@ -54,10 +54,11 @@ test(() => {
 }, "toMatrix when used in a CSSTransformValue produces correct matrix");
 
 test(() => {
-  let expectedMatrix = new DOMMatrixReadOnly();
   let transformValue = new CSSTransformValue([new CSSPerspective(CSS.em(10))]);
-  assert_matrix_approx_equals(transformValue.toMatrix(), expectedMatrix, EPSILON);
-}, "toMatrix is the identity (instead of crashing) if relative units are used");
+  assert_throws(new TypeError(), () => {
+    transformValue.toMatrix();
+  });
+}, "toMatrix throws TypeError if relative units are used");
 
 test(() => {
   let expectedMatrix = new DOMMatrixReadOnly();
