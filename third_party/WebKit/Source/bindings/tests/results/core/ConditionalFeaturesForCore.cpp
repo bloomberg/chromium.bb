@@ -77,7 +77,7 @@ void InstallPendingConditionalFeatureForCore(const String& feature,
   v8::Isolate* isolate = script_state->GetIsolate();
   const DOMWrapperWorld& world = script_state->World();
   V8PerContextData* context_data = script_state->PerContextData();
-  if (feature == "FeatureName") {
+  if (feature == OriginTrials::kFeatureNameTrialName) {
     if (context_data->GetExistingConstructorAndPrototypeForType(
             &V8TestObject::wrapperTypeInfo, &prototype_object, &interface_object)) {
       V8TestObject::installFeatureName(

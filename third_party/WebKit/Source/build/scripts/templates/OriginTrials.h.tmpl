@@ -19,6 +19,12 @@ namespace OriginTrials {
 
 {% for feature in features %}
 {% if feature.origin_trial_feature_name %}
+CORE_EXPORT extern const char k{{feature.name}}TrialName[];
+{% endif %}
+{% endfor %}
+
+{% for feature in features %}
+{% if feature.origin_trial_feature_name %}
 CORE_EXPORT bool {{feature.first_lowered_name}}Enabled(ExecutionContext*);
 {% endif %}
 {% endfor %}
