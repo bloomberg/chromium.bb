@@ -16,7 +16,6 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
-#include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/basic_card_response.h"
 #include "components/payments/core/payment_request_data_util.h"
 #import "ios/chrome/browser/autofill/autofill_agent.h"
@@ -26,33 +25,12 @@
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/chrome/test/scoped_key_window.h"
-#import "ios/testing/ocmock_complex_type_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-@interface FullCardRequesterConsumerMock
-    : OCMockComplexTypeHelper<FullCardRequesterConsumer>
-@end
-
-@implementation FullCardRequesterConsumerMock
-
-typedef void (^mock_full_card_request_did_succeed_with_method_name)(
-    const std::string&,
-    const std::string&);
-
-- (void)fullCardRequestDidSucceedWithMethodName:(const std::string&)methodName
-                             stringifiedDetails:
-                                 (const std::string&)stringifiedDetails {
-  return static_cast<mock_full_card_request_did_succeed_with_method_name>(
-      [self blockForSelector:_cmd])(methodName, stringifiedDetails);
-}
-
-@end
 
 class FakeResultDelegate
     : public autofill::payments::FullCardRequest::ResultDelegate {
@@ -119,7 +97,7 @@ TEST_F(PaymentRequestFullCardRequesterTest, PresentAndDismiss) {
   ScopedKeyWindow scoped_key_window_;
   [scoped_key_window_.Get() setRootViewController:base_view_controller];
 
-  FullCardRequester full_card_requester(nil, base_view_controller,
+  FullCardRequester full_card_requester(base_view_controller,
                                         chrome_browser_state_.get());
 
   EXPECT_EQ(nil, base_view_controller.presentedViewController);
@@ -145,43 +123,4 @@ TEST_F(PaymentRequestFullCardRequesterTest, PresentAndDismiss) {
     return !base_view_controller.presentedViewController;
   });
   EXPECT_EQ(nil, base_view_controller.presentedViewController);
-}
-
-// Tests that calling the FullCardRequester's delegate method which signals that
-// the full credit card details have been successfully received, causes the
-// FullCardRequester's delegate method to get called.
-TEST_F(PaymentRequestFullCardRequesterTest, InstrumentDetailsReady) {
-  // Mock the consumer.
-  id consumer =
-      [OCMockObject mockForProtocol:@protocol(FullCardRequesterConsumer)];
-  id consumer_mock([[FullCardRequesterConsumerMock alloc]
-      initWithRepresentedObject:consumer]);
-  SEL selector =
-      @selector(fullCardRequestDidSucceedWithMethodName:stringifiedDetails:);
-  [consumer_mock onSelector:selector
-       callBlockExpectation:^(const std::string& methodName,
-                              const std::string& stringifiedDetails) {
-         EXPECT_EQ("visa", methodName);
-
-         std::string cvc;
-         std::unique_ptr<base::DictionaryValue> detailsDict =
-             base::DictionaryValue::From(
-                 base::JSONReader::Read(stringifiedDetails));
-         detailsDict->GetString("cardSecurityCode", &cvc);
-         EXPECT_EQ("123", cvc);
-       }];
-
-  FullCardRequester full_card_requester(consumer_mock, nil,
-                                        chrome_browser_state_.get());
-
-  autofill::AutofillProfile billing_address;
-
-  std::unique_ptr<base::DictionaryValue> response_value =
-      payments::data_util::GetBasicCardResponseFromAutofillCreditCard(
-          credit_card_, base::ASCIIToUTF16("123"), billing_address, "en-US")
-          .ToDictionaryValue();
-  std::string stringifiedDetails;
-  base::JSONWriter::Write(*response_value, &stringifiedDetails);
-
-  full_card_requester.OnInstrumentDetailsReady("visa", stringifiedDetails);
 }

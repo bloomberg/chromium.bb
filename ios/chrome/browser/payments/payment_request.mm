@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/containers/adapters.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -228,6 +229,10 @@ CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter() {
   return currency_formatter_.get();
 }
 
+AddressNormalizationManager* PaymentRequest::GetAddressNormalizationManager() {
+  return &address_normalization_manager_;
+}
+
 autofill::AutofillProfile* PaymentRequest::AddAutofillProfile(
     const autofill::AutofillProfile& profile) {
   profile_cache_.push_back(
@@ -334,6 +339,17 @@ bool PaymentRequest::CanMakePayment() const {
     }
   }
   return false;
+}
+
+void PaymentRequest::InvokePaymentApp(
+    id<PaymentResponseHelperConsumer> consumer) {
+  DCHECK(selected_payment_method());
+  response_helper_ = base::MakeUnique<PaymentResponseHelper>(consumer, this);
+  selected_payment_method()->InvokePaymentApp(response_helper_.get());
+}
+
+bool PaymentRequest::IsPaymentAppInvoked() const {
+  return !!response_helper_;
 }
 
 void PaymentRequest::RecordUseStats() {

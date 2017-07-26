@@ -39,6 +39,7 @@
 #include "ios/chrome/browser/payments/ios_payment_request_cache_factory.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_cache.h"
+#import "ios/chrome/browser/payments/payment_response_helper.h"
 #include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
@@ -92,7 +93,8 @@ struct PendingPaymentResponse {
 
 @interface PaymentRequestManager ()<CRWWebStateObserver,
                                     PaymentRequestCoordinatorDelegate,
-                                    PaymentRequestUIDelegate> {
+                                    PaymentRequestUIDelegate,
+                                    PaymentResponseHelperConsumer> {
   // View controller used to present the PaymentRequest view controller.
   __weak UIViewController* _baseViewController;
 
@@ -210,11 +212,6 @@ struct PendingPaymentResponse {
 // promise doesn't get settled in a reasonable amount of time, it is as if it
 // was rejected.
 - (void)setUpdateEventTimeoutTimer;
-
-// Called when the relevant addresses from a Payment Request have been
-// normalized. Resolves the request promise with a PaymentResponse.
-- (void)paymentRequestAddressNormalizationDidCompleteForPaymentRequest:
-    (payments::PaymentRequest*)paymentRequest;
 
 // Returns the instance of payments::PaymentRequest for self.activeWebState that
 // has the identifier |paymentRequestId|, if any. Otherwise returns nullptr.
@@ -770,6 +767,21 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 
 #pragma mark - PaymentRequestCoordinatorDelegate methods
 
+- (void)paymentRequestCoordinatorDidConfirm:
+    (PaymentRequestCoordinator*)coordinator {
+  DCHECK(coordinator.paymentRequest->selected_payment_method());
+
+  coordinator.paymentRequest->journey_logger().SetEventOccurred(
+      payments::JourneyLogger::EVENT_PAY_CLICKED);
+  coordinator.paymentRequest->journey_logger().SetSelectedPaymentMethod(
+      coordinator.paymentRequest->selected_payment_method()->type() ==
+              payments::PaymentInstrument::Type::AUTOFILL
+          ? payments::JourneyLogger::SELECTED_PAYMENT_METHOD_CREDIT_CARD
+          : payments::JourneyLogger::SELECTED_PAYMENT_METHOD_OTHER_PAYMENT_APP);
+
+  coordinator.paymentRequest->InvokePaymentApp(self);
+}
+
 - (void)paymentRequestCoordinatorDidCancel:
     (PaymentRequestCoordinator*)coordinator {
   coordinator.paymentRequest->journey_logger().SetAborted(
@@ -798,91 +810,6 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
          didReceiveFullMethodName:(const std::string&)methodName
                stringifiedDetails:(const std::string&)stringifiedDetails {
-  coordinator.paymentRequest->journey_logger().SetEventOccurred(
-      payments::JourneyLogger::EVENT_RECEIVED_INSTRUMENT_DETAILS);
-
-  _pendingPaymentResponse.methodName = methodName;
-  _pendingPaymentResponse.stringifiedDetails = stringifiedDetails;
-
-  if (coordinator.paymentRequest->request_shipping()) {
-    // TODO(crbug.com/602666): User should get here only if they have selected
-    // a shipping address.
-    DCHECK(coordinator.paymentRequest->selected_shipping_profile());
-    _pendingPaymentResponse.shippingAddress =
-        *coordinator.paymentRequest->selected_shipping_profile();
-    coordinator.paymentRequest->address_normalization_manager()
-        ->StartNormalizingAddress(&_pendingPaymentResponse.shippingAddress);
-  }
-
-  if (coordinator.paymentRequest->request_payer_name() ||
-      coordinator.paymentRequest->request_payer_email() ||
-      coordinator.paymentRequest->request_payer_phone()) {
-    // TODO(crbug.com/602666): User should get here only if they have selected
-    // a contact info.
-    DCHECK(coordinator.paymentRequest->selected_contact_profile());
-    _pendingPaymentResponse.contactAddress =
-        *coordinator.paymentRequest->selected_contact_profile();
-    coordinator.paymentRequest->address_normalization_manager()
-        ->StartNormalizingAddress(&_pendingPaymentResponse.contactAddress);
-  }
-
-  __weak PaymentRequestManager* weakSelf = self;
-  __weak PaymentRequestCoordinator* weakCoordinator = coordinator;
-  coordinator.paymentRequest->address_normalization_manager()
-      ->FinalizePendingRequestsWithCompletionCallback(base::BindBlockArc(^() {
-        [weakSelf
-            paymentRequestAddressNormalizationDidCompleteForPaymentRequest:
-                weakCoordinator.paymentRequest];
-      }));
-}
-
-- (void)paymentRequestAddressNormalizationDidCompleteForPaymentRequest:
-    (payments::PaymentRequest*)paymentRequest {
-  web::PaymentResponse paymentResponse;
-
-  paymentResponse.payment_request_id =
-      paymentRequest->web_payment_request().payment_request_id;
-
-  paymentResponse.method_name =
-      base::ASCIIToUTF16(_pendingPaymentResponse.methodName);
-
-  paymentResponse.details = _pendingPaymentResponse.stringifiedDetails;
-
-  if (paymentRequest->request_shipping()) {
-    paymentResponse.shipping_address =
-        payments::data_util::GetPaymentAddressFromAutofillProfile(
-            _pendingPaymentResponse.shippingAddress,
-            paymentRequest->GetApplicationLocale());
-
-    web::PaymentShippingOption* shippingOption =
-        paymentRequest->selected_shipping_option();
-    DCHECK(shippingOption);
-    paymentResponse.shipping_option = shippingOption->id;
-  }
-
-  if (paymentRequest->request_payer_name()) {
-    paymentResponse.payer_name = _pendingPaymentResponse.contactAddress.GetInfo(
-        autofill::AutofillType(autofill::NAME_FULL),
-        paymentRequest->GetApplicationLocale());
-  }
-
-  if (paymentRequest->request_payer_email()) {
-    paymentResponse.payer_email =
-        _pendingPaymentResponse.contactAddress.GetRawInfo(
-            autofill::EMAIL_ADDRESS);
-  }
-
-  if (paymentRequest->request_payer_phone()) {
-    paymentResponse.payer_phone =
-        _pendingPaymentResponse.contactAddress.GetRawInfo(
-            autofill::PHONE_HOME_WHOLE_NUMBER);
-  }
-
-  [_paymentRequestJsManager
-      resolveRequestPromiseWithPaymentResponse:paymentResponse
-                             completionHandler:nil];
-  [self setUnblockEventQueueTimer];
-  [self setPaymentResponseTimeoutTimer];
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
@@ -904,6 +831,21 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
                                completionHandler:nil];
   [self setUnblockEventQueueTimer];
   [self setUpdateEventTimeoutTimer];
+}
+
+#pragma mark - PaymentResponseHelperConsumer methods
+
+- (void)paymentResponseHelperDidReceivePaymentMethodDetails {
+  [_paymentRequestCoordinator setPending:YES];
+}
+
+- (void)paymentResponseHelperDidCompleteWithPaymentResponse:
+    (const web::PaymentResponse&)paymentResponse {
+  [_paymentRequestJsManager
+      resolveRequestPromiseWithPaymentResponse:paymentResponse
+                             completionHandler:nil];
+  [self setUnblockEventQueueTimer];
+  [self setPaymentResponseTimeoutTimer];
 }
 
 #pragma mark - CRWWebStateObserver methods

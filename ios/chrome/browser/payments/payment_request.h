@@ -21,6 +21,7 @@
 #include "components/payments/core/payment_options_provider.h"
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payments_profile_comparator.h"
+#import "ios/chrome/browser/payments/payment_response_helper.h"
 #include "ios/web/public/payments/payment_request.h"
 
 namespace autofill {
@@ -31,8 +32,8 @@ class RegionDataLoader;
 
 namespace payments {
 class AddressNormalizer;
-class CurrencyFormatter;
 class AutofillPaymentInstrument;
+class CurrencyFormatter;
 }  // namespace payments
 
 namespace ios {
@@ -132,9 +133,8 @@ class PaymentRequest : public PaymentOptionsProvider,
   // hence the CurrencyFormatter is cached here.
   CurrencyFormatter* GetOrCreateCurrencyFormatter();
 
-  AddressNormalizationManager* address_normalization_manager() {
-    return &address_normalization_manager_;
-  }
+  // Returns the AddressNormalizationManager for this instance.
+  virtual AddressNormalizationManager* GetAddressNormalizationManager();
 
   // Adds |profile| to the list of cached profiles, updates the list of
   // available shipping and contact profiles, and returns a reference to the
@@ -242,6 +242,12 @@ class PaymentRequest : public PaymentOptionsProvider,
   // Returns whether the current PaymentRequest can be used to make a payment.
   bool CanMakePayment() const;
 
+  // Invokes the appropriate payment app for the selected payment method.
+  void InvokePaymentApp(id<PaymentResponseHelperConsumer> consumer);
+
+  // Returns whether the payment app has been invoked.
+  bool IsPaymentAppInvoked() const;
+
   // Record the use of the data models that were used in the Payment Request.
   void RecordUseStats();
 
@@ -345,6 +351,8 @@ class PaymentRequest : public PaymentOptionsProvider,
 
   // Keeps track of different stats during the lifetime of this object.
   JourneyLogger journey_logger_;
+
+  std::unique_ptr<PaymentResponseHelper> response_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };
