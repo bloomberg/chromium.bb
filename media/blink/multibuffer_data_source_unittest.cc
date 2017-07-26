@@ -49,7 +49,7 @@ std::set<TestMultiBufferDataProvider*> test_data_providers;
 class TestMultiBufferDataProvider : public ResourceMultiBufferDataProvider {
  public:
   TestMultiBufferDataProvider(UrlData* url_data, MultiBuffer::BlockId pos)
-      : ResourceMultiBufferDataProvider(url_data, pos), loading_(false) {
+      : ResourceMultiBufferDataProvider(url_data, pos), deferred_(false) {
     CHECK(test_data_providers.insert(this).second);
   }
   ~TestMultiBufferDataProvider() override {
@@ -57,28 +57,22 @@ class TestMultiBufferDataProvider : public ResourceMultiBufferDataProvider {
   }
   void Start() override {
     // Create a mock active loader.
-    // Keep track of active loading state via loadAsynchronously() and cancel().
-    NiceMock<MockWebAssociatedURLLoader>* url_loader =
-        new NiceMock<MockWebAssociatedURLLoader>();
-    ON_CALL(*url_loader, Cancel()).WillByDefault(Invoke([this]() {
-      // Check that we have not been destroyed first.
-      if (test_data_providers.find(this) != test_data_providers.end()) {
-        this->loading_ = false;
-      }
-    }));
-    loading_ = true;
-    active_loader_.reset(
-        new ActiveLoader(std::unique_ptr<WebAssociatedURLLoader>(url_loader)));
+    active_loader_ = base::MakeUnique<NiceMock<MockWebAssociatedURLLoader>>();
     if (!on_start_.is_null()) {
       on_start_.Run();
     }
   }
+  void SetDeferred(bool defer) override {
+    deferred_ = defer;
+    ResourceMultiBufferDataProvider::SetDeferred(defer);
+  }
 
-  bool loading() const { return loading_; }
+  bool loading() const { return !!active_loader_; }
+  bool deferred() const { return deferred_; }
   void RunOnStart(base::Closure cb) { on_start_ = cb; }
 
  private:
-  bool loading_;
+  bool deferred_;
   base::Closure on_start_;
 };
 
@@ -303,17 +297,13 @@ class MultibufferDataSourceTest : public testing::Test {
   }
 
   void Respond(const WebURLResponse& response) {
-    EXPECT_TRUE(url_loader());
-    if (!active_loader())
-      return;
+    EXPECT_TRUE(active_loader());
     data_provider()->DidReceiveResponse(response);
     base::RunLoop().RunUntilIdle();
   }
 
   void ReceiveDataLow(int size) {
-    EXPECT_TRUE(url_loader());
-    if (!url_loader())
-      return;
+    EXPECT_TRUE(active_loader());
     std::unique_ptr<char[]> data(new char[size]);
     memset(data.get(), 0xA5, size);  // Arbitrary non-zero value.
 
@@ -326,9 +316,7 @@ class MultibufferDataSourceTest : public testing::Test {
   }
 
   void FinishLoading() {
-    EXPECT_TRUE(url_loader());
-    if (!url_loader())
-      return;
+    EXPECT_TRUE(active_loader());
     data_provider()->DidFinishLoading(0);
     base::RunLoop().RunUntilIdle();
   }
@@ -425,26 +413,27 @@ class MultibufferDataSourceTest : public testing::Test {
   TestMultiBufferDataProvider* data_provider() {
     return multibuffer()->GetProvider();
   }
-  ActiveLoader* active_loader() {
+  blink::WebAssociatedURLLoader* active_loader() {
     EXPECT_TRUE(data_provider());
     if (!data_provider())
       return nullptr;
     return data_provider()->active_loader_.get();
   }
-  ActiveLoader* active_loader_allownull() {
+  blink::WebAssociatedURLLoader* active_loader_allownull() {
     TestMultiBufferDataProvider* data_provider =
         multibuffer()->GetProvider_allownull();
     if (!data_provider)
       return nullptr;
     return data_provider->active_loader_.get();
   }
-  WebAssociatedURLLoader* url_loader() {
-    EXPECT_TRUE(active_loader());
-    if (!active_loader())
-      return nullptr;
-    return active_loader()->loader_.get();
-  }
-
+  /*
+    WebAssociatedURLLoader* url_loader() {
+      EXPECT_TRUE(active_loader());
+      if (!active_loader())
+        return nullptr;
+      return active_loader()->loader_.get();
+    }
+  */
   bool loading() { return multibuffer()->loading(); }
 
   MultibufferDataSource::Preload preload() { return data_source_->preload_; }
@@ -1206,7 +1195,7 @@ TEST_F(MultibufferDataSourceTest, ExternalResource_Response206_VerifyDefer) {
   ReadAt(0);
 
   ASSERT_TRUE(active_loader());
-  EXPECT_TRUE(active_loader()->deferred());
+  EXPECT_TRUE(data_provider()->deferred());
 }
 
 TEST_F(MultibufferDataSourceTest,
@@ -1289,12 +1278,12 @@ TEST_F(MultibufferDataSourceTest,
   ASSERT_TRUE(active_loader());
   data_source_->OnBufferingHaveEnough(true);
   ASSERT_TRUE(active_loader());
-  ASSERT_FALSE(active_loader()->deferred());
+  ASSERT_FALSE(data_provider()->deferred());
 
   // Deliver data until capacity is reached and verify deferral.
   int bytes_received = 0;
   EXPECT_CALL(host_, AddBufferedByteRange(_, _)).Times(testing::AtLeast(1));
-  while (active_loader_allownull() && !active_loader()->deferred()) {
+  while (active_loader_allownull() && !data_provider()->deferred()) {
     ReceiveData(kDataSize);
     bytes_received += kDataSize;
   }
