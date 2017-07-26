@@ -22,6 +22,7 @@
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/page_info/page_info_utils_cocoa.h"
@@ -42,6 +43,7 @@
 #include "ui/base/cocoa/a11y_util.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
+#import "ui/base/cocoa/controls/textfield_utils.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/color_palette.h"
@@ -315,6 +317,7 @@ const NSSize kPermissionIconSize = {18, 18};
     [[self window] makeFirstResponder:nil];
     [[self window] setInitialFirstResponder:allowButton.get()];
   }
+  cocoa_l10n_util::FlipAllSubviewsIfNecessary(contentView);
 }
 
 - (void)updateAnchorPosition {
@@ -384,28 +387,23 @@ const NSSize kPermissionIconSize = {18, 18};
   [permissionLabel setFrame:labelFrame];
   [permissionIcon setFrame:iconFrame];
   [permissionView setFrame:unionFrame];
+  cocoa_l10n_util::FlipAllSubviewsIfNecessary(permissionView);
 
   return permissionView.autorelease();
 }
 
 - (NSView*)titleWithOrigin:(const GURL&)origin {
-  base::scoped_nsobject<NSTextField> titleView(
-      [[NSTextField alloc] initWithFrame:NSZeroRect]);
-  [titleView setDrawsBackground:NO];
-  [titleView setBezeled:NO];
-  [titleView setEditable:NO];
-  [titleView setSelectable:NO];
-  [titleView setStringValue:l10n_util::GetNSStringF(
-                                IDS_PERMISSIONS_BUBBLE_PROMPT,
-                                url_formatter::FormatUrlForSecurityDisplay(
-                                    origin, url_formatter::SchemeDisplay::
-                                                OMIT_CRYPTOGRAPHIC))];
-  [titleView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+  NSTextField* titleView = [TextFieldUtils
+      labelWithString:
+          l10n_util::GetNSStringF(
+              IDS_PERMISSIONS_BUBBLE_PROMPT,
+              url_formatter::FormatUrlForSecurityDisplay(
+                  origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC))];
   [titleView sizeToFit];
   NSRect titleFrame = [titleView frame];
   [titleView setFrameSize:NSMakeSize(NSWidth(titleFrame) + kTitlePaddingX,
                                      NSHeight(titleFrame))];
-  return titleView.autorelease();
+  return titleView;
 }
 
 - (NSView*)buttonWithTitle:(NSString*)title
