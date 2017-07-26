@@ -149,8 +149,8 @@ bool DeleteOriginInfoOnDBThread(const GURL& origin,
   if (is_eviction) {
     QuotaDatabase::OriginInfoTableEntry entry;
     database->GetOriginInfo(origin, type, &entry);
-    UMA_HISTOGRAM_COUNTS(QuotaManager::kEvictedOriginAccessedCountHistogram,
-                         entry.used_count);
+    UMA_HISTOGRAM_COUNTS_1M(QuotaManager::kEvictedOriginAccessedCountHistogram,
+                            entry.used_count);
     UMA_HISTOGRAM_COUNTS_1000(
         QuotaManager::kEvictedOriginDaysSinceAccessHistogram,
         (now - entry.last_access_time).InDays());
@@ -1388,12 +1388,11 @@ void QuotaManager::DidGetTemporaryGlobalUsageForHistogram(
                   special_storage_policy_.get(),
                   &protected_origins,
                   &unlimited_origins);
-  UMA_HISTOGRAM_COUNTS("Quota.NumberOfTemporaryStorageOrigins",
-                       num_origins);
-  UMA_HISTOGRAM_COUNTS("Quota.NumberOfProtectedTemporaryStorageOrigins",
-                       protected_origins);
-  UMA_HISTOGRAM_COUNTS("Quota.NumberOfUnlimitedTemporaryStorageOrigins",
-                       unlimited_origins);
+  UMA_HISTOGRAM_COUNTS_1M("Quota.NumberOfTemporaryStorageOrigins", num_origins);
+  UMA_HISTOGRAM_COUNTS_1M("Quota.NumberOfProtectedTemporaryStorageOrigins",
+                          protected_origins);
+  UMA_HISTOGRAM_COUNTS_1M("Quota.NumberOfUnlimitedTemporaryStorageOrigins",
+                          unlimited_origins);
 
   GetGlobalUsage(kStorageTypePersistent,
                  base::Bind(
@@ -1416,12 +1415,12 @@ void QuotaManager::DidGetPersistentGlobalUsageForHistogram(
                   special_storage_policy_.get(),
                   &protected_origins,
                   &unlimited_origins);
-  UMA_HISTOGRAM_COUNTS("Quota.NumberOfPersistentStorageOrigins",
-                       num_origins);
-  UMA_HISTOGRAM_COUNTS("Quota.NumberOfProtectedPersistentStorageOrigins",
-                       protected_origins);
-  UMA_HISTOGRAM_COUNTS("Quota.NumberOfUnlimitedPersistentStorageOrigins",
-                       unlimited_origins);
+  UMA_HISTOGRAM_COUNTS_1M("Quota.NumberOfPersistentStorageOrigins",
+                          num_origins);
+  UMA_HISTOGRAM_COUNTS_1M("Quota.NumberOfProtectedPersistentStorageOrigins",
+                          protected_origins);
+  UMA_HISTOGRAM_COUNTS_1M("Quota.NumberOfUnlimitedPersistentStorageOrigins",
+                          unlimited_origins);
 
   // We DumpOriginInfoTable last to ensure the trackers caches are loaded.
   DumpOriginInfoTable(

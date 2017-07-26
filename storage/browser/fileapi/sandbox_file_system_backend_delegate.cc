@@ -361,10 +361,10 @@ void SandboxFileSystemBackendDelegate::GetOriginsForTypeOnFileTaskRunner(
   }
   switch (type) {
     case kFileSystemTypeTemporary:
-      UMA_HISTOGRAM_COUNTS(kTemporaryOriginsCountLabel, origins->size());
+      UMA_HISTOGRAM_COUNTS_1M(kTemporaryOriginsCountLabel, origins->size());
       break;
     case kFileSystemTypePersistent:
-      UMA_HISTOGRAM_COUNTS(kPersistentOriginsCountLabel, origins->size());
+      UMA_HISTOGRAM_COUNTS_1M(kPersistentOriginsCountLabel, origins->size());
       break;
     default:
       break;
