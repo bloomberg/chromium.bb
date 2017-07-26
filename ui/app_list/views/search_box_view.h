@@ -75,9 +75,6 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
     contents_view_ = contents_view;
   }
 
-  // Whether the search box is active.
-  bool is_search_box_active() const { return is_search_box_active_; }
-
   // Moves focus forward/backwards in response to TAB.
   bool MoveTabFocus(bool move_backwards);
 
@@ -96,6 +93,9 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   // disables cursor blink.
   void SetSearchBoxActive(bool active);
 
+  // Shows/hides the virtual keyboard if the search box is active.
+  void UpdateKeyboardVisibility();
+
   // Detects |ET_MOUSE_PRESSED| and |ET_GESTURE_TAP| events on the white
   // background of the search box.
   void HandleSearchBoxEvent(ui::LocatedEvent* located_event);
@@ -110,16 +110,22 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
 
-  // Returns background border corner radius in the given state.
-  static int GetSearchBoxBorderCornerRadiusForState(AppListModel::State state);
-
-  // Returns background color for the given state.
-  SkColor GetBackgroundColorForState(AppListModel::State state) const;
+  // Overridden from views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Updates the search box's background corner radius and color.
   void UpdateBackground(double progress,
                         AppListModel::State current_state,
                         AppListModel::State target_state);
+
+  // Called when tablet mode starts and ends.
+  void OnTabletModeChanged(bool started);
+
+  // Returns background border corner radius in the given state.
+  static int GetSearchBoxBorderCornerRadiusForState(AppListModel::State state);
+
+  // Returns background color for the given state.
+  SkColor GetBackgroundColorForState(AppListModel::State state) const;
 
   // Used only in the tests to get the current search icon.
   views::ImageView* get_search_icon_for_test() { return search_icon_; }
@@ -127,8 +133,8 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   // Used only in the tests to get the current focused view.
   SearchBoxFocus get_focused_view_for_test() const { return focused_view_; }
 
-  // Overridden from views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  // Whether the search box is active.
+  bool is_search_box_active() const { return is_search_box_active_; }
 
  private:
   // Updates model text and selection model with current Textfield info.
@@ -191,6 +197,8 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   const bool is_fullscreen_app_list_enabled_;
   // Whether the search box is active.
   bool is_search_box_active_ = false;
+  // Whether tablet mode is active.
+  bool is_tablet_mode_ = false;
   // The current background color.
   SkColor background_color_ = kSearchBoxBackgroundDefault;
   // The current search box color.
