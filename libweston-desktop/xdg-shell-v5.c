@@ -264,6 +264,10 @@ weston_desktop_xdg_surface_committed(struct weston_desktop_surface *dsurface,
 		weston_desktop_surface_get_surface(surface->surface);
 	bool reconfigure = false;
 
+	/* TODO: use the window geometry and not the surface size here
+	 * We need to check the next geometry if there is one, but not accept it
+	 * until we checked it, maybe.
+	 */
 	if (surface->next.state.maximized || surface->next.state.fullscreen)
 		reconfigure = surface->next.size.width != wsurface->width ||
 			      surface->next.size.height != wsurface->height;

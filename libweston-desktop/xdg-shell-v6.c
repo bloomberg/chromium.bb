@@ -644,9 +644,12 @@ weston_desktop_xdg_toplevel_committed(struct weston_desktop_xdg_toplevel *toplev
 	if (!wsurface->buffer_ref.buffer)
 		return;
 
+	struct weston_geometry geometry =
+		weston_desktop_surface_get_geometry(toplevel->base.desktop_surface);
+
 	if ((toplevel->next.state.maximized || toplevel->next.state.fullscreen) &&
-	    (toplevel->next.size.width != wsurface->width ||
-	     toplevel->next.size.height != wsurface->height)) {
+	    (toplevel->next.size.width != geometry.width ||
+	     toplevel->next.size.height != geometry.height)) {
 		struct weston_desktop_client *client =
 			weston_desktop_surface_get_client(toplevel->base.desktop_surface);
 		struct wl_resource *client_resource =
