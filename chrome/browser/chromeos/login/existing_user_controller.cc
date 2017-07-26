@@ -1038,7 +1038,12 @@ void ExistingUserController::OnPolicyFetchResult(
     if (!DecodeMigrationActionFromPolicy(policy_payload.get(), &action)) {
       // User policy was present, but the EcryptfsMigrationStrategy policy value
       // was not there. Stay on the safe side and don't start migration.
-      action = EcryptfsMigrationAction::DISALLOW_ARC_NO_MIGRATION;
+
+      // TODO(pmarko): bug747930: Temporarily, we default to ASK_USER for
+      // managed users who don't have the policy value, so testing migration is
+      // possible before the policy is supported server-side. This must be
+      // reverted before M61 goes stable.
+      action = EcryptfsMigrationAction::ASK_USER;
     }
   } else {
     // We don't know if the user has policy or not. Stay on the safe side and
