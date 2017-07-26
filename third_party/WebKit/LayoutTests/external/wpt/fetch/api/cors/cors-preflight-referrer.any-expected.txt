@@ -1,0 +1,13 @@
+This is a testharness.js-based test.
+FAIL Referrer policy: no-referrer and referrer: default assert_equals: Preflight's referrer is correct expected "" but got "http://web-platform.test:8001/fetch/api/cors/cors-preflight-referrer.any.html"
+FAIL Referrer policy: no-referrer and referrer: 'myreferrer' assert_equals: Preflight's referrer is correct expected "" but got "http://web-platform.test:8001/fetch/api/cors/cors-preflight-referrer.any.html"
+PASS Referrer policy: "" and referrer: default 
+FAIL Referrer policy: "" and referrer: 'myreferrer' assert_equals: Preflight's referrer is correct expected "http://web-platform.test:8001/fetch/api/cors/myreferrer" but got "http://web-platform.test:8001/fetch/api/cors/cors-preflight-referrer.any.html"
+FAIL Referrer policy: origin and referrer: default assert_equals: Preflight's referrer is correct expected "http://web-platform.test:8001/" but got "http://web-platform.test:8001/fetch/api/cors/cors-preflight-referrer.any.html"
+FAIL Referrer policy: origin and referrer: 'myreferrer' assert_equals: Preflight's referrer is correct expected "http://web-platform.test:8001/" but got "http://web-platform.test:8001/fetch/api/cors/cors-preflight-referrer.any.html"
+FAIL Referrer policy: origin-when-cross-origin and referrer: default assert_equals: Preflight's referrer is correct expected "http://web-platform.test:8001/" but got "http://web-platform.test:8001/fetch/api/cors/cors-preflight-referrer.any.html"
+FAIL Referrer policy: origin-when-cross-origin and referrer: 'myreferrer' assert_equals: Preflight's referrer is correct expected "http://web-platform.test:8001/" but got "http://web-platform.test:8001/fetch/api/cors/cors-preflight-referrer.any.html"
+PASS Referrer policy: unsafe-url and referrer: default 
+FAIL Referrer policy: unsafe-url and referrer: 'myreferrer' assert_equals: Preflight's referrer is correct expected "http://web-platform.test:8001/fetch/api/cors/myreferrer" but got "http://web-platform.test:8001/fetch/api/cors/cors-preflight-referrer.any.html"
+Harness: the test ran to completion.
+
