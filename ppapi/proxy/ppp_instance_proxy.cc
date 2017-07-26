@@ -241,7 +241,7 @@ void PPP_Instance_Proxy::OnPluginMsgHandleDocumentLoad(
   if (!dispatcher)
     return;
   Connection connection(PluginGlobals::Get()->GetBrowserSender(),
-                        dispatcher);
+                        dispatcher->sender());
 
   scoped_refptr<URLLoaderResource> loader_resource(
       new URLLoaderResource(connection, instance,
