@@ -166,11 +166,12 @@ void LayoutTestPermissionManager::UnsubscribePermissionStatusChange(
 void LayoutTestPermissionManager::SetPermission(
     PermissionType permission,
     blink::mojom::PermissionStatus status,
-    const GURL& origin,
-    const GURL& embedding_origin) {
+    const GURL& url,
+    const GURL& embedding_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  PermissionDescription description(permission, origin, embedding_origin);
+  PermissionDescription description(permission, url.GetOrigin(),
+                                    embedding_url.GetOrigin());
 
   base::AutoLock lock(permissions_lock_);
 

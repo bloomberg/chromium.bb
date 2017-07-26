@@ -113,6 +113,11 @@
     "args": ["--stable-release-mode"]
   },
   {
+    "prefix": "feature-policy-permissions",
+    "base": "http/tests/webmidi",
+    "args": ["--enable-features=UseFeaturePolicyForPermissions"]
+  },
+  {
     "prefix": "off-main-thread-fetch",
     "base": "external/wpt/html/browsers/offline/appcache/workers",
     "args": ["--enable-features=OffMainThreadFetch"]
