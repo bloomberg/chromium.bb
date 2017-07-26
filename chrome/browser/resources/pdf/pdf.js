@@ -849,7 +849,7 @@ PDFViewer.prototype = {
         this.loadState_ = LoadState.LOADING;
         if (!this.inPrintPreviewMode_) {
           this.inPrintPreviewMode_ = true;
-          this.viewport_.fitToPage();
+          this.zoomToolbar_.forceFitToPage();
         }
 
         // Stash the scroll location so that it can be restored when the new

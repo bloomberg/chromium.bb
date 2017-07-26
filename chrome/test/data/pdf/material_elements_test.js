@@ -178,18 +178,73 @@ var tests = [
     // Tap 3: Fire fit-to-page again.
     MockInteractions.tap(fab);
     assertEvent('fit-to-page');
+    chrome.test.assertTrue(fab.icon.endsWith(fitWidthIcon));
 
     // Do the same as above, but with fitToggleFromHotKey().
     zoomToolbar.fitToggleFromHotKey();
     assertEvent('fit-to-width');
+    chrome.test.assertTrue(fab.icon.endsWith(fitPageIcon));
     zoomToolbar.fitToggleFromHotKey();
     assertEvent('fit-to-page');
+    chrome.test.assertTrue(fab.icon.endsWith(fitWidthIcon));
     zoomToolbar.fitToggleFromHotKey();
     assertEvent('fit-to-width');
+    chrome.test.assertTrue(fab.icon.endsWith(fitPageIcon));
 
     // Tap 4: Fire fit-to-page again.
     MockInteractions.tap(fab);
     assertEvent('fit-to-page');
+    chrome.test.assertTrue(fab.icon.endsWith(fitWidthIcon));
+
+    chrome.test.succeed();
+  },
+
+  function testZoomToolbarForceFitToPage() {
+    var zoomToolbar = Polymer.Base.create('viewer-zoom-toolbar', {});
+    var fitButton = zoomToolbar.$['fit-button'];
+    var fab = fitButton.$['button'];
+
+    var fitWidthIcon = 'fullscreen';
+    var fitPageIcon = 'fullscreen-exit';
+
+    var lastEvent = null;
+    var logEvent = function(e) {
+      lastEvent = e.type;
+    }
+    var assertEvent = function(type) {
+      chrome.test.assertEq(type, lastEvent);
+      lastEvent = null;
+    }
+    zoomToolbar.addEventListener('fit-to-width', logEvent);
+    zoomToolbar.addEventListener('fit-to-page', logEvent);
+
+    // Initial: Show fit-to-page.
+    chrome.test.assertTrue(fab.icon.endsWith(fitPageIcon));
+
+    // Test forceFitToPage() from initial state.
+    zoomToolbar.forceFitToPage();
+    assertEvent('fit-to-page');
+    chrome.test.assertTrue(fab.icon.endsWith(fitWidthIcon));
+
+    // Tap 1: Fire fit-to-width.
+    MockInteractions.tap(fab);
+    assertEvent('fit-to-width');
+    chrome.test.assertTrue(fab.icon.endsWith(fitPageIcon));
+
+    // Test forceFitToPage() from fit-to-width mode.
+    zoomToolbar.forceFitToPage();
+    assertEvent('fit-to-page');
+    chrome.test.assertTrue(fab.icon.endsWith(fitWidthIcon));
+
+    // Test forceFitToPage() when already in fit-to-page mode.
+    zoomToolbar.forceFitToPage();
+    assertEvent('fit-to-page');
+    chrome.test.assertTrue(fab.icon.endsWith(fitWidthIcon));
+
+    // Tap 2: Fire fit-to-width.
+    MockInteractions.tap(fab);
+    assertEvent('fit-to-width');
+    chrome.test.assertTrue(fab.icon.endsWith(fitPageIcon));
 
     chrome.test.succeed();
   }
