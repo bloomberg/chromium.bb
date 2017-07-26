@@ -53,6 +53,8 @@ class NoAlertOpen(ChromeDriverException):
   pass
 class NoSuchCookie(ChromeDriverException):
   pass
+class InvalidArgument(ChromeDriverException):
+  pass
 
 def _ExceptionForLegacyResponse(response):
   exception_class_map = {
@@ -64,6 +66,7 @@ def _ExceptionForLegacyResponse(response):
     11: ElementNotVisible,
     12: InvalidElementState,
     13: UnknownError,
+    14: InvalidArgument,
     17: JavaScriptError,
     19: XPathLookupError,
     21: Timeout,
@@ -100,7 +103,8 @@ def _ExceptionForStandardResponse(response):
     'asynchronous script timeout': ScriptTimeout,
     'invalid selector': InvalidSelector,
     'session not created exception': SessionNotCreatedException,
-    'no such cookie': NoSuchCookie
+    'no such cookie': NoSuchCookie,
+    'invalid argument': InvalidArgument
   }
 
   error = response['error']
