@@ -324,8 +324,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'nvidia', 'intel'], bug=630800)
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
         ['mac', 'nvidia', 'intel'], bug=630800)
-    self.Flaky('deqp/functional/gles3/shaderoperator/common_functions.html',
-        ['mac', 'amd', 'nvidia'], bug=702336)
 
     # Mac Retina NVIDIA
     self.Fail('deqp/functional/gles3/fbomultisample*',
@@ -484,6 +482,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
         ['mac', ('nvidia', 0xfe9)], bug=654187)
 
+    # When this fails on this configuration, it fails multiple times in a row.
+    self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
+        ['mac', 'nvidia'], bug=702336)
+
     # Mac AMD
     # TODO(kbr): uncomment the following two exepectations after test
     # has been made more robust.
@@ -491,6 +493,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     #     ['mac', 'amd'], bug=735483)
     # self.Fail('conformance2/rendering/texture-switch-performance.html',
     #     ['mac', 'amd'], bug=735483)
+    self.Flaky('deqp/functional/gles3/shaderoperator/common_functions.html',
+        ['mac', 'amd'], bug=702336)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'array_interleaved_lines.html',
         ['mac', 'amd'], bug=483282)
