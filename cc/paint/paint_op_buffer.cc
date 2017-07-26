@@ -89,17 +89,17 @@ NOINLINE static void RasterWithAlphaInternalForFlags(
     const SkRect& bounds,
     uint8_t alpha) {
   SkMatrix unused_matrix;
-  if (alpha == 255) {
-    raster_fn(op, &op->flags, canvas, unused_matrix);
-  } else if (op->flags.SupportsFoldingAlpha()) {
-    PaintFlags flags = op->flags;
-    flags.setAlpha(SkMulDiv255Round(flags.getAlpha(), alpha));
-    raster_fn(op, &flags, canvas, unused_matrix);
-  } else {
+  if (!op->flags.SupportsFoldingAlpha()) {
     bool unset = bounds.x() == PaintOp::kUnsetRect.x();
     canvas->saveLayerAlpha(unset ? nullptr : &bounds, alpha);
     raster_fn(op, &op->flags, canvas, unused_matrix);
     canvas->restore();
+  } else if (alpha == 255) {
+    raster_fn(op, &op->flags, canvas, unused_matrix);
+  } else {
+    PaintFlags flags = op->flags;
+    flags.setAlpha(SkMulDiv255Round(flags.getAlpha(), alpha));
+    raster_fn(op, &flags, canvas, unused_matrix);
   }
 }
 

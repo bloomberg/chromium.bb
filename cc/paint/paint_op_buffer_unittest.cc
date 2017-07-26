@@ -341,6 +341,32 @@ TEST(PaintOpBufferTest, SaveDrawRestoreFail_BadFlags) {
   EXPECT_EQ(draw_flags.getAlpha(), canvas.paint_.getAlpha());
 }
 
+// Same as above, but the save layer itself appears to be a noop.
+// See: http://crbug.com/748485.  If the inner draw op itself
+// doesn't support folding, then the external save can't be skipped.
+TEST(PaintOpBufferTest, SaveDrawRestore_BadFlags255Alpha) {
+  PaintOpBuffer buffer;
+
+  uint8_t alpha = 255;
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha, false);
+
+  PaintFlags draw_flags;
+  draw_flags.setColor(SK_ColorMAGENTA);
+  draw_flags.setAlpha(50);
+  draw_flags.setBlendMode(SkBlendMode::kColorBurn);
+  EXPECT_FALSE(draw_flags.SupportsFoldingAlpha());
+  SkRect rect = SkRect::MakeXYWH(1, 2, 3, 4);
+  buffer.push<DrawRectOp>(rect, draw_flags);
+  buffer.push<RestoreOp>();
+
+  SaveCountingCanvas canvas;
+  buffer.Playback(&canvas);
+
+  EXPECT_EQ(1, canvas.save_count_);
+  EXPECT_EQ(1, canvas.restore_count_);
+  EXPECT_EQ(rect, canvas.draw_rect_);
+}
+
 // The same as SaveDrawRestore, but test that the optimization doesn't apply
 // when there are more than one ops between the save and restore.
 TEST(PaintOpBufferTest, SaveDrawRestoreFail_TooManyOps) {
