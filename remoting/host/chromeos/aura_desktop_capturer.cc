@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "remoting/host/chromeos/skia_bitmap_desktop_frame.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -40,8 +40,8 @@ void AuraDesktopCapturer::Start(webrtc::DesktopCapturer::Callback* callback) {
 }
 
 void AuraDesktopCapturer::CaptureFrame() {
-  std::unique_ptr<cc::CopyOutputRequest> request =
-      cc::CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
+  std::unique_ptr<viz::CopyOutputRequest> request =
+      viz::CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
           &AuraDesktopCapturer::OnFrameCaptured, weak_factory_.GetWeakPtr()));
 
   gfx::Rect window_rect(desktop_window_->bounds().size());
@@ -51,7 +51,7 @@ void AuraDesktopCapturer::CaptureFrame() {
 }
 
 void AuraDesktopCapturer::OnFrameCaptured(
-    std::unique_ptr<cc::CopyOutputResult> result) {
+    std::unique_ptr<viz::CopyOutputResult> result) {
   if (result->IsEmpty()) {
     callback_->OnCaptureResult(DesktopCapturer::Result::ERROR_TEMPORARY,
                                nullptr);

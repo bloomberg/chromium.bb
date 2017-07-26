@@ -12,13 +12,16 @@
 #include "content/common/content_export.h"
 
 namespace cc {
-class CopyOutputRequest;
 class LayerTreeFrameSink;
 class SwapPromise;
 }
 
 namespace gfx {
 class Vector2dF;
+}
+
+namespace viz {
+class CopyOutputRequest;
 }
 
 namespace content {
@@ -85,7 +88,7 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
   // For use in layout test mode only, attempts to copy the full content of the
   // compositor.
   virtual std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
-      std::unique_ptr<cc::CopyOutputRequest> request) = 0;
+      std::unique_ptr<viz::CopyOutputRequest> request) = 0;
 
  protected:
   virtual ~RenderWidgetCompositorDelegate() {}

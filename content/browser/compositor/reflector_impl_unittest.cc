@@ -170,7 +170,7 @@ class ReflectorImplTest : public testing::Test {
     if (reflector_)
       reflector_->RemoveMirroringLayer(mirroring_layer_.get());
     viz::TextureMailbox mailbox;
-    std::unique_ptr<cc::SingleReleaseCallback> release;
+    std::unique_ptr<viz::SingleReleaseCallback> release;
     if (mirroring_layer_->PrepareTextureMailbox(&mailbox, &release)) {
       release->Run(gpu::SyncToken(), false);
     }

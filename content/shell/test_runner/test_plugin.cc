@@ -298,15 +298,15 @@ static void ReleaseSharedMemory(std::unique_ptr<viz::SharedBitmap> bitmap,
 
 bool TestPlugin::PrepareTextureMailbox(
     viz::TextureMailbox* mailbox,
-    std::unique_ptr<cc::SingleReleaseCallback>* release_callback) {
+    std::unique_ptr<viz::SingleReleaseCallback>* release_callback) {
   if (!mailbox_changed_)
     return false;
   *mailbox = texture_mailbox_;
   if (texture_mailbox_.IsTexture()) {
     *release_callback =
-        cc::SingleReleaseCallback::Create(base::Bind(&IgnoreReleaseCallback));
+        viz::SingleReleaseCallback::Create(base::Bind(&IgnoreReleaseCallback));
   } else if (texture_mailbox_.IsSharedMemory()) {
-    *release_callback = cc::SingleReleaseCallback::Create(
+    *release_callback = viz::SingleReleaseCallback::Create(
         base::Bind(&ReleaseSharedMemory, base::Passed(&shared_bitmap_)));
   }
   mailbox_changed_ = false;

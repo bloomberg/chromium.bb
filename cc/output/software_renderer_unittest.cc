@@ -10,8 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
 #include "cc/output/software_output_device.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -24,6 +22,8 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -63,7 +63,7 @@ class SoftwareRendererTest : public testing::Test {
     base::RunLoop loop;
 
     list->back()->copy_requests.push_back(
-        CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
+        viz::CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
             &SoftwareRendererTest::SaveBitmapResult,
             base::Unretained(&bitmap_result), loop.QuitClosure())));
 
@@ -74,7 +74,7 @@ class SoftwareRendererTest : public testing::Test {
 
   static void SaveBitmapResult(std::unique_ptr<SkBitmap>* bitmap_result,
                                const base::Closure& quit_closure,
-                               std::unique_ptr<CopyOutputResult> result) {
+                               std::unique_ptr<viz::CopyOutputResult> result) {
     DCHECK(result->HasBitmap());
     *bitmap_result = result->TakeBitmap();
     quit_closure.Run();

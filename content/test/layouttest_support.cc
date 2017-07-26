@@ -17,8 +17,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
-#include "cc/output/copy_output_request.h"
 #include "cc/test/pixel_test_output_surface.h"
+#include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -295,7 +295,7 @@ class CopyRequestSwapPromise : public cc::SwapPromise {
   using FindLayerTreeFrameSinkCallback =
       base::Callback<viz::TestLayerTreeFrameSink*()>;
   CopyRequestSwapPromise(
-      std::unique_ptr<cc::CopyOutputRequest> request,
+      std::unique_ptr<viz::CopyOutputRequest> request,
       FindLayerTreeFrameSinkCallback find_layer_tree_frame_sink_callback)
       : copy_request_(std::move(request)),
         find_layer_tree_frame_sink_callback_(
@@ -321,7 +321,7 @@ class CopyRequestSwapPromise : public cc::SwapPromise {
   int64_t TraceId() const override { return 0; }
 
  private:
-  std::unique_ptr<cc::CopyOutputRequest> copy_request_;
+  std::unique_ptr<viz::CopyOutputRequest> copy_request_;
   FindLayerTreeFrameSinkCallback find_layer_tree_frame_sink_callback_;
   viz::TestLayerTreeFrameSink* layer_tree_frame_sink_from_commit_ = nullptr;
 };
@@ -370,7 +370,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
 
   std::unique_ptr<cc::SwapPromise> RequestCopyOfOutput(
       int32_t routing_id,
-      std::unique_ptr<cc::CopyOutputRequest> request) override {
+      std::unique_ptr<viz::CopyOutputRequest> request) override {
     // Note that we can't immediately check layer_tree_frame_sinks_, since it
     // may not have been created yet. Instead, we wait until OnCommit to find
     // the currently active LayerTreeFrameSink for the given RenderWidget

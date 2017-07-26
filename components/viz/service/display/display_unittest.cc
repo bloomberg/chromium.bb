@@ -9,13 +9,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/null_task_runner.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/copy_output_result.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/render_pass.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
@@ -175,7 +175,7 @@ class StubDisplayClient : public DisplayClient {
   void DisplayDidDrawAndSwap() override {}
 };
 
-void CopyCallback(bool* called, std::unique_ptr<cc::CopyOutputResult> result) {
+void CopyCallback(bool* called, std::unique_ptr<CopyOutputResult> result) {
   *called = true;
 }
 
@@ -330,7 +330,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
     bool copy_called = false;
-    pass->copy_requests.push_back(cc::CopyOutputRequest::CreateRequest(
+    pass->copy_requests.push_back(CopyOutputRequest::CreateRequest(
         base::BindOnce(&CopyCallback, &copy_called)));
     pass->id = 1u;
 

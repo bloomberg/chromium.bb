@@ -60,7 +60,7 @@ class GpuRootCompositorFrameSink
   // cc::mojom::CompositorFrameSinkPrivate:
   void ClaimTemporaryReference(const SurfaceId& surface_id) override;
   void RequestCopyOfSurface(
-      std::unique_ptr<cc::CopyOutputRequest> request) override;
+      std::unique_ptr<CopyOutputRequest> request) override;
 
  private:
   // DisplayClient:

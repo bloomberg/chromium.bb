@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "cc/output/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "ui/android/ui_android_export.h"
 
@@ -26,7 +26,7 @@ class UI_ANDROID_EXPORT WindowAndroidCompositor {
 
   virtual void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) = 0;
   virtual void RequestCopyOfOutputOnRootLayer(
-      std::unique_ptr<cc::CopyOutputRequest> request) = 0;
+      std::unique_ptr<viz::CopyOutputRequest> request) = 0;
   virtual void SetNeedsAnimate() = 0;
   virtual ResourceManager& GetResourceManager() = 0;
   virtual viz::FrameSinkId GetFrameSinkId() = 0;

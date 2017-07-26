@@ -21,7 +21,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace cc {
+namespace viz {
 class CopyOutputResult;
 }
 
@@ -87,7 +87,7 @@ class Pointer : public SurfaceTreeHost,
 
   // Called when cursor snapshot has been captured.
   void OnCursorCaptured(const gfx::Point& hotspot,
-                        std::unique_ptr<cc::CopyOutputResult> result);
+                        std::unique_ptr<viz::CopyOutputResult> result);
 
   // Update |cursor_| to |cursor_bitmap_| transformed for the current display.
   void UpdateCursor();

@@ -8,7 +8,6 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/base/render_surface_filters.h"
-#include "cc/output/copy_output_request.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/output/software_output_device.h"
@@ -20,6 +19,7 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/scoped_resource.h"
 #include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/quads/copy_output_request.h"
 #include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -571,7 +571,7 @@ void SoftwareRenderer::DrawUnsupportedQuad(const DrawQuad* quad) {
 }
 
 void SoftwareRenderer::CopyCurrentRenderPassToBitmap(
-    std::unique_ptr<CopyOutputRequest> request) {
+    std::unique_ptr<viz::CopyOutputRequest> request) {
   gfx::Rect copy_rect = current_frame()->current_render_pass->output_rect;
   if (request->has_area())
     copy_rect.Intersect(request->area());

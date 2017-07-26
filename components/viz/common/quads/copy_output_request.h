@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_COPY_OUTPUT_REQUEST_H_
-#define CC_OUTPUT_COPY_OUTPUT_REQUEST_H_
+#ifndef COMPONENTS_VIZ_COMMON_QUADS_COPY_OUTPUT_REQUEST_H_
+#define COMPONENTS_VIZ_COMMON_QUADS_COPY_OUTPUT_REQUEST_H_
 
 #include <memory>
 
@@ -12,23 +12,25 @@
 #include "base/optional.h"
 #include "base/task_runner.h"
 #include "base/unguessable_token.h"
-#include "cc/cc_export.h"
-#include "cc/resources/single_release_callback.h"
+#include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/quads/texture_mailbox.h"
+#include "components/viz/common/viz_common_export.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/gfx/geometry/rect.h"
 
 class SkBitmap;
 
 namespace cc {
-
 namespace mojom {
 class CopyOutputRequestDataView;
 }
+}  // namespace cc
+
+namespace viz {
 
 class CopyOutputResult;
 
-class CC_EXPORT CopyOutputRequest {
+class VIZ_COMMON_EXPORT CopyOutputRequest {
  public:
   using CopyOutputRequestCallback =
       base::OnceCallback<void(std::unique_ptr<CopyOutputResult> result)>;
@@ -77,24 +79,22 @@ class CC_EXPORT CopyOutputRequest {
 
   // By default copy requests create a new TextureMailbox to return contents
   // in. This allows a client to provide a TextureMailbox, and the compositor
-  // will place the result inside the viz::TextureMailbox.
-  void SetTextureMailbox(const viz::TextureMailbox& texture_mailbox);
+  // will place the result inside the TextureMailbox.
+  void SetTextureMailbox(const TextureMailbox& texture_mailbox);
   bool has_texture_mailbox() const { return texture_mailbox_.has_value(); }
-  const viz::TextureMailbox& texture_mailbox() const {
-    return *texture_mailbox_;
-  }
+  const TextureMailbox& texture_mailbox() const { return *texture_mailbox_; }
 
   void SendEmptyResult();
   void SendBitmapResult(std::unique_ptr<SkBitmap> bitmap);
   void SendTextureResult(
       const gfx::Size& size,
-      const viz::TextureMailbox& texture_mailbox,
+      const TextureMailbox& texture_mailbox,
       std::unique_ptr<SingleReleaseCallback> release_callback);
 
   void SendResult(std::unique_ptr<CopyOutputResult> result);
 
  private:
-  friend struct mojo::StructTraits<mojom::CopyOutputRequestDataView,
+  friend struct mojo::StructTraits<cc::mojom::CopyOutputRequestDataView,
                                    std::unique_ptr<CopyOutputRequest>>;
 
   CopyOutputRequest();
@@ -105,12 +105,12 @@ class CC_EXPORT CopyOutputRequest {
   base::Optional<base::UnguessableToken> source_;
   bool force_bitmap_result_;
   base::Optional<gfx::Rect> area_;
-  base::Optional<viz::TextureMailbox> texture_mailbox_;
+  base::Optional<TextureMailbox> texture_mailbox_;
   CopyOutputRequestCallback result_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyOutputRequest);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_COPY_OUTPUT_REQUEST_H_
+#endif  // COMPONENTS_VIZ_COMMON_QUADS_COPY_OUTPUT_REQUEST_H_

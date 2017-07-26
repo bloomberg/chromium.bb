@@ -9,9 +9,9 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
 #include "components/viz/common/gl_helper.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -227,8 +227,8 @@ void AuraWindowCaptureMachine::Capture(base::TimeTicks event_time) {
   }
   if (oracle_proxy_->ObserveEventAndDecideCapture(
           event, gfx::Rect(), event_time, &frame, &capture_frame_cb)) {
-    std::unique_ptr<cc::CopyOutputRequest> request =
-        cc::CopyOutputRequest::CreateRequest(
+    std::unique_ptr<viz::CopyOutputRequest> request =
+        viz::CopyOutputRequest::CreateRequest(
             base::BindOnce(&AuraWindowCaptureMachine::DidCopyOutput,
                            weak_factory_.GetWeakPtr(), std::move(frame),
                            event_time, start_time, capture_frame_cb));
@@ -244,7 +244,7 @@ void AuraWindowCaptureMachine::DidCopyOutput(
     base::TimeTicks event_time,
     base::TimeTicks start_time,
     const CaptureFrameCallback& capture_frame_cb,
-    std::unique_ptr<cc::CopyOutputResult> result) {
+    std::unique_ptr<viz::CopyOutputResult> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   static bool first_call = true;
@@ -284,7 +284,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
     scoped_refptr<media::VideoFrame> video_frame,
     base::TimeTicks event_time,
     const CaptureFrameCallback& capture_frame_cb,
-    std::unique_ptr<cc::CopyOutputResult> result) {
+    std::unique_ptr<viz::CopyOutputResult> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!desktop_window_) {
@@ -326,7 +326,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
   }
 
   viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
   result->TakeTexture(&texture_mailbox, &release_callback);
   DCHECK(texture_mailbox.IsTexture());
   if (!texture_mailbox.IsTexture()) {
@@ -369,7 +369,7 @@ void AuraWindowCaptureMachine::CopyOutputFinishedForVideo(
     base::TimeTicks event_time,
     const CaptureFrameCallback& capture_frame_cb,
     scoped_refptr<media::VideoFrame> target,
-    std::unique_ptr<cc::SingleReleaseCallback> release_callback,
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback,
     bool result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

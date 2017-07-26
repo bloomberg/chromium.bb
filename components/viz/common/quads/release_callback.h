@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RESOURCES_RELEASE_CALLBACK_H_
-#define CC_RESOURCES_RELEASE_CALLBACK_H_
+#ifndef COMPONENTS_VIZ_COMMON_QUADS_RELEASE_CALLBACK_H_
+#define COMPONENTS_VIZ_COMMON_QUADS_RELEASE_CALLBACK_H_
 
 #include "base/callback.h"
 
@@ -11,11 +11,11 @@ namespace gpu {
 struct SyncToken;
 }  // namespace gpu
 
-namespace cc {
+namespace viz {
 
 typedef base::Callback<void(const gpu::SyncToken& sync_token, bool is_lost)>
     ReleaseCallback;
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_RESOURCES_RELEASE_CALLBACK_H_
+#endif  // COMPONENTS_VIZ_COMMON_QUADS_RELEASE_CALLBACK_H_

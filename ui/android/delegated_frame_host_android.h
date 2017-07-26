@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "cc/output/copy_output_request.h"
 #include "cc/resources/returned_resource.h"
+#include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
@@ -65,7 +65,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void RequestCopyOfSurface(
       WindowAndroidCompositor* compositor,
       const gfx::Rect& src_subrect_in_pixel,
-      cc::CopyOutputRequest::CopyOutputRequestCallback result_callback);
+      viz::CopyOutputRequest::CopyOutputRequestCallback result_callback);
 
   void CompositorFrameSinkChanged();
 

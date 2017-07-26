@@ -31,8 +31,8 @@
 #include "platform/graphics/gpu/DrawingBuffer.h"
 
 #include <memory>
-#include "cc/resources/single_release_callback.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
+#include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -159,7 +159,7 @@ TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes) {
   GLES2InterfaceForTests* gl_ = drawing_buffer_->ContextGLForTests();
   VerifyStateWasRestored();
   viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
 
   IntSize initial_size(kInitialWidth, kInitialHeight);
   IntSize alternate_size(kInitialWidth, kAlternateHeight);
@@ -214,11 +214,11 @@ TEST_F(DrawingBufferTest, verifyDestructionCompleteAfterAllMailboxesReleased) {
   drawing_buffer_->live_ = &live;
 
   viz::TextureMailbox texture_mailbox1;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback1;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback1;
   viz::TextureMailbox texture_mailbox2;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback2;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback2;
   viz::TextureMailbox texture_mailbox3;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback3;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback3;
 
   IntSize initial_size(kInitialWidth, kInitialHeight);
 
@@ -263,11 +263,11 @@ TEST_F(DrawingBufferTest, verifyDrawingBufferStaysAliveIfResourcesAreLost) {
   drawing_buffer_->live_ = &live;
 
   viz::TextureMailbox texture_mailbox1;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback1;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback1;
   viz::TextureMailbox texture_mailbox2;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback2;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback2;
   viz::TextureMailbox texture_mailbox3;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback3;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback3;
 
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox1,
@@ -304,11 +304,11 @@ TEST_F(DrawingBufferTest, verifyDrawingBufferStaysAliveIfResourcesAreLost) {
 
 TEST_F(DrawingBufferTest, verifyOnlyOneRecycledMailboxMustBeKept) {
   viz::TextureMailbox texture_mailbox1;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback1;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback1;
   viz::TextureMailbox texture_mailbox2;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback2;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback2;
   viz::TextureMailbox texture_mailbox3;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback3;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback3;
 
   // Produce mailboxes.
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
@@ -332,7 +332,7 @@ TEST_F(DrawingBufferTest, verifyOnlyOneRecycledMailboxMustBeKept) {
   // The first recycled mailbox must be 2. 1 and 3 were deleted by FIFO order
   // because DrawingBuffer never keeps more than one mailbox.
   viz::TextureMailbox recycled_texture_mailbox1;
-  std::unique_ptr<cc::SingleReleaseCallback> recycled_release_callback1;
+  std::unique_ptr<viz::SingleReleaseCallback> recycled_release_callback1;
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(
       &recycled_texture_mailbox1, &recycled_release_callback1));
@@ -340,7 +340,7 @@ TEST_F(DrawingBufferTest, verifyOnlyOneRecycledMailboxMustBeKept) {
 
   // The second recycled mailbox must be a new mailbox.
   viz::TextureMailbox recycled_texture_mailbox2;
-  std::unique_ptr<cc::SingleReleaseCallback> recycled_release_callback2;
+  std::unique_ptr<viz::SingleReleaseCallback> recycled_release_callback2;
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(
       &recycled_texture_mailbox2, &recycled_release_callback2));
@@ -356,7 +356,7 @@ TEST_F(DrawingBufferTest, verifyOnlyOneRecycledMailboxMustBeKept) {
 TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly) {
   GLES2InterfaceForTests* gl_ = drawing_buffer_->ContextGLForTests();
   viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
 
   // Produce mailboxes.
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
@@ -425,7 +425,7 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest {
 TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
   GLES2InterfaceForTests* gl_ = drawing_buffer_->ContextGLForTests();
   viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
 
   IntSize initial_size(kInitialWidth, kInitialHeight);
   IntSize alternate_size(kInitialWidth, kAlternateHeight);
@@ -507,11 +507,11 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
 TEST_F(DrawingBufferImageChromiumTest, allocationFailure) {
   GLES2InterfaceForTests* gl_ = drawing_buffer_->ContextGLForTests();
   viz::TextureMailbox texture_mailbox1;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback1;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback1;
   viz::TextureMailbox texture_mailbox2;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback2;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback2;
   viz::TextureMailbox texture_mailbox3;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback3;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback3;
 
   // Request a mailbox. An image should already be created. Everything works
   // as expected.
@@ -706,7 +706,7 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
 TEST_F(DrawingBufferTest, verifySetIsHiddenProperlyAffectsMailboxes) {
   GLES2InterfaceForTests* gl_ = drawing_buffer_->ContextGLForTests();
   viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
 
   // Produce mailboxes.
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());

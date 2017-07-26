@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/single_release_callback.h"
+#include "components/viz/common/quads/single_release_callback.h"
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 
-namespace cc {
+namespace viz {
 
 SingleReleaseCallback::SingleReleaseCallback(const ReleaseCallback& callback)
     : callback_(callback) {
@@ -26,4 +26,4 @@ void SingleReleaseCallback::Run(const gpu::SyncToken& sync_token,
   base::ResetAndReturn(&callback_).Run(sync_token, is_lost);
 }
 
-}  // namespace cc
+}  // namespace viz

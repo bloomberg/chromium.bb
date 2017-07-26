@@ -106,7 +106,7 @@ void GpuRootCompositorFrameSink::ClaimTemporaryReference(
 }
 
 void GpuRootCompositorFrameSink::RequestCopyOfSurface(
-    std::unique_ptr<cc::CopyOutputRequest> request) {
+    std::unique_ptr<CopyOutputRequest> request) {
   support_->RequestCopyOfSurface(std::move(request));
 }
 

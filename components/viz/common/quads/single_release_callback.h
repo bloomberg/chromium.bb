@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RESOURCES_SINGLE_RELEASE_CALLBACK_H_
-#define CC_RESOURCES_SINGLE_RELEASE_CALLBACK_H_
+#ifndef COMPONENTS_VIZ_COMMON_QUADS_SINGLE_RELEASE_CALLBACK_H_
+#define COMPONENTS_VIZ_COMMON_QUADS_SINGLE_RELEASE_CALLBACK_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "cc/cc_export.h"
-#include "cc/resources/release_callback.h"
+#include "components/viz/common/quads/release_callback.h"
+#include "components/viz/common/viz_common_export.h"
 
-namespace cc {
+namespace viz {
 
-class CC_EXPORT SingleReleaseCallback {
+class VIZ_COMMON_EXPORT SingleReleaseCallback {
  public:
   static std::unique_ptr<SingleReleaseCallback> Create(
       const ReleaseCallback& cb) {
@@ -30,6 +30,6 @@ class CC_EXPORT SingleReleaseCallback {
   ReleaseCallback callback_;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_RESOURCES_SINGLE_RELEASE_CALLBACK_H_
+#endif  // COMPONENTS_VIZ_COMMON_QUADS_SINGLE_RELEASE_CALLBACK_H_

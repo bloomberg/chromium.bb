@@ -73,8 +73,9 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
     return shared_geometry_.get();
   }
 
-  void GetFramebufferPixelsAsync(const gfx::Rect& rect,
-                                 std::unique_ptr<CopyOutputRequest> request);
+  void GetFramebufferPixelsAsync(
+      const gfx::Rect& rect,
+      std::unique_ptr<viz::CopyOutputRequest> request);
   void GetFramebufferTexture(unsigned texture_id,
                              const gfx::Rect& device_rect);
   void ReleaseRenderPassTextures();
@@ -101,7 +102,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void EnsureScissorTestEnabled() override;
   void EnsureScissorTestDisabled() override;
   void CopyCurrentRenderPassToBitmap(
-      std::unique_ptr<CopyOutputRequest> request) override;
+      std::unique_ptr<viz::CopyOutputRequest> request) override;
   void SetEnableDCLayers(bool enable) override;
   void FinishDrawingQuadList() override;
 
@@ -235,8 +236,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void InitializeSharedObjects();
   void CleanupSharedObjects();
 
-  typedef base::Callback<void(std::unique_ptr<CopyOutputRequest> copy_request,
-                              bool success)>
+  typedef base::Callback<
+      void(std::unique_ptr<viz::CopyOutputRequest> copy_request, bool success)>
       AsyncGetFramebufferPixelsCleanupCallback;
   void FinishedReadback(unsigned source_buffer,
                         unsigned query,

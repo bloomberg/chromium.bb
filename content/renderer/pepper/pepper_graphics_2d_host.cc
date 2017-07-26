@@ -560,7 +560,7 @@ void PepperGraphics2DHost::ReleaseCallback(
 
 bool PepperGraphics2DHost::PrepareTextureMailbox(
     viz::TextureMailbox* mailbox,
-    std::unique_ptr<cc::SingleReleaseCallback>* release_callback) {
+    std::unique_ptr<viz::SingleReleaseCallback>* release_callback) {
   if (!texture_mailbox_modified_)
     return false;
   // TODO(jbauman): Send image_data_ through mailbox to avoid copy.
@@ -585,11 +585,9 @@ bool PepperGraphics2DHost::PrepareTextureMailbox(
   image_data_->Unmap();
 
   *mailbox = viz::TextureMailbox(shared_bitmap.get(), pixel_image_size);
-  *release_callback = cc::SingleReleaseCallback::Create(
-      base::Bind(&PepperGraphics2DHost::ReleaseCallback,
-                 this->AsWeakPtr(),
-                 base::Passed(&shared_bitmap),
-                 pixel_image_size));
+  *release_callback = viz::SingleReleaseCallback::Create(
+      base::Bind(&PepperGraphics2DHost::ReleaseCallback, this->AsWeakPtr(),
+                 base::Passed(&shared_bitmap), pixel_image_size));
   texture_mailbox_modified_ = false;
   return true;
 }

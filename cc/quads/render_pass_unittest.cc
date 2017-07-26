@@ -8,10 +8,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/base/math_util.h"
-#include "cc/output/copy_output_request.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/test/geometry_test_utils.h"
+#include "components/viz/common/quads/copy_output_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/gfx/transform.h"
@@ -30,7 +30,7 @@ struct RenderPassSize {
   FilterOperations background_filters;
   gfx::ColorSpace color_space;
   bool has_transparent_background;
-  std::vector<std::unique_ptr<CopyOutputRequest>> copy_callbacks;
+  std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_callbacks;
   QuadList quad_list;
   SharedQuadStateList shared_quad_state_list;
 };
@@ -84,7 +84,7 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   pass->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                filters, background_filters, color_space,
                has_transparent_background);
-  pass->copy_requests.push_back(CopyOutputRequest::CreateEmptyRequest());
+  pass->copy_requests.push_back(viz::CopyOutputRequest::CreateEmptyRequest());
 
   // Stick a quad in the pass, this should not get copied.
   SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();

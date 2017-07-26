@@ -25,8 +25,8 @@
 
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
-#include "cc/resources/single_release_callback.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
+#include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
@@ -245,7 +245,7 @@ class Canvas2DLayerBridgeTest : public Test {
     gl.SetIsContextLost(true);
 
     viz::TextureMailbox texture_mailbox;
-    std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback;
     EXPECT_FALSE(
         bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback));
   }
@@ -273,7 +273,7 @@ class Canvas2DLayerBridgeTest : public Test {
     bridge->RestoreSurface();
 
     viz::TextureMailbox texture_mailbox;
-    std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback;
     EXPECT_FALSE(
         bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback));
   }
@@ -291,7 +291,7 @@ class Canvas2DLayerBridgeTest : public Test {
           CanvasColorParams())));
 
       viz::TextureMailbox texture_mailbox;
-      std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+      std::unique_ptr<viz::SingleReleaseCallback> release_callback;
       EXPECT_TRUE(
           bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback));
 
@@ -306,7 +306,7 @@ class Canvas2DLayerBridgeTest : public Test {
           WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
 
       viz::TextureMailbox texture_mailbox;
-      std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+      std::unique_ptr<viz::SingleReleaseCallback> release_callback;
 
       {
         Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
@@ -1225,7 +1225,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileHibernating)
 
   // Test prepareMailbox while hibernating
   viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
   EXPECT_FALSE(
       bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback));
   EXPECT_TRUE(bridge->CheckSurfaceValid());
@@ -1285,7 +1285,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
 
   // Test prepareMailbox while background rendering
   viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
   EXPECT_FALSE(
       bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback));
   EXPECT_TRUE(bridge->CheckSurfaceValid());
@@ -1307,7 +1307,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_DeleteIOSurfaceAfterTeardown)
       WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
 
   viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
 
   {
     Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(

@@ -25,11 +25,11 @@
 #include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/output/copy_output_request.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_surface_observer.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/gl_helper.h"
+#include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
@@ -460,7 +460,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
         window()->GetHost()->compositor());
   }
 
-  void InterceptCopyOfOutput(std::unique_ptr<cc::CopyOutputRequest> request) {
+  void InterceptCopyOfOutput(std::unique_ptr<viz::CopyOutputRequest> request) {
     last_copy_request_ = std::move(request);
     if (last_copy_request_->has_texture_mailbox()) {
       // Give the resulting texture a size.
@@ -504,7 +504,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
   }
 
   gfx::Size last_frame_size_;
-  std::unique_ptr<cc::CopyOutputRequest> last_copy_request_;
+  std::unique_ptr<viz::CopyOutputRequest> last_copy_request_;
   FakeWindowEventDispatcher* dispatcher_;
   std::unique_ptr<FakeRendererCompositorFrameSink>
       renderer_compositor_frame_sink_;
@@ -3537,10 +3537,10 @@ class RenderWidgetHostViewAuraCopyRequestTest
   }
 
   void ReleaseSwappedFrame() {
-    std::unique_ptr<cc::CopyOutputRequest> request =
+    std::unique_ptr<viz::CopyOutputRequest> request =
         std::move(view_->last_copy_request_);
     request->SendTextureResult(view_rect_.size(), request->texture_mailbox(),
-                               std::unique_ptr<cc::SingleReleaseCallback>());
+                               std::unique_ptr<viz::SingleReleaseCallback>());
     RunLoopUntilCallback();
   }
 
@@ -3650,7 +3650,7 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
 
   SubmitCompositorFrame();
   EXPECT_EQ(1, callback_count_);
-  std::unique_ptr<cc::CopyOutputRequest> request =
+  std::unique_ptr<viz::CopyOutputRequest> request =
       std::move(view_->last_copy_request_);
 
   // Destroy the RenderWidgetHostViewAura and ImageTransportFactory.
@@ -3659,7 +3659,7 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
   // Send the result after-the-fact.  It goes nowhere since DelegatedFrameHost
   // has been destroyed.
   request->SendTextureResult(view_rect_.size(), request->texture_mailbox(),
-                             std::unique_ptr<cc::SingleReleaseCallback>());
+                             std::unique_ptr<viz::SingleReleaseCallback>());
 
   // Because the copy request callback may be holding state within it, that
   // state must handle the RWHVA and ImageTransportFactory going away before the

@@ -19,7 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
@@ -90,7 +90,7 @@ class VIZ_SERVICE_EXPORT Surface : public SurfaceDeadlineObserver {
   bool QueueFrame(cc::CompositorFrame frame,
                   const base::Closure& draw_callback,
                   const WillDrawCallback& will_draw_callback);
-  void RequestCopyOfOutput(std::unique_ptr<cc::CopyOutputRequest> copy_request);
+  void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
 
   // Notifies the Surface that a blocking SurfaceId now has an active
   // frame.
@@ -101,9 +101,9 @@ class VIZ_SERVICE_EXPORT Surface : public SurfaceDeadlineObserver {
   void ActivatePendingFrameForDeadline();
 
   using CopyRequestsMap =
-      std::multimap<cc::RenderPassId, std::unique_ptr<cc::CopyOutputRequest>>;
+      std::multimap<cc::RenderPassId, std::unique_ptr<CopyOutputRequest>>;
 
-  // Adds each cc::CopyOutputRequest in the current frame to copy_requests. The
+  // Adds each CopyOutputRequest in the current frame to copy_requests. The
   // caller takes ownership of them. |copy_requests| is keyed by cc::RenderPass
   // ids.
   void TakeCopyOutputRequests(CopyRequestsMap* copy_requests);

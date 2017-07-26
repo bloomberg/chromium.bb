@@ -14,8 +14,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
 #include "cc/output/overlay_strategy_single_on_top.h"
 #include "cc/output/overlay_strategy_underlay.h"
 #include "cc/output/texture_mailbox_deleter.h"
@@ -32,6 +30,8 @@
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1768,7 +1768,7 @@ void MailboxReleased(const gpu::SyncToken& sync_token,
                      bool lost_resource,
                      BlockingTaskRunner* main_thread_task_runner) {}
 
-void IgnoreCopyResult(std::unique_ptr<CopyOutputResult> result) {}
+void IgnoreCopyResult(std::unique_ptr<viz::CopyOutputResult> result) {}
 
 TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   FakeOutputSurfaceClient output_surface_client;
@@ -1804,7 +1804,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
                     gfx::Transform(), FilterOperations());
   root_pass->has_transparent_background = false;
   root_pass->copy_requests.push_back(
-      CopyOutputRequest::CreateRequest(base::BindOnce(&IgnoreCopyResult)));
+      viz::CopyOutputRequest::CreateRequest(base::BindOnce(&IgnoreCopyResult)));
 
   viz::TextureMailbox mailbox =
       viz::TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),

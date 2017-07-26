@@ -13,8 +13,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -733,8 +733,8 @@ void RenderWidgetHostViewChildFrame::SubmitSurfaceCopyRequest(
   DCHECK(IsSurfaceAvailableForCopy());
   DCHECK(support_);
 
-  std::unique_ptr<cc::CopyOutputRequest> request =
-      cc::CopyOutputRequest::CreateRequest(
+  std::unique_ptr<viz::CopyOutputRequest> request =
+      viz::CopyOutputRequest::CreateRequest(
           base::BindOnce(&CopyFromCompositingSurfaceHasResult, output_size,
                          preferred_color_type, callback));
   if (!src_subrect.IsEmpty())

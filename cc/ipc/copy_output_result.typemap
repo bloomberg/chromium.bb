@@ -3,13 +3,14 @@
 # found in the LICENSE file.
 
 mojom = "//cc/ipc/copy_output_result.mojom"
-public_headers = [ "//cc/output/copy_output_result.h" ]
+public_headers = [ "//components/viz/common/quads/copy_output_result.h" ]
 traits_headers = [ "//cc/ipc/copy_output_result_struct_traits.h" ]
 public_deps = [
   "//cc",
+  "//components/viz/common",
   "//skia/public/interfaces:struct_traits",
 ]
 sources = [
   "copy_output_result_struct_traits.cc",
 ]
-type_mappings = [ "cc.mojom.CopyOutputResult=std::unique_ptr<cc::CopyOutputResult>[move_only]" ]
+type_mappings = [ "cc.mojom.CopyOutputResult=std::unique_ptr<viz::CopyOutputResult>[move_only]" ]

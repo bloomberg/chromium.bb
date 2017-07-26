@@ -20,8 +20,6 @@
 #include "cc/layers/layer_client.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/scrollbar_layer_interface.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
 #include "cc/tiles/frame_viewer_instrumentation.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
@@ -31,6 +29,8 @@
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -361,15 +361,16 @@ bool Layer::HasAncestor(const Layer* ancestor) const {
   return false;
 }
 
-void Layer::RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> request) {
+void Layer::RequestCopyOfOutput(
+    std::unique_ptr<viz::CopyOutputRequest> request) {
   DCHECK(IsPropertyChangeAllowed());
   if (request->has_source()) {
     const base::UnguessableToken& source = request->source();
-    auto it =
-        std::find_if(inputs_.copy_requests.begin(), inputs_.copy_requests.end(),
-                     [&source](const std::unique_ptr<CopyOutputRequest>& x) {
-                       return x->has_source() && x->source() == source;
-                     });
+    auto it = std::find_if(
+        inputs_.copy_requests.begin(), inputs_.copy_requests.end(),
+        [&source](const std::unique_ptr<viz::CopyOutputRequest>& x) {
+          return x->has_source() && x->source() == source;
+        });
     if (it != inputs_.copy_requests.end())
       inputs_.copy_requests.erase(it);
   }
@@ -1223,8 +1224,9 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
 }
 
 void Layer::TakeCopyRequests(
-    std::vector<std::unique_ptr<CopyOutputRequest>>* requests) {
-  for (std::unique_ptr<CopyOutputRequest>& request : inputs_.copy_requests) {
+    std::vector<std::unique_ptr<viz::CopyOutputRequest>>* requests) {
+  for (std::unique_ptr<viz::CopyOutputRequest>& request :
+       inputs_.copy_requests) {
     // Ensure the result callback is not invoked on the compositing thread.
     if (!request->has_result_task_runner()) {
       request->set_result_task_runner(

@@ -7,12 +7,12 @@
 #include <utility>
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
 #include "components/exo/pointer_delegate.h"
 #include "components/exo/pointer_stylus_delegate.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -359,8 +359,8 @@ void Pointer::CaptureCursor(const gfx::Point& hotspot) {
                 capture_scale_ / display.device_scale_factor();
   host_window()->SetTransform(gfx::GetScaleTransform(gfx::Point(), scale));
 
-  std::unique_ptr<cc::CopyOutputRequest> request =
-      cc::CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
+  std::unique_ptr<viz::CopyOutputRequest> request =
+      viz::CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
           &Pointer::OnCursorCaptured,
           cursor_capture_weak_ptr_factory_.GetWeakPtr(), hotspot));
 
@@ -369,7 +369,7 @@ void Pointer::CaptureCursor(const gfx::Point& hotspot) {
 }
 
 void Pointer::OnCursorCaptured(const gfx::Point& hotspot,
-                               std::unique_ptr<cc::CopyOutputResult> result) {
+                               std::unique_ptr<viz::CopyOutputResult> result) {
   if (!focus_surface_)
     return;
 

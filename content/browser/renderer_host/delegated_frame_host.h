@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "cc/output/copy_output_result.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "components/viz/service/frame_sinks/frame_evictor.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -186,7 +186,7 @@ class CONTENT_EXPORT DelegatedFrameHost
     return !!released_front_lock_.get();
   }
   void SetRequestCopyOfOutputCallbackForTesting(
-      const base::Callback<void(std::unique_ptr<cc::CopyOutputRequest>)>&
+      const base::Callback<void(std::unique_ptr<viz::CopyOutputRequest>)>&
           callback) {
     request_copy_of_output_callback_for_testing_ = callback;
   }
@@ -204,7 +204,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   }
   void LockResources();
   void UnlockResources();
-  void RequestCopyOfOutput(std::unique_ptr<cc::CopyOutputRequest> request);
+  void RequestCopyOfOutput(std::unique_ptr<viz::CopyOutputRequest> request);
 
   bool ShouldSkipFrame(const gfx::Size& size_in_dip);
 
@@ -228,13 +228,13 @@ class CONTENT_EXPORT DelegatedFrameHost
       scoped_refptr<OwnedMailbox> subscriber_texture,
       scoped_refptr<media::VideoFrame> video_frame,
       const base::Callback<void(const gfx::Rect&, bool)>& callback,
-      std::unique_ptr<cc::CopyOutputResult> result);
+      std::unique_ptr<viz::CopyOutputResult> result);
   static void CopyFromCompositingSurfaceFinishedForVideo(
       scoped_refptr<media::VideoFrame> video_frame,
       base::WeakPtr<DelegatedFrameHost> rwhva,
       const base::Callback<void(bool)>& callback,
       scoped_refptr<OwnedMailbox> subscriber_texture,
-      std::unique_ptr<cc::SingleReleaseCallback> release_callback,
+      std::unique_ptr<viz::SingleReleaseCallback> release_callback,
       bool result);
   static void ReturnSubscriberTexture(
       base::WeakPtr<DelegatedFrameHost> rwhva,
@@ -305,7 +305,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // Callback used to pass the output request to the layer or to a function
   // specified by a test.
-  base::Callback<void(std::unique_ptr<cc::CopyOutputRequest>)>
+  base::Callback<void(std::unique_ptr<viz::CopyOutputRequest>)>
       request_copy_of_output_callback_for_testing_;
 
   // YUV readback pipeline.

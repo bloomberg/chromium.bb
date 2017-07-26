@@ -25,10 +25,10 @@
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/input/touch_action.h"
-#include "cc/output/copy_output_request.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/quads/copy_output_request.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/common/drag_messages.h"
@@ -1019,7 +1019,7 @@ void RenderWidget::WillBeginCompositorFrame() {
 }
 
 std::unique_ptr<cc::SwapPromise> RenderWidget::RequestCopyOfOutputForLayoutTest(
-    std::unique_ptr<cc::CopyOutputRequest> request) {
+    std::unique_ptr<viz::CopyOutputRequest> request) {
   return RenderThreadImpl::current()->RequestCopyOfOutputForLayoutTest(
       routing_id_, std::move(request));
 }

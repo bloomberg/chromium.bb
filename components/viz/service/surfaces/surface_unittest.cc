@@ -4,9 +4,9 @@
 
 #include "components/viz/service/surfaces/surface.h"
 #include "base/memory/ptr_util.h"
-#include "cc/output/copy_output_result.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/scheduler_test_common.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -51,7 +51,7 @@ TEST(SurfaceTest, SurfaceIds) {
 }
 
 void TestCopyResultCallback(bool* called,
-                            std::unique_ptr<cc::CopyOutputResult> result) {
+                            std::unique_ptr<CopyOutputResult> result) {
   *called = true;
 }
 
@@ -72,7 +72,7 @@ TEST(SurfaceTest, CopyRequestLifetime) {
   ASSERT_TRUE(!!surface);
 
   bool copy_called = false;
-  support->RequestCopyOfSurface(cc::CopyOutputRequest::CreateRequest(
+  support->RequestCopyOfSurface(CopyOutputRequest::CreateRequest(
       base::BindOnce(&TestCopyResultCallback, &copy_called)));
   EXPECT_TRUE(surface_manager->GetSurfaceForId(surface_id));
   EXPECT_FALSE(copy_called);

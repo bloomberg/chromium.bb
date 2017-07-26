@@ -38,16 +38,16 @@
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/layers/layer.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
 #include "cc/output/latency_info_swap_promise.h"
 #include "cc/output/swap_promise.h"
-#include "cc/resources/single_release_callback.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_result.h"
+#include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/switches.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/layer_tree_settings_factory.h"
@@ -964,7 +964,7 @@ bool RenderWidgetCompositor::HaveScrollEventHandlers() const {
 
 void CompositeAndReadbackAsyncCallback(
     blink::WebCompositeAndReadbackAsyncCallback* callback,
-    std::unique_ptr<cc::CopyOutputResult> result) {
+    std::unique_ptr<viz::CopyOutputResult> result) {
   if (result->HasBitmap()) {
     std::unique_ptr<SkBitmap> result_bitmap = result->TakeBitmap();
     callback->DidCompositeAndReadback(*result_bitmap);
@@ -1022,11 +1022,11 @@ void RenderWidgetCompositor::CompositeAndReadbackAsync(
   DCHECK(!layout_and_paint_async_callback_);
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
       layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner();
-  std::unique_ptr<cc::CopyOutputRequest> request =
-      cc::CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
+  std::unique_ptr<viz::CopyOutputRequest> request =
+      viz::CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
           [](blink::WebCompositeAndReadbackAsyncCallback* callback,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-             std::unique_ptr<cc::CopyOutputResult> result) {
+             std::unique_ptr<viz::CopyOutputResult> result) {
             task_runner->PostTask(FROM_HERE,
                                   base::Bind(&CompositeAndReadbackAsyncCallback,
                                              callback, base::Passed(&result)));

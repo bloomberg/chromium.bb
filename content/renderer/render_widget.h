@@ -257,7 +257,7 @@ class CONTENT_EXPORT RenderWidget
   void UpdateVisualState() override;
   void WillBeginCompositorFrame() override;
   std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
-      std::unique_ptr<cc::CopyOutputRequest> request) override;
+      std::unique_ptr<viz::CopyOutputRequest> request) override;
 
   // RenderWidgetInputHandlerDelegate
   void FocusChangeComplete() override;

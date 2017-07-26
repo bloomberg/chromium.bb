@@ -365,7 +365,7 @@ Surface* CompositorFrameSinkSupport::CreateSurface(
 }
 
 void CompositorFrameSinkSupport::RequestCopyOfSurface(
-    std::unique_ptr<cc::CopyOutputRequest> copy_request) {
+    std::unique_ptr<CopyOutputRequest> copy_request) {
   if (!current_surface_id_.is_valid())
     return;
   Surface* current_surface =

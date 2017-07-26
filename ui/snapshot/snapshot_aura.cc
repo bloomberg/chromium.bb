@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_runner_util.h"
-#include "cc/output/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_request.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
@@ -31,9 +31,9 @@ bool GrabWindowSnapshotAura(aura::Window* window,
 static void MakeAsyncCopyRequest(
     Layer* layer,
     const gfx::Rect& source_rect,
-    cc::CopyOutputRequest::CopyOutputRequestCallback callback) {
-  std::unique_ptr<cc::CopyOutputRequest> request =
-      cc::CopyOutputRequest::CreateBitmapRequest(std::move(callback));
+    viz::CopyOutputRequest::CopyOutputRequestCallback callback) {
+  std::unique_ptr<viz::CopyOutputRequest> request =
+      viz::CopyOutputRequest::CreateBitmapRequest(std::move(callback));
   request->set_area(source_rect);
   layer->RequestCopyOfOutput(std::move(request));
 }
@@ -41,9 +41,9 @@ static void MakeAsyncCopyRequest(
 static void FinishedAsyncCopyRequest(
     std::unique_ptr<aura::WindowTracker> tracker,
     const gfx::Rect& source_rect,
-    cc::CopyOutputRequest::CopyOutputRequestCallback callback,
+    viz::CopyOutputRequest::CopyOutputRequestCallback callback,
     int retry_count,
-    std::unique_ptr<cc::CopyOutputResult> result) {
+    std::unique_ptr<viz::CopyOutputResult> result) {
   static const int kMaxRetries = 5;
   // Retry the copy request if the previous one failed for some reason.
   if (!tracker->windows().empty() && (retry_count < kMaxRetries) &&
@@ -67,7 +67,7 @@ static void FinishedAsyncCopyRequest(
 static void MakeInitialAsyncCopyRequest(
     aura::Window* window,
     const gfx::Rect& source_rect,
-    cc::CopyOutputRequest::CopyOutputRequestCallback callback) {
+    viz::CopyOutputRequest::CopyOutputRequestCallback callback) {
   auto tracker = base::MakeUnique<aura::WindowTracker>();
   tracker->Add(window);
   MakeAsyncCopyRequest(

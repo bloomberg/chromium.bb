@@ -13,14 +13,14 @@
 #include "cc/base/switches.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
 #include "cc/output/software_output_device.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/test_in_process_context_provider.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/test/paths.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
@@ -88,14 +88,14 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
   return std::move(display_output_surface);
 }
 
-std::unique_ptr<CopyOutputRequest>
+std::unique_ptr<viz::CopyOutputRequest>
 LayerTreePixelTest::CreateCopyOutputRequest() {
-  return CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
+  return viz::CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
       &LayerTreePixelTest::ReadbackResult, base::Unretained(this)));
 }
 
 void LayerTreePixelTest::ReadbackResult(
-    std::unique_ptr<CopyOutputResult> result) {
+    std::unique_ptr<viz::CopyOutputResult> result) {
   ASSERT_TRUE(result->HasBitmap());
   result_bitmap_ = result->TakeBitmap();
   EndTest();

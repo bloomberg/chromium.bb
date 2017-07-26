@@ -21,10 +21,6 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace cc {
-class SingleReleaseCallback;
-}
-
 namespace gfx {
 class Rect;
 }
@@ -35,6 +31,7 @@ struct SyncToken;
 
 namespace viz {
 class SharedBitmap;
+class SingleReleaseCallback;
 class TextureMailbox;
 }
 
@@ -77,7 +74,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
 
   bool PrepareTextureMailbox(
       viz::TextureMailbox* mailbox,
-      std::unique_ptr<cc::SingleReleaseCallback>* release_callback);
+      std::unique_ptr<viz::SingleReleaseCallback>* release_callback);
   void AttachedToNewLayer();
 
   // Notifications about the view's progress painting.  See PluginInstance.

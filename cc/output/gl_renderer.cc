@@ -31,7 +31,6 @@
 #include "cc/debug/debug_colors.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/output/copy_output_request.h"
 #include "cc/output/dynamic_geometry_binding.h"
 #include "cc/output/layer_quad.h"
 #include "cc/output/output_surface.h"
@@ -48,6 +47,7 @@
 #include "cc/resources/scoped_resource.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/quads/copy_output_request.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -293,7 +293,7 @@ class GLRenderer::ScopedUseGrContext {
 struct GLRenderer::PendingAsyncReadPixels {
   PendingAsyncReadPixels() : buffer(0) {}
 
-  std::unique_ptr<CopyOutputRequest> copy_request;
+  std::unique_ptr<viz::CopyOutputRequest> copy_request;
   unsigned buffer;
 
  private:
@@ -2602,7 +2602,7 @@ void GLRenderer::EnsureScissorTestDisabled() {
 }
 
 void GLRenderer::CopyCurrentRenderPassToBitmap(
-    std::unique_ptr<CopyOutputRequest> request) {
+    std::unique_ptr<viz::CopyOutputRequest> request) {
   TRACE_EVENT0("cc", "GLRenderer::CopyCurrentRenderPassToBitmap");
   gfx::Rect copy_rect = current_frame()->current_render_pass->output_rect;
   if (request->has_area())
@@ -2791,7 +2791,7 @@ void GLRenderer::DidReceiveTextureInUseResponses(
 
 void GLRenderer::GetFramebufferPixelsAsync(
     const gfx::Rect& rect,
-    std::unique_ptr<CopyOutputRequest> request) {
+    std::unique_ptr<viz::CopyOutputRequest> request) {
   DCHECK(!request->IsEmpty());
   if (request->IsEmpty())
     return;
@@ -2845,7 +2845,7 @@ void GLRenderer::GetFramebufferPixelsAsync(
 
     viz::TextureMailbox texture_mailbox(mailbox, sync_token, GL_TEXTURE_2D);
 
-    std::unique_ptr<SingleReleaseCallback> release_callback;
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback;
     if (own_mailbox) {
       gl_->BindTexture(GL_TEXTURE_2D, 0);
       release_callback = texture_mailbox_deleter_->GetReleaseCallback(

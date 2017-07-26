@@ -9,8 +9,8 @@
 
 #include "base/containers/flat_map.h"
 #include "cc/output/layer_tree_frame_sink_client.h"
-#include "cc/resources/release_callback.h"
 #include "components/exo/surface_observer.h"
+#include "components/viz/common/quads/release_callback.h"
 
 namespace cc {
 class LayerTreeFrameSink;
@@ -32,7 +32,7 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
 
   bool HasReleaseCallbackForResource(cc::ResourceId id);
   void SetResourceReleaseCallback(cc::ResourceId id,
-                                  const cc::ReleaseCallback& callback);
+                                  const viz::ReleaseCallback& callback);
   int AllocateResourceId();
   base::WeakPtr<LayerTreeFrameSinkHolder> GetWeakPtr();
 
@@ -59,7 +59,7 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
  private:
   // A collection of callbacks used to release resources.
   using ResourceReleaseCallbackMap =
-      base::flat_map<cc::ResourceId, cc::ReleaseCallback>;
+      base::flat_map<cc::ResourceId, viz::ReleaseCallback>;
   ResourceReleaseCallbackMap release_callbacks_;
 
   Surface* surface_;
