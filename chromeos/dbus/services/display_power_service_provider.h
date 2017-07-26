@@ -44,7 +44,8 @@ class CHROMEOS_EXPORT DisplayPowerServiceProvider
     virtual void SetDimming(bool dimmed) = 0;
   };
 
-  explicit DisplayPowerServiceProvider(std::unique_ptr<Delegate> delegate);
+  DisplayPowerServiceProvider(const std::string& service_interface,
+                              std::unique_ptr<Delegate> delegate);
   ~DisplayPowerServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface overrides:
@@ -63,6 +64,11 @@ class CHROMEOS_EXPORT DisplayPowerServiceProvider
   void SetDisplaySoftwareDimming(
       dbus::MethodCall* method_call,
       dbus::ExportedObject::ResponseSender response_sender);
+
+  // Name of the service interface to install DisplayPowerService on.
+  // TODO(lannm): Remove this once these methods are removed from
+  // LibCrosService.
+  const std::string service_interface_;
 
   std::unique_ptr<Delegate> delegate_;
 

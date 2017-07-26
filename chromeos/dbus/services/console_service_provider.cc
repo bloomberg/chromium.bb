@@ -25,23 +25,33 @@ void OnDisplayOwnershipChanged(
 }  // namespace
 
 ConsoleServiceProvider::ConsoleServiceProvider(
-    std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)), weak_ptr_factory_(this) {}
+    const std::string& service_interface,
+    Delegate* delegate)
+    : service_interface_(service_interface),
+      delegate_(delegate),
+      weak_ptr_factory_(this) {}
 
 ConsoleServiceProvider::~ConsoleServiceProvider() {
 }
 
 void ConsoleServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {
+  // TODO(lannm): Remove this once methods are removed from LibCrosService.
+  bool use_libcros_methods = (service_interface_ == kLibCrosServiceInterface);
+
   exported_object->ExportMethod(
-      kLibCrosServiceInterface, kTakeDisplayOwnership,
+      service_interface_,
+      (use_libcros_methods ? kTakeDisplayOwnership
+                           : kDisplayServiceTakeOwnershipMethod),
       base::Bind(&ConsoleServiceProvider::TakeDisplayOwnership,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ConsoleServiceProvider::OnExported,
                  weak_ptr_factory_.GetWeakPtr()));
 
   exported_object->ExportMethod(
-      kLibCrosServiceInterface, kReleaseDisplayOwnership,
+      service_interface_,
+      (use_libcros_methods ? kReleaseDisplayOwnership
+                           : kDisplayServiceReleaseOwnershipMethod),
       base::Bind(&ConsoleServiceProvider::ReleaseDisplayOwnership,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ConsoleServiceProvider::OnExported,
