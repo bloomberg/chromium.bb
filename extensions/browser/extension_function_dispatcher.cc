@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/browser/api_activity_monitor.h"
+#include "extensions/browser/bad_message.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -358,6 +359,16 @@ void ExtensionFunctionDispatcher::Dispatch(
     const ExtensionHostMsg_Request_Params& params,
     content::RenderFrameHost* render_frame_host,
     int render_process_id) {
+  // Kill the renderer if it's an invalid request.
+  const bool is_valid_request =
+      (!render_frame_host && IsRequestFromServiceWorker(params)) ||
+      (render_frame_host && !IsRequestFromServiceWorker(params));
+  if (!is_valid_request) {
+    bad_message::ReceivedBadMessage(render_process_id,
+                                    bad_message::EFD_BAD_MESSAGE);
+    return;
+  }
+
   if (render_frame_host) {
     // Extension API from a non Service Worker context, e.g. extension page,
     // background page, content script.
@@ -376,9 +387,6 @@ void ExtensionFunctionDispatcher::Dispatch(
         params, render_frame_host, render_process_id,
         callback_wrapper->CreateCallback(params.request_id));
   } else {
-    // Extension API from Service Worker.
-    DCHECK_NE(kInvalidServiceWorkerVersionId, params.service_worker_version_id);
-
     content::RenderProcessHost* rph =
         content::RenderProcessHost::FromID(render_process_id);
     // UIThreadWorkerResponseCallbackWrapper requires render process host to be
