@@ -128,11 +128,14 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
     return nullptr;
 
   std::unique_ptr<LogoMetadata> metadata(new LogoMetadata());
-  if (!dict->GetString(kSourceUrlKey, &metadata->source_url) ||
+  std::string source_url;
+  std::string on_click_url;
+  std::string animated_url;
+  if (!dict->GetString(kSourceUrlKey, &source_url) ||
       !dict->GetString(kFingerprintKey, &metadata->fingerprint) ||
-      !dict->GetString(kOnClickURLKey, &metadata->on_click_url) ||
+      !dict->GetString(kOnClickURLKey, &on_click_url) ||
       !dict->GetString(kAltTextKey, &metadata->alt_text) ||
-      !dict->GetString(kAnimatedUrlKey, &metadata->animated_url) ||
+      !dict->GetString(kAnimatedUrlKey, &animated_url) ||
       !dict->GetString(kMimeTypeKey, &metadata->mime_type) ||
       !dict->GetBoolean(kCanShowAfterExpirationKey,
                         &metadata->can_show_after_expiration) ||
@@ -140,6 +143,9 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
       !GetTimeValue(*dict, kExpirationTimeKey, &metadata->expiration_time)) {
     return nullptr;
   }
+  metadata->source_url = GURL(source_url);
+  metadata->on_click_url = GURL(on_click_url);
+  metadata->animated_url = GURL(animated_url);
 
   return metadata;
 }
@@ -149,11 +155,11 @@ void LogoCache::LogoMetadataToString(const LogoMetadata& metadata,
                                      int num_bytes,
                                      std::string* str) {
   base::DictionaryValue dict;
-  dict.SetString(kSourceUrlKey, metadata.source_url);
+  dict.SetString(kSourceUrlKey, metadata.source_url.spec());
   dict.SetString(kFingerprintKey, metadata.fingerprint);
-  dict.SetString(kOnClickURLKey, metadata.on_click_url);
+  dict.SetString(kOnClickURLKey, metadata.on_click_url.spec());
   dict.SetString(kAltTextKey, metadata.alt_text);
-  dict.SetString(kAnimatedUrlKey, metadata.animated_url);
+  dict.SetString(kAnimatedUrlKey, metadata.animated_url.spec());
   dict.SetString(kMimeTypeKey, metadata.mime_type);
   dict.SetBoolean(kCanShowAfterExpirationKey,
                   metadata.can_show_after_expiration);
