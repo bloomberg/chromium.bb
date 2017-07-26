@@ -70,9 +70,9 @@ usage(int ret)
 	fprintf(stderr, "    -h,  --help                  display this help and exit.\n"
 			"    -v,  --version               print the wayland library version that\n"
 			"                                 the scanner was built against.\n"
-		        "    -c,  --include-core-only     include the core version of the headers,\n"
-	                "                                 that is e.g. wayland-client-core.h instead\n"
-	                "                                 of wayland-client.h.\n");
+			"    -c,  --include-core-only     include the core version of the headers,\n"
+			"                                 that is e.g. wayland-client-core.h instead\n"
+			"                                 of wayland-client.h.\n");
 	exit(ret);
 }
 
