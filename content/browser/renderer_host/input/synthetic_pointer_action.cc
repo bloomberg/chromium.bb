@@ -51,6 +51,9 @@ SyntheticPointerAction::GestureState
 SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
     const base::TimeTicks& timestamp,
     SyntheticGestureTarget* target) {
+  if (!params_.params.size())
+    return DONE;
+
   DCHECK_LT(num_actions_dispatched_, params_.params.size());
   SyntheticPointerActionListParams::ParamList& param_list =
       params_.params[num_actions_dispatched_];

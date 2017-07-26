@@ -704,6 +704,15 @@ TEST_F(SyntheticPointerActionTest, PointerPenAction) {
       param3, 1, buttons, SyntheticGestureParams::PEN_INPUT));
 }
 
+TEST_F(SyntheticPointerActionTest, EmptyParams) {
+  CreateSyntheticPointerActionTarget<MockSyntheticPointerPenActionTarget>();
+  pointer_action_.reset(new SyntheticPointerAction(params_));
+
+  ForwardSyntheticPointerAction();
+  EXPECT_EQ(1, num_success_);
+  EXPECT_EQ(0, num_failure_);
+}
+
 }  // namespace
 
 }  // namespace content
