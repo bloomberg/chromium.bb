@@ -376,7 +376,9 @@ void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "440224, 441028 AppListView::InitContents1"));
 
-  app_list_main_view_->Init(parent, initial_apps_page, search_box_view_);
+  app_list_main_view_->Init(
+      parent, is_fullscreen_app_list_enabled_ ? 0 : initial_apps_page,
+      search_box_view_);
 
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/440224 and
   // crbug.com/441028 are fixed.
