@@ -402,33 +402,18 @@ void PaletteTray::ShowBubble() {
       gfx::Insets(0, kPaddingBetweenTitleAndLeftEdge, 0, 0)));
   bubble_view->AddChildView(title_view);
 
-  // Function for creating a separator.
-  auto build_separator = []() {
-    auto* separator = new views::Separator();
-    separator->SetColor(kPaletteSeparatorColor);
-    separator->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets(kPaddingBetweenTitleAndSeparator, 0,
-                    kMenuSeparatorVerticalPadding, 0)));
-    return separator;
-  };
-
-  // Add horizontal separator between the title and the tools.
-  bubble_view->AddChildView(build_separator());
+  // Add horizontal separator between the title and tools.
+  auto* separator = new views::Separator();
+  separator->SetColor(kPaletteSeparatorColor);
+  separator->SetBorder(views::CreateEmptyBorder(gfx::Insets(
+      kPaddingBetweenTitleAndSeparator, 0, kMenuSeparatorVerticalPadding, 0)));
+  bubble_view->AddChildView(separator);
 
   // Add palette tools.
   // TODO(tdanderson|jdufault): Use SystemMenuButton to get the material design
   // ripples.
-  std::vector<PaletteToolView> action_views =
-      palette_tool_manager_->CreateViewsForGroup(PaletteGroup::ACTION);
-  for (const PaletteToolView& view : action_views)
-    bubble_view->AddChildView(view.view);
-
-  // Add horizontal separator between action tools and mode tools.
-  bubble_view->AddChildView(build_separator());
-
-  std::vector<PaletteToolView> mode_views =
-      palette_tool_manager_->CreateViewsForGroup(PaletteGroup::MODE);
-  for (const PaletteToolView& view : mode_views)
+  std::vector<PaletteToolView> views = palette_tool_manager_->CreateViews();
+  for (const PaletteToolView& view : views)
     bubble_view->AddChildView(view.view);
 
   // Show the bubble.

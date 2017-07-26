@@ -82,14 +82,11 @@ const gfx::VectorIcon& PaletteToolManager::GetActiveTrayIcon(
   return tool->GetActiveTrayIcon();
 }
 
-std::vector<PaletteToolView> PaletteToolManager::CreateViewsForGroup(
-    PaletteGroup group) {
+std::vector<PaletteToolView> PaletteToolManager::CreateViews() {
   std::vector<PaletteToolView> views;
+  views.reserve(tools_.size());
 
   for (const auto& tool : tools_) {
-    if (tool->GetGroup() != group)
-      continue;
-
     views::View* tool_view = tool->CreateView();
     if (!tool_view)
       continue;
