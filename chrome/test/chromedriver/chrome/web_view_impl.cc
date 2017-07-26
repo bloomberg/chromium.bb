@@ -422,7 +422,6 @@ Status WebViewImpl::DispatchKeyEvents(const std::list<KeyEvent>& events) {
     }
     params.SetString("text", it->modified_text);
     params.SetString("unmodifiedText", it->unmodified_text);
-    params.SetInteger("nativeVirtualKeyCode", it->key_code);
     params.SetInteger("windowsVirtualKeyCode", it->key_code);
     ui::DomCode dom_code = ui::UsLayoutKeyboardCodeToDomCode(it->key_code);
     std::string code = ui::KeycodeConverter::DomCodeToCodeString(dom_code);
