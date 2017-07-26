@@ -40,9 +40,6 @@ enum ReportingMode {
 };
 
 struct SensorConfiguration {
-  // Maximum allowed frequency is 60 Hz.
-  const double kMaxAllowedFrequency = 60.0;
-
   // Requested frequency in Hz.
   double frequency;
   // TODO(shalamov): Add map<string, union> for sensor specific configuration.

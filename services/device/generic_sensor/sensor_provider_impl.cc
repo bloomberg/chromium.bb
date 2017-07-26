@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/generic_sensor/platform_sensor_provider.h"
 #include "services/device/generic_sensor/sensor_impl.h"
+#include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 
 namespace device {
 
@@ -91,16 +92,34 @@ void SensorProviderImpl::SensorCreated(
   init_params->memory = std::move(cloned_handle);
   init_params->buffer_offset = SensorReadingSharedBuffer::GetOffset(type);
   init_params->mode = sensor->GetReportingMode();
-  init_params->default_configuration = sensor->GetDefaultConfiguration();
 
   double maximum_frequency = sensor->GetMaximumSupportedFrequency();
   DCHECK_GT(maximum_frequency, 0.0);
-  if (maximum_frequency > mojom::SensorConfiguration::kMaxAllowedFrequency)
-    maximum_frequency = mojom::SensorConfiguration::kMaxAllowedFrequency;
 
+  double minimum_frequency = sensor->GetMinimumSupportedFrequency();
+  DCHECK_GT(minimum_frequency, 0.0);
+
+  const double maximum_allowed_frequency = GetSensorMaxAllowedFrequency(type);
+  if (maximum_frequency > maximum_allowed_frequency)
+    maximum_frequency = maximum_allowed_frequency;
+  // These checks are to make sure the following assertion is still true:
+  // 'minimum_frequency <= default_frequency <= maximum_frequency'
+  // after we capped the maximium frequency to the value from traits
+  // (and also in case platform gave us some wacky values).
+  if (minimum_frequency > maximum_frequency)
+    minimum_frequency = maximum_frequency;
+
+  auto default_configuration = sensor->GetDefaultConfiguration();
+  if (default_configuration.frequency() > maximum_frequency)
+    default_configuration.set_frequency(maximum_frequency);
+  if (default_configuration.frequency() < minimum_frequency)
+    default_configuration.set_frequency(minimum_frequency);
+
+  init_params->default_configuration = default_configuration;
   init_params->maximum_frequency = maximum_frequency;
   init_params->minimum_frequency = sensor->GetMinimumSupportedFrequency();
   DCHECK_GT(init_params->minimum_frequency, 0.0);
+  DCHECK_GE(init_params->maximum_frequency, init_params->minimum_frequency);
 
   NotifySensorCreated(std::move(init_params), sensor_impl->GetClient(),
                       std::move(callback));

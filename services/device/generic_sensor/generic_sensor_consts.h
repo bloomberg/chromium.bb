@@ -22,18 +22,6 @@ constexpr double kMicroteslaInGauss = 100.0;
 // Required for conversion from Milligauss to Microtesla.
 constexpr double kMicroteslaInMilligauss = 0.1;
 
-// Default rate for returning value of the ambient light sensor.
-constexpr int kDefaultAmbientLightFrequencyHz = 5;
-
-// Default rate for returning value of the accelerometer sensor.
-constexpr int kDefaultAccelerometerFrequencyHz = 10;
-
-// Default rate for returning value of the gyroscope sensor.
-constexpr int kDefaultGyroscopeFrequencyHz = 10;
-
-// Default rate for returning value of the magnetometer sensor.
-constexpr int kDefaultMagnetometerFrequencyHz = 10;
-
 }  // namespace device
 
 #endif  // SERVICES_DEVICE_GENERIC_SENSOR_GENERIC_SENSOR_CONSTS_H_

@@ -12,16 +12,10 @@
 #include "core/timing/Performance.h"
 #include "modules/sensor/SensorErrorEvent.h"
 #include "modules/sensor/SensorProviderProxy.h"
+#include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 #include "services/device/public/interfaces/sensor.mojom-blink.h"
 
 namespace blink {
-
-namespace {
-
-constexpr double kMinWaitingInterval =
-    1 / device::mojom::blink::SensorConfiguration::kMaxAllowedFrequency;
-
-}  // namespace
 
 Sensor::Sensor(ExecutionContext* execution_context,
                const SensorOptions& sensor_options,
@@ -50,11 +44,15 @@ Sensor::Sensor(ExecutionContext* execution_context,
   // Check the given frequency value.
   if (sensor_options_.hasFrequency()) {
     double frequency = sensor_options_.frequency();
-    if (frequency > SensorConfiguration::kMaxAllowedFrequency) {
-      sensor_options_.setFrequency(SensorConfiguration::kMaxAllowedFrequency);
-      ConsoleMessage* console_message =
-          ConsoleMessage::Create(kJSMessageSource, kInfoMessageLevel,
-                                 "Frequency is limited to 60 Hz.");
+    const double max_allowed_frequency =
+        device::GetSensorMaxAllowedFrequency(type_);
+    if (frequency > max_allowed_frequency) {
+      sensor_options_.setFrequency(max_allowed_frequency);
+      String message = String::Format(
+          "Maximum allowed frequency value for this sensor type is %.0f Hz.",
+          max_allowed_frequency);
+      ConsoleMessage* console_message = ConsoleMessage::Create(
+          kJSMessageSource, kInfoMessageLevel, std::move(message));
       execution_context->AddConsoleMessage(console_message);
     }
   }
@@ -195,7 +193,8 @@ void Sensor::OnSensorReadingChanged() {
   // polling period.
   auto sensor_reading_changed =
       WTF::Bind(&Sensor::NotifyReading, WrapWeakPersistent(this));
-  if (waitingTime < kMinWaitingInterval) {
+  double minWaitingInterval = 1 / device::GetSensorMaxAllowedFrequency(type_);
+  if (waitingTime < minWaitingInterval) {
     // Invoke JS callbacks in a different callchain to obviate
     // possible modifications of SensorProxy::observers_ container
     // while it is being iterated through.
@@ -280,9 +279,10 @@ void Sensor::RequestAddConfiguration() {
   if (!configuration_) {
     configuration_ = CreateSensorConfig();
     DCHECK(configuration_);
-    DCHECK(configuration_->frequency > 0 &&
-           configuration_->frequency <=
-               SensorConfiguration::kMaxAllowedFrequency);
+    DCHECK_GE(configuration_->frequency,
+              sensor_proxy_->FrequencyLimits().first);
+    DCHECK_LE(configuration_->frequency,
+              sensor_proxy_->FrequencyLimits().second);
   }
 
   DCHECK(sensor_proxy_);

@@ -4,22 +4,18 @@
 
 #include "services/device/public/cpp/generic_sensor/platform_sensor_configuration.h"
 
-#include "services/device/public/interfaces/sensor.mojom.h"
-
 namespace device {
 
 PlatformSensorConfiguration::PlatformSensorConfiguration(double frequency)
     : frequency_(frequency) {
-  DCHECK(frequency_ <= mojom::SensorConfiguration::kMaxAllowedFrequency &&
-         frequency_ > 0.0);
+  DCHECK_GT(frequency_, 0.0);
 }
 
 PlatformSensorConfiguration::PlatformSensorConfiguration() = default;
 PlatformSensorConfiguration::~PlatformSensorConfiguration() = default;
 
 void PlatformSensorConfiguration::set_frequency(double frequency) {
-  DCHECK(frequency_ <= mojom::SensorConfiguration::kMaxAllowedFrequency &&
-         frequency_ > 0.0);
+  DCHECK_GT(frequency_, 0.0);
   frequency_ = frequency;
 }
 
