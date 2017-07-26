@@ -64,6 +64,8 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   std::string GetUntrustedDevToolsFrameIdForFrameTreeNodeId(
       int process_id,
       int frame_tree_node_id) const override;
+  int GetFrameTreeNodeIdForDevToolsFrameId(
+      const std::string& devtools_id) const override;
   int GetMainFrameRenderProcessId() const override;
   int GetMainFrameTreeNodeId() const override;
 

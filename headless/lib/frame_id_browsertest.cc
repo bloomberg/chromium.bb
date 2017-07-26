@@ -256,6 +256,10 @@ class FrameIdTest : public HeadlessAsyncDevTooledBrowserTest,
       protocol_handler_url_to_frame_id_[pair.first] =
           web_contents_->GetUntrustedDevToolsFrameIdForFrameTreeNodeId(
               web_contents_->GetMainFrameRenderProcessId(), pair.second);
+
+      EXPECT_EQ(pair.second,
+                web_contents_->GetFrameTreeNodeIdForDevToolsFrameId(
+                    protocol_handler_url_to_frame_id_[pair.first]));
     }
 
     EXPECT_THAT(url_to_frame_id_, protocol_handler_url_to_frame_id_);

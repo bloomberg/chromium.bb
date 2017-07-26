@@ -90,6 +90,11 @@ class HEADLESS_EXPORT HeadlessWebContents {
       int process_id,
       int frame_tree_node_id) const = 0;
 
+  // Returns the FrameTreeNode id corresponding to |devtools_id| or -1 if it
+  // can't be found. Must be called on the IO thread.
+  virtual int GetFrameTreeNodeIdForDevToolsFrameId(
+      const std::string& devtools_id) const = 0;
+
   virtual int GetMainFrameRenderProcessId() const = 0;
 
   virtual int GetMainFrameTreeNodeId() const = 0;
