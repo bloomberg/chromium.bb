@@ -1219,6 +1219,8 @@ component("base") {
       "memory/shared_memory_posix.cc",
       "message_loop/message_pump_libevent.cc",
       "message_loop/message_pump_libevent.h",
+      "posix/unix_domain_socket.cc",
+      "posix/unix_domain_socket.h",
       "process/kill_posix.cc",
       "process/launch_posix.cc",
       "process/process_handle_posix.cc",
@@ -2369,8 +2371,10 @@ test("base_unittests") {
   }
 
   if (is_fuchsia) {
-    # Fuchsia doesn't support file locking.
-    sources -= [ "files/file_locking_unittest.cc" ]
+    sources -= [
+      "files/file_locking_unittest.cc",
+      "posix/unix_domain_socket_unittest.cc",
+    ]
   }
 
   if (is_android) {
