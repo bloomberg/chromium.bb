@@ -19,14 +19,18 @@ class NumberParsingOptions {
   static constexpr unsigned kAcceptLeadingTrailingWhitespace = 1 << 2;
   static constexpr unsigned kAcceptMinusZeroForUnsigned = 1 << 3;
 
-  // Legacy 'Strict' behavior.
+  // 'Strict' behavior for String/StringImpl.
   static constexpr unsigned kStrict =
       kAcceptLeadingPlus | kAcceptLeadingTrailingWhitespace;
-  // Legacy non-'Strict' behavior.
+  // Non-'Strict' behavior for String/StringImpl.
   static constexpr unsigned kLoose = kStrict | kAcceptTrailingGarbage;
 
   // This constructor allows implicit conversion from unsigned.
-  NumberParsingOptions(unsigned options) : options_(options) {}
+  NumberParsingOptions(unsigned options) : options_(options) {
+    DCHECK_LT(options, 1u << 4) << "NumberParsingOptions should be built with "
+                                   "a combination of "
+                                   "NumberParsingOptions::kFoo constants.";
+  }
 
   bool AcceptTrailingGarbage() const {
     return options_ & kAcceptTrailingGarbage;
@@ -43,6 +47,16 @@ class NumberParsingOptions {
   unsigned options_;
 };
 
+enum class NumberParsingResult {
+  kSuccess,
+  kError,
+  // For UInt functions, kOverflowMin never happens. Negative numbers are
+  // treated as kError. This behavior matches to the HTML standard.
+  // https://html.spec.whatwg.org/multipage/common-microsyntaxes.html#rules-for-parsing-non-negative-integers
+  kOverflowMin,
+  kOverflowMax,
+};
+
 // string -> int.
 WTF_EXPORT int CharactersToInt(const LChar*,
                                size_t,
@@ -53,18 +67,7 @@ WTF_EXPORT int CharactersToInt(const UChar*,
                                NumberParsingOptions,
                                bool* ok);
 
-enum class NumberParsingState {
-  kSuccess,
-  kError,
-  // For UInt functions, kOverflowMin never happens. Negative numbers are
-  // treated as kError. This behavior matches to the HTML standard.
-  // https://html.spec.whatwg.org/multipage/common-microsyntaxes.html#rules-for-parsing-non-negative-integers
-  kOverflowMin,
-  kOverflowMax,
-};
-
 // string -> unsigned.
-// These functions do not accept "-0".
 WTF_EXPORT unsigned HexCharactersToUInt(const LChar*,
                                         size_t,
                                         NumberParsingOptions,
@@ -82,16 +85,16 @@ WTF_EXPORT unsigned CharactersToUInt(const UChar*,
                                      NumberParsingOptions,
                                      bool* ok);
 
-// NumberParsingState versions of CharactersToUInt. They can detect
-// overflow. |NumberParsingState*| should not be nullptr;
+// NumberParsingResult versions of CharactersToUInt. They can detect
+// overflow. |NumberParsingResult*| should not be nullptr;
 WTF_EXPORT unsigned CharactersToUInt(const LChar*,
                                      size_t,
                                      NumberParsingOptions,
-                                     NumberParsingState*);
+                                     NumberParsingResult*);
 WTF_EXPORT unsigned CharactersToUInt(const UChar*,
                                      size_t,
                                      NumberParsingOptions,
-                                     NumberParsingState*);
+                                     NumberParsingResult*);
 
 // string -> int64_t.
 WTF_EXPORT int64_t CharactersToInt64(const LChar*,
@@ -104,7 +107,6 @@ WTF_EXPORT int64_t CharactersToInt64(const UChar*,
                                      bool* ok);
 
 // string -> uint64_t.
-// These functions do not accept "-0".
 WTF_EXPORT uint64_t CharactersToUInt64(const LChar*,
                                        size_t,
                                        NumberParsingOptions,
