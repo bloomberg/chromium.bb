@@ -31,7 +31,7 @@ class DEVICE_VR_EXPORT GvrDelegateProvider {
   virtual GvrDelegate* GetDelegate() = 0;
   virtual void OnDisplayAdded(VRDisplayImpl* display) = 0;
   virtual void OnDisplayRemoved(VRDisplayImpl* display) = 0;
-  virtual void OnListeningForActivateChanged(VRDisplayImpl* display);
+  virtual void OnListeningForActivateChanged(VRDisplayImpl* display) = 0;
   virtual void CreateVRDisplayInfo(
       const base::Callback<void(mojom::VRDisplayInfoPtr)>& callback,
       uint32_t device_id) = 0;
