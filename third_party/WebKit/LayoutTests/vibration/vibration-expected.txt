@@ -1,8 +1,0 @@
-CONSOLE ERROR: line 313: Uncaught TypeError: Cannot read property 'then' of undefined
-This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = Uncaught TypeError: Cannot read property 'then' of undefined
-PASS VibrationManager Mojo bindings and mock interfaces are available to tests. 
-PASS navigator.vibrate(1234) triggers vibration correctly. 
-PASS navigator.vibrate(0) triggers cancel correctly. 
-Harness: the test ran to completion.
-

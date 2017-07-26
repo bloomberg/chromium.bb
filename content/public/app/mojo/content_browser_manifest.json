@@ -25,7 +25,7 @@
           "blink::mojom::OffscreenCanvasProvider",
           "blink::mojom::PermissionService",
           "blink::mojom::WebSocket",
-	  "cc::mojom::SharedBitmapAllocationNotifier",
+          "cc::mojom::SharedBitmapAllocationNotifier",
           "content::mojom::FieldTrialRecorder",
           "content::mojom::FrameSinkProvider",
           "content::mojom::MediaStreamDispatcherHost",
@@ -76,7 +76,12 @@
         "content_renderer": [ "browser" ],
         "content_utility": [ "browser" ],
         "data_decoder": [ "image_decoder" ],
-        "device": [ "device:generic_sensor", "device:nfc", "device:wake_lock" ],
+        "device": [
+          "device:generic_sensor",
+          "device:nfc",
+          "device:vibration",
+          "device:wake_lock"
+        ],
         "file": [ "file:filesystem", "file:leveldb" ],
         "media": [ "media:media" ],
         "network": [
@@ -121,10 +126,11 @@
           "content::mojom::BrowserTarget",
 
           "content::mojom::RendererAudioOutputStreamFactory",
-          "device::mojom::VRService",
           "device::mojom::Geolocation",
           "device::mojom::NFC",
           "device::mojom::SensorProvider",
+          "device::mojom::VibrationManager",
+          "device::mojom::VRService",
           "device::mojom::WakeLock",
           "device::usb::DeviceManager",
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
