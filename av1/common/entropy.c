@@ -5443,28 +5443,16 @@ static void build_head_cdfs(const aom_prob *pdf_model,
 }
 
 static void av1_default_coef_cdfs(FRAME_CONTEXT *fc) {
-  int i, j, k, l;
-  for (i = 0; i < PLANE_TYPES; ++i)
-    for (j = 0; j < REF_TYPES; ++j)
-      for (k = 0; k < COEF_BANDS; ++k)
-        for (l = 0; l < BAND_COEFF_CONTEXTS(k); ++l) {
 #if CONFIG_CHROMA_2X2
-          av1_copy(fc->coef_head_cdfs[TX_2X2][i][j][k][l],
-                   default_coef_head_cdf_4x4[i][j][k][l]);
-#endif
-          av1_copy(fc->coef_head_cdfs[TX_4X4][i][j][k][l],
-                   default_coef_head_cdf_4x4[i][j][k][l]);
-          av1_copy(fc->coef_head_cdfs[TX_8X8][i][j][k][l],
-                   default_coef_head_cdf_8x8[i][j][k][l]);
-          av1_copy(fc->coef_head_cdfs[TX_16X16][i][j][k][l],
-                   default_coef_head_cdf_16x16[i][j][k][l]);
-          av1_copy(fc->coef_head_cdfs[TX_32X32][i][j][k][l],
-                   default_coef_head_cdf_32x32[i][j][k][l]);
+  av1_copy(fc->coef_head_cdfs[TX_2X2], default_coef_head_cdf_4x4);
+#endif  // CONFIG_CHROMA_2X2
+  av1_copy(fc->coef_head_cdfs[TX_4X4], default_coef_head_cdf_4x4);
+  av1_copy(fc->coef_head_cdfs[TX_8X8], default_coef_head_cdf_8x8);
+  av1_copy(fc->coef_head_cdfs[TX_16X16], default_coef_head_cdf_16x16);
+  av1_copy(fc->coef_head_cdfs[TX_32X32], default_coef_head_cdf_32x32);
 #if CONFIG_TX64X64
-          av1_copy(fc->coef_head_cdfs[TX_64X64][i][j][k][l],
-                   default_coef_head_cdf_32x32[i][j][k][l]);
-#endif
-        }
+  av1_copy(fc->coef_head_cdfs[TX_64X64], default_coef_head_cdf_32x32);
+#endif  // CONFIG_TX64X64
 }
 
 void av1_coef_head_cdfs(FRAME_CONTEXT *fc) {
