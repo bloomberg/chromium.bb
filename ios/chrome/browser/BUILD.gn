@@ -84,6 +84,7 @@ source_set("browser") {
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/dom_distiller/core",
+    "//components/feature_engagement_tracker",
     "//components/flags_ui",
     "//components/flags_ui:switches",
     "//components/handoff",
