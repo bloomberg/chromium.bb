@@ -5410,8 +5410,14 @@ the Bookmarks menu.">
       </message>
 
       <!-- Feature Enagagement Tracker strings -->
-      <message name="IDS_NEWTAB_PROMO" desc="Text shown on promotional UI appearing next to the New Tab button, which encourages users to use it.">
+      <message name="IDS_NEWTAB_PROMO_0" desc="Variations option 1. Text shown on promotional UI appearing next to the New Tab button, which encourages users to use it.">
         Open a new tab with one click
+      </message>
+      <message name="IDS_NEWTAB_PROMO_1" desc="Variations option 2. Text shown on promotional UI appearing next to the New Tab button, which encourages users to use it.">
+        You can click here to open a new tab
+      </message>
+      <message name="IDS_NEWTAB_PROMO_2" desc="Variations option 3. Text shown on promotional UI appearing next to the New Tab button, which encourages users to use it.">
+        Open a new tab to browse two sites at once
       </message>
 
       <!-- Browser Hung Plugin Detector -->
