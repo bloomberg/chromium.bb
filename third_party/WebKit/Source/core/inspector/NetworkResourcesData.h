@@ -246,6 +246,10 @@ class NetworkResourcesData final
   ResourceData* ResourceDataForRequestId(const String& request_id);
   void EnsureNoDataForRequestId(const String& request_id);
   bool EnsureFreeSpace(size_t);
+  ResourceData* PrepareToAddResourceData(const String& request_id,
+                                         size_t data_length);
+  void MaybeAddResourceData(const String& request_id,
+                            RefPtr<const SharedBuffer>);
 
   Deque<String> request_ids_deque_;
 
