@@ -187,9 +187,9 @@ Polymer({
                 return prev.concat(cur.createFocusRows());
               },
               [])
-          .forEach(function(row) {
+          .forEach((row) => {
             this.focusGrid_.addRow(row);
-          }.bind(this));
+          });
       this.focusGrid_.ensureRowActive(1);
     });
   },
@@ -277,11 +277,11 @@ Polymer({
     }
 
     var devices = [];
-    sessionList.forEach(function(session) {
+    sessionList.forEach((session) => {
       var device = this.createInternalDevice_(session);
       if (device.tabs.length != 0)
         devices.push(device);
-    }.bind(this));
+    });
 
     this.syncedDevices_ = devices;
   },

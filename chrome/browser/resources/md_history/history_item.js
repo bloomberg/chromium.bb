@@ -220,9 +220,9 @@ cr.define('md_history', function() {
      */
     onItemMousedown_: function(e) {
       this.mouseDown_ = true;
-      listenOnce(document, 'mouseup', function() {
+      listenOnce(document, 'mouseup', () => {
         this.mouseDown_ = false;
-      }.bind(this));
+      });
       // Prevent shift clicking a checkbox from selecting text.
       if (e.shiftKey)
         e.preventDefault();
