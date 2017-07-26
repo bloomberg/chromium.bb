@@ -74,7 +74,7 @@ TEST(WindowSizerTest, DefaultSizeCase) {
     GetWindowBounds(p1280x1024, p1280x1024, gfx::Rect(), gfx::Rect(),
                     gfx::Rect(), DEFAULT, NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels, kWindowTilePixels,
-                        1050,
+                        WindowSizer::kWindowMaxDefaultWidth,
                         1024 - kWindowTilePixels * 2),
               window_bounds);
   }
@@ -84,28 +84,46 @@ TEST(WindowSizerTest, DefaultSizeCase) {
     GetWindowBounds(p1600x1200, p1600x1200, gfx::Rect(), gfx::Rect(),
                     gfx::Rect(), DEFAULT, NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels, kWindowTilePixels,
-                        1050,
+                        WindowSizer::kWindowMaxDefaultWidth,
                         1200 - kWindowTilePixels * 2),
               window_bounds);
   }
 
-  { // 16:10 monitor case, 1680x1050
+  {  // 16:10 monitor case, 1680x1050
+     // On all platforms except the Mac, for this size monitor the WindowSizer
+     // returns a width that allows side-by-side positioning of two browser
+     // windows.
+#if defined(OS_MACOSX)
+    const int expected_window_width = WindowSizer::kWindowMaxDefaultWidth;
+#else
+    const int window_width = 1680;
+    const int expected_window_width =
+        window_width / 2 - static_cast<int>(kWindowTilePixels * 1.5);
+#endif  // defined(OS_MACOSX)
     gfx::Rect window_bounds;
     GetWindowBounds(p1680x1050, p1680x1050, gfx::Rect(), gfx::Rect(),
                     gfx::Rect(), DEFAULT, NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels, kWindowTilePixels,
-                        840 - static_cast<int>(kWindowTilePixels * 1.5),
-                        1050 - kWindowTilePixels * 2),
+                        expected_window_width, 1050 - kWindowTilePixels * 2),
               window_bounds);
   }
 
-  { // 16:10 monitor case, 1920x1200
+  {  // 16:10 monitor case, 1920x1200
+     // On all platforms except the Mac, for this size monitor the WindowSizer
+     // returns a width that allows side-by-side positioning of two browser
+     // windows.
+#if defined(OS_MACOSX)
+    const int expected_window_width = WindowSizer::kWindowMaxDefaultWidth;
+#else
+    const int window_width = 1920;
+    const int expected_window_width =
+        window_width / 2 - static_cast<int>(kWindowTilePixels * 1.5);
+#endif  // defined(OS_MACOSX)
     gfx::Rect window_bounds;
     GetWindowBounds(p1920x1200, p1920x1200, gfx::Rect(), gfx::Rect(),
                     gfx::Rect(), DEFAULT, NULL, gfx::Rect(), &window_bounds);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels, kWindowTilePixels,
-                        960 - static_cast<int>(kWindowTilePixels * 1.5),
-                        1200 - kWindowTilePixels * 2),
+                        expected_window_width, 1200 - kWindowTilePixels * 2),
               window_bounds);
   }
 }
@@ -519,4 +537,4 @@ TEST(WindowSizerTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
 #endif  // !defined(OS_POSIX) || defined(OS_MACOSX)
 }
 
-#endif  //defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX)

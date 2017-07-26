@@ -299,9 +299,11 @@ void WindowSizer::GetDefaultWindowBounds(const display::Display& display,
 
   // The default size is either some reasonably wide width, or if the work
   // area is narrower, then the work area width less some aesthetic padding.
-  int default_width = std::min(work_area.width() - 2 * kWindowTilePixels, 1050);
+  int default_width = std::min(work_area.width() - 2 * kWindowTilePixels,
+                               kWindowMaxDefaultWidth);
   int default_height = work_area.height() - 2 * kWindowTilePixels;
 
+#if !defined(OS_MACOSX)
   // For wider aspect ratio displays at higher resolutions, we might size the
   // window narrower to allow two windows to easily be placed side-by-side.
   gfx::Rect screen_size = screen_->GetPrimaryDisplay().bounds();
@@ -320,6 +322,7 @@ void WindowSizer::GetDefaultWindowBounds(const display::Display& display,
     default_width = static_cast<int>(work_area.width() / 2. -
         1.5 * kWindowTilePixels);
   }
+#endif  // !defined(OS_MACOSX)
   default_bounds->SetRect(kWindowTilePixels + work_area.x(),
                           kWindowTilePixels + work_area.y(),
                           default_width, default_height);
