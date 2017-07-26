@@ -407,6 +407,15 @@ _BANNED_CPP_FUNCTIONS = (
       (
         r'^third_party/leveldatabase/.*\.(cc|h)$',
       ),
+    ),
+    (
+      r'/MessageLoop::Quit(Now|WhenIdle)',
+      (
+        'MessageLoop::Quit*() methods are deprecated. Please migrate to'
+        'Runloop.'
+      ),
+      True,
+      (),
     )
 )
 
