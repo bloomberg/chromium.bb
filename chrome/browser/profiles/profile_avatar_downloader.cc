@@ -45,6 +45,7 @@ ProfileAvatarDownloader::ProfileAvatarDownloader(
         }
         policy {
           cookies_allowed: NO
+          setting: "This feature cannot be disabled in settings."
           policy_exception_justification:
             "No content is being uploaded or saved; this request merely "
             "downloads a publicly available PNG file."
