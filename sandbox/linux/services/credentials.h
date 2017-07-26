@@ -33,7 +33,15 @@ class SANDBOX_EXPORT Credentials {
     SYS_ADMIN,
   };
 
-  // Drop all capabilities in the effective, inheritable and permitted sets for
+  // Checks that the set of RES-uids and the set of RES-gids have
+  // one element each and returns that element in |resuid| and |resgid|
+  // respectively. It's OK to pass NULL as one or both of the ids.
+  static bool GetRESIds(uid_t* resuid, gid_t* resgid);
+
+  // Sets gid and uid maps. See man newgidmap(1)/newuidmap(1) for details.
+  static bool SetGidAndUidMaps(gid_t gid, uid_t uid);
+
+  // Drops all capabilities in the effective, inheritable and permitted sets for
   // the current thread. For security reasons, since capabilities are
   // per-thread, the caller is responsible for ensuring it is single-threaded
   // when calling this API.
@@ -44,13 +52,12 @@ class SANDBOX_EXPORT Credentials {
   static bool DropAllCapabilities() WARN_UNUSED_RESULT;
   // Sets the effective and permitted capability sets for the current thread to
   // the list of capabiltiies in |caps|. All other capability flags are cleared.
-  static bool SetCapabilities(int proc_fd,
-                              const std::vector<Capability>& caps)
+  static bool SetCapabilities(int proc_fd, const std::vector<Capability>& caps)
       WARN_UNUSED_RESULT;
 
   // Versions of the above functions which do not check that the process is
   // single-threaded. After calling these functions, capabilities of other
-  // threads will not be changed. This is dangerous, do not use unless you nkow
+  // threads will not be changed. This is dangerous, do not use unless you know
   // what you are doing.
   static bool DropAllCapabilitiesOnCurrentThread() WARN_UNUSED_RESULT;
   static bool SetCapabilitiesOnCurrentThread(
@@ -60,7 +67,7 @@ class SANDBOX_EXPORT Credentials {
   // inheritable flag set for the given capability.
   static bool HasCapability(Capability cap);
 
-  // Return true iff there is any capability in any of the capabilities sets
+  // Returns true iff there is any capability in any of the capabilities sets
   // of the current thread.
   static bool HasAnyCapability();
 
@@ -71,7 +78,7 @@ class SANDBOX_EXPORT Credentials {
   // ability to move to a user namespace ahead of time.
   static bool CanCreateProcessInNewUserNS();
 
-  // Move the current process to a new "user namespace" as supported by Linux
+  // Moves the current process to a new "user namespace" as supported by Linux
   // 3.8+ (CLONE_NEWUSER).
   // The uid map will be set-up so that the perceived uid and gid will not
   // change.
@@ -80,7 +87,7 @@ class SANDBOX_EXPORT Credentials {
   // This will fail if the process is not mono-threaded.
   static bool MoveToNewUserNS() WARN_UNUSED_RESULT;
 
-  // Remove the ability of the process to access the file system. File
+  // Removes the ability of the process to access the file system. File
   // descriptors which are already open prior to calling this API remain
   // available.
   // The implementation currently uses chroot(2) and requires CAP_SYS_CHROOT.
