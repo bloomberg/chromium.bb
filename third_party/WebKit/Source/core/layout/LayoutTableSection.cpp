@@ -1230,8 +1230,8 @@ int LayoutTableSection::PaginationStrutForRow(LayoutTableRow* row,
       logical_offset, LayoutBlock::kAssociateWithLatterPage);
   if (remaining_logical_height >= row_logical_height)
     return 0;  // It fits fine where it is. No need to break.
-  LayoutUnit pagination_strut = CalculatePaginationStrutToFitContent(
-      logical_offset, remaining_logical_height, row_logical_height);
+  LayoutUnit pagination_strut =
+      CalculatePaginationStrutToFitContent(logical_offset, row_logical_height);
   if (pagination_strut == remaining_logical_height &&
       remaining_logical_height == page_logical_height) {
     // Don't break if we were at the top of a page, and we failed to fit the
