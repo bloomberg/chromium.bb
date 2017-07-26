@@ -6,19 +6,32 @@
 
 #include "ash/accelerators/accelerator_controller_delegate_classic.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/mus/bridge/shell_port_mash.h"
+#include "ash/public/cpp/config.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell_port_classic.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "chrome/browser/chromeos/ash_config.h"
 
 using base::UserMetricsAction;
 
 void TakeScreenshot() {
   base::RecordAction(UserMetricsAction("Menu_Take_Screenshot"));
+  ash::AcceleratorControllerDelegateClassic* accelerator_controller_delegate =
+      nullptr;
+  if (chromeos::GetAshConfig() == ash::Config::CLASSIC) {
+    accelerator_controller_delegate =
+        ash::ShellPortClassic::Get()->accelerator_controller_delegate();
+  } else if (chromeos::GetAshConfig() == ash::Config::MUS) {
+    accelerator_controller_delegate =
+        ash::mus::ShellPortMash::Get()->accelerator_controller_delegate_mus();
+  } else {
+    NOTIMPLEMENTED();
+    return;
+  }
   ash::ScreenshotDelegate* screenshot_delegate =
-      ash::ShellPortClassic::Get()
-          ->accelerator_controller_delegate()
-          ->screenshot_delegate();
+      accelerator_controller_delegate->screenshot_delegate();
   if (screenshot_delegate &&
       screenshot_delegate->CanTakeScreenshot()) {
     screenshot_delegate->HandleTakeScreenshotForAllRootWindows();
