@@ -6767,6 +6767,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BookmarkManager.CommandExecuted" enum="BookmarkManagerCommand">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    Logs when a user action triggers a command in the bookmark manager. Commands
+    can be triggered by keyboard shortcuts, menu items or other buttons in the
+    UI.
+  </summary>
+</histogram>
+
+<histogram name="BookmarkManager.CommandExecutedFromKeyboard"
+    enum="BookmarkManagerCommand">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    Logs when a keyboard shortcut triggers a command in the bookmark manager.
+  </summary>
+</histogram>
+
 <histogram name="BookmarkManager.NumDragged" units="bookmarks">
   <owner>calamity@chromium.org</owner>
   <summary>

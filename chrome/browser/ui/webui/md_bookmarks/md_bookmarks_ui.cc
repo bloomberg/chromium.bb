@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/md_bookmarks/bookmarks_message_handler.h"
+#include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
@@ -212,6 +213,7 @@ MdBookmarksUI::MdBookmarksUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(std::move(plural_string_handler));
 
   web_ui->AddMessageHandler(base::MakeUnique<BookmarksMessageHandler>());
+  web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
 }
 
 // static

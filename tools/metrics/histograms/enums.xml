@@ -2861,6 +2861,24 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="6" label="Omnibox suggestion"/>
 </enum>
 
+<enum name="BookmarkManagerCommand">
+  <int value="0" label="Edit"/>
+  <int value="1" label="Copy URL"/>
+  <int value="2" label="Show in folder"/>
+  <int value="3" label="Delete"/>
+  <int value="4" label="Open in new tab"/>
+  <int value="5" label="Open in new window"/>
+  <int value="6" label="Open in incognito"/>
+  <int value="7" label="Undo"/>
+  <int value="8" label="Redo"/>
+  <int value="9" label="Open (double click/enter)"/>
+  <int value="10" label="Select all"/>
+  <int value="11" label="Deselect all"/>
+  <int value="12" label="Copy"/>
+  <int value="13" label="Cut"/>
+  <int value="14" label="Paste"/>
+</enum>
+
 <enum name="BookmarksEntryPoint">
   <int value="0" label="Accelerator(Ctrl+D)"/>
   <int value="1" label="Gesture"/>
