@@ -44,7 +44,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.download.DownloadUtils;
-import org.chromium.chrome.browser.feature_engagement_tracker.FeatureEngagementTrackerFactory;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -76,9 +76,9 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarObserver;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
-import org.chromium.components.feature_engagement_tracker.EventConstants;
-import org.chromium.components.feature_engagement_tracker.FeatureConstants;
-import org.chromium.components.feature_engagement_tracker.FeatureEngagementTracker;
+import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -503,9 +503,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     return;
                 }
 
-                final FeatureEngagementTracker tracker =
-                        FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
-                                tab.getProfile());
+                final Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
 
                 if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_PAGE_FEATURE)) return;
 
@@ -544,9 +542,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     return;
                 }
 
-                FeatureEngagementTracker tracker =
-                        FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
-                                tab.getProfile());
+                Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
                 tracker.notifyEvent(EventConstants.USER_HAS_SEEN_DINO);
             }
         };
@@ -894,9 +890,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 // Chrome home is not
                 if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()
                         && !FeatureUtilities.isChromeHomeEnabled()) {
-                    FeatureEngagementTracker tracker =
-                            FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
-                                    Profile.getLastUsedProfile());
+                    Tracker tracker =
+                            TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
                     tracker.notifyEvent(EventConstants.OVERFLOW_OPENED_WITH_DATA_SAVER_SHOWN);
                 }
             }

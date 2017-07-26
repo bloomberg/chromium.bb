@@ -424,8 +424,8 @@ split_static_library("browser") {
     "favicon/favicon_utils.h",
     "favicon/large_icon_service_factory.cc",
     "favicon/large_icon_service_factory.h",
-    "feature_engagement_tracker/feature_engagement_tracker_factory.cc",
-    "feature_engagement_tracker/feature_engagement_tracker_factory.h",
+    "feature_engagement/tracker_factory.cc",
+    "feature_engagement/tracker_factory.h",
     "file_select_helper.cc",
     "file_select_helper.h",
     "file_select_helper_mac.mm",
@@ -1534,7 +1534,7 @@ split_static_library("browser") {
     "//components/favicon/content",
     "//components/favicon/core",
     "//components/favicon_base",
-    "//components/feature_engagement_tracker",
+    "//components/feature_engagement",
     "//components/flags_ui",
     "//components/gcm_driver",
     "//components/google/core/browser",
@@ -2764,7 +2764,7 @@ split_static_library("browser") {
       "android/download/ui/thumbnail_provider.h",
       "android/favicon_helper.cc",
       "android/favicon_helper.h",
-      "android/feature_engagement_tracker/feature_engagement_tracker_factory_android.cc",
+      "android/feature_engagement/tracker_factory_android.cc",
       "android/feature_utilities.cc",
       "android/feature_utilities.h",
       "android/feedback/connectivity_checker.cc",
@@ -3673,10 +3673,10 @@ split_static_library("browser") {
 
   if ((is_linux && !is_chromeos) || is_win) {
     sources += [
-      "feature_engagement_tracker/new_tab/new_tab_tracker.cc",
-      "feature_engagement_tracker/new_tab/new_tab_tracker.h",
-      "feature_engagement_tracker/new_tab/new_tab_tracker_factory.cc",
-      "feature_engagement_tracker/new_tab/new_tab_tracker_factory.h",
+      "feature_engagement/new_tab/new_tab_tracker.cc",
+      "feature_engagement/new_tab/new_tab_tracker.h",
+      "feature_engagement/new_tab/new_tab_tracker_factory.cc",
+      "feature_engagement/new_tab/new_tab_tracker_factory.h",
     ]
   }
 
@@ -4039,7 +4039,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/engagement/SiteEngagementService.java",
       "../android/java/src/org/chromium/chrome/browser/favicon/FaviconHelper.java",
       "../android/java/src/org/chromium/chrome/browser/favicon/LargeIconBridge.java",
-      "../android/java/src/org/chromium/chrome/browser/feature_engagement_tracker/FeatureEngagementTrackerFactory.java",
+      "../android/java/src/org/chromium/chrome/browser/feature_engagement/TrackerFactory.java",
       "../android/java/src/org/chromium/chrome/browser/feedback/ConnectivityChecker.java",
       "../android/java/src/org/chromium/chrome/browser/feedback/ScreenshotTask.java",
       "../android/java/src/org/chromium/chrome/browser/findinpage/FindInPageBridge.java",

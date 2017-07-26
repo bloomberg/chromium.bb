@@ -20,7 +20,7 @@ include_rules = [
   "+components/favicon/core",
   "+components/favicon/ios",
   "+components/favicon_base",
-  "+components/feature_engagement_tracker",
+  "+components/feature_engagement",
   "+components/flags_ui",
   "+components/gcm_driver",
   "+components/google/core/browser",

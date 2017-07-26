@@ -10,8 +10,8 @@
 #include "base/critical_closure.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/feature_engagement_tracker/public/event_constants.h"
-#include "components/feature_engagement_tracker/public/feature_engagement_tracker.h"
+#include "components/feature_engagement/public/event_constants.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "components/metrics/metrics_service.h"
 #import "ios/chrome/app/application_delegate/app_navigation.h"
 #import "ios/chrome/app/application_delegate/browser_launcher.h"
@@ -33,7 +33,7 @@
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #import "ios/chrome/browser/crash_report/crash_report_background_uploader.h"
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
-#include "ios/chrome/browser/feature_engagement_tracker/feature_engagement_tracker_factory.h"
+#include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_config.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
@@ -333,10 +333,10 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   }
 
   if (currentBrowserState) {
-    // Send the "Chrome Opened" event to the FeatureEngagementTracker on a warm
-    // start.
-    FeatureEngagementTrackerFactory::GetForBrowserState(currentBrowserState)
-        ->NotifyEvent(feature_engagement_tracker::events::kChromeOpened);
+    // Send the "Chrome Opened" event to the feature_engagement::Tracker on a
+    // warm start.
+    feature_engagement::TrackerFactory::GetForBrowserState(currentBrowserState)
+        ->NotifyEvent(feature_engagement::events::kChromeOpened);
   }
 }
 

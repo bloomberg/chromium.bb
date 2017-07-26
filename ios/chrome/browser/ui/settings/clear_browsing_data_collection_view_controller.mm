@@ -20,8 +20,8 @@
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
 #include "components/browsing_data/core/history_notice_utils.h"
 #include "components/browsing_data/core/pref_names.h"
-#include "components/feature_engagement_tracker/public/event_constants.h"
-#include "components/feature_engagement_tracker/public/feature_engagement_tracker.h"
+#include "components/feature_engagement/public/event_constants.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/prefs/pref_service.h"
@@ -34,7 +34,7 @@
 #include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
-#include "ios/chrome/browser/feature_engagement_tracker/feature_engagement_tracker_factory.h"
+#include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
@@ -639,11 +639,11 @@ const int kMaxTimesHistoryNoticeShown = 1;
                                                   timePeriod:_timePeriod];
   [self chromeExecuteCommand:command];
 
-  // Send the "Cleared Browsing Data" event to the FeatureEngagementTracker
+  // Send the "Cleared Browsing Data" event to the feature_engagement::Tracker
   // when the user initiates a clear browsing data action. No event is sent if
   // the browsing data is cleared without the user's input.
-  FeatureEngagementTrackerFactory::GetForBrowserState(_browserState)
-      ->NotifyEvent(feature_engagement_tracker::events::kClearedBrowsingData);
+  feature_engagement::TrackerFactory::GetForBrowserState(_browserState)
+      ->NotifyEvent(feature_engagement::events::kClearedBrowsingData);
 
   if (!!(dataTypeMask && IOSChromeBrowsingDataRemover::REMOVE_HISTORY)) {
     [self showBrowsingHistoryRemovedDialog];

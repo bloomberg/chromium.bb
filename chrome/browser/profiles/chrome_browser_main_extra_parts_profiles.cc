@@ -26,7 +26,7 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/feature_engagement_tracker/feature_engagement_tracker_factory.h"
+#include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
@@ -143,7 +143,7 @@
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
-#include "chrome/browser/feature_engagement_tracker/new_tab/new_tab_tracker_factory.h"
+#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -243,7 +243,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::VerifyTrustAPI::GetFactoryInstance();
 #endif
   FaviconServiceFactory::GetInstance();
-  FeatureEngagementTrackerFactory::GetInstance();
+  feature_engagement::TrackerFactory::GetInstance();
   FindBarStateFactory::GetInstance();
   GAIAInfoUpdateServiceFactory::GetInstance();
 #if !defined(OS_ANDROID)
@@ -291,7 +291,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   NTPResourceCacheFactory::GetInstance();
 #endif
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
-  feature_engagement_tracker::NewTabTrackerFactory::GetInstance();
+  feature_engagement::NewTabTrackerFactory::GetInstance();
 #endif
   ContentSuggestionsServiceFactory::GetInstance();
   PasswordStoreFactory::GetInstance();

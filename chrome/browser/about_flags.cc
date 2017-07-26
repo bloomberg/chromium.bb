@@ -46,8 +46,8 @@
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/favicon/core/features.h"
-#include "components/feature_engagement_tracker/public/feature_constants.h"
-#include "components/feature_engagement_tracker/public/feature_list.h"
+#include "components/feature_engagement/public/feature_constants.h"
+#include "components/feature_engagement/public/feature_list.h"
 #include "components/flags_ui/feature_entry.h"
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
@@ -1848,8 +1848,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kInProductHelpDemoModeChoiceName,
      flag_descriptions::kInProductHelpDemoModeChoiceDescription, kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
-         feature_engagement_tracker::kIPHDemoMode,
-         feature_engagement_tracker::kIPHDemoModeChoiceVariations,
+         feature_engagement::kIPHDemoMode,
+         feature_engagement::kIPHDemoModeChoiceVariations,
          "IPH_DemoMode")},
     {"num-raster-threads", flag_descriptions::kNumRasterThreadsName,
      flag_descriptions::kNumRasterThreadsDescription, kOsAll,
