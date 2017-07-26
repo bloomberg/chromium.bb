@@ -233,10 +233,9 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
       waiting_for_clear_autofill_origin_urls_ = true;
       web_data_service->RemoveOriginURLsModifiedBetween(delete_begin_,
                                                         delete_end_);
-      // The above calls are done on the UI thread but do their work on the DB
-      // thread. So wait for it.
-      WebThread::PostTaskAndReply(
-          WebThread::DB, FROM_HERE, base::Bind(&base::DoNothing),
+      // Ask for a call back when the above call is finished.
+      web_data_service->GetDBTaskRunner()->PostTaskAndReply(
+          FROM_HERE, base::Bind(&base::DoNothing),
           base::Bind(&IOSChromeBrowsingDataRemover::OnClearedAutofillOriginURLs,
                      base::Unretained(this)));
 
@@ -307,10 +306,9 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
                                                        delete_end_);
       web_data_service->RemoveAutofillDataModifiedBetween(delete_begin_,
                                                           delete_end_);
-      // The above calls are done on the UI thread but do their work on the DB
-      // thread. So wait for it.
-      WebThread::PostTaskAndReply(
-          WebThread::DB, FROM_HERE, base::Bind(&base::DoNothing),
+      // Ask for a call back when the above calls are finished.
+      web_data_service->GetDBTaskRunner()->PostTaskAndReply(
+          FROM_HERE, base::Bind(&base::DoNothing),
           base::Bind(&IOSChromeBrowsingDataRemover::OnClearedFormData,
                      base::Unretained(this)));
 
