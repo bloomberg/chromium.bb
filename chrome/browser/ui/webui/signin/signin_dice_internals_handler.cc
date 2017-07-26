@@ -53,11 +53,6 @@ void SigninDiceInternalsHandler::HandleEnableSync(const base::ListValue* args) {
   // OneClickSigninSyncStarter is suicidal (it will kill itself once it finishes
   // enabling sync).
   OneClickSigninSyncStarter::Callback callback;
-  new OneClickSigninSyncStarter(
-      profile_, browser, gaia_id, email, "" /* password */,
-      "" /* refresh_token */, OneClickSigninSyncStarter::CURRENT_PROFILE,
-      OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST,
-      web_ui()->GetWebContents(),
-      OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN,
-      GURL("") /* current_url */, GURL("") /* continue_url */, callback);
+  new OneClickSigninSyncStarter(profile_, browser, gaia_id, email,
+                                web_ui()->GetWebContents(), callback);
 }
