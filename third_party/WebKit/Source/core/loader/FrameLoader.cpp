@@ -856,7 +856,8 @@ void FrameLoader::Load(const FrameLoadRequest& passed_request,
   Frame* target_frame = request.Form()
                             ? nullptr
                             : frame_->FindFrameForNavigation(
-                                  AtomicString(request.FrameName()), *frame_);
+                                  AtomicString(request.FrameName()), *frame_,
+                                  request.GetResourceRequest().Url());
 
   NavigationPolicy policy = NavigationPolicyForRequest(request);
   if (target_frame && target_frame != frame_ &&

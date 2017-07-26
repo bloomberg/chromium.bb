@@ -132,7 +132,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void DocumentAttached();
 
   Frame* FindFrameForNavigation(const AtomicString& name,
-                                LocalFrame& active_frame);
+                                LocalFrame& active_frame,
+                                const KURL& destination_url);
 
   // Note: these two functions are not virtual but intentionally shadow the
   // corresponding method in the Frame base class to return the
@@ -224,7 +225,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   bool IsNavigationAllowed() const { return navigation_disable_count_ == 0; }
 
-  bool CanNavigate(const Frame&);
+  // destination_url is only used when a navigation is blocked due to
+  // framebusting defenses, in order to give the option of restarting the
+  // navigation at a later time.
+  bool CanNavigate(const Frame&, const KURL& destination_url = KURL());
 
   service_manager::InterfaceProvider& GetInterfaceProvider();
   InterfaceRegistry* GetInterfaceRegistry() { return interface_registry_; }

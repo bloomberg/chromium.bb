@@ -508,6 +508,10 @@ class BLINK_EXPORT WebFrameClient {
     return false;
   }
 
+  // This frame tried to navigate its top level frame to the given url without
+  // ever having received a user gesture.
+  virtual void DidBlockFramebust(const WebURL&) {}
+
   // PlzNavigate
   // Called to abort a navigation that is being handled by the browser process.
   virtual void AbortClientNavigation() {}

@@ -1055,4 +1055,8 @@ void LocalFrameClientImpl::AnnotatedRegionsChanged() {
   web_frame_->Client()->DraggableRegionsChanged();
 }
 
+void LocalFrameClientImpl::DidBlockFramebust(const KURL& url) {
+  web_frame_->Client()->DidBlockFramebust(url);
+}
+
 }  // namespace blink

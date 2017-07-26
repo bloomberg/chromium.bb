@@ -457,7 +457,8 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
   }
 
   Frame* target_frame = GetDocument().GetFrame()->FindFrameForNavigation(
-      submission->Target(), *GetDocument().GetFrame());
+      submission->Target(), *GetDocument().GetFrame(),
+      submission->RequestURL());
   if (!target_frame) {
     target_frame = GetDocument().GetFrame();
   } else {

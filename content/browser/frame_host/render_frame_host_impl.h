@@ -770,6 +770,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnUpdateTitle(const base::string16& title,
                      blink::WebTextDirection title_direction);
   void OnUpdateEncoding(const std::string& encoding);
+  void OnDidBlockFramebust(const GURL& url);
   void OnBeginNavigation(const CommonNavigationParams& common_params,
                          const BeginNavigationParams& begin_params);
   void OnAbortNavigation();
