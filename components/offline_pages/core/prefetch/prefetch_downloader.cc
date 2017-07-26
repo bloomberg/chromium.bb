@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "components/download/public/download_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_server_urls.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
@@ -45,6 +46,8 @@ void PrefetchDownloader::StartDownload(const std::string& download_id,
   // TODO(jianli): Specify scheduling parameters, i.e. battery, network and etc.
   // http://crbug.com/736156
   download::DownloadParams params;
+  params.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(NO_TRAFFIC_ANNOTATION_YET);
   params.client = download::DownloadClient::OFFLINE_PAGE_PREFETCH;
   // TODO(jianli): Remove the uppercase after the download service fixes
   // this issue.

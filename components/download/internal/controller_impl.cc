@@ -775,8 +775,9 @@ void ControllerImpl::UpdateDriverState(Entry* entry) {
     if (driver_entry.has_value()) {
       driver_->Resume(entry->guid);
     } else {
-      driver_->Start(entry->request_params, entry->guid,
-                     entry->target_file_path, NO_TRAFFIC_ANNOTATION_YET);
+      driver_->Start(
+          entry->request_params, entry->guid, entry->target_file_path,
+          net::NetworkTrafficAnnotationTag(entry->traffic_annotation));
     }
   }
 }

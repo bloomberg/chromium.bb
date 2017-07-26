@@ -6,6 +6,7 @@
 
 #include "base/guid.h"
 #include "components/download/internal/test/entry_utils.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
 namespace download {
 namespace test {
@@ -42,6 +43,8 @@ Entry BuildEntry(DownloadClient client, const std::string& guid) {
   Entry entry;
   entry.client = client;
   entry.guid = guid;
+  entry.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   return entry;
 }
 
