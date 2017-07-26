@@ -151,7 +151,9 @@ class ServiceWorkerGlobalScopeProxy final
   void PostMessageToPageInspector(int session_id, const String&) override;
   void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
   void DidInitializeWorkerContext() override;
-  void DidLoadInstalledScript() override;
+  void DidLoadInstalledScript(
+      const ContentSecurityPolicyResponseHeaders&,
+      const String& referrer_policy_on_worker_thread) override;
   void WillEvaluateWorkerScript(size_t script_size,
                                 size_t cached_metadata_size) override;
   void WillEvaluateImportedScript(size_t script_size,

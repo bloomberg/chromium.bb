@@ -61,6 +61,7 @@
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
+#include "platform/WaitableEvent.h"
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/SubstituteData.h"
@@ -279,6 +280,21 @@ void WebEmbeddedWorkerImpl::PostMessageToPageInspector(int session_id,
   worker_inspector_proxy_->DispatchMessageFromWorker(session_id, message);
 }
 
+void WebEmbeddedWorkerImpl::SetContentSecurityPolicyAndReferrerPolicy(
+    ContentSecurityPolicyResponseHeaders csp_headers,
+    String referrer_policy,
+    WaitableEvent* event) {
+  Document* document = main_frame_->GetFrame()->GetDocument();
+  ContentSecurityPolicy* content_security_policy =
+      ContentSecurityPolicy::Create();
+  content_security_policy->SetOverrideURLForSelf(document->Url());
+  content_security_policy->DidReceiveHeaders(csp_headers);
+  document->InitContentSecurityPolicy(content_security_policy);
+  if (!referrer_policy.IsNull())
+    document->ParseAndSetReferrerPolicy(referrer_policy);
+  event->Signal();
+}
+
 void WebEmbeddedWorkerImpl::PrepareShadowPageForLoader() {
   // Create 'shadow page', which is never displayed and is used mainly to
   // provide a context for loading on the main thread.
@@ -487,8 +503,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options));
     main_script_loader_.Clear();
   } else {
-    // TODO(shimazu): Set ContentSecurityPolicy, ReferrerPolicy to |document|
-    // before evaluating the main script.
+    // ContentSecurityPolicy and ReferrerPolicy are applied to |document| at
+    // SetContentSecurityPolicyAndReferrerPolicy() before evaluating the main
+    // script.
     global_scope_creation_params = WTF::MakeUnique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.user_agent,
         "" /* SourceText */, nullptr /* CachedMetadata */, start_mode,

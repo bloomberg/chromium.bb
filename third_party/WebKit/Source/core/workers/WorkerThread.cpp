@@ -404,14 +404,42 @@ void WorkerThread::InitializeOnWorkerThread(
   DCHECK_EQ(ThreadState::kNotStarted, thread_state_);
 
   KURL script_url = global_scope_creation_params->script_url;
-  String given_source_code = global_scope_creation_params->source_code;
-  std::unique_ptr<Vector<char>> given_cached_meta_data =
-      std::move(global_scope_creation_params->cached_meta_data);
   // TODO(nhiroki): Rename WorkerThreadStartMode to GlobalScopeStartMode.
   // (https://crbug.com/710364)
   WorkerThreadStartMode start_mode = global_scope_creation_params->start_mode;
   V8CacheOptions v8_cache_options =
       global_scope_creation_params->v8_cache_options;
+
+  String source_code;
+  std::unique_ptr<Vector<char>> cached_meta_data;
+  if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled() &&
+      GetInstalledScriptsManager() &&
+      GetInstalledScriptsManager()->IsScriptInstalled(script_url)) {
+    // GetScriptData blocks until the script is received from the browser.
+    auto script_data = GetInstalledScriptsManager()->GetScriptData(script_url);
+    DCHECK(script_data);
+    DCHECK(source_code.IsEmpty());
+    DCHECK(!cached_meta_data);
+    source_code = script_data->TakeSourceText();
+    cached_meta_data = script_data->TakeMetaData();
+
+    String referrer_policy = script_data->GetReferrerPolicy();
+    ContentSecurityPolicyResponseHeaders
+        content_security_policy_response_headers =
+            script_data->GetContentSecurityPolicyResponseHeaders();
+    worker_reporting_proxy_.DidLoadInstalledScript(
+        content_security_policy_response_headers, referrer_policy);
+
+    global_scope_creation_params->content_security_policy_raw_headers =
+        std::move(content_security_policy_response_headers);
+    global_scope_creation_params->referrer_policy = referrer_policy;
+    global_scope_creation_params->origin_trial_tokens =
+        script_data->CreateOriginTrialTokens();
+  } else {
+    source_code = std::move(global_scope_creation_params->source_code);
+    cached_meta_data =
+        std::move(global_scope_creation_params->cached_meta_data);
+  }
 
   {
     MutexLocker lock(thread_state_mutex_);
@@ -456,29 +484,6 @@ void WorkerThread::InitializeOnWorkerThread(
 
   if (!GlobalScope()->IsWorkerGlobalScope())
     return;
-
-  String source_code;
-  std::unique_ptr<Vector<char>> cached_meta_data;
-  if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled() &&
-      GetInstalledScriptsManager() &&
-      GetInstalledScriptsManager()->IsScriptInstalled(script_url)) {
-    // TODO(shimazu): Set ContentSecurityPolicy, ReferrerPolicy and
-    // OriginTrialTokens to |global_scope_creation_params|.
-    // TODO(shimazu): Add a post task to the main thread for setting
-    // ContentSecurityPolicy and ReferrerPolicy.
-
-    // GetScriptData blocks until the script is received from the browser.
-    auto script_data = GetInstalledScriptsManager()->GetScriptData(script_url);
-    DCHECK(script_data);
-    DCHECK(source_code.IsEmpty());
-    DCHECK(!cached_meta_data);
-    source_code = std::move(script_data->source_text);
-    cached_meta_data = std::move(script_data->meta_data);
-    worker_reporting_proxy_.DidLoadInstalledScript();
-  } else {
-    source_code = std::move(given_source_code);
-    cached_meta_data = std::move(given_cached_meta_data);
-  }
   DCHECK(!source_code.IsNull());
 
   WorkerGlobalScope* worker_global_scope = ToWorkerGlobalScope(GlobalScope());

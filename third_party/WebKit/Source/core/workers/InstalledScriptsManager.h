@@ -5,6 +5,8 @@
 #ifndef InstalledScriptsManager_h
 #define InstalledScriptsManager_h
 
+#include "core/CoreExport.h"
+#include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Optional.h"
@@ -18,10 +20,28 @@ class InstalledScriptsManager {
  public:
   InstalledScriptsManager() = default;
 
-  struct ScriptData {
-    HTTPHeaderMap headers;
-    String source_text;
-    std::unique_ptr<Vector<char>> meta_data;
+  class CORE_EXPORT ScriptData {
+   public:
+    ScriptData(const KURL& script_url,
+               String source_text,
+               std::unique_ptr<Vector<char>> meta_data,
+               std::unique_ptr<CrossThreadHTTPHeaderMapData>);
+
+    String TakeSourceText() { return std::move(source_text_); }
+    std::unique_ptr<Vector<char>> TakeMetaData() {
+      return std::move(meta_data_);
+    }
+
+    ContentSecurityPolicyResponseHeaders
+    GetContentSecurityPolicyResponseHeaders();
+    String GetReferrerPolicy();
+    std::unique_ptr<Vector<String>> CreateOriginTrialTokens();
+
+   private:
+    const KURL script_url_;
+    String source_text_;
+    std::unique_ptr<Vector<char>> meta_data_;
+    HTTPHeaderMap headers_;
   };
 
   // Used on the main or worker thread. Returns true if the script has been

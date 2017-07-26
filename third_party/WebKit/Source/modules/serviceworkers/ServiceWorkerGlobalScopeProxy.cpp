@@ -36,6 +36,7 @@
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/origin_trials/OriginTrials.h"
 #include "core/workers/ParentFrameTaskRunners.h"
@@ -76,6 +77,7 @@
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/WaitableEvent.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
@@ -562,8 +564,28 @@ void ServiceWorkerGlobalScopeProxy::DidInitializeWorkerContext() {
       WorkerGlobalScope()->ScriptController()->GetContext());
 }
 
-void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript() {
+void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript(
+    const ContentSecurityPolicyResponseHeaders& csp_headers_on_worker_thread,
+    const String& referrer_policy_on_worker_thread) {
+  DCHECK(embedded_worker_);
+
+  // Post a task to the main thread to set CSP and ReferrerPolicy on the shadow
+  // page.
+  WaitableEvent waitable_event;
+  parent_frame_task_runners_->Get(TaskType::kUnthrottled)
+      ->PostTask(
+          BLINK_FROM_HERE,
+          CrossThreadBind(
+              &WebEmbeddedWorkerImpl::SetContentSecurityPolicyAndReferrerPolicy,
+              CrossThreadUnretained(embedded_worker_),
+              csp_headers_on_worker_thread, referrer_policy_on_worker_thread,
+              CrossThreadUnretained(&waitable_event)));
   Client().WorkerScriptLoaded();
+
+  // Wait for the task to complete before returning. This ensures that worker
+  // script evaluation can't start and issue any fetches until CSP and
+  // ReferrerPolicy are set.
+  waitable_event.Wait();
 }
 
 void ServiceWorkerGlobalScopeProxy::WillEvaluateWorkerScript(
