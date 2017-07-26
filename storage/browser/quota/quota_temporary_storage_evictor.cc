@@ -92,8 +92,8 @@ void QuotaTemporaryStorageEvictor::ReportPerRoundHistogram() {
   UMA_HISTOGRAM_MBYTES("Quota.EvictedBytesPerRound",
                        round_statistics_.usage_on_beginning_of_round -
                        round_statistics_.usage_on_end_of_round);
-  UMA_HISTOGRAM_COUNTS("Quota.NumberOfEvictedOriginsPerRound",
-                       round_statistics_.num_evicted_origins_in_round);
+  UMA_HISTOGRAM_COUNTS_1M("Quota.NumberOfEvictedOriginsPerRound",
+                          round_statistics_.num_evicted_origins_in_round);
 }
 
 void QuotaTemporaryStorageEvictor::ReportPerHourHistogram() {
@@ -101,16 +101,16 @@ void QuotaTemporaryStorageEvictor::ReportPerHourHistogram() {
   stats_in_hour.subtract_assign(previous_statistics_);
   previous_statistics_ = statistics_;
 
-  UMA_HISTOGRAM_COUNTS("Quota.ErrorsOnEvictingOriginPerHour",
-                       stats_in_hour.num_errors_on_evicting_origin);
-  UMA_HISTOGRAM_COUNTS("Quota.ErrorsOnGettingUsageAndQuotaPerHour",
-                       stats_in_hour.num_errors_on_getting_usage_and_quota);
-  UMA_HISTOGRAM_COUNTS("Quota.EvictedOriginsPerHour",
-                       stats_in_hour.num_evicted_origins);
-  UMA_HISTOGRAM_COUNTS("Quota.EvictionRoundsPerHour",
-                       stats_in_hour.num_eviction_rounds);
-  UMA_HISTOGRAM_COUNTS("Quota.SkippedEvictionRoundsPerHour",
-                       stats_in_hour.num_skipped_eviction_rounds);
+  UMA_HISTOGRAM_COUNTS_1M("Quota.ErrorsOnEvictingOriginPerHour",
+                          stats_in_hour.num_errors_on_evicting_origin);
+  UMA_HISTOGRAM_COUNTS_1M("Quota.ErrorsOnGettingUsageAndQuotaPerHour",
+                          stats_in_hour.num_errors_on_getting_usage_and_quota);
+  UMA_HISTOGRAM_COUNTS_1M("Quota.EvictedOriginsPerHour",
+                          stats_in_hour.num_evicted_origins);
+  UMA_HISTOGRAM_COUNTS_1M("Quota.EvictionRoundsPerHour",
+                          stats_in_hour.num_eviction_rounds);
+  UMA_HISTOGRAM_COUNTS_1M("Quota.SkippedEvictionRoundsPerHour",
+                          stats_in_hour.num_skipped_eviction_rounds);
 }
 
 void QuotaTemporaryStorageEvictor::OnEvictionRoundStarted() {

@@ -46,18 +46,18 @@ void RecordBlobItemSizeStats(const DataElement& input_element) {
   switch (input_element.type()) {
     case DataElement::TYPE_BYTES:
     case DataElement::TYPE_BYTES_DESCRIPTION:
-      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.Bytes", length / 1024);
+      UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.Bytes", length / 1024);
       break;
     case DataElement::TYPE_BLOB:
-      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.Blob",
-                           (length - input_element.offset()) / 1024);
+      UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.Blob",
+                              (length - input_element.offset()) / 1024);
       break;
     case DataElement::TYPE_FILE: {
       bool full_file = (length == std::numeric_limits<uint64_t>::max());
       UMA_HISTOGRAM_BOOLEAN("Storage.BlobItemSize.File.Unknown", full_file);
       if (!full_file) {
-        UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.File",
-                             (length - input_element.offset()) / 1024);
+        UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.File",
+                                (length - input_element.offset()) / 1024);
       }
       break;
     }
@@ -66,14 +66,14 @@ void RecordBlobItemSizeStats(const DataElement& input_element) {
       UMA_HISTOGRAM_BOOLEAN("Storage.BlobItemSize.FileSystem.Unknown",
                             full_file);
       if (!full_file) {
-        UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.FileSystem",
-                             (length - input_element.offset()) / 1024);
+        UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.FileSystem",
+                                (length - input_element.offset()) / 1024);
       }
       break;
     }
     case DataElement::TYPE_DISK_CACHE_ENTRY:
-      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.CacheEntry",
-                           (length - input_element.offset()) / 1024);
+      UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.CacheEntry",
+                              (length - input_element.offset()) / 1024);
       break;
     case DataElement::TYPE_UNKNOWN:
       NOTREACHED();
@@ -300,8 +300,8 @@ BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
     switch (type) {
       case DataElement::TYPE_BYTES_DESCRIPTION:
       case DataElement::TYPE_BYTES: {
-        UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.BlobSlice.Bytes",
-                             read_size / 1024);
+        UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.BlobSlice.Bytes",
+                                read_size / 1024);
         if (item_index == first_item_index) {
           first_item_slice_offset = item_offset;
           first_source_item = source_items[item_index];
@@ -321,8 +321,8 @@ BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
         break;
       }
       case DataElement::TYPE_FILE: {
-        UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.BlobSlice.File",
-                             read_size / 1024);
+        UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.BlobSlice.File",
+                                read_size / 1024);
         std::unique_ptr<DataElement> element(new DataElement());
         element->SetToFilePathRange(
             source_item->path(), source_item->offset() + item_offset, read_size,
@@ -343,8 +343,8 @@ BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
         break;
       }
       case DataElement::TYPE_FILE_FILESYSTEM: {
-        UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.BlobSlice.FileSystem",
-                             read_size / 1024);
+        UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.BlobSlice.FileSystem",
+                                read_size / 1024);
         std::unique_ptr<DataElement> element(new DataElement());
         element->SetToFileSystemUrlRange(
             source_item->filesystem_url(), source_item->offset() + item_offset,
@@ -353,8 +353,8 @@ BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
         break;
       }
       case DataElement::TYPE_DISK_CACHE_ENTRY: {
-        UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.BlobSlice.CacheEntry",
-                             read_size / 1024);
+        UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.BlobSlice.CacheEntry",
+                                read_size / 1024);
         std::unique_ptr<DataElement> element(new DataElement());
         element->SetToDiskCacheEntryRange(source_item->offset() + item_offset,
                                           read_size);
@@ -502,17 +502,17 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
   entry->set_status(flattener.status);
   std::unique_ptr<BlobDataHandle> handle = CreateHandle(content.uuid_, entry);
 
-  UMA_HISTOGRAM_COUNTS("Storage.Blob.ItemCount", entry->items().size());
-  UMA_HISTOGRAM_COUNTS("Storage.Blob.TotalSize",
-                       flattener.total_memory_size / 1024);
+  UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.ItemCount", entry->items().size());
+  UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.TotalSize",
+                          flattener.total_memory_size / 1024);
 
   uint64_t total_memory_needed =
       flattener.copy_quota_needed +
       (flattener.transport_quota_type == TransportQuotaType::MEMORY
            ? flattener.transport_quota_needed
            : 0);
-  UMA_HISTOGRAM_COUNTS("Storage.Blob.TotalUnsharedSize",
-                       total_memory_needed / 1024);
+  UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.TotalUnsharedSize",
+                          total_memory_needed / 1024);
 
   size_t num_building_dependent_blobs = 0;
   std::vector<std::unique_ptr<BlobDataHandle>> dependent_blobs;
