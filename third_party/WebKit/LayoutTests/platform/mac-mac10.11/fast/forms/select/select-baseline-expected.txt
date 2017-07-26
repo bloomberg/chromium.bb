@@ -30,19 +30,19 @@ layer at (0,0) size 800x600
             text run at (8,1) width 20: "test"
       LayoutText {#text} at (222,19) size 5x18
         text run at (222,19) width 5: " "
-      LayoutButton {BUTTON} at (226.44,21) size 16x15 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+      LayoutButton {BUTTON} at (226.44,21) size 16x15 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
       LayoutText {#text} at (242,19) size 5x18
         text run at (242,19) width 5: " "
-      LayoutButton {BUTTON} at (246.44,20) size 35.91x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+      LayoutButton {BUTTON} at (246.44,20) size 35.91x18 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,2) size 19.91x13
           LayoutText {#text} at (0,0) size 20x13
             text run at (0,0) width 20: "test"
       LayoutText {#text} at (282,19) size 5x18
         text run at (282,19) width 5: " "
-      LayoutButton {BUTTON} at (286.34,29) size 16x9 [color=#00008B] [bgcolor=#ADD8E6] [border: (2px outset #C0C0C0)]
+      LayoutButton {BUTTON} at (286.34,29) size 16x9 [color=#00008B] [bgcolor=#ADD8E6] [border: (2px solid #D8D8D8) (2px solid #D1D1D1) (2px solid #BABABA) (2px solid #D1D1D1)]
       LayoutText {#text} at (302,19) size 5x18
         text run at (302,19) width 5: " "
-      LayoutButton {BUTTON} at (306.34,18) size 35.91x22 [color=#00008B] [bgcolor=#ADD8E6] [border: (2px outset #C0C0C0)]
+      LayoutButton {BUTTON} at (306.34,18) size 35.91x22 [color=#00008B] [bgcolor=#ADD8E6] [border: (2px solid #D8D8D8) (2px solid #D1D1D1) (2px solid #BABABA) (2px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,4) size 19.91x13
           LayoutText {#text} at (0,0) size 20x13
             text run at (0,0) width 20: "test"

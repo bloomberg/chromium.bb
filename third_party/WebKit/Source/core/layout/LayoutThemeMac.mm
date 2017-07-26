@@ -383,10 +383,7 @@ Color LayoutThemeMac::SystemColor(CSSValueID css_value_id) const {
       needs_fallback = true;
       break;
     case CSSValueButtonface:
-      // We use this value instead of NSColor's controlColor to avoid website
-      // incompatibilities. We may want to change this to use the NSColor in
-      // future.
-      color = 0xFFC0C0C0;
+      color = ConvertNSColorToColor([NSColor controlBackgroundColor]);
       break;
     case CSSValueButtonhighlight:
       color = ConvertNSColorToColor([NSColor controlHighlightColor]);

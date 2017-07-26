@@ -18,7 +18,8 @@ function offset(element) {
 
 function click(button) {
   const pos = offset(button);
-  eventSender.mouseMoveTo(Math.ceil(pos.left), Math.ceil(pos.top));
+  const rect = button.getBoundingClientRect();
+  eventSender.mouseMoveTo(Math.ceil(pos.left + rect.width / 2), Math.ceil(pos.top + rect.height / 2));
   eventSender.mouseDown();
   eventSender.mouseUp();
 }

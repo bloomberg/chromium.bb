@@ -47,19 +47,19 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 205x18
             text run at (0,0) width 205: "2. 3. will not crash Safari either."
         LayoutBlockFlow (anonymous) at (40,144) size 744x19
-          LayoutButton {INPUT} at (0,1) size 126.80x18 [bgcolor=#C0C0C0]
+          LayoutButton {INPUT} at (0,1) size 126.80x18 [bgcolor=#FFFFFF]
             LayoutBlockFlow (anonymous) at (8,2) size 110.80x13
               LayoutText {#text} at (0,0) size 111x13
                 text run at (0,0) width 111: "1. Set outline property"
           LayoutText {#text} at (126,0) size 5x18
             text run at (126,0) width 5: " "
-          LayoutButton {INPUT} at (130.80,1) size 128.86x18 [bgcolor=#C0C0C0]
+          LayoutButton {INPUT} at (130.80,1) size 128.86x18 [bgcolor=#FFFFFF]
             LayoutBlockFlow (anonymous) at (8,2) size 112.86x13
               LayoutText {#text} at (0,0) size 113x13
                 text run at (0,0) width 113: "2. Set display property"
           LayoutText {#text} at (259,0) size 5x18
             text run at (259,0) width 5: " "
-          LayoutButton {INPUT} at (263.66,1) size 140.88x18 [bgcolor=#C0C0C0]
+          LayoutButton {INPUT} at (263.66,1) size 140.88x18 [bgcolor=#FFFFFF]
             LayoutBlockFlow (anonymous) at (8,2) size 124.88x13
               LayoutText {#text} at (0,0) size 125x13
                 text run at (0,0) width 125: "3. Replace span-element"

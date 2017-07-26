@@ -23,7 +23,7 @@ layer at (0,0) size 800x197
           text run at (0,0) width 481: "Test passes if there is no captured image saved to the system's data storage."
       LayoutBlockFlow (anonymous) at (0,154) size 784x19
         LayoutFileUploadControl {INPUT} at (0,1) size 236x18 "No file chosen"
-          LayoutButton {INPUT} at (0,0) size 76.61x18 [bgcolor=#C0C0C0]
+          LayoutButton {INPUT} at (0,0) size 76.61x18 [bgcolor=#FFFFFF]
             LayoutBlockFlow (anonymous) at (8,2) size 60.61x13
               LayoutText {#text} at (0,0) size 61x13
                 text run at (0,0) width 61: "Choose File"

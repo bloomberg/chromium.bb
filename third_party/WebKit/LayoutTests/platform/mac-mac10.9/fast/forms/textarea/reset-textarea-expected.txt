@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           text run at (161,18) width 4: " "
         LayoutText {#text} at (326,18) size 4x18
           text run at (326,18) width 4: " "
-        LayoutButton {INPUT} at (330,19) size 44.94x18 [bgcolor=#C0C0C0]
+        LayoutButton {INPUT} at (330,19) size 44.94x18 [bgcolor=#FFFFFF]
           LayoutBlockFlow (anonymous) at (8,2) size 28.94x13
             LayoutText {#text} at (0,0) size 29x13
               text run at (0,0) width 29: "Reset"

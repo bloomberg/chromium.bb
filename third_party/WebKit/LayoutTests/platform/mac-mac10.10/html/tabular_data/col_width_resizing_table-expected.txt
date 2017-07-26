@@ -30,7 +30,7 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (2,2) size 73x18
                 text run at (2,2) width 73: "col 3 row 3"
       LayoutBlockFlow (anonymous) at (0,52) size 784x18
-        LayoutButton {BUTTON} at (0,0) size 342.56x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+        LayoutButton {BUTTON} at (0,0) size 342.56x18 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
           LayoutBlockFlow (anonymous) at (8,2) size 326.56x13
             LayoutText {#text} at (0,0) size 327x13
               text run at (0,0) width 327: "Click me to test manually. The first column should grow to 500px."

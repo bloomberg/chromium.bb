@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,0) size 601x18
         text run at (0,0) width 601: "This test passes if it doesn't crash and if the Submit button does not honor the first-letter style."
       LayoutBR {BR} at (600,14) size 1x0
-      LayoutButton {INPUT} at (0,18) size 53.25x22 [border: (2px outset #C0C0C0)]
+      LayoutButton {INPUT} at (0,18) size 53.25x22 [border: (2px solid #D8D8D8) (2px solid #D1D1D1) (2px solid #BABABA) (2px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,4) size 37.25x13
           LayoutText {#text} at (0,0) size 38x13
             text run at (0,0) width 38: "Submit"

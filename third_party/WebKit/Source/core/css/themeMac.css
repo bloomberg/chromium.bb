@@ -4,6 +4,7 @@
  */
 
 select, input[type="color" i][list] {
+    /* TODO(tkent): Use ButtonFace and border same as buttons. */
     background-color: #f8f8f8;
     border: 1px solid #a6a6a6;
 }
@@ -17,10 +18,25 @@ select[size][multiple] {
 
 select[size="0"],
 select[size="1"] {
+    /* TODO(tkent): Use ButtonFace and border same as buttons. */
     background-color: #f8f8f8;
     border: 1px solid #a6a6a6;
 }
 
 input::-webkit-inner-spin-button {
     align-self: center;
+}
+
+input[type="button" i],
+input[type="submit" i],
+input[type="reset" i],
+input[type="file" i]::-webkit-file-upload-button,
+button {
+    /* The color is similar to the border of OSX 10.12 buttons. */
+    border-color: #d8d8d8 #d1d1d1 #bababa;
+    border-radius: 4px;
+    border-style: solid;
+    /* We should specify border-width:1px to match the native button, however
+     * it's difficult to specify it with keeping the default button size.
+     */
 }
