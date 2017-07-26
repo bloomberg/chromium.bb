@@ -549,44 +549,40 @@ function getTwoHealthThermometerServicesDevice(options) {
 // Returns an object containing a Health Thermometer BluetoothRemoteGattService
 // and its corresponding FakeRemoteGATTService.
 function getHealthThermometerService() {
+  let result;
   return getHealthThermometerDevice()
-    .then(result => {
-      return result.device.gatt.getPrimaryService('health_thermometer')
-        .then(service => ({
-          service: service,
-          fake_service: result.fake_health_thermometer
-        }));
-    });
+    .then(r => result = r)
+    .then(() => result.device.gatt.getPrimaryService('health_thermometer'))
+    .then(service => Object.assign(result, {
+      service,
+      fake_service: result.fake_health_thermometer,
+    }));
 }
 
 // Returns an object containing a Measurement Interval
 // BluetoothRemoteGATTCharacteristic and its corresponding
 // FakeRemoteGATTCharacteristic.
 function getMeasurementIntervalCharacteristic() {
-  return getHealthThermometerDevice()
-    .then(result => {
-      return result.device.gatt.getPrimaryService('health_thermometer')
-        .then(service => service.getCharacteristic('measurement_interval'))
-        .then(characteristic => ({
-          characteristic: characteristic,
-          fake_characteristic: result.fake_measurement_interval
-        }));
-    });
+  let result;
+  return getHealthThermometerService()
+    .then(r => result = r)
+    .then(() => result.service.getCharacteristic('measurement_interval'))
+    .then(characteristic => Object.assign(result, {
+      characteristic,
+      fake_characteristic: result.fake_measurement_interval,
+    }));
 }
 
 function getUserDescriptionDescriptor() {
-  return getHealthThermometerDevice()
-    .then(result => {
-      return result
-        .device.gatt.getPrimaryService('health_thermometer')
-        .then(service => service.getCharacteristic('measurement_interval'))
-        .then(characteristic => characteristic.getDescriptor(
-          'gatt.characteristic_user_description'))
-        .then(descriptor => ({
-          descriptor: descriptor,
-          fake_descriptor: result.fake_user_description,
-        }));
-    });
+  let result;
+  return getMeasurementIntervalCharacteristic()
+    .then(r => result = r)
+    .then(() => result.characteristic.getDescriptor(
+        'gatt.characteristic_user_description'))
+    .then(descriptor => Object.assign(result, {
+      descriptor,
+      fake_descriptor: result.fake_user_description,
+    }));
 }
 
 // Similar to getHealthThermometerDevice except the GATT discovery
