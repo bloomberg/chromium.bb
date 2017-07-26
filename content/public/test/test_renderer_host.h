@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -281,6 +282,10 @@ class RenderViewHostTestHarness : public testing::Test {
     thread_bundle_options_ = options;
   }
 
+  base::test::ScopedTaskEnvironment* scoped_task_environment() {
+    return scoped_task_environment_.get();
+  }
+
   TestBrowserThreadBundle* thread_bundle() { return thread_bundle_.get(); }
 
 #if defined(USE_AURA)
@@ -291,6 +296,19 @@ class RenderViewHostTestHarness : public testing::Test {
   void SetRenderProcessHostFactory(RenderProcessHostFactory* factory);
 
  private:
+  friend class AudioRendererHostTest;
+
+  // DEPRECATED: New tests should not use this method.
+  // Multithreaded tests that have been ported to TaskScheduler must use a
+  // scoped task environment. Most legacy tests are compatible with a
+  // TestBrowserThreadBundle inside a scoped task environment. This method is
+  // for tests that specifically rely on TestBrowserThreadBundle in the absence
+  // of a scoped task environment.
+  void DisableScopedTaskEnvironment() { use_scoped_task_environment_ = false; }
+
+  bool use_scoped_task_environment_;
+  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+
   int thread_bundle_options_;
   std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
 
