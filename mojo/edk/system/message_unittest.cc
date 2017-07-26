@@ -10,8 +10,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
 #include "base/rand_util.h"
+#include "build/build_config.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/test/mojo_test_base.h"
+#include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace mojo {
 namespace edk {
@@ -733,6 +737,61 @@ TEST_F(MessageTest, CorrectPayloadBufferBoundaries) {
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
 }
+
+#if !defined(OS_IOS)
+
+TEST_F(MessageTest, ExtendPayloadWithHandlesAttached) {
+  // Regression test for https://crbug.com/748996. Verifies that internal
+  // message objects do not retain invalid payload pointers across buffer
+  // relocations.
+
+  MojoHandle handles[5];
+  CreateMessagePipe(&handles[0], &handles[1]);
+  PlatformChannelPair channel;
+  handles[2] = WrapPlatformFile(channel.PassServerHandle().release().handle)
+                   .release()
+                   .value();
+  handles[3] = WrapPlatformFile(channel.PassClientHandle().release().handle)
+                   .release()
+                   .value();
+  handles[4] = SharedBufferHandle::Create(64).release().value();
+
+  MojoMessageHandle message;
+  void* buffer = nullptr;
+  uint32_t buffer_size = 0;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoAttachSerializedMessageBuffer(
+                                message, 0, handles, 5, &buffer, &buffer_size));
+
+  // Force buffer reallocation by extending the payload beyond the original
+  // buffer size. This should typically result in a relocation of the buffer as
+  // well -- at least often enough that breakage will be caught by automated
+  // tests.
+  uint32_t new_buffer_size = 0;
+  uint32_t payload_size = buffer_size * 64;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoExtendSerializedMessagePayload(message, payload_size, &buffer,
+                                               &new_buffer_size));
+  memset(buffer, 'x', buffer_size);
+
+  RunTestClient("ReadAndIgnoreMessage", [&](MojoHandle h) {
+    // Send the message out of process to exercise the regression path where
+    // internally cached, stale payload pointers may be dereferenced and written
+    // into.
+    EXPECT_EQ(MOJO_RESULT_OK,
+              MojoWriteMessage(h, message, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  });
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadAndIgnoreMessage, MessageTest, h) {
+  MojoTestBase::WaitForSignals(h, MOJO_HANDLE_SIGNAL_READABLE);
+
+  MojoHandle handles[5];
+  MojoTestBase::ReadMessageWithHandles(h, handles, 5);
+  for (size_t i = 0; i < 5; ++i)
+    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[i]));
+}
+#endif  // !defined(OS_IOS)
 
 }  // namespace
 }  // namespace edk
