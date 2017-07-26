@@ -179,7 +179,7 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
   def testSuiteSchedulingEqualsFalse(self):
     """Test that a run of the stage makes suite_scheduling False."""
     # Test suite_scheduling for **-paladin
-    self._Prepare(bot_id='x86-generic-paladin')
+    self._Prepare(bot_id='amd64-generic-paladin')
     self.RunStage()
     self.assertFalse(self._run.attrs.metadata.GetValue('suite_scheduling'))
 

@@ -23,7 +23,7 @@ from chromite.lib import cros_test_lib
 def MockBuildConfig():
   """Create a BuildConfig object for convenient testing pleasure."""
   site_config = MockSiteConfig()
-  return site_config['x86-generic-paladin']
+  return site_config['amd64-generic-paladin']
 
 
 def MockSiteConfig():
@@ -35,9 +35,9 @@ def MockSiteConfig():
 
   # Add a single, simple build config.
   result.Add(
-      'x86-generic-paladin',
+      'amd64-generic-paladin',
       active_waterfall='chromiumos',
-      boards=['x86-generic'],
+      boards=['amd64-generic'],
       build_type='paladin',
       chrome_sdk=True,
       chrome_sdk_build_chrome=False,
@@ -731,7 +731,7 @@ class SiteConfigFindTests(cros_test_lib.TestCase):
     site_config = MockSiteConfig()
     self.assertEqual(
         site_config.GetBoards(),
-        set(['x86-generic']))
+        set(['amd64-generic']))
 
   def testGetBoardsComplexConfig(self):
     site_config = MockSiteConfig()
@@ -741,7 +741,7 @@ class SiteConfigFindTests(cros_test_lib.TestCase):
 
     self.assertEqual(
         site_config.GetBoards(),
-        set(['x86-generic', 'foo_board', 'bar_board', 'car_board']))
+        set(['amd64-generic', 'foo_board', 'bar_board', 'car_board']))
 
   def testGetSlaveConfigMapForMasterAll(self):
     """Test GetSlaveConfigMapForMaster, GetSlavesForMaster all slaves."""

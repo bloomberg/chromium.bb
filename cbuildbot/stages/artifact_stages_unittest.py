@@ -161,13 +161,13 @@ class UploadPrebuiltsStageTest(
 
   def testFullPrebuiltsUpload(self):
     """Test uploading of full builder prebuilts."""
-    self._VerifyBoardMap('x86-generic-full', 0, {})
+    self._VerifyBoardMap('amd64-generic-full', 0, {})
     self.assertCommandContains([self.cmd, '--git-sync'])
 
   def testIncorrectCount(self):
     """Test that _VerifyBoardMap asserts when the count is wrong."""
-    self.assertRaises(AssertionError, self._VerifyBoardMap, 'x86-generic-full',
-                      1, {})
+    self.assertRaises(AssertionError, self._VerifyBoardMap,
+                      'amd64-generic-full', 1, {})
 
 
 class UploadDevInstallerPrebuiltsStageTest(

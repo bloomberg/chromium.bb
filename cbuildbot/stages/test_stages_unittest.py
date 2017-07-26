@@ -37,7 +37,7 @@ class GCETestStageTest(generic_stages_unittest.AbstractStageTestCase,
                        cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests for the GCETest stage."""
 
-  BOT_ID = 'x86-generic-full'
+  BOT_ID = 'amd64-generic-full'
   RELEASE_TAG = ''
 
   def setUp(self):
@@ -92,7 +92,7 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
                       cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests for the VMTest stage."""
 
-  BOT_ID = 'x86-generic-full'
+  BOT_ID = 'amd64-generic-full'
   RELEASE_TAG = ''
 
   def setUp(self):
@@ -158,14 +158,14 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests for the UnitTest stage."""
 
-  BOT_ID = 'x86-generic-full'
+  BOT_ID = 'amd64-generic-full'
 
   def setUp(self):
     self.rununittests_mock = self.PatchObject(commands, 'RunUnitTests')
     self.testauzip_mock = self.PatchObject(commands, 'TestAuZip')
 
     self.image_dir = os.path.join(
-        self.build_root, 'src/build/images/x86-generic/latest-cbuildbot')
+        self.build_root, 'src/build/images/amd64-generic/latest-cbuildbot')
 
     self._Prepare()
 

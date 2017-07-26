@@ -157,7 +157,7 @@ class ManifestVersionedSyncStageTest(
     self.source_repo = 'ssh://source/repo'
     self.manifest_version_url = 'fake manifest url'
     self.branch = 'master'
-    self.build_name = 'x86-generic'
+    self.build_name = 'amd64-generic'
     self.incr_type = 'branch'
     self.next_version = 'next_version'
     self.sync_stage = None

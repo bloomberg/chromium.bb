@@ -119,7 +119,7 @@ class RunBuildScriptTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
 class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   """Test RunTestSuite functionality."""
 
-  TEST_BOARD = 'x86-generic'
+  TEST_BOARD = 'amd64-generic'
   BUILD_ROOT = '/fake/root'
 
   def _RunTestSuite(self, test_type):
@@ -714,7 +714,7 @@ class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     kwargs.setdefault('event_file',
                       os.path.join(self._buildroot, 'events',
                                    'build-test-events.json'))
-    commands.Build(buildroot=self._buildroot, board='x86-generic', **kwargs)
+    commands.Build(buildroot=self._buildroot, board='amd64-generic', **kwargs)
     self.assertCommandContains(['./build_packages'])
 
   def testGetFirmwareVersions(self):

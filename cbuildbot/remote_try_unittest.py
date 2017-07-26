@@ -33,7 +33,7 @@ class RemoteTryTests(cros_test_lib.MockTempDirTestCase):
   """Test cases related to remote try jobs."""
 
   PATCHES = ('5555', '6666')
-  BOTS = ('x86-generic-paladin', 'arm-generic-paladin')
+  BOTS = ('amd64-generic-paladin', 'arm-generic-paladin')
 
   def setUp(self):
     # pylint: disable=protected-access

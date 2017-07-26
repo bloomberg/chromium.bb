@@ -152,7 +152,7 @@ class FindConfigsForBoardTest(cros_test_lib.TestCase):
 
   def testExternalCanonicalResolution(self):
     """Test an external canonical config."""
-    self._CheckCanonicalConfig('x86-generic', 'full')
+    self._CheckCanonicalConfig('amd64-generic', 'full')
 
   def testInternalCanonicalResolution(self):
     """Test prefer internal over external when both exist."""

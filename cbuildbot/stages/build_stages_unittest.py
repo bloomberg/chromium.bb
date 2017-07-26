@@ -273,13 +273,13 @@ class BuildPackagesStageTest(AllConfigsTestCase,
 
   def testNoTests(self):
     """Test that self.options.tests = False works."""
-    self.RunTestsWithBotId('x86-generic-paladin', options_tests=False)
+    self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
 
   def testIgnoreExtractDependenciesError(self):
     """Ignore errors when failing to extract dependencies."""
     self.PatchObject(commands, 'ExtractDependencies',
                      side_effect=Exception('unmet dependency'))
-    self.RunTestsWithBotId('x86-generic-paladin')
+    self.RunTestsWithBotId('amd64-generic-paladin')
 
   def testFirmwareVersionsMixedImage(self):
     """Test that firmware versions are extracted correctly."""
@@ -296,13 +296,13 @@ class BuildPackagesStageTest(AllConfigsTestCase,
     self._update_metadata = True
     update = os.path.join(
         self.build_root,
-        'chroot/build/x86-generic/usr/sbin/chromeos-firmwareupdate')
+        'chroot/build/amd64-generic/usr/sbin/chromeos-firmwareupdate')
     osutils.Touch(update, makedirs=True)
 
     self._mock_configurator = _HookRunCommandFirmwareUpdate
-    self.RunTestsWithBotId('x86-generic-paladin', options_tests=False)
+    self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
     board_metadata = (self._run.attrs.metadata.GetDict()['board-metadata']
-                      .get('x86-generic'))
+                      .get('amd64-generic'))
     if board_metadata:
       self.assertIn('main-firmware-version', board_metadata)
       self.assertEqual(board_metadata['main-firmware-version'],
@@ -326,13 +326,13 @@ class BuildPackagesStageTest(AllConfigsTestCase,
     self._update_metadata = True
     update = os.path.join(
         self.build_root,
-        'chroot/build/x86-generic/usr/sbin/chromeos-firmwareupdate')
+        'chroot/build/amd64-generic/usr/sbin/chromeos-firmwareupdate')
     osutils.Touch(update, makedirs=True)
 
     self._mock_configurator = _HookRunCommandFirmwareUpdate
-    self.RunTestsWithBotId('x86-generic-paladin', options_tests=False)
+    self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
     board_metadata = (self._run.attrs.metadata.GetDict()['board-metadata']
-                      .get('x86-generic'))
+                      .get('amd64-generic'))
     if board_metadata:
       self.assertIn('main-firmware-version', board_metadata)
       self.assertEqual(board_metadata['main-firmware-version'],
@@ -397,13 +397,13 @@ EC (RW) version: pyro_v1.1.5909-bd1f0c9
     fdtget = os.path.join(self.build_root, 'chroot/usr/bin/fdtget')
     osutils.Touch(fdtget, makedirs=True)
     self._mock_configurator = _HookRunCommandFdtget
-    self.RunTestsWithBotId('x86-generic-paladin', options_tests=False)
+    self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
     self.assertTrue(self._run.attrs.metadata.GetDict()['unibuild'])
 
   def testGoma(self):
     self.PatchObject(build_stages.BuildPackagesStage,
                      '_ShouldEnableGoma', return_value=True)
-    self._Prepare('x86-generic-paladin')
+    self._Prepare('amd64-generic-paladin')
     # Set dummy dir name to enable goma.
     with osutils.TempDir() as goma_dir, \
          tempfile.NamedTemporaryFile() as temp_goma_client_json:
@@ -429,7 +429,7 @@ EC (RW) version: pyro_v1.1.5909-bd1f0c9
   def testGomaWithMissingCertFile(self):
     self.PatchObject(build_stages.BuildPackagesStage,
                      '_ShouldEnableGoma', return_value=True)
-    self._Prepare('x86-generic-paladin')
+    self._Prepare('amd64-generic-paladin')
     # Set dummy dir name to enable goma.
     with osutils.TempDir() as goma_dir:
       self._run.options.goma_dir = goma_dir
@@ -444,7 +444,7 @@ EC (RW) version: pyro_v1.1.5909-bd1f0c9
     self.PatchObject(build_stages.BuildPackagesStage,
                      '_ShouldEnableGoma', return_value=True)
     self.PatchObject(cros_build_lib, 'HostIsCIBuilder', return_value=True)
-    self._Prepare('x86-generic-paladin')
+    self._Prepare('amd64-generic-paladin')
     # Set dummy dir name to enable goma.
     with osutils.TempDir() as goma_dir:
       self._run.options.goma_dir = goma_dir

@@ -131,7 +131,7 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
     test_config.Add(
         'test1',
         config_lib.BuildConfig(),
-        boards=['x86-generic'],
+        boards=['amd64-generic'],
         manifest_version=True,
         build_type=constants.PFQ_TYPE,
         overlays='public',
@@ -145,7 +145,7 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
     test_config.Add(
         'test2',
         config_lib.BuildConfig(),
-        boards=['x86-generic'],
+        boards=['amd64-generic'],
         manifest_version=False,
         build_type=constants.PFQ_TYPE,
         overlays='public',
@@ -159,7 +159,7 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
     test_config.Add(
         'test3',
         config_lib.BuildConfig(),
-        boards=['x86-generic'],
+        boards=['amd64-generic'],
         manifest_version=True,
         build_type=constants.PFQ_TYPE,
         overlays='both',
@@ -173,7 +173,7 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
     test_config.Add(
         'test4',
         config_lib.BuildConfig(),
-        boards=['x86-generic'],
+        boards=['amd64-generic'],
         manifest_version=True,
         build_type=constants.PFQ_TYPE,
         overlays='both',
@@ -187,7 +187,7 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
     test_config.Add(
         'test5',
         config_lib.BuildConfig(),
-        boards=['x86-generic'],
+        boards=['amd64-generic'],
         manifest_version=True,
         build_type=constants.PFQ_TYPE,
         overlays='public',
@@ -211,7 +211,7 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
 class MasterSlaveSyncCompletionStageTest(
     generic_stages_unittest.AbstractStageTestCase):
   """Tests MasterSlaveSyncCompletionStage with ManifestVersionedSyncStage."""
-  BOT_ID = 'x86-generic-paladin'
+  BOT_ID = 'amd64-generic-paladin'
 
   def setUp(self):
     self.source_repo = 'ssh://source/repo'

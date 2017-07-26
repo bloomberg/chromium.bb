@@ -56,7 +56,7 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
 
   # Subclass should override this to default to a different build config
   # for its tests.
-  BOT_ID = 'x86-generic-paladin'
+  BOT_ID = 'amd64-generic-paladin'
 
   # Subclasses can override this.  If non-None, value is inserted into
   # self._run.attrs.release_tag.
@@ -344,12 +344,12 @@ class BuilderStageTest(AbstractStageTestCase):
     stage = self.ConstructStage()
 
     exp_url = ('https://luci-milo.appspot.com/buildbot/chromiumos/'
-               'x86-generic-paladin/%s' % DEFAULT_BUILD_NUMBER)
+               'amd64-generic-paladin/%s' % DEFAULT_BUILD_NUMBER)
     self.assertEqual(stage.ConstructDashboardURL(), exp_url)
 
     stage_name = 'Archive'
     exp_url = ('https://uberchromegw.corp.google.com/i/chromeos/builders/'
-               'x86-generic-paladin/builds/1234321/steps/Archive/logs/stdio')
+               'amd64-generic-paladin/builds/1234321/steps/Archive/logs/stdio')
     self.assertEqual(stage.ConstructDashboardURL(stage=stage_name), exp_url)
 
   def test_ExtractOverlaysSmoke(self):
@@ -747,8 +747,8 @@ class RunCommandAbstractStageTestCase(
 
   # pylint: disable=abstract-method
 
-  FULL_BOT_ID = 'x86-generic-full'
-  BIN_BOT_ID = 'x86-generic-paladin'
+  FULL_BOT_ID = 'amd64-generic-full'
+  BIN_BOT_ID = 'amd64-generic-paladin'
 
   def _Prepare(self, bot_id, **kwargs):
     super(RunCommandAbstractStageTestCase, self)._Prepare(bot_id, **kwargs)

@@ -106,14 +106,14 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
 
   def testRunStagesDefaultBuild(self):
     """Verify RunStages for standard board builders"""
-    builder_run = self._initConfig('x86-generic-full')
+    builder_run = self._initConfig('amd64-generic-full')
     builder_run.attrs.chrome_version = 'TheChromeVersion'
     simple_builders.SimpleBuilder(builder_run).RunStages()
 
   def testRunStagesDefaultBuildCompileCheck(self):
     """Verify RunStages for standard board builders (compile only)"""
     extra_argv = ['--compilecheck']
-    builder_run = self._initConfig('x86-generic-full', extra_argv=extra_argv)
+    builder_run = self._initConfig('amd64-generic-full', extra_argv=extra_argv)
     builder_run.attrs.chrome_version = 'TheChromeVersion'
     simple_builders.SimpleBuilder(builder_run).RunStages()
 
