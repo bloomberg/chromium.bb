@@ -90,7 +90,7 @@ public class JourneyLogger {
     /**
      * Records that an event occurred.
      *
-     * @param event The event that occured.
+     * @param event The event that occurred.
      */
     public void setEventOccurred(int event) {
         assert event >= 0;

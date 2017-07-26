@@ -21,7 +21,7 @@ public class ImeTestUtils {
         try {
             return runBlockingOnHandler(handler, callable, MAX_WAIT_TIME_MILLIS);
         } catch (Exception e) {
-            throw new RuntimeException("Error occured waiting for callable", e);
+            throw new RuntimeException("Error occurred waiting for callable", e);
         }
     }
 

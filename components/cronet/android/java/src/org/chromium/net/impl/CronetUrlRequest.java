@@ -620,7 +620,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
 
     /**
-     * Called when error has occured, no callbacks will be called afterwards.
+     * Called when error has occurred, no callbacks will be called afterwards.
      *
      * @param errorCode Error code represented by {@code UrlRequestError} that should be mapped
      *                  to one of {@link NetworkException#ERROR_HOSTNAME_NOT_RESOLVED

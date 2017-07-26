@@ -87,7 +87,7 @@ public class ToolbarProgressBarTest {
         // Reset progress bar start count in case anything else triggered it.
         progressBar.resetStartCountForTesting();
 
-        // Ensure no load events have occured yet.
+        // Ensure no load events have occurred yet.
         Assert.assertEquals(0, startHelper.getCallCount());
         Assert.assertEquals(0, finishHelper.getCallCount());
 
@@ -98,7 +98,7 @@ public class ToolbarProgressBarTest {
             finishHelper.waitForCallback(finishHelper.getCallCount(), 1);
         }
 
-        // Exactly one start load and one finish load event should have occured.
+        // Exactly one start load and one finish load event should have occurred.
         Assert.assertEquals(1, startHelper.getCallCount());
         Assert.assertEquals(1, finishHelper.getCallCount());
 

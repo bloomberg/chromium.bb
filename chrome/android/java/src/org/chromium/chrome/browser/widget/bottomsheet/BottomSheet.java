@@ -1052,7 +1052,7 @@ public class BottomSheet
      * Determines if a touch event is inside the toolbar. This assumes the toolbar is the full
      * width of the screen and that the toolbar is at the top of the bottom sheet.
      * @param e The motion event to test.
-     * @return True if the event occured in the toolbar region.
+     * @return True if the event occurred in the toolbar region.
      */
     private boolean isTouchEventInToolbar(MotionEvent e) {
         if (mControlContainer == null) return false;

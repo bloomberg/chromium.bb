@@ -6257,7 +6257,7 @@ I don't think this site should be blocked!
         <message name="IDS_UPGRADE_ERROR" desc="Status label: Error occurred during upgrade">
           Update failed (error: <ph name="ERROR_NUMBER">$1<ex>1</ex></ph>)
         </message>
-        <message name="IDS_UPGRADE_ERROR_DETAILS" desc="Status label optionally shown when an error occured during upgrade. The upgrade daemon may optionally send supplemental error messages; if they're available, we append them after this message in an HTML pre block.">
+        <message name="IDS_UPGRADE_ERROR_DETAILS" desc="Status label optionally shown when an error occurred during upgrade. The upgrade daemon may optionally send supplemental error messages; if they're available, we append them after this message in an HTML pre block.">
           Error details:
         </message>
       </if>
@@ -11317,7 +11317,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           Confirm
         </message>
         <message name="IDS_LOCAL_DISCOVERY_ERROR_OCURRED_MESSAGE" desc="Message for error page">
-          An error has occured. Please check your printer and try again.
+          An error has occurred. Please check your printer and try again.
         </message>
         <message name="IDS_LOCAL_DISCOVERY_NO_DESCRIPTION_PRINTER" desc="Description for printer with an empty description">
           Printer on Google Cloud Print
