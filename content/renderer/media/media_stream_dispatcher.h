@@ -109,7 +109,6 @@ class CONTENT_EXPORT MediaStreamDispatcher
 
   // RenderFrameObserver override.
   void OnDestruct() override;
-  bool Send(IPC::Message* message) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Messages from the browser.

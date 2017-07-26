@@ -18,8 +18,26 @@ enum MediaStreamType {
   NUM_MEDIA_TYPES
 };
 
+// See content/common/media/media_stream_options.h.
+struct TrackControls {
+  bool requested;
+  string stream_source;
+  string device_id;
+};
+
+// See content/common/media/media_stream_options.h.
+struct StreamControls {
+  TrackControls audio;
+  TrackControls video;
+  bool hotword_enabled;
+  bool disable_local_echo;
+};
+
 interface MediaStreamDispatcherHost {
-  // TODO(c.padhi): Migrate the rest of the messages, https://crbug.com/742682.
+  // Requests a new media stream.
+  GenerateStream(int32 render_frame_id, int32 request_id,
+                 StreamControls controls, url.mojom.Origin security_origin,
+                 bool user_gesture);
 
   // Cancels the request for a new media stream.
   CancelGenerateStream(int32 render_frame_id, int32 request_id);
@@ -48,3 +66,7 @@ interface MediaStreamDispatcherHost {
   // Tells the browser process that the stream has been started successfully.
   StreamStarted(string label);
 };
+
+// TODO(c.padhi): Migrate the browser-to-renderer messages,
+// see https://crbug.com/742682.
+interface MediaStreamDispatcher{};

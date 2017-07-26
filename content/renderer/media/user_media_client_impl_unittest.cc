@@ -120,6 +120,9 @@ class MockMojoMediaStreamDispatcherHost
  public:
   MockMojoMediaStreamDispatcherHost() {}
 
+  MOCK_METHOD5(
+      GenerateStream,
+      void(int32_t, int32_t, const StreamControls&, const url::Origin&, bool));
   MOCK_METHOD2(CancelGenerateStream, void(int32_t, int32_t));
   MOCK_METHOD2(StopStreamDevice, void(int32_t, const std::string&));
   MOCK_METHOD5(OpenDevice,

@@ -68,4 +68,35 @@ bool EnumTraits<content::mojom::MediaStreamType, content::MediaStreamType>::
   return false;
 }
 
+// static
+bool StructTraits<
+    content::mojom::TrackControlsDataView,
+    content::TrackControls>::Read(content::mojom::TrackControlsDataView input,
+                                  content::TrackControls* out) {
+  out->requested = input.requested();
+  if (!input.ReadStreamSource(&out->stream_source))
+    return false;
+  if (!input.ReadDeviceId(&out->device_id))
+    return false;
+  return true;
+}
+
+// static
+bool StructTraits<
+    content::mojom::StreamControlsDataView,
+    content::StreamControls>::Read(content::mojom::StreamControlsDataView input,
+                                   content::StreamControls* out) {
+  if (!input.ReadAudio(&out->audio))
+    return false;
+  if (!input.ReadVideo(&out->video))
+    return false;
+#if DCHECK_IS_ON()
+  if (input.hotword_enabled() || input.disable_local_echo())
+    DCHECK(out->audio.requested);
+#endif
+  out->hotword_enabled = input.hotword_enabled();
+  out->disable_local_echo = input.disable_local_echo();
+  return true;
+}
+
 }  // namespace mojo
