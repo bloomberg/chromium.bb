@@ -151,8 +151,7 @@ void NetworkResourcesData::ResourceData::ClearWeakMembers(Visitor* visitor) {
     // We could be evicting resource being loaded, save the loaded part, the
     // rest will be appended.
     network_resources_data_->MaybeAddResourceData(
-        RequestId(), cached_resource_->ResourceBuffer()->Data(),
-        cached_resource_->ResourceBuffer()->size());
+        RequestId(), cached_resource_->ResourceBuffer());
   }
   cached_resource_ = nullptr;
 }
@@ -272,21 +271,48 @@ void NetworkResourcesData::SetResourceContent(const String& request_id,
   }
 }
 
-void NetworkResourcesData::MaybeAddResourceData(const String& request_id,
-                                                const char* data,
-                                                size_t data_length) {
+NetworkResourcesData::ResourceData*
+NetworkResourcesData::PrepareToAddResourceData(const String& request_id,
+                                               size_t data_length) {
   ResourceData* resource_data = ResourceDataForRequestId(request_id);
   if (!resource_data)
-    return;
+    return nullptr;
+
   if (resource_data->DataLength() + data_length >
       maximum_single_resource_content_size_)
     content_size_ -= resource_data->EvictContent();
   if (resource_data->IsContentEvicted())
-    return;
-  if (EnsureFreeSpace(data_length) && !resource_data->IsContentEvicted()) {
-    request_ids_deque_.push_back(request_id);
+    return nullptr;
+  if (!EnsureFreeSpace(data_length) || resource_data->IsContentEvicted())
+    return nullptr;
+
+  request_ids_deque_.push_back(request_id);
+  content_size_ += data_length;
+
+  return resource_data;
+}
+
+void NetworkResourcesData::MaybeAddResourceData(const String& request_id,
+                                                const char* data,
+                                                size_t data_length) {
+  if (ResourceData* resource_data =
+          PrepareToAddResourceData(request_id, data_length)) {
     resource_data->AppendData(data, data_length);
-    content_size_ += data_length;
+  }
+}
+
+void NetworkResourcesData::MaybeAddResourceData(
+    const String& request_id,
+    RefPtr<const SharedBuffer> data) {
+  DCHECK(data);
+  if (ResourceData* resource_data =
+          PrepareToAddResourceData(request_id, data->size())) {
+    data->ForEachSegment([&resource_data](const char* segment,
+                                          size_t segment_size,
+                                          size_t segment_offset) {
+      resource_data->AppendData(segment, segment_size);
+      return true;
+    });
   }
 }
 
