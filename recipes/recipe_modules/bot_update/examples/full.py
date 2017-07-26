@@ -51,7 +51,10 @@ def RunSteps(api):
     api.bot_update.apply_gerrit_ref(
         root='/tmp/test/root',
         gerrit_no_reset=gerrit_no_reset,
-        gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref)
+        gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref,
+        gerrit_repo=api.properties.get('gerrit_custom_repo'),
+        gerrit_ref=api.properties.get('gerrit_custom_ref'),
+    )
   else:
     bot_update_step = api.bot_update.ensure_checkout(
         no_shallow=no_shallow,
@@ -154,6 +157,14 @@ def GenTests(api):
       repository='chromium',
       gerrit_no_rebase_patch_ref=True,
       gerrit_no_reset=1,
+      test_apply_gerrit_ref=True,
+  )
+  yield api.test('apply_gerrit_ref_custom') + api.properties(
+      repository='chromium',
+      gerrit_no_rebase_patch_ref=True,
+      gerrit_no_reset=1,
+      gerrit_custom_repo='https://custom/repo',
+      gerrit_custom_ref='refs/changes/custom/1234567/1',
       test_apply_gerrit_ref=True,
   )
   yield api.test('tryjob_v8') + api.properties(

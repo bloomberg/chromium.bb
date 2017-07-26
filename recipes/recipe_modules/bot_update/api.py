@@ -47,12 +47,13 @@ class BotUpdateApi(recipe_api.RecipeApi):
   # DO NOT USE.
   # TODO(tandrii): refactor this into tryserver.maybe_apply_patch
   def apply_gerrit_ref(self, root, gerrit_no_reset=False,
-                       gerrit_no_rebase_patch_ref=False, **kwargs):
+                       gerrit_no_rebase_patch_ref=False,
+                       gerrit_repo=None, gerrit_ref=None, **kwargs):
     apply_gerrit_path = self.resource('apply_gerrit.py')
     kwargs.setdefault('infra_step', True)
     cmd = [
-        '--gerrit_repo', self._repository,
-        '--gerrit_ref', self._gerrit_ref or '',
+        '--gerrit_repo', gerrit_repo or self._repository,
+        '--gerrit_ref', gerrit_ref or self._gerrit_ref or '',
         '--root', str(root),
     ]
     if gerrit_no_reset:
