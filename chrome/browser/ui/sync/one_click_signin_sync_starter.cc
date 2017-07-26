@@ -123,6 +123,30 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
                  weak_pointer_factory_.GetWeakPtr(), profile_mode));
 }
 
+OneClickSigninSyncStarter::OneClickSigninSyncStarter(
+    Profile* profile,
+    Browser* browser,
+    const std::string& gaia_id,
+    const std::string& email,
+    content::WebContents* web_contents,
+    Callback callback)
+    : OneClickSigninSyncStarter(
+          profile,
+          browser,
+          gaia_id,
+          email,
+          std::string() /* password */,
+          std::string() /* refresh_token */,
+          OneClickSigninSyncStarter::CURRENT_PROFILE,
+          OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST,
+          web_contents,
+          OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN,
+          GURL() /* current_url */,
+          GURL() /* continue_url */,
+          callback) {
+  DCHECK(signin::IsAccountConsistencyDiceEnabled());
+}
+
 void OneClickSigninSyncStarter::OnBrowserRemoved(Browser* browser) {
   if (browser == browser_)
     browser_ = nullptr;
