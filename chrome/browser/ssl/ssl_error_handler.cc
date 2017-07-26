@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
@@ -59,8 +60,13 @@ const base::Feature kCaptivePortalCertificateList{
 const base::Feature kSSLCommonNameMismatchHandling{
     "SSLCommonNameMismatchHandling", base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if defined(OS_WIN)
+const base::Feature kSuperfishInterstitial{"SuperfishInterstitial",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+#else
 const base::Feature kSuperfishInterstitial{"SuperfishInterstitial",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // Default delay in milliseconds before displaying the SSL interstitial.
 // This can be changed in tests.
