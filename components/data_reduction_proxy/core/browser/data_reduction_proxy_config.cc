@@ -1081,7 +1081,8 @@ bool DataReductionProxyConfig::ShouldAcceptServerPreview(
   // For the transition to server-driven previews decisions, we will
   // use existing Lo-Fi flags for disabling and cellular-only mode.
   // TODO(dougarnett): Refactor flag names as part of bug 725645.
-  if (params::IsLoFiDisabledViaFlags() || lofi_off()) {
+  if (params::IsLoFiDisabledViaFlags() ||
+      (!params::IsBlackListEnabledForServerPreviews() && lofi_off())) {
     UMA_HISTOGRAM_ENUMERATION(
         "DataReductionProxy.Protocol.NotAcceptingTransform",
         NOT_ACCEPTING_TRANSFORM_DISABLED,
