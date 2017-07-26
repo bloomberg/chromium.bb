@@ -12,6 +12,7 @@ component("resource_coordinator_cpp") {
     "memory_instrumentation/coordinator.h",
     "memory_instrumentation/memory_instrumentation.cc",
     "memory_instrumentation/memory_instrumentation.h",
+    "memory_instrumentation/os_metrics.cc",
     "memory_instrumentation/os_metrics.h",
     "memory_instrumentation/os_metrics_linux.cc",
     "memory_instrumentation/os_metrics_mac.cc",

@@ -152,7 +152,8 @@ TEST(OSMetricsTest, ParseProcSmaps) {
   base::ScopedFILE empty_file(OpenFile(base::FilePath("/dev/null"), "r"));
   ASSERT_TRUE(empty_file.get());
   OSMetrics::SetProcSmapsForTesting(empty_file.get());
-  OSMetrics::FillProcessMemoryMaps(base::kNullProcessId, &pmd_invalid);
+  OSMetrics::FillProcessMemoryMapsDeprecated(base::kNullProcessId,
+                                             &pmd_invalid);
   ASSERT_FALSE(pmd_invalid.has_process_mmaps());
 
   // Parse the 1st smaps file.
@@ -161,7 +162,7 @@ TEST(OSMetricsTest, ParseProcSmaps) {
   base::ScopedFILE temp_file1;
   CreateTempFileWithContents(kTestSmaps1, &temp_file1);
   OSMetrics::SetProcSmapsForTesting(temp_file1.get());
-  OSMetrics::FillProcessMemoryMaps(base::kNullProcessId, &pmd_1);
+  OSMetrics::FillProcessMemoryMapsDeprecated(base::kNullProcessId, &pmd_1);
   ASSERT_TRUE(pmd_1.has_process_mmaps());
   const auto& regions_1 = pmd_1.process_mmaps()->vm_regions();
   ASSERT_EQ(2UL, regions_1.size());
@@ -194,7 +195,7 @@ TEST(OSMetricsTest, ParseProcSmaps) {
   base::ScopedFILE temp_file2;
   CreateTempFileWithContents(kTestSmaps2, &temp_file2);
   OSMetrics::SetProcSmapsForTesting(temp_file2.get());
-  OSMetrics::FillProcessMemoryMaps(base::kNullProcessId, &pmd_2);
+  OSMetrics::FillProcessMemoryMapsDeprecated(base::kNullProcessId, &pmd_2);
   ASSERT_TRUE(pmd_2.has_process_mmaps());
   const auto& regions_2 = pmd_2.process_mmaps()->vm_regions();
   ASSERT_EQ(1UL, regions_2.size());
@@ -219,7 +220,8 @@ TEST(OSMetricsTest, TestWinModuleReading) {
 
   base::trace_event::MemoryDumpArgs args;
   base::trace_event::ProcessMemoryDump dump(nullptr, args);
-  ASSERT_TRUE(OSMetrics::FillProcessMemoryMaps(base::kNullProcessId, &dump));
+  ASSERT_TRUE(
+      OSMetrics::FillProcessMemoryMapsDeprecated(base::kNullProcessId, &dump));
   ASSERT_TRUE(dump.has_process_mmaps());
 
   wchar_t module_name[MAX_PATH];
@@ -264,7 +266,8 @@ TEST(OSMetricsTest, TestMachOReading) {
   using VMRegion = base::trace_event::ProcessMemoryMaps::VMRegion;
   base::trace_event::MemoryDumpArgs args;
   base::trace_event::ProcessMemoryDump dump(nullptr, args);
-  ASSERT_TRUE(OSMetrics::FillProcessMemoryMaps(base::kNullProcessId, &dump));
+  ASSERT_TRUE(
+      OSMetrics::FillProcessMemoryMapsDeprecated(base::kNullProcessId, &dump));
   ASSERT_TRUE(dump.has_process_mmaps());
   uint32_t size = 100;
   char full_path[size];

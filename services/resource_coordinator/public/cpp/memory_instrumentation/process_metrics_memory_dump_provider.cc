@@ -131,7 +131,7 @@ bool ProcessMetricsMemoryDumpProvider::OnMemoryDump(
 bool ProcessMetricsMemoryDumpProvider::DumpProcessMemoryMaps(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  return OSMetrics::FillProcessMemoryMaps(process_, pmd);
+  return OSMetrics::FillProcessMemoryMapsDeprecated(process_, pmd);
 }
 
 bool ProcessMetricsMemoryDumpProvider::DumpProcessTotals(
