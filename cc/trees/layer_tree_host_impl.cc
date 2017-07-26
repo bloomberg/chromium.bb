@@ -4161,7 +4161,6 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   data.opaque = bitmap.GetOpaque();
   ui_resource_map_[uid] = data;
 
-  resource_provider_->GenerateSyncTokenForResource(id);
   MarkUIResourceNotEvicted(uid);
 }
 
