@@ -44,6 +44,9 @@ bool g_started = false;
 // The main message loop.
 base::MessageLoop* g_message_loop = nullptr;
 
+// The active RunLoop.
+base::RunLoop* g_active_run_loop = nullptr;
+
 // Lets us hide the PIN that a user types.
 void SetEcho(bool echo) {
 #if defined(OS_WIN)
@@ -109,7 +112,7 @@ void OnDone(HostStarter::Result result) {
       break;
   }
 
-  g_message_loop->QuitNow();
+  g_active_run_loop->Quit();
 }
 
 std::string GetAuthorizationCodeUri() {
@@ -237,9 +240,11 @@ int StartHostMain(int argc, char** argv) {
 
   // Run the message loop until the StartHost completion callback.
   base::RunLoop run_loop;
+  g_active_run_loop = &run_loop;
   run_loop.Run();
 
   g_message_loop = nullptr;
+  g_active_run_loop = nullptr;
 
   // Destroy the HostStarter and URLRequestContextGetter before stopping the
   // IO thread.
