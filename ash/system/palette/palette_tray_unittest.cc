@@ -102,4 +102,27 @@ TEST_F(PaletteTrayTest, PaletteTrayWorkflow) {
   EXPECT_FALSE(palette_tray_->is_active());
 }
 
+// Verify that the palette tray button and bubble are as expected when modes
+// that can be deactivated without pressing the palette tray button (such as
+// capture region) are deactivated.
+TEST_F(PaletteTrayTest, ModeToolDeactivatedAutomatically) {
+  // Open the palette tray with a tap.
+  PerformTap();
+  ASSERT_TRUE(palette_tray_->is_active());
+  ASSERT_TRUE(test_api_->GetTrayBubbleWrapper());
+
+  // Activate and deactivate the capture region tool.
+  test_api_->GetPaletteToolManager()->ActivateTool(
+      PaletteToolId::CAPTURE_REGION);
+  ASSERT_TRUE(test_api_->GetPaletteToolManager()->IsToolActive(
+      PaletteToolId::CAPTURE_REGION));
+  test_api_->GetPaletteToolManager()->DeactivateTool(
+      PaletteToolId::CAPTURE_REGION);
+
+  // Verify the bubble is hidden and the button is inactive after deactivating
+  // the capture region tool.
+  EXPECT_FALSE(test_api_->GetTrayBubbleWrapper());
+  EXPECT_FALSE(palette_tray_->is_active());
+}
+
 }  // namespace ash

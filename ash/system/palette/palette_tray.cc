@@ -308,6 +308,16 @@ void PaletteTray::RecordPaletteModeCancellation(PaletteModeCancelType type) {
 
 void PaletteTray::OnActiveToolChanged() {
   ++num_actions_in_bubble_;
+
+  // If there is no tool currently active and the palette tray button was active
+  // (eg. a mode was deactivated without pressing the palette tray button), make
+  // the palette tray button inactive.
+  if (palette_tool_manager_->GetActiveTool(PaletteGroup::MODE) ==
+          PaletteToolId::NONE &&
+      is_active()) {
+    SetIsActive(false);
+  }
+
   UpdateTrayIcon();
 }
 
