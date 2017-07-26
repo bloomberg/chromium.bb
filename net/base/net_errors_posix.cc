@@ -108,6 +108,8 @@ Error MapSystemError(logging::SystemErrorCode os_error) {
       return ERR_INSUFFICIENT_RESOURCES;
     case EMFILE:  // Too many open files.
       return ERR_INSUFFICIENT_RESOURCES;
+    case EIO:  // Generic IO error.
+      return ERR_FAILED;
 
     case 0:
       return OK;
