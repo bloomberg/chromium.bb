@@ -142,9 +142,9 @@ Polymer({
    * Deselect each item in |selectedItems|.
    */
   unselectAllItems: function() {
-    this.selectedItems.forEach(function(index) {
+    this.selectedItems.forEach((index) => {
       this.changeSelection_(index, false);
-    }.bind(this));
+    });
 
     assert(this.selectedItems.size == 0);
   },
@@ -197,17 +197,15 @@ Polymer({
    * @private
    */
   deleteSelected_: function() {
-    var toBeRemoved =
-        Array.from(this.selectedItems.values()).map(function(index) {
-          return this.get('historyData_.' + index);
-        }.bind(this));
+    var toBeRemoved = Array.from(this.selectedItems.values())
+                          .map((index) => this.get('historyData_.' + index));
 
     md_history.BrowserService.getInstance()
         .deleteItems(toBeRemoved)
-        .then(function(items) {
+        .then((items) => {
           this.removeItemsByIndex_(Array.from(this.selectedItems));
           this.fire('unselect-all');
-        }.bind(this));
+        });
   },
 
   /**
@@ -223,7 +221,7 @@ Polymer({
       // Sort in reverse numerical order.
       return b - a;
     });
-    indices.forEach(function(index) {
+    indices.forEach((index) => {
       var item = this.historyData_.splice(index, 1);
       splices.push({
         index: index,
@@ -232,7 +230,7 @@ Polymer({
         object: this.historyData_,
         type: 'splice'
       });
-    }.bind(this));
+    });
     this.notifySplices('historyData_', splices);
   },
 
@@ -337,7 +335,7 @@ Polymer({
     browserService.recordAction('EntryMenuRemoveFromHistory');
     var menu = assert(this.$.sharedMenu.getIfExists());
     var itemData = this.actionMenuModel_;
-    browserService.deleteItems([itemData.item]).then(function(items) {
+    browserService.deleteItems([itemData.item]).then((items) => {
       // This unselect-all resets the toolbar when deleting a selected item
       // and clears selection state which can be invalid if items move
       // around during deletion.
@@ -359,7 +357,7 @@ Polymer({
             'HistoryPage.RemoveEntryPositionSubset', index,
             UMA_MAX_SUBSET_BUCKET_VALUE);
       }
-    }.bind(this));
+    });
     this.closeMenu_();
   },
 
@@ -385,9 +383,9 @@ Polymer({
 
     var selected = !this.selectedItems.has(index);
 
-    indices.forEach(function(index) {
+    indices.forEach((index) => {
       this.changeSelection_(index, selected);
-    }.bind(this));
+    });
 
     this.lastSelectedIndex = index;
   },

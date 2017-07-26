@@ -299,9 +299,9 @@ Polymer({
   historyViewChanged_: function() {
     // This allows the synced-device-manager to render so that it can be set as
     // the scroll target.
-    requestAnimationFrame(function() {
+    requestAnimationFrame(() => {
       this._scrollHandler();
-    }.bind(this));
+    });
     this.recordHistoryPageView_();
   },
 
