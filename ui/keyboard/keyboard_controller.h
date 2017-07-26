@@ -31,8 +31,9 @@ class CallbackAnimationObserver;
 class KeyboardControllerObserver;
 class KeyboardUI;
 
-// Animation distance.
-const int kAnimationDistance = 30;
+// Relative distance from the parent window, from which show animation starts
+// or hide animation finishes.
+constexpr int kAnimationDistance = 30;
 
 enum KeyboardMode {
   // Invalid mode.
@@ -102,10 +103,6 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // loaded yet.
   void Reload();
 
-  // Hides virtual keyboard and notifies observer bounds change.
-  // This method immediately starts hiding animation.
-  void HideKeyboard(HideReason reason);
-
   // Notifies the observer for contents bounds changed.
   void NotifyContentsBoundsChanging(const gfx::Rect& new_bounds);
 
@@ -123,6 +120,11 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   KeyboardMode keyboard_mode() const { return keyboard_mode_; }
 
   void SetKeyboardMode(KeyboardMode mode);
+
+  // Immediately starts hiding animation of virtual keyboard and notifies
+  // observers bounds change. This method forcibly sets keyboard_locked_
+  // false while closing the keyboard.
+  void HideKeyboard(HideReason reason);
 
   // Force the keyboard to show up if not showing and lock the keyboard if
   // |lock| is true.
@@ -225,7 +227,6 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // uses container_'s animator.
   std::unique_ptr<CallbackAnimationObserver> animation_observer_;
 
-  bool keyboard_visible_;
   bool show_on_resize_;
   // If true, the keyboard is always visible even if no window has input focus.
   bool keyboard_locked_;
