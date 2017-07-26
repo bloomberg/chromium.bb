@@ -176,8 +176,8 @@ PerformanceEntry* UserTiming::Measure(const String& measure_name,
   // navigation, whereas trace events accept double seconds based off of
   // CurrentTime::monotonicallyIncreasingTime().
   double start_time_monotonic =
-      performance_->TimeOrigin() + start_time / 1000.0;
-  double end_time_monotonic = performance_->TimeOrigin() + end_time / 1000.0;
+      performance_->GetTimeOrigin() + start_time / 1000.0;
+  double end_time_monotonic = performance_->GetTimeOrigin() + end_time / 1000.0;
 
   TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
       "blink.user_timing", measure_name.Utf8().data(),

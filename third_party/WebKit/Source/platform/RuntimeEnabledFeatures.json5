@@ -825,6 +825,10 @@
       status: "stable",
     },
     {
+      name: "PerformanceTimeOrigin",
+      status: "experimental",
+    },
+    {
       name: "PermissionDelegation",
       status: "test",
     },

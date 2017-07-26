@@ -149,7 +149,7 @@ PerformanceNavigationTiming* Performance::CreateNavigationTimingInstance() {
   PerformanceServerTimingVector serverTiming =
       PerformanceServerTiming::ParseServerTiming(
           *info, PerformanceServerTiming::ShouldAllowTimingDetails::Yes);
-  return new PerformanceNavigationTiming(GetFrame(), info, TimeOrigin(),
+  return new PerformanceNavigationTiming(GetFrame(), info, GetTimeOrigin(),
                                          serverTiming);
 }
 
