@@ -15,7 +15,6 @@ class GURL;
 class PrefService;
 
 namespace base {
-class SequencedTaskRunner;
 class Version;
 }
 
@@ -115,10 +114,6 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
 
   // True if signing of update checks is enabled.
   virtual bool EnabledCupSigning() const = 0;
-
-  // Gets a task runner to a blocking pool of threads suitable for worker jobs.
-  virtual scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
-      const = 0;
 
   // Returns a PrefService that the update_client can use to store persistent
   // update information. The PrefService must outlive the entire update_client,

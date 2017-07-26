@@ -23,8 +23,6 @@ source_set("updater") {
     "request_queue_impl.h",
     "safe_manifest_parser.cc",
     "safe_manifest_parser.h",
-    "update_client_config.cc",
-    "update_client_config.h",
     "update_data_provider.cc",
     "update_data_provider.h",
     "update_install_shim.cc",

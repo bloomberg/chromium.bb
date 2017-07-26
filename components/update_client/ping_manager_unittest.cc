@@ -50,9 +50,8 @@ class PingManagerTest : public testing::Test {
 PingManagerTest::PingManagerTest() {}
 
 void PingManagerTest::SetUp() {
-  config_ = new TestConfigurator(base::ThreadTaskRunnerHandle::Get(),
-                                 base::ThreadTaskRunnerHandle::Get());
-  ping_manager_.reset(new PingManager(config_));
+  config_ = base::MakeRefCounted<TestConfigurator>();
+  ping_manager_ = base::MakeUnique<PingManager>(config_);
 }
 
 void PingManagerTest::TearDown() {
