@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "media/cdm/api/content_decryption_module.h"
 #include "media/cdm/supported_cdm_versions.h"
@@ -91,7 +92,8 @@ class CdmWrapper {
   // resolve or reject the promise. If false, the caller will reject the
   // promise.
   virtual bool GetStatusForPolicy(uint32_t promise_id,
-                                  cdm::HdcpVersion min_hdcp_version) = 0;
+                                  cdm::HdcpVersion min_hdcp_version)
+      WARN_UNUSED_RESULT = 0;
 
   virtual void CreateSessionAndGenerateRequest(uint32_t promise_id,
                                                cdm::SessionType session_type,

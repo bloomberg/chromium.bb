@@ -502,7 +502,12 @@ void CdmAdapter::GetStatusForPolicy(
     std::unique_ptr<KeyStatusCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
-  cdm_->GetStatusForPolicy(promise_id, ToCdmHdcpVersion(min_hdcp_version));
+  if (!cdm_->GetStatusForPolicy(promise_id,
+                                ToCdmHdcpVersion(min_hdcp_version))) {
+    cdm_promise_adapter_.RejectPromise(promise_id,
+                                       CdmPromise::NOT_SUPPORTED_ERROR, 0,
+                                       "GetStatusForPolicy not supported.");
+  }
 }
 
 void CdmAdapter::CreateSessionAndGenerateRequest(
