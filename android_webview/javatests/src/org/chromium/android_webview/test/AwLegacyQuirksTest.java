@@ -12,6 +12,7 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.display.DisplayAndroid;
 
@@ -22,7 +23,8 @@ import java.util.concurrent.Callable;
  * Tests for legacy quirks (compatibility with WebView Classic).
  */
 public class AwLegacyQuirksTest extends AwTestBase {
-
+    // WebView layout width tests are flaky: http://crbug.com/746264
+    @RetryOnFailure
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testTargetDensityDpi() throws Throwable {
@@ -60,6 +62,8 @@ public class AwLegacyQuirksTest extends AwTestBase {
         assertEquals(displayWidth * (100f / deviceDpi), actualWidth, 10f);
     }
 
+    // WebView layout width tests are flaky: http://crbug.com/746264
+    @RetryOnFailure
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testWideViewportInitialScaleDoesNotExpandFixedLayoutWidth() throws Throwable {
@@ -87,6 +91,8 @@ public class AwLegacyQuirksTest extends AwTestBase {
         assertEquals(1.0f, getScaleOnUiThread(awContents));
     }
 
+    // WebView layout width tests are flaky: http://crbug.com/746264
+    @RetryOnFailure
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testZeroValuesQuirk() throws Throwable {

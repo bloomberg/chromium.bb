@@ -2604,6 +2604,8 @@ public class AwSettingsTest extends AwTestBase {
         assertEquals(viewportTagSpecifiedWidth, getTitleOnUiThread(awContents));
     }
 
+    // WebView layout width tests are flaky: http://crbug.com/746264
+    @RetryOnFailure
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
     public void testUseWideViewportLayoutWidth() throws Throwable {
@@ -2613,6 +2615,8 @@ public class AwSettingsTest extends AwTestBase {
         useWideViewportLayoutWidthTest(testContainerView, contentClient.getOnPageFinishedHelper());
     }
 
+    // WebView layout width tests are flaky: http://crbug.com/746264
+    @RetryOnFailure
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
     public void testUseWideViewportLayoutWidthNoQuirks() throws Throwable {
