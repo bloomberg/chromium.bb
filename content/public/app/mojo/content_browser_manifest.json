@@ -113,6 +113,7 @@
           "blink::mojom::PermissionService",
           "blink::mojom::PresentationService",
           "blink::mojom::SensitiveInputVisibilityService",
+          "blink::mojom::TextSuggestionHost",
           "blink::mojom::WebBluetoothService",
           "blink::mojom::WebSocket",
 

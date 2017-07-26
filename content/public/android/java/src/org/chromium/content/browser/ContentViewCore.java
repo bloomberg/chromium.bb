@@ -48,6 +48,7 @@ import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.input.SelectPopupDialog;
 import org.chromium.content.browser.input.SelectPopupDropdown;
 import org.chromium.content.browser.input.SelectPopupItem;
+import org.chromium.content.browser.input.TextSuggestionHost;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
@@ -218,6 +219,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     // Only valid when focused on a text / password field.
     private ImeAdapter mImeAdapter;
 
+    private TextSuggestionHost mTextSuggestionHost;
+
     // Size of the viewport in physical pixels as set from onSizeChanged.
     private int mViewportWidthPix;
     private int mViewportHeightPix;
@@ -369,6 +372,19 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         mSelectionPopupController = actionMode;
     }
 
+    /**
+     * @return The TextSuggestionHost that handles displaying the text suggestion menu.
+     */
+    @VisibleForTesting
+    public TextSuggestionHost getTextSuggestionHostForTesting() {
+        return mTextSuggestionHost;
+    }
+
+    @VisibleForTesting
+    public void setTextSuggestionHostForTesting(TextSuggestionHost textSuggestionHost) {
+        mTextSuggestionHost = textSuggestionHost;
+    }
+
     @Override
     public void addWindowAndroidChangedObserver(WindowAndroidChangedObserver observer) {
         mWindowAndroidChangedObservers.addObserver(observer);
@@ -459,6 +475,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         initPopupZoomer(mContext);
         mImeAdapter = new ImeAdapter(
                 mWebContents, mContainerView, new InputMethodManagerWrapper(mContext));
+        mTextSuggestionHost = new TextSuggestionHost(
+                mContext, mWebContents, mContainerView, this, mRenderCoordinates);
         mImeAdapter.addEventObserver(this);
 
         mSelectionPopupController = new SelectionPopupController(
@@ -990,6 +1008,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         destroyPastePopup();
         hideSelectPopupWithCancelMessage();
         mPopupZoomer.hide(false);
+        mTextSuggestionHost.hidePopups();
         if (mWebContents != null) mWebContents.dismissTextHandles();
     }
 
@@ -999,6 +1018,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         destroyPastePopup();
         hideSelectPopupWithCancelMessage();
         mPopupZoomer.hide(false);
+        mTextSuggestionHost.hidePopups();
     }
 
     private void restoreSelectionPopupsIfNecessary() {
@@ -2131,6 +2151,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             hidePopupsAndPreserveSelection();
             showSelectActionMode();
         }
+        mTextSuggestionHost.hidePopups();
 
         int rotationDegrees = 0;
         switch (rotation) {

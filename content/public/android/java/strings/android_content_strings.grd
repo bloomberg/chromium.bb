@@ -102,6 +102,12 @@
       <message name="IDS_ACTIONBAR_TEXTSELECTION_TITLE" desc="Title of the text selection contextual action bar on tablets. [CHAR-LIMIT=30]">
         Text selection
       </message>
+      <message name="IDS_ADD_TO_DICTIONARY" desc="Button that adds the currently highlighted word to the spellcheck dictionary">
+        Add to dictionary
+      </message>
+      <message name="IDS_DELETE_SUGGESTION_TEXT" desc="Button that deletes the currently highlighted word(s) from a spellcheck or voice correction menu">
+        Delete
+      </message>
       <message name="IDS_MEDIA_PLAYER_ERROR_TITLE" desc="Title of dialog explaining that a video cannot be played due to an error [CHAR-LIMIT=32]">
         Cannot play video
       </message>

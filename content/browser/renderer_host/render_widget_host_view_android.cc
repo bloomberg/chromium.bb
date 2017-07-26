@@ -43,6 +43,7 @@
 #include "content/browser/android/overscroll_controller_android.h"
 #include "content/browser/android/selection_popup_controller.h"
 #include "content/browser/android/synchronous_compositor_host.h"
+#include "content/browser/android/text_suggestion_host_android.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
@@ -455,6 +456,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       content_view_core_(nullptr),
       ime_adapter_android_(nullptr),
       selection_popup_controller_(nullptr),
+      text_suggestion_host_(nullptr),
       background_color_(SK_ColorWHITE),
       cached_background_color_(SK_ColorWHITE),
       view_(this),
@@ -964,6 +966,11 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
     return false;
 
   ComputeEventLatencyOSTouchHistograms(event);
+
+  // Receiving any other touch event before the double-tap timeout expires
+  // cancels opening the spellcheck menu.
+  if (text_suggestion_host_)
+    text_suggestion_host_->StopSpellCheckMenuTimer();
 
   // If a browser-based widget consumes the touch event, it's critical that
   // touch event interception be disabled. This avoids issues with
@@ -1825,6 +1832,11 @@ void RenderWidgetHostViewAndroid::SendKeyEvent(
     target_host = host_->delegate()->GetFocusedRenderWidgetHost(host_);
   if (!target_host)
     return;
+
+  // Receiving a key event before the double-tap timeout expires cancels opening
+  // the spellcheck menu. If the suggestion menu is open, we close the menu.
+  if (text_suggestion_host_)
+    text_suggestion_host_->OnKeyEvent();
 
   ui::LatencyInfo latency_info;
   if (event.GetType() == blink::WebInputEvent::kRawKeyDown ||
