@@ -630,6 +630,9 @@ void SchedulerStateMachine::WillPerformImplSideInvalidationInternal() {
   needs_impl_side_invalidation_ = false;
   has_pending_tree_ = true;
   did_perform_impl_side_invalidation_ = true;
+  pending_tree_needs_first_draw_on_activation_ =
+      next_invalidation_needs_first_draw_on_activation_;
+  next_invalidation_needs_first_draw_on_activation_ = false;
   // TODO(eseckler): Track impl-side invalidations for pending/active tree and
   // CompositorFrame freshness computation.
 }
@@ -696,6 +699,7 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
 
     // We have a new pending tree.
     has_pending_tree_ = true;
+    pending_tree_needs_first_draw_on_activation_ = true;
     pending_tree_is_ready_for_activation_ = false;
     // Wait for the new pending tree to become ready to draw, which may happen
     // before or after activation.
@@ -728,7 +732,8 @@ void SchedulerStateMachine::WillActivate() {
 
   has_pending_tree_ = false;
   pending_tree_is_ready_for_activation_ = false;
-  active_tree_needs_first_draw_ = true;
+  active_tree_needs_first_draw_ = pending_tree_needs_first_draw_on_activation_;
+  pending_tree_needs_first_draw_on_activation_ = false;
   needs_redraw_ = true;
 
   previous_pending_tree_was_impl_side_ = current_pending_tree_is_impl_side_;
@@ -802,8 +807,11 @@ void SchedulerStateMachine::DidDraw(DrawResult draw_result) {
   DidDrawInternal(draw_result);
 }
 
-void SchedulerStateMachine::SetNeedsImplSideInvalidation() {
+void SchedulerStateMachine::SetNeedsImplSideInvalidation(
+    bool needs_first_draw_on_activation) {
   needs_impl_side_invalidation_ = true;
+  next_invalidation_needs_first_draw_on_activation_ |=
+      needs_first_draw_on_activation;
 }
 
 void SchedulerStateMachine::SetMainThreadWantsBeginMainFrameNotExpectedMessages(

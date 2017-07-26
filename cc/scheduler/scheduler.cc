@@ -59,8 +59,9 @@ void Scheduler::Stop() {
   stopped_ = true;
 }
 
-void Scheduler::SetNeedsImplSideInvalidation() {
-  state_machine_.SetNeedsImplSideInvalidation();
+void Scheduler::SetNeedsImplSideInvalidation(
+    bool needs_first_draw_on_activation) {
+  state_machine_.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   ProcessScheduledActions();
 }
 

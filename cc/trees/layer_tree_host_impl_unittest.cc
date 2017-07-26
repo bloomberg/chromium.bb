@@ -190,7 +190,7 @@ class LayerTreeHostImplTest : public testing::Test,
     host_impl_->DidDrawAllLayers(*frame);
     last_on_draw_frame_ = std::move(frame);
   }
-  void NeedsImplSideInvalidation() override {
+  void NeedsImplSideInvalidation(bool needs_first_draw_on_activation) override {
     did_request_impl_side_invalidation_ = true;
   }
   void NotifyImageDecodeRequestFinished() override {}

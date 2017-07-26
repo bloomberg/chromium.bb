@@ -127,7 +127,8 @@ class LayerTreeHostImplClient {
   // Called when output surface asks for a draw.
   virtual void OnDrawForLayerTreeFrameSink(bool resourceless_software_draw) = 0;
 
-  virtual void NeedsImplSideInvalidation() = 0;
+  virtual void NeedsImplSideInvalidation(
+      bool needs_first_draw_on_activation) = 0;
   // Called when a requested image decode completes.
   virtual void NotifyImageDecodeRequestFinished() = 0;
 
@@ -353,7 +354,7 @@ class CC_EXPORT LayerTreeHostImpl
       TreePriority tree_priority) override;
   void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override;
   gfx::ColorSpace GetRasterColorSpace() const override;
-  void RequestImplSideInvalidation() override;
+  void RequestImplSideInvalidationForCheckerImagedTiles() override;
 
   // ScrollbarAnimationControllerClient implementation.
   void PostDelayedScrollbarAnimationTask(const base::Closure& task,

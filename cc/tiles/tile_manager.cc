@@ -1444,7 +1444,7 @@ void TileManager::ClearCheckerImageTracking(
 }
 
 void TileManager::NeedsInvalidationForCheckerImagedTiles() {
-  client_->RequestImplSideInvalidation();
+  client_->RequestImplSideInvalidationForCheckerImagedTiles();
 }
 
 viz::ResourceFormat TileManager::DetermineResourceFormat(

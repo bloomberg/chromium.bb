@@ -1694,7 +1694,7 @@ class LayerTreeHostAnimationTestImplSideInvalidation
       // invalidation and make sure it finishes before the main thread is
       // released.
       did_request_impl_side_invalidation_ = true;
-      host_impl->RequestImplSideInvalidation();
+      host_impl->RequestImplSideInvalidationForCheckerImagedTiles();
     }
   }
 

@@ -2168,12 +2168,12 @@ class LayerTreeHostScrollTestImplSideInvalidation
 
         // Request an impl-side invalidation to create an impl-side pending
         // tree.
-        host_impl->RequestImplSideInvalidation();
+        host_impl->RequestImplSideInvalidationForCheckerImagedTiles();
         break;
       case 3:
         // Request another impl-side invalidation so the aborted commit comes
         // after this tree is activated.
-        host_impl->RequestImplSideInvalidation();
+        host_impl->RequestImplSideInvalidationForCheckerImagedTiles();
         break;
       default:
         NOTREACHED();
