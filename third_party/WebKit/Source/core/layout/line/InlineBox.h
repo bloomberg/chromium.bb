@@ -432,7 +432,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
           has_virtual_logical_height_(false),
           is_horizontal_(is_horizontal),
           ends_with_break_(false),
-          has_selected_children_or_can_have_leading_expansion_(false),
+          can_have_leading_expansion_(false),
           known_to_have_no_overflow_(true),
           has_ellipsis_box_or_hyphen_(false),
           dir_override_(false),
@@ -464,8 +464,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
     ADD_BOOLEAN_BITFIELD(ends_with_break_,
                          EndsWithBreak);  // Whether the line ends with a <br>.
     // shared between RootInlineBox and InlineTextBox
-    ADD_BOOLEAN_BITFIELD(has_selected_children_or_can_have_leading_expansion_,
-                         HasSelectedChildrenOrCanHaveLeadingExpansion);
+    ADD_BOOLEAN_BITFIELD(can_have_leading_expansion_, CanHaveLeadingExpansion);
 
     // This boolean will never be set if there is potential for overflow, but it
     // will be eagerly cleared in the opposite case. As such, it's a
@@ -506,13 +505,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
     bitfields_.SetEndsWithBreak(ends_with_break);
   }
   bool HasEllipsisBox() const { return bitfields_.HasEllipsisBoxOrHyphen(); }
-  bool HasSelectedChildren() const {
-    return bitfields_.HasSelectedChildrenOrCanHaveLeadingExpansion();
-  }
-  void SetHasSelectedChildren(bool has_selected_children) {
-    bitfields_.SetHasSelectedChildrenOrCanHaveLeadingExpansion(
-        has_selected_children);
-  }
   void SetHasEllipsisBox(bool has_ellipsis_box) {
     bitfields_.SetHasEllipsisBoxOrHyphen(has_ellipsis_box);
   }
@@ -523,11 +515,10 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
     bitfields_.SetHasEllipsisBoxOrHyphen(has_hyphen);
   }
   bool CanHaveLeadingExpansion() const {
-    return bitfields_.HasSelectedChildrenOrCanHaveLeadingExpansion();
+    return bitfields_.CanHaveLeadingExpansion();
   }
   void SetCanHaveLeadingExpansion(bool can_have_leading_expansion) {
-    bitfields_.SetHasSelectedChildrenOrCanHaveLeadingExpansion(
-        can_have_leading_expansion);
+    bitfields_.SetCanHaveLeadingExpansion(can_have_leading_expansion);
   }
   signed Expansion() { return bitfields_.Expansion(); }
   void SetExpansion(signed expansion) { bitfields_.SetExpansion(expansion); }

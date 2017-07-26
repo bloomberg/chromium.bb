@@ -907,11 +907,6 @@ LayoutUnit LayoutBlock::LogicalRightSelectionOffset(
 
 void LayoutBlock::SetSelectionState(SelectionState state) {
   LayoutBox::SetSelectionState(state);
-
-  if (InlineBoxWrapper() && CanUpdateSelectionOnRootLineBoxes()) {
-    InlineBoxWrapper()->Root().SetHasSelectedChildren(state !=
-                                                      SelectionState::kNone);
-  }
 }
 
 TrackedLayoutBoxListHashSet* LayoutBlock::PositionedObjectsInternal() const {

@@ -335,11 +335,6 @@ RootInlineBox* LayoutBlockFlow::ConstructLine(BidiRunList<BidiRun>& bidi_runs,
   DCHECK(LastLineBox());
   DCHECK(!LastLineBox()->IsConstructed());
 
-  // Set the m_selectedChildren flag on the root inline box if one of the leaf
-  // inline box from the bidi runs walk above has a selection state.
-  if (root_has_selected_children)
-    LastLineBox()->Root().SetHasSelectedChildren(true);
-
   // Set bits on our inline flow boxes that indicate which sides should
   // paint borders/margins/padding.  This knowledge will ultimately be used when
   // we determine the horizontal positions and widths of all the inline boxes on

@@ -940,14 +940,6 @@ void LayoutReplaced::SetSelectionState(SelectionState state) {
   // The selection state for our containing block hierarchy is updated by the
   // base class call.
   LayoutBox::SetSelectionState(state);
-
-  if (!InlineBoxWrapper())
-    return;
-
-  if (CanUpdateSelectionOnRootLineBoxes()) {
-    InlineBoxWrapper()->Root().SetHasSelectedChildren(state !=
-                                                      SelectionState::kNone);
-  }
 }
 
 void LayoutReplaced::IntrinsicSizingInfo::Transpose() {
