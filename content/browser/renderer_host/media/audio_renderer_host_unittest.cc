@@ -206,6 +206,10 @@ class AudioRendererHostTest : public RenderViewHostTestHarness {
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
+    // MediaStreamManager depends on legacy TestBrowserThreadBundle behavior.
+    // TODO: Remove once MediaStreamManager is ported to TaskScheduler.
+    DisableScopedTaskEnvironment();
+
     RenderViewHostTestHarness::SetUp();
     audio_manager_ =
         base::MakeUnique<FakeAudioManagerWithAssociations>(&log_factory_);

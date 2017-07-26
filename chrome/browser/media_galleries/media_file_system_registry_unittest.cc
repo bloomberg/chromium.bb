@@ -213,8 +213,8 @@ class MockProfileSharedRenderProcessHostFactory
 
 class ProfileState {
  public:
-  explicit ProfileState(
-      MockProfileSharedRenderProcessHostFactory* rph_factory);
+  ProfileState(MockProfileSharedRenderProcessHostFactory* rph_factory,
+               base::test::ScopedTaskEnvironment* scoped_task_environment);
   ~ProfileState();
 
   MediaGalleriesPreferences* GetMediaGalleriesPrefs();
@@ -242,6 +242,8 @@ class ProfileState {
                      const std::vector<MediaFileSystemInfo>& container);
 
   int GetAndClearComparisonCount();
+
+  base::test::ScopedTaskEnvironment* scoped_task_environment_;
 
   int num_comparisons_;
 
@@ -430,8 +432,10 @@ MockProfileSharedRenderProcessHostFactory::CreateRenderProcessHost(
 //////////////////
 
 ProfileState::ProfileState(
-    MockProfileSharedRenderProcessHostFactory* rph_factory)
-    : num_comparisons_(0),
+    MockProfileSharedRenderProcessHostFactory* rph_factory,
+    base::test::ScopedTaskEnvironment* scoped_task_environment)
+    : scoped_task_environment_(scoped_task_environment),
+      num_comparisons_(0),
       profile_(new TestingProfile()) {
   extensions::TestExtensionSystem* extension_system(
       static_cast<extensions::TestExtensionSystem*>(
@@ -472,7 +476,7 @@ ProfileState::~ProfileState() {
   shared_web_contents2_.reset();
   profile_.reset();
 
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_->RunUntilIdle();
 }
 
 MediaGalleriesPreferences* ProfileState::GetMediaGalleriesPrefs() {
@@ -500,7 +504,7 @@ void ProfileState::CheckGalleries(
                  base::StringPrintf("%s (no permission)", test.c_str()),
                  base::ConstRef(empty_names),
                  base::ConstRef(empty_expectation)));
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_->RunUntilIdle();
   EXPECT_EQ(1, GetAndClearComparisonCount());
 
   // Read permission only.
@@ -510,7 +514,7 @@ void ProfileState::CheckGalleries(
                  base::StringPrintf("%s (regular permission)", test.c_str()),
                  base::ConstRef(compare_names_read_),
                  base::ConstRef(regular_extension_galleries)));
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_->RunUntilIdle();
   EXPECT_EQ(1, GetAndClearComparisonCount());
 
   // All galleries permission.
@@ -520,7 +524,7 @@ void ProfileState::CheckGalleries(
                  base::StringPrintf("%s (all permission)", test.c_str()),
                  base::ConstRef(compare_names_all_),
                  base::ConstRef(all_extension_galleries)));
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_->RunUntilIdle();
   EXPECT_EQ(1, GetAndClearComparisonCount());
 }
 
@@ -531,7 +535,7 @@ FSInfoMap ProfileState::GetGalleriesInfo(extensions::Extension* extension) {
   registry->GetMediaFileSystemsForExtension(
       single_web_contents_.get(), extension,
       base::Bind(&GetGalleryInfoCallback, base::Unretained(&results)));
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_->RunUntilIdle();
   return results;
 }
 
@@ -606,7 +610,8 @@ int ProfileState::GetAndClearComparisonCount() {
 
 void MediaFileSystemRegistryTest::CreateProfileState(size_t profile_count) {
   for (size_t i = 0; i < profile_count; ++i) {
-    profile_states_.push_back(base::MakeUnique<ProfileState>(&rph_factory_));
+    profile_states_.push_back(base::MakeUnique<ProfileState>(
+        &rph_factory_, scoped_task_environment()));
   }
 }
 
@@ -647,14 +652,14 @@ std::string MediaFileSystemRegistryTest::AttachDevice(
   DCHECK(StorageInfo::IsRemovableDevice(device_id));
   base::string16 label = location.BaseName().LossyDisplayName();
   ProcessAttach(device_id, label, location.value());
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment()->RunUntilIdle();
   return device_id;
 }
 
 void MediaFileSystemRegistryTest::DetachDevice(const std::string& device_id) {
   DCHECK(StorageInfo::IsRemovableDevice(device_id));
   ProcessDetach(device_id);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment()->RunUntilIdle();
 }
 
 void MediaFileSystemRegistryTest::SetGalleryPermission(
@@ -897,7 +902,7 @@ TEST_F(MediaFileSystemRegistryTest,
       break;
     }
   }
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment()->RunUntilIdle();
   EXPECT_TRUE(forget_gallery);
   EXPECT_EQ(gallery_count, GetAutoAddedGalleries(profile_state).size());
 
