@@ -141,18 +141,13 @@ require you to set `CHROMIUM_OUTPUT_DIR=out/Default`.
 
 ## Build cast\_shell\_apk
 
-Build cast\_shell\_apk with Ninja using the command:
+Build `cast_shell_apk` with Ninja using the command:
 
 ```shell
 $ ninja -C out/Default cast_shell_apk
 ```
 
-## Installing and Running cast\_shell\_apk on a device
-
-If the `adb_install_apk.py` script below fails, make sure `aapt` is in your
-PATH. If not, add `aapt`'s parent directory to your `PATH` environment variable
-(it should be
-`/path/to/src/third_party/android_tools/sdk/build-tools/{latest_version}/`).
+## Installing and Running `cast_shell_apk` on a device
 
 Prepare the environment:
 
@@ -193,178 +188,13 @@ ninja -C out/Release cast_shell_apk
 And deploy it to your Android device:
 
 ```shell
-build/android/adb_install_apk.py out/Default/apks/CastShell.apk
-adb shell am start -d "http://google.com" org.chromium.chromecast.shell/.CastShellActivity
-
+out/Default/bin/cast_shell_apk install
+# Or to install and run:
+out/Default/bin/cast_shell_apk run "http://google.com"
 ```
 
 The app will appear on the device as "Chromium".
 
-### Build Content shell
-
-Wraps the content module (but not the /chrome embedder). See
-[https://www.chromium.org/developers/content-module](https://www.chromium.org/developers/content-module)
-for details on the content module and content shell.
-
-```shell
-ninja -C out/Release content_shell_apk
-build/android/adb_install_apk.py out/Release/apks/ContentShell.apk
-```
-
-this will build and install an Android apk under
-`out/Release/apks/ContentShell.apk`. (Where `Release` is the name of your build
-directory.)
-
-If you use custom out dir instead of standard out/ dir, use
-CHROMIUM_OUT_DIR env.
-
-```shell
-export CHROMIUM_OUT_DIR=out_android
-```
-
-### Build WebView shell
-
-[Android WebView](https://developer.android.com/reference/android/webkit/WebView.html)
-is a system framework component. Since Android KitKat, it is implemented using
-Chromium code (based off the [content module](https://dev.chromium.org/developers/content-module)).
-It is possible to test modifications to WebView using a simple test shell. The
-WebView shell is a view with a URL bar at the top (see [code](https://code.google.com/p/chromium/codesearch#chromium/src/android_webview/test/shell/src/org/chromium/android_webview/test/AwTestContainerView.java))
-and is **independent** of the WebView **implementation in the Android system** (
-the WebView shell is essentially a standalone unbundled app).
-As drawback, the shell runs in non-production rendering mode only.
-
-```shell
-ninja -C out/Release webview_instrumentation_apk
-build/android/adb_install_apk.py out/Release/apks/WebViewInstrumentation.apk
-```
-
-If, instead, you want to build the complete Android WebView framework component and test the effect of your chromium changes in other Android app using the WebView, you should follow the [Android AOSP + chromium WebView instructions](https://www.chromium.org/developers/how-tos/build-instructions-android-webview)
-
-### Running
-
-Set [command line flags](https://www.chromium.org/developers/how-tos/run-chromium-with-flags) if necessary.
-
-For Content shell:
-
-```shell
-build/android/adb_run_content_shell  http://example.com
-```
-
-For Chrome public:
-
-```shell
-build/android/adb_run_chrome_public  http://example.com
-```
-
-For Android WebView shell:
-
-```shell
-build/android/adb_run_android_webview_shell http://example.com
-```
-
-### Logging and debugging
-
-Logging is often the easiest way to understand code flow. In C++ you can print
-log statements using the LOG macro or printf(). In Java, you can print log
-statements using [android.util.Log](https://developer.android.com/reference/android/util/Log.html):
-
-`Log.d("sometag", "Reticulating splines progress = " + progress);`
-
-You can see these log statements using adb logcat:
-
-```shell
-adb logcat...01-14 11:08:53.373 22693 23070 D sometag: Reticulating splines progress = 0.99
-```
-
-You can debug Java or C++ code. To debug C++ code, use one of the
-following commands:
-
-```shell
-build/android/adb_gdb_content_shell
-build/android/adb_gdb_chrome_public
-build/android/adb_gdb_android_webview_shell http://example.com
-```
-
-See [Android Debugging Instructions](android_debugging_instructions.md)
-for more on debugging, including how to debug Java code.
-
 ### Testing
 
 For information on running tests, see [Android Test Instructions](android_test_instructions.md).
-
-### Faster Edit/Deploy (GN only)
-
-GN's "incremental install" uses reflection and side-loading to speed up the edit
-& deploy cycle (normally < 10 seconds). The initial launch of the apk will be
-a little slower since updated dex files are installed manually.
-
-*   Make sure to set` is_component_build = true `in your GN args
-*   All apk targets have \*`_incremental` targets defined (e.g.
-    `chrome_public_apk_incremental`) except for Webview and Monochrome
-
-Here's an example:
-
-```shell
-ninja -C out/Default chrome_public_apk_incremental
-out/Default/bin/install_chrome_public_apk_incremental -v
-```
-
-For gunit tests (note that run_*_incremental automatically add
---fast-local-dev when calling test\_runner.py):
-
-```shell
-ninja -C out/Default base_unittests_incremental
-out/Default/bin/run_base_unittests_incremental
-```
-
-For instrumentation tests:
-
-```shell
-ninja -C out/Default chrome_public_test_apk_incremental
-out/Default/bin/run_chrome_public_test_apk_incremental
-```
-
-To uninstall:
-
-```shell
-out/Default/bin/install_chrome_public_apk_incremental -v --uninstall
-```
-
-A subtly erroneous flow arises when you build a regular apk but install an
-incremental apk (e.g.
-`ninja -C out/Default foo_apk && out/Default/bin/install_foo_apk_incremental`).
-Setting `incremental_apk_by_default = true` in your GN args aliases regular
-targets as their incremental counterparts. With this arg set, the commands
-above become:
-
-```shell
-ninja -C out/Default chrome_public_apk
-out/Default/bin/install_chrome_public_apk
-
-ninja -C out/Default base_unittests
-out/Default/bin/run_base_unittests
-
-ninja -C out/Default chrome_public_test_apk
-out/Default/bin/run_chrome_public_test_apk
-```
-
-If you want to build a non-incremental apk you'll need to remove
-`incremental_apk_by_default` from your GN args.
-
-## Tips, tricks, and troubleshooting
-
-### Rebuilding libchrome.so for a particular release
-
-These instructions are only necessary for Chrome 51 and earlier.
-
-In the case where you want to modify the native code for an existing
-release of Chrome for Android (v25+) you can do the following steps.
-Note that in order to get your changes into the official release, you'll
-need to send your change for a codereview using the regular process for
-committing code to chromium.
-
-1.  Open Chrome on your Android device and visit chrome://version
-2.  Copy down the id listed next to "Build ID:"
-3.  Go to
-    [http://storage.googleapis.com/chrome-browser-components/BUILD\_ID\_FROM\_STEP\_2/index.html](http://storage.googleapis.com/chrome-browser-components/BUILD_ID_FROM_STEP_2/index.html)
-4.  Download the listed files and follow the steps in the README.
