@@ -32035,6 +32035,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MediaRouter.Dial.ParsingError"
+    enum="MediaRouterDialParsingError">
+  <owner>zhaobin@chromium.org</owner>
+  <summary>
+    Error encountered while parsing DIAL device description XML text. Recorded
+    when utility process returns an invalid DIAL device description object to
+    browser.
+  </summary>
+</histogram>
+
 <histogram name="MediaRouter.Icon.Click.Location"
     enum="MediaRouterDialogOpenOrigin">
   <owner>apacible@chromium.org</owner>

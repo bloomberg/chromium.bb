@@ -122,10 +122,12 @@ class DeviceDescriptionService {
   // |app_url|: The app Url.
   // |device_description_ptr|: Parsed device description from utility process,
   // or nullptr if parsing failed.
+  // |parsing_error|: error encountered while parsing DIAL device description.
   void OnParsedDeviceDescription(
       const DialDeviceData& device_data,
       const GURL& app_url,
-      chrome::mojom::DialDeviceDescriptionPtr device_description_ptr);
+      chrome::mojom::DialDeviceDescriptionPtr device_description_ptr,
+      chrome::mojom::DialParsingError parsing_error);
 
   // Remove expired cache entries from |description_map_|.
   void CleanUpCacheEntries();

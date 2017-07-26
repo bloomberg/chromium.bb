@@ -16,22 +16,6 @@
 
 namespace {
 
-enum ErrorType {
-  NONE,
-  MISSING_UNIQUE_ID,
-  MISSING_FRIENDLY_NAME,
-};
-
-ErrorType Validate(const chrome::mojom::DialDeviceDescription& description) {
-  if (description.unique_id.empty()) {
-    return ErrorType::MISSING_UNIQUE_ID;
-  }
-  if (description.friendly_name.empty()) {
-    return ErrorType::MISSING_FRIENDLY_NAME;
-  }
-  return ErrorType::NONE;
-}
-
 // If friendly name does not exist, fall back to use model name + last 4
 // digits of UUID as friendly name.
 std::string ComputeFriendlyName(const std::string& unique_id,
@@ -66,16 +50,23 @@ void DialDeviceDescriptionParserImpl::ParseDialDeviceDescription(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
+  chrome::mojom::DialParsingError parsing_error =
+      chrome::mojom::DialParsingError::NONE;
   chrome::mojom::DialDeviceDescriptionPtr device_description =
-      Parse(device_description_xml_data);
-  std::move(callback).Run(std::move(device_description));
+      Parse(device_description_xml_data, &parsing_error);
+  std::move(callback).Run(std::move(device_description), parsing_error);
 }
 
 chrome::mojom::DialDeviceDescriptionPtr DialDeviceDescriptionParserImpl::Parse(
-    const std::string& xml) {
+    const std::string& xml,
+    chrome::mojom::DialParsingError* parsing_error) {
+  *parsing_error = chrome::mojom::DialParsingError::NONE;
+
   XmlReader xml_reader;
-  if (!xml_reader.Load(xml))
+  if (!xml_reader.Load(xml)) {
+    *parsing_error = chrome::mojom::DialParsingError::INVALID_XML;
     return nullptr;
+  }
 
   chrome::mojom::DialDeviceDescriptionPtr out =
       chrome::mojom::DialDeviceDescription::New();
@@ -85,28 +76,33 @@ chrome::mojom::DialDeviceDescriptionPtr DialDeviceDescriptionParserImpl::Parse(
     std::string node_name(xml_reader.NodeName());
 
     if (node_name == "UDN") {
-      if (!xml_reader.ReadElementContent(&out->unique_id))
+      if (!xml_reader.ReadElementContent(&out->unique_id)) {
+        *parsing_error = chrome::mojom::DialParsingError::FAILED_TO_READ_UDN;
         return nullptr;
+      }
     } else if (node_name == "friendlyName") {
-      if (!xml_reader.ReadElementContent(&out->friendly_name))
+      if (!xml_reader.ReadElementContent(&out->friendly_name)) {
+        *parsing_error =
+            chrome::mojom::DialParsingError::FAILED_TO_READ_FRIENDLY_NAME;
         return nullptr;
+      }
     } else if (node_name == "modelName") {
-      if (!xml_reader.ReadElementContent(&out->model_name))
+      if (!xml_reader.ReadElementContent(&out->model_name)) {
+        *parsing_error =
+            chrome::mojom::DialParsingError::FAILED_TO_READ_MODEL_NAME;
         return nullptr;
+      }
     } else if (node_name == "deviceType") {
-      if (!xml_reader.ReadElementContent(&out->device_type))
+      if (!xml_reader.ReadElementContent(&out->device_type)) {
+        *parsing_error =
+            chrome::mojom::DialParsingError::FAILED_TO_READ_DEVICE_TYPE;
         return nullptr;
+      }
     }
   }
 
   if (out->friendly_name.empty())
     out->friendly_name = ComputeFriendlyName(out->unique_id, out->model_name);
-
-  ErrorType error = Validate(*out);
-  if (error != ErrorType::NONE) {
-    DLOG(WARNING) << "Device description failed to validate: " << error;
-    return nullptr;
-  }
 
   return out;
 }

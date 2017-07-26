@@ -23,6 +23,8 @@ const char MediaRouterMetrics::kHistogramDialAvailableDeviceCount[] =
     "MediaRouter.Dial.AvailableDevicesCount";
 const char MediaRouterMetrics::kHistogramDialKnownDeviceCount[] =
     "MediaRouter.Dial.KnownDevicesCount";
+const char MediaRouterMetrics::kHistogramDialParsingError[] =
+    "MediaRouter.Dial.ParsingError";
 const char MediaRouterMetrics::kHistogramIconClickLocation[] =
     "MediaRouter.Icon.Click.Location";
 const char MediaRouterMetrics::kHistogramMediaRouterCastingSource[] =
@@ -95,6 +97,16 @@ void MediaRouterMetrics::RecordMediaRouterFileFormat(
 
 void MediaRouterMetrics::RecordMediaRouterFileSize(int64_t size) {
   UMA_HISTOGRAM_MEMORY_LARGE_MB(kHistogramMediaRouterFileSize, size);
+}
+
+// static
+void MediaRouterMetrics::RecordDialParsingError(
+    chrome::mojom::DialParsingError parsing_error) {
+  DCHECK_LT(static_cast<int>(parsing_error),
+            static_cast<int>(chrome::mojom::DialParsingError::TOTAL_COUNT));
+  UMA_HISTOGRAM_ENUMERATION(
+      kHistogramDialParsingError, parsing_error,
+      static_cast<int>(chrome::mojom::DialParsingError::TOTAL_COUNT));
 }
 
 void MediaRouterMetrics::RecordDialDeviceCounts(size_t available_device_count,

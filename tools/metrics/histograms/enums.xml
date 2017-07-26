@@ -25163,6 +25163,20 @@ from previous Chrome versions.
   <int value="3" label="Page"/>
 </enum>
 
+<enum name="MediaRouterDialParsingError">
+  <int value="0" label="None"/>
+  <int value="1" label="Invalid XML"/>
+  <int value="2" label="Failed to read UDN"/>
+  <int value="3" label="Failed to read friendly name"/>
+  <int value="4" label="Failed to read model name"/>
+  <int value="5" label="Failed to read device type"/>
+  <int value="6" label="Missing unique ID"/>
+  <int value="7" label="Missing name"/>
+  <int value="8" label="Missing app URL"/>
+  <int value="9" label="Invalid app URL"/>
+  <int value="10" label="Utility process error"/>
+</enum>
+
 <enum name="MediaRouterInitialViews">
   <int value="0" label="Route Details"/>
   <int value="1" label="Sink List"/>

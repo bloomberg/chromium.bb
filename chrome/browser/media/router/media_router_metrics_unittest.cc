@@ -117,6 +117,28 @@ TEST(MediaRouterMetricsTest, RecordMediaRouterCastingSource) {
                           Bucket(static_cast<int>(source3), 1)));
 }
 
+TEST(MediaRouterMetricsTest, RecordDialDeviceDescriptionParsingError) {
+  base::HistogramTester tester;
+  const chrome::mojom::DialParsingError action1 =
+      chrome::mojom::DialParsingError::MISSING_UNIQUE_ID;
+  const chrome::mojom::DialParsingError action2 =
+      chrome::mojom::DialParsingError::MISSING_FRIENDLY_NAME;
+  const chrome::mojom::DialParsingError action3 =
+      chrome::mojom::DialParsingError::MISSING_APP_URL;
+
+  tester.ExpectTotalCount(MediaRouterMetrics::kHistogramDialParsingError, 0);
+  MediaRouterMetrics::RecordDialParsingError(action3);
+  MediaRouterMetrics::RecordDialParsingError(action2);
+  MediaRouterMetrics::RecordDialParsingError(action3);
+  MediaRouterMetrics::RecordDialParsingError(action1);
+  tester.ExpectTotalCount(MediaRouterMetrics::kHistogramDialParsingError, 4);
+  EXPECT_THAT(
+      tester.GetAllSamples(MediaRouterMetrics::kHistogramDialParsingError),
+      ElementsAre(Bucket(static_cast<int>(action1), 1),
+                  Bucket(static_cast<int>(action2), 1),
+                  Bucket(static_cast<int>(action3), 2)));
+}
+
 TEST(MediaRouterMetricsTest, RecordDialDeviceCounts) {
   MediaRouterMetrics metrics;
   base::SimpleTestClock* clock = new base::SimpleTestClock();
