@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/testing/sim/SimRequest.h"
@@ -55,7 +55,7 @@ class VirtualTimeTest : public SimTest {
 
 namespace {
 void QuitRunLoop() {
-  base::MessageLoop::current()->QuitNow();
+  base::RunLoop::QuitCurrentDeprecated();
 }
 
 // Some task queues may have repeating v8 tasks that run forever so we impose a

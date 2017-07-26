@@ -25,6 +25,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -163,7 +164,7 @@ class CreatedObserver : public content::DownloadManager::Observer {
                          content::DownloadItem* item) override {
     DCHECK_EQ(manager_, manager);
     if (waiting_)
-      base::MessageLoopForUI::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   content::DownloadManager* manager_;
@@ -205,10 +206,10 @@ class PercentWaiter : public content::DownloadItem::Observer {
           (item_->PercentComplete() != 100)))) {
       error_ = true;
       if (waiting_)
-        base::MessageLoopForUI::current()->QuitWhenIdle();
+        base::RunLoop::QuitCurrentWhenIdleDeprecated();
     }
     if (item_->GetState() == DownloadItem::COMPLETE && waiting_)
-      base::MessageLoopForUI::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   void OnDownloadDestroyed(content::DownloadItem* item) override {
@@ -291,7 +292,7 @@ class DownloadsHistoryDataCollector {
       std::unique_ptr<std::vector<history::DownloadRow>> entries) {
     result_valid_ = true;
     results_ = std::move(entries);
-    base::MessageLoopForUI::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   Profile* profile_;
@@ -375,7 +376,7 @@ class HistoryObserver : public DownloadHistory::Observer {
 
     seen_stored_ = true;
     if (waiting_)
-      base::MessageLoopForUI::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   void OnDownloadHistoryDestroyed() override {
@@ -3791,9 +3792,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PRE_DownloadTest_History) {
   observer.WaitForStored();
   HistoryServiceFactory::GetForProfile(browser()->profile(),
                                        ServiceAccessType::IMPLICIT_ACCESS)
-      ->FlushForTest(base::Bind(
-          &base::MessageLoop::QuitWhenIdle,
-          base::Unretained(base::MessageLoop::current()->current())));
+      ->FlushForTest(base::Bind(&base::RunLoop::QuitCurrentWhenIdleDeprecated));
   content::RunMessageLoop();
 }
 

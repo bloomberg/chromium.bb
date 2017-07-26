@@ -247,7 +247,7 @@ class FileManagerTestListener : public content::NotificationObserver {
           true;
     }
     messages_.push_back(entry);
-    base::MessageLoopForUI::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
  private:

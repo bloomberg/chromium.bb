@@ -2055,7 +2055,7 @@ class ExitMessageLoopOnMousePress : public ui::test::TestEventHandler {
   void OnMouseEvent(ui::MouseEvent* event) override {
     ui::test::TestEventHandler::OnMouseEvent(event);
     if (event->type() == ui::ET_MOUSE_PRESSED)
-      base::MessageLoopForUI::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
  private:

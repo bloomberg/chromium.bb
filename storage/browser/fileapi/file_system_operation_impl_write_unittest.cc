@@ -11,7 +11,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -137,14 +136,14 @@ class FileSystemOperationImplWriteTest : public testing::Test {
     if (status == base::File::FILE_OK) {
       add_bytes_written(bytes, complete);
       if (complete)
-        base::MessageLoop::current()->QuitWhenIdle();
+        base::RunLoop::QuitCurrentWhenIdleDeprecated();
     } else {
       EXPECT_FALSE(complete_);
       EXPECT_EQ(status_, base::File::FILE_OK);
       complete_ = true;
       status_ = status;
       if (base::RunLoop::IsRunningOnCurrentThread())
-        base::MessageLoop::current()->QuitWhenIdle();
+        base::RunLoop::QuitCurrentWhenIdleDeprecated();
     }
   }
 

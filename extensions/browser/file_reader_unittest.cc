@@ -46,7 +46,7 @@ class Receiver {
   void DidReadFile(bool success, std::unique_ptr<std::string> data) {
     succeeded_ = success;
     data_ = std::move(data);
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   bool succeeded_;

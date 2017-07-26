@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
@@ -61,7 +60,7 @@ class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
     handle_ = handle;
     result_ = std::move(static_cast<WDResult<T>*>(result.get())->GetValue());
 
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   WebDataServiceBase::Handle handle() { return handle_; }

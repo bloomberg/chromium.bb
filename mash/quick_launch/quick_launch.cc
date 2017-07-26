@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -167,7 +166,7 @@ void QuickLaunch::RemoveWindow(views::Widget* window) {
   DCHECK(it != windows_.end());
   windows_.erase(it);
   if (windows_.empty() && base::RunLoop::IsRunningOnCurrentThread())
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void QuickLaunch::OnStart() {

@@ -4,7 +4,7 @@
 
 #include "ipc/ipc_test_channel_listener.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,12 +50,12 @@ bool TestChannelListener::OnMessageReceived(const IPC::Message& message) {
 void TestChannelListener::OnChannelError() {
   // There is a race when closing the channel so the last message may be lost.
   EXPECT_LE(messages_left_, 1);
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void TestChannelListener::SendNextMessage() {
   if (--messages_left_ <= 0)
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   else
     SendOneMessage(sender_, "Foo");
 }

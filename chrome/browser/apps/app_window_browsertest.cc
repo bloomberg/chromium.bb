@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -68,7 +69,7 @@ class GeometryCacheChangeHelper : AppWindowGeometryCache::Observer {
       cache_->RemoveObserver(this);
 
       if (waiting_)
-        base::MessageLoopForUI::current()->QuitWhenIdle();
+        base::RunLoop::QuitCurrentWhenIdleDeprecated();
     }
   }
 

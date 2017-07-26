@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
@@ -65,7 +66,7 @@ class Waiter : public content::NotificationObserver {
     DCHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED ||
            type == chrome::NOTIFICATION_FULLSCREEN_CHANGED);
     if (running_)
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   // Wait until the two conditions are met.

@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
@@ -147,7 +146,7 @@ class Package : public service_manager::ForwardingService,
     contexts_.erase(it);
     id_to_context_.erase(id_it);
     if (contexts_.empty() && base::RunLoop::IsRunningOnCurrentThread())
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   service_manager::test::AppClient app_client_;

@@ -141,7 +141,7 @@ void MultiDemuxerStreamAdaptersTest::OnEos() {
   ASSERT_GE(running_stream_count_, 0);
   if (running_stream_count_ == 0) {
     ASSERT_EQ(frame_received_count_, total_expected_frames_);
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 }
 

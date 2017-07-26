@@ -61,7 +61,7 @@ void NeverCalled(int) { ADD_FAILURE(); }
 void EmptyCallback() {}
 
 void QuitLoop() {
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 }  // namespace

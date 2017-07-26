@@ -242,7 +242,7 @@ bool MessageLoop::IsType(Type type) const {
 }
 
 static void QuitCurrentWhenIdle() {
-  MessageLoop::current()->QuitWhenIdle();
+  RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 // static

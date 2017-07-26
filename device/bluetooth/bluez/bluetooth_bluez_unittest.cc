@@ -166,7 +166,7 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
   // break out of those loops.
   void QuitMessageLoop() {
     if (base::RunLoop::IsRunningOnCurrentThread())
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 };
 
@@ -362,7 +362,7 @@ class BluetoothBlueZTest : public testing::Test {
   // break out of those loops.
   void QuitMessageLoop() {
     if (base::RunLoop::IsRunningOnCurrentThread())
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 };
 const char BluetoothBlueZTest::kGapUuid[] =

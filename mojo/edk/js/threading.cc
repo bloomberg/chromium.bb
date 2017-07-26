@@ -4,7 +4,7 @@
 
 #include "mojo/edk/js/threading.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "gin/object_template_builder.h"
 #include "gin/per_isolate_data.h"
 #include "mojo/edk/js/handle.h"
@@ -16,7 +16,7 @@ namespace js {
 namespace {
 
 void Quit() {
-  base::MessageLoop::current()->QuitNow();
+  base::RunLoop::QuitCurrentDeprecated();
 }
 
 gin::WrapperInfo g_wrapper_info = { gin::kEmbedderNativeGin };

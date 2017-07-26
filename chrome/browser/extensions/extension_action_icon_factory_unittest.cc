@@ -10,7 +10,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -148,7 +147,7 @@ class ExtensionActionIconFactoryTest
   // ExtensionActionIconFactory::Observer overrides:
   void OnIconUpdated() override {
     if (quit_in_icon_updated_)
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   gfx::ImageSkia GetFavicon() {

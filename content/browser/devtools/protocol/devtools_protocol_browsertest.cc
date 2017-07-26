@@ -369,7 +369,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
       in_dispatch_ = false;
       if (id && id == waiting_for_command_result_id_) {
         waiting_for_command_result_id_ = 0;
-        base::MessageLoop::current()->QuitNow();
+        base::RunLoop::QuitCurrentDeprecated();
       }
     } else {
       std::string notification;
@@ -386,7 +386,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
         waiting_for_notification_ = std::string();
         waiting_for_notification_params_ = base::WrapUnique(
             notification_params_[notification_params_.size() - 1]->DeepCopy());
-        base::MessageLoop::current()->QuitNow();
+        base::RunLoop::QuitCurrentDeprecated();
       }
     }
   }
@@ -1196,7 +1196,7 @@ class NavigationFinishedObserver : public content::WebContentsObserver {
 
     num_finished_++;
     if (num_finished_ >= num_to_wait_for_ && num_to_wait_for_ != 0) {
-      base::MessageLoop::current()->QuitNow();
+      base::RunLoop::QuitCurrentDeprecated();
     }
   }
 

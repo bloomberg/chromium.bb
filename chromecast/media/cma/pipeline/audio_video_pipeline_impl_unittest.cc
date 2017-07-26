@@ -198,7 +198,7 @@ class PipelineHelper {
   }
   void Stop() {
     media_pipeline_.reset();
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
   void SetCdmLicenseInstalled() { cdm_context_->SetLicenseInstalled(); }
 

@@ -361,7 +361,7 @@ void MultizoneBackendTest::OnEndOfStream() {
   for (auto& feeder : effects_feeders_)
     feeder->Stop();
 
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 
   EXPECT_LT(audio_feeder_->GetMaxRenderingDelayErrorUs(),
             kMaxRenderingDelayErrorUs);

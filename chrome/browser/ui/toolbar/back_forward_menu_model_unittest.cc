@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -50,7 +49,7 @@ class FaviconDelegate : public ui::MenuModelDelegate {
 
   void OnIconChanged(int model_index) override {
     was_called_ = true;
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   bool was_called() const { return was_called_; }

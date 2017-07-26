@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -38,7 +39,7 @@ ACTION_P(Notify, type) {
 
 ACTION(QuitUIMessageLoop) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 // Helper methods for constructing ProfileSyncService mocks.

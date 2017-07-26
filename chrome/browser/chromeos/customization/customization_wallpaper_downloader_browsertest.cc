@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
@@ -72,7 +71,7 @@ class TestWallpaperObserver : public WallpaperManager::Observer {
 
   void OnWallpaperAnimationFinished(const AccountId&) override {
     finished_ = true;
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   void WaitForWallpaperAnimationFinished() {

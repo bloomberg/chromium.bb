@@ -27,7 +27,6 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "platform/SharedBuffer.h"
@@ -76,7 +75,7 @@ void EnterRunLoop() {
 }
 
 void ExitRunLoop() {
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void YieldCurrentThread() {

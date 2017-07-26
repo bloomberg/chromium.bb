@@ -5,7 +5,7 @@
 
 #include "platform/Timer.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/PtrUtil.h"
@@ -23,7 +23,7 @@ class TimerPerfTest : public ::testing::Test {
 
   void RecordEndRunTime(TimerBase*) {
     run_end_ = base::ThreadTicks::Now();
-    base::MessageLoop::current()->QuitNow();
+    base::RunLoop::QuitCurrentDeprecated();
   }
 
   base::ThreadTicks run_start_;

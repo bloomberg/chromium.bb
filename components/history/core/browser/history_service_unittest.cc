@@ -61,7 +61,7 @@ class HistoryServiceTest : public testing::Test {
 
   void OnMostVisitedURLsAvailable(const MostVisitedURLList* url_list) {
     most_visited_urls_ = *url_list;
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
  protected:
@@ -132,7 +132,7 @@ class HistoryServiceTest : public testing::Test {
       query_url_row_ = URLRow();
       query_url_visits_.clear();
     }
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   // Fills in saved_redirects_ with the redirect information for the given URL,
@@ -153,7 +153,7 @@ class HistoryServiceTest : public testing::Test {
       saved_redirects_.insert(
           saved_redirects_.end(), redirects->begin(), redirects->end());
     }
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   base::ScopedTempDir temp_dir_;
@@ -614,7 +614,7 @@ class HistoryDBTaskImpl : public HistoryDBTask {
 
   void DoneRunOnMainThread() override {
     *done_invoked_ = true;
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   int* invoke_count_;

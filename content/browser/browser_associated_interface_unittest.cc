@@ -106,7 +106,7 @@ class TestDriverMessageFilter
   void RequestQuit(RequestQuitCallback callback) override {
     EXPECT_EQ(kNumTestMessages, message_count_);
     std::move(callback).Run();
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   std::string next_expected_string_;

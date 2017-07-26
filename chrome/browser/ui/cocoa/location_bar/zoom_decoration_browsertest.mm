@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -82,9 +83,7 @@ class ZoomDecorationTest : public InProcessBrowserTest,
   void OnZoomChanged(const content::HostZoomMap::ZoomLevelChange& host) {
     if (should_quit_on_zoom_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&base::MessageLoop::QuitWhenIdle,
-                     base::Unretained(base::MessageLoop::current())));
+          FROM_HERE, base::Bind(&base::RunLoop::QuitCurrentWhenIdleDeprecated));
     }
   }
 

@@ -10,7 +10,6 @@
 #include <sstream>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -202,7 +201,7 @@ class FuzzerServerListener : public SimpleListener {
     --message_count_;
     --pending_messages_;
     if (0 == message_count_)
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   void ReplyMsgNotHandled(uint32_t type_id) {
@@ -229,7 +228,7 @@ class FuzzerClientListener : public SimpleListener {
 
   bool OnMessageReceived(const IPC::Message& msg) override {
     last_msg_ = new IPC::Message(msg);
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
     return true;
   }
 

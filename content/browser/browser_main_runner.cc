@@ -210,7 +210,7 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
       // proper shutdown for content_browsertests. Shutdown() is not used by
       // the actual browser.
       if (base::RunLoop::IsRunningOnCurrentThread())
-        base::MessageLoop::current()->QuitNow();
+        base::RunLoop::QuitCurrentDeprecated();
   #endif
       main_loop_.reset(NULL);
 

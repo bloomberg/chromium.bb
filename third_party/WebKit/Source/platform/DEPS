@@ -19,6 +19,7 @@ include_rules = [
     "+base/metrics/histogram_samples.h",
     "+base/metrics/sparse_histogram.h",
     "+base/numerics/safe_conversions.h",
+    "+base/run_loop.h",
     "+base/single_thread_task_runner.h",
     "+base/strings/string_util.h",
     "+base/strings/stringprintf.h",

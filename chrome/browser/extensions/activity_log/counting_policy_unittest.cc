@@ -159,7 +159,7 @@ class CountingPolicyTest : public testing::Test {
   }
 
   static void TimeoutCallback() {
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
     FAIL() << "Policy test timed out waiting for results";
   }
 

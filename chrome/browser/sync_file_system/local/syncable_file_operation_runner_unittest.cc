@@ -14,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
@@ -137,7 +136,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
     SCOPED_TRACE(testing::Message() << location.ToString());
     EXPECT_EQ(expect, status);
     ++callback_count_;
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   bool CreateTempFile(base::FilePath* path) {

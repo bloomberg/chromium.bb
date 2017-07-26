@@ -288,7 +288,7 @@ void DownloadFileWithDelayFactory::AddRenameCallback(base::Closure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   rename_callbacks_.push_back(callback);
   if (waiting_)
-    base::MessageLoopForUI::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void DownloadFileWithDelayFactory::GetAllRenameCallbacks(

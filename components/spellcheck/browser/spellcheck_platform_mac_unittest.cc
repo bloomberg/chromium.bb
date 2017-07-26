@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,7 +37,7 @@ class SpellcheckPlatformMacTest: public testing::Test {
  private:
   void QuitMessageLoop() {
     CHECK(base::MessageLoop::current() == &message_loop_);
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   void CompletionCallback(const std::vector<SpellCheckResult>& results) {

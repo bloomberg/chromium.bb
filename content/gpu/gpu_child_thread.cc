@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
@@ -252,7 +253,7 @@ void GpuChildThread::CreateGpuService(
     LOG(ERROR) << "Exiting GPU process due to errors during initialization";
     gpu_service_.reset();
     gpu_host->DidFailInitialize();
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
     return;
   }
 

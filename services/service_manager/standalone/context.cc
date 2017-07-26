@@ -16,9 +16,9 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/process_info.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -71,7 +71,7 @@ class ServiceProcessLauncherFactoryImpl : public ServiceProcessLauncherFactory {
 
 void OnInstanceQuit(const std::string& name, const Identity& identity) {
   if (name == identity.name())
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 const char kService[] = "service";

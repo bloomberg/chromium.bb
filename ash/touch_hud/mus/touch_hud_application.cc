@@ -8,7 +8,7 @@
 #include "ash/touch_hud/touch_hud_renderer.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -100,7 +100,7 @@ void TouchHudApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
     widget_->Show();
   } else {
     widget_->Close();
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 }
 

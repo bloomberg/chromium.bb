@@ -298,7 +298,7 @@ class TestMessageLoopCondition {
   void Signal() {
     signaled_ = true;
     if (waiting_)
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   // Pause execution and recursively run the message loop until |Signal()| is
@@ -453,8 +453,7 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
 
   void RunFor(base::TimeDelta time_period) {
     base::CancelableCallback<void()> callback(
-        base::Bind(&base::MessageLoop::QuitWhenIdle,
-                   base::Unretained(base::MessageLoop::current())));
+        base::Bind(&base::RunLoop::QuitCurrentWhenIdleDeprecated));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, callback.callback(), time_period);
 

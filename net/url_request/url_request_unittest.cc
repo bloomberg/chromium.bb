@@ -9468,7 +9468,7 @@ class SSLClientAuthTestDelegate : public TestDelegate {
   void OnCertificateRequested(URLRequest* request,
                               SSLCertRequestInfo* cert_request_info) override {
     on_certificate_requested_count_++;
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
   int on_certificate_requested_count() {
     return on_certificate_requested_count_;

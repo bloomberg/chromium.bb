@@ -99,7 +99,7 @@ class PerformanceChannelListener : public Listener {
         DCHECK_EQ(response, payload_);
       }
       perf_logger_.reset();
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
     } else {
       SendPong();
     }
@@ -113,7 +113,7 @@ class PerformanceChannelListener : public Listener {
     count_down_--;
     if (count_down_ == 0) {
       perf_logger_.reset();  // Stop the perf timer now.
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
       return;
     }
 
@@ -173,7 +173,7 @@ class ChannelReflectorListener : public Listener {
     *response = payload;
   }
 
-  void OnQuit() { base::MessageLoop::current()->QuitWhenIdle(); }
+  void OnQuit() { base::RunLoop::QuitCurrentWhenIdleDeprecated(); }
 
   void Send(IPC::Message* message) { channel_->Send(message); }
 
@@ -406,7 +406,7 @@ class ReflectorImpl : public IPC::mojom::Reflector {
     std::move(callback).Run(value);
   }
 
-  void Quit() override { base::MessageLoop::current()->QuitWhenIdle(); }
+  void Quit() override { base::RunLoop::QuitCurrentWhenIdleDeprecated(); }
 
   mojo::Binding<IPC::mojom::Reflector> binding_;
 };
@@ -453,7 +453,7 @@ class MojoInterfacePerfTest : public mojo::edk::test::MojoTestBase {
       count_down_--;
       if (count_down_ == 0) {
         perf_logger_.reset();
-        base::MessageLoop::current()->QuitWhenIdle();
+        base::RunLoop::QuitCurrentWhenIdleDeprecated();
         return;
       }
     }
@@ -465,7 +465,7 @@ class MojoInterfacePerfTest : public mojo::edk::test::MojoTestBase {
         DCHECK_EQ(response, payload_);
       }
       perf_logger_.reset();
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
     } else {
       ping_receiver_->Ping(payload_, base::Bind(&MojoInterfacePerfTest::OnPong,
                                                 base::Unretained(this)));
@@ -624,7 +624,7 @@ class CallbackPerfTest : public testing::Test {
       count_down_--;
       if (count_down_ == 0) {
         perf_logger_.reset();
-        base::MessageLoop::current()->QuitWhenIdle();
+        base::RunLoop::QuitCurrentWhenIdleDeprecated();
         return;
       }
     }
@@ -699,7 +699,7 @@ class CallbackPerfTest : public testing::Test {
       count_down_--;
       if (count_down_ == 0) {
         perf_logger_.reset();
-        base::MessageLoop::current()->QuitWhenIdle();
+        base::RunLoop::QuitCurrentWhenIdleDeprecated();
         return;
       }
     }

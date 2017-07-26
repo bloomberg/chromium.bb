@@ -108,11 +108,11 @@ void BufferingFrameProviderTest::Start() {
 void BufferingFrameProviderTest::OnTestTimeout() {
   ADD_FAILURE() << "Test timed out";
   if (base::MessageLoop::current())
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void BufferingFrameProviderTest::OnTestCompleted() {
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 TEST_F(BufferingFrameProviderTest, FastProviderSlowConsumer) {

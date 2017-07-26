@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/process_singleton.h"
@@ -371,7 +370,7 @@ void TryChromeDialogView::ButtonPressed(views::Button* sender,
   }
 
   popup_->Close();
-  base::MessageLoop::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 void TryChromeDialogView::LinkClicked(views::Link* source, int event_flags) {

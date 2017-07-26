@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/run_loop.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -23,7 +24,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/message_loop/message_loop.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/platform_window/win/win_window.h"
 #endif
@@ -158,7 +158,7 @@ void WindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
 void WindowTreeHostPlatform::OnCloseRequest() {
 #if defined(OS_WIN)
   // TODO: this obviously shouldn't be here.
-  base::MessageLoopForUI::current()->QuitWhenIdle();
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 #else
   OnHostCloseRequested();
 #endif

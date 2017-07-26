@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -49,7 +50,7 @@ class PasswordStoreConsumerHelper
       std::vector<std::unique_ptr<PasswordForm>> results) override {
     result_.swap(results);
     // Quit the message loop to wake up passwords_helper::GetLogins.
-    base::MessageLoopForUI::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   std::vector<std::unique_ptr<PasswordForm>> result() {

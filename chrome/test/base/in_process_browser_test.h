@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents.h"
@@ -55,8 +56,8 @@ class ScopedBundleSwizzlerMac;
 //   state changes you'll need to run the message loop from your test method.
 //   For example, if you need to wait till a find bar has completely been shown
 //   you'll need to invoke content::RunMessageLoop(). When the message bar is
-//   shown, invoke MessageLoop::current()->QuitWhenIdle() to return control back
-//   to your test method.
+//   shown, invoke RunLoop::QuitCurrentWhenIdleDeprecated() to return control
+//   back to your test method.
 // . If you subclass and override SetUp(), be sure and invoke
 //   InProcessBrowserTest::SetUp(). (But see also BrowserTestBase's
 //   SetUpOnMainThread(), SetUpInProcessBrowserTestFixture(), and other related

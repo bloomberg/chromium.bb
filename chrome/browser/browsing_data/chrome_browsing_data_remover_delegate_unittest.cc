@@ -854,7 +854,7 @@ class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
 
  private:
   void OnPersonalDataChanged() override {
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   autofill::PersonalDataManager* personal_data_manager_;

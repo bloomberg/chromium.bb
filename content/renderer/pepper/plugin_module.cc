@@ -302,7 +302,7 @@ void RunMessageLoop(PP_Instance instance) {
 }
 
 void QuitMessageLoop(PP_Instance instance) {
-  base::MessageLoop::current()->QuitNow();
+  base::RunLoop::QuitCurrentDeprecated();
 }
 
 uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {

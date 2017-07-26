@@ -7,7 +7,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -126,7 +126,7 @@ void AutoclickApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
     widget_->Init(params);
   } else {
     widget_->Close();
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 }
 

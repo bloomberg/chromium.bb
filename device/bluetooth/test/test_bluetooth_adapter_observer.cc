@@ -335,7 +335,7 @@ void TestBluetoothAdapterObserver::GattDescriptorValueChanged(
 
 void TestBluetoothAdapterObserver::QuitMessageLoop() {
   if (base::RunLoop::IsRunningOnCurrentThread())
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 }  // namespace device

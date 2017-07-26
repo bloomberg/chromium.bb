@@ -371,7 +371,7 @@ class StubClientObserver {
         wait_color_yuv_ == color) {
       last_frame_color_yuv_ = color;
       last_frame_size_ = size;
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
     }
   }
 

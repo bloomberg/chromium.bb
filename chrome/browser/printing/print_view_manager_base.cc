@@ -367,7 +367,7 @@ bool PrintViewManagerBase::RenderAllMissingPagesNow() {
   // to actually spool the pages, only to have the renderer generate them. Run
   // a message loop until we get our signal that the print job is satisfied.
   // PrintJob will send a ALL_PAGES_REQUESTED after having received all the
-  // pages it needs. MessageLoop::current()->QuitWhenIdle() will be called as
+  // pages it needs. RunLoop::QuitCurrentWhenIdleDeprecated() will be called as
   // soon as print_job_->document()->IsComplete() is true on either
   // ALL_PAGES_REQUESTED or in DidPrintPage(). The check is done in
   // ShouldQuitFromInnerMessageLoop().
@@ -388,7 +388,7 @@ void PrintViewManagerBase::ShouldQuitFromInnerMessageLoop() {
       inside_inner_message_loop_) {
     // We are in a message loop created by RenderAllMissingPagesNow. Quit from
     // it.
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
     inside_inner_message_loop_ = false;
   }
 }

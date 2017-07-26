@@ -49,7 +49,7 @@ class Listener : public WebSocketListener {
     EXPECT_EQ(messages_[0], message);
     messages_.erase(messages_.begin());
     if (messages_.empty())
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   void OnClose() override { EXPECT_TRUE(false); }
