@@ -121,8 +121,10 @@ void RecordShouldTriggerHelpUI(const base::Feature& feature,
   }
 
   // Histogram about the failure reasons.
-  if (!result.event_model_ready_ok)
-    LogTriggerHelpUIResult(name, TriggerHelpUIResult::FAILURE_MODEL_NOT_READY);
+  if (!result.event_model_ready_ok) {
+    LogTriggerHelpUIResult(name,
+                           TriggerHelpUIResult::FAILURE_EVENT_MODEL_NOT_READY);
+  }
   if (!result.currently_showing_ok) {
     LogTriggerHelpUIResult(name,
                            TriggerHelpUIResult::FAILURE_CURRENTLY_SHOWING);

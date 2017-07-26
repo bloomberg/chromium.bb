@@ -27,8 +27,8 @@ enum class TriggerHelpUIResult {
   // The help UI is not triggered.
   FAILURE = 1,
 
-  // Data layer is not ready.
-  FAILURE_MODEL_NOT_READY = 2,
+  // Event model is not ready.
+  FAILURE_EVENT_MODEL_NOT_READY = 2,
 
   // Some other help UI is currently showing.
   FAILURE_CURRENTLY_SHOWING = 3,
@@ -51,7 +51,7 @@ enum class TriggerHelpUIResult {
   // Session rate does not meet the requirement.
   FAILURE_SESSION_RATE = 9,
 
-  // Availability mode is not ready.
+  // Availability model is not ready.
   FAILURE_AVAILABILITY_MODEL_NOT_READY = 10,
 
   // Availability precondition is not satisfied.

@@ -37469,7 +37469,7 @@ from previous Chrome versions.
 <enum name="TriggerHelpUIResult">
   <int value="0" label="SUCCESS"/>
   <int value="1" label="FAILURE"/>
-  <int value="2" label="FAILURE_MODEL_NOT_READY"/>
+  <int value="2" label="FAILURE_EVENT_MODEL_NOT_READY"/>
   <int value="3" label="FAILURE_CURRENTLY_SHOWING"/>
   <int value="4" label="FAILURE_FEATURE_DISABLED"/>
   <int value="5" label="FAILURE_CONFIG_INVALID"/>
