@@ -9,6 +9,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/window.h"
+#include "ui/wm/public/activation_delegate.h"
 
 namespace ash {
 
@@ -29,8 +30,15 @@ bool IsWindowConsideredActivatable(aura::Window* window) {
   if (!IsToplevelWindow(window))
     return false;
 
-  // The window must be visible.
-  return IsWindowConsideredVisibleForActivation(window);
+  if (!IsWindowConsideredVisibleForActivation(window))
+    return false;
+
+  if (::wm::GetActivationDelegate(window) &&
+      !::wm::GetActivationDelegate(window)->ShouldActivate()) {
+    return false;
+  }
+
+  return window->CanFocus();
 }
 
 bool IsWindowConsideredVisibleForActivation(aura::Window* window) {

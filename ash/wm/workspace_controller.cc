@@ -63,7 +63,8 @@ wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
 
   const gfx::Rect shelf_bounds(Shelf::ForWindow(viewport_)->GetIdealBounds());
   bool window_overlaps_launcher = false;
-  auto mru_list = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  auto mru_list =
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
 
   for (aura::Window* window : mru_list) {
     if (window->GetRootWindow() != viewport_->GetRootWindow())
