@@ -349,6 +349,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                                         WebTaskRunner*) = 0;
 
   virtual void AnnotatedRegionsChanged() = 0;
+
+  virtual void DidBlockFramebust(const KURL&) {}
 };
 
 }  // namespace blink

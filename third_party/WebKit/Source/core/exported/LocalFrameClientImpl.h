@@ -242,6 +242,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void AnnotatedRegionsChanged() override;
 
+  void DidBlockFramebust(const KURL&) override;
+
  private:
   explicit LocalFrameClientImpl(WebLocalFrameBase*);
 

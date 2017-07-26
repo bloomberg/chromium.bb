@@ -1554,6 +1554,10 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_DidLoadResourceFromMemoryCache,
                     std::string /* mime type */,
                     content::ResourceType /* resource type */)
 
+// This frame attempted to navigate the main frame to the given url, even
+// though this frame has never received a user gesture.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidBlockFramebust, GURL /* url */)
+
 // PlzNavigate
 // Tells the browser to perform a navigation.
 IPC_MESSAGE_ROUTED2(FrameHostMsg_BeginNavigation,

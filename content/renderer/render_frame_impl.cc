@@ -4118,6 +4118,10 @@ bool RenderFrameImpl::IsClientLoFiActiveForFrame() {
   return true;
 }
 
+void RenderFrameImpl::DidBlockFramebust(const WebURL& url) {
+  Send(new FrameHostMsg_DidBlockFramebust(GetRoutingID(), url));
+}
+
 void RenderFrameImpl::AbortClientNavigation() {
   Send(new FrameHostMsg_AbortNavigation(routing_id_));
 }
