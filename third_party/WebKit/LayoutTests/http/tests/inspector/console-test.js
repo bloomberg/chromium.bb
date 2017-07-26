@@ -229,10 +229,8 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
 InspectorTest.dumpConsoleClassesBrief = function()
 {
     var messageViews = Console.ConsoleView.instance()._visibleViewMessages;
-    for (var i = 0; i < messageViews.length; ++i) {
-        var repeatText = messageViews[i].repeatCount() > 1 ? (' x' + messageViews[i].repeatCount()) : '';
-        InspectorTest.addResult(messageViews[i].toMessageElement().className + repeatText);
-    }
+    for (var i = 0; i < messageViews.length; ++i)
+        InspectorTest.addResult(messageViews[i].toMessageElement().className);
 }
 
 InspectorTest.dumpConsoleCounters = function()
