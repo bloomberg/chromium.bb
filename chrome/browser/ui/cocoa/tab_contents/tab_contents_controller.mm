@@ -235,7 +235,10 @@ class FullscreenObserver : public WebContentsObserver {
 }
 
 - (NSTouchBar*)makeTouchBar {
-  return [touchBarController_ makeTouchBar];
+  if (@available(macOS 10.12.2, *))
+    return [touchBarController_ makeTouchBar];
+
+  return nil;
 }
 
 - (void)ensureContentsVisibleInSuperview:(NSView*)superview {
