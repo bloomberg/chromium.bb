@@ -85,6 +85,7 @@ source_set("unit_tests") {
     "interfaces/encryption_scheme_struct_traits_unittest.cc",
     "interfaces/video_decoder_config_struct_traits_unittest.cc",
     "interfaces/video_frame_struct_traits_unittest.cc",
+    "mojo_video_encode_accelerator_integration_test.cc",
     "services/mojo_audio_output_stream_unittest.cc",
     "services/mojo_cdm_allocator_unittest.cc",
     "services/mojo_video_encode_accelerator_service_unittest.cc",

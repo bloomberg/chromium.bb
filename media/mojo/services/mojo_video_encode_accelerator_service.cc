@@ -71,7 +71,6 @@ void MojoVideoEncodeAcceleratorService::Initialize(
       input_visible_size.GetArea() > limits::kMaxCanvas) {
     DLOG(ERROR) << __func__ << "too large input_visible_size "
                 << input_visible_size.ToString();
-    NotifyError(::media::VideoEncodeAccelerator::kInvalidArgumentError);
     std::move(success_callback).Run(false);
     return;
   }
@@ -81,7 +80,6 @@ void MojoVideoEncodeAcceleratorService::Initialize(
                                initial_bitrate, this, gpu_preferences_);
   if (!encoder_) {
     DLOG(ERROR) << __func__ << " Error creating or initializing VEA";
-    NotifyError(::media::VideoEncodeAccelerator::kPlatformFailureError);
     std::move(success_callback).Run(false);
     return;
   }
