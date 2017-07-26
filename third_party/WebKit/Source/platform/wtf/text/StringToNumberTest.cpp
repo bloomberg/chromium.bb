@@ -223,21 +223,22 @@ TEST(StringToNumberTest, HexCharactersToUInt) {
 #undef EXPECT_INVALID
 }
 
-NumberParsingState ParseUInt(const char* str, unsigned* value) {
-  NumberParsingState state;
+NumberParsingResult ParseUInt(const char* str, unsigned* value) {
+  NumberParsingResult result;
   *value =
       CharactersToUInt(reinterpret_cast<const LChar*>(str), std::strlen(str),
-                       NumberParsingOptions::kStrict, &state);
-  return state;
+                       NumberParsingOptions::kStrict, &result);
+  return result;
 }
 
 TEST(StringToNumberTest, NumberParsingState) {
   unsigned value;
-  EXPECT_EQ(NumberParsingState::kOverflowMax, ParseUInt("10000000000", &value));
-  EXPECT_EQ(NumberParsingState::kError, ParseUInt("10000000000abc", &value));
-  EXPECT_EQ(NumberParsingState::kError, ParseUInt("-10000000000", &value));
-  EXPECT_EQ(NumberParsingState::kError, ParseUInt("-0", &value));
-  EXPECT_EQ(NumberParsingState::kSuccess, ParseUInt("10", &value));
+  EXPECT_EQ(NumberParsingResult::kOverflowMax,
+            ParseUInt("10000000000", &value));
+  EXPECT_EQ(NumberParsingResult::kError, ParseUInt("10000000000abc", &value));
+  EXPECT_EQ(NumberParsingResult::kError, ParseUInt("-10000000000", &value));
+  EXPECT_EQ(NumberParsingResult::kError, ParseUInt("-0", &value));
+  EXPECT_EQ(NumberParsingResult::kSuccess, ParseUInt("10", &value));
 }
 
 }  // namespace WTF

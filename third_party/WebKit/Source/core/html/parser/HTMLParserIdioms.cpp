@@ -194,7 +194,7 @@ bool ParseHTMLInteger(const String& input, int& value) {
 }
 
 template <typename CharacterType>
-static WTF::NumberParsingState ParseHTMLNonNegativeIntegerInternal(
+static WTF::NumberParsingResult ParseHTMLNonNegativeIntegerInternal(
     const CharacterType* position,
     const CharacterType* end,
     unsigned& value) {
@@ -211,27 +211,27 @@ static WTF::NumberParsingState ParseHTMLNonNegativeIntegerInternal(
 
   // Step 5: If position is past the end of input, return an error.
   if (position == end)
-    return WTF::NumberParsingState::kError;
+    return WTF::NumberParsingResult::kError;
   DCHECK_LT(position, end);
 
-  WTF::NumberParsingState state;
+  WTF::NumberParsingResult result;
   WTF::NumberParsingOptions options(
       WTF::NumberParsingOptions::kAcceptTrailingGarbage |
       WTF::NumberParsingOptions::kAcceptLeadingPlus |
       WTF::NumberParsingOptions::kAcceptMinusZeroForUnsigned);
   unsigned wtf_value =
-      CharactersToUInt(position, end - position, options, &state);
-  if (state == WTF::NumberParsingState::kSuccess)
+      CharactersToUInt(position, end - position, options, &result);
+  if (result == WTF::NumberParsingResult::kSuccess)
     value = wtf_value;
-  return state;
+  return result;
 }
 
-static WTF::NumberParsingState ParseHTMLNonNegativeIntegerInternal(
+static WTF::NumberParsingResult ParseHTMLNonNegativeIntegerInternal(
     const String& input,
     unsigned& value) {
   unsigned length = input.length();
   if (length == 0)
-    return WTF::NumberParsingState::kError;
+    return WTF::NumberParsingResult::kError;
   if (input.Is8Bit()) {
     const LChar* start = input.Characters8();
     return ParseHTMLNonNegativeIntegerInternal(start, start + length, value);
@@ -244,7 +244,7 @@ static WTF::NumberParsingState ParseHTMLNonNegativeIntegerInternal(
 // https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-non-negative-integers
 bool ParseHTMLNonNegativeInteger(const String& input, unsigned& value) {
   return ParseHTMLNonNegativeIntegerInternal(input, value) ==
-         WTF::NumberParsingState::kSuccess;
+         WTF::NumberParsingResult::kSuccess;
 }
 
 bool ParseHTMLClampedNonNegativeInteger(const String& input,
@@ -253,15 +253,15 @@ bool ParseHTMLClampedNonNegativeInteger(const String& input,
                                         unsigned& value) {
   unsigned parsed_value;
   switch (ParseHTMLNonNegativeIntegerInternal(input, parsed_value)) {
-    case WTF::NumberParsingState::kError:
+    case WTF::NumberParsingResult::kError:
       return false;
-    case WTF::NumberParsingState::kOverflowMin:
+    case WTF::NumberParsingResult::kOverflowMin:
       NOTREACHED() << input;
       return false;
-    case WTF::NumberParsingState::kOverflowMax:
+    case WTF::NumberParsingResult::kOverflowMax:
       value = max;
       return true;
-    case WTF::NumberParsingState::kSuccess:
+    case WTF::NumberParsingResult::kSuccess:
       value = std::max(min, std::min(parsed_value, max));
       return true;
   }
