@@ -377,6 +377,13 @@ void URLRequestContextBuilder::SetHttpServerProperties(
   http_server_properties_ = std::move(http_server_properties);
 }
 
+void URLRequestContextBuilder::SetCreateHttpTransactionFactoryCallback(
+    CreateHttpTransactionFactoryCallback
+        create_http_network_transaction_factory) {
+  create_http_network_transaction_factory_ =
+      std::move(create_http_network_transaction_factory);
+}
+
 std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   std::unique_ptr<ContainerURLRequestContext> context(
       new ContainerURLRequestContext());
@@ -541,6 +548,15 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_, network_session_context));
 
   std::unique_ptr<HttpTransactionFactory> http_transaction_factory;
+  if (!create_http_network_transaction_factory_.is_null()) {
+    http_transaction_factory =
+        std::move(create_http_network_transaction_factory_)
+            .Run(storage->http_network_session());
+  } else {
+    http_transaction_factory =
+        base::MakeUnique<HttpNetworkLayer>(storage->http_network_session());
+  }
+
   if (http_cache_enabled_) {
     std::unique_ptr<HttpCache::BackendFactory> http_cache_backend;
     if (http_cache_params_.type != HttpCacheParams::IN_MEMORY) {
@@ -569,11 +585,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
           HttpCache::DefaultBackend::InMemory(http_cache_params_.max_size);
     }
 
-    http_transaction_factory.reset(new HttpCache(
-        storage->http_network_session(), std::move(http_cache_backend), true));
-  } else {
     http_transaction_factory.reset(
-        new HttpNetworkLayer(storage->http_network_session()));
+        new HttpCache(std::move(http_transaction_factory),
+                      std::move(http_cache_backend), true));
   }
   storage->set_http_transaction_factory(std::move(http_transaction_factory));
 
