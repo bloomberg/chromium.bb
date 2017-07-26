@@ -1546,6 +1546,7 @@ void PaintOpBuffer::operator=(PaintOpBuffer&& other) {
   op_count_ = other.op_count_;
   num_slow_paths_ = other.num_slow_paths_;
   subrecord_bytes_used_ = other.subrecord_bytes_used_;
+  has_non_aa_paint_ = other.has_non_aa_paint_;
   has_discardable_images_ = other.has_discardable_images_;
 
   // Make sure the other pob can destruct safely.
