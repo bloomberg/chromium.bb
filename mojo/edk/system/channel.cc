@@ -15,6 +15,7 @@
 #include "base/memory/aligned_memory.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/process_handle.h"
+#include "build/build_config.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/system/configuration.h"
@@ -269,6 +270,17 @@ void Channel::Message::ExtendPayload(size_t new_payload_size) {
     base::AlignedFree(data_);
     data_ = static_cast<char*>(new_data);
     capacity_ = new_capacity;
+
+    if (max_handles_ > 0) {
+// We also need to update the cached extra header addresses in case the
+// payload buffer has been relocated.
+#if defined(OS_WIN)
+      handles_ = reinterpret_cast<HandleEntry*>(mutable_extra_header());
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+      mach_ports_header_ =
+          reinterpret_cast<MachPortsExtraHeader*>(mutable_extra_header());
+#endif
+    }
   }
   size_ = header_size + new_payload_size;
   DCHECK(base::IsValueInRangeForNumericType<uint32_t>(size_));
