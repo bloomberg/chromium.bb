@@ -4,15 +4,16 @@
 
 package org.chromium.chrome.browser.input;
 
+import android.support.test.filters.LargeTest;
 import android.view.View;
 
 import org.junit.Assert;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.R;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.input.SuggestionsPopupWindow;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -36,8 +37,7 @@ public class TextSuggestionMenuTest extends ChromeActivityTestCaseBase<ChromeAct
         startMainActivityOnBlankPage();
     }
 
-    // @LargeTest
-    @DisabledTest // TODO(crbug.com/749138): This test is very flaky.
+    @LargeTest
     public void testDeleteMisspelledWord() throws InterruptedException, TimeoutException {
         loadUrl(URL);
         final ContentViewCore cvc = getActivity().getActivityTab().getContentViewCore();
@@ -48,15 +48,29 @@ public class TextSuggestionMenuTest extends ChromeActivityTestCaseBase<ChromeAct
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return cvc.getTextSuggestionHostForTesting().getSuggestionsPopupWindowForTesting()
-                        != null;
+                SuggestionsPopupWindow suggestionsPopupWindow =
+                        cvc.getTextSuggestionHostForTesting().getSuggestionsPopupWindowForTesting();
+                if (suggestionsPopupWindow == null) {
+                    return false;
+                }
+
+                // On some test runs, even when suggestionsPopupWindow is non-null and
+                // suggestionsPopupWindow.isShowing() returns true, the delete button hasn't been
+                // measured yet and getWidth()/getHeight() return 0. This causes the menu button
+                // click to instead fall on the "Add to dictionary" button. So we have to check that
+                // this isn't happening.
+                return getDeleteButton(cvc).getWidth() != 0;
             }
         });
 
-        View view = cvc.getTextSuggestionHostForTesting()
-                            .getSuggestionsPopupWindowForTesting()
-                            .getContentViewForTesting();
-        TouchCommon.singleClickView(view.findViewById(R.id.deleteButton));
+        TouchCommon.singleClickView(getDeleteButton(cvc));
         Assert.assertEquals("", DOMUtils.getNodeContents(cvc.getWebContents(), "div"));
+    }
+
+    private View getDeleteButton(ContentViewCore cvc) {
+        View contentView = cvc.getTextSuggestionHostForTesting()
+                                   .getSuggestionsPopupWindowForTesting()
+                                   .getContentViewForTesting();
+        return contentView.findViewById(R.id.deleteButton);
     }
 }
