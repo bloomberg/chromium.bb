@@ -27,6 +27,21 @@ bool WindowTargeter::SubtreeShouldBeExploredForEvent(
          EventLocationInsideBounds(window, event);
 }
 
+bool WindowTargeter::GetHitTestRects(Window* window,
+                                     gfx::Rect* hit_test_rect_mouse,
+                                     gfx::Rect* hit_test_rect_touch) const {
+  DCHECK(hit_test_rect_mouse);
+  DCHECK(hit_test_rect_touch);
+  *hit_test_rect_mouse = *hit_test_rect_touch = gfx::Rect(window->bounds());
+
+  if (ShouldUseExtendedBounds(window)) {
+    hit_test_rect_mouse->Inset(mouse_extend_);
+    hit_test_rect_touch->Inset(touch_extend_);
+  }
+
+  return true;
+}
+
 Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
                                                const ui::LocatedEvent& event) {
   DCHECK_EQ(root_window, root_window->GetRootWindow());
@@ -157,13 +172,17 @@ bool WindowTargeter::EventLocationInsideBounds(
   return mouse_rect.Contains(point);
 }
 
-bool WindowTargeter::GetHitTestRects(Window* window,
-                                     gfx::Rect* hit_test_rect_mouse,
-                                     gfx::Rect* hit_test_rect_touch) const {
-  DCHECK(hit_test_rect_mouse);
-  DCHECK(hit_test_rect_touch);
-  *hit_test_rect_mouse = *hit_test_rect_touch = gfx::Rect(window->bounds());
+bool WindowTargeter::ShouldUseExtendedBounds(const aura::Window* window) const {
   return true;
+}
+
+void WindowTargeter::OnSetInsets() {}
+
+void WindowTargeter::SetInsets(const gfx::Insets& mouse_extend,
+                               const gfx::Insets& touch_extend) {
+  mouse_extend_ = mouse_extend;
+  touch_extend_ = touch_extend;
+  OnSetInsets();
 }
 
 Window* WindowTargeter::FindTargetForKeyEvent(Window* window,

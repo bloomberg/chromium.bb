@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "ui/aura/aura_export.h"
 #include "ui/events/event_targeter.h"
+#include "ui/gfx/geometry/insets.h"
 
 namespace gfx {
 class Rect;
@@ -78,11 +79,29 @@ class AURA_EXPORT WindowTargeter : public ui::EventTargeter {
   virtual bool EventLocationInsideBounds(Window* target,
                                          const ui::LocatedEvent& event) const;
 
+  // Returns true if the hit testing (GetHitTestRects()) should use the
+  // extended bounds.
+  virtual bool ShouldUseExtendedBounds(const aura::Window* window) const;
+
+  // Called after the hit-test area has been extended with SetInsets().
+  virtual void OnSetInsets();
+
+  // Sets additional mouse and touch insets that are factored into the hit-test
+  // regions returned by GetHitTestRects.
+  void SetInsets(const gfx::Insets& mouse_extend,
+                 const gfx::Insets& touch_extend);
+
+  const gfx::Insets& mouse_extend() const { return mouse_extend_; }
+  const gfx::Insets& touch_extend() const { return touch_extend_; }
+
  private:
   Window* FindTargetForKeyEvent(Window* root_window, const ui::KeyEvent& event);
   Window* FindTargetForNonKeyEvent(Window* root_window, ui::Event* event);
   Window* FindTargetForLocatedEventRecursively(Window* root_window,
                                                ui::LocatedEvent* event);
+
+  gfx::Insets mouse_extend_;
+  gfx::Insets touch_extend_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTargeter);
 };

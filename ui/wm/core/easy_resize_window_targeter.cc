@@ -28,32 +28,12 @@ EasyResizeWindowTargeter::EasyResizeWindowTargeter(
 
 EasyResizeWindowTargeter::~EasyResizeWindowTargeter() {}
 
-void EasyResizeWindowTargeter::SetInsets(const gfx::Insets& mouse_extend,
-                                         const gfx::Insets& touch_extend) {
-  if (mouse_extend == mouse_extend_ && touch_extend_ == touch_extend)
-    return;
-
-  mouse_extend_ = mouse_extend;
-  touch_extend_ = touch_extend;
+void EasyResizeWindowTargeter::OnSetInsets() {
   if (aura::Env::GetInstance()->mode() != aura::Env::Mode::MUS)
     return;
 
   aura::WindowPortMus::Get(container_)
-      ->SetExtendedHitRegionForChildren(mouse_extend, touch_extend);
-}
-
-bool EasyResizeWindowTargeter::GetHitTestRects(aura::Window* window,
-                                               gfx::Rect* rect_mouse,
-                                               gfx::Rect* rect_touch) const {
-  if (!ShouldUseExtendedBounds(window))
-    return WindowTargeter::GetHitTestRects(window, rect_mouse, rect_touch);
-
-  DCHECK(rect_mouse);
-  DCHECK(rect_touch);
-  *rect_mouse = *rect_touch = gfx::Rect(window->bounds());
-  rect_mouse->Inset(mouse_extend_);
-  rect_touch->Inset(touch_extend_);
-  return true;
+      ->SetExtendedHitRegionForChildren(mouse_extend(), touch_extend());
 }
 
 bool EasyResizeWindowTargeter::EventLocationInsideBounds(

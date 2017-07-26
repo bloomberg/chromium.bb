@@ -40,13 +40,11 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/bubble/bubble_window_targeter.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/masked_window_targeter.h"
 #include "ui/wm/core/shadow_types.h"
 
 namespace app_list {
@@ -130,27 +128,6 @@ class AppListOverlayView : public views::View {
   const int corner_radius_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListOverlayView);
-};
-
-// An event targeter for the search box widget which will ignore events that
-// are on the search box's shadow.
-class SearchBoxWindowTargeter : public wm::MaskedWindowTargeter {
- public:
-  explicit SearchBoxWindowTargeter(views::View* search_box)
-      : wm::MaskedWindowTargeter(search_box->GetWidget()->GetNativeWindow()),
-        search_box_(search_box) {}
-  ~SearchBoxWindowTargeter() override {}
-
- private:
-  // wm::MaskedWindowTargeter:
-  bool GetHitTestMask(aura::Window* window, gfx::Path* mask) const override {
-    mask->addRect(gfx::RectToSkRect(search_box_->GetContentsBounds()));
-    return true;
-  }
-
-  views::View* search_box_;
-
-  DISALLOW_COPY_AND_ASSIGN(SearchBoxWindowTargeter);
 };
 
 }  // namespace
@@ -441,11 +418,6 @@ void AppListView::InitChildWidgets() {
   search_box_widget_->SetFocusTraversableParent(
       GetWidget()->GetFocusTraversable());
 
-  // Mouse events on the search box shadow should not be captured.
-  aura::Window* window = search_box_widget_->GetNativeWindow();
-  window->SetEventTargeter(
-      base::MakeUnique<SearchBoxWindowTargeter>(search_box_view_));
-
   app_list_main_view_->contents_view()->Layout();
 }
 
@@ -490,9 +462,6 @@ void AppListView::InitializeBubble(gfx::NativeView parent,
 
   SetBubbleArrow(views::BubbleBorder::FLOAT);
   // We can now create the internal widgets.
-
-  aura::Window* window = GetWidget()->GetNativeWindow();
-  window->SetEventTargeter(base::MakeUnique<views::BubbleWindowTargeter>(this));
 
   const int kOverlayCornerRadius =
       GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius();
