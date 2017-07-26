@@ -367,8 +367,8 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, MAYBE_NavigateToAnAttachment) {
   EXPECT_TRUE(catcher.GetNextResult());
 }
 
-// Flaky on Linux and ChromeOS: http://crbug.com/746526.
-#if defined(OS_LINUX)
+// Flaky on Linux and Win 10: http://crbug.com/746526.
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_DirectDownload DISABLED_DirectDownload
 #else
 #define MAYBE_DirectDownload DirectDownload
