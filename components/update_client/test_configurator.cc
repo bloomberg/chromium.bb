@@ -6,8 +6,7 @@
 
 #include <utility>
 
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/out_of_process_patcher.h"
@@ -27,16 +26,14 @@ std::vector<GURL> MakeDefaultUrls() {
 
 }  // namespace
 
-TestConfigurator::TestConfigurator(
-    const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner)
-    : worker_task_runner_(worker_task_runner),
-      brand_("TEST"),
+TestConfigurator::TestConfigurator()
+    : brand_("TEST"),
       initial_time_(0),
       ondemand_time_(0),
       enabled_cup_signing_(false),
       enabled_component_updates_(true),
-      context_(new net::TestURLRequestContextGetter(network_task_runner)) {}
+      context_(base::MakeRefCounted<net::TestURLRequestContextGetter>(
+          base::ThreadTaskRunnerHandle::Get())) {}
 
 TestConfigurator::~TestConfigurator() {
 }
@@ -161,12 +158,6 @@ void TestConfigurator::SetUpdateCheckUrl(const GURL& url) {
 
 void TestConfigurator::SetPingUrl(const GURL& url) {
   ping_url_ = url;
-}
-
-scoped_refptr<base::SequencedTaskRunner>
-TestConfigurator::GetSequencedTaskRunner() const {
-  DCHECK(worker_task_runner_.get());
-  return worker_task_runner_;
 }
 
 PrefService* TestConfigurator::GetPrefService() const {

@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/task_scheduler/post_task.h"
 #include "base/version.h"
 #include "components/component_updater/configurator_impl.h"
 #include "components/update_client/out_of_process_patcher.h"
@@ -49,8 +48,6 @@ class IOSConfigurator : public update_client::Configurator {
   bool EnabledComponentUpdates() const override;
   bool EnabledBackgroundDownloader() const override;
   bool EnabledCupSigning() const override;
-  scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
-      const override;
   PrefService* GetPrefService() const override;
   bool IsPerUserInstall() const override;
   std::vector<uint8_t> GetRunActionKeyHash() const override;
@@ -153,13 +150,6 @@ bool IOSConfigurator::EnabledBackgroundDownloader() const {
 
 bool IOSConfigurator::EnabledCupSigning() const {
   return configurator_impl_.EnabledCupSigning();
-}
-
-scoped_refptr<base::SequencedTaskRunner>
-IOSConfigurator::GetSequencedTaskRunner() const {
-  return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
 PrefService* IOSConfigurator::GetPrefService() const {

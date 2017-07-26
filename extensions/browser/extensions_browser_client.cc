@@ -8,7 +8,6 @@
 #include "components/update_client/update_client.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_error.h"
-#include "extensions/browser/updater/update_client_config.h"
 
 namespace extensions {
 

@@ -99,8 +99,7 @@ UpdateCheckerTest::~UpdateCheckerTest() {
 }
 
 void UpdateCheckerTest::SetUp() {
-  config_ = base::MakeRefCounted<TestConfigurator>(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get());
+  config_ = base::MakeRefCounted<TestConfigurator>();
   pref_ = base::MakeUnique<TestingPrefServiceSimple>();
   PersistedData::RegisterPrefs(pref_->registry());
   metadata_ = base::MakeUnique<PersistedData>(pref_.get());

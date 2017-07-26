@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/post_task.h"
@@ -78,24 +79,14 @@ class ComponentUnpackerTest : public testing::Test {
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_ =
       base::ThreadTaskRunnerHandle::Get();
   base::RunLoop runloop_;
-  base::Closure quit_closure_;
-
-  scoped_refptr<update_client::TestConfigurator> config_;
+  const base::Closure quit_closure_ = runloop_.QuitClosure();
 
   ComponentUnpacker::Result result_;
 };
 
-ComponentUnpackerTest::ComponentUnpackerTest()
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::UI) {
-  quit_closure_ = runloop_.QuitClosure();
+ComponentUnpackerTest::ComponentUnpackerTest() = default;
 
-  config_ = new TestConfigurator(
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
-      base::ThreadTaskRunnerHandle::Get());
-}
-
-ComponentUnpackerTest::~ComponentUnpackerTest() {}
+ComponentUnpackerTest::~ComponentUnpackerTest() = default;
 
 void ComponentUnpackerTest::RunThreads() {
   runloop_.Run();
