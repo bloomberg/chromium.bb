@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -31,6 +32,10 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+
+#if defined(OS_MACOSX)
+#include "chrome/common/chrome_features.h"
+#endif
 
 namespace {
 
@@ -100,6 +105,14 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
 
   set_close_on_deactivate(false);
   set_arrow(kPermissionAnchorArrow);
+
+#if defined(OS_MACOSX)
+  // On Mac, the browser UI flips depending on a runtime feature. TODO(tapted):
+  // Change the default in views::PlatformStyle when features::kMacRTL launches,
+  // and remove the following.
+  if (base::FeatureList::IsEnabled(features::kMacRTL))
+    set_mirror_arrow_in_rtl(true);
+#endif
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(new views::BoxLayout(
