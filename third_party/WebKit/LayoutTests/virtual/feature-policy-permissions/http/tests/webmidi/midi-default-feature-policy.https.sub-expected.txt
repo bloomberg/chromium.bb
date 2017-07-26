@@ -1,0 +1,8 @@
+CONSOLE WARNING: line 13: requestMIDIAccess usage in cross-origin iframes is deprecated and will be disabled in M63, around December 2017. To continue to use this feature, it must be enabled by the embedding document using Feature Policy, e.g. <iframe allow="midi" ...>. See https://goo.gl/EuHzyv for more details.
+This is a testharness.js-based test.
+PASS Default "midi" feature policy ["self"] allows the top-level document. 
+PASS Default "midi" feature policy ["self"] allows same-origin iframes. 
+PASS Default "midi" feature policy ["self"] disallows cross-origin iframes. 
+PASS Feature policy "midi" can be enabled in cross-origin iframes using "allow" attribute. 
+Harness: the test ran to completion.
+
