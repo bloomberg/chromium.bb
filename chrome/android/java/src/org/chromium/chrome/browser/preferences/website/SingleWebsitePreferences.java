@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
@@ -270,7 +271,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
      * Must only be called once mSite is set.
      */
     private void displaySitePermissions() {
-        addPreferencesFromResource(R.xml.single_website_preferences);
+        PreferenceUtils.addPreferencesFromResource(this, R.xml.single_website_preferences);
 
         Set<String> permissionPreferenceKeys =
                 new HashSet<>(Arrays.asList(PERMISSION_PREFERENCE_KEYS));

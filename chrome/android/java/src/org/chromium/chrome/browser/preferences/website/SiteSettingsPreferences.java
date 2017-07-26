@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.PreferenceUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +60,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.site_settings_preferences);
+        PreferenceUtils.addPreferencesFromResource(this, R.xml.site_settings_preferences);
         getActivity().setTitle(R.string.prefs_site_settings);
 
         mProtectedContentMenuAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
