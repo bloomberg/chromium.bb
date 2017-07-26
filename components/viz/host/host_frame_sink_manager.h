@@ -23,15 +23,12 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace cc {
-class SurfaceInfo;
-}  // namespace cc
-
 namespace viz {
 
 class CompositorFrameSinkSupport;
 class CompositorFrameSinkSupportClient;
 class FrameSinkManagerImpl;
+class SurfaceInfo;
 
 namespace test {
 class HostFrameSinkManagerTest;
