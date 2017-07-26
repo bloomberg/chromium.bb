@@ -4,5 +4,8 @@ utc_time: 150302120000Z
 key_purpose: SERVER_AUTH
 expected_errors:
 ----- Certificate i=0 (CN=Target) -----
-ERROR: VerifySignedData failed
+ERROR: RSA modulus too small
+  actual: 512
+  minimum: 1024
+ERROR: Unacceptable public key
 

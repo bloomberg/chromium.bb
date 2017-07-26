@@ -23,7 +23,7 @@
 #include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/internal/path_builder.h"
 #include "net/cert/internal/signature_algorithm.h"
-#include "net/cert/internal/signature_policy.h"
+#include "net/cert/internal/simple_path_builder_delegate.h"
 #include "net/cert/internal/trust_store_in_memory.h"
 #include "net/cert/internal/verify_certificate_chain.h"
 #include "net/cert/internal/verify_signed_data.h"
@@ -93,19 +93,17 @@ net::der::Input AudioOnlyPolicyOid() {
 
 // Cast certificates rely on RSASSA-PKCS#1 v1.5 with SHA-1 for signatures.
 //
-// The following signature policy specifies which signature algorithms (and key
-// sizes) are acceptable. It is used when verifying a chain of certificates, as
-// well as when verifying digital signature using the target certificate's
-// SPKI.
+// The following delegate will allow signature algorithms of:
 //
-// This particular policy allows for:
 //   * ECDSA, RSA-SSA, and RSA-PSS
 //   * Supported EC curves: P-256, P-384, P-521.
 //   * Hashes: All SHA hashes including SHA-1 (despite being known weak).
-//   * RSA keys must have a modulus at least 2048-bits long.
-std::unique_ptr<net::SignaturePolicy> CreateCastSignaturePolicy() {
-  return base::MakeUnique<net::SimpleSignaturePolicy>(2048);
-}
+//
+// It will also require RSA keys have a modulus at least 2048-bits long.
+class CastPathBuilderDelegate : public net::SimplePathBuilderDelegate {
+ public:
+  CastPathBuilderDelegate() : SimplePathBuilderDelegate(2048) {}
+};
 
 class CertVerificationContextImpl : public CertVerificationContext {
  public:
@@ -123,16 +121,10 @@ class CertVerificationContextImpl : public CertVerificationContext {
     auto signature_algorithm =
         net::SignatureAlgorithm::CreateRsaPkcs1(digest_algorithm);
 
-    // Use the same policy as was used for verifying signatures in
-    // certificates. This will ensure for instance that the key used is at
-    // least 2048-bits long.
-    auto signature_policy = CreateCastSignaturePolicy();
-
-    net::CertErrors errors;
     return net::VerifySignedData(
         *signature_algorithm, net::der::Input(data),
         net::der::BitString(net::der::Input(signature), 0),
-        net::der::Input(&spki_), signature_policy.get(), &errors);
+        net::der::Input(&spki_));
   }
 
   std::string GetCommonName() const override { return common_name_; }
@@ -298,8 +290,7 @@ CastCertError VerifyDeviceCertUsingCustomTrustStore(
       intermediate_cert_issuer_source.AddCert(std::move(cert));
   }
 
-  // Use a signature policy compatible with Cast's PKI.
-  auto signature_policy = CreateCastSignaturePolicy();
+  CastPathBuilderDelegate path_builder_delegate;
 
   // Do path building and RFC 5280 compatible certificate verification using the
   // two Cast trust anchors and Cast signature policy.
@@ -308,7 +299,7 @@ CastCertError VerifyDeviceCertUsingCustomTrustStore(
     return CastCertError::ERR_UNEXPECTED;
   net::CertPathBuilder::Result result;
   net::CertPathBuilder path_builder(
-      target_cert.get(), trust_store, signature_policy.get(), verification_time,
+      target_cert.get(), trust_store, &path_builder_delegate, verification_time,
       net::KeyPurpose::CLIENT_AUTH, net::InitialExplicitPolicy::kFalse,
       {net::AnyPolicy()}, net::InitialPolicyMappingInhibit::kFalse,
       net::InitialAnyPolicyInhibit::kFalse, &result);
