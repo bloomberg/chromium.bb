@@ -33,7 +33,7 @@ class SigninStatusMetricsProvider : public SigninStatusMetricsProviderBase,
   ~SigninStatusMetricsProvider() override;
 
   // SigninStatusMetricsProviderBase:
-  void ProvideGeneralMetrics(
+  void ProvideCurrentSessionData(
       metrics::ChromeUserMetricsExtension* uma_proto) override;
 
   // Factory method, creates a new instance of this class.

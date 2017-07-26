@@ -174,7 +174,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
   // No initial stability log should be generated.
   EXPECT_FALSE(service.has_unsent_logs());
 
-  // Ensure that HasInitialStabilityMetrics() is always called on providers,
+  // Ensure that HasPreviousSessionData() is always called on providers,
   // for consistency, even if other conditions already indicate their presence.
   EXPECT_TRUE(test_provider->has_initial_stability_metrics_called());
 
@@ -218,7 +218,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   EXPECT_TRUE(log_store->has_unsent_logs());
   EXPECT_FALSE(log_store->has_staged_log());
 
-  // Ensure that HasInitialStabilityMetrics() is always called on providers,
+  // Ensure that HasPreviousSessionData() is always called on providers,
   // for consistency, even if other conditions already indicate their presence.
   EXPECT_TRUE(test_provider->has_initial_stability_metrics_called());
 
@@ -284,7 +284,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   EXPECT_TRUE(log_store->has_unsent_logs());
   EXPECT_FALSE(log_store->has_staged_log());
 
-  // Ensure that HasInitialStabilityMetrics() is always called on providers,
+  // Ensure that HasPreviousSessionData() is always called on providers,
   // for consistency, even if other conditions already indicate their presence.
   EXPECT_TRUE(test_provider->has_initial_stability_metrics_called());
 

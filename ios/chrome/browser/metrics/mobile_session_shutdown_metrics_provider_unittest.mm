@@ -172,7 +172,7 @@ TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
 
   // Now call the method under test and verify exactly one sample is written to
   // the expected bucket.
-  metrics_provider_->ProvideInitialStabilityMetrics(nullptr);
+  metrics_provider_->ProvidePreviousSessionData(nullptr);
   histogram_tester.ExpectUniqueSample("Stability.MobileSessionShutdownType",
                                       expected_buckets[GetParam()], 1);
 }

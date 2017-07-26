@@ -344,7 +344,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
                                 CallStackProfileParams::MAY_SHUFFLE);
   AppendProfiles(&params, std::move(profiles));
   ChromeUserMetricsExtension uma_proto;
-  provider.ProvideGeneralMetrics(&uma_proto);
+  provider.ProvideCurrentSessionData(&uma_proto);
 
   ASSERT_EQ(static_cast<int>(arraysize(expected_proto_profiles)),
             uma_proto.sampled_profile().size());
@@ -428,7 +428,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
                                 CallStackProfileParams::MAY_SHUFFLE);
   AppendProfiles(&params, std::move(profiles));
   ChromeUserMetricsExtension uma_proto;
-  provider.ProvideGeneralMetrics(&uma_proto);
+  provider.ProvideCurrentSessionData(&uma_proto);
 
   ASSERT_EQ(static_cast<int>(arraysize(expected_proto_profiles)),
             uma_proto.sampled_profile().size());
@@ -514,7 +514,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
                                 CallStackProfileParams::PRESERVE_ORDER);
   AppendProfiles(&params, std::move(profiles));
   ChromeUserMetricsExtension uma_proto;
-  provider.ProvideGeneralMetrics(&uma_proto);
+  provider.ProvideCurrentSessionData(&uma_proto);
 
   ASSERT_EQ(static_cast<int>(arraysize(expected_proto_profiles)),
             uma_proto.sampled_profile().size());
@@ -558,7 +558,7 @@ TEST_F(CallStackProfileMetricsProviderTest, UnknownModule) {
                                 CallStackProfileParams::MAY_SHUFFLE);
   AppendProfiles(&params, std::move(profiles));
   ChromeUserMetricsExtension uma_proto;
-  provider.ProvideGeneralMetrics(&uma_proto);
+  provider.ProvideCurrentSessionData(&uma_proto);
 
   ASSERT_EQ(static_cast<int>(arraysize(expected_proto_profiles)),
             uma_proto.sampled_profile().size());
@@ -569,8 +569,8 @@ TEST_F(CallStackProfileMetricsProviderTest, UnknownModule) {
   }
 }
 
-// Checks that pending profiles are only passed back to ProvideGeneralMetrics
-// once.
+// Checks that pending profiles are only passed back to
+// ProvideCurrentSessionData once.
 TEST_F(CallStackProfileMetricsProviderTest, ProfilesProvidedOnlyOnce) {
   CallStackProfileMetricsProvider provider;
   for (int r = 0; r < 2; ++r) {
@@ -591,7 +591,7 @@ TEST_F(CallStackProfileMetricsProviderTest, ProfilesProvidedOnlyOnce) {
                                   CallStackProfileParams::MAY_SHUFFLE);
     AppendProfiles(&params, std::move(profiles));
     ChromeUserMetricsExtension uma_proto;
-    provider.ProvideGeneralMetrics(&uma_proto);
+    provider.ProvideCurrentSessionData(&uma_proto);
 
     ASSERT_EQ(1, uma_proto.sampled_profile().size());
     const SampledProfile& sampled_profile = uma_proto.sampled_profile().Get(0);
@@ -603,7 +603,7 @@ TEST_F(CallStackProfileMetricsProviderTest, ProfilesProvidedOnlyOnce) {
   }
 }
 
-// Checks that pending profiles are provided to ProvideGeneralMetrics
+// Checks that pending profiles are provided to ProvideCurrentSessionData
 // when collected before CallStackProfileMetricsProvider is instantiated.
 TEST_F(CallStackProfileMetricsProviderTest,
        ProfilesProvidedWhenCollectedBeforeInstantiation) {
@@ -624,12 +624,12 @@ TEST_F(CallStackProfileMetricsProviderTest,
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
   ChromeUserMetricsExtension uma_proto;
-  provider.ProvideGeneralMetrics(&uma_proto);
+  provider.ProvideCurrentSessionData(&uma_proto);
 
   EXPECT_EQ(1, uma_proto.sampled_profile_size());
 }
 
-// Checks that pending profiles are not provided to ProvideGeneralMetrics
+// Checks that pending profiles are not provided to ProvideCurrentSessionData
 // while recording is disabled.
 TEST_F(CallStackProfileMetricsProviderTest, ProfilesNotProvidedWhileDisabled) {
   Profiles profiles = ProfilesFactory()
@@ -648,12 +648,12 @@ TEST_F(CallStackProfileMetricsProviderTest, ProfilesNotProvidedWhileDisabled) {
                                 CallStackProfileParams::MAY_SHUFFLE);
   AppendProfiles(&params, std::move(profiles));
   ChromeUserMetricsExtension uma_proto;
-  provider.ProvideGeneralMetrics(&uma_proto);
+  provider.ProvideCurrentSessionData(&uma_proto);
 
   EXPECT_EQ(0, uma_proto.sampled_profile_size());
 }
 
-// Checks that pending profiles are not provided to ProvideGeneralMetrics
+// Checks that pending profiles are not provided to ProvideCurrentSessionData
 // if recording is disabled while profiling.
 TEST_F(CallStackProfileMetricsProviderTest,
        ProfilesNotProvidedAfterChangeToDisabled) {
@@ -674,12 +674,12 @@ TEST_F(CallStackProfileMetricsProviderTest,
       .Build();
   callback.Run(std::move(profiles));
   ChromeUserMetricsExtension uma_proto;
-  provider.ProvideGeneralMetrics(&uma_proto);
+  provider.ProvideCurrentSessionData(&uma_proto);
 
   EXPECT_EQ(0, uma_proto.sampled_profile_size());
 }
 
-// Checks that pending profiles are not provided to ProvideGeneralMetrics if
+// Checks that pending profiles are not provided to ProvideCurrentSessionData if
 // recording is enabled, but then disabled and reenabled while profiling.
 TEST_F(CallStackProfileMetricsProviderTest,
        ProfilesNotProvidedAfterChangeToDisabledThenEnabled) {
@@ -701,12 +701,12 @@ TEST_F(CallStackProfileMetricsProviderTest,
       .Build();
   callback.Run(std::move(profiles));
   ChromeUserMetricsExtension uma_proto;
-  provider.ProvideGeneralMetrics(&uma_proto);
+  provider.ProvideCurrentSessionData(&uma_proto);
 
   EXPECT_EQ(0, uma_proto.sampled_profile_size());
 }
 
-// Checks that pending profiles are not provided to ProvideGeneralMetrics
+// Checks that pending profiles are not provided to ProvideCurrentSessionData
 // if recording is disabled, but then enabled while profiling.
 TEST_F(CallStackProfileMetricsProviderTest,
        ProfilesNotProvidedAfterChangeFromDisabled) {
@@ -727,7 +727,7 @@ TEST_F(CallStackProfileMetricsProviderTest,
       .Build();
   callback.Run(std::move(profiles));
   ChromeUserMetricsExtension uma_proto;
-  provider.ProvideGeneralMetrics(&uma_proto);
+  provider.ProvideCurrentSessionData(&uma_proto);
 
   EXPECT_EQ(0, uma_proto.sampled_profile_size());
 }
@@ -815,7 +815,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MAYBE_PeriodicProfiles) {
   const base::TimeDelta max_expected_uptime = internal::GetUptime();
 
   ChromeUserMetricsExtension uma_proto;
-  provider.ProvideGeneralMetrics(&uma_proto);
+  provider.ProvideCurrentSessionData(&uma_proto);
 
   // We expect duration_ms to be the process uptime. Check that it's within the
   // min/max boundary values that were retrieved earlier. Then, set the value

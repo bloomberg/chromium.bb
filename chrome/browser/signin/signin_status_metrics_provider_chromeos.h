@@ -22,7 +22,7 @@ class SigninStatusMetricsProviderChromeOS
   ~SigninStatusMetricsProviderChromeOS() override;
 
   // SigninStatusMetricsProviderBase:
-  void ProvideGeneralMetrics(
+  void ProvideCurrentSessionData(
       metrics::ChromeUserMetricsExtension* uma_proto) override;
 
  private:

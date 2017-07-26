@@ -31,7 +31,7 @@ SigninStatusMetricsProviderChromeOS::SigninStatusMetricsProviderChromeOS() {
 SigninStatusMetricsProviderChromeOS::~SigninStatusMetricsProviderChromeOS() {
 }
 
-void SigninStatusMetricsProviderChromeOS::ProvideGeneralMetrics(
+void SigninStatusMetricsProviderChromeOS::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
   // Compare the current logged-in status with the recorded one and compute
   // sign-in status that should be reported.

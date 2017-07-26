@@ -126,7 +126,7 @@ void ChromeSigninStatusMetricsProviderDelegate::UpdateStatusWhenBrowserAdded(
     owner()->UpdateSigninStatus(
         SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS);
   } else if (status == SigninStatusMetricsProviderBase::UNKNOWN_SIGNIN_STATUS) {
-    // If when function ProvideGeneralMetrics() is called, Chrome is
+    // If when function ProvideCurrentSessionData() is called, Chrome is
     // running in the background with no browser window opened, |signin_status_|
     // will be reset to |UNKNOWN_SIGNIN_STATUS|. Then this newly added browser
     // is the only opened browser/profile and its signin status represents

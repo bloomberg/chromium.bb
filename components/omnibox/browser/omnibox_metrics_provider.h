@@ -23,7 +23,7 @@ class OmniboxMetricsProvider : public metrics::MetricsProvider {
   // metrics::MetricsDataProvider:
   void OnRecordingEnabled() override;
   void OnRecordingDisabled() override;
-  void ProvideGeneralMetrics(
+  void ProvideCurrentSessionData(
       metrics::ChromeUserMetricsExtension* uma_proto) override;
 
  private:
@@ -39,7 +39,7 @@ class OmniboxMetricsProvider : public metrics::MetricsProvider {
       subscription_;
 
   // Saved cache of generated Omnibox event protos, to be copied into the UMA
-  // proto when ProvideGeneralMetrics() is called.
+  // proto when ProvideCurrentSessionData() is called.
   metrics::ChromeUserMetricsExtension omnibox_events_cache;
 
   // Callback passed in from the embedder that returns whether the user is

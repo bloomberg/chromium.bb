@@ -65,7 +65,7 @@ ProfilerMetricsProvider::ProfilerMetricsProvider(
 ProfilerMetricsProvider::~ProfilerMetricsProvider() {
 }
 
-void ProfilerMetricsProvider::ProvideGeneralMetrics(
+void ProfilerMetricsProvider::ProvideCurrentSessionData(
     ChromeUserMetricsExtension* uma_proto) {
   DCHECK_EQ(0, uma_proto->profiler_event_size());
 

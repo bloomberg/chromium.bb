@@ -33,13 +33,13 @@ class MobileSessionShutdownMetricsProvider : public metrics::MetricsProvider {
   ~MobileSessionShutdownMetricsProvider() override;
 
   // metrics::MetricsProvider
-  bool HasInitialStabilityMetrics() override;
-  void ProvideInitialStabilityMetrics(
-      metrics::SystemProfileProto* system_profile_proto) override;
+  bool HasPreviousSessionData() override;
+  void ProvidePreviousSessionData(
+      metrics::ChromeUserMetricsExtension* uma_proto) override;
 
  protected:
   // Provides information on the last session environment, used to decide what
-  // stability metrics to provide in ProvideInitialStabilityMetrics.
+  // stability metrics to provide in ProvidePreviousSessionData.
   // These methods are virtual to be overridden in the tests.
   // The default implementations return the real values.
 

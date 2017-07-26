@@ -747,7 +747,7 @@ bool MetricsService::ProvidersHaveInitialStabilityMetrics() {
   // the later call to RecordInitialHistogramSnapshots().
   bool has_stability_metrics = false;
   for (auto& provider : metrics_providers_)
-    has_stability_metrics |= provider->HasInitialStabilityMetrics();
+    has_stability_metrics |= provider->HasPreviousSessionData();
 
   return has_stability_metrics;
 }

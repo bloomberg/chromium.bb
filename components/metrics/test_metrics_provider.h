@@ -26,11 +26,11 @@ class TestMetricsProvider : public MetricsProvider {
   // MetricsProvider:
   void Init() override;
   void OnRecordingDisabled() override;
-  bool HasInitialStabilityMetrics() override;
-  void ProvideInitialStabilityMetrics(
-      SystemProfileProto* system_profile_proto) override;
-  void ProvideStabilityMetrics(
-      SystemProfileProto* system_profile_proto) override;
+  bool HasPreviousSessionData() override;
+  void ProvidePreviousSessionData(
+      ChromeUserMetricsExtension* uma_proto) override;
+  void ProvideCurrentSessionData(
+      ChromeUserMetricsExtension* uma_proto) override;
   void ProvideSystemProfileMetrics(
       SystemProfileProto* system_profile_proto) override;
 

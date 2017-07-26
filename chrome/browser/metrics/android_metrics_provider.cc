@@ -37,13 +37,14 @@ AndroidMetricsProvider::AndroidMetricsProvider(PrefService* local_state)
 AndroidMetricsProvider::~AndroidMetricsProvider() {
 }
 
-void AndroidMetricsProvider::ProvideStabilityMetrics(
-    metrics::SystemProfileProto* system_profile_proto) {
+void AndroidMetricsProvider::ProvidePreviousSessionData(
+    metrics::ChromeUserMetricsExtension* uma_proto) {
   ConvertStabilityPrefsToHistograms();
 }
 
-void AndroidMetricsProvider::ProvideGeneralMetrics(
+void AndroidMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
+  ConvertStabilityPrefsToHistograms();
   UMA_HISTOGRAM_ENUMERATION(
       "CustomTabs.Visible",
       chrome::android::GetCustomTabsVisibleValue(),
