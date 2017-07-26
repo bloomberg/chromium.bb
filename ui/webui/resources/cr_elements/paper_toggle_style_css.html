@@ -1,0 +1,42 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+
+<!-- Common paper-button styling for Material Design WebUI. -->
+<dom-module id="paper-toggle-style">
+  <template>
+    <style>
+      :root {
+        --cr-toggle-bar-size: {
+          height: 12px;
+          left: 4px;
+          width: 28px;
+        };
+        --cr-toggle-button-size: {
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+          height: 16px;
+          top: -2px;
+          width: 16px;
+        };
+        --cr-toggle-ink-size: {
+          height: 40px;
+          top: -12px;
+          left: -12px;
+          width: 40px;
+        };
+
+        --paper-toggle-button-checked-bar: var(--cr-toggle-bar-size);
+        --paper-toggle-button-checked-bar-color: var(--cr-toggle-color);
+        --paper-toggle-button-checked-button: {
+          @apply(--cr-toggle-button-size);
+          transform: translate(18px, 0);
+        };
+        --paper-toggle-button-checked-button-color: var(--cr-toggle-color);
+        --paper-toggle-button-label-spacing: 0;
+        --paper-toggle-button-unchecked-bar: var(--cr-toggle-bar-size);
+        --paper-toggle-button-unchecked-button: var(--cr-toggle-button-size);
+        --paper-toggle-button-unchecked-ink: var(--cr-toggle-ink-size);
+      };
+    </style>
+  </template>
+</dom-module>
