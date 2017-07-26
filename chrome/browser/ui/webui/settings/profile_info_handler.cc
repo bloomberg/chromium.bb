@@ -17,7 +17,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
+#include "chrome/browser/ui/webui/chromeos/user_image_source.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -48,8 +48,7 @@ ProfileInfoHandler::ProfileInfoHandler(Profile* profile)
       callback_weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
   // Set up the chrome://userimage/ source.
-  content::URLDataSource::Add(profile,
-                              new chromeos::options::UserImageSource());
+  content::URLDataSource::Add(profile, new chromeos::UserImageSource());
 #endif
 }
 
@@ -186,7 +185,7 @@ ProfileInfoHandler::GetAccountNameAndIcon() const {
   // Get image as data URL instead of using chrome://userimage source to avoid
   // issues with caching.
   scoped_refptr<base::RefCountedMemory> image =
-      chromeos::options::UserImageSource::GetUserImage(user->GetAccountId());
+      chromeos::UserImageSource::GetUserImage(user->GetAccountId());
   icon_url = webui::GetPngDataUrl(image->front(), image->size());
 #else   // !defined(OS_CHROMEOS)
   ProfileAttributesEntry* entry;

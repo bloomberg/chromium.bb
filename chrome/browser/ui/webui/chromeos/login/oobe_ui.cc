@@ -63,7 +63,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/wait_for_container_ready_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
-#include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
+#include "chrome/browser/ui/webui/chromeos/user_image_source.h"
 #include "chrome/browser/ui/webui/test_files_request_filter.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_constants.h"
@@ -361,8 +361,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   network_element::AddLocalizedStrings(html_source);
 
   // Set up the chrome://userimage/ source.
-  options::UserImageSource* user_image_source =
-      new options::UserImageSource();
+  UserImageSource* user_image_source = new UserImageSource();
   content::URLDataSource::Add(profile, user_image_source);
 
   // TabHelper is required for OOBE webui to make webview working on it.
