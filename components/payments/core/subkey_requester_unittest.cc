@@ -7,9 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/null_storage.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
@@ -100,7 +99,6 @@ class TestSubKeyRequester : public SubKeyRequester {
 
  private:
   bool should_load_rules_;
-  base::test::ScopedTaskScheduler scoped_task_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSubKeyRequester);
 };
@@ -116,6 +114,7 @@ class SubKeyRequesterTest : public testing::Test {
 
   ~SubKeyRequesterTest() override {}
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   const std::unique_ptr<TestSubKeyRequester> requester_;
 
  private:
@@ -170,7 +169,7 @@ TEST_F(SubKeyRequesterTest, StartRequest_RulesNotLoaded_WillNotLoad) {
   requester_->StartRegionSubKeysRequest(kLocale, kLanguage, 0, std::move(cb));
 
   // Let the timeout execute.
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   // Since the rules are never loaded and the timeout is 0, the delegate should
   // get notified that the subkeys could not be received.
