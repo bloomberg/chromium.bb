@@ -102,15 +102,9 @@ class Git(object):
         return self._filesystem.join(self.checkout_root, repository_relative_path)
 
     def in_working_directory(self, path):
-        try:
-            return self._executive.run_command(
-                [self._executable_name, 'rev-parse', '--is-inside-work-tree'],
-                cwd=path, error_handler=Executive.ignore_error).rstrip() == 'true'
-        except OSError:
-            # The Windows bots seem to throw a WindowsError when git isn't installed.
-            # TODO(qyearsley): Check if this is still necessary and remove if possible.
-            _log.warn('Got OSError when running Git.in_working_directory.')
-            return False
+        return self._executive.run_command(
+            [self._executable_name, 'rev-parse', '--is-inside-work-tree'],
+            cwd=path, error_handler=Executive.ignore_error).rstrip() == 'true'
 
     def find_checkout_root(self, path):
         # "git rev-parse --show-cdup" would be another way to get to the root
