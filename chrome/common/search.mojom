@@ -24,19 +24,18 @@ enum TileVisualType;
 // separate interface such that a reverse connection (|client| below) can be
 // passed when connecting.
 interface EmbeddedSearchConnector {
-  // Connect to the interface. |instant| is the connection which the client will
-  // use to query the embedded search interface. |client| is the connection used
-  // by the embedded search interface implementation to push browser state
-  // updates to the client.
-  Connect(associated Instant& instant, associated SearchBox client);
+  // Connect to the interface. |embedded_search| is the connection which the
+  // client will use to query the embedded search interface. |client| is the
+  // connection used by the embedded search interface implementation to push
+  // browser state updates to the client.
+  Connect(associated EmbeddedSearch & embedded_search,
+          associated EmbeddedSearchClient client);
 };
 
-// TODO(tibell): Rename this to EmbeddedSearch.
-//
 // Browser interface to support embedded search. Render frames connect to this
 // interface to query browser data, such as the most visited pages.
 // See http://dev.chromium.org/embeddedsearch
-interface Instant {
+interface EmbeddedSearch {
   // Tells InstantExtended to set the omnibox focus state.
   FocusOmnibox(int32 page_seq_no, OmniboxFocusState state);
 
@@ -94,11 +93,9 @@ struct EmbeddedSearchRequestParams;
 [Native]
 struct ThemeBackgroundInfo;
 
-// TODO(tibell): Rename this to EmbeddedSearchClient.
-//
 // Renderer interface used by the browser to push updates to the client. For
 // example, the browser will tell the frame if the omnibox got focus.
-interface SearchBox {
+interface EmbeddedSearchClient {
   SetPageSequenceNumber(int32 page_seq_no);
 
   FocusChanged(OmniboxFocusState new_focus_state,

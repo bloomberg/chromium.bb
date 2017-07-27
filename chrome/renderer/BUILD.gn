@@ -114,8 +114,8 @@ static_library("renderer") {
     "//chrome:resources",
     "//chrome:strings",
     "//chrome/common",
-    "//chrome/common:instant_mojom",
     "//chrome/common:mojo_bindings",
+    "//chrome/common:search_mojom",
     "//chrome/common/net",
     "//components/autofill/content/renderer",
     "//components/cdm/renderer",
@@ -414,7 +414,7 @@ static_library("test_support") {
 
   deps = [
     ":renderer",
-    "//chrome/common:instant_mojom",
+    "//chrome/common:search_mojom",
     "//content/test:test_support",
     "//extensions/features",
     "//testing/gmock",

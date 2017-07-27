@@ -33,7 +33,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/search/instant_types.h"
-#include "chrome/common/search/mock_searchbox.h"
+#include "chrome/common/search/mock_embedded_search_client.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -53,10 +53,11 @@ using testing::Return;
 
 namespace {
 
-class MockSearchBoxClientFactory
-    : public SearchIPCRouter::SearchBoxClientFactory {
+class MockEmbeddedSearchClientFactory
+    : public SearchIPCRouter::EmbeddedSearchClientFactory {
  public:
-  MOCK_METHOD0(GetSearchBox, chrome::mojom::SearchBox*(void));
+  MOCK_METHOD0(GetEmbeddedSearchClient,
+               chrome::mojom::EmbeddedSearchClient*(void));
 };
 
 using content::Referrer;
@@ -69,13 +70,14 @@ using prerender::PrerenderTabHelper;
 
 class DummyPrerenderContents : public PrerenderContents {
  public:
-  DummyPrerenderContents(PrerenderManager* prerender_manager,
-                         Profile* profile,
-                         const GURL& url,
-                         const Referrer& referrer,
-                         Origin origin,
-                         bool call_did_finish_load,
-                         chrome::mojom::SearchBox* search_box);
+  DummyPrerenderContents(
+      PrerenderManager* prerender_manager,
+      Profile* profile,
+      const GURL& url,
+      const Referrer& referrer,
+      Origin origin,
+      bool call_did_finish_load,
+      chrome::mojom::EmbeddedSearchClient* embedded_search_client);
 
   void StartPrerendering(
       const gfx::Rect& bounds,
@@ -87,16 +89,18 @@ class DummyPrerenderContents : public PrerenderContents {
   Profile* profile_;
   const GURL url_;
   bool call_did_finish_load_;
-  chrome::mojom::SearchBox* search_box_;
+  chrome::mojom::EmbeddedSearchClient* embedded_search_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyPrerenderContents);
 };
 
 class DummyPrerenderContentsFactory : public PrerenderContents::Factory {
  public:
-  DummyPrerenderContentsFactory(bool call_did_finish_load,
-                                chrome::mojom::SearchBox* search_box)
-      : call_did_finish_load_(call_did_finish_load), search_box_(search_box) {}
+  DummyPrerenderContentsFactory(
+      bool call_did_finish_load,
+      chrome::mojom::EmbeddedSearchClient* embedded_search_client)
+      : call_did_finish_load_(call_did_finish_load),
+        embedded_search_client_(embedded_search_client) {}
 
   PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager,
@@ -107,7 +111,7 @@ class DummyPrerenderContentsFactory : public PrerenderContents::Factory {
 
  private:
   bool call_did_finish_load_;
-  chrome::mojom::SearchBox* search_box_;
+  chrome::mojom::EmbeddedSearchClient* embedded_search_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyPrerenderContentsFactory);
 };
@@ -119,12 +123,12 @@ DummyPrerenderContents::DummyPrerenderContents(
     const Referrer& referrer,
     Origin origin,
     bool call_did_finish_load,
-    chrome::mojom::SearchBox* search_box)
+    chrome::mojom::EmbeddedSearchClient* embedded_search_client)
     : PrerenderContents(prerender_manager, profile, url, referrer, origin),
       profile_(profile),
       url_(url),
       call_did_finish_load_(call_did_finish_load),
-      search_box_(search_box) {}
+      embedded_search_client_(embedded_search_client) {}
 
 void DummyPrerenderContents::StartPrerendering(
     const gfx::Rect& bounds,
@@ -140,10 +144,11 @@ void DummyPrerenderContents::StartPrerendering(
   SearchTabHelper::CreateForWebContents(prerender_contents_.get());
   auto* search_tab =
       SearchTabHelper::FromWebContents(prerender_contents_.get());
-  auto factory = base::MakeUnique<MockSearchBoxClientFactory>();
-  ON_CALL(*factory, GetSearchBox()).WillByDefault(Return(search_box_));
+  auto factory = base::MakeUnique<MockEmbeddedSearchClientFactory>();
+  ON_CALL(*factory, GetEmbeddedSearchClient())
+      .WillByDefault(Return(embedded_search_client_));
   search_tab->ipc_router_for_testing()
-      .set_search_box_client_factory_for_testing(std::move(factory));
+      .set_embedded_search_client_factory_for_testing(std::move(factory));
 
   prerendering_has_started_ = true;
   DCHECK(session_storage_namespace);
@@ -171,7 +176,8 @@ PrerenderContents* DummyPrerenderContentsFactory::CreatePrerenderContents(
     const Referrer& referrer,
     Origin origin) {
   return new DummyPrerenderContents(prerender_manager, profile, url, referrer,
-                                    origin, call_did_finish_load_, search_box_);
+                                    origin, call_did_finish_load_,
+                                    embedded_search_client_);
 }
 
 }  // namespace
@@ -193,7 +199,7 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
 
     PrerenderManagerFactory::GetForBrowserContext(browser()->profile())
         ->SetPrerenderContentsFactoryForTest(new DummyPrerenderContentsFactory(
-            call_did_finish_load, &mock_search_box_));
+            call_did_finish_load, &mock_embedded_search_client_));
     if (prerender_search_results_base_page) {
       content::SessionStorageNamespace* session_storage_namespace =
           GetActiveWebContents()->GetController().
@@ -238,10 +244,12 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
     EXPECT_NE(static_cast<PrerenderHandle*>(NULL), prerender_handle());
   }
 
-  MockSearchBox* mock_search_box() { return &mock_search_box_; }
+  MockEmbeddedSearchClient* mock_embedded_search_client() {
+    return &mock_embedded_search_client_;
+  }
 
  private:
-  MockSearchBox mock_search_box_;
+  MockEmbeddedSearchClient mock_embedded_search_client_;
 };
 
 TEST_F(InstantSearchPrerendererTest, GetSearchTermsFromPrerenderedPage) {
@@ -267,7 +275,7 @@ TEST_F(InstantSearchPrerendererTest, PrefetchSearchResults) {
   Init(true, true);
   EXPECT_TRUE(prerender_handle()->IsFinishedLoading());
   InstantSearchPrerenderer* prerenderer = GetInstantSearchPrerenderer();
-  EXPECT_CALL(*mock_search_box(), SetSuggestionToPrefetch(_));
+  EXPECT_CALL(*mock_embedded_search_client(), SetSuggestionToPrefetch(_));
   prerenderer->Prerender(
       InstantSuggestion(ASCIIToUTF16("flowers"), std::string()));
   EXPECT_EQ("flowers", base::UTF16ToASCII(prerenderer->get_last_query()));
@@ -278,7 +286,8 @@ TEST_F(InstantSearchPrerendererTest, DoNotPrefetchSearchResults) {
   // Page hasn't finished loading yet.
   EXPECT_FALSE(prerender_handle()->IsFinishedLoading());
   InstantSearchPrerenderer* prerenderer = GetInstantSearchPrerenderer();
-  EXPECT_CALL(*mock_search_box(), SetSuggestionToPrefetch(_)).Times(0);
+  EXPECT_CALL(*mock_embedded_search_client(), SetSuggestionToPrefetch(_))
+      .Times(0);
   prerenderer->Prerender(
       InstantSuggestion(ASCIIToUTF16("flowers"), std::string()));
   EXPECT_EQ("", base::UTF16ToASCII(prerenderer->get_last_query()));
@@ -303,7 +312,7 @@ TEST_F(InstantSearchPrerendererTest, CommitQuery) {
   base::string16 query = ASCIIToUTF16("flowers");
   PrerenderSearchQuery(query);
   InstantSearchPrerenderer* prerenderer = GetInstantSearchPrerenderer();
-  EXPECT_CALL(*mock_search_box(), Submit(_));
+  EXPECT_CALL(*mock_embedded_search_client(), Submit(_));
   prerenderer->Commit(EmbeddedSearchRequestParams());
 }
 
@@ -523,7 +532,7 @@ TEST_F(TestUsePrerenderPage, SetEmbeddedSearchRequestParams) {
   PrerenderSearchQuery(ASCIIToUTF16("foo"));
   EXPECT_TRUE(browser()->instant_controller());
   EXPECT_CALL(
-      *mock_search_box(),
+      *mock_embedded_search_client(),
       Submit(AllOf(Field(&EmbeddedSearchRequestParams::original_query,
                          Eq(base::ASCIIToUTF16("f"))),
                    Field(&EmbeddedSearchRequestParams::input_encoding,

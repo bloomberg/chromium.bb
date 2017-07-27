@@ -24,7 +24,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/search/instant_types.h"
-#include "chrome/common/search/mock_searchbox.h"
+#include "chrome/common/search/mock_embedded_search_client.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -91,10 +91,11 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldSubmitQuery, bool());
 };
 
-class MockSearchBoxClientFactory
-    : public SearchIPCRouter::SearchBoxClientFactory {
+class MockEmbeddedSearchClientFactory
+    : public SearchIPCRouter::EmbeddedSearchClientFactory {
  public:
-  MOCK_METHOD0(GetSearchBox, chrome::mojom::SearchBox*(void));
+  MOCK_METHOD0(GetEmbeddedSearchClient,
+               chrome::mojom::EmbeddedSearchClient*(void));
 };
 
 }  // namespace
@@ -147,9 +148,10 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
         mock_delegate());
     search_tab_helper->ipc_router_for_testing().set_policy_for_testing(
         base::WrapUnique(new MockSearchIPCRouterPolicy));
-    auto factory = base::MakeUnique<MockSearchBoxClientFactory>();
-    ON_CALL(*factory, GetSearchBox()).WillByDefault(Return(&mock_search_box_));
-    GetSearchIPCRouter().set_search_box_client_factory_for_testing(
+    auto factory = base::MakeUnique<MockEmbeddedSearchClientFactory>();
+    ON_CALL(*factory, GetEmbeddedSearchClient())
+        .WillByDefault(Return(&mock_embedded_search_client_));
+    GetSearchIPCRouter().set_embedded_search_client_factory_for_testing(
         std::move(factory));
   }
 
@@ -178,12 +180,14 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
         .is_active_tab_;
   }
 
-  MockSearchBox* mock_search_box() { return &mock_search_box_; }
+  MockEmbeddedSearchClient* mock_embedded_search_client() {
+    return &mock_embedded_search_client_;
+  }
 
  private:
   MockSearchIPCRouterDelegate delegate_;
   base::FieldTrialList field_trial_list_;
-  MockSearchBox mock_search_box_;
+  MockEmbeddedSearchClient mock_embedded_search_client_;
 };
 
 TEST_F(SearchIPCRouterTest, ProcessFocusOmniboxMsg) {
@@ -478,7 +482,7 @@ TEST_F(SearchIPCRouterTest, SendSetSuggestionToPrefetch) {
       .WillOnce(Return(true));
 
   content::WebContents* contents = web_contents();
-  EXPECT_CALL(*mock_search_box(), SetSuggestionToPrefetch(_));
+  EXPECT_CALL(*mock_embedded_search_client(), SetSuggestionToPrefetch(_));
   GetSearchTabHelper(contents)->SetSuggestionToPrefetch(InstantSuggestion());
 }
 
@@ -491,7 +495,8 @@ TEST_F(SearchIPCRouterTest, DoNotSendSetSuggestionToPrefetch) {
       .WillOnce(Return(false));
 
   content::WebContents* contents = web_contents();
-  EXPECT_CALL(*mock_search_box(), SetSuggestionToPrefetch(_)).Times(0);
+  EXPECT_CALL(*mock_embedded_search_client(), SetSuggestionToPrefetch(_))
+      .Times(0);
   GetSearchTabHelper(contents)->SetSuggestionToPrefetch(InstantSuggestion());
 }
 
@@ -503,7 +508,7 @@ TEST_F(SearchIPCRouterTest, SendOmniboxFocusChange) {
       .Times(1)
       .WillOnce(Return(true));
 
-  EXPECT_CALL(*mock_search_box(), FocusChanged(_, _));
+  EXPECT_CALL(*mock_embedded_search_client(), FocusChanged(_, _));
   GetSearchIPCRouter().OmniboxFocusChanged(OMNIBOX_FOCUS_NONE,
                                            OMNIBOX_FOCUS_CHANGE_EXPLICIT);
 }
@@ -516,7 +521,7 @@ TEST_F(SearchIPCRouterTest, DoNotSendOmniboxFocusChange) {
       .Times(1)
       .WillOnce(Return(false));
 
-  EXPECT_CALL(*mock_search_box(), FocusChanged(_, _)).Times(0);
+  EXPECT_CALL(*mock_embedded_search_client(), FocusChanged(_, _)).Times(0);
   GetSearchIPCRouter().OmniboxFocusChanged(OMNIBOX_FOCUS_NONE,
                                            OMNIBOX_FOCUS_CHANGE_EXPLICIT);
 }
@@ -529,7 +534,7 @@ TEST_F(SearchIPCRouterTest, SendSetInputInProgress) {
       .Times(1)
       .WillOnce(Return(true));
 
-  EXPECT_CALL(*mock_search_box(), SetInputInProgress(_));
+  EXPECT_CALL(*mock_embedded_search_client(), SetInputInProgress(_));
   GetSearchIPCRouter().SetInputInProgress(true);
 }
 
@@ -541,7 +546,7 @@ TEST_F(SearchIPCRouterTest, DoNotSendSetInputInProgress) {
       .Times(1)
       .WillOnce(Return(false));
 
-  EXPECT_CALL(*mock_search_box(), SetInputInProgress(_)).Times(0);
+  EXPECT_CALL(*mock_embedded_search_client(), SetInputInProgress(_)).Times(0);
   GetSearchIPCRouter().SetInputInProgress(true);
 }
 
@@ -553,7 +558,7 @@ TEST_F(SearchIPCRouterTest, SendMostVisitedItemsMsg) {
       .Times(1)
       .WillOnce(Return(true));
 
-  EXPECT_CALL(*mock_search_box(), MostVisitedChanged(_));
+  EXPECT_CALL(*mock_embedded_search_client(), MostVisitedChanged(_));
   GetSearchIPCRouter().SendMostVisitedItems(
       std::vector<InstantMostVisitedItem>());
 }
@@ -566,7 +571,7 @@ TEST_F(SearchIPCRouterTest, DoNotSendMostVisitedItemsMsg) {
       .Times(1)
       .WillOnce(Return(false));
 
-  EXPECT_CALL(*mock_search_box(), MostVisitedChanged(_)).Times(0);
+  EXPECT_CALL(*mock_embedded_search_client(), MostVisitedChanged(_)).Times(0);
   GetSearchIPCRouter().SendMostVisitedItems(
       std::vector<InstantMostVisitedItem>());
 }
@@ -579,7 +584,7 @@ TEST_F(SearchIPCRouterTest, SendThemeBackgroundInfoMsg) {
       .Times(1)
       .WillOnce(Return(true));
 
-  EXPECT_CALL(*mock_search_box(), ThemeChanged(_));
+  EXPECT_CALL(*mock_embedded_search_client(), ThemeChanged(_));
   GetSearchIPCRouter().SendThemeBackgroundInfo(ThemeBackgroundInfo());
 }
 
@@ -591,7 +596,7 @@ TEST_F(SearchIPCRouterTest, DoNotSendThemeBackgroundInfoMsg) {
       .Times(1)
       .WillOnce(Return(false));
 
-  EXPECT_CALL(*mock_search_box(), ThemeChanged(_)).Times(0);
+  EXPECT_CALL(*mock_embedded_search_client(), ThemeChanged(_)).Times(0);
   GetSearchIPCRouter().SendThemeBackgroundInfo(ThemeBackgroundInfo());
 }
 
@@ -601,7 +606,7 @@ TEST_F(SearchIPCRouterTest, SendSubmitMsg) {
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
   EXPECT_CALL(*policy, ShouldSubmitQuery()).Times(1).WillOnce(Return(true));
 
-  EXPECT_CALL(*mock_search_box(), Submit(_));
+  EXPECT_CALL(*mock_embedded_search_client(), Submit(_));
   GetSearchIPCRouter().Submit(EmbeddedSearchRequestParams());
 }
 
@@ -611,6 +616,6 @@ TEST_F(SearchIPCRouterTest, DoNotSendSubmitMsg) {
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
   EXPECT_CALL(*policy, ShouldSubmitQuery()).Times(1).WillOnce(Return(false));
 
-  EXPECT_CALL(*mock_search_box(), Submit(_)).Times(0);
+  EXPECT_CALL(*mock_embedded_search_client(), Submit(_)).Times(0);
   GetSearchIPCRouter().Submit(EmbeddedSearchRequestParams());
 }
