@@ -62,7 +62,6 @@ class TextFinder;
 class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
 class WebAutofillClient;
-class WebDataSourceImpl;
 class WebDevToolsAgentImpl;
 class WebDevToolsFrontendImpl;
 class WebFrameClient;
@@ -370,11 +369,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebDevToolsAgentImpl* DevToolsAgentImpl() const override {
     return dev_tools_agent_.Get();
   }
-
-  // Getters for the impls corresponding to Get(Provisional)DataSource. They
-  // may return 0 if there is no corresponding data source.
-  WebDataSourceImpl* DataSourceImpl() const;
-  WebDataSourceImpl* ProvisionalDataSourceImpl() const;
 
   // When a Find operation ends, we want to set the selection to what was active
   // and set focus to the first focusable node we find (starting with the first
