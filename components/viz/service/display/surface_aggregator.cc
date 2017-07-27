@@ -157,8 +157,8 @@ gfx::Rect SurfaceAggregator::DamageRectForSurface(
     const gfx::Rect& full_rect) const {
   auto it = previous_contained_surfaces_.find(surface->surface_id());
   if (it != previous_contained_surfaces_.end()) {
-    uint64_t previous_index = it->second;
-    if (previous_index == surface->GetActiveFrameIndex())
+    int previous_index = it->second;
+    if (previous_index == surface->frame_index())
       return gfx::Rect();
   }
   const SurfaceId& previous_surface_id = surface->previous_frame_surface_id();
@@ -167,8 +167,8 @@ gfx::Rect SurfaceAggregator::DamageRectForSurface(
     it = previous_contained_surfaces_.find(previous_surface_id);
   }
   if (it != previous_contained_surfaces_.end()) {
-    uint64_t previous_index = it->second;
-    if (previous_index == surface->GetActiveFrameIndex() - 1)
+    int previous_index = it->second;
+    if (previous_index == surface->frame_index() - 1)
       return source.damage_rect;
   }
 
@@ -600,7 +600,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
     contained_surfaces_[surface_id] = 0;
     return gfx::Rect();
   }
-  contained_surfaces_[surface_id] = surface->GetActiveFrameIndex();
+  contained_surfaces_[surface_id] = surface->frame_index();
   if (!surface->HasActiveFrame())
     return gfx::Rect();
   const cc::CompositorFrame& frame = surface->GetActiveFrame();
@@ -854,7 +854,7 @@ cc::CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
 
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   DCHECK(surface);
-  contained_surfaces_[surface_id] = surface->GetActiveFrameIndex();
+  contained_surfaces_[surface_id] = surface->frame_index();
 
   if (!surface->HasActiveFrame())
     return {};

@@ -1679,37 +1679,5 @@ TEST_F(SurfaceSynchronizationTest, FrameActivationAfterFrameSinkDestruction) {
   EXPECT_EQ(nullptr, parent_surface);
 }
 
-TEST_F(SurfaceSynchronizationTest, FrameIndexWithPendingFrames) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  constexpr int n_iterations = 7;
-
-  // Submit a frame with no dependencies that will activate immediately. Record
-  // the initial frame index.
-  parent_support().SubmitCompositorFrame(
-      parent_id.local_surface_id(),
-      MakeCompositorFrame({}, empty_surface_ids(),
-                          std::vector<cc::TransferableResource>()));
-  Surface* parent_surface =
-      frame_sink_manager().surface_manager()->GetSurfaceForId(parent_id);
-  uint64_t initial_frame_index = parent_surface->GetActiveFrameIndex();
-
-  // Submit frames with unresolved dependencies. GetActiveFrameIndex should
-  // return the same value as before.
-  for (int i = 0; i < n_iterations; i++) {
-    parent_support().SubmitCompositorFrame(
-        parent_id.local_surface_id(),
-        MakeCompositorFrame({child_id1}, empty_surface_ids(),
-                            std::vector<cc::TransferableResource>()));
-    EXPECT_EQ(initial_frame_index, parent_surface->GetActiveFrameIndex());
-  }
-
-  // Activate the pending frame. GetActiveFrameIndex should return the frame
-  // index of the newly activated frame.
-  parent_surface->ActivatePendingFrameForDeadline();
-  EXPECT_EQ(initial_frame_index + n_iterations,
-            parent_surface->GetActiveFrameIndex());
-}
-
 }  // namespace test
 }  // namespace viz

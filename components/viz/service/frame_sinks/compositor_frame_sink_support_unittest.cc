@@ -889,25 +889,5 @@ TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
   support_->SetNeedsBeginFrame(false);
 }
 
-TEST_F(CompositorFrameSinkSupportTest, FrameIndexCarriedOverToNewSurface) {
-  LocalSurfaceId local_surface_id1(1, kArbitraryToken);
-  LocalSurfaceId local_surface_id2(2, kArbitraryToken);
-  SurfaceId id1(support_->frame_sink_id(), local_surface_id1);
-  SurfaceId id2(support_->frame_sink_id(), local_surface_id2);
-
-  // Submit a frame to |id1| and record the frame index.
-  support_->SubmitCompositorFrame(local_surface_id1,
-                                  test::MakeCompositorFrame());
-  Surface* surface1 = GetSurfaceForId(id1);
-  uint64_t frame_index = surface1->GetActiveFrameIndex();
-
-  // Submit a frame to |id2| and verify that the new frame index is one more
-  // than what we had before.
-  support_->SubmitCompositorFrame(local_surface_id2,
-                                  test::MakeCompositorFrame());
-  Surface* surface2 = GetSurfaceForId(id2);
-  EXPECT_EQ(frame_index + 1, surface2->GetActiveFrameIndex());
-}
-
 }  // namespace
 }  // namespace viz

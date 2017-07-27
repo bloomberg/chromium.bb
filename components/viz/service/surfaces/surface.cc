@@ -20,6 +20,12 @@
 
 namespace viz {
 
+namespace {
+// The frame index starts at 2 so that empty frames will be treated as
+// completely damaged the first time they're drawn from.
+constexpr int kFrameIndexStart = 2;
+}  // namespace
+
 Surface::Surface(const SurfaceInfo& surface_info,
                  SurfaceManager* surface_manager,
                  base::WeakPtr<SurfaceClient> surface_client,
@@ -30,6 +36,7 @@ Surface::Surface(const SurfaceInfo& surface_info,
       surface_manager_(surface_manager),
       surface_client_(std::move(surface_client)),
       deadline_(begin_frame_source),
+      frame_index_(kFrameIndexStart),
       needs_sync_tokens_(needs_sync_tokens) {
   deadline_.AddObserver(this);
 }
@@ -47,6 +54,7 @@ Surface::~Surface() {
 
 void Surface::SetPreviousFrameSurface(Surface* surface) {
   DCHECK(surface && (HasActiveFrame() || HasPendingFrame()));
+  frame_index_ = surface->frame_index() + 1;
   previous_frame_surface_id_ = surface->surface_id();
   cc::CompositorFrame& frame = active_frame_data_ ? active_frame_data_->frame
                                                   : pending_frame_data_->frame;
@@ -100,7 +108,6 @@ void Surface::Close() {
 }
 
 bool Surface::QueueFrame(cc::CompositorFrame frame,
-                         uint64_t frame_index,
                          const base::Closure& callback,
                          const WillDrawCallback& will_draw_callback) {
   late_activation_dependencies_.clear();
@@ -137,11 +144,10 @@ bool Surface::QueueFrame(cc::CompositorFrame frame,
 
   if (activation_dependencies_.empty()) {
     // If there are no blockers, then immediately activate the frame.
-    ActivateFrame(
-        FrameData(std::move(frame), frame_index, callback, will_draw_callback));
+    ActivateFrame(FrameData(std::move(frame), callback, will_draw_callback));
   } else {
     pending_frame_data_ =
-        FrameData(std::move(frame), frame_index, callback, will_draw_callback);
+        FrameData(std::move(frame), callback, will_draw_callback);
 
     RejectCompositorFramesToFallbackSurfaces();
 
@@ -207,11 +213,9 @@ void Surface::ActivatePendingFrameForDeadline() {
 }
 
 Surface::FrameData::FrameData(cc::CompositorFrame&& frame,
-                              uint64_t frame_index,
                               const base::Closure& draw_callback,
                               const WillDrawCallback& will_draw_callback)
     : frame(std::move(frame)),
-      frame_index(frame_index),
       draw_callback(draw_callback),
       will_draw_callback(will_draw_callback) {}
 
@@ -250,6 +254,8 @@ void Surface::ActivateFrame(FrameData frame_data) {
 
   for (auto& copy_request : old_copy_requests)
     RequestCopyOfOutput(std::move(copy_request));
+
+  ++frame_index_;
 
   previous_frame_surface_id_ = surface_id();
 
