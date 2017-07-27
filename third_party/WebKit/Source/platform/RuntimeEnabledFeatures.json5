@@ -485,10 +485,6 @@
       status: "experimental",
     },
     {
-      name: "FrameTimingSupport",
-      status: "experimental",
-    },
-    {
       name: "FullscreenUnprefixed",
       settable_from_internals: true,
       status: "experimental",
