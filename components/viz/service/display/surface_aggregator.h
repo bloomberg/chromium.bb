@@ -34,7 +34,7 @@ class SurfaceManager;
 
 class VIZ_SERVICE_EXPORT SurfaceAggregator {
  public:
-  using SurfaceIndexMap = base::flat_map<SurfaceId, int>;
+  using SurfaceIndexMap = base::flat_map<SurfaceId, uint64_t>;
 
   SurfaceAggregator(SurfaceManager* manager,
                     cc::ResourceProvider* provider,
