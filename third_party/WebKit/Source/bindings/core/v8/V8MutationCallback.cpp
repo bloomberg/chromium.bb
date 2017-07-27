@@ -50,18 +50,20 @@ V8MutationCallback::~V8MutationCallback() {}
 void V8MutationCallback::Call(
     const HeapVector<Member<MutationRecord>>& mutations,
     MutationObserver* observer) {
+  if (callback_.IsEmpty())
+    return;
+
+  if (!script_state_->ContextIsValid())
+    return;
+
   v8::Isolate* isolate = script_state_->GetIsolate();
   ExecutionContext* execution_context =
       ExecutionContext::From(script_state_.Get());
   if (!execution_context || execution_context->IsContextSuspended() ||
       execution_context->IsContextDestroyed())
     return;
-  if (!script_state_->ContextIsValid())
-    return;
   ScriptState::Scope scope(script_state_.Get());
 
-  if (callback_.IsEmpty())
-    return;
   v8::Local<v8::Value> observer_handle =
       ToV8(observer, script_state_->GetContext()->Global(), isolate);
   if (!observer_handle->IsObject())
