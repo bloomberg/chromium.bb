@@ -280,7 +280,8 @@ LayoutBox* CollectInlinesInternal(
       // Add floats and positioned objects in the same way as atomic inlines.
       // Because these objects need positions, they will be handled in
       // NGInlineLayoutAlgorithm.
-      builder->AppendOpaque(NGInlineItem::kFloating, nullptr, node);
+      builder->AppendOpaque(NGInlineItem::kFloating,
+                            kObjectReplacementCharacter, nullptr, node);
 
     } else if (node->IsOutOfFlowPositioned()) {
       builder->AppendOpaque(NGInlineItem::kOutOfFlowPositioned, nullptr, node);

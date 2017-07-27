@@ -9,16 +9,13 @@
 
 namespace blink {
 
-NGInlineItemResult::NGInlineItemResult() {}
+NGInlineItemResult::NGInlineItemResult()
+    : item_index(0), start_offset(0), end_offset(0) {}
 
 NGInlineItemResult::NGInlineItemResult(unsigned index,
                                        unsigned start,
                                        unsigned end)
-    : item_index(index),
-      start_offset(start),
-      end_offset(end),
-      no_break_opportunities_inside(false),
-      prohibit_break_after(false) {}
+    : item_index(index), start_offset(start), end_offset(end) {}
 
 void NGLineInfo::SetLineStyle(const NGInlineNode& node,
                               const NGConstraintSpace& constraint_space,
