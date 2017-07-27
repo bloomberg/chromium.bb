@@ -12,10 +12,8 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
@@ -136,7 +134,9 @@ class FakeTetherDelegate : public NetworkConnectionHandler::TetherDelegate {
 
 class NetworkConnectionHandlerImplTest : public NetworkStateTest {
  public:
-  NetworkConnectionHandlerImplTest() : scoped_task_scheduler_(&message_loop_) {}
+  NetworkConnectionHandlerImplTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   ~NetworkConnectionHandlerImplTest() override {}
 
@@ -147,7 +147,8 @@ class NetworkConnectionHandlerImplTest : public NetworkStateTest {
     test_nsscertdb_.reset(new net::NSSCertDatabaseChromeOS(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot())),
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot()))));
-    test_nsscertdb_->SetSlowTaskRunnerForTest(message_loop_.task_runner());
+    test_nsscertdb_->SetSlowTaskRunnerForTest(
+        scoped_task_environment_.GetMainThreadTaskRunner());
 
     CertLoader::Initialize();
     CertLoader::ForceHardwareBackedForTesting();
@@ -179,7 +180,7 @@ class NetworkConnectionHandlerImplTest : public NetworkStateTest {
     network_connection_handler_->AddObserver(
         network_connection_observer_.get());
 
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
 
     fake_tether_delegate_.reset(new FakeTetherDelegate());
   }
@@ -215,7 +216,7 @@ class NetworkConnectionHandlerImplTest : public NetworkStateTest {
         base::Bind(&NetworkConnectionHandlerImplTest::ErrorCallback,
                    base::Unretained(this)),
         check_error_state);
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
 
   void Disconnect(const std::string& service_path) {
@@ -225,7 +226,7 @@ class NetworkConnectionHandlerImplTest : public NetworkStateTest {
                    base::Unretained(this)),
         base::Bind(&NetworkConnectionHandlerImplTest::ErrorCallback,
                    base::Unretained(this)));
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
 
   void SuccessCallback() { result_ = kSuccessResult; }
@@ -243,13 +244,13 @@ class NetworkConnectionHandlerImplTest : public NetworkStateTest {
 
   void StartCertLoader() {
     CertLoader::Get()->SetUserNSSDB(test_nsscertdb_.get());
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
 
   void LoginToRegularUser() {
     LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
                                         LoginState::LOGGED_IN_USER_REGULAR);
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
 
   scoped_refptr<net::X509Certificate> ImportTestClientCert() {
@@ -298,9 +299,10 @@ class NetworkConnectionHandlerImplTest : public NetworkStateTest {
                                          std::string(),  // no username hash
                                          *network_configs, global_config);
     }
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<NetworkConfigurationHandler> network_config_handler_;
   std::unique_ptr<NetworkConnectionHandler> network_connection_handler_;
   std::unique_ptr<TestNetworkConnectionObserver> network_connection_observer_;
@@ -309,13 +311,10 @@ class NetworkConnectionHandlerImplTest : public NetworkStateTest {
   std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
   crypto::ScopedTestNSSDB test_nssdb_;
   std::unique_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;
-  base::MessageLoopForUI message_loop_;
   std::string result_;
   std::unique_ptr<FakeTetherDelegate> fake_tether_delegate_;
 
  private:
-  base::test::ScopedTaskScheduler scoped_task_scheduler_;
-
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectionHandlerImplTest);
 };
 
