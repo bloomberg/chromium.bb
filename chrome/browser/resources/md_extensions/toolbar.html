@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_toggle_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
@@ -11,7 +12,7 @@
 
 <dom-module id="extensions-toolbar">
   <template>
-    <style include="cr-hidden-style paper-button-style">
+    <style include="cr-hidden-style paper-button-style paper-toggle-style">
       :host {
         --toolbar-width: 580px;
         --toolbar-color: var(--md-toolbar-color);
@@ -20,6 +21,18 @@
       cr-toolbar {
         --cr-toolbar-field-width: var(--toolbar-width);
         background: var(--toolbar-color);
+      }
+
+      /* This toggle needs special styling because it's on blue background. */
+      cr-toolbar paper-toggle-button {
+        --paper-toggle-button-checked-bar: {
+          @apply(--cr-toggle-bar-size);
+          opacity: 0.5;
+        };
+        --paper-toggle-button-checked-bar-color: white;
+        --paper-toggle-button-checked-button-color: white;
+        --paper-toggle-button-checked-ink-color: white;
+        --paper-toggle-button-unchecked-ink-color: white;
       }
 
       .dev-controls {
