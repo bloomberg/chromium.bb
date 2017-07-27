@@ -83,7 +83,6 @@ void InstallPendingConditionalFeatureForCore(const String& feature,
       V8TestObject::installFeatureName(
           isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
     }
-    return;
   }
 }
 

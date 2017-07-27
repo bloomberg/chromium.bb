@@ -43,6 +43,7 @@ def get_install_functions(interfaces, feature_names):
         {"condition": 'OriginTrials::%sEnabled' % uncapitalize(feature_name),
          "name": feature_name,
          "install_method": "install%s" % feature_name,
+         "interface_is_global": interface_info.is_global,
          "v8_class": interface_info.v8_class,
          "v8_class_or_partial": interface_info.v8_class_or_partial}
         for feature_name in feature_names

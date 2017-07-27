@@ -76,13 +76,18 @@ void InstallPendingConditionalFeatureForCore(const String& feature,
   {% for feature in installers_by_feature %}
   if (feature == {{feature.name_constant}}) {
     {% for installer in feature.installers %}
+    {% if installer.interface_is_global %}
+    {{installer.v8_class_or_partial}}::{{installer.install_method}}(
+        isolate, world, script_state->GetContext()->Global(),
+        v8::Local<v8::Object>(), v8::Local<v8::Function>());
+    {% else %}
     if (context_data->GetExistingConstructorAndPrototypeForType(
             &{{installer.v8_class}}::wrapperTypeInfo, &prototype_object, &interface_object)) {
       {{installer.v8_class_or_partial}}::{{installer.install_method}}(
           isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
     }
+    {% endif %}
     {% endfor %}
-    return;
   }
   {% endfor %}
   {% endif %}
