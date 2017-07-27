@@ -69,24 +69,11 @@ class {{export_attribute}} {{struct.name}} {
   }
 
   template <typename UserType>
-  static mojo::Message SerializeAsMessage(UserType* input) {
-    return mojo::internal::StructSerializeAsMessageImpl<
-        {{struct.name}}::DataView>(input);
-  }
-
-  template <typename UserType>
-  static bool Deserialize(const void* data,
-                          size_t data_num_bytes,
-                          UserType* output) {
-    return mojo::internal::StructDeserializeImpl<{{struct.name}}::DataView>(
-        data, data_num_bytes, output, Validate);
-  }
-
-  template <typename UserType>
   static bool Deserialize(const {{serialization_result_type}}& input,
                           UserType* output) {
-    return {{struct.name}}::Deserialize(
-        input.size() == 0 ? nullptr : &input.front(), input.size(), output);
+    return mojo::internal::StructDeserializeImpl<
+        {{struct.name}}::DataView, {{serialization_result_type}}>(
+            input, output, Validate);
   }
 
 {#--- Struct members #}
