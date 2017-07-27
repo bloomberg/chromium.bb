@@ -750,6 +750,12 @@ const char kMojoLoadingName[] = "Use Mojo IPC for resource loading";
 const char kMojoLoadingDescription[] =
     "Use Mojo IPC instead of traditional Chrome IPC for resource loading.";
 
+const char kMojoVideoEncodeAcceleratorName[] =
+    "Hardware-accelerated video encoder accessed using Mojo IPC";
+const char kMojoVideoEncodeAcceleratorDescription[] =
+    "Use new Mojo IPC to access hardware-accelerated video encoder, where "
+    "available.";
+
 const char kModuleScriptsName[] = "Enable ECMAScript 6 modules";
 const char kModuleScriptsDescription[] =
     "Enables ECMAScript 6 modules support in Blink.";

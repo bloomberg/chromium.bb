@@ -14,6 +14,7 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "content/child/child_thread_impl.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -159,15 +160,18 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoEncodeAccelerator() {
   if (CheckContextLost())
     return nullptr;
 
-  media::mojom::VideoEncodeAcceleratorPtr vea;
-  vea.Bind(std::move(unbound_vea_));
-  if (vea) {
-    return std::unique_ptr<media::VideoEncodeAccelerator>(
-        new media::MojoVideoEncodeAccelerator(
-            std::move(vea), context_provider_->GetCommandBufferProxy()
-                                ->channel()
-                                ->gpu_info()
-                                .video_encode_accelerator_supported_profiles));
+  if (base::FeatureList::IsEnabled(features::kMojoVideoEncodeAccelerator)) {
+    media::mojom::VideoEncodeAcceleratorPtr vea;
+    vea.Bind(std::move(unbound_vea_));
+    if (vea) {
+      return std::unique_ptr<media::VideoEncodeAccelerator>(
+          new media::MojoVideoEncodeAccelerator(
+              std::move(vea),
+              context_provider_->GetCommandBufferProxy()
+                  ->channel()
+                  ->gpu_info()
+                  .video_encode_accelerator_supported_profiles));
+    }
   }
 
   return std::unique_ptr<media::VideoEncodeAccelerator>(
