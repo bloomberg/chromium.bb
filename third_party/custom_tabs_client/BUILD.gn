@@ -13,6 +13,7 @@ android_resources("chrome_tabs_client_example_apk_resources") {
 android_apk("custom_tabs_client_example_apk") {
   java_files = [
     "src/Application/src/main/java/org/chromium/customtabsclient/BottomBarManager.java",
+    "src/Application/src/main/java/org/chromium/customtabsclient/BrowserActionsReceiver.java",
     "src/Application/src/main/java/org/chromium/customtabsclient/MainActivity.java",
     "src/Application/src/main/java/org/chromium/customtabsclient/SessionHelper.java",
   ]
