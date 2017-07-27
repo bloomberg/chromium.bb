@@ -1306,6 +1306,14 @@ crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerevent_touch-action-in
 crbug.com/613672 [ Mac ] fast/events/synthetic-events/tap-on-scaled-screen.html  [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scalefactor150/fast/events/synthetic-events/tap-on-scaled-screen.html  [ Skip ]
 
+# Coverage tests in need of rebaselining for the new block coverage mode.
+crbug.com/v8/6000 inspector/coverage/coverage-repeated.html [ NeedsManualRebaseline ]
+crbug.com/v8/6000 inspector/coverage/coverage-view-filter.html [ NeedsManualRebaseline ]
+crbug.com/v8/6000 inspector/coverage/coverage-view.html [ NeedsManualRebaseline ]
+crbug.com/v8/6000 inspector/coverage/decorations-after-script-formatter.html [ NeedsManualRebaseline ]
+crbug.com/v8/6000 inspector/coverage/gutter-js.html [ NeedsManualRebaseline ]
+crbug.com/v8/6000 inspector/coverage/multiple-instances-merge.html [ NeedsManualRebaseline ]
+
 # We should send PointerLeave events for stylus devices.
 crbug.com/583413 external/wpt/pointerevents/pointerevent_pointerleave_pen-manual.html  [ Failure ]
 
