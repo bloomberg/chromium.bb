@@ -26,6 +26,7 @@
 #include "media/base/media_log.h"
 #include "media/base/media_tracks.h"
 #include "media/base/mock_demuxer_host.h"
+#include "media/base/mock_media_log.h"
 #include "media/base/test_helpers.h"
 #include "media/base/timestamp_constants.h"
 #include "media/ffmpeg/ffmpeg_common.h"
@@ -53,6 +54,27 @@ namespace media {
 MATCHER(IsEndOfStreamBuffer,
         std::string(negation ? "isn't" : "is") + " end of stream") {
   return arg->end_of_stream();
+}
+
+// This does not verify any of the codec parameters that may be included in the
+// log entry.
+MATCHER_P(SimpleCreatedFFmpegDemuxerStream, stream_type, "") {
+  return CONTAINS_STRING(arg, "\"info\":\"FFmpegDemuxer: created " +
+                                  std::string(stream_type) +
+                                  " stream, config codec:");
+}
+
+MATCHER_P(FailedToCreateValidDecoderConfigFromStream, stream_type, "") {
+  return CONTAINS_STRING(
+      arg, "\"debug\":\"Warning, FFmpegDemuxer failed to create a valid " +
+               std::string(stream_type) +
+               " decoder configuration from muxed stream");
+}
+
+MATCHER_P(SkippingUnsupportedStream, stream_type, "") {
+  return CONTAINS_STRING(
+      arg, "\"info\":\"FFmpegDemuxer: skipping invalid or unsupported " +
+               std::string(stream_type) + " track");
 }
 
 namespace {
@@ -128,22 +150,14 @@ class FFmpegDemuxerTest : public testing::Test {
     data_source_.reset();
   }
 
+  // TODO(wolenetz): Combine with CreateDemuxer() and expand coverage of all of
+  // these tests to use strict media log. See https://crbug.com/749178.
+  void CreateDemuxerWithStrictMediaLog(const std::string& name) {
+    CreateDemuxerInternal(name, &media_log_);
+  }
+
   void CreateDemuxer(const std::string& name) {
-    CHECK(!demuxer_);
-
-    EXPECT_CALL(host_, OnBufferedTimeRangesChanged(_)).Times(AnyNumber());
-
-    CreateDataSource(name);
-
-    Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb = base::Bind(
-        &FFmpegDemuxerTest::OnEncryptedMediaInitData, base::Unretained(this));
-
-    Demuxer::MediaTracksUpdatedCB tracks_updated_cb = base::Bind(
-        &FFmpegDemuxerTest::OnMediaTracksUpdated, base::Unretained(this));
-
-    demuxer_.reset(new FFmpegDemuxer(
-        base::ThreadTaskRunnerHandle::Get(), data_source_.get(),
-        encrypted_media_init_data_cb, tracks_updated_cb, &media_log_));
+    CreateDemuxerInternal(name, &dummy_media_log_);
   }
 
   DemuxerStream* GetStream(DemuxerStream::Type type) {
@@ -281,7 +295,13 @@ class FFmpegDemuxerTest : public testing::Test {
   // Fixture members.
 
   base::test::ScopedTaskScheduler task_scheduler_;
-  MediaLog media_log_;
+
+  // TODO(wolenetz): Consider expanding MediaLog verification coverage here
+  // using StrictMock<MockMediaLog> for all FFmpegDemuxerTests. See
+  // https://crbug.com/749178.
+  StrictMock<MockMediaLog> media_log_;
+  MediaLog dummy_media_log_;
+
   std::unique_ptr<FileDataSource> data_source_;
   std::unique_ptr<FFmpegDemuxer> demuxer_;
   StrictMock<MockDemuxerHost> host_;
@@ -313,6 +333,24 @@ class FFmpegDemuxerTest : public testing::Test {
   }
 
  private:
+  void CreateDemuxerInternal(const std::string& name, MediaLog* media_log) {
+    CHECK(!demuxer_);
+
+    EXPECT_CALL(host_, OnBufferedTimeRangesChanged(_)).Times(AnyNumber());
+
+    CreateDataSource(name);
+
+    Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb = base::Bind(
+        &FFmpegDemuxerTest::OnEncryptedMediaInitData, base::Unretained(this));
+
+    Demuxer::MediaTracksUpdatedCB tracks_updated_cb = base::Bind(
+        &FFmpegDemuxerTest::OnMediaTracksUpdated, base::Unretained(this));
+
+    demuxer_.reset(new FFmpegDemuxer(
+        base::ThreadTaskRunnerHandle::Get(), data_source_.get(),
+        encrypted_media_init_data_cb, tracks_updated_cb, media_log));
+  }
+
   void CreateDataSource(const std::string& name) {
     CHECK(!data_source_);
 
@@ -1167,7 +1205,15 @@ TEST_F(FFmpegDemuxerTest, NoID3TagData) {
 // will hand us a video stream to the data which will likely be in a format we
 // don't accept as video; e.g. PNG.
 TEST_F(FFmpegDemuxerTest, Mp3WithVideoStreamID3TagData) {
-  CreateDemuxer("id3_png_test.mp3");
+  CreateDemuxerWithStrictMediaLog("id3_png_test.mp3");
+
+  EXPECT_MEDIA_LOG(SimpleCreatedFFmpegDemuxerStream("audio"));
+  EXPECT_MEDIA_LOG(FailedToCreateValidDecoderConfigFromStream("video"));
+
+  // TODO(wolenetz): Use a matcher that verifies more of the event parameters
+  // than FoundStream. See https://crbug.com/749178.
+  EXPECT_MEDIA_LOG(FoundStream("audio"));
+  EXPECT_MEDIA_LOG(SkippingUnsupportedStream("video"));
   InitializeDemuxer();
 
   // Ensure the expected streams are present.
@@ -1179,7 +1225,15 @@ TEST_F(FFmpegDemuxerTest, Mp3WithVideoStreamID3TagData) {
 // Ensure a video with an unsupported audio track still results in the video
 // stream being demuxed.
 TEST_F(FFmpegDemuxerTest, UnsupportedAudioSupportedVideoDemux) {
-  CreateDemuxer("speex_audio_vorbis_video.ogv");
+  CreateDemuxerWithStrictMediaLog("speex_audio_vorbis_video.ogv");
+
+  EXPECT_MEDIA_LOG(SimpleCreatedFFmpegDemuxerStream("video"));
+  EXPECT_MEDIA_LOG(FailedToCreateValidDecoderConfigFromStream("audio"));
+  EXPECT_MEDIA_LOG(SkippingUnsupportedStream("audio"));
+
+  // TODO(wolenetz): Use a matcher that verifies more of the event parameters
+  // than FoundStream. See https://crbug.com/749178.
+  EXPECT_MEDIA_LOG(FoundStream("video"));
   InitializeDemuxer();
 
   // Ensure the expected streams are present.
