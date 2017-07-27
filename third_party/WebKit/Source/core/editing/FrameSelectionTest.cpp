@@ -32,7 +32,7 @@ namespace blink {
 class FrameSelectionTest : public EditingTestBase {
  protected:
   const VisibleSelection& VisibleSelectionInDOMTree() const {
-    return Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
+    return Selection().ComputeVisibleSelectionInDOMTree();
   }
   const VisibleSelectionInFlatTree& GetVisibleSelectionInFlatTree() const {
     return Selection().GetSelectionInFlatTree();
@@ -83,8 +83,7 @@ TEST_F(FrameSelectionTest, SetValidSelection) {
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 0), Position(text, 5))
           .Build());
-  EXPECT_FALSE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsNone());
+  EXPECT_FALSE(Selection().ComputeVisibleSelectionInDOMTree().IsNone());
 }
 
 TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
@@ -99,8 +98,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
   Selection().SetSelection(
       SelectionInDOMTree::Builder().Collapse(Position(text, 0)).Build());
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  EXPECT_TRUE(Selection().ComputeVisibleSelectionInDOMTree().IsCaret());
   EXPECT_TRUE(ToLayoutBlock(GetDocument().body()->GetLayoutObject())
                   ->ShouldPaintCursorCaret());
 
@@ -194,16 +192,14 @@ TEST_F(FrameSelectionTest, ModifyWithUserTriggered) {
       TextGranularity::kCharacter, SetSelectionBy::kSystem))
       << "Selection.modify() returns false for non-user-triggered call when "
          "selection isn't modified.";
-  EXPECT_EQ(end_of_text,
-            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start())
+  EXPECT_EQ(end_of_text, Selection().ComputeVisibleSelectionInDOMTree().Start())
       << "Selection isn't modified";
 
   EXPECT_TRUE(Selection().Modify(
       SelectionModifyAlteration::kMove, SelectionModifyDirection::kForward,
       TextGranularity::kCharacter, SetSelectionBy::kUser))
       << "Selection.modify() returns true for user-triggered call";
-  EXPECT_EQ(end_of_text,
-            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start())
+  EXPECT_EQ(end_of_text, Selection().ComputeVisibleSelectionInDOMTree().Start())
       << "Selection isn't modified";
 }
 
@@ -289,7 +285,7 @@ TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot) {
   GetDocument().ReplaceChild(select, GetDocument().documentElement());
   GetDocument().UpdateStyleAndLayout();
   Selection().SelectAll();
-  EXPECT_TRUE(Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsNone())
+  EXPECT_TRUE(Selection().ComputeVisibleSelectionInDOMTree().IsNone())
       << "Nothing should be selected if the "
          "content of the documentElement is not "
          "selctable.";
