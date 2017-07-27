@@ -241,6 +241,12 @@ void MockModelTypeWorker::UpdateWithEncryptionKey(
   processor_->OnUpdateReceived(model_type_state_, update);
 }
 
+void MockModelTypeWorker::UpdateWithGarbageConllection(
+    const sync_pb::GarbageCollectionDirective& gcd) {
+  *model_type_state_.mutable_progress_marker()->mutable_gc_directive() = gcd;
+  processor_->OnUpdateReceived(model_type_state_, UpdateResponseDataList());
+}
+
 std::string MockModelTypeWorker::GenerateId(const std::string& tag_hash) {
   return "FakeId:" + tag_hash;
 }
