@@ -27,8 +27,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -37,7 +35,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -4599,26 +4596,17 @@ TEST_F(ExtensionServiceTest, UnpackedRequirements) {
 
 class ExtensionCookieCallback {
  public:
-  ExtensionCookieCallback()
-    : result_(false),
-      weak_factory_(base::MessageLoop::current()) {}
+  ExtensionCookieCallback() : result_(false) {}
 
   void SetCookieCallback(bool result) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&base::MessageLoop::QuitWhenIdle,
-                                  weak_factory_.GetWeakPtr()));
     result_ = result;
   }
 
   void GetAllCookiesCallback(const net::CookieList& list) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&base::MessageLoop::QuitWhenIdle,
-                                  weak_factory_.GetWeakPtr()));
     list_ = list;
   }
   net::CookieList list_;
   bool result_;
-  base::WeakPtrFactory<base::MessageLoop> weak_factory_;
 };
 
 namespace {
