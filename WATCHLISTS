@@ -25,10 +25,6 @@
                   '|isimpledom' \
                   '|liblouis'
     },
-    'activity_log': {
-      'filepath': 'chrome/browser/extensions/activity_log/' \
-                  '|chrome/browser/extensions/api/activity_log_private/'
-    },
     'add_to_homescreen': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/webapps/|'\
                   'chrome/android/javatests/src/org/chromium/chrome/browser/webapps/|'\
@@ -216,12 +212,6 @@
     'bottombar': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/compositor/bottombar/',
     },
-    'breakpad_app': {
-      'filepath': 'components/crash/content/app/',
-    },
-    'browser': {
-      'filepath': 'chrome/browser/',
-    },
     'browser_chromeos': {
       'filepath': 'chrome/browser/chromeos/',
     },
@@ -385,10 +375,6 @@
     },
     'content_network' : {
       'filepath': 'content/network/',
-    },
-    'cookie_monster': {
-      'filepath': 'net/cookies/|'\
-                  'chrome/browser/net/sqlite_persistent_cookie_store',
     },
     'courgette': {
       'filepath': 'courgette/',
@@ -625,10 +611,6 @@
     'ipc': {
       'filepath': 'ipc/ipc',
     },
-    'ipc_messages': {
-      'filepath': '_message.*.h|'\
-                  '_messages.cc',
-    },
     'login': {
       'filepath': 'chrome/browser/ui/login'
     },
@@ -805,11 +787,6 @@
     'nqe': {
       'filepath': 'nqe',
     },
-    'ntp': {
-      'filepath': 'chrome/browser/resources/ntp4/|'\
-        'chrome/browser/resources/ntp_android/|'\
-        'chrome/browser/ui/webui/ntp/',
-    },
     'ntp_snippets': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/ntp/|'\
         'chrome/android/javatests/src/org/chromium/chrome/browser/ntp/|'\
@@ -977,15 +954,6 @@
     'safe_browsing_db': {
       'filepath': 'components/safe_browsing_db/',
     },
-    'sandbox': {
-      'filepath': 'sandbox/'\
-                  '|content/browser/bootstrap_sandbox_mac'\
-                  '|content/browser/renderer_host/render_sandbox_host_linux'\
-                  '|content/browser/renderer_host/sandbox_ipc_linux'\
-                  '|content/browser/zygote_host/'\
-                  '|content/common/sandbox_'\
-                  '|content/zygote/'\
-    },
     'scheduler': {
       'filepath': 'cc/scheduler'\
                   '|components/scheduler'\
@@ -993,9 +961,6 @@
     },
     'screen_orientation': {
       'filepath': 'screen_orientation',
-    },
-    'search': {
-      'filepath': 'chrome/browser/ui/search/',
     },
     'service_worker': {
       'filepath': 'content/(browser|renderer|child|common)/service_worker/',
@@ -1014,12 +979,6 @@
     'site_instance': {
       'filepath': 'content/browser/site_instance|'\
         'content/browser/browsing_instance',
-    },
-    'speech': {
-      'filepath': 'chrome/browser/speech/'\
-                  '|content/browser/speech/'\
-                  '|content/common/.*speech'\
-                  '|content/public/.*speech'
     },
     'spellcheck': {
       'filepath': 'chrome/browser/spellchecker/'\
@@ -1092,9 +1051,6 @@
         'content/browser/tab_contents/|'\
         'chrome/browser/ui/tab_contents/',
     },
-    'task_manager': {
-      'filepath': 'task_manager'
-    },
     'tbmv2_metrics': {
       'filepath': 'third_party/catapult/tracing/tracing/metrics'
     },
@@ -1140,9 +1096,6 @@
     'timers': {
       'filepath': 'base/timer/'\
                   '|components/timers/'
-    },
-    'tools': {
-      'filepath': 'tools/',
     },
     'tools_win_chromeexts': {
       'filepath': 'tools/win/chromeexts',
@@ -1199,9 +1152,6 @@
     'views': {
       # Applies to all files and subdirs within this directory.
       'filepath': '^ui/views/',
-    },
-    'views_corewm': {
-      'filepath': 'ui/views/corewm/',
     },
     'virtual_keyboard': {
       'filepath': 'ui/keyboard/'\
@@ -1297,11 +1247,6 @@
                   '|third_party/WebKit/Source/web/.*Drag' \
                   '|third_party/WebKit/public/platform/.*Drag' \
                   '|third_party/WebKit/public/web/.*Drag',
-    },
-    'blink_content_security_policy': {
-      'filepath': 'third_party/WebKit/Source/core/frame/csp' \
-                  '|third_party/WebKit/Source/core/events/SecurityPolicyViolationEvent' \
-                  '|third_party/WebKit/LayoutTests/http/tests/security/contentSecurityPolicy'
     },
     'blink_css': {
       'filepath': 'third_party/WebKit/Source/core/css',
