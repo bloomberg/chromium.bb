@@ -81,7 +81,10 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   // The character is opaque to space collapsing; i.e., spaces before this
   // character and after this character can collapse as if this character does
   // not exist.
-  void AppendOpaque(NGInlineItem::NGInlineItemType, UChar);
+  void AppendOpaque(NGInlineItem::NGInlineItemType,
+                    UChar,
+                    const ComputedStyle* = nullptr,
+                    LayoutObject* = nullptr);
 
   // Append a non-character item that is opaque to space collapsing.
   void AppendOpaque(NGInlineItem::NGInlineItemType,

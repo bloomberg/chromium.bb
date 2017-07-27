@@ -325,12 +325,14 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendOpaque(
     NGInlineItem::NGInlineItemType type,
-    UChar character) {
+    UChar character,
+    const ComputedStyle* style,
+    LayoutObject* layout_object) {
   text_.Append(character);
   mapping_builder_.AppendIdentityMapping(1);
   concatenated_mapping_builder_.AppendIdentityMapping(1);
   unsigned end_offset = text_.length();
-  AppendItem(items_, type, end_offset - 1, end_offset, nullptr, nullptr);
+  AppendItem(items_, type, end_offset - 1, end_offset, style, layout_object);
 
   is_empty_inline_ &= IsItemEmpty(type, nullptr);
 }
@@ -390,7 +392,8 @@ void NGInlineItemsBuilderTemplate<
     if (ch == kNewlineCharacter)
       return;
   }
-  NOTREACHED();
+  // We could still reach here because the initial value is kSpace, in order to
+  // collapse leading spaces.
 }
 
 // Removes the collapsible space at the specified index.
