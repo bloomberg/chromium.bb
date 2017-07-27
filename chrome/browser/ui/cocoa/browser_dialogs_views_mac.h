@@ -8,7 +8,9 @@
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
+class BubbleUi;
 class ContentSettingBubbleModel;
+class ExtensionInstalledBubble;
 class GURL;
 class LocationBarDecoration;
 class Profile;
@@ -48,6 +50,10 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
                                     const GURL& url,
                                     bool newly_bookmarked,
                                     LocationBarDecoration* decoration);
+
+// Builds the Views version of an Extension installed bubble.
+std::unique_ptr<BubbleUi> BuildViewsExtensionInstalledBubbleUi(
+    ExtensionInstalledBubble* bubble);
 
 // Shows a views zoom bubble at the |anchor_point|. This occurs when the zoom
 // icon is clicked or when a shortcut key is pressed or whenever |web_contents|
