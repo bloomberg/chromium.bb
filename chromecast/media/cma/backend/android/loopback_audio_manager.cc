@@ -39,7 +39,7 @@ namespace {
 
 const int kMaxI2sNameLen = 32;
 const int kBufferLenMs = 20;
-const int kMsPerSecond 1000;
+const int kMsPerSecond = 1000;
 const int64_t kNsecPerSecond = 1000000000LL;
 const int64_t kTimestampUpdatePeriodNsec = 10 * kNsecPerSecond;
 const int64_t kInvalidTimestamp = std::numeric_limits<int64_t>::min();
@@ -59,11 +59,25 @@ base::LazyInstance<LoopbackAudioManagerInstance>::DestructorAtExit
 }  // namespace
 
 LoopbackAudioManager::LoopbackAudioManager()
-    : feeder_thread_("Android_Loopback"),
-      last_timestamp_nsec_(kInvalidTimestamp),
+    : last_timestamp_nsec_(kInvalidTimestamp),
       last_frame_position_(0),
       frame_count_(0),
-      loopback_running(false) {
+      feeder_thread_("CMA_Backend_Loopback"),
+      loopback_running_(false) {
+  // Open I2S device.
+  APeripheralManagerClient* client = APeripheralManagerClient_new();
+  DCHECK(client);
+
+  char i2s_name[kMaxI2sNameLen];
+  AI2sEncoding i2s_encoding;
+  GetI2sFlags(i2s_name, &i2s_encoding);
+
+  int err = APeripheralManagerClient_openI2sDevice(
+      client, i2s_name, i2s_encoding, i2s_channels_, i2s_rate_,
+      AI2S_FLAG_DIRECTION_IN, &i2s_);
+  DCHECK_EQ(err, 0);
+
+  // Spin up loopback thread.
   base::Thread::Options options;
   options.priority = base::ThreadPriority::REALTIME_AUDIO;
   CHECK(feeder_thread_.StartWithOptions(options));
@@ -76,6 +90,7 @@ LoopbackAudioManager::~LoopbackAudioManager() {
   // thread_.Stop() makes sure the thread is stopped before return.
   // It's okay to clean up after feeder_thread_ is stopped.
   StopLoopback();
+  AI2sDevice_delete(i2s_);
 }
 
 // static
@@ -99,9 +114,15 @@ void LoopbackAudioManager::CalibrateTimestamp(int64_t frame_position) {
   int64_t old_last_position = last_frame_position_;
   int64_t old_last_timestamp = last_timestamp_nsec_;
   int success;
-  DCHECK_EQ(0, AI2sDevice_getInputTimestamp(i2s_, &last_frame_position_,
-                                            &last_timestamp_nsec_, &success));
-  // If the call fails, the values are not updated.
+  int ret = AI2sDevice_getInputTimestamp(i2s_, &last_frame_position_,
+                                         &last_timestamp_nsec_, &success);
+  // An error occurred during the call.
+  if (ret != 0) {
+    LOG(ERROR) << "GetTimestamp call unsuccessful on loopback input";
+    return;
+  }
+
+  // The system is unable to provide a timestamp, but the call succeceded.
   if (!success) {
     return;
   }
@@ -126,14 +147,14 @@ int64_t LoopbackAudioManager::GetInterpolatedTimestamp(int64_t frame_position) {
 
 void LoopbackAudioManager::GetI2sFlags(char* i2s_name,
                                        AI2sEncoding* i2s_encoding) {
-  int i2s_number = GetSwitchValueInt(switches::kLoopbackI2sNumber, -1);
+  int i2s_number = GetSwitchValueInt(switches::kLoopbackI2sBusNumber, -1);
   LOG_IF(DFATAL, i2s_number == -1)
-      << "Flag --" << switches::kLoopbackI2sNumber << " is required.";
+      << "Flag --" << switches::kLoopbackI2sBusNumber << " is required.";
 
   sprintf(i2s_name, "I2S%d", i2s_number);
-  i2s_rate_ = GetSwitchValueNonNegativeInt(switches::kLoopbackI2sRate, 0);
+  i2s_rate_ = GetSwitchValueNonNegativeInt(switches::kLoopbackI2sRateHz, 0);
   LOG_IF(DFATAL, !i2s_rate_)
-      << "Flag --" << switches::kLoopbackI2sRate << " is required.";
+      << "Flag --" << switches::kLoopbackI2sRateHz << " is required.";
 
   int i2s_bits = GetSwitchValueNonNegativeInt(switches::kLoopbackI2sBits, 0);
   LOG_IF(DFATAL, !i2s_bits)
@@ -174,19 +195,6 @@ void LoopbackAudioManager::StartLoopback() {
   DCHECK(!loopback_running_);
   last_timestamp_nsec_ = kInvalidTimestamp;
 
-  // Open I2S device.
-  APeripheralManagerClient* client = APeripheralManagerClient_new();
-  DCHECK(client);
-
-  char i2s_name[kMaxI2sNameLen];
-  AI2sEncoding i2s_encoding;
-  GetI2sFlags(i2s_name, &i2s_encoding);
-
-  int err = APeripheralManagerClient_openI2sDevice(
-      client, i2s_name, i2s_encoding, i2s_channels_, i2s_rate_,
-      AI2S_FLAG_DIRECTION_IN, &i2s_);
-  DCHECK_EQ(err, 0);
-
   // Maintain sample count for interpolation.
   frame_count_ = 0;
   loopback_running_ = true;
@@ -196,7 +204,6 @@ void LoopbackAudioManager::StartLoopback() {
 void LoopbackAudioManager::StopLoopback() {
   DCHECK(loopback_running_);
   loopback_running_ = false;
-  AI2sDevice_delete(i2s_);
 }
 
 void LoopbackAudioManager::RunLoopback() {
@@ -209,8 +216,12 @@ void LoopbackAudioManager::RunLoopback() {
   // Read bytes from I2S device.
   int bytes_read;
   uint8_t data[audio_buffer_size_];
-  AI2sDevice_read(i2s_, data, 0, audio_buffer_size_, &bytes_read);
-  DCHECK_EQ(audio_buffer_size_, bytes_read);
+  int ret = AI2sDevice_read(i2s_, data, 0, audio_buffer_size_, &bytes_read);
+  if (ret != 0) {
+    LOG(ERROR) << "Failed to read loopback audio";
+    return;
+  }
+  CHECK_EQ(audio_buffer_size_, bytes_read);
   frame_count_ += bytes_read / (bytes_per_sample_ * i2s_channels_);
 
   // Get high-resolution timestamp.

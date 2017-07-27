@@ -21,7 +21,7 @@ namespace media {
 
 class LoopbackAudioManager {
  public:
-  // Get singleton instance of Loopback Audio Manager
+  // Get singleton instance of Loopback Audio Manager.
   static LoopbackAudioManager* Get();
 
   // Adds a loopback audio observer.
@@ -52,7 +52,7 @@ class LoopbackAudioManager {
   int64_t last_frame_position_;
   int64_t frame_count_;
 
-  // Initialized based on the values of castshell flags
+  // Initialized based on the values of castshell flags.
   int audio_buffer_size_;
   int bytes_per_sample_;
   int i2s_rate_;
