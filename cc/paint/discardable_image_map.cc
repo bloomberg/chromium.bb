@@ -11,6 +11,7 @@
 
 #include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "third_party/skia/include/utils/SkNoDrawCanvas.h"
@@ -126,6 +127,25 @@ class DiscardableImageGenerator {
   base::flat_map<PaintImage::Id, gfx::Rect> TakeImageIdToRectMap() {
     return std::move(image_id_to_rect_);
   }
+  void RecordColorHistograms() const {
+    if (color_stats_total_image_count_ > 0) {
+      int srgb_image_percent = (100 * color_stats_srgb_image_count_) /
+                               color_stats_total_image_count_;
+      UMA_HISTOGRAM_PERCENTAGE("Renderer4.ImagesPercentSRGB",
+                               srgb_image_percent);
+    }
+
+    base::CheckedNumeric<int> srgb_pixel_percent =
+        100 * color_stats_srgb_pixel_count_ / color_stats_total_pixel_count_;
+    if (srgb_pixel_percent.IsValid()) {
+      UMA_HISTOGRAM_PERCENTAGE("Renderer4.ImagePixelsPercentSRGB",
+                               srgb_pixel_percent.ValueOrDie());
+    }
+  }
+
+  bool all_images_are_srgb() const {
+    return color_stats_srgb_image_count_ == color_stats_total_image_count_;
+  }
 
  private:
   void AddImageFromFlags(const SkRect& rect, const PaintFlags& flags) {
@@ -182,6 +202,16 @@ class DiscardableImageGenerator {
     // raster the picture (using device clip bounds that are outset).
     image_rect.Inset(-1, -1);
 
+    // Make a note if any image was originally specified in a non-sRGB color
+    // space.
+    SkColorSpace* source_color_space = paint_image.sk_image()->colorSpace();
+    color_stats_total_pixel_count_ += image_rect.size().GetCheckedArea();
+    color_stats_total_image_count_++;
+    if (!source_color_space || source_color_space->isSRGB()) {
+      color_stats_srgb_pixel_count_ += image_rect.size().GetCheckedArea();
+      color_stats_srgb_image_count_++;
+    }
+
     // The true target color space will be assigned when it is known, in
     // GetDiscardableImagesInRect.
     gfx::ColorSpace target_color_space;
@@ -202,6 +232,13 @@ class DiscardableImageGenerator {
   PaintTrackingCanvas canvas_;
   std::vector<std::pair<DrawImage, gfx::Rect>> image_set_;
   base::flat_map<PaintImage::Id, gfx::Rect> image_id_to_rect_;
+
+  // Statistics about the number of images and pixels that will require color
+  // conversion if the target color space is not sRGB.
+  int color_stats_srgb_image_count_ = 0;
+  int color_stats_total_image_count_ = 0;
+  base::CheckedNumeric<int64_t> color_stats_srgb_pixel_count_ = 0;
+  base::CheckedNumeric<int64_t> color_stats_total_pixel_count_ = 0;
 };
 
 }  // namespace
@@ -218,7 +255,9 @@ void DiscardableImageMap::Generate(const PaintOpBuffer* paint_op_buffer,
 
   DiscardableImageGenerator generator(bounds.right(), bounds.bottom());
   generator.GatherDiscardableImages(paint_op_buffer);
+  generator.RecordColorHistograms();
   image_id_to_rect_ = generator.TakeImageIdToRectMap();
+  all_images_are_srgb_ = generator.all_images_are_srgb();
   auto images = generator.TakeImages();
   images_rtree_.Build(
       images,
