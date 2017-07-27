@@ -62580,6 +62580,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.ImagePixelsPercentSRGB" units="%">
+  <owner>ccameron@chromium.org</owner>
+  <summary>
+    For each cc::Layer that has more than zero discardable images, this metric
+    records the percent of image pixels that were from images that were
+    originally specified in an sRGB color space.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.ImagesPercentSRGB" units="%">
+  <owner>ccameron@chromium.org</owner>
+  <summary>
+    For each cc::Layer that has more than zero discardable images, this metric
+    records the percent of images that were originally specified in an sRGB
+    color space.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.InvalidationRegionApproximateRectCount"
     units="rects">
   <owner>wiltzius@chromium.org</owner>

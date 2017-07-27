@@ -22,14 +22,26 @@
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
 namespace {
 
+PaintImage CreateDiscardablePaintImageWithColorSpace(
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space) {
+  sk_sp<SkImage> sk_image = CreateDiscardableImage(size);
+  if (color_space.IsValid()) {
+    sk_image = sk_image->makeColorSpace(color_space.ToSkColorSpace(),
+                                        SkTransferFunctionBehavior::kIgnore);
+  }
+  return PaintImage(PaintImage::GetNextId(), sk_image);
+}
+
 PaintImage CreateDiscardablePaintImage(const gfx::Size& size) {
-  return PaintImage(PaintImage::GetNextId(), CreateDiscardableImage(size));
+  return CreateDiscardablePaintImageWithColorSpace(size, gfx::ColorSpace());
 }
 
 struct PositionScaleDrawImage {
@@ -692,5 +704,42 @@ TEST_F(DiscardableImageMapTest, GathersDiscardableImagesFromNestedOps) {
   EXPECT_EQ(1u, images.size());
   EXPECT_TRUE(discardable_image2 == images[0].paint_image());
 }
+
+class DiscardableImageMapColorSpaceTest
+    : public DiscardableImageMapTest,
+      public testing::WithParamInterface<gfx::ColorSpace> {};
+
+TEST_P(DiscardableImageMapColorSpaceTest, ColorSpace) {
+  const gfx::ColorSpace image_color_space = GetParam();
+  gfx::Rect visible_rect(500, 500);
+  PaintImage discardable_image = CreateDiscardablePaintImageWithColorSpace(
+      gfx::Size(500, 500), image_color_space);
+
+  FakeContentLayerClient content_layer_client;
+  content_layer_client.set_bounds(visible_rect.size());
+  content_layer_client.add_draw_image(discardable_image, gfx::Point(0, 0),
+                                      PaintFlags());
+  scoped_refptr<DisplayItemList> display_list =
+      content_layer_client.PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  display_list->GenerateDiscardableImagesMetadata();
+  const DiscardableImageMap& image_map = display_list->discardable_image_map();
+
+  if (!image_color_space.IsValid())
+    EXPECT_TRUE(image_map.all_images_are_srgb());
+  else if (image_color_space == gfx::ColorSpace::CreateSRGB())
+    EXPECT_TRUE(image_map.all_images_are_srgb());
+  else
+    EXPECT_FALSE(image_map.all_images_are_srgb());
+}
+
+gfx::ColorSpace test_color_spaces[] = {
+    gfx::ColorSpace(), gfx::ColorSpace::CreateSRGB(),
+    gfx::ColorSpace::CreateDisplayP3D65(),
+};
+
+INSTANTIATE_TEST_CASE_P(ColorSpace,
+                        DiscardableImageMapColorSpaceTest,
+                        testing::ValuesIn(test_color_spaces));
 
 }  // namespace cc
