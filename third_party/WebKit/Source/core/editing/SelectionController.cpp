@@ -35,6 +35,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"
+#include "core/editing/SetSelectionData.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markers/DocumentMarkerController.h"
@@ -806,8 +807,12 @@ void SelectionController::SetNonDirectionalSelectionIfNeeded(
     return;
   Selection().SetSelection(
       ConvertToSelectionInDOMTree(selection_in_flat_tree),
-      FrameSelection::kCloseTyping | FrameSelection::kClearTypingStyle,
-      CursorAlignOnScroll::kIfNeeded, granularity);
+      SetSelectionData::Builder()
+          .SetShouldCloseTyping(true)
+          .SetShouldClearTypingStyle(true)
+          .SetCursorAlignOnScroll(CursorAlignOnScroll::kIfNeeded)
+          .SetGranularity(granularity)
+          .Build());
 }
 
 void SelectionController::SetCaretAtHitTestResult(
