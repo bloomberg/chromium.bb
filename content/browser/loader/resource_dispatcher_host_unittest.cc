@@ -1520,9 +1520,10 @@ TEST_F(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
   // Wait until after the delay timer times out before we start processing any
   // messages.
   base::OneShotTimer timer;
+  base::RunLoop run_loop;
   timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(210),
-              base::MessageLoop::current(), &base::MessageLoop::QuitWhenIdle);
-  base::RunLoop().Run();
+              run_loop.QuitWhenIdleClosure());
+  run_loop.Run();
 
   // The prefetch should be cancelled by now.
   EXPECT_EQ(0, host_.pending_requests());
