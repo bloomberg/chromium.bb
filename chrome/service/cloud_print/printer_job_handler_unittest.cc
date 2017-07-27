@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/md5.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -452,7 +453,6 @@ class PrinterJobHandlerTest : public ::testing::Test {
   PrinterJobHandlerTest();
   void SetUp() override;
   void TearDown() override;
-  void IdleOut();
   bool GetPrinterInfo(printing::PrinterBasicInfo* info);
   void SendCapsAndDefaults(
       const std::string& printer_name,
@@ -464,10 +464,8 @@ class PrinterJobHandlerTest : public ::testing::Test {
   void BeginTest(int timeout_seconds);
   void MakeJobFetchReturnNoJobs();
 
-  static void MessageLoopQuitNowHelper(base::MessageLoop* message_loop);
-  static void MessageLoopQuitSoonHelper(base::MessageLoop* message_loop);
-
   base::MessageLoopForIO loop_;
+  std::unique_ptr<base::RunLoop> active_run_loop_;
   TestURLFetcherCallback url_callback_;
   MockPrinterJobHandlerDelegate jobhandler_delegate_;
   CloudPrintTokenStore token_store_;
@@ -523,17 +521,6 @@ void PrinterJobHandlerTest::MakeJobFetchReturnNoJobs() {
                            net::URLRequestStatus::SUCCESS);
 }
 
-void PrinterJobHandlerTest::MessageLoopQuitNowHelper(
-    base::MessageLoop* message_loop) {
-  message_loop->QuitWhenIdle();
-}
-
-void PrinterJobHandlerTest::MessageLoopQuitSoonHelper(
-    base::MessageLoop* message_loop) {
-  message_loop->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&MessageLoopQuitNowHelper, message_loop));
-}
-
 PrinterJobHandlerTest::PrinterJobHandlerTest()
     : factory_(NULL, base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
                                 base::Unretained(&url_callback_))) {
@@ -548,7 +535,7 @@ bool PrinterJobHandlerTest::PostSpoolSuccess() {
   // has been posted, we can tell the main message loop to quit when idle
   // and not worry about it idling while the print thread does work
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&MessageLoopQuitSoonHelper, &loop_));
+      FROM_HERE, active_run_loop_->QuitWhenIdleClosure());
   return true;
 }
 
@@ -616,13 +603,13 @@ void PrinterJobHandlerTest::BeginTest(int timeout_seconds) {
 
   job_handler_->Initialize();
 
+  active_run_loop_ = base::MakeUnique<base::RunLoop>();
+
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&PrinterJobHandlerTest::MessageLoopQuitSoonHelper,
-                     base::MessageLoop::current()),
+      FROM_HERE, active_run_loop_->QuitWhenIdleClosure(),
       base::TimeDelta::FromSeconds(timeout_seconds));
 
-  base::RunLoop().Run();
+  active_run_loop_->Run();
 }
 
 void PrinterJobHandlerTest::SendCapsAndDefaults(
@@ -637,12 +624,8 @@ bool PrinterJobHandlerTest::GetPrinterInfo(printing::PrinterBasicInfo* info) {
 }
 
 void PrinterJobHandlerTest::TearDown() {
-  IdleOut();
-  CloudPrintURLFetcher::set_test_factory(nullptr);
-}
-
-void PrinterJobHandlerTest::IdleOut() {
   base::RunLoop().RunUntilIdle();
+  CloudPrintURLFetcher::set_test_factory(nullptr);
 }
 
 MockPrintServerWatcher::MockPrintServerWatcher() : delegate_(NULL) {
