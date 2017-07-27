@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.text.TextUtils;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -122,7 +123,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     private static void onPaymentAppInvoked(
             Object callback, String methodName, String stringifiedDetails) {
         assert callback instanceof PaymentInstrument.InstrumentDetailsCallback;
-        if (methodName == null) {
+        if (TextUtils.isEmpty(methodName)) {
             ((PaymentInstrument.InstrumentDetailsCallback) callback).onInstrumentDetailsError();
         } else {
             ((PaymentInstrument.InstrumentDetailsCallback) callback)
