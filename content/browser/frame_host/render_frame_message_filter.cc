@@ -173,11 +173,8 @@ class RenderFrameMessageFilter::OpenChannelToPpapiPluginCallback
       public PpapiPluginProcessHost::PluginClient {
  public:
   OpenChannelToPpapiPluginCallback(RenderFrameMessageFilter* filter,
-                                   ResourceContext* context,
                                    IPC::Message* reply_msg)
-      : RenderMessageCompletionCallback(filter, reply_msg),
-        context_(context) {
-  }
+      : RenderMessageCompletionCallback(filter, reply_msg) {}
 
   void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
                            int* renderer_id) override {
@@ -197,11 +194,6 @@ class RenderFrameMessageFilter::OpenChannelToPpapiPluginCallback
   }
 
   bool Incognito() override { return filter()->incognito_; }
-
-  ResourceContext* GetResourceContext() override { return context_; }
-
- private:
-  ResourceContext* context_;
 };
 
 #endif  // ENABLE_PLUGINS
@@ -544,10 +536,8 @@ void RenderFrameMessageFilter::OnOpenChannelToPepperPlugin(
     const base::FilePath& path,
     IPC::Message* reply_msg) {
   plugin_service_->OpenChannelToPpapiPlugin(
-      render_process_id_,
-      path,
-      profile_data_directory_,
-      new OpenChannelToPpapiPluginCallback(this, resource_context_, reply_msg));
+      render_process_id_, path, profile_data_directory_,
+      new OpenChannelToPpapiPluginCallback(this, reply_msg));
 }
 
 void RenderFrameMessageFilter::OnDidCreateOutOfProcessPepperInstance(
