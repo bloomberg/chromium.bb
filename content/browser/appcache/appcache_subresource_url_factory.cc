@@ -63,17 +63,17 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
 
   // If the host is invalid, it means that the renderer has probably died.
   // (Frame has navigated elsewhere?)
-  if (!appcache_host_.get())
+  if (!appcache_host_.get()) {
+    NotifyError(std::move(client), net::ERR_FAILED);
     return;
+  }
 
   std::unique_ptr<AppCacheRequestHandler> handler =
       appcache_host_->CreateRequestHandler(
           AppCacheURLLoaderRequest::Create(request), request.resource_type,
           request.should_reset_appcache);
   if (!handler) {
-    ResourceRequestCompletionStatus request_result;
-    request_result.error_code = net::ERR_FAILED;
-    client->OnComplete(request_result);
+    NotifyError(std::move(client), net::ERR_FAILED);
     return;
   }
 
@@ -107,6 +107,14 @@ void AppCacheSubresourceURLFactory::SyncLoad(int32_t routing_id,
 
 void AppCacheSubresourceURLFactory::OnConnectionError() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+}
+
+void AppCacheSubresourceURLFactory::NotifyError(
+    mojom::URLLoaderClientPtr client,
+    int error_code) {
+  ResourceRequestCompletionStatus request_result;
+  request_result.error_code = error_code;
+  client->OnComplete(request_result);
 }
 
 }  // namespace content
