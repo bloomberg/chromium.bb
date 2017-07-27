@@ -3304,6 +3304,8 @@ split_static_library("browser") {
       "metrics/first_web_contents_profiler.h",
       "metrics/tab_reactivation_tracker.cc",
       "metrics/tab_reactivation_tracker.h",
+      "metrics/tab_stats_tracker.cc",
+      "metrics/tab_stats_tracker.h",
       "metrics/tab_usage_recorder.cc",
       "metrics/tab_usage_recorder.h",
       "net/firefox_proxy_settings.cc",
