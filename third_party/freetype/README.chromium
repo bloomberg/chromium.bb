@@ -22,6 +22,10 @@ How to update:
 2. Update BUILD.gn to reflect any changes.
 3. Merge the new src/include/freetype/config/ftoption.h into
    include/freetype-custom-config/ftoption.h .
-4. Update this file.
-5. Commit build changes while rolling Chromium's freetype DEPS to the
+4. Merge the new src/include/freetype/config/ftconfig.h into
+   include/freetype-custom-config/ftconfig.h .
+5. Update this file.
+6. Commit build changes while rolling Chromium's freetype DEPS to the
    new commit.
+
+Most of the updating can be automated will roll-freetype.sh.
