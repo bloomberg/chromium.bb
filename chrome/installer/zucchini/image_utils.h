@@ -59,6 +59,19 @@ inline bool operator==(const Reference& a, const Reference& b) {
   return a.location == b.location && a.target == b.target;
 }
 
+// Helper functions to make an offset_t, so we can distinguish file offsets from
+// Label indexes. Implementation: Marking is flagged by the most significant bit
+// (MSB).
+constexpr inline bool IsMarked(offset_t value) {
+  return value >> (sizeof(offset_t) * 8 - 1) != 0;
+}
+constexpr inline offset_t MarkIndex(offset_t value) {
+  return value | (offset_t(1) << (sizeof(offset_t) * 8 - 1));
+}
+constexpr inline offset_t UnmarkIndex(offset_t value) {
+  return value & ~(offset_t(1) << (sizeof(offset_t) * 8 - 1));
+}
+
 // An Equivalence is a block of length |length| that approximately match in
 // |old_image| at an offset of |src_offset| and in |new_image| at an offset of
 // |dst_offset|.
