@@ -39,8 +39,7 @@
     </style>
     <template is="dom-if"
         if="[[showImagePreview_(cameraActive_, imageSrc)]]">
-      <img alt="[[previewAltText]]" src="[[imageSrc]]"
-          srcset="[[getImgSrc2x_(imageSrc)]]"">
+      <img alt="[[previewAltText]]" src="[[getImgSrc_(imageSrc)]]">
       <div id="discard" hidden="[[!showDiscard_(imageType)]]">
         <button is="paper-icon-button-light" id="discardImage"
             class="icon-delete-white" title="[[discardImageLabel]]"
