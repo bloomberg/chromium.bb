@@ -19,8 +19,6 @@
 #include "url/gurl.h"
 
 namespace safe_browsing {
-bool RegisterSafeBrowsingApiBridge(JNIEnv* env);
-
 class SafeBrowsingApiHandlerBridge : public SafeBrowsingApiHandler {
  public:
   SafeBrowsingApiHandlerBridge();

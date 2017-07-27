@@ -124,8 +124,6 @@ static_library("remote_database_manager") {
 
 source_set("safe_browsing_api_handler") {
   sources = [
-    "android/jni_registrar.cc",
-    "android/jni_registrar.h",
     "safe_browsing_api_handler.cc",
     "safe_browsing_api_handler.h",
   ]
