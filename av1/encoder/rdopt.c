@@ -1869,6 +1869,11 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #endif
   int64_t rd1, rd2, rd;
   RD_STATS this_rd_stats;
+#if CONFIG_DIST_8X8
+  int sub8x8tx_in_gte8x8blk_in_plane0 =
+      plane == 0 && plane_bsize >= BLOCK_8X8 &&
+      (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4);
+#endif  // CONFIG_DIST_8X8
 
 #if !CONFIG_SUPERTX && !CONFIG_VAR_TX
   assert(tx_size == av1_get_tx_size(plane, xd));
@@ -1927,7 +1932,11 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #endif
     tmp_dist = av1_block_error(coeff, dqcoeff, buffer_length, &tmp) >> shift;
 
-  if (RDCOST(x->rdmult, 0, tmp_dist) + args->this_rd < args->best_rd) {
+  if (
+#if CONFIG_DIST_8X8
+      sub8x8tx_in_gte8x8blk_in_plane0 ||
+#endif
+      RDCOST(x->rdmult, 0, tmp_dist) + args->this_rd < args->best_rd) {
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
                    a, l);
   } else {
@@ -2008,8 +2017,7 @@ CALCULATE_RD : {}
   args->this_rd += rd;
 
 #if CONFIG_DIST_8X8
-  if (!(plane == 0 && plane_bsize >= BLOCK_8X8 &&
-        (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4))) {
+  if (!sub8x8tx_in_gte8x8blk_in_plane0) {
 #endif
     if (args->this_rd > args->best_rd) {
       args->exit_early = 1;
@@ -4341,6 +4349,11 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   const int16_t *diff =
       &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
   int txb_coeff_cost;
+#if CONFIG_DIST_8X8
+  int sub8x8tx_in_gte8x8blk_in_plane0 =
+      plane == 0 && plane_bsize >= BLOCK_8X8 &&
+      (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4);
+#endif  // CONFIG_DIST_8X8
 
   assert(tx_size < TX_SIZES_ALL);
 
@@ -4400,7 +4413,11 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
     tmp_dist =
         av1_block_error(coeff, dqcoeff, buffer_length, &tmp_sse) >> shift;
 
-  if (RDCOST(x->rdmult, 0, tmp_dist) < rd_stats->ref_rdcost) {
+  if (
+#if CONFIG_DIST_8X8
+      sub8x8tx_in_gte8x8blk_in_plane0 ||
+#endif
+      RDCOST(x->rdmult, 0, tmp_dist) < rd_stats->ref_rdcost) {
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
                    a, l);
   } else {
