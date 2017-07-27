@@ -328,6 +328,8 @@ bool AXTreeSourceArc::GetTreeData(ui::AXTreeData* data) const {
   data->tree_id = tree_id();
   if (focused_node_id_ >= 0)
     data->focus_id = focused_node_id_;
+  else if (root_id_ >= 0)
+    data->focus_id = root_id_;
   return true;
 }
 

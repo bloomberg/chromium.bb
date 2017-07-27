@@ -94,6 +94,7 @@ class ArcAccessibilityHelperBridge
   std::map<std::string, std::unique_ptr<AXTreeSourceArc>> package_name_to_tree_;
   std::map<std::string, std::set<int32_t>> package_name_to_task_ids_;
   int32_t current_task_id_;
+  std::unique_ptr<AXTreeSourceArc> fallback_tree_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAccessibilityHelperBridge);
 };
