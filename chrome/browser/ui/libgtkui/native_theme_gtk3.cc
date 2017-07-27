@@ -622,7 +622,9 @@ void NativeThemeGtk3::PaintMenuSeparator(
     } else {
       cc::PaintFlags flags;
       flags.setColor(GetFgColorFromStyleContext(context));
-      canvas->drawLine(x, y, x + w, y, flags);
+      flags.setAntiAlias(true);
+      flags.setStrokeWidth(1);
+      canvas->drawLine(x + 0.5f, y + 0.5f, x + w + 0.5f, y + 0.5f, flags);
     }
   }
 }
