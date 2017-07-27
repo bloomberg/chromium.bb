@@ -220,6 +220,8 @@ struct drm_output {
 	enum dpms_enum dpms;
 	struct backlight *backlight;
 
+	bool state_invalid;
+
 	int vblank_pending;
 	int page_flip_pending;
 	int destroy_pending;
@@ -880,7 +882,7 @@ drm_output_repaint(struct weston_output *output_base,
 		return -1;
 
 	mode = container_of(output->base.current_mode, struct drm_mode, base);
-	if (!output->fb_current ||
+	if (output->state_invalid || !output->fb_current ||
 	    output->fb_current->stride != output->fb_pending->stride) {
 		ret = drmModeSetCrtc(backend->drm.fd, output->crtc_id,
 				     output->fb_pending->fb_id, 0, 0,
@@ -891,6 +893,8 @@ drm_output_repaint(struct weston_output *output_base,
 			goto err_pageflip;
 		}
 		output_base->set_dpms(output_base, WESTON_DPMS_ON);
+
+		output->state_invalid = false;
 	}
 
 	if (drmModePageFlip(backend->drm.fd, output->crtc_id,
@@ -998,6 +1002,12 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 		/* We can't page flip if there's no mode set */
 		goto finish_frame;
 	}
+
+	/* Need to smash all state in from scratch; current timings might not
+	 * be what we want, page flip might not work, etc.
+	 */
+	if (output->state_invalid)
+		goto finish_frame;
 
 	/* Try to get current msc and timestamp via instant query */
 	vbl.request.type |= drm_waitvblank_pipe(output);
@@ -2675,6 +2685,8 @@ drm_output_enable(struct weston_output *base)
 				    output->connector->count_modes == 0 ?
 				    ", built-in" : "");
 
+	output->state_invalid = true;
+
 	return 0;
 
 err_free:
@@ -3130,6 +3142,10 @@ session_notify(struct wl_listener *listener, void *data)
 		weston_log("activating session\n");
 		weston_compositor_wake(compositor);
 		weston_compositor_damage_all(compositor);
+
+		wl_list_for_each(output, &compositor->output_list, base.link)
+			output->state_invalid = true;
+
 		udev_input_enable(&b->input);
 	} else {
 		weston_log("deactivating session\n");
