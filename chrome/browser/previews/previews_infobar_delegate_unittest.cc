@@ -23,7 +23,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
@@ -32,10 +31,6 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -84,26 +79,11 @@ class TestPreviewsWebContentsObserver
  public:
   explicit TestPreviewsWebContentsObserver(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents),
-        last_navigation_reload_type_(content::ReloadType::NONE),
-        should_have_page_id_(true) {}
+        last_navigation_reload_type_(content::ReloadType::NONE) {}
   ~TestPreviewsWebContentsObserver() override {}
 
   content::ReloadType last_navigation_reload_type() {
     return last_navigation_reload_type_;
-  }
-
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    ChromeNavigationData* chrome_navigation_data = new ChromeNavigationData();
-    content::WebContentsTester::For(web_contents())
-        ->SetNavigationData(navigation_handle,
-                            base::WrapUnique(chrome_navigation_data));
-    data_reduction_proxy::DataReductionProxyData* data =
-        new data_reduction_proxy::DataReductionProxyData();
-    chrome_navigation_data->SetDataReductionProxyData(base::WrapUnique(data));
-    data->set_used_data_reduction_proxy(true);
-    if (should_have_page_id_)
-      data->set_page_id(1u);
   }
 
   void DidFinishNavigation(
@@ -111,13 +91,8 @@ class TestPreviewsWebContentsObserver
     last_navigation_reload_type_ = navigation_handle->GetReloadType();
   }
 
-  void set_should_have_page_id(bool should_have_page_id) {
-    should_have_page_id_ = should_have_page_id;
-  }
-
  private:
   content::ReloadType last_navigation_reload_type_;
-  bool should_have_page_id_;
 };
 
 class TestOptOutObserver : public page_load_metrics::PageLoadMetricsObserver {
@@ -322,14 +297,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestReloadDismissal) {
   EXPECT_EQ(0, drp_test_context_->pref_service()->GetInteger(
                    data_reduction_proxy::prefs::kLoFiLoadImagesPerSession));
 
-  auto* data_reduction_proxy_settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-          web_contents()->GetBrowserContext());
-
-  EXPECT_EQ(0u, data_reduction_proxy_settings->data_reduction_proxy_service()
-                    ->pingback_client()
-                    ->OptOutsSizeForTesting());
-
   EXPECT_FALSE(opt_out_called_);
 }
 
@@ -406,16 +373,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLoFi) {
                   data_reduction_proxy::prefs::kLoFiLoadImagesPerSession));
     EXPECT_TRUE(user_opt_out_.value());
 
-    auto* data_reduction_proxy_settings =
-        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-            web_contents()->GetBrowserContext());
-    EXPECT_EQ(1u, data_reduction_proxy_settings->data_reduction_proxy_service()
-                      ->pingback_client()
-                      ->OptOutsSizeForTesting());
-    EXPECT_EQ(1u, data_reduction_proxy_settings->data_reduction_proxy_service()
-                      ->pingback_client()
-                      ->OptOutsSizeForTesting());
-
     EXPECT_TRUE(opt_out_called_);
   }
 }
@@ -441,13 +398,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLitePage) {
             TestPreviewsWebContentsObserver::FromWebContents(web_contents())
                 ->last_navigation_reload_type());
 
-  auto* data_reduction_proxy_settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-          web_contents()->GetBrowserContext());
-
-  EXPECT_EQ(1u, data_reduction_proxy_settings->data_reduction_proxy_service()
-                    ->pingback_client()
-                    ->OptOutsSizeForTesting());
   EXPECT_TRUE(opt_out_called_);
 }
 
@@ -571,9 +521,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, OfflineInfobarDataSaverUserTest) {
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, OfflineInfobarDisablesLoFi) {
-  TestPreviewsWebContentsObserver::FromWebContents(web_contents())
-      ->set_should_have_page_id(false);
-
   NavigateAndCommit(GURL(kTestUrl));
 
   ConfirmInfoBarDelegate* infobar =
@@ -594,64 +541,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, OfflineInfobarDisablesLoFi) {
             TestPreviewsWebContentsObserver::FromWebContents(web_contents())
                 ->last_navigation_reload_type());
 
-  auto* data_reduction_proxy_settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-          web_contents()->GetBrowserContext());
-
-  EXPECT_EQ(0u, data_reduction_proxy_settings->data_reduction_proxy_service()
-                    ->pingback_client()
-                    ->OptOutsSizeForTesting());
-
   EXPECT_TRUE(opt_out_called_);
-}
-
-TEST_F(PreviewsInfoBarDelegateUnitTest, PingbackClientClearedTabClosed) {
-  NavigateAndCommit(GURL(kTestUrl));
-
-  ConfirmInfoBarDelegate* infobar =
-      CreateInfoBar(previews::PreviewsType::LITE_PAGE, base::Time(),
-                    true /* is_data_saver_user */, false /* is_reload */);
-
-  // Simulate clicking the infobar link.
-  if (infobar->LinkClicked(WindowOpenDisposition::CURRENT_TAB))
-    infobar_service()->infobar_at(0)->RemoveSelf();
-  EXPECT_EQ(0U, infobar_service()->infobar_count());
-
-  tester_->ExpectBucketCount(
-      kUMAPreviewsInfoBarActionLitePage,
-      PreviewsInfoBarDelegate::INFOBAR_LOAD_ORIGINAL_CLICKED, 1);
-
-  content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
-
-  EXPECT_EQ(content::ReloadType::DISABLE_LOFI_MODE,
-            TestPreviewsWebContentsObserver::FromWebContents(web_contents())
-                ->last_navigation_reload_type());
-
-  auto* data_reduction_proxy_settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-          web_contents()->GetBrowserContext());
-
-  EXPECT_EQ(1u, data_reduction_proxy_settings->data_reduction_proxy_service()
-                    ->pingback_client()
-                    ->OptOutsSizeForTesting());
-
-  {
-    std::unique_ptr<content::NavigationHandle> navigation_handle(
-        content::NavigationHandle::CreateNavigationHandleForTesting(
-            GURL("url"), main_rfh(), true));
-  }
-
-  SetContents(nullptr);
-
-  EXPECT_EQ(1u, data_reduction_proxy_settings->data_reduction_proxy_service()
-                    ->pingback_client()
-                    ->OptOutsSizeForTesting());
-
-  drp_test_context_->RunUntilIdle();
-
-  EXPECT_EQ(0u, data_reduction_proxy_settings->data_reduction_proxy_service()
-                    ->pingback_client()
-                    ->OptOutsSizeForTesting());
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, PreviewInfobarTimestampMinutesTest) {

@@ -15,6 +15,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "chrome/browser/previews/previews_infobar_delegate.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
@@ -114,6 +115,7 @@ const char kBytesInflation[] = "Experimental.Bytes.Network.Inflation";
 
 DataReductionProxyMetricsObserver::DataReductionProxyMetricsObserver()
     : browser_context_(nullptr),
+      opted_out_(false),
       num_data_reduction_proxy_resources_(0),
       num_network_resources_(0),
       original_network_bytes_(0),
@@ -127,6 +129,7 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 DataReductionProxyMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This BrowserContext is valid for the lifetime of
   // DataReductionProxyMetricsObserver. BrowserContext is always valid and
   // non-nullptr in NavigationControllerImpl, which is a member of WebContents.
@@ -161,6 +164,7 @@ DataReductionProxyMetricsObserver::OnStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url,
     bool started_in_foreground) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!started_in_foreground)
     return STOP_OBSERVING;
   return CONTINUE_OBSERVING;
@@ -170,6 +174,7 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 DataReductionProxyMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // FlushMetricsOnAppEnterBackground is invoked on Android in cases where the
   // app is about to be backgrounded, as part of the Activity.onPause()
   // flow. After this method is invoked, Chrome may be killed without further
@@ -184,6 +189,7 @@ DataReductionProxyMetricsObserver::FlushMetricsOnAppEnterBackground(
 void DataReductionProxyMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RecordPageSizeUMA();
   SendPingback(timing, info, false /* app_background_occurred */);
 }
@@ -324,13 +330,14 @@ void DataReductionProxyMetricsObserver::SendPingback(
       first_image_paint, first_contentful_paint,
       experimental_first_meaningful_paint,
       parse_blocked_on_script_load_duration, parse_stop, network_bytes_,
-      original_network_bytes_, app_background_occurred);
+      original_network_bytes_, app_background_occurred, opted_out_);
   GetPingbackClient()->SendPingback(*data_, data_reduction_proxy_timing);
 }
 
 void DataReductionProxyMetricsObserver::OnDomContentLoadedEventStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
       info, data_, timing.document_timing->dom_content_loaded_event_start,
       internal::kHistogramDOMContentLoadedEventFiredSuffix);
@@ -339,6 +346,7 @@ void DataReductionProxyMetricsObserver::OnDomContentLoadedEventStart(
 void DataReductionProxyMetricsObserver::OnLoadEventStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
       info, data_, timing.document_timing->load_event_start,
       internal::kHistogramLoadEventFiredSuffix);
@@ -347,6 +355,7 @@ void DataReductionProxyMetricsObserver::OnLoadEventStart(
 void DataReductionProxyMetricsObserver::OnFirstLayout(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
       info, data_, timing.document_timing->first_layout,
       internal::kHistogramFirstLayoutSuffix);
@@ -355,6 +364,7 @@ void DataReductionProxyMetricsObserver::OnFirstLayout(
 void DataReductionProxyMetricsObserver::OnFirstPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(info, data_,
                                           timing.paint_timing->first_paint,
                                           internal::kHistogramFirstPaintSuffix);
@@ -363,6 +373,7 @@ void DataReductionProxyMetricsObserver::OnFirstPaintInPage(
 void DataReductionProxyMetricsObserver::OnFirstTextPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
       info, data_, timing.paint_timing->first_text_paint,
       internal::kHistogramFirstTextPaintSuffix);
@@ -371,6 +382,7 @@ void DataReductionProxyMetricsObserver::OnFirstTextPaintInPage(
 void DataReductionProxyMetricsObserver::OnFirstImagePaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
       info, data_, timing.paint_timing->first_image_paint,
       internal::kHistogramFirstImagePaintSuffix);
@@ -379,6 +391,7 @@ void DataReductionProxyMetricsObserver::OnFirstImagePaintInPage(
 void DataReductionProxyMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
       info, data_, timing.paint_timing->first_contentful_paint,
       internal::kHistogramFirstContentfulPaintSuffix);
@@ -388,6 +401,7 @@ void DataReductionProxyMetricsObserver::
     OnFirstMeaningfulPaintInMainFrameDocument(
         const page_load_metrics::mojom::PageLoadTiming& timing,
         const page_load_metrics::PageLoadExtraInfo& info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
       info, data_, timing.paint_timing->first_meaningful_paint,
       internal::kHistogramFirstMeaningfulPaintSuffix);
@@ -396,6 +410,7 @@ void DataReductionProxyMetricsObserver::
 void DataReductionProxyMetricsObserver::OnParseStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(info, data_,
                                           timing.parse_timing->parse_start,
                                           internal::kHistogramParseStartSuffix);
@@ -404,6 +419,7 @@ void DataReductionProxyMetricsObserver::OnParseStart(
 void DataReductionProxyMetricsObserver::OnParseStop(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!WasStartedInForegroundOptionalEventInForeground(
           timing.parse_timing->parse_stop, info))
     return;
@@ -420,6 +436,7 @@ void DataReductionProxyMetricsObserver::OnParseStop(
 void DataReductionProxyMetricsObserver::OnLoadedResource(
     const page_load_metrics::ExtraRequestCompleteInfo&
         extra_request_complete_info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (extra_request_complete_info.data_reduction_proxy_data &&
       extra_request_complete_info.data_reduction_proxy_data->lofi_received()) {
     data_->set_lofi_received(true);
@@ -445,6 +462,13 @@ DataReductionProxyMetricsObserver::GetPingbackClient() const {
              browser_context_)
       ->data_reduction_proxy_service()
       ->pingback_client();
+}
+
+void DataReductionProxyMetricsObserver::OnEventOccurred(
+    const void* const event_key) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (event_key == PreviewsInfoBarDelegate::OptOutEventKey())
+    opted_out_ = true;
 }
 
 }  // namespace data_reduction_proxy

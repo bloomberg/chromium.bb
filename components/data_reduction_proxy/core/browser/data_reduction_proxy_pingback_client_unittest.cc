@@ -106,7 +106,8 @@ class DataReductionProxyPingbackClientTest : public testing::Test {
 
   void CreateAndSendPingback(bool lofi_received,
                              bool lite_page_received,
-                             bool app_background_occurred) {
+                             bool app_background_occurred,
+                             bool opt_out_occurred) {
     timing_ = base::MakeUnique<DataReductionProxyPageLoadTiming>(
         base::Time::FromJsTime(1500) /* navigation_start */,
         base::Optional<base::TimeDelta>(
@@ -124,7 +125,7 @@ class DataReductionProxyPingbackClientTest : public testing::Test {
         base::Optional<base::TimeDelta>(
             base::TimeDelta::FromMilliseconds(2000)) /* parse_stop */,
         kBytes /* network_bytes */, kBytesOriginal /* original_network_bytes */,
-        app_background_occurred /* app_background_occurred */);
+        app_background_occurred, opt_out_occurred);
 
     DataReductionProxyData request_data;
     request_data.set_session_key(kSessionKey);
@@ -165,9 +166,9 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
   uint64_t data_page_id = page_id();
-  CreateAndSendPingback(false /* lofi_received */,
-                        false /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      false /* lofi_received */, false /* lite_page_received */,
+      false /* app_background_occurred */, false /* opt_out_occurred */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_EQ(test_fetcher->upload_content_type(), "application/x-protobuf");
@@ -230,9 +231,9 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyHoldback) {
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
   pingback_client()->SetPingbackReportingFraction(1.0f);
-  CreateAndSendPingback(false /* lofi_received */,
-                        false /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      false /* lofi_received */, false /* lite_page_received */,
+      false /* app_background_occurred */, false /* opt_out_occurred */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_EQ(test_fetcher->upload_content_type(), "application/x-protobuf");
@@ -254,22 +255,22 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyTwoPingbacksBatchedContent) {
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
   // First pingback
-  CreateAndSendPingback(false /* lofi_received */,
-                        false /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      false /* lofi_received */, false /* lite_page_received */,
+      false /* app_background_occurred */, false /* opt_out_occurred */);
 
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   // Two more pingbacks batched together.
   std::list<uint64_t> page_ids;
   page_ids.push_back(page_id());
-  CreateAndSendPingback(false /* lofi_received */,
-                        false /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      false /* lofi_received */, false /* lite_page_received */,
+      false /* app_background_occurred */, false /* opt_out_occurred */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 2);
   page_ids.push_back(page_id());
-  CreateAndSendPingback(false /* lofi_received */,
-                        false /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      false /* lofi_received */, false /* lite_page_received */,
+      false /* app_background_occurred */, false /* opt_out_occurred */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 3);
 
   // Ignore the first pingback.
@@ -335,13 +336,13 @@ TEST_F(DataReductionProxyPingbackClientTest, SendTwoPingbacks) {
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
   pingback_client()->SetPingbackReportingFraction(1.0f);
-  CreateAndSendPingback(false /* lofi_received */,
-                        false /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      false /* lofi_received */, false /* lite_page_received */,
+      false /* app_background_occurred */, false /* opt_out_occurred */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
-  CreateAndSendPingback(false /* lofi_received */,
-                        false /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      false /* lofi_received */, false /* lite_page_received */,
+      false /* app_background_occurred */, false /* opt_out_occurred */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 2);
 
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
@@ -360,9 +361,9 @@ TEST_F(DataReductionProxyPingbackClientTest, NoPingbackSent) {
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
   pingback_client()->SetPingbackReportingFraction(0.0f);
-  CreateAndSendPingback(false /* lofi_received */,
-                        false /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      false /* lofi_received */, false /* lite_page_received */,
+      false /* app_background_occurred */, false /* opt_out_occurred */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, false, 1);
   histogram_tester().ExpectTotalCount(kHistogramSucceeded, 0);
   EXPECT_FALSE(factory()->GetFetcherByID(0));
@@ -376,9 +377,9 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyReportingBehvaior) {
   // pingback is created.
   pingback_client()->SetPingbackReportingFraction(0.5f);
   pingback_client()->OverrideRandom(true, 0.4f);
-  CreateAndSendPingback(false /* lofi_received */,
-                        false /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      false /* lofi_received */, false /* lite_page_received */,
+      false /* app_background_occurred */, false /* opt_out_occurred */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher);
@@ -388,9 +389,9 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyReportingBehvaior) {
   // Verify that if the random number is greater than the reporting fraction,
   // the pingback is not created.
   pingback_client()->OverrideRandom(true, 0.6f);
-  CreateAndSendPingback(false /* lofi_received */,
-                        false /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      false /* lofi_received */, false /* lite_page_received */,
+      false /* app_background_occurred */, false /* opt_out_occurred */);
   histogram_tester().ExpectBucketCount(kHistogramAttempted, false, 1);
   test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_FALSE(test_fetcher);
@@ -400,9 +401,9 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyReportingBehvaior) {
   // and the random number is zero, no pingback is sent.
   pingback_client()->SetPingbackReportingFraction(0.0f);
   pingback_client()->OverrideRandom(true, 0.0f);
-  CreateAndSendPingback(false /* lofi_received */,
-                        false /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      false /* lofi_received */, false /* lite_page_received */,
+      false /* app_background_occurred */, false /* opt_out_occurred */);
   histogram_tester().ExpectBucketCount(kHistogramAttempted, false, 2);
   test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_FALSE(test_fetcher);
@@ -412,9 +413,9 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyReportingBehvaior) {
       data_reduction_proxy::switches::kEnableDataReductionProxyForcePingback);
   pingback_client()->SetPingbackReportingFraction(0.0f);
   pingback_client()->OverrideRandom(true, 1.0f);
-  CreateAndSendPingback(false /* lofi_received */,
-                        false /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      false /* lofi_received */, false /* lite_page_received */,
+      false /* app_background_occurred */, false /* opt_out_occurred */);
   histogram_tester().ExpectBucketCount(kHistogramAttempted, true, 2);
   test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher);
@@ -427,9 +428,9 @@ TEST_F(DataReductionProxyPingbackClientTest, FailedPingback) {
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
   pingback_client()->SetPingbackReportingFraction(1.0f);
-  CreateAndSendPingback(false /* lofi_received */,
-                        false /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      false /* lofi_received */, false /* lite_page_received */,
+      false /* app_background_occurred */, false /* opt_out_occurred */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher);
@@ -447,9 +448,9 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyLoFiContentNoOptOut) {
   pingback_client()->SetPingbackReportingFraction(1.0f);
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
-  CreateAndSendPingback(true /* lofi_received */,
-                        false /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      true /* lofi_received */, false /* lite_page_received */,
+      false /* app_background_occurred */, false /* opt_out_occurred */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_EQ(test_fetcher->upload_content_type(), "application/x-protobuf");
@@ -473,10 +474,9 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyLoFiContentOptOut) {
   pingback_client()->SetPingbackReportingFraction(1.0f);
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
-  pingback_client()->AddOptOut(NavigationID(page_id(), kSessionKey));
-  CreateAndSendPingback(true /* lofi_received */,
-                        false /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      true /* lofi_received */, false /* lite_page_received */,
+      false /* app_background_occurred */, true /* opt_out_occurred */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_EQ(test_fetcher->upload_content_type(), "application/x-protobuf");
@@ -500,10 +500,9 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyLoFiContentBackground) {
   pingback_client()->SetPingbackReportingFraction(1.0f);
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
-  pingback_client()->AddOptOut(NavigationID(page_id(), kSessionKey));
-  CreateAndSendPingback(true /* lofi_received */,
-                        false /* lite_page_received */,
-                        true /* app_background_occurred */);
+  CreateAndSendPingback(
+      true /* lofi_received */, false /* lite_page_received */,
+      true /* app_background_occurred */, true /* opt_out_occurred */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_EQ(test_fetcher->upload_content_type(), "application/x-protobuf");
@@ -527,10 +526,9 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyLitePageContent) {
   pingback_client()->SetPingbackReportingFraction(1.0f);
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
-  pingback_client()->AddOptOut(NavigationID(page_id(), kSessionKey));
-  CreateAndSendPingback(false /* lofi_received */,
-                        true /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      false /* lofi_received */, true /* lite_page_received */,
+      false /* app_background_occurred */, true /* opt_out_occurred */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_EQ(test_fetcher->upload_content_type(), "application/x-protobuf");
@@ -554,14 +552,12 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyTwoLitePagePingbacks) {
   pingback_client()->SetPingbackReportingFraction(1.0f);
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
-  pingback_client()->AddOptOut(NavigationID(page_id(), kSessionKey));
-  CreateAndSendPingback(false /* lofi_received */,
-                        true /* lite_page_received */,
-                        false /* app_background_occurred */);
-  pingback_client()->AddOptOut(NavigationID(page_id(), kSessionKey));
-  CreateAndSendPingback(false /* lofi_received */,
-                        true /* lite_page_received */,
-                        false /* app_background_occurred */);
+  CreateAndSendPingback(
+      false /* lofi_received */, true /* lite_page_received */,
+      false /* app_background_occurred */, true /* opt_out_occurred */);
+  CreateAndSendPingback(
+      false /* lofi_received */, true /* lite_page_received */,
+      false /* app_background_occurred */, true /* opt_out_occurred */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 2);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_EQ(test_fetcher->upload_content_type(), "application/x-protobuf");
@@ -585,21 +581,6 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyTwoLitePagePingbacks) {
             pageload_metrics.previews_opt_out());
   test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
   EXPECT_FALSE(factory()->GetFetcherByID(0));
-}
-
-TEST_F(DataReductionProxyPingbackClientTest, VerifyClearingPendingLoads) {
-  Init();
-  EXPECT_FALSE(factory()->GetFetcherByID(0));
-  pingback_client()->OverrideRandom(true, 0.5f);
-  pingback_client()->SetPingbackReportingFraction(1.0f);
-  base::Time current_time = base::Time::UnixEpoch();
-  pingback_client()->set_current_time(current_time);
-  pingback_client()->AddOptOut(NavigationID(page_id(), kSessionKey));
-  EXPECT_EQ(1u, pingback_client()->OptOutsSizeForTesting());
-  pingback_client()->ClearNavigationKeyAsync(
-      NavigationID(page_id(), kSessionKey));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0u, pingback_client()->OptOutsSizeForTesting());
 }
 
 }  // namespace data_reduction_proxy

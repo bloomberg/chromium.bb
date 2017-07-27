@@ -18,6 +18,7 @@
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "chrome/browser/previews/previews_infobar_delegate.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
@@ -139,7 +140,8 @@ class DataReductionProxyMetricsObserverTest
   DataReductionProxyMetricsObserverTest()
       : pingback_client_(new TestPingbackClient()),
         data_reduction_proxy_used_(false),
-        is_using_lofi_(false) {}
+        is_using_lofi_(false),
+        opt_out_expected_(false) {}
 
   void ResetTest() {
     page_load_metrics::InitPageLoadTimingForTest(&timing_);
@@ -161,17 +163,21 @@ class DataReductionProxyMetricsObserverTest
     PopulateRequiredTimingFields(&timing_);
   }
 
-  void RunTest(bool data_reduction_proxy_used, bool is_using_lofi) {
+  void RunTest(bool data_reduction_proxy_used,
+               bool is_using_lofi,
+               bool opt_out_expected) {
     data_reduction_proxy_used_ = data_reduction_proxy_used;
     is_using_lofi_ = is_using_lofi;
+    opt_out_expected_ = opt_out_expected;
     NavigateAndCommit(GURL(kDefaultTestUrl));
     SimulateTimingUpdate(timing_);
     pingback_client_->Reset();
   }
 
   void RunTestAndNavigateToUntrackedUrl(bool data_reduction_proxy_used,
-                                        bool is_using_lofi) {
-    RunTest(data_reduction_proxy_used, is_using_lofi);
+                                        bool is_using_lofi,
+                                        bool opt_out_expected) {
+    RunTest(data_reduction_proxy_used, is_using_lofi, opt_out_expected);
     NavigateToUntrackedUrl();
   }
 
@@ -202,6 +208,7 @@ class DataReductionProxyMetricsObserverTest
                        pingback_client_->timing()->load_event_start);
     ExpectEqualOrUnset(timing_.paint_timing->first_image_paint,
                        pingback_client_->timing()->first_image_paint);
+    EXPECT_EQ(opt_out_expected_, pingback_client_->timing()->opt_out_occurred);
   }
 
   void ValidateLoFiInPingback(bool lofi_expected) {
@@ -350,6 +357,7 @@ class DataReductionProxyMetricsObserverTest
  private:
   bool data_reduction_proxy_used_;
   bool is_using_lofi_;
+  bool opt_out_expected_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyMetricsObserverTest);
 };
@@ -357,7 +365,7 @@ class DataReductionProxyMetricsObserverTest
 TEST_F(DataReductionProxyMetricsObserverTest, DataReductionProxyOff) {
   ResetTest();
   // Verify that when the data reduction proxy was not used, no UMA is reported.
-  RunTest(false, false);
+  RunTest(false, false, false);
   ValidateHistograms();
 }
 
@@ -365,7 +373,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, DataReductionProxyOn) {
   ResetTest();
   // Verify that when the data reduction proxy was used, but lofi was not used,
   // the correpsonding UMA is reported.
-  RunTest(true, false);
+  RunTest(true, false, false);
   ValidateHistograms();
 }
 
@@ -373,7 +381,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, LofiEnabled) {
   ResetTest();
   // Verify that when the data reduction proxy was used and lofi was used, both
   // histograms are reported.
-  RunTest(true, true);
+  RunTest(true, true, false);
   ValidateHistograms();
 }
 
@@ -381,40 +389,49 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
   ResetTest();
   // Verify that when data reduction proxy was used the correct timing
   // information is sent to SendPingback.
-  RunTestAndNavigateToUntrackedUrl(true, false);
+  RunTestAndNavigateToUntrackedUrl(true, false, false);
   ValidateTimes();
 
   ResetTest();
   // Verify that when data reduction proxy was used but first image paint is
   // unset, the correct timing information is sent to SendPingback.
   timing_.paint_timing->first_image_paint = base::nullopt;
-  RunTestAndNavigateToUntrackedUrl(true, false);
+  RunTestAndNavigateToUntrackedUrl(true, false, false);
   ValidateTimes();
 
   ResetTest();
   // Verify that when data reduction proxy was used but first contentful paint
   // is unset, SendPingback is not called.
   timing_.paint_timing->first_contentful_paint = base::nullopt;
-  RunTestAndNavigateToUntrackedUrl(true, false);
+  RunTestAndNavigateToUntrackedUrl(true, false, false);
   ValidateTimes();
 
   ResetTest();
   // Verify that when data reduction proxy was used but first meaningful paint
   // is unset, SendPingback is not called.
   timing_.paint_timing->first_meaningful_paint = base::nullopt;
-  RunTestAndNavigateToUntrackedUrl(true, false);
+  RunTestAndNavigateToUntrackedUrl(true, false, false);
   ValidateTimes();
 
   ResetTest();
   // Verify that when data reduction proxy was used but load event start is
   // unset, SendPingback is not called.
   timing_.document_timing->load_event_start = base::nullopt;
-  RunTestAndNavigateToUntrackedUrl(true, false);
+  RunTestAndNavigateToUntrackedUrl(true, false, false);
   ValidateTimes();
   ValidateLoFiInPingback(false);
 
   ResetTest();
+  // Verify that when an opt out occurs, that it is reported in the pingback.
+  timing_.document_timing->load_event_start = base::nullopt;
+  RunTest(true, true, true);
+  observer()->BroadcastEventToObservers(
+      PreviewsInfoBarDelegate::OptOutEventKey());
+  NavigateToUntrackedUrl();
+  ValidateTimes();
+  ValidateLoFiInPingback(false);
 
+  ResetTest();
   std::unique_ptr<DataReductionProxyData> data =
       base::MakeUnique<DataReductionProxyData>();
   data->set_used_data_reduction_proxy(true);
@@ -434,7 +451,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
       content::ResourceType::RESOURCE_TYPE_SCRIPT,
       0};
 
-  RunTest(true, false);
+  RunTest(true, false, false);
   SimulateLoadedResource(resource);
   NavigateToUntrackedUrl();
   ValidateTimes();
@@ -443,7 +460,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
   ResetTest();
   // Verify that when data reduction proxy was not used, SendPingback is not
   // called.
-  RunTestAndNavigateToUntrackedUrl(false, false);
+  RunTestAndNavigateToUntrackedUrl(false, false, false);
   EXPECT_FALSE(pingback_client_->send_pingback_called());
 
   ResetTest();
@@ -451,14 +468,14 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
   base::FieldTrialList field_trial_list(nullptr);
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "DataCompressionProxyHoldback", "Enabled"));
-  RunTestAndNavigateToUntrackedUrl(true, false);
+  RunTestAndNavigateToUntrackedUrl(true, false, false);
   EXPECT_TRUE(pingback_client_->send_pingback_called());
 }
 
 TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
   ResetTest();
 
-  RunTest(true, false);
+  RunTest(true, false, false);
 
   std::unique_ptr<DataReductionProxyData> data =
       base::MakeUnique<DataReductionProxyData>();
@@ -519,7 +536,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
 TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
   ResetTest();
 
-  RunTest(true, false);
+  RunTest(true, false, false);
 
   std::unique_ptr<DataReductionProxyData> data =
       base::MakeUnique<DataReductionProxyData>();

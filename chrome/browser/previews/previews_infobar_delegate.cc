@@ -8,7 +8,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,8 +19,6 @@
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/previews/previews_infobar_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/infobars/core/infobar.h"
 #include "components/network_time/network_time_tracker.h"
@@ -59,25 +56,6 @@ void RecordPreviewsInfoBarAction(
 void RecordStaleness(PreviewsInfoBarDelegate::PreviewsInfoBarTimestamp value) {
   UMA_HISTOGRAM_ENUMERATION("Previews.InfoBarTimestamp", value,
                             PreviewsInfoBarDelegate::TIMESTAMP_INDEX_BOUNDARY);
-}
-
-// Sends opt out information to the pingback service based on a key value in the
-// infobar tab helper. Sending this information in the case of a navigation that
-// should not send a pingback (or is not a server preview) will not alter the
-// pingback.
-void ReportPingbackInformation(content::WebContents* web_contents) {
-  auto* data_reduction_proxy_settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-          web_contents->GetBrowserContext());
-  PreviewsInfoBarTabHelper* infobar_tab_helper =
-      PreviewsInfoBarTabHelper::FromWebContents(web_contents);
-  if (infobar_tab_helper &&
-      infobar_tab_helper->committed_data_saver_navigation_id()) {
-    data_reduction_proxy_settings->data_reduction_proxy_service()
-        ->pingback_client()
-        ->AddOptOut(
-            infobar_tab_helper->committed_data_saver_navigation_id().value());
-  }
 }
 
 // Increments the prefs-based opt out information for data reduction proxy when
@@ -251,8 +229,6 @@ bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
 
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
-
-  ReportPingbackInformation(web_contents);
 
   InformPLMOfOptOut(web_contents);
 
