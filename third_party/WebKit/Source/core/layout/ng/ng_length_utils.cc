@@ -47,6 +47,8 @@ LayoutUnit ResolveInlineLength(const NGConstraintSpace& constraint_space,
   DCHECK_GE(constraint_space.AvailableSize().inline_size, LayoutUnit());
   DCHECK_GE(constraint_space.PercentageResolutionSize().inline_size,
             LayoutUnit());
+  DCHECK_EQ(constraint_space.WritingMode(),
+            FromPlatformWritingMode(style.GetWritingMode()));
 
   if (type == LengthResolveType::kMinSize && length.IsAuto())
     return LayoutUnit();
@@ -125,6 +127,8 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
                               LengthResolveType type) {
   DCHECK(!length.IsMaxSizeNone());
   DCHECK_NE(type, LengthResolveType::kMarginBorderPaddingSize);
+  DCHECK_EQ(constraint_space.WritingMode(),
+            FromPlatformWritingMode(style.GetWritingMode()));
 
   if (type == LengthResolveType::kMinSize && length.IsAuto())
     return LayoutUnit();

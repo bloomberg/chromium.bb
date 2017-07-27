@@ -846,10 +846,12 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(NGLayoutInputNode child) {
       NGConstraintSpaceBuilder(MutableConstraintSpace())
           .SetAvailableSize(child_available_size_)
           .SetPercentageResolutionSize(child_percentage_size_)
-          .ToConstraintSpace(ConstraintSpace().WritingMode());
+          .ToConstraintSpace(
+              FromPlatformWritingMode(child_style.GetWritingMode()));
 
-  NGBoxStrut margins = ComputeMargins(*space, child_style, space->WritingMode(),
-                                      space->Direction());
+  NGBoxStrut margins =
+      ComputeMargins(*space, child_style, ConstraintSpace().WritingMode(),
+                     ConstraintSpace().Direction());
 
   // TODO(ikilpatrick): Move the auto margins calculation for different writing
   // modes to post-layout.
