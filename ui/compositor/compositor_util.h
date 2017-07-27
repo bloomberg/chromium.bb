@@ -12,9 +12,15 @@
 
 namespace viz {
 class RendererSettings;
+class ResourceSettings;
 }
 
 namespace ui {
+
+// |image_targets| is a map from every supported pair of GPU memory buffer
+// usage/format to its GL texture target.
+COMPOSITOR_EXPORT viz::ResourceSettings CreateResourceSettings(
+    const viz::BufferToTextureTargetMap& image_targets);
 
 COMPOSITOR_EXPORT viz::RendererSettings CreateRendererSettings(
     const viz::BufferToTextureTargetMap& image_targets);

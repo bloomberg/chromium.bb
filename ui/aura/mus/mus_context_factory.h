@@ -58,7 +58,7 @@ class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
 
   ui::RasterThreadHelper raster_thread_helper_;
   ui::Gpu* gpu_;
-  const viz::RendererSettings renderer_settings_;
+  const viz::ResourceSettings resource_settings_;
   scoped_refptr<viz::ContextProvider> shared_main_thread_context_provider_;
 
   base::WeakPtrFactory<MusContextFactory> weak_ptr_factory_;

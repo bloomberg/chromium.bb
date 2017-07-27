@@ -13,6 +13,13 @@
 
 namespace ui {
 
+viz::ResourceSettings CreateResourceSettings(
+    const viz::BufferToTextureTargetMap& image_targets) {
+  viz::ResourceSettings resource_settings;
+  resource_settings.buffer_to_texture_target_map = image_targets;
+  return resource_settings;
+}
+
 viz::RendererSettings CreateRendererSettings(
     const viz::BufferToTextureTargetMap& image_targets) {
   viz::RendererSettings renderer_settings;
@@ -32,8 +39,7 @@ viz::RendererSettings CreateRendererSettings(
   renderer_settings.enable_color_correct_rendering =
       base::FeatureList::IsEnabled(features::kColorCorrectRendering) ||
       command_line->HasSwitch(switches::kEnableHDR);
-  renderer_settings.resource_settings.buffer_to_texture_target_map =
-      image_targets;
+  renderer_settings.resource_settings = CreateResourceSettings(image_targets);
 
   renderer_settings.disallow_non_exact_resource_reuse =
       command_line->HasSwitch(cc::switches::kDisallowNonExactResourceReuse);
