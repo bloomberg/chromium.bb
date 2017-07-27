@@ -8,6 +8,5 @@ FAIL Calling replaceTrack(null) on sender not set to session description should 
 FAIL Calling replaceTrack(null) on sender set to session description should resolve with sender.track set to null assert_own_property: Expect pc to have addTransceiver() method expected property "addTransceiver" missing
 FAIL Calling replaceTrack on sender with stopped track and and set to session description should resolve with sender.track set to given track assert_own_property: Expect pc to have addTransceiver() method expected property "addTransceiver" missing
 FAIL Calling replaceTrack on sender with similar track and and set to session description should resolve with sender.track set to new track assert_own_property: Expect pc to have addTransceiver() method expected property "addTransceiver" missing
-FAIL replaceTrack should never resolve if connection is closed in parallel assert_own_property: Expect pc to have addTransceiver() method expected property "addTransceiver" missing
 Harness: the test ran to completion.
 

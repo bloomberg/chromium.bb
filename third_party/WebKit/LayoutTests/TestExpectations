@@ -1818,6 +1818,12 @@ crbug.com/626703 virtual/threaded/inspector/tracing/timeline-js/timeline-runtime
 crbug.com/626703 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/page-visibility/onvisibilitychange.html [ Timeout ]
+crbug.com/626703 external/wpt/webrtc/RTCIceTransport.html [ Timeout ]
+crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-answer.html [ Timeout ]
+crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-offer.html [ Timeout ]
+crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-answer.html [ Timeout ]
+crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-offer.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/WebCryptoAPI/generateKey/test_successes_RSA-PSS.https.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc/RTCDtlsTransport-getRemoteCertificates.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/preload/delaying-onload-link-preload-after-discovery.html [ Timeout ]
