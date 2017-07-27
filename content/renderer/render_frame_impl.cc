@@ -2639,7 +2639,7 @@ void RenderFrameImpl::LoadURLExternally(
 void RenderFrameImpl::LoadErrorPage(int reason) {
   blink::WebURLError error;
   error.unreachable_url = frame_->GetDocument().Url();
-  error.domain = WebString::FromUTF8(net::kErrorDomain);
+  error.domain = blink::WebURLError::Domain::kNet;
   error.reason = reason;
 
   std::string error_html;
@@ -3919,15 +3919,13 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
     return;
 
   // Display error page instead of a blank page, if appropriate.
-  std::string error_domain = "http";
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDataSource(frame_->DataSource());
   int http_status_code = internal_data->http_status_code();
-  if (GetContentClient()->renderer()->HasErrorPage(http_status_code,
-                                                   &error_domain)) {
+  if (GetContentClient()->renderer()->HasErrorPage(http_status_code)) {
     WebURLError error;
     error.unreachable_url = frame_->GetDocument().Url();
-    error.domain = WebString::FromUTF8(error_domain);
+    error.domain = WebURLError::Domain::kHttp;
     error.reason = http_status_code;
     // This call may run scripts, e.g. via the beforeunload event.
     LoadNavigationErrorPage(frame_->DataSource()->GetRequest(), error, true,

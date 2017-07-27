@@ -23,7 +23,7 @@ TestResponseGenerator::TestResponseGenerator(const GURL& gurl,
 WebURLError TestResponseGenerator::GenerateError() {
   WebURLError error;
   error.reason = net::ERR_ABORTED;
-  error.domain = WebString::FromUTF8(net::kErrorDomain);
+  error.domain = WebURLError::Domain::kNet;
   return error;
 }
 

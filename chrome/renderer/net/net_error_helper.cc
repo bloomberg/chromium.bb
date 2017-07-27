@@ -37,7 +37,6 @@
 #include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -205,7 +204,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
   } else {
     base::DictionaryValue error_strings;
     LocalizedError::GetStrings(
-        error.reason, error.domain.Utf8(), error.unreachable_url,
+        error.reason, GetDomainString(error.domain), error.unreachable_url,
         is_failed_post, error.stale_copy_in_cache,
         can_show_network_diagnostics_dialog,
         ChromeRenderThreadObserver::is_incognito_process(),
@@ -238,8 +237,9 @@ void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
                                      bool can_show_network_diagnostics_dialog) {
   base::DictionaryValue error_strings;
   LocalizedError::GetStrings(
-      error.reason, error.domain.Utf8(), error.unreachable_url, is_failed_post,
-      error.stale_copy_in_cache, can_show_network_diagnostics_dialog,
+      error.reason, GetDomainString(error.domain), error.unreachable_url,
+      is_failed_post, error.stale_copy_in_cache,
+      can_show_network_diagnostics_dialog,
       ChromeRenderThreadObserver::is_incognito_process(),
       RenderThread::Get()->GetLocale(), std::unique_ptr<ErrorPageParams>(),
       &error_strings);
@@ -381,4 +381,18 @@ void NetErrorHelper::OnNavigationCorrectorRequest(
 
 void NetErrorHelper::SetCanShowNetworkDiagnosticsDialog(bool can_show) {
   core_->OnSetCanShowNetworkDiagnosticsDialog(can_show);
+}
+
+std::string NetErrorHelper::GetDomainString(blink::WebURLError::Domain domain) {
+  using Domain = blink::WebURLError::Domain;
+  switch (domain) {
+    case Domain::kNet:
+      return net::kErrorDomain;
+    case Domain::kHttp:
+      return error_page::kHttpErrorDomain;
+    case Domain::kDnsProbe:
+      return error_page::kDnsProbeErrorDomain;
+    default:
+      return error_page::kUnknownErrorDomain;
+  }
 }

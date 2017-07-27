@@ -514,7 +514,7 @@ void FetchManager::Loader::DidFinishLoading(unsigned long, double) {
 
 void FetchManager::Loader::DidFail(const ResourceError& error) {
   if (error.IsCancellation() || error.IsTimeout() ||
-      error.Domain() != kErrorDomainBlinkInternal)
+      error.GetDomain() != ResourceError::Domain::kBlinkInternal)
     Failed(String());
   else
     Failed("Fetch API cannot load " + error.FailingURL() + ". " +

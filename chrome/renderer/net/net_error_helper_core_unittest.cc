@@ -8,6 +8,7 @@
 
 #include <map>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -113,16 +114,16 @@ testing::AssertionResult StringValueEquals(const base::DictionaryValue& dict,
 // Creates a string from an error that is used as a mock locally generated
 // error page for that error.
 std::string ErrorToString(const WebURLError& error, bool is_failed_post) {
-  return base::StringPrintf("(%s, %s, %i, %s)",
-                            error.unreachable_url.GetString().Utf8().c_str(),
-                            error.domain.Utf8().c_str(), error.reason,
-                            is_failed_post ? "POST" : "NOT POST");
+  std::ostringstream ss;
+  ss << "(" << error.unreachable_url << ", " << error.domain << ", "
+     << error.reason << ", " << (is_failed_post ? "POST" : "NOT POST") << ")";
+  return ss.str();
 }
 
 WebURLError ProbeError(error_page::DnsProbeStatus status) {
   WebURLError error;
   error.unreachable_url = GURL(kFailedUrl);
-  error.domain = blink::WebString::FromUTF8(error_page::kDnsProbeErrorDomain);
+  error.domain = WebURLError::Domain::kDnsProbe;
   error.reason = status;
   return error;
 }
@@ -130,7 +131,7 @@ WebURLError ProbeError(error_page::DnsProbeStatus status) {
 WebURLError NetErrorForURL(net::Error net_error, const GURL& url) {
   WebURLError error;
   error.unreachable_url = url;
-  error.domain = blink::WebString::FromUTF8(net::kErrorDomain);
+  error.domain = WebURLError::Domain::kNet;
   error.reason = net_error;
   return error;
 }

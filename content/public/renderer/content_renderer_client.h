@@ -113,11 +113,8 @@ class CONTENT_EXPORT ContentRendererClient {
       const GURL& original_url);
 
   // Returns true if the embedder has an error page to show for the given http
-  // status code. If so |error_domain| should be set to according to WebURLError
-  // and the embedder's GetNavigationErrorHtml will be called afterwards to get
-  // the error html.
-  virtual bool HasErrorPage(int http_status_code,
-                            std::string* error_domain);
+  // status code.
+  virtual bool HasErrorPage(int http_status_code);
 
   // Returns true if the embedder prefers not to show an error page for a failed
   // navigation to |url| in |render_frame|.

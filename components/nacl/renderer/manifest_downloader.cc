@@ -71,7 +71,7 @@ void ManifestDownloader::DidFinishLoading(double finish_time) {
 void ManifestDownloader::DidFail(const blink::WebURLError& error) {
   // TODO(teravest): Find a place to share this code with PepperURLLoaderHost.
   pp_nacl_error_ = PP_NACL_ERROR_MANIFEST_LOAD_URL;
-  if (error.domain.Equals(blink::WebString::FromUTF8(net::kErrorDomain))) {
+  if (error.domain == blink::WebURLError::Domain::kNet) {
     switch (error.reason) {
       case net::ERR_ACCESS_DENIED:
       case net::ERR_NETWORK_ACCESS_DENIED:

@@ -1570,7 +1570,7 @@ void XMLHttpRequest::DidFail(const ResourceError& error) {
   }
 
   // Network failures are already reported to Web Inspector by ResourceLoader.
-  if (error.Domain() == kErrorDomainBlinkInternal)
+  if (error.GetDomain() == ResourceError::Domain::kBlinkInternal)
     LogConsoleError(GetExecutionContext(), "XMLHttpRequest cannot load " +
                                                error.FailingURL() + ". " +
                                                error.LocalizedDescription());

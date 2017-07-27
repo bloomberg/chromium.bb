@@ -6458,7 +6458,7 @@ TEST_P(ParameterizedWebFrameTest, ReplaceNavigationAfterHistoryNavigation) {
   // resulted in the SubstituteData document not getting displayed.
   WebURLError error;
   error.reason = 1337;
-  error.domain = "WebFrameTest";
+  error.domain = WebURLError::Domain::kTest;
   std::string error_url = "http://0.0.0.0";
   WebURLResponse response;
   response.SetURL(URLTestHelpers::ToKURL(error_url));

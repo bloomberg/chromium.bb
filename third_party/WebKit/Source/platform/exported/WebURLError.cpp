@@ -51,7 +51,7 @@ WebURLError& WebURLError::operator=(const ResourceError& error) {
   if (error.IsNull()) {
     *this = WebURLError();
   } else {
-    domain = error.Domain();
+    domain = error.GetDomain();
     reason = error.ErrorCode();
     unreachable_url = KURL(kParsedURLString, error.FailingURL());
     stale_copy_in_cache = error.StaleCopyInCache();
@@ -71,6 +71,30 @@ WebURLError::operator ResourceError() const {
   resource_error.SetWasIgnoredByHandler(was_ignored_by_handler);
   resource_error.SetIsAccessCheck(is_web_security_violation);
   return resource_error;
+}
+
+std::ostream& operator<<(std::ostream& out, const WebURLError::Domain domain) {
+  switch (domain) {
+    case WebURLError::Domain::kEmpty:
+      out << "(null)";
+      break;
+    case WebURLError::Domain::kNet:
+      out << "net";
+      break;
+    case WebURLError::Domain::kBlinkInternal:
+      out << "blink";
+      break;
+    case WebURLError::Domain::kHttp:
+      out << "http";
+      break;
+    case WebURLError::Domain::kDnsProbe:
+      out << "dns probe";
+      break;
+    case WebURLError::Domain::kTest:
+      out << "testing";
+      break;
+  }
+  return out;
 }
 
 }  // namespace blink
