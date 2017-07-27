@@ -17,6 +17,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
 #include "ui/ozone/platform/drm/gpu/overlay_plane.h"
@@ -149,7 +150,7 @@ class HardwareDisplayController {
   gfx::Point origin() const { return origin_; }
   void set_origin(const gfx::Point& origin) { origin_ = origin; }
 
-  uint64_t GetTimeOfLastFlip() const;
+  base::TimeTicks GetTimeOfLastFlip() const;
 
   const std::vector<std::unique_ptr<CrtcController>>& crtc_controllers() const {
     return crtc_controllers_;

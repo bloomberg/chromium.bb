@@ -8,6 +8,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -153,10 +154,18 @@ void DisplayLinkMac::Tick(const CVTimeStamp& cv_time) {
     return;
   }
 
-  timebase_ = base::TimeTicks::FromInternalValue(
-      cv_time.hostTime / 1000);
-  interval_ = base::TimeDelta::FromMicroseconds(
-      1000000 * static_cast<int64_t>(numerator) / denominator);
+  base::CheckedNumeric<int64_t> interval_us(base::Time::kMicrosecondsPerSecond);
+  interval_us *= numerator;
+  interval_us /= denominator;
+  if (!interval_us.IsValid()) {
+    LOG(DFATAL) << "Bailing due to overflow: "
+                << base::Time::kMicrosecondsPerSecond << " * " << numerator
+                << " / " << denominator;
+    return;
+  }
+
+  timebase_ = base::TimeTicks::FromMachAbsoluteTime(cv_time.hostTime);
+  interval_ = base::TimeDelta::FromMicroseconds(interval_us.ValueOrDie());
   timebase_and_interval_valid_ = true;
 
   // Don't restart the display link for 10 seconds.
@@ -218,4 +227,3 @@ base::LazyInstance<DisplayLinkMac::DisplayMap>::DestructorAtExit
     DisplayLinkMac::display_map_ = LAZY_INSTANCE_INITIALIZER;
 
 }  // ui
-

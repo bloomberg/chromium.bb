@@ -211,7 +211,7 @@ TEST_F(EventsXTest, ClickCount) {
   XEvent event;
   gfx::Point location(5, 10);
 
-  base::TimeDelta time_stamp = base::TimeTicks::Now() - base::TimeTicks() -
+  base::TimeDelta time_stamp = base::TimeTicks::Now().since_origin() -
                                base::TimeDelta::FromMilliseconds(10);
   for (int i = 1; i <= 3; ++i) {
     InitButtonEvent(&event, true, location, 1, 0);
@@ -540,15 +540,22 @@ TEST_F(EventsXTest, IgnoresMotionEventForMouseWheelScroll) {
 }
 
 namespace {
+
+// Returns a fake TimeTicks based on the given millisecond offset.
+base::TimeTicks TimeTicksFromMillis(int64_t millis) {
+  return base::TimeTicks() + base::TimeDelta::FromMilliseconds(millis);
+}
+
 class MockTickClock : public base::TickClock {
  public:
-  explicit MockTickClock(uint64_t milliseconds)
-      : ticks_(base::TimeTicks::FromInternalValue(milliseconds * 1000)) {}
+  explicit MockTickClock(int64_t milliseconds)
+      : ticks_(TimeTicksFromMillis(milliseconds)) {}
   base::TimeTicks NowTicks() override { return ticks_; }
 
  private:
   base::TimeTicks ticks_;
 };
+
 }  // namespace
 
 TEST_F(EventsXTest, TimestampRolloverAndAdjustWhenDecreasing) {
@@ -556,19 +563,17 @@ TEST_F(EventsXTest, TimestampRolloverAndAdjustWhenDecreasing) {
   InitButtonEvent(&event, true, gfx::Point(5, 10), 1, 0);
 
   ResetTimestampRolloverCountersForTesting(
-      base::MakeUnique<MockTickClock>(0x100000001LL));
+      base::MakeUnique<MockTickClock>(0x100000001));
 
   event.xbutton.time = 0xFFFFFFFF;
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(0xFFFFFFFF).ToInternalValue(),
-            ui::EventTimeFromNative(&event).ToInternalValue());
+  EXPECT_EQ(TimeTicksFromMillis(0xFFFFFFFF), ui::EventTimeFromNative(&event));
 
   ResetTimestampRolloverCountersForTesting(
-      base::MakeUnique<MockTickClock>(0x100000007LL));
+      base::MakeUnique<MockTickClock>(0x100000007));
 
   event.xbutton.time = 3;
-  EXPECT_EQ(
-      base::TimeDelta::FromMilliseconds(0x100000000LL + 3).ToInternalValue(),
-      ui::EventTimeFromNative(&event).ToInternalValue());
+  EXPECT_EQ(TimeTicksFromMillis(0x100000000 + 3),
+            ui::EventTimeFromNative(&event));
 }
 
 TEST_F(EventsXTest, NoTimestampRolloverWhenMonotonicIncreasing) {
@@ -578,18 +583,15 @@ TEST_F(EventsXTest, NoTimestampRolloverWhenMonotonicIncreasing) {
   ResetTimestampRolloverCountersForTesting(base::MakeUnique<MockTickClock>(10));
 
   event.xbutton.time = 6;
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(6).ToInternalValue(),
-            ui::EventTimeFromNative(&event).ToInternalValue());
+  EXPECT_EQ(TimeTicksFromMillis(6), ui::EventTimeFromNative(&event));
   event.xbutton.time = 7;
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(7).ToInternalValue(),
-            ui::EventTimeFromNative(&event).ToInternalValue());
+  EXPECT_EQ(TimeTicksFromMillis(7), ui::EventTimeFromNative(&event));
 
   ResetTimestampRolloverCountersForTesting(
       base::MakeUnique<MockTickClock>(0x100000005));
 
   event.xbutton.time = 0xFFFFFFFF;
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(0xFFFFFFFF).ToInternalValue(),
-            ui::EventTimeFromNative(&event).ToInternalValue());
+  EXPECT_EQ(TimeTicksFromMillis(0xFFFFFFFF), ui::EventTimeFromNative(&event));
 }
 
 }  // namespace ui

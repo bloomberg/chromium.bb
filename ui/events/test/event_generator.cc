@@ -47,7 +47,8 @@ class TestTickClock : public base::TickClock {
   TestTickClock() {}
 
   base::TimeTicks NowTicks() override {
-    return base::TimeTicks::FromInternalValue(ticks_++ * 1000);
+    return base::TimeTicks() +
+           base::TimeDelta::FromMicroseconds(ticks_++ * 1000);
   }
 
  private:

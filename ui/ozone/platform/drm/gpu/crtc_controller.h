@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
@@ -39,7 +40,7 @@ class CrtcController : public base::SupportsWeakPtr<CrtcController> {
   uint32_t connector() const { return connector_; }
   const scoped_refptr<DrmDevice>& drm() const { return drm_; }
   bool is_disabled() const { return is_disabled_; }
-  uint64_t time_of_last_flip() const { return time_of_last_flip_; }
+  base::TimeTicks time_of_last_flip() const { return time_of_last_flip_; }
 
   // Perform the initial modesetting operation using |plane| as the buffer for
   // the primary plane. The CRTC configuration is specified by |mode|.
@@ -76,12 +77,7 @@ class CrtcController : public base::SupportsWeakPtr<CrtcController> {
   // Called when the page flip event occurred. The event is provided by the
   // kernel when a VBlank event finished. This allows the controller to
   // update internal state and propagate the update to the surface.
-  // The tuple (seconds, useconds) represents the event timestamp. |seconds|
-  // represents the number of seconds while |useconds| represents the
-  // microseconds (< 1 second) in the timestamp.
-  void OnPageFlipEvent(unsigned int frame,
-                       unsigned int seconds,
-                       unsigned int useconds);
+  void OnPageFlipEvent(unsigned int frame, base::TimeTicks timestamp);
 
   bool SetCursor(const scoped_refptr<ScanoutBuffer>& buffer);
   bool MoveCursor(const gfx::Point& location);
@@ -110,7 +106,7 @@ class CrtcController : public base::SupportsWeakPtr<CrtcController> {
   bool is_disabled_ = true;
 
   // The time of the last page flip event as reported by the kernel callback.
-  uint64_t time_of_last_flip_ = 0;
+  base::TimeTicks time_of_last_flip_;
 
   DISALLOW_COPY_AND_ASSIGN(CrtcController);
 };

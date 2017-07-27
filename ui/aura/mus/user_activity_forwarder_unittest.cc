@@ -71,7 +71,8 @@ TEST_F(UserActivityForwarderTest, ForwardActivityToDetector) {
   // Run pending tasks so |monitor| receives |forwarder|'s registration.
   RunUntilIdle();
 
-  base::TimeTicks now = base::TimeTicks::FromInternalValue(1000);
+  base::TimeTicks now =
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(1000);
   detector.set_now_for_test(now);
   monitor.NotifyUserActivityObservers();
   RunUntilIdle();

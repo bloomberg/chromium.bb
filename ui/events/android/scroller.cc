@@ -227,7 +227,7 @@ void Scroller::StartScroll(float start_x,
                            float dy,
                            base::TimeTicks start_time,
                            base::TimeDelta duration) {
-  DCHECK_GT(duration.ToInternalValue(), 0);
+  DCHECK_GT(duration, base::TimeDelta());
   mode_ = SCROLL_MODE;
   finished_ = false;
   duration_ = duration;
@@ -270,7 +270,7 @@ void Scroller::Fling(float start_x,
 
   velocity_ = velocity;
   duration_ = GetSplineFlingDuration(velocity);
-  DCHECK_GT(duration_.ToInternalValue(), 0);
+  DCHECK_GT(duration_, base::TimeDelta());
   duration_seconds_reciprocal_ = 1.0 / duration_.InSecondsF();
   start_time_ = start_time;
   curr_time_ = start_time_;

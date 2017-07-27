@@ -243,7 +243,7 @@ std::string ToString(const MotionEvent& event) {
           ss << "\n   { " << event.GetHistoricalX(pi, h) << ", "
              << event.GetHistoricalY(pi, h) << ", "
              << event.GetHistoricalTouchMajor(pi, h) << ", "
-             << event.GetHistoricalEventTime(pi).ToInternalValue() << " }";
+             << event.GetHistoricalEventTime(pi) << " }";
           if (h + 1 < history_size)
             ss << ",";
         }

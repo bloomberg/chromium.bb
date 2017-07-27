@@ -12,6 +12,7 @@ mojom("interfaces") {
   ]
 
   public_deps = [
+    "//mojo/common:common_custom_types",
     "//ui/gfx/mojo",
     "//ui/latency/mojo:interfaces",
   ]
