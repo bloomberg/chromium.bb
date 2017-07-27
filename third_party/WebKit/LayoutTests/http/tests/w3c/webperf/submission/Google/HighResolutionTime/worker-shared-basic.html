@@ -39,8 +39,7 @@ window.test_iframe = function(event, iframeNow) {
 }
 
 function start() {
-    test_true("workerStart" in worker, "workerStart is defined on the SharedWorker object");
-    test_greater_than(worker.workerStart, 0, "Time of worker start was after the navigation start for the document");
+    test_true(!("workerStart" in worker), "workerStart is not defined on the SharedWorker object");
     worker.port.postMessage(tests);
 }
 
