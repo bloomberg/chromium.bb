@@ -5,7 +5,7 @@
 #include "chrome/profiling/profiling_globals.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 
 namespace profiling {
@@ -38,12 +38,12 @@ BacktraceStorage* ProfilingGlobals::GetBacktraceStorage() {
 }
 
 void ProfilingGlobals::RunMainMessageLoop() {
-  base::RunLoop run_loop;
-  run_loop.Run();
+  active_runloop_ = base::MakeUnique<base::RunLoop>();
+  run_loop->Run();
 }
 
 void ProfilingGlobals::QuitWhenIdle() {
-  message_loop_.QuitWhenIdle();
+  run_loop_->QuitWhenIdle();
 }
 
 }  // namespace profiling
