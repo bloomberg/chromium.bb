@@ -1426,9 +1426,11 @@ bool FocusController::AdvanceFocusDirectionally(WebFocusType type) {
                                                     true /* ignore border */);
     } else if (isHTMLAreaElement(*focused_element)) {
       HTMLAreaElement& area = toHTMLAreaElement(*focused_element);
-      container = ScrollableEnclosingBoxOrParentFrameForNodeInDirection(
-          type, area.ImageElement());
-      starting_rect = VirtualRectForAreaElementAndDirection(area, type);
+      if (area.ImageElement()) {
+        container = ScrollableEnclosingBoxOrParentFrameForNodeInDirection(
+            type, area.ImageElement());
+        starting_rect = VirtualRectForAreaElementAndDirection(area, type);
+      }
     }
   }
 
