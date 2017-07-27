@@ -116,6 +116,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/PlainTextRange.h"
+#include "core/editing/SetSelectionData.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/TextFinder.h"
 #include "core/editing/iterators/TextIterator.h"
@@ -1209,15 +1210,13 @@ void WebLocalFrameImpl::SelectRange(
       handle_visibility_behavior == kShowSelectionHandle ||
       (handle_visibility_behavior == kPreserveHandleVisibility &&
        selection.IsHandleVisible());
-  selection.SetSelection(
-      SelectionInDOMTree::Builder()
-          .SetBaseAndExtent(range)
-          .SetAffinity(VP_DEFAULT_AFFINITY)
-          .SetIsHandleVisible(show_handles)
-          .SetIsDirectional(false)
-          .Build(),
-      FrameSelection::ConvertSetSelectionByToSetSelectionOptions(
-          SetSelectionBy::kSystem));
+  selection.SetSelection(SelectionInDOMTree::Builder()
+                             .SetBaseAndExtent(range)
+                             .SetAffinity(VP_DEFAULT_AFFINITY)
+                             .SetIsHandleVisible(show_handles)
+                             .SetIsDirectional(false)
+                             .Build(),
+                         SetSelectionData());
 }
 
 WebString WebLocalFrameImpl::RangeAsText(const WebRange& web_range) {
