@@ -72,12 +72,15 @@ bool RunResponseForwardToCallback::Accept(Message* message) {
 void SendRunMessage(MessageReceiverWithResponder* receiver,
                     interface_control::RunInputPtr input_ptr,
                     const RunCallback& callback) {
+  SerializationContext context;
   auto params_ptr = interface_control::RunMessageParams::New();
   params_ptr->input = std::move(input_ptr);
+  const size_t size =
+      PrepareToSerialize<interface_control::RunMessageParamsDataView>(
+          params_ptr, &context);
   Message message(interface_control::kRunMessageId,
-                  Message::kFlagExpectsResponse, 0, 0, nullptr);
-  SerializationContext context;
-  interface_control::internal::RunMessageParams_Data::BufferWriter params;
+                  Message::kFlagExpectsResponse, size, 0);
+  interface_control::internal::RunMessageParams_Data* params = nullptr;
   Serialize<interface_control::RunMessageParamsDataView>(
       params_ptr, message.payload_buffer(), &params, &context);
   std::unique_ptr<MessageReceiver> responder =
@@ -87,13 +90,15 @@ void SendRunMessage(MessageReceiverWithResponder* receiver,
 
 Message ConstructRunOrClosePipeMessage(
     interface_control::RunOrClosePipeInputPtr input_ptr) {
+  SerializationContext context;
   auto params_ptr = interface_control::RunOrClosePipeMessageParams::New();
   params_ptr->input = std::move(input_ptr);
-  Message message(interface_control::kRunOrClosePipeMessageId, 0, 0, 0,
-                  nullptr);
-  SerializationContext context;
-  interface_control::internal::RunOrClosePipeMessageParams_Data::BufferWriter
-      params;
+  const size_t size = PrepareToSerialize<
+      interface_control::RunOrClosePipeMessageParamsDataView>(params_ptr,
+                                                              &context);
+  Message message(interface_control::kRunOrClosePipeMessageId, 0, size, 0);
+  interface_control::internal::RunOrClosePipeMessageParams_Data* params =
+      nullptr;
   Serialize<interface_control::RunOrClosePipeMessageParamsDataView>(
       params_ptr, message.payload_buffer(), &params, &context);
   return message;
