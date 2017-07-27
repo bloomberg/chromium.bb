@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/ui/ntp/recent_tabs/views/panel_bar_view.h"
 
+#import "ios/chrome/browser/ui/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/views_utils.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"

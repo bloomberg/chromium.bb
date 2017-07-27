@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/background_generator.h"
+#import "ios/chrome/browser/ui/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_panel_protocol.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_util.h"

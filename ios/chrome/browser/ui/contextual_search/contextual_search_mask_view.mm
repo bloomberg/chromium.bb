@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ui/contextual_search/contextual_search_mask_view.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_panel_view.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 

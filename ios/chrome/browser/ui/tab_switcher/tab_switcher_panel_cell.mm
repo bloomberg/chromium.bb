@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_cell.h"
 
 #import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/ui/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/fade_truncated_label.h"
 #import "ios/chrome/browser/ui/image_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_button.h"
