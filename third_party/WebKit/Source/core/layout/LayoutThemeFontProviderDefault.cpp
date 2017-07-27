@@ -39,12 +39,12 @@ void LayoutThemeFontProvider::SetDefaultFontSize(int font_size) {
 
 // static
 void LayoutThemeFontProvider::SystemFont(CSSValueID system_font_id,
-                                         FontStyle& font_style,
-                                         FontWeight& font_weight,
+                                         FontSelectionValue& font_slope,
+                                         FontSelectionValue& font_weight,
                                          float& font_size,
                                          AtomicString& font_family) {
-  font_weight = kFontWeightNormal;
-  font_style = kFontStyleNormal;
+  font_weight = NormalWeightValue();
+  font_slope = NormalSlopeValue();
   font_size = default_font_size_;
   font_family = DefaultGUIFont();
 

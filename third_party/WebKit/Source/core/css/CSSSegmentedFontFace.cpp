@@ -36,8 +36,9 @@
 
 namespace blink {
 
-CSSSegmentedFontFace::CSSSegmentedFontFace(FontTraits traits)
-    : traits_(traits),
+CSSSegmentedFontFace::CSSSegmentedFontFace(
+    FontSelectionCapabilities font_selection_capabilities)
+    : font_selection_capabilities_(font_selection_capabilities),
       first_non_css_connected_face_(font_faces_.end()),
       approximate_character_count_(0) {}
 
@@ -96,9 +97,7 @@ PassRefPtr<FontData> CSSSegmentedFontFace::GetFontData(
   if (!IsValid())
     return nullptr;
 
-  FontTraits desired_traits = font_description.Traits();
-  FontCacheKey key =
-      font_description.CacheKey(FontFaceCreationParams(), desired_traits);
+  FontCacheKey key = font_description.CacheKey(FontFaceCreationParams());
 
   RefPtr<SegmentedFontData>& font_data =
       font_data_table_.insert(key, nullptr).stored_value->value;
@@ -112,13 +111,15 @@ PassRefPtr<FontData> CSSSegmentedFontFace::GetFontData(
     font_data = SegmentedFontData::Create();
 
   FontDescription requested_font_description(font_description);
-  requested_font_description.SetTraits(traits_);
+
+  const FontSelectionRequest& font_selection_request =
+      font_description.GetFontSelectionRequest();
   requested_font_description.SetSyntheticBold(
-      traits_.Weight() < kFontWeight600 &&
-      desired_traits.Weight() >= kFontWeight600);
+      font_selection_capabilities_.weight.maximum < BoldThreshold() &&
+      font_selection_request.weight >= BoldThreshold());
   requested_font_description.SetSyntheticItalic(
-      traits_.Style() == kFontStyleNormal &&
-      desired_traits.Style() == kFontStyleItalic);
+      font_selection_capabilities_.slope.maximum <= NormalSlopeValue() &&
+      font_selection_request.slope >= ItalicThreshold());
 
   for (FontFaceList::reverse_iterator it = font_faces_.rbegin();
        it != font_faces_.rend(); ++it) {

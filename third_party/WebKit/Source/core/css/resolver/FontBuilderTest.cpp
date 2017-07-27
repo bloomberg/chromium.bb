@@ -92,17 +92,17 @@ TEST_P(FontBuilderAdditiveTest, OnlySetValueIsModified) {
 }
 
 static void FontWeightBase(FontDescription& d) {
-  d.SetWeight(kFontWeight900);
+  d.SetWeight(FontSelectionValue(900));
 }
 static void FontWeightValue(FontBuilder& b) {
-  b.SetWeight(kFontWeightNormal);
+  b.SetWeight(NormalWeightValue());
 }
 
 static void FontStretchBase(FontDescription& d) {
-  d.SetStretch(kFontStretchUltraExpanded);
+  d.SetStretch(UltraExpandedWidthValue());
 }
 static void FontStretchValue(FontBuilder& b) {
-  b.SetStretch(kFontStretchExtraCondensed);
+  b.SetStretch(ExtraCondensedWidthValue());
 }
 
 static void FontFamilyBase(FontDescription& d) {
@@ -121,10 +121,10 @@ static void FontFeatureSettingsValue(FontBuilder& b) {
 }
 
 static void FontStyleBase(FontDescription& d) {
-  d.SetStyle(kFontStyleItalic);
+  d.SetStyle(ItalicSlopeValue());
 }
 static void FontStyleValue(FontBuilder& b) {
-  b.SetStyle(kFontStyleNormal);
+  b.SetStyle(NormalSlopeValue());
 }
 
 static void FontVariantCapsBase(FontDescription& d) {

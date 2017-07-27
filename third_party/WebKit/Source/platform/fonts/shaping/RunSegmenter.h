@@ -8,7 +8,6 @@
 #include <unicode/uscript.h>
 #include <memory>
 #include "platform/fonts/FontOrientation.h"
-#include "platform/fonts/FontTraits.h"
 #include "platform/fonts/OrientationIterator.h"
 #include "platform/fonts/ScriptRunIterator.h"
 #include "platform/fonts/SmallCapsIterator.h"

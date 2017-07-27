@@ -27,6 +27,11 @@
 #ifndef FontFaceCache_h
 #define FontFaceCache_h
 
+#include "core/CoreExport.h"
+#include "core/css/CSSSegmentedFontFace.h"
+#include "core/css/FontFace.h"
+#include "core/css/StyleRule.h"
+#include "platform/fonts/FontSelectionTypes.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
@@ -35,12 +40,9 @@
 
 namespace blink {
 
-class FontFace;
-class CSSSegmentedFontFace;
 class FontDescription;
-class StyleRuleFontFace;
 
-class FontFaceCache final {
+class CORE_EXPORT FontFaceCache final {
   DISALLOW_NEW();
 
  public:
@@ -52,6 +54,8 @@ class FontFaceCache final {
   void ClearAll();
   void AddFontFace(FontFace*, bool css_connected);
   void RemoveFontFace(FontFace*, bool css_connected);
+
+  size_t GetNumSegmentedFacesForTesting();
 
   // FIXME: It's sort of weird that add/remove uses StyleRuleFontFace* as key,
   // but this function uses FontDescription/family pair.
@@ -67,14 +71,44 @@ class FontFaceCache final {
   DECLARE_TRACE();
 
  private:
-  using TraitsMap = HeapHashMap<unsigned, Member<CSSSegmentedFontFace>>;
-  using FamilyToTraitsMap =
-      HeapHashMap<String, Member<TraitsMap>, CaseFoldingHash>;
+  // Two lookup accelerating cashes are needed: For the font selection
+  // algorithm to work and not perform font fallback across
+  // FontSelectionCapabilities, we need to bin the incoming @font-faces by same
+  // FontSelectionCapabilities, then run the font selection algorithm only by
+  // looking at the capabilities of each group. Group here means: Font faces of
+  // identicaly capabilities, but differing unicode-range.
+  //
+  // A second lookup table caches the previously received FontSelectionRequest
+  // queries, which is: HeapHashMap <String, HeapHashMap<FontSelectionRequest,
+  // CSSSegmentedFontFace>>
+  using CapabilitiesSet =
+      HeapHashMap<FontSelectionCapabilities, Member<CSSSegmentedFontFace>>;
+  using SegmentedFacesByFamily =
+      HeapHashMap<String, Member<CapabilitiesSet>, CaseFoldingHash>;
+  using FontSelectionQueryResult =
+      HeapHashMap<FontSelectionRequestKey,
+                  Member<CSSSegmentedFontFace>,
+                  FontSelectionRequestKeyHash,
+                  WTF::SimpleClassHashTraits<FontSelectionRequestKey>>;
+  using FontSelectionQueryCache =
+      HeapHashMap<String, Member<FontSelectionQueryResult>, CaseFoldingHash>;
+
+  // All incoming faces added from JS or CSS, bucketed per family.
+  SegmentedFacesByFamily segmented_faces_;
+  // Previously determined font matching query results, bucketed per family and
+  // FontSelectionRequest. A family bucket of this cache gets invalidated when a
+  // new face of the same family is added or removed.
+  FontSelectionQueryCache font_selection_query_cache_;
+
+  // Used for removing font faces from the segmented_faces_ list when a CSS rule
+  // is removed.
   using StyleRuleToFontFace =
       HeapHashMap<Member<const StyleRuleFontFace>, Member<FontFace>>;
-  FamilyToTraitsMap font_faces_;
-  FamilyToTraitsMap fonts_;
   StyleRuleToFontFace style_rule_to_font_face_;
+
+  // Needed for incoming ClearCSSConnected() requests coming in from
+  // StyleEngine, which clears all those faces from the FontCache which are
+  // originating from CSS, as opposed to those originating from JS.
   HeapListHashSet<Member<FontFace>> css_connected_font_faces_;
 
   // FIXME: See if this could be ditched

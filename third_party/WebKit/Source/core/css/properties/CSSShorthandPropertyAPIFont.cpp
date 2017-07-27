@@ -13,7 +13,6 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSPropertyFontUtils.h"
 #include "core/layout/LayoutTheme.h"
-#include "platform/fonts/FontTraits.h"
 
 namespace blink {
 
@@ -28,8 +27,8 @@ bool ConsumeSystemFont(bool important,
   if (!range.AtEnd())
     return false;
 
-  FontStyle font_style = kFontStyleNormal;
-  FontWeight font_weight = kFontWeightNormal;
+  FontSelectionValueStyle font_style = NormalSlopeValue();
+  FontSelectionValueWeight font_weight = NormalWeightValue();
   float font_size = 0;
   AtomicString font_family;
   LayoutTheme::GetTheme().SystemFont(system_font_id, font_style, font_weight,
@@ -38,7 +37,7 @@ bool ConsumeSystemFont(bool important,
   CSSPropertyParserHelpers::AddProperty(
       CSSPropertyFontStyle, CSSPropertyFont,
       *CSSIdentifierValue::Create(
-          font_style == kFontStyleItalic ? CSSValueItalic : CSSValueNormal),
+          font_style == ItalicSlopeValue() ? CSSValueItalic : CSSValueNormal),
       important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
       properties);
   CSSPropertyParserHelpers::AddProperty(

@@ -58,7 +58,8 @@ class StyleBuilderConverterBase {
   STATIC_ONLY(StyleBuilderConverterBase);
 
  public:
-  static FontWeight ConvertFontWeight(const CSSValue&, FontWeight);
+  static FontSelectionValueWeight ConvertFontWeight(const CSSValue&,
+                                                    FontSelectionValue);
   static FontDescription::FontVariantCaps ConvertFontVariantCaps(
       const CSSValue&);
   static FontDescription::FamilyDescription ConvertFontFamily(
@@ -105,7 +106,8 @@ class StyleBuilderConverter {
   static FontDescription::Size ConvertFontSize(StyleResolverState&,
                                                const CSSValue&);
   static float ConvertFontSizeAdjust(StyleResolverState&, const CSSValue&);
-  static FontWeight ConvertFontWeight(StyleResolverState&, const CSSValue&);
+  static FontSelectionValueWeight ConvertFontWeight(StyleResolverState&,
+                                                    const CSSValue&);
   static FontDescription::FontVariantCaps ConvertFontVariantCaps(
       StyleResolverState&,
       const CSSValue&);

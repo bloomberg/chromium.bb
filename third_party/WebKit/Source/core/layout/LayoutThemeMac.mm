@@ -212,7 +212,7 @@ Color LayoutThemeMac::PlatformInactiveListBoxSelectionBackgroundColor() const {
   return PlatformInactiveSelectionBackgroundColor();
 }
 
-static FontWeight ToFontWeight(NSInteger app_kit_font_weight) {
+static FontSelectionValue ToFontWeight(NSInteger app_kit_font_weight) {
   DCHECK_GT(app_kit_font_weight, 0);
   DCHECK_LT(app_kit_font_weight, 15);
   if (app_kit_font_weight > 14)
@@ -220,11 +220,12 @@ static FontWeight ToFontWeight(NSInteger app_kit_font_weight) {
   else if (app_kit_font_weight < 1)
     app_kit_font_weight = 1;
 
-  static FontWeight font_weights[] = {
-      kFontWeight100, kFontWeight100, kFontWeight200, kFontWeight300,
-      kFontWeight400, kFontWeight500, kFontWeight600, kFontWeight600,
-      kFontWeight700, kFontWeight800, kFontWeight800, kFontWeight900,
-      kFontWeight900, kFontWeight900};
+  static FontSelectionValue font_weights[] = {
+      FontSelectionValue(100), FontSelectionValue(100), FontSelectionValue(200),
+      FontSelectionValue(300), FontSelectionValue(400), FontSelectionValue(500),
+      FontSelectionValue(600), FontSelectionValue(600), FontSelectionValue(700),
+      FontSelectionValue(800), FontSelectionValue(800), FontSelectionValue(900),
+      FontSelectionValue(900), FontSelectionValue(900)};
   return font_weights[app_kit_font_weight - 1];
 }
 
@@ -252,8 +253,8 @@ static inline NSFont* SystemNSFont(CSSValueID system_font_id) {
 }
 
 void LayoutThemeMac::SystemFont(CSSValueID system_font_id,
-                                FontStyle& font_style,
-                                FontWeight& font_weight,
+                                FontSelectionValue& font_slope,
+                                FontSelectionValue& font_weight,
                                 float& font_size,
                                 AtomicString& font_family) const {
   NSFont* font = SystemNSFont(system_font_id);
@@ -261,9 +262,9 @@ void LayoutThemeMac::SystemFont(CSSValueID system_font_id,
     return;
 
   NSFontManager* font_manager = [NSFontManager sharedFontManager];
-  font_style = ([font_manager traitsOfFont:font] & NSItalicFontMask)
-                   ? kFontStyleItalic
-                   : kFontStyleNormal;
+  font_slope = ([font_manager traitsOfFont:font] & NSItalicFontMask)
+                   ? ItalicSlopeValue()
+                   : NormalSlopeValue();
   font_weight = ToFontWeight([font_manager weightOfFont:font]);
   font_size = [font pointSize];
   font_family = FontFamilyNames::system_ui;
