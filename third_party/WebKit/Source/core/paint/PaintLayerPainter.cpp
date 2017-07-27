@@ -82,7 +82,7 @@ bool PaintLayerPainter::PaintedOutputInvisible(
       return false;
 
     const EffectPaintPropertyNode* effect =
-        layout_object.PaintProperties()->Effect();
+        layout_object.FirstFragment()->PaintProperties()->Effect();
     if (effect && effect->RequiresCompositingForAnimation()) {
       return false;
     }
@@ -263,8 +263,9 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
       RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
       paint_layer_.GetLayoutObject().IsLayoutView()) {
-    const auto* local_border_box_properties =
-        paint_layer_.GetLayoutObject().LocalBorderBoxProperties();
+    const auto* local_border_box_properties = paint_layer_.GetLayoutObject()
+                                                  .FirstFragment()
+                                                  ->LocalBorderBoxProperties();
     DCHECK(local_border_box_properties);
     PaintChunkProperties properties(
         context.GetPaintController().CurrentPaintChunkProperties());
@@ -528,8 +529,9 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     // the top of this method, in scopedPaintChunkProperties.
     DCHECK(!(RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
              paint_layer_.GetLayoutObject().IsLayoutView()));
-    const auto* local_border_box_properties =
-        paint_layer_.GetLayoutObject().LocalBorderBoxProperties();
+    const auto* local_border_box_properties = paint_layer_.GetLayoutObject()
+                                                  .FirstFragment()
+                                                  ->LocalBorderBoxProperties();
     DCHECK(local_border_box_properties);
     PaintChunkProperties properties(
         context.GetPaintController().CurrentPaintChunkProperties());
@@ -1225,7 +1227,7 @@ void PaintLayerPainter::PaintMaskForFragments(
   Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     const auto* object_paint_properties =
-        paint_layer_.GetLayoutObject().PaintProperties();
+        paint_layer_.GetLayoutObject().FirstFragment()->PaintProperties();
     DCHECK(object_paint_properties && object_paint_properties->Mask());
     PaintChunkProperties properties(
         context.GetPaintController().CurrentPaintChunkProperties());

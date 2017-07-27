@@ -105,7 +105,8 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
       rect.MoveBy(Point(object.PaintOffset()));
 
     auto container_contents_properties =
-        context.paint_invalidation_container->ContentsProperties();
+        context.paint_invalidation_container->FirstFragment()
+            ->ContentsProperties();
     if (context.tree_builder_context_->current.transform ==
             container_contents_properties.Transform() &&
         context.tree_builder_context_->current.clip ==
@@ -180,7 +181,9 @@ LayoutPoint PaintInvalidator::ComputeLocationInBacking(
     point.MoveBy(object.PaintOffset());
 
     const auto* container_transform =
-        context.paint_invalidation_container->ContentsProperties().Transform();
+        context.paint_invalidation_container->FirstFragment()
+            ->ContentsProperties()
+            .Transform();
     if (context.tree_builder_context_->current.transform !=
         container_transform) {
       FloatRect rect = FloatRect(FloatPoint(point), FloatSize());

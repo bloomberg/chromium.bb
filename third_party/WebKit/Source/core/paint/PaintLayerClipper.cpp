@@ -233,10 +233,13 @@ LayoutRect PaintLayerClipper::LocalClipRect(
 
     const auto* clip_root_layer_transform =
         clipping_root_layer.GetLayoutObject()
-            .LocalBorderBoxProperties()
+            .FirstFragment()
+            ->LocalBorderBoxProperties()
             ->Transform();
-    const auto* layer_transform =
-        layer_.GetLayoutObject().LocalBorderBoxProperties()->Transform();
+    const auto* layer_transform = layer_.GetLayoutObject()
+                                      .FirstFragment()
+                                      ->LocalBorderBoxProperties()
+                                      ->Transform();
     FloatRect clipped_rect_in_local_space(premapped_rect);
     GeometryMapper::SourceToDestinationRect(clip_root_layer_transform,
                                             layer_transform,
@@ -279,8 +282,8 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
   layer_bounds = LayoutRect(offset, LayoutSize(layer_.size()));
 
   // TODO(chrishtr): fix the underlying bug that causes this situation.
-  if (!layer_.GetLayoutObject().PaintProperties() &&
-      !layer_.GetLayoutObject().LocalBorderBoxProperties()) {
+  if (!layer_.GetLayoutObject().FirstFragment()->PaintProperties() &&
+      !layer_.GetLayoutObject().FirstFragment()->LocalBorderBoxProperties()) {
     background_rect = ClipRect(LayoutRect(LayoutRect::InfiniteIntRect()));
     foreground_rect = ClipRect(LayoutRect(LayoutRect::InfiniteIntRect()));
   } else {
@@ -477,16 +480,19 @@ void PaintLayerClipper::InitializeCommonClipRectState(
     PropertyTreeState& destination_property_tree_state) const {
   DCHECK(use_geometry_mapper_);
 
-  DCHECK(layer_.GetLayoutObject().LocalBorderBoxProperties());
+  DCHECK(layer_.GetLayoutObject().FirstFragment()->LocalBorderBoxProperties());
   source_property_tree_state =
-      *layer_.GetLayoutObject().LocalBorderBoxProperties();
+      *layer_.GetLayoutObject().FirstFragment()->LocalBorderBoxProperties();
 
-  DCHECK(context.root_layer->GetLayoutObject().LocalBorderBoxProperties());
-  destination_property_tree_state =
-      *context.root_layer->GetLayoutObject().LocalBorderBoxProperties();
+  DCHECK(context.root_layer->GetLayoutObject()
+             .FirstFragment()
+             ->LocalBorderBoxProperties());
+  destination_property_tree_state = *context.root_layer->GetLayoutObject()
+                                         .FirstFragment()
+                                         ->LocalBorderBoxProperties();
 
   auto* ancestor_properties =
-      context.root_layer->GetLayoutObject().PaintProperties();
+      context.root_layer->GetLayoutObject().FirstFragment()->PaintProperties();
   if (!ancestor_properties)
     return;
 
@@ -528,8 +534,8 @@ void PaintLayerClipper::CalculateBackgroundClipRect(
     ClipRect& output) const {
   if (use_geometry_mapper_) {
     // TODO(chrishtr): fix the underlying bug that causes this situation.
-    if (!layer_.GetLayoutObject().PaintProperties() &&
-        !layer_.GetLayoutObject().LocalBorderBoxProperties()) {
+    if (!layer_.GetLayoutObject().FirstFragment()->PaintProperties() &&
+        !layer_.GetLayoutObject().FirstFragment()->LocalBorderBoxProperties()) {
       output.SetRect(FloatClipRect());
       return;
     }

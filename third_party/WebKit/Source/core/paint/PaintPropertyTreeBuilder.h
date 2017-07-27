@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class FragmentData;
 class LayoutBoxModelObject;
 class LayoutObject;
 class LocalFrameView;
@@ -146,10 +147,12 @@ class PaintPropertyTreeBuilder {
   ALWAYS_INLINE static void UpdatePaintOffsetTranslation(
       const LayoutBoxModelObject&,
       PaintPropertyTreeBuilderFragmentContext&,
+      ObjectPaintProperties&,
       bool& force_subtree_update);
   ALWAYS_INLINE static void UpdateForObjectLocationAndSize(
       const LayoutObject&,
       const LayoutObject* container_for_absolute_position,
+      ObjectPaintProperties*,
       bool& is_actually_needed,
       PaintPropertyTreeBuilderFragmentContext&,
       bool& force_subtree_update);
@@ -183,6 +186,7 @@ class PaintPropertyTreeBuilder {
   ALWAYS_INLINE static void UpdateLocalBorderBoxContext(
       const LayoutObject&,
       PaintPropertyTreeBuilderFragmentContext&,
+      FragmentData*,
       bool& force_subtree_update);
   ALWAYS_INLINE static void UpdateScrollbarPaintOffset(
       const LayoutObject&,
@@ -213,6 +217,7 @@ class PaintPropertyTreeBuilder {
   ALWAYS_INLINE static void UpdateOutOfFlowContext(
       const LayoutObject&,
       PaintPropertyTreeBuilderFragmentContext&,
+      ObjectPaintProperties*,
       bool& force_subtree_update);
 
   // Ensure the ObjectPaintProperties object is created if it will be needed, or

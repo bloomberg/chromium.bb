@@ -360,13 +360,15 @@ bool PaintLayer::FixedToViewport() const {
   // the local border box properties.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     const auto* view_border_box_properties =
-        GetLayoutObject().View()->LocalBorderBoxProperties();
+        GetLayoutObject().View()->FirstFragment()->LocalBorderBoxProperties();
     const ScrollPaintPropertyNode* ancestor_target_scroll_node;
     ancestor_target_scroll_node =
         view_border_box_properties->Transform()->FindEnclosingScrollNode();
 
-    const auto* transform =
-        GetLayoutObject().LocalBorderBoxProperties()->Transform();
+    const auto* transform = GetLayoutObject()
+                                .FirstFragment()
+                                ->LocalBorderBoxProperties()
+                                ->Transform();
     return transform->FindEnclosingScrollNode() == ancestor_target_scroll_node;
   }
 

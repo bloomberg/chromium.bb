@@ -37,6 +37,7 @@ class PrePaintTreeWalkTest
     LocalFrameView* frame_view = GetDocument().View();
     if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       return frame_view->GetLayoutView()
+          ->FirstFragment()
           ->PaintProperties()
           ->PaintOffsetTranslation();
     }
@@ -47,6 +48,7 @@ class PrePaintTreeWalkTest
     LocalFrameView* frame_view = GetDocument().View();
     if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       return frame_view->GetLayoutView()
+          ->FirstFragment()
           ->PaintProperties()
           ->ScrollTranslation();
     }
@@ -93,8 +95,9 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithBorderInvalidation) {
       "<div id='transformed'></div>");
 
   auto* transformed_element = GetDocument().getElementById("transformed");
-  const auto* transformed_properties =
-      transformed_element->GetLayoutObject()->PaintProperties();
+  const auto* transformed_properties = transformed_element->GetLayoutObject()
+                                           ->FirstFragment()
+                                           ->PaintProperties();
   EXPECT_EQ(TransformationMatrix().Translate(100, 100),
             transformed_properties->Transform()->Matrix());
 
@@ -134,8 +137,9 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithCSSTransformInvalidation) {
       "<div id='transformed' class='transformA'></div>");
 
   auto* transformed_element = GetDocument().getElementById("transformed");
-  const auto* transformed_properties =
-      transformed_element->GetLayoutObject()->PaintProperties();
+  const auto* transformed_properties = transformed_element->GetLayoutObject()
+                                           ->FirstFragment()
+                                           ->PaintProperties();
   EXPECT_EQ(TransformationMatrix().Translate(100, 100),
             transformed_properties->Transform()->Matrix());
 
@@ -160,8 +164,9 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithOpacityInvalidation) {
       "<div id='transparent' class='opacityA'></div>");
 
   auto* transparent_element = GetDocument().getElementById("transparent");
-  const auto* transparent_properties =
-      transparent_element->GetLayoutObject()->PaintProperties();
+  const auto* transparent_properties = transparent_element->GetLayoutObject()
+                                           ->FirstFragment()
+                                           ->PaintProperties();
   EXPECT_EQ(0.9f, transparent_properties->Effect()->Opacity());
 
   // Invalidate the opacity property.

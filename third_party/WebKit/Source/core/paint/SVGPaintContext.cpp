@@ -124,7 +124,9 @@ void SVGPaintContext::ApplyPaintPropertyState() {
   if (object_.IsSVGRoot())
     return;
 
-  const auto* paint_properties = object_.PaintProperties();
+  const auto* paint_properties =
+      object_.FirstFragment() ? object_.FirstFragment()->PaintProperties()
+                              : nullptr;
   const EffectPaintPropertyNode* effect =
       paint_properties ? paint_properties->Effect() : nullptr;
   if (!effect)

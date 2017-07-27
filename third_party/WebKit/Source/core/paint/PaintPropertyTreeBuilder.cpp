@@ -248,6 +248,7 @@ static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
 void PaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
     const LayoutBoxModelObject& object,
     PaintPropertyTreeBuilderFragmentContext& context,
+    ObjectPaintProperties& properties,
     bool& force_subtree_update) {
   if (NeedsPaintOffsetTranslation(object) &&
       // As an optimization, skip these paint offset translation nodes when
@@ -256,7 +257,6 @@ void PaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
       // descendants use the correct transform space.
       (object.IsLayoutView() ||
        context.current.paint_offset != LayoutPoint())) {
-    auto& properties = *object.GetMutableForPainting().PaintProperties();
     // We should use the same subpixel paint offset values for snapping
     // regardless of whether a transform is present. If there is a transform
     // we round the paint offset but keep around the residual fractional
@@ -298,8 +298,7 @@ void PaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
       context.fixed_position.paint_offset = fractional_paint_offset;
     }
   } else {
-    if (auto* properties = object.GetMutableForPainting().PaintProperties())
-      force_subtree_update |= properties->ClearPaintOffsetTranslation();
+    force_subtree_update |= properties.ClearPaintOffsetTranslation();
   }
 }
 
@@ -425,7 +424,6 @@ void PaintPropertyTreeBuilder::UpdateTransform(
       if (style.Preserves3D() && !rendering_context_id)
         rendering_context_id = PtrHash<const LayoutObject>::GetHash(&object);
 
-      auto& properties = *object.GetMutableForPainting().PaintProperties();
       auto result = properties.UpdateTransform(
           context.current.transform, matrix, TransformOrigin(box),
           context.current.should_flatten_inherited_transform,
@@ -613,10 +611,9 @@ void PaintPropertyTreeBuilder::UpdateEffect(
         force_subtree_update |= properties.ClearMask();
       }
     } else {
-      auto* properties = object.GetMutableForPainting().PaintProperties();
-      force_subtree_update |= properties->ClearEffect();
-      force_subtree_update |= properties->ClearMask();
-      local_clip_added_or_removed |= properties->ClearMaskClip();
+      force_subtree_update |= properties.ClearEffect();
+      force_subtree_update |= properties.ClearMask();
+      local_clip_added_or_removed |= properties.ClearMaskClip();
     }
     force_subtree_update |= local_clip_added_or_removed;
     clip_changed |= local_clip_changed || local_clip_added_or_removed;
@@ -753,19 +750,20 @@ void PaintPropertyTreeBuilder::UpdateCssClip(
 void PaintPropertyTreeBuilder::UpdateLocalBorderBoxContext(
     const LayoutObject& object,
     PaintPropertyTreeBuilderFragmentContext& context,
+    FragmentData* fragment_data,
     bool& force_subtree_update) {
   if (!object.NeedsPaintPropertyUpdate() && !force_subtree_update)
     return;
 
   // We only need to cache the local border box properties for layered objects.
   if (!object.HasLayer()) {
-    object.GetMutableForPainting().ClearLocalBorderBoxProperties();
+    if (fragment_data)
+      fragment_data->ClearLocalBorderBoxProperties();
   } else {
     PropertyTreeState local_border_box =
         PropertyTreeState(context.current.transform, context.current.clip,
                           context.current_effect);
-    object.GetMutableForPainting().SetLocalBorderBoxProperties(
-        local_border_box);
+    fragment_data->SetLocalBorderBoxProperties(local_border_box);
   }
 }
 
@@ -1021,8 +1019,9 @@ void PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation(
 void PaintPropertyTreeBuilder::UpdateOutOfFlowContext(
     const LayoutObject& object,
     PaintPropertyTreeBuilderFragmentContext& context,
+    ObjectPaintProperties* paint_properties,
     bool& force_subtree_update) {
-  if (!object.IsBoxModelObject() && !object.PaintProperties())
+  if (!object.IsBoxModelObject() && !paint_properties)
     return;
 
   if (object.IsLayoutBlock())
@@ -1044,16 +1043,14 @@ void PaintPropertyTreeBuilder::UpdateOutOfFlowContext(
     }
   } else if (object.CanContainFixedPositionObjects()) {
     context.fixed_position = context.current;
-  } else if (object.GetMutableForPainting().PaintProperties() &&
-             object.PaintProperties()->CssClip()) {
+  } else if (paint_properties && paint_properties->CssClip()) {
     // CSS clip applies to all descendants, even if this object is not a
     // containing block ancestor of the descendant. It is okay for
     // absolute-position descendants because having CSS clip implies being
     // absolute position container. However for fixed-position descendants we
     // need to insert the clip here if we are not a containing block ancestor of
     // them.
-    auto& properties = *object.GetMutableForPainting().PaintProperties();
-    auto* css_clip = properties.CssClip();
+    auto* css_clip = paint_properties->CssClip();
 
     // Before we actually create anything, check whether in-flow context and
     // fixed-position context has exactly the same clip. Reuse if possible.
@@ -1061,22 +1058,22 @@ void PaintPropertyTreeBuilder::UpdateOutOfFlowContext(
       context.fixed_position.clip = css_clip;
     } else {
       if (object.NeedsPaintPropertyUpdate() || force_subtree_update) {
-        auto result = properties.UpdateCssClipFixedPosition(
+        auto result = paint_properties->UpdateCssClipFixedPosition(
             context.fixed_position.clip,
             const_cast<TransformPaintPropertyNode*>(
                 css_clip->LocalTransformSpace()),
             css_clip->ClipRect());
         force_subtree_update |= result.NewNodeCreated();
       }
-      if (properties.CssClipFixedPosition())
-        context.fixed_position.clip = properties.CssClipFixedPosition();
+      if (paint_properties->CssClipFixedPosition())
+        context.fixed_position.clip = paint_properties->CssClipFixedPosition();
       return;
     }
   }
 
   if (object.NeedsPaintPropertyUpdate() || force_subtree_update) {
-    if (auto* properties = object.GetMutableForPainting().PaintProperties())
-      force_subtree_update |= properties->ClearCssClipFixedPosition();
+    if (paint_properties)
+      force_subtree_update |= paint_properties->ClearCssClipFixedPosition();
   }
 }
 
@@ -1145,6 +1142,7 @@ void PaintPropertyTreeBuilder::UpdatePaintOffset(
 void PaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     const LayoutObject& object,
     const LayoutObject* container_for_absolute_position,
+    ObjectPaintProperties* paint_properties,
     bool& is_actually_needed,
     PaintPropertyTreeBuilderFragmentContext& context,
     bool& force_subtree_update) {
@@ -1155,8 +1153,10 @@ void PaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
   if (object.IsBoxModelObject()) {
     UpdatePaintOffset(ToLayoutBoxModelObject(object), context,
                       container_for_absolute_position);
-    UpdatePaintOffsetTranslation(ToLayoutBoxModelObject(object), context,
-                                 force_subtree_update);
+    if (paint_properties) {
+      UpdatePaintOffsetTranslation(ToLayoutBoxModelObject(object), context,
+                                   *paint_properties, force_subtree_update);
+    }
   }
 
   if (object.PaintOffset() != context.current.paint_offset) {
@@ -1209,12 +1209,17 @@ void PaintPropertyTreeBuilder::UpdatePaintProperties(
       NeedsPerspective(object) || NeedsSVGLocalToBorderBoxTransform(object) ||
       NeedsScrollTranslation(object);
 
-  bool had_paint_properties = object.PaintProperties();
+  // We need at least the fragment for all PaintLayers, which store their
+  // local border box properties on the fragment.
+  if (needs_paint_properties || object.HasLayer())
+    object.GetMutableForPainting().EnsureFirstFragment();
 
+  bool had_paint_properties =
+      object.FirstFragment() && object.FirstFragment()->PaintProperties();
   if (needs_paint_properties && !had_paint_properties) {
-    object.GetMutableForPainting().EnsurePaintProperties();
+    object.GetMutableForPainting().FirstFragment()->EnsurePaintProperties();
   } else if (!needs_paint_properties && had_paint_properties) {
-    object.GetMutableForPainting().ClearPaintProperties();
+    object.GetMutableForPainting().FirstFragment()->ClearPaintProperties();
     full_context.force_subtree_update = true;
   }
 }
@@ -1242,21 +1247,22 @@ void PaintPropertyTreeBuilder::UpdatePropertiesForSelf(
 #if DCHECK_IS_ON()
   is_actually_needed = full_context.is_actually_needed;
 #endif
-
   // This is not in FindObjectPropertiesNeedingUpdateScope because paint offset
   // can change without needsPaintPropertyUpdate.
   UpdateForObjectLocationAndSize(
-      object, full_context.container_for_absolute_position, is_actually_needed,
-      context, full_context.force_subtree_update);
+      object, full_context.container_for_absolute_position,
+      object.FirstFragment() ? object.FirstFragment()->PaintProperties()
+                             : nullptr,
+      is_actually_needed, context, full_context.force_subtree_update);
 
 #if DCHECK_IS_ON()
   FindObjectPropertiesNeedingUpdateScope check_needs_update_scope(
       object, full_context.force_subtree_update);
 #endif
 
-  if (object.PaintProperties()) {
+  if (object.FirstFragment() && object.FirstFragment()->PaintProperties()) {
     ObjectPaintProperties* properties =
-        object.GetMutableForPainting().PaintProperties();
+        object.GetMutableForPainting().FirstFragment()->PaintProperties();
     UpdateTransform(object, *properties, context,
                     full_context.force_subtree_update);
     UpdateCssClip(object, *properties, context,
@@ -1269,11 +1275,11 @@ void PaintPropertyTreeBuilder::UpdatePropertiesForSelf(
                    full_context.force_subtree_update);
     }
   }
-  UpdateLocalBorderBoxContext(object, context,
+  UpdateLocalBorderBoxContext(object, context, object.FirstFragment(),
                               full_context.force_subtree_update);
-  if (object.PaintProperties()) {
+  if (object.FirstFragment() && object.FirstFragment()->PaintProperties()) {
     ObjectPaintProperties* properties =
-        object.GetMutableForPainting().PaintProperties();
+        object.GetMutableForPainting().FirstFragment()->PaintProperties();
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       UpdateScrollbarPaintOffset(object, *properties, context,
                                  full_context.force_subtree_update);
@@ -1293,9 +1299,9 @@ void PaintPropertyTreeBuilder::UpdatePropertiesForChildren(
         object, context.force_subtree_update);
 #endif
 
-    if (object.PaintProperties()) {
+    if (object.FirstFragment() && object.FirstFragment()->PaintProperties()) {
       ObjectPaintProperties* properties =
-          object.GetMutableForPainting().PaintProperties();
+          object.GetMutableForPainting().FirstFragment()->PaintProperties();
       UpdateOverflowClip(object, *properties, fragment_context,
                          context.force_subtree_update, context.clip_changed);
       UpdatePerspective(object, *properties, fragment_context,
@@ -1307,6 +1313,9 @@ void PaintPropertyTreeBuilder::UpdatePropertiesForChildren(
     }
 
     UpdateOutOfFlowContext(object, fragment_context,
+                           object.FirstFragment()
+                               ? object.FirstFragment()->PaintProperties()
+                               : nullptr,
                            context.force_subtree_update);
 
     context.force_subtree_update |= object.SubtreeNeedsPaintPropertyUpdate();

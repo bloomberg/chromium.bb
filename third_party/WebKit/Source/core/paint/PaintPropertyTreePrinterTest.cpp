@@ -85,7 +85,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTreePath) {
   LayoutObject* transformed_object =
       GetDocument().getElementById("transform")->GetLayoutObject();
   const auto* transformed_object_properties =
-      transformed_object->PaintProperties();
+      transformed_object->FirstFragment()->PaintProperties();
   String transform_path_as_string =
       transformed_object_properties->Transform()->ToTreeString();
   EXPECT_THAT(transform_path_as_string.Ascii().data(),
@@ -101,7 +101,8 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleClipTreePath) {
       "40px);'></div>");
   LayoutObject* clipped_object =
       GetDocument().getElementById("clip")->GetLayoutObject();
-  const auto* clipped_object_properties = clipped_object->PaintProperties();
+  const auto* clipped_object_properties =
+      clipped_object->FirstFragment()->PaintProperties();
   String clip_path_as_string =
       clipped_object_properties->CssClip()->ToTreeString();
   EXPECT_THAT(clip_path_as_string.Ascii().data(),
@@ -114,7 +115,8 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTreePath) {
   SetBodyInnerHTML("<div id='effect' style='opacity: 0.9;'></div>");
   LayoutObject* effect_object =
       GetDocument().getElementById("effect")->GetLayoutObject();
-  const auto* effect_object_properties = effect_object->PaintProperties();
+  const auto* effect_object_properties =
+      effect_object->FirstFragment()->PaintProperties();
   String effect_path_as_string =
       effect_object_properties->Effect()->ToTreeString();
   EXPECT_THAT(effect_path_as_string.Ascii().data(),
@@ -129,7 +131,8 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTreePath) {
       "</div>");
   LayoutObject* scroll_object =
       GetDocument().getElementById("scroll")->GetLayoutObject();
-  const auto* scroll_object_properties = scroll_object->PaintProperties();
+  const auto* scroll_object_properties =
+      scroll_object->FirstFragment()->PaintProperties();
   String scroll_path_as_string = scroll_object_properties->ScrollTranslation()
                                      ->ScrollNode()
                                      ->ToTreeString();

@@ -352,17 +352,20 @@ CompositorAnimations::CheckCanStartElementOnCompositor(
     // the DCHECK below.
     // DCHECK(document().lifecycle().state() >=
     // DocumentLifecycle::PrePaintClean);
-    const ObjectPaintProperties* paint_properties =
-        target_element.GetLayoutObject()->PaintProperties();
-    const TransformPaintPropertyNode* transform_node =
-        paint_properties->Transform();
-    const EffectPaintPropertyNode* effect_node = paint_properties->Effect();
-    bool has_direct_compositing_reasons =
-        (transform_node && transform_node->HasDirectCompositingReasons()) ||
-        (effect_node && effect_node->HasDirectCompositingReasons());
-    if (!has_direct_compositing_reasons) {
-      return FailureCode::NonActionable(
-          "Element has no direct compositing reasons");
+    if (FragmentData* fragment =
+            target_element.GetLayoutObject()->FirstFragment()) {
+      const ObjectPaintProperties* paint_properties =
+          target_element.GetLayoutObject()->FirstFragment()->PaintProperties();
+      const TransformPaintPropertyNode* transform_node =
+          paint_properties->Transform();
+      const EffectPaintPropertyNode* effect_node = paint_properties->Effect();
+      bool has_direct_compositing_reasons =
+          (transform_node && transform_node->HasDirectCompositingReasons()) ||
+          (effect_node && effect_node->HasDirectCompositingReasons());
+      if (!has_direct_compositing_reasons) {
+        return FailureCode::NonActionable(
+            "Element has no direct compositing reasons");
+      }
     }
   } else {
     bool paints_into_own_backing =

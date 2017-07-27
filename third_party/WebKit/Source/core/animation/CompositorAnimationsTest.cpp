@@ -1279,8 +1279,9 @@ TEST_F(AnimationCompositorAnimationsTest,
   element->SetLayoutObject(layout_object);
 
   ScopedSlimmingPaintV2ForTest enable_s_pv2(true);
-  auto& properties =
-      layout_object->GetMutableForPainting().EnsurePaintProperties();
+  auto& properties = layout_object->GetMutableForPainting()
+                         .EnsureFirstFragment()
+                         .EnsurePaintProperties();
 
   // Add a transform with a compositing reason, which should allow starting
   // animation.
@@ -1309,8 +1310,9 @@ TEST_F(AnimationCompositorAnimationsTest,
   element->SetLayoutObject(layout_object);
 
   ScopedSlimmingPaintV2ForTest enable_s_pv2(true);
-  auto& properties =
-      layout_object->GetMutableForPainting().EnsurePaintProperties();
+  auto& properties = layout_object->GetMutableForPainting()
+                         .EnsureFirstFragment()
+                         .EnsurePaintProperties();
 
   // Add an effect with a compositing reason, which should allow starting
   // animation.

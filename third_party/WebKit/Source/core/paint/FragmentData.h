@@ -29,13 +29,21 @@ class CORE_EXPORT FragmentData {
   ObjectPaintProperties& EnsurePaintProperties();
   void ClearPaintProperties();
 
-  ClipRects* PreviousClipRects() const {
-    return previous_clip_rects_.Get();
+  // The complete set of property nodes that should be used as a starting point
+  // to paint this fragment. See also the comment for
+  // RarePaintData::local_border_box_properties_.
+  PropertyTreeState* LocalBorderBoxProperties() const {
+    return local_border_box_properties_.get();
   }
-  void SetPreviousClipRects(ClipRects& clip_rects) {
-    previous_clip_rects_ = &clip_rects;
-  }
-  void ClearPreviousClipRects() { previous_clip_rects_.Clear(); }
+
+  void ClearLocalBorderBoxProperties();
+  void SetLocalBorderBoxProperties(PropertyTreeState&);
+
+  // This is the complete set of property nodes that can be used to paint the
+  // contents of this fragment. It is similar to local_border_box_properties_
+  // but includes properties (e.g., overflow clip, scroll translation) that
+  // apply to contents.
+  PropertyTreeState ContentsProperties() const;
 
   FragmentData* NextFragment() { return next_fragment_.get(); }
 
@@ -46,6 +54,18 @@ class CORE_EXPORT FragmentData {
   // These are used to detect changes to clipping that might invalidate
   // subsequence caching or paint phase optimizations.
   RefPtr<ClipRects> previous_clip_rects_;
+
+  // This is a complete set of property nodes that should be used as a
+  // starting point to paint a LayoutObject. This data is cached because some
+  // properties inherit from the containing block chain instead of the
+  // painting parent and cannot be derived in O(1) during the paint walk.
+  //
+  // For example: <div style='opacity: 0.3;'/>
+  //   The div's local border box properties would have an opacity 0.3 effect
+  //   node. Even though the div has no transform, its local border box
+  //   properties would have a transform node that points to the div's
+  //   ancestor transform space.
+  std::unique_ptr<PropertyTreeState> local_border_box_properties_;
 
   std::unique_ptr<FragmentData> next_fragment_;
 };

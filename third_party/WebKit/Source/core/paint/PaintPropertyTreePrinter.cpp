@@ -75,7 +75,8 @@ class PropertyTreePrinter {
 
   void CollectPropertyNodes(const LayoutObject& object) {
     if (const ObjectPaintProperties* paint_properties =
-            object.PaintProperties())
+            object.FirstFragment() ? object.FirstFragment()->PaintProperties()
+                                   : nullptr)
       Traits::AddObjectPaintProperties(object, *paint_properties, *this);
     for (LayoutObject* child = object.SlowFirstChild(); child;
          child = child->NextSibling())
@@ -385,7 +386,9 @@ class PaintPropertyTreeGraphBuilder {
   }
 
   void WriteObjectPaintPropertyNodes(const LayoutObject& object) {
-    const ObjectPaintProperties* properties = object.PaintProperties();
+    const ObjectPaintProperties* properties =
+        object.FirstFragment() ? object.FirstFragment()->PaintProperties()
+                               : nullptr;
     if (!properties)
       return;
     const TransformPaintPropertyNode* paint_offset =

@@ -121,12 +121,15 @@ class FindObjectPropertiesNeedingUpdateScope {
     object_.GetMutableForPainting()
         .SetOnlyThisNeedsPaintPropertyUpdateForTesting();
 
-    if (const auto* properties = object_.PaintProperties())
-      original_properties_ = properties->Clone();
+    if (const auto* fragment_data = object_.FirstFragment()) {
+      if (const auto* properties = fragment_data->PaintProperties())
+        original_properties_ = properties->Clone();
 
-    if (const auto* local_border_box = object_.LocalBorderBoxProperties()) {
-      original_local_border_box_properties_ =
-          WTF::WrapUnique(new PropertyTreeState(*local_border_box));
+      if (const auto* local_border_box =
+              fragment_data->LocalBorderBoxProperties()) {
+        original_local_border_box_properties_ =
+            WTF::WrapUnique(new PropertyTreeState(*local_border_box));
+      }
     }
   }
 
@@ -136,7 +139,9 @@ class FindObjectPropertiesNeedingUpdateScope {
     // property update.
     DCHECK_OBJECT_PROPERTY_EQ(object_, &original_paint_offset_,
                               &object_.PaintOffset());
-    const auto* object_properties = object_.PaintProperties();
+    const auto* object_properties =
+        object_.FirstFragment() ? object_.FirstFragment()->PaintProperties()
+                                : nullptr;
     if (original_properties_ && object_properties) {
       DCHECK_OBJECT_PROPERTY_EQ(object_,
                                 original_properties_->PaintOffsetTranslation(),
@@ -190,7 +195,10 @@ class FindObjectPropertiesNeedingUpdateScope {
           << " Object: " << object_.DebugName();
     }
 
-    const auto* object_border_box = object_.LocalBorderBoxProperties();
+    const auto* object_border_box =
+        object_.FirstFragment()
+            ? object_.FirstFragment()->LocalBorderBoxProperties()
+            : nullptr;
     if (original_local_border_box_properties_ && object_border_box) {
       DCHECK_OBJECT_PROPERTY_EQ(
           object_, original_local_border_box_properties_->Transform(),
