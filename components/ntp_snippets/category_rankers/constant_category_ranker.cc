@@ -118,6 +118,9 @@ ConstantCategoryRanker::GetKnownCategoriesDefaultOrder() {
   std::vector<KnownCategories> categories;
   CategoryOrderChoice choice = GetSelectedCategoryOrder();
   switch (choice) {
+    // All categories must be present. An exception is
+    // KnownCategories::CONTEXTUAL because it is not handled by
+    // ContentSuggestionsService.
     case CategoryOrderChoice::GENERAL:
       categories.push_back(KnownCategories::PHYSICAL_WEB_PAGES);
       categories.push_back(KnownCategories::READING_LIST);
@@ -140,8 +143,10 @@ ConstantCategoryRanker::GetKnownCategoriesDefaultOrder() {
   }
 
   static_assert(
-      static_cast<size_t>(KnownCategories::LOCAL_CATEGORIES_COUNT) == 6,
-      "All local KnownCategories must be present in all orders.");
+      static_cast<size_t>(KnownCategories::LOCAL_CATEGORIES_COUNT) == 7,
+      "Number of local categories has changed, please update "
+      "ConstantCategoryRanker::GetKnownCategoriesDefaultOrder to list all "
+      "local KnownCategories for all orders.");
 
   // Other remote categories will be ordered after these depending on when
   // providers notify us about them using AppendCategoryIfNecessary.
