@@ -31,18 +31,6 @@ namespace gpu {
 
 namespace {
 
-// Combine the integers into a string, seperated by ','.
-std::string IntSetToString(const std::set<int>& list) {
-  std::string rt;
-  for (std::set<int>::const_iterator it = list.begin();
-       it != list.end(); ++it) {
-    if (!rt.empty())
-      rt += ",";
-    rt += base::IntToString(*it);
-  }
-  return rt;
-}
-
 void StringToIntSet(const std::string& str, std::set<int>* list) {
   DCHECK(list);
   for (const base::StringPiece& piece :
@@ -95,6 +83,16 @@ GpuFeatureStatus GetGpuRasterizationFeatureStatus(
 
 }  // namespace anonymous
 
+std::string IntSetToString(const std::set<int>& list, char divider) {
+  std::string rt;
+  for (auto number : list) {
+    if (!rt.empty())
+      rt += divider;
+    rt += base::IntToString(number);
+  }
+  return rt;
+}
+
 void ApplyGpuDriverBugWorkarounds(const GPUInfo& gpu_info,
                                   base::CommandLine* command_line) {
   std::unique_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
@@ -104,7 +102,7 @@ void ApplyGpuDriverBugWorkarounds(const GPUInfo& gpu_info,
       &workarounds, *command_line);
   if (!workarounds.empty()) {
     command_line->AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
-                                    IntSetToString(workarounds));
+                                    IntSetToString(workarounds, ','));
   }
 
   std::vector<std::string> buglist_disabled_extensions =
@@ -201,6 +199,43 @@ GpuFeatureInfo GetGpuFeatureInfo(const GPUInfo& gpu_info,
   // Currently only used for GPU rasterization.
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
       GetGpuRasterizationFeatureStatus(blacklisted_features, command_line);
+
+  std::set<base::StringPiece> all_disabled_extensions;
+  std::string disabled_gl_extensions_value =
+      command_line.GetSwitchValueASCII(switches::kDisableGLExtensions);
+  if (!disabled_gl_extensions_value.empty()) {
+    std::vector<base::StringPiece> command_line_disabled_extensions =
+        base::SplitStringPiece(disabled_gl_extensions_value, ", ;",
+                               base::KEEP_WHITESPACE,
+                               base::SPLIT_WANT_NONEMPTY);
+    all_disabled_extensions.insert(command_line_disabled_extensions.begin(),
+                                   command_line_disabled_extensions.end());
+  }
+
+  std::set<int> enabled_driver_bug_workarounds;
+  std::vector<std::string> driver_bug_disabled_extensions;
+  if (!command_line.HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
+    std::unique_ptr<gpu::GpuDriverBugList> list(GpuDriverBugList::Create());
+    enabled_driver_bug_workarounds =
+        list->MakeDecision(GpuControlList::kOsAny, std::string(), gpu_info);
+
+    driver_bug_disabled_extensions = list->GetDisabledExtensions();
+    all_disabled_extensions.insert(driver_bug_disabled_extensions.begin(),
+                                   driver_bug_disabled_extensions.end());
+  }
+  gpu::GpuDriverBugList::AppendWorkaroundsFromCommandLine(
+      &enabled_driver_bug_workarounds, command_line);
+
+  gpu_feature_info.enabled_gpu_driver_bug_workarounds.insert(
+      gpu_feature_info.enabled_gpu_driver_bug_workarounds.begin(),
+      enabled_driver_bug_workarounds.begin(),
+      enabled_driver_bug_workarounds.end());
+
+  if (all_disabled_extensions.size()) {
+    std::vector<base::StringPiece> v(all_disabled_extensions.begin(),
+                                     all_disabled_extensions.end());
+    gpu_feature_info.disabled_extensions = base::JoinString(v, " ");
+  }
 
   return gpu_feature_info;
 }

@@ -11,4 +11,14 @@ GpuFeatureInfo::GpuFeatureInfo() {
     status = kGpuFeatureStatusUndefined;
 }
 
+GpuFeatureInfo::GpuFeatureInfo(const GpuFeatureInfo&) = default;
+
+GpuFeatureInfo::GpuFeatureInfo(GpuFeatureInfo&&) = default;
+
+GpuFeatureInfo::~GpuFeatureInfo() {}
+
+GpuFeatureInfo& GpuFeatureInfo::operator=(const GpuFeatureInfo&) = default;
+
+GpuFeatureInfo& GpuFeatureInfo::operator=(GpuFeatureInfo&&) = default;
+
 }  // namespace gpu

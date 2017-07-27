@@ -49,6 +49,8 @@ GetGpuFeatureInfo(const GPUInfo& gpu_info,
 
 GPU_EXPORT void SetKeysForCrashLogging(const GPUInfo& gpu_info);
 
+// Combine the integers into a string, separated by divider.
+GPU_EXPORT std::string IntSetToString(const std::set<int>& list, char divider);
 }  // namespace gpu
 
 #endif  // GPU_CONFIG_GPU_UTIL_H_

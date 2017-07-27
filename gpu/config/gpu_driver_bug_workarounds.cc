@@ -10,17 +10,12 @@
 #include "gpu/config/gpu_switches.h"
 
 namespace {
-// Process a string of wordaround type IDs (seperated by ',') and set up
-// the corresponding Workaround flags.
-void StringToWorkarounds(const std::string& types,
+// Construct GpuDriverBugWorkarounds from a set of enabled workaround IDs.
+void IntSetToWorkarounds(const std::vector<int>& enabled_workarounds,
                          gpu::GpuDriverBugWorkarounds* workarounds) {
   DCHECK(workarounds);
-  for (const base::StringPiece& piece : base::SplitStringPiece(
-           types, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    int number = 0;
-    bool succeed = base::StringToInt(piece, &number);
-    DCHECK(succeed);
-    switch (number) {
+  for (auto ID : enabled_workarounds) {
+    switch (ID) {
 #define GPU_OP(type, name)    \
   case gpu::type:             \
     workarounds->name = true; \
@@ -47,33 +42,34 @@ void StringToWorkarounds(const std::string& types,
     workarounds->max_copy_texture_chromium_size = 262144;
 }
 
+// Process a string of wordaround type IDs (seperated by ',') and set up
+// the corresponding Workaround flags.
+void StringToWorkarounds(const std::string& types,
+                         gpu::GpuDriverBugWorkarounds* workarounds) {
+  std::vector<int> IDs;
+  for (const auto& piece : base::SplitStringPiece(
+           types, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    int number = 0;
+    bool succeed = base::StringToInt(piece, &number);
+    DCHECK(succeed);
+    IDs.push_back(number);
+  }
+  IntSetToWorkarounds(IDs, workarounds);
+}
+
 }  // anonymous namespace
 
 namespace gpu {
 
-GpuDriverBugWorkarounds::GpuDriverBugWorkarounds()
-    :
-#define GPU_OP(type, name) name(false),
-      GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
-#undef GPU_OP
-          max_texture_size(0),
-      max_fragment_uniform_vectors(0),
-      max_varying_vectors(0),
-      max_vertex_uniform_vectors(0),
-      max_copy_texture_chromium_size(0) {
+GpuDriverBugWorkarounds::GpuDriverBugWorkarounds() {}
+
+GpuDriverBugWorkarounds::GpuDriverBugWorkarounds(
+    const std::vector<int>& enabled_driver_bug_workarounds) {
+  IntSetToWorkarounds(enabled_driver_bug_workarounds, this);
 }
 
 GpuDriverBugWorkarounds::GpuDriverBugWorkarounds(
-    const base::CommandLine* command_line)
-    :
-#define GPU_OP(type, name) name(false),
-      GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
-#undef GPU_OP
-          max_texture_size(0),
-      max_fragment_uniform_vectors(0),
-      max_varying_vectors(0),
-      max_vertex_uniform_vectors(0),
-      max_copy_texture_chromium_size(0) {
+    const base::CommandLine* command_line) {
   if (!command_line)
     return;
 

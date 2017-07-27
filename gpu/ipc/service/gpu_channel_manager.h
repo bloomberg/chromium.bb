@@ -42,7 +42,6 @@ class GLShareGroup;
 }
 
 namespace gpu {
-class GpuDriverBugWorkarounds;
 struct GpuPreferences;
 class PreemptionFlag;
 class Scheduler;
@@ -66,7 +65,6 @@ class GpuWatchdogThread;
 class GPU_EXPORT GpuChannelManager {
  public:
   GpuChannelManager(const GpuPreferences& gpu_preferences,
-                    const GpuDriverBugWorkarounds& workarounds,
                     GpuChannelManagerDelegate* delegate,
                     GpuWatchdogThread* watchdog,
                     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -169,7 +167,7 @@ class GPU_EXPORT GpuChannelManager {
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   const GpuPreferences gpu_preferences_;
-  GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
+  const GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
 
   GpuChannelManagerDelegate* const delegate_;
 

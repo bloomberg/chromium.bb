@@ -203,6 +203,7 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line) {
 #if defined(OS_LINUX)
   // On Chrome OS ARM Mali, GPU driver userspace creates threads when
   // initializing a GL context, so start the sandbox early.
+  // TODO(zmo): Need to collect OS version before this.
   if (command_line.HasSwitch(switches::kGpuSandboxStartEarly)) {
     gpu_info_.sandboxed =
         sandbox_helper_->EnsureSandboxInitialized(watchdog_thread_.get());
@@ -244,26 +245,25 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line) {
   CollectGraphicsInfo(gpu_info_);
   if (gpu_info_.context_info_state == gpu::kCollectInfoFatalFailure)
     return false;
-
-  // Recompute gpu driver bug workarounds.
-  // This is necessary on systems where vendor_id/device_id aren't available
-  // (Chrome OS, Android) or where workarounds may be dependent on GL_VENDOR
-  // and GL_RENDERER strings which are lazily computed (Linux).
-  if (!command_line.HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
-    // TODO: this can not affect disabled extensions, since they're already
-    // initialized in the bindings. This should be moved before bindings
-    // initialization. However, populating GPUInfo fully works only on Android.
-    // Other platforms would need the bindings to query GL strings.
-    gpu::ApplyGpuDriverBugWorkarounds(
-        gpu_info_, const_cast<base::CommandLine*>(&command_line));
-  }
 #endif  // !defined(OS_MACOSX)
-
-  gpu_feature_info_ = gpu::GetGpuFeatureInfo(gpu_info_, command_line);
-
   base::TimeDelta collect_context_time =
       base::TimeTicks::Now() - before_collect_context_graphics_info;
   UMA_HISTOGRAM_TIMES("GPU.CollectContextGraphicsInfo", collect_context_time);
+
+  gpu_feature_info_ = gpu::GetGpuFeatureInfo(gpu_info_, command_line);
+  // TODO(zmo): Apply disabled extensions to GL bindings. Even though the GL
+  // bindings have already been initialized, we can still set the disabled
+  // extensions, so the next GetString call will return desired value.
+  if (!gpu_feature_info_.enabled_gpu_driver_bug_workarounds.empty()) {
+    // TODO(zmo): Remove this block of code. They are only for existing tests.
+    std::set<int> workarounds;
+    workarounds.insert(
+        gpu_feature_info_.enabled_gpu_driver_bug_workarounds.begin(),
+        gpu_feature_info_.enabled_gpu_driver_bug_workarounds.end());
+    base::CommandLine* cmd_line = const_cast<base::CommandLine*>(&command_line);
+    cmd_line->AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
+                                gpu::IntSetToString(workarounds, ','));
+  }
 
   base::TimeDelta initialize_one_off_time =
       base::TimeTicks::Now() - before_initialize_one_off;

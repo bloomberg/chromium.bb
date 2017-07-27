@@ -77,7 +77,6 @@ GpuChannelTestCommon::GpuChannelTestCommon()
       channel_manager_delegate_(new TestGpuChannelManagerDelegate()),
       channel_manager_(
           new GpuChannelManager(GpuPreferences(),
-                                GpuDriverBugWorkarounds(),
                                 channel_manager_delegate_.get(),
                                 nullptr, /* watchdog */
                                 task_runner_.get(),
