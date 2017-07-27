@@ -59,7 +59,7 @@ namespace blink {
 
 class Canvas2DLayerBridgeTest;
 class ImageBuffer;
-class WebGraphicsContext3DProvider;
+class WebGraphicsContext3DProviderWrapper;
 class SharedContextRateLimiter;
 
 #if defined(OS_MACOSX)
@@ -89,8 +89,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
     kForceAccelerationForTesting,
   };
 
-  Canvas2DLayerBridge(std::unique_ptr<WebGraphicsContext3DProvider>,
-                      const IntSize&,
+  Canvas2DLayerBridge(const IntSize&,
                       int msaa_sample_count,
                       OpacityMode,
                       AccelerationMode,
@@ -136,7 +135,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
 
   bool HasRecordedDrawCommands() { return have_recorded_draw_commands_; }
 
-  sk_sp<SkImage> NewImageSnapshot(AccelerationHint, SnapshotReason);
+  RefPtr<StaticBitmapImage> NewImageSnapshot(AccelerationHint, SnapshotReason);
 
   // The values of the enum entries must not change because they are used for
   // usage metrics histograms. New values can be added to the end.
@@ -238,13 +237,18 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   // changing texture bindings.
   void ResetSkiaTextureBinding();
 
+  // Used for cloning context_provider_wrapper_ into an rvalue
+  WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper() const {
+    return context_provider_wrapper_;
+  }
+
   std::unique_ptr<PaintRecorder> recorder_;
   sk_sp<SkSurface> surface_;
   std::unique_ptr<PaintCanvas> surface_paint_canvas_;
   sk_sp<SkImage> hibernation_image_;
   int initial_surface_save_count_;
   std::unique_ptr<WebExternalTextureLayer> layer_;
-  std::unique_ptr<WebGraphicsContext3DProvider> context_provider_;
+  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   std::unique_ptr<SharedContextRateLimiter> rate_limiter_;
   std::unique_ptr<Logger> logger_;
   WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_;

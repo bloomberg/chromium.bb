@@ -14,6 +14,8 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/graphics/Canvas2DImageBufferSurface.h"
 #include "platform/graphics/Canvas2DLayerBridge.h"
+#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
+#include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/test/FakeGLES2Interface.h"
 #include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
@@ -36,6 +38,11 @@ class HTMLCanvasPainterTestForSPv2 : public ::testing::Test,
 
  protected:
   void SetUp() override {
+    SharedGpuContext::SetContextProviderFactoryForTesting([this] {
+      gl_.SetIsContextLost(false);
+      return std::unique_ptr<WebGraphicsContext3DProvider>(
+          new FakeWebGraphicsContext3DProvider(&gl_));
+    });
     chrome_client_ = new StubChromeClientForSPv2();
     Page::PageClients clients;
     FillWithEmptyClients(clients);
@@ -50,6 +57,10 @@ class HTMLCanvasPainterTestForSPv2 : public ::testing::Test,
     GetDocument().View()->SetSelfVisible(true);
   }
 
+  void TearDown() override {
+    SharedGpuContext::SetContextProviderFactoryForTesting(nullptr);
+  }
+
   Document& GetDocument() { return page_holder_->GetDocument(); }
   bool HasLayerAttached(const WebLayer& layer) {
     return chrome_client_->HasLayer(layer);
@@ -57,8 +68,7 @@ class HTMLCanvasPainterTestForSPv2 : public ::testing::Test,
 
   PassRefPtr<Canvas2DLayerBridge> MakeCanvas2DLayerBridge(const IntSize& size) {
     return AdoptRef(new Canvas2DLayerBridge(
-        WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl_)), size, 0,
-        kNonOpaque, Canvas2DLayerBridge::kForceAccelerationForTesting,
+        size, 0, kNonOpaque, Canvas2DLayerBridge::kForceAccelerationForTesting,
         CanvasColorParams()));
   }
 

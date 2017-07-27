@@ -94,8 +94,8 @@ class CORE_EXPORT CanvasRenderingContext
 
   const CanvasColorParams& color_params() const { return color_params_; }
 
-  virtual PassRefPtr<Image> GetImage(AccelerationHint,
-                                     SnapshotReason) const = 0;
+  virtual PassRefPtr<StaticBitmapImage> GetImage(AccelerationHint,
+                                                 SnapshotReason) const = 0;
   virtual ImageData* ToImageData(SnapshotReason reason) { return nullptr; }
   virtual ContextType GetContextType() const = 0;
   virtual bool IsComposited() const = 0;

@@ -8,18 +8,28 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "platform/graphics/Image.h"
+#include "platform/wtf/WeakPtr.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
 
 class WebGraphicsContext3DProvider;
+class WebGraphicsContext3DProviderWrapper;
 
 class PLATFORM_EXPORT StaticBitmapImage : public Image {
  public:
-  static PassRefPtr<StaticBitmapImage> Create(sk_sp<SkImage>);
+  // WebGraphicsContext3DProviderWrapper argument only needs to be provided if
+  // The SkImage is texture backed, in which case it must be a reference to the
+  // context provider that owns the GrContext with which the SkImage is
+  // associated.
+  static RefPtr<StaticBitmapImage> Create(
+      sk_sp<SkImage>,
+      WeakPtr<WebGraphicsContext3DProviderWrapper>&& = nullptr);
 
-  // Methods overrided by all sub-classes
+  bool IsStaticBitmapImage() const override { return true; }
+
+  // Methods overridden by all sub-classes
   virtual ~StaticBitmapImage() {}
   bool CurrentFrameKnownToBeOpaque(MetadataMode = kUseCurrentMetadata) = 0;
   sk_sp<SkImage> ImageForCurrentFrame() = 0;
@@ -34,12 +44,16 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   bool CurrentFrameIsComplete() override { return true; }
   void DestroyDecodedData() {}
 
-  // Methods that have a default implementation, and overrided by only one
+  // Methods that have a default implementation, and overridden by only one
   // sub-class
-  virtual bool HasMailbox() { return false; }
+  virtual bool HasMailbox() const { return false; }
+  virtual bool IsValid() const { return true; }
   virtual void Transfer() {}
+  // Creates a non-gpu copy of the image, or returns this if image is already
+  // non-gpu.
+  virtual RefPtr<StaticBitmapImage> MakeUnaccelerated() { return this; }
 
-  // Methods overrided by AcceleratedStaticBitmapImage only
+  // Methods overridden by AcceleratedStaticBitmapImage only
   virtual void CopyToTexture(WebGraphicsContext3DProvider*,
                              GLenum,
                              GLuint,
@@ -64,6 +78,8 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   void SetOriginClean(bool flag) { is_origin_clean_ = flag; }
   bool IsPremultiplied() const { return is_premultiplied_; }
   void SetPremultiplied(bool flag) { is_premultiplied_ = flag; }
+  RefPtr<StaticBitmapImage> ConvertToColorSpace(sk_sp<SkColorSpace>,
+                                                SkTransferFunctionBehavior);
 
  protected:
   // Helper for sub-classes

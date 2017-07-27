@@ -44,15 +44,15 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
-class SkImage;
 struct SkImageInfo;
 
 namespace blink {
 
-class ImageBuffer;
-class WebLayer;
 class FloatRect;
 class GraphicsContext;
+class ImageBuffer;
+class StaticBitmapImage;
+class WebLayer;
 
 class PLATFORM_EXPORT ImageBufferSurface {
   WTF_MAKE_NONCOPYABLE(ImageBufferSurface);
@@ -100,7 +100,8 @@ class PLATFORM_EXPORT ImageBufferSurface {
 
   // May return nullptr if the surface is GPU-backed and the GPU context was
   // lost.
-  virtual sk_sp<SkImage> NewImageSnapshot(AccelerationHint, SnapshotReason) = 0;
+  virtual RefPtr<StaticBitmapImage> NewImageSnapshot(AccelerationHint,
+                                                     SnapshotReason) = 0;
 
   OpacityMode GetOpacityMode() const { return opacity_mode_; }
   const IntSize& size() const { return size_; }

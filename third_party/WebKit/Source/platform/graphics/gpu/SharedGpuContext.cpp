@@ -20,9 +20,7 @@ SharedGpuContext* SharedGpuContext::GetInstanceForCurrentThread() {
   return thread_specific_instance;
 }
 
-SharedGpuContext::SharedGpuContext() : context_id_(kNoSharedContext) {
-  CreateContextProviderIfNeeded();
-}
+SharedGpuContext::SharedGpuContext() {}
 
 void SharedGpuContext::CreateContextProviderOnMainThread(
     WaitableEvent* waitable_event) {
@@ -30,27 +28,36 @@ void SharedGpuContext::CreateContextProviderOnMainThread(
   Platform::ContextAttributes context_attributes;
   context_attributes.web_gl_version = 1;  // GLES2
   Platform::GraphicsInfo graphics_info;
-  context_provider_ =
+  context_provider_ = WTF::WrapUnique(new WebGraphicsContext3DProviderWrapper(
       Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
-          context_attributes, WebURL(), nullptr, &graphics_info);
+          context_attributes, WebURL(), nullptr, &graphics_info)));
   if (waitable_event)
     waitable_event->Signal();
 }
 
+WeakPtr<WebGraphicsContext3DProviderWrapper>
+SharedGpuContext::ContextProviderWrapper() {
+  SharedGpuContext* this_ptr = GetInstanceForCurrentThread();
+  this_ptr->CreateContextProviderIfNeeded();
+  if (!this_ptr->context_provider_)
+    return nullptr;
+  return this_ptr->context_provider_->CreateWeakPtr();
+}
+
 void SharedGpuContext::CreateContextProviderIfNeeded() {
-  if (context_provider_ &&
-      context_provider_->ContextGL()->GetGraphicsResetStatusKHR() ==
-          GL_NO_ERROR)
+  if (context_provider_ && context_provider_->ContextProvider()
+                                   ->ContextGL()
+                                   ->GetGraphicsResetStatusKHR() == GL_NO_ERROR)
     return;
 
-  std::unique_ptr<WebGraphicsContext3DProvider> old_context_provider =
-      std::move(context_provider_);
   if (context_provider_factory_) {
     // This path should only be used in unit tests
-    context_provider_ = context_provider_factory_();
+    context_provider_ = WTF::WrapUnique(
+        new WebGraphicsContext3DProviderWrapper(context_provider_factory_()));
   } else if (IsMainThread()) {
-    context_provider_ = blink::Platform::Current()
-                            ->CreateSharedOffscreenGraphicsContext3DProvider();
+    context_provider_ = WTF::WrapUnique(new WebGraphicsContext3DProviderWrapper(
+        blink::Platform::Current()
+            ->CreateSharedOffscreenGraphicsContext3DProvider()));
   } else {
     // This synchronous round-trip to the main thread is the reason why
     // SharedGpuContext encasulates the context provider: so we only have to do
@@ -64,17 +71,9 @@ void SharedGpuContext::CreateContextProviderIfNeeded() {
                         CrossThreadUnretained(this),
                         CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
-    if (context_provider_ && !context_provider_->BindToCurrentThread())
+    if (context_provider_ &&
+        !context_provider_->ContextProvider()->BindToCurrentThread())
       context_provider_ = nullptr;
-  }
-
-  if (context_provider_) {
-    context_id_++;
-    // In the unlikely event of an overflow...
-    if (context_id_ == kNoSharedContext)
-      context_id_++;
-  } else {
-    context_provider_ = std::move(old_context_provider);
   }
 }
 
@@ -83,54 +82,24 @@ void SharedGpuContext::SetContextProviderFactoryForTesting(
   SharedGpuContext* this_ptr = GetInstanceForCurrentThread();
   this_ptr->context_provider_.reset();
   this_ptr->context_provider_factory_ = factory;
-  this_ptr->CreateContextProviderIfNeeded();
-}
-
-unsigned SharedGpuContext::ContextId() {
-  if (!IsValid())
-    return kNoSharedContext;
-  SharedGpuContext* this_ptr = GetInstanceForCurrentThread();
-  return this_ptr->context_id_;
-}
-
-gpu::gles2::GLES2Interface* SharedGpuContext::Gl() {
-  if (IsValid()) {
-    SharedGpuContext* this_ptr = GetInstanceForCurrentThread();
-    return this_ptr->context_provider_->ContextGL();
-  }
-  return nullptr;
-}
-
-GrContext* SharedGpuContext::Gr() {
-  if (IsValid()) {
-    SharedGpuContext* this_ptr = GetInstanceForCurrentThread();
-    return this_ptr->context_provider_->GetGrContext();
-  }
-  return nullptr;
-}
-
-bool SharedGpuContext::IsValid() {
-  SharedGpuContext* this_ptr = GetInstanceForCurrentThread();
-  this_ptr->CreateContextProviderIfNeeded();
-  if (!this_ptr->context_provider_)
-    return false;
-  return this_ptr->context_provider_->ContextGL()
-             ->GetGraphicsResetStatusKHR() == GL_NO_ERROR;
 }
 
 bool SharedGpuContext::IsValidWithoutRestoring() {
   SharedGpuContext* this_ptr = GetInstanceForCurrentThread();
   if (!this_ptr->context_provider_)
     return false;
-  return this_ptr->context_provider_->ContextGL()
+  return this_ptr->context_provider_->ContextProvider()
+             ->ContextGL()
              ->GetGraphicsResetStatusKHR() == GL_NO_ERROR;
 }
 
 bool SharedGpuContext::AllowSoftwareToAcceleratedCanvasUpgrade() {
-  if (!IsValid())
-    return kNoSharedContext;
   SharedGpuContext* this_ptr = GetInstanceForCurrentThread();
-  return this_ptr->context_provider_->GetCapabilities()
+  this_ptr->CreateContextProviderIfNeeded();
+  if (!this_ptr->context_provider_)
+    return false;
+  return this_ptr->context_provider_->ContextProvider()
+      ->GetCapabilities()
       .software_to_accelerated_canvas_upgrade;
 }
 

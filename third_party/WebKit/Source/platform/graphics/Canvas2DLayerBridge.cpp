@@ -34,11 +34,14 @@
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/graphics/AcceleratedStaticBitmapImage.h"
 #include "platform/graphics/CanvasHeuristicParameters.h"
 #include "platform/graphics/CanvasMetrics.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
 #include "platform/graphics/gpu/SharedContextRateLimiter.h"
+#include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/scheduler/child/web_scheduler.h"
@@ -123,14 +126,12 @@ static sk_sp<SkSurface> CreateSkSurface(GrContext* gr,
   return surface;
 }
 
-Canvas2DLayerBridge::Canvas2DLayerBridge(
-    std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
-    const IntSize& size,
-    int msaa_sample_count,
-    OpacityMode opacity_mode,
-    AccelerationMode acceleration_mode,
-    const CanvasColorParams& color_params)
-    : context_provider_(std::move(context_provider)),
+Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
+                                         int msaa_sample_count,
+                                         OpacityMode opacity_mode,
+                                         AccelerationMode acceleration_mode,
+                                         const CanvasColorParams& color_params)
+    : context_provider_wrapper_(SharedGpuContext::ContextProviderWrapper()),
       logger_(WTF::WrapUnique(new Logger)),
       weak_ptr_factory_(this),
       image_buffer_(0),
@@ -148,8 +149,8 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(
       opacity_mode_(opacity_mode),
       size_(size),
       color_params_(color_params) {
-  DCHECK(context_provider_);
-  DCHECK(!context_provider_->IsSoftwareRendering());
+  DCHECK(context_provider_wrapper_);
+  DCHECK(!context_provider_wrapper_->ContextProvider()->IsSoftwareRendering());
   DCHECK(color_params_.GetGfxColorSpace().IsValid());
   // Used by browser tests to detect the use of a Canvas2DLayerBridge.
   TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation",
@@ -203,10 +204,10 @@ bool Canvas2DLayerBridge::ShouldAccelerate(AccelerationHint hint) const {
     accelerate = hint == kPreferAcceleration ||
                  hint == kPreferAccelerationAfterVisibilityChange;
 
-  if (accelerate &&
-      (!context_provider_ ||
-       context_provider_->ContextGL()->GetGraphicsResetStatusKHR() !=
-           GL_NO_ERROR))
+  if (accelerate && (!context_provider_wrapper_ ||
+                     context_provider_wrapper_->ContextProvider()
+                             ->ContextGL()
+                             ->GetGraphicsResetStatusKHR() != GL_NO_ERROR))
     accelerate = false;
   return accelerate;
 }
@@ -243,7 +244,8 @@ bool Canvas2DLayerBridge::PrepareIOSurfaceMailboxFromImage(
     viz::TextureMailbox* out_mailbox) {
   // Need to flush skia's internal queue, because the texture is about to be
   // accessed directly.
-  GrContext* gr_context = context_provider_->GetGrContext();
+  GrContext* gr_context =
+      context_provider_wrapper_->ContextProvider()->GetGrContext();
   gr_context->flush();
 
   RefPtr<ImageInfo> image_info = CreateIOSurfaceBackedTexture();
@@ -291,7 +293,7 @@ bool Canvas2DLayerBridge::PrepareIOSurfaceMailboxFromImage(
 
   // Because we are changing the texture binding without going through skia,
   // we must dirty the context.
-  gr_context->resetContext(kTextureBinding_GrGLBackendState);
+  ResetSkiaTextureBinding();
 
   return true;
 }
@@ -336,6 +338,8 @@ Canvas2DLayerBridge::CreateIOSurfaceBackedTexture() {
   gl->TexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   gl->BindTexImage2DCHROMIUM(target, image_id);
 
+  ResetSkiaTextureBinding();
+
   return AdoptRef(new Canvas2DLayerBridge::ImageInfo(
       std::move(gpu_memory_buffer), image_id, texture_id));
 }
@@ -376,7 +380,11 @@ bool Canvas2DLayerBridge::PrepareMailboxFromImage(
   CreateMailboxInfo();
   MailboxInfo& mailbox_info = mailboxes_.front();
 
-  GrContext* gr_context = context_provider_->GetGrContext();
+  if (!context_provider_wrapper_)
+    return false;
+
+  GrContext* gr_context =
+      context_provider_wrapper_->ContextProvider()->GetGrContext();
   if (!gr_context) {
     mailbox_info.image_ = std::move(image);
     // For testing, skip GL stuff when using a mock graphics context.
@@ -441,12 +449,15 @@ bool Canvas2DLayerBridge::PrepareMailboxFromImage(
   gl->BindTexture(GL_TEXTURE_2D, 0);
   // Because we are changing the texture binding without going through skia,
   // we must dirty the context.
-  gr_context->resetContext(kTextureBinding_GrGLBackendState);
+  ResetSkiaTextureBinding();
   return true;
 }
 
 void Canvas2DLayerBridge::ResetSkiaTextureBinding() {
-  GrContext* gr_context = context_provider_->GetGrContext();
+  if (!context_provider_wrapper_)
+    return;
+  GrContext* gr_context =
+      context_provider_wrapper_->ContextProvider()->GetGrContext();
   if (gr_context)
     gr_context->resetContext(kTextureBinding_GrGLBackendState);
 }
@@ -558,11 +569,14 @@ SkSurface* Canvas2DLayerBridge::GetOrCreateSurface(AccelerationHint hint) {
     software_rendering_while_hidden_ = true;
   }
 
+  GrContext* gr =
+      want_acceleration && context_provider_wrapper_
+          ? context_provider_wrapper_->ContextProvider()->GetGrContext()
+          : nullptr;
+
   bool surface_is_accelerated;
-  surface_ = CreateSkSurface(
-      want_acceleration ? context_provider_->GetGrContext() : nullptr, size_,
-      msaa_sample_count_, opacity_mode_, color_params_,
-      &surface_is_accelerated);
+  surface_ = CreateSkSurface(gr, size_, msaa_sample_count_, opacity_mode_,
+                             color_params_, &surface_is_accelerated);
   surface_paint_canvas_ =
       WTF::WrapUnique(new SkiaPaintCanvas(surface_->getCanvas()));
 
@@ -829,7 +843,9 @@ gpu::gles2::GLES2Interface* Canvas2DLayerBridge::ContextGL() {
     if (!CheckSurfaceValid())
       return nullptr;
   }
-  return context_provider_ ? context_provider_->ContextGL() : nullptr;
+  return context_provider_wrapper_
+             ? context_provider_wrapper_->ContextProvider()->ContextGL()
+             : nullptr;
 }
 
 bool Canvas2DLayerBridge::CheckSurfaceValid() {
@@ -842,8 +858,10 @@ bool Canvas2DLayerBridge::CheckSurfaceValid() {
     return true;
   if (!surface_)
     return false;
-  if (context_provider_->ContextGL()->GetGraphicsResetStatusKHR() !=
-      GL_NO_ERROR) {
+  if (!context_provider_wrapper_ ||
+      context_provider_wrapper_->ContextProvider()
+              ->ContextGL()
+              ->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
     ResetSurface();
     for (auto mailbox_info = mailboxes_.begin();
          mailbox_info != mailboxes_.end(); ++mailbox_info) {
@@ -866,13 +884,13 @@ bool Canvas2DLayerBridge::RestoreSurface() {
 
   gpu::gles2::GLES2Interface* shared_gl = nullptr;
   layer_->ClearTexture();
-  context_provider_ =
-      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider();
-  if (context_provider_)
-    shared_gl = context_provider_->ContextGL();
+  context_provider_wrapper_ = SharedGpuContext::ContextProviderWrapper();
+  if (context_provider_wrapper_)
+    shared_gl = context_provider_wrapper_->ContextProvider()->ContextGL();
 
   if (shared_gl && shared_gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
-    GrContext* gr_ctx = context_provider_->GetGrContext();
+    GrContext* gr_ctx =
+        context_provider_wrapper_->ContextProvider()->GetGrContext();
     bool surface_is_accelerated;
     sk_sp<SkSurface> surface(CreateSkSurface(gr_ctx, size_, msaa_sample_count_,
                                              opacity_mode_, color_params_,
@@ -915,9 +933,10 @@ bool Canvas2DLayerBridge::PrepareTextureMailbox(
   // If the context is lost, we don't know if we should be producing GPU or
   // software frames, until we get a new context, since the compositor will
   // be trying to get a new context and may change modes.
-  if (!context_provider_ ||
-      context_provider_->ContextGL()->GetGraphicsResetStatusKHR() !=
-          GL_NO_ERROR)
+  if (!context_provider_wrapper_ ||
+      context_provider_wrapper_->ContextProvider()
+              ->ContextGL()
+              ->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
     return false;
 
   DCHECK(IsAccelerated() || IsHibernating() ||
@@ -928,19 +947,20 @@ bool Canvas2DLayerBridge::PrepareTextureMailbox(
   if ((IsHibernating() || software_rendering_while_hidden_) && IsHidden())
     return false;
 
-  sk_sp<SkImage> image =
+  RefPtr<StaticBitmapImage> image =
       NewImageSnapshot(kPreferAcceleration, kSnapshotReasonUnknown);
-  if (!image || !image->getTexture())
+  if (!image || !image->IsValid() || !image->IsTextureBacked())
     return false;
 
+  sk_sp<SkImage> skImage = image->ImageForCurrentFrame();
   // Early exit if canvas was not drawn to since last prepareMailbox.
   GLenum filter = GetGLFilter();
-  if (image->uniqueID() == last_image_id_ && filter == last_filter_)
+  if (skImage->uniqueID() == last_image_id_ && filter == last_filter_)
     return false;
-  last_image_id_ = image->uniqueID();
+  last_image_id_ = skImage->uniqueID();
   last_filter_ = filter;
 
-  if (!PrepareMailboxFromImage(std::move(image), out_mailbox))
+  if (!PrepareMailboxFromImage(std::move(skImage), out_mailbox))
     return false;
   out_mailbox->set_nearest_neighbor(GetGLFilter() == GL_NEAREST);
   out_mailbox->set_color_space(color_params_.GetGfxColorSpace());
@@ -957,11 +977,11 @@ void Canvas2DLayerBridge::MailboxReleased(const gpu::Mailbox& mailbox,
                                           const gpu::SyncToken& sync_token,
                                           bool lost_resource) {
   DCHECK(IsAccelerated() || IsHibernating());
-  bool context_lost =
-      !IsHibernating() &&
-      (!surface_ ||
-       context_provider_->ContextGL()->GetGraphicsResetStatusKHR() !=
-           GL_NO_ERROR);
+  bool context_lost = !IsHibernating() &&
+                      (!surface_ || !context_provider_wrapper_ ||
+                       context_provider_wrapper_->ContextProvider()
+                               ->ContextGL()
+                               ->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
   DCHECK(mailboxes_.back().parent_layer_bridge_.Get() == this);
 
   // Mailboxes are typically released in FIFO order, so we iterate
@@ -1085,10 +1105,11 @@ void Canvas2DLayerBridge::DoPaintInvalidation(const FloatRect& dirty_rect) {
     layer_->Layer()->InvalidateRect(EnclosingIntRect(dirty_rect));
 }
 
-sk_sp<SkImage> Canvas2DLayerBridge::NewImageSnapshot(AccelerationHint hint,
-                                                     SnapshotReason) {
+RefPtr<StaticBitmapImage> Canvas2DLayerBridge::NewImageSnapshot(
+    AccelerationHint hint,
+    SnapshotReason) {
   if (IsHibernating())
-    return hibernation_image_;
+    return StaticBitmapImage::Create(hibernation_image_);
   if (!CheckSurfaceValid())
     return nullptr;
   if (!GetOrCreateSurface(hint))
@@ -1100,7 +1121,13 @@ sk_sp<SkImage> Canvas2DLayerBridge::NewImageSnapshot(AccelerationHint hint,
   // parameters.
   GetOrCreateSurface()->notifyContentWillChange(
       SkSurface::kRetain_ContentChangeMode);
-  return surface_->makeImageSnapshot();
+  RefPtr<StaticBitmapImage> image = StaticBitmapImage::Create(
+      surface_->makeImageSnapshot(), ContextProviderWrapper());
+  if (image->IsTextureBacked()) {
+    static_cast<AcceleratedStaticBitmapImage*>(image.Get())
+        ->RetainOriginalSkImageForCopyOnWrite();
+  }
+  return image;
 }
 
 void Canvas2DLayerBridge::WillOverwriteCanvas() {

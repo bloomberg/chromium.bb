@@ -31,6 +31,7 @@
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/graphics/AcceleratedStaticBitmapImage.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/wtf/PtrUtil.h"
@@ -45,10 +46,12 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(
     OpacityMode opacity_mode,
     const CanvasColorParams& color_params)
     : ImageBufferSurface(size, opacity_mode, color_params) {
-  if (!SharedGpuContext::IsValid())
+  context_provider_wrapper_ = SharedGpuContext::ContextProviderWrapper();
+  if (!context_provider_wrapper_)
     return;
-  GrContext* gr_context = SharedGpuContext::Gr();
-  context_id_ = SharedGpuContext::ContextId();
+  GrContext* gr_context =
+      context_provider_wrapper_->ContextProvider()->GetGrContext();
+
   CHECK(gr_context);
 
   SkAlphaType alpha_type =
@@ -77,13 +80,25 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(
 }
 
 bool AcceleratedImageBufferSurface::IsValid() const {
-  return surface_ && SharedGpuContext::IsValid() &&
-         context_id_ == SharedGpuContext::ContextId();
+  // Note: SharedGpuContext::ContextProviderWrapper() is called in order to
+  // actively detect not-yet-handled context losses.
+  return surface_ && context_provider_wrapper_;
 }
 
-sk_sp<SkImage> AcceleratedImageBufferSurface::NewImageSnapshot(AccelerationHint,
-                                                               SnapshotReason) {
-  return surface_->makeImageSnapshot();
+RefPtr<StaticBitmapImage> AcceleratedImageBufferSurface::NewImageSnapshot(
+    AccelerationHint,
+    SnapshotReason) {
+  if (!IsValid())
+    return nullptr;
+  // Must make a copy of the WeakPtr because CreateFromSkImage only takes
+  // r-value references.
+  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
+      context_provider_wrapper_;
+  RefPtr<AcceleratedStaticBitmapImage> image =
+      AcceleratedStaticBitmapImage::CreateFromSkImage(
+          surface_->makeImageSnapshot(), std::move(context_provider_wrapper));
+  image->RetainOriginalSkImageForCopyOnWrite();
+  return image;
 }
 
 GLuint AcceleratedImageBufferSurface::GetBackingTextureHandleForOverwrite() {

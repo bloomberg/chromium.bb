@@ -14,7 +14,9 @@ class PLATFORM_EXPORT WebGraphicsContext3DProviderWrapper {
  public:
   WebGraphicsContext3DProviderWrapper(
       std::unique_ptr<WebGraphicsContext3DProvider> provider)
-      : context_provider_(std::move(provider)), weak_ptr_factory_(this) {}
+      : context_provider_(std::move(provider)), weak_ptr_factory_(this) {
+    DCHECK(context_provider_);
+  }
   WeakPtr<WebGraphicsContext3DProviderWrapper> CreateWeakPtr() {
     return weak_ptr_factory_.CreateWeakPtr();
   }

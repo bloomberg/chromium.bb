@@ -34,7 +34,10 @@
 #include "platform/WaitableEvent.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
+#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
+#include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/test/FakeGLES2Interface.h"
 #include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
@@ -93,6 +96,8 @@ class Canvas2DLayerBridgePtr {
 
 class FakeGLES2InterfaceWithImageSupport : public FakeGLES2Interface {
  public:
+  MOCK_METHOD0(Flush, void());
+
   GLuint CreateImageCHROMIUM(ClientBuffer, GLsizei, GLsizei, GLenum) override {
     return ++create_image_count_;
   }
@@ -107,11 +112,16 @@ class FakeGLES2InterfaceWithImageSupport : public FakeGLES2Interface {
 };
 
 class FakePlatformSupport : public TestingPlatformSupport {
+ public:
+  void RunUntilStop() const { base::RunLoop().Run(); }
+
+  void StopRunning() const { base::RunLoop().Quit(); }
+
+ private:
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override {
     return &test_gpu_memory_buffer_manager_;
   }
 
- private:
   cc::TestGpuMemoryBufferManager test_gpu_memory_buffer_manager_;
 };
 
@@ -120,24 +130,29 @@ class FakePlatformSupport : public TestingPlatformSupport {
 class Canvas2DLayerBridgeTest : public Test {
  public:
   PassRefPtr<Canvas2DLayerBridge> MakeBridge(
-      std::unique_ptr<FakeWebGraphicsContext3DProvider> provider,
       const IntSize& size,
       Canvas2DLayerBridge::AccelerationMode acceleration_mode) {
-    RefPtr<Canvas2DLayerBridge> bridge = AdoptRef(
-        new Canvas2DLayerBridge(std::move(provider), size, 0, kNonOpaque,
-                                acceleration_mode, CanvasColorParams()));
+    RefPtr<Canvas2DLayerBridge> bridge = AdoptRef(new Canvas2DLayerBridge(
+        size, 0, kNonOpaque, acceleration_mode, CanvasColorParams()));
     bridge->DontUseIdleSchedulingForTesting();
     return bridge;
   }
+  void SetUp() override {
+    SharedGpuContext::SetContextProviderFactoryForTesting([this] {
+      return std::unique_ptr<WebGraphicsContext3DProvider>(
+          new FakeWebGraphicsContext3DProvider(&gl_));
+    });
+  }
+  void TearDown() override {
+    SharedGpuContext::SetContextProviderFactoryForTesting(nullptr);
+  }
 
  protected:
-  void FullLifecycleTest() {
-    FakeGLES2Interface gl;
-    std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
-        WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
+  FakeGLES2InterfaceWithImageSupport gl_;
 
+  void FullLifecycleTest() {
     Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
-        std::move(context_provider), IntSize(300, 150), 0, kNonOpaque,
+        IntSize(300, 150), 0, kNonOpaque,
         Canvas2DLayerBridge::kDisableAcceleration, CanvasColorParams())));
 
     const GrGLTextureInfo* texture_info =
@@ -145,19 +160,16 @@ class Canvas2DLayerBridgeTest : public Test {
             bridge
                 ->NewImageSnapshot(kPreferAcceleration,
                                    kSnapshotReasonUnitTests)
+                ->ImageForCurrentFrame()
                 ->getTextureHandle(true));
     EXPECT_EQ(texture_info, nullptr);
     bridge.Clear();
   }
 
   void FallbackToSoftwareIfContextLost() {
-    FakeGLES2Interface gl;
-    std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
-        WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
-
-    gl.SetIsContextLost(true);
+    gl_.SetIsContextLost(true);
     Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
-        std::move(context_provider), IntSize(300, 150), 0, kNonOpaque,
+        IntSize(300, 150), 0, kNonOpaque,
         Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
     EXPECT_TRUE(bridge->CheckSurfaceValid());
     EXPECT_FALSE(bridge->IsAccelerated());
@@ -166,28 +178,24 @@ class Canvas2DLayerBridgeTest : public Test {
   void FallbackToSoftwareOnFailedTextureAlloc() {
     {
       // No fallback case.
-      FakeGLES2Interface gl;
-      std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
-          WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
       Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
-          std::move(context_provider), IntSize(300, 150), 0, kNonOpaque,
+          IntSize(300, 150), 0, kNonOpaque,
           Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
       EXPECT_TRUE(bridge->CheckSurfaceValid());
       EXPECT_TRUE(bridge->IsAccelerated());
-      sk_sp<SkImage> snapshot = bridge->NewImageSnapshot(
+      RefPtr<StaticBitmapImage> snapshot = bridge->NewImageSnapshot(
           kPreferAcceleration, kSnapshotReasonUnitTests);
       EXPECT_TRUE(bridge->IsAccelerated());
-      EXPECT_TRUE(snapshot->isTextureBacked());
+      EXPECT_TRUE(snapshot->IsTextureBacked());
     }
 
     {
       // Fallback case.
-      FakeGLES2Interface gl;
-      std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
-          WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
-      GrContext* gr = context_provider->GetGrContext();
+      GrContext* gr = SharedGpuContext::ContextProviderWrapper()
+                          ->ContextProvider()
+                          ->GetGrContext();
       Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
-          std::move(context_provider), IntSize(300, 150), 0, kNonOpaque,
+          IntSize(300, 150), 0, kNonOpaque,
           Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
       EXPECT_TRUE(bridge->CheckSurfaceValid());
       EXPECT_TRUE(bridge->IsAccelerated());  // We don't yet know that
@@ -195,20 +203,16 @@ class Canvas2DLayerBridgeTest : public Test {
       // This will cause SkSurface_Gpu creation to fail without
       // Canvas2DLayerBridge otherwise detecting that anything was disabled.
       gr->abandonContext();
-      sk_sp<SkImage> snapshot = bridge->NewImageSnapshot(
+      RefPtr<StaticBitmapImage> snapshot = bridge->NewImageSnapshot(
           kPreferAcceleration, kSnapshotReasonUnitTests);
       EXPECT_FALSE(bridge->IsAccelerated());
-      EXPECT_FALSE(snapshot->isTextureBacked());
+      EXPECT_FALSE(snapshot->IsTextureBacked());
     }
   }
 
   void NoDrawOnContextLostTest() {
-    FakeGLES2Interface gl;
-    std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
-        WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
-
     Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
-        std::move(context_provider), IntSize(300, 150), 0, kNonOpaque,
+        IntSize(300, 150), 0, kNonOpaque,
         Canvas2DLayerBridge::kForceAccelerationForTesting,
         CanvasColorParams())));
     EXPECT_TRUE(bridge->CheckSurfaceValid());
@@ -216,7 +220,7 @@ class Canvas2DLayerBridgeTest : public Test {
     uint32_t gen_id = bridge->GetOrCreateSurface()->generationID();
     bridge->Canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
     EXPECT_EQ(gen_id, bridge->GetOrCreateSurface()->generationID());
-    gl.SetIsContextLost(true);
+    gl_.SetIsContextLost(true);
     EXPECT_EQ(gen_id, bridge->GetOrCreateSurface()->generationID());
     bridge->Canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
     EXPECT_EQ(gen_id, bridge->GetOrCreateSurface()->generationID());
@@ -230,11 +234,8 @@ class Canvas2DLayerBridgeTest : public Test {
   }
 
   void PrepareMailboxWhenContextIsLost() {
-    FakeGLES2Interface gl;
-    std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
-        WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
     Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
-        std::move(context_provider), IntSize(300, 150), 0, kNonOpaque,
+        IntSize(300, 150), 0, kNonOpaque,
         Canvas2DLayerBridge::kForceAccelerationForTesting,
         CanvasColorParams())));
 
@@ -242,7 +243,7 @@ class Canvas2DLayerBridgeTest : public Test {
 
     // When the context is lost we are not sure if we should still be producing
     // GL frames for the compositor or not, so fail to generate frames.
-    gl.SetIsContextLost(true);
+    gl_.SetIsContextLost(true);
 
     viz::TextureMailbox texture_mailbox;
     std::unique_ptr<viz::SingleReleaseCallback> release_callback;
@@ -251,11 +252,8 @@ class Canvas2DLayerBridgeTest : public Test {
   }
 
   void PrepareMailboxWhenContextIsLostWithFailedRestore() {
-    FakeGLES2Interface gl;
-    std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
-        WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
     Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
-        std::move(context_provider), IntSize(300, 150), 0, kNonOpaque,
+        IntSize(300, 150), 0, kNonOpaque,
         Canvas2DLayerBridge::kForceAccelerationForTesting,
         CanvasColorParams())));
 
@@ -263,7 +261,7 @@ class Canvas2DLayerBridgeTest : public Test {
     EXPECT_TRUE(bridge->CheckSurfaceValid());
     // When the context is lost we are not sure if we should still be producing
     // GL frames for the compositor or not, so fail to generate frames.
-    gl.SetIsContextLost(true);
+    gl_.SetIsContextLost(true);
     EXPECT_FALSE(bridge->CheckSurfaceValid());
 
     // Restoration will fail because
@@ -282,11 +280,8 @@ class Canvas2DLayerBridgeTest : public Test {
     // Prepare a mailbox, then report the resource as lost.
     // This test passes by not crashing and not triggering assertions.
     {
-      FakeGLES2Interface gl;
-      std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
-          WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
       Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
-          std::move(context_provider), IntSize(300, 150), 0, kNonOpaque,
+          IntSize(300, 150), 0, kNonOpaque,
           Canvas2DLayerBridge::kForceAccelerationForTesting,
           CanvasColorParams())));
 
@@ -301,16 +296,12 @@ class Canvas2DLayerBridgeTest : public Test {
 
     // Retry with mailbox released while bridge destruction is in progress.
     {
-      FakeGLES2Interface gl;
-      std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
-          WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
-
       viz::TextureMailbox texture_mailbox;
       std::unique_ptr<viz::SingleReleaseCallback> release_callback;
 
       {
         Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
-            std::move(context_provider), IntSize(300, 150), 0, kNonOpaque,
+            IntSize(300, 150), 0, kNonOpaque,
             Canvas2DLayerBridge::kForceAccelerationForTesting,
             CanvasColorParams())));
         bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback);
@@ -329,31 +320,25 @@ class Canvas2DLayerBridgeTest : public Test {
 
   void AccelerationHintTest() {
     {
-      FakeGLES2Interface gl;
-      std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
-          WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
       Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
-          std::move(context_provider), IntSize(300, 300), 0, kNonOpaque,
+          IntSize(300, 300), 0, kNonOpaque,
           Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
       PaintFlags flags;
       bridge->Canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
-      sk_sp<SkImage> image = bridge->NewImageSnapshot(kPreferAcceleration,
-                                                      kSnapshotReasonUnitTests);
+      RefPtr<StaticBitmapImage> image = bridge->NewImageSnapshot(
+          kPreferAcceleration, kSnapshotReasonUnitTests);
       EXPECT_TRUE(bridge->CheckSurfaceValid());
       EXPECT_TRUE(bridge->IsAccelerated());
     }
 
     {
-      FakeGLES2Interface gl;
-      std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
-          WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
       Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
-          std::move(context_provider), IntSize(300, 300), 0, kNonOpaque,
+          IntSize(300, 300), 0, kNonOpaque,
           Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
       PaintFlags flags;
       bridge->Canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
-      sk_sp<SkImage> image = bridge->NewImageSnapshot(kPreferNoAcceleration,
-                                                      kSnapshotReasonUnitTests);
+      RefPtr<StaticBitmapImage> image = bridge->NewImageSnapshot(
+          kPreferNoAcceleration, kSnapshotReasonUnitTests);
       EXPECT_TRUE(bridge->CheckSurfaceValid());
       EXPECT_FALSE(bridge->IsAccelerated());
     }
@@ -401,92 +386,6 @@ class MockLogger : public Canvas2DLayerBridge::Logger {
   virtual ~MockLogger() {}
 };
 
-void RunCreateBridgeTask(Canvas2DLayerBridgePtr* bridge_ptr,
-                         gpu::gles2::GLES2Interface* gl,
-                         Canvas2DLayerBridgeTest* test_host,
-                         WaitableEvent* done_event) {
-  std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
-      WTF::MakeUnique<FakeWebGraphicsContext3DProvider>(gl);
-  *bridge_ptr =
-      test_host->MakeBridge(std::move(context_provider), IntSize(300, 300),
-                            Canvas2DLayerBridge::kEnableAcceleration);
-  // draw+flush to trigger the creation of a GPU surface
-  (*bridge_ptr)->DidDraw(FloatRect(0, 0, 1, 1));
-  (*bridge_ptr)->FinalizeFrame();
-  (*bridge_ptr)->Flush();
-  done_event->Signal();
-}
-
-void PostAndWaitCreateBridgeTask(const WebTraceLocation& location,
-                                 WebThread* test_thread,
-                                 Canvas2DLayerBridgePtr* bridge_ptr,
-                                 gpu::gles2::GLES2Interface* gl,
-                                 Canvas2DLayerBridgeTest* test_host) {
-  std::unique_ptr<WaitableEvent> bridge_created_event =
-      WTF::MakeUnique<WaitableEvent>();
-  test_thread->GetWebTaskRunner()->PostTask(
-      location, CrossThreadBind(
-                    &RunCreateBridgeTask, CrossThreadUnretained(bridge_ptr),
-                    CrossThreadUnretained(gl), CrossThreadUnretained(test_host),
-                    CrossThreadUnretained(bridge_created_event.get())));
-  bridge_created_event->Wait();
-}
-
-void RunDestroyBridgeTask(Canvas2DLayerBridgePtr* bridge_ptr,
-                          WaitableEvent* done_event) {
-  bridge_ptr->Clear();
-  if (done_event)
-    done_event->Signal();
-}
-
-void PostDestroyBridgeTask(const WebTraceLocation& location,
-                           WebThread* test_thread,
-                           Canvas2DLayerBridgePtr* bridge_ptr) {
-  test_thread->GetWebTaskRunner()->PostTask(
-      location, CrossThreadBind(&RunDestroyBridgeTask,
-                                CrossThreadUnretained(bridge_ptr), nullptr));
-}
-
-void PostAndWaitDestroyBridgeTask(const WebTraceLocation& location,
-                                  WebThread* test_thread,
-                                  Canvas2DLayerBridgePtr* bridge_ptr) {
-  std::unique_ptr<WaitableEvent> bridge_destroyed_event =
-      WTF::MakeUnique<WaitableEvent>();
-  test_thread->GetWebTaskRunner()->PostTask(
-      location,
-      CrossThreadBind(&RunDestroyBridgeTask, CrossThreadUnretained(bridge_ptr),
-                      CrossThreadUnretained(bridge_destroyed_event.get())));
-  bridge_destroyed_event->Wait();
-}
-
-void RunSetIsHiddenTask(Canvas2DLayerBridge* bridge,
-                        bool value,
-                        WaitableEvent* done_event) {
-  bridge->SetIsHidden(value);
-  if (done_event)
-    done_event->Signal();
-}
-
-void PostSetIsHiddenTask(const WebTraceLocation& location,
-                         WebThread* test_thread,
-                         Canvas2DLayerBridge* bridge,
-                         bool value,
-                         WaitableEvent* done_event = nullptr) {
-  test_thread->GetWebTaskRunner()->PostTask(
-      location,
-      CrossThreadBind(&RunSetIsHiddenTask, CrossThreadUnretained(bridge), value,
-                      CrossThreadUnretained(done_event)));
-}
-
-void PostAndWaitSetIsHiddenTask(const WebTraceLocation& location,
-                                WebThread* test_thread,
-                                Canvas2DLayerBridge* bridge,
-                                bool value) {
-  std::unique_ptr<WaitableEvent> done_event = WTF::MakeUnique<WaitableEvent>();
-  PostSetIsHiddenTask(location, test_thread, bridge, value, done_event.get());
-  done_event->Wait();
-}
-
 class MockImageBuffer : public ImageBuffer {
  public:
   MockImageBuffer()
@@ -498,21 +397,24 @@ class MockImageBuffer : public ImageBuffer {
   virtual ~MockImageBuffer() {}
 };
 
+void DrawSomething(Canvas2DLayerBridgePtr& bridge) {
+  bridge->DidDraw(FloatRect(0, 0, 1, 1));
+  bridge->FinalizeFrame();
+  bridge->Flush();
+}
+
 #if CANVAS2D_HIBERNATION_ENABLED
 TEST_F(Canvas2DLayerBridgeTest, HibernationLifeCycle)
 #else
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationLifeCycle)
 #endif
 {
-  FakeGLES2Interface gl;
-  std::unique_ptr<WebThread> test_thread =
-      Platform::Current()->CreateThread("TestThread");
-
-  // The Canvas2DLayerBridge has to be created on the thread that will use it
-  // to avoid WeakPtr thread check issues.
-  Canvas2DLayerBridgePtr bridge;
-  PostAndWaitCreateBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge, &gl,
-                              this);
+  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, kNonOpaque,
+      Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
+  bridge->DontUseIdleSchedulingForTesting();
+  DrawSomething(bridge);
 
   // Register an alternate Logger for tracking hibernation events
   std::unique_ptr<MockLogger> mock_logger = WTF::WrapUnique(new MockLogger);
@@ -520,16 +422,14 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationLifeCycle)
   bridge->SetLoggerForTesting(std::move(mock_logger));
 
   // Test entering hibernation
-  std::unique_ptr<WaitableEvent> hibernation_started_event =
-      WTF::MakeUnique<WaitableEvent>();
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
-  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating())
-      .WillOnce(testing::Invoke(hibernation_started_event.get(),
-                                &WaitableEvent::Signal));
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), true);
-  hibernation_started_event->Wait();
+  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
+
+  bridge->SetIsHidden(true);
+  platform->RunUntilIdle();
+
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_TRUE(bridge->IsHibernating());
@@ -539,16 +439,13 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationLifeCycle)
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationEndedNormally));
-  PostAndWaitSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(),
-                             false);
+
+  bridge->SetIsHidden(false);
+
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_TRUE(bridge->IsAccelerated());
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->CheckSurfaceValid());
-
-  // Tear down the bridge on the thread so that 'bridge' can go out of scope
-  // without crashing due to thread checks
-  PostAndWaitDestroyBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED
@@ -557,15 +454,12 @@ TEST_F(Canvas2DLayerBridgeTest, HibernationReEntry)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationReEntry)
 #endif
 {
-  FakeGLES2Interface gl;
-  std::unique_ptr<WebThread> test_thread =
-      Platform::Current()->CreateThread("TestThread");
-
-  // The Canvas2DLayerBridge has to be created on the thread that will use it
-  // to avoid WeakPtr thread check issues.
-  Canvas2DLayerBridgePtr bridge;
-  PostAndWaitCreateBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge, &gl,
-                              this);
+  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, kNonOpaque,
+      Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
+  bridge->DontUseIdleSchedulingForTesting();
+  DrawSomething(bridge);
 
   // Register an alternate Logger for tracking hibernation events
   std::unique_ptr<MockLogger> mock_logger = WTF::WrapUnique(new MockLogger);
@@ -573,21 +467,17 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationReEntry)
   bridge->SetLoggerForTesting(std::move(mock_logger));
 
   // Test entering hibernation
-  std::unique_ptr<WaitableEvent> hibernation_started_event =
-      WTF::MakeUnique<WaitableEvent>();
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
-  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating())
-      .WillOnce(testing::Invoke(hibernation_started_event.get(),
-                                &WaitableEvent::Signal));
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), true);
+  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
+  bridge->SetIsHidden(true);
   // Toggle visibility before the task that enters hibernation gets a
   // chance to run.
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), false);
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), true);
+  bridge->SetIsHidden(false);
+  bridge->SetIsHidden(true);
+  platform->RunUntilIdle();
 
-  hibernation_started_event->Wait();
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_TRUE(bridge->IsHibernating());
@@ -597,16 +487,13 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationReEntry)
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationEndedNormally));
-  PostAndWaitSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(),
-                             false);
+
+  bridge->SetIsHidden(false);
+
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_TRUE(bridge->IsAccelerated());
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->CheckSurfaceValid());
-
-  // Tear down the bridge on the thread so that 'bridge' can go out of scope
-  // without crashing due to thread checks
-  PostAndWaitDestroyBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED
@@ -617,15 +504,12 @@ TEST_F(Canvas2DLayerBridgeTest,
        DISABLED_HibernationLifeCycleWithDeferredRenderingDisabled)
 #endif
 {
-  FakeGLES2Interface gl;
-  std::unique_ptr<WebThread> test_thread =
-      Platform::Current()->CreateThread("TestThread");
-
-  // The Canvas2DLayerBridge has to be created on the thread that will use it
-  // to avoid WeakPtr thread check issues.
-  Canvas2DLayerBridgePtr bridge;
-  PostAndWaitCreateBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge, &gl,
-                              this);
+  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, kNonOpaque,
+      Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
+  bridge->DontUseIdleSchedulingForTesting();
+  DrawSomething(bridge);
   bridge->DisableDeferral(kDisableDeferralReasonUnknown);
   MockImageBuffer mock_image_buffer;
   EXPECT_CALL(mock_image_buffer, ResetCanvas(_)).Times(AnyNumber());
@@ -637,16 +521,12 @@ TEST_F(Canvas2DLayerBridgeTest,
   bridge->SetLoggerForTesting(std::move(mock_logger));
 
   // Test entering hibernation
-  std::unique_ptr<WaitableEvent> hibernation_started_event =
-      WTF::MakeUnique<WaitableEvent>();
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
-  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating())
-      .WillOnce(testing::Invoke(hibernation_started_event.get(),
-                                &WaitableEvent::Signal));
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), true);
-  hibernation_started_event->Wait();
+  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
+  bridge->SetIsHidden(true);
+  platform->RunUntilIdle();
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   ::testing::Mock::VerifyAndClearExpectations(&mock_image_buffer);
   EXPECT_FALSE(bridge->IsAccelerated());
@@ -659,35 +539,12 @@ TEST_F(Canvas2DLayerBridgeTest,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationEndedNormally));
   EXPECT_CALL(mock_image_buffer, ResetCanvas(_))
       .Times(AtLeast(1));  // Because deferred rendering is disabled
-  PostAndWaitSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(),
-                             false);
+  bridge->SetIsHidden(false);
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   ::testing::Mock::VerifyAndClearExpectations(&mock_image_buffer);
   EXPECT_TRUE(bridge->IsAccelerated());
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->CheckSurfaceValid());
-
-  // Tear down the bridge on the thread so that 'bridge' can go out of scope
-  // without crashing due to thread checks
-  PostAndWaitDestroyBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge);
-}
-
-void RunRenderingTask(Canvas2DLayerBridge* bridge, WaitableEvent* done_event) {
-  bridge->DidDraw(FloatRect(0, 0, 1, 1));
-  bridge->FinalizeFrame();
-  bridge->Flush();
-  done_event->Signal();
-}
-
-void PostAndWaitRenderingTask(const WebTraceLocation& location,
-                              WebThread* test_thread,
-                              Canvas2DLayerBridge* bridge) {
-  std::unique_ptr<WaitableEvent> done_event = WTF::MakeUnique<WaitableEvent>();
-  test_thread->GetWebTaskRunner()->PostTask(
-      location,
-      CrossThreadBind(&RunRenderingTask, CrossThreadUnretained(bridge),
-                      CrossThreadUnretained(done_event.get())));
-  done_event->Wait();
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED && CANVAS2D_BACKGROUND_RENDER_SWITCH_TO_CPU
@@ -696,15 +553,12 @@ TEST_F(Canvas2DLayerBridgeTest, BackgroundRenderingWhileHibernating)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_BackgroundRenderingWhileHibernating)
 #endif
 {
-  FakeGLES2Interface gl;
-  std::unique_ptr<WebThread> test_thread =
-      Platform::Current()->CreateThread("TestThread");
-
-  // The Canvas2DLayerBridge has to be created on the thread that will use it
-  // to avoid WeakPtr thread check issues.
-  Canvas2DLayerBridgePtr bridge;
-  PostAndWaitCreateBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge, &gl,
-                              this);
+  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, kNonOpaque,
+      Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
+  bridge->DontUseIdleSchedulingForTesting();
+  DrawSomething(bridge);
 
   // Register an alternate Logger for tracking hibernation events
   std::unique_ptr<MockLogger> mock_logger = WTF::WrapUnique(new MockLogger);
@@ -712,16 +566,12 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_BackgroundRenderingWhileHibernating)
   bridge->SetLoggerForTesting(std::move(mock_logger));
 
   // Test entering hibernation
-  std::unique_ptr<WaitableEvent> hibernation_started_event =
-      WTF::MakeUnique<WaitableEvent>();
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
-  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating())
-      .WillOnce(testing::Invoke(hibernation_started_event.get(),
-                                &WaitableEvent::Signal));
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), true);
-  hibernation_started_event->Wait();
+  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
+  bridge->SetIsHidden(true);
+  platform->RunUntilIdle();
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_TRUE(bridge->IsHibernating());
@@ -732,24 +582,19 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_BackgroundRenderingWhileHibernating)
               ReportHibernationEvent(
                   Canvas2DLayerBridge::
                       kHibernationEndedWithSwitchToBackgroundRendering));
-  PostAndWaitRenderingTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get());
+  DrawSomething(bridge);
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->CheckSurfaceValid());
 
   // Unhide
-  PostAndWaitSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(),
-                             false);
+  bridge->SetIsHidden(false);
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_TRUE(
       bridge->IsAccelerated());  // Becoming visible causes switch back to GPU
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->CheckSurfaceValid());
-
-  // Tear down the bridge on the thread so that 'bridge' can go out of scope
-  // without crashing due to thread checks
-  PostAndWaitDestroyBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED && CANVAS2D_BACKGROUND_RENDER_SWITCH_TO_CPU
@@ -761,15 +606,12 @@ TEST_F(
     DISABLED_BackgroundRenderingWhileHibernatingWithDeferredRenderingDisabled)
 #endif
 {
-  FakeGLES2Interface gl;
-  std::unique_ptr<WebThread> test_thread =
-      Platform::Current()->CreateThread("TestThread");
-
-  // The Canvas2DLayerBridge has to be created on the thread that will use it
-  // to avoid WeakPtr thread check issues.
-  Canvas2DLayerBridgePtr bridge;
-  PostAndWaitCreateBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge, &gl,
-                              this);
+  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, kNonOpaque,
+      Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
+  bridge->DontUseIdleSchedulingForTesting();
+  DrawSomething(bridge);
   MockImageBuffer mock_image_buffer;
   EXPECT_CALL(mock_image_buffer, ResetCanvas(_)).Times(AnyNumber());
   bridge->SetImageBuffer(&mock_image_buffer);
@@ -781,16 +623,12 @@ TEST_F(
   bridge->SetLoggerForTesting(std::move(mock_logger));
 
   // Test entering hibernation
-  std::unique_ptr<WaitableEvent> hibernation_started_event =
-      WTF::MakeUnique<WaitableEvent>();
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
-  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating())
-      .WillOnce(testing::Invoke(hibernation_started_event.get(),
-                                &WaitableEvent::Signal));
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), true);
-  hibernation_started_event->Wait();
+  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
+  bridge->SetIsHidden(true);
+  platform->RunUntilIdle();
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   ::testing::Mock::VerifyAndClearExpectations(&mock_image_buffer);
   EXPECT_FALSE(bridge->IsAccelerated());
@@ -803,7 +641,7 @@ TEST_F(
                   Canvas2DLayerBridge::
                       kHibernationEndedWithSwitchToBackgroundRendering));
   EXPECT_CALL(mock_image_buffer, ResetCanvas(_)).Times(AtLeast(1));
-  PostAndWaitRenderingTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get());
+  DrawSomething(bridge);
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   ::testing::Mock::VerifyAndClearExpectations(&mock_image_buffer);
   EXPECT_FALSE(bridge->IsAccelerated());
@@ -812,19 +650,13 @@ TEST_F(
 
   // Unhide
   EXPECT_CALL(mock_image_buffer, ResetCanvas(_)).Times(AtLeast(1));
-  PostAndWaitSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(),
-                             false);
+  bridge->SetIsHidden(false);
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   ::testing::Mock::VerifyAndClearExpectations(&mock_image_buffer);
   EXPECT_TRUE(
       bridge->IsAccelerated());  // Becoming visible causes switch back to GPU
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->CheckSurfaceValid());
-
-  // Tear down the bridge on the thread so that 'bridge' can go out of scope
-  // without crashing due to thread checks
-  EXPECT_CALL(mock_image_buffer, ResetCanvas(_)).Times(AnyNumber());
-  PostAndWaitDestroyBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED && CANVAS2D_BACKGROUND_RENDER_SWITCH_TO_CPU
@@ -834,15 +666,13 @@ TEST_F(Canvas2DLayerBridgeTest,
        DISABLED_DisableDeferredRenderingWhileHibernating)
 #endif
 {
-  FakeGLES2Interface gl;
-  std::unique_ptr<WebThread> test_thread =
-      Platform::Current()->CreateThread("TestThread");
+  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, kNonOpaque,
+      Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
+  bridge->DontUseIdleSchedulingForTesting();
+  DrawSomething(bridge);
 
-  // The Canvas2DLayerBridge has to be created on the thread that will use it
-  // to avoid WeakPtr thread check issues.
-  Canvas2DLayerBridgePtr bridge;
-  PostAndWaitCreateBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge, &gl,
-                              this);
   MockImageBuffer mock_image_buffer;
   EXPECT_CALL(mock_image_buffer, ResetCanvas(_)).Times(AnyNumber());
   bridge->SetImageBuffer(&mock_image_buffer);
@@ -853,16 +683,12 @@ TEST_F(Canvas2DLayerBridgeTest,
   bridge->SetLoggerForTesting(std::move(mock_logger));
 
   // Test entering hibernation
-  std::unique_ptr<WaitableEvent> hibernation_started_event =
-      WTF::MakeUnique<WaitableEvent>();
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
-  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating())
-      .WillOnce(testing::Invoke(hibernation_started_event.get(),
-                                &WaitableEvent::Signal));
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), true);
-  hibernation_started_event->Wait();
+  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
+  bridge->SetIsHidden(true);
+  platform->RunUntilIdle();
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   ::testing::Mock::VerifyAndClearExpectations(&mock_image_buffer);
   EXPECT_FALSE(bridge->IsAccelerated());
@@ -884,8 +710,7 @@ TEST_F(Canvas2DLayerBridgeTest,
 
   // Unhide
   EXPECT_CALL(mock_image_buffer, ResetCanvas(_)).Times(AtLeast(1));
-  PostAndWaitSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(),
-                             false);
+  bridge->SetIsHidden(false);
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   ::testing::Mock::VerifyAndClearExpectations(&mock_image_buffer);
   EXPECT_TRUE(
@@ -893,10 +718,9 @@ TEST_F(Canvas2DLayerBridgeTest,
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->CheckSurfaceValid());
 
-  // Tear down the bridge on the thread so that 'bridge' can go out of scope
-  // without crashing due to thread checks
   EXPECT_CALL(mock_image_buffer, ResetCanvas(_)).Times(AnyNumber());
-  PostAndWaitDestroyBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge);
+  bridge.Clear();
+  ::testing::Mock::VerifyAndClearExpectations(&mock_image_buffer);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED
@@ -905,15 +729,12 @@ TEST_F(Canvas2DLayerBridgeTest, TeardownWhileHibernating)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernating)
 #endif
 {
-  FakeGLES2Interface gl;
-  std::unique_ptr<WebThread> test_thread =
-      Platform::Current()->CreateThread("TestThread");
-
-  // The Canvas2DLayerBridge has to be created on the thread that will use it
-  // to avoid WeakPtr thread check issues.
-  Canvas2DLayerBridgePtr bridge;
-  PostAndWaitCreateBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge, &gl,
-                              this);
+  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, kNonOpaque,
+      Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
+  bridge->DontUseIdleSchedulingForTesting();
+  DrawSomething(bridge);
 
   // Register an alternate Logger for tracking hibernation events
   std::unique_ptr<MockLogger> mock_logger = WTF::WrapUnique(new MockLogger);
@@ -921,16 +742,12 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernating)
   bridge->SetLoggerForTesting(std::move(mock_logger));
 
   // Test entering hibernation
-  std::unique_ptr<WaitableEvent> hibernation_started_event =
-      WTF::MakeUnique<WaitableEvent>();
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
-  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating())
-      .WillOnce(testing::Invoke(hibernation_started_event.get(),
-                                &WaitableEvent::Signal));
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), true);
-  hibernation_started_event->Wait();
+  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
+  bridge->SetIsHidden(true);
+  platform->RunUntilIdle();
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_TRUE(bridge->IsHibernating());
@@ -940,7 +757,8 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernating)
   EXPECT_CALL(*mock_logger_ptr,
               ReportHibernationEvent(
                   Canvas2DLayerBridge::kHibernationEndedWithTeardown));
-  PostAndWaitDestroyBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge);
+  bridge.Clear();
+  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED
@@ -949,15 +767,12 @@ TEST_F(Canvas2DLayerBridgeTest, SnapshotWhileHibernating)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_SnapshotWhileHibernating)
 #endif
 {
-  FakeGLES2Interface gl;
-  std::unique_ptr<WebThread> test_thread =
-      Platform::Current()->CreateThread("TestThread");
-
-  // The Canvas2DLayerBridge has to be created on the thread that will use it
-  // to avoid WeakPtr thread check issues.
-  Canvas2DLayerBridgePtr bridge;
-  PostAndWaitCreateBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge, &gl,
-                              this);
+  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, kNonOpaque,
+      Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
+  bridge->DontUseIdleSchedulingForTesting();
+  DrawSomething(bridge);
 
   // Register an alternate Logger for tracking hibernation events
   std::unique_ptr<MockLogger> mock_logger = WTF::WrapUnique(new MockLogger);
@@ -965,26 +780,22 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_SnapshotWhileHibernating)
   bridge->SetLoggerForTesting(std::move(mock_logger));
 
   // Test entering hibernation
-  std::unique_ptr<WaitableEvent> hibernation_started_event =
-      WTF::MakeUnique<WaitableEvent>();
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
-  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating())
-      .WillOnce(testing::Invoke(hibernation_started_event.get(),
-                                &WaitableEvent::Signal));
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), true);
-  hibernation_started_event->Wait();
+  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
+  bridge->SetIsHidden(true);
+  platform->RunUntilIdle();
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_TRUE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->CheckSurfaceValid());
 
   // Take a snapshot and verify that it is not accelerated due to hibernation
-  sk_sp<SkImage> image =
+  RefPtr<StaticBitmapImage> image =
       bridge->NewImageSnapshot(kPreferAcceleration, kSnapshotReasonUnitTests);
-  EXPECT_FALSE(image->isTextureBacked());
-  image.reset();
+  EXPECT_FALSE(image->IsTextureBacked());
+  image.Clear();
 
   // Verify that taking a snapshot did not affect the state of bridge
   EXPECT_FALSE(bridge->IsAccelerated());
@@ -992,18 +803,11 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_SnapshotWhileHibernating)
   EXPECT_TRUE(bridge->CheckSurfaceValid());
 
   // End hibernation normally
-  std::unique_ptr<WaitableEvent> hibernation_ended_event =
-      WTF::MakeUnique<WaitableEvent>();
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationEndedNormally))
-      .WillOnce(testing::InvokeWithoutArgs(hibernation_ended_event.get(),
-                                           &WaitableEvent::Signal));
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), false);
-  hibernation_ended_event->Wait();
-
-  // Tear down the bridge while hibernating
-  PostAndWaitDestroyBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge);
+      .Times(1);
+  bridge->SetIsHidden(false);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED
@@ -1012,15 +816,12 @@ TEST_F(Canvas2DLayerBridgeTest, TeardownWhileHibernationIsPending)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernationIsPending)
 #endif
 {
-  FakeGLES2Interface gl;
-  std::unique_ptr<WebThread> test_thread =
-      Platform::Current()->CreateThread("TestThread");
-
-  // The Canvas2DLayerBridge has to be created on the thread that will use it
-  // to avoid WeakPtr thread check issues.
-  Canvas2DLayerBridgePtr bridge;
-  PostAndWaitCreateBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge, &gl,
-                              this);
+  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, kNonOpaque,
+      Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
+  bridge->DontUseIdleSchedulingForTesting();
+  DrawSomething(bridge);
 
   // Register an alternate Logger for tracking hibernation events
   std::unique_ptr<MockLogger> mock_logger = WTF::WrapUnique(new MockLogger);
@@ -1028,30 +829,18 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernationIsPending)
   bridge->SetLoggerForTesting(std::move(mock_logger));
 
   // Test entering hibernation
-  std::unique_ptr<WaitableEvent> hibernation_scheduled_event =
-      WTF::MakeUnique<WaitableEvent>();
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), true,
-                      hibernation_scheduled_event.get());
-  PostDestroyBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge);
+  bridge->SetIsHidden(true);
+  bridge.Clear();
   // In production, we would expect a
   // HibernationAbortedDueToDestructionWhileHibernatePending event to be
   // fired, but that signal is lost in the unit test due to no longer having
   // a bridge to hold the mockLogger.
-  hibernation_scheduled_event->Wait();
-  // Once we know the hibernation task is scheduled, we can schedule a fence.
-  // Assuming tasks are guaranteed to run in the order they were
-  // submitted, this fence will guarantee the attempt to hibernate runs to
-  // completion before the thread is destroyed.
+  platform->RunUntilIdle();
   // This test passes by not crashing, which proves that the WeakPtr logic
   // is sound.
-  std::unique_ptr<WaitableEvent> fence_event = WTF::MakeUnique<WaitableEvent>();
-  test_thread->GetWebTaskRunner()->PostTask(
-      BLINK_FROM_HERE,
-      WTF::Bind(&WaitableEvent::Signal, WTF::Unretained(fence_event.get())));
-  fence_event->Wait();
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED
@@ -1060,15 +849,12 @@ TEST_F(Canvas2DLayerBridgeTest, HibernationAbortedDueToPendingTeardown)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToPendingTeardown)
 #endif
 {
-  FakeGLES2Interface gl;
-  std::unique_ptr<WebThread> test_thread =
-      Platform::Current()->CreateThread("TestThread");
-
-  // The Canvas2DLayerBridge has to be created on the thread that will use it
-  // to avoid WeakPtr thread check issues.
-  Canvas2DLayerBridgePtr bridge;
-  PostAndWaitCreateBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge, &gl,
-                              this);
+  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, kNonOpaque,
+      Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
+  bridge->DontUseIdleSchedulingForTesting();
+  DrawSomething(bridge);
 
   // Register an alternate Logger for tracking hibernation events
   std::unique_ptr<MockLogger> mock_logger = WTF::WrapUnique(new MockLogger);
@@ -1076,8 +862,6 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToPendingTeardown)
   bridge->SetLoggerForTesting(std::move(mock_logger));
 
   // Test entering hibernation
-  std::unique_ptr<WaitableEvent> hibernation_aborted_event =
-      WTF::MakeUnique<WaitableEvent>();
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
@@ -1085,18 +869,12 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToPendingTeardown)
       *mock_logger_ptr,
       ReportHibernationEvent(
           Canvas2DLayerBridge::kHibernationAbortedDueToPendingDestruction))
-      .WillOnce(testing::InvokeWithoutArgs(hibernation_aborted_event.get(),
-                                           &WaitableEvent::Signal));
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), true);
-  test_thread->GetWebTaskRunner()->PostTask(
-      BLINK_FROM_HERE, CrossThreadBind(&Canvas2DLayerBridge::BeginDestruction,
-                                       CrossThreadUnretained(bridge.Get())));
-  hibernation_aborted_event->Wait();
+      .Times(1);
+  bridge->SetIsHidden(true);
+  bridge->BeginDestruction();
+  platform->RunUntilIdle();
 
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-
-  // Tear down bridge on thread
-  PostAndWaitDestroyBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED
@@ -1106,15 +884,12 @@ TEST_F(Canvas2DLayerBridgeTest,
        DISABLED_HibernationAbortedDueToVisibilityChange)
 #endif
 {
-  FakeGLES2Interface gl;
-  std::unique_ptr<WebThread> test_thread =
-      Platform::Current()->CreateThread("TestThread");
-
-  // The Canvas2DLayerBridge has to be created on the thread that will use it
-  // to avoid WeakPtr thread check issues.
-  Canvas2DLayerBridgePtr bridge;
-  PostAndWaitCreateBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge, &gl,
-                              this);
+  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, kNonOpaque,
+      Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
+  bridge->DontUseIdleSchedulingForTesting();
+  DrawSomething(bridge);
 
   // Register an alternate Logger for tracking hibernation events
   std::unique_ptr<MockLogger> mock_logger = WTF::WrapUnique(new MockLogger);
@@ -1122,8 +897,6 @@ TEST_F(Canvas2DLayerBridgeTest,
   bridge->SetLoggerForTesting(std::move(mock_logger));
 
   // Test entering hibernation
-  std::unique_ptr<WaitableEvent> hibernation_aborted_event =
-      WTF::MakeUnique<WaitableEvent>();
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
@@ -1131,19 +904,14 @@ TEST_F(Canvas2DLayerBridgeTest,
       *mock_logger_ptr,
       ReportHibernationEvent(
           Canvas2DLayerBridge::kHibernationAbortedDueToVisibilityChange))
-      .WillOnce(testing::InvokeWithoutArgs(hibernation_aborted_event.get(),
-                                           &WaitableEvent::Signal));
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), true);
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), false);
-  hibernation_aborted_event->Wait();
+      .Times(1);
+  bridge->SetIsHidden(true);
+  bridge->SetIsHidden(false);
+  platform->RunUntilIdle();
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_TRUE(bridge->IsAccelerated());
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->CheckSurfaceValid());
-
-  // Tear down the bridge on the thread so that 'bridge' can go out of scope
-  // without crashing due to thread checks
-  PostAndWaitDestroyBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED
@@ -1152,41 +920,33 @@ TEST_F(Canvas2DLayerBridgeTest, HibernationAbortedDueToLostContext)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToLostContext)
 #endif
 {
-  FakeGLES2Interface gl;
-  std::unique_ptr<WebThread> test_thread =
-      Platform::Current()->CreateThread("TestThread");
-
-  // The Canvas2DLayerBridge has to be created on the thread that will use it
-  // to avoid WeakPtr thread check issues.
-  Canvas2DLayerBridgePtr bridge;
-  PostAndWaitCreateBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge, &gl,
-                              this);
+  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, kNonOpaque,
+      Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
+  bridge->DontUseIdleSchedulingForTesting();
+  DrawSomething(bridge);
 
   // Register an alternate Logger for tracking hibernation events
   std::unique_ptr<MockLogger> mock_logger = WTF::WrapUnique(new MockLogger);
   MockLogger* mock_logger_ptr = mock_logger.get();
   bridge->SetLoggerForTesting(std::move(mock_logger));
 
-  gl.SetIsContextLost(true);
+  gl_.SetIsContextLost(true);
+
   // Test entering hibernation
-  std::unique_ptr<WaitableEvent> hibernation_aborted_event =
-      WTF::MakeUnique<WaitableEvent>();
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
   EXPECT_CALL(*mock_logger_ptr,
               ReportHibernationEvent(
                   Canvas2DLayerBridge::kHibernationAbortedDueGpuContextLoss))
-      .WillOnce(testing::InvokeWithoutArgs(hibernation_aborted_event.get(),
-                                           &WaitableEvent::Signal));
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), true);
-  hibernation_aborted_event->Wait();
+      .Times(1);
+
+  bridge->SetIsHidden(true);
+  platform->RunUntilIdle();
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsHibernating());
-
-  // Tear down the bridge on the thread so that 'bridge' can go out of scope
-  // without crashing due to thread checks
-  PostAndWaitDestroyBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED
@@ -1195,15 +955,12 @@ TEST_F(Canvas2DLayerBridgeTest, PrepareMailboxWhileHibernating)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileHibernating)
 #endif
 {
-  FakeGLES2Interface gl;
-  std::unique_ptr<WebThread> test_thread =
-      Platform::Current()->CreateThread("TestThread");
-
-  // The Canvas2DLayerBridge has to be created on the thread that will use it
-  // to avoid WeakPtr thread check issues.
-  Canvas2DLayerBridgePtr bridge;
-  PostAndWaitCreateBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge, &gl,
-                              this);
+  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, kNonOpaque,
+      Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
+  bridge->DontUseIdleSchedulingForTesting();
+  DrawSomething(bridge);
 
   // Register an alternate Logger for tracking hibernation events
   std::unique_ptr<MockLogger> mock_logger = WTF::WrapUnique(new MockLogger);
@@ -1211,16 +968,12 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileHibernating)
   bridge->SetLoggerForTesting(std::move(mock_logger));
 
   // Test entering hibernation
-  std::unique_ptr<WaitableEvent> hibernation_started_event =
-      WTF::MakeUnique<WaitableEvent>();
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
-  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating())
-      .WillOnce(testing::Invoke(hibernation_started_event.get(),
-                                &WaitableEvent::Signal));
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), true);
-  hibernation_started_event->Wait();
+  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
+  bridge->SetIsHidden(true);
+  platform->RunUntilIdle();
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
 
   // Test prepareMailbox while hibernating
@@ -1235,7 +988,8 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileHibernating)
   EXPECT_CALL(*mock_logger_ptr,
               ReportHibernationEvent(
                   Canvas2DLayerBridge::kHibernationEndedWithTeardown));
-  PostAndWaitDestroyBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge);
+  bridge.Clear();
+  ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED && CANVAS2D_BACKGROUND_RENDER_SWITCH_TO_CPU
@@ -1244,15 +998,11 @@ TEST_F(Canvas2DLayerBridgeTest, PrepareMailboxWhileBackgroundRendering)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
 #endif
 {
-  FakeGLES2Interface gl;
-  std::unique_ptr<WebThread> test_thread =
-      Platform::Current()->CreateThread("TestThread");
-
-  // The Canvas2DLayerBridge has to be created on the thread that will use it
-  // to avoid WeakPtr thread check issues.
-  Canvas2DLayerBridgePtr bridge;
-  PostAndWaitCreateBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge, &gl,
-                              this);
+  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, kNonOpaque,
+      Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams())));
+  DrawSomething(bridge);
 
   // Register an alternate Logger for tracking hibernation events
   std::unique_ptr<MockLogger> mock_logger = WTF::WrapUnique(new MockLogger);
@@ -1265,11 +1015,9 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
-  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating())
-      .WillOnce(testing::Invoke(hibernation_started_event.get(),
-                                &WaitableEvent::Signal));
-  PostSetIsHiddenTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get(), true);
-  hibernation_started_event->Wait();
+  EXPECT_CALL(*mock_logger_ptr, DidStartHibernating()).Times(1);
+  bridge->SetIsHidden(true);
+  platform->RunUntilIdle();
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
 
   // Rendering in the background -> temp switch to SW
@@ -1277,7 +1025,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
               ReportHibernationEvent(
                   Canvas2DLayerBridge::
                       kHibernationEndedWithSwitchToBackgroundRendering));
-  PostAndWaitRenderingTask(BLINK_FROM_HERE, test_thread.get(), bridge.Get());
+  DrawSomething(bridge);
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_FALSE(bridge->IsHibernating());
@@ -1289,10 +1037,6 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
   EXPECT_FALSE(
       bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback));
   EXPECT_TRUE(bridge->CheckSurfaceValid());
-
-  // Tear down the bridge on the thread so that 'bridge' can go out of scope
-  // without crashing due to thread checks
-  PostAndWaitDestroyBridgeTask(BLINK_FROM_HERE, test_thread.get(), &bridge);
 }
 
 #if USE_IOSURFACE_FOR_2D_CANVAS
@@ -1301,17 +1045,14 @@ TEST_F(Canvas2DLayerBridgeTest, DeleteIOSurfaceAfterTeardown)
 TEST_F(Canvas2DLayerBridgeTest, DISABLED_DeleteIOSurfaceAfterTeardown)
 #endif
 {
-  FakeGLES2InterfaceWithImageSupport gl;
   ScopedTestingPlatformSupport<FakePlatformSupport> platform;
-  std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
-      WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
 
   viz::TextureMailbox texture_mailbox;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
 
   {
     Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
-        std::move(context_provider), IntSize(300, 150), 0, kNonOpaque,
+        IntSize(300, 150), 0, kNonOpaque,
         Canvas2DLayerBridge::kForceAccelerationForTesting,
         CanvasColorParams())));
     bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback);
@@ -1320,8 +1061,8 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_DeleteIOSurfaceAfterTeardown)
   bool lost_resource = false;
   release_callback->Run(gpu::SyncToken(), lost_resource);
 
-  EXPECT_EQ(1u, gl.CreateImageCount());
-  EXPECT_EQ(1u, gl.DestroyImageCount());
+  EXPECT_EQ(1u, gl_.CreateImageCount());
+  EXPECT_EQ(1u, gl_.DestroyImageCount());
 }
 
 class FlushMockGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
@@ -1330,58 +1071,54 @@ class FlushMockGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
 };
 
 TEST_F(Canvas2DLayerBridgeTest, NoUnnecessaryFlushes) {
-  FlushMockGLES2Interface gl;
-  std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
-      WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
-
-  EXPECT_CALL(gl, Flush()).Times(0);
+  EXPECT_CALL(gl_, Flush()).Times(0);
   Canvas2DLayerBridgePtr bridge(AdoptRef(new Canvas2DLayerBridge(
-      std::move(context_provider), IntSize(300, 150), 0, kNonOpaque,
+      IntSize(300, 150), 0, kNonOpaque,
       Canvas2DLayerBridge::kForceAccelerationForTesting, CanvasColorParams())));
   EXPECT_FALSE(bridge->HasRecordedDrawCommands());
-  ::testing::Mock::VerifyAndClearExpectations(&gl);
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl, Flush()).Times(0);
+  EXPECT_CALL(gl_, Flush()).Times(0);
   bridge->DidDraw(FloatRect(0, 0, 1, 1));
   EXPECT_TRUE(bridge->HasRecordedDrawCommands());
-  ::testing::Mock::VerifyAndClearExpectations(&gl);
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl, Flush()).Times(1);
+  EXPECT_CALL(gl_, Flush()).Times(1);
   bridge->FlushGpu();
   EXPECT_FALSE(bridge->HasRecordedDrawCommands());
-  ::testing::Mock::VerifyAndClearExpectations(&gl);
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl, Flush()).Times(0);
+  EXPECT_CALL(gl_, Flush()).Times(0);
   bridge->DidDraw(FloatRect(0, 0, 1, 1));
   EXPECT_TRUE(bridge->HasRecordedDrawCommands());
-  ::testing::Mock::VerifyAndClearExpectations(&gl);
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl, Flush()).Times(1);
+  EXPECT_CALL(gl_, Flush()).Times(1);
   bridge->FlushGpu();
   EXPECT_FALSE(bridge->HasRecordedDrawCommands());
-  ::testing::Mock::VerifyAndClearExpectations(&gl);
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // No flush because already flushed since last draw
-  EXPECT_CALL(gl, Flush()).Times(0);
+  EXPECT_CALL(gl_, Flush()).Times(0);
   bridge->FlushGpu();
   EXPECT_FALSE(bridge->HasRecordedDrawCommands());
-  ::testing::Mock::VerifyAndClearExpectations(&gl);
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl, Flush()).Times(0);
+  EXPECT_CALL(gl_, Flush()).Times(0);
   bridge->DidDraw(FloatRect(0, 0, 1, 1));
   EXPECT_TRUE(bridge->HasRecordedDrawCommands());
-  ::testing::Mock::VerifyAndClearExpectations(&gl);
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Flushes recording, but not the gpu
-  EXPECT_CALL(gl, Flush()).Times(0);
+  EXPECT_CALL(gl_, Flush()).Times(0);
   bridge->Flush();
   EXPECT_FALSE(bridge->HasRecordedDrawCommands());
-  ::testing::Mock::VerifyAndClearExpectations(&gl);
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl, Flush()).Times(1);
+  EXPECT_CALL(gl_, Flush()).Times(1);
   bridge->FlushGpu();
   EXPECT_FALSE(bridge->HasRecordedDrawCommands());
-  ::testing::Mock::VerifyAndClearExpectations(&gl);
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
 }
 
 }  // namespace blink

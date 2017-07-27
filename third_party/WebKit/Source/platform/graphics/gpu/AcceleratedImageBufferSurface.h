@@ -31,14 +31,17 @@
 #ifndef AcceleratedImageBufferSurface_h
 #define AcceleratedImageBufferSurface_h
 
+#include <memory>
 #include "platform/graphics/ImageBufferSurface.h"
 #include "platform/graphics/paint/PaintCanvas.h"
+#include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include <memory>
 
 namespace blink {
+
+class WebGraphicsContext3DProviderWrapper;
 
 class PLATFORM_EXPORT AcceleratedImageBufferSurface
     : public ImageBufferSurface {
@@ -54,7 +57,8 @@ class PLATFORM_EXPORT AcceleratedImageBufferSurface
   PaintCanvas* Canvas() override { return canvas_.get(); }
   bool IsValid() const override;
   bool IsAccelerated() const override { return true; }
-  sk_sp<SkImage> NewImageSnapshot(AccelerationHint, SnapshotReason) override;
+  RefPtr<StaticBitmapImage> NewImageSnapshot(AccelerationHint,
+                                             SnapshotReason) override;
   GLuint GetBackingTextureHandleForOverwrite() override;
   bool WritePixels(const SkImageInfo& orig_info,
                    const void* pixels,
@@ -63,8 +67,8 @@ class PLATFORM_EXPORT AcceleratedImageBufferSurface
                    int y) override;
 
  private:
-  unsigned context_id_;
-  sk_sp<SkSurface> surface_;  // Uses m_contextProvider.
+  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
+  sk_sp<SkSurface> surface_;
   std::unique_ptr<PaintCanvas> canvas_;
 };
 

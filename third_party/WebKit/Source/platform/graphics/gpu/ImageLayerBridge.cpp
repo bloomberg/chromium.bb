@@ -142,22 +142,15 @@ std::unique_ptr<viz::SharedBitmap> ImageLayerBridge::CreateOrRecycleBitmap() {
 void ImageLayerBridge::MailboxReleasedGpu(RefPtr<StaticBitmapImage> image,
                                           const gpu::SyncToken& token,
                                           bool lost_resource) {
-  if (image) {
+  if (image && image->IsValid()) {
     DCHECK(image->IsTextureBacked());
-    if (token.HasData()) {
-      if (image->HasMailbox()) {
-        image->UpdateSyncToken(token);
-      } else {
-        // Wait on sync token now because SkiaTextureHolder does not know
-        // about sync tokens.
-        gpu::gles2::GLES2Interface* shared_gl = SharedGpuContext::Gl();
-        if (shared_gl)
-          shared_gl->WaitSyncTokenCHROMIUM(token.GetConstData());
-      }
+    if (token.HasData() && image->ContextProvider() &&
+        image->ContextProvider()->ContextGL()) {
+      image->ContextProvider()->ContextGL()->WaitSyncTokenCHROMIUM(
+          token.GetConstData());
     }
   }
-  // let 'image' go out of scope to finalize the release. The
-  // destructor will wait on sync token before deleting resource.
+  // let 'image' go out of scope to release gpu resources.
 }
 
 void ImageLayerBridge::MailboxReleasedSoftware(
