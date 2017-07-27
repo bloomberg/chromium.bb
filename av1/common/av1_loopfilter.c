@@ -1910,8 +1910,8 @@ static void filter_selectively_vert(
         orig_pos[i] = -1;
       }
 
-      int direct = pick_min_grad_direct(src, left_filt_len, row, col, width,
-                                        height, pitch, 1, 0);
+      const int direct = pick_min_grad_direct(src, left_filt_len, row, col,
+                                              width, height, pitch, 1, 0);
 
       pick_filter_block_vert(src, block, orig_pos, left_filt_len, row, col,
                              width, height, pitch, pivot, line_length, 1,
@@ -1940,8 +1940,8 @@ static void filter_selectively_vert(
         orig_pos[i] = -1;
       }
 
-      int direct = pick_min_grad_direct(src, 4, row, col + 4, width, height,
-                                        pitch, 1, 0);
+      const int direct = pick_min_grad_direct(src, 4, row, col + 4, width,
+                                              height, pitch, 1, 0);
 
       pick_filter_block_vert(src, block, orig_pos, 4, row, col + 4, width,
                              height, pitch, pivot, line_length, 1, direct);
@@ -2927,7 +2927,7 @@ static void av1_filter_block_plane_vert(
 
       if (params.filter_length) {
         const int filt_len = params.filter_length == 16 ? 8 : 4;
-        int direct =
+        const int direct =
             pick_min_grad_direct(src, filt_len, curr_y, curr_x, width, height,
                                  dst_stride, unit, vert_or_horz);
 
@@ -2987,7 +2987,7 @@ static void av1_filter_block_plane_vert(
           orig_pos[i] = -1;
         }
 
-        int direct =
+        const int direct =
             pick_min_grad_direct(src, 4, curr_y, curr_x + 4, width, height,
                                  dst_stride, unit, vert_or_horz);
 
@@ -3113,7 +3113,7 @@ static void av1_filter_block_plane_horz(
 
       if (params.filter_length) {
         const int filt_len = params.filter_length == 16 ? 8 : 4;
-        int direct =
+        const int direct =
             pick_min_grad_direct(src, filt_len, curr_y, curr_x, width, height,
                                  dst_stride, unit, vert_or_horz);
 
@@ -3173,7 +3173,7 @@ static void av1_filter_block_plane_horz(
           orig_pos[i] = -1;
         }
 
-        int direct =
+        const int direct =
             pick_min_grad_direct(src, 4, curr_y + 4, curr_x, width, height,
                                  dst_stride, unit, vert_or_horz);
 
@@ -3269,8 +3269,11 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
   const int plane_end = plane_start + 1;
 #else
   const int num_planes = y_only ? 1 : MAX_MB_PLANE;
+  const int plane_start = 0;
+  const int plane_end = num_planes;
 #endif  // CONFIG_UV_LVL
   int mi_row, mi_col;
+  int plane;
 
 #if CONFIG_VAR_TX || CONFIG_EXT_PARTITION || CONFIG_EXT_PARTITION_TYPES || \
     CONFIG_CB4X4
@@ -3288,15 +3291,9 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
                                                      << TX_UNIT_HIGH_LOG2);
 #endif  // CONFIG_VAR_TX
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += cm->mib_size) {
-      int plane;
-
       av1_setup_dst_planes(planes, cm->sb_size, frame_buffer, mi_row, mi_col);
 
-#if CONFIG_UV_LVL
       for (plane = plane_start; plane < plane_end; ++plane) {
-#else
-      for (plane = 0; plane < num_planes; ++plane) {
-#endif  // CONFIG_UV_LVL
         av1_filter_block_plane_non420_ver(cm, &planes[plane], mi + mi_col,
                                           mi_row, mi_col, plane);
         av1_filter_block_plane_non420_hor(cm, &planes[plane], mi + mi_col,
@@ -3310,13 +3307,8 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
   for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
       av1_setup_dst_planes(planes, cm->sb_size, frame_buffer, mi_row, mi_col);
-#if CONFIG_UV_LVL
-      for (int plane_idx = plane_start; plane_idx < plane_end; ++plane_idx) {
-#else
-      for (int plane_idx = 0; plane_idx < num_planes; plane_idx += 1) {
-#endif  // CONFIG_UV_LVL
-        av1_filter_block_plane_vert(cm, plane_idx, &planes[plane_idx], mi_row,
-                                    mi_col);
+      for (plane = plane_start; plane < plane_end; ++plane) {
+        av1_filter_block_plane_vert(cm, plane, &planes[plane], mi_row, mi_col);
       }
     }
   }
@@ -3325,13 +3317,8 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
   for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
       av1_setup_dst_planes(planes, cm->sb_size, frame_buffer, mi_row, mi_col);
-#if CONFIG_UV_LVL
-      for (int plane_idx = plane_start; plane_idx < plane_end; ++plane_idx) {
-#else
-      for (int plane_idx = 0; plane_idx < num_planes; plane_idx += 1) {
-#endif  // CONFIG_UV_LVL
-        av1_filter_block_plane_horz(cm, plane_idx, &planes[plane_idx], mi_row,
-                                    mi_col);
+      for (plane = plane_start; plane < plane_end; ++plane) {
+        av1_filter_block_plane_horz(cm, plane, &planes[plane], mi_row, mi_col);
       }
     }
   }
@@ -3344,9 +3331,8 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
       av1_setup_dst_planes(planes, cm->sb_size, frame_buffer, mi_row, mi_col);
       // filter all vertical edges in every 64x64 super block
-      for (int plane_idx = 0; plane_idx < num_planes; plane_idx += 1) {
-        av1_filter_block_plane_vert(cm, plane_idx, planes + plane_idx, mi_row,
-                                    mi_col);
+      for (plane = plane_start; plane < plane_end; plane += 1) {
+        av1_filter_block_plane_vert(cm, plane, &planes[plane], mi_row, mi_col);
       }
     }
   }
@@ -3354,9 +3340,8 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
       av1_setup_dst_planes(planes, cm->sb_size, frame_buffer, mi_row, mi_col);
       // filter all horizontal edges in every 64x64 super block
-      for (int plane_idx = 0; plane_idx < num_planes; plane_idx += 1) {
-        av1_filter_block_plane_horz(cm, plane_idx, planes + plane_idx, mi_row,
-                                    mi_col);
+      for (plane = plane_start; plane < plane_end; plane += 1) {
+        av1_filter_block_plane_horz(cm, plane, &planes[plane], mi_row, mi_col);
       }
     }
   }
@@ -3376,8 +3361,6 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
   for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
     MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride;
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
-      int plane;
-
       av1_setup_dst_planes(planes, cm->sb_size, frame_buffer, mi_row, mi_col);
 
       // TODO(JBB): Make setup_mask work for non 420.
