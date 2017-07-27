@@ -19,11 +19,8 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/task_runner.h"
-#include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/resource_context_impl.h"
@@ -121,8 +118,8 @@ net::NetLogEventType RequestJobResultToNetEventType(
   return n::FAILED;
 }
 
-std::vector<int64_t> GetFileSizesOnBlockingPool(
-    std::vector<base::FilePath> file_paths) {
+// Does file IO. Use with base::MayBlock().
+std::vector<int64_t> GetFileSizes(std::vector<base::FilePath> file_paths) {
   std::vector<int64_t> sizes;
   sizes.reserve(file_paths.size());
   for (const base::FilePath& path : file_paths) {
@@ -158,13 +155,12 @@ class ServiceWorkerURLRequestJob::FileSizeResolver {
                            phase_ == Phase::SUCCESS);
   }
 
-  void Resolve(base::TaskRunner* file_runner,
-               const base::Callback<void(bool)>& callback) {
+  void Resolve(base::OnceCallback<void(bool /* success */)> callback) {
     DCHECK_EQ(static_cast<int>(Phase::INITIAL), static_cast<int>(phase_));
     DCHECK(file_elements_.empty());
     phase_ = Phase::WAITING;
     body_ = owner_->body_;
-    callback_ = callback;
+    callback_ = std::move(callback);
 
     std::vector<base::FilePath> file_paths;
     for (ResourceRequestBody::Element& element : *body_->elements_mutable()) {
@@ -179,10 +175,11 @@ class ServiceWorkerURLRequestJob::FileSizeResolver {
       return;
     }
 
-    PostTaskAndReplyWithResult(
-        file_runner, FROM_HERE,
-        base::Bind(&GetFileSizesOnBlockingPool, base::Passed(&file_paths)),
-        base::Bind(
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+        base::BindOnce(&GetFileSizes, std::move(file_paths)),
+        base::BindOnce(
             &ServiceWorkerURLRequestJob::FileSizeResolver::OnFileSizesResolved,
             weak_factory_.GetWeakPtr()));
   }
@@ -209,8 +206,8 @@ class ServiceWorkerURLRequestJob::FileSizeResolver {
   void Complete(bool success) {
     DCHECK_EQ(static_cast<int>(Phase::WAITING), static_cast<int>(phase_));
     phase_ = success ? Phase::SUCCESS : Phase::FAIL;
-    // Destroys |this|, so we use a copy.
-    base::ResetAndReturn(&callback_).Run(success);
+    // Destroys |this|.
+    std::move(callback_).Run(success);
   }
 
   // Owns and must outlive |this|.
@@ -218,7 +215,7 @@ class ServiceWorkerURLRequestJob::FileSizeResolver {
 
   scoped_refptr<ResourceRequestBody> body_;
   std::vector<ResourceRequestBody::Element*> file_elements_;
-  base::Callback<void(bool)> callback_;
+  base::OnceCallback<void(bool /* success */)> callback_;
   Phase phase_ = Phase::INITIAL;
   base::WeakPtrFactory<FileSizeResolver> weak_factory_;
 
@@ -543,11 +540,9 @@ void ServiceWorkerURLRequestJob::StartRequest() {
       if (HasRequestBody()) {
         DCHECK(!file_size_resolver_);
         file_size_resolver_.reset(new FileSizeResolver(this));
-        file_size_resolver_->Resolve(
-            BrowserThread::GetBlockingPool(),
-            base::Bind(
-                &ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved,
-                GetWeakPtr()));
+        file_size_resolver_->Resolve(base::BindOnce(
+            &ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved,
+            GetWeakPtr()));
         return;
       }
 
