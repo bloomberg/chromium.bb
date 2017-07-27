@@ -71,10 +71,10 @@ class CC_PAINT_EXPORT PaintImage {
   PaintImage CloneWithSkImage(sk_sp<SkImage> new_image) const;
 
  private:
-  Id id_;
+  Id id_ = kUnknownStableId;
   sk_sp<SkImage> sk_image_;
-  AnimationType animation_type_;
-  CompletionState completion_state_;
+  AnimationType animation_type_ = AnimationType::UNKNOWN;
+  CompletionState completion_state_ = CompletionState::UNKNOWN;
   // The number of frames known to exist in this image (eg number of GIF frames
   // loaded). 0 indicates either unknown or only a single frame, both of which
   // should be treated similarly.
