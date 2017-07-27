@@ -89,22 +89,22 @@ TEST_F(StructTraitsTest, PointerEvent) {
       {ET_POINTER_DOWN, gfx::Point(10, 10), gfx::Point(20, 30), EF_NONE, 0,
        PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
                       MouseEvent::kMousePointerId),
-       base::TimeTicks()},
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(201)},
       {ET_POINTER_MOVED, gfx::Point(1, 5), gfx::Point(5, 1),
        EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON,
        PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
                       MouseEvent::kMousePointerId),
-       base::TimeTicks()},
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(202)},
       {ET_POINTER_UP, gfx::Point(411, 130), gfx::Point(20, 30),
        EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON, EF_RIGHT_MOUSE_BUTTON,
        PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
                       MouseEvent::kMousePointerId),
-       base::TimeTicks()},
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(203)},
       {ET_POINTER_EXITED, gfx::Point(10, 10), gfx::Point(20, 30),
        EF_BACK_MOUSE_BUTTON, 0,
        PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
                       MouseEvent::kMousePointerId),
-       base::TimeTicks()},
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(204)},
 
       // Touch pointer events:
       {ET_POINTER_DOWN, gfx::Point(10, 10), gfx::Point(20, 30), EF_NONE, 0,
@@ -115,7 +115,7 @@ TEST_F(StructTraitsTest, PointerEvent) {
                       /* force */ 3.0f,
                       /* tilt_x */ 4.0f,
                       /* tilt_y */ 5.0f),
-       base::TimeTicks()},
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(205)},
       {ET_POINTER_CANCELLED, gfx::Point(120, 120), gfx::Point(2, 3), EF_NONE, 0,
        PointerDetails(EventPointerType::POINTER_TYPE_TOUCH,
                       /* pointer_id*/ 2,
@@ -124,7 +124,7 @@ TEST_F(StructTraitsTest, PointerEvent) {
                       /* force */ 3.5f,
                       /* tilt_x */ 2.5f,
                       /* tilt_y */ 0.5f),
-       base::TimeTicks()},
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(206)},
   };
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
@@ -144,18 +144,22 @@ TEST_F(StructTraitsTest, PointerEvent) {
               output_ptr_event->changed_button_flags());
     EXPECT_EQ(kTestData[i].pointer_details(),
               output_ptr_event->pointer_details());
+    EXPECT_EQ(kTestData[i].time_stamp(), output_ptr_event->time_stamp());
   }
 }
 
 TEST_F(StructTraitsTest, PointerWheelEvent) {
   MouseWheelEvent kTestData[] = {
       {gfx::Vector2d(11, 15), gfx::Point(3, 4), gfx::Point(40, 30),
-       base::TimeTicks(), EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON},
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(301),
+       EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON},
       {gfx::Vector2d(-5, 3), gfx::Point(40, 3), gfx::Point(4, 0),
-       base::TimeTicks(), EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(302),
+       EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
        EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON},
       {gfx::Vector2d(1, 0), gfx::Point(3, 4), gfx::Point(40, 30),
-       base::TimeTicks(), EF_NONE, EF_NONE},
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(303), EF_NONE,
+       EF_NONE},
   };
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
@@ -172,6 +176,7 @@ TEST_F(StructTraitsTest, PointerWheelEvent) {
               output_pointer_event->root_location());
     EXPECT_EQ(kTestData[i].offset(),
               output_pointer_event->pointer_details().offset);
+    EXPECT_EQ(kTestData[i].time_stamp(), output_pointer_event->time_stamp());
   }
 }
 
