@@ -318,10 +318,6 @@ int WebViewGuest::GetOrGenerateRulesRegistryID(
   return rules_registry_id;
 }
 
-bool WebViewGuest::CanRunInDetachedState() const {
-  return true;
-}
-
 void WebViewGuest::CreateWebContents(
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {

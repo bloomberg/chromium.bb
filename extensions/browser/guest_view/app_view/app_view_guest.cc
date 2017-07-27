@@ -156,10 +156,6 @@ bool AppViewGuest::CheckMediaAccessPermission(WebContents* web_contents,
       web_contents, security_origin, type, guest_extension);
 }
 
-bool AppViewGuest::CanRunInDetachedState() const {
-  return true;
-}
-
 void AppViewGuest::CreateWebContents(
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {

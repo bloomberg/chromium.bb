@@ -166,7 +166,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   void SetFullscreenState(bool is_fullscreen);
 
   // GuestViewBase implementation.
-  bool CanRunInDetachedState() const final;
   void CreateWebContents(const base::DictionaryValue& create_params,
                          const WebContentsCreatedCallback& callback) final;
   void DidAttachToEmbedder() final;

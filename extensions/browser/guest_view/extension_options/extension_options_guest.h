@@ -26,7 +26,6 @@ class ExtensionOptionsGuest
   ~ExtensionOptionsGuest() override;
 
   // GuestViewBase implementation.
-  bool CanRunInDetachedState() const final;
   void CreateWebContents(const base::DictionaryValue& create_params,
                          const WebContentsCreatedCallback& callback) final;
   void DidInitialize(const base::DictionaryValue& create_params) final;

@@ -155,7 +155,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // Returns whether this guest has an associated embedder.
   bool attached() const {
-    return element_instance_id_ != kInstanceIDNone;
+    return (element_instance_id_ != kInstanceIDNone) && !attach_in_progress_;
   }
 
   // Returns the instance ID of the <*view> element.
@@ -418,6 +418,12 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // |element_instance_id_| is an identifer that's unique to a particular
   // GuestViewContainer element.
   int element_instance_id_;
+
+  // |attach_in_progress_| is used to make sure that attached() doesn't return
+  // true until after DidAttach() is called, since that's when we are guaranteed
+  // that the contentWindow for cross-process-iframe based guests will become
+  // valid.
+  bool attach_in_progress_;
 
   // |initialized_| indicates whether GuestViewBase::Init has been called for
   // this object.
