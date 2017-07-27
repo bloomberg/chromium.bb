@@ -26,10 +26,11 @@
 #ifndef TextEncodingRegistry_h
 #define TextEncodingRegistry_h
 
+#include <memory>
+#include "platform/wtf/Vector.h"
 #include "platform/wtf/WTFExport.h"
 #include "platform/wtf/text/Unicode.h"
 #include "platform/wtf/text/WTFString.h"
-#include <memory>
 
 namespace WTF {
 
@@ -46,6 +47,10 @@ template <typename CharacterType>
 const char* AtomicCanonicalTextEncodingName(const CharacterType*, size_t);
 const char* AtomicCanonicalTextEncodingName(const String&);
 bool NoExtendedTextEncodingNameUsed();
+
+// Exposed for testing (via window.internals) that the set of supported
+// encodings exactly matches what is specified.
+WTF_EXPORT Vector<String> TextEncodingAliasesForTesting();
 
 #ifndef NDEBUG
 void DumpTextEncodingNameMap();

@@ -268,7 +268,7 @@ enum EffectiveConnectionType {
     DOMString getCurrentCursorInfo();
 
     readonly attribute boolean cursorUpdatePending;
-    readonly attribute boolean fakeMouseMovePending; 
+    readonly attribute boolean fakeMouseMovePending;
 
     DOMString markerTextForListItem(Element element);
 
@@ -396,4 +396,6 @@ enum EffectiveConnectionType {
 
     void setIsLowEndDevice(boolean isLowEndDevice);
     boolean isLowEndDevice();
+
+    sequence<DOMString> supportedTextEncodingLabels();
 };
