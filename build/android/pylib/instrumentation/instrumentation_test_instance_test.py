@@ -144,8 +144,10 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
     ]
 
     o._test_jar = 'path/to/test.jar'
-    o._junit4_runner_class = 'J4Runner'
-    actual_tests = o.ProcessRawTests(raw_tests)
+    o._test_runner_junit4 = 'J4Runner'
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
 
     self.assertEquals(actual_tests, expected_tests)
 
@@ -183,106 +185,10 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
 
     o._test_filter = 'org.chromium.test.SampleTest.testMethod1'
     o._test_jar = 'path/to/test.jar'
-    o._junit4_runner_class = 'J4Runner'
-    actual_tests = o.ProcessRawTests(raw_tests)
-
-    self.assertEquals(actual_tests, expected_tests)
-
-  def testGetTests_simpleGtestUnqualifiedNameFilter(self):
-    o = self.createTestInstance()
-    raw_tests = [
-      {
-        'annotations': {'Feature': {'value': ['Foo']}},
-        'class': 'org.chromium.test.SampleTest',
-        'superclass': 'java.lang.Object',
-        'methods': [
-          {
-            'annotations': {'SmallTest': None},
-            'method': 'testMethod1',
-          },
-          {
-            'annotations': {'MediumTest': None},
-            'method': 'testMethod2',
-          },
-        ],
-      }
-    ]
-
-    expected_tests = [
-      {
-        'annotations': {
-          'Feature': {'value': ['Foo']},
-          'SmallTest': None,
-        },
-        'class': 'org.chromium.test.SampleTest',
-        'is_junit4': True,
-        'method': 'testMethod1',
-      },
-    ]
-
-    o._test_filter = 'SampleTest.testMethod1'
-    o._test_jar = 'path/to/test.jar'
-    o._junit4_runner_class = 'J4Runner'
-    actual_tests = o.ProcessRawTests(raw_tests)
-
-    self.assertEquals(actual_tests, expected_tests)
-
-  def testGetTests_parameterizedTestGtestFilter(self):
-    o = self.createTestInstance()
-    raw_tests = [
-      {
-        'annotations': {'Feature': {'value': ['Foo']}},
-        'class': 'org.chromium.test.SampleTest',
-        'superclass': 'java.lang.Object',
-        'methods': [
-          {
-            'annotations': {'SmallTest': None},
-            'method': 'testMethod1',
-          },
-          {
-            'annotations': {'SmallTest': None},
-            'method': 'testMethod1__sandboxed_mode',
-          },
-        ],
-      },
-      {
-        'annotations': {'Feature': {'value': ['Bar']}},
-        'class': 'org.chromium.test.SampleTest2',
-        'superclass': 'java.lang.Object',
-        'methods': [
-          {
-            'annotations': {'SmallTest': None},
-            'method': 'testMethod1',
-          },
-        ],
-      }
-    ]
-
-    expected_tests = [
-      {
-        'annotations': {
-          'Feature': {'value': ['Foo']},
-          'SmallTest': None,
-        },
-        'class': 'org.chromium.test.SampleTest',
-        'method': 'testMethod1',
-        'is_junit4': True,
-      },
-      {
-        'annotations': {
-          'Feature': {'value': ['Foo']},
-          'SmallTest': None,
-        },
-        'class': 'org.chromium.test.SampleTest',
-        'method': 'testMethod1__sandboxed_mode',
-        'is_junit4': True,
-      },
-    ]
-
-    o._test_jar = 'path/to/test.jar'
-    o._junit4_runner_class = 'J4Runner'
-    o._test_filter = 'org.chromium.test.SampleTest.testMethod1'
-    actual_tests = o.ProcessRawTests(raw_tests)
+    o._test_runner_junit4 = 'J4Runner'
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
 
     self.assertEquals(actual_tests, expected_tests)
 
@@ -331,8 +237,10 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
 
     o._test_filter = 'org.chromium.test.SampleTest2.*'
     o._test_jar = 'path/to/test.jar'
-    o._junit4_runner_class = 'J4Runner'
-    actual_tests = o.ProcessRawTests(raw_tests)
+    o._test_runner_junit4 = 'J4Runner'
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
 
     self.assertEquals(actual_tests, expected_tests)
 
@@ -390,8 +298,10 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
 
     o._test_filter = '*-org.chromium.test.SampleTest.testMethod1'
     o._test_jar = 'path/to/test.jar'
-    o._junit4_runner_class = 'J4Runner'
-    actual_tests = o.ProcessRawTests(raw_tests)
+    o._test_runner_junit4 = 'J4Runner'
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
 
     self.assertEquals(actual_tests, expected_tests)
 
@@ -449,8 +359,10 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
 
     o._annotations = [('SmallTest', None)]
     o._test_jar = 'path/to/test.jar'
-    o._junit4_runner_class = 'J4Runner'
-    actual_tests = o.ProcessRawTests(raw_tests)
+    o._test_runner_junit4 = 'J4Runner'
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
 
     self.assertEquals(actual_tests, expected_tests)
 
@@ -499,8 +411,10 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
 
     o._excluded_annotations = [('SmallTest', None)]
     o._test_jar = 'path/to/test.jar'
-    o._junit4_runner_class = 'J4Runner'
-    actual_tests = o.ProcessRawTests(raw_tests)
+    o._test_runner_junit4 = 'J4Runner'
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
 
     self.assertEquals(actual_tests, expected_tests)
 
@@ -559,8 +473,10 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
 
     o._annotations = [('TestValue', '1')]
     o._test_jar = 'path/to/test.jar'
-    o._junit4_runner_class = 'J4Runner'
-    actual_tests = o.ProcessRawTests(raw_tests)
+    o._test_runner_junit4 = 'J4Runner'
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
 
     self.assertEquals(actual_tests, expected_tests)
 
@@ -609,74 +525,12 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
 
     o._annotations = [('Feature', 'Bar')]
     o._test_jar = 'path/to/test.jar'
-    o._junit4_runner_class = 'J4Runner'
-    actual_tests = o.ProcessRawTests(raw_tests)
+    o._test_runner_junit4 = 'J4Runner'
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
 
     self.assertEquals(actual_tests, expected_tests)
-
-  def testGetTestName(self):
-    test = {
-      'annotations': {
-        'RunWith': {'value': 'class J4Runner'},
-        'SmallTest': {},
-        'Test': {'expected': 'class org.junit.Test$None',
-                 'timeout': '0'},
-                 'UiThreadTest': {}},
-      'class': 'org.chromium.TestA',
-      'is_junit4': True,
-      'method': 'testSimple'}
-    unqualified_class_test = {
-      'class': test['class'].split('.')[-1],
-      'method': test['method']
-    }
-
-    self.assertEquals(
-        instrumentation_test_instance.GetTestName(test, sep='.'),
-        'org.chromium.TestA.testSimple')
-    self.assertEquals(
-        instrumentation_test_instance.GetTestName(
-            unqualified_class_test, sep='.'),
-        'TestA.testSimple')
-
-  def testGetUniqueTestName(self):
-    test = {
-      'annotations': {
-        'RunWith': {'value': 'class J4Runner'},
-        'SmallTest': {},
-        'Test': {'expected': 'class org.junit.Test$None', 'timeout': '0'},
-                 'UiThreadTest': {}},
-      'class': 'org.chromium.TestA',
-      'flags': ['enable_features=abc'],
-      'is_junit4': True,
-      'method': 'testSimple'}
-    self.assertEquals(
-        instrumentation_test_instance.GetUniqueTestName(
-            test, sep='.'),
-        'org.chromium.TestA.testSimple with enable_features=abc')
-
-  def testGetTestNameWithoutParameterPostfix(self):
-    test = {
-      'annotations': {
-        'RunWith': {'value': 'class J4Runner'},
-        'SmallTest': {},
-        'Test': {'expected': 'class org.junit.Test$None', 'timeout': '0'},
-                 'UiThreadTest': {}},
-      'class': 'org.chromium.TestA__sandbox_mode',
-      'flags': 'enable_features=abc',
-      'is_junit4': True,
-      'method': 'testSimple'}
-    unqualified_class_test = {
-      'class': test['class'].split('.')[-1],
-      'method': test['method']
-    }
-    self.assertEquals(
-        instrumentation_test_instance.GetTestNameWithoutParameterPostfix(
-            test, sep='.'),
-        'org.chromium.TestA')
-    self.assertEquals(
-        instrumentation_test_instance.GetTestNameWithoutParameterPostfix(
-            unqualified_class_test, sep='.'),
-        'TestA')
 
   def testGetTests_multipleAnnotationValuesRequested(self):
     o = self.createTestInstance()
@@ -735,8 +589,10 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
 
     o._annotations = [('Feature', 'Bar'), ('Feature', 'Baz')]
     o._test_jar = 'path/to/test.jar'
-    o._junit4_runner_class = 'J4Runner'
-    actual_tests = o.ProcessRawTests(raw_tests)
+    o._test_runner_junit4 = 'J4Runner'
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
 
     self.assertEquals(actual_tests, expected_tests)
 
@@ -908,8 +764,10 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
           'method': 'testMethod2'}]
 
     o._test_jar = 'path/to/test.jar'
-    o._junit4_runner_class = 'J4Runner'
-    actual_tests = o.ProcessRawTests(raw_tests)
+    o._test_runner_junit4 = 'J4Runner'
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
     self.assertEquals(actual_tests, expected_tests)
 
   def testCommandLineParameterization_skipped(self):
@@ -962,8 +820,10 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
           'method': 'testMethod2'}]
 
     o._test_jar = 'path/to/test.jar'
-    o._junit4_runner_class = 'J4Runner'
-    actual_tests = o.ProcessRawTests(raw_tests)
+    o._test_runner_junit4 = 'J4Runner'
+    with mock.patch(_INSTRUMENTATION_TEST_INSTANCE_PATH % '_GetTestsFromPickle',
+                    return_value=raw_tests):
+      actual_tests = o.GetTests()
     self.assertEquals(actual_tests, expected_tests)
 
 if __name__ == '__main__':
