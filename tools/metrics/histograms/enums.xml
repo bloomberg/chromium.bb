@@ -22771,6 +22771,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1614912400" label="enable-link-disambiguation-popup"/>
   <int value="-1611305202" label="KeepPrefetchedContentSuggestions:disabled"/>
   <int value="-1608108774" label="SuggestionsHomeModernLayout:enabled"/>
+  <int value="-1607691647" label="MojoVideoEncodeAccelerator:disabled"/>
   <int value="-1605567628" label="disable-overlay-scrollbar"/>
   <int value="-1604051051" label="SpecialLocale:disabled"/>
   <int value="-1599538279" label="enable-md-policy-page"/>
@@ -23027,6 +23028,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-790036192" label="overscroll-start-threshold"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
   <int value="-775321548" label="UseNewDoodleApi:disabled"/>
+  <int value="-772679248" label="MojoVideoEncodeAccelerator:enabled"/>
   <int value="-770319039" label="enable-touch-editing"/>
   <int value="-763759697" label="enable-audio-support-for-desktop-share"/>
   <int value="-759830869" label="enable-tab-discarding"/>

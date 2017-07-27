@@ -479,6 +479,9 @@ extern const char kMhtmlSkipNostoreAll[];
 extern const char kMojoLoadingName[];
 extern const char kMojoLoadingDescription[];
 
+extern const char kMojoVideoEncodeAcceleratorName[];
+extern const char kMojoVideoEncodeAcceleratorDescription[];
+
 extern const char kModuleScriptsName[];
 extern const char kModuleScriptsDescription[];
 
