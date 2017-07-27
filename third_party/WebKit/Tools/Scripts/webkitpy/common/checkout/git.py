@@ -107,11 +107,8 @@ class Git(object):
             cwd=path, error_handler=Executive.ignore_error).rstrip() == 'true'
 
     def find_checkout_root(self, path):
-        # "git rev-parse --show-cdup" would be another way to get to the root
-        checkout_root = self.run(['rev-parse', '--show-toplevel'], cwd=(path or './')).strip()
-        if not self._filesystem.isabs(checkout_root):  # Sometimes git returns relative paths
-            checkout_root = self._filesystem.join(path, checkout_root)
-        return checkout_root
+        """Returns the absolute path to the root of the repository."""
+        return self.run(['rev-parse', '--show-toplevel'], cwd=path).strip()
 
     @classmethod
     def read_git_config(cls, key, cwd=None, executive=None):
