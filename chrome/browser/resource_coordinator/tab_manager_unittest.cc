@@ -139,8 +139,12 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
         GURL(kTestUrl), web_contents->GetMainFrame());
   }
 
-  // Simulate creating 3 tabs and their navigations.
   void MaybeThrottleNavigations(TabManager* tab_manager) {
+    MaybeThrottleNavigations(tab_manager, 1);
+  }
+
+  // Simulate creating 3 tabs and their navigations.
+  void MaybeThrottleNavigations(TabManager* tab_manager, size_t loading_slots) {
     nav_handle1_ = CreateTabAndNavigation();
     nav_handle2_ = CreateTabAndNavigation();
     nav_handle3_ = CreateTabAndNavigation();
@@ -164,10 +168,22 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
 
     // First tab starts navigation right away because there is no tab loading.
     EXPECT_EQ(content::NavigationThrottle::PROCEED, result1);
-
-    // The other 2 tabs's navigations are delayed.
-    EXPECT_EQ(content::NavigationThrottle::DEFER, result2);
-    EXPECT_EQ(content::NavigationThrottle::DEFER, result3);
+    switch (loading_slots) {
+      case 1:
+        EXPECT_EQ(content::NavigationThrottle::DEFER, result2);
+        EXPECT_EQ(content::NavigationThrottle::DEFER, result3);
+        break;
+      case 2:
+        EXPECT_EQ(content::NavigationThrottle::PROCEED, result2);
+        EXPECT_EQ(content::NavigationThrottle::DEFER, result3);
+        break;
+      case 3:
+        EXPECT_EQ(content::NavigationThrottle::PROCEED, result2);
+        EXPECT_EQ(content::NavigationThrottle::PROCEED, result3);
+        break;
+      default:
+        NOTREACHED();
+    }
   }
 
  protected:
@@ -835,6 +851,28 @@ TEST_F(TabManagerTest, TimeoutWhenLoadingBackgroundTabs) {
   EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle1_.get()));
   EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
   EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
+}
+
+TEST_F(TabManagerTest, BackgroundTabLoadingSlots) {
+  TabManager tab_manager1;
+  MaybeThrottleNavigations(&tab_manager1, 1);
+  EXPECT_FALSE(tab_manager1.IsNavigationDelayedForTest(nav_handle1_.get()));
+  EXPECT_TRUE(tab_manager1.IsNavigationDelayedForTest(nav_handle2_.get()));
+  EXPECT_TRUE(tab_manager1.IsNavigationDelayedForTest(nav_handle3_.get()));
+
+  TabManager tab_manager2;
+  tab_manager2.SetLoadingSlotsForTest(2);
+  MaybeThrottleNavigations(&tab_manager2, 2);
+  EXPECT_FALSE(tab_manager2.IsNavigationDelayedForTest(nav_handle1_.get()));
+  EXPECT_FALSE(tab_manager2.IsNavigationDelayedForTest(nav_handle2_.get()));
+  EXPECT_TRUE(tab_manager2.IsNavigationDelayedForTest(nav_handle3_.get()));
+
+  TabManager tab_manager3;
+  tab_manager3.SetLoadingSlotsForTest(3);
+  MaybeThrottleNavigations(&tab_manager3, 3);
+  EXPECT_FALSE(tab_manager3.IsNavigationDelayedForTest(nav_handle1_.get()));
+  EXPECT_FALSE(tab_manager3.IsNavigationDelayedForTest(nav_handle2_.get()));
+  EXPECT_FALSE(tab_manager3.IsNavigationDelayedForTest(nav_handle3_.get()));
 }
 
 }  // namespace resource_coordinator

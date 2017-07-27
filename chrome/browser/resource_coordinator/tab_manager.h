@@ -226,6 +226,7 @@ class TabManager : public TabStripModelObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnWebContentsDestroyed);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnDelayedTabSelected);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TimeoutWhenLoadingBackgroundTabs);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabLoadingSlots);
   FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTest,
                            HistogramsSessionRestoreSwitchToTab);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
@@ -394,9 +395,8 @@ class TabManager : public TabStripModelObserver,
   void OnSessionRestoreStartedLoadingTabs();
   void OnSessionRestoreFinishedLoadingTabs();
 
-  // Returns true if the navigation should be delayed.
-  bool ShouldDelayNavigation(
-      content::NavigationHandle* navigation_handle) const;
+  // Returns true if TabManager can start loading next tab.
+  bool CanLoadNextTab() const;
 
   // Start |force_load_timer_| to load the next background tab if the timer
   // expires before the current tab loading is finished.
@@ -425,6 +425,11 @@ class TabManager : public TabStripModelObserver,
 
   // Trigger |force_load_timer_| to fire. Use only in tests.
   bool TriggerForceLoadTimerForTest();
+
+  // Set |loading_slots_|. Use only in tests.
+  void SetLoadingSlotsForTest(size_t loading_slots) {
+    loading_slots_ = loading_slots;
+  }
 
   // Timer to periodically update the stats of the renderers.
   base::RepeatingTimer update_timer_;
@@ -505,6 +510,10 @@ class TabManager : public TabStripModelObserver,
   // background tab when these tabs have finished loading or a background tab
   // is brought to foreground.
   std::set<content::WebContents*> loading_contents_;
+
+  // The number of loading slots that TabManager can use to load background tabs
+  // in parallel.
+  size_t loading_slots_;
 
   // GRC tab signal observer, receives tab scoped signal from GRC.
   std::unique_ptr<GRCTabSignalObserver> grc_tab_signal_observer_;
