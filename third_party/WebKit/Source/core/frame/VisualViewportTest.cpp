@@ -1074,7 +1074,8 @@ TEST_P(VisualViewportTest, TestWebViewResizeCausesViewportConstrainedLayout) {
   EXPECT_TRUE(navbar->NeedsLayout());
 }
 
-class MockWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+class VisualViewportMockWebFrameClient
+    : public FrameTestHelpers::TestWebFrameClient {
  public:
   MOCK_METHOD1(ShowContextMenu, void(const WebContextMenuData&));
   MOCK_METHOD0(DidChangeScrollOffset, void());
@@ -1110,7 +1111,7 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
   mouse_up_event.SetType(WebInputEvent::kMouseUp);
 
   WebFrameClient* old_client = WebViewImpl()->MainFrameImpl()->Client();
-  MockWebFrameClient mock_web_frame_client;
+  VisualViewportMockWebFrameClient mock_web_frame_client;
   EXPECT_CALL(mock_web_frame_client,
               ShowContextMenu(ContextMenuAtLocation(
                   mouse_down_event.PositionInWidget().x,
@@ -1153,7 +1154,7 @@ TEST_P(VisualViewportTest, TestClientNotifiedOfScrollEvents) {
   NavigateTo(base_url_ + "200-by-300.html");
 
   WebFrameClient* old_client = WebViewImpl()->MainFrameImpl()->Client();
-  MockWebFrameClient mock_web_frame_client;
+  VisualViewportMockWebFrameClient mock_web_frame_client;
   WebViewImpl()->MainFrameImpl()->SetClient(&mock_web_frame_client);
 
   WebViewImpl()->SetPageScaleFactor(2);

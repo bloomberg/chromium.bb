@@ -48,9 +48,10 @@ using ::testing::Return;
 namespace blink {
 namespace {
 
-class MockWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+class LocalFrameMockWebFrameClient
+    : public FrameTestHelpers::TestWebFrameClient {
  public:
-  ~MockWebFrameClient() override {}
+  ~LocalFrameMockWebFrameClient() override {}
 
   MOCK_METHOD0(UserAgentOverride, WebString());
 };
@@ -83,13 +84,13 @@ class LocalFrameClientImplTest : public ::testing::Test {
 
   WebLocalFrameBase* MainFrame() { return helper_.LocalMainFrame(); }
   Document& GetDocument() { return *MainFrame()->GetFrame()->GetDocument(); }
-  MockWebFrameClient& WebFrameClient() { return web_frame_client_; }
+  LocalFrameMockWebFrameClient& WebFrameClient() { return web_frame_client_; }
   LocalFrameClient& GetLocalFrameClient() {
     return *ToLocalFrameClientImpl(MainFrame()->GetFrame()->Client());
   }
 
  private:
-  MockWebFrameClient web_frame_client_;
+  LocalFrameMockWebFrameClient web_frame_client_;
   FrameTestHelpers::WebViewHelper helper_;
 };
 
