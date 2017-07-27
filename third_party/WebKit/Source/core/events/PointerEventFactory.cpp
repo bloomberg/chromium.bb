@@ -369,6 +369,16 @@ PointerEvent* PointerEventFactory::Create(
 }
 
 PointerEvent* PointerEventFactory::CreatePointerCancelEvent(
+    const WebPointerEvent& event) {
+  DCHECK_EQ(event.GetType(), WebInputEvent::Type::kPointerCancel);
+  int pointer_id = GetPointerEventId(event);
+
+  return CreatePointerCancelEvent(
+      pointer_id, event.pointer_type,
+      TimeTicks::FromSeconds(event.TimeStampSeconds()));
+}
+
+PointerEvent* PointerEventFactory::CreatePointerCancelEvent(
     const int pointer_id,
     const WebPointerProperties::PointerType pointer_type,
     TimeTicks platfrom_time_stamp) {

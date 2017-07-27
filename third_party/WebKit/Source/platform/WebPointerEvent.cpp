@@ -27,6 +27,7 @@ WebInputEvent::Type PointerEventTypeForTouchPointState(
       return WebInputEvent::Type::kUndefined;
   }
 }
+
 }  // namespace
 
 WebPointerEvent::WebPointerEvent(const WebTouchEvent& touch_event,
@@ -48,6 +49,21 @@ WebPointerEvent::WebPointerEvent(const WebTouchEvent& touch_event,
   touch_start_or_first_touch_move = touch_event.touch_start_or_first_touch_move;
   // WebTouchPoint attributes
   rotation_angle = touch_point.rotation_angle;
+}
+
+WebPointerEvent::WebPointerEvent(WebInputEvent::Type type,
+                                 const WebMouseEvent& mouse_event)
+    : WebInputEvent(sizeof(WebPointerEvent)),
+      WebPointerProperties(mouse_event),
+      width(1),
+      height(1) {
+  DCHECK_GE(type, WebInputEvent::kPointerTypeFirst);
+  DCHECK_LE(type, WebInputEvent::kPointerTypeLast);
+  SetFrameScale(mouse_event.FrameScale());
+  SetFrameTranslate(mouse_event.FrameTranslate());
+  SetTimeStampSeconds(mouse_event.TimeStampSeconds());
+  SetType(type);
+  SetModifiers(mouse_event.GetModifiers());
 }
 
 WebPointerEvent WebPointerEvent::WebPointerEventInRootFrame() const {

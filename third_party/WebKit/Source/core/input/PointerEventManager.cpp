@@ -490,6 +490,32 @@ WebInputEventResult PointerEventManager::SendTouchPointerEvent(
   return result;
 }
 
+WebInputEventResult PointerEventManager::HandlePointerEvent(
+    const WebPointerEvent& web_pointer_event,
+    Node* target) {
+  // TODO(crbug.com/625841): This function only handles pointercancel for now.
+  // But we should extend it to handle any pointerevents.
+  DCHECK(web_pointer_event.GetType() == WebInputEvent::Type::kPointerCancel);
+  PointerEvent* pointer_event =
+      pointer_event_factory_.CreatePointerCancelEvent(web_pointer_event);
+
+  EventTarget* effective_target =
+      GetEffectiveTargetForPointerEvent(target, pointer_event->pointerId());
+  WebInputEventResult result =
+      DispatchPointerEvent(effective_target, pointer_event);
+
+  ReleasePointerCapture(pointer_event->pointerId());
+
+  // TODO(nzolghadr): Instead of |ProcessPendingPointerCapture| maybe we
+  // should have used ProcessCaptureAndPositionOfPointerEvent but that might
+  // be sending boundary events however we probably not want that all the
+  // time.
+  ProcessPendingPointerCapture(pointer_event);
+
+  RemovePointer(pointer_event);
+  return result;
+}
+
 WebInputEventResult PointerEventManager::SendMousePointerEvent(
     Node* target,
     const String& canvas_region_id,
