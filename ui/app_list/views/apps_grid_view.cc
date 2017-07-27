@@ -232,7 +232,7 @@ int ClampToRange(int value, int min, int max) {
 // gradient fading out zones.
 class AppsGridView::FadeoutLayerDelegate : public ui::LayerDelegate {
  public:
-  explicit FadeoutLayerDelegate() : layer_(ui::LAYER_TEXTURED) {
+  FadeoutLayerDelegate() : layer_(ui::LAYER_TEXTURED) {
     layer_.set_delegate(this);
     layer_.SetFillsBoundsOpaquely(false);
   }
@@ -953,8 +953,7 @@ void AppsGridView::LayoutSuggestedAppsIndicator(gfx::Rect* rect) {
       suggested_apps_indicator_->GetPreferredSize();
   indicator_rect.Inset((indicator_rect.width() - indicator_size.width()) / 2,
                        0);
-  const gfx::Vector2d page_zero_offset = CalculateTransitionOffset(0);
-  indicator_rect.Offset(page_zero_offset.x(), page_zero_offset.y());
+  indicator_rect.Offset(CalculateTransitionOffset(0));
   suggested_apps_indicator_->SetBoundsRect(indicator_rect);
   rect->Inset(0, suggested_apps_indicator_->GetPreferredSize().height(), 0, 0);
 }
@@ -1321,7 +1320,26 @@ void AppsGridView::CalculateIdealBounds() {
     const int row = view_index.slot / cols_;
     const int col = view_index.slot % cols_;
     gfx::Rect tile_slot = GetExpectedTileBounds(row, col);
-    const gfx::Vector2d offset = CalculateTransitionOffset(view_index.page);
+    gfx::Vector2d offset = CalculateTransitionOffset(view_index.page);
+    const PaginationModel::Transition& transition =
+        pagination_model_.transition();
+    // When transition is progressing, eliminate empty spaces between pages.
+    if (is_fullscreen_app_list_enabled_ && transition.progress > 0) {
+      const int current_page = pagination_model_.selected_page();
+      const bool forward = transition.target_page > current_page ? false : true;
+      // When transiting to next page, eliminate empty space from just previous
+      // page since only the previous page is visiable; vice versa.
+      if (forward && view_index.page == current_page - 1) {
+        if (view_index.page == 0) {
+          offset.set_y(offset.y() + GetHeightOnTopOfAllAppsTiles(0) -
+                       GetHeightOnTopOfAllAppsTiles(1));
+        } else {
+          offset.set_y(offset.y() + GetHeightOnTopOfAllAppsTiles(current_page));
+        }
+      } else if (!forward && view_index.page == current_page + 1) {
+        offset.set_y(offset.y() - GetHeightOnTopOfAllAppsTiles(current_page));
+      }
+    }
     tile_slot.Offset(offset.x(), offset.y());
     if (i < view_model_.view_size()) {
       view_model_.set_ideal_bounds(i, tile_slot);
@@ -2171,38 +2189,39 @@ bool AppsGridView::EnableFolderDragDropUI() {
 AppsGridView::Index AppsGridView::GetNearestTileIndexForPoint(
     const gfx::Point& point) const {
   gfx::Rect bounds = GetContentsBounds();
-  bounds.Inset(0, GetHeightOnTopOfAllAppsTiles(), 0, 0);
+  const int current_page = pagination_model_.selected_page();
+  bounds.Inset(0, GetHeightOnTopOfAllAppsTiles(current_page), 0, 0);
   const gfx::Size total_tile_size = GetTotalTileSize();
   int col = ClampToRange((point.x() - bounds.x()) / total_tile_size.width(), 0,
                          cols_ - 1);
   int row = rows_per_page_;
-  if (is_fullscreen_app_list_enabled_ &&
-      pagination_model_.selected_page() == 0) {
+  if (is_fullscreen_app_list_enabled_ && current_page == 0) {
     row = ClampToRange((point.y() - bounds.y()) / total_tile_size.height(), 0,
                        rows_per_page_ - 2);
   } else {
     row = ClampToRange((point.y() - bounds.y()) / total_tile_size.height(), 0,
                        rows_per_page_ - 1);
   }
-  return Index(pagination_model_.selected_page(), row * cols_ + col);
+  return Index(current_page, row * cols_ + col);
 }
 
 gfx::Size AppsGridView::GetTileGridSize() const {
   gfx::Rect bounds = GetExpectedTileBounds(0, 0);
-  if (is_fullscreen_app_list_enabled_ && pagination_model_.selected_page() == 0)
+  const int current_page = pagination_model_.selected_page();
+  if (is_fullscreen_app_list_enabled_ && current_page == 0)
     bounds.Union(GetExpectedTileBounds(rows_per_page_ - 2, cols_ - 1));
   else
     bounds.Union(GetExpectedTileBounds(rows_per_page_ - 1, cols_ - 1));
-  bounds.Inset(0, -GetHeightOnTopOfAllAppsTiles(), 0, 0);
+  bounds.Inset(0, -GetHeightOnTopOfAllAppsTiles(current_page), 0, 0);
   bounds.Inset(GetTilePadding());
   return bounds.size();
 }
 
-int AppsGridView::GetHeightOnTopOfAllAppsTiles() const {
+int AppsGridView::GetHeightOnTopOfAllAppsTiles(int page) const {
   if (!is_fullscreen_app_list_enabled_ || folder_delegate_)
     return 0;
 
-  if (pagination_model_.selected_page() == 0) {
+  if (page == 0) {
     return kSearchBoxBottomPadding +
            suggested_apps_indicator_->GetPreferredSize().height() +
            suggestions_container_->GetPreferredSize().height() +
@@ -2221,7 +2240,8 @@ gfx::Rect AppsGridView::GetExpectedTileBounds(int slot) const {
 
 gfx::Rect AppsGridView::GetExpectedTileBounds(int row, int col) const {
   gfx::Rect bounds(GetContentsBounds());
-  bounds.Inset(0, GetHeightOnTopOfAllAppsTiles(), 0, 0);
+  bounds.Inset(
+      0, GetHeightOnTopOfAllAppsTiles(pagination_model_.selected_page()), 0, 0);
   const gfx::Size total_tile_size = GetTotalTileSize();
   gfx::Rect tile_bounds(gfx::Point(bounds.x() + col * total_tile_size.width(),
                                    bounds.y() + row * total_tile_size.height()),
