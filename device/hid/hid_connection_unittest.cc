@@ -104,11 +104,7 @@ class TestConnectCallback {
 
 class TestIoCallback {
  public:
-  TestIoCallback()
-      : read_callback_(
-            base::Bind(&TestIoCallback::SetReadResult, base::Unretained(this))),
-        write_callback_(base::Bind(&TestIoCallback::SetWriteResult,
-                                   base::Unretained(this))) {}
+  TestIoCallback() {}
   ~TestIoCallback() {}
 
   void SetReadResult(bool success,
@@ -130,9 +126,13 @@ class TestIoCallback {
     return result_;
   }
 
-  const HidConnection::ReadCallback& read_callback() { return read_callback_; }
-  const HidConnection::WriteCallback write_callback() {
-    return write_callback_;
+  HidConnection::ReadCallback GetReadCallback() {
+    return base::BindOnce(&TestIoCallback::SetReadResult,
+                          base::Unretained(this));
+  }
+  HidConnection::WriteCallback GetWriteCallback() {
+    return base::BindOnce(&TestIoCallback::SetWriteResult,
+                          base::Unretained(this));
   }
   scoped_refptr<net::IOBuffer> buffer() const { return buffer_; }
   size_t size() const { return size_; }
@@ -142,8 +142,6 @@ class TestIoCallback {
   bool result_;
   size_t size_;
   scoped_refptr<net::IOBuffer> buffer_;
-  HidConnection::ReadCallback read_callback_;
-  HidConnection::WriteCallback write_callback_;
 };
 
 }  // namespace
@@ -197,11 +195,11 @@ TEST_F(HidConnectionTest, ReadWrite) {
     }
 
     TestIoCallback write_callback;
-    conn->Write(buffer, buffer->size(), write_callback.write_callback());
+    conn->Write(buffer, buffer->size(), write_callback.GetWriteCallback());
     ASSERT_TRUE(write_callback.WaitForResult());
 
     TestIoCallback read_callback;
-    conn->Read(read_callback.read_callback());
+    conn->Read(read_callback.GetReadCallback());
     ASSERT_TRUE(read_callback.WaitForResult());
     ASSERT_EQ(9UL, read_callback.size());
     ASSERT_EQ(0, read_callback.buffer()->data()[0]);

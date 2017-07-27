@@ -36,15 +36,15 @@ class HidConnectionMac : public HidConnection {
 
   // HidConnection implementation.
   void PlatformClose() override;
-  void PlatformRead(const ReadCallback& callback) override;
+  void PlatformRead(ReadCallback callback) override;
   void PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
                      size_t size,
-                     const WriteCallback& callback) override;
+                     WriteCallback callback) override;
   void PlatformGetFeatureReport(uint8_t report_id,
-                                const ReadCallback& callback) override;
+                                ReadCallback callback) override;
   void PlatformSendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
                                  size_t size,
-                                 const WriteCallback& callback) override;
+                                 WriteCallback callback) override;
 
   static void InputReportCallback(void* context,
                                   IOReturn result,
@@ -55,12 +55,12 @@ class HidConnectionMac : public HidConnection {
                                   CFIndex report_length);
   void ProcessInputReport(scoped_refptr<net::IOBufferWithSize> buffer);
   void ProcessReadQueue();
-  void GetFeatureReportAsync(uint8_t report_id, const ReadCallback& callback);
+  void GetFeatureReportAsync(uint8_t report_id, ReadCallback callback);
   void SetReportAsync(IOHIDReportType report_type,
                       scoped_refptr<net::IOBuffer> buffer,
                       size_t size,
-                      const WriteCallback& callback);
-  void ReturnAsyncResult(const base::Closure& callback);
+                      WriteCallback callback);
+  void ReturnAsyncResult(base::OnceClosure callback);
 
   base::ScopedCFTypeRef<IOHIDDeviceRef> device_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
