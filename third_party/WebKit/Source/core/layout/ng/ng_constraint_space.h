@@ -38,7 +38,12 @@ class CORE_EXPORT NGConstraintSpace final
  public:
   // This should live on NGBlockNode or another layout bridge and probably take
   // a root NGConstraintSpace.
-  static RefPtr<NGConstraintSpace> CreateFromLayoutObject(const LayoutBox&);
+  // override_logical_width/height are only used if
+  // LayoutObject::OverideLogicalContentWidth/Height is undefined.
+  static RefPtr<NGConstraintSpace> CreateFromLayoutObject(
+      const LayoutBox&,
+      Optional<LayoutUnit> override_logical_width = WTF::nullopt,
+      Optional<LayoutUnit> override_logical_height = WTF::nullopt);
 
   const std::shared_ptr<NGExclusions>& Exclusions() const {
     return exclusions_;

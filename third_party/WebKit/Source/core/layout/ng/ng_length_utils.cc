@@ -286,6 +286,78 @@ LayoutUnit ComputeBlockSizeForFragment(
   return ConstrainByMinMax(extent, min_length, max_length);
 }
 
+// Computes size for a replaced element.
+NGLogicalSize ComputeReplacedSize(const NGLayoutInputNode& node,
+                                  const NGConstraintSpace& space,
+                                  const Optional<MinMaxSize>& child_minmax) {
+  DCHECK(node.IsReplaced());
+
+  NGLogicalSize replaced_size;
+
+  NGLogicalSize default_intrinsic_size;
+  Optional<LayoutUnit> computed_inline_size;
+  Optional<LayoutUnit> computed_block_size;
+  NGLogicalSize aspect_ratio;
+
+  node.IntrinsicSize(&default_intrinsic_size, &computed_inline_size,
+                     &computed_block_size, &aspect_ratio);
+
+  const ComputedStyle& style = node.Style();
+  Length inline_length = style.LogicalWidth();
+  Length block_length = style.LogicalHeight();
+
+  // Compute inline size
+  if (inline_length.IsAuto()) {
+    if (block_length.IsAuto() || aspect_ratio.IsEmpty()) {
+      // Use intrinsic values if inline_size cannot be computed from block_size.
+      if (computed_inline_size.has_value())
+        replaced_size.inline_size = computed_inline_size.value();
+      else
+        replaced_size.inline_size = default_intrinsic_size.inline_size;
+      replaced_size.inline_size +=
+          (ComputeBorders(space, style) + ComputePadding(space, style))
+              .InlineSum();
+    } else {
+      // inline_size is computed from block_size.
+      replaced_size.inline_size =
+          ResolveBlockLength(space, style, block_length,
+                             default_intrinsic_size.block_size,
+                             LengthResolveType::kContentSize) *
+          aspect_ratio.inline_size / aspect_ratio.block_size;
+    }
+  } else {
+    // inline_size is resolved directly.
+    replaced_size.inline_size =
+        ResolveInlineLength(space, style, child_minmax, inline_length,
+                            LengthResolveType::kContentSize);
+  }
+
+  // Compute block size
+  if (block_length.IsAuto()) {
+    if (inline_length.IsAuto() || aspect_ratio.IsEmpty()) {
+      // Use intrinsic values if block_size cannot be computed from inline_size.
+      if (computed_block_size.has_value())
+        replaced_size.block_size = LayoutUnit(computed_block_size.value());
+      else
+        replaced_size.block_size = default_intrinsic_size.block_size;
+      replaced_size.block_size +=
+          (ComputeBorders(space, style) + ComputePadding(space, style))
+              .BlockSum();
+    } else {
+      // block_size is computed from inline_size.
+      replaced_size.block_size =
+          ResolveInlineLength(space, style, child_minmax, inline_length,
+                              LengthResolveType::kContentSize) *
+          aspect_ratio.block_size / aspect_ratio.inline_size;
+    }
+  } else {
+    replaced_size.block_size = ResolveBlockLength(
+        space, style, block_length, default_intrinsic_size.block_size,
+        LengthResolveType::kContentSize);
+  }
+  return replaced_size;
+}
+
 int ResolveUsedColumnCount(int computed_count,
                            LayoutUnit computed_size,
                            LayoutUnit used_gap,
