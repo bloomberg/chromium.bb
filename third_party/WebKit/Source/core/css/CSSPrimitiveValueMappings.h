@@ -941,36 +941,43 @@ inline FontSmoothingMode CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(FontWeight weight)
+inline CSSIdentifierValue::CSSIdentifierValue(FontSelectionValueWeight weight)
     : CSSValue(kIdentifierClass) {
-  switch (weight) {
-    case kFontWeight900:
-      value_id_ = CSSValue900;
-      return;
-    case kFontWeight800:
-      value_id_ = CSSValue800;
-      return;
-    case kFontWeight700:
-      value_id_ = CSSValueBold;
-      return;
-    case kFontWeight600:
-      value_id_ = CSSValue600;
-      return;
-    case kFontWeight500:
-      value_id_ = CSSValue500;
-      return;
-    case kFontWeight400:
-      value_id_ = CSSValueNormal;
-      return;
-    case kFontWeight300:
-      value_id_ = CSSValue300;
-      return;
-    case kFontWeight200:
-      value_id_ = CSSValue200;
-      return;
-    case kFontWeight100:
-      value_id_ = CSSValue100;
-      return;
+  if (weight == FontSelectionValue(900)) {
+    value_id_ = CSSValue900;
+    return;
+  }
+  if (weight == FontSelectionValue(800)) {
+    value_id_ = CSSValue800;
+    return;
+  }
+  if (weight == FontSelectionValue(700)) {
+    value_id_ = CSSValueBold;
+    return;
+  }
+  if (weight == FontSelectionValue(600)) {
+    value_id_ = CSSValue600;
+    return;
+  }
+  if (weight == FontSelectionValue(500)) {
+    value_id_ = CSSValue500;
+    return;
+  }
+  if (weight == FontSelectionValue(400)) {
+    value_id_ = CSSValueNormal;
+    return;
+  }
+  if (weight == FontSelectionValue(300)) {
+    value_id_ = CSSValue300;
+    return;
+  }
+  if (weight == FontSelectionValue(200)) {
+    value_id_ = CSSValue200;
+    return;
+  }
+  if (weight == FontSelectionValue(100)) {
+    value_id_ = CSSValue100;
+    return;
   }
 
   NOTREACHED();
@@ -978,51 +985,46 @@ inline CSSIdentifierValue::CSSIdentifierValue(FontWeight weight)
 }
 
 template <>
-inline FontWeight CSSIdentifierValue::ConvertTo() const {
+inline FontSelectionValueWeight CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
-    case CSSValueBold:
-      return kFontWeightBold;
-    case CSSValueNormal:
-      return kFontWeightNormal;
     case CSSValue900:
-      return kFontWeight900;
+      return FontSelectionValueWeight(900);
     case CSSValue800:
-      return kFontWeight800;
+      return FontSelectionValueWeight(800);
+    case CSSValueBold:
     case CSSValue700:
-      return kFontWeight700;
+      return BoldWeightValue();
     case CSSValue600:
-      return kFontWeight600;
+      return FontSelectionValueWeight(600);
     case CSSValue500:
-      return kFontWeight500;
+      return FontSelectionValueWeight(500);
     case CSSValue400:
-      return kFontWeight400;
+    case CSSValueNormal:
+      return NormalWeightValue();
     case CSSValue300:
-      return kFontWeight300;
+      return FontSelectionValueWeight(300);
     case CSSValue200:
-      return kFontWeight200;
+      return FontSelectionValueWeight(200);
     case CSSValue100:
-      return kFontWeight100;
+      return FontSelectionValueWeight(100);
     default:
       break;
   }
 
   NOTREACHED();
-  return kFontWeightNormal;
+  return NormalWeightValue();
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(FontStyle italic)
+inline CSSIdentifierValue::CSSIdentifierValue(FontSelectionValueStyle italic)
     : CSSValue(kIdentifierClass) {
-  switch (italic) {
-    case kFontStyleNormal:
-      value_id_ = CSSValueNormal;
-      return;
-    case kFontStyleOblique:
-      value_id_ = CSSValueOblique;
-      return;
-    case kFontStyleItalic:
-      value_id_ = CSSValueItalic;
-      return;
+  if (italic == NormalSlopeValue()) {
+    value_id_ = CSSValueNormal;
+    return;
+  }
+  if (italic == ItalicSlopeValue()) {
+    value_id_ = CSSValueItalic;
+    return;
   }
 
   NOTREACHED();
@@ -1030,52 +1032,58 @@ inline CSSIdentifierValue::CSSIdentifierValue(FontStyle italic)
 }
 
 template <>
-inline FontStyle CSSIdentifierValue::ConvertTo() const {
+inline FontSelectionValueStyle CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueOblique:
-      return kFontStyleOblique;
     case CSSValueItalic:
-      return kFontStyleItalic;
+      return ItalicSlopeValue();
     case CSSValueNormal:
-      return kFontStyleNormal;
+      return NormalSlopeValue();
     default:
       break;
   }
   NOTREACHED();
-  return kFontStyleNormal;
+  return NormalSlopeValue();
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(FontStretch stretch)
+inline CSSIdentifierValue::CSSIdentifierValue(FontSelectionValueStretch stretch)
     : CSSValue(kIdentifierClass) {
-  switch (stretch) {
-    case kFontStretchUltraCondensed:
-      value_id_ = CSSValueUltraCondensed;
-      return;
-    case kFontStretchExtraCondensed:
-      value_id_ = CSSValueExtraCondensed;
-      return;
-    case kFontStretchCondensed:
-      value_id_ = CSSValueCondensed;
-      return;
-    case kFontStretchSemiCondensed:
-      value_id_ = CSSValueSemiCondensed;
-      return;
-    case kFontStretchNormal:
-      value_id_ = CSSValueNormal;
-      return;
-    case kFontStretchSemiExpanded:
-      value_id_ = CSSValueSemiExpanded;
-      return;
-    case kFontStretchExpanded:
-      value_id_ = CSSValueExpanded;
-      return;
-    case kFontStretchExtraExpanded:
-      value_id_ = CSSValueExtraExpanded;
-      return;
-    case kFontStretchUltraExpanded:
-      value_id_ = CSSValueUltraExpanded;
-      return;
+  if (stretch == UltraCondensedWidthValue()) {
+    value_id_ = CSSValueUltraCondensed;
+    return;
+  }
+  if (stretch == ExtraCondensedWidthValue()) {
+    value_id_ = CSSValueExtraCondensed;
+    return;
+  }
+  if (stretch == CondensedWidthValue()) {
+    value_id_ = CSSValueCondensed;
+    return;
+  }
+  if (stretch == SemiCondensedWidthValue()) {
+    value_id_ = CSSValueSemiCondensed;
+    return;
+  }
+  if (stretch == NormalWidthValue()) {
+    value_id_ = CSSValueNormal;
+    return;
+  }
+  if (stretch == SemiExpandedWidthValue()) {
+    value_id_ = CSSValueSemiExpanded;
+    return;
+  }
+  if (stretch == ExpandedWidthValue()) {
+    value_id_ = CSSValueExpanded;
+    return;
+  }
+  if (stretch == ExtraExpandedWidthValue()) {
+    value_id_ = CSSValueExtraExpanded;
+    return;
+  }
+  if (stretch == UltraExpandedWidthValue()) {
+    value_id_ = CSSValueUltraExpanded;
+    return;
   }
 
   NOTREACHED();
@@ -1083,32 +1091,32 @@ inline CSSIdentifierValue::CSSIdentifierValue(FontStretch stretch)
 }
 
 template <>
-inline FontStretch CSSIdentifierValue::ConvertTo() const {
+inline FontSelectionValueStretch CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueUltraCondensed:
-      return kFontStretchUltraCondensed;
+      return UltraCondensedWidthValue();
     case CSSValueExtraCondensed:
-      return kFontStretchExtraCondensed;
+      return ExtraCondensedWidthValue();
     case CSSValueCondensed:
-      return kFontStretchCondensed;
+      return CondensedWidthValue();
     case CSSValueSemiCondensed:
-      return kFontStretchSemiCondensed;
+      return SemiCondensedWidthValue();
     case CSSValueNormal:
-      return kFontStretchNormal;
+      return NormalWidthValue();
     case CSSValueSemiExpanded:
-      return kFontStretchSemiExpanded;
+      return SemiExpandedWidthValue();
     case CSSValueExpanded:
-      return kFontStretchExpanded;
+      return ExpandedWidthValue();
     case CSSValueExtraExpanded:
-      return kFontStretchExtraExpanded;
+      return ExtraExpandedWidthValue();
     case CSSValueUltraExpanded:
-      return kFontStretchUltraExpanded;
+      return UltraExpandedWidthValue();
     default:
       break;
   }
 
   NOTREACHED();
-  return kFontStretchNormal;
+  return NormalWidthValue();
 }
 
 template <>

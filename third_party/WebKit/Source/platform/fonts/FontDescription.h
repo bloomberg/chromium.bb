@@ -32,8 +32,8 @@
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontFamily.h"
 #include "platform/fonts/FontOrientation.h"
+#include "platform/fonts/FontSelectionTypes.h"
 #include "platform/fonts/FontSmoothingMode.h"
-#include "platform/fonts/FontTraits.h"
 #include "platform/fonts/FontVariantNumeric.h"
 #include "platform/fonts/FontWidthVariant.h"
 #include "platform/fonts/TextRenderingMode.h"
@@ -141,18 +141,16 @@ class PLATFORM_EXPORT FontDescription {
   float AdjustedSize() const { return adjusted_size_; }
   float SizeAdjust() const { return size_adjust_; }
   bool HasSizeAdjust() const { return size_adjust_ != kFontSizeAdjustNone; }
-  FontStyle Style() const { return static_cast<FontStyle>(fields_.style_); }
   int ComputedPixelSize() const { return int(computed_size_ + 0.5f); }
   FontVariantCaps VariantCaps() const {
     return static_cast<FontVariantCaps>(fields_.variant_caps_);
   }
   bool IsAbsoluteSize() const { return fields_.is_absolute_size_; }
-  FontWeight Weight() const { return static_cast<FontWeight>(fields_.weight_); }
-  FontStretch Stretch() const {
-    return static_cast<FontStretch>(fields_.stretch_);
-  }
-  static FontWeight LighterWeight(FontWeight);
-  static FontWeight BolderWeight(FontWeight);
+  FontSelectionValue Weight() const { return font_selection_request_.weight; }
+  FontSelectionValue Style() const { return font_selection_request_.slope; }
+  FontSelectionValue Stretch() const { return font_selection_request_.width; }
+  static FontSelectionValue LighterWeight(FontSelectionValue);
+  static FontSelectionValue BolderWeight(FontSelectionValue);
   static Size LargerSize(const Size&);
   static Size SmallerSize(const Size&);
   GenericFamilyType GenericFamily() const {
@@ -200,7 +198,7 @@ class PLATFORM_EXPORT FontDescription {
     return fields_.subpixel_text_position_;
   }
 
-  FontTraits Traits() const;
+  FontSelectionRequest GetFontSelectionRequest() const;
   float WordSpacing() const { return word_spacing_; }
   float LetterSpacing() const { return letter_spacing_; }
   FontOrientation Orientation() const {
@@ -230,21 +228,23 @@ class PLATFORM_EXPORT FontDescription {
 
   float EffectiveFontSize()
       const;  // Returns either the computedSize or the computedPixelSize
-  FontCacheKey CacheKey(const FontFaceCreationParams&,
-                        FontTraits desired_traits = FontTraits(0)) const;
+  FontCacheKey CacheKey(const FontFaceCreationParams&) const;
 
   void SetFamily(const FontFamily& family) { family_list_ = family; }
   void SetComputedSize(float s) { computed_size_ = clampTo<float>(s); }
   void SetSpecifiedSize(float s) { specified_size_ = clampTo<float>(s); }
   void SetAdjustedSize(float s) { adjusted_size_ = clampTo<float>(s); }
   void SetSizeAdjust(float aspect) { size_adjust_ = clampTo<float>(aspect); }
-  void SetStyle(FontStyle i) { fields_.style_ = i; }
+
+  void SetStyle(FontSelectionValue i) { font_selection_request_.slope = i; }
+  void SetWeight(FontSelectionValue w) { font_selection_request_.weight = w; }
+  void SetStretch(FontSelectionValue s) { font_selection_request_.width = s; }
+
   void SetVariantCaps(FontVariantCaps);
   void SetVariantLigatures(const VariantLigatures&);
   void SetVariantNumeric(const FontVariantNumeric&);
   void SetIsAbsoluteSize(bool s) { fields_.is_absolute_size_ = s; }
-  void SetWeight(FontWeight w) { fields_.weight_ = w; }
-  void SetStretch(FontStretch s) { fields_.stretch_ = s; }
+
   void SetGenericFamily(GenericFamilyType generic_family) {
     fields_.generic_family_ = generic_family;
   }
@@ -281,7 +281,6 @@ class PLATFORM_EXPORT FontDescription {
   void SetVariationSettings(PassRefPtr<FontVariationSettings> settings) {
     variation_settings_ = std::move(settings);
   }
-  void SetTraits(FontTraits);
   void SetWordSpacing(float s) { word_spacing_ = s; }
   void SetLetterSpacing(float s) {
     letter_spacing_ = s;
@@ -343,19 +342,19 @@ class PLATFORM_EXPORT FontDescription {
   float letter_spacing_;
   float word_spacing_;
 
+  // Covers stretch, style, weight.
+  FontSelectionRequest font_selection_request_;
+
   struct BitFields {
     DISALLOW_NEW();
     unsigned orientation_ : static_cast<unsigned>(FontOrientation::kBitCount);
 
     unsigned width_variant_ : 2;  // FontWidthVariant
 
-    unsigned style_ : 2;         // FontStyle
     unsigned variant_caps_ : 3;  // FontVariantCaps
     unsigned
         is_absolute_size_ : 1;  // Whether or not CSS specified an explicit size
     // (logical sizes like "medium" don't count).
-    unsigned weight_ : 4;          // FontWeight
-    unsigned stretch_ : 4;         // FontStretch
     unsigned generic_family_ : 3;  // GenericFamilyType
 
     unsigned kerning_ : 2;  // Kerning

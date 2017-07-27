@@ -9,37 +9,13 @@
 
 namespace blink {
 
-double FontWeightToDouble(FontWeight font_weight) {
-  switch (font_weight) {
-    case kFontWeight100:
-      return 100;
-    case kFontWeight200:
-      return 200;
-    case kFontWeight300:
-      return 300;
-    case kFontWeight400:
-      return 400;
-    case kFontWeight500:
-      return 500;
-    case kFontWeight600:
-      return 600;
-    case kFontWeight700:
-      return 700;
-    case kFontWeight800:
-      return 800;
-    case kFontWeight900:
-      return 900;
-    default:
-      NOTREACHED();
-      return 400;
-  }
-}
-
-FontWeight DoubleToFontWeight(double value) {
-  static const FontWeight kFontWeights[] = {
-      kFontWeight100, kFontWeight200, kFontWeight300,
-      kFontWeight400, kFontWeight500, kFontWeight600,
-      kFontWeight700, kFontWeight800, kFontWeight900,
+FontSelectionValue DoubleToFontWeight(double value) {
+  // Until we allow continuous animations for font weight in a subsequent CL
+  // (crbug.com/739334), convert to a discrete font weight value here.
+  static const FontSelectionValue kFontWeights[] = {
+      FontSelectionValue(100), FontSelectionValue(200), FontSelectionValue(300),
+      FontSelectionValue(400), FontSelectionValue(500), FontSelectionValue(600),
+      FontSelectionValue(700), FontSelectionValue(800), FontSelectionValue(900),
   };
 
   int index = round(value / 100 - 1);

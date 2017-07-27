@@ -30,91 +30,21 @@
 
 namespace blink {
 
-static inline void AssertDescriptionMatchesMask(FontDescription& source,
-                                                FontTraitsBitfield bitfield) {
-  FontDescription target;
-  target.SetTraits(FontTraits(bitfield));
-  EXPECT_EQ(source.Style(), target.Style());
-  EXPECT_EQ(source.Weight(), target.Weight());
-  EXPECT_EQ(source.Stretch(), target.Stretch());
-}
-
-TEST(FontDescriptionTest, TestFontTraits) {
-  FontDescription source;
-  source.SetStyle(kFontStyleNormal);
-  source.SetWeight(kFontWeightNormal);
-  source.SetStretch(kFontStretchNormal);
-  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
-
-  source.SetStyle(kFontStyleNormal);
-  source.SetWeight(kFontWeightNormal);
-  source.SetStretch(kFontStretchExtraCondensed);
-  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
-
-  source.SetStyle(kFontStyleItalic);
-  source.SetWeight(kFontWeight900);
-  source.SetStretch(kFontStretchUltraExpanded);
-  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
-
-  source.SetStyle(kFontStyleItalic);
-  source.SetWeight(kFontWeight100);
-  source.SetStretch(kFontStretchExtraExpanded);
-  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
-
-  source.SetStyle(kFontStyleItalic);
-  source.SetWeight(kFontWeight900);
-  source.SetStretch(kFontStretchNormal);
-  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
-
-  source.SetStyle(kFontStyleItalic);
-  source.SetWeight(kFontWeight800);
-  source.SetStretch(kFontStretchNormal);
-  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
-
-  source.SetStyle(kFontStyleItalic);
-  source.SetWeight(kFontWeight700);
-  source.SetStretch(kFontStretchNormal);
-  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
-
-  source.SetStyle(kFontStyleItalic);
-  source.SetWeight(kFontWeight600);
-  source.SetStretch(kFontStretchNormal);
-  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
-
-  source.SetStyle(kFontStyleItalic);
-  source.SetWeight(kFontWeight500);
-  source.SetStretch(kFontStretchNormal);
-  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
-
-  source.SetStyle(kFontStyleItalic);
-  source.SetWeight(kFontWeight400);
-  source.SetStretch(kFontStretchNormal);
-  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
-
-  source.SetStyle(kFontStyleItalic);
-  source.SetWeight(kFontWeight300);
-  source.SetStretch(kFontStretchUltraExpanded);
-  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
-
-  source.SetStyle(kFontStyleItalic);
-  source.SetWeight(kFontWeight200);
-  source.SetStretch(kFontStretchNormal);
-  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
-}
-
 TEST(FontDescriptionTest, TestHashCollision) {
-  FontWeight weights[] = {
-      kFontWeight100, kFontWeight200, kFontWeight300,
-      kFontWeight400, kFontWeight500, kFontWeight600,
-      kFontWeight700, kFontWeight800, kFontWeight900,
-  };
-  FontStretch stretches[]{
-      kFontStretchUltraCondensed, kFontStretchExtraCondensed,
-      kFontStretchCondensed,      kFontStretchSemiCondensed,
-      kFontStretchNormal,         kFontStretchSemiExpanded,
-      kFontStretchExpanded,       kFontStretchExtraExpanded,
-      kFontStretchUltraExpanded};
-  FontStyle styles[] = {kFontStyleNormal, kFontStyleOblique, kFontStyleItalic};
+  FontSelectionValue weights[] = {
+      FontSelectionValue(100), FontSelectionValue(200),
+      FontSelectionValue(300), FontSelectionValue(400),
+      FontSelectionValue(500), FontSelectionValue(600),
+      FontSelectionValue(700), FontSelectionValue(800),
+      FontSelectionValue(900)};
+  FontSelectionValue stretches[]{
+      UltraCondensedWidthValue(), ExtraCondensedWidthValue(),
+      CondensedWidthValue(),      SemiCondensedWidthValue(),
+      NormalWidthValue(),         SemiExpandedWidthValue(),
+      ExpandedWidthValue(),       ExtraExpandedWidthValue(),
+      UltraExpandedWidthValue()};
+
+  FontSelectionValue slopes[] = {NormalSlopeValue(), ItalicSlopeValue()};
 
   FontDescription source;
   WTF::Vector<unsigned> hashes;
@@ -122,8 +52,8 @@ TEST(FontDescriptionTest, TestHashCollision) {
     source.SetWeight(weights[i]);
     for (size_t j = 0; j < WTF_ARRAY_LENGTH(stretches); j++) {
       source.SetStretch(stretches[j]);
-      for (size_t k = 0; k < WTF_ARRAY_LENGTH(styles); k++) {
-        source.SetStyle(styles[k]);
+      for (size_t k = 0; k < WTF_ARRAY_LENGTH(slopes); k++) {
+        source.SetStyle(slopes[k]);
         unsigned hash = source.StyleHashWithoutFamilyList();
         ASSERT_FALSE(hashes.Contains(hash));
         hashes.push_back(hash);

@@ -384,22 +384,25 @@ double StyleBuilderConverter::ConvertValueToNumber(
   }
 }
 
-FontWeight StyleBuilderConverterBase::ConvertFontWeight(
+FontSelectionValueWeight StyleBuilderConverterBase::ConvertFontWeight(
     const CSSValue& value,
-    FontWeight parent_weight) {
+    FontSelectionValue parent_weight) {
   const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
   switch (identifier_value.GetValueID()) {
     case CSSValueBolder:
-      return FontDescription::BolderWeight(parent_weight);
+      return FontSelectionValueWeight(
+          FontDescription::BolderWeight(parent_weight));
     case CSSValueLighter:
-      return FontDescription::LighterWeight(parent_weight);
+      return FontSelectionValueWeight(
+          FontDescription::LighterWeight(parent_weight));
     default:
-      return identifier_value.ConvertTo<FontWeight>();
+      return identifier_value.ConvertTo<FontSelectionValueWeight>();
   }
 }
 
-FontWeight StyleBuilderConverter::ConvertFontWeight(StyleResolverState& state,
-                                                    const CSSValue& value) {
+FontSelectionValueWeight StyleBuilderConverter::ConvertFontWeight(
+    StyleResolverState& state,
+    const CSSValue& value) {
   return StyleBuilderConverterBase::ConvertFontWeight(
       value, state.ParentStyle()->GetFontDescription().Weight());
 }

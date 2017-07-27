@@ -193,8 +193,6 @@ blink_core_sources("css") {
     "FontFaceSource.h",
     "FontSize.cpp",
     "FontSize.h",
-    "FontStyleMatcher.cpp",
-    "FontStyleMatcher.h",
     "HashTools.h",
     "KeyframeStyleRuleCSSStyleDeclaration.cpp",
     "KeyframeStyleRuleCSSStyleDeclaration.h",

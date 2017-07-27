@@ -975,10 +975,10 @@ class ComputedStyle : public ComputedStyleBase,
   bool HasFontSizeAdjust() const;
 
   // font-weight
-  CORE_EXPORT FontWeight GetFontWeight() const;
+  CORE_EXPORT FontSelectionValue GetFontWeight() const;
 
   // font-stretch
-  FontStretch GetFontStretch() const;
+  FontSelectionValue GetFontStretch() const;
 
   // -webkit-locale
   const AtomicString& Locale() const {

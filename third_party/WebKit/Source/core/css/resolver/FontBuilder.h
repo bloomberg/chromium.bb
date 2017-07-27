@@ -56,14 +56,16 @@ class CORE_EXPORT FontBuilder {
 
   float FontSizeForKeyword(unsigned keyword, bool is_monospace) const;
 
-  void SetWeight(FontWeight);
   void SetSize(const FontDescription::Size&);
   void SetSizeAdjust(const float aspect_value);
-  void SetStretch(FontStretch);
+
+  void SetStretch(FontSelectionValue);
+  void SetStyle(FontSelectionValue);
+  void SetWeight(FontSelectionValue);
+
   void SetFamilyDescription(const FontDescription::FamilyDescription&);
   void SetFeatureSettings(PassRefPtr<FontFeatureSettings>);
   void SetLocale(PassRefPtr<const LayoutLocale>);
-  void SetStyle(FontStyle);
   void SetVariantCaps(FontDescription::FontVariantCaps);
   void SetVariantLigatures(const FontDescription::VariantLigatures&);
   void SetVariantNumeric(const FontVariantNumeric&);
@@ -104,13 +106,18 @@ class CORE_EXPORT FontBuilder {
     return FontVariantNumeric();
   };
   static LayoutLocale* InitialLocale() { return nullptr; }
-  static FontStyle InitialStyle() { return kFontStyleNormal; }
   static FontDescription::Kerning InitialKerning() {
     return FontDescription::kAutoKerning;
   }
   static FontSmoothingMode InitialFontSmoothing() { return kAutoSmoothing; }
-  static FontStretch InitialStretch() { return kFontStretchNormal; }
-  static FontWeight InitialWeight() { return kFontWeightNormal; }
+
+  static FontSelectionValueStretch InitialStretch() {
+    return NormalWidthValue();
+  }
+  static FontSelectionValueWeight InitialWeight() {
+    return NormalWeightValue();
+  }
+  static FontSelectionValueStyle InitialStyle() { return NormalSlopeValue(); }
 
  private:
   void SetFamilyDescription(FontDescription&,

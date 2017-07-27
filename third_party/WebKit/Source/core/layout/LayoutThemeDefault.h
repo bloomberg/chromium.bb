@@ -84,8 +84,8 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
 
   // System fonts.
   virtual void SystemFont(CSSValueID system_font_id,
-                          FontStyle&,
-                          FontWeight&,
+                          FontSelectionValue& font_slope,
+                          FontSelectionValue& font_weight,
                           float& font_size,
                           AtomicString& font_family) const;
 

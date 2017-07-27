@@ -152,7 +152,8 @@ FontFace* FontFace::Create(Document* document,
       font_face->SetPropertyFromStyle(properties,
                                       CSSPropertyFontFeatureSettings) &&
       font_face->SetPropertyFromStyle(properties, CSSPropertyFontDisplay) &&
-      !font_face->family().IsEmpty() && font_face->Traits().Bitfield()) {
+      font_face->GetFontSelectionCapabilities().IsValid() &&
+      !font_face->family().IsEmpty()) {
     font_face->InitCSSFontFace(document, src);
     return font_face;
   }
@@ -449,110 +450,138 @@ void FontFace::AddCallback(LoadFontCallback* callback) {
     callbacks_.push_back(callback);
 }
 
-FontTraits FontFace::Traits() const {
-  FontStretch stretch = kFontStretchNormal;
+FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
+  // FontSelectionCapabilities represents a range of available width, slope and
+  // weight values. The first value of each pair is the minimum value, the
+  // second is the maximum value.
+  FontSelectionCapabilities normal_capabilities(
+      {NormalWidthValue(), NormalWidthValue()},
+      {NormalSlopeValue(), NormalSlopeValue()},
+      {NormalWeightValue(), NormalWeightValue()});
+  FontSelectionCapabilities capabilities(normal_capabilities);
+
   if (stretch_) {
-    if (!stretch_->IsIdentifierValue())
-      return 0;
-
-    switch (ToCSSIdentifierValue(stretch_.Get())->GetValueID()) {
-      case CSSValueUltraCondensed:
-        stretch = kFontStretchUltraCondensed;
-        break;
-      case CSSValueExtraCondensed:
-        stretch = kFontStretchExtraCondensed;
-        break;
-      case CSSValueCondensed:
-        stretch = kFontStretchCondensed;
-        break;
-      case CSSValueSemiCondensed:
-        stretch = kFontStretchSemiCondensed;
-        break;
-      case CSSValueSemiExpanded:
-        stretch = kFontStretchSemiExpanded;
-        break;
-      case CSSValueExpanded:
-        stretch = kFontStretchExpanded;
-        break;
-      case CSSValueExtraExpanded:
-        stretch = kFontStretchExtraExpanded;
-        break;
-      case CSSValueUltraExpanded:
-        stretch = kFontStretchUltraExpanded;
-        break;
-      default:
-        break;
+    if (stretch_->IsIdentifierValue()) {
+      switch (ToCSSIdentifierValue(stretch_.Get())->GetValueID()) {
+        case CSSValueUltraCondensed:
+          capabilities.width = {UltraCondensedWidthValue(),
+                                UltraCondensedWidthValue()};
+          break;
+        case CSSValueExtraCondensed:
+          capabilities.width = {ExtraCondensedWidthValue(),
+                                ExtraCondensedWidthValue()};
+          break;
+        case CSSValueCondensed:
+          capabilities.width = {CondensedWidthValue(), CondensedWidthValue()};
+          break;
+        case CSSValueSemiCondensed:
+          capabilities.width = {SemiCondensedWidthValue(),
+                                SemiCondensedWidthValue()};
+          break;
+        case CSSValueSemiExpanded:
+          capabilities.width = {SemiExpandedWidthValue(),
+                                SemiExpandedWidthValue()};
+          break;
+        case CSSValueExpanded:
+          capabilities.width = {ExpandedWidthValue(), ExpandedWidthValue()};
+          break;
+        case CSSValueExtraExpanded:
+          capabilities.width = {ExtraExpandedWidthValue(),
+                                ExtraExpandedWidthValue()};
+          break;
+        case CSSValueUltraExpanded:
+          capabilities.width = {UltraExpandedWidthValue(),
+                                UltraExpandedWidthValue()};
+          break;
+        default:
+          break;
+      }
+    } else {
+      NOTREACHED();
+      return normal_capabilities;
     }
   }
 
-  FontStyle style = kFontStyleNormal;
   if (style_) {
-    if (!style_->IsIdentifierValue())
-      return 0;
-
-    switch (ToCSSIdentifierValue(style_.Get())->GetValueID()) {
-      case CSSValueNormal:
-        style = kFontStyleNormal;
-        break;
-      case CSSValueOblique:
-        style = kFontStyleOblique;
-        break;
-      case CSSValueItalic:
-        style = kFontStyleItalic;
-        break;
-      default:
-        break;
+    if (style_->IsIdentifierValue()) {
+      switch (ToCSSIdentifierValue(style_.Get())->GetValueID()) {
+        case CSSValueNormal:
+          capabilities.slope = {NormalSlopeValue(), NormalSlopeValue()};
+          break;
+        case CSSValueOblique:
+          capabilities.slope = {ItalicSlopeValue(), ItalicSlopeValue()};
+          break;
+        case CSSValueItalic:
+          capabilities.slope = {ItalicSlopeValue(), ItalicSlopeValue()};
+          break;
+        default:
+          break;
+      }
+    } else {
+      NOTREACHED();
+      return normal_capabilities;
     }
   }
 
-  FontWeight weight = kFontWeight400;
   if (weight_) {
-    if (!weight_->IsIdentifierValue())
-      return 0;
-
-    switch (ToCSSIdentifierValue(weight_.Get())->GetValueID()) {
-      case CSSValueBold:
-      case CSSValue700:
-        weight = kFontWeight700;
-        break;
-      case CSSValueNormal:
-      case CSSValue400:
-        weight = kFontWeight400;
-        break;
-      case CSSValue900:
-        weight = kFontWeight900;
-        break;
-      case CSSValue800:
-        weight = kFontWeight800;
-        break;
-      case CSSValue600:
-        weight = kFontWeight600;
-        break;
-      case CSSValue500:
-        weight = kFontWeight500;
-        break;
-      case CSSValue300:
-        weight = kFontWeight300;
-        break;
-      case CSSValue200:
-        weight = kFontWeight200;
-        break;
-      case CSSValue100:
-        weight = kFontWeight100;
-        break;
-      // Although 'lighter' and 'bolder' are valid keywords for font-weights,
-      // they are invalid inside font-face rules so they are ignored. Reference:
-      // http://www.w3.org/TR/css3-fonts/#descdef-font-weight.
-      case CSSValueLighter:
-      case CSSValueBolder:
-        break;
-      default:
-        NOTREACHED();
-        break;
+    if (weight_->IsIdentifierValue()) {
+      switch (ToCSSIdentifierValue(weight_.Get())->GetValueID()) {
+        case CSSValue100:
+          capabilities.weight = {FontSelectionValue(100),
+                                 FontSelectionValue(100)};
+          break;
+        case CSSValue200:
+          capabilities.weight = {FontSelectionValue(200),
+                                 FontSelectionValue(200)};
+          break;
+        case CSSValue300:
+          capabilities.weight = {FontSelectionValue(300),
+                                 FontSelectionValue(300)};
+          break;
+        case CSSValueNormal:
+        case CSSValue400:
+          capabilities.weight = {FontSelectionValue(400),
+                                 FontSelectionValue(400)};
+          break;
+        case CSSValue500:
+          capabilities.weight = {FontSelectionValue(500),
+                                 FontSelectionValue(500)};
+          break;
+        case CSSValue600:
+          capabilities.weight = {FontSelectionValue(600),
+                                 FontSelectionValue(600)};
+          break;
+        case CSSValueBold:
+        case CSSValue700:
+          capabilities.weight = {FontSelectionValue(700),
+                                 FontSelectionValue(700)};
+          break;
+        case CSSValue800:
+          capabilities.weight = {FontSelectionValue(800),
+                                 FontSelectionValue(800)};
+          break;
+        case CSSValue900:
+          capabilities.weight = {FontSelectionValue(900),
+                                 FontSelectionValue(900)};
+          break;
+        // Although 'lighter' and 'bolder' are valid keywords for
+        // font-weights, they are invalid inside font-face rules so they are
+        // ignored. Reference:
+        // http://www.w3.org/TR/css3-fonts/#descdef-font-weight.
+        case CSSValueLighter:
+        case CSSValueBolder:
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
+    } else {
+      NOTREACHED();
+      return normal_capabilities;
     }
   }
 
-  return FontTraits(style, weight, stretch);
+  return capabilities;
 }
 
 size_t FontFace::ApproximateBlankCharacterCount() const {
