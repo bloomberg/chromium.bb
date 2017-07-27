@@ -1,6 +1,9 @@
+<!DOCTYPE html>
 <html>
     <head>
         <title>Line breaks after closing punctuations</title>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
     </head>
     <body>
         These are good:
@@ -33,14 +36,14 @@
         </div>
         <div id=result></div>
         <script>
-            if (window.testRunner)
-                testRunner.dumpAsText();
-
             function paragraphHeight(paragraphNumber) {
                 return document.defaultView.getComputedStyle(document.getElementsByTagName("p")[paragraphNumber], null).getPropertyValue("height")
             }
 
-            document.getElementById("result").innerHTML = (paragraphHeight(0) == paragraphHeight(2) && paragraphHeight(1) == paragraphHeight(3)) ? "PASS" : "FAIL";
+test(() => {
+  assert_equals(paragraphHeight(0), paragraphHeight(2));
+  assert_equals(paragraphHeight(1), paragraphHeight(3));
+});
         </script>
     </body>
 </html>

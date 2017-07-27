@@ -1,6 +1,9 @@
+<!DOCTYPE html>
 <html>
 <head>
 <title>Line breaks after empty inline - Hebrew</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 </head>
 <body>
 <meta charset=utf-8>
@@ -13,9 +16,6 @@ The following two paragraphs should have the same line breaks:
 </div>
 <div><pre id=results></pre></div>
 <script>
-if (window.testRunner)
-    testRunner.dumpAsText();
-
 function getLineWidths(paragraphNumber) {
     var range = document.createRange();
     var paragraphs = document.getElementsByTagName("p");
@@ -32,24 +32,17 @@ function getLineWidths(paragraphNumber) {
     return widths;
 }
 
-var widths1 = getLineWidths(0);
-var widths2 = getLineWidths(1);
-var results = '';
-if (widths1.length != widths2.length)
-    results += 'FAIL: different number of lines, got ' + widths2.length + ', expected ' + widths1.length;
-else {
-    for (var i = 0; i < widths1.length; ++i) {
-        if (widths2[i] != widths1[i]) {
-            if (results.length)
-                results += '\n'
-            results += 'FAIL: line[' + i + '] width differs, got ' + widths2[i] + ', expected ' + widths1[i];
-        }
-    } 
-}
-if (!results.length)
-    results = 'PASS';
-document.getElementById("results").innerText = results;
+test(() => {
+  var widths1 = getLineWidths(0);
+  var widths2 = getLineWidths(1);
+  assert_equals(widths1.length, widths2.length,
+    'FAIL: different number of lines, got ' + widths2.length + ', expected ' + widths1.length);
 
+  for (var i = 0; i < widths1.length; ++i) {
+    assert_equals(widths2[i], widths1[i],
+      'FAIL: line[' + i + '] width differs, got ' + widths2[i] + ', expected ' + widths1[i]);
+  }
+});
 </script>
 </body>
 </html>

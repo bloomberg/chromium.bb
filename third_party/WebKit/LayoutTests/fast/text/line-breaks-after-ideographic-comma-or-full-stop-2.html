@@ -1,12 +1,13 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <p>
     This tests that a line break is prohibited between an ideographic comma and a right corner bracket.
 </p>
 <div id="target" style="font-size: 72px;">&#x3046;&#x3001;&#x0300d;&#x3046;</div>
 <p id="result">Test did not run.</p>
 <script>
-    if (window.testRunner)
-        testRunner.dumpAsText();
-
+test(() => {
     var target = document.getElementById("target");
     var range = document.createRange();
     range.setStart(target.firstChild, 0);
@@ -18,6 +19,6 @@
     range.setStart(target.firstChild, 2);
     range.setEnd(target.firstChild, 3);
 
-    document.getElementById("result").innerText = 
-        range.getBoundingClientRect().top == rect.top ? "PASS" : "FAIL";
+    assert_equals(range.getBoundingClientRect().top, rect.top);
+});
 </script>
