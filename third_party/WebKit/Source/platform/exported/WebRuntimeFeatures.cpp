@@ -120,10 +120,6 @@ void WebRuntimeFeatures::EnableDisplayList2dCanvas(bool enable) {
   RuntimeEnabledFeatures::SetDisplayList2dCanvasEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableDocumentWriteEvaluator(bool enable) {
-  RuntimeEnabledFeatures::SetDocumentWriteEvaluatorEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableExperimentalCanvasFeatures(bool enable) {
   RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(enable);
 }

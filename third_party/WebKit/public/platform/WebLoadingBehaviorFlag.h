@@ -16,6 +16,7 @@ enum WebLoadingBehaviorFlag {
   kWebLoadingBehaviorNone = 0,
   // Indicates that the page used the document.write evaluator to preload scan
   // for resources inserted via document.write.
+  // DEPRECATED, feature has been turned down.
   kWebLoadingBehaviorDocumentWriteEvaluator = 1 << 0,
   // Indicates that the page is controlled by a Service Worker.
   kWebLoadingBehaviorServiceWorkerControlled = 1 << 1,

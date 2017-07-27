@@ -130,8 +130,6 @@ class BackgroundHTMLParser {
   std::unique_ptr<CompactHTMLTokenStream> pending_tokens_;
   const size_t pending_token_limit_;
   PreloadRequestStream pending_preloads_;
-  // Indices into |m_pendingTokens|.
-  Vector<int> likely_document_write_script_indices_;
   ViewportDescriptionWrapper viewport_description_;
   XSSInfoStream pending_xss_infos_;
 

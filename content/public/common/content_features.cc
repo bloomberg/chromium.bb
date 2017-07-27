@@ -71,12 +71,6 @@ const base::Feature kCompositeOpaqueScrollers{"CompositeOpaqueScrollers",
 const base::Feature kCompositorTouchAction{"CompositorTouchAction",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Speculatively pre-evaluate Javascript which will likely use document.write to
-// load an external script. The feature extracts the written markup and sends it
-// to the preload scanner.
-const base::Feature kDocumentWriteEvaluator{"DocumentWriteEvaluator",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Throttle tasks in Blink background timer queues based on CPU budgets
 // for the background tab. Bug: https://crbug.com/639852.
 const base::Feature kExpensiveBackgroundTimerThrottling{

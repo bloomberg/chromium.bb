@@ -58976,6 +58976,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PreloadScanner.DocumentWrite.ExecutionTime.Failure" units="ms">
+  <obsolete>
+    DocumentWriteEvaluator was removed in 07/2017
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     Time spent executing a script tag in the blink preload scanner, for the
@@ -58985,6 +58988,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PreloadScanner.DocumentWrite.ExecutionTime.Success" units="ms">
+  <obsolete>
+    DocumentWriteEvaluator was removed in 07/2017
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     Time spent executing a script tag in the blink preload scanner, for the
@@ -58995,6 +59001,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PreloadScanner.DocumentWrite.GatedEvaluation"
     enum="DocumentWriteGatedEvaluation">
+  <obsolete>
+    DocumentWriteEvaluator was removed in 07/2017
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     The reason a particular inline script was blocked from evaluation.
@@ -59002,6 +59011,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PreloadScanner.DocumentWrite.InitializationTime" units="ms">
+  <obsolete>
+    DocumentWriteEvaluator was removed in 07/2017
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     Time spent initializing a new V8 context for the purpose of evaluating it
@@ -95684,22 +95696,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram
       name="PageLoad.Clients.DocWrite.Block.Timing2.ParseDuration"/>
   <affected-histogram
-      name="PageLoad.Clients.DocWrite.Evaluator.PaintTiming.NavigationToFirstContentfulPaint"/>
-  <affected-histogram
-      name="PageLoad.Clients.DocWrite.Evaluator.ParseTiming.ParseBlockedOnScriptLoad"/>
-  <affected-histogram
-      name="PageLoad.Clients.DocWrite.Evaluator.ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite"/>
-  <affected-histogram
-      name="PageLoad.Clients.DocWrite.Evaluator.ParseTiming.ParseDuration"/>
-  <affected-histogram
-      name="PageLoad.Clients.DocWrite.Evaluator.Timing2.NavigationToFirstContentfulPaint"/>
-  <affected-histogram
-      name="PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseBlockedOnScriptLoad"/>
-  <affected-histogram
-      name="PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite"/>
-  <affected-histogram
-      name="PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseDuration"/>
-  <affected-histogram
       name="PageLoad.Clients.MultiTabLoading.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
   <affected-histogram
       name="PageLoad.Clients.MultiTabLoading.DocumentTiming.NavigationToLoadEventFired"/>
@@ -95949,9 +95945,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="PageLoadMetrics from a page that has synchronous, cross-origin
              document.written scripts that could be blocked if the
              document.write script blocking feature is enabled."/>
-  <suffix name="Clients.DocWrite.Evaluator"
-      label="PageLoadMetrics from a page that could have been evaluated by
-             the DocumentWriteEvaluator"/>
   <affected-histogram
       name="PageLoad.Experimental.PaintTiming.ParseStartToFirstMeaningfulPaint"/>
   <affected-histogram
