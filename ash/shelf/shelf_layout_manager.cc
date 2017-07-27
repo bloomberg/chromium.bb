@@ -1108,6 +1108,11 @@ void ShelfLayoutManager::StartGestureDrag(
     Shell::Get()->SetAppListYPosition(gesture_in_screen.location().y());
     gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
   } else {
+    // Disable the shelf dragging if the fullscreen app list is opened.
+    if (app_list::features::IsFullscreenAppListEnabled() &&
+        is_app_list_visible_) {
+      return;
+    }
     gesture_drag_status_ = GESTURE_DRAG_IN_PROGRESS;
     gesture_drag_auto_hide_state_ = visibility_state() == SHELF_AUTO_HIDE
                                         ? auto_hide_state()

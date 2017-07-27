@@ -1482,6 +1482,52 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   }
 }
 
+// Swiping on shelf when fullscreen app list is opened should have no effect.
+TEST_F(ShelfLayoutManagerTest, SwipingOnShelfIfFullscreenAppListOpened) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      app_list::features::kEnableFullscreenAppList);
+  Shelf* shelf = GetPrimaryShelf();
+  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+  aura::Window* root_window =
+      RootWindowController::ForTargetRootWindow()->GetRootWindow();
+  layout_manager->OnAppListVisibilityChanged(true, root_window);
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+
+  // Note: A window must be visible in order to hide the shelf.
+  CreateTestWidget();
+
+  ui::test::EventGenerator& generator(GetEventGenerator());
+  constexpr base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
+  constexpr int kNumScrollSteps = 4;
+  gfx::Point start = GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint();
+
+  // Swiping down on shelf when the fullscreen app list is opened
+  // should not hide the shelf.
+  gfx::Point end = start + gfx::Vector2d(0, 120);
+  generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+
+  // Swiping left on shelf when the fullscreen app list is opened
+  // should not hide the shelf.
+  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  end = start + gfx::Vector2d(-120, 0);
+  generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+
+  // Swiping right on shelf when the fullscreen app list is opened
+  // should not hide the shelf.
+  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  end = start + gfx::Vector2d(120, 0);
+  generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+}
+
 TEST_F(ShelfLayoutManagerTest, WindowVisibilityDisablesAutoHide) {
   UpdateDisplay("800x600,800x600");
   Shelf* shelf = GetPrimaryShelf();
