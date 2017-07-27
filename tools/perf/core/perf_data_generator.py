@@ -594,7 +594,10 @@ def generate_isolate_script_entry(swarming_dimensions, test_args,
       'ignore_task_failure': ignore_task_failure,
       'io_timeout': 3600,
       'dimension_sets': swarming_dimensions,
+      'upload_test_results': False,
     }
+    if step_name in BENCHMARKS_TO_UPLOAD_TO_FLAKINESS_DASHBOARD:
+      result['swarming']['upload_test_results'] = True
   return result
 
 
