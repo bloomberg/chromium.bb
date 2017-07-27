@@ -26,7 +26,6 @@ if os.path.basename(_containing_dir) == 'third_party':
 # List of third_party directories that might need subpaths added to search.
 _extra_import_paths = [
     'dpkt',
-    os.path.join('gdata', 'src'),
     'google',
     'pyelftools',
 ]
