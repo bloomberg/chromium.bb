@@ -7032,6 +7032,38 @@ TEST_F(PersonalDataManagerTest, RemoveProfilesNotUsedSinceTimestamp) {
     histogram_tester.ExpectTotalCount(kHistogramName, 1);
     histogram_tester.ExpectBucketCount(kHistogramName, 6, 1);
   }
+
+  // Verify all profiles are removed if they're all disused.
+  {
+    // Create a working copy of the profile pointers.
+    std::vector<AutofillProfile*> profiles(all_profile_ptrs);
+
+    // Filter the profiles while capturing histograms.
+    base::HistogramTester histogram_tester;
+    PersonalDataManager::RemoveProfilesNotUsedSinceTimestamp(
+        kNow + base::TimeDelta::FromDays(1), &profiles);
+
+    // Validate that we get the expected filtered profiles and histograms.
+    EXPECT_TRUE(profiles.empty());
+    histogram_tester.ExpectTotalCount(kHistogramName, 1);
+    histogram_tester.ExpectBucketCount(kHistogramName, kNumProfiles, 1);
+  }
+
+  // Verify all profiles are retained if they're sufficiently recently used.
+  {
+    // Create a working copy of the profile pointers.
+    std::vector<AutofillProfile*> profiles(all_profile_ptrs);
+
+    // Filter the profiles while capturing histograms.
+    base::HistogramTester histogram_tester;
+    PersonalDataManager::RemoveProfilesNotUsedSinceTimestamp(
+        kNow - base::TimeDelta::FromDays(720), &profiles);
+
+    // Validate that we get the expected filtered profiles and histograms.
+    EXPECT_EQ(all_profile_ptrs, profiles);
+    histogram_tester.ExpectTotalCount(kHistogramName, 1);
+    histogram_tester.ExpectBucketCount(kHistogramName, 0, 1);
+  }
 }
 
 }  // namespace autofill
