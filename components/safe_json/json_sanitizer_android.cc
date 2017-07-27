@@ -51,20 +51,13 @@ class JsonSanitizerAndroid : public JsonSanitizer {
   StringCallback success_callback_;
   StringCallback error_callback_;
 
-  // Runs the callbacks. Stored as a member because grabbing it when posting
-  // the callbacks (being called from Java) fails under certain circumstances
-  // (https://crbug.com/739510).
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
   DISALLOW_COPY_AND_ASSIGN(JsonSanitizerAndroid);
 };
 
 JsonSanitizerAndroid::JsonSanitizerAndroid(
     const StringCallback& success_callback,
     const StringCallback& error_callback)
-    : success_callback_(success_callback),
-      error_callback_(error_callback),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+    : success_callback_(success_callback), error_callback_(error_callback) {}
 
 void JsonSanitizerAndroid::Sanitize(const std::string& unsafe_json) {
   // The JSON parser only accepts wellformed UTF-8.
@@ -83,11 +76,13 @@ void JsonSanitizerAndroid::Sanitize(const std::string& unsafe_json) {
 }
 
 void JsonSanitizerAndroid::OnSuccess(const std::string& json) {
-  task_runner_->PostTask(FROM_HERE, base::Bind(success_callback_, json));
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(success_callback_, json));
 }
 
 void JsonSanitizerAndroid::OnError(const std::string& error) {
-  task_runner_->PostTask(FROM_HERE, base::Bind(error_callback_, error));
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(error_callback_, error));
 }
 
 }  // namespace
