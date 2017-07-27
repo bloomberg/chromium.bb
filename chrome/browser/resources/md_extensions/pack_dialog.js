@@ -54,18 +54,18 @@ cr.define('extensions', function() {
 
     /** @private */
     onRootBrowse_: function() {
-      this.delegate.choosePackRootDirectory().then(function(path) {
+      this.delegate.choosePackRootDirectory().then(path => {
         if (path)
           this.set('packDirectory_', path);
-      }.bind(this));
+      });
     },
 
     /** @private */
     onKeyBrowse_: function() {
-      this.delegate.choosePrivateKeyPath().then(function(path) {
+      this.delegate.choosePrivateKeyPath().then(path => {
         if (path)
           this.set('keyFile_', path);
-      }.bind(this));
+      });
     },
 
     /** @private */

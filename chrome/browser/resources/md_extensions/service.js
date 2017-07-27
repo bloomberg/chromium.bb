@@ -43,14 +43,13 @@ cr.define('extensions', function() {
       chrome.developerPrivate.onItemStateChanged.addListener(
           this.onItemStateChanged_.bind(this));
       chrome.developerPrivate.getExtensionsInfo(
-          {includeDisabled: true, includeTerminated: true},
-          function(extensions) {
+          {includeDisabled: true, includeTerminated: true}, extensions => {
             this.extensions_ = extensions;
             for (let extension of extensions)
               this.manager_.addItem(extension);
 
             this.manager_.initPage();
-          }.bind(this));
+          });
       chrome.developerPrivate.getProfileConfiguration(
           this.onProfileStateChanged_.bind(this));
     }
@@ -181,13 +180,13 @@ cr.define('extensions', function() {
       if (this.isDeleting_)
         return;
       this.isDeleting_ = true;
-      chrome.management.uninstall(id, {showConfirmDialog: true}, function() {
+      chrome.management.uninstall(id, {showConfirmDialog: true}, () => {
         // The "last error" was almost certainly the user canceling the dialog.
         // Do nothing. We only check it so we don't get noisy logs.
         /** @suppress {suspiciousCode} */
         chrome.runtime.lastError;
         this.isDeleting_ = false;
-      }.bind(this));
+      });
     }
 
     /** @override */

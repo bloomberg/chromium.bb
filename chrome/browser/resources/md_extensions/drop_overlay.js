@@ -12,12 +12,12 @@ Polymer({
     var dragTarget = document.documentElement;
     this.dragWrapperHandler_ =
         new extensions.DragAndDropHandler(true, dragTarget);
-    dragTarget.addEventListener('extension-drag-started', function() {
+    dragTarget.addEventListener('extension-drag-started', () => {
       this.hidden = false;
-    }.bind(this));
-    dragTarget.addEventListener('extension-drag-ended', function() {
+    });
+    dragTarget.addEventListener('extension-drag-ended', () => {
       this.hidden = true;
-    }.bind(this));
+    });
     this.dragWrapper_ =
         new cr.ui.DragWrapper(dragTarget, this.dragWrapperHandler_);
   },

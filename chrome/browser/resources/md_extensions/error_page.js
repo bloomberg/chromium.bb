@@ -138,9 +138,9 @@ cr.define('extensions', function() {
               0;
           break;
       }
-      this.delegate.requestFileSource(args).then(function(code) {
+      this.delegate.requestFileSource(args).then(code => {
         this.$['code-section'].code = code;
-      }.bind(this));
+      });
     },
 
     /**

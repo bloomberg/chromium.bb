@@ -21,7 +21,6 @@ module.exports = {
       },
     ],
     'semi': ['error', 'always'],
-    'arrow-parens': ['error', 'always'],
 
     // TODO(dpapad): Add more checks according to our styleguide.
   },
