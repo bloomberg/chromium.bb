@@ -28,6 +28,7 @@ source_set("cast_media_android") {
     ":audio_track_java",
     ":audio_track_jni_headers",
     "//base",
+    "//chromecast:chromecast_features",
     "//chromecast/base",
     "//chromecast/media/cma/backend:null",
     "//chromecast/media/cma/base",
