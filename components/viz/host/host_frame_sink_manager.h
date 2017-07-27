@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_VIZ_HOST_HOST_FRAME_SINK_MANAGER_H_
 #define COMPONENTS_VIZ_HOST_HOST_FRAME_SINK_MANAGER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
@@ -122,6 +124,10 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
    private:
     DISALLOW_COPY_AND_ASSIGN(FrameSinkData);
   };
+
+  // Assigns the temporary reference to the frame sink that is expected to
+  // embeded |surface_id|, otherwise drops the temporary reference.
+  void PerformAssignTemporaryReference(const SurfaceId& surface_id);
 
   // cc::mojom::FrameSinkManagerClient:
   void OnSurfaceCreated(const SurfaceInfo& surface_info) override;

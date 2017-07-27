@@ -135,9 +135,38 @@ HostFrameSinkManager::CreateCompositorFrameSinkSupport(
   return support;
 }
 
+void HostFrameSinkManager::PerformAssignTemporaryReference(
+    const SurfaceId& surface_id) {
+  // Find the expected embedder for the new surface and assign the temporary
+  // reference to it.
+  auto iter = frame_sink_data_map_.find(surface_id.frame_sink_id());
+  if (iter != frame_sink_data_map_.end()) {
+    const FrameSinkData& data = iter->second;
+
+    // Display roots don't have temporary references to assign.
+    if (data.is_root)
+      return;
+
+    if (data.parent.has_value()) {
+      frame_sink_manager_impl_->AssignTemporaryReference(surface_id,
+                                                         data.parent.value());
+      return;
+    }
+  }
+
+  // We don't have any hierarchy information for what will embed the new
+  // surface, drop the temporary reference.
+  frame_sink_manager_->DropTemporaryReference(surface_id);
+}
+
 void HostFrameSinkManager::OnSurfaceCreated(const SurfaceInfo& surface_info) {
   for (auto& observer : observers_)
     observer.OnSurfaceCreated(surface_info);
+
+  if (frame_sink_manager_impl_ &&
+      frame_sink_manager_impl_->surface_manager()->using_surface_references()) {
+    PerformAssignTemporaryReference(surface_info.id());
+  }
 }
 
 void HostFrameSinkManager::OnClientConnectionClosed(
