@@ -5,8 +5,17 @@
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
 
 #include "base/files/file_util.h"
+#include "base/task_scheduler/lazy_task_runner.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/common/file_utilities_messages.h"
+
+namespace {
+
+base::LazySequencedTaskRunner g_file_utility_task_runner =
+    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock(), base::TaskPriority::USER_VISIBLE));
+
+}  // namespace
 
 namespace content {
 
@@ -18,11 +27,11 @@ FileUtilitiesMessageFilter::FileUtilitiesMessageFilter(int process_id)
 FileUtilitiesMessageFilter::~FileUtilitiesMessageFilter() {
 }
 
-void FileUtilitiesMessageFilter::OverrideThreadForMessage(
-    const IPC::Message& message,
-    BrowserThread::ID* thread) {
+base::TaskRunner* FileUtilitiesMessageFilter::OverrideTaskRunnerForMessage(
+    const IPC::Message& message) {
   if (IPC_MESSAGE_CLASS(message) == FileUtilitiesMsgStart)
-    *thread = BrowserThread::FILE;
+    return g_file_utility_task_runner.Get().get();
+  return nullptr;
 }
 
 bool FileUtilitiesMessageFilter::OnMessageReceived(
