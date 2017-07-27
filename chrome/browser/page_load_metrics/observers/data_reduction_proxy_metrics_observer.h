@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "components/ukm/ukm_source.h"
 
@@ -104,6 +105,7 @@ class DataReductionProxyMetricsObserver
                    const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
                             extra_request_compelte_info) override;
+  void OnEventOccurred(const void* const event_key) override;
 
  private:
   // Sends the page load information to the pingback client.
@@ -123,6 +125,9 @@ class DataReductionProxyMetricsObserver
   // The browser context this navigation is operating in.
   content::BrowserContext* browser_context_;
 
+  // True if a Preview opt out occurred during this page load.
+  bool opted_out_;
+
   // The number of resources that used data reduction proxy.
   int num_data_reduction_proxy_resources_;
 
@@ -138,6 +143,8 @@ class DataReductionProxyMetricsObserver
 
   // The total network bytes used.
   int64_t network_bytes_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyMetricsObserver);
 };

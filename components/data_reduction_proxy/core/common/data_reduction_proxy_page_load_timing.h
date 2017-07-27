@@ -27,7 +27,8 @@ struct DataReductionProxyPageLoadTiming {
       const base::Optional<base::TimeDelta>& parse_stop,
       int64_t network_bytes,
       int64_t original_network_bytes,
-      bool app_background_occurred);
+      bool app_background_occurred,
+      bool opt_out_occurred);
 
   DataReductionProxyPageLoadTiming(
       const DataReductionProxyPageLoadTiming& other);
@@ -60,6 +61,8 @@ struct DataReductionProxyPageLoadTiming {
   const int64_t original_network_bytes;
   // True when android app background occurred during the page load lifetime.
   const bool app_background_occurred;
+  // True when the user clicks "Show Original" on the Previews infobar.
+  const bool opt_out_occurred;
 };
 
 }  // namespace data_reduction_proxy

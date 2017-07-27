@@ -5,12 +5,11 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 
 #include <stdint.h>
+#include <string>
 
-#include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
@@ -39,8 +38,7 @@ static const char kHistogramAttempted[] =
 // timing and data reduction proxy state.
 void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
                               const DataReductionProxyPageLoadTiming& timing,
-                              PageloadMetrics* request,
-                              bool opted_out) {
+                              PageloadMetrics* request) {
   request->set_session_key(request_data.session_key());
   request->set_holdback_group(params::HoldbackFieldTrialGroup());
   // For the timing events, any of them could be zero. Fill the message as a
@@ -123,7 +121,7 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
     return;
   }
 
-  if (opted_out) {
+  if (timing.opt_out_occurred) {
     request->set_previews_opt_out(PageloadMetrics_PreviewsOptOut_OPT_OUT);
     return;
   }
@@ -151,7 +149,6 @@ DataReductionProxyPingbackClient::DataReductionProxyPingbackClient(
       pingback_reporting_fraction_(0.0) {}
 
 DataReductionProxyPingbackClient::~DataReductionProxyPingbackClient() {
-  DCHECK(opt_outs_.empty());
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
@@ -175,17 +172,8 @@ void DataReductionProxyPingbackClient::SendPingback(
   if (!send_pingback)
     return;
 
-  bool opted_out = false;
-  if (request_data.page_id()) {
-    auto opt_out = opt_outs_.find(NavigationID(request_data.page_id().value(),
-                                               request_data.session_key()));
-    opted_out = opt_out != opt_outs_.end();
-    if (opted_out)
-      opt_outs_.erase(opt_out);
-  }
-
   PageloadMetrics* pageload_metrics = metrics_request_.add_pageloads();
-  AddDataToPageloadMetrics(request_data, timing, pageload_metrics, opted_out);
+  AddDataToPageloadMetrics(request_data, timing, pageload_metrics);
   if (current_fetcher_.get())
     return;
   DCHECK_EQ(1, metrics_request_.pageloads_size());
@@ -259,28 +247,6 @@ void DataReductionProxyPingbackClient::SetPingbackReportingFraction(
   DCHECK_LE(0.0f, pingback_reporting_fraction);
   DCHECK_GE(1.0f, pingback_reporting_fraction);
   pingback_reporting_fraction_ = pingback_reporting_fraction;
-}
-
-void DataReductionProxyPingbackClient::AddOptOut(
-    const NavigationID& navigation_id) {
-  opt_outs_.emplace(navigation_id);
-}
-
-void DataReductionProxyPingbackClient::ClearNavigationKeySync(
-    const NavigationID& navigation_id) {
-  opt_outs_.erase(navigation_id);
-}
-
-void DataReductionProxyPingbackClient::ClearNavigationKeyAsync(
-    const NavigationID& navigation_id) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&DataReductionProxyPingbackClient::ClearNavigationKeySync,
-                 base::Unretained(this), navigation_id));
-}
-
-size_t DataReductionProxyPingbackClient::OptOutsSizeForTesting() const {
-  return opt_outs_.size();
 }
 
 }  // namespace data_reduction_proxy
