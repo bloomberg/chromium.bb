@@ -262,7 +262,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private CompositorViewHolder mCompositorViewHolder;
     private InsetObserverView mInsetObserverView;
     private ContextualSearchManager mContextualSearchManager;
-    private ReaderModeManager mReaderModeManager;
+    protected ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
     private DataUseSnackbarController mDataUseSnackbarController;
     private DataReductionPromoSnackbarController mDataReductionPromoSnackbarController;

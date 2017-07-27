@@ -31,7 +31,7 @@ public class ReaderModeInfoBar extends InfoBar {
     private View.OnClickListener mNavigateListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (getReaderModeManager() != null) getReaderModeManager().navigateToReaderMode();
+            if (getReaderModeManager() != null) getReaderModeManager().activateReaderMode();
         }
     };
 

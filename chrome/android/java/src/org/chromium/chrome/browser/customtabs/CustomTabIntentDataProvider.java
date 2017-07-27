@@ -141,7 +141,7 @@ public class CustomTabIntentDataProvider {
     private boolean mIsOpenedByChrome;
 
     /**
-     * Add extras to customize menu items for openning payment request UI custom tab from Chrome.
+     * Add extras to customize menu items for opening payment request UI custom tab from Chrome.
      */
     public static void addPaymentRequestUIExtras(Intent intent) {
         intent.putExtra(EXTRA_UI_TYPE, CUSTOM_TABS_UI_TYPE_PAYMENT_REQUEST);

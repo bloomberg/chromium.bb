@@ -91,7 +91,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                 requestDesktopSiteVisible = false;
                 addToHomeScreenVisible = false;
             } else if (mUiType == CUSTOM_TABS_UI_TYPE_PAYMENT_REQUEST) {
-                // Only the icon row and 'find in page' are shown for openning payment request UI
+                // Only the icon row and 'find in page' are shown for opening payment request UI
                 // from Chrome.
                 openInChromeItemVisible = false;
                 requestDesktopSiteVisible = false;

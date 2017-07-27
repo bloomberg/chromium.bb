@@ -14,6 +14,10 @@ class WebContents;
 // takes ownership over the old WebContents after swapping in the new one.
 void DistillCurrentPageAndView(content::WebContents* old_web_contents);
 
+// Starts distillation in the |source_web_contents|. The viewer needs to be
+// created separatly.
+void DistillCurrentPage(content::WebContents* source_web_contents);
+
 // Starts distillation in the |source_web_contents| while navigating the
 // |destination_web_contents| to view the distilled content. This does not take
 // ownership of any WebContents.
