@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_toggle_style_css.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
@@ -20,7 +21,7 @@
 
 <dom-module id="extensions-item">
   <template>
-    <style include="iron-flex cr-hidden-style action-link paper-button-style">
+    <style include="iron-flex cr-hidden-style action-link paper-button-style paper-toggle-style">
       #icon-wrapper {
         align-self: flex-start;
         display: flex;
@@ -143,6 +144,7 @@
       }
 
       paper-toggle-button {
+        -webkit-margin-end: 8px; /* Avoid ripple from overlapping container. */
         cursor: pointer;
       }
 
