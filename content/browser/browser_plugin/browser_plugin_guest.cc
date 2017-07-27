@@ -212,12 +212,6 @@ void BrowserPluginGuest::Init() {
     return;
   initialized_ = true;
 
-  // TODO(fsamuel): Initiailization prior to attachment should be behind a
-  // command line flag once we introduce experimental guest types that rely on
-  // this functionality.
-  if (!delegate_->CanRunInDetachedState())
-    return;
-
   WebContentsImpl* owner_web_contents = static_cast<WebContentsImpl*>(
       delegate_->GetOwnerWebContents());
   owner_web_contents->CreateBrowserPluginEmbedderIfNecessary();

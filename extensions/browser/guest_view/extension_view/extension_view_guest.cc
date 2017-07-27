@@ -66,10 +66,6 @@ bool ExtensionViewGuest::NavigateGuest(const std::string& src,
 }
 
 // GuestViewBase implementation.
-bool ExtensionViewGuest::CanRunInDetachedState() const {
-  return true;
-}
-
 void ExtensionViewGuest::CreateWebContents(
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
