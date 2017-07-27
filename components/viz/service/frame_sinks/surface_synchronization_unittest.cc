@@ -1679,5 +1679,37 @@ TEST_F(SurfaceSynchronizationTest, FrameActivationAfterFrameSinkDestruction) {
   EXPECT_EQ(nullptr, parent_surface);
 }
 
+TEST_F(SurfaceSynchronizationTest, PreviousFrameSurfaceId) {
+  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+
+  // Submit a frame with no dependencies to |parent_id1|.
+  parent_support().SubmitCompositorFrame(
+      parent_id1.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), empty_surface_ids(),
+                          std::vector<cc::TransferableResource>()));
+
+  // Submit a frame with unresolved dependencies to |parent_id2|. The frame
+  // should become pending and previous_frame_surface_id() should return
+  // |parent_id1|.
+  parent_support().SubmitCompositorFrame(
+      parent_id2.local_surface_id(),
+      MakeCompositorFrame({child_id}, empty_surface_ids(),
+                          std::vector<cc::TransferableResource>()));
+  Surface* parent_surface2 =
+      frame_sink_manager().surface_manager()->GetSurfaceForId(parent_id2);
+  EXPECT_FALSE(parent_surface2->HasActiveFrame());
+  EXPECT_TRUE(parent_surface2->HasPendingFrame());
+  EXPECT_EQ(parent_id1, parent_surface2->previous_frame_surface_id());
+
+  // Activate the pending frame in |parent_id2|. previous_frame_surface_id()
+  // should still return |parent_id1|.
+  parent_surface2->ActivatePendingFrameForDeadline();
+  EXPECT_TRUE(parent_surface2->HasActiveFrame());
+  EXPECT_FALSE(parent_surface2->HasPendingFrame());
+  EXPECT_EQ(parent_id1, parent_surface2->previous_frame_surface_id());
+}
+
 }  // namespace test
 }  // namespace viz
