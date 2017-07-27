@@ -3105,6 +3105,8 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       # Currently just support RELEASE builders
       raise ValueError('Do not support builder %s.' % builder)
 
+  hw_test_list = HWTestList(ge_build_config)
+
   for unibuild in config_lib.GetUnifiedBuildConfigAllBuilds(ge_build_config):
     active_waterfall = _GetConfigWaterfall(
         unibuild[config_lib.CONFIG_TEMPLATE_BUILDER])
@@ -3120,7 +3122,9 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
         site_config.templates.release,
         models=models,
         important=not unibuild[config_lib.CONFIG_TEMPLATE_EXPERIMENTAL],
-        active_waterfall=active_waterfall
+        active_waterfall=active_waterfall,
+        hw_tests=hw_test_list.SharedPoolCanary(
+            pool=constants.HWTEST_MACH_POOL_UNI),
     )
 
     master_config.AddSlave(site_config[config_name])
