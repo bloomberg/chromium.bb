@@ -182,7 +182,7 @@ void AnimationPlayer::TransitionFloatTo(base::TimeTicks monotonic_time,
 
   if (transition_.target_properties.find(target_property) ==
       transition_.target_properties.end()) {
-    target_->NotifyClientFloatAnimated(target, nullptr);
+    target_->NotifyClientFloatAnimated(target, target_property, nullptr);
     return;
   }
 
@@ -234,7 +234,8 @@ void AnimationPlayer::TransitionTransformOperationsTo(
 
   if (transition_.target_properties.find(target_property) ==
       transition_.target_properties.end()) {
-    target_->NotifyClientTransformOperationsAnimated(target, nullptr);
+    target_->NotifyClientTransformOperationsAnimated(target, target_property,
+                                                     nullptr);
     return;
   }
 
@@ -280,7 +281,7 @@ void AnimationPlayer::TransitionSizeTo(base::TimeTicks monotonic_time,
 
   if (transition_.target_properties.find(target_property) ==
       transition_.target_properties.end()) {
-    target_->NotifyClientSizeAnimated(target, nullptr);
+    target_->NotifyClientSizeAnimated(target, target_property, nullptr);
     return;
   }
 
@@ -326,7 +327,7 @@ void AnimationPlayer::TransitionColorTo(base::TimeTicks monotonic_time,
 
   if (transition_.target_properties.find(target_property) ==
       transition_.target_properties.end()) {
-    target_->NotifyClientColorAnimated(target, nullptr);
+    target_->NotifyClientColorAnimated(target, target_property, nullptr);
     return;
   }
 
@@ -370,7 +371,7 @@ void AnimationPlayer::TransitionBooleanTo(base::TimeTicks monotonic_time,
 
   if (transition_.target_properties.find(target_property) ==
       transition_.target_properties.end()) {
-    target_->NotifyClientBooleanAnimated(target, nullptr);
+    target_->NotifyClientBooleanAnimated(target, target_property, nullptr);
     return;
   }
 

@@ -20,6 +20,7 @@ static constexpr float kNoise = 1e-6;
 class TestAnimationTarget : public cc::AnimationTarget {
  public:
   TestAnimationTarget() {
+    layout_offset_.AppendTranslate(0, 0, 0);
     operations_.AppendTranslate(0, 0, 0);
     operations_.AppendRotate(1, 0, 0, 0);
     operations_.AppendScale(1, 1, 1);
@@ -27,37 +28,50 @@ class TestAnimationTarget : public cc::AnimationTarget {
 
   const gfx::SizeF& size() const { return size_; }
   const cc::TransformOperations& operations() const { return operations_; }
+  const cc::TransformOperations& layout_offset() const {
+    return layout_offset_;
+  }
   float opacity() const { return opacity_; }
   SkColor background_color() const { return background_color_; }
   bool visible() const { return visible_; }
 
   void NotifyClientSizeAnimated(const gfx::SizeF& size,
+                                int target_property_id,
                                 cc::Animation* animation) override {
     size_ = size;
   }
 
   void NotifyClientTransformOperationsAnimated(
       const cc::TransformOperations& operations,
+      int target_property_id,
       cc::Animation* animation) override {
-    operations_ = operations;
+    if (target_property_id == LAYOUT_OFFSET) {
+      layout_offset_ = operations;
+    } else {
+      operations_ = operations;
+    }
   }
 
   void NotifyClientFloatAnimated(float opacity,
+                                 int target_property_id,
                                  cc::Animation* animation) override {
     opacity_ = opacity;
   }
 
   void NotifyClientColorAnimated(SkColor color,
+                                 int target_property_id,
                                  cc::Animation* animation) override {
     background_color_ = color;
   }
 
   void NotifyClientBooleanAnimated(bool visible,
+                                   int target_property_id,
                                    cc::Animation* animation) override {
     visible_ = visible;
   }
 
  private:
+  cc::TransformOperations layout_offset_;
   cc::TransformOperations operations_;
   gfx::SizeF size_ = {10.0f, 10.0f};
   float opacity_ = 1.0f;
@@ -254,6 +268,46 @@ TEST(AnimationPlayerTest, ReversedOpacityTransitions) {
 
   player.Tick(start_time + UsToDelta(2000));
   EXPECT_EQ(from, target.opacity());
+}
+
+TEST(AnimationPlayerTest, LayoutOffsetTransitions) {
+  // In this test, we do expect exact equality.
+  float tolerance = 0.0f;
+  TestAnimationTarget target;
+  AnimationPlayer player;
+  player.set_target(&target);
+  Transition transition;
+  transition.target_properties = {TargetProperty::LAYOUT_OFFSET};
+  transition.duration = UsToDelta(10000);
+  player.set_transition(transition);
+  base::TimeTicks start_time = UsToTicks(1000000);
+  player.Tick(start_time);
+
+  cc::TransformOperations from = target.layout_offset();
+
+  cc::TransformOperations to;
+  to.AppendTranslate(8, 0, 0);
+
+  player.TransitionTransformOperationsTo(
+      start_time, TargetProperty::LAYOUT_OFFSET, from, to);
+
+  EXPECT_TRUE(from.ApproximatelyEqual(target.layout_offset(), tolerance));
+  player.Tick(start_time);
+
+  // Scheduling a redundant, approximately equal transition should be ignored.
+  int animation_id = player.animations().front()->id();
+  cc::TransformOperations nearby = to;
+  nearby.at(0).translate.x += kNoise;
+  player.TransitionTransformOperationsTo(
+      start_time, TargetProperty::LAYOUT_OFFSET, from, nearby);
+  EXPECT_EQ(animation_id, player.animations().front()->id());
+
+  player.Tick(start_time + UsToDelta(5000));
+  EXPECT_LT(from.at(0).translate.x, target.layout_offset().at(0).translate.x);
+  EXPECT_GT(to.at(0).translate.x, target.layout_offset().at(0).translate.x);
+
+  player.Tick(start_time + UsToDelta(10000));
+  EXPECT_TRUE(to.ApproximatelyEqual(target.layout_offset(), tolerance));
 }
 
 TEST(AnimationPlayerTest, TransformTransitions) {

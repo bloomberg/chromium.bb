@@ -40,11 +40,11 @@ TEST(UiElements, AnimationAffectsInheritableTransform) {
   base::TimeTicks start_time = UsToTicks(1);
   rect.Animate(start_time);
   gfx::Point3F p;
-  rect.transform_operations().Apply().TransformPoint(&p);
+  rect.LocalTransform().TransformPoint(&p);
   EXPECT_VECTOR3DF_EQ(gfx::Vector3dF(10, 100, 1000), p);
   p = gfx::Point3F();
   rect.Animate(start_time + UsToDelta(10000));
-  rect.transform_operations().Apply().TransformPoint(&p);
+  rect.LocalTransform().TransformPoint(&p);
   EXPECT_VECTOR3DF_EQ(gfx::Vector3dF(20, 200, 2000), p);
 }
 

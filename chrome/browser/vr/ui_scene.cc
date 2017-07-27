@@ -144,7 +144,7 @@ void UiScene::ApplyRecursiveTransforms(UiElement* element) {
 
   // Compute an inheritable transformation that can be applied to this element,
   // and it's children, if applicable.
-  gfx::Transform inheritable = element->transform_operations().Apply();
+  gfx::Transform inheritable = element->LocalTransform();
 
   if (parent) {
     ApplyRecursiveTransforms(parent);

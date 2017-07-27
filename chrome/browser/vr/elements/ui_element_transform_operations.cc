@@ -10,18 +10,11 @@ namespace vr {
 
 UiElementTransformOperations::UiElementTransformOperations() {
   operations_.AppendTranslate(0, 0, 0);
-  operations_.AppendTranslate(0, 0, 0);
   operations_.AppendRotate(1, 0, 0, 0);
   operations_.AppendScale(1, 1, 1);
 }
 
 UiElementTransformOperations::~UiElementTransformOperations() {}
-
-void UiElementTransformOperations::SetLayoutOffset(float x, float y) {
-  cc::TransformOperation& op = operations_.at(UiElement::kLayoutOffsetIndex);
-  op.translate = {x, y, 0};
-  op.Bake();
-}
 
 void UiElementTransformOperations::SetTranslate(float x, float y, float z) {
   cc::TransformOperation& op = operations_.at(UiElement::kTranslateIndex);

@@ -315,7 +315,7 @@ void UiSceneManager::CreateContentQuad() {
 
   // Limit reticle distance to a sphere based on content distance.
   scene_->set_background_distance(
-      main_content_->transform_operations().Apply().matrix().get(2, 3) *
+      main_content_->LocalTransform().matrix().get(2, 3) *
       -kBackgroundDistanceMultiplier);
 }
 
@@ -615,7 +615,7 @@ void UiSceneManager::ConfigureScene() {
     close_button_->SetSize(kCloseButtonWidth, kCloseButtonHeight);
   }
   scene_->set_background_distance(
-      main_content_->transform_operations().Apply().matrix().get(2, 3) *
+      main_content_->LocalTransform().matrix().get(2, 3) *
       -kBackgroundDistanceMultiplier);
 
   for (auto& element : scene_->GetUiElements())
