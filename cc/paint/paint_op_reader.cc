@@ -139,7 +139,7 @@ void PaintOpReader::Read(PaintImage* image) {
 }
 
 void PaintOpReader::Read(sk_sp<SkData>* data) {
-  size_t bytes;
+  size_t bytes = 0;
   ReadSimple(&bytes);
   if (remaining_bytes_ < bytes)
     valid_ = false;
