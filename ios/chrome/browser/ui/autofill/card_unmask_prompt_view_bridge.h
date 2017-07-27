@@ -11,6 +11,8 @@
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 
+extern NSString* const kCardUnmaskPromptCollectionViewAccessibilityID;
+
 @class CardUnmaskPromptViewController;
 
 namespace autofill {

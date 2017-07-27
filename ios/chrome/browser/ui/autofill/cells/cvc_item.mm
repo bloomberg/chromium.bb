@@ -140,6 +140,7 @@ const CGFloat kCVCTextFieldWidth = 60;
         ios::GetChromeBrowserProvider()->CreateStyledTextField(CGRectZero);
     _monthInput.placeholder = l10n_util::GetNSString(
         IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH);
+    _monthInput.accessibilityIdentifier = @"month_textField";
     _monthInput.keyboardType = UIKeyboardTypeNumberPad;
     _monthInput.delegate = self;
     _monthInput.translatesAutoresizingMaskIntoConstraints = NO;
@@ -155,6 +156,7 @@ const CGFloat kCVCTextFieldWidth = 60;
         ios::GetChromeBrowserProvider()->CreateStyledTextField(CGRectZero);
     _yearInput.placeholder =
         l10n_util::GetNSString(IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR);
+    _yearInput.accessibilityIdentifier = @"year_textField";
     _yearInput.keyboardType = UIKeyboardTypeNumberPad;
     _yearInput.delegate = self;
     _yearInput.translatesAutoresizingMaskIntoConstraints = NO;
@@ -168,6 +170,7 @@ const CGFloat kCVCTextFieldWidth = 60;
         ios::GetChromeBrowserProvider()->CreateStyledTextField(CGRectZero);
     _CVCInput.placeholder =
         l10n_util::GetNSString(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC);
+    _CVCInput.accessibilityIdentifier = @"CVC_textField";
     _CVCInput.keyboardType = UIKeyboardTypeNumberPad;
     _CVCInput.delegate = self;
     _CVCInput.translatesAutoresizingMaskIntoConstraints = NO;
