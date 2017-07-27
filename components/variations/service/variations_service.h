@@ -86,11 +86,6 @@ class VariationsService
   // Should be called before startup of the main message loop.
   void PerformPreMainMessageLoopStartup();
 
-  // Calls FetchVariationsSeed once and repeats this periodically. See
-  // implementation for details on the period. Must be called after
-  // |CreateTrialsFromSeed|.
-  void StartRepeatedVariationsSeedFetch();
-
   // Adds an observer to listen for detected experiment changes.
   void AddObserver(Observer* observer);
 
@@ -215,6 +210,8 @@ class VariationsService
                            LoadPermanentConsistencyCountry);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CountryHeader);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, GetVariationsServerURL);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, RequestsInitiallyAllowed);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, RequestsInitiallyNotAllowed);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest,
                            SafeMode_SuccessfulFetchClearsFailureStreaks);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest,
@@ -236,6 +233,11 @@ class VariationsService
     LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_NEQ,
     LOAD_COUNTRY_MAX,
   };
+
+  // Calls FetchVariationsSeed once and repeats this periodically. See
+  // implementation for details on the period. Must be called after
+  // |CreateTrialsFromSeed|.
+  void StartRepeatedVariationsSeedFetch();
 
   // Checks if prerequisites for fetching the Variations seed are met, and if
   // so, performs the actual fetch using |DoActualFetch|.

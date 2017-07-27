@@ -278,27 +278,6 @@ void VariationsService::PerformPreMainMessageLoopStartup() {
   StartRepeatedVariationsSeedFetch();
 }
 
-void VariationsService::StartRepeatedVariationsSeedFetch() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Initialize the Variations server URL.
-  variations_server_url_ =
-      GetVariationsServerURL(policy_pref_service_, restrict_mode_);
-
-  // Check that |CreateTrialsFromSeed| was called, which is necessary to
-  // retrieve the serial number that will be sent to the server.
-  DCHECK(field_trial_creator_.create_trials_from_seed_called());
-
-  DCHECK(!request_scheduler_.get());
-  request_scheduler_.reset(VariationsRequestScheduler::Create(
-      base::Bind(&VariationsService::FetchVariationsSeed,
-                 weak_ptr_factory_.GetWeakPtr()),
-      local_state_));
-  // Note that the act of starting the scheduler will start the fetch, if the
-  // scheduler deems appropriate.
-  request_scheduler_->Start();
-}
-
 std::string VariationsService::LoadPermanentConsistencyCountry(
     const base::Version& version,
     const std::string& latest_country) {
@@ -528,6 +507,27 @@ bool VariationsService::StoreSeed(const std::string& seed_data,
 std::unique_ptr<const base::FieldTrial::EntropyProvider>
 VariationsService::CreateLowEntropyProvider() {
   return state_manager_->CreateLowEntropyProvider();
+}
+
+void VariationsService::StartRepeatedVariationsSeedFetch() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Initialize the Variations server URL.
+  variations_server_url_ =
+      GetVariationsServerURL(policy_pref_service_, restrict_mode_);
+
+  // Check that |CreateTrialsFromSeed| was called, which is necessary to
+  // retrieve the serial number that will be sent to the server.
+  DCHECK(field_trial_creator_.create_trials_from_seed_called());
+
+  DCHECK(!request_scheduler_.get());
+  request_scheduler_.reset(VariationsRequestScheduler::Create(
+      base::Bind(&VariationsService::FetchVariationsSeed,
+                 weak_ptr_factory_.GetWeakPtr()),
+      local_state_));
+  // Note that the act of starting the scheduler will start the fetch, if the
+  // scheduler deems appropriate.
+  request_scheduler_->Start();
 }
 
 void VariationsService::FetchVariationsSeed() {
