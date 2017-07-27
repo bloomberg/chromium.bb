@@ -23,6 +23,8 @@
 #include "content/shell/browser/layout_test/layout_test_url_request_context_getter.h"
 #include "content/shell/browser/shell_url_request_context_getter.h"
 #include "content/test/mock_background_sync_controller.h"
+#include "device/geolocation/geolocation_provider.h"
+#include "device/geolocation/geoposition.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_file_job.h"
 
@@ -85,9 +87,22 @@ class MojomProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
 LayoutTestBrowserContext::LayoutTestBrowserContext(bool off_the_record,
                                                    net::NetLog* net_log)
     : ShellBrowserContext(off_the_record, net_log) {
+  Init();
 }
 
 LayoutTestBrowserContext::~LayoutTestBrowserContext() {
+}
+
+void LayoutTestBrowserContext::Init() {
+  // Fake geolocation coordinates for testing.
+  device::Geoposition position;
+  position.latitude = 0;
+  position.longitude = 0;
+  position.altitude = 0;
+  position.accuracy = 0;
+  position.timestamp = base::Time::Now();
+  device::GeolocationProvider::GetInstance()->OverrideLocationForTesting(
+      position);
 }
 
 ShellURLRequestContextGetter*
