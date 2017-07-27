@@ -110,6 +110,7 @@
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/data_protocol_handler.h"
+#include "net/url_request/network_error_logging_delegate.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
@@ -6923,7 +6924,7 @@ TEST_F(URLRequestTestHTTP, ProcessReportToHeaderHTTPS) {
   EXPECT_EQ("foo, bar", reporting_service.headers()[0].header_value);
 }
 
-TEST_F(URLRequestTestHTTP, DontProcessReportToHeaderInvalidHTTPS) {
+TEST_F(URLRequestTestHTTP, DontProcessReportToHeaderInvalidHttps) {
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
   https_test_server.RegisterRequestHandler(base::Bind(&SendReportToHeader));
@@ -6949,6 +6950,160 @@ TEST_F(URLRequestTestHTTP, DontProcessReportToHeaderInvalidHTTPS) {
   EXPECT_TRUE(reporting_service.headers().empty());
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
+
+namespace {
+
+class TestNetworkErrorLoggingDelegate : public NetworkErrorLoggingDelegate {
+ public:
+  struct Header {
+    Header() {}
+    ~Header() {}
+
+    url::Origin origin;
+    std::string value;
+  };
+
+  struct NetworkError {
+    NetworkError() {}
+    ~NetworkError() {}
+
+    url::Origin origin;
+    Error error;
+    NetworkErrorLoggingDelegate::ErrorDetails details;
+  };
+
+  const std::vector<Header>& headers() { return headers_; }
+  const std::vector<NetworkError>& errors() { return errors_; }
+
+  // NetworkErrorLoggingDelegate implementation:
+
+  ~TestNetworkErrorLoggingDelegate() override {}
+
+  void SetReportingService(ReportingService* reporting_service) override {
+    NOTREACHED();
+  }
+
+  void OnHeader(const url::Origin& origin, const std::string& value) override {
+    Header header;
+    header.origin = origin;
+    header.value = value;
+    headers_.push_back(header);
+  }
+
+  void OnNetworkError(const url::Origin& origin,
+                      Error error,
+                      ErrorDetailsCallback details_callback) override {
+    NetworkError network_error;
+    network_error.origin = origin;
+    network_error.error = error;
+    std::move(details_callback).Run(&network_error.details);
+    errors_.push_back(network_error);
+  }
+
+ private:
+  std::vector<Header> headers_;
+  std::vector<NetworkError> errors_;
+};
+
+std::unique_ptr<test_server::HttpResponse> SendNelHeader(
+    const test_server::HttpRequest& request) {
+  std::unique_ptr<test_server::BasicHttpResponse> http_response(
+      new test_server::BasicHttpResponse);
+  http_response->set_code(HTTP_OK);
+  http_response->AddCustomHeader(NetworkErrorLoggingDelegate::kHeaderName,
+                                 "foo");
+  return std::move(http_response);
+}
+
+}  // namespace
+
+TEST_F(URLRequestTestHTTP, DontProcessNelHeaderNoDelegate) {
+  http_test_server()->RegisterRequestHandler(base::Bind(&SendNelHeader));
+  ASSERT_TRUE(http_test_server()->Start());
+  GURL request_url = http_test_server()->GetURL("/");
+
+  TestNetworkDelegate network_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  base::RunLoop().Run();
+}
+
+TEST_F(URLRequestTestHTTP, DontProcessNelHeaderHttp) {
+  http_test_server()->RegisterRequestHandler(base::Bind(&SendNelHeader));
+  ASSERT_TRUE(http_test_server()->Start());
+  GURL request_url = http_test_server()->GetURL("/");
+
+  TestNetworkDelegate network_delegate;
+  TestNetworkErrorLoggingDelegate nel_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_network_error_logging_delegate(&nel_delegate);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  base::RunLoop().Run();
+
+  EXPECT_TRUE(nel_delegate.headers().empty());
+}
+
+TEST_F(URLRequestTestHTTP, ProcessNelHeaderHttps) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.RegisterRequestHandler(base::Bind(&SendNelHeader));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.GetURL("/");
+
+  TestNetworkDelegate network_delegate;
+  TestNetworkErrorLoggingDelegate nel_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_network_error_logging_delegate(&nel_delegate);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  base::RunLoop().Run();
+
+  ASSERT_EQ(1u, nel_delegate.headers().size());
+  EXPECT_EQ(url::Origin(request_url), nel_delegate.headers()[0].origin);
+  EXPECT_EQ("foo", nel_delegate.headers()[0].value);
+}
+
+TEST_F(URLRequestTestHTTP, DontProcessNelHeaderInvalidHttps) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
+  https_test_server.RegisterRequestHandler(base::Bind(&SendNelHeader));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.GetURL("/");
+
+  TestNetworkDelegate network_delegate;
+  TestNetworkErrorLoggingDelegate nel_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_network_error_logging_delegate(&nel_delegate);
+  context.Init();
+
+  TestDelegate d;
+  d.set_allow_certificate_errors(true);
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  base::RunLoop().Run();
+
+  EXPECT_TRUE(d.have_certificate_errors());
+  EXPECT_TRUE(IsCertStatusError(request->ssl_info().cert_status));
+  EXPECT_TRUE(nel_delegate.headers().empty());
+}
 
 TEST_F(URLRequestTestHTTP, ContentTypeNormalizationTest) {
   ASSERT_TRUE(http_test_server()->Start());
