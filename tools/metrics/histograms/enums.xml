@@ -1140,6 +1140,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="SEARCH_PEOPLE"/>
   <int value="5" label="SUGGESTION"/>
   <int value="6" label="LAUNCHER_SEARCH_PROVIDER"/>
+  <int value="7" label="PLAY_STORE_UNINSTALLED_APP"/>
+  <int value="8" label="PLAY_STORE_INSTANT_APP"/>
 </enum>
 
 <enum name="AppListSearchResultDisplayType">

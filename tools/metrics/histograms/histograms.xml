@@ -1895,6 +1895,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Arc.PlayStoreSearch.QueryTime" units="ms">
+  <owner>hejq@chromium.org</owner>
+  <summary>
+    Time between sending an Play Store app discovery request and the storing
+    returned results.
+  </summary>
+</histogram>
+
+<histogram name="Arc.PlayStoreSearch.ReturnedAppsTotal" units="apps">
+  <owner>hejq@chromium.org</owner>
+  <summary>
+    The total number of returned apps of a Play Store app discovery query.
+  </summary>
+</histogram>
+
+<histogram name="Arc.PlayStoreSearch.ReturnedInstantApps" units="apps">
+  <owner>hejq@chromium.org</owner>
+  <summary>
+    The number of returned instant apps of a Play Store app discovery query.
+  </summary>
+</histogram>
+
+<histogram name="Arc.PlayStoreSearch.ReturnedUninstalledApps" units="apps">
+  <owner>hejq@chromium.org</owner>
+  <summary>
+    The number of returned uninstalled apps of a Play Store app discovery query.
+  </summary>
+</histogram>
+
 <histogram name="Arc.PlayStoreShown.TimeDelta" units="ms">
   <owner>yusukes@google.com</owner>
   <owner>khmel@google.com</owner>

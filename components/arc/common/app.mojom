@@ -88,6 +88,17 @@ struct AppDiscoveryResult {
   array<uint8> icon_png_data;
 };
 
+// Describes the status of an app discovery request.
+[Extensible]
+enum AppDiscoveryRequestState {
+  // Request handled successfully.
+  SUCCESS = 0,
+  // Request canceled when a newer request is sent.
+  CANCELED = 1,
+  // Request failed due to any communication error or Play Store internal error.
+  ERROR = 2,
+};
+
 // Next method ID: 18
 interface AppHost {
   // Sends newly added ARC app to Chrome. This message is sent when ARC receives
@@ -253,5 +264,5 @@ interface AppInstance {
   // Starts a query for Play Store apps.
   [MinVersion=20] GetRecentAndSuggestedAppsFromPlayStore@16(
       string query, int32 max_results) =>
-          (array<AppDiscoveryResult> results);
+          (AppDiscoveryRequestState state@1, array<AppDiscoveryResult> results@0);
 };
