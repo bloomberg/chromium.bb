@@ -17,10 +17,6 @@ const char kDisableGLErrorLimit[]           = "disable-gl-error-limit";
 // Disable the GLSL translator.
 const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
 
-// Disable workarounds for various GPU driver bugs.
-const char kDisableGpuDriverBugWorkarounds[] =
-    "disable-gpu-driver-bug-workarounds";
-
 // Turn off user-defined name hashing in shaders.
 const char kDisableShaderNameHashing[]      = "disable-shader-name-hashing";
 

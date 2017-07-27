@@ -96,7 +96,6 @@ GpuService::GpuService(const gpu::GPUInfo& gpu_info,
       watchdog_thread_(std::move(watchdog_thread)),
       gpu_memory_buffer_factory_(
           gpu::GpuMemoryBufferFactory::CreateNativeType()),
-      gpu_workarounds_(base::CommandLine::ForCurrentProcess()),
       gpu_info_(gpu_info),
       gpu_feature_info_(gpu_feature_info),
       bindings_(base::MakeUnique<mojo::BindingSet<mojom::GpuService>>()),
@@ -134,9 +133,11 @@ void GpuService::UpdateGPUInfoFromPreferences(
   DCHECK(main_runner_->BelongsToCurrentThread());
   DCHECK(!gpu_host_);
   gpu_preferences_ = preferences;
+  gpu::GpuDriverBugWorkarounds gpu_workarounds(
+      gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
   gpu_info_.video_decode_accelerator_capabilities =
       media::GpuVideoDecodeAccelerator::GetCapabilities(gpu_preferences_,
-                                                        gpu_workarounds_);
+                                                        gpu_workarounds);
   gpu_info_.video_encode_accelerator_supported_profiles =
       media::GpuVideoEncodeAccelerator::GetSupportedProfiles(gpu_preferences_);
   gpu_info_.jpeg_decode_accelerator_supported =
@@ -187,10 +188,9 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
   gpu_channel_manager_.reset(new gpu::GpuChannelManager(
-      gpu_preferences_, gpu_workarounds_, this, watchdog_thread_.get(),
-      main_runner_, io_runner_, scheduler_.get(), sync_point_manager_,
-      gpu_memory_buffer_factory_.get(), gpu_feature_info_,
-      std::move(activity_flags)));
+      gpu_preferences_, this, watchdog_thread_.get(), main_runner_, io_runner_,
+      scheduler_.get(), sync_point_manager_, gpu_memory_buffer_factory_.get(),
+      gpu_feature_info_, std::move(activity_flags)));
 
   media_gpu_channel_manager_.reset(
       new media::MediaGpuChannelManager(gpu_channel_manager_.get()));

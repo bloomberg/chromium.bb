@@ -47,7 +47,6 @@ const int kMaxKeepAliveTimeMs = 200;
 
 GpuChannelManager::GpuChannelManager(
     const GpuPreferences& gpu_preferences,
-    const GpuDriverBugWorkarounds& workarounds,
     GpuChannelManagerDelegate* delegate,
     GpuWatchdogThread* watchdog,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -60,7 +59,8 @@ GpuChannelManager::GpuChannelManager(
     : task_runner_(task_runner),
       io_task_runner_(io_task_runner),
       gpu_preferences_(gpu_preferences),
-      gpu_driver_bug_workarounds_(workarounds),
+      gpu_driver_bug_workarounds_(
+          gpu_feature_info.enabled_gpu_driver_bug_workarounds),
       delegate_(delegate),
       watchdog_(watchdog),
       share_group_(new gl::GLShareGroup()),

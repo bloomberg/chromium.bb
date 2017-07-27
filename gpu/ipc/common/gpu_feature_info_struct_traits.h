@@ -61,13 +61,25 @@ struct StructTraits<gpu::mojom::GpuFeatureInfoDataView, gpu::GpuFeatureInfo> {
     if (info_status.size() != gpu::NUMBER_OF_GPU_FEATURE_TYPES)
       return false;
     std::copy(info_status.begin(), info_status.end(), out->status_values);
-    return true;
+    return data.ReadEnabledGpuDriverBugWorkarounds(
+               &out->enabled_gpu_driver_bug_workarounds) &&
+           data.ReadDisabledExtensions(&out->disabled_extensions);
   }
 
   static std::vector<gpu::GpuFeatureStatus> status_values(
       const gpu::GpuFeatureInfo& info) {
     return std::vector<gpu::GpuFeatureStatus>(info.status_values,
                                               std::end(info.status_values));
+  }
+
+  static const std::vector<int>& enabled_gpu_driver_bug_workarounds(
+      const gpu::GpuFeatureInfo& info) {
+    return info.enabled_gpu_driver_bug_workarounds;
+  }
+
+  static const std::string& disabled_extensions(
+      const gpu::GpuFeatureInfo& info) {
+    return info.disabled_extensions;
   }
 };
 

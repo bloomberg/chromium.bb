@@ -5,6 +5,8 @@
 #ifndef GPU_CONFIG_GPU_DRIVER_BUG_WORKAROUNDS_H_
 #define GPU_CONFIG_GPU_DRIVER_BUG_WORKAROUNDS_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
@@ -22,22 +24,23 @@ namespace gpu {
 class GPU_EXPORT GpuDriverBugWorkarounds {
  public:
   GpuDriverBugWorkarounds();
+  explicit GpuDriverBugWorkarounds(const std::vector<int>&);
   explicit GpuDriverBugWorkarounds(const base::CommandLine* command_line);
 
   GpuDriverBugWorkarounds(const GpuDriverBugWorkarounds& other);
 
   ~GpuDriverBugWorkarounds();
 
-#define GPU_OP(type, name) bool name;
+#define GPU_OP(type, name) bool name = false;
   GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
 #undef GPU_OP
 
   // Note: 0 here means use driver limit.
-  GLint max_texture_size;
-  GLint max_fragment_uniform_vectors;
-  GLint max_varying_vectors;
-  GLint max_vertex_uniform_vectors;
-  GLint max_copy_texture_chromium_size;
+  GLint max_texture_size = 0;
+  GLint max_fragment_uniform_vectors = 0;
+  GLint max_varying_vectors = 0;
+  GLint max_vertex_uniform_vectors = 0;
+  GLint max_copy_texture_chromium_size = 0;
 };
 
 }  // namespace gpu

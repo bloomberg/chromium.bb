@@ -240,18 +240,6 @@ void UpdateDriverBugListStats(const gpu::GpuDriverBugList* bug_list,
   }
 }
 
-// Combine the integers into a string, seperated by ','.
-std::string IntSetToString(const std::set<int>& list) {
-  std::string rt;
-  for (std::set<int>::const_iterator it = list.begin();
-       it != list.end(); ++it) {
-    if (!rt.empty())
-      rt += ",";
-    rt += base::IntToString(*it);
-  }
-  return rt;
-}
-
 #if defined(OS_MACOSX)
 void DisplayReconfigCallback(CGDirectDisplayID display,
                              CGDisplayChangeSummaryFlags flags,
@@ -809,7 +797,7 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
 
   if (!gpu_driver_bugs_.empty()) {
     command_line->AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
-                                    IntSetToString(gpu_driver_bugs_));
+                                    gpu::IntSetToString(gpu_driver_bugs_, ','));
   }
 
   if (!disabled_extensions_.empty()) {
