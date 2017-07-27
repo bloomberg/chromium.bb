@@ -1524,7 +1524,7 @@ int QuicStreamFactory::CreateSession(const QuicSessionKey& key,
   if (socket_performance_watcher_factory_) {
     socket_performance_watcher =
         socket_performance_watcher_factory_->CreateSocketPerformanceWatcher(
-            SocketPerformanceWatcherFactory::PROTOCOL_QUIC);
+            SocketPerformanceWatcherFactory::PROTOCOL_QUIC, address_list);
   }
 
   *session = new QuicChromiumClientSession(
