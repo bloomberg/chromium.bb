@@ -5917,6 +5917,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="32" label="Ads setting"/>
   <int value="33" label="Ads metadata"/>
   <int value="34" label="Password protection setting"/>
+  <int value="35" label="Media engagement setting"/>
+  <int value="36" label="Sound setting"/>
+  <int value="37" label="Client hints setting"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">

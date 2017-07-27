@@ -20,7 +20,7 @@ struct HistogramValue {
 };
 
 // WARNING: The value specified here for a type should match exactly the value
-// specified in the ContentType enum in histograms.xml. Since these values are
+// specified in the ContentType enum in enums.xml. Since these values are
 // used for histograms, please do not reuse the same value for a different
 // content setting. Always append to the end and increment.
 //
