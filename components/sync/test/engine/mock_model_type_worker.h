@@ -103,6 +103,9 @@ class MockModelTypeWorker : public CommitQueue {
   void UpdateWithEncryptionKey(const std::string& ekn,
                                const UpdateResponseDataList& update);
 
+  void UpdateWithGarbageConllection(
+      const sync_pb::GarbageCollectionDirective& gcd);
+
  private:
   // Generate an ID string.
   static std::string GenerateId(const std::string& tag_hash);

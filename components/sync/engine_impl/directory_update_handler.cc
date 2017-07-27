@@ -297,15 +297,13 @@ void DirectoryUpdateHandler::ExpireEntriesIfNeeded(
     // For saving resource purpose(ex. cpu, battery), We round up garbage
     // collection age to day, so we only run GC once a day if server did not
     // change the |age_watermark_in_days|.
-    if (cached_gc_directive_aged_out_day_ !=
+    base::Time to_be_expired =
         base::Time::Now().LocalMidnight() -
-            base::TimeDelta::FromDays(
-                new_gc_directive.age_watermark_in_days())) {
+        base::TimeDelta::FromDays(new_gc_directive.age_watermark_in_days());
+    if (cached_gc_directive_aged_out_day_ != to_be_expired) {
       ExpireEntriesByAge(dir_, trans, type_,
                          new_gc_directive.age_watermark_in_days());
-      cached_gc_directive_aged_out_day_ =
-          base::Time::Now().LocalMidnight() -
-          base::TimeDelta::FromDays(new_gc_directive.age_watermark_in_days());
+      cached_gc_directive_aged_out_day_ = to_be_expired;
     }
   }
 }

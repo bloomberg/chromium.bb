@@ -17,7 +17,6 @@
 
 namespace sync_pb {
 class DataTypeProgressMarker;
-class GarbageCollectionDirective;
 }
 
 namespace syncer {
