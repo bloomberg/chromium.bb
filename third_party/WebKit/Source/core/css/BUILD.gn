@@ -57,6 +57,8 @@ blink_core_sources("css") {
     "CSSFontSelector.cpp",
     "CSSFontSelector.h",
     "CSSFontSelectorClient.h",
+    "CSSFontStyleRangeValue.cpp",
+    "CSSFontStyleRangeValue.h",
     "CSSFontVariationValue.cpp",
     "CSSFontVariationValue.h",
     "CSSFunctionValue.cpp",
