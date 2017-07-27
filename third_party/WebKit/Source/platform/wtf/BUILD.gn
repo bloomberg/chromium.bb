@@ -182,6 +182,7 @@ component("wtf") {
     "text/CharacterNames.h",
     "text/Collator.h",
     "text/IntegerToStringConversion.h",
+    "text/NumberParsingOptions.h",
     "text/ParsingUtilities.h",
     "text/StringBuffer.h",
     "text/StringBuilder.cpp",

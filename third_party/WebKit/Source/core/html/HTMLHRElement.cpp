@@ -94,8 +94,7 @@ void HTMLHRElement::CollectStyleForPresentationAttribute(
       style->SetProperty(CSSPropertyBackgroundColor, dark_gray_value);
     }
   } else if (name == sizeAttr) {
-    StringImpl* si = value.Impl();
-    int size = si->ToInt();
+    int size = value.ToInt();
     if (size <= 1)
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyBorderBottomWidth, 0,

@@ -34,6 +34,7 @@
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/WTFExport.h"
 #include "platform/wtf/text/ASCIIFastPath.h"
+#include "platform/wtf/text/NumberParsingOptions.h"
 #include "platform/wtf/text/Unicode.h"
 
 #if DCHECK_IS_ON()
@@ -306,21 +307,17 @@ class WTF_EXPORT StringImpl {
 
   bool ContainsOnlyWhitespace();
 
-  int ToIntStrict(bool* ok = 0);
-  unsigned ToUIntStrict(bool* ok = 0);
+  int ToInt(NumberParsingOptions, bool* ok) const;
+  unsigned ToUInt(NumberParsingOptions, bool* ok) const;
+  int64_t ToInt64(NumberParsingOptions, bool* ok) const;
+  uint64_t ToUInt64(NumberParsingOptions, bool* ok) const;
+
   unsigned HexToUIntStrict(bool* ok);
-  int64_t ToInt64Strict(bool* ok = 0);
-  uint64_t ToUInt64Strict(bool* ok = 0);
 
-  int ToInt(bool* ok = 0);          // ignores trailing garbage
-  unsigned ToUInt(bool* ok = 0);    // ignores trailing garbage
-  int64_t ToInt64(bool* ok = 0);    // ignores trailing garbage
-  uint64_t ToUInt64(bool* ok = 0);  // ignores trailing garbage
-
-  // FIXME: Like the strict functions above, these give false for "ok" when
-  // there is trailing garbage.  Like the non-strict functions above, these
-  // return the value when there is trailing garbage.  It would be better if
-  // these were more consistent with the above functions instead.
+  // FIXME: Like NumberParsingOptions::kStrict, these give false for "ok" when
+  // there is trailing garbage.  Like NumberParsingOptions::kLoose, these return
+  // the value when there is trailing garbage.  It would be better if these were
+  // more consistent with the above functions instead.
   double ToDouble(bool* ok = 0);
   float ToFloat(bool* ok = 0);
 
