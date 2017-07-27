@@ -80,93 +80,92 @@ void HidConnection::Close() {
   closed_ = true;
 }
 
-void HidConnection::Read(const ReadCallback& callback) {
+void HidConnection::Read(ReadCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device_info_->max_input_report_size() == 0) {
     HID_LOG(USER) << "This device does not support input reports.";
-    callback.Run(false, NULL, 0);
+    std::move(callback).Run(false, NULL, 0);
     return;
   }
 
-  PlatformRead(callback);
+  PlatformRead(std::move(callback));
 }
 
 void HidConnection::Write(scoped_refptr<net::IOBuffer> buffer,
                           size_t size,
-                          const WriteCallback& callback) {
+                          WriteCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device_info_->max_output_report_size() == 0) {
     HID_LOG(USER) << "This device does not support output reports.";
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
   if (size > device_info_->max_output_report_size() + 1) {
     HID_LOG(USER) << "Output report buffer too long (" << size << " > "
                   << (device_info_->max_output_report_size() + 1) << ").";
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
   DCHECK_GE(size, 1u);
   uint8_t report_id = buffer->data()[0];
   if (device_info_->has_report_id() != (report_id != 0)) {
     HID_LOG(USER) << "Invalid output report ID.";
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
   if (IsReportIdProtected(report_id)) {
     HID_LOG(USER) << "Attempt to set a protected output report.";
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
-  PlatformWrite(buffer, size, callback);
+  PlatformWrite(buffer, size, std::move(callback));
 }
 
-void HidConnection::GetFeatureReport(uint8_t report_id,
-                                     const ReadCallback& callback) {
+void HidConnection::GetFeatureReport(uint8_t report_id, ReadCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device_info_->max_feature_report_size() == 0) {
     HID_LOG(USER) << "This device does not support feature reports.";
-    callback.Run(false, NULL, 0);
+    std::move(callback).Run(false, NULL, 0);
     return;
   }
   if (device_info_->has_report_id() != (report_id != 0)) {
     HID_LOG(USER) << "Invalid feature report ID.";
-    callback.Run(false, NULL, 0);
+    std::move(callback).Run(false, NULL, 0);
     return;
   }
   if (IsReportIdProtected(report_id)) {
     HID_LOG(USER) << "Attempt to get a protected feature report.";
-    callback.Run(false, NULL, 0);
+    std::move(callback).Run(false, NULL, 0);
     return;
   }
 
-  PlatformGetFeatureReport(report_id, callback);
+  PlatformGetFeatureReport(report_id, std::move(callback));
 }
 
 void HidConnection::SendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
                                       size_t size,
-                                      const WriteCallback& callback) {
+                                      WriteCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device_info_->max_feature_report_size() == 0) {
     HID_LOG(USER) << "This device does not support feature reports.";
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
   DCHECK_GE(size, 1u);
   uint8_t report_id = buffer->data()[0];
   if (device_info_->has_report_id() != (report_id != 0)) {
     HID_LOG(USER) << "Invalid feature report ID.";
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
   if (IsReportIdProtected(report_id)) {
     HID_LOG(USER) << "Attempt to set a protected feature report.";
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
-  PlatformSendFeatureReport(buffer, size, callback);
+  PlatformSendFeatureReport(buffer, size, std::move(callback));
 }
 
 bool HidConnection::IsReportIdProtected(uint8_t report_id) {
@@ -187,7 +186,7 @@ PendingHidReport::~PendingHidReport() {}
 
 PendingHidRead::PendingHidRead() {}
 
-PendingHidRead::PendingHidRead(const PendingHidRead& other) = default;
+PendingHidRead::PendingHidRead(PendingHidRead&& other) = default;
 
 PendingHidRead::~PendingHidRead() {}
 

@@ -42,20 +42,20 @@ class MockHidErrorConnection : public device::HidConnection {
 
   void PlatformClose() override {}
 
-  void PlatformRead(const ReadCallback& callback) override {}
+  void PlatformRead(ReadCallback callback) override {}
 
   void PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
                      size_t size,
-                     const WriteCallback& callback) override {
-    callback.Run(false);
+                     WriteCallback callback) override {
+    std::move(callback).Run(false);
   }
 
   void PlatformGetFeatureReport(uint8_t report_id,
-                                const ReadCallback& callback) override {}
+                                ReadCallback callback) override {}
 
   void PlatformSendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
                                  size_t size,
-                                 const WriteCallback& callback) override {}
+                                 WriteCallback callback) override {}
 
  private:
   ~MockHidErrorConnection() override {}

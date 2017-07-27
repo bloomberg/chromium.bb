@@ -24,10 +24,10 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
     kAnyReportId = 0xFF,
   };
 
-  typedef base::Callback<
-      void(bool success, scoped_refptr<net::IOBuffer> buffer, size_t size)>
-      ReadCallback;
-  typedef base::Callback<void(bool success)> WriteCallback;
+  using ReadCallback = base::OnceCallback<
+      void(bool success, scoped_refptr<net::IOBuffer> buffer, size_t size)>;
+
+  using WriteCallback = base::OnceCallback<void(bool success)>;
 
   scoped_refptr<HidDeviceInfo> device_info() const { return device_info_; }
   bool has_protected_collection() const { return has_protected_collection_; }
@@ -39,24 +39,24 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
 
   // The report ID (or 0 if report IDs are not supported by the device) is
   // always returned in the first byte of the buffer.
-  void Read(const ReadCallback& callback);
+  void Read(ReadCallback callback);
 
   // The report ID (or 0 if report IDs are not supported by the device) is
   // always expected in the first byte of the buffer.
   void Write(scoped_refptr<net::IOBuffer> buffer,
              size_t size,
-             const WriteCallback& callback);
+             WriteCallback callback);
 
   // The buffer will contain whatever report data was received from the device.
   // This may include the report ID. The report ID is not stripped because a
   // device may respond with other data in place of the report ID.
-  void GetFeatureReport(uint8_t report_id, const ReadCallback& callback);
+  void GetFeatureReport(uint8_t report_id, ReadCallback callback);
 
   // The report ID (or 0 if report IDs are not supported by the device) is
   // always expected in the first byte of the buffer.
   void SendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
                          size_t size,
-                         const WriteCallback& callback);
+                         WriteCallback callback);
 
  protected:
   friend class base::RefCountedThreadSafe<HidConnection>;
@@ -65,15 +65,15 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
   virtual ~HidConnection();
 
   virtual void PlatformClose() = 0;
-  virtual void PlatformRead(const ReadCallback& callback) = 0;
+  virtual void PlatformRead(ReadCallback callback) = 0;
   virtual void PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
                              size_t size,
-                             const WriteCallback& callback) = 0;
+                             WriteCallback callback) = 0;
   virtual void PlatformGetFeatureReport(uint8_t report_id,
-                                        const ReadCallback& callback) = 0;
+                                        ReadCallback callback) = 0;
   virtual void PlatformSendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
                                          size_t size,
-                                         const WriteCallback& callback) = 0;
+                                         WriteCallback callback) = 0;
 
   bool IsReportIdProtected(uint8_t report_id);
 
@@ -97,7 +97,7 @@ struct PendingHidReport {
 
 struct PendingHidRead {
   PendingHidRead();
-  PendingHidRead(const PendingHidRead& other);
+  PendingHidRead(PendingHidRead&& other);
   ~PendingHidRead();
 
   HidConnection::ReadCallback callback;
