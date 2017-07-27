@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -103,7 +104,8 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
         shingle_hashes,
         base::Bind(&PhishingTermFeatureExtractorTest::ExtractionDone,
                    base::Unretained(this)));
-    base::RunLoop().Run();
+    active_run_loop_ = base::MakeUnique<base::RunLoop>();
+    active_run_loop_->Run();
     return success_;
   }
 
@@ -120,21 +122,23 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
         FROM_HERE,
         base::BindOnce(&PhishingTermFeatureExtractorTest::QuitExtraction,
                        base::Unretained(this)));
-    base::RunLoop().RunUntilIdle();
+    active_run_loop_ = base::MakeUnique<base::RunLoop>();
+    active_run_loop_->RunUntilIdle();
   }
 
   // Completion callback for feature extraction.
   void ExtractionDone(bool success) {
     success_ = success;
-    msg_loop_.QuitWhenIdle();
+    active_run_loop_->QuitWhenIdle();
   }
 
   void QuitExtraction() {
     extractor_->CancelPendingExtraction();
-    msg_loop_.QuitWhenIdle();
+    active_run_loop_->QuitWhenIdle();
   }
 
   base::MessageLoop msg_loop_;
+  std::unique_ptr<base::RunLoop> active_run_loop_;
   MockFeatureExtractorClock clock_;
   std::unique_ptr<PhishingTermFeatureExtractor> extractor_;
   base::hash_set<std::string> term_hashes_;
