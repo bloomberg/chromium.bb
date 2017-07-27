@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/ntp/whats_new_header_view.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/common/string_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"

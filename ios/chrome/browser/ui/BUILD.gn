@@ -39,6 +39,9 @@ source_set("ui") {
     "uikit_ui_util.mm",
     "url_loader.h",
   ]
+  public_deps = [
+    ":constraints_ui",
+  ]
   deps = [
     "//base",
     "//base:i18n",
@@ -54,6 +57,17 @@ source_set("ui") {
     "Accelerate.framework",
     "CoreGraphics.framework",
     "QuartzCore.framework",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("constraints_ui") {
+  sources = [
+    "constraints_ui_util.h",
+    "constraints_ui_util.mm",
+  ]
+  deps = [
+    "//base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
