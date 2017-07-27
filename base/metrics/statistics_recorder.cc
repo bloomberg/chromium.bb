@@ -332,6 +332,11 @@ void StatisticsRecorder::PrepareDeltas(
     HistogramBase::Flags flags_to_set,
     HistogramBase::Flags required_flags,
     HistogramSnapshotManager* snapshot_manager) {
+  // This must be called *before* the lock is acquired below because it will
+  // call back into this object to register histograms. Those called methods
+  // will acquire the lock at that time.
+  ImportGlobalPersistentHistograms();
+
   base::AutoLock auto_lock(lock_.Get());
   snapshot_manager->PrepareDeltas(begin(include_persistent), end(),
                                   flags_to_set, required_flags);
@@ -339,6 +344,11 @@ void StatisticsRecorder::PrepareDeltas(
 
 // static
 void StatisticsRecorder::ValidateAllHistograms() {
+  // This must be called *before* the lock is acquired below because it will
+  // call back into this object to register histograms. Those called methods
+  // will acquire the lock at that time.
+  ImportGlobalPersistentHistograms();
+
   base::AutoLock auto_lock(lock_.Get());
 
   HistogramBase* last_invalid_histogram = nullptr;
@@ -367,11 +377,14 @@ void StatisticsRecorder::InitLogOnShutdown() {
 // static
 void StatisticsRecorder::GetSnapshot(const std::string& query,
                                      Histograms* snapshot) {
+  // This must be called *before* the lock is acquired below because it will
+  // call back into this object to register histograms. Those called methods
+  // will acquire the lock at that time.
+  ImportGlobalPersistentHistograms();
+
   base::AutoLock auto_lock(lock_.Get());
   if (!histograms_)
     return;
-
-  ImportGlobalPersistentHistograms();
 
   for (const auto& entry : *histograms_) {
     if (entry.second->histogram_name().find(query) != std::string::npos)
@@ -482,7 +495,6 @@ void StatisticsRecorder::UninitializeForTesting() {
 StatisticsRecorder::HistogramIterator StatisticsRecorder::begin(
     bool include_persistent) {
   DCHECK(histograms_);
-  ImportGlobalPersistentHistograms();
 
   HistogramMap::iterator iter_begin = histograms_->begin();
   return HistogramIterator(iter_begin, include_persistent);
