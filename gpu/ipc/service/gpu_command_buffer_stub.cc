@@ -369,6 +369,10 @@ const gles2::FeatureInfo* GpuCommandBufferStub::GetFeatureInfo() const {
   return context_group_->feature_info();
 }
 
+const GpuPreferences& GpuCommandBufferStub::GetGpuPreferences() const {
+  return context_group_->gpu_preferences();
+}
+
 void GpuCommandBufferStub::SetLatencyInfoCallback(
     const LatencyInfoCallback& callback) {
   latency_info_callback_ = callback;

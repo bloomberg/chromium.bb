@@ -13,6 +13,7 @@
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -60,6 +61,9 @@ class TestImageTransportSurfaceDelegate
   const gles2::FeatureInfo* GetFeatureInfo() const override {
     return feature_info_.get();
   }
+  const GpuPreferences& GetGpuPreferences() const override {
+    return gpu_preferences_;
+  }
   void SetLatencyInfoCallback(const LatencyInfoCallback& callback) override {}
   void UpdateVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override {}
@@ -68,6 +72,7 @@ class TestImageTransportSurfaceDelegate
 
  private:
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
+  GpuPreferences gpu_preferences_;
 };
 
 class TestPlatformDelegate : public ui::PlatformWindowDelegate {

@@ -22,6 +22,7 @@ class MessageFilter;
 }
 
 namespace gpu {
+struct GpuPreferences;
 
 namespace gles2 {
 class FeatureInfo;
@@ -67,6 +68,8 @@ class GPU_EXPORT ImageTransportSurfaceDelegate {
 
   // Returns the features available for the ContextGroup.
   virtual const gles2::FeatureInfo* GetFeatureInfo() const = 0;
+
+  virtual const GpuPreferences& GetGpuPreferences() const = 0;
 
   using LatencyInfoCallback =
       base::Callback<void(const std::vector<ui::LatencyInfo>&)>;

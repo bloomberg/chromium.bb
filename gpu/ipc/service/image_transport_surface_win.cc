@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/win/windows_version.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/ipc/service/direct_composition_surface_win.h"
 #include "gpu/ipc/service/gpu_vsync_provider_win.h"
 #include "gpu/ipc/service/pass_through_image_transport_surface.h"
@@ -49,7 +50,8 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
     else
       vsync_provider.reset(new gl::VSyncProviderWin(surface_handle));
 
-    if (gl::GLSurfaceEGL::IsDirectCompositionSupported()) {
+    if (gl::GLSurfaceEGL::IsDirectCompositionSupported() &&
+        !delegate->GetGpuPreferences().use_passthrough_cmd_decoder) {
       scoped_refptr<DirectCompositionSurfaceWin> egl_surface =
           make_scoped_refptr(new DirectCompositionSurfaceWin(
               std::move(vsync_provider), delegate, surface_handle));

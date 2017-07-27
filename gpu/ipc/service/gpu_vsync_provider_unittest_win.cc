@@ -10,6 +10,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message_macros.h"
@@ -113,6 +114,9 @@ class FakeDelegate : public ImageTransportSurfaceDelegate,
       SurfaceHandle child_window) override {}
   void DidSwapBuffersComplete(SwapBuffersCompleteParams params) override {}
   const gles2::FeatureInfo* GetFeatureInfo() const override { return nullptr; }
+  const GpuPreferences& GetGpuPreferences() const override {
+    return gpu_preferences_;
+  }
   void SetLatencyInfoCallback(const LatencyInfoCallback& callback) override {}
   void UpdateVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override {
@@ -128,6 +132,7 @@ class FakeDelegate : public ImageTransportSurfaceDelegate,
 
  private:
   FakeChannel* channel_;
+  GpuPreferences gpu_preferences_;
   DISALLOW_COPY_AND_ASSIGN(FakeDelegate);
 };
 
