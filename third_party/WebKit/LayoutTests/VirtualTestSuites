@@ -118,6 +118,11 @@
     "args": ["--enable-features=UseFeaturePolicyForPermissions"]
   },
   {
+    "prefix": "feature-policy-permissions",
+    "base": "http/tests/geolocation-api",
+    "args": ["--enable-features=UseFeaturePolicyForPermissions"]
+  },
+  {
     "prefix": "off-main-thread-fetch",
     "base": "external/wpt/html/browsers/offline/appcache/workers",
     "args": ["--enable-features=OffMainThreadFetch"]

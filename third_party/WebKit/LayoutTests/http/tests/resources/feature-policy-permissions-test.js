@@ -31,8 +31,14 @@ function run_permission_default_header_policy_tests(
   // post the result of running the feature promise back to the parent.
   if (location.hash == '#iframe') {
     feature_promise_factory().then(
-        () => window.parent.postMessage('#OK', '*'),
-        error => window.parent.postMessage('#' + error.name, '*'));
+        () => window.parent.postMessage('#OK', '*'), error => {
+          var name = error.name;
+          // TODO(raymes): We use error.toString() here instead of error.name
+          // because the latter currently returns undefined for PositionError.
+          if (!name)
+            name = error.toString().split(' ')[1].split(']')[0];
+          window.parent.postMessage('#' + name, '*');
+        });
     return;
   }
 
