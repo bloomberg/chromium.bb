@@ -30,6 +30,7 @@ void ProximityAuthProfilePrefManager::RegisterPrefs(
                               0L);
   registry->RegisterInt64Pref(
       prefs::kProximityAuthLastPromotionCheckTimestampMs, 0L);
+  registry->RegisterIntegerPref(prefs::kProximityAuthPromotionShownCount, 0);
   registry->RegisterDictionaryPref(prefs::kProximityAuthRemoteBleDevices);
   registry->RegisterIntegerPref(
       prefs::kEasyUnlockProximityThreshold, 1,
@@ -149,6 +150,14 @@ int64_t ProximityAuthProfilePrefManager::GetLastPromotionCheckTimestampMs()
     const {
   return pref_service_->GetInt64(
       prefs::kProximityAuthLastPromotionCheckTimestampMs);
+}
+
+void ProximityAuthProfilePrefManager::SetPromotionShownCount(int count) {
+  pref_service_->SetInteger(prefs::kProximityAuthPromotionShownCount, count);
+}
+
+int ProximityAuthProfilePrefManager::GetPromotionShownCount() const {
+  return pref_service_->GetInteger(prefs::kProximityAuthPromotionShownCount);
 }
 
 void ProximityAuthProfilePrefManager::SetProximityThreshold(

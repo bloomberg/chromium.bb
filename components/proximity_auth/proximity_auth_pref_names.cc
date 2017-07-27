@@ -16,6 +16,10 @@ const char kProximityAuthLastPasswordEntryTimestampMs[] =
 const char kProximityAuthLastPromotionCheckTimestampMs[] =
     "proximity_auth.last_promotion_check_timestamp_ms";
 
+// The number of times the promotion was shown to the user.
+extern const char kProximityAuthPromotionShownCount[] =
+    "proximity_auth.promotion_shown_count";
+
 // The dictionary containing remote BLE devices.
 const char kProximityAuthRemoteBleDevices[] =
     "proximity_auth.remote_ble_devices";

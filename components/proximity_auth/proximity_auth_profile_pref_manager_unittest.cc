@@ -189,6 +189,15 @@ TEST_F(ProximityAuthProfilePrefManagerTest, LastPromotionCheckTimestamp) {
             pref_manager.GetLastPromotionCheckTimestampMs());
 }
 
+TEST_F(ProximityAuthProfilePrefManagerTest, PromotionShownCount) {
+  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
+  EXPECT_EQ(0, pref_manager.GetPromotionShownCount());
+  pref_manager.SetPromotionShownCount(1);
+  EXPECT_EQ(1, pref_manager.GetPromotionShownCount());
+  pref_manager.SetPromotionShownCount(2);
+  EXPECT_EQ(2, pref_manager.GetPromotionShownCount());
+}
+
 TEST_F(ProximityAuthProfilePrefManagerTest, ProximityThreshold) {
   ProximityAuthProfilePrefManager pref_manager(&pref_service_);
   EXPECT_EQ(1, pref_manager.GetProximityThreshold());

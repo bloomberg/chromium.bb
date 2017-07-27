@@ -140,7 +140,8 @@ void EasyUnlockNotificationControllerChromeOS::ShowPromotionNotification() {
 
   ShowNotification(CreateNotification(
       kEasyUnlockPromotionNotifierId,
-      l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SETUP_NOTIFICATION_TITLE),
+      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_NOTIFICATION_TITLE,
+                                 ash::GetChromeOSDeviceName()),
       l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_NOTIFICATION_MESSAGE,
                                  ash::GetChromeOSDeviceName()),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
