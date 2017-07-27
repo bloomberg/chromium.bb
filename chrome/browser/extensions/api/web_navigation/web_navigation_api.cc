@@ -417,8 +417,10 @@ void WebNavigationTabObserver::DispatchCachedOnBeforeNavigate() {
 
 void WebNavigationTabObserver::HandleCommit(
     content::NavigationHandle* navigation_handle) {
-  bool is_reference_fragment_navigation = IsReferenceFragmentNavigation(
-      navigation_handle->GetRenderFrameHost(), navigation_handle->GetURL());
+  bool is_reference_fragment_navigation =
+      navigation_handle->IsSameDocument() &&
+      IsReferenceFragmentNavigation(navigation_handle->GetRenderFrameHost(),
+                                    navigation_handle->GetURL());
 
   navigation_state_.StartTrackingDocumentLoad(
       navigation_handle->GetRenderFrameHost(), navigation_handle->GetURL(),
