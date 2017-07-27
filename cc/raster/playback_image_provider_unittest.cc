@@ -41,7 +41,7 @@ TEST(PlaybackImageProviderTest, SkipsAllImages) {
   PlaybackImageProvider provider(true, {}, &cache, gfx::ColorSpace());
 
   SkRect rect = SkRect::MakeWH(10, 10);
-  SkMatrix matrix;
+  SkMatrix matrix = SkMatrix::I();
   EXPECT_EQ(provider.GetDecodedImage(
                 PaintImage(PaintImage::kNonLazyStableId, CreateRasterImage()),
                 rect, kMedium_SkFilterQuality, matrix),
@@ -61,7 +61,7 @@ TEST(PlaybackImageProviderTest, SkipsSomeImages) {
                                  gfx::ColorSpace());
 
   SkRect rect = SkRect::MakeWH(10, 10);
-  SkMatrix matrix;
+  SkMatrix matrix = SkMatrix::I();
   EXPECT_EQ(provider.GetDecodedImage(skip_image, rect, kMedium_SkFilterQuality,
                                      matrix),
             nullptr);
@@ -74,7 +74,7 @@ TEST(PlaybackImageProviderTest, RefAndUnrefDecode) {
   EXPECT_CALL(cache, GetDecodedImageForDraw(_))
       .WillOnce(Return(CreateDecode()));
   SkRect rect = SkRect::MakeWH(10, 10);
-  SkMatrix matrix;
+  SkMatrix matrix = SkMatrix::I();
   auto decode = provider.GetDecodedImage(
       PaintImage(PaintImage::GetNextId(),
                  CreateDiscardableImage(gfx::Size(10, 10))),
