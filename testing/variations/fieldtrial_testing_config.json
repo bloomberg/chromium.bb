@@ -863,23 +863,7 @@
     "DisallowFetchForDocWrittenScriptsInMainFrame": [
         {
             "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "DocumentWriteEvaluatorGroup",
-                    "params": {
-                        "disallowFetchForDocWrittenScriptsInMainFrame": "false",
-                        "disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections": "false"
-                    },
-                    "enable_features": [
-                        "DocumentWriteEvaluator"
-                    ]
-                }
-            ]
-        },
-        {
-            "platforms": [
+                "android",
                 "chromeos"
             ],
             "experiments": [
@@ -887,32 +871,13 @@
                     "name": "DocumentWriteScriptBlockGroup",
                     "params": {
                         "disallowFetchForDocWrittenScriptsInMainFrame": "true"
-                    },
-                    "disable_features": [
-                        "DocumentWriteEvaluator"
-                    ]
+                    }
                 }
             ]
         },
         {
             "platforms": [
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "DocumentWriteEvaluatorGroup",
-                    "params": {
-                        "disallowFetchForDocWrittenScriptsInMainFrame": "false",
-                        "disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections": "false"
-                    },
-                    "enable_features": [
-                        "DocumentWriteEvaluator"
-                    ]
-                }
-            ]
-        },
-        {
-            "platforms": [
+                "linux",
                 "mac",
                 "win"
             ],
@@ -922,10 +887,7 @@
                     "params": {
                         "disallowFetchForDocWrittenScriptsInMainFrame": "false",
                         "disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections": "true"
-                    },
-                    "disable_features": [
-                        "DocumentWriteEvaluator"
-                    ]
+                    }
                 }
             ]
         }

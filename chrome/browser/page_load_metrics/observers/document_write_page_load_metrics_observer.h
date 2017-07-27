@@ -55,18 +55,6 @@ class DocumentWritePageLoadMetricsObserver
   static void LogLoadingBehaviorMetrics(DocumentWriteLoadingBehavior behavior,
                                         ukm::SourceId source_id);
 
-  void LogDocumentWriteEvaluatorFirstContentfulPaint(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info);
-
-  void LogDocumentWriteEvaluatorFirstMeaningfulPaint(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info);
-
-  void LogDocumentWriteEvaluatorParseStop(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info);
-
   void LogDocumentWriteBlockFirstContentfulPaint(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info);

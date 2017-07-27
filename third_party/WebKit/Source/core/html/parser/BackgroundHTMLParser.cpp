@@ -260,11 +260,9 @@ void BackgroundHTMLParser::PumpTokenizer() {
 
       CompactHTMLToken token(token_.get(), position);
 
-      bool should_evaluate_for_document_write = false;
       bool is_csp_meta_tag = false;
       preload_scanner_->Scan(token, input_.Current(), pending_preloads_,
-                             &viewport_description_, &is_csp_meta_tag,
-                             &should_evaluate_for_document_write);
+                             &viewport_description_, &is_csp_meta_tag);
 
       simulated_token =
           tree_builder_simulator_.Simulate(token, tokenizer_.get());
@@ -280,10 +278,6 @@ void BackgroundHTMLParser::PumpTokenizer() {
       pending_tokens_->push_back(token);
       if (is_csp_meta_tag) {
         pending_csp_meta_token_index_ = pending_tokens_->size() - 1;
-      }
-      if (should_evaluate_for_document_write) {
-        likely_document_write_script_indices_.push_back(
-            pending_tokens_->size() - 1);
       }
     }
 
@@ -341,8 +335,6 @@ bool BackgroundHTMLParser::QueueChunkForMainThread() {
   chunk->preload_scanner_checkpoint = preload_scanner_->CreateCheckpoint();
   chunk->tokens = std::move(pending_tokens_);
   chunk->starting_script = starting_script_;
-  chunk->likely_document_write_script_indices.swap(
-      likely_document_write_script_indices_);
   chunk->pending_csp_meta_token_index = pending_csp_meta_token_index_;
   starting_script_ = false;
   pending_csp_meta_token_index_ =

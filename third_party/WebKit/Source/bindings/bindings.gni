@@ -33,8 +33,6 @@ bindings_core_v8_files =
                     "core/v8/CallbackPromiseAdapter.h",
                     "core/v8/V0CustomElementConstructorBuilder.cpp",
                     "core/v8/V0CustomElementConstructorBuilder.h",
-                    "core/v8/DocumentWriteEvaluator.cpp",
-                    "core/v8/DocumentWriteEvaluator.h",
                     "core/v8/Dictionary.cpp",
                     "core/v8/Dictionary.h",
                     "core/v8/DictionaryHelperForBindings.h",
@@ -188,7 +186,6 @@ bindings_unittest_files =
         [
           "core/v8/ActivityLoggerTest.cpp",
           "core/v8/BindingSecurityTest.cpp",
-          "core/v8/DocumentWriteEvaluatorTest.cpp",
           "core/v8/DOMWrapperWorldTest.cpp",
           "core/v8/IDLTypesTest.cpp",
           "core/v8/NativeValueTraitsImplTest.cpp",

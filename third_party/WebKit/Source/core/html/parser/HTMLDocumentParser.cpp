@@ -26,7 +26,6 @@
 #include "core/html/parser/HTMLDocumentParser.h"
 
 #include <memory>
-#include "bindings/core/v8/DocumentWriteEvaluator.h"
 #include "core/HTMLNames.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -143,7 +142,6 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
       weak_factory_(this),
       preloader_(HTMLResourcePreloader::Create(document)),
       tokenized_chunk_queue_(TokenizedChunkQueue::Create()),
-      evaluator_(DocumentWriteEvaluator::Create(document)),
       pending_csp_meta_token_(nullptr),
       should_use_threading_(sync_policy == kAllowAsynchronousParsing),
       end_was_delayed_(false),
@@ -368,11 +366,6 @@ void HTMLDocumentParser::NotifyPendingTokenizedChunks() {
         else
           queued_preloads_.push_back(std::move(request));
       }
-      for (auto& index : chunk->likely_document_write_script_indices) {
-        const CompactHTMLToken& token = chunk->tokens->at(index);
-        DCHECK_EQ(token.GetType(), HTMLToken::TokenType::kCharacter);
-        queued_document_write_scripts_.push_back(token.Data());
-      }
     }
     preloader_->TakeAndPreload(link_rel_preloads);
   } else {
@@ -380,19 +373,8 @@ void HTMLDocumentParser::NotifyPendingTokenizedChunks() {
     // document element is available, as we empty the queue immediately after
     // the document element is created in documentElementAvailable().
     DCHECK(queued_preloads_.IsEmpty());
-    DCHECK(queued_document_write_scripts_.IsEmpty());
-    // Loop through the chunks to generate preloads before any document.write
-    // script evaluation takes place. Preloading these scripts is valuable and
-    // comparably cheap, while evaluating JS can be expensive.
     for (auto& chunk : pending_chunks)
       preloader_->TakeAndPreload(chunk->preloads);
-    for (auto& chunk : pending_chunks) {
-      for (auto& index : chunk->likely_document_write_script_indices) {
-        const CompactHTMLToken& token = chunk->tokens->at(index);
-        DCHECK_EQ(token.GetType(), HTMLToken::TokenType::kCharacter);
-        EvaluateAndPreloadScriptForDocumentWrite(token.Data());
-      }
-    }
   }
 
   for (auto& chunk : pending_chunks)
@@ -1289,69 +1271,6 @@ void HTMLDocumentParser::FetchQueuedPreloads() {
 
   if (!queued_preloads_.IsEmpty())
     preloader_->TakeAndPreload(queued_preloads_);
-
-  for (const String& script_source : queued_document_write_scripts_) {
-    EvaluateAndPreloadScriptForDocumentWrite(script_source);
-  }
-
-  queued_document_write_scripts_.clear();
-}
-
-void HTMLDocumentParser::EvaluateAndPreloadScriptForDocumentWrite(
-    const String& source) {
-  if (!evaluator_->ShouldEvaluate(source))
-    return;
-  GetDocument()->Loader()->DidObserveLoadingBehavior(
-      WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteEvaluator);
-  if (!RuntimeEnabledFeatures::DocumentWriteEvaluatorEnabled())
-    return;
-  TRACE_EVENT0("blink",
-               "HTMLDocumentParser::evaluateAndPreloadScriptForDocumentWrite");
-
-  double initialize_start_time = MonotonicallyIncreasingTimeMS();
-  bool needed_initialization = evaluator_->EnsureEvaluationContext();
-  double initialization_duration =
-      MonotonicallyIncreasingTimeMS() - initialize_start_time;
-
-  double start_time = MonotonicallyIncreasingTimeMS();
-  String written_source = evaluator_->EvaluateAndEmitWrittenSource(source);
-  double duration = MonotonicallyIncreasingTimeMS() - start_time;
-
-  int current_preload_count =
-      GetDocument()->Loader()->Fetcher()->CountPreloads();
-
-  std::unique_ptr<HTMLPreloadScanner> scanner =
-      CreatePreloadScanner(TokenPreloadScanner::ScannerType::kInsertion);
-  scanner->AppendToEnd(SegmentedString(written_source));
-  ScanAndPreload(scanner.get());
-
-  int num_preloads = GetDocument()->Loader()->Fetcher()->CountPreloads() -
-                     current_preload_count;
-
-  TRACE_EVENT_INSTANT2(
-      "blink",
-      "HTMLDocumentParser::evaluateAndPreloadScriptForDocumentWrite.data",
-      TRACE_EVENT_SCOPE_THREAD, "numPreloads", num_preloads, "scriptLength",
-      source.length());
-
-  if (needed_initialization) {
-    DEFINE_STATIC_LOCAL(
-        CustomCountHistogram, initialize_histograms,
-        ("PreloadScanner.DocumentWrite.InitializationTime", 1, 10000, 50));
-    initialize_histograms.Count(initialization_duration);
-  }
-
-  if (num_preloads) {
-    DEFINE_STATIC_LOCAL(
-        CustomCountHistogram, success_histogram,
-        ("PreloadScanner.DocumentWrite.ExecutionTime.Success", 1, 10000, 50));
-    success_histogram.Count(duration);
-  } else {
-    DEFINE_STATIC_LOCAL(
-        CustomCountHistogram, failure_histogram,
-        ("PreloadScanner.DocumentWrite.ExecutionTime.Failure", 1, 10000, 50));
-    failure_histogram.Count(duration);
-  }
 }
 
 }  // namespace blink

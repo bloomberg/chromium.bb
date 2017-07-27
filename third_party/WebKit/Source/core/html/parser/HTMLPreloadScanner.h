@@ -66,7 +66,6 @@ struct CORE_EXPORT CachedDocumentParameters {
   }
 
   bool do_html_preload_scanning;
-  bool do_document_write_preload_scanning;
   Length default_viewport_min_width;
   bool viewport_meta_zero_values_quirk;
   bool viewport_meta_enabled;
@@ -99,8 +98,7 @@ class TokenPreloadScanner {
             const SegmentedString&,
             PreloadRequestStream& requests,
             ViewportDescriptionWrapper*,
-            bool* is_csp_meta_tag,
-            bool* likely_document_write_script);
+            bool* is_csp_meta_tag);
 
   void SetPredictedBaseElementURL(const KURL& url) {
     predicted_base_element_url_ = url;
@@ -114,18 +112,12 @@ class TokenPreloadScanner {
  private:
   class StartTagScanner;
 
-  bool ShouldEvaluateForDocumentWrite(const String& source);
-  bool ShouldEvaluateForDocumentWrite(const HTMLToken::DataVector& source) {
-    return false;
-  }
-
   template <typename Token>
   inline void ScanCommon(const Token&,
                          const SegmentedString&,
                          PreloadRequestStream& requests,
                          ViewportDescriptionWrapper*,
-                         bool* is_csp_meta_tag,
-                         bool* likely_document_write_script);
+                         bool* is_csp_meta_tag);
 
   template <typename Token>
   void UpdatePredictedBaseURL(const Token&);

@@ -18,8 +18,6 @@ std::unique_ptr<CachedDocumentParameters> CachedDocumentParametersForFuzzing(
   std::unique_ptr<CachedDocumentParameters> document_parameters =
       CachedDocumentParameters::Create();
   document_parameters->do_html_preload_scanning = fuzzed_data.ConsumeBool();
-  document_parameters->do_document_write_preload_scanning =
-      fuzzed_data.ConsumeBool();
   // TODO(csharrison): How should this be fuzzed?
   document_parameters->default_viewport_min_width = Length();
   document_parameters->viewport_meta_zero_values_quirk =

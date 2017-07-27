@@ -1587,12 +1587,6 @@ crbug.com/453002 [ Win ] fast/text/international/vertical-text-glyph-test.html [
 crbug.com/453002 [ Win ] fast/text/justify-ideograph-vertical.html [ Failure Pass ]
 crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
 
-# DocumentWriteEvaluator is still experimental
-crbug.com/599115 http/tests/preload/document-write [ Failure ]
-crbug.com/599115 http/tests/preload/document-write/document_write_no_preload.html [ Pass ]
-crbug.com/599115 virtual/mojo-loading/http/tests/preload/document-write [ Failure ]
-crbug.com/599115 virtual/mojo-loading/http/tests/preload/document-write/document_write_no_preload.html [ Pass ]
-
 crbug.com/605525 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
 
 crbug.com/600248 external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]

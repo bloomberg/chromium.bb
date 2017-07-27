@@ -268,9 +268,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableSlimmingPaintV2))
     WebRuntimeFeatures::EnableSlimmingPaintV2(true);
 
-  if (base::FeatureList::IsEnabled(features::kDocumentWriteEvaluator))
-    WebRuntimeFeatures::EnableDocumentWriteEvaluator(true);
-
   if (base::FeatureList::IsEnabled(features::kLazyParseCSS))
     WebRuntimeFeatures::EnableLazyParseCSS(true);
 

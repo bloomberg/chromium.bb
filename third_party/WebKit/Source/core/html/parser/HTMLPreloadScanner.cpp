@@ -56,29 +56,6 @@
 
 namespace blink {
 
-namespace {
-
-// When adding values to this enum, update histograms.xml as well.
-enum DocumentWriteGatedEvaluation {
-  kGatedEvaluationScriptTooLong,
-  kGatedEvaluationNoLikelyScript,
-  kGatedEvaluationLooping,
-  kGatedEvaluationPopularLibrary,
-  kGatedEvaluationNondeterminism,
-
-  // Add new values before this last value.
-  kGatedEvaluationLastValue
-};
-
-void LogGatedEvaluation(DocumentWriteGatedEvaluation reason) {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, gated_evaluation_histogram,
-                      ("PreloadScanner.DocumentWrite.GatedEvaluation",
-                       kGatedEvaluationLastValue));
-  gated_evaluation_histogram.Count(reason);
-}
-
-}  // namespace
-
 using namespace HTMLNames;
 
 static bool Match(const StringImpl* impl, const QualifiedName& q_name) {
@@ -641,17 +618,15 @@ void TokenPreloadScanner::Scan(const HTMLToken& token,
                                PreloadRequestStream& requests,
                                ViewportDescriptionWrapper* viewport,
                                bool* is_csp_meta_tag) {
-  ScanCommon(token, source, requests, viewport, is_csp_meta_tag, nullptr);
+  ScanCommon(token, source, requests, viewport, is_csp_meta_tag);
 }
 
 void TokenPreloadScanner::Scan(const CompactHTMLToken& token,
                                const SegmentedString& source,
                                PreloadRequestStream& requests,
                                ViewportDescriptionWrapper* viewport,
-                               bool* is_csp_meta_tag,
-                               bool* likely_document_write_script) {
-  ScanCommon(token, source, requests, viewport, is_csp_meta_tag,
-             likely_document_write_script);
+                               bool* is_csp_meta_tag) {
+  ScanCommon(token, source, requests, viewport, is_csp_meta_tag);
 }
 
 static void HandleMetaViewport(
@@ -721,63 +696,12 @@ static void HandleMetaNameAttribute(
   }
 }
 
-// This method returns true for script source strings which will likely use
-// document.write to insert an external script. These scripts will be flagged
-// for evaluation via the DocumentWriteEvaluator, so it also dismisses scripts
-// that will likely fail evaluation. These includes scripts that are too long,
-// have looping constructs, or use non-determinism. Note that flagging occurs
-// even when the experiment is off, to ensure fair comparison between experiment
-// and control groups.
-bool TokenPreloadScanner::ShouldEvaluateForDocumentWrite(const String& source) {
-  // The maximum length script source that will be marked for evaluation to
-  // preload document.written external scripts.
-  const int kMaxLengthForEvaluating = 1024;
-  if (!document_parameters_->do_document_write_preload_scanning)
-    return false;
-
-  if (source.length() > kMaxLengthForEvaluating) {
-    LogGatedEvaluation(kGatedEvaluationScriptTooLong);
-    return false;
-  }
-  if (source.Find("document.write") == WTF::kNotFound ||
-      source.FindIgnoringASCIICase("src") == WTF::kNotFound) {
-    LogGatedEvaluation(kGatedEvaluationNoLikelyScript);
-    return false;
-  }
-  if (source.FindIgnoringASCIICase("<sc") == WTF::kNotFound &&
-      source.FindIgnoringASCIICase("%3Csc") == WTF::kNotFound) {
-    LogGatedEvaluation(kGatedEvaluationNoLikelyScript);
-    return false;
-  }
-  if (source.Find("while") != WTF::kNotFound ||
-      source.Find("for(") != WTF::kNotFound ||
-      source.Find("for ") != WTF::kNotFound) {
-    LogGatedEvaluation(kGatedEvaluationLooping);
-    return false;
-  }
-  // This check is mostly for "window.jQuery" for false positives fetches,
-  // though it include $ calls to avoid evaluations which will quickly fail.
-  if (source.Find("jQuery") != WTF::kNotFound ||
-      source.Find("$.") != WTF::kNotFound ||
-      source.Find("$(") != WTF::kNotFound) {
-    LogGatedEvaluation(kGatedEvaluationPopularLibrary);
-    return false;
-  }
-  if (source.Find("Math.random") != WTF::kNotFound ||
-      source.Find("Date") != WTF::kNotFound) {
-    LogGatedEvaluation(kGatedEvaluationNondeterminism);
-    return false;
-  }
-  return true;
-}
-
 template <typename Token>
 void TokenPreloadScanner::ScanCommon(const Token& token,
                                      const SegmentedString& source,
                                      PreloadRequestStream& requests,
                                      ViewportDescriptionWrapper* viewport,
-                                     bool* is_csp_meta_tag,
-                                     bool* likely_document_write_script) {
+                                     bool* is_csp_meta_tag) {
   if (!document_parameters_->do_html_preload_scanning)
     return;
 
@@ -786,14 +710,6 @@ void TokenPreloadScanner::ScanCommon(const Token& token,
       if (in_style_) {
         css_scanner_.Scan(token.Data(), source, requests,
                           predicted_base_element_url_);
-      } else if (in_script_ && likely_document_write_script && !did_rewind_) {
-        // Don't mark scripts for evaluation if the preloader rewound to a
-        // previous checkpoint. This could cause re-evaluation of scripts if
-        // care isn't given.
-        // TODO(csharrison): Revisit this if rewinds are low hanging fruit for
-        // the document.write evaluator.
-        *likely_document_write_script =
-            ShouldEvaluateForDocumentWrite(token.Data());
       }
       return;
     }
@@ -960,9 +876,6 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
   do_html_preload_scanning =
       !document->GetSettings() ||
       document->GetSettings()->GetDoHtmlPreloadScanning();
-  do_document_write_preload_scanning = do_html_preload_scanning &&
-                                       document->GetFrame() &&
-                                       document->GetFrame()->IsMainFrame();
   default_viewport_min_width = document->ViewportDefaultMinWidth();
   viewport_meta_zero_values_quirk =
       document->GetSettings() &&
