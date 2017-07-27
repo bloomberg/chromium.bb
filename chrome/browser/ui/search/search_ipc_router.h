@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/common/instant.mojom.h"
+#include "chrome/common/search.mojom.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "components/ntp_tiles/tile_source.h"
@@ -31,7 +31,7 @@ class SearchIPCRouterTest;
 // SearchIPCRouter is responsible for receiving and sending IPC messages between
 // the browser and the Instant page.
 class SearchIPCRouter : public content::WebContentsObserver,
-                        public chrome::mojom::Instant {
+                        public chrome::mojom::EmbeddedSearch {
  public:
   // SearchIPCRouter calls its delegate in response to messages received from
   // the page.
@@ -41,13 +41,13 @@ class SearchIPCRouter : public content::WebContentsObserver,
     // the omnibox focus state.
     virtual void FocusOmnibox(OmniboxFocusState state) = 0;
 
-    // Called when the SearchBox wants to delete a Most Visited item.
+    // Called when the EmbeddedSearch wants to delete a Most Visited item.
     virtual void OnDeleteMostVisitedItem(const GURL& url) = 0;
 
-    // Called when the SearchBox wants to undo a Most Visited deletion.
+    // Called when the EmbeddedSearch wants to undo a Most Visited deletion.
     virtual void OnUndoMostVisitedDeletion(const GURL& url) = 0;
 
-    // Called when the SearchBox wants to undo all Most Visited deletions.
+    // Called when the EmbeddedSearch wants to undo all Most Visited deletions.
     virtual void OnUndoAllMostVisitedDeletions() = 0;
 
     // Called to signal that an event has occurred on the New Tab Page at a
@@ -71,17 +71,18 @@ class SearchIPCRouter : public content::WebContentsObserver,
     // if the |text| is empty) into the omnibox.
     virtual void PasteIntoOmnibox(const base::string16& text) = 0;
 
-    // Called when the SearchBox wants to verify the signed-in Chrome identity
-    // against the provided |identity|. Will make a round-trip to the browser
-    // and eventually return the result through SendChromeIdentityCheckResult.
-    // Calls SendChromeIdentityCheckResult with true if the identity matches.
+    // Called when the EmbeddedSearch wants to verify the signed-in Chrome
+    // identity against the provided |identity|. Will make a round-trip to the
+    // browser and eventually return the result through
+    // SendChromeIdentityCheckResult. Calls SendChromeIdentityCheckResult with
+    // true if the identity matches.
     virtual void OnChromeIdentityCheck(const base::string16& identity) = 0;
 
-    // Called when the SearchBox wants to verify the signed-in Chrome identity
-    // against the provided |identity|. Will make a round-trip to the browser
-    // and eventually return the result through SendHistorySyncCheckResult.
-    // Calls SendHistorySyncCheckResult with true if the user syncs their
-    // history.
+    // Called when the EmbeddedSearch wants to verify the signed-in Chrome
+    // identity against the provided |identity|. Will make a round-trip to the
+    // browser and eventually return the result through
+    // SendHistorySyncCheckResult. Calls SendHistorySyncCheckResult with true if
+    // the user syncs their history.
     virtual void OnHistorySyncCheck() = 0;
   };
 
@@ -110,17 +111,17 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldSubmitQuery() = 0;
   };
 
-  // Creates chrome::mojom::SearchBox connections on request.
-  class SearchBoxClientFactory {
+  // Creates chrome::mojom::EmbeddedSearchClient connections on request.
+  class EmbeddedSearchClientFactory {
    public:
-    SearchBoxClientFactory() = default;
-    virtual ~SearchBoxClientFactory() = default;
+    EmbeddedSearchClientFactory() = default;
+    virtual ~EmbeddedSearchClientFactory() = default;
 
     // The returned pointer is owned by the factory.
-    virtual chrome::mojom::SearchBox* GetSearchBox() = 0;
+    virtual chrome::mojom::EmbeddedSearchClient* GetEmbeddedSearchClient() = 0;
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(SearchBoxClientFactory);
+    DISALLOW_COPY_AND_ASSIGN(EmbeddedSearchClientFactory);
   };
 
   SearchIPCRouter(content::WebContents* web_contents,
@@ -163,7 +164,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
   // Called when the tab corresponding to |this| instance is deactivated.
   void OnTabDeactivated();
 
-  // chrome::mojom::Instant:
+  // chrome::mojom::EmbeddedSearch:
   void FocusOmnibox(int page_id, OmniboxFocusState state) override;
   void DeleteMostVisitedItem(int page_seq_no, const GURL& url) override;
   void UndoMostVisitedDeletion(int page_seq_no, const GURL& url) override;
@@ -185,9 +186,9 @@ class SearchIPCRouter : public content::WebContentsObserver,
                            const base::string16& identity) override;
   void HistorySyncCheck(int page_seq_no) override;
 
-  void set_search_box_client_factory_for_testing(
-      std::unique_ptr<SearchBoxClientFactory> factory) {
-    search_box_client_factory_ = std::move(factory);
+  void set_embedded_search_client_factory_for_testing(
+      std::unique_ptr<EmbeddedSearchClientFactory> factory) {
+    embedded_search_client_factory_ = std::move(factory);
   }
 
  private:
@@ -211,8 +212,8 @@ class SearchIPCRouter : public content::WebContentsObserver,
   // Used by unit tests.
   int page_seq_no_for_testing() const { return commit_counter_; }
 
-  chrome::mojom::SearchBox* search_box() {
-    return search_box_client_factory_->GetSearchBox();
+  chrome::mojom::EmbeddedSearchClient* embedded_search_client() {
+    return embedded_search_client_factory_->GetEmbeddedSearchClient();
   }
 
   Delegate* delegate_;
@@ -228,9 +229,9 @@ class SearchIPCRouter : public content::WebContentsObserver,
   // Binding for the connected main frame. We only allow one frame to connect at
   // the moment, but this could be extended to a map of connected frames, if
   // desired.
-  mojo::AssociatedBinding<chrome::mojom::Instant> binding_;
+  mojo::AssociatedBinding<chrome::mojom::EmbeddedSearch> binding_;
 
-  std::unique_ptr<SearchBoxClientFactory> search_box_client_factory_;
+  std::unique_ptr<EmbeddedSearchClientFactory> embedded_search_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchIPCRouter);
 };

@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/common/instant.mojom.h"
+#include "chrome/common/search.mojom.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "chrome/renderer/instant_restricted_id_cache.h"
@@ -25,7 +25,7 @@
 
 class SearchBox : public content::RenderFrameObserver,
                   public content::RenderFrameObserverTracker<SearchBox>,
-                  public chrome::mojom::SearchBox {
+                  public chrome::mojom::EmbeddedSearchClient {
  public:
   enum ImageSourceType {
     NONE = -1,
@@ -153,7 +153,7 @@ class SearchBox : public content::RenderFrameObserver,
   // Returns the URL of the Most Visited item specified by the |item_id|.
   GURL GetURLForMostVisitedItem(InstantRestrictedID item_id) const;
 
-  void Bind(chrome::mojom::SearchBoxAssociatedRequest request);
+  void Bind(chrome::mojom::EmbeddedSearchClientAssociatedRequest request);
 
   int page_seq_no_;
   bool is_focused_;
@@ -163,8 +163,8 @@ class SearchBox : public content::RenderFrameObserver,
   ThemeBackgroundInfo theme_info_;
   EmbeddedSearchRequestParams embedded_search_request_params_;
   InstantSuggestion suggestion_;
-  chrome::mojom::InstantAssociatedPtr instant_service_;
-  mojo::AssociatedBinding<chrome::mojom::SearchBox> binding_;
+  chrome::mojom::EmbeddedSearchAssociatedPtr embedded_search_service_;
+  mojo::AssociatedBinding<chrome::mojom::EmbeddedSearchClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBox);
 };

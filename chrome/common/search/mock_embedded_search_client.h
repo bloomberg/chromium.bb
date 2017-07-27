@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SEARCH_MOCK_SEARCHBOX_H_
-#define CHROME_COMMON_SEARCH_MOCK_SEARCHBOX_H_
+#ifndef CHROME_COMMON_SEARCH_MOCK_EMBEDDED_SEARCH_CLIENT_H_
+#define CHROME_COMMON_SEARCH_MOCK_EMBEDDED_SEARCH_CLIENT_H_
 
-#include "chrome/common/instant.mojom.h"
+#include "chrome/common/search.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-class MockSearchBox : public chrome::mojom::SearchBox {
+class MockEmbeddedSearchClient : public chrome::mojom::EmbeddedSearchClient {
  public:
-  MockSearchBox();
-  ~MockSearchBox();
+  MockEmbeddedSearchClient();
+  ~MockEmbeddedSearchClient();
 
   MOCK_METHOD1(SetPageSequenceNumber, void(int));
   MOCK_METHOD2(ChromeIdentityCheckResult, void(const base::string16&, bool));
@@ -25,5 +25,4 @@ class MockSearchBox : public chrome::mojom::SearchBox {
   MOCK_METHOD1(ThemeChanged, void(const ThemeBackgroundInfo&));
 };
 
-
-#endif  // CHROME_COMMON_SEARCH_MOCK_SEARCHBOX_H_
+#endif  // CHROME_COMMON_SEARCH_MOCK_EMBEDDED_SEARCH_CLIENT_H_

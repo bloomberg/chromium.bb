@@ -31,55 +31,56 @@ bool IsInInstantProcess(content::RenderFrameHost* render_frame) {
   return instant_service->IsInstantProcess(process_host->GetID());
 }
 
-class SearchBoxClientFactoryImpl
-    : public SearchIPCRouter::SearchBoxClientFactory,
+class EmbeddedSearchClientFactoryImpl
+    : public SearchIPCRouter::EmbeddedSearchClientFactory,
       public chrome::mojom::EmbeddedSearchConnector {
  public:
   // |web_contents| and |binding| must outlive this object.
-  SearchBoxClientFactoryImpl(
+  EmbeddedSearchClientFactoryImpl(
       content::WebContents* web_contents,
-      mojo::AssociatedBinding<chrome::mojom::Instant>* binding)
+      mojo::AssociatedBinding<chrome::mojom::EmbeddedSearch>* binding)
       : client_binding_(binding), factory_bindings_(web_contents, this) {
     DCHECK(web_contents);
     DCHECK(binding);
     // Before we are connected to a frame we throw away all messages.
-    mojo::MakeIsolatedRequest(&search_box_);
+    mojo::MakeIsolatedRequest(&embedded_search_client_);
   }
 
-  chrome::mojom::SearchBox* GetSearchBox() override {
-    return search_box_.get();
+  chrome::mojom::EmbeddedSearchClient* GetEmbeddedSearchClient() override {
+    return embedded_search_client_.get();
   }
 
  private:
-  void Connect(chrome::mojom::InstantAssociatedRequest request,
-               chrome::mojom::SearchBoxAssociatedPtrInfo client) override;
+  void Connect(
+      chrome::mojom::EmbeddedSearchAssociatedRequest request,
+      chrome::mojom::EmbeddedSearchClientAssociatedPtrInfo client) override;
 
   // An interface used to push updates to the frame that connected to us. Before
   // we've been connected to a frame, messages sent on this interface go into
   // the void.
-  chrome::mojom::SearchBoxAssociatedPtr search_box_;
+  chrome::mojom::EmbeddedSearchClientAssociatedPtr embedded_search_client_;
 
   // Used to bind incoming interface requests to the implementation, which lives
   // in SearchIPCRouter.
-  mojo::AssociatedBinding<chrome::mojom::Instant>* client_binding_;
+  mojo::AssociatedBinding<chrome::mojom::EmbeddedSearch>* client_binding_;
 
   // Binding used to listen to connection requests.
   content::WebContentsFrameBindingSet<chrome::mojom::EmbeddedSearchConnector>
       factory_bindings_;
 
-  DISALLOW_COPY_AND_ASSIGN(SearchBoxClientFactoryImpl);
+  DISALLOW_COPY_AND_ASSIGN(EmbeddedSearchClientFactoryImpl);
 };
 
-void SearchBoxClientFactoryImpl::Connect(
-    chrome::mojom::InstantAssociatedRequest request,
-    chrome::mojom::SearchBoxAssociatedPtrInfo client) {
+void EmbeddedSearchClientFactoryImpl::Connect(
+    chrome::mojom::EmbeddedSearchAssociatedRequest request,
+    chrome::mojom::EmbeddedSearchClientAssociatedPtrInfo client) {
   content::RenderFrameHost* frame = factory_bindings_.GetCurrentTargetFrame();
   const bool is_main_frame = frame->GetParent() == nullptr;
   if (!IsInInstantProcess(frame) || !is_main_frame) {
     return;
   }
   client_binding_->Bind(std::move(request));
-  search_box_.Bind(std::move(client));
+  embedded_search_client_.Bind(std::move(client));
 }
 
 }  // namespace
@@ -93,8 +94,8 @@ SearchIPCRouter::SearchIPCRouter(content::WebContents* web_contents,
       commit_counter_(0),
       is_active_tab_(false),
       binding_(this),
-      search_box_client_factory_(
-          new SearchBoxClientFactoryImpl(web_contents, &binding_)) {
+      embedded_search_client_factory_(
+          new EmbeddedSearchClientFactoryImpl(web_contents, &binding_)) {
   DCHECK(web_contents);
   DCHECK(delegate);
   DCHECK(policy_.get());
@@ -104,7 +105,7 @@ SearchIPCRouter::~SearchIPCRouter() = default;
 
 void SearchIPCRouter::OnNavigationEntryCommitted() {
   ++commit_counter_;
-  search_box()->SetPageSequenceNumber(commit_counter_);
+  embedded_search_client()->SetPageSequenceNumber(commit_counter_);
 }
 
 void SearchIPCRouter::SendChromeIdentityCheckResult(
@@ -113,14 +114,14 @@ void SearchIPCRouter::SendChromeIdentityCheckResult(
   if (!policy_->ShouldProcessChromeIdentityCheck())
     return;
 
-  search_box()->ChromeIdentityCheckResult(identity, identity_match);
+  embedded_search_client()->ChromeIdentityCheckResult(identity, identity_match);
 }
 
 void SearchIPCRouter::SendHistorySyncCheckResult(bool sync_history) {
   if (!policy_->ShouldProcessHistorySyncCheck())
     return;
 
-  search_box()->HistorySyncCheckResult(sync_history);
+  embedded_search_client()->HistorySyncCheckResult(sync_history);
 }
 
 void SearchIPCRouter::SetSuggestionToPrefetch(
@@ -128,14 +129,14 @@ void SearchIPCRouter::SetSuggestionToPrefetch(
   if (!policy_->ShouldSendSetSuggestionToPrefetch())
     return;
 
-  search_box()->SetSuggestionToPrefetch(suggestion);
+  embedded_search_client()->SetSuggestionToPrefetch(suggestion);
 }
 
 void SearchIPCRouter::SetInputInProgress(bool input_in_progress) {
   if (!policy_->ShouldSendSetInputInProgress(is_active_tab_))
     return;
 
-  search_box()->SetInputInProgress(input_in_progress);
+  embedded_search_client()->SetInputInProgress(input_in_progress);
 }
 
 void SearchIPCRouter::OmniboxFocusChanged(OmniboxFocusState state,
@@ -143,7 +144,7 @@ void SearchIPCRouter::OmniboxFocusChanged(OmniboxFocusState state,
   if (!policy_->ShouldSendOmniboxFocusChanged())
     return;
 
-  search_box()->FocusChanged(state, reason);
+  embedded_search_client()->FocusChanged(state, reason);
 }
 
 void SearchIPCRouter::SendMostVisitedItems(
@@ -151,7 +152,7 @@ void SearchIPCRouter::SendMostVisitedItems(
   if (!policy_->ShouldSendMostVisitedItems())
     return;
 
-  search_box()->MostVisitedChanged(items);
+  embedded_search_client()->MostVisitedChanged(items);
 }
 
 void SearchIPCRouter::SendThemeBackgroundInfo(
@@ -159,14 +160,14 @@ void SearchIPCRouter::SendThemeBackgroundInfo(
   if (!policy_->ShouldSendThemeBackgroundInfo())
     return;
 
-  search_box()->ThemeChanged(theme_info);
+  embedded_search_client()->ThemeChanged(theme_info);
 }
 
 void SearchIPCRouter::Submit(const EmbeddedSearchRequestParams& params) {
   if (!policy_->ShouldSubmitQuery())
     return;
 
-  search_box()->Submit(params);
+  embedded_search_client()->Submit(params);
 }
 
 void SearchIPCRouter::OnTabActivated() {
