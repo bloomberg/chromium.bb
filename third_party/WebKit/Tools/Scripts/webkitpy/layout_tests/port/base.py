@@ -765,6 +765,9 @@ class Port(object):
         return WPTManifest(self._filesystem.read_text_file(manifest_path))
 
     def is_slow_wpt_test(self, test_file):
+        match = re.match(r'virtual/[^/]+/', test_file)
+        if match:
+            test_file = test_file[match.end(0):]
         match = re.match(r'external/wpt/(.*)', test_file)
         if not match:
             return False
