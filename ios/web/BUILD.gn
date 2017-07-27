@@ -61,6 +61,8 @@ source_set("web_arc") {
     "interstitials/web_interstitial_impl.h",
     "interstitials/web_interstitial_impl.mm",
     "load_committed_details.cc",
+    "navigation/crw_navigation_item_holder.h",
+    "navigation/crw_navigation_item_holder.mm",
     "navigation/crw_session_controller+private_constructors.h",
     "navigation/crw_session_controller.h",
     "navigation/crw_session_controller.mm",
@@ -523,6 +525,7 @@ source_set("ios_web_navigation_unittests") {
   ]
 
   sources = [
+    "navigation/crw_navigation_item_holder_unittest.mm",
     "navigation/crw_navigation_item_storage_unittest.mm",
     "navigation/crw_session_controller_unittest.mm",
     "navigation/crw_session_storage_unittest.mm",
@@ -533,6 +536,7 @@ source_set("ios_web_navigation_unittests") {
     "navigation/navigation_manager_util_unittest.mm",
     "navigation/nscoder_util_unittest.mm",
     "navigation/serializable_user_data_manager_impl_unittest.mm",
+    "navigation/wk_based_navigation_manager_impl_unittest.mm",
   ]
 }
 
