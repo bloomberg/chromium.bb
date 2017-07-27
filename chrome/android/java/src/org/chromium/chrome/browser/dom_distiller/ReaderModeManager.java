@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.infobar.ReaderModeInfoBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.dom_distiller.content.DistillablePageUtils;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.NavigationController;
@@ -373,8 +372,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
 
         if (!mTabStatusMap.containsKey(currentTabId) || usingRequestDesktopSite
                 || mTabStatusMap.get(currentTabId).getStatus() != POSSIBLE
-                || mTabStatusMap.get(currentTabId).isDismissed()
-                || AccessibilityUtil.isAccessibilityEnabled()) {
+                || mTabStatusMap.get(currentTabId).isDismissed()) {
             return;
         }
 
