@@ -3544,6 +3544,12 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "cast_graphics_unittests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "cast_media_unittests"
