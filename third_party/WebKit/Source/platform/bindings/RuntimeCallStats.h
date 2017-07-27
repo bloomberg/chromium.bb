@@ -176,9 +176,11 @@ class PLATFORM_EXPORT RuntimeCallStats {
   V(AssociateObjectWithWrapper)                                         \
   V(CollectGarbage)                                                     \
   V(CreateWrapper)                                                      \
+  V(DocumentFragmentParseHTML)                                          \
+  V(GcEpilogue)                                                         \
+  V(GcPrologue)                                                         \
   V(GetEventListener)                                                   \
   V(HasInstance)                                                        \
-  V(DocumentFragmentParseHTML)                                          \
   V(PaintContents)                                                      \
   V(PerformIdleLazySweep)                                               \
   V(ProcessStyleSheet)                                                  \
