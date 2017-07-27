@@ -1073,6 +1073,7 @@ void PrintPreviewHandler::PrintToPdf() {
 }
 
 void PrintPreviewHandler::HandleHidePreview(const base::ListValue* /*args*/) {
+  print_preview_ui()->OnHidePreviewDialog();
   if (settings_) {
     // Print preview is responding to a resolution of "print" promise. Send the
     // print message to the renderer.
@@ -1086,15 +1087,13 @@ void PrintPreviewHandler::HandleHidePreview(const base::ListValue* /*args*/) {
     WebContents* initiator = GetInitiator();
     ClearInitiatorDetails();
 
-    // Since the preview dialog will be hidden and not closed, we need to make
-    // this call.
+    // Since the preview dialog is hidden and not closed, we need to make this
+    // call.
     if (initiator) {
       auto* print_view_manager = PrintViewManager::FromWebContents(initiator);
       print_view_manager->PrintPreviewDone();
     }
   }
-
-  print_preview_ui()->OnHidePreviewDialog();
 }
 
 void PrintPreviewHandler::HandleCancelPendingPrintRequest(
