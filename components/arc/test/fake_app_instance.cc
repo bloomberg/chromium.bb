@@ -214,6 +214,11 @@ void FakeAppInstance::SendPackageAdded(const mojom::ArcPackageInfo& package) {
   app_host_->OnPackageAdded(mojom::ArcPackageInfoPtr(package.Clone()));
 }
 
+void FakeAppInstance::SendPackageModified(
+    const mojom::ArcPackageInfo& package) {
+  app_host_->OnPackageModified(mojom::ArcPackageInfoPtr(package.Clone()));
+}
+
 void FakeAppInstance::SendPackageUninstalled(const std::string& package_name) {
   app_host_->OnPackageRemoved(package_name);
 }

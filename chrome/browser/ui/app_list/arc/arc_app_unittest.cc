@@ -1409,6 +1409,13 @@ TEST_P(ArcAppModelBuilderRecreate, IconInvalidation) {
   ui::test::ScopedSetSupportedScaleFactors scoped_supported_scale_factors(
       supported_scale_factors);
 
+  arc::mojom::ArcPackageInfo package;
+  package.package_name = fake_apps()[0].package_name;
+  package.package_version = 1;
+  package.last_backup_android_id = 1;
+  package.last_backup_time = 1;
+  package.sync = true;
+
   ASSERT_FALSE(fake_apps().empty());
   std::vector<arc::mojom::AppInfo> apps = std::vector<arc::mojom::AppInfo>(
       fake_apps().begin(), fake_apps().begin() + 1);
@@ -1421,6 +1428,7 @@ TEST_P(ArcAppModelBuilderRecreate, IconInvalidation) {
 
   app_instance()->RefreshAppList();
   app_instance()->SendRefreshAppList(apps);
+  AddPackage(package);
 
   prefs->MaybeRequestIcon(app_id, ui::SCALE_FACTOR_100P);
 
@@ -1436,12 +1444,15 @@ TEST_P(ArcAppModelBuilderRecreate, IconInvalidation) {
   ASSERT_NE(nullptr, prefs);
   app_instance()->RefreshAppList();
   app_instance()->SendRefreshAppList(apps);
+  app_instance()->SendPackageModified(package);
 
   // No icon update requests on restart. Icons were not invalidated.
   EXPECT_TRUE(app_instance()->icon_requests().empty());
 
-  // Send new apps for the package. This should invalidate app icons.
+  // Send new apps for the package. This should invalidate package icons.
+  package.package_version = 2;
   app_instance()->SendPackageAppListRefreshed(apps[0].package_name, apps);
+  app_instance()->SendPackageModified(package);
   base::RunLoop().RunUntilIdle();
 
   // Requests to reload icons are issued for all supported scales.
@@ -1466,6 +1477,7 @@ TEST_P(ArcAppModelBuilderRecreate, IconInvalidation) {
   ASSERT_NE(nullptr, prefs);
   app_instance()->RefreshAppList();
   app_instance()->SendRefreshAppList(apps);
+  app_instance()->SendPackageModified(package);
 
   // No new icon update requests on restart. Icons were invalidated and updated.
   EXPECT_TRUE(app_instance()->icon_requests().empty());
