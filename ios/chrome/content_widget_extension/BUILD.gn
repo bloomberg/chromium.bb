@@ -48,6 +48,7 @@ source_set("content_widget") {
 
   deps = [
     "//base",
+    "//ios/chrome/browser/ui/ntp:ntp_tile",
     "//ios/chrome/common/app_group",
   ]
 

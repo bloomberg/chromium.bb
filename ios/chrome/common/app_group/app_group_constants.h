@@ -89,6 +89,9 @@ extern NSString* const kShareItemType;
 // The value used by Chrome share extension in |kShareItemSource|.
 extern NSString* const kShareItemShareExtensionSource;
 
+// The value of the key for the sharedDefaults used by the Content Widget.
+extern NSString* const kSuggestedItems;
+
 // The current epoch time, on the first run of chrome on this machine. It is set
 // once and must be attached to metrics reports forever thereafter.
 extern const char kInstallDate[];
@@ -111,6 +114,10 @@ NSURL* LegacyShareExtensionItemsFolder();
 
 // Gets the shared folder URL containing commands from other applications.
 NSURL* ExternalCommandsItemsFolder();
+
+// Gets the shared folder URL in which favicons used by the content widget are
+// stored.
+NSURL* ContentWidgetFaviconsFolder();
 
 // Returns an autoreleased pointer to the shared user defaults if an
 // application group is defined. If not (i.e. on simulator, or if entitlements
