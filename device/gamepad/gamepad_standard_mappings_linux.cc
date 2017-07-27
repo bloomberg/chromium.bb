@@ -291,7 +291,7 @@ void MapperRazerServal(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
-void MapperMogaPro(const Gamepad& input, Gamepad* mapped) {
+void MapperMoga(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[5]);
   mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[4]);
@@ -340,6 +340,28 @@ void MapperSamsung_EI_GP20(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
+void MapperSteelSeries(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = input.buttons[6];
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[7];
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = NullButton();
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = NullButton();
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[12];
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = NullButton();
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = NullButton();
+  mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[5]);
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = AxisPositiveAsButton(input.axes[5]);
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = AxisNegativeAsButton(input.axes[4]);
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+      AxisPositiveAsButton(input.axes[4]);
+  mapped->buttons[BUTTON_INDEX_META] = NullButton();
+  mapped->buttons_length = BUTTON_INDEX_META;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
 struct MappingData {
   const char* const vendor_id;
   const char* const product_id;
@@ -350,6 +372,7 @@ struct MappingData {
     {"045e", "028e", MapperXInputStyleGamepad},  // Xbox 360 Wired
     {"045e", "028f", MapperXInputStyleGamepad},  // Xbox 360 Wireless
     {"045e", "02a1", MapperXInputStyleGamepad},  // Xbox 360 Wireless
+    {"045e", "0291", MapperXInputStyleGamepad},  // Xbox 360 Wireless
     {"045e", "02d1", MapperXInputStyleGamepad},  // Xbox One Wired
     {"045e", "02dd", MapperXInputStyleGamepad},  // Xbox One Wired (2015 FW)
     {"045e", "02e3", MapperXInputStyleGamepad},  // Xbox One Elite Wired
@@ -369,9 +392,11 @@ struct MappingData {
     {"0955", "7210", MapperNvShield},            // Nvidia Shield gamepad
     {"0b05", "4500", MapperADT1},                // Nexus Player Controller
     {"0e8f", "0003", MapperXGEAR},           // XFXforce XGEAR PS2 Controller
+    {"1038", "1412", MapperSteelSeries},     // Zeemote: SteelSeries FREE
     {"1532", "0900", MapperRazerServal},     // Razer Serval Controller
     {"18d1", "2c40", MapperADT1},            // ADT-1 Controller
-    {"20d6", "6271", MapperMogaPro},         // Moga Pro Controller (HID mode)
+    {"20d6", "6271", MapperMoga},            // Moga Pro Controller (HID mode)
+    {"20d6", "89e5", MapperMoga},            // Moga 2 HID
     {"2378", "1008", MapperOnLiveWireless},  // OnLive Controller (Bluetooth)
     {"2378", "100a", MapperOnLiveWireless},  // OnLive Controller (Wired)
     {"2836", "0001", MapperOUYA},            // OUYA Controller
