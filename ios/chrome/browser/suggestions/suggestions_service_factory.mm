@@ -68,10 +68,6 @@ SuggestionsServiceFactory::~SuggestionsServiceFactory() {
 std::unique_ptr<KeyedService>
 SuggestionsServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND});
-
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   SigninManager* signin_manager =
@@ -87,13 +83,20 @@ SuggestionsServiceFactory::BuildServiceInstanceFor(
       new SuggestionsStore(browser_state->GetPrefs()));
   std::unique_ptr<BlacklistStore> blacklist_store(
       new BlacklistStore(browser_state->GetPrefs()));
-  std::unique_ptr<leveldb_proto::ProtoDatabaseImpl<ImageData>> db(
-      new leveldb_proto::ProtoDatabaseImpl<ImageData>(background_task_runner));
 
+  scoped_refptr<base::SequencedTaskRunner> db_task_runner =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND});
+  std::unique_ptr<leveldb_proto::ProtoDatabaseImpl<ImageData>> db(
+      new leveldb_proto::ProtoDatabaseImpl<ImageData>(db_task_runner));
+
+  scoped_refptr<base::SequencedTaskRunner> decoder_task_runner =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher =
       base::MakeUnique<image_fetcher::ImageFetcherImpl>(
-          image_fetcher::CreateIOSImageDecoder(
-              web::WebThread::GetBlockingPool()),
+          image_fetcher::CreateIOSImageDecoder(decoder_task_runner),
           browser_state->GetRequestContext());
 
   std::unique_ptr<ImageManager> thumbnail_manager(
