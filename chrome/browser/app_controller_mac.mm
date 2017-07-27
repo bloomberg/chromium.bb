@@ -77,6 +77,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_class_mac.h"
@@ -344,18 +345,6 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
 
   // Initialize the Profile menu.
   [self initProfileMenu];
-
-  // If the OSX version supports this method, the system will automatically
-  // hide the item if there's no touch bar. However, for unsupported versions,
-  // we'll have to manually remove the item from the menu.
-  if (![NSApp
-          respondsToSelector:@selector(toggleTouchBarCustomizationPalette:)]) {
-    NSMenu* mainMenu = [NSApp mainMenu];
-    NSMenu* viewMenu = [[mainMenu itemWithTag:IDC_VIEW_MENU] submenu];
-    NSMenuItem* customizeItem = [viewMenu itemWithTag:IDC_CUSTOMIZE_TOUCH_BAR];
-    if (customizeItem)
-      [viewMenu removeItem:customizeItem];
-  }
 }
 
 - (void)unregisterEventHandlers {
@@ -378,6 +367,20 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
 
   if (@available(macOS 10.12, *)) {
     NSWindow.allowsAutomaticWindowTabbing = NO;
+  }
+
+  // If the OSX version supports this method, the system will automatically
+  // hide the item if there's no touch bar. However, for unsupported versions,
+  // we'll have to manually remove the item from the menu. The item also has
+  // to be removed if the feature is disabled.
+  if (![NSApp
+          respondsToSelector:@selector(toggleTouchBarCustomizationPalette:)] ||
+      !base::FeatureList::IsEnabled(features::kBrowserTouchBar)) {
+    NSMenu* mainMenu = [NSApp mainMenu];
+    NSMenu* viewMenu = [[mainMenu itemWithTag:IDC_VIEW_MENU] submenu];
+    NSMenuItem* customizeItem = [viewMenu itemWithTag:IDC_CUSTOMIZE_TOUCH_BAR];
+    if (customizeItem)
+      [viewMenu removeItem:customizeItem];
   }
 }
 
