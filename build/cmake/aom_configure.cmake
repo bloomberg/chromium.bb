@@ -83,16 +83,20 @@ string(STRIP "${AOM_CMAKE_CONFIG}" AOM_CMAKE_CONFIG)
 message("--- aom_configure: Detected CPU: ${AOM_TARGET_CPU}")
 set(AOM_TARGET_SYSTEM ${CMAKE_SYSTEM_NAME})
 
-if (BUILD_SHARED_LIBS)
-  set(CONFIG_PIC 1)
-  set(CONFIG_SHARED 1)
-  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+if (NOT MSVC)
+  if (BUILD_SHARED_LIBS)
+    set(CONFIG_PIC 1)
+    set(CONFIG_SHARED 1)
+  endif ()
 
-  if ("${AOM_TARGET_SYSTEM}" STREQUAL "Linux" AND
-      "${AOM_TARGET_CPU}" MATCHES "^armv7")
-    set(AOM_AS_FLAGS ${AOM_AS_FLAGS} --defsym PIC=1)
-  else ()
-    set(AOM_AS_FLAGS ${AOM_AS_FLAGS} -DPIC)
+  if (CONFIG_PIC)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    if ("${AOM_TARGET_SYSTEM}" STREQUAL "Linux" AND
+        "${AOM_TARGET_CPU}" MATCHES "^armv7")
+      set(AOM_AS_FLAGS ${AOM_AS_FLAGS} --defsym PIC=1)
+    else ()
+      set(AOM_AS_FLAGS ${AOM_AS_FLAGS} -DPIC)
+    endif ()
   endif ()
 endif ()
 
@@ -112,8 +116,9 @@ if ("${AOM_TARGET_CPU}" STREQUAL "x86" OR "${AOM_TARGET_CPU}" STREQUAL "x86_64")
   endif ()
 
   if (NOT AS_EXECUTABLE)
-    message(FATAL_ERROR "Unable to find yasm. To build without optimizations, "
-            "add -DAOM_TARGET_CPU=generic to your cmake command line.")
+    message(FATAL_ERROR "Unable to find assembler. To build without "
+            "optimizations, add -DAOM_TARGET_CPU=generic to your cmake command "
+            "line.")
   endif ()
   get_asm_obj_format("objformat")
   set(AOM_AS_FLAGS -f ${objformat} ${AOM_AS_FLAGS})
