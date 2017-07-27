@@ -54,6 +54,8 @@ class ProximityAuthProfilePrefManager : public ProximityAuthPrefManager {
   int64_t GetLastPasswordEntryTimestampMs() const override;
   void SetLastPromotionCheckTimestampMs(int64_t timestamp_ms) override;
   int64_t GetLastPromotionCheckTimestampMs() const override;
+  void SetPromotionShownCount(int count) override;
+  int GetPromotionShownCount() const override;
   void SetProximityThreshold(ProximityThreshold value) override;
   ProximityThreshold GetProximityThreshold() const override;
   void SetIsChromeOSLoginEnabled(bool is_enabled) override;

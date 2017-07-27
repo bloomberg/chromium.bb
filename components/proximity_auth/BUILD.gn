@@ -23,6 +23,7 @@ static_library("proximity_auth") {
     "messenger_observer.h",
     "metrics.cc",
     "metrics.h",
+    "notification_controller.h",
     "promotion_manager.cc",
     "promotion_manager.h",
     "proximity_auth_client.h",

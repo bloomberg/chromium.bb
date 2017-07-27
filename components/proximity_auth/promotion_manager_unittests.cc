@@ -14,6 +14,7 @@
 #include "components/cryptauth/mock_cryptauth_client.h"
 #include "components/cryptauth/mock_local_device_data_provider.h"
 #include "components/proximity_auth/fake_lock_handler.h"
+#include "components/proximity_auth/notification_controller.h"
 #include "components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,6 +22,7 @@
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::NiceMock;
+using ::testing::StrictMock;
 using ::testing::Return;
 using ::testing::SaveArg;
 
@@ -38,6 +40,21 @@ const bool kUnlockKey1 = true;
 const bool kUnlockable1 = false;
 }  // namespace
 
+// Mock implementation of NotificationController.
+class MockNotificationController : public NotificationController {
+ public:
+  MockNotificationController() {}
+  ~MockNotificationController() override {}
+
+  MOCK_METHOD0(ShowChromebookAddedNotification, void());
+  MOCK_METHOD0(ShowPairingChangeNotification, void());
+  MOCK_METHOD1(ShowPairingChangeAppliedNotification, void(const std::string&));
+  MOCK_METHOD0(ShowPromotionNotification, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockNotificationController);
+};
+
 // Mock implementation of ProximityAuthProfilePrefManager.
 class MockProximityAuthPrefManager : public ProximityAuthProfilePrefManager {
  public:
@@ -46,6 +63,9 @@ class MockProximityAuthPrefManager : public ProximityAuthProfilePrefManager {
 
   MOCK_METHOD1(SetLastPromotionCheckTimestampMs, void(int64_t));
   MOCK_CONST_METHOD0(GetLastPromotionCheckTimestampMs, int64_t());
+
+  MOCK_METHOD1(SetPromotionShownCount, void(int));
+  MOCK_CONST_METHOD0(GetPromotionShownCount, int());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockProximityAuthPrefManager);
@@ -58,15 +78,17 @@ class ProximityAuthPromotionManagerTest
   ProximityAuthPromotionManagerTest()
       : local_device_data_provider_(
             new cryptauth::MockLocalDeviceDataProvider()),
+        notification_controller_(new StrictMock<MockNotificationController>()),
         clock_(new base::SimpleTestClock()),
         expect_eligible_unlock_devices_request_(false),
         client_factory_(new cryptauth::MockCryptAuthClientFactory(
             cryptauth::MockCryptAuthClientFactory::MockType::
                 MAKE_STRICT_MOCKS)),
-        pref_manager_(new NiceMock<MockProximityAuthPrefManager>()),
+        pref_manager_(new StrictMock<MockProximityAuthPrefManager>()),
         task_runner_(new base::TestSimpleTaskRunner),
         promotion_manager_(
             new PromotionManager(local_device_data_provider_.get(),
+                                 notification_controller_.get(),
                                  pref_manager_.get(),
                                  base::WrapUnique(client_factory_),
                                  base::WrapUnique(clock_),
@@ -87,6 +109,7 @@ class ProximityAuthPromotionManagerTest
   }
 
   void SetUp() override {
+    EXPECT_CALL(*pref_manager_, GetPromotionShownCount()).WillOnce(Return(0));
     promotion_manager_->set_check_eligibility_probability(2.0);
     promotion_manager_->Start();
     LockScreen();
@@ -124,6 +147,7 @@ class ProximityAuthPromotionManagerTest
   FakeLockHandler lock_handler_;
   std::unique_ptr<cryptauth::MockLocalDeviceDataProvider>
       local_device_data_provider_;
+  std::unique_ptr<MockNotificationController> notification_controller_;
   base::SimpleTestClock* clock_;
   bool expect_eligible_unlock_devices_request_;
   cryptauth::MockCryptAuthClientFactory* client_factory_;
@@ -167,6 +191,9 @@ TEST_F(ProximityAuthPromotionManagerTest, ShowPromotion) {
   task_runner_->RunUntilIdle();
 
   // Receives the FindEligibleUnlockDevices response.
+  EXPECT_CALL(*notification_controller_, ShowPromotionNotification());
+  EXPECT_CALL(*pref_manager_, GetPromotionShownCount()).WillOnce(Return(0));
+  EXPECT_CALL(*pref_manager_, SetPromotionShownCount(1));
   find_eligible_unlock_devices_response_.add_eligible_devices()->CopyFrom(
       unlock_key_);
   find_eligible_unlock_devices_success_callback_.Run(
@@ -235,6 +262,40 @@ TEST_F(ProximityAuthPromotionManagerTest,
 
   // Receives the FindEligibleUnlockDevices response.
   find_eligible_unlock_devices_error_callback_.Run("some error");
+}
+
+TEST_F(ProximityAuthPromotionManagerTest,
+       StopShowingPromotionAfterMaxCountIsReached) {
+  // Show the promotion 3 times.
+  for (int i = 0; i < 3; i++) {
+    ExpectFreshnessPeriodElapsed();
+    UnlockScreen();
+
+    // Receives the FindEligibleForPromotion response.
+    find_eligible_for_promotion_response_.set_may_show_promo(true);
+    find_eligible_for_promotion_success_callback_.Run(
+        find_eligible_for_promotion_response_);
+
+    // Waits before sending the FindEligibleUnlockDevices request.
+    expect_eligible_unlock_devices_request_ = true;
+    task_runner_->RunUntilIdle();
+
+    // Receives the FindEligibleUnlockDevices response.
+    EXPECT_CALL(*notification_controller_, ShowPromotionNotification());
+    EXPECT_CALL(*pref_manager_, GetPromotionShownCount()).WillOnce(Return(i));
+    EXPECT_CALL(*pref_manager_, SetPromotionShownCount(i + 1));
+    find_eligible_unlock_devices_response_.add_eligible_devices()->CopyFrom(
+        unlock_key_);
+    find_eligible_unlock_devices_success_callback_.Run(
+        find_eligible_unlock_devices_response_);
+
+    // Prepare for the iteration.
+    LockScreen();
+    expect_eligible_unlock_devices_request_ = false;
+  }
+
+  // Nothing should happen.
+  UnlockScreen();
 }
 
 }  // namespace proximity_auth

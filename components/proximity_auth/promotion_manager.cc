@@ -14,6 +14,7 @@
 #include "components/cryptauth/cryptauth_client.h"
 #include "components/cryptauth/local_device_data_provider.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "components/proximity_auth/notification_controller.h"
 #include "components/proximity_auth/proximity_auth_pref_manager.h"
 
 namespace proximity_auth {
@@ -29,16 +30,21 @@ const int64_t kWaitForPhoneOnlineDelaySec = 10;
 // The probably for each operation to actually check with CryptAuth.
 const double kCheckEligibilityProbability = 0.2;
 
+// The maximum number of times the promotion will be shown to the user.
+const int kMaxPromotionShownCount = 3;
+
 }  // namespace
 
 PromotionManager::PromotionManager(
     cryptauth::LocalDeviceDataProvider* provider,
+    NotificationController* notification_controller,
     ProximityAuthPrefManager* pref_manager,
     std::unique_ptr<cryptauth::CryptAuthClientFactory> client_factory,
     std::unique_ptr<base::Clock> clock,
     scoped_refptr<base::TaskRunner> task_runner)
     : check_eligibility_probability_(kCheckEligibilityProbability),
       local_device_data_provider_(provider),
+      notification_controller_(notification_controller),
       pref_manager_(pref_manager),
       client_factory_(std::move(client_factory)),
       clock_(std::move(clock)),
@@ -52,6 +58,9 @@ PromotionManager::~PromotionManager() {
 }
 
 void PromotionManager::Start() {
+  if (pref_manager_->GetPromotionShownCount() >= kMaxPromotionShownCount) {
+    return;
+  }
   ScreenlockBridge::Get()->AddObserver(this);
 }
 
@@ -65,7 +74,7 @@ void PromotionManager::OnScreenDidUnlock(
   if (!HasFreshnessPeriodElapsed()) {
     return;
   }
-  PA_LOG(INFO) << "[Promotion] Fresh period elapsed. Starting the flow.";
+  PA_LOG(INFO) << "Freshness period elapsed. Starting the flow.";
   if (!RollForPromotionCheck()) {
     return;
   }
@@ -97,7 +106,7 @@ bool PromotionManager::HasFreshnessPeriodElapsed() {
 bool PromotionManager::RollForPromotionCheck() {
   bool success = base::RandDouble() < check_eligibility_probability_;
   if (!success) {
-    PA_LOG(INFO) << "[Promotion] Roll uncessful. Stopping the flow.";
+    PA_LOG(INFO) << "Roll uncessful. Stopping the flow.";
   }
   return success;
 }
@@ -105,14 +114,14 @@ bool PromotionManager::RollForPromotionCheck() {
 void PromotionManager::OnFindEligibleForPromotionFailure(
     const std::string& error) {
   client_.reset();
-  PA_LOG(WARNING) << "[Promotion] FindEligibleForPromotion failed: " << error;
+  PA_LOG(WARNING) << "FindEligibleForPromotion failed: " << error;
 }
 
 void PromotionManager::OnFindEligibleForPromotionSuccess(
     const cryptauth::FindEligibleForPromotionResponse& response) {
   client_.reset();
   if (!response.may_show_promo()) {
-    PA_LOG(INFO) << "[Promotion] Local device not eligible for promo.";
+    PA_LOG(INFO) << "Local device not eligible for promo.";
     return;
   }
   task_runner_->PostDelayedTask(
@@ -138,22 +147,30 @@ void PromotionManager::FindEligibleUnlockDevices() {
 void PromotionManager::OnFindEligibleUnlockDevicesFailure(
     const std::string& error) {
   client_.reset();
-  PA_LOG(WARNING) << "[Promotion] FindEligibleUnlockDevices failed: " << error;
+  PA_LOG(WARNING) << "FindEligibleUnlockDevices failed: " << error;
 }
 
 void PromotionManager::OnFindEligibleUnlockDevicesSuccess(
     const cryptauth::FindEligibleUnlockDevicesResponse& response) {
   client_.reset();
   if (response.eligible_devices_size() == 0) {
-    PA_LOG(INFO) << "[Promotion] No eligible unlock devices found.";
+    PA_LOG(INFO) << "No eligible unlock devices found.";
     return;
   }
   ShowPromotion();
 }
 
 void PromotionManager::ShowPromotion() {
-  PA_LOG(INFO) << "[Promotion] Showing promotion for the user.";
-  // TODO(sacomoto): Actually display the promotion message.
+  int previous_count = pref_manager_->GetPromotionShownCount();
+  PA_LOG(INFO) << "Showing promotion for the user, previous count: "
+               << previous_count;
+  notification_controller_->ShowPromotionNotification();
+  pref_manager_->SetPromotionShownCount(previous_count + 1);
+
+  if (previous_count + 1 >= kMaxPromotionShownCount) {
+    PA_LOG(INFO) << "Stop showing promotions";
+    ScreenlockBridge::Get()->RemoveObserver(this);
+  }
 }
 
 }  // namespace proximity_auth
