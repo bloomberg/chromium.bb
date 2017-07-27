@@ -9,6 +9,7 @@
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
+#include "chrome/common/navigation_corrector.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/google/core/browser/google_util.h"
@@ -16,6 +17,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "google_apis/google_api_keys.h"
 
 using content::RenderFrameHost;
@@ -97,11 +99,12 @@ void NavigationCorrectionTabObserver::OnEnabledChanged() {
 void NavigationCorrectionTabObserver::UpdateNavigationCorrectionInfo(
     RenderFrameHost* render_frame_host) {
   GURL google_base_url(UIThreadSearchTermsData(profile_).GoogleBaseURLValue());
-  render_frame_host->Send(new ChromeViewMsg_SetNavigationCorrectionInfo(
-      render_frame_host->GetRoutingID(),
+  chrome::mojom::NavigationCorrectorAssociatedPtr client;
+  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
+  client->SetNavigationCorrectionInfo(
       GetNavigationCorrectionURL(),
       google_util::GetGoogleLocale(g_browser_process->GetApplicationLocale()),
       google_util::GetGoogleCountryCode(google_base_url),
       google_apis::GetAPIKey(),
-      google_util::GetGoogleSearchURL(google_base_url)));
+      google_util::GetGoogleSearchURL(google_base_url));
 }

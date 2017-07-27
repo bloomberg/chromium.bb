@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "chrome/common/navigation_corrector.mojom.h"
 #include "chrome/common/network_diagnostics.mojom.h"
 #include "chrome/renderer/net/net_error_helper_core.h"
 #include "chrome/renderer/net/net_error_page_controller.h"
@@ -46,7 +47,8 @@ class NetErrorHelper
       public content::RenderThreadObserver,
       public NetErrorHelperCore::Delegate,
       public NetErrorPageController::Delegate,
-      public chrome::mojom::NetworkDiagnosticsClient {
+      public chrome::mojom::NetworkDiagnosticsClient,
+      public chrome::mojom::NavigationCorrector {
  public:
   explicit NetErrorHelper(content::RenderFrame* render_frame);
   ~NetErrorHelper() override;
@@ -64,9 +66,6 @@ class NetErrorHelper
   void WasShown() override;
   void WasHidden() override;
   void OnDestruct() override;
-
-  // IPC::Listener implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
 
   // RenderThreadObserver implementation.
   void NetworkStateChanged(bool online) override;
@@ -128,10 +127,19 @@ class NetErrorHelper
 
   void OnNetworkDiagnosticsClientRequest(
       chrome::mojom::NetworkDiagnosticsClientAssociatedRequest request);
+  void OnNavigationCorrectorRequest(
+      chrome::mojom::NavigationCorrectorAssociatedRequest request);
 
   // chrome::mojom::NetworkDiagnosticsClient:
   void SetCanShowNetworkDiagnosticsDialog(bool can_show) override;
   void DNSProbeStatus(int32_t) override;
+
+  // chrome::mojom::NavigationCorrector:
+  void SetNavigationCorrectionInfo(const GURL& navigation_correction_url,
+                                   const std::string& language,
+                                   const std::string& country_code,
+                                   const std::string& api_key,
+                                   const GURL& search_url) override;
 
   std::unique_ptr<content::ResourceFetcher> correction_fetcher_;
   std::unique_ptr<content::ResourceFetcher> tracking_fetcher_;
@@ -141,6 +149,8 @@ class NetErrorHelper
   mojo::AssociatedBindingSet<chrome::mojom::NetworkDiagnosticsClient>
       network_diagnostics_client_bindings_;
   chrome::mojom::NetworkDiagnosticsAssociatedPtr remote_network_diagnostics_;
+  mojo::AssociatedBindingSet<chrome::mojom::NavigationCorrector>
+      navigation_corrector_bindings_;
 
   // Weak factory for vending a weak pointer to a NetErrorPageController. Weak
   // pointers are invalidated on each commit, to prevent getting messages from
