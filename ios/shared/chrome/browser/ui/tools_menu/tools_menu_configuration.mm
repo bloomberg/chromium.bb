@@ -17,15 +17,18 @@
 @synthesize inTabSwitcher = _inTabSwitcher;
 @synthesize noOpenedTabs = _noOpenedTabs;
 @synthesize inIncognito = _inIncognito;
+@synthesize showReadingListNewBadge = _showReadingListNewBadge;
 @synthesize userAgentType = _userAgentType;
 @synthesize requestStartTime = _requestStartTime;
 @synthesize inNewTabPage = _inNewTabPage;
+@synthesize engagementTracker = _engagementTracker;
 
 - (instancetype)initWithDisplayView:(UIView*)displayView {
   if (self = [super init]) {
     _userAgentType = web::UserAgentType::NONE;
     _displayView.reset(displayView);
     _readingListMenuNotifier.reset();
+    _engagementTracker = nullptr;
   }
   return self;
 }
