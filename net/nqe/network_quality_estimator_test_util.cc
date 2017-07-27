@@ -78,12 +78,12 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
       embedded_test_server_(base::FilePath(kTestFilePath)),
       suppress_notifications_for_testing_(suppress_notifications_for_testing),
       net_log_(std::move(net_log)) {
-  // Set up the embedded test server.
   SetUseLocalHostRequestsForTesting(allow_local_host_requests_for_tests);
   SetUseSmallResponsesForTesting(allow_smaller_responses_for_tests);
   SetAddDefaultPlatformObservationsForTesting(
       add_default_platform_observations);
 
+  // Set up the embedded test server.
   EXPECT_TRUE(embedded_test_server_.Start());
 }
 

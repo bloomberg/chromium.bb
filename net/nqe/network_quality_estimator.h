@@ -38,7 +38,7 @@
 #include "net/nqe/network_quality_store.h"
 #include "net/nqe/observation_buffer.h"
 #include "net/nqe/rtt_throughput_estimates_observer.h"
-#include "net/socket/socket_performance_watcher_factory.h"
+#include "net/nqe/socket_watcher_factory.h"
 
 namespace base {
 class TickClock;
@@ -576,7 +576,7 @@ class NET_EXPORT NetworkQualityEstimator
   base::ObserverList<RTTObserver> rtt_observer_list_;
   base::ObserverList<ThroughputObserver> throughput_observer_list_;
 
-  std::unique_ptr<SocketPerformanceWatcherFactory> watcher_factory_;
+  std::unique_ptr<nqe::internal::SocketWatcherFactory> watcher_factory_;
 
   // Takes throughput measurements, and passes them back to |this| through the
   // provided callback. |this| stores the throughput observations in
