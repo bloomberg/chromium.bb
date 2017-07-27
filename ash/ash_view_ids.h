@@ -13,6 +13,8 @@ enum ViewID {
   // Ash IDs start above the range used in Chrome (c/b/ui/view_ids.h).
   VIEW_ID_MEDIA_TRAY_VIEW = 10000,
   VIEW_ID_USER_VIEW_MEDIA_INDICATOR,
+  VIEW_ID_BLUETOOTH_DEFAULT_VIEW,
+  VIEW_ID_ACCESSIBILITY_TRAY_ITEM,
 
   // View ID that is used to mark sticky header rows in a scroll view.
   VIEW_ID_STICKY_HEADER,

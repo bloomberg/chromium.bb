@@ -438,6 +438,7 @@ void UserCardView::AddUserContent(views::BoxLayout* layout) {
       (media_capture_width - media_capture_icon_->GetPreferredSize().width()) /
           2)));
   media_capture_icon_->set_id(VIEW_ID_USER_VIEW_MEDIA_INDICATOR);
+  media_capture_icon_->SetVisible(false);
 
   media_capture_container_ = new views::View();
   media_capture_container_->SetLayoutManager(new views::FillLayout());

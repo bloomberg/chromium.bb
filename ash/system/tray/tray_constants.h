@@ -147,11 +147,6 @@ extern const int kTrayPopupInkDropCornerRadius;
 // The height of the system info row.
 extern const int kTrayPopupSystemInfoRowHeight;
 
-namespace test {
-const int kSettingsTrayItemViewId = 10000;
-const int kAccessibilityTrayItemViewId = 10001;
-}  // namespace test
-
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_

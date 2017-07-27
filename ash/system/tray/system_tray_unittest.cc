@@ -9,6 +9,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accessibility_delegate.h"
+#include "ash/ash_view_ids.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -834,8 +835,10 @@ TEST_F(SystemTrayTest, PersistentBubble) {
   EXPECT_TRUE(tray->HasSystemBubble());
 }
 
+// With a system modal dialog, the bubble should be created with a LOCKED login
+// status.
 TEST_F(SystemTrayTest, WithSystemModal) {
-  // Check if the accessibility item is created even with system modal dialog.
+  // The accessiblity item is created and is visible either way.
   Shell::Get()->accessibility_delegate()->SetVirtualKeyboardEnabled(true);
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
       new ModalWidgetDelegate, kShellWindowId_SystemModalContainer,
@@ -847,22 +850,31 @@ TEST_F(SystemTrayTest, WithSystemModal) {
   ASSERT_TRUE(tray->HasSystemBubble());
   const views::View* accessibility =
       tray->GetSystemBubble()->bubble_view()->GetViewByID(
-          test::kAccessibilityTrayItemViewId);
+          VIEW_ID_ACCESSIBILITY_TRAY_ITEM);
   ASSERT_TRUE(accessibility);
   EXPECT_TRUE(accessibility->visible());
-  EXPECT_FALSE(tray->GetSystemBubble()->bubble_view()->GetViewByID(
-      test::kSettingsTrayItemViewId));
+
+  // The bluetooth item is disabled in locked mode.
+  const views::View* bluetooth =
+      tray->GetSystemBubble()->bubble_view()->GetViewByID(
+          VIEW_ID_BLUETOOTH_DEFAULT_VIEW);
+  ASSERT_TRUE(bluetooth);
+  EXPECT_FALSE(bluetooth->enabled());
 
   // Close the modal dialog.
   widget.reset();
 
+  // System modal is gone. The bluetooth item should be enabled now.
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
-  // System modal is gone. The bubble should now contains settings
-  // as well.
   accessibility = tray->GetSystemBubble()->bubble_view()->GetViewByID(
-      test::kAccessibilityTrayItemViewId);
+      VIEW_ID_ACCESSIBILITY_TRAY_ITEM);
   ASSERT_TRUE(accessibility);
   EXPECT_TRUE(accessibility->visible());
+
+  bluetooth = tray->GetSystemBubble()->bubble_view()->GetViewByID(
+      VIEW_ID_BLUETOOTH_DEFAULT_VIEW);
+  ASSERT_TRUE(bluetooth);
+  EXPECT_TRUE(bluetooth->enabled());
 }
 
 // Tests that if SetVisible(true) is called while animating to hidden that the
