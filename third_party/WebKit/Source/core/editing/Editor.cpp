@@ -46,6 +46,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/RenderedPosition.h"
+#include "core/editing/SetSelectionData.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/ApplyStyleCommand.h"
 #include "core/editing/commands/DeleteSelectionCommand.h"
@@ -948,7 +949,7 @@ void Editor::AppliedEditing(CompositeEditCommand* cmd) {
 
   // Don't clear the typing style with this selection change. We do those things
   // elsewhere if necessary.
-  ChangeSelectionAfterCommand(new_selection, 0);
+  ChangeSelectionAfterCommand(new_selection, SetSelectionData());
 
   if (!cmd->PreservesTypingStyle())
     ClearTypingStyle();
@@ -987,9 +988,11 @@ void Editor::UnappliedEditing(UndoStep* cmd) {
 
   const SelectionInDOMTree& new_selection = CorrectedSelectionAfterCommand(
       cmd->StartingSelection(), GetFrame().GetDocument());
-  ChangeSelectionAfterCommand(
-      new_selection,
-      FrameSelection::kCloseTyping | FrameSelection::kClearTypingStyle);
+  ChangeSelectionAfterCommand(new_selection,
+                              SetSelectionData::Builder()
+                                  .SetShouldCloseTyping(true)
+                                  .SetShouldClearTypingStyle(true)
+                                  .Build());
 
   last_edit_command_ = nullptr;
   undo_stack_->RegisterRedoStep(cmd);
@@ -1008,9 +1011,11 @@ void Editor::ReappliedEditing(UndoStep* cmd) {
 
   const SelectionInDOMTree& new_selection = CorrectedSelectionAfterCommand(
       cmd->EndingSelection(), GetFrame().GetDocument());
-  ChangeSelectionAfterCommand(
-      new_selection,
-      FrameSelection::kCloseTyping | FrameSelection::kClearTypingStyle);
+  ChangeSelectionAfterCommand(new_selection,
+                              SetSelectionData::Builder()
+                                  .SetShouldCloseTyping(true)
+                                  .SetShouldClearTypingStyle(true)
+                                  .Build());
 
   last_edit_command_ = nullptr;
   undo_stack_->RegisterUndoStep(cmd);
@@ -1489,7 +1494,7 @@ void Editor::AddToKillRing(const EphemeralRange& range) {
 
 void Editor::ChangeSelectionAfterCommand(
     const SelectionInDOMTree& new_selection,
-    FrameSelection::SetSelectionOptions options) {
+    const SetSelectionData& options) {
   if (new_selection.IsNone())
     return;
 

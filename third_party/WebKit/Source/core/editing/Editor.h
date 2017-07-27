@@ -355,7 +355,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
       const ScrollAlignment& = ScrollAlignment::kAlignCenterIfNeeded,
       RevealExtentOption = kDoNotRevealExtent);
   void ChangeSelectionAfterCommand(const SelectionInDOMTree&,
-                                   FrameSelection::SetSelectionOptions);
+                                   const SetSelectionData&);
 
   SpellChecker& GetSpellChecker() const;
 
