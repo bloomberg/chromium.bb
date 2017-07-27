@@ -298,6 +298,7 @@ void VisitWeakHandlesForMinorGC(v8::Isolate* isolate) {
 void V8GCController::GcPrologue(v8::Isolate* isolate,
                                 v8::GCType type,
                                 v8::GCCallbackFlags flags) {
+  RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kGcPrologue);
   if (IsMainThread())
     ScriptForbiddenScope::Enter();
 
@@ -363,6 +364,7 @@ void UpdateCollectedPhantomHandles(v8::Isolate* isolate) {
 void V8GCController::GcEpilogue(v8::Isolate* isolate,
                                 v8::GCType type,
                                 v8::GCCallbackFlags flags) {
+  RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kGcEpilogue);
   UpdateCollectedPhantomHandles(isolate);
   switch (type) {
     case v8::kGCTypeScavenge:
