@@ -110,24 +110,26 @@ void HandleToggleWallpaperMode() {
   static int index = 0;
   WallpaperController* wallpaper_controller =
       Shell::Get()->wallpaper_controller();
+  wallpaper::WallpaperInfo info("", wallpaper::WALLPAPER_LAYOUT_STRETCH,
+                                user_manager::User::DEFAULT,
+                                base::Time::Now().LocalMidnight());
   switch (++index % 4) {
     case 0:
       Shell::Get()->wallpaper_delegate()->InitializeWallpaper();
       break;
     case 1:
       wallpaper_controller->SetWallpaperImage(
-          CreateWallpaperImage(SK_ColorRED, SK_ColorBLUE),
-          wallpaper::WALLPAPER_LAYOUT_STRETCH);
+          CreateWallpaperImage(SK_ColorRED, SK_ColorBLUE), info);
       break;
     case 2:
+      info.layout = wallpaper::WALLPAPER_LAYOUT_CENTER;
       wallpaper_controller->SetWallpaperImage(
-          CreateWallpaperImage(SK_ColorBLUE, SK_ColorGREEN),
-          wallpaper::WALLPAPER_LAYOUT_CENTER);
+          CreateWallpaperImage(SK_ColorBLUE, SK_ColorGREEN), info);
       break;
     case 3:
+      info.layout = wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
       wallpaper_controller->SetWallpaperImage(
-          CreateWallpaperImage(SK_ColorGREEN, SK_ColorRED),
-          wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED);
+          CreateWallpaperImage(SK_ColorGREEN, SK_ColorRED), info);
       break;
   }
 }

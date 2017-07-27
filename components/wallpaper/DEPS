@@ -14,4 +14,7 @@ specific_include_rules = {
     "+components/signin/core/account_id/account_id.h",
     "+components/user_manager",
   ],
+  "wallpaper_info\.h": [
+    "+components/user_manager",
+  ],
 }
