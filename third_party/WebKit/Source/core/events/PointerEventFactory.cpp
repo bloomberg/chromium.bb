@@ -277,7 +277,9 @@ PointerEvent* PointerEventFactory::Create(
   if (pointer_event_name == EventTypeNames::pointermove) {
     HeapVector<Member<PointerEvent>> coalesced_pointer_events;
     for (const auto& coalesced_mouse_event : coalesced_mouse_events) {
-      DCHECK_EQ(mouse_event.id, coalesced_mouse_event.id);
+      // TODO(crbug.com/733774): Disabled the DCHECK on the id of mouse events
+      // because it failed on some versions of Mac OS.
+      // DCHECK_EQ(mouse_event.id, coalesced_mouse_event.id);
 
       DCHECK_EQ(mouse_event.pointer_type, coalesced_mouse_event.pointer_type);
       PointerEventInit coalesced_event_init = pointer_event_init;
