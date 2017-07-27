@@ -74,14 +74,12 @@ class Page;
 class PagePopup;
 class PagePopupClient;
 class PopupOpeningObserver;
-class RemoteFrame;
 class WebDragData;
 class WebFrameScheduler;
 class WebImage;
 class WebLayer;
 class WebLayerTreeView;
 class WebLocalFrameBase;
-class WebRemoteFrameBase;
 class WebViewBase;
 
 struct CompositedSelection;
@@ -353,10 +351,6 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual WebLayerTreeView* GetWebLayerTreeView(LocalFrame*) { return nullptr; }
 
   virtual WebLocalFrameBase* GetWebLocalFrameBase(LocalFrame*) {
-    return nullptr;
-  }
-
-  virtual WebRemoteFrameBase* GetWebRemoteFrameBase(RemoteFrame&) {
     return nullptr;
   }
 

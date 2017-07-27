@@ -207,7 +207,7 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::FromFrame(RemoteFrame& frame) {
     return nullptr;
   RemoteFrameClientImpl* client =
       static_cast<RemoteFrameClientImpl*>(frame.Client());
-  return ToWebRemoteFrameImpl(client->GetWebFrame());
+  return client->GetWebFrame();
 }
 
 void WebRemoteFrameImpl::SetReplicatedOrigin(const WebSecurityOrigin& origin) {

@@ -9841,7 +9841,7 @@ TEST_P(ParameterizedWebFrameTest,
 TEST_P(ParameterizedWebFrameTest, SuspendedPageLoadWithRemoteMainFrame) {
   FrameTestHelpers::WebViewHelper helper;
   helper.InitializeRemote();
-  WebRemoteFrameBase* remote_root = helper.RemoteMainFrame();
+  WebRemoteFrameImpl* remote_root = helper.RemoteMainFrame();
 
   // Check that ScopedPageSuspender properly triggers deferred loading for
   // the current Page.
@@ -10319,7 +10319,7 @@ class WebFrameVisibilityChangeTest : public ParameterizedWebFrameTest {
   }
 
   WebLocalFrame* MainFrame() { return frame_; }
-  WebRemoteFrameBase* RemoteFrame() { return web_remote_frame_; }
+  WebRemoteFrameImpl* RemoteFrame() { return web_remote_frame_; }
   TestWebRemoteFrameClientForVisibility* RemoteFrameClient() {
     return &remote_frame_client_;
   }
@@ -10328,7 +10328,7 @@ class WebFrameVisibilityChangeTest : public ParameterizedWebFrameTest {
   TestWebRemoteFrameClientForVisibility remote_frame_client_;
   FrameTestHelpers::WebViewHelper web_view_helper_;
   WebLocalFrame* frame_;
-  Persistent<WebRemoteFrameBase> web_remote_frame_;
+  Persistent<WebRemoteFrameImpl> web_remote_frame_;
 };
 
 INSTANTIATE_TEST_CASE_P(All, WebFrameVisibilityChangeTest, ::testing::Bool());
