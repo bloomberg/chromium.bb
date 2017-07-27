@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_GENERATE_PAGE_BUNDLE_TASK_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_GENERATE_PAGE_BUNDLE_TASK_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -16,14 +17,13 @@
 namespace offline_pages {
 class PrefetchGCMHandler;
 class PrefetchNetworkRequestFactory;
+class PrefetchStore;
 
 // Task that attempts to start archiving the URLs the prefetch service has
 // determined are viable to prefetch.
 class GeneratePageBundleTask : public Task {
  public:
-  // TODO(dewittj): remove the list of prefetch URLs when the DB operation can
-  // supply the current set of URLs.
-  GeneratePageBundleTask(const std::vector<PrefetchURL>& prefetch_urls,
+  GeneratePageBundleTask(PrefetchStore* prefetch_store,
                          PrefetchGCMHandler* gcm_handler,
                          PrefetchNetworkRequestFactory* request_factory,
                          const PrefetchRequestFinishedCallback& callback);
@@ -33,17 +33,17 @@ class GeneratePageBundleTask : public Task {
   void Run() override;
 
  private:
-  void StartGeneratePageBundle(int updated_entry_count);
-  void GotRegistrationId(const std::string& id,
+  void StartGeneratePageBundle(std::unique_ptr<std::vector<std::string>> urls);
+  void GotRegistrationId(std::unique_ptr<std::vector<std::string>> urls,
+                         const std::string& id,
                          instance_id::InstanceID::Result result);
 
-  std::vector<PrefetchURL> prefetch_urls_;
+  PrefetchStore* prefetch_store_;
   PrefetchGCMHandler* gcm_handler_;
   PrefetchNetworkRequestFactory* request_factory_;
   PrefetchRequestFinishedCallback callback_;
 
   base::WeakPtrFactory<GeneratePageBundleTask> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(GeneratePageBundleTask);
 };
 

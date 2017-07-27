@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
 #include "components/offline_pages/core/prefetch/prefetch_background_task_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
@@ -53,11 +53,8 @@ PrefetchServiceTestTaco::PrefetchServiceTestTaco() {
   gcm_handler_ = base::MakeUnique<TestPrefetchGCMHandler>();
   network_request_factory_ =
       base::MakeUnique<TestPrefetchNetworkRequestFactory>();
-
-  PrefetchStoreTestUtil store_test_util;
-  store_test_util.BuildStoreInMemory();
-  prefetch_store_sql_ = store_test_util.ReleaseStore();
-
+  prefetch_store_sql_ =
+      base::MakeUnique<PrefetchStore>(base::ThreadTaskRunnerHandle::Get());
   suggested_articles_observer_ = base::MakeUnique<SuggestedArticlesObserver>();
   prefetch_downloader_ = base::WrapUnique(new PrefetchDownloader(kTestChannel));
   prefetch_importer_ = base::MakeUnique<TestPrefetchImporter>();

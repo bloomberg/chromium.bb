@@ -13,12 +13,14 @@
 
 namespace offline_pages {
 
-int64_t GenerateOfflineId() {
+// static
+int64_t PrefetchStoreUtils::GenerateOfflineId() {
   return base::RandGenerator(std::numeric_limits<int64_t>::max()) + 1;
 }
 
-bool DeletePrefetchItemByOfflineIdSync(sql::Connection* db,
-                                       int64_t offline_id) {
+// static
+bool PrefetchStoreUtils::DeletePrefetchItemByOfflineIdSync(sql::Connection* db,
+                                                           int64_t offline_id) {
   DCHECK(db);
   static const char kSql[] = "DELETE FROM prefetch_items WHERE offline_id=?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));

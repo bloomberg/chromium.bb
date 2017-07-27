@@ -16,10 +16,26 @@ using testing::_;
 namespace offline_pages {
 
 TaskTestBase::TaskTestBase()
-    : task_runner(new base::TestSimpleTaskRunner),
-      task_runner_handle_(task_runner) {}
+    : task_runner_(new base::TestSimpleTaskRunner),
+      task_runner_handle_(task_runner_),
+      store_test_util_(task_runner_) {}
 
 TaskTestBase::~TaskTestBase() = default;
+
+void TaskTestBase::SetUp() {
+  testing::Test::SetUp();
+  store_test_util_.BuildStoreInMemory();
+}
+
+void TaskTestBase::TearDown() {
+  store_test_util_.DeleteStore();
+  RunUntilIdle();
+  testing::Test::TearDown();
+}
+
+void TaskTestBase::RunUntilIdle() {
+  task_runner_->RunUntilIdle();
+}
 
 void TaskTestBase::ExpectTaskCompletes(Task* task) {
   completion_callbacks_.push_back(
@@ -27,7 +43,7 @@ void TaskTestBase::ExpectTaskCompletes(Task* task) {
   EXPECT_CALL(*completion_callbacks_.back(), Run(_));
 
   task->SetTaskCompletionCallbackForTesting(
-      task_runner.get(), completion_callbacks_.back()->Get());
+      task_runner_.get(), completion_callbacks_.back()->Get());
 }
 
 }  // namespace offline_pages

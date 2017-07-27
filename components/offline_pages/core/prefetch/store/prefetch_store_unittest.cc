@@ -48,14 +48,15 @@ class PrefetchStoreTest : public testing::Test {
   void PumpLoop() { task_runner_->RunUntilIdle(); }
 
  private:
-  PrefetchStoreTestUtil store_test_util_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
+  PrefetchStoreTestUtil store_test_util_;
 };
 
 PrefetchStoreTest::PrefetchStoreTest()
     : task_runner_(new base::TestSimpleTaskRunner),
-      task_runner_handle_(task_runner_) {}
+      task_runner_handle_(task_runner_),
+      store_test_util_(task_runner_) {}
 
 TEST_F(PrefetchStoreTest, InitializeStore) {
   store()->Execute<int>(base::BindOnce(&CountPrefetchItems),

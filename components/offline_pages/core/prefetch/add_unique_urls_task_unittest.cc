@@ -15,12 +15,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
-namespace {
-void VerifyItemCount(int expected_count, int actual_count) {
-  EXPECT_EQ(expected_count, actual_count);
-}
-}  // namespace
-
 class AddUniqueUrlsTaskTest : public testing::Test {
  public:
   AddUniqueUrlsTaskTest();
@@ -43,7 +37,8 @@ class AddUniqueUrlsTaskTest : public testing::Test {
 
 AddUniqueUrlsTaskTest::AddUniqueUrlsTaskTest()
     : task_runner_(new base::TestSimpleTaskRunner),
-      task_runner_handle_(task_runner_) {}
+      task_runner_handle_(task_runner_),
+      store_test_util_(task_runner_) {}
 
 void AddUniqueUrlsTaskTest::SetUp() {
   store_test_util_.BuildStoreInMemory();
@@ -67,8 +62,7 @@ TEST_F(AddUniqueUrlsTaskTest, AddTaskInEmptyStore) {
   task.Run();
   PumpLoop();
 
-  store_util()->CountPrefetchItems(base::BindOnce(&VerifyItemCount, 2));
-  PumpLoop();
+  EXPECT_EQ(2, store_util()->CountPrefetchItems());
 }
 
 TEST_F(AddUniqueUrlsTaskTest, DontAddURLIfItExists) {
@@ -88,8 +82,7 @@ TEST_F(AddUniqueUrlsTaskTest, DontAddURLIfItExists) {
   PumpLoop();
 
   // Do the count here.
-  store_util()->CountPrefetchItems(base::BindOnce(&VerifyItemCount, 3));
-  PumpLoop();
+  EXPECT_EQ(3, store_util()->CountPrefetchItems());
 }
 
 TEST_F(AddUniqueUrlsTaskTest, HandleZombiePrefetchItems) {
@@ -102,12 +95,9 @@ TEST_F(AddUniqueUrlsTaskTest, HandleZombiePrefetchItems) {
   task1.Run();
   PumpLoop();
 
-  store_util()->ZombifyPrefetchItem(name_space, urls[0].url,
-                                    base::BindOnce(&VerifyItemCount, 1));
-  PumpLoop();
-  store_util()->ZombifyPrefetchItem(name_space, urls[1].url,
-                                    base::BindOnce(&VerifyItemCount, 1));
-  PumpLoop();
+  // ZombifyPrefetchItem returns the number of affected items.
+  EXPECT_EQ(1, store_util()->ZombifyPrefetchItems(name_space, urls[0].url));
+  EXPECT_EQ(1, store_util()->ZombifyPrefetchItems(name_space, urls[1].url));
 
   urls.clear();
   urls.push_back(PrefetchURL{"ID-1", GURL("https://www.google.com/")});
@@ -122,8 +112,7 @@ TEST_F(AddUniqueUrlsTaskTest, HandleZombiePrefetchItems) {
   PumpLoop();
 
   // Do the count here.
-  store_util()->CountPrefetchItems(base::BindOnce(&VerifyItemCount, 3));
-  PumpLoop();
+  EXPECT_EQ(3, store_util()->CountPrefetchItems());
 }
 
 }  // namespace offline_pages

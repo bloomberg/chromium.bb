@@ -41,7 +41,7 @@ TEST_F(GetOperationTaskTest, NormalOperationTask) {
   ExpectTaskCompletes(&task);
 
   task.Run();
-  task_runner->RunUntilIdle();
+  RunUntilIdle();
 
   EXPECT_NE(nullptr, prefetch_request_factory()->FindGetOperationRequestByName(
                          operation_name));
