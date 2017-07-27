@@ -1396,8 +1396,6 @@ source_set("browser") {
     "service_worker/service_worker_data_pipe_reader.h",
     "service_worker/service_worker_database.cc",
     "service_worker/service_worker_database.h",
-    "service_worker/service_worker_database_task_manager.cc",
-    "service_worker/service_worker_database_task_manager.h",
     "service_worker/service_worker_disk_cache.cc",
     "service_worker/service_worker_disk_cache.h",
     "service_worker/service_worker_dispatcher_host.cc",

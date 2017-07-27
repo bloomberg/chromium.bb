@@ -276,8 +276,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   void InitInternal(
       const base::FilePath& user_data_directory,
-      std::unique_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
-      const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
+      scoped_refptr<base::SequencedTaskRunner> database_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> disk_cache_thread,
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy,
       ChromeBlobStorageContext* blob_context,
