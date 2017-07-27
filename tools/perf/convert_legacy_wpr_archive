@@ -7,7 +7,18 @@
 Takes in a page set json file. Iterate through all .wpr archives and convert
 them to .wprgo archive format.
 
+Instructions: http://bit.ly/wpr-go-migration
+
+(1) Generate .wprgo archives from a page set json file
 tools/perf/convert_legacy_wpr_archive /path/to/page_sets_json_file
+
+(2) Test that benchmarks pass with the new page set json file.
+tools/perf/run_benchmark ...
+
+(3) Upload new .wprgo files to cloudstorage
+tools/perf/convert_legacy_wpr_archive --upload /path/to/page_sets_json_file
+
+(4) Create a CL to upload generated .wprgo.sha1 and page_sets_json_file for review
 
 """
 
@@ -21,6 +32,7 @@ import sys
 import time
 
 from core import path_util
+from core import benchmark_finders
 
 path_util.AddTelemetryToPath()
 from telemetry.internal.util import binary_manager
@@ -57,9 +69,44 @@ def dump_requests(wpr_archive):
     requests += ']'
     return requests
 
+def upload(page_sets_json_file, bucket):
+    print "uploading to bucket %s\n" % bucket
+    dir_path = os.path.abspath(os.path.dirname(page_sets_json_file))
+    count = 0
+    with open(page_sets_json_file, 'r+') as json_file:
+      content = json_file.read()
+      m = re.findall(r'"(\w*).wprgo"', content)
+      if not m:
+        raise Exception("No .wprgo files to upload in ", page_sets_json_file)
+      # get rid of duplicates.
+      m = list(set(m))
+      for f in m:
+        wprgo_file = os.path.join(dir_path, f + ".wprgo")
+        if not os.path.exists(wprgo_file):
+          raise Exception('file "%s" does not exist' % wprgo_file)
+        cmd = ['third_party/depot_tools/upload_to_google_storage.py', '--bucket',
+               bucket, wprgo_file]
+        print cmd
+        return_code = subprocess.call(cmd)
+        if return_code != 0:
+          raise Exception("fail to upload wprgo file %s\n" % wprgo_file)
+        count += 1
+    print "successfully upload %d wprgo files in %s to buckets: %s\n" % (count,
+        page_sets_json_file, bucket)
+
+def GetStorySet(benchmark):
+  # Create a dummy options object which hold default values that are expected
+  # by Benchmark.CreateStorySet(options) method.
+  parser = optparse.OptionParser()
+  benchmark.AddBenchmarkCommandLineArgs(parser)
+  options, _ = parser.parse_args([])
+  return benchmark().CreateStorySet(options)
+
 def main():
   option_parser = optparse.OptionParser()
-  _, args = option_parser.parse_args()
+  option_parser.add_option("--upload", action="store_true", default=False,
+          help='Upload wprgo files to cloud storage bucket')
+  options, args = option_parser.parse_args()
 
   if len(args) < 1:
     print 'args: %s' % args
@@ -69,6 +116,30 @@ def main():
 
   if not os.path.exists(page_sets_json_file):
     option_parser.error('file "%s" does not exist' % page_sets_json_file)
+
+  if options.upload:
+    buckets = []
+    benchmarks_to_skip = ['skpicture_printer_ct',
+                          'screenshot_ct',
+                          'repaint_ct',
+                          'rasterize_and_record_micro_ct',
+                          'multipage_skpicture_printer_ct',
+                          'loading.cluster_telemetry',
+                          'skpicture_printer',
+                          'cros_tab_switching.typical_24',
+                          'multipage_skpicture_printer']
+    for b in benchmark_finders.GetAllBenchmarks():
+      if b.Name() in benchmarks_to_skip:
+        continue
+      story_set = GetStorySet(b)
+      if not story_set.bucket or not story_set.archive_data_file:
+        continue
+      if story_set.archive_data_file.split('/')[-1] == page_sets_json_file.split('/')[-1]:
+        buckets.append(story_set.bucket)
+    buckets = list(set(buckets))
+    assert len(buckets) == 1
+    upload(page_sets_json_file, buckets[0])
+    return 0
 
   dir_path = os.path.abspath(os.path.dirname(page_sets_json_file))
   cert_file = os.path.join(path_util.GetWprGoDir(), 'wpr_cert.pem')
