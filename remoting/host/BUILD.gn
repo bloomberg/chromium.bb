@@ -135,6 +135,8 @@ static_library("host") {
     "disconnect_window_win.cc",
     "dns_blackhole_checker.cc",
     "dns_blackhole_checker.h",
+    "evaluate_capability.cc",
+    "evaluate_capability.h",
     "forward_process_stats_agent.cc",
     "forward_process_stats_agent.h",
     "gcd_rest_client.cc",
@@ -531,6 +533,20 @@ source_set("unit_tests") {
 
   if (!is_ios) {
     deps += [ "//components/policy/core/browser:test_support" ]
+  }
+
+  if (enable_me2me_host) {
+    sources += [
+      "evaluate_capability_unittest.cc",
+    ]
+
+    if (is_win) {
+      data_deps = [ "//remoting/host/win:remoting_me2me_host" ]
+    } else if (is_mac) {
+      data_deps = [ "//remoting/host/mac:remoting_me2me_host" ]
+    } else {
+      data_deps = [ ":remoting_me2me_host" ]
+    }
   }
 }
 

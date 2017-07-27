@@ -9,19 +9,6 @@
 
 namespace remoting {
 
-// "--elevate=<binary>" requests |binary| to be launched elevated (possibly
-// causing a UAC prompt).
-extern const char kElevateSwitchName[];
-
-// "--type=<type>" specifies the kind of process to run.
-extern const char kProcessTypeSwitchName[];
-
-extern const char kProcessTypeController[];
-extern const char kProcessTypeDaemon[];
-extern const char kProcessTypeDesktop[];
-extern const char kProcessTypeHost[];
-extern const char kProcessTypeRdpDesktopSession[];
-
 // The common entry point exported from remoting_core.dll. It uses
 // "--type==<type>" command line parameter to determine the kind of process it
 // needs to run.
