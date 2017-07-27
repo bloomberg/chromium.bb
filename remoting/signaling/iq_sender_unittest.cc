@@ -122,10 +122,10 @@ TEST_F(IqSenderTest, Timeout) {
 
   request_->SetTimeout(base::TimeDelta::FromMilliseconds(2));
 
+  base::RunLoop run_loop;
   EXPECT_CALL(callback_, Run(request_.get(), nullptr))
-      .WillOnce(
-          InvokeWithoutArgs(&message_loop_, &base::MessageLoop::QuitWhenIdle));
-  base::RunLoop().Run();
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::QuitWhenIdle));
+  run_loop.Run();
 }
 
 TEST_F(IqSenderTest, NotNormalizedJid) {

@@ -63,10 +63,10 @@ TEST_F(MonitoredVideoStubTest, OnChannelDisconnected) {
   EXPECT_CALL(*this, OnVideoChannelStatus(true));
   monitor_->ProcessVideoPacket(std::move(packet_), base::Closure());
 
+  base::RunLoop run_loop;
   EXPECT_CALL(*this, OnVideoChannelStatus(false))
-      .WillOnce(
-          InvokeWithoutArgs(&message_loop_, &base::MessageLoop::QuitWhenIdle));
-  base::RunLoop().Run();
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::QuitWhenIdle));
+  run_loop.Run();
 }
 
 TEST_F(MonitoredVideoStubTest, OnChannelStayConnected) {
