@@ -20,7 +20,7 @@ FakeTetherService::FakeTetherService(
                     cryptauth_service,
                     network_state_handler) {}
 
-void FakeTetherService::StartTetherIfEnabled() {
+void FakeTetherService::StartTetherIfPossible() {
   if (GetTetherTechnologyState() !=
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED) {
     return;
@@ -35,7 +35,7 @@ void FakeTetherService::StartTetherIfEnabled() {
   }
 }
 
-void FakeTetherService::StopTether() {
+void FakeTetherService::StopTetherIfNecessary() {
   for (int i = 0; i < num_tether_networks_; ++i) {
     network_state_handler()->RemoveTetherNetworkState(kTetherGuidPrefix + i);
   }

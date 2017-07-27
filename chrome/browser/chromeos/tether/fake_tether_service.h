@@ -19,8 +19,8 @@ class FakeTetherService : public TetherService {
                     chromeos::NetworkStateHandler* network_state_handler);
 
   // TetherService:
-  void StartTetherIfEnabled() override;
-  void StopTether() override;
+  void StartTetherIfPossible() override;
+  void StopTetherIfNecessary() override;
 
   void set_num_tether_networks(int num_tether_networks) {
     num_tether_networks_ = num_tether_networks;

@@ -63,10 +63,7 @@ class TetherService : public KeyedService,
   // Attempt to start the Tether module. Only succeeds if all conditions to
   // reach chromeos::NetworkStateHandler::TechnologyState::ENABLED are reached.
   // Should only be called once a user is logged in.
-  virtual void StartTetherIfEnabled();
-
-  // Stop the Tether module.
-  virtual void StopTether();
+  virtual void StartTetherIfPossible();
 
   // Delegate used to call the static functions of Initializer. Injected to
   // aid in testing.
@@ -112,6 +109,10 @@ class TetherService : public KeyedService,
 
   // Callback when the controlling pref changes.
   void OnPrefsChanged();
+
+  // Stop the Tether module if it is currently enabled; if it was not enabled,
+  // this function is a no-op.
+  virtual void StopTetherIfNecessary();
 
   // Whether Tether hosts are available.
   virtual bool HasSyncedTetherHosts() const;

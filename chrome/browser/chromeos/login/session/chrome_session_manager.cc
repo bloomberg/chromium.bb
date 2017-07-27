@@ -143,7 +143,7 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
 
     TetherService* tether_service = TetherService::Get(user_profile);
     if (tether_service)
-      tether_service->StartTetherIfEnabled();
+      tether_service->StartTetherIfPossible();
   }
 }
 
