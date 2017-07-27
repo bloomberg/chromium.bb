@@ -98,8 +98,6 @@ import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
-import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.BrowserStartupController.StartupCallback;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -1184,7 +1182,7 @@ public class CustomTabActivityTest {
 
     private void hideDomainAndEnsureTitleIsSet(
             final String url, int speculation, final String expectedTitle) {
-        final CustomTabsConnection connection = warmUpAndWait();
+        final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, url);
         intent.putExtra(
@@ -1237,7 +1235,7 @@ public class CustomTabActivityTest {
     @SmallTest
     @RetryOnFailure
     public void testPostMessageBasic() throws InterruptedException {
-        final CustomTabsConnection connection = warmUpAndWait();
+        final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage);
         final CustomTabsSessionToken token =
@@ -1284,7 +1282,7 @@ public class CustomTabActivityTest {
     @SmallTest
     @RetryOnFailure
     public void testPostMessageWebContentsDestroyed() throws InterruptedException {
-        final CustomTabsConnection connection = warmUpAndWait();
+        final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage);
         final CustomTabsSessionToken token =
@@ -1340,7 +1338,7 @@ public class CustomTabActivityTest {
     @SmallTest
     @RetryOnFailure
     public void testPostMessageRequiresValidation() throws InterruptedException {
-        final CustomTabsConnection connection = warmUpAndWait();
+        final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage);
         final CustomTabsSessionToken token =
@@ -1371,7 +1369,7 @@ public class CustomTabActivityTest {
     public void testPostMessageReceivedInPage() throws InterruptedException {
         final String url =
                 mWebServer.setResponse("/test.html", TITLE_FROM_POSTMESSAGE_TO_CHANNEL, null);
-        final CustomTabsConnection connection = warmUpAndWait();
+        final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, url);
         final CustomTabsSessionToken token =
@@ -1411,7 +1409,7 @@ public class CustomTabActivityTest {
         final CallbackHelper messageChannelHelper = new CallbackHelper();
         final CallbackHelper onPostMessageHelper = new CallbackHelper();
         final String url = mWebServer.setResponse("/test.html", MESSAGE_FROM_PAGE_TO_CHANNEL, null);
-        warmUpAndWait();
+        CustomTabsTestUtils.warmUpAndWait();
         final CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
             @Override
             public void onMessageChannelReady(Bundle extras) {
@@ -1464,7 +1462,7 @@ public class CustomTabActivityTest {
         final CallbackHelper messageChannelHelper = new CallbackHelper();
         final CallbackHelper onPostMessageHelper = new CallbackHelper();
         final String url = mWebServer.setResponse("/test.html", MESSAGE_FROM_PAGE_TO_CHANNEL, null);
-        warmUpAndWait();
+        CustomTabsTestUtils.warmUpAndWait();
         final CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
             @Override
             public void onMessageChannelReady(Bundle extras) {
@@ -1617,7 +1615,7 @@ public class CustomTabActivityTest {
         final CallbackHelper messageChannelHelper = new CallbackHelper();
         final String url =
                 mWebServer.setResponse("/test.html", TITLE_FROM_POSTMESSAGE_TO_CHANNEL, null);
-        final CustomTabsConnection connection = warmUpAndWait();
+        final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
 
         final CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
             @Override
@@ -1731,7 +1729,7 @@ public class CustomTabActivityTest {
     @SmallTest
     @RetryOnFailure
     public void testPrecreatedRenderer() throws Exception {
-        CustomTabsConnection connection = warmUpAndWait();
+        CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage);
         CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
@@ -1802,7 +1800,7 @@ public class CustomTabActivityTest {
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
     public void testWarmupAndLaunchRegularChrome() {
-        warmUpAndWait();
+        CustomTabsTestUtils.warmUpAndWait();
         Intent intent = new Intent(InstrumentationRegistry.getInstrumentation().getTargetContext(),
                 ChromeLauncherActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -1830,7 +1828,7 @@ public class CustomTabActivityTest {
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
     public void testWarmupAndLaunchRightToolbarLayout() {
-        warmUpAndWait();
+        CustomTabsTestUtils.warmUpAndWait();
         mCustomTabActivityTestRule.startActivityCompletely(createMinimalCustomTabIntent());
         Assert.assertNull("Should not have a tab switcher button.",
                 getActivity().findViewById(R.id.tab_switcher_button));
@@ -1969,7 +1967,7 @@ public class CustomTabActivityTest {
         Context context = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()
                                   .getApplicationContext();
-        CustomTabsConnection connection = warmUpAndWait();
+        CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, urlWithFragment);
         CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         connection.newSession(token);
@@ -2067,7 +2065,7 @@ public class CustomTabActivityTest {
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
             "enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB})
     public void testHiddenTabThirdPartyCookiesBlocked() throws Exception {
-        final CustomTabsConnection connection = warmUpAndWait();
+        final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         final CustomTabsSessionToken token =
                 CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
@@ -2099,7 +2097,7 @@ public class CustomTabActivityTest {
         Context context = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()
                                   .getApplicationContext();
-        final CustomTabsConnection connection = warmUpAndWait();
+        final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
         connection.setSpeculationModeForSession(token, requestedSpeculationMode);
@@ -2139,7 +2137,7 @@ public class CustomTabActivityTest {
     }
 
     private void testSpeculateInvalidUrl(int speculationMode) throws Exception {
-        final CustomTabsConnection connection = warmUpAndWait();
+        final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
         connection.setSpeculationModeForSession(token, speculationMode);
@@ -2158,7 +2156,7 @@ public class CustomTabActivityTest {
         Context context = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()
                                   .getApplicationContext();
-        final CustomTabsConnection connection = warmUpAndWait();
+        final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
         try {
@@ -2223,7 +2221,7 @@ public class CustomTabActivityTest {
         Context context = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()
                                   .getApplicationContext();
-        final CustomTabsConnection connection = warmUpAndWait();
+        final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
         connection.setSpeculationModeForSession(token, speculationMode);
@@ -2250,7 +2248,7 @@ public class CustomTabActivityTest {
         Context context = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()
                                   .getApplicationContext();
-        warmUpAndWait();
+        CustomTabsTestUtils.warmUpAndWait();
 
         try {
             mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
@@ -2557,7 +2555,7 @@ public class CustomTabActivityTest {
         CustomTabsSessionToken token = null;
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, url);
         if (speculationMode != CustomTabsConnection.SpeculationParams.NO_SPECULATION) {
-            connection = warmUpAndWait();
+            connection = CustomTabsTestUtils.warmUpAndWait();
             token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
             connection.newSession(token);
             connection.setSpeculationModeForSession(token, speculationMode);
@@ -2650,7 +2648,7 @@ public class CustomTabActivityTest {
             throws Exception {
         String speculationUrl = mTestPage;
         String navigationUrl = speculationWasAHit ? mTestPage : mTestPage2;
-        final CustomTabsConnection connection = warmUpAndWait();
+        final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         Context context = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()
                                   .getApplicationContext();
@@ -2695,36 +2693,6 @@ public class CustomTabActivityTest {
         }
         Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
         Assert.assertEquals(mTestPage, tab.getUrl());
-    }
-
-    private CustomTabsConnection warmUpAndWait() {
-        CustomTabsConnection connection = CustomTabsTestUtils.setUpConnection();
-        final CallbackHelper startupCallbackHelper = new CallbackHelper();
-        Assert.assertTrue(connection.warmup(0));
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .addStartupCompletedObserver(new StartupCallback() {
-                            @Override
-                            public void onSuccess(boolean alreadyStarted) {
-                                startupCallbackHelper.notifyCalled();
-                            }
-
-                            @Override
-                            public void onFailure() {
-                                Assert.fail();
-                            }
-                        });
-            }
-        });
-
-        try {
-            startupCallbackHelper.waitForCallback(0);
-        } catch (TimeoutException | InterruptedException e) {
-            Assert.fail();
-        }
-        return connection;
     }
 
     private ChromeActivity reparentAndVerifyTab() throws InterruptedException {
@@ -2781,7 +2749,7 @@ public class CustomTabActivityTest {
 
     private CustomTabsSessionToken warmUpAndLaunchUrlWithSession(Intent intentWithSession)
             throws InterruptedException {
-        CustomTabsConnection connection = warmUpAndWait();
+        CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         CustomTabsSessionToken token =
                 CustomTabsSessionToken.getSessionTokenFromIntent(intentWithSession);
         connection.newSession(token);
