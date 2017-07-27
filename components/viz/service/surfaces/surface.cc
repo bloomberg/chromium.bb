@@ -32,7 +32,6 @@ Surface::Surface(const SurfaceInfo& surface_info,
                  BeginFrameSource* begin_frame_source,
                  bool needs_sync_tokens)
     : surface_info_(surface_info),
-      previous_frame_surface_id_(surface_info.id()),
       surface_manager_(surface_manager),
       surface_client_(std::move(surface_client)),
       deadline_(begin_frame_source),
@@ -129,6 +128,9 @@ bool Surface::QueueFrame(cc::CompositorFrame frame,
     callback.Run();
     return true;
   }
+
+  if (active_frame_data_ || pending_frame_data_)
+    previous_frame_surface_id_ = surface_id();
 
   TakeLatencyInfoFromPendingFrame(&frame.metadata.latency_info);
 
@@ -256,8 +258,6 @@ void Surface::ActivateFrame(FrameData frame_data) {
     RequestCopyOfOutput(std::move(copy_request));
 
   ++frame_index_;
-
-  previous_frame_surface_id_ = surface_id();
 
   UnrefFrameResourcesAndRunDrawCallback(std::move(previous_frame_data));
 
