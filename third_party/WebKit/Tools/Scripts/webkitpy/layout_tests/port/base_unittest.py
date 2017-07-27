@@ -406,6 +406,8 @@ class PortTest(unittest.TestCase):
         self.assertFalse(port.is_slow_wpt_test('dom/ranges/Range-attributes.html'))
         self.assertTrue(port.is_slow_wpt_test('external/wpt/dom/ranges/Range-attributes-slow.html'))
         self.assertTrue(port.is_slow_wpt_test('external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html'))
+        self.assertFalse(port.is_slow_wpt_test('virtual/virtual_wpt/external/wpt/dom/ranges/Range-attributes.html'))
+        self.assertTrue(port.is_slow_wpt_test('virtual/virtual_wpt/external/wpt/dom/ranges/Range-attributes-slow.html'))
 
     def test_parse_reftest_list(self):
         port = self.make_port(with_tests=True)
