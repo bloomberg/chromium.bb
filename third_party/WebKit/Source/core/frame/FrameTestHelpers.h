@@ -101,7 +101,6 @@ namespace blink {
 
 class WebFrame;
 class WebLocalFrameBase;
-class WebRemoteFrameBase;
 class WebRemoteFrameImpl;
 class WebSettings;
 
@@ -313,7 +312,7 @@ class WebViewHelper {
   WebViewBase* WebView() const { return web_view_; }
 
   WebLocalFrameBase* LocalMainFrame() const;
-  WebRemoteFrameBase* RemoteMainFrame() const;
+  WebRemoteFrameImpl* RemoteMainFrame() const;
 
  private:
   void InitializeWebView(TestWebViewClient*);

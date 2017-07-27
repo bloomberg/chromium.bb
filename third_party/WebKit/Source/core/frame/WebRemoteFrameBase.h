@@ -18,8 +18,6 @@ class WebRemoteFrameClient;
 class WebRemoteFrameBase : public GarbageCollectedFinalized<WebRemoteFrameBase>,
                            public WebRemoteFrame {
  public:
-  CORE_EXPORT static WebRemoteFrameBase* FromFrame(RemoteFrame&);
-
   virtual void InitializeCoreFrame(Page&,
                                    FrameOwner*,
                                    const AtomicString& name) = 0;

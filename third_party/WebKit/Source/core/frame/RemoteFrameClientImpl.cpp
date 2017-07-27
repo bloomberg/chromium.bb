@@ -9,10 +9,10 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/events/WheelEvent.h"
+#include "core/exported/WebRemoteFrameImpl.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/frame/WebLocalFrameBase.h"
-#include "core/frame/WebRemoteFrameBase.h"
 #include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/api/LayoutItem.h"
 #include "platform/exported/WrappedResourceRequest.h"
@@ -38,11 +38,11 @@ Frame* ToCoreFrame(WebFrame* frame) {
 
 }  // namespace
 
-RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameBase* web_frame)
+RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameImpl* web_frame)
     : web_frame_(web_frame) {}
 
 RemoteFrameClientImpl* RemoteFrameClientImpl::Create(
-    WebRemoteFrameBase* web_frame) {
+    WebRemoteFrameImpl* web_frame) {
   return new RemoteFrameClientImpl(web_frame);
 }
 

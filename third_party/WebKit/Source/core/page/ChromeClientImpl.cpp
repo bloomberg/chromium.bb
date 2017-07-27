@@ -835,11 +835,6 @@ WebLocalFrameBase* ChromeClientImpl::GetWebLocalFrameBase(LocalFrame* frame) {
   return WebLocalFrameImpl::FromFrame(frame);
 }
 
-WebRemoteFrameBase* ChromeClientImpl::GetWebRemoteFrameBase(
-    RemoteFrame& frame) {
-  return WebRemoteFrameImpl::FromFrame(frame);
-}
-
 void ChromeClientImpl::RequestDecode(
     LocalFrame* frame,
     const PaintImage& image,

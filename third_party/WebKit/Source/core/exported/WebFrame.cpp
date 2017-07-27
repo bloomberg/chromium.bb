@@ -9,13 +9,13 @@
 #include "core/HTMLNames.h"
 #include "core/dom/IncrementLoadEventDelayCount.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/exported/WebRemoteFrameImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/OpenedFrameTracker.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameOwner.h"
 #include "core/frame/WebLocalFrameBase.h"
-#include "core/frame/WebRemoteFrameBase.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Page.h"
@@ -117,7 +117,7 @@ bool WebFrame::Swap(WebFrame* frame) {
                            TRACE_EVENT_SCOPE_THREAD, "frame", &local_frame);
     }
   } else {
-    ToWebRemoteFrameBase(frame)->InitializeCoreFrame(*page, owner, name);
+    ToWebRemoteFrameImpl(frame)->InitializeCoreFrame(*page, owner, name);
   }
 
   if (parent_ && old_frame->HasReceivedUserGesture())
@@ -305,7 +305,7 @@ WebFrame* WebFrame::FromFrame(Frame* frame) {
 
   if (frame->IsLocalFrame())
     return WebLocalFrameBase::FromFrame(ToLocalFrame(*frame));
-  return WebRemoteFrameBase::FromFrame(ToRemoteFrame(*frame));
+  return WebRemoteFrameImpl::FromFrame(ToRemoteFrame(*frame));
 }
 
 WebFrame::WebFrame(WebTreeScopeType scope)
@@ -329,7 +329,7 @@ void WebFrame::TraceFrame(Visitor* visitor, WebFrame* frame) {
   if (frame->IsWebLocalFrame())
     visitor->Trace(ToWebLocalFrameBase(frame));
   else
-    visitor->Trace(ToWebRemoteFrameBase(frame));
+    visitor->Trace(ToWebRemoteFrameImpl(frame));
 }
 
 void WebFrame::TraceFrames(Visitor* visitor, WebFrame* frame) {
@@ -357,7 +357,7 @@ Frame* WebFrame::ToCoreFrame(const WebFrame& frame) {
   if (frame.IsWebLocalFrame())
     return ToWebLocalFrameBase(frame).GetFrame();
   if (frame.IsWebRemoteFrame())
-    return ToWebRemoteFrameBase(frame).GetFrame();
+    return ToWebRemoteFrameImpl(frame).GetFrame();
   NOTREACHED();
   return nullptr;
 }

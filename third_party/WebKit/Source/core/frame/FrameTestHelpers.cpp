@@ -329,8 +329,8 @@ WebLocalFrameBase* WebViewHelper::LocalMainFrame() const {
   return ToWebLocalFrameBase(web_view_->MainFrame());
 }
 
-WebRemoteFrameBase* WebViewHelper::RemoteMainFrame() const {
-  return ToWebRemoteFrameBase(web_view_->MainFrame());
+WebRemoteFrameImpl* WebViewHelper::RemoteMainFrame() const {
+  return ToWebRemoteFrameImpl(web_view_->MainFrame());
 }
 
 void WebViewHelper::Resize(WebSize size) {
