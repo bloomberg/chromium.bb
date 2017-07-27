@@ -117,7 +117,7 @@ bool PrerenderingLoader::LoadPage(const GURL& url,
 
   DCHECK(adapter_->IsActive());
   snapshot_controller_ = SnapshotController::CreateForBackgroundOfflining(
-      base::ThreadTaskRunnerHandle::Get(), this);
+      base::ThreadTaskRunnerHandle::Get(), this, false);
   load_done_callback_ = load_done_callback;
   progress_callback_ = progress_callback;
   session_contents_.swap(new_web_contents);

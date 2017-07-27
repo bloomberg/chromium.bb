@@ -74,14 +74,17 @@ class SnapshotController {
   // and ignores document available signal.
   static std::unique_ptr<SnapshotController> CreateForBackgroundOfflining(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      SnapshotController::Client* client);
+      SnapshotController::Client* client,
+      bool renovations_enabled);
 
   SnapshotController(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       SnapshotController::Client* client,
       int64_t delay_after_document_available_ms,
       int64_t delay_after_document_on_load_completed_ms,
-      bool document_available_triggers_snapshot);
+      int64_t delay_after_renovations_completed_ms,
+      bool document_available_triggers_snapshot,
+      bool renovations_enabled);
   virtual ~SnapshotController();
 
   // Resets the 'session', returning controller to initial state.
@@ -107,6 +110,7 @@ class SnapshotController {
 
   int64_t GetDelayAfterDocumentAvailableForTest();
   int64_t GetDelayAfterDocumentOnLoadCompletedForTest();
+  int64_t GetDelayAfterRenovationsCompletedForTest();
 
   PageQuality current_page_quality() const { return current_page_quality_; }
 
@@ -120,7 +124,9 @@ class SnapshotController {
   SnapshotController::State state_;
   int64_t delay_after_document_available_ms_;
   int64_t delay_after_document_on_load_completed_ms_;
+  int64_t delay_after_renovations_completed_ms_;
   bool document_available_triggers_snapshot_;
+  bool renovations_enabled_;
 
   // The expected quality of a snapshot taken at the moment this value is
   // queried.
