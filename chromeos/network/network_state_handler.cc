@@ -226,7 +226,11 @@ void NetworkStateHandler::SetTetherTechnologyState(
 void NetworkStateHandler::SetTetherScanState(bool is_scanning) {
   DeviceState* tether_device_state =
       GetModifiableDeviceState(kTetherDevicePath);
-  DCHECK(tether_device_state);
+  if (!tether_device_state) {
+    NET_LOG(ERROR) << "SetTetherScanState() called when Tether TechnologyState "
+                   << "is UNAVAILABLE; cannot set scanning state.";
+    return;
+  }
 
   bool was_scanning = tether_device_state->scanning();
   tether_device_state->set_scanning(is_scanning);

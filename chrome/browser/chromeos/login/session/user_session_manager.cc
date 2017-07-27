@@ -1262,7 +1262,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
     TetherService* tether_service = TetherService::Get(profile);
     if (tether_service)
-      tether_service->StartTetherIfEnabled();
+      tether_service->StartTetherIfPossible();
   }
 
   UpdateEasyUnlockKeys(user_context_);

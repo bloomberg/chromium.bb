@@ -109,7 +109,7 @@ TetherService::TetherService(
 
 TetherService::~TetherService() {}
 
-void TetherService::StartTetherIfEnabled() {
+void TetherService::StartTetherIfPossible() {
   if (GetTetherTechnologyState() !=
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED) {
     return;
@@ -124,7 +124,7 @@ void TetherService::StartTetherIfEnabled() {
       chromeos::NetworkHandler::Get()->network_connection_handler());
 }
 
-void TetherService::StopTether() {
+void TetherService::StopTetherIfNecessary() {
   initializer_delegate_->ShutdownTether();
 }
 
@@ -148,7 +148,7 @@ void TetherService::Shutdown() {
   // Shut down the feature. Note that this does not change Tether's technology
   // state in NetworkStateHandler because doing so could cause visual jank just
   // as the user logs out.
-  StopTether();
+  StopTetherIfNecessary();
 }
 
 void TetherService::SuspendImminent() {
@@ -241,13 +241,22 @@ void TetherService::UpdateTetherTechnologyState() {
   chromeos::NetworkStateHandler::TechnologyState new_tether_technology_state =
       GetTetherTechnologyState();
 
-  network_state_handler_->SetTetherTechnologyState(new_tether_technology_state);
-
   if (new_tether_technology_state ==
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED) {
-    StartTetherIfEnabled();
+    // If Tether should be enabled, notify NetworkStateHandler before starting
+    // up the component. This ensures that it is not possible to add Tether
+    // networks before the network stack is ready for them.
+    network_state_handler_->SetTetherTechnologyState(
+        new_tether_technology_state);
+    StartTetherIfPossible();
   } else {
-    StopTether();
+    // If Tether should not be enabled, shut down the component before notifying
+    // NetworkStateHandler. This ensures that nothing in the Tether component
+    // attempts to edit Tether networks or properties when the network stack is
+    // not ready for them.
+    StopTetherIfNecessary();
+    network_state_handler_->SetTetherTechnologyState(
+        new_tether_technology_state);
   }
 
   if (!CanEnableBluetoothNotificationBeShown())
