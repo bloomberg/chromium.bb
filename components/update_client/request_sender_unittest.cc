@@ -9,11 +9,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
-#include "base/test/scoped_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/update_client/test_configurator.h"
 #include "components/update_client/url_request_post_interceptor.h"
@@ -58,7 +57,8 @@ class RequestSenderTest : public testing::Test {
  protected:
   void Quit();
   void RunThreads();
-  void RunThreadsUntilIdle();
+
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   scoped_refptr<TestConfigurator> config_;
   std::unique_ptr<RequestSender> request_sender_;
@@ -72,14 +72,14 @@ class RequestSenderTest : public testing::Test {
   std::string response_;
 
  private:
-  base::MessageLoopForIO loop_;
-  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestSenderTest);
 };
 
-RequestSenderTest::RequestSenderTest() : scoped_task_scheduler_(&loop_) {}
+RequestSenderTest::RequestSenderTest()
+    : scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
 
 RequestSenderTest::~RequestSenderTest() {}
 
@@ -106,8 +106,6 @@ void RequestSenderTest::TearDown() {
   interceptor_factory_ = nullptr;
 
   config_ = nullptr;
-
-  RunThreadsUntilIdle();
 }
 
 void RequestSenderTest::RunThreads() {
@@ -119,11 +117,7 @@ void RequestSenderTest::RunThreads() {
   // intercepts on the IO thread, run the threads until they are
   // idle. The component updater service won't loop again until the loop count
   // is set and the service is started.
-  RunThreadsUntilIdle();
-}
-
-void RequestSenderTest::RunThreadsUntilIdle() {
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 void RequestSenderTest::Quit() {
