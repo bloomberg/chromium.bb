@@ -772,7 +772,7 @@ TEST_F(MessageTest, ExtendPayloadWithHandlesAttached) {
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoExtendSerializedMessagePayload(message, payload_size, &buffer,
                                                &new_buffer_size));
-  memset(buffer, 'x', buffer_size);
+  memset(buffer, 'x', payload_size);
 
   RunTestClient("ReadAndIgnoreMessage", [&](MojoHandle h) {
     // Send the message out of process to exercise the regression path where
