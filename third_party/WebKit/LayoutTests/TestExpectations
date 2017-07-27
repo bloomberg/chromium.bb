@@ -3071,3 +3071,8 @@ crbug.com/746926 [ Win Debug ] virtual/outofblink-cors/webexposed/global-interfa
 
 crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-applyConstraints.html [ Pass Crash ]
 crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-getSettings.html [ Pass Crash ]
+
+crbug.com/749738 [ Win7 Debug ] http/tests/devtools/console/console-format-es6.js [ Timeout ]
+crbug.com/749738 [ Win7 Debug ] inspector/editor/text-editor-word-jumps.html [ Timeout ]
+crbug.com/749738 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/console/console-format-es6.js [ Timeout ]
+
