@@ -159,17 +159,24 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const TileInfo *const tile = &xd->tile;
   int i;
   uint8_t newmv_count = 0;
+  int col_offset = 0;
 #if CONFIG_CB4X4
   const int bsize = xd->mi[0]->mbmi.sb_type;
-  const int mi_offset =
-      bsize < BLOCK_8X8 ? mi_size_wide[BLOCK_4X4] : mi_size_wide[BLOCK_8X8];
+  const int mi_offset = bsize < BLOCK_8X8 || abs(row_offset) > 1
+                            ? mi_size_wide[BLOCK_4X4]
+                            : mi_size_wide[BLOCK_8X8];
   // TODO(jingning): Revisit this part after cb4x4 is stable.
-  if (bsize >= BLOCK_8X8) row_offset *= 2;
+  if (bsize >= BLOCK_8X8 || abs(row_offset) > 1) row_offset *= 2;
+
+  if (bsize < BLOCK_8X8 && abs(row_offset) > 1) {
+    if (mi_row & 0x01) row_offset += 1;
+    if (mi_col & 0x01) col_offset -= 1;
+  }
 #else
   const int mi_offset = mi_size_wide[BLOCK_8X8];
 #endif
 
-  for (i = 0; i < xd->n8_w && *refmv_count < MAX_REF_MV_STACK_SIZE;) {
+  for (i = col_offset; i < xd->n8_w && *refmv_count < MAX_REF_MV_STACK_SIZE;) {
     POSITION mi_pos;
 #if CONFIG_CB4X4
     const int use_step_16 = (xd->n8_w >= 16);
@@ -207,16 +214,23 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const TileInfo *const tile = &xd->tile;
   int i;
   uint8_t newmv_count = 0;
+  int row_offset = 0;
 #if CONFIG_CB4X4
   const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
-  const int mi_offset =
-      (bsize < BLOCK_8X8) ? mi_size_high[BLOCK_4X4] : mi_size_high[BLOCK_8X8];
-  if (bsize >= BLOCK_8X8) col_offset *= 2;
+  const int mi_offset = (bsize < BLOCK_8X8) || (abs(col_offset) > 1)
+                            ? mi_size_high[BLOCK_4X4]
+                            : mi_size_high[BLOCK_8X8];
+  if (bsize >= BLOCK_8X8 || abs(col_offset) > 1) col_offset *= 2;
+
+  if (bsize < BLOCK_8X8 && abs(col_offset) > 1) {
+    if (mi_row & 0x01) row_offset -= 1;
+    if (mi_col & 0x01) col_offset += 1;
+  }
 #else
   const int mi_offset = mi_size_wide[BLOCK_8X8];
 #endif
 
-  for (i = 0; i < xd->n8_h && *refmv_count < MAX_REF_MV_STACK_SIZE;) {
+  for (i = row_offset; i < xd->n8_h && *refmv_count < MAX_REF_MV_STACK_SIZE;) {
     POSITION mi_pos;
 #if CONFIG_CB4X4
     const int use_step_16 = (xd->n8_h >= 16);
