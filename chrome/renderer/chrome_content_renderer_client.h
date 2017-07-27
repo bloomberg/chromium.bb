@@ -117,7 +117,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   blink::WebPlugin* CreatePluginReplacement(
       content::RenderFrame* render_frame,
       const base::FilePath& plugin_path) override;
-  bool HasErrorPage(int http_status_code, std::string* error_domain) override;
+  bool HasErrorPage(int http_status_code) override;
   bool ShouldSuppressErrorPage(content::RenderFrame* render_frame,
                                const GURL& url) override;
   void GetNavigationErrorStrings(content::RenderFrame* render_frame,

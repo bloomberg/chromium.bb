@@ -1107,16 +1107,11 @@ bool ChromeContentRendererClient::IsNaClAllowed(
 }
 #endif  // defined(DISABLE_NACL)
 
-bool ChromeContentRendererClient::HasErrorPage(int http_status_code,
-                                               std::string* error_domain) {
+bool ChromeContentRendererClient::HasErrorPage(int http_status_code) {
   // Use an internal error page, if we have one for the status code.
-  if (!error_page::LocalizedError::HasStrings(
-          error_page::LocalizedError::kHttpErrorDomain, http_status_code)) {
-    return false;
-  }
-
-  *error_domain = error_page::LocalizedError::kHttpErrorDomain;
-  return true;
+  return error_page::LocalizedError::HasStrings(
+      NetErrorHelper::GetDomainString(blink::WebURLError::Domain::kHttp),
+      http_status_code);
 }
 
 bool ChromeContentRendererClient::ShouldSuppressErrorPage(
@@ -1151,7 +1146,7 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
 
   if (error_description) {
     *error_description = error_page::LocalizedError::GetErrorDetails(
-        error.domain.Utf8(), error.reason, is_post);
+        NetErrorHelper::GetDomainString(error.domain), error.reason, is_post);
   }
 }
 

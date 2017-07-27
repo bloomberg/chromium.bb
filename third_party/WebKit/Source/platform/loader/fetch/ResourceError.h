@@ -34,20 +34,18 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebURLError.h"
 
 namespace blink {
 
 class WebURL;
 enum class ResourceRequestBlockedReason;
-struct WebURLError;
-
-// Used for errors that won't be exposed to clients.
-PLATFORM_EXPORT extern const char kErrorDomainBlinkInternal[];
 
 class PLATFORM_EXPORT ResourceError final {
   DISALLOW_NEW();
 
  public:
+  using Domain = WebURLError::Domain;
   enum Error {
     ACCESS_DENIED = net::ERR_ACCESS_DENIED,
     BLOCKED_BY_XSS_AUDITOR = net::ERR_BLOCKED_BY_XSS_AUDITOR
@@ -67,7 +65,7 @@ class PLATFORM_EXPORT ResourceError final {
 
   ResourceError() = default;
 
-  ResourceError(const String& domain,
+  ResourceError(Domain domain,
                 int error_code,
                 const KURL& failing_url,
                 const String& localized_description)
@@ -83,7 +81,7 @@ class PLATFORM_EXPORT ResourceError final {
 
   bool IsNull() const { return is_null_; }
 
-  const String& Domain() const { return domain_; }
+  Domain GetDomain() const { return domain_; }
   int ErrorCode() const { return error_code_; }
   const String& FailingURL() const { return failing_url_; }
   const String& LocalizedDescription() const { return localized_description_; }
@@ -124,7 +122,7 @@ class PLATFORM_EXPORT ResourceError final {
                                     int reason);
 
  private:
-  String domain_;
+  Domain domain_ = Domain::kEmpty;
   int error_code_ = 0;
   KURL failing_url_;
   String localized_description_;

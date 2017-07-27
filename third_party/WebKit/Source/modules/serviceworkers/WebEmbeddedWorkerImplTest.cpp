@@ -262,7 +262,7 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
   response.SetHTTPStatusCode(404);
   WebURLError error;
   error.reason = 1010;
-  error.domain = "WebEmbeddedWorkerImplTest";
+  error.domain = WebURLError::Domain::kTest;
   Platform::Current()->GetURLLoaderMockFactory()->RegisterErrorURL(
       script_url, response, error);
   start_data_.script_url = script_url;

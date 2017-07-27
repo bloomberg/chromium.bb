@@ -74,7 +74,7 @@ void FileDownloader::DidFinishLoading(double finish_time) {
 
 void FileDownloader::DidFail(const blink::WebURLError& error) {
   status_ = FAILED;
-  if (error.domain.Equals(blink::WebString::FromUTF8(net::kErrorDomain))) {
+  if (error.domain == blink::WebURLError::Domain::kNet) {
     switch (error.reason) {
       case net::ERR_ACCESS_DENIED:
       case net::ERR_NETWORK_ACCESS_DENIED:

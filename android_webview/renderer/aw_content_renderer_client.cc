@@ -204,8 +204,7 @@ void AwContentRendererClient::RenderViewCreated(
 #endif
 }
 
-bool AwContentRendererClient::HasErrorPage(int http_status_code,
-                                           std::string* error_domain) {
+bool AwContentRendererClient::HasErrorPage(int http_status_code) {
   return http_status_code >= 400;
 }
 
