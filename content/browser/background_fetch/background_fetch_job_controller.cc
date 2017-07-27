@@ -4,24 +4,24 @@
 
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace content {
 
 BackgroundFetchJobController::BackgroundFetchJobController(
+    BackgroundFetchDelegateProxy* delegate_proxy,
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
     BackgroundFetchDataManager* data_manager,
-    BrowserContext* browser_context,
-    scoped_refptr<net::URLRequestContextGetter> request_context,
     CompletedCallback completed_callback)
     : registration_id_(registration_id),
       options_(options),
       data_manager_(data_manager),
-      delegate_proxy_(this, registration_id, browser_context, request_context),
+      delegate_proxy_(delegate_proxy),
       completed_callback_(std::move(completed_callback)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -29,7 +29,7 @@ BackgroundFetchJobController::BackgroundFetchJobController(
 
 BackgroundFetchJobController::~BackgroundFetchJobController() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-};
+}
 
 void BackgroundFetchJobController::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -59,7 +59,7 @@ void BackgroundFetchJobController::StartRequest(
     return;
   }
 
-  delegate_proxy_.StartRequest(request);
+  delegate_proxy_->StartRequest(this, request);
 }
 
 void BackgroundFetchJobController::DidStartRequest(
@@ -105,7 +105,7 @@ void BackgroundFetchJobController::DidMarkRequestCompleted(
 void BackgroundFetchJobController::UpdateUI(const std::string& title) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  delegate_proxy_.UpdateUI(title);
+  delegate_proxy_->UpdateUI(title);
 }
 
 void BackgroundFetchJobController::Abort() {
@@ -120,7 +120,7 @@ void BackgroundFetchJobController::Abort() {
       return;  // Ignore attempt to abort after completion/abort.
   }
 
-  delegate_proxy_.Abort();
+  delegate_proxy_->Abort();
 
   state_ = State::ABORTED;
   // Inform the owner of the controller about the job having aborted.

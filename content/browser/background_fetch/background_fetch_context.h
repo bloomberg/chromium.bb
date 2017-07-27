@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_CONTEXT_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -27,6 +28,7 @@ class Origin;
 namespace content {
 
 class BackgroundFetchDataManager;
+class BackgroundFetchDelegateProxy;
 class BackgroundFetchEventDispatcher;
 class BackgroundFetchJobController;
 struct BackgroundFetchOptions;
@@ -118,6 +120,7 @@ class CONTENT_EXPORT BackgroundFetchContext
 
   std::unique_ptr<BackgroundFetchDataManager> data_manager_;
   std::unique_ptr<BackgroundFetchEventDispatcher> event_dispatcher_;
+  std::unique_ptr<BackgroundFetchDelegateProxy> delegate_proxy_;
 
   // Map of the Background Fetch fetches that are currently in-progress.
   std::map<BackgroundFetchRegistrationId,

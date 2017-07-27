@@ -19,14 +19,9 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace content {
 
 class BackgroundFetchDataManager;
-class BrowserContext;
 
 // The JobController will be responsible for coordinating communication with the
 // DownloadManager. It will get requests from the DataManager and dispatch them
@@ -39,11 +34,10 @@ class CONTENT_EXPORT BackgroundFetchJobController {
       base::OnceCallback<void(BackgroundFetchJobController*)>;
 
   BackgroundFetchJobController(
+      BackgroundFetchDelegateProxy* delegate_proxy,
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchOptions& options,
       BackgroundFetchDataManager* data_manager,
-      BrowserContext* browser_context,
-      scoped_refptr<net::URLRequestContextGetter> request_context,
       CompletedCallback completed_callback);
   ~BackgroundFetchJobController();
 
@@ -68,6 +62,10 @@ class CONTENT_EXPORT BackgroundFetchJobController {
 
   // Returns the options with which this job is fetching data.
   const BackgroundFetchOptions& options() const { return options_; }
+
+  base::WeakPtr<BackgroundFetchJobController> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
   // Called when the given |request| has started fetching, after having been
   // assigned the |download_guid| by the download system.
@@ -98,8 +96,8 @@ class CONTENT_EXPORT BackgroundFetchJobController {
   BackgroundFetchDataManager* data_manager_;
 
   // Proxy for interacting with the BackgroundFetchDelegate across thread
-  // boundaries.
-  BackgroundFetchDelegateProxy delegate_proxy_;
+  // boundaries. It is owned by the BackgroundFetchContext.
+  BackgroundFetchDelegateProxy* delegate_proxy_;
 
   // Callback for when all fetches have been completed.
   CompletedCallback completed_callback_;
