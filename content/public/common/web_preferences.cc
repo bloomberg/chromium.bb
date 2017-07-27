@@ -205,6 +205,7 @@ WebPreferences::WebPreferences()
       video_rotate_to_fullscreen_enabled(false),
       video_fullscreen_detection_enabled(false),
       embedded_media_experience_enabled(false),
+      css_hex_alpha_color_enabled(true),
 #endif  // defined(OS_ANDROID)
 #if defined(OS_ANDROID)
       default_minimum_page_scale_factor(0.25f),

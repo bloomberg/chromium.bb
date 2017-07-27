@@ -85,6 +85,7 @@ public class AwSettings {
     private boolean mSpatialNavigationEnabled;  // Default depends on device features.
     private boolean mEnableSupportedHardwareAcceleratedFeatures;
     private int mMixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW;
+    private boolean mCSSHexAlphaColorEnabled = false;
 
     private boolean mOffscreenPreRaster;
     private int mDisabledMenuItems = WebSettings.MENU_ITEM_NONE;
@@ -1265,6 +1266,21 @@ public class AwSettings {
     private boolean getSupportMultipleWindowsLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
         return mSupportMultipleWindows;
+    }
+
+    @CalledByNative
+    private boolean getCSSHexAlphaColorEnabledLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mCSSHexAlphaColorEnabled;
+    }
+
+    public void setCSSHexAlphaColorEnabled(boolean enabled) {
+        synchronized (mAwSettingsLock) {
+            if (mCSSHexAlphaColorEnabled != enabled) {
+                mCSSHexAlphaColorEnabled = enabled;
+                mEventHandler.updateWebkitPreferencesLocked();
+            }
+        }
     }
 
     @CalledByNative

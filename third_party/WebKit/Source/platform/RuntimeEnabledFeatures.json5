@@ -257,7 +257,7 @@
     },
     {
       name: "CSSHexAlphaColor",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSHyphens",

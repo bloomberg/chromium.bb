@@ -2983,6 +2983,26 @@ public class AwSettingsTest extends AwTestBase {
         doAllowEmptyDocumentPersistenceTest(false);
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testCSSHexAlphaColorEnabled() throws Throwable {
+        final TestAwContentsClient client = new TestAwContentsClient();
+        final AwTestContainerView view = createAwTestContainerViewOnMainSync(client);
+        final AwContents awContents = view.getAwContents();
+        CallbackHelper onPageFinishedHelper = client.getOnPageFinishedHelper();
+        enableJavaScriptOnUiThread(awContents);
+        final String expectedTitle = "false"; // https://crbug.com/618472
+        final String page = "<!doctype html>"
+                + "<script>"
+                + "window.onload = function() {"
+                + "  document.title = CSS.supports('color', '#AABBCCDD');"
+                + "};"
+                + "</script>";
+        loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
+        String actualTitle = getTitleOnUiThread(awContents);
+        assertEquals(expectedTitle, actualTitle);
+    }
+
     private static class SelectionRangeTestDependencyFactory extends TestDependencyFactory {
         private boolean mDoNotUpdate;
         public SelectionRangeTestDependencyFactory(boolean doNotUpdate) {

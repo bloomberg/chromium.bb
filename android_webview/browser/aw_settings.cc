@@ -460,6 +460,9 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
   web_prefs->do_not_update_selection_on_mutating_selection_range =
       Java_AwSettings_getDoNotUpdateSelectionOnMutatingSelectionRange(env, obj);
 
+  web_prefs->css_hex_alpha_color_enabled =
+      Java_AwSettings_getCSSHexAlphaColorEnabledLocked(env, obj);
+
   // Keep spellcheck disabled on html elements unless the spellcheck="true"
   // attribute is explicitly specified. This "opt-in" behavior is for backward
   // consistency in apps that use WebView (see crbug.com/652314).
