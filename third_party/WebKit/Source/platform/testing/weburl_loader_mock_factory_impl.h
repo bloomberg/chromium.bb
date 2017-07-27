@@ -80,7 +80,7 @@ class WebURLLoaderMockFactoryImpl : public WebURLLoaderMockFactory {
 
   // Loads the specified request and populates the response, error and data
   // accordingly.
-  void LoadRequest(const WebURLRequest& request,
+  void LoadRequest(const WebURL& url,
                    WebURLResponse* response,
                    WebURLError* error,
                    WebData* data);
