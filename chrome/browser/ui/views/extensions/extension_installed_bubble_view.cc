@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/extensions/extension_installed_bubble_view.h"
+
 #include <algorithm>
 #include <string>
 
@@ -9,28 +11,26 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/sync/bubble_sync_promo_view.h"
-#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
-#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bubble/bubble_controller.h"
-#include "components/bubble/bubble_ui.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
@@ -38,6 +38,15 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/box_layout.h"
+
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
+#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#endif
 
 using extensions::Extension;
 
@@ -54,6 +63,44 @@ views::Label* CreateLabel(const base::string16& text) {
   label->SizeToFit(kRightColumnWidth);
   return label;
 }
+
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+views::View* AnchorViewForBrowser(ExtensionInstalledBubble* controller,
+                                  Browser* browser) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  views::View* reference_view = nullptr;
+  switch (controller->anchor_position()) {
+    case ExtensionInstalledBubble::ANCHOR_ACTION: {
+      BrowserActionsContainer* container =
+          browser_view->toolbar()->browser_actions();
+      // Hitting this DCHECK means |ShouldShow| failed.
+      DCHECK(!container->animating());
+
+      reference_view = container->GetViewForId(controller->extension()->id());
+      break;
+    }
+    case ExtensionInstalledBubble::ANCHOR_OMNIBOX: {
+      reference_view = browser_view->GetLocationBarView()->location_icon_view();
+      break;
+    }
+    case ExtensionInstalledBubble::ANCHOR_APP_MENU:
+      // Will be caught below.
+      break;
+  }
+
+  // Default case.
+  if (!reference_view || !reference_view->visible())
+    return browser_view->toolbar()->app_menu_button();
+  return reference_view;
+}
+#else
+views::View* AnchorViewForBrowser(ExtensionInstalledBubble* controller,
+                                  Browser* browser) {
+  return nullptr;  // Always use the anchor point.
+}
+#endif
+
+}  // namespace
 
 // Provides feedback to the user upon successful installation of an
 // extension. Depending on the type of extension, the Bubble will
@@ -120,32 +167,15 @@ ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
 ExtensionInstalledBubbleView::~ExtensionInstalledBubbleView() {}
 
 void ExtensionInstalledBubbleView::UpdateAnchorView() {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-
-  views::View* reference_view = nullptr;
-  switch (controller_->anchor_position()) {
-    case ExtensionInstalledBubble::ANCHOR_ACTION: {
-      BrowserActionsContainer* container =
-          browser_view->toolbar()->browser_actions();
-      // Hitting this DCHECK means |ShouldShow| failed.
-      DCHECK(!container->animating());
-
-      reference_view = container->GetViewForId(controller_->extension()->id());
-      break;
-    }
-    case ExtensionInstalledBubble::ANCHOR_OMNIBOX: {
-      reference_view = browser_view->GetLocationBarView()->location_icon_view();
-      break;
-    }
-    case ExtensionInstalledBubble::ANCHOR_APP_MENU:
-      // Will be caught below.
-      break;
+  views::View* reference_view = AnchorViewForBrowser(controller_, browser());
+  if (reference_view) {
+    SetAnchorView(reference_view);
+  } else {
+    gfx::NativeWindow parent_window = browser()->window()->GetNativeWindow();
+    set_parent_window(platform_util::GetViewForWindow(parent_window));
+    gfx::Point window_offset = controller_->GetAnchorPoint(parent_window);
+    SetAnchorRect(gfx::Rect(window_offset, gfx::Size()));
   }
-
-  // Default case.
-  if (!reference_view || !reference_view->visible())
-    reference_view = browser_view->toolbar()->app_menu_button();
-  SetAnchorView(reference_view);
 }
 
 void ExtensionInstalledBubbleView::CloseBubble() {
@@ -271,29 +301,6 @@ gfx::Size ExtensionInstalledBubbleView::GetIconSize() const {
              : size;
 }
 
-// NB: This bubble is using the temporarily-deprecated bubble manager interface
-// BubbleUi. Do not copy this pattern.
-class ExtensionInstalledBubbleUi : public BubbleUi,
-                                   public views::WidgetObserver {
- public:
-  explicit ExtensionInstalledBubbleUi(ExtensionInstalledBubble* bubble);
-  ~ExtensionInstalledBubbleUi() override;
-
-  // BubbleUi:
-  void Show(BubbleReference bubble_reference) override;
-  void Close() override;
-  void UpdateAnchorPosition() override;
-
-  // WidgetObserver:
-  void OnWidgetClosing(views::Widget* widget) override;
-
- private:
-  ExtensionInstalledBubble* bubble_;
-  ExtensionInstalledBubbleView* bubble_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubbleUi);
-};
-
 ExtensionInstalledBubbleUi::ExtensionInstalledBubbleUi(
     ExtensionInstalledBubble* bubble)
     : bubble_(bubble), bubble_view_(nullptr) {
@@ -329,9 +336,10 @@ void ExtensionInstalledBubbleUi::OnWidgetClosing(views::Widget* widget) {
   bubble_view_ = nullptr;
 }
 
-}  // namespace
+// Implemented here to create the platform specific instance of the BubbleUi.
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 
-// Views specific implementation.
+// Views (BrowserView) specific implementation.
 bool ExtensionInstalledBubble::ShouldShow() {
   if (anchor_position() == ANCHOR_ACTION) {
     BrowserActionsContainer* container =
@@ -343,7 +351,14 @@ bool ExtensionInstalledBubble::ShouldShow() {
   return true;
 }
 
-// Implemented here to create the platform specific instance of the BubbleUi.
+gfx::Point ExtensionInstalledBubble::GetAnchorPoint(
+    gfx::NativeWindow window) const {
+  NOTREACHED();  // There is always an anchor view.
+  return gfx::Point();
+}
+
 std::unique_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
   return base::WrapUnique(new ExtensionInstalledBubbleUi(this));
 }
+
+#endif

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
+#include "chrome/browser/ui/views/extensions/extension_installed_bubble_view.h"
 #include "chrome/browser/ui/views/importer/import_lock_dialog_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
@@ -72,6 +73,11 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
   views::BubbleDialogDelegateView* bubble =
       BookmarkBubbleView::bookmark_bubble();
   KeepBubbleAnchored(bubble, decoration);
+}
+
+std::unique_ptr<BubbleUi> BuildViewsExtensionInstalledBubbleUi(
+    ExtensionInstalledBubble* bubble) {
+  return base::MakeUnique<ExtensionInstalledBubbleUi>(bubble);
 }
 
 void ShowZoomBubbleViewsAtPoint(content::WebContents* web_contents,

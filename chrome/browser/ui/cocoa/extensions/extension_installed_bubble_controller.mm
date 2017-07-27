@@ -21,8 +21,10 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
+#include "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
 #import "chrome/browser/ui/cocoa/bubble_sync_promo_controller.h"
 #include "chrome/browser/ui/cocoa/chrome_style.h"
 #include "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
@@ -53,6 +55,8 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
+#import "ui/gfx/mac/coordinate_conversion.h"
 
 using content::BrowserThread;
 using extensions::Extension;
@@ -118,8 +122,53 @@ bool ExtensionInstalledBubble::ShouldShow() {
   return true;
 }
 
+gfx::Point ExtensionInstalledBubble::GetAnchorPoint(
+    gfx::NativeWindow window) const {
+  BrowserWindowController* windowController =
+      [BrowserWindowController browserWindowControllerForWindow:window];
+
+  auto getAppMenuButtonAnchorPoint = [windowController]() {
+    // Point at the bottom of the app menu menu.
+    NSView* appMenuButton =
+        [[windowController toolbarController] appMenuButton];
+    const NSRect bounds = [appMenuButton bounds];
+    NSPoint anchor = NSMakePoint(NSMidX(bounds), NSMaxY(bounds));
+    return [appMenuButton convertPoint:anchor toView:nil];
+  };
+
+  NSPoint arrowPoint;
+  switch (anchor_position()) {
+    case ExtensionInstalledBubble::ANCHOR_ACTION: {
+      BrowserActionsController* controller =
+          [[windowController toolbarController] browserActionsController];
+      arrowPoint = [controller popupPointForId:extension()->id()];
+      break;
+    }
+    case ExtensionInstalledBubble::ANCHOR_OMNIBOX: {
+      LocationBarViewMac* locationBarView =
+          [windowController locationBarBridge];
+      arrowPoint = locationBarView->GetPageInfoBubblePoint();
+      break;
+    }
+    case ExtensionInstalledBubble::ANCHOR_APP_MENU: {
+      arrowPoint = getAppMenuButtonAnchorPoint();
+      break;
+    }
+    default: {
+      NOTREACHED();
+      break;
+    }
+  }
+  // Convert to screen coordinates.
+  arrowPoint = ui::ConvertPointFromWindowToScreen(window, arrowPoint);
+  return gfx::ScreenPointFromNSPoint(arrowPoint);
+}
+
 // Implemented here to create the platform specific instance of the BubbleUi.
 std::unique_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+    return chrome::BuildViewsExtensionInstalledBubbleUi(this);
+
   // |controller| is owned by the parent window.
   ExtensionInstalledBubbleController* controller =
       [[ExtensionInstalledBubbleController alloc]
@@ -199,21 +248,9 @@ std::unique_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
 // We need to calculate the location of these icons and the size of the
 // message itself (which varies with the title of the extension) in order
 // to figure out the origin point for the extension installed bubble.
-// TODO(mirandac): add framework to easily test extension UI components!
 - (NSPoint)calculateArrowPoint {
   BrowserWindowCocoa* window =
       static_cast<BrowserWindowCocoa*>(browser_->window());
-  NSPoint arrowPoint = NSZeroPoint;
-
-  auto getAppMenuButtonAnchorPoint = [window]() {
-    // Point at the bottom of the app menu menu.
-    NSView* appMenuButton =
-        [[window->cocoa_controller() toolbarController] appMenuButton];
-    const NSRect bounds = [appMenuButton bounds];
-    NSPoint anchor = NSMakePoint(NSMidX(bounds), NSMaxY(bounds));
-    return [appMenuButton convertPoint:anchor toView:nil];
-  };
-
   if (type_ == extension_installed_bubble::kApp) {
     TabStripView* view = [window->cocoa_controller() tabStripView];
     NewTabButton* button = [view getNewTabButton];
@@ -221,30 +258,13 @@ std::unique_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
     NSPoint anchor = NSMakePoint(
         NSMidX(bounds),
         NSMaxY(bounds) - extension_installed_bubble::kAppsBubbleArrowOffset);
-    arrowPoint = [button convertPoint:anchor toView:nil];
-  } else {
-    DCHECK(installedBubble_);
-    switch (installedBubble_->anchor_position()) {
-      case ExtensionInstalledBubble::ANCHOR_ACTION: {
-        BrowserActionsController* controller =
-            [[window->cocoa_controller() toolbarController]
-                browserActionsController];
-        arrowPoint = [controller popupPointForId:[self extension]->id()];
-        break;
-      }
-      case ExtensionInstalledBubble::ANCHOR_OMNIBOX: {
-        LocationBarViewMac* locationBarView =
-            [window->cocoa_controller() locationBarBridge];
-        arrowPoint = locationBarView->GetPageInfoBubblePoint();
-        break;
-      }
-      case ExtensionInstalledBubble::ANCHOR_APP_MENU: {
-        arrowPoint = getAppMenuButtonAnchorPoint();
-        break;
-      }
-    }
+    return ui::ConvertPointFromWindowToScreen(
+        window->GetNativeWindow(), [button convertPoint:anchor toView:nil]);
   }
-  return arrowPoint;
+
+  DCHECK(installedBubble_);
+  return gfx::ScreenPointToNSPoint(
+      installedBubble_->GetAnchorPoint(window->GetNativeWindow()));
 }
 
 // Override -[BaseBubbleController showWindow:] to tweak bubble location and
@@ -447,8 +467,7 @@ std::unique_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
 }
 
 - (void)updateAnchorPosition {
-  self.anchorPoint = ui::ConvertPointFromWindowToScreen(
-      self.parentWindow, [self calculateArrowPoint]);
+  self.anchorPoint = [self calculateArrowPoint];
 }
 
 - (IBAction)onManageShortcutClicked:(id)sender {
