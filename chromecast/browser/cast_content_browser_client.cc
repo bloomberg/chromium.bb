@@ -112,10 +112,8 @@ CastContentBrowserClient::CastContentBrowserClient()
       url_request_context_factory_(new URLRequestContextFactory()) {}
 
 CastContentBrowserClient::~CastContentBrowserClient() {
-  content::BrowserThread::DeleteSoon(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      url_request_context_factory_.release());
+  content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
+                                     url_request_context_factory_.release());
 }
 
 void CastContentBrowserClient::AppendExtraCommandLineSwitches(
@@ -147,8 +145,7 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif  // defined(USE_AURA)
 }
 
-void CastContentBrowserClient::PreCreateThreads() {
-}
+void CastContentBrowserClient::PreCreateThreads() {}
 
 std::unique_ptr<CastService> CastContentBrowserClient::CreateCastService(
     content::BrowserContext* browser_context,
@@ -236,12 +233,10 @@ media::MediaCapsImpl* CastContentBrowserClient::media_caps() {
 }
 
 void CastContentBrowserClient::SetMetricsClientId(
-    const std::string& client_id) {
-}
+    const std::string& client_id) {}
 
 void CastContentBrowserClient::RegisterMetricsProviders(
-    ::metrics::MetricsService* metrics_service) {
-}
+    ::metrics::MetricsService* metrics_service) {}
 
 bool CastContentBrowserClient::EnableRemoteDebuggingImmediately() {
   return true;
@@ -262,9 +257,9 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
   // getting HostResolver.
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&net::URLRequestContextGetter::GetURLRequestContext,
-                 base::Unretained(
-                    url_request_context_factory_->GetSystemGetter())),
+      base::Bind(
+          &net::URLRequestContextGetter::GetURLRequestContext,
+          base::Unretained(url_request_context_factory_->GetSystemGetter())),
       base::Bind(&CastContentBrowserClient::AddNetworkHintsMessageFilter,
                  base::Unretained(this), host->GetID()));
 
@@ -279,7 +274,8 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
 }
 
 void CastContentBrowserClient::AddNetworkHintsMessageFilter(
-    int render_process_id, net::URLRequestContext* context) {
+    int render_process_id,
+    net::URLRequestContext* context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::RenderProcessHost* host =
@@ -298,12 +294,9 @@ bool CastContentBrowserClient::IsHandledURL(const GURL& url) {
     return false;
 
   static const char* const kProtocolList[] = {
-    content::kChromeUIScheme,
-    content::kChromeDevToolsScheme,
-    kChromeResourceScheme,
-    url::kBlobScheme,
-    url::kDataScheme,
-    url::kFileSystemScheme,
+      content::kChromeUIScheme, content::kChromeDevToolsScheme,
+      kChromeResourceScheme,    url::kBlobScheme,
+      url::kDataScheme,         url::kFileSystemScheme,
   };
 
   const std::string& scheme = url.scheme();
@@ -475,8 +468,8 @@ void CastContentBrowserClient::SelectClientCertificateOnIOThread(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   CastNetworkDelegate* network_delegate =
       url_request_context_factory_->app_network_delegate();
-  if (network_delegate->IsWhitelisted(requesting_url,
-                                      render_process_id, false)) {
+  if (network_delegate->IsWhitelisted(requesting_url, render_process_id,
+                                      false)) {
     original_runner->PostTask(
         FROM_HERE,
         base::Bind(continue_callback, CastNetworkDelegate::DeviceCert(),
@@ -485,8 +478,7 @@ void CastContentBrowserClient::SelectClientCertificateOnIOThread(
   } else {
     LOG(ERROR) << "Invalid host for client certificate request: "
                << requesting_url.host()
-               << " with render_process_id: "
-               << render_process_id;
+               << " with render_process_id: " << render_process_id;
   }
   original_runner->PostTask(FROM_HERE,
                             base::Bind(continue_callback, nullptr, nullptr));
@@ -569,7 +561,7 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   breakpad::CrashDumpObserver::GetInstance()->BrowserChildProcessStarted(
       child_process_id, mappings);
 #else
-    int crash_signal_fd = GetCrashSignalFD(command_line);
+  int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {
     mappings->Share(kCrashDumpSignal, crash_signal_fd);
   }
@@ -617,8 +609,8 @@ CastContentBrowserClient::CreateCrashHandlerHost(
 
   // Alway set "upload" to false to use our own uploader.
   breakpad::CrashHandlerHostLinux* crash_handler =
-    new breakpad::CrashHandlerHostLinux(
-        process_type, dumps_path, false /* upload */);
+      new breakpad::CrashHandlerHostLinux(process_type, dumps_path,
+                                          false /* upload */);
   // StartUploaderThread() even though upload is diferred.
   // Breakpad-related memory is freed in the uploader thread.
   crash_handler->StartUploaderThread();
