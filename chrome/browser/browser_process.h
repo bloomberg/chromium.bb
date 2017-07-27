@@ -15,6 +15,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -138,9 +139,13 @@ class BrowserProcess {
 
   // Invoked when the user is logging out/shutting down. When logging off we may
   // not have enough time to do a normal shutdown. This method is invoked prior
-  // to normal shutdown and saves any state that must be saved before we are
-  // continue shutdown.
+  // to normal shutdown and saves any state that must be saved before system
+  // shutdown.
   virtual void EndSession() = 0;
+
+  // Ensures |local_state()| was flushed to disk and then posts |reply| back on
+  // the current sequence.
+  virtual void FlushLocalStateAndReply(base::OnceClosure reply) = 0;
 
   // Gets the manager for the various metrics-related services, constructing it
   // if necessary.

@@ -102,6 +102,13 @@ TestingBrowserProcess::~TestingBrowserProcess() {
 void TestingBrowserProcess::ResourceDispatcherHostCreated() {
 }
 
+void TestingBrowserProcess::FlushLocalStateAndReply(base::OnceClosure reply) {
+  // This could be implemented the same way as in BrowserProcessImpl but it's
+  // not currently expected to be used by TestingBrowserProcess users so we
+  // don't bother.
+  CHECK(false);
+}
+
 void TestingBrowserProcess::EndSession() {
 }
 

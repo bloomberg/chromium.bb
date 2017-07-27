@@ -1002,10 +1002,18 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   first_run::IsChromeFirstRun();
 #endif  // !defined(OS_ANDROID)
 
+  // The initial read is done synchronously, the TaskPriority is thus only used
+  // for flushes to disks and BACKGROUND is therefore appropriate. Priority of
+  // remaining BACKGROUND+BLOCK_SHUTDOWN tasks is bumped by the TaskScheduler on
+  // shutdown. However, some shutdown use cases happen without
+  // TaskScheduler::Shutdown() (e.g. ChromeRestartRequest::Start() and
+  // BrowserProcessImpl::EndSession()) and we must thus unfortunately make this
+  // USER_VISIBLE until we solve https://crbug.com/747495 to allow bumping
+  // priority of a sequence on demand.
   scoped_refptr<base::SequencedTaskRunner> local_state_task_runner =
-      JsonPrefStore::GetTaskRunnerForFile(
-          base::FilePath(chrome::kLocalStorePoolName),
-          BrowserThread::GetBlockingPool());
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
   {
     TRACE_EVENT0("startup",
