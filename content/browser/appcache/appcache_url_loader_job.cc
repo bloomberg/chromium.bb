@@ -428,9 +428,9 @@ void AppCacheURLLoaderJob::NotifyCompleted(int error_code) {
   if (storage_.get())
     storage_->CancelDelegateCallbacks(this);
 
-  const net::HttpResponseInfo* http_info =
-      is_range_request() ? range_response_info_.get()
-                         : (info_ ? info_->http_response_info() : nullptr);
+  const net::HttpResponseInfo* http_info = is_range_request()
+                                               ? range_response_info_.get()
+                                               : info_->http_response_info();
 
   ResourceRequestCompletionStatus request_complete_data;
   request_complete_data.error_code = error_code;
@@ -443,7 +443,7 @@ void AppCacheURLLoaderJob::NotifyCompleted(int error_code) {
     request_complete_data.completion_time = base::TimeTicks::Now();
     request_complete_data.encoded_body_length =
         is_range_request() ? range_response_info_->headers->GetContentLength()
-                           : (info_ ? info_->response_data_size() : 0);
+                           : info_->response_data_size();
     request_complete_data.decoded_body_length =
         request_complete_data.encoded_body_length;
   }
