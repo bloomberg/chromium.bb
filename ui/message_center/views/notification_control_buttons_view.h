@@ -54,9 +54,9 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
   // close button, false otherwise.
   bool IsSettingsButtonFocused() const;
 
-  // Methods for testing.
-  message_center::PaddedButton* close_button_for_testing() const;
-  message_center::PaddedButton* settings_button_for_testing() const;
+  // Methods for retrieving the control buttons directly.
+  message_center::PaddedButton* close_button() const;
+  message_center::PaddedButton* settings_button() const;
 
   // views::View
   const char* GetClassName() const override;
