@@ -83,7 +83,7 @@ void LayerTitleCache::UpdateFavicon(JNIEnv* env,
                                     jint tab_id,
                                     jint favicon_resource_id) {
   DecorationTitle* title_layer = layer_cache_.Lookup(tab_id);
-  if (title_layer == nullptr && favicon_resource_id != -1) {
+  if (title_layer && favicon_resource_id != -1) {
     title_layer->SetFaviconResourceId(favicon_resource_id);
   }
 }
