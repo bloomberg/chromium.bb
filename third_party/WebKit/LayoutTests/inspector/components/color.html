@@ -21,7 +21,9 @@ var test = function()
         var hsvaString = String.sprintf("hsva(%d, %d%, %d%, %f)", Math.round(hsva[0] * 360), Math.round(hsva[1] * 100), Math.round(hsva[2] * 100), hsva[3]);
         InspectorTest.addResult(" - " + hsvaString);
 
+        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.HEXA));
         InspectorTest.addResult(" - " + color.asString(Common.Color.Format.HEX));
+        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.ShortHEXA));
         InspectorTest.addResult(" - " + color.asString(Common.Color.Format.ShortHEX));
         InspectorTest.addResult(" - " + color.asString(Common.Color.Format.Nickname));
         InspectorTest.addResult(" - default: " + color.asString());
@@ -45,7 +47,9 @@ var test = function()
     dumpColor("hsl(212, 55%, 32%)");
     dumpColor("hsla(212, 55%, 32%, 0.5)");
 
+    dumpColor("#12345678");
     dumpColor("#00FFFF");
+    dumpColor("#1234");
     dumpColor("#0FF");
     InspectorTest.completeTest();
 }
