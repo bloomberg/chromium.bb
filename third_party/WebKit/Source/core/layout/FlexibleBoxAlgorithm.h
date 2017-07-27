@@ -41,12 +41,20 @@
 
 namespace blink {
 
+class FlexLayoutAlgorithm;
 class LayoutBox;
 struct MinMaxSize;
 
 enum FlexSign {
   kPositiveFlexibility,
   kNegativeFlexibility,
+};
+
+enum class TransformedWritingMode {
+  kTopToBottomWritingMode,
+  kRightToLeftWritingMode,
+  kLeftToRightWritingMode,
+  kBottomToTopWritingMode
 };
 
 class FlexItem {
@@ -76,6 +84,19 @@ class FlexItem {
     return min_max_sizes.ClampSizeToMinAndMax(size);
   }
 
+  bool HasOrthogonalFlow() const;
+
+  LayoutUnit FlowAwareMarginStart() const;
+  LayoutUnit FlowAwareMarginEnd() const;
+  LayoutUnit FlowAwareMarginBefore() const;
+  LayoutUnit CrossAxisMarginExtent() const;
+  LayoutUnit CrossAxisExtent() const;
+
+  LayoutUnit MarginBoxAscent() const;
+
+  LayoutUnit AvailableAlignmentSpace(LayoutUnit) const;
+
+  FlexLayoutAlgorithm* algorithm;
   LayoutBox* box;
   const LayoutUnit flex_base_content_size;
   const MinMaxSize min_max_sizes;
@@ -150,7 +171,7 @@ class FlexLayoutAlgorithm {
  public:
   FlexLayoutAlgorithm(const ComputedStyle*,
                       LayoutUnit line_break_length,
-                      const Vector<FlexItem>& all_items);
+                      Vector<FlexItem>& all_items);
 
   Vector<FlexLine>& FlexLines() { return flex_lines_; }
 
@@ -158,12 +179,18 @@ class FlexLayoutAlgorithm {
   // pointer to it. Returns nullptr if there are no more lines.
   FlexLine* ComputeNextFlexLine();
 
+  bool IsHorizontalFlow() const;
+  bool IsLeftToRightFlow() const;
+  TransformedWritingMode GetTransformedWritingMode() const;
+
+  static TransformedWritingMode GetTransformedWritingMode(const ComputedStyle&);
+
  private:
   bool IsMultiline() const { return style_->FlexWrap() != EFlexWrap::kNowrap; }
 
   const ComputedStyle* style_;
   LayoutUnit line_break_length_;
-  const Vector<FlexItem>& all_items_;
+  Vector<FlexItem>& all_items_;
   Vector<FlexLine> flex_lines_;
   size_t next_item_index_;
 };
