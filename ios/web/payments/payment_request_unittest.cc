@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/payments/core/basic_card_response.h"
@@ -319,6 +320,20 @@ TEST(PaymentRequestTest, EmptyResponseDictionary) {
 
   expected_value.SetString("requestId", "");
   expected_value.SetString("methodName", "");
+  std::unique_ptr<base::DictionaryValue> shipping_address(
+      new base::DictionaryValue);
+  shipping_address->SetString("country", "");
+  shipping_address->Set("addressLine", base::MakeUnique<base::ListValue>());
+  shipping_address->SetString("region", "");
+  shipping_address->SetString("dependentLocality", "");
+  shipping_address->SetString("city", "");
+  shipping_address->SetString("postalCode", "");
+  shipping_address->SetString("languageCode", "");
+  shipping_address->SetString("sortingCode", "");
+  shipping_address->SetString("organization", "");
+  shipping_address->SetString("recipient", "");
+  shipping_address->SetString("phone", "");
+  expected_value.Set("shippingAddress", std::move(shipping_address));
 
   PaymentResponse payment_response;
   EXPECT_TRUE(
@@ -338,14 +353,34 @@ TEST(PaymentRequestTest, PopulatedResponseDictionary) {
   details->SetString("cardSecurityCode", "111");
   std::unique_ptr<base::DictionaryValue> billing_address(
       new base::DictionaryValue);
+  billing_address->SetString("country", "");
+  billing_address->Set("addressLine", base::MakeUnique<base::ListValue>());
+  billing_address->SetString("region", "");
+  billing_address->SetString("dependentLocality", "");
+  billing_address->SetString("city", "");
   billing_address->SetString("postalCode", "90210");
+  billing_address->SetString("languageCode", "");
+  billing_address->SetString("sortingCode", "");
+  billing_address->SetString("organization", "");
+  billing_address->SetString("recipient", "");
+  billing_address->SetString("phone", "");
   details->Set("billingAddress", std::move(billing_address));
   expected_value.Set("details", std::move(details));
   expected_value.SetString("requestId", "12345");
   expected_value.SetString("methodName", "American Express");
   std::unique_ptr<base::DictionaryValue> shipping_address(
       new base::DictionaryValue);
+  shipping_address->SetString("country", "");
+  shipping_address->Set("addressLine", base::MakeUnique<base::ListValue>());
+  shipping_address->SetString("region", "");
+  shipping_address->SetString("dependentLocality", "");
+  shipping_address->SetString("city", "");
   shipping_address->SetString("postalCode", "94115");
+  shipping_address->SetString("languageCode", "");
+  shipping_address->SetString("sortingCode", "");
+  shipping_address->SetString("organization", "");
+  shipping_address->SetString("recipient", "");
+  shipping_address->SetString("phone", "");
   expected_value.Set("shippingAddress", std::move(shipping_address));
   expected_value.SetString("shippingOption", "666");
   expected_value.SetString("payerName", "Jane Doe");
