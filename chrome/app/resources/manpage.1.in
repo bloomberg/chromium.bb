@@ -40,6 +40,10 @@ in "app mode": with no browser toolbars.
 Open in incognito mode.
 
 .TP
+\fB\-\-new-window\fR
+If \fIPATH\fR or \fIURL\fR is given, open it in a new window.
+
+.TP
 \fB\-\-proxy-server\fR=\fIhost:port\fR
 Specify the HTTP/SOCKS4/SOCKS5 proxy server to use for requests.  This
 overrides any environment variables or settings picked via the options dialog.
