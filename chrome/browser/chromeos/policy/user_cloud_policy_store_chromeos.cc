@@ -4,27 +4,18 @@
 
 #include "chrome/browser/chromeos/policy/user_cloud_policy_store_chromeos.h"
 
-#include <stddef.h>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/files/file_util.h"
-#include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
-#include "base/strings/stringprintf.h"
+#include "chrome/browser/chromeos/policy/cached_policy_key_loader_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/cryptohome_client.h"
-#include "components/policy/core/common/cloud/cloud_policy_constants.h"
-#include "components/policy/proto/cloud_policy.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 using RetrievePolicyResponseType =
@@ -35,26 +26,6 @@ namespace em = enterprise_management;
 namespace policy {
 
 namespace {
-
-// Path within |user_policy_key_dir_| that contains the policy key.
-// "%s" must be substituted with the sanitized username.
-const base::FilePath::CharType kPolicyKeyFile[] =
-    FILE_PATH_LITERAL("%s/policy.pub");
-
-// Maximum key size that will be loaded, in bytes.
-const size_t kKeySizeLimit = 16 * 1024;
-
-enum ValidationFailure {
-  VALIDATION_FAILURE_DBUS,
-  VALIDATION_FAILURE_LOAD_KEY,
-  VALIDATION_FAILURE_SIZE,
-};
-
-void SampleValidationFailure(ValidationFailure sample) {
-  UMA_HISTOGRAM_ENUMERATION("Enterprise.UserPolicyValidationFailure",
-                            sample,
-                            VALIDATION_FAILURE_SIZE);
-}
 
 // Extracts the domain name from the passed username.
 std::string ExtractDomain(const std::string& username) {
@@ -71,11 +42,14 @@ UserCloudPolicyStoreChromeOS::UserCloudPolicyStoreChromeOS(
     const base::FilePath& user_policy_key_dir,
     bool is_active_directory)
     : UserCloudPolicyStoreBase(background_task_runner),
-      cryptohome_client_(cryptohome_client),
       session_manager_client_(session_manager_client),
       account_id_(account_id),
-      user_policy_key_dir_(user_policy_key_dir),
       is_active_directory_(is_active_directory),
+      cached_policy_key_loader_(base::MakeUnique<CachedPolicyKeyLoaderChromeOS>(
+          cryptohome_client,
+          background_task_runner,
+          account_id,
+          user_policy_key_dir)),
       weak_factory_(this) {}
 
 UserCloudPolicyStoreChromeOS::~UserCloudPolicyStoreChromeOS() {}
@@ -88,10 +62,9 @@ void UserCloudPolicyStoreChromeOS::Store(
   weak_factory_.InvalidateWeakPtrs();
   std::unique_ptr<em::PolicyFetchResponse> response(
       new em::PolicyFetchResponse(policy));
-  EnsurePolicyKeyLoaded(
+  cached_policy_key_loader_->EnsurePolicyKeyLoaded(
       base::Bind(&UserCloudPolicyStoreChromeOS::ValidatePolicyForStore,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(&response)));
+                 weak_factory_.GetWeakPtr(), base::Passed(&response)));
 }
 
 void UserCloudPolicyStoreChromeOS::Load() {
@@ -139,19 +112,11 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
     return;
   }
 
-  std::string sanitized_username =
-      cryptohome_client_->BlockingGetSanitizedUsername(
-          cryptohome::Identification(account_id_));
-  if (sanitized_username.empty()) {
+  if (!cached_policy_key_loader_->LoadPolicyKeyImmediately()) {
     status_ = STATUS_LOAD_ERROR;
     NotifyStoreError();
     return;
   }
-
-  cached_policy_key_path_ = user_policy_key_dir_.Append(
-      base::StringPrintf(kPolicyKeyFile, sanitized_username.c_str()));
-  LoadPolicyKey(cached_policy_key_path_, &cached_policy_key_);
-  cached_policy_key_loaded_ = true;
 
   std::unique_ptr<UserCloudPolicyValidator> validator =
       CreateValidatorForLoad(std::move(policy));
@@ -167,11 +132,13 @@ void UserCloudPolicyStoreChromeOS::ValidatePolicyForStore(
   std::unique_ptr<UserCloudPolicyValidator> validator = CreateValidator(
       std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_VALIDATED);
   validator->ValidateUsername(account_id_.GetUserEmail(), true);
-  if (cached_policy_key_.empty()) {
+  const std::string& cached_policy_key =
+      cached_policy_key_loader_->cached_policy_key();
+  if (cached_policy_key.empty()) {
     validator->ValidateInitialKey(ExtractDomain(account_id_.GetUserEmail()));
   } else {
     validator->ValidateSignatureAllowingRotation(
-        cached_policy_key_, ExtractDomain(account_id_.GetUserEmail()));
+        cached_policy_key, ExtractDomain(account_id_.GetUserEmail()));
   }
 
   // Start validation.
@@ -221,8 +188,8 @@ void UserCloudPolicyStoreChromeOS::OnPolicyStored(bool success) {
     // Load the policy right after storing it, to make sure it was accepted by
     // the session manager. An additional validation is performed after the
     // load; reload the key for that validation too, in case it was rotated.
-    ReloadPolicyKey(base::Bind(&UserCloudPolicyStoreChromeOS::Load,
-                               weak_factory_.GetWeakPtr()));
+    cached_policy_key_loader_->ReloadPolicyKey(base::Bind(
+        &UserCloudPolicyStoreChromeOS::Load, weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -263,7 +230,7 @@ void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
   if (is_active_directory_) {
     ValidateRetrievedPolicy(std::move(policy));
   } else {
-    EnsurePolicyKeyLoaded(
+    cached_policy_key_loader_->EnsurePolicyKeyLoaded(
         base::Bind(&UserCloudPolicyStoreChromeOS::ValidateRetrievedPolicy,
                    weak_factory_.GetWeakPtr(), base::Passed(&policy)));
   }
@@ -293,92 +260,11 @@ void UserCloudPolicyStoreChromeOS::OnRetrievedPolicyValidated(
   }
 
   InstallPolicy(std::move(validator->policy_data()),
-                std::move(validator->payload()), cached_policy_key_);
+                std::move(validator->payload()),
+                cached_policy_key_loader_->cached_policy_key());
   status_ = STATUS_OK;
 
   NotifyStoreLoaded();
-}
-
-void UserCloudPolicyStoreChromeOS::ReloadPolicyKey(
-    const base::Closure& callback) {
-  DCHECK(!is_active_directory_);
-
-  std::string* key = new std::string();
-  background_task_runner()->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(&UserCloudPolicyStoreChromeOS::LoadPolicyKey,
-                     cached_policy_key_path_, key),
-      base::BindOnce(&UserCloudPolicyStoreChromeOS::OnPolicyKeyReloaded,
-                     weak_factory_.GetWeakPtr(), base::Owned(key), callback));
-}
-
-// static
-void UserCloudPolicyStoreChromeOS::LoadPolicyKey(const base::FilePath& path,
-                                                 std::string* key) {
-  if (!base::PathExists(path)) {
-    // There is no policy key the first time that a user fetches policy. If
-    // |path| does not exist then that is the most likely scenario, so there's
-    // no need to sample a failure.
-    VLOG(1) << "No key at " << path.value();
-    return;
-  }
-
-  const bool read_success =
-      base::ReadFileToStringWithMaxSize(path, key, kKeySizeLimit);
-  // If the read was successful and the file size is 0 or if the read fails
-  // due to file size exceeding |kKeySizeLimit|, log error.
-  if ((read_success && key->length() == 0) ||
-      (!read_success && key->length() == kKeySizeLimit)) {
-    LOG(ERROR) << "Key at " << path.value()
-               << (read_success ? " is empty." : " exceeds size limit");
-    key->clear();
-  } else if (!read_success) {
-    LOG(ERROR) << "Failed to read key at " << path.value();
-  }
-
-  if (key->empty())
-    SampleValidationFailure(VALIDATION_FAILURE_LOAD_KEY);
-}
-
-void UserCloudPolicyStoreChromeOS::OnPolicyKeyReloaded(
-    std::string* key,
-    const base::Closure& callback) {
-  DCHECK(!is_active_directory_);
-
-  cached_policy_key_ = *key;
-  cached_policy_key_loaded_ = true;
-  callback.Run();
-}
-
-void UserCloudPolicyStoreChromeOS::EnsurePolicyKeyLoaded(
-    const base::Closure& callback) {
-  DCHECK(!is_active_directory_);
-
-  if (cached_policy_key_loaded_) {
-    callback.Run();
-  } else {
-    // Get the hashed username that's part of the key's path, to determine
-    // |cached_policy_key_path_|.
-    cryptohome_client_->GetSanitizedUsername(
-        cryptohome::Identification(account_id_),
-        base::Bind(&UserCloudPolicyStoreChromeOS::OnGetSanitizedUsername,
-                   weak_factory_.GetWeakPtr(), callback));
-  }
-}
-
-void UserCloudPolicyStoreChromeOS::OnGetSanitizedUsername(
-    const base::Closure& callback,
-    chromeos::DBusMethodCallStatus call_status,
-    const std::string& sanitized_username) {
-  // The default empty path will always yield an empty key.
-  if (call_status == chromeos::DBUS_METHOD_CALL_SUCCESS &&
-      !sanitized_username.empty()) {
-    cached_policy_key_path_ = user_policy_key_dir_.Append(
-        base::StringPrintf(kPolicyKeyFile, sanitized_username.c_str()));
-  } else {
-    SampleValidationFailure(VALIDATION_FAILURE_DBUS);
-  }
-  ReloadPolicyKey(callback);
 }
 
 std::unique_ptr<UserCloudPolicyValidator>
@@ -398,7 +284,8 @@ UserCloudPolicyStoreChromeOS::CreateValidatorForLoad(
     // The policy loaded from session manager need not be validated using the
     // verification key since it is secure, and since there may be legacy policy
     // data that was stored without a verification key.
-    validator->ValidateSignature(cached_policy_key_);
+    validator->ValidateSignature(
+        cached_policy_key_loader_->cached_policy_key());
   }
   return validator;
 }
