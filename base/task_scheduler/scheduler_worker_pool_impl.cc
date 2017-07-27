@@ -555,29 +555,31 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnDetach() {
 
 void SchedulerWorkerPoolImpl::WakeUpOneWorker() {
   SchedulerWorker* worker = nullptr;
-  {
-    AutoSchedulerLock auto_lock(lock_);
+
+  AutoSchedulerLock auto_lock(lock_);
 
 #if DCHECK_IS_ON()
-    DCHECK_EQ(workers_.empty(), !workers_created_.IsSet());
+  DCHECK_EQ(workers_.empty(), !workers_created_.IsSet());
 #endif
 
-    if (workers_.empty()) {
-      ++num_wake_ups_before_start_;
-      return;
-    }
-
-    // Add a new worker if we're below capacity and there are no idle workers.
-    if (idle_workers_stack_.IsEmpty() && workers_.size() < worker_capacity_)
-      worker = CreateRegisterAndStartSchedulerWorker().get();
-    else
-      worker = idle_workers_stack_.Pop();
+  if (workers_.empty()) {
+    ++num_wake_ups_before_start_;
+    return;
   }
+
+  // Add a new worker if we're below capacity and there are no idle workers.
+  if (idle_workers_stack_.IsEmpty() && workers_.size() < worker_capacity_)
+    worker = CreateRegisterAndStartSchedulerWorker().get();
+  else
+    worker = idle_workers_stack_.Pop();
 
   if (worker)
     worker->WakeUp();
-  // TODO(robliao): Honor StandbyThreadPolicy::ONE here and consider adding
-  // hysteresis to the CanDetach check. See https://crbug.com/666041.
+
+  // Try to keep at least one idle worker at all times for better
+  // responsiveness.
+  if (idle_workers_stack_.IsEmpty() && workers_.size() < worker_capacity_)
+    idle_workers_stack_.Push(CreateRegisterAndStartSchedulerWorker().get());
 }
 
 void SchedulerWorkerPoolImpl::AddToIdleWorkersStack(
