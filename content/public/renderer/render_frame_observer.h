@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/platform/web_feature.mojom.h"
 #include "third_party/WebKit/public/web/WebMeaningfulLayout.h"
 #include "v8/include/v8.h"
 
@@ -116,6 +117,10 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // load. This is used for metrics collection.
   virtual void DidObserveLoadingBehavior(
       blink::WebLoadingBehaviorFlag behavior) {}
+
+  // Notification when the renderer observes a new feature usage during a page
+  // load. This is used for UseCounter feature metrics.
+  virtual void DidObserveNewFeatureUsage(blink::mojom::WebFeature feature) {}
 
   // Called when the focused node has changed to |node|.
   virtual void FocusedNodeChanged(const blink::WebNode& node) {}
