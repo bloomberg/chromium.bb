@@ -164,8 +164,13 @@ stage_install_common() {
 
   # ANGLE
   if [ "${CHANNEL}" != "stable" ]; then
-    install -m 644 "${BUILDDIR}/libGLESv2.so" "${STAGEDIR}/${INSTALLDIR}/"
-    install -m 644 "${BUILDDIR}/libEGL.so" "${STAGEDIR}/${INSTALLDIR}/"
+    for file in libEGL.so libGLESv2.so; do
+      buildfile="${BUILDDIR}/${file}"
+      strippedfile="${buildfile}.stripped"
+      debugfile="${buildfile}.debug"
+      "${BUILDDIR}/installer/common/eu-strip" -o "${strippedfile}" -f "${debugfile}" "${buildfile}"
+      install -m 644 "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/${file}"
+    done
   fi
 
   # SwiftShader
