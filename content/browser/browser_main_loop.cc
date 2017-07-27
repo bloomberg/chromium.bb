@@ -53,6 +53,7 @@
 #include "components/tracing/common/trace_config_file.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -1467,7 +1468,15 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 #if !defined(OS_ANDROID)
   if (!service_manager::ServiceManagerIsRemote()) {
-    frame_sink_manager_impl_ = base::MakeUnique<viz::FrameSinkManagerImpl>();
+    // TODO(kylechar): Remove flag along with surface sequences.
+    // See https://crbug.com/676384.
+    auto surface_lifetime_type =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableSurfaceReferences)
+            ? viz::SurfaceManager::LifetimeType::REFERENCES
+            : viz::SurfaceManager::LifetimeType::SEQUENCES;
+    frame_sink_manager_impl_ = base::MakeUnique<viz::FrameSinkManagerImpl>(
+        nullptr /* display_provider */, surface_lifetime_type);
 
     host_frame_sink_manager_ = base::MakeUnique<viz::HostFrameSinkManager>();
 

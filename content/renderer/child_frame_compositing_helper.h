@@ -95,6 +95,11 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   viz::SurfaceId surface_id_;
   blink::WebRemoteFrame* frame_;
 
+  // If surface references are enabled use a stub reference factory.
+  // TODO(kylechar): Remove variable along with surface sequences.
+  // See https://crbug.com/676384.
+  bool enable_surface_references_;
+
   scoped_refptr<viz::SurfaceReferenceFactory> surface_reference_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildFrameCompositingHelper);

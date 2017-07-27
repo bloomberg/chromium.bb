@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/picture_image_layer.h"
 #include "cc/layers/solid_color_layer.h"
@@ -16,6 +17,8 @@
 #include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/surfaces/sequence_surface_reference_factory.h"
+#include "components/viz/common/surfaces/stub_surface_reference_factory.h"
+#include "components/viz/common/switches.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/content_switches_internal.h"
@@ -166,9 +169,14 @@ ChildFrameCompositingHelper::ChildFrameCompositingHelper(
       browser_plugin_(browser_plugin),
       render_frame_proxy_(render_frame_proxy),
       frame_(frame) {
+  enable_surface_references_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSurfaceReferences);
   scoped_refptr<ThreadSafeSender> sender(
       RenderThreadImpl::current()->thread_safe_sender());
-  if (render_frame_proxy_) {
+  if (enable_surface_references_) {
+    surface_reference_factory_ = new viz::StubSurfaceReferenceFactory();
+  } else if (render_frame_proxy_) {
     surface_reference_factory_ =
         new IframeSurfaceReferenceFactory(sender, host_routing_id_);
   } else {
@@ -264,14 +272,16 @@ void ChildFrameCompositingHelper::OnSetSurface(
   // The RWHV creates a destruction dependency on the surface that needs to be
   // satisfied. The reference factory will satisfy it when a new reference has
   // been created.
-  if (render_frame_proxy_) {
-    static_cast<IframeSurfaceReferenceFactory*>(
-        surface_reference_factory_.get())
-        ->AddPendingSequence(sequence);
-  } else {
-    static_cast<BrowserPluginSurfaceReferenceFactory*>(
-        surface_reference_factory_.get())
-        ->AddPendingSequence(sequence);
+  if (!enable_surface_references_) {
+    if (render_frame_proxy_) {
+      static_cast<IframeSurfaceReferenceFactory*>(
+          surface_reference_factory_.get())
+          ->AddPendingSequence(sequence);
+    } else {
+      static_cast<BrowserPluginSurfaceReferenceFactory*>(
+          surface_reference_factory_.get())
+          ->AddPendingSequence(sequence);
+    }
   }
 
   viz::SurfaceInfo modified_surface_info(surface_info.id(), scale_factor,

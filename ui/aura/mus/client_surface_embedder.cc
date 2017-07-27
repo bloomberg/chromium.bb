@@ -5,7 +5,7 @@
 #include "ui/aura/mus/client_surface_embedder.h"
 
 #include "base/memory/ptr_util.h"
-#include "components/viz/service/surfaces/stub_surface_reference_factory.h"
+#include "components/viz/common/surfaces/stub_surface_reference_factory.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/dip_util.h"
 

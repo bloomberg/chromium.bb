@@ -61,6 +61,8 @@ viz_component("common") {
     "surfaces/local_surface_id_allocator.h",
     "surfaces/sequence_surface_reference_factory.cc",
     "surfaces/sequence_surface_reference_factory.h",
+    "surfaces/stub_surface_reference_factory.cc",
+    "surfaces/stub_surface_reference_factory.h",
     "surfaces/surface_id.cc",
     "surfaces/surface_id.h",
     "surfaces/surface_info.h",

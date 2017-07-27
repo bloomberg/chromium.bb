@@ -480,13 +480,16 @@ void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
 void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
   if (service_manager::ServiceManagerIsRemote())
     return;
+  // TODO(kylechar): Remove sequence generation and only send surface info.
+  // See https://crbug.com/676384.
   viz::SurfaceSequence sequence =
       viz::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
   viz::SurfaceManager* manager = GetFrameSinkManager()->surface_manager();
   viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
   // The renderer process will satisfy this dependency when it creates a
   // SurfaceLayer.
-  manager->RequireSequence(surface_id, sequence);
+  if (!manager->using_surface_references())
+    manager->RequireSequence(surface_id, sequence);
   viz::SurfaceInfo surface_info(surface_id, current_surface_scale_factor_,
                                 current_surface_size_);
   SendSurfaceInfoToEmbedderImpl(surface_info, sequence);

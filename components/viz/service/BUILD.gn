@@ -59,8 +59,6 @@ viz_component("service") {
     "hit_test/hit_test_aggregator.h",
     "surfaces/direct_surface_reference_factory.cc",
     "surfaces/direct_surface_reference_factory.h",
-    "surfaces/stub_surface_reference_factory.cc",
-    "surfaces/stub_surface_reference_factory.h",
     "surfaces/surface.cc",
     "surfaces/surface.h",
     "surfaces/surface_client.h",

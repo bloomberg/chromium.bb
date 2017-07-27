@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_SURFACES_STUB_SURFACE_REFERENCE_FACTORY_H_
-#define COMPONENTS_VIZ_SERVICE_SURFACES_STUB_SURFACE_REFERENCE_FACTORY_H_
+#ifndef COMPONENTS_VIZ_COMMON_SURFACES_STUB_SURFACE_REFERENCE_FACTORY_H_
+#define COMPONENTS_VIZ_COMMON_SURFACES_STUB_SURFACE_REFERENCE_FACTORY_H_
 
 #include "base/compiler_specific.h"
 #include "components/viz/common/surfaces/surface_reference_factory.h"
-#include "components/viz/service/viz_service_export.h"
+#include "components/viz/common/viz_common_export.h"
 
 namespace viz {
 
 // A stub implementation that creates a closure which does nothing.
 // TODO(kylechar): Delete this class and all usage of
 // SurfaceReferenceFactory when surface references are enabled by default.
-class VIZ_SERVICE_EXPORT StubSurfaceReferenceFactory
+class VIZ_COMMON_EXPORT StubSurfaceReferenceFactory
     : public NON_EXPORTED_BASE(SurfaceReferenceFactory) {
  public:
   StubSurfaceReferenceFactory() = default;
@@ -31,4 +31,4 @@ class VIZ_SERVICE_EXPORT StubSurfaceReferenceFactory
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_SERVICE_SURFACES_STUB_SURFACE_REFERENCE_FACTORY_H_
+#endif  // COMPONENTS_VIZ_COMMON_SURFACES_STUB_SURFACE_REFERENCE_FACTORY_H_
