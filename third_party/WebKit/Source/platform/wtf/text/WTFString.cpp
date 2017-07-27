@@ -426,7 +426,7 @@ int String::ToIntStrict(bool* ok) const {
       *ok = false;
     return 0;
   }
-  return impl_->ToIntStrict(ok);
+  return impl_->ToInt(NumberParsingOptions::kStrict, ok);
 }
 
 unsigned String::ToUIntStrict(bool* ok) const {
@@ -435,7 +435,7 @@ unsigned String::ToUIntStrict(bool* ok) const {
       *ok = false;
     return 0;
   }
-  return impl_->ToUIntStrict(ok);
+  return impl_->ToUInt(NumberParsingOptions::kStrict, ok);
 }
 
 unsigned String::HexToUIntStrict(bool* ok) const {
@@ -453,7 +453,7 @@ int64_t String::ToInt64Strict(bool* ok) const {
       *ok = false;
     return 0;
   }
-  return impl_->ToInt64Strict(ok);
+  return impl_->ToInt64(NumberParsingOptions::kStrict, ok);
 }
 
 uint64_t String::ToUInt64Strict(bool* ok) const {
@@ -462,7 +462,7 @@ uint64_t String::ToUInt64Strict(bool* ok) const {
       *ok = false;
     return 0;
   }
-  return impl_->ToUInt64Strict(ok);
+  return impl_->ToUInt64(NumberParsingOptions::kStrict, ok);
 }
 
 int String::ToInt(bool* ok) const {
@@ -471,7 +471,7 @@ int String::ToInt(bool* ok) const {
       *ok = false;
     return 0;
   }
-  return impl_->ToInt(ok);
+  return impl_->ToInt(NumberParsingOptions::kLoose, ok);
 }
 
 unsigned String::ToUInt(bool* ok) const {
@@ -480,7 +480,7 @@ unsigned String::ToUInt(bool* ok) const {
       *ok = false;
     return 0;
   }
-  return impl_->ToUInt(ok);
+  return impl_->ToUInt(NumberParsingOptions::kLoose, ok);
 }
 
 int64_t String::ToInt64(bool* ok) const {
@@ -489,7 +489,7 @@ int64_t String::ToInt64(bool* ok) const {
       *ok = false;
     return 0;
   }
-  return impl_->ToInt64(ok);
+  return impl_->ToInt64(NumberParsingOptions::kLoose, ok);
 }
 
 uint64_t String::ToUInt64(bool* ok) const {
@@ -498,7 +498,7 @@ uint64_t String::ToUInt64(bool* ok) const {
       *ok = false;
     return 0;
   }
-  return impl_->ToUInt64(ok);
+  return impl_->ToUInt64(NumberParsingOptions::kLoose, ok);
 }
 
 double String::ToDouble(bool* ok) const {
