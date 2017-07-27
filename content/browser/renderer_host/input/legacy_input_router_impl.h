@@ -36,7 +36,7 @@ struct DidOverscrollParams;
 
 namespace content {
 
-class InputAckHandler;
+class InputDispositionHandler;
 class InputRouterClient;
 struct InputEventAck;
 
@@ -53,7 +53,7 @@ class CONTENT_EXPORT LegacyInputRouterImpl
  public:
   LegacyInputRouterImpl(IPC::Sender* sender,
                         InputRouterClient* client,
-                        InputAckHandler* ack_handler,
+                        InputDispositionHandler* disposition_handler,
                         int routing_id,
                         const Config& config);
   ~LegacyInputRouterImpl() override;
@@ -199,7 +199,7 @@ class CONTENT_EXPORT LegacyInputRouterImpl
 
   IPC::Sender* sender_;
   InputRouterClient* client_;
-  InputAckHandler* ack_handler_;
+  InputDispositionHandler* disposition_handler_;
   int routing_id_;
   int frame_tree_node_id_;
 

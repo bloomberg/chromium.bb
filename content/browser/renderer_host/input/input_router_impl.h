@@ -34,7 +34,7 @@ struct DidOverscrollParams;
 
 namespace content {
 
-class InputAckHandler;
+class InputDispositionHandler;
 
 class CONTENT_EXPORT InputRouterImplClient : public InputRouterClient {
  public:
@@ -50,7 +50,7 @@ class CONTENT_EXPORT InputRouterImpl
       public NON_EXPORTED_BASE(TouchpadTapSuppressionControllerClient) {
  public:
   InputRouterImpl(InputRouterImplClient* client,
-                  InputAckHandler* ack_handler,
+                  InputDispositionHandler* disposition_handler,
                   const Config& config);
   ~InputRouterImpl() override;
 
@@ -189,7 +189,7 @@ class CONTENT_EXPORT InputRouterImpl
   void UpdateTouchAckTimeoutEnabled();
 
   InputRouterImplClient* client_;
-  InputAckHandler* ack_handler_;
+  InputDispositionHandler* disposition_handler_;
   int frame_tree_node_id_;
 
   // Whether there are any active flings in the renderer. As the fling

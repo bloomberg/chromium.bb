@@ -30,7 +30,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
-#include "content/browser/renderer_host/input/input_ack_handler.h"
+#include "content/browser/renderer_host/input/input_disposition_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/legacy_ipc_widget_input_handler.h"
 #include "content/browser/renderer_host/input/render_widget_host_latency_tracker.h"
@@ -102,7 +102,7 @@ struct TextInputState;
 class CONTENT_EXPORT RenderWidgetHostImpl
     : public RenderWidgetHost,
       public InputRouterClient,
-      public InputAckHandler,
+      public InputDispositionHandler,
       public TouchEmulatorClient,
       public NON_EXPORTED_BASE(SyntheticGestureController::Delegate),
       public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSink),

@@ -14,7 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
-#include "content/browser/renderer_host/input/input_ack_handler.h"
+#include "content/browser/renderer_host/input/input_disposition_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/legacy_touch_event_queue.h"
 #include "content/browser/renderer_host/input/passthrough_touch_event_queue.h"
@@ -94,10 +94,10 @@ ui::WebScopedInputEvent ScaleEvent(const WebInputEvent& event, double scale) {
 }  // namespace
 
 InputRouterImpl::InputRouterImpl(InputRouterImplClient* client,
-                                 InputAckHandler* ack_handler,
+                                 InputDispositionHandler* disposition_handler,
                                  const Config& config)
     : client_(client),
-      ack_handler_(ack_handler),
+      disposition_handler_(disposition_handler),
       frame_tree_node_id_(-1),
       active_renderer_fling_count_(0),
       touch_scroll_started_sent_(false),
@@ -120,7 +120,7 @@ InputRouterImpl::InputRouterImpl(InputRouterImplClient* client,
   }
 
   DCHECK(client);
-  DCHECK(ack_handler);
+  DCHECK(disposition_handler);
   UpdateTouchAckTimeoutEnabled();
 }
 
@@ -167,7 +167,7 @@ void InputRouterImpl::KeyboardEventHandled(
   if (source != InputEventAckSource::BROWSER)
     client_->DecrementInFlightEventCount(source);
   event.latency.AddNewLatencyFrom(latency);
-  ack_handler_->OnKeyboardEventAck(event, state);
+  disposition_handler_->OnKeyboardEventAck(event, state);
 
   // WARNING: This InputRouterImpl can be deallocated at this point
   // (i.e.  in the case of Ctrl+W, where the call to
@@ -238,7 +238,7 @@ void InputRouterImpl::MouseEventHandled(
   if (source != InputEventAckSource::BROWSER)
     client_->DecrementInFlightEventCount(source);
   event.latency.AddNewLatencyFrom(latency);
-  ack_handler_->OnMouseEventAck(event, state);
+  disposition_handler_->OnMouseEventAck(event, state);
 }
 
 void InputRouterImpl::SendTouchEventImmediately(
@@ -276,7 +276,7 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
     touch_action_filter_.ResetTouchAction();
     UpdateTouchAckTimeoutEnabled();
   }
-  ack_handler_->OnTouchEventAck(event, ack_result);
+  disposition_handler_->OnTouchEventAck(event, ack_result);
 
   // Reset the touch action at the end of a touch-action sequence.
   if (WebTouchEventTraits::IsTouchSequenceEnd(event.event)) {
@@ -364,7 +364,7 @@ void InputRouterImpl::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
   touch_event_queue_->OnGestureEventAck(event, ack_result);
-  ack_handler_->OnGestureEventAck(event, ack_result);
+  disposition_handler_->OnGestureEventAck(event, ack_result);
 }
 
 void InputRouterImpl::ForwardGestureEventWithLatencyInfo(
@@ -403,7 +403,7 @@ void InputRouterImpl::MouseWheelEventHandled(
 void InputRouterImpl::OnMouseWheelEventAck(
     const MouseWheelEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
-  ack_handler_->OnWheelEventAck(event, ack_result);
+  disposition_handler_->OnWheelEventAck(event, ack_result);
 }
 
 void InputRouterImpl::FilterAndSendWebInputEvent(

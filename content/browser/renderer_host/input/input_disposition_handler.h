@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ACK_HANDLER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ACK_HANDLER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_DISPOSITION_HANDLER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_DISPOSITION_HANDLER_H_
 
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/input/input_event_ack_state.h"
@@ -12,10 +12,10 @@
 
 namespace content {
 
-// Provided customized ack response for input events.
-class CONTENT_EXPORT InputAckHandler {
+// Provided customized disposition response for input events.
+class CONTENT_EXPORT InputDispositionHandler {
  public:
-  virtual ~InputAckHandler() {}
+  virtual ~InputDispositionHandler() {}
 
   // Called upon event ack receipt from the renderer.
   virtual void OnKeyboardEventAck(
@@ -38,6 +38,6 @@ class CONTENT_EXPORT InputAckHandler {
   virtual void OnUnexpectedEventAck(UnexpectedEventAckType type) = 0;
 };
 
-} // namespace content
+}  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ACK_HANDLER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_DISPOSITION_HANDLER_H_
