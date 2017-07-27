@@ -21,7 +21,8 @@ void DeleteServiceObjects(ClientServiceMap<ClientType, ServiceType>* id_map,
                           DeleteFunction delete_function) {
   if (have_context) {
     for (auto client_service_id_pair : *id_map) {
-      delete_function(client_service_id_pair.second);
+      delete_function(client_service_id_pair.first,
+                      client_service_id_pair.second);
     }
   }
 
@@ -47,22 +48,34 @@ PassthroughResources::PassthroughResources() {}
 PassthroughResources::~PassthroughResources() {}
 
 void PassthroughResources::Destroy(bool have_context) {
-  DeleteServiceObjects(&texture_id_map, have_context,
-                       [](GLuint texture) { glDeleteTextures(1, &texture); });
-  DeleteServiceObjects(&buffer_id_map, have_context,
-                       [](GLuint buffer) { glDeleteBuffersARB(1, &buffer); });
+  // Only delete textures that are not referenced by a TexturePassthrough
+  // object, they handle their own deletion once all references are lost
   DeleteServiceObjects(
-      &renderbuffer_id_map, have_context,
-      [](GLuint renderbuffer) { glDeleteRenderbuffersEXT(1, &renderbuffer); });
-  DeleteServiceObjects(&sampler_id_map, have_context,
-                       [](GLuint sampler) { glDeleteSamplers(1, &sampler); });
-  DeleteServiceObjects(&program_id_map, have_context,
-                       [](GLuint program) { glDeleteProgram(program); });
-  DeleteServiceObjects(&shader_id_map, have_context,
-                       [](GLuint shader) { glDeleteShader(shader); });
-  DeleteServiceObjects(&sync_id_map, have_context, [](uintptr_t sync) {
-    glDeleteSync(reinterpret_cast<GLsync>(sync));
-  });
+      &texture_id_map, have_context, [this](GLuint client_id, GLuint texture) {
+        if (texture_object_map.find(client_id) == texture_object_map.end()) {
+          glDeleteTextures(1, &texture);
+        }
+      });
+  DeleteServiceObjects(
+      &buffer_id_map, have_context,
+      [](GLuint client_id, GLuint buffer) { glDeleteBuffersARB(1, &buffer); });
+  DeleteServiceObjects(&renderbuffer_id_map, have_context,
+                       [](GLuint client_id, GLuint renderbuffer) {
+                         glDeleteRenderbuffersEXT(1, &renderbuffer);
+                       });
+  DeleteServiceObjects(
+      &sampler_id_map, have_context,
+      [](GLuint client_id, GLuint sampler) { glDeleteSamplers(1, &sampler); });
+  DeleteServiceObjects(
+      &program_id_map, have_context,
+      [](GLuint client_id, GLuint program) { glDeleteProgram(program); });
+  DeleteServiceObjects(
+      &shader_id_map, have_context,
+      [](GLuint client_id, GLuint shader) { glDeleteShader(shader); });
+  DeleteServiceObjects(&sync_id_map, have_context,
+                       [](GLuint client_id, uintptr_t sync) {
+                         glDeleteSync(reinterpret_cast<GLsync>(sync));
+                       });
 
   if (!have_context) {
     for (auto passthrough_texture : texture_object_map) {
@@ -186,6 +199,10 @@ GLES2Decoder::Error GLES2DecoderPassthroughImpl::DoCommandsImpl(
             gpu_tracer_->Begin(TRACE_DISABLED_BY_DEFAULT("gpu_decoder"),
                                GetCommandName(command), kTraceDecoder);
           }
+        }
+
+        if (DebugImpl) {
+          VerifyServiceTextureObjectsExist();
         }
 
         uint32_t immediate_data_size = (arg_count - info_arg_count) *
@@ -317,18 +334,21 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
     FlushErrors();
   }
 
-  DeleteServiceObjects(
-      &framebuffer_id_map_, have_context,
-      [](GLuint framebuffer) { glDeleteFramebuffersEXT(1, &framebuffer); });
+  DeleteServiceObjects(&framebuffer_id_map_, have_context,
+                       [](GLuint client_id, GLuint framebuffer) {
+                         glDeleteFramebuffersEXT(1, &framebuffer);
+                       });
   DeleteServiceObjects(&transform_feedback_id_map_, have_context,
-                       [](GLuint transform_feedback) {
+                       [](GLuint client_id, GLuint transform_feedback) {
                          glDeleteTransformFeedbacks(1, &transform_feedback);
                        });
-  DeleteServiceObjects(&query_id_map_, have_context,
-                       [](GLuint query) { glDeleteQueries(1, &query); });
   DeleteServiceObjects(
-      &vertex_array_id_map_, have_context,
-      [](GLuint vertex_array) { glDeleteVertexArraysOES(1, &vertex_array); });
+      &query_id_map_, have_context,
+      [](GLuint client_id, GLuint query) { glDeleteQueries(1, &query); });
+  DeleteServiceObjects(&vertex_array_id_map_, have_context,
+                       [](GLuint client_id, GLuint vertex_array) {
+                         glDeleteVertexArraysOES(1, &vertex_array);
+                       });
 
   // Destroy the GPU Tracer which may own some in process GPU Timings.
   if (gpu_tracer_) {
@@ -1058,6 +1078,12 @@ error::Error GLES2DecoderPassthroughImpl::BindTexImage2DCHROMIUMImpl(
   }
 
   return error::kNoError;
+}
+
+void GLES2DecoderPassthroughImpl::VerifyServiceTextureObjectsExist() {
+  for (const auto& texture_mapping : resources_->texture_object_map) {
+    DCHECK_EQ(GL_TRUE, glIsTexture(texture_mapping.second->service_id()));
+  }
 }
 
 #define GLES2_CMD_OP(name)                                               \

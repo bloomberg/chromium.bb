@@ -305,6 +305,8 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
                                           GLenum internalformat,
                                           GLint image_id);
 
+  void VerifyServiceTextureObjectsExist();
+
   GLES2DecoderClient* client_;
 
   int commands_to_process_;
