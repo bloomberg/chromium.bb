@@ -346,11 +346,14 @@ void InputMethodController::SelectComposition() const {
       SelectionInDOMTree::Builder().SetBaseAndExtent(range).Build());
 }
 
-bool IsCompositionTooLong(const Element& element) {
+bool IsTextTooLongAt(const Position& position) {
+  const Element* element = EnclosingTextControl(position);
+  if (!element)
+    return false;
   if (isHTMLInputElement(element))
-    return toHTMLInputElement(element).TooLong();
+    return toHTMLInputElement(element)->TooLong();
   if (isHTMLTextAreaElement(element))
-    return toHTMLTextAreaElement(element).TooLong();
+    return toHTMLTextAreaElement(element)->TooLong();
   return false;
 }
 
@@ -361,8 +364,7 @@ bool InputMethodController::FinishComposingText(
 
   // If text is longer than maxlength, give input/textarea's handler a chance to
   // clamp the text by replacing the composition with the same value.
-  const bool is_too_long =
-      IsCompositionTooLong(*GetDocument().FocusedElement());
+  const bool is_too_long = IsTextTooLongAt(composition_range_->StartPosition());
 
   const String& composing = ComposingText();
 
