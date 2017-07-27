@@ -36,6 +36,13 @@ class MockDownloadFile : public DownloadFile {
   void AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
                      int64_t offset,
                      int64_t length) override;
+  void AddDataPipeConsumerHandle(mojo::ScopedDataPipeConsumerHandle handle,
+                                 int64_t offset,
+                                 int64_t length) override;
+  MOCK_METHOD3(DoAddDataPipeConsumerHandle,
+               void(const mojo::DataPipeConsumerHandle& handle,
+                    int64_t offset,
+                    int64_t length));
   MOCK_METHOD3(DoAddByteStream,
                void(ByteStreamReader* stream_reader,
                     int64_t offset,

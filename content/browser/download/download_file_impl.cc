@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
+#include "mojo/public/c/system/types.h"
 #include "net/base/io_buffer.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
@@ -52,6 +53,9 @@ const int kNoBytesToWrite = -1;
 // Default content length when the potential file size is not yet determined.
 const int kUnknownContentLength = -1;
 
+// Data length to read from data pipe.
+const int kBytesToRead = 4096;
+
 }  // namespace
 
 DownloadFileImpl::SourceStream::SourceStream(
@@ -64,6 +68,20 @@ DownloadFileImpl::SourceStream::SourceStream(
       finished_(false),
       index_(0u),
       stream_reader_(std::move(stream_reader)) {}
+
+DownloadFileImpl::SourceStream::SourceStream(
+    int64_t offset,
+    int64_t length,
+    mojo::ScopedDataPipeConsumerHandle consumer_handle)
+    : offset_(offset),
+      length_(length),
+      bytes_written_(0),
+      finished_(false),
+      index_(0u),
+      consumer_handle_(std::move(consumer_handle)),
+      handle_watcher_(base::MakeUnique<mojo::SimpleWatcher>(
+          FROM_HERE,
+          mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC)) {}
 
 DownloadFileImpl::SourceStream::~SourceStream() = default;
 
@@ -92,10 +110,99 @@ void DownloadFileImpl::SourceStream::TruncateLengthWithWrittenDataBlock(
   }
 }
 
+void DownloadFileImpl::SourceStream::RegisterDataReadyCallback(
+    const mojo::SimpleWatcher::ReadyCallback& callback) {
+  if (handle_watcher_) {
+    handle_watcher_->Watch(consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                           callback);
+  } else if (stream_reader_) {
+    stream_reader_->RegisterCallback(base::Bind(callback, MOJO_RESULT_OK));
+  }
+}
+
+void DownloadFileImpl::SourceStream::ClearDataReadyCallback() {
+  if (handle_watcher_)
+    handle_watcher_->Cancel();
+  else if (stream_reader_)
+    stream_reader_->RegisterCallback(base::Closure());
+}
+
+DownloadInterruptReason DownloadFileImpl::SourceStream::GetStatus() {
+  if (stream_reader_)
+    return static_cast<DownloadInterruptReason>(stream_reader_->GetStatus());
+  // TODO(qinmin): figure out how to pass the complete status when data pipe is
+  // used.
+  return DOWNLOAD_INTERRUPT_REASON_NONE;
+}
+
+DownloadFileImpl::SourceStream::ReadResult DownloadFileImpl::SourceStream::Read(
+    scoped_refptr<net::IOBuffer>* data,
+    size_t* length) {
+  if (handle_watcher_) {
+    *length = kBytesToRead;
+    *data = new net::IOBuffer(kBytesToRead);
+    MojoResult mojo_result =
+        mojo::ReadDataRaw(consumer_handle_.get(), (*data)->data(),
+                          (uint32_t*)length, MOJO_READ_DATA_FLAG_NONE);
+    // TODO(qinmin): figure out when COMPLETE should be returned.
+    switch (mojo_result) {
+      case MOJO_RESULT_OK:
+        return HAS_DATA;
+      case MOJO_RESULT_SHOULD_WAIT:
+        return EMPTY;
+      case MOJO_RESULT_FAILED_PRECONDITION:
+        return COMPLETE;
+      case MOJO_RESULT_INVALID_ARGUMENT:
+      case MOJO_RESULT_OUT_OF_RANGE:
+      case MOJO_RESULT_BUSY:
+        NOTREACHED();
+        return COMPLETE;
+    }
+  } else if (stream_reader_) {
+    ByteStreamReader::StreamState state = stream_reader_->Read(data, length);
+    switch (state) {
+      case ByteStreamReader::STREAM_EMPTY:
+        return EMPTY;
+      case ByteStreamReader::STREAM_HAS_DATA:
+        return HAS_DATA;
+      case ByteStreamReader::STREAM_COMPLETE:
+        return COMPLETE;
+    }
+  }
+  return COMPLETE;
+}
+
 DownloadFileImpl::DownloadFileImpl(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<ByteStreamReader> stream_reader,
+    const net::NetLogWithSource& download_item_net_log,
+    base::WeakPtr<DownloadDestinationObserver> observer)
+    : DownloadFileImpl(std::move(save_info),
+                       default_download_directory,
+                       download_item_net_log,
+                       observer) {
+  source_streams_[save_info_->offset] = base::MakeUnique<SourceStream>(
+      save_info_->offset, save_info_->length, std::move(stream_reader));
+}
+
+DownloadFileImpl::DownloadFileImpl(
+    std::unique_ptr<DownloadSaveInfo> save_info,
+    const base::FilePath& default_download_directory,
+    mojo::ScopedDataPipeConsumerHandle consumer_handle,
+    const net::NetLogWithSource& download_item_net_log,
+    base::WeakPtr<DownloadDestinationObserver> observer)
+    : DownloadFileImpl(std::move(save_info),
+                       default_download_directory,
+                       download_item_net_log,
+                       observer) {
+  source_streams_[save_info_->offset] = base::MakeUnique<SourceStream>(
+      save_info_->offset, save_info_->length, std::move(consumer_handle));
+}
+
+DownloadFileImpl::DownloadFileImpl(
+    std::unique_ptr<DownloadSaveInfo> save_info,
+    const base::FilePath& default_download_directory,
     const net::NetLogWithSource& download_item_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer)
     : net_log_(
@@ -112,9 +219,6 @@ DownloadFileImpl::DownloadFileImpl(
       bytes_seen_without_parallel_streams_(0),
       observer_(observer),
       weak_factory_(this) {
-  source_streams_[save_info_->offset] = base::MakeUnique<SourceStream>(
-      save_info_->offset, save_info_->length, std::move(stream_reader));
-
   download_item_net_log.AddEvent(
       net::NetLogEventType::DOWNLOAD_FILE_CREATED,
       net_log_.source().ToEventParametersCallback());
@@ -184,7 +288,21 @@ void DownloadFileImpl::AddByteStream(
 
   source_streams_[offset] =
       base::MakeUnique<SourceStream>(offset, length, std::move(stream_reader));
+  OnSourceStreamAdded(source_streams_[offset].get());
+}
 
+void DownloadFileImpl::AddDataPipeConsumerHandle(
+    mojo::ScopedDataPipeConsumerHandle consumer_handle,
+    int64_t offset,
+    int64_t length) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  source_streams_[offset] = base::MakeUnique<SourceStream>(
+      offset, length, std::move(consumer_handle));
+  OnSourceStreamAdded(source_streams_[offset].get());
+}
+
+void DownloadFileImpl::OnSourceStreamAdded(SourceStream* source_stream) {
   // There are writers at different offsets now, create the received slices
   // vector if necessary.
   if (received_slices_.empty() && TotalBytesReceived() > 0) {
@@ -194,7 +312,7 @@ void DownloadFileImpl::AddByteStream(
   }
   // If the file is initialized, start to write data, or wait until file opened.
   if (file_.in_progress())
-    RegisterAndActivateStream(source_streams_[offset].get());
+    RegisterAndActivateStream(source_stream);
 }
 
 DownloadInterruptReason DownloadFileImpl::WriteDataToFile(int64_t offset,
@@ -338,11 +456,8 @@ void DownloadFileImpl::RenameWithRetryInternal(
     // Null out callback so that we don't do any more stream processing.
     // The request that writes to the pipe should be canceled after
     // the download being interrupted.
-    for (auto& stream : source_streams_) {
-      ByteStreamReader* stream_reader = stream.second->stream_reader();
-      if (stream_reader)
-        stream_reader->RegisterCallback(base::Closure());
-    }
+    for (auto& stream : source_streams_)
+      stream.second->ClearDataReadyCallback();
 
     new_path.clear();
   }
@@ -389,9 +504,11 @@ void DownloadFileImpl::WasPaused() {
   record_stream_bandwidth_ = false;
 }
 
-void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
+// TODO(qinmin): This only works with byte stream now, need to handle callback
+// from data pipe.
+void DownloadFileImpl::StreamActive(SourceStream* source_stream,
+                                    MojoResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(source_stream->stream_reader());
   base::TimeTicks start(base::TimeTicks::Now());
   base::TimeTicks now;
   scoped_refptr<net::IOBuffer> incoming_data;
@@ -400,58 +517,54 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
   size_t num_buffers = 0;
   size_t bytes_to_write = 0;
   bool should_terminate = false;
-  ByteStreamReader::StreamState state(ByteStreamReader::STREAM_EMPTY);
+  SourceStream::ReadResult state(SourceStream::EMPTY);
   DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_NONE;
   base::TimeDelta delta(
       base::TimeDelta::FromMilliseconds(kMaxTimeBlockingFileThreadMs));
 
   // Take care of any file local activity required.
   do {
-    state = source_stream->stream_reader()->Read(&incoming_data,
-                                                 &incoming_data_size);
+    state = source_stream->Read(&incoming_data, &incoming_data_size);
 
     switch (state) {
-      case ByteStreamReader::STREAM_EMPTY:
+      case SourceStream::EMPTY:
         should_terminate = (source_stream->length() == kNoBytesToWrite);
         break;
-      case ByteStreamReader::STREAM_HAS_DATA:
-        {
-          ++num_buffers;
-          base::TimeTicks write_start(base::TimeTicks::Now());
-          should_terminate = CalculateBytesToWrite(
-              source_stream, incoming_data_size, &bytes_to_write);
-          DCHECK_GE(incoming_data_size, bytes_to_write);
-          reason = WriteDataToFile(
-              source_stream->offset() + source_stream->bytes_written(),
-              incoming_data.get()->data(), bytes_to_write);
-          disk_writes_time_ += (base::TimeTicks::Now() - write_start);
-          bytes_seen_ += bytes_to_write;
-          total_incoming_data_size += bytes_to_write;
-          if (reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
-            int64_t prev_bytes_written = source_stream->bytes_written();
-            source_stream->OnWriteBytesToDisk(bytes_to_write);
-            if (!IsSparseFile())
-              break;
-            // If the write operation creates a new slice, add it to the
-            // |received_slices_| and update all the entries in
-            // |source_streams_|.
-            if (bytes_to_write > 0 && prev_bytes_written == 0) {
-              AddNewSlice(source_stream->offset(), bytes_to_write);
-            } else {
-              received_slices_[source_stream->index()].received_bytes +=
-                  bytes_to_write;
-            }
+      case SourceStream::HAS_DATA: {
+        ++num_buffers;
+        base::TimeTicks write_start(base::TimeTicks::Now());
+        should_terminate = CalculateBytesToWrite(
+            source_stream, incoming_data_size, &bytes_to_write);
+        DCHECK_GE(incoming_data_size, bytes_to_write);
+        reason = WriteDataToFile(
+            source_stream->offset() + source_stream->bytes_written(),
+            incoming_data.get()->data(), bytes_to_write);
+        disk_writes_time_ += (base::TimeTicks::Now() - write_start);
+        bytes_seen_ += bytes_to_write;
+        total_incoming_data_size += bytes_to_write;
+        if (reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
+          int64_t prev_bytes_written = source_stream->bytes_written();
+          source_stream->OnWriteBytesToDisk(bytes_to_write);
+          if (!IsSparseFile())
+            break;
+          // If the write operation creates a new slice, add it to the
+          // |received_slices_| and update all the entries in
+          // |source_streams_|.
+          if (bytes_to_write > 0 && prev_bytes_written == 0) {
+            AddNewSlice(source_stream->offset(), bytes_to_write);
+          } else {
+            received_slices_[source_stream->index()].received_bytes +=
+                bytes_to_write;
           }
         }
-        break;
-      case ByteStreamReader::STREAM_COMPLETE:
-        {
-        reason = static_cast<DownloadInterruptReason>(
-            source_stream->stream_reader()->GetStatus());
+      } break;
+      case SourceStream::COMPLETE: {
+        reason = source_stream->GetStatus();
         if (source_stream->length() == DownloadSaveInfo::kLengthFullContent &&
             !received_slices_.empty() &&
-            (source_stream->offset() == received_slices_.back().offset +
-                received_slices_.back().received_bytes) &&
+            (source_stream->offset() ==
+             received_slices_.back().offset +
+                 received_slices_.back().received_bytes) &&
             reason == DownloadInterruptReason::
                           DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE) {
           // We are probably reaching the end of the stream, don't treat this
@@ -466,16 +579,17 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
         break;
     }
     now = base::TimeTicks::Now();
-  } while (state == ByteStreamReader::STREAM_HAS_DATA &&
+  } while (state == SourceStream::HAS_DATA &&
            reason == DOWNLOAD_INTERRUPT_REASON_NONE && now - start <= delta &&
            !should_terminate);
 
   // If we're stopping to yield the thread, post a task so we come back.
-  if (state == ByteStreamReader::STREAM_HAS_DATA && now - start > delta &&
+  if (state == SourceStream::HAS_DATA && now - start > delta &&
       !should_terminate) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&DownloadFileImpl::StreamActive,
-                              weak_factory_.GetWeakPtr(), source_stream));
+        FROM_HERE,
+        base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr(),
+                   source_stream, MOJO_RESULT_OK));
   }
 
   if (total_incoming_data_size)
@@ -486,9 +600,9 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
   // Take care of communication with our observer.
   if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
     HandleStreamError(source_stream, reason);
-  } else if (state == ByteStreamReader::STREAM_COMPLETE || should_terminate) {
+  } else if (state == SourceStream::COMPLETE || should_terminate) {
     // Signal successful completion or termination of the current stream.
-    source_stream->stream_reader()->RegisterCallback(base::Closure());
+    source_stream->ClearDataReadyCallback();
     source_stream->set_finished(true);
     if (should_terminate)
       CancelRequest(source_stream->offset());
@@ -532,19 +646,16 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
 void DownloadFileImpl::RegisterAndActivateStream(SourceStream* source_stream) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  ByteStreamReader* stream_reader = source_stream->stream_reader();
-  if (stream_reader) {
-    stream_reader->RegisterCallback(base::Bind(&DownloadFileImpl::StreamActive,
-                                               weak_factory_.GetWeakPtr(),
-                                               source_stream));
-    // Truncate |source_stream|'s length if necessary.
-    for (const auto& received_slice : received_slices_) {
-      source_stream->TruncateLengthWithWrittenDataBlock(
-          received_slice.offset, received_slice.received_bytes);
-    }
-    num_active_streams_++;
-    StreamActive(source_stream);
+  source_stream->RegisterDataReadyCallback(
+      base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr(),
+                 source_stream));
+  // Truncate |source_stream|'s length if necessary.
+  for (const auto& received_slice : received_slices_) {
+    source_stream->TruncateLengthWithWrittenDataBlock(
+        received_slice.offset, received_slice.received_bytes);
   }
+  num_active_streams_++;
+  StreamActive(source_stream, MOJO_RESULT_OK);
 }
 
 int64_t DownloadFileImpl::TotalBytesReceived() const {
@@ -622,8 +733,7 @@ bool DownloadFileImpl::IsDownloadCompleted() {
 void DownloadFileImpl::HandleStreamError(SourceStream* source_stream,
                                          DownloadInterruptReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  source_stream->stream_reader()->RegisterCallback(base::Closure());
+  source_stream->ClearDataReadyCallback();
   source_stream->set_finished(true);
   num_active_streams_--;
 
@@ -665,7 +775,7 @@ void DownloadFileImpl::HandleStreamError(SourceStream* source_stream,
         if (stream.second->offset() < source_stream->offset() &&
             stream.second->offset() > preceding_neighbor->offset()) {
           DCHECK_EQ(stream.second->bytes_written(), 0);
-          stream.second->stream_reader()->RegisterCallback(base::Closure());
+          stream.second->ClearDataReadyCallback();
           stream.second->set_finished(true);
           CancelRequest(stream.second->offset());
           num_active_streams_--;

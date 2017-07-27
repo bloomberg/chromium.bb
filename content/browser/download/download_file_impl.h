@@ -27,6 +27,7 @@
 #include "content/browser/download/rate_estimator.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/log/net_log_with_source.h"
 
 namespace content {
@@ -35,17 +36,22 @@ class DownloadDestinationObserver;
 
 class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
  public:
-  // Takes ownership of the object pointed to by |request_handle|.
+  // Takes ownership of the object pointed to by |save_info|.
   // |net_log| will be used for logging the download file's events.
   // May be constructed on any thread.  All methods besides the constructor
   // (including destruction) must occur in the same sequence.
   //
   // Note that the DownloadFileImpl automatically reads from the passed in
-  // stream, and sends updates and status of those reads to the
-  // DownloadDestinationObserver.
+  // |stream_reader| or |consumer_handle|, and sends updates and status of
+  // those reads to the DownloadDestinationObserver.
   DownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
                    const base::FilePath& default_downloads_directory,
                    std::unique_ptr<ByteStreamReader> stream_reader,
+                   const net::NetLogWithSource& net_log,
+                   base::WeakPtr<DownloadDestinationObserver> observer);
+  DownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
+                   const base::FilePath& default_downloads_directory,
+                   mojo::ScopedDataPipeConsumerHandle consumer_handle,
                    const net::NetLogWithSource& net_log,
                    base::WeakPtr<DownloadDestinationObserver> observer);
 
@@ -56,11 +62,12 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
                   const CancelRequestCallback& cancel_request_callback,
                   const DownloadItem::ReceivedSlices& received_slices,
                   bool is_parallelizable) override;
-
   void AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
                      int64_t offset,
                      int64_t length) override;
-
+  void AddDataPipeConsumerHandle(mojo::ScopedDataPipeConsumerHandle handle,
+                                 int64_t offset,
+                                 int64_t length) override;
   void RenameAndUniquify(const base::FilePath& full_path,
                          const RenameCompletionCallback& callback) override;
   void RenameAndAnnotate(const base::FilePath& full_path,
@@ -90,11 +97,17 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
  private:
   friend class DownloadFileTest;
 
-  // Wrapper of a ByteStreamReader, and the meta data needed to write to a
-  // slice of the target file.
+  DownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
+                   const base::FilePath& default_downloads_directory,
+                   const net::NetLogWithSource& net_log,
+                   base::WeakPtr<DownloadDestinationObserver> observer);
+
+  // Wrapper of a ByteStreamReader or ScopedDataPipeConsumerHandle, and the meta
+  // data needed to write to a slice of the target file.
   //
-  // Does not require the stream reader ready when constructor is called.
-  // |stream_reader_| can be set later when the network response is handled.
+  // Does not require the stream reader or the consumer handle to be ready when
+  // constructor is called. |stream_reader_| can be set later when the network
+  // response is handled.
   //
   // Multiple SourceStreams can concurrently write to the same file sink.
   class CONTENT_EXPORT SourceStream {
@@ -102,6 +115,9 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     SourceStream(int64_t offset,
                  int64_t length,
                  std::unique_ptr<ByteStreamReader> stream_reader);
+    SourceStream(int64_t offset,
+                 int64_t length,
+                 mojo::ScopedDataPipeConsumerHandle consumer_handle);
     ~SourceStream();
 
     // Called after successfully writing a buffer to disk.
@@ -112,7 +128,30 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     void TruncateLengthWithWrittenDataBlock(int64_t offset,
                                             int64_t bytes_written);
 
-    ByteStreamReader* stream_reader() const { return stream_reader_.get(); }
+    // Registers the callback that will be called when data is ready.
+    void RegisterDataReadyCallback(
+        const mojo::SimpleWatcher::ReadyCallback& callback);
+    // Clears the callback that is registed when data is ready.
+    void ClearDataReadyCallback();
+
+    // Gets the status of the input stream when the stream completes.
+    // TODO(qinmin): for data pipe, it currently doesn't support sending an
+    // abort status at the end. The best way to do this is to add a separate
+    // mojo interface for control messages when creating this object. See
+    // http://crbug.com/748240. An alternative strategy is to let the
+    // DownloadManager pass the status code to DownloadItem or DownloadFile.
+    // However, a DownloadFile can have multiple SourceStreams, so we have to
+    // maintain a map between data pipe and DownloadItem/DownloadFile somewhere.
+    DownloadInterruptReason GetStatus();
+
+    // Results for reading the SourceStream.
+    enum ReadResult {
+      EMPTY = 0,
+      HAS_DATA,
+      COMPLETE,
+    };
+    ReadResult Read(scoped_refptr<net::IOBuffer>* data, size_t* length);
+
     int64_t offset() const { return offset_; }
     int64_t length() const { return length_; }
     int64_t bytes_written() const { return bytes_written_; }
@@ -143,6 +182,10 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
     // The stream through which data comes.
     std::unique_ptr<ByteStreamReader> stream_reader_;
+
+    // Objects for reading from a mojo data pipe.
+    mojo::ScopedDataPipeConsumerHandle consumer_handle_;
+    std::unique_ptr<mojo::SimpleWatcher> handle_watcher_;
 
     DISALLOW_COPY_AND_ASSIGN(SourceStream);
   };
@@ -198,9 +241,12 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
                              size_t bytes_available_to_write,
                              size_t* bytes_to_write);
 
-  // Called when there's some activity on the byte stream that needs to be
+  // Called when a new SourceStream object is added.
+  void OnSourceStreamAdded(SourceStream* source_stream);
+
+  // Called when there's some activity on the input data that needs to be
   // handled.
-  void StreamActive(SourceStream* source_stream);
+  void StreamActive(SourceStream* source_stream, MojoResult result);
 
   // Register callback and start to read data from the stream.
   void RegisterAndActivateStream(SourceStream* source_stream);
