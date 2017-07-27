@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/surfaces/stub_surface_reference_factory.h"
+#include "components/viz/common/surfaces/stub_surface_reference_factory.h"
 
 #include "base/callback.h"
 

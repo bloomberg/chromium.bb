@@ -13,9 +13,9 @@
 
 #include "base/logging.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/stub_surface_reference_factory.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/surfaces/direct_surface_reference_factory.h"
-#include "components/viz/service/surfaces/stub_surface_reference_factory.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_client.h"
 
@@ -112,6 +112,7 @@ void SurfaceManager::SurfaceWillDraw(const SurfaceId& surface_id) {
 
 void SurfaceManager::RequireSequence(const SurfaceId& surface_id,
                                      const SurfaceSequence& sequence) {
+  DCHECK_EQ(lifetime_type_, LifetimeType::SEQUENCES);
   auto* surface = GetSurfaceForId(surface_id);
   if (!surface) {
     DLOG(ERROR) << "Attempting to require callback on nonexistent surface";
