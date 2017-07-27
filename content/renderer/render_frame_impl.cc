@@ -5175,9 +5175,11 @@ void RenderFrameImpl::OnCommitNavigation(
       },
       weak_factory_.GetWeakPtr());
 
-  // Chrome doesn't use interface versioning.
-  url_loader_factory_.Bind(mojom::URLLoaderFactoryPtrInfo(
-      mojo::ScopedMessagePipeHandle(commit_data.url_loader_factory), 0u));
+  if (commit_data.url_loader_factory.is_valid()) {
+    // Chrome doesn't use interface versioning.
+    url_loader_factory_.Bind(mojom::URLLoaderFactoryPtrInfo(
+        mojo::ScopedMessagePipeHandle(commit_data.url_loader_factory), 0u));
+  }
 
   // If the request was initiated in the context of a user gesture then make
   // sure that the navigation also executes in the context of a user gesture.
