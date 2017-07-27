@@ -663,6 +663,7 @@
     {
       name: "backdrop-filter",
       api_class: "CSSPropertyAPIFilter",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertFilterOperations",
       interpolable: true,
       runtime_flag: "CSSBackdropFilter",
@@ -1257,6 +1258,7 @@
     {
       name: "filter",
       api_class: "CSSPropertyAPIFilter",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertFilterOperations",
       interpolable: true,
       field_template: "storage_only",
