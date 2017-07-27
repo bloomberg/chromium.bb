@@ -34,7 +34,6 @@ class WebState;
 @protocol AppRatingPrompt;
 @protocol LogoVendor;
 @protocol TextFieldStyling;
-@protocol NativeAppWhitelistManager;
 @class Tab;
 @class TabModel;
 @class UITextField;
