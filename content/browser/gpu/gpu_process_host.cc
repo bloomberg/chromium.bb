@@ -539,9 +539,8 @@ GpuProcessHost::~GpuProcessHost() {
         status == base::TERMINATION_STATUS_PROCESS_CRASHED) {
       // Windows always returns PROCESS_CRASHED on abnormal termination, as it
       // doesn't have a way to distinguish the two.
-      UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessExitCode",
-                                exit_code,
-                                RESULT_CODE_LAST_CODE);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.GPUProcessExitCode",
+                                  std::max(0, std::min(100, exit_code)));
     }
 
     switch (status) {
@@ -1126,9 +1125,10 @@ void GpuProcessHost::RecordProcessCrash() {
   // options).
   if (process_launched_ && kind_ == GPU_PROCESS_KIND_SANDBOXED) {
     if (swiftshader_rendering_) {
-      UMA_HISTOGRAM_ENUMERATION("GPU.SwiftShaderLifetimeEvents",
-                                DIED_FIRST_TIME + swiftshader_crash_count_,
-                                GPU_PROCESS_LIFETIME_EVENT_MAX);
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          "GPU.SwiftShaderLifetimeEvents",
+          DIED_FIRST_TIME + swiftshader_crash_count_,
+          static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
 
       if (++swiftshader_crash_count_ >= kGpuMaxCrashCount &&
           !disable_crash_limit) {
@@ -1137,10 +1137,11 @@ void GpuProcessHost::RecordProcessCrash() {
       }
     } else {
       ++gpu_crash_count_;
-      UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
-                                std::min(DIED_FIRST_TIME + gpu_crash_count_,
-                                         GPU_PROCESS_LIFETIME_EVENT_MAX - 1),
-                                GPU_PROCESS_LIFETIME_EVENT_MAX);
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          "GPU.GPUProcessLifetimeEvents",
+          std::min(DIED_FIRST_TIME + gpu_crash_count_,
+                   GPU_PROCESS_LIFETIME_EVENT_MAX - 1),
+          static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
 
       // Allow about 1 GPU crash per hour to be removed from the crash count,
       // so very occasional crashes won't eventually add up and prevent the

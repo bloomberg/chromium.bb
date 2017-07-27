@@ -131,17 +131,19 @@ void ModelTypeRegistry::ConnectNonBlockingType(
     // TODO(crbug.com/658002): Store a pref before attempting migration
     // indicating that it was attempted so we can avoid failure loops.
     if (uss_migrator_.Run(type, user_share_, worker_ptr)) {
+      // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
       UMA_HISTOGRAM_ENUMERATION("Sync.USSMigrationSuccess",
                                 ModelTypeToHistogramInt(type),
-                                MODEL_TYPE_COUNT);
+                                static_cast<int>(MODEL_TYPE_COUNT));
       // If we succesfully migrated, purge the directory of data for the type.
       // Purging removes the directory's local copy of the data only.
       directory()->PurgeEntriesWithTypeIn(ModelTypeSet(type), ModelTypeSet(),
                                           ModelTypeSet());
     } else {
+      // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
       UMA_HISTOGRAM_ENUMERATION("Sync.USSMigrationFailure",
                                 ModelTypeToHistogramInt(type),
-                                MODEL_TYPE_COUNT);
+                                static_cast<int>(MODEL_TYPE_COUNT));
     }
   }
 

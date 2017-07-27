@@ -203,8 +203,10 @@ void JourneyLogger::RecordPaymentMethodMetric() {
 
 void JourneyLogger::RecordRequestedInformationMetrics() {
   DCHECK(requested_information_ != REQUESTED_INFORMATION_MAX);
-  UMA_HISTOGRAM_ENUMERATION("PaymentRequest.RequestedInformation",
-                            requested_information_, REQUESTED_INFORMATION_MAX);
+  UMA_HISTOGRAM_ENUMERATION(
+      "PaymentRequest.RequestedInformation",
+      static_cast<RequestedInformation>(requested_information_),
+      REQUESTED_INFORMATION_MAX);
 }
 
 void JourneyLogger::RecordSectionSpecificStats(
@@ -305,7 +307,8 @@ void JourneyLogger::RecordCanMakePaymentEffectOnShow() {
     effect_on_trigger |= CMP_EFFECT_ON_SHOW_COULD_MAKE_PAYMENT;
 
   UMA_HISTOGRAM_ENUMERATION("PaymentRequest.CanMakePayment.Used.EffectOnShow",
-                            effect_on_trigger, CMP_EFFECT_ON_SHOW_MAX);
+                            static_cast<CmpEffectOnShow>(effect_on_trigger),
+                            CMP_EFFECT_ON_SHOW_MAX);
 }
 
 void JourneyLogger::RecordCanMakePaymentEffectOnCompletion(

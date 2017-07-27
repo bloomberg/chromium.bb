@@ -134,7 +134,8 @@ void LogoTracker::SetClockForTests(std::unique_ptr<base::Clock> clock) {
 
 void LogoTracker::ReturnToIdle(int outcome) {
   if (outcome != kDownloadOutcomeNotTracked) {
-    UMA_HISTOGRAM_ENUMERATION("NewTabPage.LogoDownloadOutcome", outcome,
+    UMA_HISTOGRAM_ENUMERATION("NewTabPage.LogoDownloadOutcome",
+                              static_cast<LogoDownloadOutcome>(outcome),
                               DOWNLOAD_OUTCOME_COUNT);
   }
   // Cancel the current asynchronous operation, if any.

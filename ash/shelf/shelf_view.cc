@@ -685,10 +685,11 @@ void ShelfView::PointerPressedOnButton(views::View* view,
   drag_view_ = static_cast<ShelfButton*>(view);
   drag_origin_ = gfx::Point(event.x(), event.y());
   UMA_HISTOGRAM_ENUMERATION("Ash.ShelfAlignmentUsage",
-                            shelf_->SelectValueForShelfAlignment(
-                                SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
-                                SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT,
-                                SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT),
+                            static_cast<ShelfAlignmentUmaEnumValue>(
+                                shelf_->SelectValueForShelfAlignment(
+                                    SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
+                                    SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT,
+                                    SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT)),
                             SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT);
 }
 

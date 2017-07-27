@@ -300,9 +300,9 @@ void DeviceManagementRequestJobImpl::HandleResponse(
     LOG(WARNING) << "DMServer sent an error response: " << response_code;
   } else {
     // Success with retries_count_ retries.
-    UMA_HISTOGRAM_ENUMERATION("Enterprise.DMServerRequestSuccess",
-                              retries_count_,
-                              DMServerRequestSuccess::REQUEST_MAX);
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "Enterprise.DMServerRequestSuccess", retries_count_,
+        static_cast<int>(DMServerRequestSuccess::REQUEST_MAX));
   }
 
   switch (response_code) {

@@ -56,20 +56,21 @@ static const int kMaxBookmarks = 5;
 // We need this to be a macro, as the histogram macros cache their pointers
 // after the first call, so when we change the uma name we check fail if we're
 // just a method.
-#define RECORD_UMA_FOR_IMPORTANT_REASON(uma_name, uma_count_name,    \
-                                        reason_bitfield)             \
-  do {                                                               \
-    int count = 0;                                                   \
-    int32_t bitfield = (reason_bitfield);                            \
-    for (int i = 0; i < ImportantReason::REASON_BOUNDARY; i++) {     \
-      if ((bitfield >> i) & 1) {                                     \
-        count++;                                                     \
-        UMA_HISTOGRAM_ENUMERATION((uma_name), i,                     \
-                                  ImportantReason::REASON_BOUNDARY); \
-      }                                                              \
-    }                                                                \
-    UMA_HISTOGRAM_ENUMERATION((uma_count_name), count,               \
-                              ImportantReason::REASON_BOUNDARY);     \
+#define RECORD_UMA_FOR_IMPORTANT_REASON(uma_name, uma_count_name,              \
+                                        reason_bitfield)                       \
+  do {                                                                         \
+    int count = 0;                                                             \
+    int32_t bitfield = (reason_bitfield);                                      \
+    for (int i = 0; i < ImportantReason::REASON_BOUNDARY; i++) {               \
+      if ((bitfield >> i) & 1) {                                               \
+        count++;                                                               \
+        UMA_HISTOGRAM_ENUMERATION((uma_name), static_cast<ImportantReason>(i), \
+                                  ImportantReason::REASON_BOUNDARY);           \
+      }                                                                        \
+    }                                                                          \
+    UMA_HISTOGRAM_EXACT_LINEAR(                                                \
+        (uma_count_name), count,                                               \
+        static_cast<int>(ImportantReason::REASON_BOUNDARY));                   \
   } while (0)
 
 // Do not change the values here, as they are used for UMA histograms and

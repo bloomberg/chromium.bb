@@ -382,9 +382,10 @@ void ModelAssociationManager::ModelAssociationDone(State new_state) {
     DataTypeController* dtc = (*it).second.get();
     if (associating_types_.Has(dtc->type()) &&
         dtc->state() != DataTypeController::NOT_RUNNING) {
+      // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
       UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureFailed",
                                 ModelTypeToHistogramInt(dtc->type()),
-                                MODEL_TYPE_COUNT);
+                                static_cast<int>(MODEL_TYPE_COUNT));
       StopDatatype(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
                              "Association timed out.", dtc->type()),
                    dtc);

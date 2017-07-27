@@ -1371,8 +1371,8 @@ ThreadActivityTracker* GlobalActivityTracker::CreateTrackerForCurrentThread() {
   this_thread_tracker_.Set(tracker);
   int old_count = thread_tracker_count_.fetch_add(1, std::memory_order_relaxed);
 
-  UMA_HISTOGRAM_ENUMERATION("ActivityTracker.ThreadTrackers.Count",
-                            old_count + 1, kMaxThreadCount);
+  UMA_HISTOGRAM_EXACT_LINEAR("ActivityTracker.ThreadTrackers.Count",
+                             old_count + 1, static_cast<int>(kMaxThreadCount));
   return tracker;
 }
 
