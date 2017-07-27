@@ -164,14 +164,14 @@ VisibleSelectionTemplate<Strategy>::ToNormalizedEphemeralRange() const {
   // in the course of running edit commands which modify the DOM.
   // Failing to ensure this can result in equivalentXXXPosition calls returning
   // incorrect results.
-  DCHECK(!NeedsLayoutTreeUpdate(start_)) << *this;
+  DCHECK(!NeedsLayoutTreeUpdate(Start())) << *this;
 
   if (IsCaret()) {
     // If the selection is a caret, move the range start upstream. This
     // helps us match the conventions of text editors tested, which make
     // style determinations based on the character before the caret, if any.
     const PositionTemplate<Strategy> start =
-        MostBackwardCaretPosition(start_).ParentAnchoredEquivalent();
+        MostBackwardCaretPosition(Start()).ParentAnchoredEquivalent();
     return EphemeralRangeTemplate<Strategy>(start, start);
   }
   // If the selection is a range, select the minimum range that encompasses
@@ -186,7 +186,7 @@ VisibleSelectionTemplate<Strategy>::ToNormalizedEphemeralRange() const {
   //                       ^ selected
   //
   DCHECK(IsRange());
-  return NormalizeRange(EphemeralRangeTemplate<Strategy>(start_, end_));
+  return NormalizeRange(EphemeralRangeTemplate<Strategy>(Start(), End()));
 }
 
 template <typename Strategy>
@@ -196,8 +196,8 @@ VisibleSelectionTemplate<Strategy>::AppendTrailingWhitespace() const {
     return *this;
   if (!IsRange())
     return *this;
-  const PositionTemplate<Strategy>& new_end = SkipWhitespace(end_);
-  if (end_ == new_end)
+  const PositionTemplate<Strategy>& new_end = SkipWhitespace(End());
+  if (End() == new_end)
     return *this;
   VisibleSelectionTemplate<Strategy> result = *this;
   result.end_ = new_end;
