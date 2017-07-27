@@ -647,6 +647,13 @@ split_static_library("ui") {
     ]
   }
 
+  if (enable_oop_heap_profiling) {
+    sources += [
+      "webui/memory_internals_ui.cc",
+      "webui/memory_internals_ui.h",
+    ]
+  }
+
   if (is_chromeos && use_cras) {
     defines += [ "USE_CRAS" ]
   }
@@ -2130,12 +2137,6 @@ split_static_library("ui") {
         "webui/signin/signin_dice_internals_handler.h",
         "webui/signin/signin_dice_internals_ui.cc",
         "webui/signin/signin_dice_internals_ui.h",
-      ]
-    }
-    if (enable_oop_heap_profiling) {
-      sources += [
-        "webui/memory_internals_ui.cc",
-        "webui/memory_internals_ui.h",
       ]
     }
     if (is_mac && !mac_views_browser) {
