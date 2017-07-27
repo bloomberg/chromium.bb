@@ -5,8 +5,12 @@
 package org.chromium.chrome.browser.browseractions;
 
 import android.app.PendingIntent;
+import android.app.PendingIntent.CanceledException;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.customtabs.browseractions.BrowserActionItem;
 import android.support.customtabs.browseractions.BrowserActionsIntent;
+import android.support.customtabs.browseractions.BrowserActionsIntent.BrowserActionsItemId;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.view.ContextMenu;
@@ -16,6 +20,7 @@ import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnCreateContextMenuListener;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem;
 import org.chromium.chrome.browser.contextmenu.ContextMenuItem;
@@ -36,6 +41,7 @@ import java.util.List;
 public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListener,
                                                         OnCloseContextMenuListener,
                                                         OnAttachStateChangeListener {
+    private static final String TAG = "cr_BrowserActions";
     private static final boolean IS_NEW_UI_ENABLED = true;
 
     private static final List<Integer> CUSTOM_BROWSER_ACTIONS_ID_GROUP =
@@ -56,11 +62,13 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
     private final Runnable mOnMenuShown;
     private final Runnable mOnMenuClosed;
     private final Callback<Boolean> mOnShareClickedRunnable;
+    private final PendingIntent mOnBrowserActionSelectedCallback;
 
     private final List<Pair<Integer, List<ContextMenuItem>>> mItems;
 
     public BrowserActionsContextMenuHelper(BrowserActionActivity activity, ContextMenuParams params,
-            List<BrowserActionItem> customItems, String sourcePackageName) {
+            List<BrowserActionItem> customItems, String sourcePackageName,
+            PendingIntent onBrowserActionSelectedCallback) {
         mActivity = activity;
         mCurrentContextMenuParams = params;
         mOnMenuShown = new Runnable() {
@@ -96,6 +104,7 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
                         ChromeContextMenuItem.BROWSER_ACTION_SAVE_LINK_AS,
                         ChromeContextMenuItem.BROWSER_ACTIONS_COPY_ADDRESS, shareItem);
         mDelegate = new BrowserActionsContextMenuItemDelegate(mActivity, sourcePackageName);
+        mOnBrowserActionSelectedCallback = onBrowserActionSelectedCallback;
 
         mItems = buildContextMenuItems(customItems);
     }
@@ -132,18 +141,34 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
     private boolean onItemSelected(int itemId) {
         if (itemId == R.id.browser_actions_open_in_background) {
             mDelegate.onOpenInBackground(mCurrentContextMenuParams.getLinkUrl());
+            notifyBrowserActionSelected(BrowserActionsIntent.ITEM_OPEN_IN_NEW_TAB);
         } else if (itemId == R.id.browser_actions_open_in_incognito_tab) {
             mDelegate.onOpenInIncognitoTab(mCurrentContextMenuParams.getLinkUrl());
+            notifyBrowserActionSelected(BrowserActionsIntent.ITEM_OPEN_IN_INCOGNITO);
         } else if (itemId == R.id.browser_actions_save_link_as) {
             mDelegate.startDownload(mCurrentContextMenuParams.getLinkUrl());
+            notifyBrowserActionSelected(BrowserActionsIntent.ITEM_DOWNLOAD);
         } else if (itemId == R.id.browser_actions_copy_address) {
             mDelegate.onSaveToClipboard(mCurrentContextMenuParams.getLinkUrl());
+            notifyBrowserActionSelected(BrowserActionsIntent.ITEM_COPY);
         } else if (itemId == R.id.browser_actions_share) {
             mDelegate.share(false, mCurrentContextMenuParams.getLinkUrl());
+            notifyBrowserActionSelected(BrowserActionsIntent.ITEM_SHARE);
         } else if (mCustomItemActionMap.indexOfKey(itemId) >= 0) {
             mDelegate.onCustomItemSelected(mCustomItemActionMap.get(itemId));
         }
         return true;
+    }
+
+    private void notifyBrowserActionSelected(@BrowserActionsItemId int menuId) {
+        if (mOnBrowserActionSelectedCallback == null) return;
+        Intent additionalData = new Intent();
+        additionalData.setData(Uri.parse(String.valueOf(menuId)));
+        try {
+            mOnBrowserActionSelectedCallback.send(mActivity, 0, additionalData, null, null);
+        } catch (CanceledException e) {
+            Log.e(TAG, "Browser Actions failed to send default items' pending intent.");
+        }
     }
 
     /**
