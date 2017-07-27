@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base_switches.h"
 #include "base/build_time.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
@@ -18,9 +19,12 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/field_trial_config/field_trial_util.h"
+#include "components/variations/platform_field_trials.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/proto/variations_seed.pb.h"
 #include "components/variations/service/variations_service_client.h"
+#include "components/variations/variations_http_header_provider.h"
 #include "components/variations/variations_seed_processor.h"
 #include "components/variations/variations_switches.h"
 #include "ui/base/device_form_factor.h"
@@ -323,6 +327,77 @@ void VariationsFieldTrialCreator::RecordLastFetchTime() {
 
 bool VariationsFieldTrialCreator::LoadSeed(VariationsSeed* seed) {
   return seed_store_.LoadSeed(seed);
+}
+
+bool VariationsFieldTrialCreator::SetupFieldTrials(
+    const char* kEnableGpuBenchmarking,
+    const char* kEnableFeatures,
+    const char* kDisableFeatures,
+    const std::set<std::string>& unforceable_field_trials,
+    std::unique_ptr<const base::FieldTrial::EntropyProvider>
+        low_entropy_provider,
+    std::unique_ptr<base::FeatureList> feature_list,
+    std::vector<std::string>* variation_ids,
+    PlatformFieldTrials* platform_field_trials) {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableBenchmarking) ||
+      command_line->HasSwitch(kEnableGpuBenchmarking)) {
+    base::FieldTrial::EnableBenchmarking();
+  }
+
+  if (command_line->HasSwitch(switches::kForceFieldTrialParams)) {
+    bool result = AssociateParamsFromString(
+        command_line->GetSwitchValueASCII(switches::kForceFieldTrialParams));
+    CHECK(result) << "Invalid --" << switches::kForceFieldTrialParams
+                  << " list specified.";
+  }
+
+  // Ensure any field trials specified on the command line are initialized.
+  if (command_line->HasSwitch(::switches::kForceFieldTrials)) {
+    // Create field trials without activating them, so that this behaves in a
+    // consistent manner with field trials created from the server.
+    bool result = base::FieldTrialList::CreateTrialsFromString(
+        command_line->GetSwitchValueASCII(::switches::kForceFieldTrials),
+        unforceable_field_trials);
+    CHECK(result) << "Invalid --" << ::switches::kForceFieldTrials
+                  << " list specified.";
+  }
+
+  VariationsHttpHeaderProvider* http_header_provider =
+      VariationsHttpHeaderProvider::GetInstance();
+  // Force the variation ids selected in chrome://flags and/or specified using
+  // the command-line flag.
+  bool result = http_header_provider->ForceVariationIds(
+      command_line->GetSwitchValueASCII(switches::kForceVariationIds),
+      variation_ids);
+  CHECK(result) << "Invalid list of variation ids specified (either in --"
+                << switches::kForceVariationIds << " or in chrome://flags)";
+
+  feature_list->InitializeFromCommandLine(
+      command_line->GetSwitchValueASCII(kEnableFeatures),
+      command_line->GetSwitchValueASCII(kDisableFeatures));
+
+#if defined(FIELDTRIAL_TESTING_ENABLED)
+  if (!command_line->HasSwitch(switches::kDisableFieldTrialTestingConfig) &&
+      !command_line->HasSwitch(::switches::kForceFieldTrials) &&
+      !command_line->HasSwitch(switches::kVariationsServerURL)) {
+    AssociateDefaultFieldTrialConfig(feature_list.get());
+  }
+#endif  // defined(FIELDTRIAL_TESTING_ENABLED)
+
+  bool has_seed =
+      CreateTrialsFromSeed(std::move(low_entropy_provider), feature_list.get());
+
+  platform_field_trials->SetupFeatureControllingFieldTrials(has_seed,
+                                                            feature_list.get());
+
+  base::FeatureList::SetInstance(std::move(feature_list));
+
+  // This must be called after |local_state_| is initialized.
+  platform_field_trials->SetupFieldTrials();
+
+  return has_seed;
 }
 
 }  // namespace variations

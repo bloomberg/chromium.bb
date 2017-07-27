@@ -21,6 +21,7 @@ static_library("service") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/variations",
+    "//components/variations/field_trial_config",
     "//components/variations/proto",
     "//components/version_info",
     "//components/web_resource",

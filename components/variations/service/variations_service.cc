@@ -720,6 +720,20 @@ std::string VariationsService::GetLatestCountry() const {
   return field_trial_creator_.GetLatestCountry();
 }
 
+bool VariationsService::SetupFieldTrials(
+    const char* kEnableGpuBenchmarking,
+    const char* kEnableFeatures,
+    const char* kDisableFeatures,
+    const std::set<std::string>& unforceable_field_trials,
+    std::unique_ptr<base::FeatureList> feature_list,
+    std::vector<std::string>* variation_ids,
+    variations::PlatformFieldTrials* platform_field_trials) {
+  return field_trial_creator_.SetupFieldTrials(
+      kEnableGpuBenchmarking, kEnableFeatures, kDisableFeatures,
+      unforceable_field_trials, CreateLowEntropyProvider(),
+      std::move(feature_list), variation_ids, platform_field_trials);
+}
+
 bool VariationsService::CreateTrialsFromSeed(base::FeatureList* feature_list) {
   return field_trial_creator_.CreateTrialsFromSeed(CreateLowEntropyProvider(),
                                                    feature_list);

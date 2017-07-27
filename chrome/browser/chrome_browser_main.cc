@@ -664,46 +664,11 @@ ChromeBrowserMainParts::~ChromeBrowserMainParts() {
 
 // This will be called after the command-line has been mutated by about:flags
 void ChromeBrowserMainParts::SetupFieldTrials() {
-  TRACE_EVENT0("startup", "ChromeBrowserMainParts::SetupFieldTrials");
-
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization.
   DCHECK(!field_trial_list_);
-  field_trial_list_.reset(
-      new base::FieldTrialList(browser_process_->GetMetricsServicesManager()
-                                   ->CreateEntropyProvider()));
-
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(variations::switches::kEnableBenchmarking) ||
-      command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
-    base::FieldTrial::EnableBenchmarking();
-  }
-
-  if (command_line->HasSwitch(variations::switches::kForceFieldTrialParams)) {
-    bool result = variations::AssociateParamsFromString(
-        command_line->GetSwitchValueASCII(
-            variations::switches::kForceFieldTrialParams));
-    CHECK(result) << "Invalid --"
-                  << variations::switches::kForceFieldTrialParams
-                  << " list specified.";
-  }
-
-  // Ensure any field trials specified on the command line are initialized.
-  if (command_line->HasSwitch(switches::kForceFieldTrials)) {
-    std::set<std::string> unforceable_field_trials;
-#if defined(OFFICIAL_BUILD)
-    unforceable_field_trials.insert("SettingsEnforcement");
-#endif  // defined(OFFICIAL_BUILD)
-
-    // Create field trials without activating them, so that this behaves in a
-    // consistent manner with field trials created from the server.
-    bool result = base::FieldTrialList::CreateTrialsFromString(
-        command_line->GetSwitchValueASCII(switches::kForceFieldTrials),
-        unforceable_field_trials);
-    CHECK(result) << "Invalid --" << switches::kForceFieldTrials
-                  << " list specified.";
-  }
+  field_trial_list_.reset(new base::FieldTrialList(
+      browser_process_->GetMetricsServicesManager()->CreateEntropyProvider()));
 
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
 
@@ -714,45 +679,20 @@ void ChromeBrowserMainParts::SetupFieldTrials() {
       about_flags::RegisterAllFeatureVariationParameters(
           &flags_storage, feature_list.get());
 
-  variations::VariationsHttpHeaderProvider* http_header_provider =
-      variations::VariationsHttpHeaderProvider::GetInstance();
-  // Force the variation ids selected in chrome://flags and/or specified using
-  // the command-line flag.
-  bool result = http_header_provider->ForceVariationIds(
-      command_line->GetSwitchValueASCII(
-          variations::switches::kForceVariationIds),
-      &variation_ids);
-  CHECK(result) << "Invalid list of variation ids specified (either in --"
-                << variations::switches::kForceVariationIds
-                << " or in chrome://flags)";
-
-  feature_list->InitializeFromCommandLine(
-      command_line->GetSwitchValueASCII(switches::kEnableFeatures),
-      command_line->GetSwitchValueASCII(switches::kDisableFeatures));
-
-#if defined(FIELDTRIAL_TESTING_ENABLED)
-  if (!command_line->HasSwitch(
-          variations::switches::kDisableFieldTrialTestingConfig) &&
-      !command_line->HasSwitch(switches::kForceFieldTrials) &&
-      !command_line->HasSwitch(variations::switches::kVariationsServerURL)) {
-    variations::AssociateDefaultFieldTrialConfig(feature_list.get());
-  }
-#endif  // defined(FIELDTRIAL_TESTING_ENABLED)
+  std::set<std::string> unforceable_field_trials;
+#if defined(OFFICIAL_BUILD)
+  unforceable_field_trials.insert("SettingsEnforcement");
+#endif  // defined(OFFICIAL_BUILD)
 
   variations::VariationsService* variations_service =
       browser_process_->variations_service();
+  variations_service->SetupFieldTrials(
+      cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
+      switches::kDisableFeatures, unforceable_field_trials,
+      std::move(feature_list), &variation_ids, &browser_field_trials_);
 
-  bool has_seed = variations_service &&
-                  variations_service->CreateTrialsFromSeed(feature_list.get());
-
-  browser_field_trials_.SetupFeatureControllingFieldTrials(has_seed,
-                                                           feature_list.get());
-
-  base::FeatureList::SetInstance(std::move(feature_list));
-
-  // This must be called after |local_state_| is initialized.
-  browser_field_trials_.SetupFieldTrials();
-
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   // Enable Navigation Tracing only if a trace upload url is specified.
   if (command_line->HasSwitch(switches::kEnableNavigationTracing) &&
       command_line->HasSwitch(switches::kTraceUploadURL)) {
