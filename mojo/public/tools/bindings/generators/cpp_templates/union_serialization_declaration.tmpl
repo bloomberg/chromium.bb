@@ -8,63 +8,74 @@ struct Serializer<{{data_view}}, MaybeConstUserType> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Traits = UnionTraits<{{data_view}}, UserType>;
 
-  static size_t PrepareToSerialize(MaybeConstUserType& input,
-                                   bool inlined,
-                                   SerializationContext* context) {
-    size_t size = inlined ? 0 : sizeof({{data_type}});
+  static void PrepareToSerialize(MaybeConstUserType& input,
+                                 bool inlined,
+                                 SerializationContext* context) {
+{# NOTE: Only types which may (recursively) contain handles or interface types
+   need to do any preparation for serialization. We don't bother in other cases,
+   and nullability testing and context setup can instead be done directly in
+   Serialize below. #}
+{%- if union|contains_handles_or_interfaces %}
     const bool is_null = CallIsNullIfExists<Traits>(input);
     context->PushNextNullState(is_null);
     if (is_null)
-      return size;
+      return;
 
-    void* custom_context = CustomContextHelper<Traits>::SetUp(input, context);
+    void* custom_context = CustomContextHelper<Traits>::SetUpAndPush(input,
+                                                                     context);
     ALLOW_UNUSED_LOCAL(custom_context);
 
     switch (CallWithContext(Traits::GetTag, input, custom_context)) {
-{%- for field in union.fields %}
-{%-   set name = field.name %}
+{%-   for field in union.fields %}
+{%-     set name = field.name %}
       case {{data_view}}::Tag::{{name|upper}}: {
-{%-   if field.kind|is_object_kind or
-          field.kind|is_any_handle_or_interface_kind %}
-{%-     set kind = field.kind %}
-{%-     set serializer_type = kind|unmapped_type_for_serializer %}
+{%-     if field.kind|contains_handles_or_interfaces %}
+{%-       set kind = field.kind %}
+{%-       set serializer_type = kind|unmapped_type_for_serializer %}
         decltype(CallWithContext(Traits::{{name}}, input, custom_context))
             in_{{name}} = CallWithContext(Traits::{{name}}, input,
                                           custom_context);
-{%-     if kind|is_union_kind %}
-        size += mojo::internal::PrepareToSerialize<{{serializer_type}}>(
+{%-       if kind|is_union_kind %}
+        mojo::internal::PrepareToSerialize<{{serializer_type}}>(
             in_{{name}}, false, context);
-{%-     else %}
-        size += mojo::internal::PrepareToSerialize<{{serializer_type}}>(
+{%-       else %}
+        mojo::internal::PrepareToSerialize<{{serializer_type}}>(
             in_{{name}}, context);
+{%-       endif %}
 {%-     endif %}
-{%-   endif %}
         break;
       }
-{%- endfor %}
+{%-   endfor %}
     }
-    return size;
+{%- endif %}
   }
 
   static void Serialize(MaybeConstUserType& input,
                         Buffer* buffer,
-                        {{data_type}}** output,
+                        {{data_type}}::BufferWriter* writer,
                         bool inlined,
                         SerializationContext* context) {
+{%- if union|contains_handles_or_interfaces %}
     if (context->IsNextFieldNull()) {
       if (inlined)
-        (*output)->set_null();
-      else
-        *output = nullptr;
+        writer->data()->set_null();
       return;
     }
 
     void* custom_context = CustomContextHelper<Traits>::GetNext(context);
+{%- else %}
+    if (CallIsNullIfExists<Traits>(input)) {
+       if (inlined)
+         writer->data()->set_null();
+      return;
+    }
+    void* custom_context = CustomContextHelper<Traits>::SetUp(input, context);
+{%- endif %}
 
     if (!inlined)
-      *output = {{data_type}}::New(buffer);
+      writer->Allocate(buffer);
 
-    {{data_type}}* result = *output;
+    {{data_type}}::BufferWriter& result = *writer;
     ALLOW_UNUSED_LOCAL(result);
     // TODO(azani): Handle unknown and objects.
     // Set the not-null flag.
@@ -80,25 +91,29 @@ struct Serializer<{{data_view}}, MaybeConstUserType> {
             in_{{name}} = CallWithContext(Traits::{{name}}, input,
                                           custom_context);
 {%-   if kind|is_object_kind %}
-        typename decltype(result->data.f_{{name}})::BaseType* ptr;
+        typename decltype(result->data.f_{{name}})::BaseType::BufferWriter
+            value_writer;
 {%-     if kind|is_union_kind %}
         mojo::internal::Serialize<{{serializer_type}}>(
-            in_{{name}}, buffer, &ptr, false, context);
+            in_{{name}}, buffer, &value_writer, false, context);
 {%-     elif kind|is_array_kind or kind|is_map_kind %}
         const ContainerValidateParams {{name}}_validate_params(
             {{kind|get_container_validate_params_ctor_args|indent(16)}});
         mojo::internal::Serialize<{{serializer_type}}>(
-            in_{{name}}, buffer, &ptr, &{{name}}_validate_params, context);
-{%-     else %}
+            in_{{name}}, buffer, &value_writer, &{{name}}_validate_params,
+            context);
+ {%-     else %}
         mojo::internal::Serialize<{{serializer_type}}>(
-            in_{{name}}, buffer, &ptr, context);
+            in_{{name}}, buffer, &value_writer, context);
 {%-     endif %}
-        result->data.f_{{name}}.Set(ptr);
 {%-     if not kind|is_nullable_kind %}
         MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-            !ptr, mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+            value_writer.is_null(),
+            mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
             "null {{name}} in {{union.name}} union");
 {%-     endif %}
+        result->data.f_{{name}}.Set(
+            value_writer.is_null() ? nullptr : value_writer.data());
 
 {%-   elif kind|is_any_handle_or_interface_kind %}
         mojo::internal::Serialize<{{serializer_type}}>(

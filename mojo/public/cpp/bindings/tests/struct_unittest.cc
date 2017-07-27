@@ -28,6 +28,34 @@ void CheckRect(const Rect& rect, int32_t factor = 1) {
   EXPECT_EQ(20 * factor, rect.height);
 }
 
+template <typename StructType>
+struct SerializeStructHelperTraits {
+  using DataView = typename StructType::DataView;
+};
+
+template <>
+struct SerializeStructHelperTraits<NativeStruct> {
+  using DataView = NativeStructDataView;
+};
+
+template <typename InputType, typename DataType>
+size_t SerializeStruct(InputType& input,
+                       mojo::Message* message,
+                       mojo::internal::SerializationContext* context,
+                       DataType** out_data) {
+  using StructType = typename InputType::Struct;
+  using DataViewType =
+      typename SerializeStructHelperTraits<StructType>::DataView;
+  *message = mojo::Message(0, 0, 0, 0, nullptr);
+  const size_t payload_start = message->payload_buffer()->cursor();
+  typename DataType::BufferWriter writer;
+  mojo::internal::PrepareToSerialize<DataViewType>(input, context);
+  mojo::internal::Serialize<DataViewType>(input, message->payload_buffer(),
+                                          &writer, context);
+  *out_data = writer.is_null() ? nullptr : writer.data();
+  return message->payload_buffer()->cursor() - payload_start;
+}
+
 MultiVersionStructPtr MakeMultiVersionStruct() {
   MessagePipe pipe;
   return MultiVersionStruct::New(123, MakeRect(5), std::string("hello"),
@@ -45,16 +73,14 @@ U SerializeAndDeserialize(T input) {
   using OutputDataType =
       typename mojo::internal::MojomTypeTraits<OutputMojomType>::Data*;
 
+  mojo::Message message;
   mojo::internal::SerializationContext context;
-  size_t size =
-      mojo::internal::PrepareToSerialize<InputMojomType>(input, &context);
-  mojo::internal::FixedBufferForTesting buf(size + 32);
   InputDataType data;
-  mojo::internal::Serialize<InputMojomType>(input, &buf, &data, &context);
+  SerializeStruct(input, &message, &context, &data);
 
   // Set the subsequent area to a special value, so that we can find out if we
   // mistakenly access the area.
-  void* subsequent_area = buf.Allocate(32);
+  void* subsequent_area = message.payload_buffer()->AllocateAndGet(32);
   memset(subsequent_area, 0xAA, 32);
 
   OutputDataType output_data = reinterpret_cast<OutputDataType>(data);
@@ -124,14 +150,10 @@ TEST_F(StructTest, Clone) {
 TEST_F(StructTest, Serialization_Basic) {
   RectPtr rect(MakeRect());
 
+  mojo::Message message;
   mojo::internal::SerializationContext context;
-  size_t size =
-      mojo::internal::PrepareToSerialize<RectDataView>(rect, &context);
-  EXPECT_EQ(8U + 16U, size);
-
-  mojo::internal::FixedBufferForTesting buf(size);
   internal::Rect_Data* data;
-  mojo::internal::Serialize<RectDataView>(rect, &buf, &data, &context);
+  EXPECT_EQ(8U + 16U, SerializeStruct(rect, &message, &context, &data));
 
   RectPtr rect2;
   mojo::internal::Deserialize<RectDataView>(data, &rect2, &context);
@@ -157,14 +179,11 @@ TEST_F(StructTest, Construction_StructPointers) {
 TEST_F(StructTest, Serialization_StructPointers) {
   RectPairPtr pair(RectPair::New(MakeRect(), MakeRect()));
 
+  mojo::Message message;
   mojo::internal::SerializationContext context;
-  size_t size =
-      mojo::internal::PrepareToSerialize<RectPairDataView>(pair, &context);
-  EXPECT_EQ(8U + 16U + 2 * (8U + 16U), size);
-
-  mojo::internal::FixedBufferForTesting buf(size);
   internal::RectPair_Data* data;
-  mojo::internal::Serialize<RectPairDataView>(pair, &buf, &data, &context);
+  EXPECT_EQ(8U + 16U + 2 * (8U + 16U),
+            SerializeStruct(pair, &message, &context, &data));
 
   RectPairPtr pair2;
   mojo::internal::Deserialize<RectPairDataView>(data, &pair2, &context);
@@ -182,9 +201,9 @@ TEST_F(StructTest, Serialization_ArrayPointers) {
   NamedRegionPtr region(
       NamedRegion::New(std::string("region"), std::move(rects)));
 
+  mojo::Message message;
   mojo::internal::SerializationContext context;
-  size_t size =
-      mojo::internal::PrepareToSerialize<NamedRegionDataView>(region, &context);
+  internal::NamedRegion_Data* data;
   EXPECT_EQ(8U +            // header
                 8U +        // name pointer
                 8U +        // rects pointer
@@ -194,11 +213,7 @@ TEST_F(StructTest, Serialization_ArrayPointers) {
                 4 * 8U +    // rects payload (four pointers)
                 4 * (8U +   // rect header
                      16U),  // rect payload (four ints)
-            size);
-
-  mojo::internal::FixedBufferForTesting buf(size);
-  internal::NamedRegion_Data* data;
-  mojo::internal::Serialize<NamedRegionDataView>(region, &buf, &data, &context);
+            SerializeStruct(region, &message, &context, &data));
 
   NamedRegionPtr region2;
   mojo::internal::Deserialize<NamedRegionDataView>(data, &region2, &context);
@@ -216,17 +231,13 @@ TEST_F(StructTest, Serialization_NullArrayPointers) {
   EXPECT_FALSE(region->name);
   EXPECT_FALSE(region->rects);
 
+  mojo::Message message;
   mojo::internal::SerializationContext context;
-  size_t size =
-      mojo::internal::PrepareToSerialize<NamedRegionDataView>(region, &context);
+  internal::NamedRegion_Data* data;
   EXPECT_EQ(8U +      // header
                 8U +  // name pointer
                 8U,   // rects pointer
-            size);
-
-  mojo::internal::FixedBufferForTesting buf(size);
-  internal::NamedRegion_Data* data;
-  mojo::internal::Serialize<NamedRegionDataView>(region, &buf, &data, &context);
+            SerializeStruct(region, &message, &context, &data));
 
   NamedRegionPtr region2;
   mojo::internal::Deserialize<NamedRegionDataView>(data, &region2, &context);
@@ -369,16 +380,11 @@ TEST_F(StructTest, Serialization_NativeStruct) {
   {
     // Serialization of a null native struct.
     NativeStructPtr native;
+
+    mojo::Message message;
     mojo::internal::SerializationContext context;
-    size_t size = mojo::internal::PrepareToSerialize<NativeStructDataView>(
-        native, &context);
-    EXPECT_EQ(0u, size);
-    mojo::internal::FixedBufferForTesting buf(size);
-
     Data* data = nullptr;
-    mojo::internal::Serialize<NativeStructDataView>(std::move(native), &buf,
-                                                    &data, &context);
-
+    EXPECT_EQ(0u, SerializeStruct(native, &message, &context, &data));
     EXPECT_EQ(nullptr, data);
 
     NativeStructPtr output_native;
@@ -390,16 +396,11 @@ TEST_F(StructTest, Serialization_NativeStruct) {
   {
     // Serialization of a native struct with null data.
     NativeStructPtr native(NativeStruct::New());
+
+    mojo::Message message;
     mojo::internal::SerializationContext context;
-    size_t size = mojo::internal::PrepareToSerialize<NativeStructDataView>(
-        native, &context);
-    EXPECT_EQ(0u, size);
-    mojo::internal::FixedBufferForTesting buf(size);
-
     Data* data = nullptr;
-    mojo::internal::Serialize<NativeStructDataView>(std::move(native), &buf,
-                                                    &data, &context);
-
+    EXPECT_EQ(0u, SerializeStruct(native, &message, &context, &data));
     EXPECT_EQ(nullptr, data);
 
     NativeStructPtr output_native;
@@ -412,16 +413,10 @@ TEST_F(StructTest, Serialization_NativeStruct) {
     NativeStructPtr native(NativeStruct::New());
     native->data = std::vector<uint8_t>{'X', 'Y'};
 
+    mojo::Message message;
     mojo::internal::SerializationContext context;
-    size_t size = mojo::internal::PrepareToSerialize<NativeStructDataView>(
-        native, &context);
-    EXPECT_EQ(16u, size);
-    mojo::internal::FixedBufferForTesting buf(size);
-
     Data* data = nullptr;
-    mojo::internal::Serialize<NativeStructDataView>(std::move(native), &buf,
-                                                    &data, &context);
-
+    EXPECT_EQ(16u, SerializeStruct(native, &message, &context, &data));
     EXPECT_NE(nullptr, data);
 
     NativeStructPtr output_native;

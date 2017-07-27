@@ -12,21 +12,11 @@ namespace mojo {
 namespace internal {
 
 FixedBufferForTesting::FixedBufferForTesting(size_t size)
-    : FixedBufferForTesting(nullptr, Align(size)) {}
+    : Buffer(calloc(Align(size), 1), Align(size), 0) {}
 
 FixedBufferForTesting::~FixedBufferForTesting() {
   free(data());
 }
-
-void* FixedBufferForTesting::Leak() {
-  void* ptr = data();
-  Reset();
-  return ptr;
-}
-
-FixedBufferForTesting::FixedBufferForTesting(std::nullptr_t,
-                                             size_t aligned_size)
-    : Buffer(calloc(aligned_size, 1), aligned_size) {}
 
 }  // namespace internal
 }  // namespace mojo
