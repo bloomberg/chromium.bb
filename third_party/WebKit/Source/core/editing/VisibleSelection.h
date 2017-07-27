@@ -73,11 +73,11 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
 
   VisiblePositionTemplate<Strategy> VisibleStart() const {
     return CreateVisiblePosition(
-        start_, IsRange() ? TextAffinity::kDownstream : Affinity());
+        Start(), IsRange() ? TextAffinity::kDownstream : Affinity());
   }
   VisiblePositionTemplate<Strategy> VisibleEnd() const {
     return CreateVisiblePosition(
-        end_, IsRange() ? TextAffinity::kUpstream : Affinity());
+        End(), IsRange() ? TextAffinity::kUpstream : Affinity());
   }
   VisiblePositionTemplate<Strategy> VisibleBase() const {
     return CreateVisiblePosition(
