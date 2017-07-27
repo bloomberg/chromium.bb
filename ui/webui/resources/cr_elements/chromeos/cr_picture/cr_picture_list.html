@@ -70,6 +70,7 @@
         <img id="profileImage" role="radio"
             data-type$="[[selectionTypesEnum_.PROFILE]]"
             src="[[profileImageUrl_]]" hidden="[[!profileImageUrl_]]"
+            srcset="[[getImgSrc2x_(profileImageUrl_)]]"
             title="[[profileImageLoadingLabel]]">
         <!-- Shows and selects the previously selected ('old') picture. -->
         <img id="oldImage" role="radio"
