@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "remoting/base/breakpad.h"
+#include "remoting/host/evaluate_capability.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
 #include "remoting/host/resources.h"
@@ -60,11 +61,12 @@ const char kUsageMessage[] =
   "  --daemon-pipe=<pipe>     - Specifies the pipe to connect to the daemon.\n"
   "  --elevate=<binary>       - Runs <binary> elevated.\n"
   "  --host-config=<config>   - Specifies the host configuration.\n"
-  "  --help, -?               - Print this message.\n"
+  "  --help, -?               - Prints this message.\n"
   "  --type                   - Specifies process type.\n"
   "  --version                - Prints the host version and exits.\n"
   "  --window-id=<id>         - Specifies a window to remote,"
-                                " instead of the whole desktop.\n";
+                                " instead of the whole desktop.\n"
+  "  --evaluate-type=<type>   - Evaluates the capability of the host.\n";
 
 void Usage(const base::FilePath& program_name) {
   printf(kUsageMessage, program_name.MaybeAsASCII().c_str());
@@ -148,30 +150,6 @@ int HostMain(int argc, char** argv) {
 
   base::CommandLine::Init(argc, argv);
 
-  // This object instance is required by Chrome code (for example,
-  // LazyInstance, MessageLoop).
-  base::AtExitManager exit_manager;
-
-  // Enable debug logs.
-  InitHostLogging();
-
-#if defined(REMOTING_ENABLE_BREAKPAD)
-  // Initialize Breakpad as early as possible. On Mac the command-line needs to
-  // be initialized first, so that the preference for crash-reporting can be
-  // looked up in the config file.
-  if (IsUsageStatsAllowed()) {
-    InitializeCrashReporting();
-  }
-#endif  // defined(REMOTING_ENABLE_BREAKPAD)
-
-#if defined(OS_WIN)
-  // Register and initialize common controls.
-  INITCOMMONCONTROLSEX info;
-  info.dwSize = sizeof(info);
-  info.dwICC = ICC_STANDARD_CLASSES;
-  InitCommonControlsEx(&info);
-#endif  // defined(OS_WIN)
-
   // Parse the command line.
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -197,6 +175,39 @@ int HostMain(int argc, char** argv) {
   if (command_line->HasSwitch(kProcessTypeSwitchName)) {
     process_type = command_line->GetSwitchValueASCII(kProcessTypeSwitchName);
   }
+
+  if (process_type == kProcessTypeEvaluateCapability) {
+    if (command_line->HasSwitch(kEvaluateCapabilitySwitchName)) {
+      return EvaluateCapabilityLocally(
+          command_line->GetSwitchValueASCII(kEvaluateCapabilitySwitchName));
+    }
+    Usage(command_line->GetProgram());
+    return kSuccessExitCode;
+  }
+
+  // This object instance is required by Chrome code (for example,
+  // LazyInstance, MessageLoop).
+  base::AtExitManager exit_manager;
+
+  // Enable debug logs.
+  InitHostLogging();
+
+#if defined(REMOTING_ENABLE_BREAKPAD)
+  // Initialize Breakpad as early as possible. On Mac the command-line needs to
+  // be initialized first, so that the preference for crash-reporting can be
+  // looked up in the config file.
+  if (IsUsageStatsAllowed()) {
+    InitializeCrashReporting();
+  }
+#endif  // defined(REMOTING_ENABLE_BREAKPAD)
+
+#if defined(OS_WIN)
+  // Register and initialize common controls.
+  INITCOMMONCONTROLSEX info;
+  info.dwSize = sizeof(info);
+  info.dwICC = ICC_STANDARD_CLASSES;
+  InitCommonControlsEx(&info);
+#endif  // defined(OS_WIN)
 
   MainRoutineFn main_routine = SelectMainRoutine(process_type);
   if (!main_routine) {
