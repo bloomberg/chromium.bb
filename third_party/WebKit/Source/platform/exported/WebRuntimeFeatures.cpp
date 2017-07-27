@@ -442,4 +442,10 @@ void WebRuntimeFeatures::EnableClientHintsPersistent(bool enable) {
   RuntimeEnabledFeatures::SetClientHintsPersistentEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableMediaEngagementBypassAutoplayPolicies(
+    bool enable) {
+  RuntimeEnabledFeatures::SetMediaEngagementBypassAutoplayPoliciesEnabled(
+      enable);
+}
+
 }  // namespace blink

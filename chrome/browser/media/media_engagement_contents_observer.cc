@@ -9,9 +9,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/WebKit/public/platform/media_engagement.mojom.h"
 
 namespace {
 
@@ -19,7 +22,18 @@ int ConvertScoreToPercentage(double score) {
   return round(score * 100);
 }
 
+void SendEngagementLevelToFrame(const url::Origin& origin,
+                                content::RenderFrameHost* render_frame_host) {
+  blink::mojom::MediaEngagementClientAssociatedPtr client;
+  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
+  client->SetHasHighMediaEngagement(origin);
+}
+
 }  // namespace.
+
+// Origins with scores higher than this will be allowed to bypass autoplay
+// policies.
+constexpr double kScoreAutoplayAllowed = 0.7;
 
 // This is the minimum size (in px) of each dimension that a media
 // element has to be in order to be determined significant.
@@ -388,4 +402,14 @@ void MediaEngagementContentsObserver::UpdateTimer() {
 void MediaEngagementContentsObserver::SetTimerForTest(
     std::unique_ptr<base::Timer> timer) {
   playback_timer_ = std::move(timer);
+}
+
+void MediaEngagementContentsObserver::ReadyToCommitNavigation(
+    content::NavigationHandle* handle) {
+  // TODO(beccahughes): Convert MEI API to using origin.
+  GURL url = handle->GetWebContents()->GetURL();
+  if (service_->GetEngagementScore(url) >= kScoreAutoplayAllowed) {
+    SendEngagementLevelToFrame(url::Origin(handle->GetURL()),
+                               handle->GetRenderFrameHost());
+  }
 }

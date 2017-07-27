@@ -1193,6 +1193,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       pepper_last_mouse_event_target_(nullptr),
 #endif
       engagement_binding_(this),
+      media_engagement_binding_(this),
       frame_binding_(this),
       host_zoom_binding_(this),
       frame_bindings_control_binding_(this),
@@ -1725,6 +1726,11 @@ void RenderFrameImpl::OnNavigate(
 void RenderFrameImpl::BindEngagement(
     blink::mojom::EngagementClientAssociatedRequest request) {
   engagement_binding_.Bind(std::move(request));
+}
+
+void RenderFrameImpl::BindMediaEngagement(
+    blink::mojom::MediaEngagementClientAssociatedRequest request) {
+  media_engagement_binding_.Bind(std::move(request));
 }
 
 void RenderFrameImpl::BindFrame(
@@ -2828,6 +2834,19 @@ void RenderFrameImpl::SetEngagementLevel(const url::Origin& origin,
   }
 
   engagement_level_ = std::make_pair(origin, level);
+}
+
+// blink::mojom::MediaEngagementClient implementation --------------------------
+
+void RenderFrameImpl::SetHasHighMediaEngagement(const url::Origin& origin) {
+  // Set the HasHighMediaEngagement bit on |frame| if the origin matches
+  // the one we were provided.
+  if (frame_ && url::Origin(frame_->GetSecurityOrigin()) == origin) {
+    frame_->SetHasHighMediaEngagement(true);
+    return;
+  }
+
+  high_media_engagement_origin_ = origin;
 }
 
 // mojom::Frame implementation -------------------------------------------------
@@ -4866,6 +4885,14 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     engagement_level_.first = url::Origin();
   }
 
+  // Set the correct high media engagement bit on the frame, and wipe the cached
+  // origin so this will not be reused accidentally.
+  if (url::Origin(frame_->GetSecurityOrigin()) ==
+      high_media_engagement_origin_) {
+    frame_->SetHasHighMediaEngagement(true);
+    high_media_engagement_origin_ = url::Origin();
+  }
+
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.http_status_code = response.HttpStatusCode();
   params.url_is_unreachable = ds->HasUnreachableURL();
@@ -6691,6 +6718,9 @@ void RenderFrameImpl::HandlePepperImeCommit(const base::string16& text) {
 void RenderFrameImpl::RegisterMojoInterfaces() {
   GetAssociatedInterfaceRegistry()->AddInterface(
       base::Bind(&RenderFrameImpl::BindEngagement, weak_factory_.GetWeakPtr()));
+
+  GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
+      &RenderFrameImpl::BindMediaEngagement, weak_factory_.GetWeakPtr()));
 
   GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
       &RenderFrameImpl::BindFrameBindingsControl, weak_factory_.GetWeakPtr()));

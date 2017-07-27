@@ -1221,6 +1221,11 @@ class CORE_EXPORT Document : public ContainerNode,
     engagement_level_ = level;
   }
 
+  void SetHasHighMediaEngagement(bool has_high_media_engagement) {
+    has_high_media_engagement_ = has_high_media_engagement;
+  }
+  bool HasHighMediaEngagement() const { return has_high_media_engagement_; }
+
   // TODO(thestig): Rename these and related functions, since we can call them
   // for controls outside of forms as well.
   void DidAssociateFormControl(Element*);
@@ -1695,6 +1700,8 @@ class CORE_EXPORT Document : public ContainerNode,
   mojom::EngagementLevel engagement_level_;
 
   Member<NetworkStateObserver> network_state_observer_;
+
+  bool has_high_media_engagement_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

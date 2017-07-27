@@ -630,6 +630,10 @@
     {
       name: "MediaDocumentDownloadButton",
     },
+    // Set to reflect the kMediaEngagementBypassAutoplayPolicies feature.
+    {
+      name: "MediaEngagementBypassAutoplayPolicies",
+    },
     {
       name: "MediaQueryShape",
       status: "experimental",

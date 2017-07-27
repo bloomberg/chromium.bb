@@ -679,6 +679,11 @@ class WebLocalFrame : public WebFrame {
   // This will be removed following the deprecation.
   virtual void UsageCountChromeLoadTimes(const WebString& metric) = 0;
 
+  // Media engagement -------------------------------------------------------
+
+  // Sets the high media engagement bit for this frame's document.
+  virtual void SetHasHighMediaEngagement(bool has_high_media_engagement) = 0;
+
   // Scheduling ---------------------------------------------------------------
 
   virtual WebFrameScheduler* Scheduler() const = 0;

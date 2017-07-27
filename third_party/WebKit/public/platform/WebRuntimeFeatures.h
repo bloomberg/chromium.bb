@@ -170,6 +170,8 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableClientPlaceholdersForServerLoFi(bool);
   BLINK_PLATFORM_EXPORT static void EnableLazyInitializeMediaControls(bool);
   BLINK_PLATFORM_EXPORT static void EnableClientHintsPersistent(bool);
+  BLINK_PLATFORM_EXPORT static void EnableMediaEngagementBypassAutoplayPolicies(
+      bool);
 
  private:
   WebRuntimeFeatures();
