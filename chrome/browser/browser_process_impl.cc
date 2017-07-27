@@ -469,6 +469,12 @@ bool RundownTaskCounter::TimedWaitUntil(const base::TimeTicks& end_time) {
 
 }  // namespace
 
+void BrowserProcessImpl::FlushLocalStateAndReply(base::OnceClosure reply) {
+  local_state()->CommitPendingWrite();
+  local_state_task_runner_->PostTaskAndReply(
+      FROM_HERE, base::Bind(&base::DoNothing), std::move(reply));
+}
+
 void BrowserProcessImpl::EndSession() {
   // Mark all the profiles as clean.
   ProfileManager* pm = profile_manager();
