@@ -18,9 +18,6 @@
 //   OptimizeForWindows98="1" linker: /OPT:NOWIN98
 //   linker: /SAFESEH:NO
 
-// have the linker merge the sections, saving us ~500 bytes.
-#pragma comment(linker, "/MERGE:.rdata=.text")
-
 #include "chrome/installer/mini_installer/mini_installer.h"
 
 #include <windows.h>
