@@ -275,25 +275,6 @@ class Git(object):
         git_log = self.most_recent_log_matching('Cr-Commit-Position:', path)
         return self._commit_position_from_git_log(git_log)
 
-    def _commit_position_regex_for_timestamp(self):
-        return 'Cr-Commit-Position:.*@{#%s}'
-
-    def timestamp_of_revision(self, path, revision):
-        git_log = self.most_recent_log_matching(self._commit_position_regex_for_timestamp() % revision, path)
-        match = re.search(r"^Date:\s*(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}) ([+-])(\d{2})(\d{2})$", git_log, re.MULTILINE)
-        if not match:
-            return ''
-
-        # Manually modify the timezone since Git doesn't have an option to show it in UTC.
-        # Git also truncates milliseconds but we're going to ignore that for now.
-        time_with_timezone = datetime.datetime(int(match.group(1)), int(match.group(2)), int(match.group(3)),
-                                               int(match.group(4)), int(match.group(5)), int(match.group(6)), 0)
-
-        sign = 1 if match.group(7) == '+' else -1
-        time_without_timezone = time_with_timezone - \
-            datetime.timedelta(hours=sign * int(match.group(8)), minutes=int(match.group(9)))
-        return time_without_timezone.strftime('%Y-%m-%dT%H:%M:%SZ')
-
     def create_patch(self, git_commit=None, changed_files=None):
         """Returns a byte array (str()) representing the patch file.
 
@@ -339,9 +320,6 @@ class Git(object):
     def create_clean_branch(self, name):
         self.run(['checkout', '-q', '-b', name, self._remote_branch_ref()])
 
-    def blame(self, path):
-        return self.run(['blame', '--show-email', path])
-
     # Git-specific methods:
     def _branch_ref_exists(self, branch_ref):
         return self.run(['show-ref', '--quiet', '--verify', branch_ref], return_exit_code=True) == 0
@@ -379,16 +357,3 @@ class Git(object):
     def affected_files(self, commit):
         output = self.run(['log', '-1', '--format=', '--name-only', commit])
         return output.strip().split('\n')
-
-    def _branch_tracking_remote_master(self):
-        origin_info = self.run(['remote', 'show', 'origin', '-n'])
-        match = re.search(r"^\s*(?P<branch_name>\S+)\s+merges with remote master$", origin_info, re.MULTILINE)
-        if not match:
-            raise ScriptError(message='Unable to find local branch tracking origin/master.')
-        branch = str(match.group('branch_name'))
-        return self._branch_from_ref(self.run(['rev-parse', '--symbolic-full-name', branch]).strip())
-
-    def ensure_cleanly_tracking_remote_master(self):
-        self._discard_working_directory_changes()
-        self.run(['checkout', '-q', self._branch_tracking_remote_master()])
-        self._discard_local_commits()
