@@ -2260,6 +2260,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'guado',
       'guado_moblab',
       'hana',
+      'kevin',
       'kip',
       'lakitu',
       'lakitu-gpu',
@@ -2310,7 +2311,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'auron_paine',
       'betty-arc64',
-      'kevin',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
