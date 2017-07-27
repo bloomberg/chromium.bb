@@ -51,7 +51,6 @@ class MessageLoopQuitListener {
                         const Geoposition& position) {
     EXPECT_EQ(client_message_loop_, base::MessageLoop::current());
     updated_provider_ = provider;
-    client_message_loop_->QuitWhenIdle();
   }
 
   base::MessageLoop* client_message_loop_;
