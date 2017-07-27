@@ -787,55 +787,13 @@
             ],
             "experiments": [
                 {
-                    "name": "SavePasswordsBubblePromotionV1",
+                    "name": "BookmarksBubblePromotionV1",
                     "params": {
                         "body_text_id": "0",
-                        "entry_point": "SavePasswordsBubblePromotion",
+                        "entry_point": "BookmarksBubblePromotion",
                         "max_views": "3",
-                        "promo_variation_id": "1",
-                        "sms_id": "19001508",
-                        "title_text_id": "0"
-                    },
-                    "enable_features": [
-                        "DesktopIOSPromotion"
-                    ]
-                },
-                {
-                    "name": "SavePasswordsBubblePromotionV2",
-                    "params": {
-                        "body_text_id": "0",
-                        "entry_point": "SavePasswordsBubblePromotion",
-                        "max_views": "3",
-                        "promo_variation_id": "2",
-                        "sms_id": "19001509",
-                        "title_text_id": "1"
-                    },
-                    "enable_features": [
-                        "DesktopIOSPromotion"
-                    ]
-                },
-                {
-                    "name": "SavePasswordsBubblePromotionV3",
-                    "params": {
-                        "body_text_id": "0",
-                        "entry_point": "SavePasswordsBubblePromotion",
-                        "max_views": "3",
-                        "promo_variation_id": "3",
-                        "sms_id": "19001510",
-                        "title_text_id": "2"
-                    },
-                    "enable_features": [
-                        "DesktopIOSPromotion"
-                    ]
-                },
-                {
-                    "name": "SavePasswordsBubblePromotion50Beta",
-                    "params": {
-                        "body_text_id": "0",
-                        "entry_point": "SavePasswordsBubblePromotion",
-                        "max_views": "3",
-                        "promo_variation_id": "1",
-                        "sms_id": "19001507",
+                        "promo_variation_id": "6",
+                        "sms_id": "19001511",
                         "title_text_id": "0"
                     },
                     "enable_features": [
