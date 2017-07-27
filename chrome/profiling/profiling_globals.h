@@ -15,6 +15,7 @@
 #include "chrome/profiling/profiling_process.h"
 
 namespace base {
+class RunLoop;
 class TaskRunner;
 }  // namespace base
 
@@ -40,6 +41,7 @@ class ProfilingGlobals {
   static ProfilingGlobals* singleton_;
 
   base::MessageLoopForIO message_loop_;
+  std::unique_ptr<base::RunLoop> active_runloop_;
 
   ProfilingProcess process_;
   MemlogConnectionManager memlog_connection_manager_;
