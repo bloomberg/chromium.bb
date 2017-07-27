@@ -21,9 +21,10 @@ class FrameSinkProviderImpl : public mojom::FrameSinkProvider {
   void Unbind();
 
   // mojom::FrameSinkProvider implementation.
-  void CreateForWidget(int32_t widget_id,
-                       cc::mojom::CompositorFrameSinkRequest request,
-                       cc::mojom::CompositorFrameSinkClientPtr client) override;
+  void CreateForWidget(
+      int32_t widget_id,
+      viz::mojom::CompositorFrameSinkRequest request,
+      viz::mojom::CompositorFrameSinkClientPtr client) override;
 
  private:
   const int32_t process_id_;

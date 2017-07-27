@@ -8,12 +8,12 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "services/ui/ws/compositor_frame_sink_client_binding.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -25,7 +25,7 @@ namespace ws {
 
 // Responsible for redrawing the display in response to the redraw requests by
 // submitting CompositorFrames to the owned CompositorFrameSink.
-class FrameGenerator : public cc::mojom::CompositorFrameSinkClient {
+class FrameGenerator : public viz::mojom::CompositorFrameSinkClient {
  public:
   FrameGenerator();
   ~FrameGenerator() override;
@@ -42,10 +42,10 @@ class FrameGenerator : public cc::mojom::CompositorFrameSinkClient {
   void OnWindowDamaged();
   void OnWindowSizeChanged(const gfx::Size& pixel_size);
   void Bind(
-      std::unique_ptr<cc::mojom::CompositorFrameSink> compositor_frame_sink);
+      std::unique_ptr<viz::mojom::CompositorFrameSink> compositor_frame_sink);
 
  private:
-  // cc::mojom::CompositorFrameSinkClient implementation:
+  // viz::mojom::CompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
       const std::vector<cc::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
@@ -65,7 +65,7 @@ class FrameGenerator : public cc::mojom::CompositorFrameSinkClient {
   float device_scale_factor_ = 1.f;
   gfx::Size pixel_size_;
 
-  std::unique_ptr<cc::mojom::CompositorFrameSink> compositor_frame_sink_;
+  std::unique_ptr<viz::mojom::CompositorFrameSink> compositor_frame_sink_;
   viz::BeginFrameArgs last_begin_frame_args_;
   viz::BeginFrameAck current_begin_frame_ack_;
   bool high_contrast_mode_enabled_ = false;

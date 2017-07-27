@@ -1422,7 +1422,7 @@ void RenderWidgetHostViewMac::FocusedNodeChanged(
 }
 
 void RenderWidgetHostViewMac::DidCreateNewRendererCompositorFrameSink(
-    cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
+    viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   browser_compositor_->DidCreateNewRendererCompositorFrameSink(
       renderer_compositor_frame_sink);
 }

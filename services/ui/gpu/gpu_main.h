@@ -37,8 +37,8 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
                         const gpu::GpuPreferences& preferences,
                         mojo::ScopedSharedBufferHandle activity_flags) override;
   void CreateFrameSinkManager(
-      cc::mojom::FrameSinkManagerRequest request,
-      cc::mojom::FrameSinkManagerClientPtr client) override;
+      viz::mojom::FrameSinkManagerRequest request,
+      viz::mojom::FrameSinkManagerClientPtr client) override;
 
   void OnStart();
 
@@ -51,11 +51,11 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
       scoped_refptr<base::SingleThreadTaskRunner> compositor_runner);
 
   void CreateFrameSinkManagerInternal(
-      cc::mojom::FrameSinkManagerRequest request,
-      cc::mojom::FrameSinkManagerClientPtrInfo client_info);
+      viz::mojom::FrameSinkManagerRequest request,
+      viz::mojom::FrameSinkManagerClientPtrInfo client_info);
   void CreateFrameSinkManagerOnCompositorThread(
-      cc::mojom::FrameSinkManagerRequest request,
-      cc::mojom::FrameSinkManagerClientPtrInfo client_info);
+      viz::mojom::FrameSinkManagerRequest request,
+      viz::mojom::FrameSinkManagerClientPtrInfo client_info);
   void CreateGpuServiceOnGpuThread(mojom::GpuServiceRequest request,
                                    mojom::GpuHostPtr gpu_host,
                                    const gpu::GpuPreferences& preferences,
@@ -77,8 +77,8 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
 
   // If the gpu service is not yet ready then we stash pending MessagePipes in
   // these member variables.
-  cc::mojom::FrameSinkManagerRequest pending_frame_sink_manager_request_;
-  cc::mojom::FrameSinkManagerClientPtrInfo
+  viz::mojom::FrameSinkManagerRequest pending_frame_sink_manager_request_;
+  viz::mojom::FrameSinkManagerClientPtrInfo
       pending_frame_sink_manager_client_info_;
 
   // Provides mojo interfaces for creating and managing FrameSinks.

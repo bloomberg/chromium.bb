@@ -1206,7 +1206,7 @@ void RenderWidgetHostViewAndroid::ReclaimResources(
 }
 
 void RenderWidgetHostViewAndroid::DidCreateNewRendererCompositorFrameSink(
-    cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
+    viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   if (!delegated_frame_host_) {
     DCHECK(!using_browser_compositor_);
     // We don't expect RendererCompositorFrameSink on Android WebView.

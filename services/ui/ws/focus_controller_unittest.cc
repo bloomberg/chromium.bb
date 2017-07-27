@@ -318,7 +318,7 @@ class TestServerWindowDelegate2 : public ServerWindowDelegate {
   ~TestServerWindowDelegate2() override = default;
 
   // ServerWindowDelegate:
-  cc::mojom::FrameSinkManager* GetFrameSinkManager() override {
+  viz::mojom::FrameSinkManager* GetFrameSinkManager() override {
     return nullptr;
   }
   ServerWindow* GetRootWindow(const ServerWindow* window) override {

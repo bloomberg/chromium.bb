@@ -14,7 +14,6 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "cc/ipc/frame_sink_manager.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -27,6 +26,7 @@
 #include "services/ui/ws/user_id_tracker.h"
 #include "services/ui/ws/user_id_tracker_observer.h"
 #include "services/ui/ws/window_manager_window_tree_factory_set.h"
+#include "services/viz/compositing/privileged/interfaces/frame_sink_manager.mojom.h"
 
 namespace ui {
 namespace ws {
@@ -52,7 +52,7 @@ class WindowServer : public ServerWindowDelegate,
                      public GpuHostDelegate,
                      public UserDisplayManagerDelegate,
                      public UserIdTrackerObserver,
-                     public cc::mojom::FrameSinkManagerClient {
+                     public viz::mojom::FrameSinkManagerClient {
  public:
   explicit WindowServer(WindowServerDelegate* delegate);
   ~WindowServer() override;
@@ -78,7 +78,7 @@ class WindowServer : public ServerWindowDelegate,
   // FrameSinkManagerClientBinding (the FrameSinkManager implementation being
   // used) requires WindowServer's GpuHost to create.
   void SetFrameSinkManager(
-      std::unique_ptr<cc::mojom::FrameSinkManager> frame_sink_manager);
+      std::unique_ptr<viz::mojom::FrameSinkManager> frame_sink_manager);
 
   void SetGpuHost(std::unique_ptr<GpuHost> gpu_host);
 
@@ -251,7 +251,7 @@ class WindowServer : public ServerWindowDelegate,
   WindowManagerState* GetWindowManagerStateForUser(const UserId& user_id);
 
   // ServerWindowDelegate:
-  cc::mojom::FrameSinkManager* GetFrameSinkManager() override;
+  viz::mojom::FrameSinkManager* GetFrameSinkManager() override;
 
   // UserDisplayManagerDelegate:
   bool GetFrameDecorationsForUser(
@@ -361,7 +361,7 @@ class WindowServer : public ServerWindowDelegate,
   // GpuHostDelegate:
   void OnGpuServiceInitialized() override;
 
-  // cc::mojom::FrameSinkManagerClient:
+  // viz::mojom::FrameSinkManagerClient:
   void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
   void OnClientConnectionClosed(const viz::FrameSinkId& frame_sink_id) override;
 
@@ -410,7 +410,7 @@ class WindowServer : public ServerWindowDelegate,
   viz::SurfaceId root_surface_id_;
 
   // Provides interfaces to create and manage FrameSinks.
-  std::unique_ptr<cc::mojom::FrameSinkManager> frame_sink_manager_;
+  std::unique_ptr<viz::mojom::FrameSinkManager> frame_sink_manager_;
 
   DisplayCreationConfig display_creation_config_;
 

@@ -7,6 +7,7 @@ include_rules = [
   "+components/scheduler/test",
   "+components/viz/common",
   "+components/viz/service",
+  "+services/viz/public/interfaces/compositing",
 
   "+cc/blink",
   "+chromeos/audio", # For WebRTC tests.

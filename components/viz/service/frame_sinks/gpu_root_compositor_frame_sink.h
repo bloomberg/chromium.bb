@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "cc/ipc/compositor_frame_sink.mojom.h"
-#include "cc/ipc/frame_sink_manager.mojom.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/display_client.h"
@@ -16,6 +14,8 @@
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/viz/compositing/privileged/interfaces/frame_sink_manager.mojom.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 
 namespace viz {
 
@@ -26,8 +26,8 @@ class FrameSinkManagerImpl;
 
 class GpuRootCompositorFrameSink
     : public NON_EXPORTED_BASE(CompositorFrameSinkSupportClient),
-      public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSink),
-      public NON_EXPORTED_BASE(cc::mojom::DisplayPrivate),
+      public NON_EXPORTED_BASE(mojom::CompositorFrameSink),
+      public NON_EXPORTED_BASE(mojom::DisplayPrivate),
       public NON_EXPORTED_BASE(DisplayClient) {
  public:
   GpuRootCompositorFrameSink(
@@ -35,13 +35,13 @@ class GpuRootCompositorFrameSink
       const FrameSinkId& frame_sink_id,
       std::unique_ptr<Display> display,
       std::unique_ptr<BeginFrameSource> begin_frame_source,
-      cc::mojom::CompositorFrameSinkAssociatedRequest request,
-      cc::mojom::CompositorFrameSinkClientPtr client,
-      cc::mojom::DisplayPrivateAssociatedRequest display_private_request);
+      mojom::CompositorFrameSinkAssociatedRequest request,
+      mojom::CompositorFrameSinkClientPtr client,
+      mojom::DisplayPrivateAssociatedRequest display_private_request);
 
   ~GpuRootCompositorFrameSink() override;
 
-  // cc::mojom::DisplayPrivate:
+  // mojom::DisplayPrivate:
   void SetDisplayVisible(bool visible) override;
   void ResizeDisplay(const gfx::Size& size) override;
   void SetDisplayColorSpace(const gfx::ColorSpace& color_space) override;
@@ -49,7 +49,7 @@ class GpuRootCompositorFrameSink
   void SetLocalSurfaceId(const LocalSurfaceId& local_surface_id,
                          float scale_factor) override;
 
-  // cc::mojom::CompositorFrameSink:
+  // mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
@@ -81,10 +81,10 @@ class GpuRootCompositorFrameSink
   std::unique_ptr<BeginFrameSource> display_begin_frame_source_;
   std::unique_ptr<Display> display_;
 
-  cc::mojom::CompositorFrameSinkClientPtr client_;
-  mojo::AssociatedBinding<cc::mojom::CompositorFrameSink>
+  mojom::CompositorFrameSinkClientPtr client_;
+  mojo::AssociatedBinding<mojom::CompositorFrameSink>
       compositor_frame_sink_binding_;
-  mojo::AssociatedBinding<cc::mojom::DisplayPrivate> display_private_binding_;
+  mojo::AssociatedBinding<mojom::DisplayPrivate> display_private_binding_;
 
   HitTestAggregator hit_test_aggregator_;
 

@@ -45,10 +45,10 @@ class GpuHost {
   virtual void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) = 0;
   virtual void OnAcceleratedWidgetDestroyed(gfx::AcceleratedWidget widget) = 0;
 
-  // Requests a cc::mojom::FrameSinkManager interface from mus-gpu.
+  // Requests a viz::mojom::FrameSinkManager interface from mus-gpu.
   virtual void CreateFrameSinkManager(
-      cc::mojom::FrameSinkManagerRequest request,
-      cc::mojom::FrameSinkManagerClientPtr client) = 0;
+      viz::mojom::FrameSinkManagerRequest request,
+      viz::mojom::FrameSinkManagerClientPtr client) = 0;
 };
 
 class DefaultGpuHost : public GpuHost, public mojom::GpuHost {
@@ -67,8 +67,8 @@ class DefaultGpuHost : public GpuHost, public mojom::GpuHost {
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
   void OnAcceleratedWidgetDestroyed(gfx::AcceleratedWidget widget) override;
   void CreateFrameSinkManager(
-      cc::mojom::FrameSinkManagerRequest request,
-      cc::mojom::FrameSinkManagerClientPtr client) override;
+      viz::mojom::FrameSinkManagerRequest request,
+      viz::mojom::FrameSinkManagerClientPtr client) override;
 
   // mojom::GpuHost:
   void DidInitialize(const gpu::GPUInfo& gpu_info,

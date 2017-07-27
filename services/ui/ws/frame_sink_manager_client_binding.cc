@@ -10,10 +10,10 @@ namespace ui {
 namespace ws {
 
 FrameSinkManagerClientBinding::FrameSinkManagerClientBinding(
-    cc::mojom::FrameSinkManagerClient* frame_sink_manager_client,
+    viz::mojom::FrameSinkManagerClient* frame_sink_manager_client,
     GpuHost* gpu_host)
     : frame_sink_manager_client_binding_(frame_sink_manager_client) {
-  cc::mojom::FrameSinkManagerClientPtr client_proxy;
+  viz::mojom::FrameSinkManagerClientPtr client_proxy;
   frame_sink_manager_client_binding_.Bind(mojo::MakeRequest(&client_proxy));
   gpu_host->CreateFrameSinkManager(mojo::MakeRequest(&frame_sink_manager_),
                                    std::move(client_proxy));
@@ -34,9 +34,9 @@ void FrameSinkManagerClientBinding::InvalidateFrameSinkId(
 void FrameSinkManagerClientBinding::CreateRootCompositorFrameSink(
     const viz::FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
-    cc::mojom::CompositorFrameSinkAssociatedRequest request,
-    cc::mojom::CompositorFrameSinkClientPtr client,
-    cc::mojom::DisplayPrivateAssociatedRequest display_private_request) {
+    viz::mojom::CompositorFrameSinkAssociatedRequest request,
+    viz::mojom::CompositorFrameSinkClientPtr client,
+    viz::mojom::DisplayPrivateAssociatedRequest display_private_request) {
   frame_sink_manager_->CreateRootCompositorFrameSink(
       frame_sink_id, surface_handle, std::move(request), std::move(client),
       std::move(display_private_request));
@@ -44,8 +44,8 @@ void FrameSinkManagerClientBinding::CreateRootCompositorFrameSink(
 
 void FrameSinkManagerClientBinding::CreateCompositorFrameSink(
     const viz::FrameSinkId& frame_sink_id,
-    cc::mojom::CompositorFrameSinkRequest request,
-    cc::mojom::CompositorFrameSinkClientPtr client) {
+    viz::mojom::CompositorFrameSinkRequest request,
+    viz::mojom::CompositorFrameSinkClientPtr client) {
   frame_sink_manager_->CreateCompositorFrameSink(
       frame_sink_id, std::move(request), std::move(client));
 }

@@ -446,7 +446,7 @@ void RenderWidgetHostViewChildFrame::DidReceiveCompositorFrameAck(
 }
 
 void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(
-    cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
+    viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   ResetCompositorFrameSinkSupport();
   renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
   CreateCompositorFrameSinkSupport();

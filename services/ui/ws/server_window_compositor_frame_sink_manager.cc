@@ -16,7 +16,7 @@ namespace ws {
 
 ServerWindowCompositorFrameSinkManager::ServerWindowCompositorFrameSinkManager(
     const viz::FrameSinkId& frame_sink_id,
-    cc::mojom::FrameSinkManager* frame_sink_manager)
+    viz::mojom::FrameSinkManager* frame_sink_manager)
     : frame_sink_id_(frame_sink_id), frame_sink_manager_(frame_sink_manager) {
   frame_sink_manager_->RegisterFrameSinkId(frame_sink_id_);
 }
@@ -28,9 +28,9 @@ ServerWindowCompositorFrameSinkManager::
 
 void ServerWindowCompositorFrameSinkManager::CreateRootCompositorFrameSink(
     gfx::AcceleratedWidget widget,
-    cc::mojom::CompositorFrameSinkAssociatedRequest sink_request,
-    cc::mojom::CompositorFrameSinkClientPtr client,
-    cc::mojom::DisplayPrivateAssociatedRequest display_request) {
+    viz::mojom::CompositorFrameSinkAssociatedRequest sink_request,
+    viz::mojom::CompositorFrameSinkClientPtr client,
+    viz::mojom::DisplayPrivateAssociatedRequest display_request) {
   // TODO(fsamuel): AcceleratedWidget cannot be transported over IPC for Mac
   // or Android. We should instead use GpuSurfaceTracker here on those
   // platforms.
@@ -40,8 +40,8 @@ void ServerWindowCompositorFrameSinkManager::CreateRootCompositorFrameSink(
 }
 
 void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSink(
-    cc::mojom::CompositorFrameSinkRequest request,
-    cc::mojom::CompositorFrameSinkClientPtr client) {
+    viz::mojom::CompositorFrameSinkRequest request,
+    viz::mojom::CompositorFrameSinkClientPtr client) {
   frame_sink_manager_->CreateCompositorFrameSink(
       frame_sink_id_, std::move(request), std::move(client));
 }

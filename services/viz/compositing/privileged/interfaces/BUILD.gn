@@ -6,11 +6,16 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
+    "frame_sink_manager.mojom",
     "renderer_settings.mojom",
   ]
 
   public_deps = [
-    "//services/viz/public/interfaces/compositing:interfaces",
+    "//cc/ipc:interfaces",
+    "//gpu/ipc/common:interfaces",
+    "//mojo/common:common_custom_types",
+    "//services/viz/public/interfaces/compositing",
+    "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
   ]
 }

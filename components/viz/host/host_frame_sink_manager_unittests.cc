@@ -8,13 +8,13 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "cc/ipc/frame_sink_manager.mojom.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface_manager.h"
+#include "services/viz/compositing/privileged/interfaces/frame_sink_manager.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,14 +47,14 @@ class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
                              SurfaceManager::LifetimeType::REFERENCES) {}
   ~MockFrameSinkManagerImpl() override = default;
 
-  // cc::mojom::FrameSinkManager:
+  // mojom::FrameSinkManager:
   MOCK_METHOD1(RegisterFrameSinkId, void(const FrameSinkId& frame_sink_id));
   MOCK_METHOD1(InvalidateFrameSinkId, void(const FrameSinkId& frame_sink_id));
   // Work around for gmock not supporting move-only types.
   void CreateCompositorFrameSink(
       const FrameSinkId& frame_sink_id,
-      cc::mojom::CompositorFrameSinkRequest request,
-      cc::mojom::CompositorFrameSinkClientPtr client) override {
+      mojom::CompositorFrameSinkRequest request,
+      mojom::CompositorFrameSinkClientPtr client) override {
     MockCreateCompositorFrameSink(frame_sink_id);
   }
   MOCK_METHOD1(MockCreateCompositorFrameSink,
@@ -91,8 +91,8 @@ class HostFrameSinkManagerTest : public testing::Test {
         false /* needs_sync_points */);
   }
 
-  cc::mojom::FrameSinkManagerClient* GetFrameSinkManagerClient() {
-    return static_cast<cc::mojom::FrameSinkManagerClient*>(host_manager_.get());
+  mojom::FrameSinkManagerClient* GetFrameSinkManagerClient() {
+    return static_cast<mojom::FrameSinkManagerClient*>(host_manager_.get());
   }
 
   bool FrameSinkDataExists(const FrameSinkId& frame_sink_id) {

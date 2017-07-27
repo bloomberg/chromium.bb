@@ -169,7 +169,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool LockMouse() override;
   void UnlockMouse() override;
   void DidCreateNewRendererCompositorFrameSink(
-      cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
+      viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
       override;
   void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
@@ -600,7 +600,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   float device_scale_factor_;
 
-  cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
+  viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
 
   // While this is a ui::EventHandler for targetting, |event_handler_| actually

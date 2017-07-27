@@ -6,8 +6,8 @@
 #define SERVICES_UI_WS_FRAME_SINK_MANAGER_CLIENT_BINDING_H_
 
 #include "base/macros.h"
-#include "cc/ipc/frame_sink_manager.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/viz/compositing/privileged/interfaces/frame_sink_manager.mojom.h"
 
 namespace ui {
 namespace ws {
@@ -19,28 +19,28 @@ class WindowServer;
 // its FrameSinkManager. FrameSinkManagerClientBinding exists so that a mock
 // implementation of FrameSinkManager can be injected for tests. WindowServer
 // owns its associated FrameSinkManagerClientBinding.
-class FrameSinkManagerClientBinding : public cc::mojom::FrameSinkManager {
+class FrameSinkManagerClientBinding : public viz::mojom::FrameSinkManager {
  public:
   FrameSinkManagerClientBinding(
-      cc::mojom::FrameSinkManagerClient* frame_sink_manager_client,
+      viz::mojom::FrameSinkManagerClient* frame_sink_manager_client,
       GpuHost* gpu_host);
   ~FrameSinkManagerClientBinding() override;
 
  private:
-  // cc::mojom::FrameSinkManager:
+  // viz::mojom::FrameSinkManager:
   void RegisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
   void InvalidateFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
   void CreateRootCompositorFrameSink(
       const viz::FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
-      cc::mojom::CompositorFrameSinkAssociatedRequest request,
-      cc::mojom::CompositorFrameSinkClientPtr client,
-      cc::mojom::DisplayPrivateAssociatedRequest display_private_request)
+      viz::mojom::CompositorFrameSinkAssociatedRequest request,
+      viz::mojom::CompositorFrameSinkClientPtr client,
+      viz::mojom::DisplayPrivateAssociatedRequest display_private_request)
       override;
   void CreateCompositorFrameSink(
       const viz::FrameSinkId& frame_sink_id,
-      cc::mojom::CompositorFrameSinkRequest request,
-      cc::mojom::CompositorFrameSinkClientPtr client) override;
+      viz::mojom::CompositorFrameSinkRequest request,
+      viz::mojom::CompositorFrameSinkClientPtr client) override;
   void RegisterFrameSinkHierarchy(
       const viz::FrameSinkId& parent_frame_sink_id,
       const viz::FrameSinkId& child_frame_sink_id) override;
@@ -51,9 +51,9 @@ class FrameSinkManagerClientBinding : public cc::mojom::FrameSinkManager {
                                 const viz::FrameSinkId& owner) override;
   void DropTemporaryReference(const viz::SurfaceId& surface_id) override;
 
-  mojo::Binding<cc::mojom::FrameSinkManagerClient>
+  mojo::Binding<viz::mojom::FrameSinkManagerClient>
       frame_sink_manager_client_binding_;
-  cc::mojom::FrameSinkManagerPtr frame_sink_manager_;
+  viz::mojom::FrameSinkManagerPtr frame_sink_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSinkManagerClientBinding);
 };

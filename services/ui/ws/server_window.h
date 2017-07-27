@@ -14,12 +14,12 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "cc/ipc/compositor_frame_sink.mojom.h"
-#include "cc/ipc/frame_sink_manager.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/ids.h"
+#include "services/viz/compositing/privileged/interfaces/frame_sink_manager.mojom.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -63,13 +63,13 @@ class ServerWindow {
   // existing.
   void CreateRootCompositorFrameSink(
       gfx::AcceleratedWidget widget,
-      cc::mojom::CompositorFrameSinkAssociatedRequest sink_request,
-      cc::mojom::CompositorFrameSinkClientPtr client,
-      cc::mojom::DisplayPrivateAssociatedRequest display_request);
+      viz::mojom::CompositorFrameSinkAssociatedRequest sink_request,
+      viz::mojom::CompositorFrameSinkClientPtr client,
+      viz::mojom::DisplayPrivateAssociatedRequest display_request);
 
   void CreateCompositorFrameSink(
-      cc::mojom::CompositorFrameSinkRequest request,
-      cc::mojom::CompositorFrameSinkClientPtr client);
+      viz::mojom::CompositorFrameSinkRequest request,
+      viz::mojom::CompositorFrameSinkClientPtr client);
 
   const WindowId& id() const { return id_; }
 

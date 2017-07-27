@@ -132,8 +132,8 @@ void GpuMain::CreateGpuService(mojom::GpuServiceRequest request,
 }
 
 void GpuMain::CreateFrameSinkManager(
-    cc::mojom::FrameSinkManagerRequest request,
-    cc::mojom::FrameSinkManagerClientPtr client) {
+    viz::mojom::FrameSinkManagerRequest request,
+    viz::mojom::FrameSinkManagerClientPtr client) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
   if (!gpu_service_ || !gpu_service_->is_initialized()) {
     pending_frame_sink_manager_request_ = std::move(request);
@@ -163,8 +163,8 @@ void GpuMain::InitOnGpuThread(
 }
 
 void GpuMain::CreateFrameSinkManagerInternal(
-    cc::mojom::FrameSinkManagerRequest request,
-    cc::mojom::FrameSinkManagerClientPtrInfo client_info) {
+    viz::mojom::FrameSinkManagerRequest request,
+    viz::mojom::FrameSinkManagerClientPtrInfo client_info) {
   DCHECK(!gpu_command_service_);
   DCHECK(gpu_service_);
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
@@ -180,10 +180,10 @@ void GpuMain::CreateFrameSinkManagerInternal(
 }
 
 void GpuMain::CreateFrameSinkManagerOnCompositorThread(
-    cc::mojom::FrameSinkManagerRequest request,
-    cc::mojom::FrameSinkManagerClientPtrInfo client_info) {
+    viz::mojom::FrameSinkManagerRequest request,
+    viz::mojom::FrameSinkManagerClientPtrInfo client_info) {
   DCHECK(!frame_sink_manager_);
-  cc::mojom::FrameSinkManagerClientPtr client;
+  viz::mojom::FrameSinkManagerClientPtr client;
   client.Bind(std::move(client_info));
 
   display_provider_ = base::MakeUnique<viz::GpuDisplayProvider>(

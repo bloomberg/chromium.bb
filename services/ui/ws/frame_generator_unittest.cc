@@ -33,14 +33,14 @@ const viz::SurfaceInfo kArbitrarySurfaceInfo(kArbitrarySurfaceId,
 
 // TestClientBinding Observes a BeginFrame and accepts CompositorFrame submitted
 // from FrameGenerator. It provides a way to inspect CompositorFrames.
-class TestClientBinding : public cc::mojom::CompositorFrameSink,
+class TestClientBinding : public viz::mojom::CompositorFrameSink,
                           public viz::BeginFrameObserver {
  public:
-  explicit TestClientBinding(cc::mojom::CompositorFrameSinkClient* sink_client)
+  explicit TestClientBinding(viz::mojom::CompositorFrameSinkClient* sink_client)
       : sink_client_(sink_client) {}
   ~TestClientBinding() override = default;
 
-  // cc::mojom::CompositorFrameSink implementation:
+  // viz::mojom::CompositorFrameSink implementation:
   void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override {
     ++frames_submitted_;
@@ -94,7 +94,7 @@ class TestClientBinding : public cc::mojom::CompositorFrameSink,
   }
 
  private:
-  cc::mojom::CompositorFrameSinkClient* sink_client_;
+  viz::mojom::CompositorFrameSinkClient* sink_client_;
   viz::BeginFrameArgs last_begin_frame_args_;
   cc::CompositorFrame last_frame_;
   viz::BeginFrameSource* begin_frame_source_ = nullptr;

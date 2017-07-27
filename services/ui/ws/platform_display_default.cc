@@ -268,10 +268,10 @@ void PlatformDisplayDefault::OnAcceleratedWidgetAvailable(
   widget_ = widget;
   delegate_->OnAcceleratedWidgetAvailable();
 
-  cc::mojom::CompositorFrameSinkAssociatedPtr compositor_frame_sink;
-  cc::mojom::DisplayPrivateAssociatedPtr display_private;
-  cc::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client;
-  cc::mojom::CompositorFrameSinkClientRequest
+  viz::mojom::CompositorFrameSinkAssociatedPtr compositor_frame_sink;
+  viz::mojom::DisplayPrivateAssociatedPtr display_private;
+  viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client;
+  viz::mojom::CompositorFrameSinkClientRequest
       compositor_frame_sink_client_request =
           mojo::MakeRequest(&compositor_frame_sink_client);
 

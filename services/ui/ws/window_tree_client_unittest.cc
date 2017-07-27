@@ -2195,9 +2195,9 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
   // Submit a CompositorFrame to window_1_100_in_ws2 (the embedded window in
   // wt2) and make sure the server gets it.
   {
-    cc::mojom::CompositorFrameSinkPtr surface_ptr;
-    cc::mojom::CompositorFrameSinkClientRequest client_request;
-    cc::mojom::CompositorFrameSinkClientPtr surface_client_ptr;
+    viz::mojom::CompositorFrameSinkPtr surface_ptr;
+    viz::mojom::CompositorFrameSinkClientRequest client_request;
+    viz::mojom::CompositorFrameSinkClientPtr surface_client_ptr;
     client_request = mojo::MakeRequest(&surface_client_ptr);
     wt2()->AttachCompositorFrameSink(window_1_100_in_ws2,
                                      mojo::MakeRequest(&surface_ptr),
@@ -2232,9 +2232,9 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
   // Submit a CompositorFrame to window_2_101_in_ws2 (a regular window in
   // wt2) and make sure client gets it.
   {
-    cc::mojom::CompositorFrameSinkPtr surface_ptr;
-    cc::mojom::CompositorFrameSinkClientRequest client_request;
-    cc::mojom::CompositorFrameSinkClientPtr surface_client_ptr;
+    viz::mojom::CompositorFrameSinkPtr surface_ptr;
+    viz::mojom::CompositorFrameSinkClientRequest client_request;
+    viz::mojom::CompositorFrameSinkClientPtr surface_client_ptr;
     client_request = mojo::MakeRequest(&surface_client_ptr);
     wt2()->AttachCompositorFrameSink(window_2_101,
                                      mojo::MakeRequest(&surface_ptr),

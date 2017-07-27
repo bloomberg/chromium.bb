@@ -48,8 +48,8 @@ void OffscreenCanvasProviderImpl::CreateOffscreenCanvasSurface(
 
 void OffscreenCanvasProviderImpl::CreateCompositorFrameSink(
     const viz::FrameSinkId& frame_sink_id,
-    cc::mojom::CompositorFrameSinkClientPtr client,
-    cc::mojom::CompositorFrameSinkRequest request) {
+    viz::mojom::CompositorFrameSinkClientPtr client,
+    viz::mojom::CompositorFrameSinkRequest request) {
   // TODO(kylechar): Kill the renderer too.
   if (frame_sink_id.client_id() != renderer_client_id_) {
     DLOG(ERROR) << "Invalid client id " << frame_sink_id;

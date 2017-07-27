@@ -25,7 +25,6 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
-#include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
@@ -50,6 +49,7 @@
 #include "content/public/common/url_constants.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
@@ -105,7 +105,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public InputDispositionHandler,
       public TouchEmulatorClient,
       public NON_EXPORTED_BASE(SyntheticGestureController::Delegate),
-      public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSink),
+      public NON_EXPORTED_BASE(viz::mojom::CompositorFrameSink),
       public NON_EXPORTED_BASE(viz::SharedBitmapAllocationObserver),
       public IPC::Listener {
  public:
@@ -568,8 +568,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void RequestCompositionUpdates(bool immediate_request, bool monitor_updates);
 
   void RequestCompositorFrameSink(
-      cc::mojom::CompositorFrameSinkRequest request,
-      cc::mojom::CompositorFrameSinkClientPtr client);
+      viz::mojom::CompositorFrameSinkRequest request,
+      viz::mojom::CompositorFrameSinkClientPtr client);
 
   const cc::CompositorFrameMetadata& last_frame_metadata() {
     return last_frame_metadata_;
@@ -577,7 +577,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool HasGestureStopped() override;
 
-  // cc::mojom::CompositorFrameSink implementation.
+  // viz::mojom::CompositorFrameSink implementation.
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
@@ -975,8 +975,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   viz::LocalSurfaceId last_local_surface_id_;
   RenderWidgetSurfaceProperties last_surface_properties_;
 
-  mojo::Binding<cc::mojom::CompositorFrameSink> compositor_frame_sink_binding_;
-  cc::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_;
+  mojo::Binding<viz::mojom::CompositorFrameSink> compositor_frame_sink_binding_;
+  viz::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_;
 
   cc::CompositorFrameMetadata last_frame_metadata_;
 
