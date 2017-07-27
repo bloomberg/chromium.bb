@@ -305,6 +305,7 @@ public class BottomSheetNewTabControllerTest {
             public void run() {
                 mBottomSheet.loadUrlInNewTab(new LoadUrlParams("about:blank"));
                 layoutManager.showOverview(false);
+                mBottomSheet.endAnimations();
             }
         });
 
