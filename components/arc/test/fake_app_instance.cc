@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 
 namespace mojo {
 
@@ -277,7 +278,8 @@ void FakeAppInstance::GetRecentAndSuggestedAppsFromPlayStore(
     const std::string& query,
     int32_t max_results,
     const GetRecentAndSuggestedAppsFromPlayStoreCallback& callback) {
-  callback.Run(std::vector<arc::mojom::AppDiscoveryResultPtr>());
+  callback.Run(arc::mojom::AppDiscoveryRequestState::SUCCESS,
+               std::vector<arc::mojom::AppDiscoveryResultPtr>());
 }
 
 void FakeAppInstance::StartPaiFlow() {

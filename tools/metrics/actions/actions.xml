@@ -1652,6 +1652,22 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Arc.Launcher.Search.OpenPlayStore.InstantApps">
+  <owner>hejq@chromium.com</owner>
+  <description>
+    Recorded when the user opens the an instant app from a Play Store app search
+    query.
+  </description>
+</action>
+
+<action name="Arc.Launcher.Search.OpenPlayStore.UninstalledApps">
+  <owner>hejq@chromium.com</owner>
+  <description>
+    Recorded when the user opens the installing page of a Play Store app search
+    result.
+  </description>
+</action>
+
 <action name="AutoDetectChange">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

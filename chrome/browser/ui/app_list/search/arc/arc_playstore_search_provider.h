@@ -29,7 +29,9 @@ class ArcPlayStoreSearchProvider : public SearchProvider {
   void Stop() override;
 
  private:
-  void OnResults(std::vector<arc::mojom::AppDiscoveryResultPtr> results);
+  void OnResults(base::TimeTicks query_start_time,
+                 arc::mojom::AppDiscoveryRequestState state,
+                 std::vector<arc::mojom::AppDiscoveryResultPtr> results);
 
   const int max_results_;
   // |profile_| is owned by ProfileInfo.

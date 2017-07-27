@@ -7,10 +7,12 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_playstore_app_context_menu.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/grit/component_extension_resources.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
@@ -178,6 +180,15 @@ void ArcPlayStoreSearchResult::Open(int event_flags) {
   if (app_instance == nullptr)
     return;
 
+  // Open the installing page of this result in Play Store.
+  RecordHistogram(is_instant_app() ? PLAY_STORE_INSTANT_APP
+                                   : PLAY_STORE_UNINSTALLED_APP);
+  base::RecordAction(
+      is_instant_app()
+          ? base::UserMetricsAction(
+                "Arc.Launcher.Search.OpenPlayStore.InstantApps")
+          : base::UserMetricsAction(
+                "Arc.Launcher.Search.OpenPlayStore.UninstalledApps"));
   app_instance->LaunchIntent(install_intent_uri().value(), base::nullopt);
 }
 
