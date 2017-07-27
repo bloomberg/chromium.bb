@@ -5,6 +5,8 @@
 source_set("bubble") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "bubble_util.h",
+    "bubble_util.mm",
     "bubble_view.h",
     "bubble_view.mm",
     "bubble_view_controller.h",
@@ -12,6 +14,7 @@ source_set("bubble") {
   ]
   deps = [
     "//base",
+    "//base:i18n",
   ]
   libs = [ "UIKit.framework" ]
 }
@@ -20,11 +23,13 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "bubble_util_unittest.mm",
     "bubble_view_controller_unittest.mm",
   ]
   deps = [
     ":bubble",
     "//base",
+    "//base:i18n",
     "//testing/gtest",
   ]
 }

@@ -10,17 +10,18 @@
 #error "This file requires ARC support."
 #endif
 
+const CGFloat kBubbleAlignmentOffset = 10.0f;
+
 @interface BubbleView ()
 // Label containing the text displayed on the bubble.
 @property(nonatomic, weak) UILabel* label;
 @end
 
 @implementation BubbleView
-
 @synthesize label = _label;
 
 - (instancetype)initWithText:(NSString*)text
-                   direction:(BubbleArrowDirection)arrowDirection
+              arrowDirection:(BubbleArrowDirection)direction
                    alignment:(BubbleAlignment)alignment {
   self = [super initWithFrame:CGRectZero];
   return self;

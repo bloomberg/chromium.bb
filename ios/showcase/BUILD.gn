@@ -26,6 +26,7 @@ ios_app_bundle("showcase") {
 group("features") {
   deps = [
     "//ios/clean/chrome/browser/ui/tools:tools_ui",
+    "//ios/showcase/bubble",
     "//ios/showcase/content_suggestions",
     "//ios/showcase/ntp",
     "//ios/showcase/payments",
@@ -56,6 +57,7 @@ ios_eg_test("ios_showcase_egtests") {
     "//ios/showcase/core:main",
 
     # Add all eg_tests targets below.
+    "//ios/showcase/bubble:eg_tests",
     "//ios/showcase/content_suggestions:eg_tests",
     "//ios/showcase/core:eg_tests",
     "//ios/showcase/payments:eg_tests",
