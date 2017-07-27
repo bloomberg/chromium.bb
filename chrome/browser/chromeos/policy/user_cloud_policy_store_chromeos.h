@@ -7,14 +7,12 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_store_base.h"
@@ -29,6 +27,8 @@ class CryptohomeClient;
 }
 
 namespace policy {
+
+class CachedPolicyKeyLoaderChromeOS;
 
 // Implements a policy store backed by the Chrome OS' session_manager, which
 // takes care of persisting policy to disk and is accessed via DBus calls
@@ -83,43 +83,15 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   // policy and publishes it if validation succeeded.
   void OnRetrievedPolicyValidated(UserCloudPolicyValidator* validator);
 
-  // Invokes |callback| after reloading |policy_key_|.
-  void ReloadPolicyKey(const base::Closure& callback);
-
-  // Reads the contents of |path| into |key|.
-  static void LoadPolicyKey(const base::FilePath& path,
-                            std::string* key);
-
-  // Callback for the key reloading.
-  void OnPolicyKeyReloaded(std::string* key,
-                           const base::Closure& callback);
-
-  // Invokes |callback| after creating |policy_key_|, if it hasn't been created
-  // yet; otherwise invokes |callback| immediately.
-  void EnsurePolicyKeyLoaded(const base::Closure& callback);
-
-  // Callback for getting the sanitized username from |cryptohome_client_|.
-  void OnGetSanitizedUsername(const base::Closure& callback,
-                              chromeos::DBusMethodCallStatus call_status,
-                              const std::string& sanitized_username);
-
   std::unique_ptr<UserCloudPolicyValidator> CreateValidatorForLoad(
       std::unique_ptr<enterprise_management::PolicyFetchResponse> policy);
 
-  chromeos::CryptohomeClient* cryptohome_client_;
   chromeos::SessionManagerClient* session_manager_client_;
   const AccountId account_id_;
-  base::FilePath user_policy_key_dir_;
   bool is_active_directory_;
 
-  // The current key used to verify signatures of policy. This value is loaded
-  // from the key cache file (which is owned and kept up to date by the Chrome
-  // OS session manager). This is, generally, different from
-  // |policy_signature_public_key_|, which always corresponds to the currently
-  // effective policy.
-  std::string cached_policy_key_;
-  bool cached_policy_key_loaded_ = false;
-  base::FilePath cached_policy_key_path_;
+  // Used to load the policy key provided by session manager as a file.
+  std::unique_ptr<CachedPolicyKeyLoaderChromeOS> cached_policy_key_loader_;
 
   base::WeakPtrFactory<UserCloudPolicyStoreChromeOS> weak_factory_;
 
