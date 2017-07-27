@@ -39,6 +39,8 @@ enum class SearchAnswerRequestResult {
 };
 
 constexpr char kSearchAnswerHasResult[] = "SearchAnswer-HasResult";
+constexpr char kSearchAnswerIssuedQuery[] = "SearchAnswer-IssuedQuery";
+constexpr char kSearchAnswerTitle[] = "SearchAnswer-Title";
 
 void RecordRequestResult(SearchAnswerRequestResult request_result) {
   UMA_HISTOGRAM_ENUMERATION("SearchAnswer.RequestResult", request_result,
@@ -89,11 +91,7 @@ void AnswerCardSearchProvider::Start(bool is_voice_query,
     return;
 
   // Start a request to the answer server.
-  result_url_ =
-      template_url_service_->GetDefaultSearchProvider()
-          ->url_ref()
-          .ReplaceSearchTerms(TemplateURLRef::SearchTermsArgs(query),
-                              template_url_service_->search_terms_data());
+  result_url_ = GetResultUrl(query);
 
   // Lifetime of |prefixed_query| should be longer than the one of
   // |replacements|.
@@ -252,16 +250,38 @@ bool AnswerCardSearchProvider::ParseResponseHeaders(
     return false;
   }
   if (!headers->HasHeaderValue(kSearchAnswerHasResult, "true")) {
-    VLOG(1) << "Failed to parse response headers: " << kSearchAnswerHasResult
-            << " header != true";
+    LOG(ERROR) << "Failed to parse response headers: " << kSearchAnswerHasResult
+               << " header != true";
     return false;
   }
-  if (!headers->GetNormalizedHeader("SearchAnswer-Title", &result_title_)) {
-    LOG(ERROR) << "Failed to parse response headers: SearchAnswer-Title header "
-                  "is not present";
+  if (!headers->GetNormalizedHeader(kSearchAnswerTitle, &result_title_)) {
+    LOG(ERROR) << "Failed to parse response headers: " << kSearchAnswerTitle
+               << " header is not present";
     return false;
   }
+
+  std::string issued_query;
+  // TODO(749320): Make the header mandatory once the production server starts
+  // serving it.
+  if (headers->GetNormalizedHeader(kSearchAnswerIssuedQuery, &issued_query)) {
+    // The header contains the autocompleted query that corresponds to the card
+    // contents. Use it for the open-URL, and for deduplication with the omnibox
+    // search results.
+    result_url_ = GetResultUrl(base::UTF8ToUTF16(issued_query));
+  } else {
+    VLOG(1) << "Warning: " << kSearchAnswerIssuedQuery
+            << " header is not present";
+  }
+
   return true;
+}
+
+std::string AnswerCardSearchProvider::GetResultUrl(
+    const base::string16& query) const {
+  return template_url_service_->GetDefaultSearchProvider()
+      ->url_ref()
+      .ReplaceSearchTerms(TemplateURLRef::SearchTermsArgs(query),
+                          template_url_service_->search_terms_data());
 }
 
 }  // namespace app_list
