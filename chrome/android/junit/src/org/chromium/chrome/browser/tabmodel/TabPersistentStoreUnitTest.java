@@ -224,6 +224,59 @@ public class TabPersistentStoreUnitTest {
         verify(mNormalTabCreator).createFrozenTab(eq(ntpState), eq(1), anyInt());
     }
 
+    @Test
+    @Feature("TabPersistentStore")
+    public void testActiveEmptyIncognitoNtpNotIgnoredDuringRestore() {
+        when(mTabModelSelector.isIncognitoSelected()).thenReturn(true);
+        when(mTabModelSelector.getCurrentModel()).thenReturn(mIncognitoTabModel);
+
+        mPersistentStore = new TabPersistentStore(
+                mPersistencePolicy, mTabModelSelector, mTabCreatorManager, mObserver);
+        mPersistentStore.initializeRestoreVars(false);
+
+        LoadUrlParamsUrlMatcher paramsMatcher = new LoadUrlParamsUrlMatcher(UrlConstants.NTP_URL);
+        Tab emptyNtp = mock(Tab.class);
+        when(mIncognitoTabCreator.createNewTab(
+                     argThat(paramsMatcher), eq(TabLaunchType.FROM_RESTORE), (Tab) isNull()))
+                .thenReturn(emptyNtp);
+
+        TabRestoreDetails emptyNtpDetails =
+                new TabRestoreDetails(1, 0, true, UrlConstants.NTP_URL, false);
+        mPersistentStore.restoreTab(emptyNtpDetails, null, true);
+
+        verify(mIncognitoTabCreator)
+                .createNewTab(argThat(new LoadUrlParamsUrlMatcher(UrlConstants.NTP_URL)),
+                        eq(TabLaunchType.FROM_RESTORE), (Tab) isNull());
+    }
+
+    @Test
+    @Feature("TabPersistentStore")
+    public void testNotActiveIncognitoNtpIgnoredDuringRestore() {
+        mPersistentStore = new TabPersistentStore(
+                mPersistencePolicy, mTabModelSelector, mTabCreatorManager, mObserver);
+        mPersistentStore.initializeRestoreVars(false);
+
+        TabRestoreDetails emptyNtpDetails =
+                new TabRestoreDetails(1, 0, true, UrlConstants.NTP_URL, false);
+        mPersistentStore.restoreTab(emptyNtpDetails, null, false);
+
+        verifyZeroInteractions(mIncognitoTabCreator);
+    }
+
+    @Test
+    @Feature("TabPersistentStore")
+    public void testActiveEmptyIncognitoNtpIgnoredDuringRestoreIfIncognitoLoadingIsDisabled() {
+        mPersistentStore = new TabPersistentStore(
+                mPersistencePolicy, mTabModelSelector, mTabCreatorManager, mObserver);
+        mPersistentStore.initializeRestoreVars(true);
+
+        TabRestoreDetails emptyNtpDetails =
+                new TabRestoreDetails(1, 0, true, UrlConstants.NTP_URL, false);
+        mPersistentStore.restoreTab(emptyNtpDetails, null, true);
+
+        verifyZeroInteractions(mIncognitoTabCreator);
+    }
+
     private static class LoadUrlParamsUrlMatcher implements ArgumentMatcher<LoadUrlParams> {
         private final String mUrl;
 

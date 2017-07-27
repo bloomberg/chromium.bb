@@ -565,8 +565,12 @@ public class TabPersistentStore extends TabPersister {
                 Log.w(TAG, "Failed to restore tab: not enough info about its type was available.");
                 return;
             } else if (isIncognito) {
-                Log.i(TAG, "Failed to restore Incognito tab: its TabState could not be restored.");
-                return;
+                if (!NewTabPage.isNTPUrl(tabToRestore.url) || !setAsActive
+                        || mCancelIncognitoTabLoads) {
+                    Log.i(TAG,
+                            "Failed to restore Incognito tab: its TabState could not be restored.");
+                    return;
+                }
             }
         }
 
