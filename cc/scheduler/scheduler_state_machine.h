@@ -255,8 +255,10 @@ class CC_EXPORT SchedulerStateMachine {
   // Indicates that scheduled BeginMainFrame is started.
   void NotifyBeginMainFrameStarted();
 
-  // Indicates that the pending tree is ready for activation.
-  void NotifyReadyToActivate();
+  // Indicates that the pending tree is ready for activation. Returns whether
+  // the notification received updated the state for the current pending tree,
+  // if any.
+  bool NotifyReadyToActivate();
 
   // Indicates the active tree's visible tiles are ready to be drawn.
   void NotifyReadyToDraw();
