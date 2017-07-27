@@ -829,7 +829,7 @@ bool InputMethodController::SetSelectionOffsets(
 
 bool InputMethodController::SetSelectionOffsets(
     const PlainTextRange& selection_offsets,
-    TypingContinuation Typing_continuation) {
+    TypingContinuation typing_continuation) {
   const EphemeralRange range = EphemeralRangeForOffsets(selection_offsets);
   if (range.IsNull())
     return false;
@@ -837,7 +837,7 @@ bool InputMethodController::SetSelectionOffsets(
   GetFrame().Selection().SetSelection(
       SelectionInDOMTree::Builder().SetBaseAndExtent(range).Build(),
       SetSelectionData::Builder()
-          .SetShouldCloseTyping(Typing_continuation == TypingContinuation::kEnd)
+          .SetShouldCloseTyping(typing_continuation == TypingContinuation::kEnd)
           .Build());
   return true;
 }
