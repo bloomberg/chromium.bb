@@ -227,11 +227,6 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   if (abort_when_bfc_resolved_)
     DCHECK(!constraint_space_->FloatsBfcOffset());
 
-  NGBlockChildIterator child_iterator(Node().FirstChild(), BreakToken());
-  NGBlockChildIterator::Entry entry = child_iterator.NextChild();
-  NGLayoutInputNode child = entry.node;
-  NGBreakToken* child_break_token = entry.token;
-
   // If we are resuming from a break token our start border and padding is
   // within a previous fragment.
   content_size_ =
@@ -277,7 +272,12 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
       NGPreviousInflowPosition{input_bfc_block_offset, content_size_,
                                input_margin_strut};
 
-  while (child) {
+  NGBlockChildIterator child_iterator(Node().FirstChild(), BreakToken());
+  for (auto entry = child_iterator.NextChild();
+       NGLayoutInputNode child = entry.node;
+       entry = child_iterator.NextChild()) {
+    NGBreakToken* child_break_token = entry.token;
+
     if (child.IsOutOfFlowPositioned()) {
       DCHECK(!child_break_token);
       HandleOutOfFlowPositioned(previous_inflow_position.value(),
@@ -296,10 +296,6 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
         return container_builder_.Abort(NGLayoutResult::kBfcOffsetResolved);
       }
     }
-
-    entry = child_iterator.NextChild();
-    child = entry.node;
-    child_break_token = entry.token;
 
     if (IsOutOfSpace(ConstraintSpace(), content_size_))
       break;
