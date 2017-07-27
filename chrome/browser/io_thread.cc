@@ -462,11 +462,8 @@ void IOThread::Init() {
 
   // Export ssl keys if log file specified.
   base::FilePath ssl_keylog_file = GetSSLKeyLogFile(command_line);
-  if (!ssl_keylog_file.empty()) {
-    net::SSLClientSocket::SetSSLKeyLogFile(
-        ssl_keylog_file,
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
-  }
+  if (!ssl_keylog_file.empty())
+    net::SSLClientSocket::SetSSLKeyLogFile(ssl_keylog_file);
 
   DCHECK(!globals_);
   globals_ = new Globals;

@@ -484,7 +484,7 @@ TEST_F(StaleHostResolverTest, CreatedByContext) {
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log, nullptr);
+  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(base::WrapUnique(
       new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect())));

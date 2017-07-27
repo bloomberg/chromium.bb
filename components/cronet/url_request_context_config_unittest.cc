@@ -69,7 +69,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log, nullptr);
+  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
   EXPECT_FALSE(config.effective_experimental_options->HasKey("UnknownOption"));
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
@@ -152,7 +152,7 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log, nullptr);
+  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       base::MakeUnique<net::ProxyConfigServiceFixed>(

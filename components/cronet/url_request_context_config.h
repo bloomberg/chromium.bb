@@ -19,10 +19,6 @@
 #include "net/http/http_network_session.h"
 #include "net/nqe/effective_connection_type.h"
 
-namespace base {
-class SequencedTaskRunner;
-}  // namespace base
-
 namespace net {
 class CertVerifier;
 class NetLog;
@@ -120,8 +116,7 @@ struct URLRequestContextConfig {
   // Configures |context_builder| based on |this|.
   void ConfigureURLRequestContextBuilder(
       net::URLRequestContextBuilder* context_builder,
-      net::NetLog* net_log,
-      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner);
+      net::NetLog* net_log);
 
   // Enable QUIC.
   const bool enable_quic;
@@ -188,8 +183,7 @@ struct URLRequestContextConfig {
   void ParseAndSetExperimentalOptions(
       net::URLRequestContextBuilder* context_builder,
       net::HttpNetworkSession::Params* session_params,
-      net::NetLog* net_log,
-      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner);
+      net::NetLog* net_log);
 
   // Experimental options encoded as a string in a JSON format containing
   // experiments and their corresponding configuration options. The format

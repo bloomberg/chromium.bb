@@ -158,7 +158,6 @@ class CronetEnvironment {
 
   std::unique_ptr<base::Thread> network_io_thread_;
   std::unique_ptr<base::Thread> network_cache_thread_;
-  std::unique_ptr<base::Thread> file_thread_;
   std::unique_ptr<base::Thread> file_user_blocking_thread_;
   scoped_refptr<base::SequencedTaskRunner> pref_store_worker_pool_;
   std::unique_ptr<net::CertVerifier> mock_cert_verifier_;
