@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
+#include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/metrics/statistics_recorder.h"
@@ -18,6 +19,8 @@ struct InitGlobals {
   InitGlobals()
       : scoped_task_environment(
             base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+    base::CommandLine::Init(0, nullptr);
+
     // Set up ICU. ICU is used internally by GURL, which is used throughout the
     // //net code. Initializing ICU is important to prevent fuzztests from
     // asserting when handling non-ASCII urls.
