@@ -55,6 +55,7 @@
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebLayer.h"
+#include "public/platform/WebLayerStickyPositionConstraint.h"
 
 namespace blink {
 
@@ -67,16 +68,20 @@ inline String IdForLayer(const GraphicsLayer* graphics_layer) {
   return String::Number(graphics_layer->PlatformLayer()->Id());
 }
 
+static std::unique_ptr<protocol::DOM::Rect> BuildObjectForRect(
+    const WebRect& rect) {
+  return protocol::DOM::Rect::create()
+      .setX(rect.x)
+      .setY(rect.y)
+      .setHeight(rect.height)
+      .setWidth(rect.width)
+      .build();
+}
+
 static std::unique_ptr<protocol::LayerTree::ScrollRect> BuildScrollRect(
     const WebRect& rect,
     const String& type) {
-  std::unique_ptr<protocol::DOM::Rect> rect_object =
-      protocol::DOM::Rect::create()
-          .setX(rect.x)
-          .setY(rect.y)
-          .setHeight(rect.height)
-          .setWidth(rect.width)
-          .build();
+  std::unique_ptr<protocol::DOM::Rect> rect_object = BuildObjectForRect(rect);
   std::unique_ptr<protocol::LayerTree::ScrollRect> scroll_rect_object =
       protocol::LayerTree::ScrollRect::create()
           .setRect(std::move(rect_object))
@@ -113,6 +118,38 @@ BuildScrollRectsForLayer(GraphicsLayer* graphics_layer,
         protocol::LayerTree::ScrollRect::TypeEnum::WheelEventHandler));
   }
   return scroll_rects->length() ? std::move(scroll_rects) : nullptr;
+}
+
+static std::unique_ptr<protocol::LayerTree::StickyPositionConstraint>
+BuildStickyInfoForLayer(WebLayer* layer) {
+  WebLayerStickyPositionConstraint constraints =
+      layer->StickyPositionConstraint();
+  if (!constraints.is_sticky)
+    return nullptr;
+
+  std::unique_ptr<protocol::DOM::Rect> sticky_box_rect =
+      BuildObjectForRect(constraints.scroll_container_relative_sticky_box_rect);
+
+  std::unique_ptr<protocol::DOM::Rect> containing_block_rect =
+      BuildObjectForRect(
+          constraints.scroll_container_relative_containing_block_rect);
+
+  std::unique_ptr<protocol::LayerTree::StickyPositionConstraint>
+      constraints_obj =
+          protocol::LayerTree::StickyPositionConstraint::create()
+              .setStickyBoxRect(std::move(sticky_box_rect))
+              .setContainingBlockRect(std::move(containing_block_rect))
+              .build();
+  if (constraints.nearest_layer_shifting_sticky_box >= 0) {
+    constraints_obj->setNearestLayerShiftingStickyBox(
+        String::Number(constraints.nearest_layer_shifting_sticky_box));
+  }
+  if (constraints.nearest_layer_shifting_containing_block >= 0) {
+    constraints_obj->setNearestLayerShiftingContainingBlock(
+        String::Number(constraints.nearest_layer_shifting_containing_block));
+  }
+
+  return constraints_obj;
 }
 
 static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
@@ -165,6 +202,10 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
       BuildScrollRectsForLayer(graphics_layer, report_wheel_event_listeners);
   if (scroll_rects)
     layer_object->setScrollRects(std::move(scroll_rects));
+  std::unique_ptr<protocol::LayerTree::StickyPositionConstraint> sticky_info =
+      BuildStickyInfoForLayer(web_layer);
+  if (sticky_info)
+    layer_object->setStickyPositionConstraint(std::move(sticky_info));
   return layer_object;
 }
 

@@ -19,11 +19,11 @@
 
   function dumpLayers(layers) {
     function replacer(key, value) {
-      if (['layerId', 'parentLayerId', 'backendNodeId', 'paintCount'].indexOf(key) >= 0)
+      if (['layerId', 'parentLayerId', 'backendNodeId', 'paintCount', 'nearestLayerShiftingContainingBlock'].indexOf(key) >= 0)
         return typeof(value);
       // some values differ based on port, but the ones we most
-      // care about will always be less or equal 100.
-      if ((key === 'width' || key === 'height') && value > 100)
+      // care about will always be less or equal 200.
+      if ((key === 'width' || key === 'height') && value > 200)
         return typeof(value);
       return value;
     }

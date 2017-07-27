@@ -102,6 +102,24 @@ function initialize_LayerTreeTests()
         InspectorTest.layerTreeModel().layerTree().forEachLayer(dumpScrollRectsForLayer.bind(this));
     }
 
+    InspectorTest.dumpModelStickyPositionConstraint = function()
+    {
+        function dumpModelStickyPositionConstraintForLayer(layer)
+        {
+          // To avoid infinite recursion between SDK.Layer.StickyPositionConstraint
+          // and SDK.Layer, define a custom formatter for the SDK.Layer members.
+          var stickyFormatters = {
+            "_nearestLayerShiftingContainingBlock": "formatAsTypeNameOrNull",
+            "_nearestLayerShiftingStickyBox": "formatAsTypeNameOrNull"
+          };
+          if (layer._stickyPositionConstraint)
+            InspectorTest.addObject(layer._stickyPositionConstraint, stickyFormatters);
+        }
+
+        InspectorTest.addResult("Model elements dump");
+        InspectorTest.layerTreeModel().layerTree().forEachLayer(dumpModelStickyPositionConstraintForLayer.bind(this));
+    }
+
     InspectorTest.dispatchMouseEvent = function(eventType, button, element, offsetX, offsetY)
     {
         var totalOffset = element.totalOffset();

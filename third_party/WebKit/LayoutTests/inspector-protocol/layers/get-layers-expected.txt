@@ -55,6 +55,79 @@ Tests LayerTree domain reporting layers.
         "height": 50,
         "paintCount": "number",
         "drawsContent": true
+    },
+    {
+        "layerId": "string",
+        "parentLayerId": "string",
+        "backendNodeId": "number",
+        "offsetX": 400,
+        "offsetY": 0,
+        "width": 100,
+        "height": 100,
+        "paintCount": "number",
+        "drawsContent": true
+    },
+    {
+        "layerId": "string",
+        "parentLayerId": "string",
+        "backendNodeId": "number",
+        "offsetX": 0,
+        "offsetY": 0,
+        "width": 100,
+        "height": 50,
+        "paintCount": "number",
+        "drawsContent": true,
+        "stickyPositionConstraint": {
+            "stickyBoxRect": {
+                "x": 0,
+                "y": 0,
+                "width": 100,
+                "height": 50
+            },
+            "containingBlockRect": {
+                "x": 0,
+                "y": 0,
+                "width": 100,
+                "height": 200
+            }
+        }
+    },
+    {
+        "layerId": "string",
+        "parentLayerId": "string",
+        "backendNodeId": "number",
+        "offsetX": 0,
+        "offsetY": 0,
+        "width": 100,
+        "height": 25,
+        "paintCount": "number",
+        "drawsContent": true,
+        "stickyPositionConstraint": {
+            "stickyBoxRect": {
+                "x": 0,
+                "y": 0,
+                "width": 100,
+                "height": 25
+            },
+            "containingBlockRect": {
+                "x": 0,
+                "y": 0,
+                "width": 100,
+                "height": 50
+            },
+            "nearestLayerShiftingContainingBlock": "string"
+        }
+    },
+    {
+        "layerId": "string",
+        "parentLayerId": "string",
+        "backendNodeId": "number",
+        "offsetX": 0,
+        "offsetY": 0,
+        "width": 100,
+        "height": 200,
+        "paintCount": "number",
+        "drawsContent": false
     }
 ]
 
@@ -113,6 +186,79 @@ Tests LayerTree domain reporting layers.
         "height": 50,
         "paintCount": "number",
         "drawsContent": true
+    },
+    {
+        "layerId": "string",
+        "parentLayerId": "string",
+        "backendNodeId": "number",
+        "offsetX": 400,
+        "offsetY": 0,
+        "width": 100,
+        "height": 100,
+        "paintCount": "number",
+        "drawsContent": true
+    },
+    {
+        "layerId": "string",
+        "parentLayerId": "string",
+        "backendNodeId": "number",
+        "offsetX": 0,
+        "offsetY": 0,
+        "width": 100,
+        "height": 50,
+        "paintCount": "number",
+        "drawsContent": true,
+        "stickyPositionConstraint": {
+            "stickyBoxRect": {
+                "x": 0,
+                "y": 0,
+                "width": 100,
+                "height": 50
+            },
+            "containingBlockRect": {
+                "x": 0,
+                "y": 0,
+                "width": 100,
+                "height": 200
+            }
+        }
+    },
+    {
+        "layerId": "string",
+        "parentLayerId": "string",
+        "backendNodeId": "number",
+        "offsetX": 0,
+        "offsetY": 0,
+        "width": 100,
+        "height": 25,
+        "paintCount": "number",
+        "drawsContent": true,
+        "stickyPositionConstraint": {
+            "stickyBoxRect": {
+                "x": 0,
+                "y": 0,
+                "width": 100,
+                "height": 25
+            },
+            "containingBlockRect": {
+                "x": 0,
+                "y": 0,
+                "width": 100,
+                "height": 50
+            },
+            "nearestLayerShiftingContainingBlock": "string"
+        }
+    },
+    {
+        "layerId": "string",
+        "parentLayerId": "string",
+        "backendNodeId": "number",
+        "offsetX": 0,
+        "offsetY": 0,
+        "width": 100,
+        "height": 200,
+        "paintCount": "number",
+        "drawsContent": false
     },
     {
         "layerId": "string",
