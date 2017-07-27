@@ -37,7 +37,6 @@
 #include "core/css/properties/CSSPropertyAnimationTimingFunctionUtils.h"
 #include "core/css/properties/CSSPropertyBackgroundUtils.h"
 #include "core/css/properties/CSSPropertyBorderImageUtils.h"
-#include "core/css/properties/CSSPropertyBoxShadowUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/css/properties/CSSPropertyFontUtils.h"
 #include "core/css/properties/CSSPropertyGridUtils.h"
@@ -302,77 +301,6 @@ static CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
     return values;
 
   return nullptr;
-}
-
-static CSSFunctionValue* ConsumeFilterFunction(
-    CSSParserTokenRange& range,
-    const CSSParserContext* context) {
-  CSSValueID filter_type = range.Peek().FunctionId();
-  if (filter_type < CSSValueInvert || filter_type > CSSValueDropShadow)
-    return nullptr;
-  CSSParserTokenRange args = ConsumeFunction(range);
-  CSSFunctionValue* filter_value = CSSFunctionValue::Create(filter_type);
-  CSSValue* parsed_value = nullptr;
-
-  if (filter_type == CSSValueDropShadow) {
-    parsed_value = CSSPropertyBoxShadowUtils::ParseSingleShadow(
-        args, context->Mode(), AllowInsetAndSpread::kForbid);
-  } else {
-    if (args.AtEnd()) {
-      context->Count(WebFeature::kCSSFilterFunctionNoArguments);
-      return filter_value;
-    }
-    if (filter_type == CSSValueBrightness) {
-      // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
-      parsed_value = ConsumePercent(args, kValueRangeAll);
-      if (!parsed_value)
-        parsed_value = ConsumeNumber(args, kValueRangeAll);
-    } else if (filter_type == CSSValueHueRotate) {
-      parsed_value =
-          ConsumeAngle(args, *context, WebFeature::kUnitlessZeroAngleFilter);
-    } else if (filter_type == CSSValueBlur) {
-      parsed_value =
-          ConsumeLength(args, kHTMLStandardMode, kValueRangeNonNegative);
-    } else {
-      // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
-      parsed_value = ConsumePercent(args, kValueRangeNonNegative);
-      if (!parsed_value)
-        parsed_value = ConsumeNumber(args, kValueRangeNonNegative);
-      if (parsed_value && filter_type != CSSValueSaturate &&
-          filter_type != CSSValueContrast) {
-        bool is_percentage = ToCSSPrimitiveValue(parsed_value)->IsPercentage();
-        double max_allowed = is_percentage ? 100.0 : 1.0;
-        if (ToCSSPrimitiveValue(parsed_value)->GetDoubleValue() > max_allowed) {
-          parsed_value = CSSPrimitiveValue::Create(
-              max_allowed, is_percentage
-                               ? CSSPrimitiveValue::UnitType::kPercentage
-                               : CSSPrimitiveValue::UnitType::kNumber);
-        }
-      }
-    }
-  }
-  if (!parsed_value || !args.AtEnd())
-    return nullptr;
-  filter_value->Append(*parsed_value);
-  return filter_value;
-}
-
-static CSSValue* ConsumeFilter(CSSParserTokenRange& range,
-                               const CSSParserContext* context) {
-  if (range.Peek().Id() == CSSValueNone)
-    return ConsumeIdent(range);
-
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  do {
-    CSSValue* filter_value = ConsumeUrl(range, context);
-    if (!filter_value) {
-      filter_value = ConsumeFilterFunction(range, context);
-      if (!filter_value)
-        return nullptr;
-    }
-    list->Append(*filter_value);
-  } while (!range.AtEnd());
-  return list;
 }
 
 static CSSValue* ConsumeBackgroundBlendMode(CSSParserTokenRange& range) {
@@ -890,9 +818,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyGridRowGap:
       return ConsumeLengthOrPercent(range_, context_->Mode(),
                                     kValueRangeNonNegative);
-    case CSSPropertyFilter:
-    case CSSPropertyBackdropFilter:
-      return ConsumeFilter(range_, context_);
     case CSSPropertyTextDecoration:
       DCHECK(!RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
       return CSSPropertyTextDecorationLineUtils::ConsumeTextDecorationLine(
