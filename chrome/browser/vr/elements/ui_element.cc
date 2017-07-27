@@ -34,7 +34,7 @@ bool GetRayPlaneDistance(const gfx::Point3F& ray_origin,
 
 UiElement::UiElement() {
   animation_player_.set_target(this);
-  transform_operations_.AppendTranslate(0, 0, 0);
+  layout_offset_.AppendTranslate(0, 0, 0);
   transform_operations_.AppendTranslate(0, 0, 0);
   transform_operations_.AppendRotate(1, 0, 0, 0);
   transform_operations_.AppendScale(1, 1, 1);
@@ -98,12 +98,12 @@ void UiElement::SetTransformOperations(
 }
 
 void UiElement::SetLayoutOffset(float x, float y) {
-  cc::TransformOperations operations = transform_operations_;
-  cc::TransformOperation& op = operations.at(kLayoutOffsetIndex);
+  cc::TransformOperations operations = layout_offset_;
+  cc::TransformOperation& op = operations.at(0);
   op.translate = {x, y, 0};
   op.Bake();
   animation_player_.TransitionTransformOperationsTo(
-      last_frame_time_, TargetProperty::TRANSFORM, transform_operations_,
+      last_frame_time_, TargetProperty::LAYOUT_OFFSET, transform_operations_,
       operations);
 }
 
@@ -203,22 +203,32 @@ bool UiElement::GetRayDistance(const gfx::Point3F& ray_origin,
 }
 
 void UiElement::NotifyClientFloatAnimated(float opacity,
+                                          int target_property_id,
                                           cc::Animation* animation) {
   opacity_ = cc::MathUtil::ClampToRange(opacity, 0.0f, 1.0f);
 }
 
 void UiElement::NotifyClientTransformOperationsAnimated(
     const cc::TransformOperations& operations,
+    int target_property_id,
     cc::Animation* animation) {
-  transform_operations_ = operations;
+  if (target_property_id == TRANSFORM) {
+    transform_operations_ = operations;
+  } else if (target_property_id == LAYOUT_OFFSET) {
+    layout_offset_ = operations;
+  } else {
+    NOTREACHED();
+  }
 }
 
 void UiElement::NotifyClientSizeAnimated(const gfx::SizeF& size,
+                                         int target_property_id,
                                          cc::Animation* animation) {
   size_ = size;
 }
 
 void UiElement::NotifyClientBooleanAnimated(bool visible,
+                                            int target_property_id,
                                             cc::Animation* animation) {
   visible_ = visible;
 }
@@ -252,6 +262,10 @@ void UiElement::LayOutChildren() {
     }
     child->SetLayoutOffset(x_offset, y_offset);
   }
+}
+
+gfx::Transform UiElement::LocalTransform() const {
+  return layout_offset_.Apply() * transform_operations_.Apply();
 }
 
 }  // namespace vr

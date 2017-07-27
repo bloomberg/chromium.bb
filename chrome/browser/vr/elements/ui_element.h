@@ -65,10 +65,9 @@ class UiElement : public cc::AnimationTarget {
   ~UiElement() override;
 
   enum OperationIndex {
-    kLayoutOffsetIndex = 0,
-    kTranslateIndex = 1,
-    kRotateIndex = 2,
-    kScaleIndex = 3,
+    kTranslateIndex = 0,
+    kRotateIndex = 1,
+    kScaleIndex = 2,
   };
 
   virtual void PrepareToDraw();
@@ -131,10 +130,6 @@ class UiElement : public cc::AnimationTarget {
   gfx::SizeF size() const { return size_; }
   void SetSize(float width, float hight);
 
-  // This is the local transform. It is inherited by descendants.
-  const cc::TransformOperations& transform_operations() const {
-    return transform_operations_;
-  }
   // It is assumed that operations is of size 4 with a component for layout
   // translation, translation, rotation and scale, in that order (see
   // constructor and the DCHECKs in the implementation of this function).
@@ -255,13 +250,17 @@ class UiElement : public cc::AnimationTarget {
 
   // cc::AnimationTarget
   void NotifyClientFloatAnimated(float opacity,
+                                 int transform_property_id,
                                  cc::Animation* animation) override;
   void NotifyClientTransformOperationsAnimated(
       const cc::TransformOperations& operations,
+      int transform_property_id,
       cc::Animation* animation) override;
   void NotifyClientSizeAnimated(const gfx::SizeF& size,
+                                int transform_property_id,
                                 cc::Animation* animation) override;
   void NotifyClientBooleanAnimated(bool visible,
+                                   int transform_property_id,
                                    cc::Animation* animation) override;
 
   // Handles positioning adjustments for children. This will be overridden by
@@ -269,6 +268,8 @@ class UiElement : public cc::AnimationTarget {
   // override for their particular functionality. The base implementation
   // applies anchoring.
   virtual void LayOutChildren();
+
+  virtual gfx::Transform LocalTransform() const;
 
  protected:
   virtual void OnSetMode();
@@ -343,6 +344,9 @@ class UiElement : public cc::AnimationTarget {
   // transitions easier to implement (you may, for example, want to animate just
   // the translation, but leave the rotation and scale in tact).
   cc::TransformOperations transform_operations_;
+
+  // This is set by the parent and is combined into LocalTransform()
+  cc::TransformOperations layout_offset_;
 
   // This is the combined, local to screen transform. It includes
   // |inheritable_transform_|, |transform_|, and anchoring adjustments.
