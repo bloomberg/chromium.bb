@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "ash/ash_view_ids.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -117,7 +118,9 @@ const int kDisabledPanelLabelBaselineY = 20;
 
 class BluetoothDefaultView : public TrayItemMore {
  public:
-  explicit BluetoothDefaultView(SystemTrayItem* owner) : TrayItemMore(owner) {}
+  explicit BluetoothDefaultView(SystemTrayItem* owner) : TrayItemMore(owner) {
+    set_id(VIEW_ID_BLUETOOTH_DEFAULT_VIEW);
+  }
   ~BluetoothDefaultView() override {}
 
   void Update() {

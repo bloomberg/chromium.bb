@@ -9,6 +9,7 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
+#include "ash/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -18,7 +19,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -114,7 +114,7 @@ class DefaultAccessibilityView : public TrayItemMore {
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY);
     SetLabel(label);
     SetAccessibleName(label);
-    set_id(test::kAccessibilityTrayItemViewId);
+    set_id(VIEW_ID_ACCESSIBILITY_TRAY_ITEM);
   }
 
   ~DefaultAccessibilityView() override {}
