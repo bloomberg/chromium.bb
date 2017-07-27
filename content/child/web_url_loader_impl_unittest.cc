@@ -139,19 +139,19 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
         delete_on_fail_(false),
         did_receive_redirect_(false),
         did_receive_response_(false),
-        check_redirect_request_priority_(false),
         did_finish_(false) {}
 
   ~TestWebURLLoaderClient() override {}
 
   // blink::WebURLLoaderClient implementation:
-  bool WillFollowRedirect(
-      blink::WebURLRequest& newRequest,
-      const blink::WebURLResponse& redirectResponse) override {
+  bool WillFollowRedirect(const blink::WebURL& new_url,
+                          const blink::WebURL& new_first_party_for_cookies,
+                          const blink::WebString& new_referrer,
+                          blink::WebReferrerPolicy new_referrer_policy,
+                          const blink::WebString& new_method,
+                          const blink::WebURLResponse& passed_redirect_response,
+                          bool& report_raw_headers) override {
     EXPECT_TRUE(loader_);
-
-    if (check_redirect_request_priority_)
-      EXPECT_EQ(redirect_request_priority, newRequest.GetPriority());
 
     // No test currently simulates mutiple redirects.
     EXPECT_FALSE(did_receive_redirect_);
@@ -231,10 +231,6 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   void set_delete_on_receive_data() { delete_on_receive_data_ = true; }
   void set_delete_on_finish() { delete_on_finish_ = true; }
   void set_delete_on_fail() { delete_on_fail_ = true; }
-  void set_redirect_request_priority(blink::WebURLRequest::Priority priority) {
-    check_redirect_request_priority_ = true;
-    redirect_request_priority = priority;
-  }
 
   bool did_receive_redirect() const { return did_receive_redirect_; }
   bool did_receive_response() const { return did_receive_response_; }
@@ -254,8 +250,6 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
 
   bool did_receive_redirect_;
   bool did_receive_response_;
-  bool check_redirect_request_priority_;
-  blink::WebURLRequest::Priority redirect_request_priority;
   std::string received_data_;
   bool did_finish_;
   blink::WebURLError error_;
@@ -386,19 +380,6 @@ TEST_F(WebURLLoaderImplTest, Success) {
 
 TEST_F(WebURLLoaderImplTest, Redirect) {
   DoStartAsyncRequest();
-  DoReceiveRedirect();
-  DoReceiveResponse();
-  DoReceiveData();
-  DoCompleteRequest();
-  EXPECT_FALSE(dispatcher()->canceled());
-  EXPECT_EQ(kTestData, client()->received_data());
-}
-
-TEST_F(WebURLLoaderImplTest, RedirectCorrectPriority) {
-  DoStartAsyncRequestWithPriority(
-      blink::WebURLRequest::Priority::kPriorityVeryHigh);
-  client()->set_redirect_request_priority(
-      blink::WebURLRequest::Priority::kPriorityVeryHigh);
   DoReceiveRedirect();
   DoReceiveResponse();
   DoReceiveData();

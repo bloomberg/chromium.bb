@@ -57,15 +57,10 @@ class CONTENT_EXPORT WebURLLoaderImpl
                    mojom::URLLoaderFactory* url_loader_factory);
   ~WebURLLoaderImpl() override;
 
-  static void PopulateURLResponse(const GURL& url,
+  static void PopulateURLResponse(const blink::WebURL& url,
                                   const ResourceResponseInfo& info,
                                   blink::WebURLResponse* response,
                                   bool report_security_info);
-  static blink::WebURLRequest PopulateURLRequestForRedirect(
-      const blink::WebURLRequest& request,
-      const net::RedirectInfo& redirect_info,
-      blink::WebURLRequest::ServiceWorkerMode service_worker_mode);
-
   // WebURLLoader methods:
   void LoadSynchronously(const blink::WebURLRequest& request,
                          blink::WebURLResponse& response,

@@ -118,15 +118,15 @@ void WebURLLoaderMockFactoryImpl::ServeAsynchronousRequests() {
     WebURLResponse response;
     WebURLError error;
     WebData data;
-    LoadRequest(request, &response, &error, &data);
+    LoadRequest(request.Url(), &response, &error, &data);
     // Follow any redirects while the loader is still active.
     while (response.HttpStatusCode() >= 300 &&
            response.HttpStatusCode() < 400) {
-      WebURLRequest new_request = loader->ServeRedirect(request, response);
+      WebURL new_url = loader->ServeRedirect(request, response);
       RunUntilIdle();
       if (!loader || loader->is_cancelled() || loader->is_deferred())
         break;
-      LoadRequest(new_request, &response, &error, &data);
+      LoadRequest(new_url, &response, &error, &data);
     }
     // Serve the request if the loader is still active.
     if (loader && !loader->is_cancelled() && !loader->is_deferred()) {
@@ -153,7 +153,7 @@ void WebURLLoaderMockFactoryImpl::LoadSynchronously(
     WebURLError* error,
     WebData* data,
     int64_t* encoded_data_length) {
-  LoadRequest(request, response, error, data);
+  LoadRequest(request.Url(), response, error, data);
   *encoded_data_length = data->size();
 }
 
@@ -171,12 +171,12 @@ void WebURLLoaderMockFactoryImpl::RunUntilIdle() {
     base::RunLoop().RunUntilIdle();
 }
 
-void WebURLLoaderMockFactoryImpl::LoadRequest(const WebURLRequest& request,
+void WebURLLoaderMockFactoryImpl::LoadRequest(const WebURL& url,
                                               WebURLResponse* response,
                                               WebURLError* error,
                                               WebData* data) {
   ResponseInfo response_info;
-  if (!LookupURL(request.Url(), error, &response_info)) {
+  if (!LookupURL(url, error, &response_info)) {
     // Non mocked URLs should not have been passed to the default URLLoader.
     NOTREACHED();
     return;

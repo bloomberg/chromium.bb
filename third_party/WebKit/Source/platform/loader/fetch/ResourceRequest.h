@@ -234,7 +234,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
 
   // True if corresponding AppCache group should be resetted.
-  bool ShouldResetAppCache() { return should_reset_app_cache_; }
+  bool ShouldResetAppCache() const { return should_reset_app_cache_; }
   void SetShouldResetAppCache(bool should_reset_app_cache) {
     should_reset_app_cache_ = should_reset_app_cache;
   }

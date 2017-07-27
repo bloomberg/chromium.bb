@@ -40,8 +40,8 @@ class WebURLLoaderMock : public WebURLLoader {
                                 const WebURLError& error);
 
   // Simulates the redirect being served.
-  WebURLRequest ServeRedirect(const WebURLRequest& request,
-                              const WebURLResponse& redirect_response);
+  WebURL ServeRedirect(const WebURLRequest& request,
+                       const WebURLResponse& redirect_response);
 
   // WebURLLoader methods:
   void LoadSynchronously(const WebURLRequest& request,
