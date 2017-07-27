@@ -22,6 +22,31 @@ namespace base {
 namespace internal {
 
 template <typename T,
+          typename std::enable_if<std::is_integral<T>::value &&
+                                  std::is_signed<T>::value>::type* = nullptr>
+constexpr T SaturatedNegWrapper(T value) {
+  return MustTreatAsConstexpr(value) || !ClampedNegFastOp<T>::is_supported
+             ? (NegateWrapper(value) != std::numeric_limits<T>::lowest()
+                    ? NegateWrapper(value)
+                    : std::numeric_limits<T>::max())
+             : ClampedNegFastOp<T>::Do(value);
+}
+
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value &&
+                                  !std::is_signed<T>::value>::type* = nullptr>
+constexpr T SaturatedNegWrapper(T value) {
+  return T(0);
+}
+
+template <
+    typename T,
+    typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
+constexpr T SaturatedNegWrapper(T value) {
+  return -value;
+}
+
+template <typename T,
           typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
 constexpr T SaturatedAbsWrapper(T value) {
   // The calculation below is a static identity for unsigned types, but for
@@ -32,10 +57,8 @@ constexpr T SaturatedAbsWrapper(T value) {
   // special case of numeric_limits<T>::min(), by evaluating the bit pattern as
   // a signed integer value. If it is the overflow case, we end up subtracting
   // one from the unsigned result, thus saturating to numeric_limits<T>::max().
-  return MustTreatAsConstexpr(value) && !ClampedAbsFastOp<T>::is_supported
-             ? static_cast<T>(SafeUnsignedAbs(value) -
-                              IsValueNegative<T>(SafeUnsignedAbs(value)))
-             : ClampedAbsFastOp<T>::Do(value);
+  return static_cast<T>(SafeUnsignedAbs(value) -
+                        IsValueNegative<T>(SafeUnsignedAbs(value)));
 }
 
 template <
@@ -61,9 +84,8 @@ struct ClampedAddOp<T,
       return ClampedAddFastOp<T, U>::template Do<V>(x, y);
 
     V result;
-    // Prefer a compile-time constant (if we have one).
-    const V saturated = GetMaxOrMin<V>(
-        IsCompileTimeConstant(x) ? IsValueNegative(x) : IsValueNegative(y));
+    // TODO(jschuh) C++14 constexpr allows a compile-time constant optimization.
+    const V saturated = GetMaxOrMin<V>(IsValueNegative(y));
     return CheckedAddOp<T, U>::Do(x, y, &result) ? result : saturated;
   }
 };
@@ -84,9 +106,8 @@ struct ClampedSubOp<T,
       return ClampedSubFastOp<T, U>::template Do<V>(x, y);
 
     V result;
-    // Prefer a compile-time constant (if we have one).
-    const V saturated = GetMaxOrMin<V>(
-        IsCompileTimeConstant(x) ? IsValueNegative(x) : !IsValueNegative(y));
+    // TODO(jschuh) C++14 constexpr allows a compile-time constant optimization.
+    const V saturated = GetMaxOrMin<V>(!IsValueNegative(y));
     return CheckedSubOp<T, U>::Do(x, y, &result) ? result : saturated;
   }
 };
