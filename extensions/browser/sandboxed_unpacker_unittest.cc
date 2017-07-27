@@ -15,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extensions_test.h"
@@ -65,8 +66,11 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
 class SandboxedUnpackerTest : public ExtensionsTest {
  public:
   SandboxedUnpackerTest()
-      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>(
-            content::TestBrowserThreadBundle::IO_MAINLOOP)) {}
+      : SandboxedUnpackerTest(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+
+  SandboxedUnpackerTest(content::TestBrowserThreadBundle::Options options)
+      : ExtensionsTest(
+            base::MakeUnique<content::TestBrowserThreadBundle>(options)) {}
 
   void SetUp() override {
     ExtensionsTest::SetUp();
@@ -123,6 +127,20 @@ class SandboxedUnpackerTest : public ExtensionsTest {
         base::Bind(&SandboxedUnpacker::StartWithDirectory, sandboxed_unpacker_,
                    fake_id, fake_public_key, temp_dir.Take()));
     client_->WaitForUnpack();
+  }
+
+  void SimulateUtilityProcessCrash() {
+    sandboxed_unpacker_->CreateTempDirectory();
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&SandboxedUnpacker::StartUtilityProcessIfNeeded,
+                   sandboxed_unpacker_));
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&SandboxedUnpacker::UtilityProcessCrashed,
+                   sandboxed_unpacker_));
   }
 
   base::FilePath GetInstallPath() {
@@ -189,6 +207,27 @@ TEST_F(SandboxedUnpackerTest, SkipHashCheck) {
   SetupUnpacker("good_l10n.crx", "badhash");
   // Check that there is no error message.
   EXPECT_EQ(base::string16(), GetInstallError());
+}
+
+class SandboxedUnpackerTestWithRealIOThread : public SandboxedUnpackerTest {
+ public:
+  SandboxedUnpackerTestWithRealIOThread()
+      : SandboxedUnpackerTest(
+            content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+
+  void TearDown() override {
+    // The utility process task could still be running.  Ensure it is fully
+    // finished before ending the test.
+    content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+    SandboxedUnpackerTest::TearDown();
+  }
+};
+
+TEST_F(SandboxedUnpackerTestWithRealIOThread, UtilityProcessCrash) {
+  SimulateUtilityProcessCrash();
+  client_->WaitForUnpack();
+  // Check that there is an error message.
+  EXPECT_NE(base::string16(), GetInstallError());
 }
 
 }  // namespace extensions
