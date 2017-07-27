@@ -6,6 +6,7 @@
 #define WebPointerEvent_h
 
 #include "WebInputEvent.h"
+#include "WebMouseEvent.h"
 #include "WebPointerProperties.h"
 #include "WebTouchEvent.h"
 
@@ -26,6 +27,8 @@ class WebPointerEvent : public WebInputEvent, public WebPointerProperties {
       : WebInputEvent(sizeof(WebPointerEvent)), WebPointerProperties(0) {}
   BLINK_PLATFORM_EXPORT WebPointerEvent(const WebTouchEvent&,
                                         const WebTouchPoint&);
+  BLINK_PLATFORM_EXPORT WebPointerEvent(WebInputEvent::Type,
+                                        const WebMouseEvent&);
 
   // TODO(crbug.com/736014): We need a clarified definition of the scale and
   // the coordinate space on these attributes.

@@ -30,6 +30,12 @@ class CORE_EXPORT PointerEventManager
   PointerEventManager(LocalFrame&, MouseEventManager&);
   DECLARE_TRACE();
 
+  // This is the unified path for handling all input device events. This may
+  // cause firing DOM pointerevents, mouseevent, and touch events accordingly.
+  // TODO(crbug.com/625841): We need to get all event handling path to go
+  // through this function.
+  WebInputEventResult HandlePointerEvent(const WebPointerEvent&, Node* target);
+
   // Sends the mouse pointer events and the boundary events
   // that it may cause. It also sends the compat mouse events
   // and sets the newNodeUnderMouse if the capturing is set

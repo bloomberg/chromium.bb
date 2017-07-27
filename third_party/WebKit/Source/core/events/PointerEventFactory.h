@@ -9,6 +9,7 @@
 #include "core/events/PointerEvent.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
+#include "public/platform/WebPointerEvent.h"
 #include "public/platform/WebPointerProperties.h"
 
 namespace blink {
@@ -40,6 +41,8 @@ class CORE_EXPORT PointerEventFactory {
                        TimeTicks event_platform_time_stamp,
                        LocalFrame*,
                        DOMWindow*);
+
+  PointerEvent* CreatePointerCancelEvent(const WebPointerEvent&);
 
   PointerEvent* CreatePointerCancelEvent(
       const int pointer_id,

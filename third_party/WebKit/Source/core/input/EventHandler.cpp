@@ -565,6 +565,12 @@ OptionalCursor EventHandler::SelectAutoCursor(const HitTestResult& result,
   return PointerCursor();
 }
 
+WebInputEventResult EventHandler::HandlePointerEvent(
+    const WebPointerEvent& web_pointer_event,
+    Node* target) {
+  return pointer_event_manager_->HandlePointerEvent(web_pointer_event, target);
+}
+
 WebInputEventResult EventHandler::HandleMousePressEvent(
     const WebMouseEvent& mouse_event) {
   TRACE_EVENT0("blink", "EventHandler::handleMousePressEvent");

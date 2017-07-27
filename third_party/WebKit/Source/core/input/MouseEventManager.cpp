@@ -896,6 +896,16 @@ bool MouseEventManager::HandleDrag(const MouseEventWithHitTestResults& event,
     // Something failed to start the drag, clean up.
     ClearDragDataTransfer();
     ResetDragState();
+  } else {
+    // Since drag operation started we need to send a pointercancel for the
+    // corresponding pointer.
+    if (initiator == DragInitiator::kMouse) {
+      frame_->GetEventHandler().HandlePointerEvent(
+          WebPointerEvent(WebInputEvent::Type::kPointerCancel, event.Event()),
+          event.InnerNode());
+    }
+    // TODO(crbug.com/708278): If the drag starts with touch the touch cancel
+    // should trigger the release of pointer capture.
   }
 
   mouse_down_may_start_drag_ = false;
