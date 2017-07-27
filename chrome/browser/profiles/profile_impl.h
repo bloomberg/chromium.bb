@@ -170,7 +170,7 @@ class ProfileImpl : public Profile {
   ProfileImpl(const base::FilePath& path,
               Delegate* delegate,
               CreateMode create_mode,
-              base::SequencedTaskRunner* sequenced_task_runner);
+              scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
   // Does final initialization. Should be called after prefs were loaded.
   void DoFinalInit();
@@ -210,6 +210,9 @@ class ProfileImpl : public Profile {
 
   base::FilePath path_;
   base::FilePath base_cache_path_;
+
+  // Task runner used for file access in the profile path.
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   // !!! BIG HONKING WARNING !!!
   //  The order of the members below is important. Do not change it unless
