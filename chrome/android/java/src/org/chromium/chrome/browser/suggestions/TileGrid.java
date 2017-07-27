@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.NodeVisitor;
 import org.chromium.chrome.browser.ntp.cards.OptionalLeaf;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
  * The model and controller for a group of site suggestion tiles that will be rendered in a grid.
@@ -40,10 +41,11 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
     private final TileGroup mTileGroup;
 
     public TileGrid(SuggestionsUiDelegate uiDelegate, ContextMenuManager contextMenuManager,
-            TileGroup.Delegate tileGroupDelegate, OfflinePageBridge offlinePageBridge) {
+            TileGroup.Delegate tileGroupDelegate, OfflinePageBridge offlinePageBridge,
+            UiConfig uiConfig) {
         mTileGroup = new TileGroup(ContextUtils.getApplicationContext(), uiDelegate,
-                contextMenuManager, tileGroupDelegate,
-                /* observer = */ this, offlinePageBridge, getTileTitleLines());
+                contextMenuManager, tileGroupDelegate, /* observer = */ this, offlinePageBridge,
+                getTileTitleLines(), SuggestionsConfig.getTileStyle(uiConfig));
         mTileGroup.startObserving(getMaxTileRows(), MAX_TILE_COLUMNS);
     }
 
@@ -116,7 +118,7 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
         }
 
         public void updateTiles(TileGroup tileGroup) {
-            tileGroup.renderTileViews(mLayout, /* condensed = */ false);
+            tileGroup.renderTileViews(mLayout);
         }
 
         public void updateIconView(Tile tile) {

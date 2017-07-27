@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.suggestions.TileView.Style;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -59,7 +60,7 @@ import java.util.List;
 @Config(manifest = Config.NONE)
 @Features({@Features.Register(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME),
         @Features.Register(ChromeFeatureList.SUGGESTIONS_HOME_MODERN_LAYOUT)})
-public class TileGroupTest {
+public class TileGroupUnitTest {
     private static final int MAX_COLUMNS_TO_FETCH = 4;
     private static final int MAX_ROWS_TO_FETCH = 1;
     private static final int TILE_TITLE_LINES = 1;
@@ -93,7 +94,7 @@ public class TileGroupTest {
         TileGroup tileGroup =
                 new TileGroup(RuntimeEnvironment.application, mock(SuggestionsUiDelegate.class),
                         mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
-                        mock(OfflinePageBridge.class), TILE_TITLE_LINES);
+                        mock(OfflinePageBridge.class), TILE_TITLE_LINES, Style.CLASSIC);
         tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
 
         notifyTileUrlsAvailable(URLS);
@@ -115,7 +116,7 @@ public class TileGroupTest {
         TileGroup tileGroup =
                 new TileGroup(RuntimeEnvironment.application, mock(SuggestionsUiDelegate.class),
                         mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
-                        mock(OfflinePageBridge.class), TILE_TITLE_LINES);
+                        mock(OfflinePageBridge.class), TILE_TITLE_LINES, Style.CLASSIC);
         tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
 
         notifyTileUrlsAvailable(/* nothing! */);
@@ -205,7 +206,7 @@ public class TileGroupTest {
         when(uiDelegate.isVisible()).thenReturn(true);
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
-                mock(OfflinePageBridge.class), TILE_TITLE_LINES);
+                mock(OfflinePageBridge.class), TILE_TITLE_LINES, Style.CLASSIC);
         tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
 
         notifyTileUrlsAvailable(URLS);
@@ -220,7 +221,7 @@ public class TileGroupTest {
         when(uiDelegate.isVisible()).thenReturn(true);
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
-                mock(OfflinePageBridge.class), TILE_TITLE_LINES);
+                mock(OfflinePageBridge.class), TILE_TITLE_LINES, Style.CLASSIC);
         tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
 
         notifyTileUrlsAvailable(URLS);
@@ -260,7 +261,7 @@ public class TileGroupTest {
         when(uiDelegate.getImageFetcher()).thenReturn(mock(ImageFetcher.class));
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
-                mock(OfflinePageBridge.class), TILE_TITLE_LINES);
+                mock(OfflinePageBridge.class), TILE_TITLE_LINES, Style.CLASSIC);
         tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
         ViewGroup layout = new FrameLayout(RuntimeEnvironment.application, null);
 
@@ -268,7 +269,7 @@ public class TileGroupTest {
         notifyTileUrlsAvailable(URLS);
 
         // Render them to the layout.
-        tileGroup.renderTileViews(layout, false);
+        tileGroup.renderTileViews(layout);
         assertThat(layout.getChildCount(), is(2));
         assertThat(((TileView) layout.getChildAt(0)).getUrl(), is(URLS[0]));
         assertThat(((TileView) layout.getChildAt(1)).getUrl(), is(URLS[1]));
@@ -281,7 +282,7 @@ public class TileGroupTest {
         when(uiDelegate.getImageFetcher()).thenReturn(mock(ImageFetcher.class));
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
-                mock(OfflinePageBridge.class), TILE_TITLE_LINES);
+                mock(OfflinePageBridge.class), TILE_TITLE_LINES, Style.CLASSIC);
         tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
         ViewGroup layout = new FrameLayout(RuntimeEnvironment.application, null);
 
@@ -289,7 +290,7 @@ public class TileGroupTest {
         notifyTileUrlsAvailable(URLS[0], URLS[1], URLS[0]);
 
         // Render them to the layout. The duplicated URL is skipped.
-        tileGroup.renderTileViews(layout, false);
+        tileGroup.renderTileViews(layout);
         assertThat(layout.getChildCount(), is(2));
         assertThat(((TileView) layout.getChildAt(0)).getUrl(), is(URLS[0]));
         assertThat(((TileView) layout.getChildAt(1)).getUrl(), is(URLS[1]));
@@ -301,7 +302,7 @@ public class TileGroupTest {
         when(uiDelegate.getImageFetcher()).thenReturn(mock(ImageFetcher.class));
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
-                mock(OfflinePageBridge.class), TILE_TITLE_LINES);
+                mock(OfflinePageBridge.class), TILE_TITLE_LINES, Style.CLASSIC);
         tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
         notifyTileUrlsAvailable(URLS);
 
@@ -314,7 +315,7 @@ public class TileGroupTest {
         layout.addView(view2);
 
         // The tiles should be updated, the old ones removed.
-        tileGroup.renderTileViews(layout, false);
+        tileGroup.renderTileViews(layout);
         assertThat(layout.getChildCount(), is(2));
         assertThat(layout.indexOfChild(view1), is(-1));
         assertThat(layout.indexOfChild(view2), is(-1));
@@ -327,7 +328,7 @@ public class TileGroupTest {
         TileGroup tileGroup =
                 new TileGroup(RuntimeEnvironment.application, mock(SuggestionsUiDelegate.class),
                         mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
-                        mock(OfflinePageBridge.class), TILE_TITLE_LINES);
+                        mock(OfflinePageBridge.class), TILE_TITLE_LINES, Style.CLASSIC);
         tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
         notifyTileUrlsAvailable(URLS);
 
@@ -342,7 +343,7 @@ public class TileGroupTest {
         layout.addView(view2);
 
         // The tiles should be updated, the old ones reused.
-        tileGroup.renderTileViews(layout, false);
+        tileGroup.renderTileViews(layout);
         assertThat(layout.getChildCount(), is(2));
         assertThat(layout.getChildAt(0), CoreMatchers.<View>is(view1));
         assertThat(layout.getChildAt(1), CoreMatchers.<View>is(view2));
@@ -372,7 +373,7 @@ public class TileGroupTest {
         Tile tile = new Tile("title", URLS[0], "", 0, TileSource.POPULAR);
 
         ViewGroup layout = new FrameLayout(RuntimeEnvironment.application, null);
-        tileGroup.buildTileView(tile, layout, /* condensed = */ false);
+        tileGroup.buildTileView(tile, layout);
 
         // Ensure we run the callback for the new tile.
         assertEquals(1, mImageFetcher.getPendingIconCallbackCount());
@@ -390,7 +391,7 @@ public class TileGroupTest {
         // Notify for a second set.
         notifyTileUrlsAvailable(URLS);
         ViewGroup layout = new FrameLayout(RuntimeEnvironment.application, null);
-        tileGroup.renderTileViews(layout, /* condensed: */ false);
+        tileGroup.renderTileViews(layout);
         mImageFetcher.fulfillLargeIconRequests();
 
         // Data changed but no loading complete event is sent
@@ -409,7 +410,7 @@ public class TileGroupTest {
         notifyTileUrlsAvailable(URLS);
         tileGroup.onSwitchToForeground(/* trackLoadTask: */ false);
         ViewGroup layout = new FrameLayout(RuntimeEnvironment.application, null);
-        tileGroup.renderTileViews(layout, /* condensed: */ false);
+        tileGroup.renderTileViews(layout);
         mImageFetcher.fulfillLargeIconRequests();
 
         // Data changed but no loading complete event is sent (same as sync)
@@ -428,7 +429,7 @@ public class TileGroupTest {
         notifyTileUrlsAvailable(URLS);
         tileGroup.onSwitchToForeground(/* trackLoadTask: */ true);
         ViewGroup layout = new FrameLayout(RuntimeEnvironment.application, null);
-        tileGroup.renderTileViews(layout, /* condensed: */ false);
+        tileGroup.renderTileViews(layout);
         mImageFetcher.fulfillLargeIconRequests();
 
         // Data changed but no loading complete event is sent
@@ -471,12 +472,12 @@ public class TileGroupTest {
 
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
-                mock(OfflinePageBridge.class), TILE_TITLE_LINES);
+                mock(OfflinePageBridge.class), TILE_TITLE_LINES, TileView.Style.CLASSIC);
         tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
         notifyTileUrlsAvailable(urls);
 
         ViewGroup layout = new FrameLayout(RuntimeEnvironment.application, null);
-        tileGroup.renderTileViews(layout, /* condensed = */ false);
+        tileGroup.renderTileViews(layout);
 
         reset(mTileGroupObserver);
         reset(mTileGroupDelegate);
