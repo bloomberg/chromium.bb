@@ -21,8 +21,8 @@ class FileUtilitiesMessageFilter : public BrowserMessageFilter {
   explicit FileUtilitiesMessageFilter(int process_id);
 
   // BrowserMessageFilter implementation.
-  void OverrideThreadForMessage(const IPC::Message& message,
-                                BrowserThread::ID* thread) override;
+  base::TaskRunner* OverrideTaskRunnerForMessage(
+      const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
