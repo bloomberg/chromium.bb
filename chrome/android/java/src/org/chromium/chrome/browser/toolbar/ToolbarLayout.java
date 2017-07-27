@@ -164,8 +164,13 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             }
 
             @Override
+            public boolean hasTab() {
+                return false;
+            }
+
+            @Override
             public String getCurrentUrl() {
-                return null;
+                return "";
             }
 
             @Override
@@ -185,6 +190,11 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
 
             @Override
             public boolean isUsingBrandColor() {
+                return false;
+            }
+
+            @Override
+            public boolean isOfflinePage() {
                 return false;
             }
         };
