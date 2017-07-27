@@ -26,6 +26,8 @@ namespace mojo {
 //     // using ConstIterator = T::const_iterator;
 //
 //     // These two methods are optional. Please see comments in struct_traits.h
+//     // Note that unlike with StructTraits, IsNull() is called *twice* during
+//     // serialization for ArrayTraits.
 //     static bool IsNull(const Container<T>& input);
 //     static void SetToNull(Container<T>* output);
 //

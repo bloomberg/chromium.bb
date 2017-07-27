@@ -21,15 +21,7 @@ class MOJO_CPP_BINDINGS_EXPORT FixedBufferForTesting : public Buffer {
   explicit FixedBufferForTesting(size_t size);
   ~FixedBufferForTesting();
 
-  // Returns the internal memory owned by the Buffer to the caller. The Buffer
-  // relinquishes its pointer, effectively resetting the state of the Buffer
-  // and leaving the caller responsible for freeing the returned memory address
-  // when no longer needed.
-  void* Leak();
-
  private:
-  FixedBufferForTesting(std::nullptr_t, size_t aligned_size);
-
   DISALLOW_COPY_AND_ASSIGN(FixedBufferForTesting);
 };
 

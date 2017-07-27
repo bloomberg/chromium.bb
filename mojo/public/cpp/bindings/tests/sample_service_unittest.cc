@@ -226,8 +226,8 @@ void Print(int depth, const char* name, const FooPtr& foo) {
   }
 }
 
-void DumpHex(const uint8_t* bytes, uint32_t num_bytes) {
-  for (uint32_t i = 0; i < num_bytes; ++i) {
+void DumpHex(const uint8_t* bytes, size_t num_bytes) {
+  for (size_t i = 0; i < num_bytes; ++i) {
     std::cout << std::setw(2) << std::setfill('0') << std::hex
               << uint32_t(bytes[i]);
 
