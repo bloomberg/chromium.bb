@@ -195,6 +195,9 @@ deps = {
   'src/chrome/test/data/perf/frame_rate/content':
     Var('chromium_git') + '/chromium/frame_rate/content.git' + '@' + 'c10272c88463efeef6bb19c9ec07c42bc8fe22b9',
 
+  'src/chrome/test/data/vr/webvr_info':
+    Var('chromium_git') + '/external/github.com/toji/webvr.info.git' + '@' + '932fd58075e564727b5525681d6b9293b41a90f7',
+
   'src/third_party/bidichecker':
     Var('chromium_git') + '/external/bidichecker/lib.git' + '@' + '97f2aa645b74c28c57eca56992235c79850fa9e0',
 
