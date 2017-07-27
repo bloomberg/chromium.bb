@@ -675,6 +675,7 @@ mojom("mojo_bindings") {
     "file_patcher.mojom",
     "image_context_menu_renderer.mojom",
     "insecure_content_renderer.mojom",
+    "navigation_corrector.mojom",
     "net_benchmarking.mojom",
     "network_diagnostics.mojom",
     "open_search_description_document_handler.mojom",
