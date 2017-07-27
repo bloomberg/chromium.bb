@@ -44,6 +44,7 @@ class TestImporter(object):
         self.verbose = False
         self.git_cl = None
         self.wpt_github = wpt_github
+        self.dest_path = self.finder.path_from_layout_tests('external', 'wpt')
 
     def main(self, argv=None):
         options = self.parse_args(argv)
@@ -88,9 +89,7 @@ class TestImporter(object):
             commit_message = self._commit_message(
                 chromium_commit, import_commit, locally_applied_commits=commits)
 
-        dest_path = self.finder.path_from_layout_tests('external', 'wpt')
-
-        self._clear_out_dest_path(dest_path)
+        self._clear_out_dest_path()
 
         _log.info('Copying the tests from the temp repo to the destination.')
         test_copier = TestCopier(self.host, local_wpt.path)
@@ -98,10 +97,10 @@ class TestImporter(object):
 
         self.run(['git', 'add', '--all', 'external/wpt'])
 
-        self._delete_orphaned_baselines(dest_path)
+        self._delete_orphaned_baselines()
 
         # TODO(qyearsley): Consider updating manifest after adding baselines.
-        self._generate_manifest(dest_path)
+        self._generate_manifest()
 
         # TODO(qyearsley): Consider running the imported tests with
         # `run-webkit-tests --reset-results external/wpt` to get some baselines
@@ -265,31 +264,28 @@ class TestImporter(object):
         """Returns a list of commits that would be clobbered by importer."""
         return exportable_commits_over_last_n_commits(self.host, local_wpt, self.wpt_github)
 
-    def _generate_manifest(self, dest_path):
+    def _generate_manifest(self):
         """Generates MANIFEST.json for imported tests.
-
-        Args:
-            dest_path: Path to the destination WPT directory.
 
         Runs the (newly-updated) manifest command if it's found, and then
         stages the generated MANIFEST.json in the git index, ready to commit.
         """
         _log.info('Generating MANIFEST.json')
-        WPTManifest.generate_manifest(self.host, dest_path)
-        manifest_path = self.fs.join(dest_path, 'MANIFEST.json')
+        WPTManifest.generate_manifest(self.host, self.dest_path)
+        manifest_path = self.fs.join(self.dest_path, 'MANIFEST.json')
         assert self.fs.exists(manifest_path)
         manifest_base_path = self.fs.normpath(
-            self.fs.join(dest_path, '..', 'WPT_BASE_MANIFEST.json'))
+            self.fs.join(self.dest_path, '..', 'WPT_BASE_MANIFEST.json'))
         self.copyfile(manifest_path, manifest_base_path)
         self.run(['git', 'add', manifest_base_path])
 
-    def _clear_out_dest_path(self, dest_path):
-        _log.info('Cleaning out tests from %s.', dest_path)
+    def _clear_out_dest_path(self):
+        _log.info('Cleaning out tests from %s.', self.dest_path)
         should_remove = lambda fs, dirname, basename: (
             not self.is_baseline(basename) and
             # See http://crbug.com/702283 for context.
             basename != 'OWNERS')
-        files_to_delete = self.fs.files_under(dest_path, file_filter=should_remove)
+        files_to_delete = self.fs.files_under(self.dest_path, file_filter=should_remove)
         for subpath in files_to_delete:
             self.remove(self.finder.path_from_layout_tests('external', subpath))
 
@@ -311,12 +307,13 @@ class TestImporter(object):
         message += '\nNo-Export: true'
         return message
 
-    def _delete_orphaned_baselines(self, dest_path):
+    def _delete_orphaned_baselines(self):
         _log.info('Deleting any orphaned baselines.')
         is_baseline_filter = lambda fs, dirname, basename: self.is_baseline(basename)
-        previous_baselines = self.fs.files_under(dest_path, file_filter=is_baseline_filter)
+        previous_baselines = self.fs.files_under(
+            self.dest_path, file_filter=is_baseline_filter)
         for sub_path in previous_baselines:
-            full_baseline_path = self.fs.join(dest_path, sub_path)
+            full_baseline_path = self.fs.join(self.dest_path, sub_path)
             if not self._has_corresponding_test(full_baseline_path):
                 self.fs.remove(full_baseline_path)
 
