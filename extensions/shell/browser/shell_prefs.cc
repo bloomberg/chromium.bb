@@ -4,7 +4,8 @@
 
 #include "extensions/shell/browser/shell_prefs.h"
 
-#include "base/sequenced_task_runner.h"
+#include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/json_pref_store.h"
@@ -14,7 +15,6 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/audio/audio_api.h"
 #include "extensions/browser/extension_prefs.h"
 
@@ -37,11 +37,8 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 // Creates a JsonPrefStore from a file at |filepath| and synchronously loads
 // the preferences.
 scoped_refptr<JsonPrefStore> CreateAndLoadPrefStore(const FilePath& filepath) {
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      JsonPrefStore::GetTaskRunnerForFile(
-          filepath, content::BrowserThread::GetBlockingPool());
   scoped_refptr<JsonPrefStore> pref_store =
-      new JsonPrefStore(filepath, task_runner, std::unique_ptr<PrefFilter>());
+      base::MakeRefCounted<JsonPrefStore>(filepath);
   pref_store->ReadPrefs();  // Synchronous.
   return pref_store;
 }
