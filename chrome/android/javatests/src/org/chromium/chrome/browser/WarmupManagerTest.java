@@ -26,12 +26,17 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.net.test.EmbeddedTestServer;
 
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -43,12 +48,21 @@ public class WarmupManagerTest {
             RuleChain.outerRule(new ChromeBrowserTestRule()).around(new UiThreadTestRule());
 
     private WarmupManager mWarmupManager;
+    private Context mContext;
 
     @Before
     public void setUp() throws Exception {
+        mContext = InstrumentationRegistry.getInstrumentation()
+                           .getTargetContext()
+                           .getApplicationContext();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
+                try {
+                    ChromeBrowserInitializer.getInstance(mContext).handleSynchronousStartup();
+                } catch (Exception e) {
+                    Assert.fail();
+                }
                 mWarmupManager = WarmupManager.getInstance();
             }
         });
@@ -194,8 +208,47 @@ public class WarmupManagerTest {
     public void testInflateLayout() throws Throwable {
         int layoutId = R.layout.custom_tabs_control_container;
         int toolbarId = R.layout.custom_tabs_toolbar;
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        mWarmupManager.initializeViewHierarchy(context, layoutId, toolbarId);
+        mWarmupManager.initializeViewHierarchy(mContext, layoutId, toolbarId);
         Assert.assertTrue(mWarmupManager.hasViewHierarchyWithToolbar(layoutId));
+    }
+
+    /** Tests that preconnects can be initiated from the Java side. */
+    @Test
+    @SmallTest
+    public void testPreconnect() throws Exception {
+        EmbeddedTestServer server = new EmbeddedTestServer();
+        try {
+            // The predictor prepares 2 connections when asked to preconnect. Initializes the
+            // semaphore to be unlocked after 2 connections.
+            final Semaphore connectionsSemaphore = new Semaphore(1 - 2);
+
+            // Cannot use EmbeddedTestServer#createAndStartServer(), as we need to add the
+            // connection listener.
+            server.initializeNative(mContext);
+            server.addDefaultHandlers("");
+            server.setConnectionListener(new EmbeddedTestServer.ConnectionListener() {
+                @Override
+                public void acceptedSocket(long socketId) {
+                    connectionsSemaphore.release();
+                }
+            });
+            server.start();
+
+            final String url = server.getURL("/hello_world.html");
+            ThreadUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mWarmupManager.maybePreconnectUrlAndSubResources(
+                            Profile.getLastUsedProfile(), url);
+                }
+            });
+            if (!connectionsSemaphore.tryAcquire(5, TimeUnit.SECONDS)) {
+                // Starts at -1.
+                int actualConnections = connectionsSemaphore.availablePermits() + 1;
+                Assert.fail("Expected 2 connections, got " + actualConnections);
+            }
+        } finally {
+            server.stopAndDestroyServer();
+        }
     }
 }
