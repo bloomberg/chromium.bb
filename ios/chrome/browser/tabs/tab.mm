@@ -943,9 +943,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   if ([_parentTabModel tabUsageRecorder])
     [_parentTabModel tabUsageRecorder]->RecordPageLoadStart(self);
 
-  // Reset |isVoiceSearchResultsTab| since a new page is being navigated to.
-  self.isVoiceSearchResultsTab = NO;
-
   web::NavigationItem* navigationItem =
       [self navigationManager]->GetPendingItem();
 
@@ -1376,10 +1373,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     if ([_parentTabModel tabUsageRecorder])
       [_parentTabModel tabUsageRecorder]->RecordPageLoadStart(self);
   }
-  if (![self navigationManager]->GetPendingItem()) {
-    // Reset |isVoiceSearchResultsTab| since a new page is being navigated to.
-    self.isVoiceSearchResultsTab = NO;
-  }
 }
 
 - (void)webState:(web::WebState*)webState
@@ -1388,6 +1381,11 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       PageTransitionCoreTypeIs(navigation->GetPageTransition(),
                                ui::PAGE_TRANSITION_RELOAD)) {
     [_parentTabModel tabUsageRecorder]->RecordReload(self);
+  }
+
+  if (!navigation->IsSameDocument()) {
+    // Reset |isVoiceSearchResultsTab| since a new page is being navigated to.
+    self.isVoiceSearchResultsTab = NO;
   }
 
   // Move the toolbar to visible during page load.
