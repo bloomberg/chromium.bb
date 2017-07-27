@@ -5,8 +5,6 @@
 function cipd_bin_setup {
     local MYPATH=$(dirname "${BASH_SOURCE[0]}")
 
-    "$MYPATH/cipd" ensure \
-        -log-level warning \
-        -ensure-file "$MYPATH/cipd_manifest.txt" \
+    "$MYPATH/cipd" ensure -ensure-file "$MYPATH/cipd_manifest.txt" \
         -root "$MYPATH/.cipd_bin"
 }
