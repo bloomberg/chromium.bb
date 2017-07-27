@@ -22,12 +22,6 @@
 #include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/viz_service_export.h"
 
-namespace {
-// The frame index starts at 2 so that empty frames will be treated as
-// completely damaged the first time they're drawn from.
-constexpr int kFrameIndexStart = 2;
-}  // namespace
-
 namespace viz {
 
 class FrameSinkManagerImpl;
@@ -164,8 +158,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   // A callback that will be run at the start of the destructor if set.
   base::OnceCallback<void()> destruction_callback_;
-
-  uint64_t last_frame_index_ = kFrameIndexStart;
 
   base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_;
 

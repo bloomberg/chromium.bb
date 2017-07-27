@@ -88,7 +88,6 @@ class VIZ_SERVICE_EXPORT Surface : public SurfaceDeadlineObserver {
   // |will_draw_callback| is called when |surface| is scheduled for a draw and
   // there is visible damage.
   bool QueueFrame(cc::CompositorFrame frame,
-                  uint64_t frame_index,
                   const base::Closure& draw_callback,
                   const WillDrawCallback& will_draw_callback);
   void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
@@ -119,9 +118,7 @@ class VIZ_SERVICE_EXPORT Surface : public SurfaceDeadlineObserver {
   const cc::CompositorFrame& GetPendingFrame();
 
   // Returns a number that increments by 1 every time a new frame is enqueued.
-  uint64_t GetActiveFrameIndex() const {
-    return active_frame_data_->frame_index;
-  }
+  int frame_index() const { return frame_index_; }
 
   void TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
   void RunDrawCallback();
@@ -171,14 +168,12 @@ class VIZ_SERVICE_EXPORT Surface : public SurfaceDeadlineObserver {
  private:
   struct FrameData {
     FrameData(cc::CompositorFrame&& frame,
-              uint64_t frame_index,
               const base::Closure& draw_callback,
               const WillDrawCallback& will_draw_callback);
     FrameData(FrameData&& other);
     ~FrameData();
     FrameData& operator=(FrameData&& other);
     cc::CompositorFrame frame;
-    uint64_t frame_index;
     base::Closure draw_callback;
     WillDrawCallback will_draw_callback;
   };
@@ -220,6 +215,7 @@ class VIZ_SERVICE_EXPORT Surface : public SurfaceDeadlineObserver {
 
   base::Optional<FrameData> pending_frame_data_;
   base::Optional<FrameData> active_frame_data_;
+  int frame_index_;
   bool closed_ = false;
   const bool needs_sync_tokens_;
   std::vector<SurfaceSequence> destruction_dependencies_;
