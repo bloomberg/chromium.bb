@@ -67,7 +67,7 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
         task_runner = web_task_runner->ToSingleThreadTaskRunner();
       }
     }
-    cc::mojom::blink::CompositorFrameSinkClientPtr client;
+    viz::mojom::blink::CompositorFrameSinkClientPtr client;
     binding_.Bind(mojo::MakeRequest(&client), task_runner);
     provider->CreateCompositorFrameSink(frame_sink_id_, std::move(client),
                                         mojo::MakeRequest(&sink_));

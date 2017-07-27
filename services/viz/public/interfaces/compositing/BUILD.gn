@@ -4,12 +4,15 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
+mojom("compositing") {
   sources = [
+    "compositor_frame_sink.mojom",
     "resource_settings.mojom",
   ]
 
   public_deps = [
+    "//cc/ipc:interfaces",
+    "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
   ]
 }
@@ -22,7 +25,7 @@ source_set("tests") {
   ]
 
   deps = [
-    ":interfaces",
+    ":compositing",
     "//base/test:test_support",
     "//components/viz/common:common",
     "//media/capture/mojo:capture_types",

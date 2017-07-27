@@ -6,5 +6,6 @@ include_rules = [
   "+components/viz/client",
   "+mojo/public/cpp/bindings",
   "+mojo/public/cpp/system",
+  "+services/viz/public/interfaces/compositing",
   "+ui/gfx/geometry",
 ]

@@ -94,8 +94,8 @@ class GpuChildThread : public ChildThreadImpl, public ui::mojom::GpuMain {
                         const gpu::GpuPreferences& preferences,
                         mojo::ScopedSharedBufferHandle activity_flags) override;
   void CreateFrameSinkManager(
-      cc::mojom::FrameSinkManagerRequest request,
-      cc::mojom::FrameSinkManagerClientPtr client) override;
+      viz::mojom::FrameSinkManagerRequest request,
+      viz::mojom::FrameSinkManagerClientPtr client) override;
 
   void BindServiceFactoryRequest(
       service_manager::mojom::ServiceFactoryRequest request);

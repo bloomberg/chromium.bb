@@ -4,17 +4,17 @@
 
 module ui.mojom;
 
-import "cc/ipc/frame_sink_manager.mojom";
 import "gpu/ipc/common/gpu_preferences.mojom";
 import "services/ui/gpu/interfaces/gpu_host.mojom";
 import "services/ui/gpu/interfaces/gpu_service.mojom";
+import "services/viz/compositing/privileged/interfaces/frame_sink_manager.mojom";
 
 // This is the primordial interface used to (re)start the mus-gpu bundle
 // of services.
 interface GpuMain {
   CreateFrameSinkManager(
-    cc.mojom.FrameSinkManager& frame_sink_manager,
-    cc.mojom.FrameSinkManagerClient frame_sink_manager_client);
+    viz.mojom.FrameSinkManager& frame_sink_manager,
+    viz.mojom.FrameSinkManagerClient frame_sink_manager_client);
 
   CreateGpuService(GpuService& gpu_service,
                    GpuHost gpu_host,

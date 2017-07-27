@@ -18,9 +18,9 @@ GpuRootCompositorFrameSink::GpuRootCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
     std::unique_ptr<Display> display,
     std::unique_ptr<BeginFrameSource> begin_frame_source,
-    cc::mojom::CompositorFrameSinkAssociatedRequest request,
-    cc::mojom::CompositorFrameSinkClientPtr client,
-    cc::mojom::DisplayPrivateAssociatedRequest display_private_request)
+    mojom::CompositorFrameSinkAssociatedRequest request,
+    mojom::CompositorFrameSinkClientPtr client,
+    mojom::DisplayPrivateAssociatedRequest display_private_request)
     : support_(CompositorFrameSinkSupport::Create(
           this,
           frame_sink_manager,

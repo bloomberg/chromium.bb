@@ -277,6 +277,7 @@ static_library("test_support") {
     "//mojo/edk/system",
     "//net:test_support",
     "//services/service_manager/public/cpp",
+    "//services/viz/public/interfaces/compositing",
     "//skia",
     "//storage/browser",
     "//storage/browser:test_support",

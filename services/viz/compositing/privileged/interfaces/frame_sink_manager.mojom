@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module cc.mojom;
+module viz.mojom;
 
 import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_surface_id.mojom";
-import "cc/ipc/compositor_frame_sink.mojom";
 import "cc/ipc/surface_id.mojom";
 import "cc/ipc/surface_info.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
 import "mojo/common/time.mojom";
+import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 
@@ -55,8 +55,8 @@ interface FrameSinkManager {
   CreateRootCompositorFrameSink(
       cc.mojom.FrameSinkId frame_sink_id,
       gpu.mojom.SurfaceHandle widget,
-      associated cc.mojom.CompositorFrameSink& compositor_frame_sink,
-      cc.mojom.CompositorFrameSinkClient compositor_frame_sink_client,
+      associated CompositorFrameSink& compositor_frame_sink,
+      CompositorFrameSinkClient compositor_frame_sink_client,
       associated DisplayPrivate& display_private);
 
   // CreateCompositorFrameSink is used by unprivileged clients. This
@@ -64,8 +64,8 @@ interface FrameSinkManager {
   // CompositorFrameSink in order to appear on screen.
   CreateCompositorFrameSink(
       cc.mojom.FrameSinkId frame_sink_id,
-      cc.mojom.CompositorFrameSink& compositor_frame_sink,
-      cc.mojom.CompositorFrameSinkClient compositor_frame_sink_client);
+      CompositorFrameSink& compositor_frame_sink,
+      CompositorFrameSinkClient compositor_frame_sink_client);
 
   // Set up a BeginFrame relationship between two FrameSinkIds. In this case,
   // the child inherits the viz::BeginFrameSource from the parent if it doesn't
@@ -95,7 +95,7 @@ interface FrameSinkManager {
 interface FrameSinkManagerClient {
   // Called by the frame sink manager immediately upon receiving a
   // CompositorFrame with a new SurfaceId for the first time.
-  OnSurfaceCreated(SurfaceInfo surface_info);
+  OnSurfaceCreated(cc.mojom.SurfaceInfo surface_info);
 
   // The CompositorFrameSink pipe for |frame_sink_id| was closed. The client
   // cannot submit any CompositorFrames to viz after this occurs.

@@ -11,5 +11,7 @@ include_rules = [
 specific_include_rules = {
   ".*_unittest\.cc": [
     "+components/viz/test",
+    "+services/compositing/privileged/interfaces",
+    "+services/viz/public/interfaces/compositing",
   ]
 }

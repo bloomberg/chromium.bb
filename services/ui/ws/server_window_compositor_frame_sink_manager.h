@@ -7,11 +7,11 @@
 
 #include "base/macros.h"
 #include "cc/ipc/compositor_frame.mojom.h"
-#include "cc/ipc/frame_sink_manager.mojom.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/viz/compositing/privileged/interfaces/frame_sink_manager.mojom.h"
 
 namespace ui {
 namespace ws {
@@ -24,20 +24,20 @@ class ServerWindowCompositorFrameSinkManager {
  public:
   ServerWindowCompositorFrameSinkManager(
       const viz::FrameSinkId& frame_sink_id,
-      cc::mojom::FrameSinkManager* frame_sink_manager);
+      viz::mojom::FrameSinkManager* frame_sink_manager);
   ~ServerWindowCompositorFrameSinkManager();
 
   // Creates a new CompositorFrameSink of the specified type, replacing the
   // existing one of the specified type.
   void CreateRootCompositorFrameSink(
       gfx::AcceleratedWidget widget,
-      cc::mojom::CompositorFrameSinkAssociatedRequest sink_request,
-      cc::mojom::CompositorFrameSinkClientPtr client,
-      cc::mojom::DisplayPrivateAssociatedRequest display_request);
+      viz::mojom::CompositorFrameSinkAssociatedRequest sink_request,
+      viz::mojom::CompositorFrameSinkClientPtr client,
+      viz::mojom::DisplayPrivateAssociatedRequest display_request);
 
   void CreateCompositorFrameSink(
-      cc::mojom::CompositorFrameSinkRequest request,
-      cc::mojom::CompositorFrameSinkClientPtr client);
+      viz::mojom::CompositorFrameSinkRequest request,
+      viz::mojom::CompositorFrameSinkClientPtr client);
 
   // Claims this FrameSinkId will embed |surface_id| so it should own the
   // temporary reference to |surface_id|.
@@ -48,7 +48,7 @@ class ServerWindowCompositorFrameSinkManager {
 
  private:
   const viz::FrameSinkId frame_sink_id_;
-  cc::mojom::FrameSinkManager* const frame_sink_manager_;
+  viz::mojom::FrameSinkManager* const frame_sink_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerWindowCompositorFrameSinkManager);
 };

@@ -8,6 +8,7 @@ include_rules = [
   "+services/resource_coordinator/public/interfaces",
   "+services/service_manager/public/cpp",
   "+services/video_capture/public/interfaces",
+  "+services/viz/public/interfaces/compositing",
 
   # No inclusion of WebKit from the browser, other than strictly enum/POD,
   # header-only types, and some selected common code.

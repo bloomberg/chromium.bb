@@ -48,8 +48,9 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
   // offscreen canvas client. The corresponding private interface will be owned
   // here to control CompositorFrameSink lifetime. This should only ever be
   // called once.
-  void CreateCompositorFrameSink(cc::mojom::CompositorFrameSinkClientPtr client,
-                                 cc::mojom::CompositorFrameSinkRequest request);
+  void CreateCompositorFrameSink(
+      viz::mojom::CompositorFrameSinkClientPtr client,
+      viz::mojom::CompositorFrameSinkRequest request);
 
   // FrameSinkObserver implementation.
   void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;

@@ -14,12 +14,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
-#include "cc/ipc/frame_sink_manager.mojom.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/frame_sink_observer.h"
 #include "components/viz/host/viz_host_export.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/viz/compositing/privileged/interfaces/frame_sink_manager.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -40,7 +40,7 @@ class HostFrameSinkManagerTest;
 // UI thread. Manages frame sinks and is intended to replace all usage of
 // FrameSinkManagerImpl.
 class VIZ_HOST_EXPORT HostFrameSinkManager
-    : public NON_EXPORTED_BASE(cc::mojom::FrameSinkManagerClient),
+    : public NON_EXPORTED_BASE(mojom::FrameSinkManagerClient),
       public NON_EXPORTED_BASE(CompositorFrameSinkSupportManager) {
  public:
   HostFrameSinkManager();
@@ -53,9 +53,9 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // Mac |task_runner| will be the resize helper task runner. May only be called
   // once.
   void BindAndSetManager(
-      cc::mojom::FrameSinkManagerClientRequest request,
+      mojom::FrameSinkManagerClientRequest request,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      cc::mojom::FrameSinkManagerPtr ptr);
+      mojom::FrameSinkManagerPtr ptr);
 
   void AddObserver(FrameSinkObserver* observer);
   void RemoveObserver(FrameSinkObserver* observer);
@@ -63,10 +63,9 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // Creates a connection between client to viz, using |request| and |client|,
   // that allows the client to submit CompositorFrames. When no longer needed,
   // call DestroyCompositorFrameSink().
-  void CreateCompositorFrameSink(
-      const FrameSinkId& frame_sink_id,
-      cc::mojom::CompositorFrameSinkRequest request,
-      cc::mojom::CompositorFrameSinkClientPtr client);
+  void CreateCompositorFrameSink(const FrameSinkId& frame_sink_id,
+                                 mojom::CompositorFrameSinkRequest request,
+                                 mojom::CompositorFrameSinkClientPtr client);
 
   // Destroys a client connection. Will call UnregisterFrameSinkHierarchy() with
   // the registered parent if there is one.
@@ -129,21 +128,21 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // embeded |surface_id|, otherwise drops the temporary reference.
   void PerformAssignTemporaryReference(const SurfaceId& surface_id);
 
-  // cc::mojom::FrameSinkManagerClient:
+  // mojom::FrameSinkManagerClient:
   void OnSurfaceCreated(const SurfaceInfo& surface_info) override;
   void OnClientConnectionClosed(const FrameSinkId& frame_sink_id) override;
 
   // This will point to |frame_sink_manager_ptr_| if using Mojo or
   // |frame_sink_manager_impl_| if directly connected. Use this to make function
   // calls.
-  cc::mojom::FrameSinkManager* frame_sink_manager_ = nullptr;
+  mojom::FrameSinkManager* frame_sink_manager_ = nullptr;
 
   // Mojo connection to the FrameSinkManager. If this is bound then
   // |frame_sink_manager_impl_| must be null.
-  cc::mojom::FrameSinkManagerPtr frame_sink_manager_ptr_;
+  mojom::FrameSinkManagerPtr frame_sink_manager_ptr_;
 
   // Mojo connection back from the FrameSinkManager.
-  mojo::Binding<cc::mojom::FrameSinkManagerClient> binding_;
+  mojo::Binding<mojom::FrameSinkManagerClient> binding_;
 
   // A direct connection to FrameSinkManagerImpl. If this is set then
   // |frame_sink_manager_ptr_| must be unbound. For use in browser process only,

@@ -8,7 +8,7 @@ import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_surface_id.mojom";
 import "cc/ipc/surface_id.mojom";
 import "cc/ipc/surface_info.mojom";
-import "cc/ipc/compositor_frame_sink.mojom";
+import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
 import "services/ui/public/interfaces/cursor/cursor.mojom";
 import "services/ui/public/interfaces/event_matcher.mojom";
 import "services/ui/public/interfaces/mus_constants.mojom";
@@ -152,8 +152,8 @@ interface WindowTree {
   // Attaches a CompositorFrameSink to a particular window.
   AttachCompositorFrameSink(
       uint32 window_id,
-      cc.mojom.CompositorFrameSink& compositor_frame_sink,
-      cc.mojom.CompositorFrameSinkClient client);
+      viz.mojom.CompositorFrameSink& compositor_frame_sink,
+      viz.mojom.CompositorFrameSinkClient client);
 
   // Reparents a window.
   // This fails for any of the following reasons:
@@ -480,7 +480,7 @@ interface WindowTreeClient {
   // going through the window server. http://crbug.com/655231
   OnWindowSurfaceChanged(uint32 window_id,
                          cc.mojom.SurfaceInfo surface_info);
-                         
+
   // Called when the mouse cursor enters a window on this connection for the
   // first time, providing a list of available mime types. We want to send this
   // set of data only one time, so this isn't part of OnDragEnter(), which

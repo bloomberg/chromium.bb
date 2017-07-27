@@ -187,8 +187,8 @@ void TestWindowTree::SetWindowOpacity(uint32_t change_id,
 
 void TestWindowTree::AttachCompositorFrameSink(
     uint32_t window_id,
-    mojo::InterfaceRequest<cc::mojom::CompositorFrameSink> surface,
-    cc::mojom::CompositorFrameSinkClientPtr client) {}
+    mojo::InterfaceRequest<viz::mojom::CompositorFrameSink> surface,
+    viz::mojom::CompositorFrameSinkClientPtr client) {}
 
 void TestWindowTree::AddWindow(uint32_t change_id,
                                uint32_t parent,

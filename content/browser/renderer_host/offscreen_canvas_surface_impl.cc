@@ -43,8 +43,8 @@ OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
 }
 
 void OffscreenCanvasSurfaceImpl::CreateCompositorFrameSink(
-    cc::mojom::CompositorFrameSinkClientPtr client,
-    cc::mojom::CompositorFrameSinkRequest request) {
+    viz::mojom::CompositorFrameSinkClientPtr client,
+    viz::mojom::CompositorFrameSinkRequest request) {
   if (has_created_compositor_frame_sink_) {
     DLOG(ERROR) << "CreateCompositorFrameSink() called more than once.";
     return;

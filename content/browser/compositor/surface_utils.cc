@@ -222,14 +222,14 @@ void ConnectWithInProcessFrameSinkManager(
     viz::FrameSinkManagerImpl* manager,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   // A mojo pointer to |host| which is the FrameSinkManagerImpl's client.
-  cc::mojom::FrameSinkManagerClientPtr host_mojo;
+  viz::mojom::FrameSinkManagerClientPtr host_mojo;
   // A mojo pointer to |manager|.
-  cc::mojom::FrameSinkManagerPtr manager_mojo;
+  viz::mojom::FrameSinkManagerPtr manager_mojo;
 
   // A request to bind to each of the above interfaces.
-  cc::mojom::FrameSinkManagerClientRequest host_mojo_request =
+  viz::mojom::FrameSinkManagerClientRequest host_mojo_request =
       mojo::MakeRequest(&host_mojo);
-  cc::mojom::FrameSinkManagerRequest manager_mojo_request =
+  viz::mojom::FrameSinkManagerRequest manager_mojo_request =
       mojo::MakeRequest(&manager_mojo);
 
   // Sets |manager_mojo| which is given to the |host|.

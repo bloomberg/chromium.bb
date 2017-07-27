@@ -28,9 +28,9 @@ void HostFrameSinkManager::SetLocalManager(
 }
 
 void HostFrameSinkManager::BindAndSetManager(
-    cc::mojom::FrameSinkManagerClientRequest request,
+    mojom::FrameSinkManagerClientRequest request,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    cc::mojom::FrameSinkManagerPtr ptr) {
+    mojom::FrameSinkManagerPtr ptr) {
   DCHECK(!frame_sink_manager_impl_);
   DCHECK(!binding_.is_bound());
 
@@ -50,8 +50,8 @@ void HostFrameSinkManager::RemoveObserver(FrameSinkObserver* observer) {
 
 void HostFrameSinkManager::CreateCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
-    cc::mojom::CompositorFrameSinkRequest request,
-    cc::mojom::CompositorFrameSinkClientPtr client) {
+    mojom::CompositorFrameSinkRequest request,
+    mojom::CompositorFrameSinkClientPtr client) {
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
   DCHECK(!data.HasCompositorFrameSinkData());
 

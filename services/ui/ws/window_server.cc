@@ -103,7 +103,7 @@ void WindowServer::SetDisplayCreationConfig(DisplayCreationConfig config) {
 }
 
 void WindowServer::SetFrameSinkManager(
-    std::unique_ptr<cc::mojom::FrameSinkManager> frame_sink_manager) {
+    std::unique_ptr<viz::mojom::FrameSinkManager> frame_sink_manager) {
   frame_sink_manager_ = std::move(frame_sink_manager);
 }
 
@@ -584,7 +584,7 @@ WindowManagerState* WindowServer::GetWindowManagerStateForUser(
       user_id);
 }
 
-cc::mojom::FrameSinkManager* WindowServer::GetFrameSinkManager() {
+viz::mojom::FrameSinkManager* WindowServer::GetFrameSinkManager() {
   return frame_sink_manager_.get();
 }
 

@@ -18,6 +18,7 @@ mojom("interfaces") {
     "//media/gpu/mojo:jpeg_decoder",
     "//media/mojo/interfaces",
     "//services/ui/public/interfaces",
+    "//services/viz/compositing/privileged/interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
     "//url/mojo:url_mojom_gurl",

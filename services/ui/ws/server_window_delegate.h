@@ -10,7 +10,7 @@
 #include "services/ui/public/interfaces/mus_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
-namespace cc {
+namespace viz {
 namespace mojom {
 class FrameSinkManager;
 }
@@ -26,7 +26,7 @@ class ServerWindowDelegate {
  public:
   // Returns a frame sink manager interface pointer. There is only one
   // FrameSinkManagerImpl running in the system.
-  virtual cc::mojom::FrameSinkManager* GetFrameSinkManager() = 0;
+  virtual viz::mojom::FrameSinkManager* GetFrameSinkManager() = 0;
 
   // Returns the root of the window tree to which this |window| is attached.
   // Returns null if this window is not attached up through to a root window.

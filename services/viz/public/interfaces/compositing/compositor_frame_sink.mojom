@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module cc.mojom;
+module viz.mojom;
 
 import "cc/ipc/begin_frame_args.mojom";
 import "cc/ipc/compositor_frame.mojom";
@@ -48,14 +48,14 @@ interface CompositorFrameSinkClient {
   // TODO(fsamuel): This method ought not be necessary with unified BeginFrame.
   // However, there's a fair amount of cleanup and refactoring necessary to get
   // rid of it.
-  DidReceiveCompositorFrameAck(array<ReturnedResource> resources);
+  DidReceiveCompositorFrameAck(array<cc.mojom.ReturnedResource> resources);
 
   // Notification for the client to generate a CompositorFrame.
-  OnBeginFrame(BeginFrameArgs args);
+  OnBeginFrame(cc.mojom.BeginFrameArgs args);
 
   // Inform the client that OnBeginFrame may not be called for some time.
   OnBeginFramePausedChanged(bool paused);
 
   // Returns resources sent to SubmitCompositorFrame to be reused or freed.
-  ReclaimResources(array<ReturnedResource> resources);
+  ReclaimResources(array<cc.mojom.ReturnedResource> resources);
 };

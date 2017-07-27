@@ -7,6 +7,8 @@ include_rules = [
   "+gpu/ipc/common",
   "+services/ui/gpu/interfaces",
   "-services/ui/surfaces",
+  "+services/viz/compositing/privileged/interfaces",
+  "+services/viz/public/interfaces/compositing",
 ]
 
 specific_include_rules = {
