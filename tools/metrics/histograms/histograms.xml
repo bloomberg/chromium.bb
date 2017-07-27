@@ -29623,6 +29623,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.BytesReadFromCache" units="KB">
+  <owner>hubbe@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>Kb read by media demuxer from MultiBuffer cache.</summary>
+</histogram>
+
+<histogram name="Media.BytesReadFromNetwork" units="KB">
+  <owner>hubbe@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>Kb read by from network into MultiBuffer cache.</summary>
+</histogram>
+
 <histogram name="Media.CacheUseful" enum="BooleanSuccess">
   <owner>scherkus@chromium.org</owner>
   <summary>

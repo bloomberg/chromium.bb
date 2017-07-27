@@ -143,7 +143,9 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   blink::WebLocalFrame* frame() const { return frame_; }
 
   void AddBytesRead(int64_t b) { bytes_read_from_cache_ += b; }
-  int64_t BytesReadFromCache() { return bytes_read_from_cache_; }
+  int64_t BytesReadFromCache() const { return bytes_read_from_cache_; }
+  void AddBytesReadFromNetwork(int64_t b) { bytes_read_from_network_ += b; }
+  int64_t BytesReadFromNetwork() const { return bytes_read_from_network_; }
 
  protected:
   UrlData(const GURL& url,
@@ -178,6 +180,9 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
 
   // Number of bytes read from this resource.
   int64_t bytes_read_from_cache_ = 0;
+
+  // Number of bytes read from network into the cache for this resource.
+  int64_t bytes_read_from_network_ = 0;
 
   // Does the server support ranges?
   bool range_supported_;
