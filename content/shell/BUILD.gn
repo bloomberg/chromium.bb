@@ -226,7 +226,7 @@ static_library("content_shell_lib") {
     "//cc",
     "//components/cdm/renderer",
     "//components/keyed_service/content",
-    "//components/network_session_configurator/common",
+    "//components/network_session_configurator/browser",
     "//components/plugins/renderer",
     "//components/url_formatter",
     "//components/web_cache/renderer",

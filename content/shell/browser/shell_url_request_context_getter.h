@@ -13,18 +13,18 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/public/browser/browser_context.h"
-#include "net/proxy/proxy_config_service.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace net {
 class CertVerifier;
 class HostResolver;
-class NetworkDelegate;
 class NetLog;
+class NetworkDelegate;
 class ProxyConfigService;
 class ProxyService;
-class URLRequestContextStorage;
+class URLRequestContext;
 }
 
 namespace content {
@@ -54,7 +54,13 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   // and net::ProxyService.
   virtual std::unique_ptr<net::NetworkDelegate> CreateNetworkDelegate();
   virtual std::unique_ptr<net::CertVerifier> GetCertVerifier();
+  // GetProxyConfigService() and GetProxyService() are mutually exclusive.
+  // if the subclass returns something in GetProxyService(), the return
+  // ProxyConfigService will not be used. Called on the UI thread, unlike other
+  // virtual methods.
   virtual std::unique_ptr<net::ProxyConfigService> GetProxyConfigService();
+  // If this returns nullptr, the URLRequestContextBuilder will create the
+  // service.
   virtual std::unique_ptr<net::ProxyService> GetProxyService();
 
  private:
@@ -65,8 +71,6 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   net::NetLog* net_log_;
 
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
-  std::unique_ptr<net::NetworkDelegate> network_delegate_;
-  std::unique_ptr<net::URLRequestContextStorage> storage_;
   std::unique_ptr<net::URLRequestContext> url_request_context_;
   ProtocolHandlerMap protocol_handlers_;
   URLRequestInterceptorScopedVector request_interceptors_;
