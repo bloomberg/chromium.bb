@@ -194,7 +194,8 @@ class Hook(object):
         not gclient_eval.EvaluateCondition(self._condition, self._variables)):
       return
 
-    cmd = list(self._action)
+    cmd = [arg.format(**self._variables) for arg in self._action]
+
     if cmd[0] == 'python':
       # If the hook specified "python" as the first item, the action is a
       # Python script.  Run it by starting a new copy of the same
@@ -221,32 +222,16 @@ class Hook(object):
             gclient_utils.CommandToStr(cmd), elapsed_time))
 
 
-class GClientKeywords(object):
-  class VarImpl(object):
-    def __init__(self, custom_vars, local_scope):
-      self._custom_vars = custom_vars
-      self._local_scope = local_scope
-
-    def Lookup(self, var_name):
-      """Implements the Var syntax."""
-      if var_name in self._custom_vars:
-        return self._custom_vars[var_name]
-      elif var_name in self._local_scope.get("vars", {}):
-        return self._local_scope["vars"][var_name]
-      raise gclient_utils.Error("Var is not defined: %s" % var_name)
-
-
-class DependencySettings(GClientKeywords):
+class DependencySettings(object):
   """Immutable configuration settings."""
   def __init__(
-      self, parent, url, managed, custom_deps, custom_vars,
+      self, parent, raw_url, url, managed, custom_deps, custom_vars,
       custom_hooks, deps_file, should_process, relative,
       condition, condition_value):
-    GClientKeywords.__init__(self)
-
     # These are not mutable:
     self._parent = parent
     self._deps_file = deps_file
+    self._raw_url = raw_url
     self._url = url
     # The condition as string (or None). Useful to keep e.g. for flatten.
     self._condition = condition
@@ -325,7 +310,13 @@ class DependencySettings(GClientKeywords):
     return self._custom_hooks[:]
 
   @property
+  def raw_url(self):
+    """URL before variable expansion."""
+    return self._raw_url
+
+  @property
   def url(self):
+    """URL after variable expansion."""
     return self._url
 
   @property
@@ -354,12 +345,12 @@ class DependencySettings(GClientKeywords):
 class Dependency(gclient_utils.WorkItem, DependencySettings):
   """Object that represents a dependency checkout."""
 
-  def __init__(self, parent, name, url, managed, custom_deps,
+  def __init__(self, parent, name, raw_url, url, managed, custom_deps,
                custom_vars, custom_hooks, deps_file, should_process,
                relative, condition, condition_value):
     gclient_utils.WorkItem.__init__(self, name)
     DependencySettings.__init__(
-        self, parent, url, managed, custom_deps, custom_vars,
+        self, parent, raw_url, url, managed, custom_deps, custom_vars,
         custom_hooks, deps_file, should_process, relative,
         condition, condition_value)
 
@@ -636,21 +627,24 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       condition = None
       condition_value = True
       if isinstance(dep_value, basestring):
-        url = dep_value
+        raw_url = dep_value
       else:
         # This should be guaranteed by schema checking in gclient_eval.
         assert isinstance(dep_value, collections.Mapping)
-        url = dep_value['url']
+        raw_url = dep_value['url']
         # Take into account should_process metadata set by MergeWithOsDeps.
         should_process = (should_process and
                           dep_value.get('should_process', True))
         condition = dep_value.get('condition')
+
+      url = raw_url.format(**self.get_vars())
+
       if condition:
         condition_value = gclient_eval.EvaluateCondition(
             condition, self.get_vars())
         should_process = should_process and condition_value
       deps_to_add.append(Dependency(
-          self, name, url, None, None, self.custom_vars, None,
+          self, name, raw_url, url, None, None, self.custom_vars, None,
           deps_file, should_process, use_relative_paths, condition,
           condition_value))
     deps_to_add.sort(key=lambda x: x.name)
@@ -685,10 +679,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     local_scope = {}
     if deps_content:
-      # One thing is unintuitive, vars = {} must happen before Var() use.
-      var = self.VarImpl(self.custom_vars, local_scope)
       global_scope = {
-        'Var': var.Lookup,
+        'Var': lambda var_name: '{%s}' % var_name,
         'deps_os': {},
       }
       # Eval the content.
@@ -734,7 +726,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     elif self._relative:
       rel_prefix = os.path.dirname(self.name)
 
-    deps = local_scope.get('deps', {})
+    deps = {}
+    for key, value in local_scope.get('deps', {}).iteritems():
+      deps[key.format(**self.get_vars())] = value
+
     if 'recursion' in local_scope:
       self.recursion_override = local_scope.get('recursion')
       logging.warning(
@@ -1203,7 +1198,7 @@ solutions = [
     # Do not change previous behavior. Only solution level and immediate DEPS
     # are processed.
     self._recursion_limit = 2
-    Dependency.__init__(self, None, None, None, True, None, None, None,
+    Dependency.__init__(self, None, None, None, None, True, None, None, None,
                         'unused', True, None, None, True)
     self._options = options
     if options.deps_os:
@@ -1286,7 +1281,7 @@ it or fix the checkout.
     for s in config_dict.get('solutions', []):
       try:
         deps_to_add.append(Dependency(
-            self, s['name'], s['url'],
+            self, s['name'], s['url'], s['url'],
             s.get('managed', True),
             s.get('custom_deps', {}),
             s.get('custom_vars', {}),
@@ -1738,7 +1733,7 @@ class Flattener(object):
           continue
         scm = gclient_scm.CreateSCM(
             dep.parsed_url, self._client.root_dir, dep.name, dep.outbuf)
-        dep._parsed_url = dep._url = '%s@%s' % (
+        dep._parsed_url = dep._raw_url = dep._url = '%s@%s' % (
             url, scm.revinfo(self._client._options, [], None))
 
     self._deps_string = '\n'.join(
@@ -1875,7 +1870,7 @@ def _DepsToLines(deps):
     s.extend([
         '  # %s' % dep.hierarchy(include_url=False),
         '  "%s": {' % (name,),
-        '    "url": "%s",' % (dep.url,),
+        '    "url": "%s",' % (dep.raw_url,),
     ] + condition_part + [
         '  },',
         '',

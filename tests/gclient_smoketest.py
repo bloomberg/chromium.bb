@@ -578,6 +578,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     with open(output_deps) as f:
       deps_contents = f.read()
 
+    self.maxDiff = None
     self.assertEqual([
         'gclient_gn_args_file = "src/gclient.args"',
         'gclient_gn_args = [\'DummyVariable\']',
@@ -598,7 +599,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '  # src -> src/repo2',
         '  "src/repo2": {',
-        '    "url": "git://127.0.0.1:20000/git/repo_2@%s",' % (
+        '    "url": "{git_base}repo_2@%s",' % (
                  self.githash('repo_2', 1)[:7]),
         '    "condition": "True",',
         '  },',
@@ -661,7 +662,8 @@ class GClientSmokeGIT(GClientSmokeBase):
         '    "action": [',
         '        "python",',
         '        "-c",',
-        '        "open(\'src/git_hooked1\', \'w\').write(\'git_hooked1\')",',
+        '        "open(\'src/git_hooked1\', \'w\')'
+            '.write(\'{hook1_contents}\')",',
         '    ]',
         '  },',
         '',
@@ -699,6 +701,12 @@ class GClientSmokeGIT(GClientSmokeBase):
         'vars = {',
         '  # src',
         '  "DummyVariable": \'repo\',',
+        '',
+        '  # src',
+        '  "git_base": \'git://127.0.0.1:20000/git/\',',
+        '',
+        '  # src',
+        '  "hook1_contents": \'git_hooked1\',',
         '',
         '}',
         '',
@@ -741,7 +749,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '  # src -> src/repo2',
         '  "src/repo2": {',
-        '    "url": "git://127.0.0.1:20000/git/repo_2@%s",' % (
+        '    "url": "{git_base}repo_2@%s",' % (
                  self.githash('repo_2', 1)[:7]),
         '    "condition": "True",',
         '  },',
@@ -805,7 +813,8 @@ class GClientSmokeGIT(GClientSmokeBase):
         '    "action": [',
         '        "python",',
         '        "-c",',
-        '        "open(\'src/git_hooked1\', \'w\').write(\'git_hooked1\')",',
+        '        "open(\'src/git_hooked1\', \'w\')'
+            '.write(\'{hook1_contents}\')",',
         '    ]',
         '  },',
         '',
@@ -843,6 +852,12 @@ class GClientSmokeGIT(GClientSmokeBase):
         'vars = {',
         '  # src',
         '  "DummyVariable": \'repo\',',
+        '',
+        '  # src',
+        '  "git_base": \'git://127.0.0.1:20000/git/\',',
+        '',
+        '  # src',
+        '  "hook1_contents": \'git_hooked1\',',
         '',
         '}',
         '',

@@ -458,6 +458,8 @@ pre_deps_hooks = [
       'DEPS': """
 vars = {
   'DummyVariable': 'repo',
+  'git_base': '%(git_base)s',
+  'hook1_contents': 'git_hooked1',
 }
 gclient_gn_args_file = 'src/gclient.args'
 gclient_gn_args = ['DummyVariable']
@@ -466,7 +468,7 @@ allowed_hosts = [
 ]
 deps = {
   'src/repo2': {
-    'url': '%(git_base)srepo_2@%(hash)s',
+    'url': Var('git_base') + 'repo_2@%(hash)s',
     'condition': 'True',
   },
   'src/repo4': {
@@ -493,7 +495,7 @@ hooks = [
   {
     'pattern': '.',
     'action': ['python', '-c',
-               'open(\\'src/git_hooked1\\', \\'w\\').write(\\'git_hooked1\\')'],
+               'open(\\'src/git_hooked1\\', \\'w\\').write(\\'{hook1_contents}\\')'],
   },
   {
     # Should not be run.
