@@ -17,7 +17,7 @@ function createShallowDOMTree() {
 }
 
 function createRegularDOMTree() {
-    createDOMTree(document.body, 6, 6);
+    createDOMTree(document.body, 4, 4);
 }
 
 function forceStyleRecalc(node) {
