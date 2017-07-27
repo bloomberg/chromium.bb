@@ -53,6 +53,66 @@ FlexItem::FlexItem(LayoutBox* box,
       << "Use LayoutUnit::Max() for no max size";
 }
 
+bool FlexItem::HasOrthogonalFlow() const {
+  return algorithm->IsHorizontalFlow() != box->IsHorizontalWritingMode();
+}
+
+LayoutUnit FlexItem::FlowAwareMarginStart() const {
+  if (algorithm->IsHorizontalFlow()) {
+    return algorithm->IsLeftToRightFlow() ? box->MarginLeft()
+                                          : box->MarginRight();
+  }
+  return algorithm->IsLeftToRightFlow() ? box->MarginTop()
+                                        : box->MarginBottom();
+}
+
+LayoutUnit FlexItem::FlowAwareMarginEnd() const {
+  if (algorithm->IsHorizontalFlow()) {
+    return algorithm->IsLeftToRightFlow() ? box->MarginRight()
+                                          : box->MarginLeft();
+  }
+  return algorithm->IsLeftToRightFlow() ? box->MarginBottom()
+                                        : box->MarginTop();
+}
+
+LayoutUnit FlexItem::FlowAwareMarginBefore() const {
+  switch (algorithm->GetTransformedWritingMode()) {
+    case TransformedWritingMode::kTopToBottomWritingMode:
+      return box->MarginTop();
+    case TransformedWritingMode::kBottomToTopWritingMode:
+      return box->MarginBottom();
+    case TransformedWritingMode::kLeftToRightWritingMode:
+      return box->MarginLeft();
+    case TransformedWritingMode::kRightToLeftWritingMode:
+      return box->MarginRight();
+  }
+  NOTREACHED();
+  return box->MarginTop();
+}
+
+LayoutUnit FlexItem::CrossAxisMarginExtent() const {
+  return algorithm->IsHorizontalFlow() ? box->MarginHeight()
+                                       : box->MarginWidth();
+}
+
+LayoutUnit FlexItem::CrossAxisExtent() const {
+  return algorithm->IsHorizontalFlow() ? box->Size().Height()
+                                       : box->Size().Width();
+}
+
+LayoutUnit FlexItem::MarginBoxAscent() const {
+  LayoutUnit ascent(box->FirstLineBoxBaseline());
+  if (ascent == -1)
+    ascent = CrossAxisExtent();
+  return ascent + FlowAwareMarginBefore();
+}
+
+LayoutUnit FlexItem::AvailableAlignmentSpace(
+    LayoutUnit line_cross_axis_extent) const {
+  LayoutUnit cross_extent = CrossAxisMarginExtent() + CrossAxisExtent();
+  return line_cross_axis_extent - cross_extent;
+}
+
 void FlexLine::FreezeViolations(Vector<FlexItem*>& violations) {
   for (size_t i = 0; i < violations.size(); ++i) {
     DCHECK(!violations[i]->frozen) << i;
@@ -106,11 +166,14 @@ void FlexLine::FreezeInflexibleItems() {
 
 FlexLayoutAlgorithm::FlexLayoutAlgorithm(const ComputedStyle* style,
                                          LayoutUnit line_break_length,
-                                         const Vector<FlexItem>& all_items)
+                                         Vector<FlexItem>& all_items)
     : style_(style),
       line_break_length_(line_break_length),
       all_items_(all_items),
-      next_item_index_(0) {}
+      next_item_index_(0) {
+  for (FlexItem& item : all_items_)
+    item.algorithm = this;
+}
 
 FlexLine* FlexLayoutAlgorithm::ComputeNextFlexLine() {
   Vector<FlexItem> line_items;
@@ -148,6 +211,55 @@ FlexLine* FlexLayoutAlgorithm::ComputeNextFlexLine() {
         total_weighted_flex_shrink, sum_hypothetical_main_size);
   }
   return nullptr;
+}
+
+bool FlexLayoutAlgorithm::IsHorizontalFlow() const {
+  if (style_->IsHorizontalWritingMode())
+    return !style_->IsColumnFlexDirection();
+  return style_->IsColumnFlexDirection();
+}
+
+bool FlexLayoutAlgorithm::IsLeftToRightFlow() const {
+  if (style_->IsColumnFlexDirection()) {
+    return blink::IsHorizontalWritingMode(style_->GetWritingMode()) ||
+           IsFlippedLinesWritingMode(style_->GetWritingMode());
+  }
+  return style_->IsLeftToRightDirection() ^
+         (style_->FlexDirection() == EFlexDirection::kRowReverse);
+}
+
+TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode() const {
+  return GetTransformedWritingMode(*style_);
+}
+
+TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode(
+    const ComputedStyle& style) {
+  WritingMode mode = style.GetWritingMode();
+  if (!style.IsColumnFlexDirection()) {
+    static_assert(
+        static_cast<TransformedWritingMode>(WritingMode::kHorizontalTb) ==
+                TransformedWritingMode::kTopToBottomWritingMode &&
+            static_cast<TransformedWritingMode>(WritingMode::kVerticalLr) ==
+                TransformedWritingMode::kLeftToRightWritingMode &&
+            static_cast<TransformedWritingMode>(WritingMode::kVerticalRl) ==
+                TransformedWritingMode::kRightToLeftWritingMode,
+        "WritingMode and TransformedWritingMode must match values.");
+    return static_cast<TransformedWritingMode>(mode);
+  }
+
+  switch (mode) {
+    case WritingMode::kHorizontalTb:
+      return style.IsLeftToRightDirection()
+                 ? TransformedWritingMode::kLeftToRightWritingMode
+                 : TransformedWritingMode::kRightToLeftWritingMode;
+    case WritingMode::kVerticalLr:
+    case WritingMode::kVerticalRl:
+      return style.IsLeftToRightDirection()
+                 ? TransformedWritingMode::kTopToBottomWritingMode
+                 : TransformedWritingMode::kBottomToTopWritingMode;
+  }
+  NOTREACHED();
+  return TransformedWritingMode::kTopToBottomWritingMode;
 }
 
 }  // namespace blink
