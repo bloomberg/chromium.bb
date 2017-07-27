@@ -16,6 +16,14 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Matcher for the cancel button on the printer options view.
+id<GREYMatcher> PrintOptionsCancelButton() {
+  return grey_allOf(grey_accessibilityLabel(@"Cancel"),
+                    grey_kindOfClass([UIButton class]), nil);
+}
+}  // namespace
+
 // Test case for bringing up the print dialog when a web site's JavaScript runs
 // "window.print".
 @interface JSPrintTestCase : ChromeTestCase
@@ -42,17 +50,12 @@
   [ChromeEarlGrey tapWebViewElementWithID:@"printButton"];
 
   // Test if print dialog appeared.
-  id<GREYMatcher> printerOption = grey_allOf(
-      grey_accessibilityLabel(@"Printer Options"),
-      grey_not(grey_accessibilityTrait(UIAccessibilityTraitHeader)), nil);
-  [[EarlGrey selectElementWithMatcher:printerOption]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Printer Options")]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Clean up and close print dialog.
-  id<GREYMatcher> cancelButton =
-      grey_allOf(grey_accessibilityLabel(@"Cancel"),
-                 grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
-  [[EarlGrey selectElementWithMatcher:cancelButton] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:PrintOptionsCancelButton()]
+      performAction:grey_tap()];
 }
 
 @end
