@@ -242,8 +242,9 @@ std::unique_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
     // IsValidConfig internally and return a null scoped_ptr if not valid.
     if (!AVStreamToAudioDecoderConfig(stream, audio_config.get()) ||
         !audio_config->IsValidConfig()) {
-      MEDIA_LOG(ERROR, media_log)
-          << "FFmpegDemuxer: failed creating audio stream";
+      MEDIA_LOG(DEBUG, media_log) << "Warning, FFmpegDemuxer failed to create "
+                                     "a valid audio decoder configuration from "
+                                     "muxed stream";
       return nullptr;
     }
 
@@ -259,8 +260,9 @@ std::unique_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
     // IsValidConfig internally and return a null scoped_ptr if not valid.
     if (!AVStreamToVideoDecoderConfig(stream, video_config.get()) ||
         !video_config->IsValidConfig()) {
-      MEDIA_LOG(ERROR, media_log)
-          << "FFmpegDemuxer: failed creating video stream";
+      MEDIA_LOG(DEBUG, media_log) << "Warning, FFmpegDemuxer failed to create "
+                                     "a valid video decoder configuration from "
+                                     "muxed stream";
       return nullptr;
     }
 

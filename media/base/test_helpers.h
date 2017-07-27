@@ -215,8 +215,7 @@ MATCHER(ParsedDTSGreaterThanPTS, "") {
 
 MATCHER_P(FoundStream, stream_type_string, "") {
   return CONTAINS_STRING(
-             arg, "found_" + std::string(stream_type_string) + "_stream") &&
-         CONTAINS_STRING(arg, "true");
+      arg, "found_" + std::string(stream_type_string) + "_stream\":true");
 }
 
 MATCHER_P2(CodecName, stream_type_string, codec_string, "") {
