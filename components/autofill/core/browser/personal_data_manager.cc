@@ -1374,19 +1374,19 @@ void PersonalDataManager::LogStoredProfileMetrics() const {
     // Update the histogram of how many addresses the user has stored.
     AutofillMetrics::LogStoredProfileCount(web_profiles_.size());
 
-    // Update the histogram of how many addresses would be considered disused.
-    const base::Time now = AutofillClock::Now();
-    const base::Time min_use_date = now - kDisusedProfileTimeDelta;
-    AutofillMetrics::LogStoredProfileDisusedCount(std::count_if(
-        web_profiles_.begin(), web_profiles_.end(),
-        [min_use_date](const std::unique_ptr<AutofillProfile>& p) {
-          return p->use_date() > min_use_date;
-        }));
-
-    // Update the histogram of days since last use for each address.
-    for (const std::unique_ptr<AutofillProfile>& profile : web_profiles_) {
-      AutofillMetrics::LogStoredProfileDaysSinceLastUse(
-          (now - profile->use_date()).InDays());
+    // If the user has stored addresses, log the distribution of days since
+    // their last use and how many would be considered disused.
+    if (!web_profiles_.empty()) {
+      size_t num_disused_profiles = 0;
+      const base::Time now = AutofillClock::Now();
+      for (const std::unique_ptr<AutofillProfile>& profile : web_profiles_) {
+        const base::TimeDelta time_since_last_use = now - profile->use_date();
+        AutofillMetrics::LogStoredProfileDaysSinceLastUse(
+            time_since_last_use.InDays());
+        if (time_since_last_use > kDisusedProfileTimeDelta)
+          ++num_disused_profiles;
+      }
+      AutofillMetrics::LogStoredProfileDisusedCount(num_disused_profiles);
     }
 
     // Only log this info once per chrome user profile load.

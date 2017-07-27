@@ -6891,6 +6891,17 @@ TEST_F(PersonalDataManagerTest, RemoveByGUID_ResetsBillingAddress) {
   }
 }
 
+TEST_F(PersonalDataManagerTest, LogStoredProfileMetrics_NoStoredProfiles) {
+  base::HistogramTester histogram_tester;
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+  EXPECT_TRUE(personal_data_->GetProfiles().empty());
+  histogram_tester.ExpectTotalCount("Autofill.StoredProfileCount", 1);
+  histogram_tester.ExpectBucketCount("Autofill.StoredProfileCount", 0, 1);
+  histogram_tester.ExpectTotalCount("Autofill.StoredProfileDisusedCount", 0);
+  histogram_tester.ExpectTotalCount("Autofill.DaysSinceLastUse.StoredProfile",
+                                    0);
+}
+
 TEST_F(PersonalDataManagerTest, LogStoredProfileMetrics) {
   // Add a recently used (3 days ago) profile.
   AutofillProfile profile0(base::GenerateGUID(), "https://www.example.com");
