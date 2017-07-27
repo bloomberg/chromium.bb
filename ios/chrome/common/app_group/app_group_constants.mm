@@ -49,6 +49,8 @@ NSString* const kShareItemType = @"Type";
 
 NSString* const kShareItemShareExtensionSource = @"ChromeShareExtension";
 
+NSString* const kSuggestedItems = @"SuggestedItems";
+
 NSString* ApplicationGroup() {
   NSBundle* bundle = [NSBundle mainBundle];
   NSString* group = [bundle objectForInfoDictionaryKey:@"KSApplicationGroup"];
@@ -112,6 +114,17 @@ NSURL* ExternalCommandsItemsFolder() {
       [chromeURL URLByAppendingPathComponent:@"ExternalCommands"
                                  isDirectory:YES];
   return externalCommandsURL;
+}
+
+NSURL* ContentWidgetFaviconsFolder() {
+  NSURL* groupURL = [[NSFileManager defaultManager]
+      containerURLForSecurityApplicationGroupIdentifier:ApplicationGroup()];
+  NSURL* chromeURL =
+      [groupURL URLByAppendingPathComponent:@"Chrome" isDirectory:YES];
+  NSURL* contentWidgetFaviconsURL =
+      [chromeURL URLByAppendingPathComponent:@"ContentWidgetFavicons"
+                                 isDirectory:YES];
+  return contentWidgetFaviconsURL;
 }
 
 }  // namespace app_group

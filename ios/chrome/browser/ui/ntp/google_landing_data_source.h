@@ -64,7 +64,7 @@ class LargeIconService;
 // if there is valid fallback data with the |textColor| and |backgroundColor|
 // for the fallback icon to use. |isDefaultColor| is true if a default color
 // should be used instead of |backgroundColor|.
-- (void)getFaviconForURL:(GURL)URL
+- (void)getFaviconForURL:(const GURL&)URL
                     size:(CGFloat)size
                 useCache:(BOOL)useCache
            imageCallback:(void (^)(UIImage* favicon))imageCallback

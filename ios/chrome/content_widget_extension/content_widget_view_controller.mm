@@ -9,6 +9,7 @@
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/ui/ntp/ntp_tile.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/content_widget_extension/content_widget_view.h"
 
@@ -26,6 +27,7 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 
 @interface ContentWidgetViewController ()
 @property(nonatomic, weak) ContentWidgetView* widgetView;
+@property(nonatomic, strong) NSArray<NTPTile*>* sites;
 
 // Updates the widget with latest data. Returns whether any visual updates
 // occured.
@@ -36,7 +38,20 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 
 @implementation ContentWidgetViewController
 
+@synthesize sites = _sites;
 @synthesize widgetView = _widgetView;
+
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    NSUserDefaults* sharedDefaults = [[NSUserDefaults alloc]
+        initWithSuiteName:app_group::ApplicationGroup()];
+    _sites = [NSKeyedUnarchiver
+        unarchiveObjectWithData:[sharedDefaults
+                                    objectForKey:app_group::kSuggestedItems]];
+  }
+  return self;
+}
 
 #pragma mark - UIViewController
 
@@ -114,7 +129,16 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 #pragma mark - internal
 
 - (BOOL)updateWidget {
-  return NO;
+  NSUserDefaults* sharedDefaults =
+      [[NSUserDefaults alloc] initWithSuiteName:app_group::ApplicationGroup()];
+  NSMutableArray<NTPTile*>* newSites = [NSKeyedUnarchiver
+      unarchiveObjectWithData:[sharedDefaults
+                                  objectForKey:app_group::kSuggestedItems]];
+
+  if (newSites == self.sites) {
+    return NO;
+  }
+  return YES;
 }
 
 - (void)openAppWithURL:(NSString*)URL {
