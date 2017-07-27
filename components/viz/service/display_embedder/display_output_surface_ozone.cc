@@ -83,11 +83,7 @@ void DisplayOutputSurfaceOzone::SwapBuffers(cc::OutputSurfaceFrame frame) {
 
   gfx::Rect damage_rect =
       frame.sub_buffer_rect ? *frame.sub_buffer_rect : gfx::Rect(swap_size_);
-  // Use previous buffer when damage rect is empty. This avoids unnecessary
-  // partial swap work and makes it possible to support empty swaps on devices
-  // where partial swaps are disabled.
-  if (!damage_rect.IsEmpty())
-    buffer_queue_->SwapBuffers(damage_rect);
+  buffer_queue_->SwapBuffers(damage_rect);
 
   DisplayOutputSurface::SwapBuffers(std::move(frame));
 }
