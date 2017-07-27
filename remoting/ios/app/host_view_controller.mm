@@ -77,6 +77,8 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   // or image to be set but we are using the rotating image instead. Until this
   // is directly supported by the FAB, a space for the title is a work-around.
   [_floatingButton setTitle:@" " forState:UIControlStateNormal];
+  [_floatingButton setBackgroundColor:RemotingTheme.buttonBackgroundColor
+                             forState:UIControlStateNormal];
   [_floatingButton addTarget:self
                       action:@selector(didTap:)
             forControlEvents:UIControlEventTouchUpInside];
