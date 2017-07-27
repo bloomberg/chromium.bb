@@ -105,8 +105,8 @@ def record_global_constructors(idl_filename):
 
 def generate_global_constructors_list(interface_name, extended_attributes):
     extended_attributes_list = [
-        name + '=' + extended_attributes[name]
-        for name in 'RuntimeEnabled', 'OriginTrialEnabled', 'ContextEnabled'
+        name + (('=' + extended_attributes[name]) if extended_attributes[name] else '')
+        for name in 'RuntimeEnabled', 'OriginTrialEnabled', 'ContextEnabled', 'SecureContext'
         if name in extended_attributes]
     if extended_attributes_list:
         extended_string = '[%s] ' % ', '.join(extended_attributes_list)

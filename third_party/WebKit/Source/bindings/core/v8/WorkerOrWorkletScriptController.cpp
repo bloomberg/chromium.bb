@@ -46,6 +46,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/bindings/ConditionalFeatures.h"
 #include "platform/bindings/V8DOMWrapper.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/bindings/WrapperTypeInfo.h"
@@ -236,6 +237,8 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
     world_->SetNonMainWorldHumanReadableName(world_->GetWorldId(),
                                              human_readable_name);
   }
+
+  InstallConditionalFeaturesOnGlobal(wrapper_type_info, script_state_.Get());
 
   return true;
 }

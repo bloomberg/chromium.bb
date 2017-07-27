@@ -944,10 +944,13 @@ void {{v8_class_or_partial}}::preparePrototypeAndInterfaceObject(v8::Local<v8::C
   {% endif %}
 
   v8::Isolate* isolate = context->GetIsolate();
-  {% if has_conditional_attributes_on_prototype or conditionally_enabled_methods %}
+  {% if conditionally_enabled_attributes or conditionally_enabled_methods %}
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ExecutionContext* executionContext = ToExecutionContext(context);
   DCHECK(executionContext);
+  {% if has_conditionally_enabled_secure_attributes or has_conditionally_enabled_secure_methods %}
+  bool isSecureContext = (executionContext && executionContext->IsSecureContext());
+  {% endif %}
   {% endif %}
 
 {% if unscopables %}
@@ -964,16 +967,37 @@ void {{v8_class_or_partial}}::preparePrototypeAndInterfaceObject(v8::Local<v8::C
   {% endfor %}
   prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopables).FromJust();
 {% endif %}{# unscopables #}
-{% if has_conditional_attributes_on_prototype %}
-  {{install_conditionally_enabled_attributes_on_prototype() | indent(2)}}
+{% if conditionally_enabled_attributes %}
+  {{install_conditionally_enabled_attributes_on_prototype('isSecureContext') | indent(2)}}
 {% endif %}
 {% if conditionally_enabled_methods %}
-  {{install_conditionally_enabled_methods() | indent(2)}}
+  {{install_conditionally_enabled_methods('isSecureContext') | indent(2)}}
 {% endif %}
 }
 {% endif %}
 
-{% endblock %}
+{% endblock %}{# prepare_prototype_and_interface_object #}
+{##############################################################################}
+{% block install_conditional_features_on_global %}
+{% from 'attributes.cpp.tmpl' import install_conditionally_enabled_constructors with context %}
+{% if has_install_conditional_features_on_global_func %}
+void {{v8_class_or_partial}}::InstallConditionalFeaturesOnGlobal(v8::Local<v8::Context> context, const DOMWrapperWorld& world) {
+  {% if conditionally_enabled_attributes %}
+  v8::Isolate* isolate = context->GetIsolate();
+  v8::Local<v8::Object> prototype_object;
+  v8::Local<v8::Object> instance = context->Global();
+  ExecutionContext* executionContext = ToExecutionContext(context);
+  DCHECK(executionContext);
+  {% if has_conditionally_enabled_secure_attributes %}
+  bool isSecureContext = (executionContext && executionContext->IsSecureContext());
+  {% endif %}
+  {% endif %}{# if conditionally_enabled_attributes #}
+
+  {{install_conditionally_enabled_constructors('isSecureContext') | indent(2)}}
+}
+{% endif %}
+
+{% endblock %}{# install_conditional_features_on_global_func #}
 {##############################################################################}
 {% block partial_interface %}{% endblock %}
 }  // namespace blink

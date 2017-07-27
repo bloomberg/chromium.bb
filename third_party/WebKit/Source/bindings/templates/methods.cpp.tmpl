@@ -643,11 +643,12 @@ for (const auto& methodConfig : {{method.name}}MethodConfiguration)
 
 
 {######################################}
-{% macro install_conditionally_enabled_methods() %}
+{% macro install_conditionally_enabled_methods(secure_context_test_result) %}
 {% for method in conditionally_enabled_methods %}
 {% filter secure_context(method.overloads.secure_context_test_all
                          if method.overloads else
-                         method.secure_context_test) %}
+                         method.secure_context_test,
+                         secure_context_test_result) %}
 {% filter exposed(method.overloads.exposed_test_all
                   if method.overloads else
                   method.exposed_test) %}
