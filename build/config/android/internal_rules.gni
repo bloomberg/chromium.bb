@@ -316,7 +316,12 @@ template("write_build_config") {
         }
       }
     }
-
+    if (defined(invoker.enable_relocation_packing)) {
+      args += [
+        "--enable-relocation-packing",
+        invoker.enable_relocation_packing,
+      ]
+    }
     if (defined(invoker.java_sources_file)) {
       args += [
         "--java-sources-file",
@@ -556,6 +561,10 @@ template("test_runner_script") {
           _apk_under_test = "@FileArg($_rebased_apk_under_test_build_config:deps_info:incremental_apk_path)"
         }
         test_runner_args += [ "--apk-under-test=$_apk_under_test" ]
+        test_runner_args += [
+          "--enable-relocation-packing",
+          "@FileArg($_rebased_apk_under_test_build_config:deps_info:enable_relocation_packing)",
+        ]
       }
       if (emma_coverage) {
         # Set a default coverage output directory (can be overridden by user
