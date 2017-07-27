@@ -62,7 +62,9 @@ NGConstraintSpace::NGConstraintSpace(
 }
 
 RefPtr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
-    const LayoutBox& box) {
+    const LayoutBox& box,
+    Optional<LayoutUnit> override_logical_width,
+    Optional<LayoutUnit> override_logical_height) {
   auto writing_mode = FromPlatformWritingMode(box.StyleRef().GetWritingMode());
   bool parallel_containing_block = IsParallelWritingMode(
       FromPlatformWritingMode(
@@ -99,10 +101,18 @@ RefPtr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
     available_size.inline_size =
         box.BorderAndPaddingLogicalWidth() + box.OverrideLogicalContentWidth();
     fixed_inline = true;
+  } else if (override_logical_width.has_value()) {
+    available_size.inline_size =
+        box.BorderAndPaddingLogicalWidth() + override_logical_width.value();
+    fixed_inline = true;
   }
   if (box.HasOverrideLogicalContentHeight()) {
     available_size.block_size = box.BorderAndPaddingLogicalHeight() +
                                 box.OverrideLogicalContentHeight();
+    fixed_block = true;
+  } else if (override_logical_height.has_value()) {
+    available_size.block_size =
+        box.BorderAndPaddingLogicalHeight() + override_logical_height.value();
     fixed_block = true;
   }
 

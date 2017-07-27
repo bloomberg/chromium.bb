@@ -17,9 +17,10 @@ class ComputedStyle;
 class LayoutObject;
 class LayoutUnit;
 class Length;
-struct MinMaxSize;
 class NGConstraintSpace;
+class NGLayoutInputNode;
 struct NGBoxStrut;
+struct NGLogicalSize;
 
 enum class LengthResolveType {
   kMinSize,
@@ -81,6 +82,11 @@ ComputeInlineSizeForFragment(const NGConstraintSpace&,
 CORE_EXPORT LayoutUnit ComputeBlockSizeForFragment(const NGConstraintSpace&,
                                                    const ComputedStyle&,
                                                    LayoutUnit content_size);
+
+// Computes intrinsic size for replaced elements.
+CORE_EXPORT NGLogicalSize ComputeReplacedSize(const NGLayoutInputNode&,
+                                              const NGConstraintSpace&,
+                                              const Optional<MinMaxSize>&);
 
 // Based on available inline size, CSS computed column-width, CSS computed
 // column-count and CSS used column-gap, return CSS used column-count.
