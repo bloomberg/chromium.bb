@@ -40,8 +40,10 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
+import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebApkServiceClient;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.webapk.lib.client.WebApkIdentityServiceClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.net.URI;
@@ -144,20 +146,6 @@ public class NotificationPlatformBridge {
     private void destroy() {
         assert sInstance == this;
         sInstance = null;
-    }
-
-    /**
-     * Returns the package for the WebAPK which should handle the URL.
-     *
-     * @param url The url to check.
-     * @return Package name of the WebAPK which should handle the URL. Returns empty string if the
-     *         URL should not be handled by a WebAPK.
-     */
-    @CalledByNative
-    private String queryWebApkPackage(String url) {
-        String webApkPackage =
-                WebApkValidator.queryWebApkPackage(ContextUtils.getApplicationContext(), url);
-        return webApkPackage == null ? "" : webApkPackage;
     }
 
     /**
@@ -499,8 +487,6 @@ public class NotificationPlatformBridge {
      *            notification will replace the previous notification with the same tag and origin,
      *            if present. If no matching previous notification is present, the new one will just
      *            be added.
-     * @param webApkPackage The package of the WebAPK associated with the notification. Empty if
-     *        the notification is not associated with a WebAPK.
      * @param title Title to be displayed in the notification.
      * @param body Message to be displayed in the notification. Will be trimmed to one line of
      *             text by the Android notification system.
@@ -519,10 +505,40 @@ public class NotificationPlatformBridge {
      *     Android Notification API</a>
      */
     @CalledByNative
-    private void displayNotification(String notificationId, String origin, String profileId,
-            boolean incognito, String tag, String webApkPackage, String title, String body,
-            Bitmap image, Bitmap icon, Bitmap badge, int[] vibrationPattern, long timestamp,
-            boolean renotify, boolean silent, ActionInfo[] actions) {
+    private void displayNotification(final String notificationId, final String origin,
+            final String profileId, final boolean incognito, final String tag, final String title,
+            final String body, final Bitmap image, final Bitmap icon, final Bitmap badge,
+            final int[] vibrationPattern, final long timestamp, final boolean renotify,
+            final boolean silent, final ActionInfo[] actions) {
+        final String webApkPackage =
+                WebApkValidator.queryWebApkPackage(ContextUtils.getApplicationContext(), origin);
+        if (webApkPackage != null) {
+            WebApkIdentityServiceClient.CheckBrowserBacksWebApkCallback callback =
+                    new WebApkIdentityServiceClient.CheckBrowserBacksWebApkCallback() {
+                        @Override
+                        public void onChecked(boolean doesBrowserBackWebApk) {
+                            displayNotificationInternal(notificationId, origin, profileId,
+                                    incognito, tag, title, body, image, icon, badge,
+                                    vibrationPattern, timestamp, renotify, silent, actions,
+                                    doesBrowserBackWebApk ? webApkPackage : "");
+                        }
+                    };
+            ChromeWebApkHost.checkChromeBacksWebApkAsync(webApkPackage, callback);
+            return;
+        }
+
+        displayNotificationInternal(notificationId, origin, profileId, incognito, tag, title, body,
+                image, icon, badge, vibrationPattern, timestamp, renotify, silent, actions, "");
+    }
+
+    /** Called after querying whether the browser backs the given WebAPK. */
+    private void displayNotificationInternal(String notificationId, String origin, String profileId,
+            boolean incognito, String tag, String title, String body, Bitmap image, Bitmap icon,
+            Bitmap badge, int[] vibrationPattern, long timestamp, boolean renotify, boolean silent,
+            ActionInfo[] actions, String webApkPackage) {
+        nativeStoreCachedWebApkPackageForNotificationId(
+                mNativeNotificationPlatformBridge, notificationId, webApkPackage);
+
         Context context = ContextUtils.getApplicationContext();
         Resources res = context.getResources();
 
@@ -704,20 +720,43 @@ public class NotificationPlatformBridge {
     /**
      * Closes the notification associated with the given parameters.
      *
-     * @param profileId of the profile whose notification this is for.
      * @param notificationId The id of the notification.
      * @param origin The origin to which the notification belongs.
      * @param tag The tag of the notification. May be NULL.
+     * @param hasQueriedWebApkPackage Whether has done the query of is there a WebAPK can handle
+     *                                this notification.
      * @param webApkPackage The package of the WebAPK associated with the notification.
-     *        Empty if the notification is not associated with a WebAPK.
+     *                      Empty if the notification is not associated with a WebAPK.
      */
     @CalledByNative
-    private void closeNotification(String profileId, String notificationId, String origin,
-            String tag, String webApkPackage) {
+    private void closeNotification(final String notificationId, final String origin,
+            final String tag, boolean hasQueriedWebApkPackage, String webApkPackage) {
+        if (!hasQueriedWebApkPackage) {
+            final String webApkPackageFound = WebApkValidator.queryWebApkPackage(
+                    ContextUtils.getApplicationContext(), origin);
+            if (webApkPackageFound != null) {
+                WebApkIdentityServiceClient.CheckBrowserBacksWebApkCallback callback =
+                        new WebApkIdentityServiceClient.CheckBrowserBacksWebApkCallback() {
+                            @Override
+                            public void onChecked(boolean doesBrowserBackWebApk) {
+                                closeNotificationInternal(notificationId, origin, tag,
+                                        doesBrowserBackWebApk ? webApkPackageFound : null);
+                            }
+                        };
+                ChromeWebApkHost.checkChromeBacksWebApkAsync(webApkPackageFound, callback);
+                return;
+            }
+        }
+        closeNotificationInternal(notificationId, origin, tag, webApkPackage);
+    }
+
+    /** Called after querying whether the browser backs the given WebAPK. */
+    private void closeNotificationInternal(
+            String notificationId, String origin, String tag, String webApkPackage) {
         // TODO(miguelg) make profile_id part of the tag.
         String platformTag = makePlatformTag(notificationId, origin, tag);
 
-        if (webApkPackage.isEmpty()) {
+        if (TextUtils.isEmpty(webApkPackage)) {
             mNotificationManager.cancel(platformTag, PLATFORM_ID);
         } else {
             WebApkServiceClient.getInstance().cancelNotification(
@@ -773,4 +812,7 @@ public class NotificationPlatformBridge {
     private native void nativeOnNotificationClosed(long nativeNotificationPlatformBridgeAndroid,
             String notificationId, String origin, String profileId, boolean incognito, String tag,
             boolean byUser);
+    private native void nativeStoreCachedWebApkPackageForNotificationId(
+            long nativeNotificationPlatformBridgeAndroid, String notificationId,
+            String webApkPackage);
 }

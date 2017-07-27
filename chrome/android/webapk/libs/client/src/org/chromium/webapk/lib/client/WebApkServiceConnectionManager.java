@@ -163,29 +163,6 @@ public class WebApkServiceConnectionManager {
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, values);
     }
 
-    /**
-     * Disconnect from the given WebAPK. Can be called from any thread.
-     * @param browserContext The browser context.
-     */
-    public void disconnect(final Context browserContext, String webApkPackage) {
-        if (webApkPackage == null) {
-            return;
-        }
-
-        final Connection connection = mConnections.remove(webApkPackage);
-        if (connection == null) {
-            return;
-        }
-
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                browserContext.unbindService(connection);
-                return null;
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
     public WebApkServiceConnectionManager(String category, String action) {
         mCategory = category;
         mAction = action;

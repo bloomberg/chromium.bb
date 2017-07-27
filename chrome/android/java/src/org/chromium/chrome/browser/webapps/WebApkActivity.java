@@ -209,12 +209,6 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        WebApkServiceClient.getInstance().disconnect(getWebApkPackageName());
-    }
-
-    @Override
     public void onStartWithNative() {
         super.onStartWithNative();
         // If WebappStorage is available, check whether to show a disclosure notification. If it's
