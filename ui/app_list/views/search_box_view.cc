@@ -63,7 +63,7 @@ constexpr int kSearchBoxBorderCornerRadiusSearchResult = 4;
 constexpr int kMicIconSize = 24;
 constexpr int kCloseIconSize = 24;
 
-constexpr int kLightVibrantBlendAlpha = 0xB3;
+constexpr int kLightVibrantBlendAlpha = 0xE6;
 
 // Color of placeholder text in zero query state.
 constexpr SkColor kZeroQuerySearchboxColor =
@@ -767,6 +767,7 @@ const std::vector<SkColor>& SearchBoxView::GetWallpaperProminentColors() const {
 }
 
 void SearchBoxView::SetBackgroundColor(SkColor light_vibrant) {
+  DCHECK(is_fullscreen_app_list_enabled_);
   const SkColor light_vibrant_mixed = color_utils::AlphaBlend(
       SK_ColorWHITE, light_vibrant, kLightVibrantBlendAlpha);
   background_color_ = SK_ColorTRANSPARENT == light_vibrant
