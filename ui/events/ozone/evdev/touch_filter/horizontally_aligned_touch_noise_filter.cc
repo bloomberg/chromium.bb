@@ -41,12 +41,12 @@ void HorizontallyAlignedTouchNoiseFilter::Filter(
           "Ozone.TouchNoiseFilter.HorizontallyAlignedDistance", distance);
 
       if (distance <= kMaxDistance) {
-        VLOG(2) << base::StringPrintf("Cancel tracking id %d, down at %" PRId64
-                                      " at %f,%f near touch %d at "
-                                      "%f,%f",
-                                      touch.tracking_id, time.ToInternalValue(),
-                                      touch.x, touch.y, other_touch.tracking_id,
-                                      other_touch.x, other_touch.y);
+        VLOG(2) << base::StringPrintf(
+            "Cancel tracking id %d, down at %" PRId64
+            " at %f,%f near touch %d at "
+            "%f,%f",
+            touch.tracking_id, time.since_origin().InMicroseconds(), touch.x,
+            touch.y, other_touch.tracking_id, other_touch.x, other_touch.y);
         slots_with_noise->set(touch.slot);
       }
     }

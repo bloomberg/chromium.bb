@@ -125,12 +125,8 @@ std::vector<uint64_t> CrtcController::GetFormatModifiers(uint32_t format) {
 }
 
 void CrtcController::OnPageFlipEvent(unsigned int frame,
-                                     unsigned int seconds,
-                                     unsigned int useconds) {
-  time_of_last_flip_ =
-      static_cast<uint64_t>(seconds) * base::Time::kMicrosecondsPerSecond +
-      useconds;
-
+                                     base::TimeTicks timestamp) {
+  time_of_last_flip_ = timestamp;
   SignalPageFlipRequest(gfx::SwapResult::SWAP_ACK);
 }
 

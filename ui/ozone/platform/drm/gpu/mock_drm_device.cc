@@ -126,7 +126,7 @@ bool MockDrmDevice::PageFlip(uint32_t crtc_id,
   current_framebuffer_ = framebuffer;
   if (page_flip_expectation_) {
     if (use_sync_flips_)
-      callback.Run(0, 0, 0);
+      callback.Run(0, base::TimeTicks());
     else
       callbacks_.push(callback);
   }
@@ -241,7 +241,7 @@ void MockDrmDevice::RunCallbacks() {
   while (!callbacks_.empty()) {
     PageFlipCallback callback = callbacks_.front();
     callbacks_.pop();
-    callback.Run(0, 0, 0);
+    callback.Run(0, base::TimeTicks());
   }
 }
 

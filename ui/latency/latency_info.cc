@@ -338,8 +338,8 @@ LatencyInfo::AsTraceableData() {
         new base::DictionaryValue());
     component_info->SetDouble("comp_id", static_cast<double>(lc.first.second));
     component_info->SetDouble(
-        "time",
-        static_cast<double>(lc.second.event_time.ToInternalValue()));
+        "time", static_cast<double>(
+                    lc.second.event_time.since_origin().InMicroseconds()));
     component_info->SetDouble("count", lc.second.event_count);
     component_info->SetDouble("sequence_number",
                               lc.second.sequence_number);

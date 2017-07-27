@@ -162,18 +162,11 @@ void DrmWindow::GetVSyncParameters(
   // If we're in mirror mode the 2 CRTCs should have similar modes with the same
   // refresh rates.
   CrtcController* crtc = controller_->crtc_controllers()[0].get();
-  // The value is invalid, so we can't update the parameters.
-  if (controller_->GetTimeOfLastFlip() == 0 || crtc->mode().vrefresh == 0)
-    return;
-
-  // Stores the time of the last refresh.
-  base::TimeTicks timebase =
-      base::TimeTicks::FromInternalValue(controller_->GetTimeOfLastFlip());
-  // Stores the refresh rate.
-  base::TimeDelta interval =
-      base::TimeDelta::FromSeconds(1) / crtc->mode().vrefresh;
-
-  callback.Run(timebase, interval);
+  const base::TimeTicks last_flip = controller_->GetTimeOfLastFlip();
+  if (last_flip == base::TimeTicks() || crtc->mode().vrefresh == 0)
+    return;  // The value is invalid, so we can't update the parameters.
+  callback.Run(last_flip,
+               base::TimeDelta::FromSeconds(1) / crtc->mode().vrefresh);
 }
 
 void DrmWindow::ResetCursor(bool bitmap_only) {

@@ -56,8 +56,9 @@ TEST_F(StructTraitsTest, KeyEvent) {
       {'Z', VKEY_Z, EF_CAPS_LOCK_ON},
       {'z', VKEY_Z, EF_NONE},
       {ET_KEY_PRESSED, VKEY_Z, EF_NONE,
-       base::TimeTicks::FromInternalValue(101)},
-      {'Z', VKEY_Z, EF_NONE, base::TimeTicks::FromInternalValue(102)},
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(101)},
+      {'Z', VKEY_Z, EF_NONE,
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(102)},
   };
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();

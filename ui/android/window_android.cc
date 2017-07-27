@@ -217,7 +217,14 @@ void WindowAndroid::OnVSync(JNIEnv* env,
                             const JavaParamRef<jobject>& obj,
                             jlong time_micros,
                             jlong period_micros) {
-  base::TimeTicks frame_time(base::TimeTicks::FromInternalValue(time_micros));
+  // Warning: It is generally unsafe to manufacture TimeTicks values. The
+  // following assumption is being made, AND COULD EASILY BREAK AT ANY TIME:
+  // Upstream, Java code is providing "System.nanos() / 1000," and this is the
+  // same timestamp that would be provided by the CLOCK_MONOTONIC POSIX clock.
+  DCHECK_EQ(base::TimeTicks::GetClock(),
+            base::TimeTicks::Clock::LINUX_CLOCK_MONOTONIC);
+  base::TimeTicks frame_time =
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(time_micros);
   base::TimeDelta vsync_period(
       base::TimeDelta::FromMicroseconds(period_micros));
 
