@@ -273,6 +273,7 @@ class VariationsServiceTest : public ::testing::Test {
   VariationsServiceTest()
       : enabled_state_provider_(
             new metrics::TestEnabledStateProvider(false, false)) {
+    VariationsService::EnableForTesting();
     VariationsService::RegisterPrefs(prefs_.registry());
     metrics::CleanExitBeacon::RegisterPrefs(prefs_.registry());
     metrics::MetricsStateManager::RegisterPrefs(prefs_.registry());
