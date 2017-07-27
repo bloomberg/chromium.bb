@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/content_export.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -20,7 +21,8 @@ class AppCacheServiceImpl;
 class URLLoaderFactoryGetter;
 
 // Implements the URLLoaderFactory mojom for AppCache subresource requests.
-class AppCacheSubresourceURLFactory : public mojom::URLLoaderFactory {
+class CONTENT_EXPORT AppCacheSubresourceURLFactory
+    : public mojom::URLLoaderFactory {
  public:
   ~AppCacheSubresourceURLFactory() override;
 
@@ -52,11 +54,17 @@ class AppCacheSubresourceURLFactory : public mojom::URLLoaderFactory {
                 SyncLoadCallback callback) override;
 
  private:
+  friend class AppCacheNetworkServiceBrowserTest;
+
   AppCacheSubresourceURLFactory(mojom::URLLoaderFactoryRequest request,
                                 URLLoaderFactoryGetter* factory_getter,
                                 base::WeakPtr<AppCacheHost> host);
 
   void OnConnectionError();
+
+  // Notifies the |client| if there is a failure. The |error_code| contains the
+  // actual error.
+  void NotifyError(mojom::URLLoaderClientPtr client, int error_code);
 
   // Mojo binding.
   mojo::Binding<mojom::URLLoaderFactory> binding_;
