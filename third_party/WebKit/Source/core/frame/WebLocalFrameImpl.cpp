@@ -482,7 +482,7 @@ class ChromePluginPrintContext final : public ChromePrintContext {
 };
 
 static WebDataSource* DataSourceForDocLoader(DocumentLoader* loader) {
-  return loader ? WebDataSourceImpl::FromDocumentLoader(loader) : 0;
+  return loader ? WebDataSourceImpl::FromDocumentLoader(loader) : nullptr;
 }
 
 // WebFrame -------------------------------------------------------------------
@@ -1772,14 +1772,6 @@ WebViewBase* WebLocalFrameImpl::ViewImpl() const {
   if (!GetFrame())
     return nullptr;
   return GetFrame()->GetPage()->GetChromeClient().GetWebView();
-}
-
-WebDataSourceImpl* WebLocalFrameImpl::DataSourceImpl() const {
-  return static_cast<WebDataSourceImpl*>(DataSource());
-}
-
-WebDataSourceImpl* WebLocalFrameImpl::ProvisionalDataSourceImpl() const {
-  return static_cast<WebDataSourceImpl*>(ProvisionalDataSource());
 }
 
 void WebLocalFrameImpl::DidFail(const ResourceError& error,
