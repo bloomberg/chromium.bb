@@ -95,6 +95,10 @@ grit("strings") {
   if (is_android) {
     outputs += android_string_outputs
   }
+
+  if (is_official_build) {
+    defines = [ "_official_build" ]
+  }
 }
 
 if (is_android) {
