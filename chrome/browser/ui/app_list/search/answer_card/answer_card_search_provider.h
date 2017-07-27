@@ -56,6 +56,8 @@ class AnswerCardSearchProvider : public SearchProvider,
   void RecordReceivedAnswerFinalResult();
   void OnResultAvailable(bool is_available);
   bool ParseResponseHeaders(const net::HttpResponseHeaders* headers);
+  // Returns Url to open when the user clicks at the result for |query|.
+  std::string GetResultUrl(const base::string16& query) const;
 
   // Unowned pointer to the associated profile.
   Profile* const profile_;
