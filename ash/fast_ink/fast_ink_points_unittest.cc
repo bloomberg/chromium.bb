@@ -175,7 +175,6 @@ TEST_F(FastInkPointsTest, FastInkPointsInternalCollectionDeletion) {
 TEST_F(FastInkPointsTest, FastInkPointsPrediction) {
   prediction_duration_ = base::TimeDelta::FromMilliseconds(18);
 
-  const int kTraceLength = 4;
   const base::TimeDelta kTraceInterval = base::TimeDelta::FromMilliseconds(5);
 
   const int kExpectedPredictionDepth = 3;
@@ -188,28 +187,45 @@ TEST_F(FastInkPointsTest, FastInkPointsPrediction) {
   std::vector<gfx::Vector2dF> computed_acceleration;
 
   const gfx::Vector2dF zero;
-
-  // Fixed position, no prediction should be available.
   const gfx::PointF position(0, 0);
-  AddStroke(kTraceLength, kTraceInterval, position, zero, zero);
+
+  // 0 points, no prediction.
+  AddStroke(0, kTraceInterval, position, zero, zero);
   EXPECT_EQ(0, predicted_.GetNumberOfPoints());
+
+  // 1 point, no prediction.
+  AddStroke(1, kTraceInterval, position, zero, zero);
+  EXPECT_EQ(0, predicted_.GetNumberOfPoints());
+
+  // Fixed position, no prediction.
+  for (int points = 2; points <= 4; ++points) {
+    SCOPED_TRACE(points);
+    AddStroke(points, kTraceInterval, position, zero, zero);
+    EXPECT_EQ(0, predicted_.GetNumberOfPoints());
+  }
 
   // Constant velocity, the predicted trajectory should maintain it.
   const gfx::Vector2dF velocity(10, 5);
-  AddStroke(kTraceLength, kTraceInterval, position, velocity, zero);
-  EXPECT_EQ(kExpectedPredictionDepth, predicted_.GetNumberOfPoints());
-  ComputeDeltas(computed_velocity, computed_acceleration);
-  for (auto v : computed_velocity) {
-    EXPECT_GT(kMaxPredictionError, (velocity - v).Length());
+  for (int points = 2; points <= 4; ++points) {
+    SCOPED_TRACE(points);
+    AddStroke(points, kTraceInterval, position, velocity, zero);
+    EXPECT_EQ(kExpectedPredictionDepth, predicted_.GetNumberOfPoints());
+    ComputeDeltas(computed_velocity, computed_acceleration);
+    for (auto v : computed_velocity) {
+      EXPECT_GT(kMaxPredictionError, (velocity - v).Length());
+    }
   }
 
   // Constant acceleration, the predicted trajectory should maintain it.
   const gfx::Vector2dF acceleration(4, 2);
-  AddStroke(kTraceLength, kTraceInterval, position, velocity, acceleration);
-  EXPECT_EQ(kExpectedPredictionDepth, predicted_.GetNumberOfPoints());
-  ComputeDeltas(computed_velocity, computed_acceleration);
-  for (auto a : computed_acceleration) {
-    EXPECT_GT(kMaxPredictionError, (acceleration - a).Length());
+  for (int points = 3; points <= 4; ++points) {
+    SCOPED_TRACE(points);
+    AddStroke(points, kTraceInterval, position, velocity, acceleration);
+    EXPECT_EQ(kExpectedPredictionDepth, predicted_.GetNumberOfPoints());
+    ComputeDeltas(computed_velocity, computed_acceleration);
+    for (auto a : computed_acceleration) {
+      EXPECT_GT(kMaxPredictionError, (acceleration - a).Length());
+    }
   }
 
   // Not testing with non-zero jerk, as the current prediction implementation
