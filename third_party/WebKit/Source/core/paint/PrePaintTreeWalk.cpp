@@ -170,11 +170,6 @@ bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
              object);
 }
 
-void PrePaintTreeWalk::ClearPreviousClipRectsForTesting(
-    const LayoutObject& object) {
-  object.GetMutableForPainting().FirstFragment()->ClearPreviousClipRects();
-}
-
 void PrePaintTreeWalk::Walk(const LayoutObject& object,
                             const PrePaintTreeWalkContext& parent_context) {
   // Early out from the tree walk if possible.

@@ -17,7 +17,6 @@ class LocalFrame;
 class LocalFrameView;
 class LayoutViewItem;
 class Node;
-class ObjectPaintProperties;
 
 class LayoutItem {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -217,10 +216,6 @@ class LayoutItem {
 
   Color ResolveColor(int color_property) const {
     return layout_object_->ResolveColor(color_property);
-  }
-
-  const ObjectPaintProperties* PaintProperties() const {
-    return layout_object_->PaintProperties();
   }
 
   void InvalidatePaintRectangle(const LayoutRect& dirty_rect) const {

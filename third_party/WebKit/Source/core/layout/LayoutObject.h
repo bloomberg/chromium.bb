@@ -69,7 +69,6 @@ class LayoutFlowThread;
 class LayoutGeometryMap;
 class LayoutMultiColumnSpannerPlaceholder;
 class LayoutView;
-class PropertyTreeState;
 class ObjectPaintProperties;
 class PaintLayer;
 class PseudoStyleRequest;
@@ -397,30 +396,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Sets the parent of this object but doesn't add it as a child of the parent.
   void SetDangerousOneWayParent(LayoutObject*);
 
-  // The ObjectPaintProperties structure holds references to the property tree
-  // nodes that are created by the layout object. The property nodes should only
-  // be updated during InPrePaint phase of the document lifecycle.
-  const ObjectPaintProperties* PaintProperties() const {
-    return rare_paint_data_ ? rare_paint_data_->PaintProperties() : nullptr;
-  }
-
   LayoutObjectId UniqueId() const {
     DCHECK(rare_paint_data_);
     return rare_paint_data_ ? rare_paint_data_->UniqueId() : 0;
   }
-
-  // The complete set of property nodes that should be used as a starting point
-  // to paint this LayoutObject. See also the comment for
-  // RarePaintData::local_border_box_properties_.
-  const PropertyTreeState* LocalBorderBoxProperties() const {
-    if (rare_paint_data_)
-      return rare_paint_data_->LocalBorderBoxProperties();
-    return nullptr;
-  }
-
-  // The complete set of property nodes that should be used as a starting point
-  // to paint contents of this LayoutObject.
-  PropertyTreeState ContentsProperties() const;
 
  private:
   //////////////////////////////////////////
@@ -1724,6 +1703,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // debugging output
   virtual LayoutRect DebugRect() const;
 
+  FragmentData* FirstFragment() const {
+    return rare_paint_data_ ? rare_paint_data_->Fragment() : nullptr;
+  }
+
   // Painters can use const methods only, except for these explicitly declared
   // methods.
   class CORE_EXPORT MutableForPainting {
@@ -1802,40 +1785,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                              canStartElementOnCompositorEffectSPv2);
     FRIEND_TEST_ALL_PREFIXES(PrePaintTreeWalkTest, ClipRects);
 
-    // The following non-const functions for ObjectPaintProperties should only
-    // be called from PaintPropertyTreeBuilder.
-    ObjectPaintProperties& EnsurePaintProperties() {
-      return layout_object_.EnsureRarePaintData()
-          .EnsureFragment()
-          .EnsurePaintProperties();
-    }
-    ObjectPaintProperties* PaintProperties() {
-      if (auto* paint_data = layout_object_.GetRarePaintData())
-        return paint_data->PaintProperties();
-      return nullptr;
-    }
-    void ClearPaintProperties() {
-      if (auto* paint_data = layout_object_.GetRarePaintData()) {
-        if (auto* fragment = paint_data->Fragment())
-          fragment->ClearPaintProperties();
-      }
-    }
     // Each LayoutObject has one or more painting fragments (exactly one
     // in the absence of multicol/pagination).
     // See ../paint/README.md for more on fragments.
     FragmentData* FirstFragment();
     FragmentData& EnsureFirstFragment();
-
-    // The following non-const functions for local border box properties should
-    // only be called from PaintPropertyTreeBuilder.
-    void ClearLocalBorderBoxProperties() {
-      if (auto* paint_data = layout_object_.GetRarePaintData())
-        paint_data->ClearLocalBorderBoxProperties();
-    }
-    void SetLocalBorderBoxProperties(PropertyTreeState& local_border_box) {
-      return layout_object_.EnsureRarePaintData().SetLocalBorderBoxProperties(
-          local_border_box);
-    }
 
     friend class LayoutObject;
     MutableForPainting(const LayoutObject& layout_object)

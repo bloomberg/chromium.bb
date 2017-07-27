@@ -43,12 +43,16 @@ class VisualRectMappingTest : public RenderingTest {
       return;
 
     FloatClipRect geometry_mapper_rect((FloatRect(local_rect)));
-    if (object.PaintProperties() || object.LocalBorderBoxProperties()) {
-      geometry_mapper_rect.MoveBy(FloatPoint(object.PaintOffset()));
-      GeometryMapper::LocalToAncestorVisualRect(
-          *object.LocalBorderBoxProperties(), ancestor.ContentsProperties(),
-          geometry_mapper_rect);
-      geometry_mapper_rect.MoveBy(-FloatPoint(ancestor.PaintOffset()));
+    if (FragmentData* fragment_data = object.FirstFragment()) {
+      if (fragment_data->PaintProperties() ||
+          fragment_data->LocalBorderBoxProperties()) {
+        geometry_mapper_rect.MoveBy(FloatPoint(object.PaintOffset()));
+        GeometryMapper::LocalToAncestorVisualRect(
+            *fragment_data->LocalBorderBoxProperties(),
+            ancestor.FirstFragment()->ContentsProperties(),
+            geometry_mapper_rect);
+        geometry_mapper_rect.MoveBy(-FloatPoint(ancestor.PaintOffset()));
+      }
     }
 
     // The following condition can be false if paintInvalidationContainer is
@@ -63,7 +67,7 @@ class VisualRectMappingTest : public RenderingTest {
     EXPECT_TRUE(EnclosingIntRect(slow_map_rect)
                     .Contains(EnclosingIntRect(expected_visual_rect)));
 
-    if (object.PaintProperties()) {
+    if (object.FirstFragment() && object.FirstFragment()->PaintProperties()) {
       EXPECT_TRUE(EnclosingIntRect(geometry_mapper_rect.Rect())
                       .Contains(EnclosingIntRect(expected_visual_rect)));
     }

@@ -3482,10 +3482,6 @@ void LayoutObject::SetIsBackgroundAttachmentFixedObject(
     GetFrameView()->RemoveBackgroundAttachmentFixedObject(this);
 }
 
-PropertyTreeState LayoutObject::ContentsProperties() const {
-  return rare_paint_data_->ContentsProperties();
-}
-
 RarePaintData& LayoutObject::EnsureRarePaintData() {
   if (!rare_paint_data_)
     rare_paint_data_ = WTF::MakeUnique<RarePaintData>();
