@@ -10,7 +10,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/SubresourceIntegrity.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/loader/fetch/MemoryCache.h"
 

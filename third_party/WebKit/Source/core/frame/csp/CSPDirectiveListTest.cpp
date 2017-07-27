@@ -4,9 +4,9 @@
 
 #include "core/frame/csp/CSPDirectiveList.h"
 
-#include "core/frame/SubresourceIntegrity.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/frame/csp/SourceListDirective.h"
+#include "platform/loader/SubresourceIntegrity.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/wtf/text/StringOperators.h"

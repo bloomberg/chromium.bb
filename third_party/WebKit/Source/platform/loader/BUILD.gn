@@ -21,6 +21,8 @@ source_set("loader") {
   sources = [
     "LinkHeader.cpp",
     "LinkHeader.h",
+    "SubresourceIntegrity.cpp",
+    "SubresourceIntegrity.h",
     "fetch/AccessControlStatus.h",
     "fetch/BufferingDataPipeWriter.cpp",
     "fetch/BufferingDataPipeWriter.h",
@@ -118,6 +120,7 @@ source_set("unit_tests") {
   # Source files for blink_platform_unittests.
   sources = [
     "LinkHeaderTest.cpp",
+    "SubresourceIntegrityTest.cpp",
     "fetch/BufferingDataPipeWriterTest.cpp",
     "fetch/ClientHintsPreferencesTest.cpp",
     "fetch/CrossOriginAccessControlTest.cpp",

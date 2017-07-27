@@ -26,10 +26,12 @@
 
 #include "core/loader/resource/ScriptResource.h"
 
-#include "core/frame/SubresourceIntegrity.h"
+#include "core/dom/Document.h"
+#include "core/loader/SubresourceIntegrityHelper.h"
 #include "platform/SharedBuffer.h"
 #include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
+#include "platform/loader/SubresourceIntegrity.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/ResourceClientWalker.h"
@@ -151,8 +153,10 @@ void ScriptResource::CheckResourceIntegrity(Document& document) {
     data_length = ResourceBuffer()->size();
   }
 
+  SubresourceIntegrity::ReportInfo report_info;
   bool passed = SubresourceIntegrity::CheckSubresourceIntegrity(
-      IntegrityMetadata(), document, data, data_length, Url(), *this);
+      IntegrityMetadata(), data, data_length, Url(), *this, report_info);
+  SubresourceIntegrityHelper::DoReport(document, report_info);
   SetIntegrityDisposition(passed ? ResourceIntegrityDisposition::kPassed
                                  : ResourceIntegrityDisposition::kFailed);
   DCHECK_NE(IntegrityDisposition(), ResourceIntegrityDisposition::kNotChecked);

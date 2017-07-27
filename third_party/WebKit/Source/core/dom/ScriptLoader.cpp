@@ -44,15 +44,16 @@
 #include "core/dom/Text.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/SubresourceIntegrity.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/imports/HTMLImport.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/loader/SubresourceIntegrityHelper.h"
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/WebFrameScheduler.h"
+#include "platform/loader/SubresourceIntegrity.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -420,8 +421,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       String integrity_attr = element_->IntegrityAttributeValue();
       IntegrityMetadataSet integrity_metadata;
       if (!integrity_attr.IsEmpty()) {
+        SubresourceIntegrity::ReportInfo report_info;
         SubresourceIntegrity::ParseIntegrityAttribute(
-            integrity_attr, integrity_metadata, &element_document);
+            integrity_attr, integrity_metadata, &report_info);
+        SubresourceIntegrityHelper::DoReport(element_document, report_info);
       }
 
       if (!FetchClassicScript(url, element_document.Fetcher(), nonce,
