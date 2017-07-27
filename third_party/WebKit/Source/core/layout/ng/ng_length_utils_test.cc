@@ -27,15 +27,16 @@ class NGLengthUtilsTest : public ::testing::Test {
       int inline_size,
       int block_size,
       bool fixed_inline = false,
-      bool fixed_block = false) {
-    return NGConstraintSpaceBuilder(kHorizontalTopBottom)
+      bool fixed_block = false,
+      NGWritingMode writing_mode = NGWritingMode::kHorizontalTopBottom) {
+    return NGConstraintSpaceBuilder(writing_mode)
         .SetAvailableSize(
             NGLogicalSize(LayoutUnit(inline_size), LayoutUnit(block_size)))
         .SetPercentageResolutionSize(
             NGLogicalSize(LayoutUnit(inline_size), LayoutUnit(block_size)))
         .SetIsFixedSizeInline(fixed_inline)
         .SetIsFixedSizeBlock(fixed_block)
-        .ToConstraintSpace(kHorizontalTopBottom);
+        .ToConstraintSpace(writing_mode);
   }
 
   LayoutUnit ResolveInlineLength(
@@ -384,8 +385,8 @@ TEST_F(NGLengthUtilsTest, testPadding) {
   style_->SetPaddingLeft(Length(11, kPercent));
   style_->SetWritingMode(WritingMode::kVerticalRl);
 
-  RefPtr<NGConstraintSpace> constraint_space(
-      ConstructConstraintSpace(200, 300));
+  RefPtr<NGConstraintSpace> constraint_space(ConstructConstraintSpace(
+      200, 300, false, false, NGWritingMode::kVerticalRightLeft));
 
   NGBoxStrut padding = ComputePadding(*constraint_space, *style_);
 
