@@ -1550,28 +1550,12 @@ static void SetTextDecorationProperty(MutableStylePropertySet* style,
   }
 }
 
-static bool GetPrimitiveValueNumber(StylePropertySet* style,
-                                    CSSPropertyID property_id,
-                                    float& number) {
-  if (!style)
-    return false;
-  const CSSValue* value = style->GetPropertyCSSValue(property_id);
-  if (!value || !value->IsPrimitiveValue())
-    return false;
-  number = ToCSSPrimitiveValue(value)->GetFloatValue();
-  return true;
-}
-
 void StyleChange::ExtractTextStyles(Document* document,
                                     MutableStylePropertySet* style,
                                     bool is_monospace_font) {
   DCHECK(style);
 
-  float weight = 0;
-  bool is_number =
-      GetPrimitiveValueNumber(style, CSSPropertyFontWeight, weight);
-  if (GetIdentifierValue(style, CSSPropertyFontWeight) == CSSValueBold ||
-      (is_number && weight >= BoldThreshold())) {
+  if (GetIdentifierValue(style, CSSPropertyFontWeight) == CSSValueBold) {
     style->RemoveProperty(CSSPropertyFontWeight);
     apply_bold_ = true;
   }
@@ -1660,30 +1644,38 @@ static void DiffTextDecorations(MutableStylePropertySet* style,
 }
 
 static bool FontWeightIsBold(const CSSValue* font_weight) {
-  if (font_weight->IsIdentifierValue()) {
-    // Because b tag can only bold text, there are only two states in plain
-    // html: bold and not bold. Collapse all other values to either one of these
-    // two states for editing purposes.
+  if (!font_weight->IsIdentifierValue())
+    return false;
 
-    switch (ToCSSIdentifierValue(font_weight)->GetValueID()) {
-      case CSSValueNormal:
-        return false;
-      case CSSValueBold:
-        return true;
-      default:
-        break;
-    }
+  // Because b tag can only bold text, there are only two states in plain html:
+  // bold and not bold. Collapse all other values to either one of these two
+  // states for editing purposes.
+  switch (ToCSSIdentifierValue(font_weight)->GetValueID()) {
+    case CSSValue100:
+    case CSSValue200:
+    case CSSValue300:
+    case CSSValue400:
+    case CSSValue500:
+    case CSSValueNormal:
+      return false;
+    case CSSValueBold:
+    case CSSValue600:
+    case CSSValue700:
+    case CSSValue800:
+    case CSSValue900:
+      return true;
+    default:
+      break;
   }
 
-  CHECK(font_weight->IsPrimitiveValue());
-  CHECK(ToCSSPrimitiveValue(font_weight)->IsNumber());
-  return ToCSSPrimitiveValue(font_weight)->GetFloatValue() >= BoldThreshold();
+  NOTREACHED();  // For CSSValueBolder and CSSValueLighter
+  return false;
 }
 
 static bool FontWeightNeedsResolving(const CSSValue* font_weight) {
-  if (font_weight->IsPrimitiveValue())
-    return false;
-  CHECK(font_weight->IsIdentifierValue());
+  if (!font_weight->IsIdentifierValue())
+    return true;
+
   const CSSValueID value = ToCSSIdentifierValue(font_weight)->GetValueID();
   return value == CSSValueLighter || value == CSSValueBolder;
 }

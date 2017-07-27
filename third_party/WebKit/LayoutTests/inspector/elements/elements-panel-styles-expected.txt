@@ -28,7 +28,7 @@ font-size: 14px;
 font-style: italic;
     italic !important - #container .foo elements-panel-styles.css:17 -> elements-panel-styles.css:17:18
     OVERLOADED normal !important - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:7
-font-weight: 400;
+font-weight: normal;
     normal !important - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:7
 margin-bottom: 2px;
     2px - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:7

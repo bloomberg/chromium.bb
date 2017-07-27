@@ -62,8 +62,8 @@ class LayoutThemeMac final : public LayoutTheme {
 
   // System fonts.
   void SystemFont(CSSValueID system_font_id,
-                  FontSelectionValue& font_slope,
-                  FontSelectionValue& font_weight,
+                  FontStyle&,
+                  FontWeight&,
                   float& font_size,
                   AtomicString& font_family) const override;
 

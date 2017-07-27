@@ -117,8 +117,8 @@ PassRefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
 
   // First try the specified font with standard style & weight.
   if (fallback_priority != FontFallbackPriority::kEmojiEmoji &&
-      (font_description.Style() == ItalicSlopeValue() ||
-       font_description.Weight() >= BoldThreshold())) {
+      (font_description.Style() == kFontStyleItalic ||
+       font_description.Weight() >= kFontWeight600)) {
     RefPtr<SimpleFontData> font_data =
         FallbackOnStandardFontStyle(font_description, c);
     if (font_data)
@@ -142,17 +142,18 @@ PassRefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
   bool should_set_synthetic_bold = false;
   bool should_set_synthetic_italic = false;
   FontDescription description(font_description);
-  if (fallback_font.is_bold && description.Weight() < BoldThreshold())
-    description.SetWeight(BoldWeightValue());
-  if (!fallback_font.is_bold && description.Weight() >= BoldThreshold()) {
+  if (fallback_font.is_bold && description.Weight() < kFontWeightBold)
+    description.SetWeight(kFontWeightBold);
+  if (!fallback_font.is_bold && description.Weight() >= kFontWeightBold) {
     should_set_synthetic_bold = true;
-    description.SetWeight(NormalWeightValue());
+    description.SetWeight(kFontWeightNormal);
   }
-  if (fallback_font.is_italic && description.Style() == NormalSlopeValue())
-    description.SetStyle(ItalicSlopeValue());
-  if (!fallback_font.is_italic && (description.Style() == ItalicSlopeValue())) {
+  if (fallback_font.is_italic && description.Style() == kFontStyleNormal)
+    description.SetStyle(kFontStyleItalic);
+  if (!fallback_font.is_italic && (description.Style() == kFontStyleItalic ||
+                                   description.Style() == kFontStyleOblique)) {
     should_set_synthetic_italic = true;
-    description.SetStyle(NormalSlopeValue());
+    description.SetStyle(kFontStyleNormal);
   }
 
   FontPlatformData* substitute_platform_data =

@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class CORE_EXPORT CSSFontFamilyValue : public CSSValue {
+class CSSFontFamilyValue : public CSSValue {
  public:
   static CSSFontFamilyValue* Create(const String& family_name);
 

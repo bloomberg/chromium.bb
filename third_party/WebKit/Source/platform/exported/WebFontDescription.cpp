@@ -38,11 +38,9 @@ WebFontDescription::WebFontDescription(const FontDescription& desc) {
   family = desc.Family().Family();
   generic_family = static_cast<GenericFamily>(desc.GenericFamily());
   size = desc.SpecifiedSize();
-  italic = desc.Style() == ItalicSlopeValue();
+  italic = desc.Style() == kFontStyleItalic;
   small_caps = desc.VariantCaps() == FontDescription::kSmallCaps;
-  DCHECK(desc.Weight() >= 100 && desc.Weight() <= 900 &&
-         static_cast<int>(desc.Weight()) % 100 == 0);
-  weight = static_cast<Weight>(static_cast<int>(desc.Weight()) / 100 - 1);
+  weight = static_cast<Weight>(desc.Weight());
   smoothing = static_cast<Smoothing>(desc.FontSmoothing());
   letter_spacing = desc.LetterSpacing();
   word_spacing = desc.WordSpacing();
@@ -58,14 +56,10 @@ WebFontDescription::operator FontDescription() const {
       static_cast<FontDescription::GenericFamilyType>(generic_family));
   desc.SetSpecifiedSize(size);
   desc.SetComputedSize(size);
-  desc.SetStyle(italic ? ItalicSlopeValue() : NormalSlopeValue());
+  desc.SetStyle(italic ? kFontStyleItalic : kFontStyleNormal);
   desc.SetVariantCaps(small_caps ? FontDescription::kSmallCaps
                                  : FontDescription::kCapsNormal);
-  static_assert(static_cast<int>(WebFontDescription::kWeight100) == 0,
-                "kWeight100 conversion");
-  static_assert(static_cast<int>(WebFontDescription::kWeight900) == 8,
-                "kWeight900 conversion");
-  desc.SetWeight(FontSelectionValue((weight + 1) * 100));
+  desc.SetWeight(static_cast<FontWeight>(weight));
   desc.SetFontSmoothing(static_cast<FontSmoothingMode>(smoothing));
   desc.SetLetterSpacing(letter_spacing);
   desc.SetWordSpacing(word_spacing);

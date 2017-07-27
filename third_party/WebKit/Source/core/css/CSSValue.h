@@ -88,9 +88,6 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   bool IsFontFeatureValue() const { return class_type_ == kFontFeatureClass; }
   bool IsFontFamilyValue() const { return class_type_ == kFontFamilyClass; }
   bool IsFontFaceSrcValue() const { return class_type_ == kFontFaceSrcClass; }
-  bool IsFontStyleRangeValue() const {
-    return class_type_ == kFontStyleRangeClass;
-  }
   bool IsFontVariationValue() const {
     return class_type_ == kFontVariationClass;
   }
@@ -216,7 +213,6 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
     kFontFeatureClass,
     kFontFaceSrcClass,
     kFontFamilyClass,
-    kFontStyleRangeClass,
     kFontVariationClass,
 
     kInheritedClass,

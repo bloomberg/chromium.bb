@@ -38,7 +38,6 @@
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSFontFeatureValue.h"
-#include "core/css/CSSFontStyleRangeValue.h"
 #include "core/css/CSSFontVariationValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
@@ -170,8 +169,6 @@ bool CSSValue::operator==(const CSSValue& other) const {
         return CompareCSSValues<CSSFontFamilyValue>(*this, other);
       case kFontFeatureClass:
         return CompareCSSValues<CSSFontFeatureValue>(*this, other);
-      case kFontStyleRangeClass:
-        return CompareCSSValues<CSSFontStyleRangeValue>(*this, other);
       case kFontVariationClass:
         return CompareCSSValues<CSSFontVariationValue>(*this, other);
       case kFunctionClass:
@@ -274,8 +271,6 @@ String CSSValue::CssText() const {
       return ToCSSFontFamilyValue(this)->CustomCSSText();
     case kFontFeatureClass:
       return ToCSSFontFeatureValue(this)->CustomCSSText();
-    case kFontStyleRangeClass:
-      return ToCSSFontStyleRangeValue(this)->CustomCSSText();
     case kFontVariationClass:
       return ToCSSFontVariationValue(this)->CustomCSSText();
     case kFunctionClass:
@@ -385,9 +380,6 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       return;
     case kFontFeatureClass:
       ToCSSFontFeatureValue(this)->~CSSFontFeatureValue();
-      return;
-    case kFontStyleRangeClass:
-      ToCSSFontStyleRangeValue(this)->~CSSFontStyleRangeValue();
       return;
     case kFontVariationClass:
       ToCSSFontVariationValue(this)->~CSSFontVariationValue();
@@ -533,9 +525,6 @@ DEFINE_TRACE(CSSValue) {
       return;
     case kFontFeatureClass:
       ToCSSFontFeatureValue(this)->TraceAfterDispatch(visitor);
-      return;
-    case kFontStyleRangeClass:
-      ToCSSFontStyleRangeValue(this)->TraceAfterDispatch(visitor);
       return;
     case kFontVariationClass:
       ToCSSFontVariationValue(this)->TraceAfterDispatch(visitor);

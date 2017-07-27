@@ -95,18 +95,20 @@ String CSSPropertyFontUtils::ConcatenateFamilyName(CSSParserTokenRange& range) {
   return builder.ToString();
 }
 
-CSSValue* CSSPropertyFontUtils::ConsumeFontWeight(CSSParserTokenRange& range) {
+CSSIdentifierValue* CSSPropertyFontUtils::ConsumeFontWeight(
+    CSSParserTokenRange& range) {
   const CSSParserToken& token = range.Peek();
   if (token.Id() >= CSSValueNormal && token.Id() <= CSSValueLighter)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
-  if (token.GetType() != kNumberToken)
+  if (token.GetType() != kNumberToken ||
+      token.GetNumericValueType() != kIntegerValueType)
     return nullptr;
-  float weight = token.NumericValue();
-  if (weight < 1 || weight > 1000)
+  int weight = static_cast<int>(token.NumericValue());
+  if ((weight % 100) || weight < 100 || weight > 900)
     return nullptr;
   range.ConsumeIncludingWhitespace();
-  return CSSPrimitiveValue::Create(weight,
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSIdentifierValue::Create(
+      static_cast<CSSValueID>(CSSValue100 + weight / 100 - 1));
 }
 
 // TODO(bugsnash): move this to the FontFeatureSettings API when it is no longer

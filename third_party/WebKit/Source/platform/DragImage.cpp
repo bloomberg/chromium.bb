@@ -180,7 +180,7 @@ std::unique_ptr<DragImage> DragImage::Create(
 }
 
 static Font DeriveDragLabelFont(int size,
-                                FontSelectionValue font_weight,
+                                FontWeight font_weight,
                                 const FontDescription& system_font) {
   FontDescription description = system_font;
   description.SetWeight(font_weight);
@@ -195,12 +195,12 @@ std::unique_ptr<DragImage> DragImage::Create(const KURL& url,
                                              const String& in_label,
                                              const FontDescription& system_font,
                                              float device_scale_factor) {
-  const Font label_font = DeriveDragLabelFont(kDragLinkLabelFontSize,
-                                              BoldWeightValue(), system_font);
+  const Font label_font =
+      DeriveDragLabelFont(kDragLinkLabelFontSize, kFontWeightBold, system_font);
   const SimpleFontData* label_font_data = label_font.PrimaryFont();
   DCHECK(label_font_data);
-  const Font url_font = DeriveDragLabelFont(kDragLinkUrlFontSize,
-                                            NormalWeightValue(), system_font);
+  const Font url_font =
+      DeriveDragLabelFont(kDragLinkUrlFontSize, kFontWeightNormal, system_font);
   const SimpleFontData* url_font_data = url_font.PrimaryFont();
   DCHECK(url_font_data);
 

@@ -725,12 +725,12 @@ void LayoutTheme::SystemFont(CSSValueID system_font_id,
   if (font_description.IsAbsoluteSize())
     return;
 
-  FontSelectionValue font_slope = NormalSlopeValue();
-  FontSelectionValue font_weight = NormalWeightValue();
+  FontStyle font_style = kFontStyleNormal;
+  FontWeight font_weight = kFontWeightNormal;
   float font_size = 0;
   AtomicString font_family;
-  SystemFont(system_font_id, font_slope, font_weight, font_size, font_family);
-  font_description.SetStyle(font_slope);
+  SystemFont(system_font_id, font_style, font_weight, font_size, font_family);
+  font_description.SetStyle(font_style);
   font_description.SetWeight(font_weight);
   font_description.SetSpecifiedSize(font_size);
   font_description.SetIsAbsoluteSize(true);

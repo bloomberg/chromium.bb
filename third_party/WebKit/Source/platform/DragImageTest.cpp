@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "platform/fonts/FontDescription.h"
+#include "platform/fonts/FontTraits.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Image.h"
@@ -141,8 +142,8 @@ TEST(DragImageTest, TrimWhitespace) {
   font_description.SetSpecifiedSize(16);
   font_description.SetIsAbsoluteSize(true);
   font_description.SetGenericFamily(FontDescription::kNoFamily);
-  font_description.SetWeight(NormalWeightValue());
-  font_description.SetStyle(NormalSlopeValue());
+  font_description.SetWeight(kFontWeightNormal);
+  font_description.SetStyle(kFontStyleNormal);
 
   std::unique_ptr<DragImage> test_image =
       DragImage::Create(url, test_label, font_description, device_scale_factor);
