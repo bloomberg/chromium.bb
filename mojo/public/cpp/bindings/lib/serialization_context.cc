@@ -111,8 +111,9 @@ void SerializationContext::ConsumeNextSerializedAssociatedInterfaceInfo(
 
 void SerializationContext::PrepareMessage(uint32_t message_name,
                                           uint32_t flags,
+                                          size_t payload_size,
                                           Message* message) {
-  *message = Message(message_name, flags, 0,
+  *message = Message(message_name, flags, payload_size,
                      associated_endpoint_handles_.size(), &handles_);
   associated_endpoint_handles_.swap(
       *message->mutable_associated_endpoint_handles());

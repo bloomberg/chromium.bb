@@ -2,29 +2,7 @@
 
 class {{export_attribute}} {{class_name}} {
  public:
-  class BufferWriter {
-   public:
-    BufferWriter() = default;
-
-    void Allocate(mojo::internal::Buffer* buffer) {
-      buffer_ = buffer;
-      index_ = buffer_->Allocate(sizeof({{class_name}}));
-      new (data()) {{class_name}}();
-    }
-
-    bool is_null() const { return !buffer_; }
-    {{class_name}}* data() {
-      DCHECK(!is_null());
-      return buffer_->Get<{{class_name}}>(index_);
-    }
-    {{class_name}}* operator->() { return data(); }
-
-   private:
-    mojo::internal::Buffer* buffer_ = nullptr;
-    size_t index_ = 0;
-
-    DISALLOW_COPY_AND_ASSIGN(BufferWriter);
-  };
+  static {{class_name}}* New(mojo::internal::Buffer* buf);
 
   static bool Validate(const void* data,
                        mojo::internal::ValidationContext* validation_context);
@@ -42,7 +20,7 @@ class {{export_attribute}} {{class_name}} {
 {%-     set next_pf = struct.packed.packed_fields[loop.index0 + 1] %}
 {%-     set pad = next_pf.offset - (packed_field.offset + packed_field.size) %}
 {%-     if pad > 0 %}
-  uint8_t pad{{loop.index0}}_[{{pad}}] = {};
+  uint8_t pad{{loop.index0}}_[{{pad}}];
 {%-     endif %}
 {%-   endif %}
 {%- endfor %}
@@ -53,7 +31,7 @@ class {{export_attribute}} {{class_name}} {
 {%-   set offset = last_field.offset + last_field.size %}
 {%-   set pad = offset|get_pad(8) %}
 {%-   if pad > 0 %}
-  uint8_t padfinal_[{{pad}}] = {};
+  uint8_t padfinal_[{{pad}}];
 {%-   endif %}
 {%- endif %}
 

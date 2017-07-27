@@ -42,8 +42,9 @@ template <typename MojomType,
           typename... Args,
           typename std::enable_if<
               !IsOptionalWrapper<InputUserType>::value>::type* = nullptr>
-void PrepareToSerialize(InputUserType&& input, Args&&... args) {
-  Serializer<MojomType, typename std::remove_reference<InputUserType>::type>::
+size_t PrepareToSerialize(InputUserType&& input, Args&&... args) {
+  return Serializer<MojomType,
+                    typename std::remove_reference<InputUserType>::type>::
       PrepareToSerialize(std::forward<InputUserType>(input),
                          std::forward<Args>(args)...);
 }
@@ -76,24 +77,27 @@ template <typename MojomType,
           typename... Args,
           typename std::enable_if<
               IsOptionalWrapper<InputUserType>::value>::type* = nullptr>
-void PrepareToSerialize(InputUserType&& input, Args&&... args) {
-  if (input)
-    PrepareToSerialize<MojomType>(*input, std::forward<Args>(args)...);
+size_t PrepareToSerialize(InputUserType&& input, Args&&... args) {
+  if (!input)
+    return 0;
+  return PrepareToSerialize<MojomType>(*input, std::forward<Args>(args)...);
 }
 
 template <typename MojomType,
           typename InputUserType,
-          typename BufferWriterType,
+          typename DataType,
           typename... Args,
           typename std::enable_if<
               IsOptionalWrapper<InputUserType>::value>::type* = nullptr>
 void Serialize(InputUserType&& input,
                Buffer* buffer,
-               BufferWriterType* writer,
+               DataType** output,
                Args&&... args) {
-  if (!input)
+  if (!input) {
+    *output = nullptr;
     return;
-  Serialize<MojomType>(*input, buffer, writer, std::forward<Args>(args)...);
+  }
+  Serialize<MojomType>(*input, buffer, output, std::forward<Args>(args)...);
 }
 
 template <typename MojomType,

@@ -18,12 +18,15 @@ namespace {
 
 Message ConstructRunOrClosePipeMessage(
     pipe_control::RunOrClosePipeInputPtr input_ptr) {
+  internal::SerializationContext context;
+
   auto params_ptr = pipe_control::RunOrClosePipeMessageParams::New();
   params_ptr->input = std::move(input_ptr);
 
-  Message message(pipe_control::kRunOrClosePipeMessageId, 0, 0, 0, nullptr);
-  internal::SerializationContext context;
-  pipe_control::internal::RunOrClosePipeMessageParams_Data::BufferWriter params;
+  size_t size = internal::PrepareToSerialize<
+      pipe_control::RunOrClosePipeMessageParamsDataView>(params_ptr, &context);
+  Message message(pipe_control::kRunOrClosePipeMessageId, 0, size, 0);
+  pipe_control::internal::RunOrClosePipeMessageParams_Data* params = nullptr;
   internal::Serialize<pipe_control::RunOrClosePipeMessageParamsDataView>(
       params_ptr, message.payload_buffer(), &params, &context);
   message.set_interface_id(kInvalidInterfaceId);
