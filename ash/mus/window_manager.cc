@@ -113,6 +113,13 @@ void WindowManager::Init(
   // created by chrome, which creates InputDeviceClient.
   if (config_ == Config::MASH) {
     input_device_client_ = base::MakeUnique<ui::InputDeviceClient>();
+
+    // |connector_| can be nullptr in tests.
+    if (connector_) {
+      ui::mojom::InputDeviceServerPtr server;
+      connector_->BindInterface(ui::mojom::kServiceName, &server);
+      input_device_client_->Connect(std::move(server));
+    }
   } else {
     // In Config::MUS ash handles all drag and drop.
     window_tree_client->DisableDragDropClient();
