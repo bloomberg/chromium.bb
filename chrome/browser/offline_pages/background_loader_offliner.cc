@@ -209,7 +209,7 @@ bool BackgroundLoaderOffliner::LoadAndSave(
   loader_.get()->LoadPage(request.url());
 
   snapshot_controller_ = SnapshotController::CreateForBackgroundOfflining(
-      base::ThreadTaskRunnerHandle::Get(), this);
+      base::ThreadTaskRunnerHandle::Get(), this, false);
 
   return true;
 }
