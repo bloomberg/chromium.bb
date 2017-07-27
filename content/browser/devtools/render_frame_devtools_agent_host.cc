@@ -85,6 +85,8 @@ FrameTreeNode* GetFrameTreeNodeAncestor(FrameTreeNode* frame_tree_node) {
   return frame_tree_node;
 }
 
+const char* kPageNavigateCommand = "Page.navigate";
+
 }  // namespace
 
 // RenderFrameDevToolsAgentHost::FrameHostHolder -------------------------------
@@ -558,7 +560,7 @@ bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
   }
 
   if (IsBrowserSideNavigationEnabled()) {
-    if (!navigation_handles_.empty()) {
+    if (!navigation_handles_.empty() || method == kPageNavigateCommand) {
       suspended_messages_by_session_id_[session_id].push_back(
           {call_id, method, message});
       return true;
