@@ -1238,7 +1238,9 @@ void RenderWidget::Resize(const ResizeParams& params) {
 
   if (compositor_) {
     compositor_->SetViewportSize(params.physical_backing_size);
-    compositor_->setBottomControlsHeight(params.bottom_controls_height);
+    compositor_->SetBrowserControlsHeight(
+        params.top_controls_height, params.bottom_controls_height,
+        params.browser_controls_shrink_blink_size);
     compositor_->SetRasterColorSpace(
         screen_info_.color_space.GetParametricApproximation());
     // If surface synchronization is enable, then this will use the provided

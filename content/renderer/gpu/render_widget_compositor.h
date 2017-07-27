@@ -177,9 +177,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
                                 float bottom_height,
                                 bool shrink) override;
   void SetBrowserControlsShownRatio(float) override;
-  // TODO(ianwen): Move this method to WebLayerTreeView and implement main
-  // thread scrolling.
-  virtual void setBottomControlsHeight(float height);
   void RequestDecode(const PaintImage& image,
                      const base::Callback<void(bool)>& callback) override;
 

@@ -1111,10 +1111,6 @@ void RenderWidgetCompositor::SetBrowserControlsShownRatio(float ratio) {
   layer_tree_host_->SetBrowserControlsShownRatio(ratio);
 }
 
-void RenderWidgetCompositor::setBottomControlsHeight(float height) {
-  layer_tree_host_->SetBottomControlsHeight(height);
-}
-
 void RenderWidgetCompositor::RequestDecode(
     const PaintImage& image,
     const base::Callback<void(bool)>& callback) {
