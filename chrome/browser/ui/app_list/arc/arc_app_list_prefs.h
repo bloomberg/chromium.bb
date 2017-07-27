@@ -408,6 +408,12 @@ class ArcAppListPrefs
   // Dispatches OnAppReadyChanged event to observers.
   void NotifyAppReadyChanged(const std::string& app_id, bool ready);
 
+  // Marks app icons as invalidated and request icons updated.
+  void InvalidateAppIcons(const std::string& app_id);
+
+  // Marks package icons as invalidated and request icons updated.
+  void InvalidatePackageIcons(const std::string& package_name);
+
   Profile* const profile_;
 
   // Owned by the BrowserContext.
@@ -450,6 +456,8 @@ class ArcAppListPrefs
   base::OneShotTimer detect_default_app_availability_timeout_;
   // Set of currently installing default apps_.
   std::unordered_set<std::string> default_apps_installations_;
+  // Mask of scale factors for which the app's icon needs invalidation.
+  uint32_t invalidated_icon_scale_factor_mask_;
 
   arc::ArcPackageSyncableService* sync_service_ = nullptr;
 
