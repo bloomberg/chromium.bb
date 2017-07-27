@@ -32,7 +32,10 @@ config("freetype-warnings") {
 # FreeType itself. Then we build FreeType depending on harfbuzz-ng-ft and
 # harfbuzz-ng.
 static_library("bootstrap_freetype_for_harfbuzz") {
-  visibility = [ "//third_party/harfbuzz-ng:harfbuzz-ng-ft", ":freetype" ]
+  visibility = [
+    "//third_party/harfbuzz-ng:harfbuzz-ng-ft",
+    ":freetype",
+  ]
 
   defines = []
 
@@ -41,8 +44,31 @@ static_library("bootstrap_freetype_for_harfbuzz") {
     "include/freetype-custom-config/ftoption.h",
     "src/src/base/ftbase.c",
     "src/src/base/ftbitmap.c",
-    "src/src/base/ftsystem.c",
   ]
+
+  include_dirs = []
+
+  # ftsystem.c provides implementations of FT_Memory and FT_Stream_Open.
+  # While Chromium itself avoids using this code, any build of Chromium which
+  # depends on //third_party/fontconfig:fontconfig with use_bundled_fontconfig
+  # will make heavy use of these implementations, so use the best available.
+  if (is_posix) {
+    sources += [ "src/builds/unix/ftsystem.c" ]
+
+    # builds/unix/ftsystem.c directly includes <ftconfig.h> instead of using
+    # FT_CONFIG_CONFIG_H. The includes/freetype/config directory should not be
+    # on the include path to avoid accidentally using the ftoption or ftmodule
+    # from there.
+    include_dirs += [ "include/freetype-custom-config" ]
+
+    # builds/unix/ftsystem.c requires the following defines to be set.
+    defines += [
+      "HAVE_UNISTD_H",
+      "HAVE_FCNTL_H",
+    ]
+  } else {
+    sources += [ "src/src/base/ftsystem.c" ]
+  }
 
   if (is_mac && !is_component_build) {
     defines += [ "MAC_RESTRICT_VISIBILITY" ]
@@ -144,6 +170,7 @@ component("freetype") {
     # GN currently does not escape '<' and '>' when generating xml based Visual
     # Studio project files. As a result, use quotes instead of pointy brackets
     # in these defines.
+    "FT_CONFIG_CONFIG_H=\"freetype-custom-config/ftconfig.h\"",
     "FT_CONFIG_MODULES_H=\"freetype-custom-config/ftmodule.h\"",
     "FT_CONFIG_OPTIONS_H=\"freetype-custom-config/ftoption.h\"",
   ]
@@ -165,9 +192,7 @@ component("freetype") {
   ]
 
   if (!use_system_freetype) {
-    deps += [
-    ":bootstrap_freetype_for_harfbuzz"
-    ]
+    deps += [ ":bootstrap_freetype_for_harfbuzz" ]
   }
 
   if (!use_system_harfbuzz) {
