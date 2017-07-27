@@ -38,6 +38,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/SetSelectionData.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/TextIterator.h"
@@ -1690,9 +1691,11 @@ void Range::UpdateSelectionIfAddedToSelection() {
                              .Collapse(StartPosition())
                              .Extend(EndPosition())
                              .Build(),
-                         FrameSelection::kCloseTyping |
-                             FrameSelection::kClearTypingStyle |
-                             FrameSelection::kDoNotSetFocus);
+                         SetSelectionData::Builder()
+                             .SetShouldCloseTyping(true)
+                             .SetShouldClearTypingStyle(true)
+                             .SetDoNotSetFocus(true)
+                             .Build());
   selection.CacheRangeOfDocument(this);
 }
 
