@@ -166,11 +166,16 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                             ? mi_size_wide[BLOCK_4X4]
                             : mi_size_wide[BLOCK_8X8];
   // TODO(jingning): Revisit this part after cb4x4 is stable.
-  if (abs(row_offset) > 1) row_offset *= 2;
+  if (abs(row_offset) > 1) {
+    row_offset *= 2;
+    row_offset += 1;
 
-  if (bsize < BLOCK_8X8 && abs(row_offset) > 1) {
-    if (mi_row & 0x01) row_offset += 1;
-    if (mi_col & 0x01) col_offset -= 1;
+    col_offset = 1;
+
+    if (bsize < BLOCK_8X8) {
+      if (mi_row & 0x01) row_offset += 1;
+      if (mi_col & 0x01) col_offset -= 1;
+    }
   }
 #else
   const int mi_offset = mi_size_wide[BLOCK_8X8];
@@ -220,11 +225,16 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const int mi_offset = (bsize < BLOCK_8X8) || (abs(col_offset) > 1)
                             ? mi_size_high[BLOCK_4X4]
                             : mi_size_high[BLOCK_8X8];
-  if (abs(col_offset) > 1) col_offset *= 2;
+  if (abs(col_offset) > 1) {
+    col_offset *= 2;
+    col_offset += 1;
 
-  if (bsize < BLOCK_8X8 && abs(col_offset) > 1) {
-    if (mi_row & 0x01) row_offset -= 1;
-    if (mi_col & 0x01) col_offset += 1;
+    row_offset = 1;
+
+    if (bsize < BLOCK_8X8) {
+      if (mi_row & 0x01) row_offset -= 1;
+      if (mi_col & 0x01) col_offset += 1;
+    }
   }
 #else
   const int mi_offset = mi_size_wide[BLOCK_8X8];
