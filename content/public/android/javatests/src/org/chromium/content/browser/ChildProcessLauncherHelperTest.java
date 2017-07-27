@@ -361,6 +361,33 @@ public class ChildProcessLauncherHelperTest {
                 });
     }
 
+    /**
+     * Tests that 2 connections stopping consecutively don't trigger an assert.
+     * https://crbug.com/749149
+     */
+    @Test
+    @MediumTest
+    @Feature({"ProcessManagement"})
+    public void testSandboxedAllocatorFreedWith2Connections() {
+        ChildProcessLauncherHelper launcher1 = startSandboxedChildProcess(
+                null /* packageName */, BLOCK_UNTIL_SETUP, true /* doSetupConnection */);
+        ChildProcessLauncherHelper launcher2 = startSandboxedChildProcess(
+                null /* packageName */, BLOCK_UNTIL_SETUP, true /* doSetupConnection */);
+        stopProcesses(launcher1, launcher2);
+
+        // Wait for the allocator to be removed, so we know both connections' listeners have been
+        // run.
+        final String packageName =
+                InstrumentationRegistry.getInstrumentation().getTargetContext().getPackageName();
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("The connection allocator was not removed.") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return !hasSandboxedConnectionAllocatorForPackage(packageName);
+                    }
+                });
+    }
+
     @Test
     @MediumTest
     @Feature({"ProcessManagement"})
@@ -557,6 +584,21 @@ public class ChildProcessLauncherHelperTest {
             @Override
             public void run() {
                 ChildProcessLauncherHelper.stop(connection.getPid());
+            }
+        });
+    }
+
+    private static void stopProcesses(ChildProcessLauncherHelper... launcherHelpers) {
+        final int[] pids = new int[launcherHelpers.length];
+        for (int i = 0; i < launcherHelpers.length; i++) {
+            pids[i] = getPid(launcherHelpers[i]);
+        }
+        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                for (int pid : pids) {
+                    ChildProcessLauncherHelper.stop(pid);
+                }
             }
         });
     }
