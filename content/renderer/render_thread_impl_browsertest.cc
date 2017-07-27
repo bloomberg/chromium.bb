@@ -13,11 +13,11 @@
 #include "base/debug/leak_annotations.h"
 #include "base/location.h"
 #include "base/memory/discardable_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
@@ -136,19 +136,15 @@ class RenderThreadImplForTest : public RenderThreadImpl {
 #pragma warning(pop)
 #endif
 
-void QuitTask(base::MessageLoop* message_loop) {
-  message_loop->QuitWhenIdle();
-}
-
 class QuitOnTestMsgFilter : public IPC::MessageFilter {
  public:
-  explicit QuitOnTestMsgFilter(base::MessageLoop* message_loop)
-      : message_loop_(message_loop) {}
+  explicit QuitOnTestMsgFilter(base::OnceClosure quit_closure)
+      : origin_task_runner_(base::SequencedTaskRunnerHandle::Get()),
+        quit_closure_(std::move(quit_closure)) {}
 
   // IPC::MessageFilter overrides:
   bool OnMessageReceived(const IPC::Message& message) override {
-    message_loop_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&QuitTask, message_loop_));
+    origin_task_runner_->PostTask(FROM_HERE, std::move(quit_closure_));
     return true;
   }
 
@@ -161,7 +157,8 @@ class QuitOnTestMsgFilter : public IPC::MessageFilter {
  private:
   ~QuitOnTestMsgFilter() override {}
 
-  base::MessageLoop* message_loop_;
+  scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
+  base::OnceClosure quit_closure_;
 };
 
 class RenderThreadImplBrowserTest : public testing::Test {
@@ -231,8 +228,9 @@ class RenderThreadImplBrowserTest : public testing::Test {
         std::move(renderer_scheduler), test_task_counter);
     cmd->InitFromArgv(old_argv);
 
+    run_loop_ = base::MakeUnique<base::RunLoop>();
     test_msg_filter_ = make_scoped_refptr(
-        new QuitOnTestMsgFilter(base::MessageLoop::current()));
+        new QuitOnTestMsgFilter(run_loop_->QuitWhenIdleClosure()));
     thread_->AddFilter(test_msg_filter_.get());
   }
 
@@ -263,6 +261,8 @@ class RenderThreadImplBrowserTest : public testing::Test {
   RenderThreadImplForTest* thread_;  // Owned by mock_process_.
 
   base::FieldTrialList field_trial_list_;
+
+  std::unique_ptr<base::RunLoop> run_loop_;
 };
 
 void CheckRenderThreadInputHandlerManager(RenderThreadImpl* thread) {
@@ -294,7 +294,7 @@ TEST_F(RenderThreadImplBrowserTest,
   sender()->Send(new ResourceHostMsg_FollowRedirect(0));
   sender()->Send(new TestMsg_QuitRunLoop());
 
-  base::RunLoop().Run();
+  run_loop_->Run();
   EXPECT_EQ(1, test_task_counter_->NumTasksPosted());
 }
 
@@ -306,7 +306,7 @@ TEST_F(RenderThreadImplBrowserTest,
 
   sender()->Send(new TestMsg_QuitRunLoop());
 
-  base::RunLoop().Run();
+  run_loop_->Run();
 
   EXPECT_EQ(0, test_task_counter_->NumTasksPosted());
 }
