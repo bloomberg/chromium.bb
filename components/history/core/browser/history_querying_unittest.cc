@@ -192,8 +192,8 @@ class HistoryQueryTest : public testing::Test {
 
   void QueryHistoryComplete(QueryResults* results) {
     results->Swap(&last_query_results_);
-    base::MessageLoop::current()
-        ->QuitWhenIdle();  // Will return out to QueryHistory.
+    // Will return out to QueryHistory.
+    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   base::ScopedTempDir temp_dir_;
