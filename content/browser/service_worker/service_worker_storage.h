@@ -20,7 +20,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_database.h"
-#include "content/browser/service_worker/service_worker_database_task_manager.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
@@ -82,8 +81,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
   static std::unique_ptr<ServiceWorkerStorage> Create(
       const base::FilePath& path,
       const base::WeakPtr<ServiceWorkerContextCore>& context,
-      std::unique_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
-      const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
+      scoped_refptr<base::SequencedTaskRunner> database_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> disk_cache_thread,
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy);
 
@@ -354,8 +353,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
   ServiceWorkerStorage(
       const base::FilePath& path,
       base::WeakPtr<ServiceWorkerContextCore> context,
-      std::unique_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
-      const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
+      scoped_refptr<base::SequencedTaskRunner> database_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> disk_cache_thread,
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy);
 
@@ -566,10 +565,10 @@ class CONTENT_EXPORT ServiceWorkerStorage
   // The context should be valid while the storage is alive.
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
-  // Only accessed using |database_task_manager_|.
+  // |database_| is only accessed using |database_task_runner_|.
   std::unique_ptr<ServiceWorkerDatabase> database_;
+  scoped_refptr<base::SequencedTaskRunner> database_task_runner_;
 
-  std::unique_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> disk_cache_thread_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
