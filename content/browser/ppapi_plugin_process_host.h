@@ -26,7 +26,6 @@
 
 namespace content {
 class BrowserChildProcessHostImpl;
-class ResourceContext;
 struct PepperPluginInfo;
 
 // Process host for PPAPI plugin and broker processes.
@@ -60,10 +59,6 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
   };
 
   class PluginClient : public Client {
-   public:
-    // Returns the resource context for the renderer requesting the channel.
-    virtual ResourceContext* GetResourceContext() = 0;
-
    protected:
     ~PluginClient() override {}
   };
