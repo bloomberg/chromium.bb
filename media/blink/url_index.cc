@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -54,7 +55,12 @@ UrlData::UrlData(const GURL& url,
       multibuffer_(this, url_index_->block_shift_),
       frame_(url_index->frame()) {}
 
-UrlData::~UrlData() {}
+UrlData::~UrlData() {
+  UMA_HISTOGRAM_MEMORY_KB("Media.BytesReadFromCache",
+                          BytesReadFromCache() >> 10);
+  UMA_HISTOGRAM_MEMORY_KB("Media.BytesReadFromNetwork",
+                          BytesReadFromNetwork() >> 10);
+}
 
 std::pair<GURL, UrlData::CORSMode> UrlData::key() const {
   DCHECK(thread_checker_.CalledOnValidThread());
