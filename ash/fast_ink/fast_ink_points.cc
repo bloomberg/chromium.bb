@@ -136,21 +136,28 @@ void FastInkPoints::Predict(const FastInkPoints& real_points,
     if (it == position.end())
       break;
   }
-  // Pad with last point if needed.
-  std::fill(it, position.end(), last_point_location);
+
+  const size_t valid_positions = it - position.begin();
+  if (valid_positions < 2)  // Not enough reliable data, bail out.
+    return;
 
   // Note: Currently there's no need to divide by the time delta between
   // points as we assume a constant delta between points that matches the
   // prediction point interval.
   gfx::Vector2dF velocity[3];
-  for (size_t i = 0; i < arraysize(velocity); ++i)
+  for (size_t i = 0; i < valid_positions - 1; ++i)
     velocity[i] = position[i] - position[i + 1];
+  // velocity[0] is always valid, since |valid_positions| >=2
 
   gfx::Vector2dF acceleration[2];
-  for (size_t i = 0; i < arraysize(acceleration); ++i)
+  for (size_t i = 0; i < valid_positions - 2; ++i)
     acceleration[i] = velocity[i] - velocity[i + 1];
+  // acceleration[0] is always valid (zero if |valid_positions| < 3).
 
-  gfx::Vector2dF jerk = acceleration[0] - acceleration[1];
+  gfx::Vector2dF jerk;
+  if (valid_positions > 3)
+     jerk = acceleration[0] - acceleration[1];
+  // |jerk| is aways valid (zero if |valid_positions| < 4).
 
   // Adjust max prediction time based on speed as prediction data is not great
   // at lower speeds.
