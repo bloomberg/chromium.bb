@@ -1919,6 +1919,10 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
           # http://crbug.com/599451: this test is currently too slow
           # to run on x64 in Debug mode. Need to shard the tests.
           'Win7 x64 Debug (NVIDIA)',
+
+          # The Mac NVIDIA Retina bots don't have the capacity to run
+          # this test suite on mac_optional_gpu_tests_rel.
+          'Optional Mac Retina Release (NVIDIA)',
         ],
         # Don't run these tests on Android yet.
         'os_types': ['android'],
