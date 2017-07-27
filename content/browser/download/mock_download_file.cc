@@ -48,4 +48,11 @@ void MockDownloadFile::AddByteStream(
   DoAddByteStream(stream_reader.get(), offset, length);
 }
 
+void MockDownloadFile::AddDataPipeConsumerHandle(
+    mojo::ScopedDataPipeConsumerHandle handle,
+    int64_t offset,
+    int64_t length) {
+  DoAddDataPipeConsumerHandle(handle.get(), offset, length);
+}
+
 }  // namespace content
