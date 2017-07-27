@@ -60,11 +60,13 @@ void AddRequestDone(const RequestQueue::AddRequestCallback& callback,
 }  // namespace
 
 RequestQueue::RequestQueue(std::unique_ptr<RequestQueueStore> store)
-    : store_(std::move(store)), weak_ptr_factory_(this) {
+    : store_(std::move(store)), task_queue_(this), weak_ptr_factory_(this) {
   Initialize();
 }
 
 RequestQueue::~RequestQueue() {}
+
+void RequestQueue::OnTaskQueueIsIdle() {}
 
 void RequestQueue::GetRequests(const GetRequestsCallback& callback) {
   std::unique_ptr<Task> task(new GetRequestsTask(

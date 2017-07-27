@@ -19,13 +19,15 @@
 namespace offline_pages {
 class PrefetchService;
 
-class PrefetchDispatcherImpl : public PrefetchDispatcher {
+class PrefetchDispatcherImpl : public PrefetchDispatcher,
+                               public TaskQueue::Delegate {
  public:
   PrefetchDispatcherImpl();
   ~PrefetchDispatcherImpl() override;
 
   // PrefetchDispatcher implementation:
   void SetService(PrefetchService* service) override;
+  void SchedulePipelineProcessing() override;
   void AddCandidatePrefetchURLs(
       const std::string& name_space,
       const std::vector<PrefetchURL>& prefetch_urls) override;
@@ -38,6 +40,9 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher {
       const std::string& operation_name) override;
   void RequestFinishBackgroundTaskForTest() override;
 
+  // TaskQueue::Delegate implementation:
+  void OnTaskQueueIsIdle() override;
+
  private:
   friend class PrefetchDispatcherTest;
 
@@ -46,9 +51,13 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher {
                           PrefetchRequestStatus status,
                           const std::string& operation_name,
                           const std::vector<RenderPageInfo>& pages);
+  // Adds the Action tasks to the queue. See PrefetchDispatcher interface
+  // declaration for Action tasks definition.
+  void QueueActionTasks();
 
   PrefetchService* service_;
   TaskQueue task_queue_;
+  bool needs_pipeline_processing_ = false;
   std::unique_ptr<ScopedBackgroundTask> background_task_;
 
   base::WeakPtrFactory<PrefetchDispatcherImpl> weak_factory_;

@@ -29,7 +29,15 @@ namespace offline_pages {
 // the previous one calls |Task::TaskComplete|.
 class TaskQueue {
  public:
-  TaskQueue();
+  class Delegate {
+   public:
+    virtual ~Delegate() {};
+
+    // Invoked once when TaskQueue reached 0 tasks.
+    virtual void OnTaskQueueIsIdle() = 0;
+  };
+
+  explicit TaskQueue(Delegate* delegate);
   ~TaskQueue();
 
   // Adds a task to the queue. Queue takes ownership of the task.
@@ -47,6 +55,11 @@ class TaskQueue {
 
   // Callback for informing the queue that a task was completed.
   void TaskCompleted(Task* task);
+
+  void InformTaskQueueIsIdle();
+
+  // Owns and outlives this TaskQueue.
+  Delegate* delegate_;
 
   // Currently running tasks.
   std::unique_ptr<Task> current_task_;
