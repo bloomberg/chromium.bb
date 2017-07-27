@@ -26,6 +26,8 @@ import android.os.SystemClock;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.GooglePlayServicesAvailabilityException;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -66,6 +68,22 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
                 accountsChangedBroadcastReceiver, accountsChangedIntentFilter);
     }
 
+    protected void checkCanUseGooglePlayServices() throws AccountManagerDelegateException {
+        Context context = ContextUtils.getApplicationContext();
+        final int resultCode =
+                GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context);
+        if (resultCode == ConnectionResult.SUCCESS) {
+            return;
+        }
+
+        if (GoogleApiAvailability.getInstance().isUserResolvableError(resultCode)) {
+            throw new GmsAvailabilityException(
+                    String.format("Can't use Google Play Services: %s",
+                            GoogleApiAvailability.getInstance().getErrorString(resultCode)),
+                    resultCode);
+        }
+    }
+
     @Override
     public void addObserver(AccountsChangeObserver observer) {
         mObservers.addObserver(observer);
@@ -78,6 +96,10 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
 
     @Override
     public Account[] getAccountsSync() throws AccountManagerDelegateException {
+        // Account seeding relies on GoogleAuthUtil.getAccountId to get GAIA ids,
+        // so don't report any accounts if Google Play Services are out of date.
+        checkCanUseGooglePlayServices();
+
         if (!hasGetAccountsPermission()) {
             return new Account[] {};
         }
