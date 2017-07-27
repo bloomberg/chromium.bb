@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef IOS_CHROME_BROWSER_FEATURE_ENGAGEMENT_TRACKER_UTIL_H_
+#define IOS_CHROME_BROWSER_FEATURE_ENGAGEMENT_TRACKER_UTIL_H_
+
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
@@ -22,3 +25,5 @@ void NotifyNewTabEvent(ios::ChromeBrowserState* browserState, bool isIncognito);
 void NotifyNewTabEventForCommand(ios::ChromeBrowserState* browserState,
                                  OpenNewTabCommand* command);
 }  // namespace feature_engagement
+
+#endif  // IOS_CHROME_BROWSER_FEATURE_ENGAGEMENT_TRACKER_UTIL_H_
