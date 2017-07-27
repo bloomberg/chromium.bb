@@ -150,6 +150,13 @@ InspectorTest.formatters.formatAsTypeName = function(value)
     return "<" + typeof value + ">";
 }
 
+InspectorTest.formatters.formatAsTypeNameOrNull = function(value)
+{
+    if (value === null)
+      return "null";
+    return InspectorTest.formatters.formatAsTypeName(value);
+}
+
 InspectorTest.formatters.formatAsRecentTime = function(value)
 {
     if (typeof value !== "object" || !(value instanceof Date))

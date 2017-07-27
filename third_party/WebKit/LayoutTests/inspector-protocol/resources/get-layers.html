@@ -3,7 +3,7 @@
 <script>
 function addCompositedLayer() {
   var element = document.createElement("div");
-  element.className = "composited";
+  element.className = "composited small-box";
   element.id = "last-element";
   document.body.appendChild(element);
 }
@@ -15,18 +15,21 @@ div {
   left: 0;
 }
 
-.regular {
+.large-box {
   width: 100px;
   height: 100px;
   background-color: black;
 }
 
-.composited {
+.small-box {
   top: 25px;
   left: 25px;
   width: 50px;
   height: 50px;
   background-color: blue;
+}
+
+.composited {
   transform: translateZ(0);
 }
 
@@ -34,18 +37,54 @@ div {
   left: 200px;
   transform: translateZ(0);
 }
+
+.scroller {
+  left: 400px;
+  height: 100px;
+  width: 100px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+.outer-sticky {
+  position: sticky;
+  top: 10px;
+  width: 100px;
+  height: 50px;
+  background-color: black;
+}
+
+.inner-sticky {
+  position: sticky;
+  top: 15px;
+  width: 100px;
+  height: 25px;
+  background-color: blue;
+}
+
+.padding {
+  width: 100px;
+  height: 200px;
+}
 </style>
 </head>
 <body>
 
-<div class="regular"></div>
+<div class="large-box"></div>
 
-<div class="composited">
-  <div class="composited"></div>
+<div class="composited small-box">
+  <div class="composited small-box"></div>
 </div>
 
-<div class="regular offset">
-  <div class="composited"></div>
+<div class="offset large-box">
+  <div class="composited small-box"></div>
+</div>
+
+<div class="composited scroller">
+  <div class="composited outer-sticky">
+    <div class="composited inner-sticky"></div>
+  </div>
+  <div class="padding"></div>
 </div>
 
 </body>
