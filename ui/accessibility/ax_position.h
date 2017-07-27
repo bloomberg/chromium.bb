@@ -1038,7 +1038,7 @@ class AXPosition {
     if (parent_position->IsNullPosition())
       return CreateNullPosition();
 
-    // Get the previous sibling's deepest first child if a previous sibling
+    // Get the previous sibling's deepest last child if a previous sibling
     // exists, otherwise move up to the parent.
     int index_in_parent = AnchorIndexInParent();
     if (index_in_parent <= 0)
@@ -1047,7 +1047,7 @@ class AXPosition {
     AXPositionInstance leaf =
         parent_position->CreateChildPositionAt(index_in_parent - 1);
     while (!leaf->IsNullPosition() && leaf->AnchorChildCount())
-      leaf = leaf->CreateChildPositionAt(0);
+      leaf = leaf->CreateChildPositionAt(leaf->AnchorChildCount() - 1);
 
     return leaf;
   }
