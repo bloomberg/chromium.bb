@@ -26,14 +26,15 @@
 }
 
 .destination-list .throbber-container {
-  display: inline;
-  padding: 0 16px 0 8px;
+  -webkit-padding-end: 16px;
+  -webkit-padding-start: 8px;
+  display: inline-block;
   position: relative;
+  vertical-align: middle;
 }
 
 .destination-list .throbber {
-  position: absolute;
-  top: -1px;
+  vertical-align: middle;
 }
 
 .destination-list .no-destinations-message {
