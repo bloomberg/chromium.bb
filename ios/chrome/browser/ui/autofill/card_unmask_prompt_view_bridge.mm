@@ -31,6 +31,9 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kCardUnmaskPromptCollectionViewAccessibilityID =
+    @"kCardUnmaskPromptCollectionViewAccessibilityID";
+
 namespace {
 
 const CGFloat kTitleVerticalSpacing = 2.0f;
@@ -157,6 +160,9 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  self.collectionView.accessibilityIdentifier =
+      kCardUnmaskPromptCollectionViewAccessibilityID;
+
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
 
   UILabel* titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
@@ -192,6 +198,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
                                        style:UIBarButtonItemStylePlain
                                       target:self
                                       action:@selector(onVerify:)];
+  [_verifyButton setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_OK)];
   [_verifyButton setTitleTextAttributes:@{
     NSForegroundColorAttributeName : [[MDCPalette cr_bluePalette] tint600]
   }
