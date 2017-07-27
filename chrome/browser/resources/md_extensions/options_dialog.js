@@ -37,7 +37,7 @@ cr.define('extensions', function() {
         return Math.min(Math.max(min, val), max);
       };
 
-      var onSizeChanged = function(e) {
+      var onSizeChanged = e => {
         var minHeaderWidth = this.$$('#icon-and-name-wrapper img').offsetWidth +
             this.$$('#icon-and-name-wrapper span').offsetWidth +
             HEADER_EXTRA_SPACING;
@@ -48,7 +48,7 @@ cr.define('extensions', function() {
             bounded(minWidth, MAX_WIDTH, e.width) + 'px';
         this.$.dialog.style.width =
             (bounded(minWidth, MAX_WIDTH, e.width) + DIALOG_PADDING) + 'px';
-      }.bind(this);
+      };
 
       this.extensionOptions_.onpreferredsizechanged = onSizeChanged;
       this.$.body.appendChild(this.extensionOptions_);

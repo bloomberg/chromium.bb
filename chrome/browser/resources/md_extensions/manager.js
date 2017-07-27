@@ -129,11 +129,10 @@ cr.define('extensions', function() {
       this.sidebar.setListDelegate(this.listHelper_);
       this.readyPromiseResolver.resolve();
       this.currentPage_ = {page: Page.LIST};
-      this.navigationHelper_ =
-          new extensions.NavigationHelper(function(newPage) {
-            this.changePage(newPage, true);
-          }.bind(this));
-      this.optionsDialog.addEventListener('close', function() {
+      this.navigationHelper_ = new extensions.NavigationHelper(newPage => {
+        this.changePage(newPage, true);
+      });
+      this.optionsDialog.addEventListener('close', () => {
         // We update the page when the options dialog closes, but only if we're
         // still on the details page. We could be on a different page if the
         // user hit back while the options dialog was visible; in that case, the
@@ -145,7 +144,7 @@ cr.define('extensions', function() {
           this.changePage(
               {page: Page.DETAILS, extensionId: this.currentPage_.extensionId});
         }
-      }.bind(this));
+      });
     },
 
     get keyboardShortcuts() {
