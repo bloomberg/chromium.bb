@@ -175,6 +175,9 @@ BrowserAccessibilityEvent::Result
   if (user_is_navigating_away_)
     return BrowserAccessibilityEvent::DiscardedBecauseUserNavigatingAway;
 
+  if (!target)
+    return BrowserAccessibilityEvent::FailedBecauseNoFocus;
+
   // Inline text boxes are an internal implementation detail, we don't
   // expose them to Windows.
   if (target->GetRole() == ui::AX_ROLE_INLINE_TEXT_BOX)
@@ -185,9 +188,6 @@ BrowserAccessibilityEvent::Result
       target->GetBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_BUSY)) {
     return BrowserAccessibilityEvent::DiscardedBecauseLiveRegionBusy;
   }
-
-  if (!target)
-    return BrowserAccessibilityEvent::FailedBecauseNoFocus;
 
   event->set_target(target);
 
