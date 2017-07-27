@@ -9,6 +9,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/metrics/field_trial.h"
+#include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/tracing/crash_service_uploader.h"
@@ -70,6 +71,9 @@ void SetConfigTextFilterForTesting(ConfigTextFilterForTesting predicate) {
 }
 
 void SetupBackgroundTracingFieldTrial() {
+  if (base::trace_event::TraceLog::GetInstance()->IsEnabled())
+    return;
+
   std::string config_text = variations::GetVariationParamValue(
       kBackgroundTracingFieldTrial, kBackgroundTracingConfig);
   std::string upload_url = variations::GetVariationParamValue(
