@@ -3306,7 +3306,8 @@ def main(argv):
   parser.add_option('--verify-order', action='store_true')
   parser.add_option('--generate-dchecks', action='store_true',
                     help='Generates DCHECKs into the logging functions '
-                        'asserting no GL errors (useful for debugging)')
+                         'asserting no GL errors (useful for debugging with '
+                         '--enable-gpu-service-logging)')
   parser.add_option('--validate-bindings', action='store_true',
                     help='Generate DCHECKs to validate function bindings '
                          ' were correctly supplied (useful for debugging)')
