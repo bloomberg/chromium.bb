@@ -68,6 +68,25 @@ CREATE TABLE `buildMessageTable` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
+DROP TABLE IF EXISTS `buildRequestTable`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `buildRequestTable` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `build_id` int(11) NOT NULL,
+  `request_build_config` varchar(80) NOT NULL,
+  `request_build_args` varchar(240) DEFAULT NULL,
+  `request_buildbucket_id` varchar(80) DEFAULT NULL,
+  `request_reason` enum('sanity-pre-cq') NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `build_id` (`build_id`),
+  KEY `timestamp` (`timestamp`),
+  CONSTRAINT `buildRequestTable_ibfk_1` FOREIGN KEY (`build_id`) REFERENCES `buildTable` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
 DROP TABLE IF EXISTS `buildStageTable`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
