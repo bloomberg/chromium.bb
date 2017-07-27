@@ -116,8 +116,6 @@ TEST_F(CompositorTimingHistoryTest, AllSequential_BeginMainFrameAborted) {
   base::TimeDelta prepare_tiles_duration = base::TimeDelta::FromMilliseconds(2);
   base::TimeDelta prepare_tiles_end_to_ready_to_activate_duration =
       base::TimeDelta::FromMilliseconds(1);
-  base::TimeDelta commit_to_ready_to_activate_duration =
-      base::TimeDelta::FromMilliseconds(3);
   base::TimeDelta activate_duration = base::TimeDelta::FromMilliseconds(4);
   base::TimeDelta draw_duration = base::TimeDelta::FromMilliseconds(5);
 
@@ -131,7 +129,6 @@ TEST_F(CompositorTimingHistoryTest, AllSequential_BeginMainFrameAborted) {
   AdvanceNowBy(prepare_tiles_duration);
   timing_history_.DidPrepareTiles();
   AdvanceNowBy(prepare_tiles_end_to_ready_to_activate_duration);
-  timing_history_.ReadyToActivate();
   // Do not count idle time between notification and actual activation.
   AdvanceNowBy(one_second);
   timing_history_.WillActivate();
@@ -151,8 +148,6 @@ TEST_F(CompositorTimingHistoryTest, AllSequential_BeginMainFrameAborted) {
   EXPECT_EQ(begin_main_frame_start_to_commit_duration,
             timing_history_.BeginMainFrameStartToCommitDurationEstimate());
 
-  EXPECT_EQ(commit_to_ready_to_activate_duration,
-            timing_history_.CommitToReadyToActivateDurationEstimate());
   EXPECT_EQ(prepare_tiles_duration,
             timing_history_.PrepareTilesDurationEstimate());
   EXPECT_EQ(activate_duration, timing_history_.ActivateDurationEstimate());

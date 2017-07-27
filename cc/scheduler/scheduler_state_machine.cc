@@ -1221,9 +1221,12 @@ void SchedulerStateMachine::DidLoseLayerTreeFrameSink() {
   needs_redraw_ = false;
 }
 
-void SchedulerStateMachine::NotifyReadyToActivate() {
-  if (has_pending_tree_)
-    pending_tree_is_ready_for_activation_ = true;
+bool SchedulerStateMachine::NotifyReadyToActivate() {
+  if (!has_pending_tree_ || pending_tree_is_ready_for_activation_)
+    return false;
+
+  pending_tree_is_ready_for_activation_ = true;
+  return true;
 }
 
 void SchedulerStateMachine::NotifyReadyToDraw() {
