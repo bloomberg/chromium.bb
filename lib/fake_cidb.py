@@ -9,6 +9,7 @@ from __future__ import print_function
 import datetime
 import itertools
 
+from chromite.lib import build_requests
 from chromite.lib import constants
 from chromite.lib import cidb
 from chromite.lib import clactions
@@ -34,6 +35,7 @@ class FakeCIDBConnection(object):
     self.fake_keyvals = fake_keyvals or {}
     self.buildMessageTable = {}
     self.hwTestResultTable = {}
+    self.buildRequestTable = {}
 
   def _TrimStatus(self, status):
     """Trims a build row to keys that should be returned by GetBuildStatus"""
@@ -100,6 +102,8 @@ class FakeCIDBConnection(object):
       values.update(status=status)
     if summary is not None:
       values.update(summary=summary)
+
+    values.update(finish_time=datetime.datetime.now(), final=True)
 
     if values:
       build.update(values)
@@ -240,6 +244,37 @@ class FakeCIDBConnection(object):
       result_id = result_id + 1
 
     return len(hwTestResults)
+
+  def InsertBuildRequest(self, build_id, request_build_config, request_reason,
+                         request_build_args=None, request_buildbucket_id=None,
+                         timestamp=None):
+    """Insert a build request.
+
+    Args:
+      build_id: build_id (int) of the build which sends the request.
+      request_build_config: build_config (string) of the requested build.
+      request_reason: reason (must be a member of
+        build_requests.BUILD_REQUEST_REASONS) of the request.
+      request_build_args: build_args (string) of the requested build, default to
+        None.
+      request_buildbucket_id: buildbucket_id (string) of the requested build,
+        default to None.
+      timestamp: timestamp of the build request when it's created.
+
+    Returns:
+       Integer primary key of the inserted row.
+    """
+    request_id = len(self.buildRequestTable)
+
+    values = {'id': request_id,
+              'build_id': build_id,
+              'request_build_config': request_build_config,
+              'request_build_args': request_build_args,
+              'request_buildbucket_id': request_buildbucket_id,
+              'request_reason': request_reason,
+              'timestamp': timestamp or datetime.datetime.now()}
+    self.buildRequestTable[request_id] = values
+    return request_id
 
   def GetBuildMessages(self, build_id):
     """Get the build messages of the given build id.
@@ -416,10 +451,22 @@ class FakeCIDBConnection(object):
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
                       starting_build_number=None, milestone_version=None,
-                      platform_version=None):
+                      platform_version=None, final=False):
     """Returns the build history for the given |build_config|."""
+    return self.GetBuildsHistory(
+        build_config, num_results, ignore_build_id=ignore_build_id,
+        start_date=start_date, end_date=end_date,
+        starting_build_number=starting_build_number,
+        milestone_version=milestone_version, platform_version=platform_version,
+        final=final)
+
+  def GetBuildsHistory(self, build_configs, num_results,
+                       ignore_build_id=None, start_date=None, end_date=None,
+                       starting_build_number=None, milestone_version=None,
+                       platform_version=None, final=False):
+    """Returns the build history for the given |build_configs|."""
     builds = [b for b in self.buildTable
-              if b['build_config'] == build_config]
+              if b['build_config'] in build_configs]
     # Reverse sort as that's what's expected.
     builds = sorted(builds, reverse=True)
 
@@ -443,6 +490,9 @@ class FakeCIDBConnection(object):
     if platform_version is not None:
       builds = [b for b in builds
                 if b.get('platform_version') == platform_version]
+    if final:
+      builds = [b for b in builds
+                if b.get('final') is True]
 
     if num_results != -1:
       return builds[:num_results]
@@ -524,6 +574,52 @@ class FakeCIDBConnection(object):
             value['status']))
 
     return results
+
+  def GetBuildRequestsForBuildConfig(self, request_build_config,
+                                     num_results=-1, start_time=None):
+    """Get BuildRequests for a build_config.
+
+    Args:
+      request_build_config: build config (string) to request.
+      num_results: number of results to return, default to -1.
+      start_time: get build requests sent after start_time.
+
+    Returns:
+      A list of BuildRequest instances sorted by id in descending order.
+    """
+    return self.GetBuildRequestsForBuildConfigs(
+        [request_build_config], num_results=num_results, start_time=start_time)
+
+  def GetBuildRequestsForBuildConfigs(self, request_build_configs,
+                                      num_results=-1, start_time=None):
+    """Get BuildRequests for a list build_configs.
+
+    Args:
+      request_build_configs: build configs (string) to request.
+      num_results: number of results to return, default to -1.
+      start_time: get build requests sent after start_time.
+
+    Returns:
+      A list of BuildRequest instances sorted by id in descending order.
+    """
+    results = []
+    for value in self.buildRequestTable.values():
+
+      if start_time is not None and value['timestamp'] < start_time:
+        continue
+
+      if value['request_build_config'] in request_build_configs:
+        results.append(build_requests.BuildRequest(
+            value['id'], value['build_id'], value['request_build_config'],
+            value['request_build_args'], value['request_buildbucket_id'],
+            value['request_reason'], value['timestamp']))
+
+    requests = sorted(results, key=lambda r: r.id, reverse=True)
+
+    if num_results != -1:
+      return requests[:num_results]
+    else:
+      return requests
 
   def HasFailureMsgForStage(self, build_stage_id):
     """Determine whether a build stage has failure messages in failureTable.
