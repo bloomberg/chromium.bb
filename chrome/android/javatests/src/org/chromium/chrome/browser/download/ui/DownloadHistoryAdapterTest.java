@@ -22,6 +22,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedDownloadDelegate;
 import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedOfflinePageDelegate;
@@ -253,6 +255,8 @@ public class DownloadHistoryAdapterTest {
     }
 
     /** Adding and updating new items should bucket them into the proper dates. */
+    // Flaky: http://crbug.com/749351
+    @RetryOnFailure
     @Test
     @SmallTest
     public void testUpdate_UpdateItems() throws Exception {
@@ -354,7 +358,8 @@ public class DownloadHistoryAdapterTest {
         Assert.assertEquals(0, mAdapter.getTotalDownloadSize());
     }
 
-    /** Test filtering of items. */
+    // Flaky: http://crbug.com/749351
+    @RetryOnFailure
     @Test
     @SmallTest
     public void testFilter_SevenItems() throws Exception {
@@ -427,8 +432,10 @@ public class DownloadHistoryAdapterTest {
         Assert.assertEquals(0, mAdapter.getItemCount());
     }
 
-    @Test
-    @SmallTest
+    // Very flaky: http://crbug.com/749351
+    @DisabledTest
+    // @Test
+    // @SmallTest
     public void testInProgress_FilePathMapAccurate() throws Exception {
         Set<DownloadHistoryItemWrapper> toDelete;
 
@@ -574,8 +581,10 @@ public class DownloadHistoryAdapterTest {
         checkAdapterContents(HEADER, null, item1, item0);
     }
 
-    @Test
-    @SmallTest
+    // Very flaky: http://crbug.com/749351
+    @DisabledTest
+    // @Test
+    // @SmallTest
     public void testSearch_RemoveItem() throws Exception {
         DownloadItem item0 = StubbedProvider.createDownloadItem(0, "19840116 12:00");
         DownloadItem item1 = StubbedProvider.createDownloadItem(1, "19840116 12:01");
