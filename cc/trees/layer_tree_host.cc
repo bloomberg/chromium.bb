@@ -999,14 +999,6 @@ void LayerTreeHost::SetBrowserControlsShownRatio(float ratio) {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetBottomControlsHeight(float height) {
-  if (bottom_controls_height_ == height)
-    return;
-
-  bottom_controls_height_ = height;
-  SetNeedsCommit();
-}
-
 void LayerTreeHost::SetPageScaleFactorAndLimits(float page_scale_factor,
                                                 float min_page_scale_factor,
                                                 float max_page_scale_factor) {
