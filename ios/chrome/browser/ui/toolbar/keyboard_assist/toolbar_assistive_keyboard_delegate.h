@@ -18,7 +18,7 @@
 
 // Notifies the delegate that a touch up occured in the the Camera Search
 // button.
-- (void)keyboardAccessoryCameraSearchTouchUpInside:(UIView*)view;
+- (void)keyboardAccessoryCameraSearchTouchUp;
 
 // Notifies the delegate that a key with the title |title| was pressed.
 - (void)keyPressed:(NSString*)title;

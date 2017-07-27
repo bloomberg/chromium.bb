@@ -52,7 +52,6 @@
 #define IDC_SHOW_READING_LIST                          40950
 #define IDC_SHOW_CLEAR_BROWSING_DATA_SETTINGS          40951
 #define IDC_SHOW_SYNC_PASSPHRASE_SETTINGS              40952
-#define IDC_SHOW_QR_SCANNER                            40953
 #define IDC_SHOW_AUTOFILL_SETTINGS                     40956
 // clang-format on
 

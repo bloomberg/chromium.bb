@@ -51,7 +51,7 @@ NSArray<UIButton*>* ToolbarAssistiveKeyboardLeadingButtons(
 
   UIButton* cameraButton = ButtonWitIcon(@"keyboard_accessory_qr_scanner");
   [cameraButton addTarget:delegate
-                   action:@selector(keyboardAccessoryCameraSearchTouchUpInside:)
+                   action:@selector(keyboardAccessoryCameraSearchTouchUp)
          forControlEvents:UIControlEventTouchUpInside];
   SetA11yLabelAndUiAutomationName(
       cameraButton, IDS_IOS_KEYBOARD_ACCESSORY_VIEW_QR_CODE_SEARCH,
