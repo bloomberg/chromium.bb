@@ -75,6 +75,13 @@ void LayoutInline::WillBeDestroyed() {
 
   if (!DocumentBeingDestroyed()) {
     if (FirstLineBox()) {
+      // We can't wait for LayoutBoxModelObject::destroy to clear the selection,
+      // because by then we will have nuked the line boxes.
+      // FIXME: The FrameSelection should be responsible for this when it
+      // is notified of DOM mutations.
+      if (IsSelectionBorder())
+        View()->ClearSelection();
+
       // If line boxes are contained inside a root, that means we're an inline.
       // In that case, we need to remove all the line boxes so that the parent
       // lines aren't pointing to deleted children. If the first line box does

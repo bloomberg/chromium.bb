@@ -2844,6 +2844,13 @@ void LayoutBlockFlow::WillBeDestroyed() {
     // TODO(mstensho): figure out if we need this. We have no test coverage for
     // it. It looks like all line boxes have been removed at this point.
     if (FirstLineBox()) {
+      // We can't wait for LayoutBox::destroy to clear the selection,
+      // because by then we will have nuked the line boxes.
+      // FIXME: The FrameSelection should be responsible for this when it
+      // is notified of DOM mutations.
+      if (IsSelectionBorder())
+        View()->ClearSelection();
+
       // If we are an anonymous block, then our line boxes might have children
       // that will outlast this block. In the non-anonymous block case those
       // children will be destroyed by the time we return from this function.
