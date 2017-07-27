@@ -168,7 +168,6 @@ NetExportMessageHandler::NetExportMessageHandler()
       state_observer_manager_(this),
       weak_ptr_factory_(this) {
   file_writer_->Initialize(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE_USER_BLOCKING),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 }
 

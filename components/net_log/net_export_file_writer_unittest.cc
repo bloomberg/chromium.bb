@@ -255,9 +255,7 @@ class NetExportFileWriterTest : public ::testing::Test {
       std::vector<scoped_refptr<net::URLRequestContextGetter>>;
 
   NetExportFileWriterTest()
-      : file_writer_(&net_log_),
-        file_thread_("NetLogFileWriter file thread"),
-        net_thread_("NetLogFileWriter net thread") {}
+      : file_writer_(&net_log_), net_thread_("NetLogFileWriter net thread") {}
 
   // ::testing::Test implementation
   void SetUp() override {
@@ -270,7 +268,6 @@ class NetExportFileWriterTest : public ::testing::Test {
 
     default_log_path_ = log_temp_dir_.GetPath().Append(kLogRelativePath);
 
-    ASSERT_TRUE(file_thread_.Start());
     ASSERT_TRUE(net_thread_.Start());
 
     file_writer_.AddObserver(&test_state_observer_);
@@ -294,8 +291,7 @@ class NetExportFileWriterTest : public ::testing::Test {
   WARN_UNUSED_RESULT ::testing::AssertionResult InitializeThenVerifyNewState(
       bool expected_initialize_success,
       bool expected_log_exists) {
-    file_writer_.Initialize(file_thread_.task_runner(),
-                            net_thread_.task_runner());
+    file_writer_.Initialize(net_thread_.task_runner());
     std::unique_ptr<base::DictionaryValue> state =
         test_state_observer_.WaitForNewState();
     ::testing::AssertionResult result =
@@ -431,7 +427,6 @@ class NetExportFileWriterTest : public ::testing::Test {
   // The default log path that |file_writer_| will use is cached here.
   base::FilePath default_log_path_;
 
-  base::Thread file_thread_;
   base::Thread net_thread_;
 
   TestStateObserver test_state_observer_;
@@ -737,8 +732,7 @@ TEST_F(NetExportFileWriterTest, StartWithContextGetters) {
 
 TEST_F(NetExportFileWriterTest, ReceiveStartWhileInitializing) {
   // Trigger initialization of |file_writer_|.
-  file_writer_.Initialize(file_thread_.task_runner(),
-                          net_thread_.task_runner());
+  file_writer_.Initialize(net_thread_.task_runner());
 
   // Before running the main message loop, tell |file_writer_| to start
   // logging. Not running the main message loop prevents the initialization

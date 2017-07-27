@@ -94,8 +94,6 @@ NetExportMessageHandler::NetExportMessageHandler()
       state_observer_manager_(this),
       weak_ptr_factory_(this) {
   file_writer_->Initialize(
-      web::WebThread::GetTaskRunnerForThread(
-          web::WebThread::FILE_USER_BLOCKING),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::IO));
 }
 
