@@ -165,8 +165,10 @@ enum PhysicalWebInitialStateIosChrome {
   }
 
   DCHECK(state < PHYSICAL_WEB_INITIAL_STATE_COUNT);
-  UMA_HISTOGRAM_ENUMERATION("PhysicalWeb.InitialState.IosChrome", state,
-                            PHYSICAL_WEB_INITIAL_STATE_COUNT);
+  UMA_HISTOGRAM_ENUMERATION(
+      "PhysicalWeb.InitialState.IosChrome",
+      static_cast<PhysicalWebInitialStateIosChrome>(state),
+      PHYSICAL_WEB_INITIAL_STATE_COUNT);
 }
 
 @end

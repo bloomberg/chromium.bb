@@ -145,14 +145,15 @@ void AndroidMetricsProvider::ConvertStabilityPrefsToHistograms() {
     for (int count = 0; count < launch_count; ++count) {
       UMA_STABILITY_HISTOGRAM_ENUMERATION(
           "Chrome.Android.Activity.LaunchCounts",
-          activity_type,
+          static_cast<ActivityTypeIds::Type>(activity_type),
           ActivityTypeIds::ACTIVITY_MAX_VALUE);
     }
 
     for (int count = 0; count < crash_count; ++count) {
-      UMA_STABILITY_HISTOGRAM_ENUMERATION("Chrome.Android.Activity.CrashCounts",
-                                          activity_type,
-                                          ActivityTypeIds::ACTIVITY_MAX_VALUE);
+      UMA_STABILITY_HISTOGRAM_ENUMERATION(
+          "Chrome.Android.Activity.CrashCounts",
+          static_cast<ActivityTypeIds::Type>(activity_type),
+          ActivityTypeIds::ACTIVITY_MAX_VALUE);
     }
   }
 

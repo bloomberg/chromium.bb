@@ -562,10 +562,11 @@ void UserMetricsRecorder::RecordPeriodicMetrics() {
   if (shelf) {
     // TODO(bruthig): Consider tracking the time spent in each alignment.
     UMA_HISTOGRAM_ENUMERATION("Ash.ShelfAlignmentOverTime",
-                              shelf->SelectValueForShelfAlignment(
-                                  SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
-                                  SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT,
-                                  SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT),
+                              static_cast<ShelfAlignmentUmaEnumValue>(
+                                  shelf->SelectValueForShelfAlignment(
+                                      SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
+                                      SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT,
+                                      SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT)),
                               SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT);
   }
 

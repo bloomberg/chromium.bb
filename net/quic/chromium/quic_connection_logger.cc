@@ -268,7 +268,8 @@ void UpdatePublicResetAddressMismatchHistogram(
     return;
   }
   UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.PublicResetAddressMismatch2",
-                            sample, QUIC_ADDRESS_MISMATCH_MAX);
+                            static_cast<QuicAddressMismatch>(sample),
+                            QUIC_ADDRESS_MISMATCH_MAX);
 }
 
 // If |address| is an IPv4-mapped IPv6 address, returns ADDRESS_FAMILY_IPV4

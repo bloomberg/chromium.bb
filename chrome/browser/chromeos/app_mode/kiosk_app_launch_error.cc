@@ -102,14 +102,16 @@ void KioskAppLaunchError::RecordMetricAndClear() {
 
   int error;
   if (dict_update->GetInteger(kKeyLaunchError, &error))
-    UMA_HISTOGRAM_ENUMERATION("Kiosk.Launch.Error", error, ERROR_COUNT);
+    UMA_HISTOGRAM_ENUMERATION("Kiosk.Launch.Error", static_cast<Error>(error),
+                              ERROR_COUNT);
   dict_update->Remove(kKeyLaunchError, NULL);
 
   int cryptohome_failure;
   if (dict_update->GetInteger(kKeyCryptohomeFailure, &cryptohome_failure)) {
-    UMA_HISTOGRAM_ENUMERATION("Kiosk.Launch.CryptohomeFailure",
-                              cryptohome_failure,
-                              AuthFailure::NUM_FAILURE_REASONS);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Kiosk.Launch.CryptohomeFailure",
+        static_cast<AuthFailure::FailureReason>(cryptohome_failure),
+        AuthFailure::NUM_FAILURE_REASONS);
   }
   dict_update->Remove(kKeyCryptohomeFailure, NULL);
 }

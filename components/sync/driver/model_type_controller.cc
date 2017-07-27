@@ -39,9 +39,10 @@ void ReportError(ModelType model_type,
                  scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
                  const ModelErrorHandler& error_handler,
                  const ModelError& error) {
+  // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
                             ModelTypeToHistogramInt(model_type),
-                            MODEL_TYPE_COUNT);
+                            static_cast<int>(MODEL_TYPE_COUNT));
   ui_thread->PostTask(error.location(), base::Bind(error_handler, error));
 }
 
@@ -250,8 +251,10 @@ void ModelTypeController::ReportModelError(const ModelError& error) {
 
 void ModelTypeController::RecordStartFailure(ConfigureResult result) const {
   DCHECK(CalledOnValidThread());
+  // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
-                            ModelTypeToHistogramInt(type()), MODEL_TYPE_COUNT);
+                            ModelTypeToHistogramInt(type()),
+                            static_cast<int>(MODEL_TYPE_COUNT));
 #define PER_DATA_TYPE_MACRO(type_str)                                    \
   UMA_HISTOGRAM_ENUMERATION("Sync." type_str "ConfigureFailure", result, \
                             MAX_CONFIGURE_RESULT);

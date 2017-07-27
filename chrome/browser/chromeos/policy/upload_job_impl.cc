@@ -411,8 +411,9 @@ void UploadJobImpl::OnURLFetchComplete(const net::URLFetcher* source) {
       access_token_.clear();
       post_data_.reset();
       state_ = SUCCESS;
-      UMA_HISTOGRAM_ENUMERATION(kUploadJobSuccessHistogram, retry_,
-                                UploadJobSuccess::REQUEST_MAX);
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          kUploadJobSuccessHistogram, retry_,
+          static_cast<int>(UploadJobSuccess::REQUEST_MAX));
       delegate_->OnSuccess();
     } else if (response_code == net::HTTP_UNAUTHORIZED) {
       SYSLOG(ERROR) << "Unauthorized request.";

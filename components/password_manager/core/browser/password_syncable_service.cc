@@ -516,9 +516,10 @@ bool PasswordSyncableService::ReadFromPasswordStore(
       !password_store_->FillBlacklistLogins(&blacklist_entries)) {
     // Password store often fails to load passwords. Track failures with UMA.
     // (http://crbug.com/249000)
+    // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
     UMA_HISTOGRAM_ENUMERATION("Sync.LocalDataFailedToLoad",
                               ModelTypeToHistogramInt(syncer::PASSWORDS),
-                              syncer::MODEL_TYPE_COUNT);
+                              static_cast<int>(syncer::MODEL_TYPE_COUNT));
     return false;
   }
   password_entries->resize(autofillable_entries.size() +
