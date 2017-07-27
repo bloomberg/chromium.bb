@@ -989,19 +989,17 @@ void V8TestInterface5::preparePrototypeAndInterfaceObject(v8::Local<v8::Context>
   ExecutionContext* executionContext = ToExecutionContext(context);
   DCHECK(executionContext);
 
-  if (executionContext && (executionContext->IsWorkerGlobalScope())) {
-    static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration[] = {
-        { "workerExposedAttribute", V8TestInterface5::workerExposedAttributeAttributeGetterCallback, V8TestInterface5::workerExposedAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds }
-    };
-    for (const auto& accessorConfig : accessorConfiguration)
-      V8DOMConfiguration::InstallAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfig);
-  }
   if (executionContext && (executionContext->IsDocument())) {
-    static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration[] = {
-        { "windowExposedAttribute", V8TestInterface5::windowExposedAttributeAttributeGetterCallback, V8TestInterface5::windowExposedAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds }
+    static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
+        { "windowExposedAttribute", V8TestInterface5::windowExposedAttributeAttributeGetterCallback, V8TestInterface5::windowExposedAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
     };
-    for (const auto& accessorConfig : accessorConfiguration)
-      V8DOMConfiguration::InstallAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfig);
+    V8DOMConfiguration::InstallAccessors(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessor_configurations, WTF_ARRAY_LENGTH(accessor_configurations));
+  }
+  if (executionContext && (executionContext->IsWorkerGlobalScope())) {
+    static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
+        { "workerExposedAttribute", V8TestInterface5::workerExposedAttributeAttributeGetterCallback, V8TestInterface5::workerExposedAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
+    };
+    V8DOMConfiguration::InstallAccessors(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessor_configurations, WTF_ARRAY_LENGTH(accessor_configurations));
   }
   if (executionContext && (executionContext->IsWorkerGlobalScope())) {
     const V8DOMConfiguration::MethodConfiguration workerExposedMethodMethodConfiguration[] = {

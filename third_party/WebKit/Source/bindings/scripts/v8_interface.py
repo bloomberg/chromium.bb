@@ -394,9 +394,15 @@ def interface_context(interface, interfaces):
     conditional_enabled_attributes = v8_attributes.filter_conditionally_enabled(attributes)
     has_conditional_attributes_on_prototype = any(  # pylint: disable=invalid-name
         attribute['on_prototype'] for attribute in conditional_enabled_attributes)
+    has_conditionally_enabled_constructors = any(  # pylint: disable=invalid-name
+        attribute['constructor_type'] for attribute in conditional_enabled_attributes)
+    has_conditionally_enabled_secure_attributes = any(  # pylint: disable=invalid-name
+        v8_attributes.is_secure_context(attribute) for attribute in conditional_enabled_attributes)
     context.update({
-        'has_conditional_attributes_on_prototype':
-            has_conditional_attributes_on_prototype,
+        'has_conditionally_enabled_constructors':
+            has_conditionally_enabled_constructors,
+        'has_conditionally_enabled_secure_attributes':
+            has_conditionally_enabled_secure_attributes,
         'conditionally_enabled_attributes': conditional_enabled_attributes,
     })
 
@@ -406,7 +412,16 @@ def interface_context(interface, interfaces):
     context.update({
         'has_origin_safe_method_setter': any(method['is_cross_origin'] and not method['is_unforgeable']
             for method in methods),
-        'conditionally_enabled_methods': v8_methods.filter_conditionally_enabled(methods, interface.is_partial),
+    })
+
+    # Conditionally enabled methods
+    conditionally_enabled_methods = v8_methods.filter_conditionally_enabled(methods, interface.is_partial)
+    has_conditionally_enabled_secure_methods = any(  # pylint: disable=invalid-name
+        v8_methods.is_secure_context(method) for method in conditionally_enabled_methods)
+    context.update({
+        'has_conditionally_enabled_secure_methods':
+            has_conditionally_enabled_secure_methods,
+        'conditionally_enabled_methods': conditionally_enabled_methods,
     })
 
     # Window.idl in Blink has indexed properties, but the spec says Window
@@ -426,9 +441,11 @@ def interface_context(interface, interfaces):
     if (unscopables or has_conditional_attributes_on_prototype or
             context['conditionally_enabled_methods']):
         prepare_prototype_and_interface_object_func = '%s::preparePrototypeAndInterfaceObject' % v8_class_name_or_partial  # pylint: disable=invalid-name
+    has_install_conditional_features_on_global_func = has_conditionally_enabled_constructors  # pylint: disable=invalid-name
 
     context.update({
         'prepare_prototype_and_interface_object_func': prepare_prototype_and_interface_object_func,
+        'has_install_conditional_features_on_global_func': has_install_conditional_features_on_global_func,
     })
 
     context.update({

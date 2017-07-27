@@ -53,10 +53,13 @@ def is_origin_trial_enabled(method):
     return bool(method['origin_trial_feature_name'])
 
 
+def is_secure_context(method):
+    return bool(method['overloads']['secure_context_test_all'] if 'overloads' in method else method['secure_context_test'])
+
+
 def is_conditionally_enabled(method):
     exposed = method['overloads']['exposed_test_all'] if 'overloads' in method else method['exposed_test']
-    secure_context = method['overloads']['secure_context_test_all'] if 'overloads' in method else method['secure_context_test']
-    return exposed or secure_context
+    return exposed or is_secure_context(method)
 
 
 def filter_conditionally_enabled(methods, interface_is_partial):

@@ -227,10 +227,14 @@ def runtime_call_stats_context(context, extended_attributes):
     })
 
 
+def is_secure_context(attribute):
+    return bool(attribute['secure_context_test'])
+
+
 def filter_accessors(attributes):
     return [attribute for attribute in attributes if
             not (attribute['exposed_test'] or
-                 attribute['secure_context_test'] or
+                 is_secure_context(attribute) or
                  attribute['context_enabled_feature_name'] or
                  attribute['origin_trial_enabled_function'] or
                  attribute['runtime_enabled_feature_name']) and
@@ -239,7 +243,7 @@ def filter_accessors(attributes):
 
 def is_data_attribute(attribute):
     return (not (attribute['exposed_test'] or
-                 attribute['secure_context_test'] or
+                 is_secure_context(attribute) or
                  attribute['context_enabled_feature_name'] or
                  attribute['origin_trial_enabled_function'] or
                  attribute['runtime_enabled_feature_name']) and
@@ -264,14 +268,14 @@ def filter_lazy_data_attributes(attributes):
 def filter_runtime_enabled(attributes):
     return [attribute for attribute in attributes if
             not (attribute['exposed_test'] or
-                 attribute['secure_context_test']) and
+                 is_secure_context(attribute)) and
             attribute['runtime_enabled_feature_name']]
 
 
 def filter_conditionally_enabled(attributes):
     return [attribute for attribute in attributes if
             attribute['exposed_test'] or
-            (attribute['secure_context_test'] and
+            (is_secure_context(attribute) and
              not attribute['origin_trial_feature_name'])]
 
 
