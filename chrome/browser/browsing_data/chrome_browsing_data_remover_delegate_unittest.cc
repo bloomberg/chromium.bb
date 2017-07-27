@@ -32,7 +32,10 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
+#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/storage/durable_storage_permission_context.h"
+#include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -46,7 +49,11 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
+#include "components/content_settings/core/browser/content_settings_info.h"
+#include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/browser/website_settings_info.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/domain_reliability/clear_mode.h"
@@ -592,6 +599,21 @@ class RemovePasswordsTester {
   DISALLOW_COPY_AND_ASSIGN(RemovePasswordsTester);
 };
 
+// Implementation of the TestingProfile that has the neccessary services for
+// BrowsingDataRemover.
+class BrowsingDataTestingProfile : public TestingProfile {
+ public:
+  BrowsingDataTestingProfile() {}
+  ~BrowsingDataTestingProfile() override {}
+
+  content::SSLHostStateDelegate* GetSSLHostStateDelegate() override {
+    return ChromeSSLHostStateDelegateFactory::GetForProfile(this);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowsingDataTestingProfile);
+};
+
 class RemovePermissionPromptCountsTest {
  public:
   explicit RemovePermissionPromptCountsTest(TestingProfile* profile)
@@ -939,12 +961,27 @@ class ClearReportingCacheTester {
   net::ReportingService* old_service_;
 };
 
+// Implementation of the TestingProfile that provides an SSLHostStateDelegate
+// which is required for the tests.
+class BrowsingDataRemoverTestingProfile : public TestingProfile {
+ public:
+  BrowsingDataRemoverTestingProfile() {}
+  ~BrowsingDataRemoverTestingProfile() override {}
+
+  content::SSLHostStateDelegate* GetSSLHostStateDelegate() override {
+    return ChromeSSLHostStateDelegateFactory::GetForProfile(this);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverTestingProfile);
+};
+
 // Test Class -----------------------------------------------------------------
 
 class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
  public:
   ChromeBrowsingDataRemoverDelegateTest()
-      : profile_(new TestingProfile()),
+      : profile_(new BrowsingDataRemoverTestingProfile()),
         clear_domain_reliability_tester_(profile_.get()) {
     remover_ = content::BrowserContext::GetBrowsingDataRemover(profile_.get());
 
@@ -2299,4 +2336,101 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
             data_type_mask);
   EXPECT_TRUE(
       ProbablySameFilters(builder->BuildGeneralFilter(), origin_filter));
+}
+
+// Test that all WebsiteSettings are getting deleted by creating a
+// value for each of them and removing data.
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
+  TestingProfile* profile = GetProfile();
+  ASSERT_TRUE(profile->CreateHistoryService(true, false));
+  ASSERT_TRUE(SubresourceFilterProfileContextFactory::GetForProfile(profile));
+
+  auto* map = HostContentSettingsMapFactory::GetForProfile(profile);
+  auto* registry = content_settings::WebsiteSettingsRegistry::GetInstance();
+  auto* content_setting_registry =
+      content_settings::ContentSettingsRegistry::GetInstance();
+
+  GURL url("https://example.com");
+
+  // Whitelist of types that don't have to be deletable.
+  static const ContentSettingsType whitelisted_types[] = {
+      // Doesn't allow any values.
+      CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS,
+      // Doesn't allow any values.
+      CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
+      // Only policy provider sets exceptions for this type.
+      CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+
+      // TODO(710873): Make sure that these get fixed:
+      // No one ever seems to write to this content setting? Can it be removed?
+      CONTENT_SETTINGS_TYPE_CLIENT_HINTS,
+      // Not deleted but should be deleted with history?
+      CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO,
+      // Deprecated and should be removed after M60.
+      CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
+      // Is cleared in PasswordProtectionService::CleanUpExpiredVerdicts()
+      // but not when CBD is executed.
+      CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
+  };
+
+  // Set a value for every WebsiteSetting.
+  for (const content_settings::WebsiteSettingsInfo* info : *registry) {
+    if (base::ContainsValue(whitelisted_types, info->type()))
+      continue;
+    base::Value some_value;
+    auto* content_setting = content_setting_registry->Get(info->type());
+    if (content_setting) {
+      // Content Settings only allow integers.
+      if (content_setting->IsSettingValid(CONTENT_SETTING_ALLOW)) {
+        some_value = base::Value(CONTENT_SETTING_ALLOW);
+      } else {
+        ASSERT_TRUE(content_setting->IsSettingValid(CONTENT_SETTING_ASK));
+        some_value = base::Value(CONTENT_SETTING_ASK);
+      }
+      ASSERT_TRUE(content_setting->IsDefaultSettingValid(CONTENT_SETTING_BLOCK))
+          << info->name();
+      // Set default to BLOCK to be able to differentiate an exception from the
+      // default.
+      map->SetDefaultContentSetting(info->type(), CONTENT_SETTING_BLOCK);
+    } else {
+      // Other website settings only allow dictionaries.
+      base::DictionaryValue dict;
+      dict.SetIntegerWithoutPathExpansion("foo", 42);
+      some_value = std::move(dict);
+    }
+    // Create an exception.
+    map->SetWebsiteSettingDefaultScope(
+        url, url, info->type(), std::string(),
+        base::MakeUnique<base::Value>(some_value));
+
+    // Check that the exception was created.
+    std::unique_ptr<base::Value> value =
+        map->GetWebsiteSetting(url, url, info->type(), std::string(), nullptr);
+    EXPECT_TRUE(value) << "Not created: " << info->name();
+    if (value)
+      EXPECT_EQ(some_value, *value) << "Not created: " << info->name();
+  }
+
+  // Delete all data types that trigger website setting deletions.
+  int mask = ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY |
+             ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
+             ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS;
+
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(), mask, false);
+
+  // All settings should be deleted now.
+  for (const content_settings::WebsiteSettingsInfo* info : *registry) {
+    if (base::ContainsValue(whitelisted_types, info->type()))
+      continue;
+    std::unique_ptr<base::Value> value = map->GetWebsiteSetting(
+        url, GURL(), info->type(), std::string(), nullptr);
+
+    if (value && value->is_int()) {
+      EXPECT_EQ(CONTENT_SETTING_BLOCK, value->GetInt())
+          << "Not deleted: " << info->name() << " value: " << *value;
+    } else {
+      EXPECT_FALSE(value) << "Not deleted: " << info->name()
+                          << " value: " << *value;
+    }
+  }
 }
