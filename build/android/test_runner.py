@@ -399,6 +399,11 @@ def AddInstrumentationTestOptions(parser):
       '--render-results-directory',
       dest='render_results_dir',
       help='Directory to pull render test result images off of the device to.')
+  parser.add_argument(
+      '--enable-relocation-packing',
+      dest='enable_relocation_packing',
+      action='store_true',
+      help='Whether relocation packing is enabled.')
   def package_replacement(arg):
     split_arg = arg.split(',')
     if len(split_arg) != 2:

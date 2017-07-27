@@ -1843,6 +1843,11 @@ if (enable_java_templates) {
       if (_proguard_enabled) {
         proguard_info = "$_proguard_output_jar_path.info"
       }
+      if (_enable_relocation_packing) {
+        enable_relocation_packing = "1"
+      } else {
+        enable_relocation_packing = "0"
+      }
 
       # Don't depend on the runtime_deps target in order to avoid having to
       # build the native libraries just to create the .build_config file.
