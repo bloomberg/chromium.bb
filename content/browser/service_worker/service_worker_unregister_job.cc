@@ -33,6 +33,7 @@ void ServiceWorkerUnregisterJob::AddCallback(
 }
 
 void ServiceWorkerUnregisterJob::Start() {
+  start_time_ = base::TimeTicks::Now();
   context_->storage()->FindRegistrationForPattern(
       pattern_,
       base::Bind(&ServiceWorkerUnregisterJob::OnRegistrationFound,
@@ -49,6 +50,10 @@ bool ServiceWorkerUnregisterJob::Equals(
   if (job->GetType() != GetType())
     return false;
   return static_cast<ServiceWorkerUnregisterJob*>(job)->pattern_ == pattern_;
+}
+
+base::TimeTicks ServiceWorkerUnregisterJob::StartTime() const {
+  return start_time_;
 }
 
 RegistrationJobType ServiceWorkerUnregisterJob::GetType() const {

@@ -75,7 +75,6 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       pattern_(options.scope),
       script_url_(script_url),
       phase_(INITIAL),
-      doom_installing_worker_(false),
       is_promise_resolved_(false),
       should_uninstall_on_failure_(false),
       force_bypass_cache_(false),
@@ -92,7 +91,6 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       job_type_(UPDATE_JOB),
       pattern_(registration->pattern()),
       phase_(INITIAL),
-      doom_installing_worker_(false),
       is_promise_resolved_(false),
       should_uninstall_on_failure_(false),
       force_bypass_cache_(force_bypass_cache),
@@ -123,6 +121,7 @@ void ServiceWorkerRegisterJob::AddCallback(
 }
 
 void ServiceWorkerRegisterJob::Start() {
+  start_time_ = base::TimeTicks::Now();
   BrowserThread::PostAfterStartupTask(
       FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&ServiceWorkerRegisterJob::StartImpl,
@@ -169,14 +168,12 @@ bool ServiceWorkerRegisterJob::Equals(ServiceWorkerRegisterJobBase* job) const {
          register_job->script_url_ == script_url_;
 }
 
-RegistrationJobType ServiceWorkerRegisterJob::GetType() const {
-  return job_type_;
+base::TimeTicks ServiceWorkerRegisterJob::StartTime() const {
+  return start_time_;
 }
 
-void ServiceWorkerRegisterJob::DoomInstallingWorker() {
-  doom_installing_worker_ = true;
-  if (phase_ == INSTALL)
-    Complete(SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED, std::string());
+RegistrationJobType ServiceWorkerRegisterJob::GetType() const {
+  return job_type_;
 }
 
 ServiceWorkerRegisterJob::Internal::Internal() {}
@@ -445,12 +442,6 @@ void ServiceWorkerRegisterJob::InstallAndContinue() {
                  weak_factory_.GetWeakPtr()),
       base::Bind(&ServiceWorkerRegisterJob::OnInstallFailed,
                  weak_factory_.GetWeakPtr()));
-
-  // A subsequent registration job may terminate our installing worker. It can
-  // only do so after we've started the worker and dispatched the install
-  // event, as those are atomic substeps in the [[Install]] algorithm.
-  if (doom_installing_worker_)
-    Complete(SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED);
 }
 
 void ServiceWorkerRegisterJob::DispatchInstallEvent() {
