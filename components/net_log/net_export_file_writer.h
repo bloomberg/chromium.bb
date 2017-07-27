@@ -22,7 +22,7 @@
 
 namespace base {
 class DictionaryValue;
-class SingleThreadTaskRunner;
+class TaskRunner;
 }  // namespace base
 
 namespace net {
@@ -90,13 +90,11 @@ class NetExportFileWriter {
   // Detaches a StateObserver.
   void RemoveObserver(StateObserver* observer);
 
-  // Initializes NetExportFileWriter if not initialized.
-  //
-  // Also sets the task runners used by NetExportFileWriter for doing file I/O
-  // and network I/O respectively. The task runners must not be changed once
-  // set. However, calling this function again with the same parameters is OK.
-  void Initialize(scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-                  scoped_refptr<base::SingleThreadTaskRunner> net_task_runner);
+  // Initializes NetExportFileWriter if not initialized and sets the network
+  // task runner (used by NetExportFileWriter when querying network state).
+  // This task runner must not be changed once set. Calling this function again
+  // with the same parameter is OK.
+  void Initialize(scoped_refptr<base::TaskRunner> net_task_runner);
 
   // Starts collecting NetLog data into the file at |log_path|. If |log_path| is
   // empty, the default log path is used. If NetExportFileWriter is already
@@ -212,9 +210,9 @@ class NetExportFileWriter {
   base::ThreadChecker thread_checker_;
 
   // Task runners for file-specific and net-specific tasks that must run on a
-  // file or net thread.
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> net_task_runner_;
+  // file or net task runner.
+  scoped_refptr<base::TaskRunner> file_task_runner_;
+  scoped_refptr<base::TaskRunner> net_task_runner_;
 
   State state_;  // Current logging state of NetExportFileWriter.
 

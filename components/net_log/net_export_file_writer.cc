@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -99,6 +100,17 @@ base::FilePath GetPathWithAllPermissions(const base::FilePath& path) {
 #endif
 }
 
+scoped_refptr<base::SequencedTaskRunner> CreateFileTaskRunner() {
+  // The tasks posted to this sequenced task runner do synchronous File I/O for
+  // checking paths and setting permissions on files.
+  //
+  // These operations can be skipped on shutdown since FileNetLogObserver's API
+  // doesn't require things to have completed until notified of completion.
+  return base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+}
+
 }  // namespace
 
 NetExportFileWriter::NetExportFileWriter(ChromeNetLog* chrome_net_log)
@@ -126,15 +138,11 @@ void NetExportFileWriter::RemoveObserver(StateObserver* observer) {
 }
 
 void NetExportFileWriter::Initialize(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> net_task_runner) {
+    scoped_refptr<base::TaskRunner> net_task_runner) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(file_task_runner);
   DCHECK(net_task_runner);
 
-  if (file_task_runner_)
-    DCHECK_EQ(file_task_runner_, file_task_runner);
-  file_task_runner_ = file_task_runner;
+  file_task_runner_ = CreateFileTaskRunner();
   if (net_task_runner_)
     DCHECK_EQ(net_task_runner_, net_task_runner);
   net_task_runner_ = net_task_runner;
