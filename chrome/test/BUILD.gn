@@ -1291,6 +1291,7 @@ test("browser_tests") {
       "../browser/media/encrypted_media_supported_types_browsertest.cc",
       "../browser/media/media_browsertest.cc",
       "../browser/media/media_browsertest.h",
+      "../browser/media/media_engagement_autoplay_browsertest.cc",
       "../browser/media/media_engagement_browsertest.cc",
       "../browser/media/test_license_server.cc",
       "../browser/media/test_license_server.h",

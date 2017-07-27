@@ -404,6 +404,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableLazyInitializeMediaControls(
       base::FeatureList::IsEnabled(features::kLazyInitializeMediaControls));
 
+  WebRuntimeFeatures::EnableMediaEngagementBypassAutoplayPolicies(
+      base::FeatureList::IsEnabled(
+          media::kMediaEngagementBypassAutoplayPolicies));
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {

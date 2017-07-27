@@ -123,6 +123,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebMouseWheelEvent.h",
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
   "+third_party/WebKit/public/platform/WebSecurityStyle.h",
+  "+third_party/WebKit/public/platform/media_engagement.mojom.h",
   "+third_party/WebKit/public/platform/modules/app_banner/app_banner.mojom.h",
   "+third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h",
   "+third_party/WebKit/public/platform/modules/installation/installation.mojom.h",

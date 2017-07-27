@@ -69,6 +69,7 @@
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
+#include "third_party/WebKit/public/platform/media_engagement.mojom.h"
 #include "third_party/WebKit/public/platform/site_engagement.mojom.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -173,6 +174,7 @@ class CreateFrameWidgetParams;
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
       NON_EXPORTED_BASE(blink::mojom::EngagementClient),
+      NON_EXPORTED_BASE(blink::mojom::MediaEngagementClient),
       NON_EXPORTED_BASE(mojom::Frame),
       NON_EXPORTED_BASE(mojom::HostZoom),
       NON_EXPORTED_BASE(mojom::FrameBindingsControl),
@@ -475,6 +477,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetEngagementLevel(const url::Origin& origin,
                           blink::mojom::EngagementLevel level) override;
 
+  // blink::mojom::MediaEngagementClient implementation:
+  void SetHasHighMediaEngagement(const url::Origin& origin) override;
+
   // mojom::Frame implementation:
   void GetInterfaceProvider(
       service_manager::mojom::InterfaceProviderRequest request) override;
@@ -693,6 +698,10 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Binds to the site engagement service in the browser.
   void BindEngagement(blink::mojom::EngagementClientAssociatedRequest request);
+
+  // Binds to the media engagement service in the browser.
+  void BindMediaEngagement(
+      blink::mojom::MediaEngagementClientAssociatedRequest request);
 
   // Binds to the FrameHost in the browser.
   void BindFrame(const service_manager::BindSourceInfo& browser_info,
@@ -1394,8 +1403,11 @@ class CONTENT_EXPORT RenderFrameImpl
 
   HostZoomLevels host_zoom_levels_;
   EngagementOriginAndLevel engagement_level_;
+  url::Origin high_media_engagement_origin_;
 
   mojo::AssociatedBinding<blink::mojom::EngagementClient> engagement_binding_;
+  mojo::AssociatedBinding<blink::mojom::MediaEngagementClient>
+      media_engagement_binding_;
   mojo::Binding<mojom::Frame> frame_binding_;
   mojo::AssociatedBinding<mojom::HostZoom> host_zoom_binding_;
   mojo::AssociatedBinding<mojom::FrameBindingsControl>

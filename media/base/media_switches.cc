@@ -270,6 +270,11 @@ const base::Feature kLowDelayVideoRenderingOnLiveStream{
 const base::Feature kRecordMediaEngagementScores{
     "kRecordMediaEngagementScores", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the Media Engagement Index to override autoplay policies if an
+// origins engagement score is high enough.
+const base::Feature kMediaEngagementBypassAutoplayPolicies{
+    "MediaEngagementBypassAutoplayPolicies", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 // Lock the screen orientation when a video goes fullscreen.
 const base::Feature kVideoFullscreenOrientationLock{

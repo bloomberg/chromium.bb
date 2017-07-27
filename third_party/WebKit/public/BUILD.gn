@@ -716,6 +716,7 @@ mojom("mojo_bindings") {
   ]
   sources = [
     "platform/display_mode.mojom",
+    "platform/media_engagement.mojom",
     "platform/mime_registry.mojom",
     "platform/modules/app_banner/app_banner.mojom",
     "platform/modules/background_fetch/background_fetch.mojom",

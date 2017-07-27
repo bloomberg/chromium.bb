@@ -70,6 +70,11 @@ AutoplayPolicy::Type AutoplayPolicy::GetAutoplayPolicyForDocument(
   if (IsDocumentWhitelisted(document))
     return Type::kNoUserGestureRequired;
 
+  if (RuntimeEnabledFeatures::MediaEngagementBypassAutoplayPoliciesEnabled() &&
+      document.HasHighMediaEngagement()) {
+    return Type::kNoUserGestureRequired;
+  }
+
   return document.GetSettings()->GetAutoplayPolicy();
 }
 

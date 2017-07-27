@@ -22,6 +22,8 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   void WebContentsDestroyed() override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void WasShown() override;
   void WasHidden() override;
   void MediaStartedPlaying(const MediaPlayerInfo& media_player_info,
