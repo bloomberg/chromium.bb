@@ -135,7 +135,7 @@ void AppendOrRemoveAccountConsistentyRequestHeader(
     int profile_mode_mask) {
   const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  DiceHeaderHelper dice_helper(sync_has_auth_error);
+  DiceHeaderHelper dice_helper(!account_id.empty() && sync_has_auth_error);
   std::string dice_header_value;
   if (dice_helper.ShouldBuildRequestHeader(url, cookie_settings)) {
     dice_header_value =

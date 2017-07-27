@@ -17,7 +17,7 @@ namespace signin {
 // SigninHeaderHelper implementation managing the Dice header.
 class DiceHeaderHelper : public SigninHeaderHelper {
  public:
-  explicit DiceHeaderHelper(bool sync_has_auth_error);
+  explicit DiceHeaderHelper(bool signed_in_with_auth_error);
   ~DiceHeaderHelper() override {}
 
   // Returns the parameters contained in the X-Chrome-ID-Consistency-Response
@@ -39,7 +39,7 @@ class DiceHeaderHelper : public SigninHeaderHelper {
   // SigninHeaderHelper implementation:
   bool IsUrlEligibleForRequestHeader(const GURL& url) override;
 
-  bool sync_has_auth_error_;
+  bool signed_in_with_auth_error_;
 
   DISALLOW_COPY_AND_ASSIGN(DiceHeaderHelper);
 };
