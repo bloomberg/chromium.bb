@@ -57,7 +57,7 @@ bool CreatePrefetchItemSync(sql::Connection* db,
 
   int64_t now_internal = base::Time::Now().ToInternalValue();
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
-  statement.BindInt64(0, GenerateOfflineId());
+  statement.BindInt64(0, PrefetchStoreUtils::GenerateOfflineId());
   statement.BindString(1, prefetch_url.url.spec());
   statement.BindString(2, name_space);
   statement.BindString(3, prefetch_url.id);
@@ -104,8 +104,10 @@ AddUniqueUrlsTask::Result AddUrlsAndCleanupZombiesSync(
   for (const auto& existing_item : existing_items) {
     if (existing_item.second.second != PrefetchItemState::ZOMBIE)
       continue;
-    if (!DeletePrefetchItemByOfflineIdSync(db, existing_item.second.first))
+    if (!PrefetchStoreUtils::DeletePrefetchItemByOfflineIdSync(
+            db, existing_item.second.first)) {
       return AddUniqueUrlsTask::Result::STORE_ERROR;  // Transaction rollback.
+    }
   }
 
   if (!transaction.Commit())

@@ -82,15 +82,12 @@ void PrefetchDispatcherImpl::BeginBackgroundTask(
 
   background_task_ = std::move(background_task);
 
-  // TODO(dewittj): Remove this when the task can get the suggestions from the
-  // SQL store directly.
-  std::vector<PrefetchURL> prefetch_urls;
-  service_->GetSuggestedArticlesObserver()->GetCurrentSuggestions(
-      &prefetch_urls);
-
+  // Check if there are NEW_REQUEST urls, send them to the service to
+  // start offlining. Transition state of sent urls to
+  // SENT_GENERATE_PAGE_BUNDLE.
   std::unique_ptr<Task> generate_page_bundle_task =
       base::MakeUnique<GeneratePageBundleTask>(
-          prefetch_urls, service_->GetPrefetchGCMHandler(),
+          service_->GetPrefetchStore(), service_->GetPrefetchGCMHandler(),
           service_->GetPrefetchNetworkRequestFactory(),
           base::Bind(&PrefetchDispatcherImpl::DidPrefetchRequest,
                      weak_factory_.GetWeakPtr(), "GeneratePageBundleRequest"));
