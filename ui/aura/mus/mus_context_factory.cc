@@ -39,8 +39,8 @@ viz::BufferToTextureTargetMap CreateBufferToTextureTargetMap() {
 
 MusContextFactory::MusContextFactory(ui::Gpu* gpu)
     : gpu_(gpu),
-      renderer_settings_(
-          ui::CreateRendererSettings(CreateBufferToTextureTargetMap())),
+      resource_settings_(
+          ui::CreateResourceSettings(CreateBufferToTextureTargetMap())),
       weak_ptr_factory_(this) {}
 
 MusContextFactory::~MusContextFactory() {}
@@ -104,7 +104,7 @@ cc::TaskGraphRunner* MusContextFactory::GetTaskGraphRunner() {
 }
 
 const viz::ResourceSettings& MusContextFactory::GetResourceSettings() const {
-  return renderer_settings_.resource_settings;
+  return resource_settings_;
 }
 
 }  // namespace aura
