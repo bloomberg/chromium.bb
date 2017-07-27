@@ -382,18 +382,25 @@ public class ChildProcessLauncherHelper {
                     LauncherThread.post(new Runnable() {
                         @Override
                         public void run() {
-                            if (!allocator.anyConnectionAllocated()) {
-                                // Last connection was freed, the allocator is going aways, remove
-                                // the listener.
-                                allocator.removeListener(listener);
-                                Log.w(TAG,
-                                        "Removing empty ChildConnectionAllocator for package "
-                                                + "name = %s,",
-                                        packageName);
-                                ChildConnectionAllocator removedAllocator =
-                                        sSandboxedChildConnectionAllocatorMap.remove(packageName);
-                                assert removedAllocator == allocator;
+                            if (allocator.anyConnectionAllocated()
+                                    || !sSandboxedChildConnectionAllocatorMap.containsKey(
+                                               packageName)) {
+                                // Note the second condition above guards against multiple tasks
+                                // like this one posted consecutively removing the listener more
+                                // than once (and asserting).
+                                return;
                             }
+
+                            // Last connection was freed, the allocator is going aways, remove
+                            // the listener.
+                            allocator.removeListener(listener);
+                            Log.w(TAG,
+                                    "Removing empty ChildConnectionAllocator for package "
+                                            + "name = %s,",
+                                    packageName);
+                            ChildConnectionAllocator removedAllocator =
+                                    sSandboxedChildConnectionAllocatorMap.remove(packageName);
+                            assert removedAllocator == allocator;
                         }
                     });
                 }
