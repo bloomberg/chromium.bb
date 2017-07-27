@@ -166,7 +166,7 @@ void SystemTrayController::SetPrimaryTrayEnabled(bool enabled) {
   // SystemTray::SetEnabled(false) guarantees, that the menu will not be opened
   // until the UI is enabled again.
   if (!enabled && tray->HasSystemBubble())
-    tray->CloseSystemBubble();
+    tray->CloseBubble();
 
   tray->SetEnabled(enabled);
 }

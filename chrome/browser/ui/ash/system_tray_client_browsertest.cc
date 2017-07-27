@@ -74,5 +74,5 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseTest, TrayEnterprise) {
   ASSERT_TRUE(tray_enterprise->tray_view());
   EXPECT_TRUE(tray_enterprise->tray_view()->visible());
 
-  system_tray->CloseSystemBubble();
+  system_tray->CloseBubble();
 }

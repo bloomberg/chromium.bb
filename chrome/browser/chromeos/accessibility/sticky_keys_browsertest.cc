@@ -76,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, OpenTrayMenu) {
   EXPECT_TRUE(GetSystemTray()->HasSystemBubble());
 
   // Hide system bubble.
-  GetSystemTray()->CloseSystemBubble();
+  GetSystemTray()->CloseBubble();
   EXPECT_FALSE(GetSystemTray()->HasSystemBubble());
 
   // Pressing S again should not reopen the bubble.

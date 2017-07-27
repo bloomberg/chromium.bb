@@ -157,7 +157,7 @@ TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
   EXPECT_TRUE(tray()->IsSystemBubbleVisible());
 
   EXPECT_EQ(TrayUser::SHOWN, tray_user()->GetStateForTest());
-  tray()->CloseSystemBubble();
+  tray()->CloseBubble();
 }
 
 TEST_F(TrayUserTest, AccessibleLabelContainsSingleUserInfo) {
@@ -230,7 +230,7 @@ TEST_F(TrayUserTest, MultiUserModeDoesNotAllowToAddUser) {
   EXPECT_EQ(TrayUser::HOVERED, tray_user()->GetStateForTest());
 
   // Close and check that everything is deleted.
-  tray()->CloseSystemBubble();
+  tray()->CloseBubble();
   EXPECT_FALSE(tray()->IsSystemBubbleVisible());
   EXPECT_EQ(TrayUser::HIDDEN, tray_user()->GetStateForTest());
 }
@@ -263,7 +263,7 @@ TEST_F(TrayUserTest, MultiUserModeButtonClicks) {
   // user_id.
   EXPECT_NE(active_user->user_info->account_id.GetUserEmail(),
             second_user->user_info->display_email);
-  tray()->CloseSystemBubble();
+  tray()->CloseBubble();
 }
 
 // Test SessionController updates avatar image.

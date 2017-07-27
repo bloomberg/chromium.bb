@@ -122,7 +122,7 @@ class SystemTrayTest : public AshTestBase {
     SystemTray* system_tray = GetPrimarySystemTray();
     system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
     gfx::Rect bounds = GetSystemBubbleBoundsInScreen();
-    system_tray->CloseSystemBubble();
+    system_tray->CloseBubble();
     return bounds.height();
   }
 
@@ -152,7 +152,7 @@ TEST_F(SystemTrayTest, SwipingOnShelfDuringAnimation) {
 
   system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   gfx::Rect original_bounds = GetSystemBubbleBoundsInScreen();
-  system_tray->CloseSystemBubble();
+  system_tray->CloseBubble();
 
   // Enable animations so that we can make sure that they occur.
   ui::ScopedAnimationDurationScaleMode regular_animations(
@@ -207,7 +207,7 @@ TEST_F(SystemTrayTest, FlingOnSystemTray) {
   SendGestureEvent(start, delta, true,
                    -(TrayDragController::kFlingVelocity + 1));
   EXPECT_TRUE(system_tray->HasSystemBubble());
-  system_tray->CloseSystemBubble();
+  system_tray->CloseBubble();
 
   // Fling up on the system tray should show the bubble if the |velocity_y| is
   // larger than |kFlingVelocity| even the dragging amount is less than one
@@ -216,7 +216,7 @@ TEST_F(SystemTrayTest, FlingOnSystemTray) {
   SendGestureEvent(start, delta, true,
                    -(TrayDragController::kFlingVelocity + 1));
   EXPECT_TRUE(system_tray->HasSystemBubble());
-  system_tray->CloseSystemBubble();
+  system_tray->CloseBubble();
 
   // Fling up on the system tray should show the bubble if the |velocity_y| is
   // less than |kFlingVelocity| but the dragging amount if larger than one third
@@ -225,7 +225,7 @@ TEST_F(SystemTrayTest, FlingOnSystemTray) {
   SendGestureEvent(start, delta, true,
                    -(TrayDragController::kFlingVelocity - 1));
   EXPECT_TRUE(system_tray->HasSystemBubble());
-  system_tray->CloseSystemBubble();
+  system_tray->CloseBubble();
 
   // Fling up on the system tray should close the bubble if the |velocity_y|
   // is less than |kFlingVelocity| and the dragging amount is less than one
@@ -252,7 +252,7 @@ TEST_F(SystemTrayTest, FlingOnSystemTray) {
   // height of the bubble.
   SendGestureEvent(start, delta, true, TrayDragController::kFlingVelocity - 1);
   EXPECT_TRUE(system_tray->HasSystemBubble());
-  system_tray->CloseSystemBubble();
+  system_tray->CloseBubble();
 
   // Fling down on the system tray should close the bubble if the |velocity_y|
   // is less than |kFlingVelocity| and the dragging amount is less than one
@@ -301,7 +301,7 @@ TEST_F(SystemTrayTest, SwipingOnSystemTray) {
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   SendGestureEvent(start, delta, false, 0);
   EXPECT_TRUE(system_tray->HasSystemBubble());
-  system_tray->CloseSystemBubble();
+  system_tray->CloseBubble();
 
   // Swiping up less than one third of the bubble's height should not show the
   // bubble.
@@ -314,7 +314,7 @@ TEST_F(SystemTrayTest, SwipingOnSystemTray) {
   delta = -GetSystemBubbleHeight() / 2;
   SendGestureEvent(start, delta, false, 0);
   EXPECT_TRUE(system_tray->HasSystemBubble());
-  system_tray->CloseSystemBubble();
+  system_tray->CloseBubble();
 
   // Swiping up on system tray should not show the system tray bubble if the
   // shelf is left alignment.
@@ -384,7 +384,8 @@ TEST_F(SystemTrayTest, OnlyVisibleItemsRecorded) {
   histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
                                      SystemTrayItem::UMA_TEST, 1);
 
-  ASSERT_TRUE(tray->CloseSystemBubble());
+  ASSERT_TRUE(tray->HasSystemBubble());
+  tray->CloseBubble();
   RunAllPendingInMessageLoop();
 
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
@@ -392,7 +393,8 @@ TEST_F(SystemTrayTest, OnlyVisibleItemsRecorded) {
   histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
                                      SystemTrayItem::UMA_TEST, 2);
 
-  ASSERT_TRUE(tray->CloseSystemBubble());
+  ASSERT_TRUE(tray->HasSystemBubble());
+  tray->CloseBubble();
   RunAllPendingInMessageLoop();
 
   test_item->set_views_are_visible(false);
@@ -402,7 +404,8 @@ TEST_F(SystemTrayTest, OnlyVisibleItemsRecorded) {
   histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
                                      SystemTrayItem::UMA_TEST, 2);
 
-  ASSERT_TRUE(tray->CloseSystemBubble());
+  ASSERT_TRUE(tray->HasSystemBubble());
+  tray->CloseBubble();
   RunAllPendingInMessageLoop();
 }
 
@@ -423,7 +426,8 @@ TEST_F(SystemTrayTest, NotRecordedtemsAreNotRecorded) {
   histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
                                      SystemTrayItem::UMA_NOT_RECORDED, 0);
 
-  ASSERT_TRUE(tray->CloseSystemBubble());
+  ASSERT_TRUE(tray->HasSystemBubble());
+  tray->CloseBubble();
   RunAllPendingInMessageLoop();
 }
 
@@ -444,7 +448,8 @@ TEST_F(SystemTrayTest, NullDefaultViewIsNotRecorded) {
   histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
                                      SystemTrayItem::UMA_TEST, 0);
 
-  ASSERT_TRUE(tray->CloseSystemBubble());
+  ASSERT_TRUE(tray->HasSystemBubble());
+  tray->CloseBubble();
   RunAllPendingInMessageLoop();
 }
 
@@ -464,7 +469,8 @@ TEST_F(SystemTrayTest, VisibleDetailedViewsIsNotRecorded) {
 
   histogram_tester.ExpectTotalCount(kVisibleRowsHistogramName, 0);
 
-  ASSERT_TRUE(tray->CloseSystemBubble());
+  ASSERT_TRUE(tray->HasSystemBubble());
+  tray->CloseBubble();
   RunAllPendingInMessageLoop();
 }
 
@@ -494,7 +500,8 @@ TEST_F(SystemTrayTest, VisibleDefaultViewIsNotRecordedOnReshow) {
   histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
                                      SystemTrayItem::UMA_TEST, 1);
 
-  ASSERT_TRUE(tray->CloseSystemBubble());
+  ASSERT_TRUE(tray->HasSystemBubble());
+  tray->CloseBubble();
   RunAllPendingInMessageLoop();
 }
 
@@ -505,9 +512,10 @@ TEST_F(SystemTrayTest, SystemTrayDefaultView) {
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
 
   // Ensure that closing the bubble destroys it.
-  ASSERT_TRUE(tray->CloseSystemBubble());
+  ASSERT_TRUE(tray->HasSystemBubble());
+  tray->CloseBubble();
   RunAllPendingInMessageLoop();
-  ASSERT_FALSE(tray->CloseSystemBubble());
+  ASSERT_FALSE(tray->HasSystemBubble());
 }
 
 // Make sure the opening system tray bubble will not deactivate the
@@ -530,7 +538,7 @@ TEST_F(SystemTrayTest, Activation) {
   EXPECT_FALSE(widget->IsActive());
 
   // Closing the bubble re-activates the window.
-  tray->CloseSystemBubble();
+  tray->CloseBubble();
   EXPECT_TRUE(widget->IsActive());
 
   // Opening the bubble with an accelerator activates the bubble because the
@@ -590,7 +598,8 @@ TEST_F(SystemTrayTest, SystemTrayColoring) {
   ASSERT_TRUE(tray->is_active());
 
   // Closing the system menu should change the coloring back to normal.
-  ASSERT_TRUE(tray->CloseSystemBubble());
+  ASSERT_TRUE(tray->HasSystemBubble());
+  tray->CloseBubble();
   RunAllPendingInMessageLoop();
   ASSERT_FALSE(tray->is_active());
 }
@@ -615,7 +624,7 @@ TEST_F(SystemTrayTest, SystemTrayColoringAfterAlignmentChange) {
   ASSERT_FALSE(tray->is_active());
   RunAllPendingInMessageLoop();
   // The bubble should already be closed by now.
-  ASSERT_FALSE(tray->CloseSystemBubble());
+  ASSERT_FALSE(tray->HasSystemBubble());
 }
 
 TEST_F(SystemTrayTest, SystemTrayTestItems) {
@@ -891,7 +900,8 @@ TEST_F(SystemTrayTest, SystemTrayHeightWithBubble) {
   EXPECT_LT(0, notification_tray->tray_bubble_height_for_test());
 
   // Hide the default view, ensure the tray bubble height is back to zero.
-  ASSERT_TRUE(tray->CloseSystemBubble());
+  ASSERT_TRUE(tray->HasSystemBubble());
+  tray->CloseBubble();
   RunAllPendingInMessageLoop();
 
   EXPECT_EQ(0, notification_tray->tray_bubble_height_for_test());

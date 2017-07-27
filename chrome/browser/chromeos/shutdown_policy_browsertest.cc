@@ -152,7 +152,7 @@ class ShutdownPolicyInSessionTest
 
   // Closes the system tray menu. This deletes the tray views.
   void CloseSystemTrayMenu() {
-    ash::Shell::Get()->GetPrimarySystemTray()->CloseSystemBubble();
+    ash::Shell::Get()->GetPrimarySystemTray()->CloseBubble();
   }
 
   // Gets the shutdown button view.

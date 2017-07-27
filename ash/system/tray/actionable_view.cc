@@ -92,7 +92,7 @@ std::unique_ptr<views::InkDropMask> ActionableView::CreateInkDropMask() const {
 
 void ActionableView::CloseSystemBubble() {
   DCHECK(owner_);
-  owner_->system_tray()->CloseSystemBubble();
+  owner_->system_tray()->CloseBubble();
 }
 
 void ActionableView::ButtonPressed(Button* sender, const ui::Event& event) {

@@ -325,14 +325,14 @@ void AccessibilityDetailedView::CreateExtraTitleRowButtons() {
 void AccessibilityDetailedView::ShowSettings() {
   if (TrayPopupUtils::CanOpenWebUISettings()) {
     Shell::Get()->system_tray_controller()->ShowAccessibilitySettings();
-    owner()->system_tray()->CloseSystemBubble();
+    owner()->system_tray()->CloseBubble();
   }
 }
 
 void AccessibilityDetailedView::ShowHelp() {
   if (TrayPopupUtils::CanOpenWebUISettings()) {
     Shell::Get()->system_tray_controller()->ShowAccessibilityHelp();
-    owner()->system_tray()->CloseSystemBubble();
+    owner()->system_tray()->CloseBubble();
   }
 }
 

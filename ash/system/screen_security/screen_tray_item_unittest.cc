@@ -202,7 +202,7 @@ void TestSystemTrayInteraction(ScreenTrayItemTest* test) {
   // The default view should be created in a new bubble.
   AshTestBase::GetPrimarySystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
   EXPECT_TRUE(tray_item->default_view());
-  AshTestBase::GetPrimarySystemTray()->CloseSystemBubble();
+  AshTestBase::GetPrimarySystemTray()->CloseBubble();
   EXPECT_FALSE(tray_item->default_view());
 
   test->StopSession();

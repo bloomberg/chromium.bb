@@ -207,7 +207,7 @@ void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
     Shell::Get()->system_tray_controller()->ShowProxySettings();
 
   if (owner()->system_tray())
-    owner()->system_tray()->CloseSystemBubble();
+    owner()->system_tray()->CloseBubble();
 }
 
 void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {

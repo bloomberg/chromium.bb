@@ -267,7 +267,7 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
       SwitchUser(user_index);
     }
     HideUserDropdownWidget();
-    owner_->system_tray()->CloseSystemBubble();
+    owner_->system_tray()->CloseBubble();
   } else {
     NOTREACHED();
   }

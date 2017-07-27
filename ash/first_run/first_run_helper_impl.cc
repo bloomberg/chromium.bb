@@ -80,7 +80,7 @@ void FirstRunHelperImpl::OpenTrayBubble() {
 void FirstRunHelperImpl::CloseTrayBubble() {
   SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
   DCHECK(tray->HasSystemBubble()) << "Tray bubble is closed already.";
-  tray->CloseSystemBubble();
+  tray->CloseBubble();
 }
 
 bool FirstRunHelperImpl::IsTrayBubbleOpened() {

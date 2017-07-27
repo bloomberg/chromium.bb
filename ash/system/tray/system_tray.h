@@ -111,11 +111,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   // Returns true if system bubble is visible.
   bool IsSystemBubbleVisible() const;
 
-  // TODO(minch): Remove CloseSystemBubble which is redundant with CloseBubble.
-  // http://crbug.com/741953
-  // Closes system bubble and returns true if it did exist.
-  bool CloseSystemBubble() const;
-
   // Returns view for help button if default view is shown. Returns NULL
   // otherwise.
   views::View* GetHelpButtonView() const;
