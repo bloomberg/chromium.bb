@@ -23,18 +23,18 @@
 @synthesize alignment = _alignment;
 
 - (instancetype)initWithText:(NSString*)text
-                   direction:(BubbleArrowDirection)arrowDirection
+              arrowDirection:(BubbleArrowDirection)direction
                    alignment:(BubbleAlignment)alignment {
   self = [super initWithNibName:nil bundle:nil];
   _text = text;
-  _arrowDirection = arrowDirection;
+  _arrowDirection = direction;
   _alignment = alignment;
   return self;
 }
 
 - (void)loadView {
   self.view = [[BubbleView alloc] initWithText:self.text
-                                     direction:self.arrowDirection
+                                arrowDirection:self.arrowDirection
                                      alignment:self.alignment];
 }
 

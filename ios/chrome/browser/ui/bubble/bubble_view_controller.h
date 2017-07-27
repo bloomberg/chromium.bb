@@ -7,15 +7,13 @@
 
 #import "ios/chrome/browser/ui/bubble/bubble_view.h"
 
-#import <UIKit/UIKit.h>
-
 // View controller that manages a BubbleView, which points to a UI element of
 // interest.
 @interface BubbleViewController : UIViewController
 
 // Initializes the bubble with the given text, arrow direction, and alignment.
 - (instancetype)initWithText:(NSString*)text
-                   direction:(BubbleArrowDirection)arrowDirection
+              arrowDirection:(BubbleArrowDirection)direction
                    alignment:(BubbleAlignment)alignment
     NS_DESIGNATED_INITIALIZER;
 
