@@ -82,6 +82,9 @@ struct TextInputState;
   // The cursor for the page. This is passed up from the renderer.
   base::scoped_nsobject<NSCursor> currentCursor_;
 
+  // Is YES if the cursor is hidden by key events.
+  BOOL cursorHidden_;
+
   // Variables used by our implementaion of the NSTextInput protocol.
   // An input method of Mac calls the methods of this protocol not only to
   // notify an application of its status, but also to retrieve the status of
