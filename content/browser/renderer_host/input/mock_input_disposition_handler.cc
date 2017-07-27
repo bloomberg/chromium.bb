@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/mock_input_ack_handler.h"
+#include "content/browser/renderer_host/input/mock_input_disposition_handler.h"
 
 #include "content/browser/renderer_host/input/input_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,24 +17,24 @@ using blink::WebTouchPoint;
 
 namespace content {
 
-MockInputAckHandler::MockInputAckHandler()
+MockInputDispositionHandler::MockInputDispositionHandler()
     : input_router_(NULL),
       ack_count_(0),
       unexpected_event_ack_called_(false),
       ack_event_type_(WebInputEvent::kUndefined),
       ack_state_(INPUT_EVENT_ACK_STATE_UNKNOWN) {}
 
-MockInputAckHandler::~MockInputAckHandler() {}
+MockInputDispositionHandler::~MockInputDispositionHandler() {}
 
-void MockInputAckHandler::OnKeyboardEventAck(
+void MockInputDispositionHandler::OnKeyboardEventAck(
     const NativeWebKeyboardEventWithLatencyInfo& event,
-    InputEventAckState ack_result)  {
+    InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_key_event_.reset(new NativeWebKeyboardEvent(event.event));
   RecordAckCalled(event.event.GetType(), ack_result);
 }
 
-void MockInputAckHandler::OnMouseEventAck(
+void MockInputDispositionHandler::OnMouseEventAck(
     const MouseEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
@@ -42,7 +42,7 @@ void MockInputAckHandler::OnMouseEventAck(
   RecordAckCalled(event.event.GetType(), ack_result);
 }
 
-void MockInputAckHandler::OnWheelEventAck(
+void MockInputDispositionHandler::OnWheelEventAck(
     const MouseWheelEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
@@ -51,7 +51,7 @@ void MockInputAckHandler::OnWheelEventAck(
   RecordAckCalled(event.event.GetType(), ack_result);
 }
 
-void MockInputAckHandler::OnTouchEventAck(
+void MockInputDispositionHandler::OnTouchEventAck(
     const TouchEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
@@ -63,7 +63,7 @@ void MockInputAckHandler::OnTouchEventAck(
     input_router_->SendGestureEvent(*gesture_followup_event_);
 }
 
-void MockInputAckHandler::OnGestureEventAck(
+void MockInputDispositionHandler::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
@@ -71,19 +71,21 @@ void MockInputAckHandler::OnGestureEventAck(
   RecordAckCalled(event.event.GetType(), ack_result);
 }
 
-void MockInputAckHandler::OnUnexpectedEventAck(UnexpectedEventAckType type)  {
+void MockInputDispositionHandler::OnUnexpectedEventAck(
+    UnexpectedEventAckType type) {
   VLOG(1) << __FUNCTION__ << " called!";
   unexpected_event_ack_called_ = true;
 }
 
-size_t MockInputAckHandler::GetAndResetAckCount() {
+size_t MockInputDispositionHandler::GetAndResetAckCount() {
   size_t ack_count = ack_count_;
   ack_count_ = 0;
   return ack_count;
 }
 
-void MockInputAckHandler::RecordAckCalled(blink::WebInputEvent::Type type,
-                                          InputEventAckState ack_result) {
+void MockInputDispositionHandler::RecordAckCalled(
+    blink::WebInputEvent::Type type,
+    InputEventAckState ack_result) {
   ack_event_type_ = type;
   ++ack_count_;
   ack_state_ = ack_result;

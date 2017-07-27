@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_INPUT_ACK_HANDLER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_INPUT_ACK_HANDLER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_INPUT_DISPOSITION_HANDLER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_INPUT_DISPOSITION_HANDLER_H_
 
 #include <stddef.h>
 
 #include <memory>
 #include <utility>
 
-#include "content/browser/renderer_host/input/input_ack_handler.h"
+#include "content/browser/renderer_host/input/input_disposition_handler.h"
 
 namespace content {
 
 class InputRouter;
 
-class MockInputAckHandler : public InputAckHandler {
+class MockInputDispositionHandler : public InputDispositionHandler {
  public:
-  MockInputAckHandler();
-  ~MockInputAckHandler() override;
+  MockInputDispositionHandler();
+  ~MockInputDispositionHandler() override;
 
-  // InputAckHandler
+  // InputDispositionHandler
   void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,
                           InputEventAckState ack_result) override;
   void OnMouseEventAck(const MouseEventWithLatencyInfo& event,
@@ -97,4 +97,4 @@ class MockInputAckHandler : public InputAckHandler {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_INPUT_ACK_HANDLER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_INPUT_DISPOSITION_HANDLER_H_

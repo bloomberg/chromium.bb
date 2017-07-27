@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "content/browser/renderer_host/input/input_ack_handler.h"
+#include "content/browser/renderer_host/input/input_disposition_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/legacy_input_router_impl.h"
 #include "content/common/input_messages.h"
@@ -33,12 +33,12 @@ namespace content {
 
 namespace {
 
-class NullInputAckHandler : public InputAckHandler {
+class NullInputDispositionHandler : public InputDispositionHandler {
  public:
-  NullInputAckHandler() : ack_count_(0) {}
-  ~NullInputAckHandler() override {}
+  NullInputDispositionHandler() : ack_count_(0) {}
+  ~NullInputDispositionHandler() override {}
 
-  // InputAckHandler
+  // InputDispositionHandler
   void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,
                           InputEventAckState ack_result) override {
     ++ack_count_;
@@ -228,17 +228,17 @@ class LegacyInputRouterImplPerfTest : public testing::Test {
   void SetUp() override {
     sender_.reset(new NullIPCSender());
     client_.reset(new NullInputRouterClient());
-    ack_handler_.reset(new NullInputAckHandler());
+    disposition_handler_.reset(new NullInputDispositionHandler());
     input_router_.reset(new LegacyInputRouterImpl(
-        sender_.get(), client_.get(), ack_handler_.get(), MSG_ROUTING_NONE,
-        InputRouter::Config()));
+        sender_.get(), client_.get(), disposition_handler_.get(),
+        MSG_ROUTING_NONE, InputRouter::Config()));
   }
 
   void TearDown() override {
     base::RunLoop().RunUntilIdle();
 
     input_router_.reset();
-    ack_handler_.reset();
+    disposition_handler_.reset();
     client_.reset();
     sender_.reset();
   }
@@ -272,9 +272,11 @@ class LegacyInputRouterImplPerfTest : public testing::Test {
     return sender_->GetAndResetSentEventCount();
   }
 
-  size_t GetAndResetAckCount() { return ack_handler_->GetAndResetAckCount(); }
+  size_t GetAndResetAckCount() {
+    return disposition_handler_->GetAndResetAckCount();
+  }
 
-  size_t AckCount() const { return ack_handler_->ack_count(); }
+  size_t AckCount() const { return disposition_handler_->ack_count(); }
 
   int64_t NextLatencyID() { return ++last_input_id_; }
 
@@ -353,7 +355,7 @@ class LegacyInputRouterImplPerfTest : public testing::Test {
   int64_t last_input_id_;
   std::unique_ptr<NullIPCSender> sender_;
   std::unique_ptr<NullInputRouterClient> client_;
-  std::unique_ptr<NullInputAckHandler> ack_handler_;
+  std::unique_ptr<NullInputDispositionHandler> disposition_handler_;
   std::unique_ptr<LegacyInputRouterImpl> input_router_;
 };
 
