@@ -170,7 +170,7 @@ ApplyStyleCommand::ApplyStyleCommand(
 
 void ApplyStyleCommand::UpdateStartEnd(const Position& new_start,
                                        const Position& new_end) {
-  DCHECK_GE(ComparePositions(new_end, new_start), 0);
+  DCHECK_GE(new_end, new_start);
 
   if (!use_ending_selection_ && (new_start != start_ || new_end != end_))
     use_ending_selection_ = true;
