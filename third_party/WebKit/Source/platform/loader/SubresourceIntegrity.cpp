@@ -2,14 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/SubresourceIntegrity.h"
+#include "platform/loader/SubresourceIntegrity.h"
 
-#include "core/HTMLNames.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/ExecutionContext.h"
-#include "core/frame/UseCounter.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "platform/Crypto.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/weborigin/KURL.h"
@@ -39,12 +33,6 @@ static bool IsValueCharacter(UChar c) {
   return c >= 0x21 && c <= 0x7e;
 }
 
-static void LogErrorToConsole(const String& message,
-                              ExecutionContext& execution_context) {
-  execution_context.AddConsoleMessage(ConsoleMessage::Create(
-      kSecurityMessageSource, kErrorMessageLevel, message));
-}
-
 static bool DigestsEqual(const DigestValue& digest1,
                          const DigestValue& digest2) {
   if (digest1.size() != digest2.size())
@@ -61,6 +49,15 @@ static bool DigestsEqual(const DigestValue& digest1,
 static String DigestToString(const DigestValue& digest) {
   return Base64Encode(reinterpret_cast<const char*>(digest.data()),
                       digest.size(), kBase64DoNotInsertLFs);
+}
+
+void SubresourceIntegrity::ReportInfo::AddUseCount(UseCounterFeature feature) {
+  use_counts_.push_back(feature);
+}
+
+void SubresourceIntegrity::ReportInfo::AddConsoleErrorMessage(
+    const String& message) {
+  console_error_messages_.push_back(message);
 }
 
 HashAlgorithm SubresourceIntegrity::GetPrioritizedHashFunction(
@@ -103,52 +100,45 @@ HashAlgorithm SubresourceIntegrity::GetPrioritizedHashFunction(
 
 bool SubresourceIntegrity::CheckSubresourceIntegrity(
     const String& integrity_attribute,
-    Document& document,
     const char* content,
     size_t size,
     const KURL& resource_url,
-    const Resource& resource) {
+    const Resource& resource,
+    ReportInfo& report_info) {
   if (integrity_attribute.IsEmpty())
     return true;
 
   IntegrityMetadataSet metadata_set;
   IntegrityParseResult integrity_parse_result =
-      ParseIntegrityAttribute(integrity_attribute, metadata_set, &document);
-  // On failed parsing, there's no need to log an error here, as
-  // parseIntegrityAttribute() will output an appropriate console message.
+      ParseIntegrityAttribute(integrity_attribute, metadata_set, &report_info);
   if (integrity_parse_result != kIntegrityParseValidResult)
     return true;
 
-  return CheckSubresourceIntegrity(metadata_set, document, content, size,
-                                   resource_url, resource);
+  return CheckSubresourceIntegrity(metadata_set, content, size, resource_url,
+                                   resource, report_info);
 }
 
 bool SubresourceIntegrity::CheckSubresourceIntegrity(
     const IntegrityMetadataSet& metadata_set,
-    Document& document,
     const char* content,
     size_t size,
     const KURL& resource_url,
-    const Resource& resource) {
+    const Resource& resource,
+    ReportInfo& report_info) {
   if (!resource.IsSameOriginOrCORSSuccessful()) {
-    UseCounter::Count(document,
-                      WebFeature::kSRIElementIntegrityAttributeButIneligible);
-    LogErrorToConsole("Subresource Integrity: The resource '" +
-                          resource_url.ElidedString() +
-                          "' has an integrity attribute, but the resource "
-                          "requires the request to be CORS enabled to check "
-                          "the integrity, and it is not. The resource has been "
-                          "blocked because the integrity cannot be enforced.",
-                      document);
+    report_info.AddConsoleErrorMessage(
+        "Subresource Integrity: The resource '" + resource_url.ElidedString() +
+        "' has an integrity attribute, but the resource "
+        "requires the request to be CORS enabled to check "
+        "the integrity, and it is not. The resource has been "
+        "blocked because the integrity cannot be enforced.");
+    report_info.AddUseCount(ReportInfo::UseCounterFeature::
+                                kSRIElementIntegrityAttributeButIneligible);
     return false;
   }
 
-  String error_message;
-  bool result = CheckSubresourceIntegrity(
-      metadata_set, content, size, resource_url, document, error_message);
-  if (!result)
-    LogErrorToConsole(error_message, document);
-  return result;
+  return CheckSubresourceIntegrity(metadata_set, content, size, resource_url,
+                                   report_info);
 }
 
 bool SubresourceIntegrity::CheckSubresourceIntegrity(
@@ -156,18 +146,15 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
     const char* content,
     size_t size,
     const KURL& resource_url,
-    ExecutionContext& execution_context,
-    String& error_message) {
+    ReportInfo& report_info) {
   IntegrityMetadataSet metadata_set;
-  IntegrityParseResult integrity_parse_result = ParseIntegrityAttribute(
-      integrity_metadata, metadata_set, &execution_context);
-  // On failed parsing, there's no need to log an error here, as
-  // parseIntegrityAttribute() will output an appropriate console message.
+  IntegrityParseResult integrity_parse_result =
+      ParseIntegrityAttribute(integrity_metadata, metadata_set, &report_info);
   if (integrity_parse_result != kIntegrityParseValidResult)
     return true;
 
   return CheckSubresourceIntegrity(metadata_set, content, size, resource_url,
-                                   execution_context, error_message);
+                                   report_info);
 }
 
 bool SubresourceIntegrity::CheckSubresourceIntegrity(
@@ -175,15 +162,15 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
     const char* content,
     size_t size,
     const KURL& resource_url,
-    ExecutionContext& execution_context,
-    String& error_message) {
+    ReportInfo& report_info) {
   if (!metadata_set.size())
     return true;
 
   HashAlgorithm strongest_algorithm = kHashAlgorithmSha256;
-  for (const IntegrityMetadata& metadata : metadata_set)
+  for (const IntegrityMetadata& metadata : metadata_set) {
     strongest_algorithm =
         GetPrioritizedHashFunction(metadata.Algorithm(), strongest_algorithm);
+  }
 
   DigestValue digest;
   for (const IntegrityMetadata& metadata : metadata_set) {
@@ -202,9 +189,8 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
           reinterpret_cast<uint8_t*>(hash_vector.data()), hash_vector.size());
 
       if (DigestsEqual(digest, converted_hash_vector)) {
-        UseCounter::Count(
-            &execution_context,
-            WebFeature::kSRIElementWithMatchingIntegrityAttribute);
+        report_info.AddUseCount(ReportInfo::UseCounterFeature::
+                                    kSRIElementWithMatchingIntegrityAttribute);
         return true;
       }
     }
@@ -217,21 +203,20 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
     // need to be very careful not to expose this in exceptions or
     // JavaScript, otherwise it risks exposing information about the
     // resource cross-origin.
-    error_message =
+    report_info.AddConsoleErrorMessage(
         "Failed to find a valid digest in the 'integrity' attribute for "
         "resource '" +
         resource_url.ElidedString() + "' with computed SHA-256 integrity '" +
-        DigestToString(digest) + "'. The resource has been blocked.";
+        DigestToString(digest) + "'. The resource has been blocked.");
   } else {
-    error_message =
+    report_info.AddConsoleErrorMessage(
         "There was an error computing an integrity value for resource '" +
-        resource_url.ElidedString() + "'. The resource has been blocked.";
+        resource_url.ElidedString() + "'. The resource has been blocked.");
   }
-  UseCounter::Count(&execution_context,
-                    WebFeature::kSRIElementWithNonMatchingIntegrityAttribute);
+  report_info.AddUseCount(ReportInfo::UseCounterFeature::
+                              kSRIElementWithNonMatchingIntegrityAttribute);
   return false;
 }
-
 // Before:
 //
 // [algorithm]-[hash]
@@ -321,7 +306,7 @@ SubresourceIntegrity::IntegrityParseResult
 SubresourceIntegrity::ParseIntegrityAttribute(
     const WTF::String& attribute,
     IntegrityMetadataSet& metadata_set,
-    ExecutionContext* execution_context) {
+    ReportInfo* report_info) {
   Vector<UChar> characters;
   attribute.StripWhiteSpace().AppendTo(characters);
   const UChar* position = characters.data();
@@ -353,14 +338,14 @@ SubresourceIntegrity::ParseIntegrityAttribute(
       // Unknown hash algorithms are treated as if they're not present,
       // and thus are not marked as an error, they're just skipped.
       SkipUntil<UChar, IsASCIISpace>(position, end);
-      if (execution_context) {
-        LogErrorToConsole("Error parsing 'integrity' attribute ('" + attribute +
-                              "'). The specified hash algorithm must be one of "
-                              "'sha256', 'sha384', or 'sha512'.",
-                          *execution_context);
-        UseCounter::Count(
-            execution_context,
-            WebFeature::kSRIElementWithUnparsableIntegrityAttribute);
+      if (report_info) {
+        report_info->AddConsoleErrorMessage(
+            "Error parsing 'integrity' attribute ('" + attribute +
+            "'). The specified hash algorithm must be one of "
+            "'sha256', 'sha384', or 'sha512'.");
+        report_info->AddUseCount(
+            ReportInfo::UseCounterFeature::
+                kSRIElementWithUnparsableIntegrityAttribute);
       }
       continue;
     }
@@ -368,15 +353,15 @@ SubresourceIntegrity::ParseIntegrityAttribute(
     if (parse_result == kAlgorithmUnparsable) {
       error = true;
       SkipUntil<UChar, IsASCIISpace>(position, end);
-      if (execution_context) {
-        LogErrorToConsole("Error parsing 'integrity' attribute ('" + attribute +
-                              "'). The hash algorithm must be one of 'sha256', "
-                              "'sha384', or 'sha512', followed by a '-' "
-                              "character.",
-                          *execution_context);
-        UseCounter::Count(
-            execution_context,
-            WebFeature::kSRIElementWithUnparsableIntegrityAttribute);
+      if (report_info) {
+        report_info->AddConsoleErrorMessage(
+            "Error parsing 'integrity' attribute ('" + attribute +
+            "'). The hash algorithm must be one of 'sha256', "
+            "'sha384', or 'sha512', followed by a '-' "
+            "character.");
+        report_info->AddUseCount(
+            ReportInfo::UseCounterFeature::
+                kSRIElementWithUnparsableIntegrityAttribute);
       }
       continue;
     }
@@ -386,14 +371,13 @@ SubresourceIntegrity::ParseIntegrityAttribute(
     if (!ParseDigest(position, current_integrity_end, digest)) {
       error = true;
       SkipUntil<UChar, IsASCIISpace>(position, end);
-      if (execution_context) {
-        LogErrorToConsole(
+      if (report_info) {
+        report_info->AddConsoleErrorMessage(
             "Error parsing 'integrity' attribute ('" + attribute +
-                "'). The digest must be a valid, base64-encoded value.",
-            *execution_context);
-        UseCounter::Count(
-            execution_context,
-            WebFeature::kSRIElementWithUnparsableIntegrityAttribute);
+            "'). The digest must be a valid, base64-encoded value.");
+        report_info->AddUseCount(
+            ReportInfo::UseCounterFeature::
+                kSRIElementWithUnparsableIntegrityAttribute);
       }
       continue;
     }
@@ -405,11 +389,10 @@ SubresourceIntegrity::ParseIntegrityAttribute(
     if (SkipExactly<UChar>(position, end, '?')) {
       const UChar* begin = position;
       SkipWhile<UChar, IsValueCharacter>(position, end);
-      if (begin != position && execution_context) {
-        LogErrorToConsole(
+      if (begin != position && report_info) {
+        report_info->AddConsoleErrorMessage(
             "Ignoring unrecogized 'integrity' attribute option '" +
-                String(begin, position - begin) + "'.",
-            *execution_context);
+            String(begin, position - begin) + "'.");
       }
     }
 

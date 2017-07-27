@@ -1367,7 +1367,6 @@ jumbo_source_set("unit_tests") {
     "frame/OriginsUsingFeaturesTest.cpp",
     "frame/PerformanceMonitorTest.cpp",
     "frame/RootFrameViewportTest.cpp",
-    "frame/SubresourceIntegrityTest.cpp",
     "frame/UseCounterTest.cpp",
     "frame/VisualViewportTest.cpp",
     "frame/csp/CSPDirectiveListTest.cpp",

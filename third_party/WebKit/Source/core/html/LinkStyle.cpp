@@ -9,12 +9,13 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
-#include "core/frame/SubresourceIntegrity.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/CrossOriginAttribute.h"
 #include "core/html/HTMLLinkElement.h"
+#include "core/loader/SubresourceIntegrityHelper.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "platform/Histogram.h"
+#include "platform/loader/SubresourceIntegrity.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
@@ -94,9 +95,11 @@ void LinkStyle::SetCSSStyleSheet(
         data = cached_style_sheet->ResourceBuffer()->Data();
         size = cached_style_sheet->ResourceBuffer()->size();
       }
+      SubresourceIntegrity::ReportInfo report_info;
       check_result = SubresourceIntegrity::CheckSubresourceIntegrity(
-          owner_->FastGetAttribute(integrityAttr), GetDocument(), data, size,
-          KURL(base_url, href), *cached_style_sheet);
+          owner_->FastGetAttribute(integrityAttr), data, size,
+          KURL(base_url, href), *cached_style_sheet, report_info);
+      SubresourceIntegrityHelper::DoReport(GetDocument(), report_info);
       disposition = check_result ? ResourceIntegrityDisposition::kPassed
                                  : ResourceIntegrityDisposition::kFailed;
 
