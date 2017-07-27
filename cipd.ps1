@@ -49,9 +49,6 @@ while ($true) {
       $cipd_lock_file = [IO.File]::OpenWrite($cipd_lock)
 
       if (!(Test-Path $client)) {
-          echo "Bootstrapping cipd client for $plat-$arch..."
-          echo "From $url"
-
           # TODO(iannucci): It would be really nice if there was a way to get this to
           # show progress without also completely destroying the download speed, but
           # I can't seem to find a way to do it. Patches welcome :)
@@ -61,7 +58,6 @@ while ($true) {
       }
       break
   } catch {
-      echo "CIPD lock is held, trying again after delay..."
       Start-Sleep -s 1
   } finally {
       if ($cipd_lock_file) {

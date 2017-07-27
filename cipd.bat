@@ -18,7 +18,7 @@ if not exist "%~dp0.cipd_client.exe" (
 )
 
 for /f %%i in (%~dp0cipd_client_version) do set CIPD_CLIENT_VER=%%i
-"%~dp0.cipd_client.exe" selfupdate -version "%CIPD_CLIENT_VER%"
+"%~dp0.cipd_client.exe" selfupdate -log-level warning -version "%CIPD_CLIENT_VER%"
 if not errorlevel 0 goto :END
 
 "%~dp0.cipd_client.exe" %*

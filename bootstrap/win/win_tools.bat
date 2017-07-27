@@ -58,7 +58,7 @@ set WIN_TOOLS_EXTRA_ARGS=%WIN_TOOLS_EXTRA_ARGS% --win-tools-name "%WIN_TOOLS_NAM
 :: Install our CIPD packages. The CIPD client self-bootstraps.
 :: See "//cipd.bat" and "//cipd.ps1" for more information.
 set CIPD_EXE=%WIN_TOOLS_ROOT_DIR%\cipd.bat
-call "%CIPD_EXE%" ensure -ensure-file "%~dp0%CIPD_MANIFEST%" -root "%WIN_TOOLS_PATH%"
+call "%CIPD_EXE%" ensure -log-level warning -ensure-file "%~dp0%CIPD_MANIFEST%" -root "%WIN_TOOLS_PATH%"
 if errorlevel 1 goto :END
 
 :: This executes "win_tools.py" using the bundle's Python interpreter.

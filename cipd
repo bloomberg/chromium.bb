@@ -49,8 +49,6 @@ CLIENT="$MYPATH/.cipd_client"
 USER_AGENT="depot_tools/$(git -C $MYPATH rev-parse HEAD 2>/dev/null || echo "???")"
 
 if [ ! -e "$CLIENT" ]; then
-  echo "Bootstrapping cipd client for ${PLAT}-${ARCH}..."
-  echo "From $URL"
   if hash curl 2> /dev/null ; then
     # Download the client into a temporary file, then move it into the final
     # location atomically.
@@ -60,7 +58,7 @@ if [ ! -e "$CLIENT" ]; then
       mktemp -p "$MYPATH" 2>/dev/null || \
       mktemp "$MYPATH/.cipd_client.XXXXXXX")
 
-    curl "$URL" -f -A "$USER_AGENT"  -L -o "$CIPD_CLIENT_TMP"
+    curl "$URL" -s --show-error -f -A "$USER_AGENT"  -L -o "$CIPD_CLIENT_TMP"
     chmod +x "$CIPD_CLIENT_TMP"
 
     set +e
@@ -78,7 +76,7 @@ if [ ! -e "$CLIENT" ]; then
 fi
 
 export CIPD_HTTP_USER_AGENT_PREFIX=$USER_AGENT
-if ! "$CLIENT" selfupdate -version "$CIPD_CLIENT_VER" ; then
+if ! "$CLIENT" selfupdate -log-level warning -version "$CIPD_CLIENT_VER" ; then
   echo -n "[31;1mselfupdate failed:[0;1m " 1>&2
   echo "run \`CIPD_HTTP_USER_AGENT_PREFIX=$USER_AGENT/manual $CLIENT selfupdate -version '$CIPD_CLIENT_VER'\` to diagnose" 1>&2
   echo "[0m" 1>&2
