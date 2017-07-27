@@ -65,6 +65,7 @@ import org.chromium.chrome.browser.cookies.CookiesFetcher;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
+import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitor;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitorDelegate;
@@ -1862,6 +1863,21 @@ public class ChromeTabbedActivity
                     null,
                     intent);
         } else {
+            // Check if the tab is being created from a Reader Mode navigation.
+            if (ReaderModeManager.isEnabled(this)
+                    && ReaderModeManager.isReaderModeCreatedIntent(intent)) {
+                Bundle extras = intent.getExtras();
+                int readerParentId = IntentUtils.safeGetInt(
+                        extras, ReaderModeManager.EXTRA_READER_MODE_PARENT, Tab.INVALID_TAB_ID);
+                extras.remove(ReaderModeManager.EXTRA_READER_MODE_PARENT);
+                // Set the parent tab to the tab that Reader Mode started from.
+                if (readerParentId != Tab.INVALID_TAB_ID && mTabModelSelectorImpl != null) {
+                    return getCurrentTabCreator().createNewTab(
+                            new LoadUrlParams(url, PageTransition.LINK), TabLaunchType.FROM_LINK,
+                            mTabModelSelectorImpl.getTabById(readerParentId));
+                }
+            }
+
             return getTabCreator(false).launchUrlFromExternalApp(url, referer, headers,
                     externalAppId, forceNewTab, intent, mIntentHandlingTimeMs);
         }

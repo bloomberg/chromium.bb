@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity;
+import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
@@ -278,6 +279,11 @@ public class ChromeLauncherActivity extends Activity
 
         // Don't reroute Home screen shortcuts.
         if (IntentUtils.safeHasExtra(intent, ShortcutHelper.EXTRA_SOURCE)) {
+            return false;
+        }
+
+        // Don't reroute intents created by Reader Mode.
+        if (ReaderModeManager.isReaderModeCreatedIntent(intent)) {
             return false;
         }
 
