@@ -1149,7 +1149,18 @@ void AXObjectCacheImpl::HandleInitialFocus() {
 }
 
 void AXObjectCacheImpl::HandleEditableTextContentChanged(Node* node) {
-  AXObject* obj = Get(node);
+  if (!node)
+    return;
+
+  AXObject* obj = nullptr;
+  // We shouldn't create a new AX object here because we might be in the middle
+  // of a layout.
+  do {
+    obj = Get(node);
+  } while (!obj && (node = node->parentNode()));
+  if (!obj)
+    return;
+
   while (obj && !obj->IsNativeTextControl() && !obj->IsNonNativeTextControl())
     obj = obj->ParentObject();
   PostNotification(obj, AXObjectCache::kAXValueChanged);
