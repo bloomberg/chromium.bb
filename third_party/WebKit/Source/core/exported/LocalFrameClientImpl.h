@@ -142,6 +142,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidRunContentWithCertificateErrors(const KURL&) override;
   void DidChangePerformanceTiming() override;
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag) override;
+  void DidObserveNewFeatureUsage(mojom::WebFeature) override;
   void SelectorMatchChanged(const Vector<String>& added_selectors,
                             const Vector<String>& removed_selectors) override;
 

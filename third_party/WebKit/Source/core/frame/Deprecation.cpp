@@ -151,7 +151,7 @@ void Deprecation::CountDeprecation(const LocalFrame* frame,
     return;
 
   if (!page->GetUseCounter().HasRecordedMeasurement(feature)) {
-    page->GetUseCounter().RecordMeasurement(feature);
+    page->GetUseCounter().RecordMeasurement(feature, *frame);
     String message = DeprecationMessage(feature);
 
     DCHECK(!message.IsEmpty());

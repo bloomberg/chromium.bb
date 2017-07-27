@@ -136,4 +136,99 @@ TEST_F(PageTimingMetricsSenderTest, SendTimingOnDestructor) {
   metrics_sender_.reset();
 }
 
+TEST_F(PageTimingMetricsSenderTest, SendSingleFeature) {
+  mojom::PageLoadTiming timing;
+  InitPageLoadTimingForTest(&timing);
+  blink::mojom::WebFeature feature = blink::mojom::WebFeature::kFetch;
+
+  metrics_sender_->Send(timing.Clone());
+  validator_.ExpectPageLoadTiming(timing);
+  // Observe a single feature, update expected features sent across IPC.
+  metrics_sender_->DidObserveNewFeatureUsage(feature);
+  validator_.UpdateExpectPageLoadFeatures(feature);
+  // Fire the timer to trigger sending of features via an SendTiming call.
+  metrics_sender_->mock_timer()->Fire();
+  validator_.VerifyExpectedFeatures();
+}
+
+TEST_F(PageTimingMetricsSenderTest, SendMultipleFeatures) {
+  mojom::PageLoadTiming timing;
+  InitPageLoadTimingForTest(&timing);
+  blink::mojom::WebFeature feature_0 = blink::mojom::WebFeature::kFetch;
+  blink::mojom::WebFeature feature_1 =
+      blink::mojom::WebFeature::kFetchBodyStream;
+
+  metrics_sender_->Send(timing.Clone());
+  validator_.ExpectPageLoadTiming(timing);
+  // Observe the first feature, update expected features sent across IPC.
+  metrics_sender_->DidObserveNewFeatureUsage(feature_0);
+  validator_.UpdateExpectPageLoadFeatures(feature_0);
+  // Observe the second feature, update expected features sent across IPC.
+  metrics_sender_->DidObserveNewFeatureUsage(feature_1);
+  validator_.UpdateExpectPageLoadFeatures(feature_1);
+  // Fire the timer to trigger sending of features via an SendTiming call.
+  metrics_sender_->mock_timer()->Fire();
+  validator_.VerifyExpectedFeatures();
+}
+
+TEST_F(PageTimingMetricsSenderTest, SendDuplicatedFeatures) {
+  mojom::PageLoadTiming timing;
+  InitPageLoadTimingForTest(&timing);
+  blink::mojom::WebFeature feature = blink::mojom::WebFeature::kFetch;
+
+  metrics_sender_->Send(timing.Clone());
+  validator_.ExpectPageLoadTiming(timing);
+  metrics_sender_->DidObserveNewFeatureUsage(feature);
+  validator_.UpdateExpectPageLoadFeatures(feature);
+  // Observe a duplicated feature usage, without updating expected features sent
+  // across IPC.
+  metrics_sender_->DidObserveNewFeatureUsage(feature);
+  // Fire the timer to trigger sending of features via an SendTiming call.
+  metrics_sender_->mock_timer()->Fire();
+  validator_.VerifyExpectedFeatures();
+}
+
+TEST_F(PageTimingMetricsSenderTest, SendMultipleFeaturesTwice) {
+  mojom::PageLoadTiming timing;
+  InitPageLoadTimingForTest(&timing);
+  blink::mojom::WebFeature feature_0 = blink::mojom::WebFeature::kFetch;
+  blink::mojom::WebFeature feature_1 =
+      blink::mojom::WebFeature::kFetchBodyStream;
+  blink::mojom::WebFeature feature_2 = blink::mojom::WebFeature::kWindowFind;
+
+  metrics_sender_->Send(timing.Clone());
+  validator_.ExpectPageLoadTiming(timing);
+  // Observe the first feature, update expected features sent across IPC.
+  metrics_sender_->DidObserveNewFeatureUsage(feature_0);
+  validator_.UpdateExpectPageLoadFeatures(feature_0);
+  // Observe the second feature, update expected features sent across IPC.
+  metrics_sender_->DidObserveNewFeatureUsage(feature_1);
+  validator_.UpdateExpectPageLoadFeatures(feature_1);
+  // Observe a duplicated feature usage, without updating expected features sent
+  // across IPC.
+  metrics_sender_->DidObserveNewFeatureUsage(feature_0);
+  // Fire the timer to trigger sending of features via an SendTiming call.
+  metrics_sender_->mock_timer()->Fire();
+  validator_.VerifyExpectedFeatures();
+
+  base::TimeDelta load_event = base::TimeDelta::FromMillisecondsD(4);
+  // Send an updated PageLoadTiming after the timer for the first send request
+  // has fired, and verify that a second list of features is sent.
+  timing.document_timing->load_event_start = load_event;
+  metrics_sender_->Send(timing.Clone());
+  validator_.ExpectPageLoadTiming(timing);
+  // Observe duplicated feature usage, without updating expected features sent
+  // across IPC.
+  metrics_sender_->DidObserveNewFeatureUsage(feature_0);
+  metrics_sender_->DidObserveNewFeatureUsage(feature_1);
+  // Observe an additional feature usage, update expected features sent across
+  // IPC.
+  metrics_sender_->DidObserveNewFeatureUsage(feature_2);
+  validator_.UpdateExpectPageLoadFeatures(feature_2);
+  // Fire the timer to trigger another sending of features via the second
+  // SendTiming call.
+  metrics_sender_->mock_timer()->Fire();
+  validator_.VerifyExpectedFeatures();
+}
+
 }  // namespace page_load_metrics

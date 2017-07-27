@@ -5,6 +5,7 @@
 module page_load_metrics.mojom;
 
 import "mojo/common/time.mojom";
+import "third_party/WebKit/public/platform/web_feature.mojom";
 
 // TimeDeltas below relative to navigation start.
 struct DocumentTiming {
@@ -108,8 +109,18 @@ struct PageLoadMetadata {
   int32 behavior_flags = 0;
 };
 
+// PageLoadFeatures contains a list of features newly observed by use counter.
+// In a given page load, no PageLoadFeatures sent will contain previously seen
+// values.
+struct PageLoadFeatures {
+  // These features are defined as blink::mojom::WebFeature enums.
+  array<blink.mojom.WebFeature> features;
+};
+
 // Sent from renderer to browser process when the PageLoadTiming for the
 // associated frame changed.
 interface PageLoadMetrics {
-  UpdateTiming(PageLoadTiming page_load_timing, PageLoadMetadata page_load_metadata);
+  UpdateTiming(PageLoadTiming page_load_timing,
+               PageLoadMetadata page_load_metadata,
+               PageLoadFeatures new_features);
 };

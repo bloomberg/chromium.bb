@@ -627,6 +627,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidChangePerformanceTiming() override;
   void DidObserveLoadingBehavior(
       blink::WebLoadingBehaviorFlag behavior) override;
+  void DidObserveNewFeatureUsage(blink::mojom::WebFeature feature) override;
   void DidCreateScriptContext(v8::Local<v8::Context> context,
                               int world_id) override;
   void WillReleaseScriptContext(v8::Local<v8::Context> context,

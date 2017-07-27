@@ -5,6 +5,7 @@
 #include "chrome/renderer/page_load_metrics/metrics_render_frame_observer.h"
 
 #include <string>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
@@ -40,9 +41,11 @@ class MojoPageTimingSender : public PageTimingSender {
   }
   ~MojoPageTimingSender() override {}
   void SendTiming(const mojom::PageLoadTimingPtr& timing,
-                  const mojom::PageLoadMetadataPtr& metadata) override {
+                  const mojom::PageLoadMetadataPtr& metadata,
+                  mojom::PageLoadFeaturesPtr new_features) override {
     DCHECK(page_load_metrics_);
-    page_load_metrics_->UpdateTiming(timing->Clone(), metadata->Clone());
+    page_load_metrics_->UpdateTiming(timing->Clone(), metadata->Clone(),
+                                     std::move(new_features));
   }
 
  private:
@@ -67,6 +70,12 @@ void MetricsRenderFrameObserver::DidObserveLoadingBehavior(
     blink::WebLoadingBehaviorFlag behavior) {
   if (page_timing_metrics_sender_)
     page_timing_metrics_sender_->DidObserveLoadingBehavior(behavior);
+}
+
+void MetricsRenderFrameObserver::DidObserveNewFeatureUsage(
+    blink::mojom::WebFeature feature) {
+  if (page_timing_metrics_sender_)
+    page_timing_metrics_sender_->DidObserveNewFeatureUsage(feature);
 }
 
 void MetricsRenderFrameObserver::FrameDetached() {

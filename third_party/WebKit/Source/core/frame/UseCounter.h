@@ -134,7 +134,7 @@ class CORE_EXPORT UseCounter {
   void MuteForInspector();
   void UnmuteForInspector();
 
-  void RecordMeasurement(WebFeature);
+  void RecordMeasurement(WebFeature, const LocalFrame&);
 
   // Return whether the feature has been seen since the last page load
   // (except when muted).  Does include features seen in documents which have

@@ -35,6 +35,7 @@ class MetricsRenderFrameObserver : public content::RenderFrameObserver {
   void DidChangePerformanceTiming() override;
   void DidObserveLoadingBehavior(
       blink::WebLoadingBehaviorFlag behavior) override;
+  void DidObserveNewFeatureUsage(blink::mojom::WebFeature feature) override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_document_navigation) override;
   void OnDestruct() override;

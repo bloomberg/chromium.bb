@@ -42,6 +42,7 @@ include_rules = [
   "+rlz/features/features.h",
   "+sandbox/linux/services/credentials.h",
   "+third_party/boringssl/src/include",
+  "+third_party/WebKit/public/platform/web_feature.mojom.h",
 
   # FIXME - refactor code and remove these dependencies
   "+chrome/installer/util",
