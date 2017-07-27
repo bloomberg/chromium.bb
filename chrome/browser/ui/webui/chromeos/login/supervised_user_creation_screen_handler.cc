@@ -408,7 +408,7 @@ void SupervisedUserCreationScreenHandler::HandleAuthenticateManager(
 // It should be removed by issue 251179.
 void SupervisedUserCreationScreenHandler::HandleGetImages() {
   std::unique_ptr<base::ListValue> image_urls =
-      default_user_image::GetAsDictionary();
+      default_user_image::GetAsDictionary(false /* all */);
   CallJS("setDefaultImages", *image_urls);
 }
 

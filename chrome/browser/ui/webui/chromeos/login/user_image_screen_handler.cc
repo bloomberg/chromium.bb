@@ -118,7 +118,7 @@ void UserImageScreenHandler::RegisterMessages() {
 // TODO(antrim) : It looks more like parameters for "Init" rather than callback.
 void UserImageScreenHandler::HandleGetImages() {
   std::unique_ptr<base::ListValue> image_urls =
-      default_user_image::GetAsDictionary();
+      default_user_image::GetAsDictionary(false /* all */);
   CallJS("setDefaultImages", *image_urls);
 }
 

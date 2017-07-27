@@ -11,10 +11,11 @@ cr.exportPath('settings');
 /**
  * An object describing a default image.
  * @typedef {{
- *   author: string,
- *   title: string,
+ *   author: (string|undefined),
+ *   index: number,
+ *   title: (string|undefined),
  *   url: string,
- *   website: string
+ *   website: (string|undefined)
  * }}
  */
 settings.DefaultImage;

@@ -74,13 +74,15 @@
         <!-- Shows and selects the previously selected ('old') picture. -->
         <img id="oldImage" role="radio"
             data-type$="[[selectionTypesEnum_.OLD]]"
+            data-image-index$="[[oldImageIndex_]]"
             src="[[oldImageUrl_]]" hidden="[[!oldImageUrl_]]"
             title="[[oldImageLabel]]">
         <!-- Shows the list of available images to select from. -->
         <template is="dom-repeat" items="[[defaultImages]]">
           <img role="radio"
               data-type$="[[selectionTypesEnum_.DEFAULT]]"
-              data-index$="[[index]]" src="[[item.url]]"
+              data-index$="[[index]]" data-image-index$="[[item.index]]"
+              src="[[item.url]]"
               srcset="[[getImgSrc2x_(item.url)]]" title="[[item.title]]">
         </template>
       </iron-selector>
