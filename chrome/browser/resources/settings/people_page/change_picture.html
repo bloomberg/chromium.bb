@@ -68,7 +68,8 @@
       </div>
       <cr-picture-list id="pictureList"
           camera-present="[[cameraPresent_]]"
-          default-images="[[defaultImages_]]"
+          default-images="[[getDefaultImages_(defaultImages_,
+              firstDefaultImageIndex_)]]"
           selected-item="{{selectedItem_}}"
           choose-file-label="$i18n{chooseFile}"
           old-image-label="$i18n{oldPhoto}"

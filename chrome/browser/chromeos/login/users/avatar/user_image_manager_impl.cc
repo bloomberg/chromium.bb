@@ -16,7 +16,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
-#include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
@@ -919,9 +918,7 @@ bool UserImageManagerImpl::IsUserImageManaged() const {
 
 void UserImageManagerImpl::SetInitialUserImage() {
   // Choose a random default image.
-  SaveUserDefaultImageIndex(
-      base::RandInt(default_user_image::kFirstDefaultImageIndex,
-                    default_user_image::kDefaultImagesCount - 1));
+  SaveUserDefaultImageIndex(default_user_image::GetRandomDefaultImageIndex());
 }
 
 void UserImageManagerImpl::TryToInitDownloadedProfileImage() {

@@ -4,15 +4,18 @@
 
 #include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
@@ -25,6 +28,8 @@ namespace default_user_image {
 // Resource IDs of default user images.
 const int kDefaultImageResourceIDs[] = {
     IDR_LOGIN_DEFAULT_USER,
+
+    // Original set of images.
     IDR_LOGIN_DEFAULT_USER_1,
     IDR_LOGIN_DEFAULT_USER_2,
     IDR_LOGIN_DEFAULT_USER_3,
@@ -43,6 +48,8 @@ const int kDefaultImageResourceIDs[] = {
     IDR_LOGIN_DEFAULT_USER_16,
     IDR_LOGIN_DEFAULT_USER_17,
     IDR_LOGIN_DEFAULT_USER_18,
+
+    // Second set of images.
     IDR_LOGIN_DEFAULT_USER_19,
     IDR_LOGIN_DEFAULT_USER_20,
     IDR_LOGIN_DEFAULT_USER_21,
@@ -59,6 +66,25 @@ const int kDefaultImageResourceIDs[] = {
     IDR_LOGIN_DEFAULT_USER_32,
     IDR_LOGIN_DEFAULT_USER_33,
 };
+
+const int kDefaultImagesCount = arraysize(kDefaultImageResourceIDs);
+
+const int kFirstDefaultImageIndex = 19;
+
+// The order and the values of these constants are important for histograms
+// of different Chrome OS versions to be merged smoothly.
+const int kHistogramImageFromCamera = 19;
+const int kHistogramImageFromFile = 20;
+const int kHistogramImageOld = 21;
+const int kHistogramImageFromProfile = 22;
+// const int kHistogramVideoFromCamera = 23;  // Unused
+// const int kHistogramVideoFromFile = 24;  // Unused
+const int kHistogramImagesCount = kDefaultImagesCount + 6;
+
+namespace {
+
+const char kDefaultUrlPrefix[] = "chrome://theme/IDR_LOGIN_DEFAULT_USER_";
+const char kZeroDefaultUrl[] = "chrome://theme/IDR_LOGIN_DEFAULT_USER";
 
 const int kDefaultImageAuthorIDs[] = {
     IDS_LOGIN_DEFAULT_USER_AUTHOR,
@@ -97,6 +123,8 @@ const int kDefaultImageAuthorIDs[] = {
     IDS_LOGIN_DEFAULT_USER_AUTHOR_33,
 };
 
+const int kDefaultImageAuthorMaxID = arraysize(kDefaultImageAuthorIDs);
+
 const int kDefaultImageWebsiteIDs[] = {
     IDS_LOGIN_DEFAULT_USER_WEBSITE,
     IDS_LOGIN_DEFAULT_USER_WEBSITE_1,
@@ -134,24 +162,7 @@ const int kDefaultImageWebsiteIDs[] = {
     IDS_LOGIN_DEFAULT_USER_WEBSITE_33,
 };
 
-const int kDefaultImagesCount = arraysize(kDefaultImageResourceIDs);
-
-const int kFirstDefaultImageIndex = 19;
-
-// The order and the values of these constants are important for histograms
-// of different Chrome OS versions to be merged smoothly.
-const int kHistogramImageFromCamera = 19;
-const int kHistogramImageFromFile = 20;
-const int kHistogramImageOld = 21;
-const int kHistogramImageFromProfile = 22;
-const int kHistogramVideoFromCamera = 23;
-const int kHistogramVideoFromFile = 24;
-const int kHistogramImagesCount = kDefaultImagesCount + 6;
-
-namespace {
-
-const char kDefaultUrlPrefix[] = "chrome://theme/IDR_LOGIN_DEFAULT_USER_";
-const char kZeroDefaultUrl[] = "chrome://theme/IDR_LOGIN_DEFAULT_USER";
+const int kDefaultImageWebsiteMaxID = arraysize(kDefaultImageWebsiteIDs);
 
 // IDs of default user image descriptions.
 const int kDefaultImageDescriptions[] = {
@@ -191,6 +202,8 @@ const int kDefaultImageDescriptions[] = {
     IDS_LOGIN_DEFAULT_USER_DESC_33,
 };
 
+const int kDefaultImageDescriptionsMaxID = arraysize(kDefaultImageDescriptions);
+
 // Returns a string consisting of the prefix specified and the index of the
 // image if its valid.
 std::string GetDefaultImageString(int index, const std::string& prefix) {
@@ -223,6 +236,13 @@ bool IsDefaultImageString(const std::string& s,
   return false;
 }
 
+void GetFirstLastIndex(int* first, int* last) {
+  if (first)
+    *first = kFirstDefaultImageIndex;
+  if (last)
+    *last = kDefaultImagesCount - 1;
+}
+
 }  // namespace
 
 std::string GetDefaultImageUrl(int index) {
@@ -245,13 +265,16 @@ const gfx::ImageSkia& GetDefaultImage(int index) {
       kDefaultImageResourceIDs[index]);
 }
 
-base::string16 GetDefaultImageDescription(int index) {
-  DCHECK(index >= 0 && index < kDefaultImagesCount);
-  int string_id = kDefaultImageDescriptions[index];
-  if (string_id)
-    return l10n_util::GetStringUTF16(string_id);
-  else
-    return base::string16();
+int GetRandomDefaultImageIndex() {
+  int first, last;
+  GetFirstLastIndex(&first, &last);
+  return base::RandInt(first, last);
+}
+
+bool IsInCurrentImageSet(int index) {
+  int first, last;
+  GetFirstLastIndex(&first, &last);
+  return index >= first && index <= last;
 }
 
 int GetDefaultImageHistogramValue(int index) {
@@ -263,23 +286,42 @@ int GetDefaultImageHistogramValue(int index) {
   return index + 6;
 }
 
-std::unique_ptr<base::ListValue> GetAsDictionary() {
+std::unique_ptr<base::ListValue> GetAsDictionary(bool all) {
+  int first, last;
+  GetFirstLastIndex(&first, &last);
+  if (all)
+    first = 0;
+
   auto image_urls = base::MakeUnique<base::ListValue>();
-  for (int i = default_user_image::kFirstDefaultImageIndex;
-       i < default_user_image::kDefaultImagesCount; ++i) {
+  for (int i = first; i <= last; ++i) {
     auto image_data = base::MakeUnique<base::DictionaryValue>();
     image_data->SetString("url", default_user_image::GetDefaultImageUrl(i));
-    image_data->SetString("author",
-                          l10n_util::GetStringUTF16(
-                              default_user_image::kDefaultImageAuthorIDs[i]));
-    image_data->SetString("website",
-                          l10n_util::GetStringUTF16(
-                              default_user_image::kDefaultImageWebsiteIDs[i]));
-    image_data->SetString("title",
-                          default_user_image::GetDefaultImageDescription(i));
+    image_data->SetInteger("index", i);
+    if (i < kDefaultImageAuthorMaxID) {
+      image_data->SetString("author",
+                            l10n_util::GetStringUTF16(
+                                default_user_image::kDefaultImageAuthorIDs[i]));
+    }
+    if (i < kDefaultImageWebsiteMaxID) {
+      image_data->SetString(
+          "website", l10n_util::GetStringUTF16(
+                         default_user_image::kDefaultImageWebsiteIDs[i]));
+    }
+    if (i < kDefaultImageDescriptionsMaxID) {
+      int string_id = kDefaultImageDescriptions[i];
+      image_data->SetString("title", string_id
+                                         ? l10n_util::GetStringUTF16(string_id)
+                                         : base::string16());
+    }
     image_urls->Append(std::move(image_data));
   }
   return image_urls;
+}
+
+int GetFirstDefaultImage() {
+  int first;
+  GetFirstLastIndex(&first, nullptr);
+  return first;
 }
 
 }  // namespace default_user_image

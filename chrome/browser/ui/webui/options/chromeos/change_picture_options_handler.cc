@@ -163,24 +163,10 @@ void ChangePictureOptionsHandler::RegisterMessages() {
 }
 
 void ChangePictureOptionsHandler::SendDefaultImages() {
-  base::ListValue image_urls;
-  for (int i = default_user_image::kFirstDefaultImageIndex;
-       i < default_user_image::kDefaultImagesCount; ++i) {
-    std::unique_ptr<base::DictionaryValue> image_data(
-        new base::DictionaryValue);
-    image_data->SetString("url", default_user_image::GetDefaultImageUrl(i));
-    image_data->SetString("author",
-                          l10n_util::GetStringUTF16(
-                              default_user_image::kDefaultImageAuthorIDs[i]));
-    image_data->SetString("website",
-                          l10n_util::GetStringUTF16(
-                              default_user_image::kDefaultImageWebsiteIDs[i]));
-    image_data->SetString("title",
-                          default_user_image::GetDefaultImageDescription(i));
-    image_urls.Append(std::move(image_data));
-  }
+  std::unique_ptr<base::ListValue> image_urls =
+      default_user_image::GetAsDictionary(false /* all */);
   web_ui()->CallJavascriptFunctionUnsafe(
-      "ChangePictureOptions.setDefaultImages", image_urls);
+      "ChangePictureOptions.setDefaultImages", *image_urls);
 }
 
 void ChangePictureOptionsHandler::HandleChooseFile(
@@ -280,10 +266,7 @@ void ChangePictureOptionsHandler::SendSelectedImage() {
       break;
     }
     default: {
-      DCHECK(previous_image_index_ >= 0 &&
-             previous_image_index_ < default_user_image::kDefaultImagesCount);
-      if (previous_image_index_ >=
-          default_user_image::kFirstDefaultImageIndex) {
+      if (default_user_image::IsInCurrentImageSet(previous_image_index_)) {
         // User has image from the current set of default images.
         base::Value image_url(
             default_user_image::GetDefaultImageUrl(previous_image_index_));

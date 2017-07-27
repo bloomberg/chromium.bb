@@ -80,8 +80,7 @@ const char kProfileDownloadReason[] = "Preferences";
 }  // namespace
 
 ChangePictureHandler::ChangePictureHandler()
-    : previous_image_url_(url::kAboutBlankURL),
-      previous_image_index_(user_manager::User::USER_IMAGE_INVALID),
+    : previous_image_index_(user_manager::User::USER_IMAGE_INVALID),
       user_manager_observer_(this),
       camera_observer_(this) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
@@ -131,9 +130,12 @@ void ChangePictureHandler::OnJavascriptDisallowed() {
 }
 
 void ChangePictureHandler::SendDefaultImages() {
-  std::unique_ptr<base::ListValue> image_urls =
-      default_user_image::GetAsDictionary();
-  FireWebUIListener("default-images-changed", *image_urls);
+  base::DictionaryValue result;
+  result.SetInteger("first", default_user_image::GetFirstDefaultImage());
+  std::unique_ptr<base::ListValue> default_images =
+      default_user_image::GetAsDictionary(true /* all */);
+  result.Set("images", std::move(default_images));
+  FireWebUIListener("default-images-changed", result);
 }
 
 void ChangePictureHandler::HandleChooseFile(const base::ListValue* args) {
@@ -204,7 +206,7 @@ void ChangePictureHandler::SendSelectedImage() {
     case user_manager::User::USER_IMAGE_EXTERNAL: {
       // User has image from camera/file, record it and add to the image list.
       previous_image_ = user->GetImage();
-      SendOldImage(webui::GetBitmapDataUrl(*previous_image_.bitmap()));
+      SendOldImage(webui::GetBitmapDataUrl(*previous_image_.bitmap()), -1);
       break;
     }
     case user_manager::User::USER_IMAGE_PROFILE: {
@@ -213,10 +215,7 @@ void ChangePictureHandler::SendSelectedImage() {
       break;
     }
     default: {
-      DCHECK(previous_image_index_ >= 0 &&
-             previous_image_index_ < default_user_image::kDefaultImagesCount);
-      if (previous_image_index_ >=
-          default_user_image::kFirstDefaultImageIndex) {
+      if (default_user_image::IsInCurrentImageSet(previous_image_index_)) {
         // User has image from the current set of default images.
         base::Value image_url(
             default_user_image::GetDefaultImageUrl(previous_image_index_));
@@ -224,8 +223,10 @@ void ChangePictureHandler::SendSelectedImage() {
       } else {
         // User has an old default image, so present it in the same manner as a
         // previous image from file.
+        previous_image_ = user->GetImage();
         SendOldImage(
-            default_user_image::GetDefaultImageUrl(previous_image_index_));
+            default_user_image::GetDefaultImageUrl(previous_image_index_),
+            previous_image_index_);
       }
     }
   }
@@ -244,16 +245,18 @@ void ChangePictureHandler::UpdateProfileImage() {
   // If we have a downloaded profile image and haven't sent it in
   // |SendSelectedImage|, send it now (without selecting).
   if (previous_image_index_ != user_manager::User::USER_IMAGE_PROFILE &&
-      !user_image_manager->DownloadedProfileImage().isNull())
+      !user_image_manager->DownloadedProfileImage().isNull()) {
     SendProfileImage(user_image_manager->DownloadedProfileImage(), false);
-
+  }
   user_image_manager->DownloadProfileImage(kProfileDownloadReason);
 }
 
-void ChangePictureHandler::SendOldImage(const std::string& image_url) {
-  previous_image_url_ = image_url;
-  base::Value url(image_url);
-  FireWebUIListener("old-image-changed", url);
+void ChangePictureHandler::SendOldImage(const std::string& image_url,
+                                        int image_index) {
+  base::DictionaryValue result;
+  result.SetString("url", image_url);
+  result.SetInteger("index", image_index);
+  FireWebUIListener("old-image-changed", result);
 }
 
 void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
