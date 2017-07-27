@@ -1,5 +1,7 @@
 per-file WebAXEnums.h=dmazzoni@chromium.org
 per-file WebAXEnums.h=aboxhall@chromium.org
+per-file WebAXEnums.h=dtseng@chromium.org
+per-file WebAXEnums.h=nektar@chromium.org
 
 # Page load metrics
 per-file WebPerformance.h=bmcquade@chromium.org
