@@ -1107,7 +1107,11 @@ bool DirectCompositionSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
   pbuffer_attribs.push_back(EGL_NONE);
   default_surface_ =
       eglCreatePbufferSurface(display, GetConfig(), &pbuffer_attribs[0]);
-  CHECK(!!default_surface_);
+  if (!default_surface_) {
+    LOG(ERROR) << "eglCreatePbufferSurface failed with error "
+               << ui::GetLastEGLErrorString();
+    return false;
+  }
 
   return RecreateRootSurface();
 }
