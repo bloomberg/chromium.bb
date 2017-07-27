@@ -229,10 +229,10 @@ TEST(LayerImplTest, VerifyActiveLayerChangesAreTrackedProperly) {
   root->SetScrollable(gfx::Size(100, 100));
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
-  // Make root the inner viewport container layer. This ensures the later call
+  // Make root the outer viewport container layer. This ensures the later call
   // to |SetViewportBoundsDelta| will be on a viewport layer.
   LayerTreeImpl::ViewportLayerIds viewport_ids;
-  viewport_ids.inner_viewport_container = root->id();
+  viewport_ids.outer_viewport_container = root->id();
   host_impl.active_tree()->SetViewportLayersFromIds(viewport_ids);
 
   root->SetMasksToBounds(true);
@@ -259,12 +259,12 @@ TEST(LayerImplTest, VerifyActiveLayerChangesAreTrackedProperly) {
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   root->layer_tree_impl()->ResetAllChangeTracking();
 
-  // Ensure some node is affected by the inner viewport bounds delta. This
+  // Ensure some node is affected by the outer viewport bounds delta. This
   // ensures the later call to |SetViewportBoundsDelta| will require a
   // transform tree update.
   TransformTree& transform_tree =
       host_impl.active_tree()->property_trees()->transform_tree;
-  transform_tree.AddNodeAffectedByInnerViewportBoundsDelta(
+  transform_tree.AddNodeAffectedByOuterViewportBoundsDelta(
       child->transform_tree_index());
   EXPECT_FALSE(transform_tree.needs_update());
   root->SetViewportBoundsDelta(gfx::Vector2d(111, 222));

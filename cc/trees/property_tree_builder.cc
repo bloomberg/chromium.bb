@@ -383,8 +383,6 @@ bool AddTransformNodeIfNeeded(
   }
 
   if (IsContainerForFixedPositionLayers(layer) || is_root) {
-    data_for_children->affected_by_inner_viewport_bounds_delta =
-        layer == data_from_ancestor.inner_viewport_scroll_layer;
     data_for_children->affected_by_outer_viewport_bounds_delta =
         layer == data_from_ancestor.outer_viewport_scroll_layer;
     if (is_scrollable) {
@@ -488,17 +486,7 @@ bool AddTransformNodeIfNeeded(
   }
 
   if (is_fixed) {
-    if (data_from_ancestor.affected_by_inner_viewport_bounds_delta) {
-      node->moved_by_inner_viewport_bounds_delta_x =
-          PositionConstraint(layer).is_fixed_to_right_edge();
-      node->moved_by_inner_viewport_bounds_delta_y =
-          PositionConstraint(layer).is_fixed_to_bottom_edge();
-      if (node->moved_by_inner_viewport_bounds_delta_x ||
-          node->moved_by_inner_viewport_bounds_delta_y) {
-        data_for_children->property_trees->transform_tree
-            .AddNodeAffectedByInnerViewportBoundsDelta(node->id);
-      }
-    } else if (data_from_ancestor.affected_by_outer_viewport_bounds_delta) {
+    if (data_from_ancestor.affected_by_outer_viewport_bounds_delta) {
       node->moved_by_outer_viewport_bounds_delta_x =
           PositionConstraint(layer).is_fixed_to_right_edge();
       node->moved_by_outer_viewport_bounds_delta_y =
@@ -523,16 +511,20 @@ bool AddTransformNodeIfNeeded(
     ScrollNode* scroll_ancestor =
         data_for_children->property_trees->scroll_tree.Node(
             sticky_data->scroll_ancestor);
+
+    // Position sticky should never attach to the inner viewport since it
+    // shouldn't be affected by pinch-zoom. If we did then we'd need setting
+    // the inner viewport bounds delta to cause a TransformTree update, which
+    // it currently doesn't.
+    DCHECK(!scroll_ancestor->scrolls_inner_viewport);
+
     if (sticky_data->constraints.is_anchored_right ||
         sticky_data->constraints.is_anchored_bottom) {
       // Sticky nodes whose ancestor scroller is the inner / outer viewport
       // need to have their local transform updated when the inner / outer
       // viewport bounds change, but do not unconditionally move by that delta
       // like fixed position nodes.
-      if (scroll_ancestor->scrolls_inner_viewport) {
-        data_for_children->property_trees->transform_tree
-            .AddNodeAffectedByInnerViewportBoundsDelta(node->id);
-      } else if (scroll_ancestor->scrolls_outer_viewport) {
+      if (scroll_ancestor->scrolls_outer_viewport) {
         data_for_children->property_trees->transform_tree
             .AddNodeAffectedByOuterViewportBoundsDelta(node->id);
       }
@@ -1255,7 +1247,6 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.elastic_overscroll = elastic_overscroll;
   data_for_recursion.page_scale_factor = page_scale_factor;
   data_for_recursion.in_subtree_of_page_scale_layer = false;
-  data_for_recursion.affected_by_inner_viewport_bounds_delta = false;
   data_for_recursion.affected_by_outer_viewport_bounds_delta = false;
   data_for_recursion.should_flatten = false;
   data_for_recursion.is_hidden = false;
