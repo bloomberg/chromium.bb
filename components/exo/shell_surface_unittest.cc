@@ -360,10 +360,6 @@ TEST_F(ShellSurfaceTest, CloseCallback) {
   EXPECT_EQ(0, close_call_count);
   shell_surface->GetWidget()->Close();
   EXPECT_EQ(1, close_call_count);
-
-  ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
-  shell_surface->GetWidget()->OnKeyEvent(&event);
-  EXPECT_EQ(2, close_call_count);
 }
 
 void DestroyShellSurface(std::unique_ptr<ShellSurface>* shell_surface) {

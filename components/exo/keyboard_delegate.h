@@ -32,10 +32,12 @@ class KeyboardDelegate {
   virtual void OnKeyboardLeave(Surface* surface) = 0;
 
   // Called when keyboard key state changed. |pressed| is true when |key|
-  // was pressed and false if it was released.
-  virtual void OnKeyboardKey(base::TimeTicks time_stamp,
-                             ui::DomCode key,
-                             bool pressed) = 0;
+  // was pressed and false if it was released. Should return the serial
+  // number that will be used by the client to acknowledge the change in
+  // key state.
+  virtual uint32_t OnKeyboardKey(base::TimeTicks time_stamp,
+                                 ui::DomCode key,
+                                 bool pressed) = 0;
 
   // Called when keyboard modifier state changed.
   virtual void OnKeyboardModifiers(int modifier_flags) = 0;

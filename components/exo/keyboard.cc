@@ -4,6 +4,7 @@
 
 #include "components/exo/keyboard.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/exo/keyboard_delegate.h"
 #include "components/exo/keyboard_device_configuration_delegate.h"
 #include "components/exo/shell_surface.h"
@@ -20,12 +21,24 @@
 namespace exo {
 namespace {
 
+// Delay until a key state change expected to be acknowledged is expired.
+const int kExpirationDelayForPendingKeyAcksMs = 1000;
+
+bool ProcessAccelerator(Surface* surface, const ui::KeyEvent* event) {
+  views::Widget* widget =
+      views::Widget::GetTopLevelWidgetForNativeView(surface->window());
+  if (widget) {
+    views::FocusManager* focus_manager = widget->GetFocusManager();
+    return focus_manager->ProcessAccelerator(ui::Accelerator(*event));
+  }
+  return false;
+}
+
 bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
   // Check if IME consumed the event, to avoid it to be doubly processed.
   // First let us see whether IME is active and is in text input mode.
   views::Widget* widget =
-      focus ? views::Widget::GetTopLevelWidgetForNativeView(focus->window())
-            : nullptr;
+      views::Widget::GetTopLevelWidgetForNativeView(focus->window());
   ui::InputMethod* ime = widget ? widget->GetInputMethod() : nullptr;
   if (!ime || ime->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
     return false;
@@ -92,7 +105,11 @@ bool IsPhysicalKeyboardEnabled() {
 ////////////////////////////////////////////////////////////////////////////////
 // Keyboard, public:
 
-Keyboard::Keyboard(KeyboardDelegate* delegate) : delegate_(delegate) {
+Keyboard::Keyboard(KeyboardDelegate* delegate)
+    : delegate_(delegate),
+      expiration_delay_for_pending_key_acks_(base::TimeDelta::FromMilliseconds(
+          kExpirationDelayForPendingKeyAcksMs)),
+      weak_ptr_factory_(this) {
   auto* helper = WMHelper::GetInstance();
   helper->AddPostTargetHandler(this);
   helper->AddFocusObserver(this);
@@ -136,21 +153,36 @@ void Keyboard::RemoveObserver(KeyboardObserver* observer) {
 }
 
 void Keyboard::SetNeedKeyboardKeyAcks(bool need_acks) {
-  are_keyboard_key_acks_needed = need_acks;
+  are_keyboard_key_acks_needed_ = need_acks;
 }
 
 bool Keyboard::AreKeyboardKeyAcksNeeded() const {
-  return are_keyboard_key_acks_needed;
+  return are_keyboard_key_acks_needed_;
 }
 
 void Keyboard::AckKeyboardKey(uint32_t serial, bool handled) {
-  // TODO(yhanada): Implement this method. See http://b/28104183.
+  auto it = pending_key_acks_.find(serial);
+  if (it == pending_key_acks_.end())
+    return;
+
+  if (!handled && focus_)
+    ProcessAccelerator(focus_, &it->second.first);
+  pending_key_acks_.erase(serial);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // ui::EventHandler overrides:
 
 void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
+  // Pass accelerators to ShellSurfaceWidget before passing it to the delegate
+  // if ack key event is not needed.
+  if (!are_keyboard_key_acks_needed_) {
+    if (focus_ && ProcessAccelerator(focus_, event)) {
+      event->StopPropagation();
+      return;
+    }
+  }
+
   // These modifiers reflect what Wayland is aware of.  For example,
   // EF_SCROLL_LOCK_ON is missing because Wayland doesn't support scroll lock.
   const int kModifierMask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
@@ -167,15 +199,23 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
   // When IME ate a key event, we use the event only for tracking key states and
   // ignore for further processing. Otherwise it is handled in two places (IME
   // and client) and causes undesired behavior.
-  bool consumed_by_ime = ConsumedByIme(focus_, event);
+  bool consumed_by_ime = focus_ ? ConsumedByIme(focus_, event) : false;
 
   switch (event->type()) {
     case ui::ET_KEY_PRESSED: {
       auto it =
           std::find(pressed_keys_.begin(), pressed_keys_.end(), event->code());
       if (it == pressed_keys_.end()) {
-        if (focus_ && !consumed_by_ime)
-          delegate_->OnKeyboardKey(event->time_stamp(), event->code(), true);
+        if (focus_ && !consumed_by_ime) {
+          uint32_t serial = delegate_->OnKeyboardKey(event->time_stamp(),
+                                                     event->code(), true);
+          if (are_keyboard_key_acks_needed_) {
+            pending_key_acks_.insert(
+                {serial,
+                 {*event, base::TimeTicks::Now() +
+                              expiration_delay_for_pending_key_acks_}});
+          }
+        }
 
         pressed_keys_.push_back(event->code());
       }
@@ -184,8 +224,16 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
       auto it =
           std::find(pressed_keys_.begin(), pressed_keys_.end(), event->code());
       if (it != pressed_keys_.end()) {
-        if (focus_ && !consumed_by_ime)
-          delegate_->OnKeyboardKey(event->time_stamp(), event->code(), false);
+        if (focus_ && !consumed_by_ime) {
+          uint32_t serial = delegate_->OnKeyboardKey(event->time_stamp(),
+                                                     event->code(), false);
+          if (are_keyboard_key_acks_needed_) {
+            pending_key_acks_.insert(
+                {serial,
+                 {*event, base::TimeTicks::Now() +
+                              expiration_delay_for_pending_key_acks_}});
+          }
+        }
 
         pressed_keys_.erase(it);
       }
@@ -194,6 +242,13 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
       NOTREACHED();
       break;
   }
+
+  if (pending_key_acks_.empty())
+    return;
+  if (process_expired_pending_key_acks_pending_)
+    return;
+
+  ScheduleProcessExpiredPendingKeyAcks(expiration_delay_for_pending_key_acks_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -208,6 +263,7 @@ void Keyboard::OnWindowFocused(aura::Window* gained_focus,
       delegate_->OnKeyboardLeave(focus_);
       focus_->RemoveSurfaceObserver(this);
       focus_ = nullptr;
+      pending_key_acks_.clear();
     }
     if (gained_focus_surface) {
       delegate_->OnKeyboardModifiers(modifier_flags_);
@@ -265,6 +321,44 @@ Surface* Keyboard::GetEffectiveFocus(aura::Window* window) const {
 
   return focus && delegate_->CanAcceptKeyboardEventsForSurface(focus) ? focus
                                                                       : nullptr;
+}
+
+void Keyboard::ProcessExpiredPendingKeyAcks() {
+  DCHECK(process_expired_pending_key_acks_pending_);
+  process_expired_pending_key_acks_pending_ = false;
+
+  // Check pending acks and process them as if it's not handled if
+  // expiration time passed.
+  base::TimeTicks current_time = base::TimeTicks::Now();
+  auto it = pending_key_acks_.begin();
+  while (it != pending_key_acks_.end()) {
+    const ui::KeyEvent& event = it->second.first;
+
+    if (it->second.second > current_time)
+      break;
+
+    if (focus_)
+      ProcessAccelerator(focus_, &event);
+    it = pending_key_acks_.erase(it);
+  }
+
+  if (pending_key_acks_.empty())
+    return;
+
+  base::TimeDelta delay_until_next_process_expired_pending_key_acks =
+      pending_key_acks_.begin()->second.second - current_time;
+  ScheduleProcessExpiredPendingKeyAcks(
+      delay_until_next_process_expired_pending_key_acks);
+}
+
+void Keyboard::ScheduleProcessExpiredPendingKeyAcks(base::TimeDelta delay) {
+  DCHECK(!process_expired_pending_key_acks_pending_);
+  process_expired_pending_key_acks_pending_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&Keyboard::ProcessExpiredPendingKeyAcks,
+                     weak_ptr_factory_.GetWeakPtr()),
+      delay);
 }
 
 }  // namespace exo

@@ -3154,14 +3154,16 @@ class WaylandKeyboardDelegate
     wl_keyboard_send_leave(keyboard_resource_, next_serial(), surface_resource);
     wl_client_flush(client());
   }
-  void OnKeyboardKey(base::TimeTicks time_stamp,
-                     ui::DomCode key,
-                     bool pressed) override {
-    wl_keyboard_send_key(keyboard_resource_, next_serial(),
+  uint32_t OnKeyboardKey(base::TimeTicks time_stamp,
+                         ui::DomCode key,
+                         bool pressed) override {
+    uint32_t serial = next_serial();
+    wl_keyboard_send_key(keyboard_resource_, serial,
                          TimeTicksToMilliseconds(time_stamp), DomCodeToKey(key),
                          pressed ? WL_KEYBOARD_KEY_STATE_PRESSED
                                  : WL_KEYBOARD_KEY_STATE_RELEASED);
     wl_client_flush(client());
+    return serial;
   }
   void OnKeyboardModifiers(int modifier_flags) override {
     xkb_state_update_mask(xkb_state_.get(),
