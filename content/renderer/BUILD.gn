@@ -479,6 +479,8 @@ target(link_target_type, "renderer") {
     "//media/midi",
     "//media/midi:mojo",
     "//media/mojo:features",
+    "//media/mojo/clients",
+    "//media/mojo/interfaces",
     "//media/mojo/interfaces:remoting",
     "//mojo/common",
     "//mojo/edk/js",
@@ -972,11 +974,6 @@ target(link_target_type, "renderer") {
     sources += [
       "media/media_interface_provider.cc",
       "media/media_interface_provider.h",
-    ]
-
-    deps += [
-      "//media/mojo/clients",
-      "//media/mojo/interfaces",
     ]
   }
 
