@@ -312,8 +312,10 @@ void HTMLInputElement::UpdateFocusAppearance(
     // TODO(tkent): scrollRectToVisible is a workaround of a bug of
     // FrameSelection::revealSelection().  It doesn't scroll correctly in a
     // case of RangeSelection. crbug.com/443061.
-    if (GetLayoutObject())
+    GetDocument().EnsurePaintLocationDataValidForNode(this);
+    if (GetLayoutObject()) {
       GetLayoutObject()->ScrollRectToVisible(BoundingBox());
+    }
     if (GetDocument().GetFrame())
       GetDocument().GetFrame()->Selection().RevealSelection();
   } else {
