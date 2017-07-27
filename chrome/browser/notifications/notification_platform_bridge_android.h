@@ -12,6 +12,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/notifications/displayed_notifications_dispatch_callback.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
@@ -50,6 +51,14 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
       jint action_index,
       const base::android::JavaParamRef<jstring>& java_reply);
 
+  // Called by the Java implementation when the query of WebAPK's package name
+  // is done.
+  void StoreCachedWebApkPackageForNotificationId(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& java_object,
+      const base::android::JavaParamRef<jstring>& java_notification_id,
+      const base::android::JavaParamRef<jstring>& java_webapk_package);
+
   // Called by the Java implementation when the notification has been closed.
   void OnNotificationClosed(
       JNIEnv* env,
@@ -82,8 +91,19 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
   // that were not created by this instance of the manager. This list may not
   // contain the notifications that have not been interacted with since the last
   // restart of Chrome.
+  // When |Display()| is called, it sets an entry in
+  // |regenerated_notification_infos_| synchronously. The |webapk_package| isn't
+  // avaiable at that time since the query of WebAPK package name is
+  // asynchronous. After the query is done, Java calls the
+  // |StoreCachedWebApkPackageForNotificationId| to set |webapk_package|
+  // properly. Therefore, before the |webapk_package| is set, additional query
+  // is needed on the Java side. For example, we add an additional check when
+  // closing a notification on Java in case the |Close()| is called before the
+  // query is done.
   struct RegeneratedNotificationInfo {
     RegeneratedNotificationInfo();
+    RegeneratedNotificationInfo(const std::string& origin,
+                                const std::string& tag);
     RegeneratedNotificationInfo(const std::string& origin,
                                 const std::string& tag,
                                 const std::string& webapk_package);
@@ -91,7 +111,7 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
 
     std::string origin;
     std::string tag;
-    std::string webapk_package;
+    base::Optional<std::string> webapk_package;
   };
 
   // Mapping of notification id to renegerated notification info.

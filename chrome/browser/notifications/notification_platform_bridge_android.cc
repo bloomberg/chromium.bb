@@ -184,6 +184,25 @@ void NotificationPlatformBridgeAndroid::OnNotificationClicked(
                  action_index, reply));
 }
 
+void NotificationPlatformBridgeAndroid::
+    StoreCachedWebApkPackageForNotificationId(
+        JNIEnv* env,
+        const base::android::JavaParamRef<jobject>& java_object,
+        const base::android::JavaParamRef<jstring>& java_notification_id,
+        const base::android::JavaParamRef<jstring>& java_webapk_package) {
+  std::string notification_id =
+      ConvertJavaStringToUTF8(env, java_notification_id);
+  const auto iterator = regenerated_notification_infos_.find(notification_id);
+  if (iterator == regenerated_notification_infos_.end())
+    return;
+
+  const RegeneratedNotificationInfo& info = iterator->second;
+  regenerated_notification_infos_[notification_id] =
+      RegeneratedNotificationInfo(
+          info.origin, info.tag,
+          ConvertJavaStringToUTF8(env, java_webapk_package));
+}
+
 void NotificationPlatformBridgeAndroid::OnNotificationClosed(
     JNIEnv* env,
     const JavaParamRef<jobject>& java_object,
@@ -230,9 +249,6 @@ void NotificationPlatformBridgeAndroid::Display(
     scope_url = origin_url;
   ScopedJavaLocalRef<jstring> j_scope_url =
         ConvertUTF8ToJavaString(env, scope_url.spec());
-  ScopedJavaLocalRef<jstring> webapk_package =
-      Java_NotificationPlatformBridge_queryWebApkPackage(
-          env, java_object_, j_scope_url);
 
   ScopedJavaLocalRef<jstring> j_notification_id =
       ConvertUTF8ToJavaString(env, notification_id);
@@ -271,13 +287,12 @@ void NotificationPlatformBridgeAndroid::Display(
 
   Java_NotificationPlatformBridge_displayNotification(
       env, java_object_, j_notification_id, j_origin, j_profile_id, incognito,
-      tag, webapk_package, title, body, image, notification_icon, badge,
-      vibration_pattern, notification.timestamp().ToJavaTime(),
-      notification.renotify(), notification.silent(), actions);
+      tag, title, body, image, notification_icon, badge, vibration_pattern,
+      notification.timestamp().ToJavaTime(), notification.renotify(),
+      notification.silent(), actions);
 
   regenerated_notification_infos_[notification_id] =
-      RegeneratedNotificationInfo(origin_url.spec(), notification.tag(),
-                                  ConvertJavaStringToUTF8(env, webapk_package));
+      RegeneratedNotificationInfo(origin_url.spec(), notification.tag());
 }
 
 void NotificationPlatformBridgeAndroid::Close(
@@ -297,17 +312,19 @@ void NotificationPlatformBridgeAndroid::Close(
       ConvertUTF8ToJavaString(env, notification_info.origin);
   ScopedJavaLocalRef<jstring> tag =
       ConvertUTF8ToJavaString(env, notification_info.tag);
-  ScopedJavaLocalRef<jstring> webapk_package =
-      ConvertUTF8ToJavaString(env, notification_info.webapk_package);
 
-  ScopedJavaLocalRef<jstring> j_profile_id =
-      ConvertUTF8ToJavaString(env, profile_id);
+  bool has_queried_webapk_package =
+      notification_info.webapk_package.has_value();
+  std::string webapk_package =
+      has_queried_webapk_package ? *notification_info.webapk_package : "";
+  ScopedJavaLocalRef<jstring> j_webapk_package =
+      ConvertUTF8ToJavaString(env, webapk_package);
 
   regenerated_notification_infos_.erase(iterator);
 
   Java_NotificationPlatformBridge_closeNotification(
-      env, java_object_, j_profile_id, j_notification_id, origin, tag,
-      webapk_package);
+      env, java_object_, j_notification_id, origin, tag,
+      has_queried_webapk_package, j_webapk_package);
 }
 
 void NotificationPlatformBridgeAndroid::GetDisplayed(
@@ -334,6 +351,11 @@ void NotificationPlatformBridgeAndroid::RegisterProfilePrefs(
 
 NotificationPlatformBridgeAndroid::RegeneratedNotificationInfo::
     RegeneratedNotificationInfo() {}
+
+NotificationPlatformBridgeAndroid::RegeneratedNotificationInfo::
+    RegeneratedNotificationInfo(const std::string& origin,
+                                const std::string& tag)
+    : origin(origin), tag(tag) {}
 
 NotificationPlatformBridgeAndroid::RegeneratedNotificationInfo::
     RegeneratedNotificationInfo(const std::string& origin,
