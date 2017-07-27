@@ -190,7 +190,7 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
   if (variations_service) {
     variations_service->set_policy_pref_service(
         last_used_browser_state->GetPrefs());
-    variations_service->StartRepeatedVariationsSeedFetch();
+    variations_service->PerformPreMainMessageLoopStartup();
   }
 
   translate::TranslateDownloadManager::RequestLanguageList(
