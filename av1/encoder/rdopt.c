@@ -4346,6 +4346,22 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
   int coeff_ctx = get_entropy_context(tx_size, a, l);
 
+  tmp = pixel_diff_dist(x, plane, diff, diff_stride, blk_row, blk_col,
+                        plane_bsize, txm_bsize);
+
+#if CONFIG_HIGHBITDEPTH
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+    tmp = ROUND_POWER_OF_TWO(tmp, (xd->bd - 8) * 2);
+#endif  // CONFIG_HIGHBITDEPTH
+  rd_stats->sse += tmp << 4;
+
+  if (rd_stats->invalid_rate) {
+    rd_stats->dist += tmp << 4;
+    rd_stats->rate += rd_stats->zero_rate;
+    rd_stats->skip = 1;
+    return;
+  }
+
 // TODO(any): Use av1_dist_block to compute distortion
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
@@ -4373,30 +4389,30 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   const int shift = (MAX_TX_SCALE - av1_get_tx_scale(tx_size)) * 2;
   tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   const int buffer_length = tx_size_2d[tx_size];
-  int64_t tmp_dist;
+  int64_t tmp_dist, tmp_sse;
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-    tmp_dist =
-        av1_highbd_block_error(coeff, dqcoeff, buffer_length, &tmp, xd->bd) >>
-        shift;
+    tmp_dist = av1_highbd_block_error(coeff, dqcoeff, buffer_length, &tmp_sse,
+                                      xd->bd) >>
+               shift;
   else
 #endif
-    tmp_dist = av1_block_error(coeff, dqcoeff, buffer_length, &tmp) >> shift;
+    tmp_dist =
+        av1_block_error(coeff, dqcoeff, buffer_length, &tmp_sse) >> shift;
 
   if (RDCOST(x->rdmult, 0, tmp_dist) < rd_stats->ref_rdcost) {
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
                    a, l);
+  } else {
+    rd_stats->rate += rd_stats->zero_rate;
+    rd_stats->dist += tmp_sse >> shift;
+    rd_stats->sse += tmp_sse >> shift;
+    rd_stats->skip = 1;
+    rd_stats->invalid_rate = 1;
+    return;
   }
 #endif  // DISABLE_TRELLISQ_SEARCH
 
-  tmp = pixel_diff_dist(x, plane, diff, diff_stride, blk_row, blk_col,
-                        plane_bsize, txm_bsize);
-
-#if CONFIG_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-    tmp = ROUND_POWER_OF_TWO(tmp, (xd->bd - 8) * 2);
-#endif  // CONFIG_HIGHBITDEPTH
-  rd_stats->sse += tmp * 16;
   const int eob = p->eobs[block];
 
 #if CONFIG_LGT
