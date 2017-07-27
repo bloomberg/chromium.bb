@@ -45,17 +45,12 @@ std::unique_ptr<base::DictionaryValue> BasicCardResponse::ToDictionaryValue()
   std::unique_ptr<base::DictionaryValue> result =
       base::MakeUnique<base::DictionaryValue>();
 
-  if (!this->cardholder_name.empty())
-    result->SetString(kCardCardholderName, this->cardholder_name);
+  result->SetString(kCardCardholderName, this->cardholder_name);
   result->SetString(kCardCardNumber, this->card_number);
-  if (!this->expiry_month.empty())
-    result->SetString(kCardExpiryMonth, this->expiry_month);
-  if (!this->expiry_year.empty())
-    result->SetString(kCardExpiryYear, this->expiry_year);
-  if (!this->card_security_code.empty())
-    result->SetString(kCardCardSecurityCode, this->card_security_code);
-  if (!this->billing_address.ToDictionaryValue()->empty())
-    result->Set(kCardBillingAddress, this->billing_address.ToDictionaryValue());
+  result->SetString(kCardExpiryMonth, this->expiry_month);
+  result->SetString(kCardExpiryYear, this->expiry_year);
+  result->SetString(kCardCardSecurityCode, this->card_security_code);
+  result->Set(kCardBillingAddress, this->billing_address.ToDictionaryValue());
 
   return result;
 }

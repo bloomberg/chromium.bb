@@ -52,37 +52,23 @@ std::unique_ptr<base::DictionaryValue> PaymentAddress::ToDictionaryValue()
     const {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
 
-  if (!this->country.empty())
-    result->SetString(kAddressCountry, this->country);
-
-  if (!this->address_line.empty()) {
-    std::unique_ptr<base::ListValue> address_line =
-        base::MakeUnique<base::ListValue>();
-    for (const base::string16& address_line_string : this->address_line) {
-      if (!address_line_string.empty())
-        address_line->AppendString(address_line_string);
-    }
-    result->Set(kAddressAddressLine, std::move(address_line));
+  result->SetString(kAddressCountry, this->country);
+  std::unique_ptr<base::ListValue> address_line =
+      base::MakeUnique<base::ListValue>();
+  for (const base::string16& address_line_string : this->address_line) {
+    if (!address_line_string.empty())
+      address_line->AppendString(address_line_string);
   }
-
-  if (!this->region.empty())
-    result->SetString(kAddressRegion, this->region);
-  if (!this->city.empty())
-    result->SetString(kAddressCity, this->city);
-  if (!this->dependent_locality.empty())
-    result->SetString(kAddressDependentLocality, this->dependent_locality);
-  if (!this->postal_code.empty())
-    result->SetString(kAddressPostalCode, this->postal_code);
-  if (!this->sorting_code.empty())
-    result->SetString(kAddressSortingCode, this->sorting_code);
-  if (!this->language_code.empty())
-    result->SetString(kAddressLanguageCode, this->language_code);
-  if (!this->organization.empty())
-    result->SetString(kAddressOrganization, this->organization);
-  if (!this->recipient.empty())
-    result->SetString(kAddressRecipient, this->recipient);
-  if (!this->phone.empty())
-    result->SetString(kAddressPhone, this->phone);
+  result->Set(kAddressAddressLine, std::move(address_line));
+  result->SetString(kAddressRegion, this->region);
+  result->SetString(kAddressCity, this->city);
+  result->SetString(kAddressDependentLocality, this->dependent_locality);
+  result->SetString(kAddressPostalCode, this->postal_code);
+  result->SetString(kAddressSortingCode, this->sorting_code);
+  result->SetString(kAddressLanguageCode, this->language_code);
+  result->SetString(kAddressOrganization, this->organization);
+  result->SetString(kAddressRecipient, this->recipient);
+  result->SetString(kAddressPhone, this->phone);
 
   return result;
 }
