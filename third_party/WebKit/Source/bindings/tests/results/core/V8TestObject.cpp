@@ -3774,9 +3774,6 @@ static void limitedWithEmptyMissingInvalidAttributeAttributeGetter(const v8::Fun
 }
 
 static void RuntimeCallStatsCounterAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(),
-                           RuntimeCallStats::CounterId::kRuntimeCallStatsCounterAttribute_Getter);
-
   v8::Local<v8::Object> holder = info.Holder();
 
   TestObject* impl = V8TestObject::toImpl(holder);
@@ -3785,8 +3782,6 @@ static void RuntimeCallStatsCounterAttributeAttributeGetter(const v8::FunctionCa
 }
 
 static void RuntimeCallStatsCounterAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(),
-                           RuntimeCallStats::CounterId::kRuntimeCallStatsCounterAttribute_Setter);
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -3806,9 +3801,6 @@ static void RuntimeCallStatsCounterAttributeAttributeSetter(v8::Local<v8::Value>
 }
 
 static void RuntimeCallStatsCounterReadOnlyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(),
-                           RuntimeCallStats::CounterId::kRuntimeCallStatsCounterReadOnlyAttribute_Getter);
-
   v8::Local<v8::Object> holder = info.Holder();
 
   TestObject* impl = V8TestObject::toImpl(holder);
@@ -9246,9 +9238,6 @@ static void newObjectTestInterfaceMethodMethod(const v8::FunctionCallbackInfo<v8
 }
 
 static void RuntimeCallStatsCounterMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(),
-                           RuntimeCallStats::CounterId::kRuntimeCallStatsCounterMethod);
-
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   impl->RuntimeCallStatsCounterMethod();
@@ -10971,16 +10960,25 @@ void V8TestObject::limitedWithEmptyMissingInvalidAttributeAttributeGetterCallbac
 }
 
 void V8TestObject::RuntimeCallStatsCounterAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(),
+                           RuntimeCallStats::CounterId::kRuntimeCallStatsCounterAttribute_Getter);
+
   TestObjectV8Internal::RuntimeCallStatsCounterAttributeAttributeGetter(info);
 }
 
 void V8TestObject::RuntimeCallStatsCounterAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(),
+                           RuntimeCallStats::CounterId::kRuntimeCallStatsCounterAttribute_Setter);
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::RuntimeCallStatsCounterAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::RuntimeCallStatsCounterReadOnlyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(),
+                           RuntimeCallStats::CounterId::kRuntimeCallStatsCounterReadOnlyAttribute_Getter);
+
   TestObjectV8Internal::RuntimeCallStatsCounterReadOnlyAttributeAttributeGetter(info);
 }
 
@@ -12192,6 +12190,8 @@ void V8TestObject::newObjectTestInterfaceMethodMethodCallback(const v8::Function
 }
 
 void V8TestObject::RuntimeCallStatsCounterMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(),
+                           RuntimeCallStats::CounterId::kRuntimeCallStatsCounterMethod);
   TestObjectV8Internal::RuntimeCallStatsCounterMethodMethod(info);
 }
 

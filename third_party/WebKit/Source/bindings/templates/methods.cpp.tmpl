@@ -17,7 +17,6 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "{{interface_name}}", "{{method.name}}");
   {%- endset %}
 
-  {{runtime_timer_scope(method.rcs_counter) | indent(2)}}
   {% set function_call = func_call_with_prep_of_args(method, world_suffix) %}
 
   {% if 'exceptionState' in function_call or
@@ -487,6 +486,7 @@ static void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, 
 {##############################################################################}
 {% macro method_callback(method, world_suffix) %}
 void {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  {{runtime_timer_scope(method.rcs_counter) | indent(2)}}
   {% if not method.overloads %}{# Overloaded methods are measured in overload_resolution_method() #}
   {% if method.measure_as %}
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{method.measure_as('Method')}});
