@@ -43,34 +43,6 @@ class BackgroundFetchDelegateProxy::Core {
       : io_parent_(io_parent),
         browser_context_(browser_context),
         request_context_(std::move(request_context)),
-        traffic_annotation_(
-            net::DefineNetworkTrafficAnnotation("background_fetch_context",
-                                                R"(
-            semantics {
-              sender: "Background Fetch API"
-              description:
-                "The Background Fetch API enables developers to upload or "
-                "download files on behalf of the user. Such fetches will yield "
-                "a user visible notification to inform the user of the "
-                "operation, through which it can be suspended, resumed and/or "
-                "cancelled. The developer retains control of the file once the "
-                "fetch is completed,  similar to XMLHttpRequest and other "
-                "mechanisms for fetching resources using JavaScript."
-              trigger:
-                "When the website uses the Background Fetch API to request "
-                "fetching a file and/or a list of files. This is a Web "
-                "Platform API for which no express user permission is required."
-              data:
-                "The request headers and data as set by the website's "
-                "developer."
-              destination: WEBSITE
-            }
-            policy {
-              cookies_allowed: YES
-              cookies_store: "user"
-              setting: "This feature cannot be disabled in settings."
-              policy_exception_justification: "Not implemented."
-            })")),
         weak_ptr_factory_(this) {
     // Although the Core lives only on the UI thread, it is constructed on IO.
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -96,9 +68,38 @@ class BackgroundFetchDelegateProxy::Core {
 
     const ServiceWorkerFetchRequest& fetch_request = request->fetch_request();
 
+    const net::NetworkTrafficAnnotationTag traffic_annotation(
+        net::DefineNetworkTrafficAnnotation("background_fetch_context",
+                                            R"(
+            semantics {
+              sender: "Background Fetch API"
+              description:
+                "The Background Fetch API enables developers to upload or "
+                "download files on behalf of the user. Such fetches will yield "
+                "a user visible notification to inform the user of the "
+                "operation, through which it can be suspended, resumed and/or "
+                "cancelled. The developer retains control of the file once the "
+                "fetch is completed,  similar to XMLHttpRequest and other "
+                "mechanisms for fetching resources using JavaScript."
+              trigger:
+                "When the website uses the Background Fetch API to request "
+                "fetching a file and/or a list of files. This is a Web "
+                "Platform API for which no express user permission is required."
+              data:
+                "The request headers and data as set by the website's "
+                "developer."
+              destination: WEBSITE
+            }
+            policy {
+              cookies_allowed: YES
+              cookies_store: "user"
+              setting: "This feature cannot be disabled in settings."
+              policy_exception_justification: "Not implemented."
+            })"));
+
     std::unique_ptr<DownloadUrlParameters> download_parameters(
         base::MakeUnique<DownloadUrlParameters>(
-            fetch_request.url, request_context_.get(), traffic_annotation_));
+            fetch_request.url, request_context_.get(), traffic_annotation));
 
     // TODO(peter): The |download_parameters| should be populated with all the
     // properties set in the |fetch_request| structure.
@@ -199,9 +200,6 @@ class BackgroundFetchDelegateProxy::Core {
 
   // The URL request context to use when issuing the requests.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
-
-  // Traffic annotation for network request.
-  const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   // Map from DownloadItem* to the request info for the in-progress downloads.
   std::unordered_map<DownloadItem*, scoped_refptr<BackgroundFetchRequestInfo>>
