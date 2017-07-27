@@ -492,7 +492,6 @@ core_dependency_idl_files =
                     "svg/SVGTests.idl",
                     "svg/SVGURIReference.idl",
                     "svg/SVGZoomAndPan.idl",
-                    "timing/SharedWorkerPerformance.idl",
                     "timing/WindowPerformance.idl",
                     "timing/WorkerGlobalScopePerformance.idl",
                     "url/URLUtilsReadOnly.idl",

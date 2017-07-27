@@ -5773,7 +5773,6 @@ interface SharedWorker : EventTarget
     attribute @@toStringTag
     getter onerror
     getter port
-    getter workerStart
     method constructor
     setter onerror
 interface SourceBuffer : EventTarget
