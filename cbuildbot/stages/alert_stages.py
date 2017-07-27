@@ -11,7 +11,6 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import buildbucket_lib
 from chromite.lib import cidb
 from chromite.lib import constants
-from chromite.lib import cros_logging as logging
 from chromite.lib import cros_build_lib
 from chromite.lib import failures_lib
 
@@ -26,8 +25,9 @@ class SomDispatcherStage(generic_stages.BuilderStage):
       builder_run: See builder_run on BuilderStage.
       tree: SoM instance name. See constants.SOM_BUILDS.
     """
+    suffix = ' [%s]' % tree
     super(SomDispatcherStage, self).__init__(
-        builder_run, suffix=tree.capitalize(), **kwargs)
+        builder_run, suffix=suffix, **kwargs)
     self.tree = tree
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
@@ -49,10 +49,7 @@ class SomDispatcherStage(generic_stages.BuilderStage):
       dispatcher_cmd.append('--allow_experimental')
     dispatcher_cmd.append(db_credentials_dir)
 
-    try:
-      cros_build_lib.RunCommand(dispatcher_cmd)
-    except cros_build_lib.RunCommandError as e:
-      logging.warn('Unable to run alerts dispatcher: %s', e)
+    cros_build_lib.RunCommand(dispatcher_cmd)
 
   def PerformStage(self):
     db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()

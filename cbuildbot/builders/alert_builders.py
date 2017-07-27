@@ -8,7 +8,6 @@ from __future__ import print_function
 
 from chromite.cbuildbot.builders import simple_builders
 from chromite.cbuildbot.stages import alert_stages
-from chromite.cbuildbot.stages import build_stages
 from chromite.lib import constants
 
 class SomDispatcherBuilder(simple_builders.SimpleBuilder):
@@ -16,7 +15,5 @@ class SomDispatcherBuilder(simple_builders.SimpleBuilder):
 
   def RunStages(self):
     """Run through the stages."""
-    self._RunStage(build_stages.InitSDKStage)
-
     for tree in constants.SOM_BUILDS.keys():
       self._RunStage(alert_stages.SomDispatcherStage, tree=tree)
