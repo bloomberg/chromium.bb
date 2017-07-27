@@ -72,6 +72,9 @@ class MESSAGE_CENTER_EXPORT NotificationView
 
   friend class NotificationViewTest;
 
+  // views::ViewTargeterDelegate:
+  views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
+
   void CreateOrUpdateViews(const Notification& notification);
 
   void CreateOrUpdateTitleView(const Notification& notification);

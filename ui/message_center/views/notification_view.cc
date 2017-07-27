@@ -141,6 +141,34 @@ namespace message_center {
 
 // NotificationView ////////////////////////////////////////////////////////////
 
+views::View* NotificationView::TargetForRect(views::View* root,
+                                             const gfx::Rect& rect) {
+  CHECK_EQ(root, this);
+
+  // TODO(tdanderson): Modify this function to support rect-based event
+  // targeting. Using the center point of |rect| preserves this function's
+  // expected behavior for the time being.
+  gfx::Point point = rect.CenterPoint();
+
+  // Want to return this for underlying views, otherwise GetCursor is not
+  // called. But buttons are exceptions, they'll have their own event handlings.
+  std::vector<views::View*> buttons(action_buttons_.begin(),
+                                    action_buttons_.end());
+  if (control_buttons_view_->settings_button())
+    buttons.push_back(control_buttons_view_->settings_button());
+  if (control_buttons_view_->close_button())
+    buttons.push_back(control_buttons_view_->close_button());
+
+  for (size_t i = 0; i < buttons.size(); ++i) {
+    gfx::Point point_in_child = point;
+    ConvertPointToTarget(this, buttons[i], &point_in_child);
+    if (buttons[i]->HitTestPoint(point_in_child))
+      return buttons[i]->GetEventHandlerForPoint(point_in_child);
+  }
+
+  return root;
+}
+
 void NotificationView::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateTitleView(notification);
   CreateOrUpdateMessageView(notification);
