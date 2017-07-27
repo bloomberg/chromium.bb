@@ -193,20 +193,12 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
     return device_transform_scale_factor_;
   }
 
-  void UpdateInnerViewportContainerBoundsDelta();
-
   void UpdateOuterViewportContainerBoundsDelta();
 
-  void AddNodeAffectedByInnerViewportBoundsDelta(int node_id);
   void AddNodeAffectedByOuterViewportBoundsDelta(int node_id);
 
-  bool HasNodesAffectedByInnerViewportBoundsDelta() const;
   bool HasNodesAffectedByOuterViewportBoundsDelta() const;
 
-  const std::vector<int>& nodes_affected_by_inner_viewport_bounds_delta()
-      const {
-    return nodes_affected_by_inner_viewport_bounds_delta_;
-  }
   const std::vector<int>& nodes_affected_by_outer_viewport_bounds_delta()
       const {
     return nodes_affected_by_outer_viewport_bounds_delta_;
@@ -267,7 +259,6 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   float page_scale_factor_;
   float device_scale_factor_;
   float device_transform_scale_factor_;
-  std::vector<int> nodes_affected_by_inner_viewport_bounds_delta_;
   std::vector<int> nodes_affected_by_outer_viewport_bounds_delta_;
   std::vector<TransformCachedNodeData> cached_data_;
   std::vector<StickyPositionNodeData> sticky_position_data_;

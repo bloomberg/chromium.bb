@@ -118,7 +118,6 @@ void TransformTree::clear() {
   page_scale_factor_ = 1.f;
   device_scale_factor_ = 1.f;
   device_transform_scale_factor_ = 1.f;
-  nodes_affected_by_inner_viewport_bounds_delta_.clear();
   nodes_affected_by_outer_viewport_bounds_delta_.clear();
   cached_data_.clear();
   cached_data_.push_back(TransformCachedNodeData());
@@ -500,18 +499,12 @@ void TransformTree::UpdateLocalTransform(TransformNode* node) {
   }
 
   gfx::Vector2dF fixed_position_adjustment;
-  gfx::Vector2dF inner_viewport_bounds_delta =
-      property_trees()->inner_viewport_container_bounds_delta();
   gfx::Vector2dF outer_viewport_bounds_delta =
       property_trees()->outer_viewport_container_bounds_delta();
-  if (node->moved_by_inner_viewport_bounds_delta_x)
-    fixed_position_adjustment.set_x(inner_viewport_bounds_delta.x());
-  else if (node->moved_by_outer_viewport_bounds_delta_x)
+  if (node->moved_by_outer_viewport_bounds_delta_x)
     fixed_position_adjustment.set_x(outer_viewport_bounds_delta.x());
 
-  if (node->moved_by_inner_viewport_bounds_delta_y)
-    fixed_position_adjustment.set_y(inner_viewport_bounds_delta.y());
-  else if (node->moved_by_outer_viewport_bounds_delta_y)
+  if (node->moved_by_outer_viewport_bounds_delta_y)
     fixed_position_adjustment.set_y(outer_viewport_bounds_delta.y());
 
   transform.Translate(node->source_to_parent.x() - node->scroll_offset.x() +
@@ -677,15 +670,6 @@ void TransformTree::SetRootTransformsAndScales(
   }
 }
 
-void TransformTree::UpdateInnerViewportContainerBoundsDelta() {
-  if (nodes_affected_by_inner_viewport_bounds_delta_.empty())
-    return;
-
-  set_needs_update(true);
-  for (int i : nodes_affected_by_inner_viewport_bounds_delta_)
-    Node(i)->needs_local_transform_update = true;
-}
-
 void TransformTree::UpdateOuterViewportContainerBoundsDelta() {
   if (nodes_affected_by_outer_viewport_bounds_delta_.empty())
     return;
@@ -695,16 +679,8 @@ void TransformTree::UpdateOuterViewportContainerBoundsDelta() {
     Node(i)->needs_local_transform_update = true;
 }
 
-void TransformTree::AddNodeAffectedByInnerViewportBoundsDelta(int node_id) {
-  nodes_affected_by_inner_viewport_bounds_delta_.push_back(node_id);
-}
-
 void TransformTree::AddNodeAffectedByOuterViewportBoundsDelta(int node_id) {
   nodes_affected_by_outer_viewport_bounds_delta_.push_back(node_id);
-}
-
-bool TransformTree::HasNodesAffectedByInnerViewportBoundsDelta() const {
-  return !nodes_affected_by_inner_viewport_bounds_delta_.empty();
 }
 
 bool TransformTree::HasNodesAffectedByOuterViewportBoundsDelta() const {
@@ -741,8 +717,6 @@ bool TransformTree::operator==(const TransformTree& other) const {
          device_scale_factor_ == other.device_scale_factor() &&
          device_transform_scale_factor_ ==
              other.device_transform_scale_factor() &&
-         nodes_affected_by_inner_viewport_bounds_delta_ ==
-             other.nodes_affected_by_inner_viewport_bounds_delta() &&
          nodes_affected_by_outer_viewport_bounds_delta_ ==
              other.nodes_affected_by_outer_viewport_bounds_delta() &&
          cached_data_ == other.cached_data();
@@ -1697,7 +1671,6 @@ void PropertyTrees::SetInnerViewportContainerBoundsDelta(
     return;
 
   inner_viewport_container_bounds_delta_ = bounds_delta;
-  transform_tree.UpdateInnerViewportContainerBoundsDelta();
 }
 
 void PropertyTrees::SetOuterViewportContainerBoundsDelta(

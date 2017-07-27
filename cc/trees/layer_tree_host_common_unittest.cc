@@ -6559,78 +6559,6 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionBottom) {
       sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
 }
 
-TEST_F(LayerTreeHostCommonTest, StickyPositionBottomInnerViewportDelta) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> scroller = Layer::Create();
-  scoped_refptr<Layer> sticky_pos = Layer::Create();
-  root->AddChild(scroller);
-  scroller->AddChild(sticky_pos);
-  host()->SetRootLayer(root);
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
-  LayerTreeHost::ViewportLayers viewport_layers;
-  viewport_layers.page_scale = root;
-  viewport_layers.inner_viewport_container = root;
-  viewport_layers.inner_viewport_scroll = scroller;
-  host()->RegisterViewportLayers(viewport_layers);
-
-  LayerStickyPositionConstraint sticky_position;
-  sticky_position.is_sticky = true;
-  sticky_position.is_anchored_bottom = true;
-  sticky_position.bottom_offset = 10.0f;
-  sticky_position.scroll_container_relative_sticky_box_rect =
-      gfx::Rect(0, 70, 10, 10);
-  sticky_position.scroll_container_relative_containing_block_rect =
-      gfx::Rect(0, 60, 100, 100);
-  sticky_pos->SetStickyPositionConstraint(sticky_position);
-
-  root->SetBounds(gfx::Size(100, 100));
-  scroller->SetScrollable(gfx::Size(100, 100));
-  scroller->SetBounds(gfx::Size(100, 1000));
-  sticky_pos->SetBounds(gfx::Size(10, 10));
-  sticky_pos->SetPosition(gfx::PointF(0, 70));
-
-  ExecuteCalculateDrawProperties(root.get(), 1.f, 1.f, root.get(),
-                                 scroller.get(), nullptr);
-  host()->CommitAndCreateLayerImplTree();
-  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
-  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
-  ASSERT_EQ(scroller->id(), layer_tree_impl->InnerViewportScrollLayer()->id());
-
-  LayerImpl* inner_scroll = layer_tree_impl->InnerViewportScrollLayer();
-  LayerImpl* sticky_pos_impl = layer_tree_impl->LayerById(sticky_pos->id());
-
-  // Initially the sticky element is moved to the bottom of the container.
-  EXPECT_VECTOR2DF_EQ(
-      gfx::Vector2dF(0.f, 70.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-
-  // We start to hide the toolbar, but not far enough that the sticky element
-  // should be moved up yet.
-  root_impl->SetViewportBoundsDelta(gfx::Vector2dF(0.f, -10.f));
-  ExecuteCalculateDrawProperties(root_impl, 1.f, 1.f, root_impl, inner_scroll,
-                                 nullptr);
-  EXPECT_VECTOR2DF_EQ(
-      gfx::Vector2dF(0.f, 70.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-
-  // On hiding more of the toolbar the sticky element starts to stick.
-  root_impl->SetViewportBoundsDelta(gfx::Vector2dF(0.f, -20.f));
-  ExecuteCalculateDrawProperties(root_impl, 1.f, 1.f, root_impl, inner_scroll,
-                                 nullptr);
-  EXPECT_VECTOR2DF_EQ(
-      gfx::Vector2dF(0.f, 60.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-
-  // On hiding more the sticky element stops moving as it has reached its
-  // limit.
-  root_impl->SetViewportBoundsDelta(gfx::Vector2dF(0.f, -30.f));
-  ExecuteCalculateDrawProperties(root_impl, 1.f, 1.f, root_impl, inner_scroll,
-                                 nullptr);
-  EXPECT_VECTOR2DF_EQ(
-      gfx::Vector2dF(0.f, 60.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-}
-
 TEST_F(LayerTreeHostCommonTest, StickyPositionBottomOuterViewportDelta) {
   scoped_refptr<Layer> root = Layer::Create();
   scoped_refptr<Layer> scroller = Layer::Create();
@@ -8221,7 +8149,6 @@ TEST_F(LayerTreeHostCommonTest, NodesAffectedByViewportBoundsDeltaGetUpdated) {
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
 
   TransformTree& transform_tree = host()->property_trees()->transform_tree;
-  EXPECT_TRUE(transform_tree.HasNodesAffectedByInnerViewportBoundsDelta());
   EXPECT_TRUE(transform_tree.HasNodesAffectedByOuterViewportBoundsDelta());
 
   LayerPositionConstraint fixed_to_left;
@@ -8229,13 +8156,11 @@ TEST_F(LayerTreeHostCommonTest, NodesAffectedByViewportBoundsDeltaGetUpdated) {
   fixed_to_inner->SetPositionConstraint(fixed_to_left);
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_FALSE(transform_tree.HasNodesAffectedByInnerViewportBoundsDelta());
   EXPECT_TRUE(transform_tree.HasNodesAffectedByOuterViewportBoundsDelta());
 
   fixed_to_outer->SetPositionConstraint(fixed_to_left);
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_FALSE(transform_tree.HasNodesAffectedByInnerViewportBoundsDelta());
   EXPECT_FALSE(transform_tree.HasNodesAffectedByOuterViewportBoundsDelta());
 }
 
