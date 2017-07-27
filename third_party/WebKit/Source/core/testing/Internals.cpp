@@ -154,6 +154,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/dtoa.h"
 #include "platform/wtf/text/StringBuffer.h"
+#include "platform/wtf/text/TextEncodingRegistry.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebConnectionType.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
@@ -3427,6 +3428,10 @@ void Internals::setIsLowEndDevice(bool is_low_end_device) {
 
 bool Internals::isLowEndDevice() const {
   return MemoryCoordinator::IsLowEndDevice();
+}
+
+Vector<String> Internals::supportedTextEncodingLabels() const {
+  return WTF::TextEncodingAliasesForTesting();
 }
 
 }  // namespace blink

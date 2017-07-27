@@ -575,6 +575,11 @@ class Internals final : public GarbageCollected<Internals>,
   // Returns if the device is low-end.
   bool isLowEndDevice() const;
 
+  // Returns a list of the supported text encoding aliases ("UTF-8", "GBK",
+  // "windows-1252", "Latin-1", "iso-8859-1", etc).
+  // The order is not defined.
+  Vector<String> supportedTextEncodingLabels() const;
+
  private:
   explicit Internals(ExecutionContext*);
   Document* ContextDocument() const;

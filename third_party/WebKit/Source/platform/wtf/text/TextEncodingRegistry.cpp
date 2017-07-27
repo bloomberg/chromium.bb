@@ -267,6 +267,21 @@ bool NoExtendedTextEncodingNameUsed() {
   return !AtomicDidExtendTextCodecMaps();
 }
 
+Vector<String> TextEncodingAliasesForTesting() {
+  Vector<String> results;
+  {
+    MutexLocker lock(EncodingRegistryMutex());
+    if (!g_text_encoding_name_map)
+      BuildBaseTextCodecMaps();
+    if (!AtomicDidExtendTextCodecMaps()) {
+      ExtendTextCodecMaps();
+      AtomicSetDidExtendTextCodecMaps();
+    }
+    CopyKeysToVector(*g_text_encoding_name_map, results);
+  }
+  return results;
+}
+
 #ifndef NDEBUG
 void DumpTextEncodingNameMap() {
   unsigned size = g_text_encoding_name_map->size();
@@ -274,10 +289,8 @@ void DumpTextEncodingNameMap() {
 
   MutexLocker lock(EncodingRegistryMutex());
 
-  TextEncodingNameMap::const_iterator it = g_text_encoding_name_map->begin();
-  TextEncodingNameMap::const_iterator end = g_text_encoding_name_map->end();
-  for (; it != end; ++it)
-    fprintf(stderr, "'%s' => '%s'\n", it->key, it->value);
+  for (const auto& it : *g_text_encoding_name_map)
+    fprintf(stderr, "'%s' => '%s'\n", it.key, it.value);
 }
 #endif
 
