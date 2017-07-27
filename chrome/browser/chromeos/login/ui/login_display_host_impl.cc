@@ -323,7 +323,7 @@ class LoginDisplayHostImpl::KeyboardDrivenOobeKeyHandler
   // ui::EventHandler
   void OnKeyEvent(ui::KeyEvent* event) override {
     if (event->key_code() == ui::VKEY_F6) {
-      ash::Shell::Get()->GetPrimarySystemTray()->CloseSystemBubble();
+      ash::Shell::Get()->GetPrimarySystemTray()->CloseBubble();
       event->StopPropagation();
     }
   }

@@ -23,7 +23,7 @@ TEST_F(TrayEnterpriseTest, ItemVisible) {
   // By default there is no enterprise item in the menu.
   system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   EXPECT_FALSE(tray_enterprise->tray_view()->visible());
-  system_tray->CloseSystemBubble();
+  system_tray->CloseBubble();
 
   // Simulate enterprise information becoming available.
   const bool active_directory = false;
@@ -33,7 +33,7 @@ TEST_F(TrayEnterpriseTest, ItemVisible) {
   // Enterprise managed devices show an item.
   system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   EXPECT_TRUE(tray_enterprise->tray_view()->visible());
-  system_tray->CloseSystemBubble();
+  system_tray->CloseBubble();
 }
 
 TEST_F(TrayEnterpriseTest, ItemVisibleForActiveDirectory) {
@@ -51,7 +51,7 @@ TEST_F(TrayEnterpriseTest, ItemVisibleForActiveDirectory) {
   // Active Directory managed devices show an item.
   system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   EXPECT_TRUE(tray_enterprise->tray_view()->visible());
-  system_tray->CloseSystemBubble();
+  system_tray->CloseBubble();
 }
 
 }  // namespace ash

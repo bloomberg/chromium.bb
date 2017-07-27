@@ -187,7 +187,7 @@ class SystemTray::ActivationObserver : public ::wm::ActivationChangeObserver {
       return;
     }
 
-    tray_->CloseSystemBubble();
+    tray_->CloseBubble();
   }
 
  private:
@@ -392,13 +392,6 @@ bool SystemTray::IsSystemBubbleVisible() const {
   return HasSystemBubble() && system_bubble_->bubble()->IsVisible();
 }
 
-bool SystemTray::CloseSystemBubble() const {
-  if (!system_bubble_)
-    return false;
-  system_bubble_->bubble()->Close();
-  return true;
-}
-
 views::View* SystemTray::GetHelpButtonView() const {
   return tray_tiles_->GetHelpButtonView();
 }
@@ -575,7 +568,9 @@ bool SystemTray::PerformAction(const ui::Event& event) {
 }
 
 void SystemTray::CloseBubble() {
-  CloseSystemBubble();
+  if (!system_bubble_)
+    return;
+  system_bubble_->bubble()->Close();
 }
 
 void SystemTray::ShowBubble() {

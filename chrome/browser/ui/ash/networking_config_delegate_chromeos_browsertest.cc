@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingConfigDelegateChromeosTest, SystemTrayItem) {
   EXPECT_TRUE(HasChildWithTooltip(tray_network->detailed(), expected_tooltip));
 
   // Close the system tray menu.
-  system_tray->CloseSystemBubble();
+  system_tray->CloseBubble();
   content::RunAllPendingInMessageLoop();
 }
 

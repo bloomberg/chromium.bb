@@ -131,7 +131,7 @@ class IMEDetailedView : public ImeListView {
     base::RecordAction(base::UserMetricsAction("StatusArea_IME_Detailed"));
     Shell::Get()->system_tray_controller()->ShowIMESettings();
     if (owner()->system_tray())
-      owner()->system_tray()->CloseSystemBubble();
+      owner()->system_tray()->CloseBubble();
   }
 
   ImeController* const ime_controller_;

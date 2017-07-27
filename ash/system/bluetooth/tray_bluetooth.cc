@@ -420,7 +420,7 @@ class BluetoothDetailedView : public TrayDetailsView {
   void ShowSettings() {
     if (TrayPopupUtils::CanOpenWebUISettings()) {
       Shell::Get()->system_tray_controller()->ShowBluetoothSettings();
-      owner()->system_tray()->CloseSystemBubble();
+      owner()->system_tray()->CloseBubble();
     }
   }
 
