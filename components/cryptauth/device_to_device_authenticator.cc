@@ -11,7 +11,6 @@
 #include "base/timer/timer.h"
 #include "components/cryptauth/authenticator.h"
 #include "components/cryptauth/connection.h"
-#include "components/cryptauth/device_to_device_initiator_operations.h"
 #include "components/cryptauth/device_to_device_secure_context.h"
 #include "components/cryptauth/secure_context.h"
 #include "components/cryptauth/secure_message_delegate.h"
@@ -69,6 +68,7 @@ DeviceToDeviceAuthenticator::DeviceToDeviceAuthenticator(
     : connection_(connection),
       account_id_(account_id),
       secure_message_delegate_(std::move(secure_message_delegate)),
+      helper_(base::MakeUnique<DeviceToDeviceInitiatorHelper>()),
       state_(State::NOT_STARTED),
       weak_ptr_factory_(this) {
   DCHECK(connection_);
@@ -114,7 +114,7 @@ void DeviceToDeviceAuthenticator::OnKeyPairGenerated(
 
   // Create the [Initiator Hello] message to send to the remote device.
   state_ = State::SENDING_HELLO;
-  DeviceToDeviceInitiatorOperations::CreateHelloMessage(
+  helper_->CreateHelloMessage(
       public_key, connection_->remote_device().persistent_symmetric_key,
       secure_message_delegate_.get(),
       base::Bind(&DeviceToDeviceAuthenticator::OnHelloMessageCreated,
@@ -168,7 +168,7 @@ void DeviceToDeviceAuthenticator::OnResponderAuthValidated(
   session_keys_ = session_keys;
 
   // Create the [Initiator Auth] message to send to the remote device.
-  DeviceToDeviceInitiatorOperations::CreateInitiatorAuthMessage(
+  helper_->CreateInitiatorAuthMessage(
       session_keys_, connection_->remote_device().persistent_symmetric_key,
       responder_auth_message_, secure_message_delegate_.get(),
       base::Bind(&DeviceToDeviceAuthenticator::OnInitiatorAuthCreated,
@@ -243,7 +243,7 @@ void DeviceToDeviceAuthenticator::OnMessageReceived(
     // Attempt to validate the [Responder Auth] message received from the remote
     // device.
     std::string responder_public_key = connection.remote_device().public_key;
-    DeviceToDeviceInitiatorOperations::ValidateResponderAuthMessage(
+    helper_->ValidateResponderAuthMessage(
         responder_auth_message_, responder_public_key,
         connection_->remote_device().persistent_symmetric_key,
         local_session_private_key_, hello_message_,
