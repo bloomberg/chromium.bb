@@ -5,11 +5,12 @@
 #ifndef FontWeightConversion_h
 #define FontWeightConversion_h
 
-#include "platform/fonts/FontSelectionTypes.h"
+#include "platform/fonts/FontTraits.h"
 
 namespace blink {
 
-FontSelectionValue DoubleToFontWeight(double value);
+double FontWeightToDouble(FontWeight);
+FontWeight DoubleToFontWeight(double value);
 
 }  // namespace blink
 

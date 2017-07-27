@@ -34,6 +34,7 @@
 #import <math.h>
 #include "platform/LayoutTestSupport.h"
 #include "platform/fonts/FontCache.h"
+#include "platform/fonts/FontTraits.h"
 #include "platform/mac/VersionUtilMac.h"
 #import "platform/wtf/HashSet.h"
 #import "platform/wtf/text/AtomicStringHash.h"
@@ -44,8 +45,8 @@
 
 namespace {
 
-static CGFloat toYosemiteFontWeight(blink::FontSelectionValue font_weight) {
-  static uint64_t ns_font_weights[] = {
+static CGFloat toYosemiteFontWeight(blink::FontWeight fontWeight) {
+  static uint64_t nsFontWeights[] = {
       0xbfe99999a0000000,  // NSFontWeightUltraLight
       0xbfe3333340000000,  // NSFontWeightThin
       0xbfd99999a0000000,  // NSFontWeightLight
@@ -56,15 +57,10 @@ static CGFloat toYosemiteFontWeight(blink::FontSelectionValue font_weight) {
       0x3fe1eb8520000000,  // NSFontWeightHeavy
       0x3fe3d70a40000000,  // NSFontWeightBlack
   };
-  if (font_weight <= 50 || font_weight >= 950)
-    return ns_font_weights[3];
-
-  size_t select_weight = roundf(font_weight / 100) - 1;
-  DCHECK_GE(select_weight, 0ul);
-  DCHECK_LE(select_weight, arraysize(ns_font_weights));
-  CGFloat* return_weight =
-      reinterpret_cast<CGFloat*>(&ns_font_weights[select_weight]);
-  return *return_weight;
+  DCHECK_GE(fontWeight, 0);
+  DCHECK_LE(fontWeight, 8);
+  CGFloat* weight = reinterpret_cast<CGFloat*>(&nsFontWeights[fontWeight]);
+  return *weight;
 }
 }
 
@@ -134,7 +130,7 @@ static BOOL BetterChoice(NSFontTraitMask desired_traits,
 // names of the installed fonts.
 NSFont* MatchNSFontFamily(const AtomicString& desired_family_string,
                           NSFontTraitMask desired_traits,
-                          FontSelectionValue desired_weight,
+                          FontWeight desired_weight,
                           float size) {
   DCHECK_NE(desired_family_string, FontCache::LegacySystemFontFamily());
   if (desired_family_string == FontFamilyNames::system_ui) {
@@ -146,7 +142,7 @@ NSFont* MatchNSFontFamily(const AtomicString& desired_family_string,
     // switch is made, this should be changed to return .LucidaGrandeUI and
     // the Layout Expectations should be updated. http://crbug.com/515836.
     if (LayoutTestSupport::IsRunningLayoutTest() && IsOS10_9()) {
-      if (desired_weight >= BoldWeightValue())
+      if (desired_weight >= blink::kFontWeightBold)
         return [NSFont fontWithName:@"Lucida Grande Bold" size:size];
       else
         return [NSFont fontWithName:@"Lucida Grande" size:size];
@@ -155,7 +151,7 @@ NSFont* MatchNSFontFamily(const AtomicString& desired_family_string,
     NSFont* font = nil;
     if (IsOS10_9()) {
       // On older OSX versions, only bold and regular are available.
-      if (desired_weight >= BoldWeightValue())
+      if (desired_weight >= blink::kFontWeightBold)
         font = [NSFont boldSystemFontOfSize:size];
       else
         font = [NSFont systemFontOfSize:size];
@@ -312,12 +308,7 @@ NSFont* MatchNSFontFamily(const AtomicString& desired_family_string,
   return font;
 }
 
-int ToAppKitFontWeight(FontSelectionValue font_weight) {
-  float weight = font_weight;
-  if (weight <= 50 || weight >= 950)
-    return 5;
-
-  size_t select_weight = roundf(weight / 100) - 1;
+int ToAppKitFontWeight(FontWeight font_weight) {
   static int app_kit_font_weights[] = {
       2,   // FontWeight100
       3,   // FontWeight200
@@ -329,9 +320,7 @@ int ToAppKitFontWeight(FontSelectionValue font_weight) {
       10,  // FontWeight800
       12,  // FontWeight900
   };
-  DCHECK_GE(select_weight, 0ul);
-  DCHECK_LE(select_weight, arraysize(app_kit_font_weights));
-  return app_kit_font_weights[select_weight];
+  return app_kit_font_weights[font_weight];
 }
 
 }  // namespace blink

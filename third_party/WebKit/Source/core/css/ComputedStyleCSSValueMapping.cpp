@@ -757,18 +757,15 @@ static CSSPrimitiveValue* ValueForFontSize(const ComputedStyle& style) {
 }
 
 static CSSIdentifierValue* ValueForFontStretch(const ComputedStyle& style) {
-  return CSSIdentifierValue::Create(
-      FontSelectionValueStretch(style.GetFontDescription().Stretch()));
+  return CSSIdentifierValue::Create(style.GetFontDescription().Stretch());
 }
 
 static CSSIdentifierValue* ValueForFontStyle(const ComputedStyle& style) {
-  return CSSIdentifierValue::Create(
-      FontSelectionValueStyle(style.GetFontDescription().Style()));
+  return CSSIdentifierValue::Create(style.GetFontDescription().Style());
 }
 
-static CSSPrimitiveValue* ValueForFontWeight(const ComputedStyle& style) {
-  return CSSPrimitiveValue::Create(style.GetFontDescription().Weight(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+static CSSIdentifierValue* ValueForFontWeight(const ComputedStyle& style) {
+  return CSSIdentifierValue::Create(style.GetFontDescription().Weight());
 }
 
 static CSSIdentifierValue* ValueForFontVariantCaps(const ComputedStyle& style) {

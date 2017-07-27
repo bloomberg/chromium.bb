@@ -37,7 +37,7 @@ namespace blink {
 
 class Document;
 
-class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
+class CSSFontFaceSrcValue : public CSSValue {
  public:
   static CSSFontFaceSrcValue* Create(
       const String& specified_resource,

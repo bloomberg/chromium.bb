@@ -415,9 +415,9 @@ String CanvasRenderingContext2D::font() const {
   const FontDescription& font_description =
       GetState().GetFont().GetFontDescription();
 
-  if (font_description.Style() == ItalicSlopeValue())
+  if (font_description.Style() == kFontStyleItalic)
     serialized_font.Append("italic ");
-  if (font_description.Weight() == BoldWeightValue())
+  if (font_description.Weight() == kFontWeightBold)
     serialized_font.Append("bold ");
   if (font_description.VariantCaps() == FontDescription::kSmallCaps)
     serialized_font.Append("small-caps ");

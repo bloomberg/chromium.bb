@@ -6,6 +6,7 @@
 #define CSSFontWeightInterpolationType_h
 
 #include "core/animation/CSSInterpolationType.h"
+#include "platform/fonts/FontTraits.h"
 
 namespace blink {
 
@@ -23,7 +24,7 @@ class CSSFontWeightInterpolationType : public CSSInterpolationType {
                                   StyleResolverState&) const final;
 
  private:
-  InterpolationValue CreateFontWeightValue(FontSelectionValue) const;
+  InterpolationValue CreateFontWeightValue(FontWeight) const;
   InterpolationValue MaybeConvertNeutral(const InterpolationValue& underlying,
                                          ConversionCheckers&) const final;
   InterpolationValue MaybeConvertInitial(const StyleResolverState&,

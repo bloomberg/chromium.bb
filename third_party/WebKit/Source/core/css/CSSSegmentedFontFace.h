@@ -27,7 +27,7 @@
 #define CSSSegmentedFontFace_h
 
 #include "platform/fonts/FontCacheKey.h"
-#include "platform/fonts/FontSelectionTypes.h"
+#include "platform/fonts/FontTraits.h"
 #include "platform/fonts/SegmentedFontData.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
@@ -46,15 +46,12 @@ class SegmentedFontData;
 class CSSSegmentedFontFace final
     : public GarbageCollectedFinalized<CSSSegmentedFontFace> {
  public:
-  static CSSSegmentedFontFace* Create(
-      FontSelectionCapabilities font_selection_capabilities) {
-    return new CSSSegmentedFontFace(font_selection_capabilities);
+  static CSSSegmentedFontFace* Create(FontTraits traits) {
+    return new CSSSegmentedFontFace(traits);
   }
   ~CSSSegmentedFontFace();
 
-  FontSelectionCapabilities GetFontSelectionCapabilities() const {
-    return font_selection_capabilities_;
-  }
+  FontTraits Traits() const { return traits_; }
 
   // Called when status of a FontFace has changed (e.g. loaded or timed out)
   // so cached FontData must be discarded.
@@ -77,14 +74,14 @@ class CSSSegmentedFontFace final
   DECLARE_TRACE();
 
  private:
-  CSSSegmentedFontFace(FontSelectionCapabilities);
+  CSSSegmentedFontFace(FontTraits);
 
   void PruneTable();
   bool IsValid() const;
 
   using FontFaceList = HeapListHashSet<Member<FontFace>>;
 
-  FontSelectionCapabilities font_selection_capabilities_;
+  FontTraits traits_;
   HashMap<FontCacheKey,
           RefPtr<SegmentedFontData>,
           FontCacheKeyHash,

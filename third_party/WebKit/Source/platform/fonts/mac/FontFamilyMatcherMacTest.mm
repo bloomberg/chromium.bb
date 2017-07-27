@@ -17,7 +17,7 @@
 
 namespace blink {
 
-void TestSystemFontContainsString(FontSelectionValue desired_weight,
+void TestSystemFontContainsString(FontWeight desired_weight,
                                   NSString* substring) {
   NSFont* font =
       MatchNSFontFamily(FontFamilyNames::system_ui, 0, desired_weight, 11);
@@ -28,15 +28,15 @@ TEST(FontFamilyMatcherMacTest, YosemiteFontWeights) {
   if (!IsOS10_10())
     return;
 
-  TestSystemFontContainsString(FontSelectionValue(100), @"-UltraLight");
-  TestSystemFontContainsString(FontSelectionValue(200), @"-Thin");
-  TestSystemFontContainsString(FontSelectionValue(300), @"-Light");
-  TestSystemFontContainsString(FontSelectionValue(400), @"-Regular");
-  TestSystemFontContainsString(FontSelectionValue(500), @"-Medium");
-  TestSystemFontContainsString(FontSelectionValue(600), @"-Bold");
-  TestSystemFontContainsString(FontSelectionValue(700), @"-Bold");
-  TestSystemFontContainsString(FontSelectionValue(800), @"-Heavy");
-  TestSystemFontContainsString(FontSelectionValue(900), @"-Heavy");
+  TestSystemFontContainsString(kFontWeight100, @"-UltraLight");
+  TestSystemFontContainsString(kFontWeight200, @"-Thin");
+  TestSystemFontContainsString(kFontWeight300, @"-Light");
+  TestSystemFontContainsString(kFontWeight400, @"-Regular");
+  TestSystemFontContainsString(kFontWeight500, @"-Medium");
+  TestSystemFontContainsString(kFontWeight600, @"-Bold");
+  TestSystemFontContainsString(kFontWeight700, @"-Bold");
+  TestSystemFontContainsString(kFontWeight800, @"-Heavy");
+  TestSystemFontContainsString(kFontWeight900, @"-Heavy");
 }
 
 }  // namespace blink

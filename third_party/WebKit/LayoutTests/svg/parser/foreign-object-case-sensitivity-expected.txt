@@ -39,13 +39,13 @@ Style rule matches case-insensitively for html and svg elements in html document
 (Should have matched case-sensitively for svg elements according to the html spec).
 
 PASS getComputedStyle(fo1).color is "rgb(0, 128, 0)"
-PASS getComputedStyle(fo1).fontWeight is "700"
+PASS getComputedStyle(fo1).fontWeight is "bold"
 PASS getComputedStyle(fo2).color is "rgb(0, 128, 0)"
-PASS getComputedStyle(fo2).fontWeight is "700"
+PASS getComputedStyle(fo2).fontWeight is "bold"
 PASS getComputedStyle(fo3).color is "rgb(0, 128, 0)"
-PASS getComputedStyle(fo3).fontWeight is "700"
+PASS getComputedStyle(fo3).fontWeight is "bold"
 PASS getComputedStyle(fo4).color is "rgb(0, 128, 0)"
-PASS getComputedStyle(fo4).fontWeight is "700"
+PASS getComputedStyle(fo4).fontWeight is "bold"
 PASS successfullyParsed is true
 
 TEST COMPLETE

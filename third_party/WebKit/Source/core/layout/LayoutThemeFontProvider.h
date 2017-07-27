@@ -28,7 +28,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
-#include "platform/fonts/FontSelectionTypes.h"
+#include "platform/fonts/FontTraits.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/AtomicString.h"
 
@@ -39,8 +39,8 @@ class CORE_EXPORT LayoutThemeFontProvider {
 
  public:
   static void SystemFont(CSSValueID system_font_id,
-                         FontSelectionValue& slope,
-                         FontSelectionValue& weight,
+                         FontStyle&,
+                         FontWeight&,
                          float& font_size,
                          AtomicString& font_family);
   static void SetDefaultFontSize(int);

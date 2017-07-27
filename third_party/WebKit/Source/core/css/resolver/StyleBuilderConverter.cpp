@@ -384,38 +384,22 @@ double StyleBuilderConverter::ConvertValueToNumber(
   }
 }
 
-FontSelectionValue StyleBuilderConverterBase::ConvertFontWeight(
+FontWeight StyleBuilderConverterBase::ConvertFontWeight(
     const CSSValue& value,
-    FontSelectionValue parent_weight) {
-  if (value.IsPrimitiveValue()) {
-    const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value);
-    if (primitive_value.IsNumber())
-      return clampTo<FontSelectionValue>(primitive_value.GetFloatValue());
+    FontWeight parent_weight) {
+  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
+  switch (identifier_value.GetValueID()) {
+    case CSSValueBolder:
+      return FontDescription::BolderWeight(parent_weight);
+    case CSSValueLighter:
+      return FontDescription::LighterWeight(parent_weight);
+    default:
+      return identifier_value.ConvertTo<FontWeight>();
   }
-
-  if (value.IsIdentifierValue()) {
-    const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-    switch (identifier_value.GetValueID()) {
-      case CSSValueNormal:
-        return NormalWeightValue();
-      case CSSValueBold:
-        return BoldWeightValue();
-      case CSSValueBolder:
-        return FontDescription::BolderWeight(parent_weight);
-      case CSSValueLighter:
-        return FontDescription::LighterWeight(parent_weight);
-      default:
-        NOTREACHED();
-        return NormalWeightValue();
-    }
-  }
-  NOTREACHED();
-  return NormalWeightValue();
 }
 
-FontSelectionValue StyleBuilderConverter::ConvertFontWeight(
-    StyleResolverState& state,
-    const CSSValue& value) {
+FontWeight StyleBuilderConverter::ConvertFontWeight(StyleResolverState& state,
+                                                    const CSSValue& value) {
   return StyleBuilderConverterBase::ConvertFontWeight(
       value, state.ParentStyle()->GetFontDescription().Weight());
 }

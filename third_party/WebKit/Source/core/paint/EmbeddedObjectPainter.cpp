@@ -27,7 +27,7 @@ static Font ReplacementTextFont() {
   FontDescription font_description;
   LayoutTheme::GetTheme().SystemFont(CSSValueWebkitSmallControl,
                                      font_description);
-  font_description.SetWeight(BoldWeightValue());
+  font_description.SetWeight(kFontWeightBold);
   font_description.SetComputedSize(font_description.SpecifiedSize());
   Font font(font_description);
   font.Update(nullptr);

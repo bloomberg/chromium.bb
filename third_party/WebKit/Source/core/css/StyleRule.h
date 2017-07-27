@@ -148,7 +148,7 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
   mutable Member<CSSLazyPropertyParser> lazy_property_parser_;
 };
 
-class CORE_EXPORT StyleRuleFontFace : public StyleRuleBase {
+class StyleRuleFontFace : public StyleRuleBase {
  public:
   static StyleRuleFontFace* Create(StylePropertySet* properties) {
     return new StyleRuleFontFace(properties);
