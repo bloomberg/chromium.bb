@@ -195,7 +195,7 @@ void PresentationServiceImpl::StartPresentation(
 
 void PresentationServiceImpl::ReconnectPresentation(
     const std::vector<GURL>& presentation_urls,
-    const base::Optional<std::string>& presentation_id,
+    const std::string& presentation_id,
     NewPresentationCallback callback) {
   DVLOG(2) << "ReconnectPresentation";
   if (!controller_delegate_) {
@@ -216,7 +216,7 @@ void PresentationServiceImpl::ReconnectPresentation(
                               presentation_urls,
                               render_frame_host_->GetLastCommittedOrigin());
   controller_delegate_->ReconnectPresentation(
-      request, presentation_id.value_or(std::string()),
+      request, presentation_id,
       base::Bind(&PresentationServiceImpl::OnReconnectPresentationSucceeded,
                  weak_factory_.GetWeakPtr(), request_id),
       base::Bind(&PresentationServiceImpl::OnReconnectPresentationError,

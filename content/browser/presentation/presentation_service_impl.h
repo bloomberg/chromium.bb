@@ -69,7 +69,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   void StartPresentation(const std::vector<GURL>& presentation_urls,
                          NewPresentationCallback callback) override;
   void ReconnectPresentation(const std::vector<GURL>& presentation_urls,
-                             const base::Optional<std::string>& presentation_id,
+                             const std::string& presentation_id,
                              NewPresentationCallback callback) override;
   void CloseConnection(const GURL& presentation_url,
                        const std::string& presentation_id) override;
