@@ -22,10 +22,10 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
     : public StaticBitmapImage {
  public:
   ~AcceleratedStaticBitmapImage() override;
-  // SkImage with a texture backing that is assumed to be from the shared
-  // context of the current thread.
-  static PassRefPtr<AcceleratedStaticBitmapImage> CreateFromSharedContextImage(
-      sk_sp<SkImage>);
+  // SkImage with a texture backing.
+  static PassRefPtr<AcceleratedStaticBitmapImage> CreateFromSkImage(
+      sk_sp<SkImage>,
+      WeakPtr<WebGraphicsContext3DProviderWrapper>&&);
   // Can specify the GrContext that created the texture backing. Ideally all
   // callers would use this option. The |mailbox| is a name for the texture
   // backing, allowing other contexts to use the same backing.
@@ -33,7 +33,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       const gpu::Mailbox&,
       const gpu::SyncToken&,
       unsigned texture_id,
-      WeakPtr<WebGraphicsContext3DProviderWrapper>,
+      WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
       IntSize mailbox_size);
 
   bool CurrentFrameKnownToBeOpaque(MetadataMode = kUseCurrentMetadata) override;
@@ -48,6 +48,12 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
             RespectImageOrientationEnum,
             ImageClampingMode) override;
 
+  bool IsValid() const final;
+  WebGraphicsContext3DProvider* ContextProvider() const final;
+  WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
+      const final;
+  RefPtr<StaticBitmapImage> MakeUnaccelerated() final;
+
   void CopyToTexture(WebGraphicsContext3DProvider*,
                      GLenum dest_target,
                      GLuint dest_texture_id,
@@ -55,7 +61,9 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
                      const IntPoint& dest_point,
                      const IntRect& source_sub_rectangle) override;
 
-  bool HasMailbox() final { return texture_holder_->IsMailboxTextureHolder(); }
+  bool HasMailbox() const final {
+    return texture_holder_->IsMailboxTextureHolder();
+  }
   // To be called on sender thread before performing a transfer
   void Transfer() final;
 
@@ -66,23 +74,34 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   }
   void UpdateSyncToken(gpu::SyncToken) final;
 
+  // Call this immediately after creation in cases where the source SkImage
+  // was a snapshot of an SkSurface that may be rendered to after
+  void RetainOriginalSkImageForCopyOnWrite();
+
  private:
-  AcceleratedStaticBitmapImage(sk_sp<SkImage>);
+  AcceleratedStaticBitmapImage(sk_sp<SkImage>,
+                               WeakPtr<WebGraphicsContext3DProviderWrapper>&&);
   AcceleratedStaticBitmapImage(const gpu::Mailbox&,
                                const gpu::SyncToken&,
                                unsigned texture_id,
-                               WeakPtr<WebGraphicsContext3DProviderWrapper>,
+                               WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
                                IntSize mailbox_size);
 
   void CreateImageFromMailboxIfNeeded();
   void CheckThread();
   void WaitSyncTokenIfNeeded();
-  bool IsValid();
 
   std::unique_ptr<TextureHolder> texture_holder_;
 
   base::ThreadChecker thread_checker_;
   bool detach_thread_at_next_check_ = false;
+
+  // For RetainOriginalSkImageForCopyOnWrite()
+  sk_sp<SkImage> original_skia_image_;
+  RefPtr<WebTaskRunner> original_skia_image_task_runner_;
+  PlatformThreadId original_skia_image_thread_id_;
+  WeakPtr<WebGraphicsContext3DProviderWrapper>
+      original_skia_image_context_provider_wrapper_;
 };
 
 }  // namespace blink

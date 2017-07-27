@@ -73,7 +73,6 @@
 #include "platform/graphics/CanvasMetrics.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/RecordingImageBufferSurface.h"
-#include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
@@ -119,17 +118,14 @@ const int kMaxGlobalGPUMemoryUsage =
 // misinterpreted as a user-input value
 const int kUndefinedQualityValue = -1.0;
 
-sk_sp<SkImage> CreateTransparentSkImage(const IntSize& size) {
+PassRefPtr<Image> CreateTransparentImage(const IntSize& size) {
   if (!ImageBuffer::CanCreateImageBuffer(size))
     return nullptr;
   sk_sp<SkSurface> surface =
       SkSurface::MakeRasterN32Premul(size.Width(), size.Height());
-  return surface ? surface->makeImageSnapshot() : nullptr;
-}
-
-PassRefPtr<Image> CreateTransparentImage(const IntSize& size) {
-  sk_sp<SkImage> image = CreateTransparentSkImage(size);
-  return image ? StaticBitmapImage::Create(image) : nullptr;
+  if (!surface)
+    return nullptr;
+  return StaticBitmapImage::Create(surface->makeImageSnapshot());
 }
 
 }  // namespace
@@ -653,13 +649,14 @@ ImageData* HTMLCanvasElement::ToImageData(SourceDrawingBuffer source_buffer,
     context_->PaintRenderingResultsToCanvas(source_buffer);
     image_data = ImageData::Create(size_);
     if (image_data && GetImageBuffer()) {
-      sk_sp<SkImage> snapshot =
-          GetImageBuffer()->NewSkImageSnapshot(kPreferNoAcceleration, reason);
+      RefPtr<StaticBitmapImage> snapshot =
+          GetImageBuffer()->NewImageSnapshot(kPreferNoAcceleration, reason);
       if (snapshot) {
         SkImageInfo image_info = SkImageInfo::Make(
             width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
-        snapshot->readPixels(image_info, image_data->data()->Data(),
-                             image_info.minRowBytes(), 0, 0);
+        snapshot->ImageForCurrentFrame()->readPixels(
+            image_info, image_data->data()->Data(), image_info.minRowBytes(), 0,
+            0);
       }
     }
     return image_data;
@@ -671,20 +668,20 @@ ImageData* HTMLCanvasElement::ToImageData(SourceDrawingBuffer source_buffer,
     return image_data;
 
   DCHECK(Is2d() || PlaceholderFrame());
-  sk_sp<SkImage> snapshot;
+  RefPtr<StaticBitmapImage> snapshot;
   if (GetImageBuffer()) {
     snapshot =
-        GetImageBuffer()->NewSkImageSnapshot(kPreferNoAcceleration, reason);
+        GetImageBuffer()->NewImageSnapshot(kPreferNoAcceleration, reason);
   } else if (PlaceholderFrame()) {
     DCHECK(PlaceholderFrame()->OriginClean());
-    snapshot = PlaceholderFrame()->ImageForCurrentFrame();
+    snapshot = PlaceholderFrame();
   }
 
   if (snapshot) {
     SkImageInfo image_info = SkImageInfo::Make(
         width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
-    snapshot->readPixels(image_info, image_data->data()->Data(),
-                         image_info.minRowBytes(), 0, 0);
+    snapshot->ImageForCurrentFrame()->readPixels(
+        image_info, image_data->data()->Data(), image_info.minRowBytes(), 0, 0);
   }
 
   return image_data;
@@ -921,19 +918,19 @@ HTMLCanvasElement::CreateAcceleratedImageBufferSurface(OpacityMode opacity_mode,
 
   // Avoid creating |contextProvider| until we're sure we want to try use it,
   // since it costs us GPU memory.
-  std::unique_ptr<WebGraphicsContext3DProvider> context_provider(
-      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider());
-  if (!context_provider) {
+  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
+      SharedGpuContext::ContextProviderWrapper();
+  if (!context_provider_wrapper) {
     CanvasMetrics::CountCanvasContextUsage(
         CanvasMetrics::kAccelerated2DCanvasGPUContextLost);
     return nullptr;
   }
 
-  if (context_provider->IsSoftwareRendering())
+  if (context_provider_wrapper->ContextProvider()->IsSoftwareRendering())
     return nullptr;  // Don't use accelerated canvas with swiftshader.
 
   auto surface = WTF::MakeUnique<Canvas2DImageBufferSurface>(
-      std::move(context_provider), Size(), *msaa_sample_count, opacity_mode,
+      Size(), *msaa_sample_count, opacity_mode,
       Canvas2DLayerBridge::kEnableAcceleration, GetCanvasColorParams());
   if (!surface->IsValid()) {
     CanvasMetrics::CountCanvasContextUsage(
@@ -1269,10 +1266,14 @@ PassRefPtr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
   if (context_->GetContextType() ==
       CanvasRenderingContext::kContextImageBitmap) {
     *status = kNormalSourceImageStatus;
-    return context_->GetImage(hint, reason);
+    RefPtr<Image> result = context_->GetImage(hint, reason);
+    if (!result)
+      result = CreateTransparentImage(Size());
+    *status = result ? kNormalSourceImageStatus : kInvalidSourceImageStatus;
+    return result;
   }
 
-  sk_sp<SkImage> sk_image;
+  RefPtr<Image> image;
   // TODO(ccameron): Canvas should produce sRGB images.
   // https://crbug.com/672299
   if (Is3d()) {
@@ -1281,9 +1282,9 @@ PassRefPtr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     // cached copy of the backing in the canvas's ImageBuffer.
     RenderingContext()->PaintRenderingResultsToCanvas(kBackBuffer);
     if (GetImageBuffer()) {
-      sk_image = GetImageBuffer()->NewSkImageSnapshot(hint, reason);
+      image = GetImageBuffer()->NewImageSnapshot(hint, reason);
     } else {
-      sk_image = CreateTransparentSkImage(Size());
+      image = CreateTransparentImage(Size());
     }
   } else {
     if (CanvasHeuristicParameters::kDisableAccelerationToAvoidReadbacks &&
@@ -1292,21 +1293,18 @@ PassRefPtr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
         GetImageBuffer()->IsAccelerated()) {
       GetImageBuffer()->DisableAcceleration();
     }
-    RefPtr<Image> image = RenderingContext()->GetImage(hint, reason);
-    if (image) {
-      sk_image = image->ImageForCurrentFrame();
-    } else {
-      sk_image = CreateTransparentSkImage(Size());
+    image = RenderingContext()->GetImage(hint, reason);
+    if (!image) {
+      image = CreateTransparentImage(Size());
     }
   }
 
-  if (sk_image) {
+  if (image) {
     *status = kNormalSourceImageStatus;
-    return StaticBitmapImage::Create(std::move(sk_image));
+  } else {
+    *status = kInvalidSourceImageStatus;
   }
-
-  *status = kInvalidSourceImageStatus;
-  return nullptr;
+  return image;
 }
 
 bool HTMLCanvasElement::WouldTaintOrigin(SecurityOrigin*) const {

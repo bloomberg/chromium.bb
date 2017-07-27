@@ -38,8 +38,8 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/text/BidiTextRun.h"
 #include "platform/text/StringTruncator.h"
@@ -309,7 +309,7 @@ std::unique_ptr<DragImage> DragImage::Create(const KURL& url,
                           FloatPoint(text_pos), Font::kDoNotPaintIfFontNotReady,
                           device_scale_factor, text_paint);
 
-  RefPtr<Image> image = buffer->NewImageSnapshot();
+  RefPtr<StaticBitmapImage> image = buffer->NewImageSnapshot();
   return DragImage::Create(image.Get(), kDoNotRespectImageOrientation,
                            device_scale_factor);
 }

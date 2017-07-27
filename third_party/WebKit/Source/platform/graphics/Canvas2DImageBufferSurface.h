@@ -33,6 +33,7 @@
 
 #include "platform/graphics/Canvas2DLayerBridge.h"
 #include "platform/graphics/ImageBufferSurface.h"
+#include "platform/graphics/StaticBitmapImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
@@ -42,20 +43,17 @@ namespace blink {
 class Canvas2DImageBufferSurface final : public ImageBufferSurface {
  public:
   Canvas2DImageBufferSurface(
-      std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
       const IntSize& size,
       int msaa_sample_count,
       OpacityMode opacity_mode,
       Canvas2DLayerBridge::AccelerationMode acceleration_mode,
       const CanvasColorParams& color_params)
       : ImageBufferSurface(size, opacity_mode, color_params),
-        layer_bridge_(
-            AdoptRef(new Canvas2DLayerBridge(std::move(context_provider),
-                                             size,
-                                             msaa_sample_count,
-                                             opacity_mode,
-                                             acceleration_mode,
-                                             color_params))) {
+        layer_bridge_(AdoptRef(new Canvas2DLayerBridge(size,
+                                                       msaa_sample_count,
+                                                       opacity_mode,
+                                                       acceleration_mode,
+                                                       color_params))) {
     Init();
   }
 
@@ -102,8 +100,8 @@ class Canvas2DImageBufferSurface final : public ImageBufferSurface {
     return layer_bridge_->WritePixels(orig_info, pixels, row_bytes, x, y);
   }
 
-  sk_sp<SkImage> NewImageSnapshot(AccelerationHint hint,
-                                  SnapshotReason reason) override {
+  RefPtr<StaticBitmapImage> NewImageSnapshot(AccelerationHint hint,
+                                             SnapshotReason reason) override {
     return layer_bridge_->NewImageSnapshot(hint, reason);
   }
 

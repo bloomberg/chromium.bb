@@ -24,6 +24,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -117,6 +118,8 @@ void OffscreenCanvasFrameDispatcherImpl::
     SetTransferableResourceToSharedGPUContext(
         cc::TransferableResource& resource,
         RefPtr<StaticBitmapImage> image) {
+  DCHECK(!image->IsTextureBacked());
+
   // TODO(crbug.com/652707): When committing the first frame, there is no
   // instance of SharedGpuContext yet, calling SharedGpuContext::gl() will
   // trigger a creation of an instace, which requires to create a
@@ -125,7 +128,16 @@ void OffscreenCanvasFrameDispatcherImpl::
   // and bind to the worker thread if commit() is called on worker. In the
   // subsequent frame, we should already have a SharedGpuContext, then getting
   // the gl interface should not be expensive.
-  gpu::gles2::GLES2Interface* gl = SharedGpuContext::Gl();
+  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
+      SharedGpuContext::ContextProviderWrapper();
+  if (!context_provider_wrapper)
+    return;
+
+  gpu::gles2::GLES2Interface* gl =
+      context_provider_wrapper->ContextProvider()->ContextGL();
+  GrContext* gr = context_provider_wrapper->ContextProvider()->GetGrContext();
+  if (!gl || !gr)
+    return;
 
   std::unique_ptr<FrameResource> frame_resource =
       createOrRecycleFrameResource();
@@ -143,8 +155,13 @@ void OffscreenCanvasFrameDispatcherImpl::
       Uint8Array::Create(std::move(dst_buffer), 0, byte_length);
   image->ImageForCurrentFrame()->readPixels(info, dst_pixels->Data(),
                                             info.minRowBytes(), 0, 0);
+  DCHECK(frame_resource->context_provider_wrapper_.get() ==
+             context_provider_wrapper.get() ||
+         !frame_resource->context_provider_wrapper_);
 
-  if (frame_resource->texture_id_ == 0u) {
+  if (frame_resource->texture_id_ == 0u ||
+      !frame_resource->context_provider_wrapper_) {
+    frame_resource->context_provider_wrapper_ = context_provider_wrapper;
     gl->GenTextures(1, &frame_resource->texture_id_);
     gl->BindTexture(GL_TEXTURE_2D, frame_resource->texture_id_);
     GLenum format =
@@ -173,6 +190,7 @@ void OffscreenCanvasFrameDispatcherImpl::
   resource.is_software = false;
 
   resources_.insert(next_resource_id_, std::move(frame_resource));
+  gr->resetContext(kTextureBinding_GrGLBackendState);
 }
 
 void OffscreenCanvasFrameDispatcherImpl::
@@ -492,11 +510,14 @@ void OffscreenCanvasFrameDispatcherImpl::OnBeginFrame(
 }
 
 OffscreenCanvasFrameDispatcherImpl::FrameResource::~FrameResource() {
-  gpu::gles2::GLES2Interface* gl = SharedGpuContext::Gl();
-  if (texture_id_)
-    gl->DeleteTextures(1, &texture_id_);
-  if (image_id_)
-    gl->DestroyImageCHROMIUM(image_id_);
+  if (context_provider_wrapper_) {
+    gpu::gles2::GLES2Interface* gl =
+        context_provider_wrapper_->ContextProvider()->ContextGL();
+    if (texture_id_)
+      gl->DeleteTextures(1, &texture_id_);
+    if (image_id_)
+      gl->DestroyImageCHROMIUM(image_id_);
+  }
 }
 
 void OffscreenCanvasFrameDispatcherImpl::ReclaimResources(
@@ -508,9 +529,10 @@ void OffscreenCanvasFrameDispatcherImpl::ReclaimResources(
     if (it == resources_.end())
       continue;
 
-    if (SharedGpuContext::IsValid() && resource.sync_token.HasData()) {
-      SharedGpuContext::Gl()->WaitSyncTokenCHROMIUM(
-          resource.sync_token.GetConstData());
+    if (it->value->context_provider_wrapper_ && resource.sync_token.HasData()) {
+      it->value->context_provider_wrapper_->ContextProvider()
+          ->ContextGL()
+          ->WaitSyncTokenCHROMIUM(resource.sync_token.GetConstData());
     }
     ReclaimResourceInternal(it);
   }

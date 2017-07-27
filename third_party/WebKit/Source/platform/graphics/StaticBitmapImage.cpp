@@ -15,13 +15,15 @@
 
 namespace blink {
 
-PassRefPtr<StaticBitmapImage> StaticBitmapImage::Create(sk_sp<SkImage> image) {
-  if (!image)
-    return nullptr;
-  if (image->isTextureBacked())
-    return AcceleratedStaticBitmapImage::CreateFromSharedContextImage(
-        std::move(image));
-  return UnacceleratedStaticBitmapImage::Create(std::move(image));
+RefPtr<StaticBitmapImage> StaticBitmapImage::Create(
+    sk_sp<SkImage> image,
+    WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper) {
+  if (image->isTextureBacked()) {
+    CHECK(context_provider_wrapper);
+    return AcceleratedStaticBitmapImage::CreateFromSkImage(
+        image, std::move(context_provider_wrapper));
+  }
+  return UnacceleratedStaticBitmapImage::Create(image);
 }
 
 void StaticBitmapImage::DrawHelper(PaintCanvas* canvas,
@@ -38,6 +40,20 @@ void StaticBitmapImage::DrawHelper(PaintCanvas* canvas,
 
   canvas->drawImageRect(image, adjusted_src_rect, dst_rect, &flags,
                         WebCoreClampingModeToSkiaRectConstraint(clamp_mode));
+}
+
+RefPtr<StaticBitmapImage> StaticBitmapImage::ConvertToColorSpace(
+    sk_sp<SkColorSpace> target,
+    SkTransferFunctionBehavior premulBehavior) {
+  sk_sp<SkImage> skia_image = ImageForCurrentFrame();
+  sk_sp<SkImage> converted_skia_image =
+      skia_image->makeColorSpace(target, premulBehavior);
+
+  if (skia_image == converted_skia_image)
+    return this;
+
+  return StaticBitmapImage::Create(converted_skia_image,
+                                   ContextProviderWrapper());
 }
 
 }  // namespace blink

@@ -40,6 +40,7 @@
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
+#include "platform/wtf/WeakPtr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkImage;
@@ -58,6 +59,8 @@ class FloatSize;
 class GraphicsContext;
 class Image;
 class KURL;
+class WebGraphicsContext3DProvider;
+class WebGraphicsContext3DProviderWrapper;
 
 using cc::PaintCanvas;
 using cc::PaintFlags;
@@ -77,6 +80,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   virtual bool IsSVGImage() const { return false; }
   virtual bool IsBitmapImage() const { return false; }
+  virtual bool IsStaticBitmapImage() const { return false; }
 
   // To increase accuracy of currentFrameKnownToBeOpaque() it may,
   // for applicable image types, be told to pre-cache metadata for
@@ -187,6 +191,17 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
                     ImageClampingMode) = 0;
 
   virtual bool ApplyShader(PaintFlags&, const SkMatrix& local_matrix);
+
+  // Use ContextProvider() for immediate use only, use ContextProviderWrapper()
+  // to obtain a retainable reference.
+  // Note: Implemented only in sub-classes that use the GPU.
+  virtual WebGraphicsContext3DProvider* ContextProvider() const {
+    return nullptr;
+  }
+  virtual WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
+      const {
+    return nullptr;
+  }
 
   // Compute the tile which contains a given point (assuming a repeating tile
   // grid). The point and returned value are in destination grid space.

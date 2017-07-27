@@ -6,6 +6,8 @@
 
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "platform/CrossThreadFunctional.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/graphics/MailboxTextureHolder.h"
 #include "platform/graphics/SkiaTextureHolder.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
@@ -14,6 +16,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/gpu/GrTexture.h"
 
 #include <memory>
 #include <utility>
@@ -21,9 +24,12 @@
 namespace blink {
 
 PassRefPtr<AcceleratedStaticBitmapImage>
-AcceleratedStaticBitmapImage::CreateFromSharedContextImage(
-    sk_sp<SkImage> image) {
-  return AdoptRef(new AcceleratedStaticBitmapImage(std::move(image)));
+AcceleratedStaticBitmapImage::CreateFromSkImage(
+    sk_sp<SkImage> image,
+    WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper) {
+  DCHECK(image->isTextureBacked());
+  return AdoptRef(new AcceleratedStaticBitmapImage(
+      std::move(image), std::move(context_provider_wrapper)));
 }
 
 PassRefPtr<AcceleratedStaticBitmapImage>
@@ -31,15 +37,18 @@ AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
     unsigned texture_id,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider,
+    WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper,
     IntSize mailbox_size) {
   return AdoptRef(new AcceleratedStaticBitmapImage(
-      mailbox, sync_token, texture_id, context_provider, mailbox_size));
+      mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
+      mailbox_size));
 }
 
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
-    sk_sp<SkImage> image) {
-  texture_holder_ = WTF::WrapUnique(new SkiaTextureHolder(std::move(image)));
+    sk_sp<SkImage> image,
+    WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper) {
+  texture_holder_ = WTF::WrapUnique(new SkiaTextureHolder(
+      std::move(image), std::move(context_provider_wrapper)));
   thread_checker_.DetachFromThread();
 }
 
@@ -47,17 +56,68 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
     unsigned texture_id,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider,
+    WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper,
     IntSize mailbox_size) {
   texture_holder_ = WTF::WrapUnique(new MailboxTextureHolder(
-      mailbox, sync_token, texture_id, context_provider, mailbox_size));
+      mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
+      mailbox_size));
   thread_checker_.DetachFromThread();
 }
 
-AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {}
+namespace {
+
+void DestroySkImageOnOriginalThread(
+    sk_sp<SkImage> image,
+    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper) {
+  if (context_provider_wrapper &&
+      image->isValid(
+          context_provider_wrapper->ContextProvider()->GetGrContext())) {
+    // In case texture was used by compositor, which may have changed params.
+    image->getTexture()->textureParamsModified();
+  }
+  // destroy by letting |image| go out of scope
+}
+
+}  // unnamed namespace
+
+AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {
+  // If the original SkImage was retained, it must be destroyed on the thread
+  // where it came from. In the same thread case, there is nothing to do because
+  // the regular destruction flow is fine.
+  if (original_skia_image_) {
+    if (original_skia_image_thread_id_ !=
+        Platform::Current()->CurrentThread()->ThreadId()) {
+      original_skia_image_task_runner_->PostTask(
+          BLINK_FROM_HERE,
+          CrossThreadBind(
+              &DestroySkImageOnOriginalThread, std::move(original_skia_image_),
+              std::move(original_skia_image_context_provider_wrapper_)));
+    } else {
+      DestroySkImageOnOriginalThread(
+          std::move(original_skia_image_),
+          std::move(original_skia_image_context_provider_wrapper_));
+    }
+  }
+}
+
+void AcceleratedStaticBitmapImage::RetainOriginalSkImageForCopyOnWrite() {
+  DCHECK(texture_holder_->IsSkiaTextureHolder());
+  original_skia_image_ = texture_holder_->GetSkImage();
+  original_skia_image_context_provider_wrapper_ = ContextProviderWrapper();
+  DCHECK(original_skia_image_);
+  WebThread* thread = Platform::Current()->CurrentThread();
+  original_skia_image_thread_id_ = thread->ThreadId();
+  original_skia_image_task_runner_ = thread->GetWebTaskRunner();
+}
 
 IntSize AcceleratedStaticBitmapImage::Size() const {
   return texture_holder_->Size();
+}
+
+RefPtr<StaticBitmapImage> AcceleratedStaticBitmapImage::MakeUnaccelerated() {
+  CreateImageFromMailboxIfNeeded();
+  return StaticBitmapImage::Create(
+      texture_holder_->GetSkImage()->makeNonTextureImage());
 }
 
 void AcceleratedStaticBitmapImage::UpdateSyncToken(gpu::SyncToken sync_token) {
@@ -116,23 +176,25 @@ void AcceleratedStaticBitmapImage::Draw(PaintCanvas* canvas,
                                 image_clamping_mode, paint_image);
 }
 
-bool AcceleratedStaticBitmapImage::IsValid() {
-  if (!texture_holder_)
-    return false;
-  if (!SharedGpuContext::IsValid())
-    return false;  // Gpu context was lost
-  unsigned shared_context_id = texture_holder_->SharedContextId();
-  if (shared_context_id != SharedGpuContext::kNoSharedContext &&
-      shared_context_id != SharedGpuContext::ContextId()) {
-    // Gpu context was lost and restored since the resource was created.
-    return false;
-  }
-  return true;
+bool AcceleratedStaticBitmapImage::IsValid() const {
+  return texture_holder_ && texture_holder_->IsValid();
+}
+
+WebGraphicsContext3DProvider* AcceleratedStaticBitmapImage::ContextProvider()
+    const {
+  if (!IsValid())
+    return nullptr;
+  return texture_holder_->ContextProvider();
+}
+
+WeakPtr<WebGraphicsContext3DProviderWrapper>
+AcceleratedStaticBitmapImage::ContextProviderWrapper() const {
+  if (!IsValid())
+    return nullptr;
+  return texture_holder_->ContextProviderWrapper();
 }
 
 void AcceleratedStaticBitmapImage::CreateImageFromMailboxIfNeeded() {
-  if (texture_holder_->SharedContextId() != SharedGpuContext::kNoSharedContext)
-    return;
   if (texture_holder_->IsSkiaTextureHolder())
     return;
   texture_holder_ =
@@ -150,17 +212,6 @@ void AcceleratedStaticBitmapImage::EnsureMailbox() {
 void AcceleratedStaticBitmapImage::Transfer() {
   CheckThread();
   EnsureMailbox();
-  // If |m_textureThreadTaskRunner| in TextureHolder is set, it means that
-  // the |m_texture| in this class has been consumed on the current thread,
-  // which may happen when we have chained transfers. When that is the case,
-  // we must not reset |m_imageThreadTaskRunner|, so we ensure that
-  // releaseImage() or releaseTexture() is called on the right thread.
-  if (!texture_holder_->WasTransferred()) {
-    WebThread* current_thread = Platform::Current()->CurrentThread();
-    texture_holder_->SetWasTransferred(true);
-    texture_holder_->SetTextureThreadTaskRunner(
-        current_thread->GetWebTaskRunner());
-  }
   detach_thread_at_next_check_ = true;
 }
 

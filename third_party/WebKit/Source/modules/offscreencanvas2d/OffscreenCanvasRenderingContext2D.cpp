@@ -106,10 +106,9 @@ RefPtr<StaticBitmapImage>
 OffscreenCanvasRenderingContext2D::TransferToStaticBitmapImage() {
   if (!GetImageBuffer())
     return nullptr;
-  sk_sp<SkImage> sk_image = GetImageBuffer()->NewSkImageSnapshot(
+  RefPtr<StaticBitmapImage> image = GetImageBuffer()->NewImageSnapshot(
       kPreferAcceleration, kSnapshotReasonTransferToImageBitmap);
-  RefPtr<StaticBitmapImage> image =
-      StaticBitmapImage::Create(std::move(sk_image));
+
   image->SetOriginClean(this->OriginClean());
   return image;
 }
@@ -121,18 +120,23 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
   RefPtr<StaticBitmapImage> image = TransferToStaticBitmapImage();
   if (!image)
     return nullptr;
-  host()->DiscardImageBuffer();  // "Transfer" means no retained buffer
+  if (image->IsTextureBacked()) {
+    // Before discarding the ImageBuffer, we need to flush pending render ops
+    // to fully resolve the snapshot.
+    image->ImageForCurrentFrame()->getTextureHandle(
+        true);  // Flush pending ops.
+  }
+  host()->DiscardImageBuffer();  // "Transfer" means no retained buffer.
   return ImageBitmap::Create(std::move(image));
 }
 
-PassRefPtr<Image> OffscreenCanvasRenderingContext2D::GetImage(
+PassRefPtr<StaticBitmapImage> OffscreenCanvasRenderingContext2D::GetImage(
     AccelerationHint hint,
     SnapshotReason reason) const {
   if (!GetImageBuffer())
     return nullptr;
-  sk_sp<SkImage> sk_image = GetImageBuffer()->NewSkImageSnapshot(hint, reason);
   RefPtr<StaticBitmapImage> image =
-      StaticBitmapImage::Create(std::move(sk_image));
+      GetImageBuffer()->NewImageSnapshot(hint, reason);
   return image;
 }
 
@@ -140,16 +144,16 @@ ImageData* OffscreenCanvasRenderingContext2D::ToImageData(
     SnapshotReason reason) {
   if (!GetImageBuffer())
     return nullptr;
-  sk_sp<SkImage> snapshot =
-      GetImageBuffer()->NewSkImageSnapshot(kPreferNoAcceleration, reason);
+  RefPtr<StaticBitmapImage> snapshot =
+      GetImageBuffer()->NewImageSnapshot(kPreferNoAcceleration, reason);
   ImageData* image_data = nullptr;
   if (snapshot) {
     image_data = ImageData::Create(host()->Size());
     SkImageInfo image_info =
         SkImageInfo::Make(this->Width(), this->Height(), kRGBA_8888_SkColorType,
                           kUnpremul_SkAlphaType);
-    snapshot->readPixels(image_info, image_data->data()->Data(),
-                         image_info.minRowBytes(), 0, 0);
+    snapshot->ImageForCurrentFrame()->readPixels(
+        image_info, image_data->data()->Data(), image_info.minRowBytes(), 0, 0);
   }
   return image_data;
 }

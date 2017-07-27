@@ -57,7 +57,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   void clearRect(double x, double y, double width, double height) override {
     BaseRenderingContext2D::clearRect(x, y, width, height);
   }
-  PassRefPtr<Image> GetImage(AccelerationHint, SnapshotReason) const final;
+  PassRefPtr<StaticBitmapImage> GetImage(AccelerationHint,
+                                         SnapshotReason) const final;
   ImageData* ToImageData(SnapshotReason) override;
   void Reset() override;
   void RestoreCanvasMatrixClipStack(PaintCanvas* c) const override {

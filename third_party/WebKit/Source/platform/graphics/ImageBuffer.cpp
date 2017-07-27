@@ -183,22 +183,14 @@ void ImageBuffer::ResetCanvas(PaintCanvas* canvas) const {
     client_->RestoreCanvasMatrixClipStack(canvas);
 }
 
-sk_sp<SkImage> ImageBuffer::NewSkImageSnapshot(AccelerationHint hint,
-                                               SnapshotReason reason) const {
+PassRefPtr<StaticBitmapImage> ImageBuffer::NewImageSnapshot(
+    AccelerationHint hint,
+    SnapshotReason reason) const {
   if (snapshot_state_ == kInitialSnapshotState)
     snapshot_state_ = kDidAcquireSnapshot;
-
   if (!IsSurfaceValid())
     return nullptr;
   return surface_->NewImageSnapshot(hint, reason);
-}
-
-PassRefPtr<Image> ImageBuffer::NewImageSnapshot(AccelerationHint hint,
-                                                SnapshotReason reason) const {
-  sk_sp<SkImage> snapshot = NewSkImageSnapshot(hint, reason);
-  if (!snapshot)
-    return nullptr;
-  return StaticBitmapImage::Create(std::move(snapshot));
 }
 
 void ImageBuffer::DidDraw(const FloatRect& rect) const {
@@ -225,40 +217,34 @@ bool ImageBuffer::CopyToPlatformTexture(SnapshotReason reason,
   if (!IsSurfaceValid())
     return false;
 
-  sk_sp<const SkImage> texture_image =
+  RefPtr<StaticBitmapImage> image =
       surface_->NewImageSnapshot(kPreferAcceleration, reason);
-  if (!texture_image)
+  if (!image || !image->IsTextureBacked() || !image->IsValid())
     return false;
 
-  if (!surface_->IsAccelerated())
-    return false;
-
-  DCHECK(texture_image->isTextureBacked());  // The isAccelerated() check above
-                                             // should guarantee this.
   // Get the texture ID, flushing pending operations if needed.
   const GrGLTextureInfo* texture_info = skia::GrBackendObjectToGrGLTextureInfo(
-      texture_image->getTextureHandle(true));
+      image->ImageForCurrentFrame()->getTextureHandle(true));
   if (!texture_info || !texture_info->fID)
     return false;
 
-  std::unique_ptr<WebGraphicsContext3DProvider> provider =
-      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider();
+  WebGraphicsContext3DProvider* provider = image->ContextProvider();
   if (!provider || !provider->GetGrContext())
     return false;
-  gpu::gles2::GLES2Interface* shared_gl = provider->ContextGL();
+  gpu::gles2::GLES2Interface* source_gl = provider->ContextGL();
 
   gpu::Mailbox mailbox;
 
   // Contexts may be in a different share group. We must transfer the texture
   // through a mailbox first.
-  shared_gl->GenMailboxCHROMIUM(mailbox.name);
-  shared_gl->ProduceTextureDirectCHROMIUM(texture_info->fID,
+  source_gl->GenMailboxCHROMIUM(mailbox.name);
+  source_gl->ProduceTextureDirectCHROMIUM(texture_info->fID,
                                           texture_info->fTarget, mailbox.name);
-  const GLuint64 shared_fence_sync = shared_gl->InsertFenceSyncCHROMIUM();
-  shared_gl->Flush();
+  const GLuint64 shared_fence_sync = source_gl->InsertFenceSyncCHROMIUM();
+  source_gl->Flush();
 
   gpu::SyncToken produce_sync_token;
-  shared_gl->GenSyncTokenCHROMIUM(shared_fence_sync,
+  source_gl->GenSyncTokenCHROMIUM(shared_fence_sync,
                                   produce_sync_token.GetData());
   gl->WaitSyncTokenCHROMIUM(produce_sync_token.GetConstData());
 
@@ -285,10 +271,10 @@ bool ImageBuffer::CopyToPlatformTexture(SnapshotReason reason,
 
   gpu::SyncToken copy_sync_token;
   gl->GenSyncTokenCHROMIUM(context_fence_sync, copy_sync_token.GetData());
-  shared_gl->WaitSyncTokenCHROMIUM(copy_sync_token.GetConstData());
+  source_gl->WaitSyncTokenCHROMIUM(copy_sync_token.GetConstData());
   // This disassociates the texture from the mailbox to avoid leaking the
-  // mapping between the two.
-  shared_gl->ProduceTextureDirectCHROMIUM(0, texture_info->fTarget,
+  // mapping between the two in cases where the texture is recycled by skia.
+  source_gl->ProduceTextureDirectCHROMIUM(0, texture_info->fTarget,
                                           mailbox.name);
 
   // Undo grContext texture binding changes introduced in this function.
@@ -368,7 +354,7 @@ bool ImageBuffer::GetImageData(Multiply multiplied,
 
   DCHECK(Canvas());
 
-  sk_sp<SkImage> snapshot = surface_->NewImageSnapshot(
+  RefPtr<StaticBitmapImage> snapshot = surface_->NewImageSnapshot(
       kPreferNoAcceleration, kSnapshotReasonGetImageData);
   if (!snapshot)
     return false;
@@ -401,8 +387,8 @@ bool ImageBuffer::GetImageData(Multiply multiplied,
       rect.Width(), rect.Height(), color_type, alpha_type,
       surface_->color_params().GetSkColorSpaceForSkSurfaces());
 
-  snapshot->readPixels(info, result.Data(), bytes_per_pixel * rect.Width(),
-                       rect.X(), rect.Y());
+  snapshot->ImageForCurrentFrame()->readPixels(
+      info, result.Data(), bytes_per_pixel * rect.Width(), rect.X(), rect.Y());
   gpu_readback_invoked_in_current_frame_ = true;
   result.Transfer(contents);
   return true;
@@ -506,7 +492,7 @@ void ImageBuffer::DisableAcceleration() {
 }
 
 void ImageBuffer::SetSurface(std::unique_ptr<ImageBufferSurface> surface) {
-  sk_sp<SkImage> image =
+  RefPtr<StaticBitmapImage> image =
       surface_->NewImageSnapshot(kPreferNoAcceleration, kSnapshotReasonPaint);
 
   // image can be null if alloaction failed in which case we should just
@@ -515,18 +501,23 @@ void ImageBuffer::SetSurface(std::unique_ptr<ImageBufferSurface> surface) {
   if (!image)
     return;
 
-  if (surface->IsRecording()) {
+  if (surface->IsRecording() && image->IsTextureBacked()) {
     // Using a GPU-backed image with RecordingImageBufferSurface
     // will fail at playback time.
-    image = image->makeNonTextureImage();
+    sk_sp<SkImage> texture_image = image->ImageForCurrentFrame();
+    // Must tear down AcceleratedStaticBitmapImage before calling
+    // makeNonTextureImage()
+    image.Clear();
+    image = StaticBitmapImage::Create(texture_image->makeNonTextureImage());
   }
   // TODO(vmpstr): Figure out actual values for this.
   auto animation_type = PaintImage::AnimationType::UNKNOWN;
   auto completion_state = PaintImage::CompletionState::UNKNOWN;
   static PaintImage::Id unknown_stable_id = PaintImage::GetNextId();
-  surface->Canvas()->drawImage(PaintImage(unknown_stable_id, std::move(image),
-                                          animation_type, completion_state),
-                               0, 0);
+  surface->Canvas()->drawImage(
+      PaintImage(unknown_stable_id, image->ImageForCurrentFrame(),
+                 animation_type, completion_state),
+      0, 0);
 
   surface->SetImageBuffer(this);
   if (client_)
