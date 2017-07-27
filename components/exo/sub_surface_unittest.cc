@@ -5,6 +5,7 @@
 #include "components/exo/sub_surface.h"
 
 #include "base/memory/ptr_util.h"
+#include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
@@ -16,10 +17,10 @@ namespace {
 using SubSurfaceTest = test::ExoTestBase;
 
 TEST_F(SubSurfaceTest, SetPosition) {
-  std::unique_ptr<Surface> parent(new Surface);
-  std::unique_ptr<Surface> surface(new Surface);
-  std::unique_ptr<SubSurface> sub_surface(
-      new SubSurface(surface.get(), parent.get()));
+  auto parent = base::MakeUnique<Surface>();
+  auto shell_surface = base::MakeUnique<ShellSurface>(parent.get());
+  auto surface = base::MakeUnique<Surface>();
+  auto sub_surface = base::MakeUnique<SubSurface>(surface.get(), parent.get());
 
   // Initial position is at the origin.
   EXPECT_EQ(gfx::Point().ToString(),
@@ -49,14 +50,15 @@ TEST_F(SubSurfaceTest, SetPosition) {
 }
 
 TEST_F(SubSurfaceTest, PlaceAbove) {
-  std::unique_ptr<Surface> parent(new Surface);
-  std::unique_ptr<Surface> surface1(new Surface);
-  std::unique_ptr<Surface> surface2(new Surface);
-  std::unique_ptr<Surface> non_sibling_surface(new Surface);
-  std::unique_ptr<SubSurface> sub_surface1(
-      new SubSurface(surface1.get(), parent.get()));
-  std::unique_ptr<SubSurface> sub_surface2(
-      new SubSurface(surface2.get(), parent.get()));
+  auto parent = base::MakeUnique<Surface>();
+  auto shell_surface = base::MakeUnique<ShellSurface>(parent.get());
+  auto surface1 = base::MakeUnique<Surface>();
+  auto surface2 = base::MakeUnique<Surface>();
+  auto non_sibling_surface = base::MakeUnique<Surface>();
+  auto sub_surface1 =
+      base::MakeUnique<SubSurface>(surface1.get(), parent.get());
+  auto sub_surface2 =
+      base::MakeUnique<SubSurface>(surface2.get(), parent.get());
 
   ASSERT_EQ(2u, parent->window()->children().size());
   EXPECT_EQ(surface1->window(), parent->window()->children()[0]);
@@ -80,14 +82,15 @@ TEST_F(SubSurfaceTest, PlaceAbove) {
 }
 
 TEST_F(SubSurfaceTest, PlaceBelow) {
-  std::unique_ptr<Surface> parent(new Surface);
-  std::unique_ptr<Surface> surface1(new Surface);
-  std::unique_ptr<Surface> surface2(new Surface);
-  std::unique_ptr<Surface> non_sibling_surface(new Surface);
-  std::unique_ptr<SubSurface> sub_surface1(
-      new SubSurface(surface1.get(), parent.get()));
-  std::unique_ptr<SubSurface> sub_surface2(
-      new SubSurface(surface2.get(), parent.get()));
+  auto parent = base::MakeUnique<Surface>();
+  auto shell_surface = base::MakeUnique<ShellSurface>(parent.get());
+  auto surface1 = base::MakeUnique<Surface>();
+  auto surface2 = base::MakeUnique<Surface>();
+  auto non_sibling_surface = base::MakeUnique<Surface>();
+  auto sub_surface1 =
+      base::MakeUnique<SubSurface>(surface1.get(), parent.get());
+  auto sub_surface2 =
+      base::MakeUnique<SubSurface>(surface2.get(), parent.get());
 
   ASSERT_EQ(2u, parent->window()->children().size());
   EXPECT_EQ(surface1->window(), parent->window()->children()[0]);
@@ -111,13 +114,14 @@ TEST_F(SubSurfaceTest, PlaceBelow) {
 }
 
 TEST_F(SubSurfaceTest, SetCommitBehavior) {
-  std::unique_ptr<Surface> parent(new Surface);
-  std::unique_ptr<Surface> child(new Surface);
-  std::unique_ptr<Surface> grandchild(new Surface);
-  std::unique_ptr<SubSurface> child_sub_surface(
-      new SubSurface(child.get(), parent.get()));
-  std::unique_ptr<SubSurface> grandchild_sub_surface(
-      new SubSurface(grandchild.get(), child.get()));
+  auto parent = base::MakeUnique<Surface>();
+  auto shell_surface = base::MakeUnique<ShellSurface>(parent.get());
+  auto child = base::MakeUnique<Surface>();
+  auto grandchild = base::MakeUnique<Surface>();
+  auto child_sub_surface =
+      base::MakeUnique<SubSurface>(child.get(), parent.get());
+  auto grandchild_sub_surface =
+      base::MakeUnique<SubSurface>(grandchild.get(), child.get());
 
   // Initial position is at the origin.
   EXPECT_EQ(gfx::Point().ToString(),
@@ -141,19 +145,20 @@ TEST_F(SubSurfaceTest, SetCommitBehavior) {
   EXPECT_EQ(position1.ToString(),
             grandchild->window()->bounds().origin().ToString());
 
+  // TODO(penghuang): http://crbug.com/740110 Support async mode.
   // Disable synchronous commit behavior.
-  bool synchronized = false;
-  child_sub_surface->SetCommitBehavior(synchronized);
+  // bool synchronized = false;
+  // child_sub_surface->SetCommitBehavior(synchronized);
 
   // Set position to 20, 20.
-  gfx::Point position2(20, 20);
-  grandchild_sub_surface->SetPosition(position2);
-  child->Commit();
+  // gfx::Point position2(20, 20);
+  // grandchild_sub_surface->SetPosition(position2);
+  // child->Commit();
 
   // A Commit() call on child should be sufficient for the position of
   // grandchild to take effect when synchronous is disabled.
-  EXPECT_EQ(position2.ToString(),
-            grandchild->window()->bounds().origin().ToString());
+  // EXPECT_EQ(position2.ToString(),
+  //           grandchild->window()->bounds().origin().ToString());
 }
 
 }  // namespace

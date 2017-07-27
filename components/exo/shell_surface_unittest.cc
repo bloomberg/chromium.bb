@@ -243,7 +243,7 @@ TEST_F(ShellSurfaceTest, SetApplicationId) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
-  EXPECT_EQ(nullptr, shell_surface->GetWidget());
+  EXPECT_FALSE(shell_surface->GetWidget());
   shell_surface->SetApplicationId("pre-widget-id");
 
   surface->Attach(buffer.get());
@@ -624,12 +624,42 @@ TEST_F(ShellSurfaceTest, SurfaceShadow) {
   EXPECT_TRUE(shadow->layer()->visible());
 
   // For surface shadow, the underlay is placed at the bottom of shell surfaces.
-  EXPECT_EQ(shell_surface->host_window(),
-            shell_surface->shadow_underlay()->parent());
+  EXPECT_EQ(window, shell_surface->shadow_underlay()->parent());
   EXPECT_EQ(window, shell_surface->shadow_overlay()->parent());
 
-  EXPECT_EQ(*shell_surface->host_window()->children().begin(),
-            shell_surface->shadow_underlay());
+  auto child_it = window->children().begin();
+  EXPECT_EQ(*child_it++, shell_surface->shadow_underlay());
+  EXPECT_EQ(*child_it++, shell_surface->shadow_overlay());
+  EXPECT_EQ(*child_it++, shell_surface->host_window());
+  EXPECT_EQ(child_it, window->children().end());
+
+  // Set the shadow background to 0, and the shadow_underlay should be
+  // destroyed.
+  shell_surface->SetRectangularShadowBackgroundOpacity(0.f);
+  surface->Commit();
+
+  EXPECT_FALSE(shell_surface->shadow_underlay());
+  EXPECT_EQ(window, shell_surface->shadow_overlay()->parent());
+
+  child_it = window->children().begin();
+  EXPECT_EQ(*child_it++, shell_surface->shadow_overlay());
+  EXPECT_EQ(*child_it++, shell_surface->host_window());
+  EXPECT_EQ(child_it, window->children().end());
+
+  // Set the shadow background to 1, and the shadow_underlay should be
+  // recreated.
+  shell_surface->SetRectangularShadowBackgroundOpacity(1.f);
+  surface->Commit();
+
+  EXPECT_TRUE(shell_surface->shadow_underlay());
+  EXPECT_EQ(window, shell_surface->shadow_underlay()->parent());
+  EXPECT_EQ(window, shell_surface->shadow_overlay()->parent());
+
+  child_it = window->children().begin();
+  EXPECT_EQ(*child_it++, shell_surface->shadow_underlay());
+  EXPECT_EQ(*child_it++, shell_surface->shadow_overlay());
+  EXPECT_EQ(*child_it++, shell_surface->host_window());
+  EXPECT_EQ(child_it, window->children().end());
 }
 
 TEST_F(ShellSurfaceTest, NonSurfaceShadow) {
@@ -828,7 +858,6 @@ TEST_F(ShellSurfaceTest, ShadowStartMaximized) {
   // Underlay should be created even without shadow.
   ASSERT_TRUE(shell_surface->shadow_underlay());
   EXPECT_TRUE(shell_surface->shadow_underlay()->IsVisible());
-
   shell_surface->SetRectangularSurfaceShadow(gfx::Rect(0, 0, 0, 0));
   // Underlay should be created even without shadow.
   ASSERT_TRUE(shell_surface->shadow_underlay());
@@ -908,7 +937,8 @@ TEST_F(ShellSurfaceTest, MaximizedAndImmersiveFullscreenBackdrop) {
   surface->Commit();
   EXPECT_EQ(shadow_bounds,
             shell_surface->GetWidget()->GetWindowBoundsInScreen());
-  ASSERT_EQ(shadow_bounds, shell_surface->shadow_underlay()->bounds());
+  ASSERT_EQ(shadow_bounds,
+            shell_surface->shadow_underlay()->GetBoundsInScreen());
   EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().size(),
             shell_surface->surface_for_testing()->window()->bounds().size());
 
@@ -963,7 +993,8 @@ TEST_F(ShellSurfaceTest,
   surface->Commit();
   EXPECT_EQ(shadow_bounds,
             shell_surface->GetWidget()->GetWindowBoundsInScreen());
-  ASSERT_EQ(shadow_bounds, shell_surface->shadow_underlay()->bounds());
+  ASSERT_EQ(shadow_bounds,
+            shell_surface->shadow_underlay()->GetBoundsInScreen());
   EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().size(),
             shell_surface->surface_for_testing()->window()->bounds().size());
 

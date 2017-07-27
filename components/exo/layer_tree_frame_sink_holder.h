@@ -9,7 +9,6 @@
 
 #include "base/containers/flat_map.h"
 #include "cc/output/layer_tree_frame_sink_client.h"
-#include "components/exo/surface_observer.h"
 #include "components/viz/common/quads/release_callback.h"
 
 namespace cc {
@@ -17,16 +16,13 @@ class LayerTreeFrameSink;
 }
 
 namespace exo {
-class Surface;
+class SurfaceTreeHost;
 
 // This class talks to CompositorFrameSink and keeps track of references to
-// the contents of Buffers. It's keeped alive by references from
-// release_callbacks_. It's destroyed when its owning Surface is destroyed and
-// the last outstanding release callback is called.
-class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
-                                 public SurfaceObserver {
+// the contents of Buffers.
+class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient {
  public:
-  LayerTreeFrameSinkHolder(Surface* surface,
+  LayerTreeFrameSinkHolder(SurfaceTreeHost* surface_tree_host,
                            std::unique_ptr<cc::LayerTreeFrameSink> frame_sink);
   ~LayerTreeFrameSinkHolder() override;
 
@@ -53,16 +49,13 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
       const gfx::Rect& viewport_rect,
       const gfx::Transform& transform) override {}
 
-  // Overridden from SurfaceObserver:
-  void OnSurfaceDestroying(Surface* surface) override;
-
  private:
   // A collection of callbacks used to release resources.
   using ResourceReleaseCallbackMap =
       base::flat_map<cc::ResourceId, viz::ReleaseCallback>;
   ResourceReleaseCallbackMap release_callbacks_;
 
-  Surface* surface_;
+  SurfaceTreeHost* surface_tree_host_;
   std::unique_ptr<cc::LayerTreeFrameSink> frame_sink_;
 
   // The next resource id the buffer is attached to.
