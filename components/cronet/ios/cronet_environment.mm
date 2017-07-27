@@ -229,9 +229,6 @@ void CronetEnvironment::Start() {
   network_io_thread_.reset(new base::Thread("Chrome Network IO Thread"));
   network_io_thread_->StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-  file_thread_.reset(new base::Thread("Chrome File Thread"));
-  file_thread_->StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   file_user_blocking_thread_.reset(
       new base::Thread("Chrome File User Blocking Thread"));
   file_user_blocking_thread_->StartWithOptions(
@@ -269,8 +266,7 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   if (!ssl_key_log_file_set && !ssl_key_log_file_name_.empty()) {
     ssl_key_log_file_set = true;
     base::FilePath ssl_key_log_file(ssl_key_log_file_name_);
-    net::SSLClientSocket::SetSSLKeyLogFile(ssl_key_log_file,
-                                           file_thread_->task_runner());
+    net::SSLClientSocket::SetSSLKeyLogFile(ssl_key_log_file);
   }
 
   if (user_agent_partial_)
@@ -309,8 +305,7 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   // future.
   context_builder.set_transport_security_persister_path(base::FilePath());
 
-  config->ConfigureURLRequestContextBuilder(&context_builder, net_log_.get(),
-                                            file_thread_.get()->task_runner());
+  config->ConfigureURLRequestContextBuilder(&context_builder, net_log_.get());
 
   std::unique_ptr<net::MappedHostResolver> mapped_host_resolver(
       new net::MappedHostResolver(

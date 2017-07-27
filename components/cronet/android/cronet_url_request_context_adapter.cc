@@ -639,8 +639,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
           std::move(proxy_config_service_), g_net_log.Get().net_log()));
 
   config->ConfigureURLRequestContextBuilder(&context_builder,
-                                            g_net_log.Get().net_log(),
-                                            GetFileThread()->task_runner());
+                                            g_net_log.Get().net_log());
 
   effective_experimental_options_ =
       std::move(config->effective_experimental_options);
