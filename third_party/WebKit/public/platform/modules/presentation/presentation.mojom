@@ -95,7 +95,7 @@ interface PresentationService {
   // Called when reconnect() is called by the frame. The result callback
   // works the same as for the method above. reconnect() will create a new
   // connection to a presentation with the matching URL and id.
-  ReconnectPresentation(array<url.mojom.Url> presentation_urls, string? presentation_id)
+  ReconnectPresentation(array<url.mojom.Url> presentation_urls, string presentation_id)
       => (PresentationInfo? presentation_info, PresentationError? error);
 
   // Notifies the service that a PresentationConnection has been started.

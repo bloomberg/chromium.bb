@@ -80,13 +80,13 @@ class MockPresentationService : public PresentationService {
                     StartPresentationCallback& callback));
 
   void ReconnectPresentation(const std::vector<GURL>& presentation_urls,
-                             const base::Optional<std::string>& presentation_id,
+                             const std::string& presentation_id,
                              ReconnectPresentationCallback callback) {
     ReconnectPresentationInternal(presentation_urls, presentation_id, callback);
   }
   MOCK_METHOD3(ReconnectPresentationInternal,
                void(const std::vector<GURL>& presentation_urls,
-                    const base::Optional<std::string>& presentation_id,
+                    const std::string& presentation_id,
                     ReconnectPresentationCallback& callback));
 
   void SetPresentationConnection(
