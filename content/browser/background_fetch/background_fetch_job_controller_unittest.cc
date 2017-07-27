@@ -4,9 +4,12 @@
 
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 
+#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "base/guid.h"
 #include "base/macros.h"
@@ -81,10 +84,13 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
     StoragePartition* storage_partition =
         BrowserContext::GetDefaultStoragePartition(browser_context());
 
-    return base::MakeUnique<BackgroundFetchJobController>(
-        registration_id, BackgroundFetchOptions(), &data_manager_,
+    delegate_proxy_.reset(new BackgroundFetchDelegateProxy(
         browser_context(),
-        make_scoped_refptr(storage_partition->GetURLRequestContext()),
+        make_scoped_refptr(storage_partition->GetURLRequestContext())));
+
+    return base::MakeUnique<BackgroundFetchJobController>(
+        delegate_proxy_.get(), registration_id, BackgroundFetchOptions(),
+        &data_manager_,
         base::BindOnce(&BackgroundFetchJobControllerTest::DidCompleteJob,
                        base::Unretained(this)));
   }
@@ -96,6 +102,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   // Closure that will be invoked when the JobController has completed all
   // available jobs. Enables use of a run loop for deterministic waits.
   base::OnceClosure job_completed_closure_;
+
+  std::unique_ptr<BackgroundFetchDelegateProxy> delegate_proxy_;
 
  private:
   void DidCreateRegistration(blink::mojom::BackgroundFetchError* out_error,

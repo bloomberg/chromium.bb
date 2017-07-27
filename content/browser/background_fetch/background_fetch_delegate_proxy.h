@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -26,11 +25,9 @@ class BrowserContext;
 // Proxy class for passing messages between BackgroundFetchJobController on the
 // IO thread to and BackgroundFetchDelegate on the UI thread.
 // TODO(delphick): Create BackgroundFetchDelegate.
-class BackgroundFetchDelegateProxy {
+class CONTENT_EXPORT BackgroundFetchDelegateProxy {
  public:
   BackgroundFetchDelegateProxy(
-      BackgroundFetchJobController* job_controller,
-      const BackgroundFetchRegistrationId& registration_id,
       BrowserContext* browser_context,
       scoped_refptr<net::URLRequestContextGetter> request_context);
 
@@ -39,7 +36,8 @@ class BackgroundFetchDelegateProxy {
   // Requests that the download manager start fetching |request|.
   // Should only be called from the BackgroundFetchJobController (on the IO
   // thread).
-  void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request);
+  void StartRequest(BackgroundFetchJobController* job_controller,
+                    scoped_refptr<BackgroundFetchRequestInfo> request);
 
   // Updates the representation of this Background Fetch in the user interface
   // to match the given |title|.
@@ -59,15 +57,16 @@ class BackgroundFetchDelegateProxy {
   // |download_item| continues to be owned by the download system. The
   // |interrupt_reason| will indicate when a request could not be started.
   // Should only be called from the BackgroundFetchDelegate (on the IO thread).
-  void DidStartRequest(scoped_refptr<BackgroundFetchRequestInfo> request,
-                       const std::string& download_guid);
+  void DidStartRequest(
+      const base::WeakPtr<BackgroundFetchJobController>& job_controller,
+      scoped_refptr<BackgroundFetchRequestInfo> request,
+      const std::string& download_guid);
 
   // Called when the given |request| has been completed.
   // Should only be called from the BackgroundFetchDelegate (on the IO thread).
-  void DidCompleteRequest(scoped_refptr<BackgroundFetchRequestInfo> request);
-
-  // Parent job controller that owns |this|.
-  BackgroundFetchJobController* const job_controller_;
+  void DidCompleteRequest(
+      const base::WeakPtr<BackgroundFetchJobController>& job_controller,
+      scoped_refptr<BackgroundFetchRequestInfo> request);
 
   std::unique_ptr<Core, BrowserThread::DeleteOnUIThread> ui_core_;
   base::WeakPtr<Core> ui_core_ptr_;

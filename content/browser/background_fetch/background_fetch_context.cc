@@ -4,6 +4,8 @@
 
 #include "content/browser/background_fetch/background_fetch_context.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_event_dispatcher.h"
@@ -55,6 +57,8 @@ void BackgroundFetchContext::InitializeOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   request_context_getter_ = request_context_getter;
+  delegate_proxy_ = base::MakeUnique<BackgroundFetchDelegateProxy>(
+      browser_context_, request_context_getter);
 }
 
 void BackgroundFetchContext::StartFetch(
@@ -145,8 +149,7 @@ void BackgroundFetchContext::CreateController(
 
   std::unique_ptr<BackgroundFetchJobController> controller =
       base::MakeUnique<BackgroundFetchJobController>(
-          registration_id, options, data_manager_.get(), browser_context_,
-          request_context_getter_,
+          delegate_proxy_.get(), registration_id, options, data_manager_.get(),
           base::BindOnce(&BackgroundFetchContext::DidCompleteJob,
                          weak_factory_.GetWeakPtr()));
 
