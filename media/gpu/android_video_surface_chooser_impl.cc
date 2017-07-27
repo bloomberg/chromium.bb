@@ -111,9 +111,11 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
     new_overlay_state = kUsingSurfaceTexture;
 
   // If we need a secure surface, then we must choose an overlay.  The only way
-  // we won't is if we don't have a factory.  If the compositor won't promote,
-  // we still use the overlay, since hopefully it's a temporary restriction.
-  // If we drop the overlay, then playback will fail.
+  // we won't is if we don't have a factory or our request fails.  If the
+  // compositor won't promote, then we still use the overlay, since hopefully
+  // it's a temporary restriction.  If we drop the overlay, then playback will
+  // fail (L1) or be insecure on SurfaceTexture (L3).  For L3, that's still
+  // preferable to failing.
   if (current_state_.is_secure)
     new_overlay_state = kUsingOverlay;
 

@@ -1863,6 +1863,12 @@ void WebMediaPlayerImpl::OnOverlayInfoRequested(
     return;
   }
 
+  // For encrypted video on pre-M, we pretend that the decoder doesn't require a
+  // restart.  This is because it needs an overlay all the time anyway.  We'll
+  // switch into |force_video_overlays_| mode below.
+  if (overlay_mode_ == OverlayMode::kUseAndroidOverlay && is_encrypted_)
+    decoder_requires_restart_for_overlay = false;
+
   // If we get a surface request it means GpuVideoDecoder is initializing, so
   // until we get a null surface request, GVD is the active decoder.
   //

@@ -392,7 +392,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   bool force_defer_surface_creation_for_testing_;
 
-  AndroidVideoSurfaceChooser::State chooser_state_;
+  AndroidVideoSurfaceChooser::State surface_chooser_state_;
 
   // Optional factory to produce mojo AndroidOverlay instances.
   AndroidOverlayMojoFactoryCB overlay_factory_cb_;
