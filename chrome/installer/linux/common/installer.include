@@ -240,7 +240,7 @@ stage_install_common() {
   install -m 755 "${BUILDDIR}/xdg-mime" "${STAGEDIR}${INSTALLDIR}/"
   install -m 755 "${BUILDDIR}/xdg-settings" "${STAGEDIR}${INSTALLDIR}/"
 
-  if [ ${PACKAGE:0:6} = google ]; then
+  if [ "${PACKAGE}" = "google-chrome" ]; then
     process_template "${BUILDDIR}/installer/common/google-chrome.appdata.xml.template" \
       "${STAGEDIR}/usr/share/appdata/${PACKAGE}.appdata.xml"
     chmod 644 "${STAGEDIR}/usr/share/appdata/${PACKAGE}.appdata.xml"
