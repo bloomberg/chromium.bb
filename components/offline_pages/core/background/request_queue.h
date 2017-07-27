@@ -31,7 +31,7 @@ class CleanupTaskFactory;
 class RequestQueueStore;
 
 // Class responsible for managing save page requests.
-class RequestQueue {
+class RequestQueue : public TaskQueue::Delegate {
  public:
   // Callback used for |GetRequests|.
   typedef base::Callback<void(GetRequestsResult,
@@ -50,7 +50,10 @@ class RequestQueue {
   typedef base::Callback<void(UpdateRequestResult)> UpdateRequestCallback;
 
   explicit RequestQueue(std::unique_ptr<RequestQueueStore> store);
-  ~RequestQueue();
+  ~RequestQueue() override;
+
+  // TaskQueue::Delegate
+  void OnTaskQueueIsIdle() override;
 
   // Gets all of the active requests from the store. Calling this method may
   // schedule purging of the request queue.

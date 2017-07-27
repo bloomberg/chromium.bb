@@ -9,7 +9,10 @@
 
 namespace offline_pages {
 
-TaskQueue::TaskQueue() : weak_ptr_factory_(this) {}
+TaskQueue::TaskQueue(Delegate* delegate)
+    : delegate_(delegate), weak_ptr_factory_(this) {
+  DCHECK(delegate_);
+}
 
 TaskQueue::~TaskQueue() {}
 
@@ -32,8 +35,15 @@ bool TaskQueue::HasRunningTask() const {
 void TaskQueue::StartTaskIfAvailable() {
   DVLOG(2) << "running? " << HasRunningTask() << ", pending? "
            << HasPendingTasks() << " " << __func__;
-  if (HasRunningTask() || !HasPendingTasks())
+  if (HasRunningTask())
     return;
+
+  if (!HasPendingTasks()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&TaskQueue::InformTaskQueueIsIdle,
+                              weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
 
   current_task_ = std::move(tasks_.front());
   tasks_.pop();
@@ -46,6 +56,10 @@ void TaskQueue::TaskCompleted(Task* task) {
     current_task_.reset(nullptr);
     StartTaskIfAvailable();
   }
+}
+
+void TaskQueue::InformTaskQueueIsIdle() {
+  delegate_->OnTaskQueueIsIdle();
 }
 
 }  // namespace offline_pages

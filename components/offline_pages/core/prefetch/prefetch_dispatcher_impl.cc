@@ -35,13 +35,18 @@ void DeleteBackgroundTaskHelper(
 }
 }  // namespace
 
-PrefetchDispatcherImpl::PrefetchDispatcherImpl() : weak_factory_(this) {}
+PrefetchDispatcherImpl::PrefetchDispatcherImpl()
+    : task_queue_(this), weak_factory_(this) {}
 
 PrefetchDispatcherImpl::~PrefetchDispatcherImpl() = default;
 
 void PrefetchDispatcherImpl::SetService(PrefetchService* service) {
   CHECK(service);
   service_ = service;
+}
+
+void PrefetchDispatcherImpl::SchedulePipelineProcessing() {
+  needs_pipeline_processing_ = true;
 }
 
 void PrefetchDispatcherImpl::AddCandidatePrefetchURLs(
@@ -82,9 +87,11 @@ void PrefetchDispatcherImpl::BeginBackgroundTask(
 
   background_task_ = std::move(background_task);
 
-  // Check if there are NEW_REQUEST urls, send them to the service to
-  // start offlining. Transition state of sent urls to
-  // SENT_GENERATE_PAGE_BUNDLE.
+  // TODO(dimich): add QueueReconcilers() here when at least one is implemented.
+  QueueActionTasks();
+}
+
+void PrefetchDispatcherImpl::QueueActionTasks() {
   std::unique_ptr<Task> generate_page_bundle_task =
       base::MakeUnique<GeneratePageBundleTask>(
           service_->GetPrefetchStore(), service_->GetPrefetchGCMHandler(),
@@ -106,6 +113,13 @@ void PrefetchDispatcherImpl::RequestFinishBackgroundTaskForTest() {
     return;
 
   DisposeTask();
+}
+
+void PrefetchDispatcherImpl::OnTaskQueueIsIdle() {
+  if (needs_pipeline_processing_) {
+    needs_pipeline_processing_ = false;
+    QueueActionTasks();
+  }
 }
 
 void PrefetchDispatcherImpl::DisposeTask() {
