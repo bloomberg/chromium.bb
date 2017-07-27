@@ -63,6 +63,7 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/http_user_agent_settings.h"
+#include "net/url_request/network_error_logging_delegate.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
@@ -368,6 +369,7 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
   ProcessPublicKeyPinsHeader();
   ProcessExpectCTHeader();
   ProcessReportToHeader();
+  ProcessNetworkErrorLoggingHeader();
 
   // Handle the server notification of a new SDCH dictionary.
   SdchManager* sdch_manager(request()->context()->sdch_manager());
@@ -887,6 +889,30 @@ void URLRequestHttpJob::ProcessReportToHeader() {
 
   service->ProcessHeader(request_info_.url.GetOrigin(), value);
 #endif  // BUILDFLAG(ENABLE_REPORTING)
+}
+
+void URLRequestHttpJob::ProcessNetworkErrorLoggingHeader() {
+  DCHECK(response_info_);
+
+  HttpResponseHeaders* headers = GetResponseHeaders();
+  std::string value;
+  if (!headers->GetNormalizedHeader(NetworkErrorLoggingDelegate::kHeaderName,
+                                    &value)) {
+    return;
+  }
+
+  NetworkErrorLoggingDelegate* delegate =
+      request_->context()->network_error_logging_delegate();
+  if (!delegate)
+    return;
+
+  // Only accept Report-To headers on HTTPS connections that have no
+  // certificate errors.
+  const SSLInfo& ssl_info = response_info_->ssl_info;
+  if (!ssl_info.is_valid() || IsCertStatusError(ssl_info.cert_status))
+    return;
+
+  delegate->OnHeader(url::Origin(request_info_.url), value);
 }
 
 void URLRequestHttpJob::OnStartCompleted(int result) {
