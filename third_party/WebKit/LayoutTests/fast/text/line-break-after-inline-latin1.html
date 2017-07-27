@@ -1,6 +1,9 @@
+<!DOCTYPE html>
 <html>
 <head>
 <title>Line breaks after span inlines - Latin1</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 </head>
 <body>
 <meta charset=utf-8>
@@ -20,9 +23,6 @@
 </div>
 <div><pre id=results></pre></div>
 <script>
-if (window.testRunner)
-    testRunner.dumpAsText();
-
 function mergeRect(rects, rect) {
     var newRects = [];
     if (!rects.length)
@@ -69,38 +69,23 @@ function getLineRects(paragraphNumber) {
     return rects;
 }
 
-function appendResults(results, newResults) {
-    if (newResults.length) {
-        if (results.length)
-            results += '\n'
-        results += newResults;
-    }
-    return results;
-}
-
-function compareParagraphLineRects(paragraphNumber1, paragraphNumber2, results) {
+function compareParagraphLineRects(paragraphNumber1, paragraphNumber2) {
     var rects1 = getLineRects(paragraphNumber1);
     var rects2 = getLineRects(paragraphNumber2);
-    if (rects1.length != rects2.length)
-        results = appendResults(results, 'FAIL: different number of lines, got ' + rects1.length + ', expected ' + rects2.length);
-    else {
-        for (var i = 0; i < rects1.length; ++i) {
-            if (rects2[i].width != rects1[i].width) {
-                results = appendResults(results,
-                    'FAIL: para[' + paragraphNumber1 + '] line[' + i + '] width differs from para[' + paragraphNumber2 + '] line[' + i + ']' +
-                    ', got ' + rects1[i].width + ', expected ' + rects2[i].width);
-            }
-        }
+    assert_equals(rects1.length, rects2.length,
+      'FAIL: different number of lines, got ' + rects1.length + ', expected ' + rects2.length);
+
+    for (var i = 0; i < rects1.length; ++i) {
+      assert_equals(rects2[i].width, rects1[i].width,
+        'FAIL: para[' + paragraphNumber1 + '] line[' + i + '] width differs from para[' + paragraphNumber2 + '] line[' + i + ']' +
+        ', got ' + rects1[i].width + ', expected ' + rects2[i].width);
     }
-    return results;
 }
 
-var results = '';
-for (var i = 0; i < 3; i++ )
-    results = compareParagraphLineRects(i*2 + 1, i*2 + 1 + 6, results);
-if (!results.length)
-    results = 'PASS';
-document.getElementById("results").innerText = results;
+test(() => {
+  for (var i = 0; i < 3; i++ )
+    compareParagraphLineRects(i*2 + 1, i*2 + 1 + 6);
+});
 </script>
 </body>
 </html>
