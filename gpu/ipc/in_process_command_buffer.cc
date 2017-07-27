@@ -1045,6 +1045,10 @@ const gles2::FeatureInfo* InProcessCommandBuffer::GetFeatureInfo() const {
   return context_group_->feature_info();
 }
 
+const GpuPreferences& InProcessCommandBuffer::GetGpuPreferences() const {
+  return context_group_->gpu_preferences();
+}
+
 void InProcessCommandBuffer::SetLatencyInfoCallback(
     const LatencyInfoCallback& callback) {
   latency_info_callback_ = callback;

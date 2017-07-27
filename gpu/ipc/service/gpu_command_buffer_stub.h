@@ -113,6 +113,7 @@ class GPU_EXPORT GpuCommandBufferStub
 #endif
   void DidSwapBuffersComplete(SwapBuffersCompleteParams params) override;
   const gles2::FeatureInfo* GetFeatureInfo() const override;
+  const GpuPreferences& GetGpuPreferences() const override;
   void SetLatencyInfoCallback(const LatencyInfoCallback& callback) override;
   void UpdateVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;
