@@ -20,8 +20,15 @@
 // based on existence of unread items.
 @interface ReadingListMenuViewCell : ToolsMenuViewCell
 
-// Update the badge count according to |count|. Can be animated or not.
+// Update the badge count according to |count|. Can be animated or not. If
+// |count| is greater than 0 and the text badge is visible, then the text badge
+// is animated out, because only one badge should be visible, and the number
+// badge takes precedence.
 - (void)updateBadgeCount:(NSInteger)count animated:(BOOL)animated;
+
+// Displays or hides the text badge based on |showTextBadge|. Does nothing if
+// the number badge is currently visible. Can be animated or not.
+- (void)updateShowTextBadge:(BOOL)showTextBadge animated:(BOOL)animated;
 
 // Update the seen state according to |hasUnseenItems|. Can be animated or
 // not.

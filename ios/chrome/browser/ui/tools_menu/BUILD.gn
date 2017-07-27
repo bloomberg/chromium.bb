@@ -25,6 +25,7 @@ source_set("tools_menu") {
   deps = [
     "//base",
     "//base:i18n",
+    "//components/feature_engagement",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
@@ -54,6 +55,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "reading_list_menu_view_item_unittest.mm",
     "tools_menu_view_controller_unittest.mm",
     "tools_menu_view_item_unittest.mm",
   ]
@@ -62,6 +64,7 @@ source_set("unit_tests") {
     "//base",
     "//ios/chrome/browser:browser",
     "//ios/chrome/browser/ui/commands:commands",
+    "//ios/chrome/browser/ui/reading_list:reading_list_ui",
     "//ios/shared/chrome/browser/ui/tools_menu",
     "//ios/web:user_agent",
     "//testing/gtest",

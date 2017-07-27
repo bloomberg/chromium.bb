@@ -999,6 +999,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_READING_LIST_CANCEL_BUTTON" desc="Label of the button to stop editing the reading list entries (delete, mark as read/unread) [Length: 25em]" meaning="Stop editing. [Length: 25em]">
         Cancel
       </message>
+      <message name="IDS_IOS_READING_LIST_CELL_NEW_FEATURE_BADGE" desc="Title and accessibility label of the badge displayed on the tools menu reading list item when users have never used it before [Length: 20em]" meaning="The user has never viewed the reading list before, so a badge is displayed informing them of this feature that is new to them.">
+        New
+      </message>
       <message name="IDS_IOS_READING_LIST_CONTENT_CONTEXT_OFFLINE" desc="Title of the button to display the Offline version instead of the Online one. [Length: 50em]">
         View Offline Version in New Tab
       </message>
