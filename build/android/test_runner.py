@@ -50,6 +50,13 @@ _DEVIL_STATIC_CONFIG_FILE = os.path.abspath(os.path.join(
     host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'devil_config.json'))
 
 
+def _RealPath(arg):
+  if arg.startswith('//'):
+    arg = os.path.abspath(os.path.join(host_paths.DIR_SOURCE_ROOT,
+                                       arg[2:].replace('/', os.sep)))
+  return os.path.realpath(arg)
+
+
 def AddTestLauncherOptions(parser):
   """Adds arguments mirroring //base/test/launcher.
 
@@ -420,7 +427,7 @@ def AddInstrumentationTestOptions(parser):
       help='Capture screenshots of test failures')
   parser.add_argument(
       '--shared-prefs-file',
-      dest='shared_prefs_file', type=os.path.realpath,
+      dest='shared_prefs_file', type=_RealPath,
       help='The relative path to a file containing JSON list of shared '
            'preference files to edit and how to do so. Example list: '
            '[{'
