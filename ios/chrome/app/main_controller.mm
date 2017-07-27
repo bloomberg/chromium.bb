@@ -1832,7 +1832,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     [self.currentBVC startVoiceSearch];
   } else if (self.startQRScannerAfterTabSwitcherDismissal) {
     self.startQRScannerAfterTabSwitcherDismissal = NO;
-    [self.currentBVC showQRScanner];
+    [self.currentBVC.dispatcher showQRScanner];
   } else if (self.startFocusOmniboxAfterTabSwitcherDismissal) {
     self.startFocusOmniboxAfterTabSwitcherDismissal = NO;
     [self.currentBVC focusOmnibox];
@@ -2195,7 +2195,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   }
   if ([_startupParameters launchQRScanner]) {
     tabOpenedCompletion = ^{
-      [targetBVC showQRScanner];
+      [targetBVC.dispatcher showQRScanner];
     };
   }
   if ([_startupParameters launchFocusOmnibox]) {

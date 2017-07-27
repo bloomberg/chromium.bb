@@ -139,9 +139,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // Shows the voice search UI.
 - (void)startVoiceSearch;
 
-// Shows the QR scanner UI.
-- (void)showQRScanner;
-
 // Focuses the omnibox.
 - (void)focusOmnibox;
 
