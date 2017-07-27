@@ -53,7 +53,6 @@ import org.chromium.policy.CombinedPolicyProvider;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.io.File;
-import java.util.LinkedList;
 import java.util.Locale;
 
 /**
@@ -251,45 +250,24 @@ public class ChromeBrowserInitializer {
     public void handlePostNativeStartup(final boolean isAsync, final BrowserParts delegate)
             throws ProcessInitException {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread";
-
-        final LinkedList<Runnable> initQueue = new LinkedList<>();
-
-        abstract class NativeInitTask implements Runnable {
+        final ChainedTasks tasks = new ChainedTasks();
+        tasks.add(new Runnable() {
             @Override
-            public final void run() {
-                // Run the current task then put a request for the next one onto the
-                // back of the UI message queue. This lets Chrome handle input events
-                // between tasks.
-                initFunction();
-                if (!initQueue.isEmpty()) {
-                    Runnable nextTask = initQueue.pop();
-                    if (isAsync) {
-                        mHandler.post(nextTask);
-                    } else {
-                        nextTask.run();
-                    }
-                }
-            }
-            public abstract void initFunction();
-        }
-
-        initQueue.add(new NativeInitTask() {
-            @Override
-            public void initFunction() {
+            public void run() {
                 ProcessInitializationHandler.getInstance().initializePostNative();
             }
         });
 
-        initQueue.add(new NativeInitTask() {
+        tasks.add(new Runnable() {
             @Override
-            public void initFunction() {
+            public void run() {
                 initNetworkChangeNotifier(mApplication.getApplicationContext());
             }
         });
 
-        initQueue.add(new NativeInitTask() {
+        tasks.add(new Runnable() {
             @Override
-            public void initFunction() {
+            public void run() {
                 // This is not broken down as a separate task, since this:
                 // 1. Should happen as early as possible
                 // 2. Only submits asynchronous work
@@ -303,32 +281,32 @@ public class ChromeBrowserInitializer {
             }
         });
 
-        initQueue.add(new NativeInitTask() {
+        tasks.add(new Runnable() {
             @Override
-            public void initFunction() {
+            public void run() {
                 if (delegate.isActivityDestroyed()) return;
                 delegate.initializeCompositor();
             }
         });
 
-        initQueue.add(new NativeInitTask() {
+        tasks.add(new Runnable() {
             @Override
-            public void initFunction() {
+            public void run() {
                 if (delegate.isActivityDestroyed()) return;
                 delegate.initializeState();
             }
         });
 
-        initQueue.add(new NativeInitTask() {
+        tasks.add(new Runnable() {
             @Override
-            public void initFunction() {
+            public void run() {
                 onFinishNativeInitialization();
             }
         });
 
-        initQueue.add(new NativeInitTask() {
+        tasks.add(new Runnable() {
             @Override
-            public void initFunction() {
+            public void run() {
                 if (delegate.isActivityDestroyed()) return;
                 delegate.finishNativeInitialization();
             }
@@ -348,13 +326,12 @@ public class ChromeBrowserInitializer {
 
                         @Override
                         public void onSuccess(boolean success) {
-                            mHandler.post(initQueue.pop());
+                            tasks.start(false);
                         }
                     });
         } else {
             startChromeBrowserProcessesSync();
-            initQueue.pop().run();
-            assert initQueue.isEmpty();
+            tasks.start(true);
         }
     }
 

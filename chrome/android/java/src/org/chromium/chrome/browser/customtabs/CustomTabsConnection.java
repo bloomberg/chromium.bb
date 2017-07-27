@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.init.ChainedTasks;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -188,10 +189,13 @@ public class CustomTabsConnection {
     private final AtomicBoolean mWarmupHasBeenFinished = new AtomicBoolean();
     private ExternalPrerenderHandler mExternalPrerenderHandler;
     private boolean mForcePrerenderForTesting;
+    private volatile Runnable mWarmupFinishedCallback;
 
     // Conversion between native TimeTicks and SystemClock.uptimeMillis().
     private long mNativeTickOffsetUs;
     private boolean mNativeTickOffsetUsComputed;
+
+    private ChainedTasks mWarmupTasks;
 
     /**
      * <strong>DO NOT CALL</strong>
@@ -275,9 +279,6 @@ public class CustomTabsConnection {
             System.exit(-1);
         }
         ChildProcessLauncherHelper.warmUp(context);
-        ChromeBrowserInitializer.initNetworkChangeNotifier(context);
-        WarmupManager.getInstance().initializeViewHierarchy(
-                context, R.layout.custom_tabs_control_container, R.layout.custom_tabs_toolbar);
     }
 
     public boolean warmup(long flags) {
@@ -309,46 +310,84 @@ public class CustomTabsConnection {
         if (!isCallerForegroundOrSelf()) return false;
         mClientManager.recordUidHasCalledWarmup(Binder.getCallingUid());
         final boolean initialized = !mWarmupHasBeenCalled.compareAndSet(false, true);
-        // The call is non-blocking and this must execute on the UI thread, post a task.
-        ThreadUtils.postOnUiThread(new Runnable() {
+
+        // The call is non-blocking and this must execute on the UI thread, post chained tasks.
+        mWarmupTasks = new ChainedTasks();
+
+        // Ordering of actions here:
+        // 1. Initializing the browser needs to be done once, and first.
+        // 2. Creating a spare renderer takes time, in other threads and processes, so start it
+        //    sooner rather than later. Can be done several times.
+        // 3. UI inflation has to be done for any new activity.
+        // 4. Initializing the LoadingPredictor is done once, and triggers work on other threads,
+        //    start it early.
+        // 5. RequestThrottler first access has to be done only once.
+
+        // (1)
+        if (!initialized) {
+            mWarmupTasks.add(new Runnable() {
+                @Override
+                public void run() {
+                    TraceEvent.begin("CustomTabsConnection.initializeBrowser()");
+                    initializeBrowser(mContext);
+                    ChromeBrowserInitializer.initNetworkChangeNotifier(mContext);
+                    mWarmupHasBeenFinished.set(true);
+                    TraceEvent.end("CustomTabsConnection.initializeBrowser()");
+                }
+            });
+        }
+
+        // (2)
+        if (mayCreateSpareWebContents && mSpeculation == null) {
+            mWarmupTasks.add(new Runnable() {
+                @Override
+                public void run() {
+                    TraceEvent.begin("CreateSpareWebContents");
+                    WarmupManager.getInstance().createSpareWebContents();
+                    TraceEvent.end("CreateSpareWebContents");
+                }
+            });
+        }
+
+        // (3)
+        mWarmupTasks.add(new Runnable() {
             @Override
             public void run() {
-                try {
-                    TraceEvent.begin("CustomTabsConnection.warmupInternal");
-                    // Ordering of actions here:
-                    // 1. Initializing the browser needs to be done once, and first.
-                    // 2. Creating a spare renderer takes time, in other threads and processes, so
-                    //    start it sooner rather than later. Can be done several times.
-                    // 3. Initializing the LoadingPredictor is done once, and triggers
-                    //    work on other threads, start it early.
-                    // 4. RequestThrottler first access has to be done only once.
-
-                    // (1)
-                    if (!initialized) initializeBrowser(mContext);
-
-                    // (2)
-                    if (mayCreateSpareWebContents && mSpeculation == null) {
-                        WarmupManager.getInstance().createSpareWebContents();
-                    }
-
-                    if (!initialized) {
-                        // (3)
-                        Profile profile = Profile.getLastUsedProfile();
-                        new LoadingPredictor(profile).startInitialization();
-
-                        // (4)
-                        // The throttling database uses shared preferences, that can cause a
-                        // StrictMode violation on the first access. Make sure that this access is
-                        // not in mayLauchUrl.
-                        RequestThrottler.loadInBackground(mContext);
-                    }
-                } finally {
-                    TraceEvent.end("CustomTabsConnection.warmupInternal");
-                }
-                mWarmupHasBeenFinished.set(true);
+                TraceEvent.begin("InitializeViewHierarchy");
+                WarmupManager.getInstance().initializeViewHierarchy(mContext,
+                        R.layout.custom_tabs_control_container, R.layout.custom_tabs_toolbar);
+                TraceEvent.end("InitializeViewHierarchy");
             }
         });
+
+        if (!initialized) {
+            mWarmupTasks.add(new Runnable() {
+                @Override
+                public void run() {
+                    TraceEvent.begin("WarmupInternalFinishInitialization");
+                    // (4)
+                    Profile profile = Profile.getLastUsedProfile();
+                    new LoadingPredictor(profile).startInitialization();
+
+                    // (5)
+                    // The throttling database uses shared preferences, that can cause a
+                    // StrictMode violation on the first access. Make sure that this access is
+                    // not in mayLauchUrl.
+                    RequestThrottler.loadInBackground(mContext);
+                    TraceEvent.end("WarmupInternalFinishInitialization");
+                }
+            });
+        }
+        if (mWarmupFinishedCallback != null) mWarmupTasks.add(mWarmupFinishedCallback);
+
+        mWarmupTasks.start(false);
         return true;
+    }
+
+    /** Sets a callback to be notified of the completion of all the warmup() tasks. */
+    @VisibleForTesting
+    void setWarmupCompletedCallbackForTesting(Runnable cb) {
+        mWarmupFinishedCallback = cb;
     }
 
     /** @return the URL or null if it's invalid. */
@@ -737,9 +776,12 @@ public class CustomTabsConnection {
      * @param intent incoming intent.
      */
     void onHandledIntent(CustomTabsSessionToken session, String url, Intent intent) {
+        // If we still have pending warmup tasks, don't continue as they would only delay intent
+        // processing from now on.
+        if (mWarmupTasks != null) mWarmupTasks.cancel();
+
         // For the preconnection to not be a no-op, we need more than just the native library.
-        Context context = ContextUtils.getApplicationContext();
-        if (!ChromeBrowserInitializer.getInstance(context).hasNativeInitializationCompleted()) {
+        if (!ChromeBrowserInitializer.getInstance(mContext).hasNativeInitializationCompleted()) {
             return;
         }
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_REDIRECT_PRECONNECT)) return;
