@@ -2248,6 +2248,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'peach_pit',
       'peppy',
       'poppy',
+      'quawks',
       'reef',
       'samus',
       'scarlet',
@@ -2281,7 +2282,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron_paine',
       'betty',
       'kevin',
-      'quawks',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
