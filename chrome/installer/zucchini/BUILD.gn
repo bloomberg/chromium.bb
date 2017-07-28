@@ -7,6 +7,7 @@ import("//testing/test.gni")
 
 static_library("zucchini_lib") {
   sources = [
+    "address_translator.h",
     "buffer_sink.cc",
     "buffer_sink.h",
     "buffer_source.cc",
@@ -22,6 +23,8 @@ static_library("zucchini_lib") {
     "label_manager.cc",
     "label_manager.h",
     "patch_utils.h",
+    "rel32_utils.cc",
+    "rel32_utils.h",
     "suffix_array.h",
     "typed_value.h",
     "zucchini.h",
@@ -69,6 +72,7 @@ test("zucchini_unittests") {
     "io_utils_unittest.cc",
     "label_manager_unittest.cc",
     "patch_utils_unittest.cc",
+    "rel32_utils_unittest.cc",
     "suffix_array_unittest.cc",
     "typed_value_unittest.cc",
   ]

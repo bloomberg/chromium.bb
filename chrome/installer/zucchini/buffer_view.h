@@ -58,8 +58,20 @@ class BufferViewBase {
   // Returns the raw value at specified location |pos|.
   // If |pos| is not within the range of the buffer, the process is terminated.
   reference operator[](size_type pos) const {
-    CHECK_LT(first_ + pos, last_);
+    CHECK_LT(pos, size());
     return first_[pos];
+  }
+
+  template <class U>
+  const U& read(size_type pos) const {
+    CHECK_LE(pos + sizeof(U), size());
+    return *reinterpret_cast<const U*>(begin() + pos);
+  }
+
+  template <class U>
+  void write(size_type pos, const U& value) {
+    CHECK_LE(pos + sizeof(U), size());
+    *reinterpret_cast<U*>(begin() + pos) = value;
   }
 
   // Capacity
