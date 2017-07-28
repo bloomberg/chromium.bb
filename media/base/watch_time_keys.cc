@@ -33,12 +33,6 @@ const char kWatchTimeAudioEme[] = "Media.WatchTime.Audio.EME";
 const char kWatchTimeAudioSrc[] = "Media.WatchTime.Audio.SRC";
 const char kWatchTimeAudioBattery[] = "Media.WatchTime.Audio.Battery";
 const char kWatchTimeAudioAc[] = "Media.WatchTime.Audio.AC";
-const char kWatchTimeAudioDisplayFullscreen[] =
-    "Media.WatchTime.Audio.DisplayFullscreen";
-const char kWatchTimeAudioDisplayInline[] =
-    "Media.WatchTime.Audio.DisplayInline";
-const char kWatchTimeAudioDisplayPictureInPicture[] =
-    "Media.WatchTime.Audio.DisplayPictureInPicture";
 const char kWatchTimeAudioEmbeddedExperience[] =
     "Media.WatchTime.Audio.EmbeddedExperience";
 const char kWatchTimeAudioNativeControlsOn[] =
@@ -61,11 +55,6 @@ const char kWatchTimeAudioVideoBackgroundAc[] =
     "Media.WatchTime.AudioVideo.Background.AC";
 const char kWatchTimeAudioVideoBackgroundEmbeddedExperience[] =
     "Media.WatchTime.AudioVideo.Background.EmbeddedExperience";
-
-const char kWatchTimeFinalize[] = "FinalizeWatchTime";
-const char kWatchTimeFinalizePower[] = "FinalizePowerWatchTime";
-const char kWatchTimeFinalizeControls[] = "FinalizeControlsWatchTime";
-const char kWatchTimeFinalizeDisplay[] = "FinalizeDisplayWatchTime";
 
 const char kWatchTimeUnderflowCount[] = "UnderflowCount";
 
@@ -92,67 +81,68 @@ const char kRebuffersCountAudioVideoMse[] =
 const char kRebuffersCountAudioVideoEme[] =
     "Media.RebuffersCount.AudioVideo.EME";
 
-base::flat_set<base::StringPiece> GetWatchTimeKeys() {
-  return base::flat_set<base::StringPiece>(
-      {
-          kWatchTimeAudioAll,
-          kWatchTimeAudioMse,
-          kWatchTimeAudioEme,
-          kWatchTimeAudioSrc,
-          kWatchTimeAudioBattery,
-          kWatchTimeAudioAc,
-          kWatchTimeAudioEmbeddedExperience,
-          kWatchTimeAudioDisplayFullscreen,
-          kWatchTimeAudioDisplayInline,
-          kWatchTimeAudioDisplayPictureInPicture,
-          kWatchTimeAudioNativeControlsOn,
-          kWatchTimeAudioNativeControlsOff,
-          kWatchTimeAudioVideoAll,
-          kWatchTimeAudioVideoMse,
-          kWatchTimeAudioVideoEme,
-          kWatchTimeAudioVideoSrc,
-          kWatchTimeAudioVideoBattery,
-          kWatchTimeAudioVideoAc,
-          kWatchTimeAudioVideoDisplayFullscreen,
-          kWatchTimeAudioVideoDisplayInline,
-          kWatchTimeAudioVideoDisplayPictureInPicture,
-          kWatchTimeAudioVideoEmbeddedExperience,
-          kWatchTimeAudioVideoNativeControlsOn,
-          kWatchTimeAudioVideoNativeControlsOff,
-          kWatchTimeAudioVideoBackgroundAll,
-          kWatchTimeAudioVideoBackgroundMse,
-          kWatchTimeAudioVideoBackgroundEme,
-          kWatchTimeAudioVideoBackgroundSrc,
-          kWatchTimeAudioVideoBackgroundBattery,
-          kWatchTimeAudioVideoBackgroundAc,
-          kWatchTimeAudioVideoBackgroundEmbeddedExperience,
-      },
-      base::KEEP_FIRST_OF_DUPES);
-}
+base::StringPiece WatchTimeKeyToString(WatchTimeKey key) {
+  switch (key) {
+    case WatchTimeKey::kAudioAll:
+      return kWatchTimeAudioAll;
+    case WatchTimeKey::kAudioMse:
+      return kWatchTimeAudioMse;
+    case WatchTimeKey::kAudioEme:
+      return kWatchTimeAudioEme;
+    case WatchTimeKey::kAudioSrc:
+      return kWatchTimeAudioSrc;
+    case WatchTimeKey::kAudioBattery:
+      return kWatchTimeAudioBattery;
+    case WatchTimeKey::kAudioAc:
+      return kWatchTimeAudioAc;
+    case WatchTimeKey::kAudioEmbeddedExperience:
+      return kWatchTimeAudioEmbeddedExperience;
+    case WatchTimeKey::kAudioNativeControlsOn:
+      return kWatchTimeAudioNativeControlsOn;
+    case WatchTimeKey::kAudioNativeControlsOff:
+      return kWatchTimeAudioNativeControlsOff;
+    case WatchTimeKey::kAudioVideoAll:
+      return kWatchTimeAudioVideoAll;
+    case WatchTimeKey::kAudioVideoMse:
+      return kWatchTimeAudioVideoMse;
+    case WatchTimeKey::kAudioVideoEme:
+      return kWatchTimeAudioVideoEme;
+    case WatchTimeKey::kAudioVideoSrc:
+      return kWatchTimeAudioVideoSrc;
+    case WatchTimeKey::kAudioVideoBattery:
+      return kWatchTimeAudioVideoBattery;
+    case WatchTimeKey::kAudioVideoAc:
+      return kWatchTimeAudioVideoAc;
+    case WatchTimeKey::kAudioVideoDisplayFullscreen:
+      return kWatchTimeAudioVideoDisplayFullscreen;
+    case WatchTimeKey::kAudioVideoDisplayInline:
+      return kWatchTimeAudioVideoDisplayInline;
+    case WatchTimeKey::kAudioVideoDisplayPictureInPicture:
+      return kWatchTimeAudioVideoDisplayPictureInPicture;
+    case WatchTimeKey::kAudioVideoEmbeddedExperience:
+      return kWatchTimeAudioVideoEmbeddedExperience;
+    case WatchTimeKey::kAudioVideoNativeControlsOn:
+      return kWatchTimeAudioVideoNativeControlsOn;
+    case WatchTimeKey::kAudioVideoNativeControlsOff:
+      return kWatchTimeAudioVideoNativeControlsOff;
+    case WatchTimeKey::kAudioVideoBackgroundAll:
+      return kWatchTimeAudioVideoBackgroundAll;
+    case WatchTimeKey::kAudioVideoBackgroundMse:
+      return kWatchTimeAudioVideoBackgroundMse;
+    case WatchTimeKey::kAudioVideoBackgroundEme:
+      return kWatchTimeAudioVideoBackgroundEme;
+    case WatchTimeKey::kAudioVideoBackgroundSrc:
+      return kWatchTimeAudioVideoBackgroundSrc;
+    case WatchTimeKey::kAudioVideoBackgroundBattery:
+      return kWatchTimeAudioVideoBackgroundBattery;
+    case WatchTimeKey::kAudioVideoBackgroundAc:
+      return kWatchTimeAudioVideoBackgroundAc;
+    case WatchTimeKey::kAudioVideoBackgroundEmbeddedExperience:
+      return kWatchTimeAudioVideoBackgroundEmbeddedExperience;
+  };
 
-base::flat_set<base::StringPiece> GetWatchTimePowerKeys() {
-  return base::flat_set<base::StringPiece>(
-      {kWatchTimeAudioBattery, kWatchTimeAudioAc, kWatchTimeAudioVideoBattery,
-       kWatchTimeAudioVideoAc, kWatchTimeAudioVideoBackgroundBattery,
-       kWatchTimeAudioVideoBackgroundAc},
-      base::KEEP_FIRST_OF_DUPES);
-}
-
-base::flat_set<base::StringPiece> GetWatchTimeControlsKeys() {
-  return base::flat_set<base::StringPiece>(
-      {kWatchTimeAudioNativeControlsOn, kWatchTimeAudioNativeControlsOff,
-       kWatchTimeAudioVideoNativeControlsOn,
-       kWatchTimeAudioVideoNativeControlsOff},
-      base::KEEP_FIRST_OF_DUPES);
-}
-
-base::flat_set<base::StringPiece> GetWatchTimeDisplayKeys() {
-  return base::flat_set<base::StringPiece>(
-      {kWatchTimeAudioDisplayFullscreen, kWatchTimeAudioDisplayInline,
-       kWatchTimeAudioDisplayPictureInPicture,
-       kWatchTimeAudioVideoDisplayFullscreen, kWatchTimeAudioVideoDisplayInline,
-       kWatchTimeAudioVideoDisplayPictureInPicture},
-      base::KEEP_FIRST_OF_DUPES);
+  NOTREACHED();
+  return base::StringPiece();
 }
 
 }  // namespace media

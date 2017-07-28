@@ -11,11 +11,15 @@
 #include "base/power_monitor/power_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "media/base/audio_codecs.h"
 #include "media/base/media_log.h"
 #include "media/base/timestamp_constants.h"
+#include "media/base/video_codecs.h"
 #include "media/blink/media_blink_export.h"
+#include "media/mojo/interfaces/watch_time_recorder.mojom.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "ui/gfx/geometry/size.h"
+#include "url/origin.h"
 
 namespace media {
 
@@ -46,32 +50,30 @@ namespace media {
 // old metric finalized as accurately as possible.
 class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
  public:
-  using GetMediaTimeCB = base::Callback<base::TimeDelta(void)>;
+  using GetMediaTimeCB = base::RepeatingCallback<base::TimeDelta(void)>;
 
   // Constructor for the reporter; all requested metadata should be fully known
   // before attempting construction as incorrect values will result in the wrong
   // watch time metrics being reported.
   //
-  // |media_log| is used to continuously log the watch time values for eventual
-  // recording to a histogram upon finalization.
-  //
-  // |initial_video_size| required to ensure that the video track has sufficient
-  // size for watch time reporting.
+  // |properties| Properties describing the playback; these are considered
+  // immutable over the lifetime of the reporter. If any of them change a new
+  // WatchTimeReporter should be created with updated properties.
   //
   // |get_media_time_cb| must return the current playback time in terms of media
   // time, not wall clock time! Using media time instead of wall clock time
   // allows us to avoid a whole class of issues around clock changes during
   // suspend and resume.
+  //
+  // |provider| A provider of mojom::WatchTimeRecorder instances which will be
+  // created and used to handle caching of metrics outside of the current
+  // process.
+  //
   // TODO(dalecurtis): Should we only report when rate == 1.0? Should we scale
   // the elapsed media time instead?
-  WatchTimeReporter(bool has_audio,
-                    bool has_video,
-                    bool is_mse,
-                    bool is_encrypted,
-                    bool is_embedded_media_experience_enabled,
-                    MediaLog* media_log,
-                    const gfx::Size& initial_video_size,
-                    const GetMediaTimeCB& get_media_time_cb);
+  WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
+                    GetMediaTimeCB get_media_time_cb,
+                    mojom::WatchTimeRecorderProvider* provider);
   ~WatchTimeReporter() override;
 
   // These methods are used to ensure that watch time is only reported for
@@ -144,15 +146,10 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   friend class WatchTimeReporterTest;
 
   // Internal constructor for marking background status.
-  WatchTimeReporter(bool has_audio,
-                    bool has_video,
-                    bool is_mse,
-                    bool is_encrypted,
-                    bool is_embedded_media_experience_enabled,
-                    MediaLog* media_log,
-                    const gfx::Size& initial_video_size,
-                    const GetMediaTimeCB& get_media_time_cb,
-                    bool is_background);
+  WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
+                    bool is_background,
+                    GetMediaTimeCB get_media_time_cb,
+                    mojom::WatchTimeRecorderProvider* provider);
 
   // base::PowerObserver implementation.
   //
@@ -169,15 +166,10 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   void OnDisplayTypeChanged(blink::WebMediaPlayer::DisplayType display_type);
 
   // Initialized during construction.
-  const bool has_audio_;
-  const bool has_video_;
-  const bool is_mse_;
-  const bool is_encrypted_;
-  const bool is_embedded_media_experience_enabled_;
-  MediaLog* media_log_;
-  const gfx::Size initial_video_size_;
-  const GetMediaTimeCB get_media_time_cb_;
+  const mojom::PlaybackPropertiesPtr properties_;
   const bool is_background_;
+  const GetMediaTimeCB get_media_time_cb_;
+  mojom::WatchTimeRecorderPtr recorder_;
 
   // The amount of time between each UpdateWatchTime(); this is the frequency by
   // which the watch times are updated. In the event of a process crash or kill

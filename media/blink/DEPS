@@ -6,6 +6,7 @@ include_rules = [
   "+gin",
   "+media",
   "+mojo/edk/embedder",
+  "+mojo/public/cpp/bindings",
   "+net/base",
   "+net/http",
   "+third_party/WebKit/public/platform",
