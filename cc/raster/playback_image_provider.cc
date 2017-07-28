@@ -87,13 +87,13 @@ PlaybackImageProvider::GetDecodedImage(const PaintImage& paint_image,
     return nullptr;
 
   if (images_to_skip_.count(paint_image.stable_id()) != 0) {
-    DCHECK(paint_image.sk_image()->isLazyGenerated());
+    DCHECK(paint_image.GetSkImage()->isLazyGenerated());
     return nullptr;
   }
 
-  if (!paint_image.sk_image()->isLazyGenerated()) {
+  if (!paint_image.GetSkImage()->isLazyGenerated()) {
     return base::MakeUnique<NonLazyDecodedImageHolderImpl>(
-        paint_image.sk_image(), filter_quality);
+        paint_image.GetSkImage(), filter_quality);
   }
 
   auto decoded_image_holder = base::MakeUnique<DecodedImageHolderImpl>(

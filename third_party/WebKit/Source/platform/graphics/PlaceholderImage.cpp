@@ -26,23 +26,22 @@ PlaceholderImage::PlaceholderImage(ImageObserver* observer, const IntSize& size)
 
 PlaceholderImage::~PlaceholderImage() {}
 
-sk_sp<SkImage> PlaceholderImage::ImageForCurrentFrame() {
-  if (image_for_current_frame_)
-    return image_for_current_frame_;
+void PlaceholderImage::PopulateImageForCurrentFrame(
+    PaintImageBuilder& builder) {
+  const IntRect dest_rect(0, 0, size_.Width(), size_.Height());
 
-  const FloatRect dest_rect(0.0f, 0.0f, static_cast<float>(size_.Width()),
-                            static_cast<float>(size_.Height()));
+  if (paint_record_for_current_frame_) {
+    builder.set_paint_record(paint_record_for_current_frame_, dest_rect);
+    return;
+  }
 
   PaintRecorder paint_recorder;
-  Draw(paint_recorder.beginRecording(dest_rect), PaintFlags(), dest_rect,
-       dest_rect, kDoNotRespectImageOrientation, kClampImageToSourceRect);
+  Draw(paint_recorder.beginRecording(FloatRect(dest_rect)), PaintFlags(),
+       FloatRect(dest_rect), FloatRect(dest_rect),
+       kDoNotRespectImageOrientation, kClampImageToSourceRect);
 
-  image_for_current_frame_ = SkImage::MakeFromPicture(
-      ToSkPicture(paint_recorder.finishRecordingAsPicture(), dest_rect),
-      SkISize::Make(size_.Width(), size_.Height()), nullptr, nullptr,
-      SkImage::BitDepth::kU8, SkColorSpace::MakeSRGB());
-
-  return image_for_current_frame_;
+  paint_record_for_current_frame_ = paint_recorder.finishRecordingAsPicture();
+  builder.set_paint_record(paint_record_for_current_frame_, dest_rect);
 }
 
 void PlaceholderImage::Draw(PaintCanvas* canvas,
@@ -114,7 +113,7 @@ void PlaceholderImage::DrawPattern(GraphicsContext& context,
 }
 
 void PlaceholderImage::DestroyDecodedData() {
-  image_for_current_frame_.reset();
+  paint_record_for_current_frame_.reset();
 }
 
 }  // namespace blink

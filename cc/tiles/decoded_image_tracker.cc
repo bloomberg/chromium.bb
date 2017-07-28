@@ -28,7 +28,7 @@ void DecodedImageTracker::QueueImageDecode(
   // space while color correct rendering is disabled.
   gfx::ColorSpace target_color_space;
 
-  auto image_bounds = image.sk_image()->bounds();
+  auto image_bounds = SkIRect::MakeWH(image.width(), image.height());
   // TODO(khushalsagar): Eliminate the use of an incorrect id here and have all
   // call-sites provide PaintImage to the ImageController.
   DrawImage draw_image(image, image_bounds, kNone_SkFilterQuality,

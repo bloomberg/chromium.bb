@@ -83,8 +83,8 @@ CheckerImagingDecision GetLoadDecision(const PaintImage& image) {
 CheckerImagingDecision GetSizeDecision(const PaintImage& image,
                                        size_t max_bytes) {
   base::CheckedNumeric<size_t> checked_size = 4;
-  checked_size *= image.sk_image()->width();
-  checked_size *= image.sk_image()->height();
+  checked_size *= image.width();
+  checked_size *= image.height();
   size_t size = checked_size.ValueOrDefault(std::numeric_limits<size_t>::max());
 
   if (size < kMinImageSizeToCheckerBytes)
@@ -371,11 +371,12 @@ void CheckerImageTracker::ScheduleNextImageDecode() {
     if (it->second.policy != DecodePolicy::ASYNC)
       continue;
 
-    draw_image = DrawImage(candidate, candidate.sk_image()->bounds(),
-                           it->second.filter_quality,
-                           SkMatrix::MakeScale(it->second.scale.width(),
-                                               it->second.scale.height()),
-                           it->second.color_space);
+    draw_image = DrawImage(
+        candidate, SkIRect::MakeWH(candidate.width(), candidate.height()),
+        it->second.filter_quality,
+        SkMatrix::MakeScale(it->second.scale.width(),
+                            it->second.scale.height()),
+        it->second.color_space);
     outstanding_image_decode_.emplace(candidate);
     break;
   }

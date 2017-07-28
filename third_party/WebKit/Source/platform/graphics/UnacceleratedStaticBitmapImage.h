@@ -17,7 +17,6 @@ class PLATFORM_EXPORT UnacceleratedStaticBitmapImage final
 
   bool CurrentFrameKnownToBeOpaque(MetadataMode = kUseCurrentMetadata) override;
   IntSize Size() const override;
-  sk_sp<SkImage> ImageForCurrentFrame() override;
 
   void Draw(PaintCanvas*,
             const PaintFlags&,
@@ -27,6 +26,8 @@ class PLATFORM_EXPORT UnacceleratedStaticBitmapImage final
             ImageClampingMode) override;
 
  private:
+  void PopulateImageForCurrentFrame(PaintImageBuilder&) override;
+
   UnacceleratedStaticBitmapImage(sk_sp<SkImage>);
   sk_sp<SkImage> image_;
 };

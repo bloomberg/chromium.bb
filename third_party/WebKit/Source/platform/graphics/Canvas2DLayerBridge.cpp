@@ -952,7 +952,7 @@ bool Canvas2DLayerBridge::PrepareTextureMailbox(
   if (!image || !image->IsValid() || !image->IsTextureBacked())
     return false;
 
-  sk_sp<SkImage> skImage = image->ImageForCurrentFrame();
+  sk_sp<SkImage> skImage = image->PaintImageForCurrentFrame().GetSkImage();
   // Early exit if canvas was not drawn to since last prepareMailbox.
   GLenum filter = GetGLFilter();
   if (skImage->uniqueID() == last_image_id_ && filter == last_filter_)

@@ -624,8 +624,7 @@ SoftwareImageDecodeCache::GetSubrectImageDecode(const ImageKey& key,
                                                 const PaintImage& image) {
   // Construct a key to use in GetDecodedImageForDrawInternal().
   // This allows us to reuse an image in any cache if available.
-  gfx::Rect full_image_rect(image.sk_image()->width(),
-                            image.sk_image()->height());
+  gfx::Rect full_image_rect(image.width(), image.height());
   DrawImage original_size_draw_image(image, gfx::RectToSkIRect(full_image_rect),
                                      kNone_SkFilterQuality, SkMatrix::I(),
                                      key.target_color_space());
@@ -688,8 +687,7 @@ SoftwareImageDecodeCache::GetScaledImageDecode(const ImageKey& key,
                                                const PaintImage& image) {
   // Construct a key to use in GetDecodedImageForDrawInternal().
   // This allows us to reuse an image in any cache if available.
-  gfx::Rect full_image_rect(image.sk_image()->width(),
-                            image.sk_image()->height());
+  gfx::Rect full_image_rect(image.width(), image.height());
   DrawImage original_size_draw_image(image, gfx::RectToSkIRect(full_image_rect),
                                      kNone_SkFilterQuality, SkMatrix::I(),
                                      key.target_color_space());

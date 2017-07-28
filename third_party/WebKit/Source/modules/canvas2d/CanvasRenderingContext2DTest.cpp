@@ -1142,8 +1142,8 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
     ImageBitmapOptions options =
         PrepareBitmapOptionsAndSetRuntimeFlags(color_space_conversion);
     ImageBitmap* image_bitmap = ImageBitmap::Create(canvas, crop_rect, options);
-    SkImage* converted_image =
-        image_bitmap->BitmapImage()->ImageForCurrentFrame().get();
+    sk_sp<SkImage> converted_image =
+        image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
 
     switch (color_space_conversion) {
       case ColorSpaceConversion::NONE:

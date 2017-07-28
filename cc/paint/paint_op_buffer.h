@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <type_traits>
 
 #include "base/debug/alias.h"
 #include "base/logging.h"
@@ -891,7 +892,11 @@ class CC_PAINT_EXPORT TranslateOp final : public PaintOp {
 
 #undef HAS_SERIALIZATION_FUNCTIONS
 
-using LargestPaintOp = DrawDRRectOp;
+// TODO(vmpstr): Revisit this when sizes of DrawImageRectOp change.
+using LargestPaintOp =
+    typename std::conditional<(sizeof(DrawImageRectOp) > sizeof(DrawDRRectOp)),
+                              DrawImageRectOp,
+                              DrawDRRectOp>::type;
 
 class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
  public:

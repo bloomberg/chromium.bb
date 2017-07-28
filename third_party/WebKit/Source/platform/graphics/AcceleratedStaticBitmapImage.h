@@ -38,7 +38,6 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
 
   bool CurrentFrameKnownToBeOpaque(MetadataMode = kUseCurrentMetadata) override;
   IntSize Size() const override;
-  sk_sp<SkImage> ImageForCurrentFrame() override;
   bool IsTextureBacked() const override { return true; }
 
   void Draw(PaintCanvas*,
@@ -77,6 +76,9 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   // Call this immediately after creation in cases where the source SkImage
   // was a snapshot of an SkSurface that may be rendered to after
   void RetainOriginalSkImageForCopyOnWrite();
+
+ protected:
+  void PopulateImageForCurrentFrame(PaintImageBuilder&) override;
 
  private:
   AcceleratedStaticBitmapImage(sk_sp<SkImage>,

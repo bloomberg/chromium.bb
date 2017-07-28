@@ -817,7 +817,7 @@ ImageData* WebGLRenderingContextBase::ToImageData(SnapshotReason reason) {
     RefPtr<StaticBitmapImage> snapshot = MakeImageSnapshot(image_info);
     if (snapshot) {
       image_data = ImageData::Create(GetDrawingBuffer()->Size());
-      snapshot->ImageForCurrentFrame()->readPixels(
+      snapshot->PaintImageForCurrentFrame().GetSkImage()->readPixels(
           image_info, image_data->data()->Data(), image_info.minRowBytes(), 0,
           0);
     }
@@ -5392,7 +5392,8 @@ void WebGLRenderingContextBase::TexImageHelperImageBitmap(
     }
     return;
   }
-  sk_sp<SkImage> sk_image = bitmap->BitmapImage()->ImageForCurrentFrame();
+  sk_sp<SkImage> sk_image =
+      bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
   SkPixmap pixmap;
   uint8_t* pixel_data_ptr = nullptr;
   RefPtr<Uint8Array> pixel_data;

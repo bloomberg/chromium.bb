@@ -80,7 +80,7 @@ PaintImage DragImage::ResizeAndOrientImage(
     FloatSize image_scale,
     float opacity,
     InterpolationQuality interpolation_quality) {
-  IntSize size(image.sk_image()->width(), image.sk_image()->height());
+  IntSize size(image.width(), image.height());
   size.Scale(image_scale.Width(), image_scale.Height());
   AffineTransform transform;
   if (orientation != kDefaultImageOrientation) {
@@ -95,8 +95,8 @@ PaintImage DragImage::ResizeAndOrientImage(
 
   if (transform.IsIdentity() && opacity == 1) {
     // Nothing to adjust, just use the original.
-    DCHECK_EQ(image.sk_image()->width(), size.Width());
-    DCHECK_EQ(image.sk_image()->height(), size.Height());
+    DCHECK_EQ(image.width(), size.Width());
+    DCHECK_EQ(image.height(), size.Height());
     return image;
   }
 
@@ -121,7 +121,7 @@ PaintImage DragImage::ResizeAndOrientImage(
     canvas = color_transform_canvas.get();
   }
   canvas->concat(AffineTransformToSkMatrix(transform));
-  canvas->drawImage(image.sk_image(), 0, 0, &paint);
+  canvas->drawImage(image.GetSkImage(), 0, 0, &paint);
 
   return image.CloneWithSkImage(surface->makeImageSnapshot());
 }
@@ -170,7 +170,7 @@ std::unique_ptr<DragImage> DragImage::Create(
   SkBitmap bm;
   paint_image = ResizeAndOrientImage(paint_image, orientation, image_scale,
                                      opacity, interpolation_quality);
-  if (!paint_image || !paint_image.sk_image()->asLegacyBitmap(
+  if (!paint_image || !paint_image.GetSkImage()->asLegacyBitmap(
                           &bm, SkImage::kRO_LegacyBitmapMode)) {
     return nullptr;
   }

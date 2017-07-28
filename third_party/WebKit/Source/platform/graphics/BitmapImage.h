@@ -83,7 +83,6 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   ImageAnimationPolicy AnimationPolicy() override { return animation_policy_; }
   void AdvanceTime(double delta_time_in_seconds) override;
 
-  sk_sp<SkImage> ImageForCurrentFrame() override;
   PassRefPtr<Image> ImageForDefaultFrame() override;
 
   bool CurrentFrameKnownToBeOpaque(MetadataMode = kUseCurrentMetadata) override;
@@ -99,6 +98,9 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
       ImageOrientation);
   // Advance the image animation by one frame.
   void AdvanceAnimationForTesting() override { InternalAdvanceAnimation(); }
+
+ protected:
+  void PopulateImageForCurrentFrame(PaintImageBuilder&) override;
 
  private:
   enum RepetitionCountStatus : uint8_t {

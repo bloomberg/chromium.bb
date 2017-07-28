@@ -97,7 +97,7 @@ class DiscardableImageGenerator {
         PaintOpType op_type = static_cast<PaintOpType>(op->type);
         if (op_type == PaintOpType::DrawImage) {
           auto* image_op = static_cast<DrawImageOp*>(op);
-          auto* sk_image = image_op->image.sk_image().get();
+          auto* sk_image = image_op->image.GetSkImage().get();
           AddImage(image_op->image,
                    SkRect::MakeIWH(sk_image->width(), sk_image->height()),
                    SkRect::MakeXYWH(image_op->left, image_op->top,
@@ -156,7 +156,7 @@ class DiscardableImageGenerator {
     const PaintImage& paint_image = flags.getShader()->paint_image();
     SkMatrix local_matrix = flags.getShader()->GetLocalMatrix();
     AddImage(paint_image,
-             SkRect::MakeFromIRect(paint_image.sk_image()->bounds()), rect,
+             SkRect::MakeWH(paint_image.width(), paint_image.height()), rect,
              &local_matrix, flags);
   }
 
@@ -165,7 +165,7 @@ class DiscardableImageGenerator {
                 const SkRect& rect,
                 const SkMatrix* local_matrix,
                 const PaintFlags& flags) {
-    if (!paint_image.sk_image()->isLazyGenerated())
+    if (!paint_image.IsLazyGenerated())
       return;
 
     const SkRect& clip_rect = SkRect::Make(canvas_.getDeviceClipBounds());
@@ -204,7 +204,7 @@ class DiscardableImageGenerator {
 
     // Make a note if any image was originally specified in a non-sRGB color
     // space.
-    SkColorSpace* source_color_space = paint_image.sk_image()->colorSpace();
+    SkColorSpace* source_color_space = paint_image.GetSkImage()->colorSpace();
     color_stats_total_pixel_count_ += image_rect.size().GetCheckedArea();
     color_stats_total_image_count_++;
     if (!source_color_space || source_color_space->isSRGB()) {

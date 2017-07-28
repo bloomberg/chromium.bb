@@ -61,8 +61,9 @@ bool SVGImageForContainer::ApplyShader(PaintFlags& flags,
                                          local_matrix);
 }
 
-sk_sp<SkImage> SVGImageForContainer::ImageForCurrentFrame() {
-  return image_->ImageForCurrentFrameForContainer(url_, Size());
+void SVGImageForContainer::PopulateImageForCurrentFrame(
+    PaintImageBuilder& builder) {
+  image_->PopulatePaintRecordForCurrentFrameForContainer(builder, url_, Size());
 }
 
 }  // namespace blink

@@ -160,7 +160,8 @@ class Canvas2DLayerBridgeTest : public Test {
             bridge
                 ->NewImageSnapshot(kPreferAcceleration,
                                    kSnapshotReasonUnitTests)
-                ->ImageForCurrentFrame()
+                ->PaintImageForCurrentFrame()
+                .GetSkImage()
                 ->getTextureHandle(true));
     EXPECT_EQ(texture_info, nullptr);
     bridge.Clear();

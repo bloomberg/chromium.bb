@@ -265,7 +265,7 @@ void BitmapImage::Draw(
     return;  // It's too early and we don't have an image yet.
 
   FloatRect adjusted_src_rect = src_rect;
-  adjusted_src_rect.Intersect(SkRect::Make(image.sk_image()->bounds()));
+  adjusted_src_rect.Intersect(SkRect::MakeWH(image.width(), image.height()));
 
   if (adjusted_src_rect.IsEmpty() || dst_rect.IsEmpty())
     return;  // Nothing to draw.
@@ -296,8 +296,8 @@ void BitmapImage::Draw(
     }
   }
 
-  uint32_t unique_id = image.sk_image()->uniqueID();
-  bool is_lazy_generated = image.sk_image()->isLazyGenerated();
+  uint32_t unique_id = image.GetSkImage()->uniqueID();
+  bool is_lazy_generated = image.IsLazyGenerated();
   canvas->drawImageRect(std::move(image), adjusted_src_rect, adjusted_dst_rect,
                         &flags,
                         WebCoreClampingModeToSkiaRectConstraint(clamp_mode));
@@ -364,8 +364,10 @@ float BitmapImage::FrameDurationAtIndex(size_t index) const {
   return source_.FrameDurationAtIndex(index);
 }
 
-sk_sp<SkImage> BitmapImage::ImageForCurrentFrame() {
-  return FrameAtIndex(CurrentFrame());
+void BitmapImage::PopulateImageForCurrentFrame(PaintImageBuilder& builder) {
+  // TODO(vmpstr): Pass the builder down so that we can populate the decoder
+  // instead.
+  builder.set_image(FrameAtIndex(CurrentFrame()));
 }
 
 PassRefPtr<Image> BitmapImage::ImageForDefaultFrame() {

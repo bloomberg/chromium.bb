@@ -110,10 +110,11 @@ ScriptPromise ShapeDetector::detect(
   uint8_t* pixel_data_ptr = nullptr;
   WTF::CheckedNumeric<int> allocation_size = 0;
 
-  // makeNonTextureImage() will make a raster copy of ImageForCurrentFrame() if
-  // needed, otherwise returning the original SkImage.
+  // makeNonTextureImage() will make a raster copy of
+  // PaintImageForCurrentFrame() if needed, otherwise returning the original
+  // SkImage.
   const sk_sp<SkImage> sk_image =
-      image->ImageForCurrentFrame()->makeNonTextureImage();
+      image->PaintImageForCurrentFrame().GetSkImage()->makeNonTextureImage();
   if (sk_image && sk_image->peekPixels(&pixmap)) {
     pixel_data_ptr = static_cast<uint8_t*>(pixmap.writable_addr());
     allocation_size = pixmap.getSafeSize();
@@ -179,7 +180,8 @@ ScriptPromise ShapeDetector::DetectShapesOnImageElement(
     return promise;
   }
 
-  const sk_sp<SkImage> image = blink_image->ImageForCurrentFrame();
+  const sk_sp<SkImage> image =
+      blink_image->PaintImageForCurrentFrame().GetSkImage();
   DCHECK_EQ(img->naturalWidth(), static_cast<unsigned>(image->width()));
   DCHECK_EQ(img->naturalHeight(), static_cast<unsigned>(image->height()));
 

@@ -83,7 +83,6 @@ class CORE_EXPORT SVGImage final : public Image {
   void AdvanceAnimationForTesting() override;
   SVGImageChromeClient& ChromeClientForTesting();
 
-  sk_sp<SkImage> ImageForCurrentFrame() override;
   static FloatPoint OffsetForCurrentFrame(const FloatRect& dst_rect,
                                           const FloatRect& src_rect);
 
@@ -104,6 +103,9 @@ class CORE_EXPORT SVGImage final : public Image {
                                              const IntRect& draw_src_rect,
                                              const IntRect& draw_dst_rect,
                                              bool flip_y) override;
+
+ protected:
+  void PopulateImageForCurrentFrame(PaintImageBuilder&) override;
 
  private:
   // Accesses m_page.
@@ -155,7 +157,8 @@ class CORE_EXPORT SVGImage final : public Image {
                                const FloatRect&,
                                const FloatSize& repeat_spacing,
                                const KURL&);
-  sk_sp<SkImage> ImageForCurrentFrameForContainer(
+  void PopulatePaintRecordForCurrentFrameForContainer(
+      PaintImageBuilder&,
       const KURL&,
       const IntSize& container_size);
 

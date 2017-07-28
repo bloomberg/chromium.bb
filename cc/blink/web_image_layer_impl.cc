@@ -24,8 +24,7 @@ blink::WebLayer* WebImageLayerImpl::Layer() {
 
 void WebImageLayerImpl::SetImage(cc::PaintImage image) {
   static_cast<WebLayerImplFixedBounds*>(layer_.get())
-      ->SetFixedBounds(
-          gfx::Size(image.sk_image()->width(), image.sk_image()->height()));
+      ->SetFixedBounds(gfx::Size(image.width(), image.height()));
   static_cast<cc::PictureImageLayer*>(layer_->layer())
       ->SetImage(std::move(image));
 }
