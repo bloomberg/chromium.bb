@@ -152,8 +152,7 @@ class CORE_EXPORT AccessibleNode
 
   // Returns the given relation property if the Element has an AccessibleNode,
   // otherwise returns the equivalent ARIA attribute.
-  static AccessibleNode* GetPropertyOrARIAAttribute(Element*,
-                                                    AOMRelationProperty);
+  static Element* GetPropertyOrARIAAttribute(Element*, AOMRelationProperty);
 
   // Returns true and provides the the value of the given relation
   // list property if the Element has an AccessibleNode, or if it has

@@ -21,6 +21,28 @@
 
 namespace content {
 
+namespace {
+
+bool IsContainerWithSelectableChildrenRole(ui::AXRole role) {
+  switch (role) {
+    case ui::AX_ROLE_COMBO_BOX:
+    case ui::AX_ROLE_GRID:
+    case ui::AX_ROLE_LIST_BOX:
+    case ui::AX_ROLE_MENU:
+    case ui::AX_ROLE_MENU_BAR:
+    case ui::AX_ROLE_RADIO_GROUP:
+    case ui::AX_ROLE_TAB_LIST:
+    case ui::AX_ROLE_TOOLBAR:
+    case ui::AX_ROLE_TREE:
+    case ui::AX_ROLE_TREE_GRID:
+      return true;
+    default:
+      return false;
+  }
+}
+
+}  // namespace
+
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
@@ -243,6 +265,26 @@ gfx::Rect BrowserAccessibilityManagerWin::GetViewBounds() {
   return gfx::Rect();
 }
 
+void BrowserAccessibilityManagerWin::OnTreeDataChanged(
+    ui::AXTree* tree,
+    const ui::AXTreeData& old_tree_data,
+    const ui::AXTreeData& new_tree_data) {
+  BrowserAccessibilityManager::OnTreeDataChanged(tree, old_tree_data,
+                                                 new_tree_data);
+  if (new_tree_data.loaded && !old_tree_data.loaded)
+    tree_events_[tree->root()->id()].insert(ui::AX_EVENT_LOAD_COMPLETE);
+  if (new_tree_data.sel_anchor_object_id !=
+          old_tree_data.sel_anchor_object_id ||
+      new_tree_data.sel_anchor_offset != old_tree_data.sel_anchor_offset ||
+      new_tree_data.sel_anchor_affinity != old_tree_data.sel_anchor_affinity ||
+      new_tree_data.sel_focus_object_id != old_tree_data.sel_focus_object_id ||
+      new_tree_data.sel_focus_offset != old_tree_data.sel_focus_offset ||
+      new_tree_data.sel_focus_affinity != old_tree_data.sel_focus_affinity) {
+    tree_events_[tree->root()->id()].insert(
+        ui::AX_EVENT_DOCUMENT_SELECTION_CHANGED);
+  }
+}
+
 void BrowserAccessibilityManagerWin::OnNodeCreated(ui::AXTree* tree,
                                                    ui::AXNode* node) {
   DCHECK(node);
@@ -254,12 +296,77 @@ void BrowserAccessibilityManagerWin::OnNodeCreated(ui::AXTree* tree,
     return;
 }
 
+void BrowserAccessibilityManagerWin::OnNodeDataWillChange(
+    ui::AXTree* tree,
+    const ui::AXNodeData& old_node_data,
+    const ui::AXNodeData& new_node_data) {
+  if (new_node_data.child_ids != old_node_data.child_ids &&
+      new_node_data.role != ui::AX_ROLE_STATIC_TEXT) {
+    tree_events_[new_node_data.id].insert(ui::AX_EVENT_CHILDREN_CHANGED);
+  }
+}
+
+void BrowserAccessibilityManagerWin::OnStateChanged(ui::AXTree* tree,
+                                                    ui::AXNode* node,
+                                                    ui::AXState state,
+                                                    bool new_value) {
+  if (state == ui::AX_STATE_SELECTED) {
+    ui::AXNode* container = node;
+    while (container &&
+           !IsContainerWithSelectableChildrenRole(container->data().role))
+      container = container->parent();
+    if (container) {
+      tree_events_[container->id()].insert(
+          ui::AX_EVENT_SELECTED_CHILDREN_CHANGED);
+    }
+  }
+}
+
+void BrowserAccessibilityManagerWin::OnIntAttributeChanged(
+    ui::AXTree* tree,
+    ui::AXNode* node,
+    ui::AXIntAttribute attr,
+    int32_t old_value,
+    int32_t new_value) {
+  BrowserAccessibilityManager::OnIntAttributeChanged(tree, node, attr,
+                                                     old_value, new_value);
+  switch (attr) {
+    case ui::AX_ATTR_ACTIVEDESCENDANT_ID:
+      tree_events_[node->id()].insert(ui::AX_EVENT_ACTIVEDESCENDANTCHANGED);
+      break;
+    case ui::AX_ATTR_SCROLL_X:
+    case ui::AX_ATTR_SCROLL_Y:
+      tree_events_[node->id()].insert(ui::AX_EVENT_SCROLL_POSITION_CHANGED);
+      break;
+    default:
+      break;
+  }
+}
+
 void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
     ui::AXTree* tree,
     bool root_changed,
     const std::vector<ui::AXTreeDelegate::Change>& changes) {
   BrowserAccessibilityManager::OnAtomicUpdateFinished(
       tree, root_changed, changes);
+
+  if (root_changed && tree->data().loaded)
+    tree_events_[tree->root()->id()].insert(ui::AX_EVENT_LOAD_COMPLETE);
+
+  // Handle live region changes.
+  for (size_t i = 0; i < changes.size(); ++i) {
+    const ui::AXNode* node = changes[i].node;
+    DCHECK(node);
+    if (node->data().HasStringAttribute(ui::AX_ATTR_CONTAINER_LIVE_STATUS)) {
+      const ui::AXNode* container = node;
+      while (container &&
+             !container->data().HasStringAttribute(ui::AX_ATTR_LIVE_STATUS)) {
+        container = container->parent();
+      }
+      if (container)
+        tree_events_[container->id()].insert(ui::AX_EVENT_LIVE_REGION_CHANGED);
+    }
+  }
 
   // Do a sequence of Windows-specific updates on each node. Each one is
   // done in a single pass that must complete before the next step starts.

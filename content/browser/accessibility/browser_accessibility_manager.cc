@@ -434,9 +434,14 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
 
     ui::AXEvent event_type = detail.event_type;
 
-#if defined(OS_MACOSX)
-    if (event_type != ui::AX_EVENT_HOVER)
+// On Mac and Windows, nearly all events are now fired implicitly,
+// so we should ignore most events from the renderer.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+    if (event_type != ui::AX_EVENT_HOVER &&
+        event_type != ui::AX_EVENT_LOCATION_CHANGED &&
+        event_type != ui::AX_EVENT_SCROLLED_TO_ANCHOR) {
       continue;
+    }
 #endif  // !defined(OS_MACOSX)
 
     if (event_type == ui::AX_EVENT_FOCUS ||
