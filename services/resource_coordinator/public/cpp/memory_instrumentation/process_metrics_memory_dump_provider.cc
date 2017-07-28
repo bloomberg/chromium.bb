@@ -137,21 +137,6 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessMemoryMaps(
 bool ProcessMetricsMemoryDumpProvider::DumpProcessTotals(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-// On Windows add extra region if necessary:
-#if defined(OS_WIN)
-  if (args.level_of_detail ==
-      base::trace_event::MemoryDumpLevelOfDetail::DETAILED) {
-    uint64_t pss_bytes = 0;
-    bool res = process_metrics_->GetProportionalSetSizeBytes(&pss_bytes);
-    if (res) {
-      base::trace_event::ProcessMemoryMaps::VMRegion region;
-      region.byte_stats_proportional_resident = pss_bytes;
-      pmd->process_mmaps()->AddVMRegion(region);
-      pmd->set_has_process_mmaps();
-    }
-  }
-#endif  // defined(OS_WIN)
-
 // On Mac set a few extra values on process_totals:
 #if defined(OS_MACOSX)
   size_t private_bytes;

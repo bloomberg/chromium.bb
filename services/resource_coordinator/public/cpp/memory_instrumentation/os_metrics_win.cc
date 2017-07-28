@@ -38,6 +38,15 @@ std::vector<mojom::VmRegionPtr> OSMetrics::GetProcessMemoryMaps(
   if (!base::win::GetLoadedModulesSnapshot(::GetCurrentProcess(), &modules))
     return maps;
 
+  auto process_metrics = base::ProcessMetrics::CreateCurrentProcessMetrics();
+  uint64_t pss_bytes = 0;
+  bool res = process_metrics->GetProportionalSetSizeBytes(&pss_bytes);
+  if (res) {
+    mojom::VmRegionPtr region = mojom::VmRegion::New();
+    region->byte_stats_proportional_resident = pss_bytes;
+    maps.push_back(std::move(region));
+  }
+
   // Query the base address for each module, and attach it to the dump.
   for (size_t i = 0; i < modules.size(); ++i) {
     wchar_t module_name[MAX_PATH];

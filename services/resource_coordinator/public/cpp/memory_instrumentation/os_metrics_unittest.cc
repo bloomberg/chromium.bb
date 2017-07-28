@@ -244,6 +244,13 @@ TEST(OSMetricsTest, TestWinModuleReading) {
   bool found_executable = false;
   bool found_region_with_dummy = false;
   for (const VMRegion& region : dump.process_mmaps()->vm_regions()) {
+    // We add a region just for byte_stats_proportional_resident which
+    // is empty other than that one stat.
+    if (region.byte_stats_proportional_resident > 0) {
+      EXPECT_EQ(0u, region.start_address);
+      EXPECT_EQ(0u, region.size_in_bytes);
+      continue;
+    }
     EXPECT_NE(0u, region.start_address);
     EXPECT_NE(0u, region.size_in_bytes);
 
