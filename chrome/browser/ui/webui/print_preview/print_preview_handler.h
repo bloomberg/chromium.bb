@@ -110,6 +110,10 @@ class PrintPreviewHandler
     return regenerate_preview_request_count_;
   }
 
+  // Shuts down the initiator renderer. Called when a bad IPC message is
+  // received.
+  void BadMessageReceived();
+
   // Sets |pdf_file_saved_closure_| to |closure|.
   void SetPdfSavedClosureForTesting(const base::Closure& closure);
 
