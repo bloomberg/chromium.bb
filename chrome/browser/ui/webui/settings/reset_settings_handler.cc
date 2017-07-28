@@ -70,7 +70,7 @@ ResetRequestOriginFromString(const std::string& request_origin) {
 const char ResetSettingsHandler::kCctResetSettingsHash[] = "cct";
 
 ResetSettingsHandler::ResetSettingsHandler(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {
+    : profile_(profile), callback_weak_ptr_factory_(this) {
   google_brand::GetBrand(&brandcode_);
 }
 
@@ -98,6 +98,10 @@ ResetSettingsHandler* ResetSettingsHandler::Create(
   html_source->AddBoolean("showResetProfileBanner", show_reset_profile_banner);
 
   return new ResetSettingsHandler(profile);
+}
+
+void ResetSettingsHandler::OnJavascriptDisallowed() {
+  callback_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void ResetSettingsHandler::RegisterMessages() {
@@ -182,10 +186,9 @@ void ResetSettingsHandler::HandleGetReportedSettings(
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
 
-  setting_snapshot_->RequestShortcuts(base::Bind(
-      &ResetSettingsHandler::OnGetReportedSettingsDone,
-      weak_ptr_factory_.GetWeakPtr(),
-      callback_id));
+  setting_snapshot_->RequestShortcuts(
+      base::Bind(&ResetSettingsHandler::OnGetReportedSettingsDone,
+                 callback_weak_ptr_factory_.GetWeakPtr(), callback_id));
 }
 
 void ResetSettingsHandler::OnGetReportedSettingsDone(std::string callback_id) {
@@ -249,8 +252,8 @@ void ResetSettingsHandler::ResetProfile(
   GetResetter()->Reset(
       ProfileResetter::ALL, std::move(default_settings),
       base::Bind(&ResetSettingsHandler::OnResetProfileSettingsDone,
-                 weak_ptr_factory_.GetWeakPtr(), callback_id, send_settings,
-                 request_origin));
+                 callback_weak_ptr_factory_.GetWeakPtr(), callback_id,
+                 send_settings, request_origin));
   base::RecordAction(base::UserMetricsAction("ResetProfile"));
   UMA_HISTOGRAM_BOOLEAN("ProfileReset.SendFeedback", send_settings);
   UMA_HISTOGRAM_ENUMERATION(
