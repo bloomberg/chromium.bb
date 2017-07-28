@@ -1041,21 +1041,17 @@ void SpellChecker::SpellCheckAfterBlur() {
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       GetFrame().GetDocument()->Lifecycle());
-  if (!GetFrame()
-           .Selection()
-           .ComputeVisibleSelectionInDOMTree()
-           .IsContentEditable())
+  const VisibleSelection& selection =
+      GetFrame().Selection().ComputeVisibleSelectionInDOMTree();
+  if (!selection.IsContentEditable())
     return;
 
-  if (IsPositionInTextField(
-          GetFrame().Selection().ComputeVisibleSelectionInDOMTree().Start())) {
+  if (IsPositionInTextField(selection.Start())) {
     // textFieldDidEndEditing() and textFieldDidBeginEditing() handle this.
     return;
   }
 
-  VisibleSelection empty;
-  SpellCheckOldSelection(
-      GetFrame().Selection().ComputeVisibleSelectionInDOMTree().Start(), empty);
+  SpellCheckOldSelection(selection.Start(), VisibleSelection());
 }
 
 void SpellChecker::SpellCheckOldSelection(
