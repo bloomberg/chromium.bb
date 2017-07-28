@@ -93,6 +93,11 @@ void QuotaPolicyCookieStore::SetForceKeepSessionState() {
   special_storage_policy_ = nullptr;
 }
 
+void QuotaPolicyCookieStore::SetBeforeFlushCallback(
+    base::RepeatingClosure callback) {
+  persistent_store_->SetBeforeFlushCallback(std::move(callback));
+}
+
 void QuotaPolicyCookieStore::Flush(base::OnceClosure callback) {
   persistent_store_->Flush(std::move(callback));
 }

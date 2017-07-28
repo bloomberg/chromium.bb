@@ -786,6 +786,11 @@ class NET_EXPORT CookieMonster::PersistentCookieStore
   // Instructs the store to not discard session only cookies on shutdown.
   virtual void SetForceKeepSessionState() = 0;
 
+  // Sets a callback that will be run before the store flushes.  If |callback|
+  // performs any async operations, the store will not wait for those to finish
+  // before flushing.
+  virtual void SetBeforeFlushCallback(base::RepeatingClosure callback) = 0;
+
   // Flushes the store and posts |callback| when complete. |callback| may be
   // NULL.
   virtual void Flush(base::OnceClosure callback) = 0;
