@@ -963,9 +963,11 @@ void GetDefaultNetworkImageAndLabel(IconType icon_type,
     }
   }
   if (!network) {
-    // If no connecting network, check for mobile initializing.
+    // If no connecting network, check for mobile initializing. Do not display
+    // the message about enabling Bluetooth for Tether.
     int uninitialized_msg = GetMobileUninitializedMsg();
-    if (uninitialized_msg != 0) {
+    if (uninitialized_msg != 0 &&
+        uninitialized_msg != IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH) {
       *image = GetConnectingImage(icon_type, shill::kTypeCellular);
       if (label)
         *label = l10n_util::GetStringUTF16(uninitialized_msg);
