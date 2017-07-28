@@ -233,6 +233,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
       chromeos::quick_unlock::IsPinEnabled(profile->GetPrefs()));
   html_source->AddBoolean("fingerprintUnlockEnabled",
                           chromeos::quick_unlock::IsFingerprintEnabled());
+  html_source->AddBoolean("hasInternalStylus",
+                          ash::palette_utils::HasInternalStylus());
 
   // We have 2 variants of Android apps settings. Default case, when the Play
   // Store app exists we show expandable section that allows as to

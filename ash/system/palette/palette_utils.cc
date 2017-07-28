@@ -63,5 +63,10 @@ bool PaletteContainsPointInScreen(const gfx::Point& point) {
   return false;
 }
 
+bool HasInternalStylus() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kHasInternalStylus);
+}
+
 }  // namespace palette_utils
 }  // namespace ash

@@ -36,13 +36,15 @@
       </settings-toggle-button>
     </div>
 
-    <div class="settings-box">
-      <settings-toggle-button class="start"
-          pref="{{prefs.settings.launch_palette_on_eject_event}}"
-          label="$i18n{stylusAutoOpenStylusTools}"
-          disabled="[[!prefs.settings.enable_stylus_tools.value]]">
-      </settings-toggle-button>
-    </div>
+    <template is="dom-if" if="[[hasInternalStylus_]]">
+      <div class="settings-box">
+        <settings-toggle-button class="start"
+            pref="{{prefs.settings.launch_palette_on_eject_event}}"
+            label="$i18n{stylusAutoOpenStylusTools}"
+            disabled="[[!prefs.settings.enable_stylus_tools.value]]">
+        </settings-toggle-button>
+      </div>
+    </template>
 
     <div class="settings-box">
       <div id="stylusNoteTakingAppLabel" class="start">
