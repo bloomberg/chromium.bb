@@ -47,6 +47,7 @@ TEST(ChromeOSFileSystemBackendTest, DefaultMountPoints) {
       nullptr,  // mtp_delegate
       nullptr,  // arc_content_delegate
       nullptr,  // arc_documents_provider_delegate
+      nullptr,  // recent_delegate
       mount_points.get(), storage::ExternalMountPoints::GetSystemInstance());
   backend.AddSystemMountPoints();
   std::vector<base::FilePath> root_dirs = backend.GetRootDirectories();
@@ -75,6 +76,7 @@ TEST(ChromeOSFileSystemBackendTest, GetRootDirectories) {
       nullptr,  // mtp_delegate
       nullptr,  // arc_content_delegate
       nullptr,  // arc_documents_provider_delegate
+      nullptr,  // recent_delegate
       mount_points.get(), system_mount_points.get());
 
   const size_t initial_root_dirs_size = backend.GetRootDirectories().size();
@@ -122,6 +124,7 @@ TEST(ChromeOSFileSystemBackendTest, AccessPermissions) {
       nullptr,  // mtp_delegate
       nullptr,  // arc_content_delegate
       nullptr,  // arc_documents_provider_delegate
+      nullptr,  // recent_delegate
       mount_points.get(), system_mount_points.get());
 
   std::string extension("ddammdhioacbehjngdmkjcjbnfginlla");
@@ -192,6 +195,7 @@ TEST(ChromeOSFileSystemBackendTest, GetVirtualPathConflictWithSystemPoints) {
       nullptr,  // mtp_delegate
       nullptr,  // arc_content_delegate
       nullptr,  // arc_documents_provider_delegate
+      nullptr,  // recent_delegate
       mount_points.get(), system_mount_points.get());
 
   const storage::FileSystemType type = storage::kFileSystemTypeNativeLocal;

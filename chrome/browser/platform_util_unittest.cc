@@ -5,6 +5,7 @@
 #include "chrome/browser/platform_util.h"
 
 #include <memory>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -59,7 +60,8 @@ class PlatformUtilTestContentBrowserClient : public ChromeContentBrowserClient {
     // New FileSystemBackend that uses our MockSpecialStoragePolicy.
     additional_backends->push_back(
         base::MakeUnique<chromeos::FileSystemBackend>(
-            nullptr, nullptr, nullptr, nullptr, nullptr, external_mount_points,
+            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+            external_mount_points,
             storage::ExternalMountPoints::GetSystemInstance()));
   }
 };
