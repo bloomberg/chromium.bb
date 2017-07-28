@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -53,7 +53,7 @@ class TranslateScriptTest : public testing::Test {
   }
 
   // Sets up the task scheduling/task-runner environment for each test.
-  base::test::ScopedTaskScheduler scoped_task_scheduler_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // The translate script.
   std::unique_ptr<TranslateScript> script_;
