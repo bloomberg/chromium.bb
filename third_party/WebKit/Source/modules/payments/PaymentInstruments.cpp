@@ -58,7 +58,7 @@ bool rejectError(ScriptPromiseResolver* resolver,
           ExecutionContext::From(resolver->GetScriptState());
       context->AddConsoleMessage(ConsoleMessage::Create(
           kJSMessageSource, kWarningMessageLevel,
-          "Unable to fetch payment handler's name and icon from its web app "
+          "Unable to fetch payment handler's name and/or icon from its web app "
           "manifest. User may not recognize this payment handler in UI, "
           "because it will be labeled only by its origin."));
       return false;
