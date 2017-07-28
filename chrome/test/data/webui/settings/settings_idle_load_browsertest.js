@@ -17,7 +17,7 @@ SettingsIdleLoadBrowserTest.prototype = {
   __proto__: testing.Test.prototype,
 
   /** @override */
-  browsePreload: 'chrome://md-settings/controls/setting_idle_load.html',
+  browsePreload: 'chrome://settings/controls/setting_idle_load.html',
 
   /** @override */
   extraLibraries: [

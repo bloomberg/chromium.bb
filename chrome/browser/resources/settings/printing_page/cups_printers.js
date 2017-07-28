@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview 'settings-cups-printers' is a component for showing CUPS
- * Printer settings subpage (chrome://md-settings/cupsPrinters). It is used to
+ * Printer settings subpage (chrome://settings/cupsPrinters). It is used to
  * set up legacy & non-CloudPrint printers on ChromeOS by leveraging CUPS (the
  * unix printing system) and the many open source drivers built for CUPS.
  */

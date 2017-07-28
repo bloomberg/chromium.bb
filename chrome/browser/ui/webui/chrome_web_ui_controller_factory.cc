@@ -269,20 +269,12 @@ WebUIController* NewWebUI<dom_distiller::DomDistillerUi>(WebUI* web_ui,
       web_ui, service, dom_distiller::kDomDistillerScheme);
 }
 
-#if !defined(OS_ANDROID)
-template<>
-WebUIController* NewWebUI<settings::MdSettingsUI>(WebUI* web_ui,
-                                                  const GURL& url) {
-  return new settings::MdSettingsUI(web_ui, url);
-}
-
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 template <>
 WebUIController* NewWebUI<WelcomeUI>(WebUI* web_ui, const GURL& url) {
   return new WelcomeUI(web_ui, url);
 }
-#endif  // !defined(OS_CHROMEOS)
-#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
 template <>
@@ -431,10 +423,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUINewTabHost)
     return &NewWebUI<NewTabUI>;
   // Settings are implemented with native UI elements on Android.
-  if (url.host_piece() == chrome::kChromeUISettingsHost ||
-      url.host_piece() == chrome::kChromeUIMdSettingsHost) {
+  if (url.host_piece() == chrome::kChromeUISettingsHost)
     return &NewWebUI<settings::MdSettingsUI>;
-  }
   if (url.host_piece() == chrome::kChromeUIExtensionsHost)
     return &NewWebUI<extensions::ExtensionsUI>;
   if (url.host_piece() == chrome::kChromeUIHistoryHost)
@@ -545,9 +535,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<NaClUI>;
 #endif
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
-  if (url.host_piece() == chrome::kChromeUITabModalConfirmDialogHost) {
+  if (url.host_piece() == chrome::kChromeUITabModalConfirmDialogHost)
     return &NewWebUI<ConstrainedWebDialogUI>;
-  }
 #endif
 #if defined(USE_NSS_CERTS) && defined(USE_AURA)
   if (url.host_piece() == chrome::kChromeUICertificateViewerHost)
@@ -810,14 +799,14 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
     return MdDownloadsUI::GetFaviconResourceBytes(scale_factor);
 
   // Android doesn't use the Options/Settings pages.
-  if (page_url.host_piece() == chrome::kChromeUISettingsHost ||
-      page_url.host_piece() == chrome::kChromeUIMdSettingsHost)
+  if (page_url.host_piece() == chrome::kChromeUISettingsHost)
     return settings_utils::GetFaviconResourceBytes(scale_factor);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (page_url.host_piece() == chrome::kChromeUIExtensionsHost ||
-      page_url.host_piece() == chrome::kChromeUIExtensionsFrameHost)
+      page_url.host_piece() == chrome::kChromeUIExtensionsFrameHost) {
     return extensions::ExtensionsUI::GetFaviconResourceBytes(scale_factor);
+  }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 #endif  // !defined(OS_ANDROID)
 

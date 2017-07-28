@@ -96,12 +96,6 @@
 
 namespace settings {
 
-bool IsValidOrigin(const GURL& url) {
-  const GURL origin = url.GetOrigin();
-  return origin == GURL(chrome::kChromeUISettingsURL).GetOrigin() ||
-         origin == GURL(chrome::kChromeUIMdSettingsURL).GetOrigin();
-}
-
 // static
 void MdSettingsUI::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -112,7 +106,7 @@ void MdSettingsUI::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kImportDialogSearchEngine, true);
 }
 
-MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
+MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui),
       WebContentsObserver(web_ui->GetWebContents()) {
 #if BUILDFLAG(USE_VULCANIZE)
@@ -186,13 +180,11 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   AddSettingsPageUIHandler(base::MakeUnique<SystemHandler>());
 #endif
 
-  // Host must be derived from the visible URL, since this might be serving
-  // either chrome://settings or chrome://md-settings.
-  CHECK(IsValidOrigin(url));
-
   content::WebUIDataSource* html_source =
-      content::WebUIDataSource::Create(url.host());
-  html_source->AddString("hostname", url.host());
+      content::WebUIDataSource::Create(chrome::kChromeUISettingsHost);
+  // This is used by a <base> tag in c/b/r/settings/BUILD.gn. TODO(dbeam): Is
+  // this still needed now that there's only 1 host name?
+  html_source->AddString("hostname", chrome::kChromeUISettingsHost);
 
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(safe_browsing::kInBrowserCleanerUIFeature)) {
