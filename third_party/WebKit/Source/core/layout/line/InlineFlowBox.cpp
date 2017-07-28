@@ -1456,7 +1456,7 @@ LayoutUnit InlineFlowBox::PlaceEllipsisBox(bool ltr,
                                            LayoutUnit block_right_edge,
                                            LayoutUnit ellipsis_width,
                                            LayoutUnit& truncated_width,
-                                           bool& found_box,
+                                           InlineBox** found_box,
                                            LayoutUnit logical_left_offset) {
   LayoutUnit result(-1);
   // We iterate over all children, the foundBox variable tells us when we've
@@ -1477,9 +1477,12 @@ LayoutUnit InlineFlowBox::PlaceEllipsisBox(bool ltr,
   LayoutUnit visible_right_edge = block_right_edge;
 
   while (box) {
+    bool had_found_box = *found_box;
     LayoutUnit curr_result = box->PlaceEllipsisBox(
         ltr, visible_left_edge, visible_right_edge, ellipsis_width,
         truncated_width, found_box, logical_left_offset);
+    if (IsRootInlineBox() && *found_box && !had_found_box)
+      *found_box = box;
     if (curr_result != -1 && result == -1)
       result = curr_result;
 
