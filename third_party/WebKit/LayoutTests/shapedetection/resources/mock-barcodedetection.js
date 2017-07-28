@@ -1,31 +1,15 @@
 "use strict";
 
-class MockBarcodeDetectionProvider {
+class MockBarcodeDetection {
   constructor() {
     this.bindingSet_ = new mojo.BindingSet(
-        shapeDetection.mojom.BarcodeDetectionProvider);
+        shapeDetection.mojom.BarcodeDetection);
 
     this.interceptor_ = new MojoInterfaceInterceptor(
-        shapeDetection.mojom.BarcodeDetectionProvider.name);
+        shapeDetection.mojom.BarcodeDetection.name);
     this.interceptor_.oninterfacerequest =
         e => this.bindingSet_.addBinding(this, e.handle);
     this.interceptor_.start();
-  }
-
-  createBarcodeDetection(request, options) {
-    this.mockService_ = new MockBarcodeDetection(request, options);
-  }
-
-  getFormats() {
-   return this.mockService_.options_.formats;
-  }
-}
-
-class MockBarcodeDetection {
-  constructor(request, options) {
-    this.options_ = options;
-    this.binding_ =
-        new mojo.Binding(shapeDetection.mojom.BarcodeDetection, this, request);
   }
 
   detect(bitmap_data) {
@@ -56,6 +40,10 @@ class MockBarcodeDetection {
       ],
     });
   }
+
+  getFrameData() {
+    return this.buffer_data_;
+  }
 }
 
-let mockBarcodeDetectionProvider = new MockBarcodeDetectionProvider();
+let mockBarcodeDetection = new MockBarcodeDetection();

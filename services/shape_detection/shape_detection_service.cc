@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/service_context.h"
-#include "services/shape_detection/barcode_detection_provider_impl.h"
+#include "services/shape_detection/barcode_detection_impl.h"
 #include "services/shape_detection/face_detection_provider_impl.h"
 #include "services/shape_detection/text_detection_impl.h"
 
@@ -32,17 +32,16 @@ void ShapeDetectionService::OnStart() {
 
 #if defined(OS_ANDROID)
   registry_.AddInterface(
-      GetJavaInterfaces()
-          ->CreateInterfaceFactory<mojom::BarcodeDetectionProvider>());
+      GetJavaInterfaces()->CreateInterfaceFactory<mojom::BarcodeDetection>());
   registry_.AddInterface(
       GetJavaInterfaces()
           ->CreateInterfaceFactory<mojom::FaceDetectionProvider>());
   registry_.AddInterface(
       GetJavaInterfaces()->CreateInterfaceFactory<mojom::TextDetection>());
 #else
-  registry_.AddInterface(base::Bind(&BarcodeDetectionProviderImpl::Create));
-  registry_.AddInterface(base::Bind(&FaceDetectionProviderImpl::Create));
+  registry_.AddInterface(base::Bind(&BarcodeDetectionImpl::Create));
   registry_.AddInterface(base::Bind(&TextDetectionImpl::Create));
+  registry_.AddInterface(base::Bind(&FaceDetectionProviderImpl::Create));
 #endif
 }
 

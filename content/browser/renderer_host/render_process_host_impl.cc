@@ -197,7 +197,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
-#include "services/shape_detection/public/interfaces/barcodedetection_provider.mojom.h"
+#include "services/shape_detection/public/interfaces/barcodedetection.mojom.h"
 #include "services/shape_detection/public/interfaces/constants.mojom.h"
 #include "services/shape_detection/public/interfaces/facedetection_provider.mojom.h"
 #include "services/shape_detection/public/interfaces/textdetection.mojom.h"
@@ -1776,7 +1776,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::Bind(&ForwardShapeDetectionRequest<
-                 shape_detection::mojom::BarcodeDetectionProviderRequest>));
+                 shape_detection::mojom::BarcodeDetectionRequest>));
   AddUIThreadInterface(
       registry.get(),
       base::Bind(&ForwardShapeDetectionRequest<
