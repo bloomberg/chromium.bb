@@ -15,11 +15,14 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/path_service.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/mac/install_from_dmg.h"
 #include "chrome/browser/mac/keychain_reauthorize.h"
 #import "chrome/browser/mac/keystone_glue.h"
@@ -52,8 +55,10 @@ void EnsureMetadataNeverIndexFileOnFileThread(
 }
 
 void EnsureMetadataNeverIndexFile(const base::FilePath& user_data_dir) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::Bind(&EnsureMetadataNeverIndexFileOnFileThread, user_data_dir));
 }
 
@@ -196,10 +201,8 @@ void ChromeBrowserMainPartsMac::PostProfileInit() {
   g_browser_process->metrics_service()->RecordBreakpadRegistration(
       crash_reporter::GetUploadsEnabled());
 
-  // TODO(calamity): Make this gated on first_run::IsChromeFirstRun() in M45.
-  content::BrowserThread::PostAfterStartupTask(
-      FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&EnsureMetadataNeverIndexFile, user_data_dir()));
+  if (first_run::IsChromeFirstRun())
+    EnsureMetadataNeverIndexFile(user_data_dir());
 
   // Activation of Keystone is not automatic but done in response to the
   // counting and reporting of profiles.
