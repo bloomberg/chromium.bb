@@ -159,6 +159,7 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
   DCHECK(local_surface_id.is_valid());
   DCHECK(!frame.render_pass_list.empty());
 
+  uint64_t frame_index = ++last_frame_index_;
   ++ack_pending_count_;
 
   // |has_damage| is not transmitted.
@@ -207,7 +208,7 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
   }
 
   bool result = current_surface->QueueFrame(
-      std::move(frame),
+      std::move(frame), frame_index,
       base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
                  weak_factory_.GetWeakPtr()),
       base::BindRepeating(&CompositorFrameSinkSupport::WillDrawSurface,
