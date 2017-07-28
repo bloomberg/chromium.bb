@@ -1683,7 +1683,8 @@ static bool FontWeightIsBold(const CSSValue* font_weight) {
 static bool FontWeightNeedsResolving(const CSSValue* font_weight) {
   if (font_weight->IsPrimitiveValue())
     return false;
-  CHECK(font_weight->IsIdentifierValue());
+  if (!font_weight->IsIdentifierValue())
+    return true;
   const CSSValueID value = ToCSSIdentifierValue(font_weight)->GetValueID();
   return value == CSSValueLighter || value == CSSValueBolder;
 }
