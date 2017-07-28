@@ -335,7 +335,7 @@ TEST_F(ShelfLayoutManagerTest, SwipingUpOnShelfForFullscreenAppList) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // Note: A window must be visible in order to hide the shelf.
-  CreateTestWidget();
+  views::Widget* widget = CreateTestWidget();
 
   app_list::test::TestAppListPresenter test_app_list_presenter;
   shell->app_list()->SetAppListPresenter(
@@ -389,6 +389,27 @@ TEST_F(ShelfLayoutManagerTest, SwipingUpOnShelfForFullscreenAppList) {
   EXPECT_EQ(2u, test_app_list_presenter.show_count());
   EXPECT_EQ(1u, test_app_list_presenter.dismiss_count());
   EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
+
+  // Swiping down should hide the shelf.
+  generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+
+  // Minimize the visible window, the shelf should be shown if there are no
+  // visible windows, even in auto-hide mode.
+  widget->Minimize();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+
+  // Swiping up on the shelf in this state should open the app list.
+  delta.set_y(work_area_bounds.height() / 2.0);
+  end = start - delta;
+  generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(3u, test_app_list_presenter.show_count());
+  EXPECT_EQ(1u, test_app_list_presenter.dismiss_count());
 }
 
 void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {

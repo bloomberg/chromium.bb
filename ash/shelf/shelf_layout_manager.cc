@@ -314,12 +314,12 @@ void ShelfLayoutManager::UpdateAutoHideState() {
 
 void ShelfLayoutManager::UpdateAutoHideForMouseEvent(ui::MouseEvent* event,
                                                      aura::Window* target) {
-  // This also checks IsShelfWindow() to make sure we don't attempt to hide the
-  // shelf if the mouse down occurs on the shelf.
+  // This also checks IsShelfWindow() and IsStatusAreaWindow() to make sure we
+  // don't attempt to hide the shelf if the mouse down occurs on the shelf.
   in_mouse_drag_ = (event->type() == ui::ET_MOUSE_DRAGGED ||
                     (in_mouse_drag_ && event->type() != ui::ET_MOUSE_RELEASED &&
                      event->type() != ui::ET_MOUSE_CAPTURE_CHANGED)) &&
-                   !IsShelfWindow(target);
+                   !IsShelfWindow(target) && !IsStatusAreaWindow(target);
 
   // Don't update during shutdown because synthetic mouse events (e.g. mouse
   // exit) may be generated during status area widget teardown.
@@ -333,13 +333,19 @@ void ShelfLayoutManager::UpdateAutoHideForMouseEvent(ui::MouseEvent* event,
   }
 }
 
-void ShelfLayoutManager::UpdateAutoHideForGestureEvent(ui::GestureEvent* event,
-                                                       aura::Window* target) {
+void ShelfLayoutManager::ProcessGestureEventOnWindow(ui::GestureEvent* event,
+                                                     aura::Window* target) {
   if (visibility_state() != SHELF_AUTO_HIDE || in_shutdown_)
     return;
 
-  if (IsShelfWindow(target) && ProcessGestureEvent(*event))
-    event->StopPropagation();
+  if (IsShelfWindow(target)) {
+    ui::GestureEvent event_in_screen(*event);
+    gfx::Point location_in_screen(event->location());
+    ::wm::ConvertPointToScreen(target, &location_in_screen);
+    event_in_screen.set_location(location_in_screen);
+    if (ProcessGestureEvent(event_in_screen))
+      event->StopPropagation();
+  }
 }
 
 void ShelfLayoutManager::SetWindowOverlapsShelf(bool value) {
@@ -1012,10 +1018,15 @@ bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {
   if (!window)
     return false;
   const aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
+  return shelf_window && shelf_window->Contains(window);
+}
+
+bool ShelfLayoutManager::IsStatusAreaWindow(aura::Window* window) {
+  if (!window)
+    return false;
   const aura::Window* status_window =
       shelf_widget_->status_area_widget()->GetNativeWindow();
-  return (shelf_window && shelf_window->Contains(window)) ||
-         (status_window && status_window->Contains(window));
+  return status_window && status_window->Contains(window);
 }
 
 int ShelfLayoutManager::GetWorkAreaInsets(const State& state, int size) const {
