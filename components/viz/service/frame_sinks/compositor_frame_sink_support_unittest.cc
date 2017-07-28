@@ -7,9 +7,6 @@
 #include "base/macros.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/test/fake_external_begin_frame_source.h"
-#include "cc/test/fake_surface_observer.h"
-#include "cc/test/mock_compositor_frame_sink_support_client.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -19,6 +16,9 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/compositor_frame_helpers.h"
+#include "components/viz/test/fake_external_begin_frame_source.h"
+#include "components/viz/test/fake_surface_observer.h"
+#include "components/viz/test/mock_compositor_frame_sink_support_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -174,9 +174,9 @@ class CompositorFrameSinkSupportTest : public testing::Test {
   FrameSinkManagerImpl manager_;
   FakeCompositorFrameSinkSupportClient fake_support_client_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
-  cc::FakeExternalBeginFrameSource begin_frame_source_;
+  FakeExternalBeginFrameSource begin_frame_source_;
   LocalSurfaceId local_surface_id_;
-  cc::FakeSurfaceObserver surface_observer_;
+  FakeSurfaceObserver surface_observer_;
 
   // This is the sync token submitted with the frame. It should never be
   // returned to the client.
@@ -488,7 +488,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
 }
 
 TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
-  cc::test::MockCompositorFrameSinkSupportClient mock_client;
+  test::MockCompositorFrameSinkSupportClient mock_client;
   auto support = CompositorFrameSinkSupport::Create(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
       kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
@@ -506,7 +506,7 @@ TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
 
 // Tests doing an EvictCurrentSurface before shutting down the factory.
 TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
-  cc::test::MockCompositorFrameSinkSupportClient mock_client;
+  test::MockCompositorFrameSinkSupportClient mock_client;
   auto support = CompositorFrameSinkSupport::Create(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
       kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
@@ -535,7 +535,7 @@ TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
 // Tests doing an EvictCurrentSurface which has unregistered dependency.
 TEST_F(CompositorFrameSinkSupportTest,
        EvictCurrentSurfaceDependencyUnRegistered) {
-  cc::test::MockCompositorFrameSinkSupportClient mock_client;
+  test::MockCompositorFrameSinkSupportClient mock_client;
   auto support = CompositorFrameSinkSupport::Create(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
       kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
@@ -569,7 +569,7 @@ TEST_F(CompositorFrameSinkSupportTest,
 // Tests doing an EvictCurrentSurface which has registered dependency.
 TEST_F(CompositorFrameSinkSupportTest,
        EvictCurrentSurfaceDependencyRegistered) {
-  cc::test::MockCompositorFrameSinkSupportClient mock_client;
+  test::MockCompositorFrameSinkSupportClient mock_client;
   auto support = CompositorFrameSinkSupport::Create(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
       kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);

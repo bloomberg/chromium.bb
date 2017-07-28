@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/fake_external_begin_frame_source.h"
+#include "components/viz/test/fake_external_begin_frame_source.h"
 
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "components/viz/test/begin_frame_args_test.h"
 
-namespace cc {
+namespace viz {
 
 FakeExternalBeginFrameSource::FakeExternalBeginFrameSource(
     double refresh_rate,
@@ -28,13 +28,13 @@ FakeExternalBeginFrameSource::~FakeExternalBeginFrameSource() {
 void FakeExternalBeginFrameSource::SetPaused(bool paused) {
   if (paused != paused_) {
     paused_ = paused;
-    std::set<viz::BeginFrameObserver*> observers(observers_);
+    std::set<BeginFrameObserver*> observers(observers_);
     for (auto* obs : observers)
       obs->OnBeginFrameSourcePausedChanged(paused_);
   }
 }
 
-void FakeExternalBeginFrameSource::AddObserver(viz::BeginFrameObserver* obs) {
+void FakeExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
   DCHECK(observers_.find(obs) == observers_.end());
 
@@ -44,10 +44,10 @@ void FakeExternalBeginFrameSource::AddObserver(viz::BeginFrameObserver* obs) {
   if (observers_was_empty && tick_automatically_) {
     PostTestOnBeginFrame();
   } else if (current_args_.IsValid()) {
-    const viz::BeginFrameArgs& last_args = obs->LastUsedBeginFrameArgs();
+    const BeginFrameArgs& last_args = obs->LastUsedBeginFrameArgs();
     if (!last_args.IsValid() ||
         last_args.frame_time < current_args_.frame_time) {
-      current_args_.type = viz::BeginFrameArgs::MISSED;
+      current_args_.type = BeginFrameArgs::MISSED;
       obs->OnBeginFrame(current_args_);
     }
   }
@@ -55,8 +55,7 @@ void FakeExternalBeginFrameSource::AddObserver(viz::BeginFrameObserver* obs) {
     client_->OnAddObserver(obs);
 }
 
-void FakeExternalBeginFrameSource::RemoveObserver(
-    viz::BeginFrameObserver* obs) {
+void FakeExternalBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
   DCHECK(observers_.find(obs) != observers_.end());
 
@@ -67,31 +66,30 @@ void FakeExternalBeginFrameSource::RemoveObserver(
     client_->OnRemoveObserver(obs);
 }
 
-void FakeExternalBeginFrameSource::DidFinishFrame(
-    viz::BeginFrameObserver* obs) {}
+void FakeExternalBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs) {}
 
 bool FakeExternalBeginFrameSource::IsThrottled() const {
   return true;
 }
 
-viz::BeginFrameArgs FakeExternalBeginFrameSource::CreateBeginFrameArgs(
-    viz::BeginFrameArgs::CreationLocation location,
+BeginFrameArgs FakeExternalBeginFrameSource::CreateBeginFrameArgs(
+    BeginFrameArgs::CreationLocation location,
     base::SimpleTestTickClock* now_src) {
-  return viz::CreateBeginFrameArgsForTesting(
-      location, source_id(), next_begin_frame_number_++, now_src);
+  return CreateBeginFrameArgsForTesting(location, source_id(),
+                                        next_begin_frame_number_++, now_src);
 }
 
-viz::BeginFrameArgs FakeExternalBeginFrameSource::CreateBeginFrameArgs(
-    viz::BeginFrameArgs::CreationLocation location) {
-  return viz::CreateBeginFrameArgsForTesting(location, source_id(),
-                                             next_begin_frame_number_++);
+BeginFrameArgs FakeExternalBeginFrameSource::CreateBeginFrameArgs(
+    BeginFrameArgs::CreationLocation location) {
+  return CreateBeginFrameArgsForTesting(location, source_id(),
+                                        next_begin_frame_number_++);
 }
 
 void FakeExternalBeginFrameSource::TestOnBeginFrame(
-    const viz::BeginFrameArgs& args) {
+    const BeginFrameArgs& args) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   current_args_ = args;
-  std::set<viz::BeginFrameObserver*> observers(observers_);
+  std::set<BeginFrameObserver*> observers(observers_);
   for (auto* obs : observers)
     obs->OnBeginFrame(current_args_);
   if (tick_automatically_)
@@ -110,4 +108,4 @@ void FakeExternalBeginFrameSource::PostTestOnBeginFrame() {
   next_begin_frame_number_++;
 }
 
-}  // namespace cc
+}  // namespace viz

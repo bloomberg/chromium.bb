@@ -9,11 +9,11 @@
 #include "base/test/null_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/scheduler_test_common.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/display/display.h"
+#include "components/viz/test/fake_external_begin_frame_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
@@ -158,7 +158,7 @@ class DisplaySchedulerTest : public testing::Test {
                          last_begin_frame_args_.sequence_number, true);
   }
 
-  cc::FakeExternalBeginFrameSource fake_begin_frame_source_;
+  FakeExternalBeginFrameSource fake_begin_frame_source_;
   BeginFrameArgs last_begin_frame_args_;
 
   base::SimpleTestTickClock now_src_;
