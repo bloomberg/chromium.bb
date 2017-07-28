@@ -509,6 +509,18 @@ TEST_F(EventHandlerTest, NonEmptyTextfieldInsertionOnTap) {
   ASSERT_TRUE(Selection().IsHandleVisible());
 }
 
+TEST_F(EventHandlerTest, NewlineDivInsertionOnTap) {
+  SetHtmlInnerHTML("<div contenteditable><br/></div>");
+
+  TapEventBuilder single_tap_event(IntPoint(10, 10), 1);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      single_tap_event);
+
+  ASSERT_TRUE(
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().IsHandleVisible());
+}
+
 TEST_F(EventHandlerTest, EmptyTextfieldInsertionOnLongPress) {
   SetHtmlInnerHTML("<textarea cols=50 rows=50></textarea>");
 
