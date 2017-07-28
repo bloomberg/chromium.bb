@@ -33,6 +33,7 @@ class FormStructure;
 
 namespace password_manager {
 
+class BrowserSavePasswordProgressLogger;
 class PasswordManagerClient;
 class PasswordManagerDriver;
 class PasswordFormManager;
@@ -193,6 +194,12 @@ class PasswordManager : public LoginModel {
   // Returns true if we can show possible usernames to users in cases where
   // the username for the form is ambigious.
   bool OtherPossibleUsernamesEnabled() const;
+
+  // Clones |matched_manager| and keeps it as |provisional_save_manager_|.
+  // |form| is saved provisionally to |provisional_save_manager_|.
+  void ProvisionallySaveManager(const autofill::PasswordForm& form,
+                                PasswordFormManager* matched_manager,
+                                BrowserSavePasswordProgressLogger* logger);
 
   // Returns true if |provisional_save_manager_| is ready for saving and
   // non-blacklisted.

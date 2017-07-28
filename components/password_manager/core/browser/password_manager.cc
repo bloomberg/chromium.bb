@@ -137,6 +137,66 @@ bool AreAllFieldsEmpty(const PasswordForm& form) {
          form.new_password_value.empty();
 }
 
+// Finds the matched form manager for |form| in |pending_login_managers|.
+PasswordFormManager* FindMatchedManager(
+    const autofill::PasswordForm& form,
+    const std::vector<std::unique_ptr<PasswordFormManager>>&
+        pending_login_managers,
+    const password_manager::PasswordManagerDriver* driver,
+    BrowserSavePasswordProgressLogger* logger) {
+  auto matched_manager_it = pending_login_managers.end();
+  PasswordFormManager::MatchResultMask current_match_result =
+      PasswordFormManager::RESULT_NO_MATCH;
+  // Below, "matching" is in DoesManage-sense and "not ready" in the sense of
+  // FormFetcher being ready. We keep track of such PasswordFormManager
+  // instances for UMA.
+  for (auto iter = pending_login_managers.begin();
+       iter != pending_login_managers.end(); ++iter) {
+    PasswordFormManager::MatchResultMask result =
+        (*iter)->DoesManage(form, driver);
+
+    if (result == PasswordFormManager::RESULT_NO_MATCH)
+      continue;
+
+    if (result == PasswordFormManager::RESULT_COMPLETE_MATCH) {
+      // If we find a manager that exactly matches the submitted form including
+      // the action URL, exit the loop.
+      if (logger)
+        logger->LogMessage(Logger::STRING_EXACT_MATCH);
+      matched_manager_it = iter;
+      break;
+    } else if (result == (PasswordFormManager::RESULT_COMPLETE_MATCH &
+                          ~PasswordFormManager::RESULT_ACTION_MATCH) &&
+               result > current_match_result) {
+      // If the current manager matches the submitted form excluding the action
+      // URL, remember it as a candidate and continue searching for an exact
+      // match. See http://crbug.com/27246 for an example where actions can
+      // change.
+      if (logger)
+        logger->LogMessage(Logger::STRING_MATCH_WITHOUT_ACTION);
+      matched_manager_it = iter;
+      current_match_result = result;
+    } else if (IsSignupForm(form) && result > current_match_result) {
+      // Signup forms don't require HTML attributes to match because we don't
+      // need to fill these saved passwords on the same form in the future.
+      // Prefer the best possible match (e.g. action and origins match instead
+      // or just origin matching). Don't break in case there exists a better
+      // match.
+      // TODO(gcasto): Matching in this way is very imprecise. Having some
+      // better way to match the same form when the HTML elements change (e.g.
+      // text element changed to password element) would be useful.
+      if (logger)
+        logger->LogMessage(Logger::STRING_ORIGINS_MATCH);
+      matched_manager_it = iter;
+      current_match_result = result;
+    }
+  }
+
+  return matched_manager_it == pending_login_managers.end()
+             ? nullptr
+             : matched_manager_it->get();
+}
+
 }  // namespace
 
 // static
@@ -296,84 +356,21 @@ void PasswordManager::ProvisionallySavePassword(
     return;
   }
 
-  auto matched_manager_it = pending_login_managers_.end();
-  PasswordFormManager::MatchResultMask current_match_result =
-      PasswordFormManager::RESULT_NO_MATCH;
-  // Below, "matching" is in DoesManage-sense and "not ready" in the sense of
-  // FormFetcher being ready. We keep track of such PasswordFormManager
-  // instances for UMA.
-  for (auto iter = pending_login_managers_.begin();
-       iter != pending_login_managers_.end(); ++iter) {
-    PasswordFormManager::MatchResultMask result =
-        (*iter)->DoesManage(form, driver);
+  PasswordFormManager* matched_manager =
+      FindMatchedManager(form, pending_login_managers_, driver, logger.get());
 
-    if (result == PasswordFormManager::RESULT_NO_MATCH)
-      continue;
-
-    (*iter)->SetSubmittedForm(form);
-
-    if (result == PasswordFormManager::RESULT_COMPLETE_MATCH) {
-      // If we find a manager that exactly matches the submitted form including
-      // the action URL, exit the loop.
-      if (logger)
-        logger->LogMessage(Logger::STRING_EXACT_MATCH);
-      matched_manager_it = iter;
-      break;
-    } else if (result == (PasswordFormManager::RESULT_COMPLETE_MATCH &
-                          ~PasswordFormManager::RESULT_ACTION_MATCH) &&
-               result > current_match_result) {
-      // If the current manager matches the submitted form excluding the action
-      // URL, remember it as a candidate and continue searching for an exact
-      // match. See http://crbug.com/27246 for an example where actions can
-      // change.
-      if (logger)
-        logger->LogMessage(Logger::STRING_MATCH_WITHOUT_ACTION);
-      matched_manager_it = iter;
-      current_match_result = result;
-    } else if (IsSignupForm(form) && result > current_match_result) {
-      // Signup forms don't require HTML attributes to match because we don't
-      // need to fill these saved passwords on the same form in the future.
-      // Prefer the best possible match (e.g. action and origins match instead
-      // or just origin matching). Don't break in case there exists a better
-      // match.
-      // TODO(gcasto): Matching in this way is very imprecise. Having some
-      // better way to match the same form when the HTML elements change (e.g.
-      // text element changed to password element) would be useful.
-      if (logger)
-        logger->LogMessage(Logger::STRING_ORIGINS_MATCH);
-      matched_manager_it = iter;
-      current_match_result = result;
-    }
-  }
   // If we didn't find a manager, this means a form was submitted without
   // first loading the page containing the form. Don't offer to save
   // passwords in this case.
-  if (matched_manager_it == pending_login_managers_.end()) {
+  if (!matched_manager) {
     client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::NO_MATCHING_FORM, main_frame_url_,
         form.origin, logger.get());
     return;
   }
+  matched_manager->SaveSubmittedFormTypeForMetrics(form);
 
-  std::unique_ptr<PasswordFormManager> manager = (*matched_manager_it)->Clone();
-
-  PasswordForm submitted_form(form);
-  submitted_form.preferred = true;
-  if (logger) {
-    logger->LogPasswordForm(Logger::STRING_PROVISIONALLY_SAVED_FORM,
-                            submitted_form);
-  }
-  PasswordFormManager::OtherPossibleUsernamesAction action =
-      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES;
-  if (OtherPossibleUsernamesEnabled())
-    action = PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES;
-  if (logger) {
-    logger->LogBoolean(
-        Logger::STRING_IGNORE_POSSIBLE_USERNAMES,
-        action == PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
-  }
-  manager->ProvisionallySave(submitted_form, action);
-  provisional_save_manager_.swap(manager);
+  ProvisionallySaveManager(form, matched_manager, logger.get());
 
   // Cache the user-visible URL (i.e., the one seen in the omnibox). Once the
   // post-submit navigation concludes, we compare the landing URL against the
@@ -545,6 +542,36 @@ void PasswordManager::CreatePendingLoginManagers(
     logger->LogNumber(Logger::STRING_NEW_NUMBER_LOGIN_MANAGERS,
                       pending_login_managers_.size());
   }
+}
+
+bool PasswordManager::OtherPossibleUsernamesEnabled() const {
+  return false;
+}
+
+void PasswordManager::ProvisionallySaveManager(
+    const PasswordForm& form,
+    PasswordFormManager* matched_manager,
+    BrowserSavePasswordProgressLogger* logger) {
+  DCHECK(matched_manager);
+  std::unique_ptr<PasswordFormManager> manager = matched_manager->Clone();
+
+  PasswordForm submitted_form(form);
+  submitted_form.preferred = true;
+  if (logger) {
+    logger->LogPasswordForm(Logger::STRING_PROVISIONALLY_SAVED_FORM,
+                            submitted_form);
+  }
+  PasswordFormManager::OtherPossibleUsernamesAction action =
+      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES;
+  if (OtherPossibleUsernamesEnabled())
+    action = PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES;
+  if (logger) {
+    logger->LogBoolean(
+        Logger::STRING_IGNORE_POSSIBLE_USERNAMES,
+        action == PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  }
+  manager->ProvisionallySave(submitted_form, action);
+  provisional_save_manager_.swap(manager);
 }
 
 bool PasswordManager::CanProvisionalManagerSave() {
@@ -780,10 +807,6 @@ void PasswordManager::OnLoginSuccessful() {
       provisional_save_manager_.reset();
     }
   }
-}
-
-bool PasswordManager::OtherPossibleUsernamesEnabled() const {
-  return false;
 }
 
 void PasswordManager::Autofill(

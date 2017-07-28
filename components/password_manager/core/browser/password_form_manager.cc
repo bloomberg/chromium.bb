@@ -482,7 +482,8 @@ void PasswordFormManager::PasswordNoLongerGenerated() {
   generated_password_changed_ = false;
 }
 
-void PasswordFormManager::SetSubmittedForm(const autofill::PasswordForm& form) {
+void PasswordFormManager::SaveSubmittedFormTypeForMetrics(
+    const autofill::PasswordForm& form) {
   bool is_change_password_form =
       !form.new_password_value.empty() && !form.password_value.empty();
   bool is_signup_form =

@@ -105,10 +105,8 @@ class PasswordFormManager : public FormFetcher::Consumer {
       const autofill::PasswordForm& form,
       const password_manager::PasswordManagerDriver* driver) const;
 
-  // Update |this| with the |form| that was actually submitted. Used to
-  // determine what type the submitted form is for
-  // IsIgnorableChangePasswordForm() and UMA stats.
-  void SetSubmittedForm(const autofill::PasswordForm& form);
+  // Used to determine what type the submitted form is for UMA stats.
+  void SaveSubmittedFormTypeForMetrics(const autofill::PasswordForm& form);
 
   // Determines if the user opted to 'never remember' passwords for this form.
   bool IsBlacklisted() const;
