@@ -45,18 +45,48 @@ class PrefChangeRegistrar;
 class Profile;
 
 // A class which implements an application JumpList.
-// This class encapsulates operations required for updating an application
-// JumpList:
-// * Retrieving "Most Visited" pages from HistoryService;
-// * Retrieving strings from the application resource;
-// * Adding COM objects to JumpList, etc.
 //
-// This class observes the tabs and policies of the given Profile and updates
-// the JumpList whenever a change is detected.
+// This class observes the recently closed tabs, topsites, and policies of the
+// given Profile. It tries to update the JumpList whenever a change is detected.
 //
-// Updating a JumpList requires some file operations and it is not good to
-// update it in a UI thread. To solve this problem, this class posts to a
-// runnable method when it actually updates a JumpList.
+// The states that the JumpList machine can be in between UI thread tasks are:
+// 1. Idle.
+// 2. Notification from TabRetore and/or TopSites services arrived, waiting for
+//    quiesence via a timer.
+// 3. Most-visited data async fetch started, waiting for data. (Tab restore data
+//    is fetched synchronously, so it doesn't have a state.)
+// 4. Tab restore data or most-visited data has been fetched; favicons load
+//    started (one at a time), waiting for results.
+// 5. All favicon loaded, JumpList update started.
+//
+// The policy for how to handle notifications while any state of an update is in
+// progress is:
+//   "Prohibit overlapping updates by queueing up inbound notifications that
+// arrive after an update has started but before it has finished. On update
+// completion, restart the timer to start another update if any notifications
+// were queued."
+//
+// Updating a JumpList as mentioned in state 5 requires some file operations and
+// it is not good to run it in the UI thread. To solve this problem, this class
+// posts the update task to a non-UI thread.
+//
+// Updating a JumpList consists of the following steps:
+// 1. Tell the OS to begin an update transaction. If this fails or times out,
+//    abort this update run.
+// 2. Create new icon files if not in the cache.
+// 3. Assemble an updated JumpList with most-visited, recently-closed and tasks
+//    (never change) categories. If this fails or times out, go to step 5.
+// 4. Commit the update to the OS.
+// 5. Delete any obsolete icon files. If step 3 or 4 fails or times out, delete
+//    icons newly created in step 2, otherwise delete icons from the previous
+//    JumpList but aren't reused by the new one.
+// 6. Update the icon cache.
+//
+// Step 1, 3 and 4 are basically Windows API calls. Normally they are pretty
+// fast (within a few hundred milliseconds), but can take minutes in slow
+// machines. To prevent those machines from being bogged down by JumpList
+// updates, this class skips the next few updates if a timeout is detected in
+// any of those steps.
 class JumpList : public sessions::TabRestoreServiceObserver,
                  public history::TopSitesObserver,
                  public KeyedService {
