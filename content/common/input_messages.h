@@ -332,9 +332,13 @@ IPC_MESSAGE_ROUTED1(InputHostMsg_QueueSyntheticGesture,
 IPC_MESSAGE_ROUTED1(InputHostMsg_SetTouchAction,
                     cc::TouchAction /* touch_action */)
 
-// The whitelisted touch action for a new touch point sent by the compositor.
-IPC_MESSAGE_ROUTED1(InputHostMsg_SetWhiteListedTouchAction,
-                    cc::TouchAction /* white_listed_touch_action */)
+// The whitelisted touch action and the associated unique touch event id
+// for a new touch point sent by the compositor. The unique touch event id is
+// only needed to verify that the whitelisted touch action is being associated
+// with the correct touch event.
+IPC_MESSAGE_ROUTED2(InputHostMsg_SetWhiteListedTouchAction,
+                    cc::TouchAction /* white_listed_touch_action */,
+                    uint32_t /* unique_touch_event_id */)
 
 // Sent by the compositor when input scroll events are dropped due to bounds
 // restrictions on the root scroll offset.

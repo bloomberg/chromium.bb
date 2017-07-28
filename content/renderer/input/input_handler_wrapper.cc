@@ -110,8 +110,10 @@ void InputHandlerWrapper::GenerateScrollBeginAndSendToMainThread(
 }
 
 void InputHandlerWrapper::SetWhiteListedTouchAction(
-    cc::TouchAction touch_action) {
-  input_handler_manager_->SetWhiteListedTouchAction(routing_id_, touch_action);
+    cc::TouchAction touch_action,
+    uint32_t unique_touch_event_id) {
+  input_handler_manager_->SetWhiteListedTouchAction(routing_id_, touch_action,
+                                                    unique_touch_event_id);
 }
 
 }  // namespace content

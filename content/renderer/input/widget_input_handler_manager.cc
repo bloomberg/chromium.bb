@@ -180,9 +180,10 @@ void WidgetInputHandlerManager::GenerateScrollBeginAndSendToMainThread(
 }
 
 void WidgetInputHandlerManager::SetWhiteListedTouchAction(
-    cc::TouchAction touch_action) {
+    cc::TouchAction touch_action,
+    uint32_t unique_touch_event_id) {
   legacy_host_message_sender_->Send(new InputHostMsg_SetWhiteListedTouchAction(
-      legacy_host_message_routing_id_, touch_action));
+      legacy_host_message_routing_id_, touch_action, unique_touch_event_id));
 }
 
 void WidgetInputHandlerManager::ObserveGestureEventOnMainThread(
