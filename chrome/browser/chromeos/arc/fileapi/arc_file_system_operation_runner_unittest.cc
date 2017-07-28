@@ -11,10 +11,12 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/file_system.mojom.h"
 #include "components/arc/test/fake_file_system_instance.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -36,8 +38,15 @@ class ArcFileSystemOperationRunnerTest : public testing::Test {
 
   void SetUp() override {
     arc_service_manager_ = base::MakeUnique<ArcServiceManager>();
+    profile_ = base::MakeUnique<TestingProfile>();
+    ArcFileSystemBridge::GetFactory()->SetTestingFactoryAndUse(
+        profile_.get(),
+        [](content::BrowserContext* context) -> std::unique_ptr<KeyedService> {
+          return base::MakeUnique<ArcFileSystemBridge>(
+              context, ArcServiceManager::Get()->arc_bridge_service());
+        });
     runner_ = ArcFileSystemOperationRunner::CreateForTesting(
-        arc_service_manager_->arc_bridge_service());
+        profile_.get(), arc_service_manager_->arc_bridge_service());
     arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
         &file_system_instance_);
 
@@ -96,7 +105,11 @@ class ArcFileSystemOperationRunnerTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   FakeFileSystemInstance file_system_instance_;
+
+  // Use the same initialization/destruction order as
+  // ChromeBrowserMainPartsChromeos.
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
+  std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ArcFileSystemOperationRunner> runner_;
 
  private:
