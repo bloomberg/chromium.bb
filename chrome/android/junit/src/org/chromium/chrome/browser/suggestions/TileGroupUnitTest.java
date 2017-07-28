@@ -40,6 +40,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
@@ -78,6 +79,9 @@ public class TileGroupUnitTest {
     @Before
     public void setUp() {
         CardsVariationParameters.setTestVariationParams(new HashMap<String, String>());
+
+        // TODO(galinap): Should not be needed once we stop statically trying to guess column count.
+        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
 
         MockitoAnnotations.initMocks(this);
         mTileGroupDelegate = spy(new FakeTileGroupDelegate());
