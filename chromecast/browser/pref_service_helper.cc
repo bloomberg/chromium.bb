@@ -10,14 +10,12 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/sequenced_task_runner.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/pref_names.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/pref_store.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace chromecast {
 namespace shell {
@@ -59,11 +57,8 @@ std::unique_ptr<PrefService> PrefServiceHelper::CreatePrefService(
   RegisterPlatformPrefs(registry);
 
   PrefServiceFactory prefServiceFactory;
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      JsonPrefStore::GetTaskRunnerForFile(
-          config_path,
-          content::BrowserThread::GetBlockingPool());
-  prefServiceFactory.SetUserPrefsFile(config_path, task_runner.get());
+  prefServiceFactory.set_user_prefs(
+      base::MakeRefCounted<JsonPrefStore>(config_path));
   prefServiceFactory.set_async(false);
 
   PersistentPrefStore::PrefReadError prefs_read_error =
