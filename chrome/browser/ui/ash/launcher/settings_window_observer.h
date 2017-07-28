@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/settings_window_manager_observer.h"
+#include "chrome/browser/ui/settings_window_manager_observer_chromeos.h"
 #include "ui/aura/window_tracker.h"
 
 // Sets the window title and shelf item properties for settings windows.

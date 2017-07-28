@@ -11,16 +11,48 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
 
 GURL GetGoogleURL() {
   return GURL("http://www.google.com/");
+}
+
+using BrowserNavigatorTestChromeOS = BrowserNavigatorTest;
+
+// This test verifies that the settings page is opened in a new browser window.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, NavigateToSettings) {
+  GURL old_url = browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
+  {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    chrome::ShowSettings(browser());
+    observer.Wait();
+  }
+  // browser() tab contents should be unaffected.
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(old_url,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Settings page should be opened in a new window.
+  Browser* settings_browser =
+      chrome::SettingsWindowManager::GetInstance()->FindBrowserForProfile(
+          browser()->profile());
+  EXPECT_NE(browser(), settings_browser);
+  EXPECT_EQ(
+      GURL("chrome://settings"),
+      settings_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // Subclass that tests navigation while in the Guest session.

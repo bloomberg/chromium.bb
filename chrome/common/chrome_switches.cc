@@ -261,10 +261,6 @@ const char kDisablePushApiBackgroundMode[] = "disable-push-api-background-mode";
 const char kDisableSearchGeolocationDisclosure[] =
     "disable-search-geolocation-disclosure";
 
-// Disable settings in a separate browser window per profile
-// (see SettingsWindowEnabled() below).
-const char kDisableSettingsWindow[]          = "disable-settings-window";
-
 // Disables Web Notification custom layouts.
 const char kDisableWebNotificationCustomLayouts[] =
     "disable-web-notification-custom-layouts";
@@ -395,10 +391,6 @@ const char kEnableProfiling[]               = "enable-profiling";
 
 // Enable background mode for the Push API.
 const char kEnablePushApiBackgroundMode[] = "enable-push-api-background-mode";
-
-// Enable settings in a separate browser window per profile
-// (see SettingsWindowEnabled() below).
-const char kEnableSettingsWindow[]           = "enable-settings-window";
 
 // Enables the site settings all sites list and site details pages in the Chrome
 // settings UI.
@@ -1116,16 +1108,6 @@ bool MdFeedbackEnabled() {
 bool MdPolicyPageEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableMaterialDesignPolicyPage);
-}
-
-bool SettingsWindowEnabled() {
-#if defined(OS_CHROMEOS)
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kDisableSettingsWindow);
-#else
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kEnableSettingsWindow);
-#endif
 }
 
 #if defined(OS_CHROMEOS)
