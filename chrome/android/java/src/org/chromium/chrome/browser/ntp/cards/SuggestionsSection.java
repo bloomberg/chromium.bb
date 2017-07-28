@@ -250,7 +250,12 @@ public class SuggestionsSection extends InnerNode {
             itemRemovedCallback.onResult(getHeaderText());
             return;
         }
-
+        if (getItemViewType(position) == ItemViewType.SNIPPET) {
+            int suggestionRank = position - getStartingOffsetForChild(mSuggestionsList) + 1;
+            if (suggestionRank <= mNumberOfSuggestionsSeen) {
+                mNumberOfSuggestionsSeen--;
+            }
+        }
         super.dismissItem(position, itemRemovedCallback);
     }
 
@@ -323,6 +328,9 @@ public class SuggestionsSection extends InnerNode {
         for (SnippetArticle suggestion : mSuggestionsList) {
             if (suggestion.mIdWithinCategory.equals(idWithinCategory)) {
                 mSuggestionsList.remove(i);
+                if (i < mNumberOfSuggestionsSeen) {
+                    mNumberOfSuggestionsSeen--;
+                }
                 return;
             }
             i++;
@@ -355,6 +363,9 @@ public class SuggestionsSection extends InnerNode {
      * effect if changing the list of suggestions is not allowed (e.g. because the user has already
      * seen the suggestions). In that case, the section will be flagged as stale.
      * (see {@link #isDataStale()})
+     * Note, that this method also gets called if the user hits the "More" button on an empty list
+     * (either because all suggestions got dismissed or because they were removed due to privacy
+     * reasons; e.g. a user clearing their history).
      */
     public void updateSuggestions() {
         if (mDelegate.isResetAllowed()) clearData();
@@ -374,26 +385,29 @@ public class SuggestionsSection extends InnerNode {
         // TODO(dgn): Distinguish the init case where we have to wait? (https://crbug.com/711457)
         if (suggestions.isEmpty()) return;
 
-        Log.d(TAG, "updateSuggestions: keeping the first %d suggestion", mNumberOfSuggestionsSeen);
-        mSuggestionsList.clearAllButFirstN(mNumberOfSuggestionsSeen);
         if (mNumberOfSuggestionsSeen > 0) {
             mIsDataStale = true;
-            Log.d(TAG, "updateSuggestions: Category %d is stale, it kept seen suggestions.",
+            Log.d(TAG,
+                    "updateSuggestions: Category %d is stale, will keep already seen suggestions.",
                     getCategory());
         }
-
-        trimIncomingSuggestions(suggestions);
-        appendSuggestions(suggestions, false);
+        appendSuggestions(suggestions, /*keepSectionSize=*/true);
     }
 
     /**
      * Adds the provided suggestions to the ones currently displayed by the section.
      *
      * @param suggestions The suggestions to be added at the end of the current list.
-     * @param userRequested Whether the operation is explicitly requested by the user, preventing
-     *                      scheduled updates to override the new data.
+     * @param keepSectionSize Whether the section size should stay the same -- will be enforced by
+     *                        replacing not-yet-seen suggestions with the new suggestions.
      */
-    public void appendSuggestions(List<SnippetArticle> suggestions, boolean userRequested) {
+    public void appendSuggestions(List<SnippetArticle> suggestions, boolean keepSectionSize) {
+        if (keepSectionSize) {
+            Log.d(TAG, "updateSuggestions: keeping the first %d suggestion",
+                    mNumberOfSuggestionsSeen);
+            mSuggestionsList.clearAllButFirstN(mNumberOfSuggestionsSeen);
+            trimIncomingSuggestions(suggestions);
+        }
         mSuggestionsList.addAll(suggestions);
 
         for (SnippetArticle article : suggestions) {
@@ -402,7 +416,7 @@ public class SuggestionsSection extends InnerNode {
             }
         }
 
-        if (userRequested) {
+        if (!keepSectionSize) {
             NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_SUCCESS_APPENDED);
             mHasAppended = true;
         } else {
@@ -445,6 +459,8 @@ public class SuggestionsSection extends InnerNode {
         }
 
         if (mNumberOfSuggestionsSeen >= getSuggestionsCount() || mHasAppended) {
+            // In case that suggestions got removed, we assume they already were seen. This might
+            // be over-simplifying things, but given the rare occurences it should be good enough.
             Log.d(TAG, "setSuggestions: replacing existing suggestion not possible, all seen");
             NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_FAIL_ALL_SEEN);
             return false;
@@ -462,7 +478,7 @@ public class SuggestionsSection extends InnerNode {
                         if (!isAttached()) return; // The section has been dismissed.
 
                         mProgressIndicator.setVisible(false);
-                        appendSuggestions(additionalSuggestions, /* userRequested = */ true);
+                        appendSuggestions(additionalSuggestions, /*keepSectionSize=*/false);
                     }
                 });
 
