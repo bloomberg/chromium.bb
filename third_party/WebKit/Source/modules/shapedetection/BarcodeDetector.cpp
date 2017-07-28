@@ -12,7 +12,6 @@
 #include "modules/imagecapture/Point2D.h"
 #include "modules/shapedetection/DetectedBarcode.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/shape_detection/public/interfaces/barcodedetection_provider.mojom-blink.h"
 
 namespace blink {
 
@@ -21,8 +20,7 @@ BarcodeDetector* BarcodeDetector::Create(ExecutionContext* context) {
 }
 
 BarcodeDetector::BarcodeDetector(ExecutionContext* context) : ShapeDetector() {
-  shape_detection::mojom::blink::BarcodeDetectionProviderPtr provider;
-  auto request = mojo::MakeRequest(&provider);
+  auto request = mojo::MakeRequest(&barcode_service_);
   if (context->IsDocument()) {
     LocalFrame* frame = ToDocument(context)->GetFrame();
     if (frame)
@@ -31,10 +29,6 @@ BarcodeDetector::BarcodeDetector(ExecutionContext* context) : ShapeDetector() {
     WorkerThread* thread = ToWorkerGlobalScope(context)->GetThread();
     thread->GetInterfaceProvider().GetInterface(std::move(request));
   }
-
-  provider->CreateBarcodeDetection(
-      mojo::MakeRequest(&barcode_service_),
-      shape_detection::mojom::blink::BarcodeDetectorOptions::New());
 
   barcode_service_.set_connection_error_handler(ConvertToBaseCallback(
       WTF::Bind(&BarcodeDetector::OnBarcodeServiceConnectionError,

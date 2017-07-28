@@ -8,7 +8,7 @@ import("//testing/test.gni")
 
 source_set("lib") {
   sources = [
-    "barcode_detection_provider_impl.h",
+    "barcode_detection_impl.h",
     "face_detection_provider_impl.h",
     "shape_detection_service.cc",
     "shape_detection_service.h",
@@ -29,7 +29,7 @@ source_set("lib") {
     libs = [ "QuartzCore.framework" ]
   } else {
     sources += [
-      "barcode_detection_provider_impl.cc",
+      "barcode_detection_impl.cc",
       "face_detection_provider_impl.cc",
       "text_detection_impl.cc",
     ]
@@ -64,7 +64,6 @@ if (is_android) {
   android_library("shape_detection_java") {
     java_files = [
       "android/java/src/org/chromium/shape_detection/BarcodeDetectionImpl.java",
-      "android/java/src/org/chromium/shape_detection/BarcodeDetectionProviderImpl.java",
       "android/java/src/org/chromium/shape_detection/FaceDetectionImpl.java",
       "android/java/src/org/chromium/shape_detection/FaceDetectionImplGmsCore.java",
       "android/java/src/org/chromium/shape_detection/FaceDetectionProviderImpl.java",
