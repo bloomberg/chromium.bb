@@ -679,8 +679,13 @@ class LocalDeviceInstrumentationTestRun(
           result.SetLink(failure_filename, html_results_link)
 
   #override
-  def _ShouldRetry(self, test):
-    if 'RetryOnFailure' in test.get('annotations', {}):
+  def _ShouldRetry(self, test, result):
+    def not_run(res):
+      if isinstance(res, list):
+        return any(not_run(r) for r in res)
+      return res.GetType() == base_test_result.ResultType.NOTRUN
+
+    if 'RetryOnFailure' in test.get('annotations', {}) or not_run(result):
       return True
 
     # TODO(jbudorick): Remove this log message once @RetryOnFailure has been
