@@ -4,9 +4,10 @@
 
 #include "chrome/browser/gpu/gpu_driver_info_manager_android.h"
 
+#include <memory>
+
 #include "base/android/build_info.h"
-#include "base/command_line.h"
-#include "build/build_config.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -32,8 +33,8 @@ void GpuProfileCache::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-GpuProfileCache* GpuProfileCache::Create() {
-  return new GpuDriverInfoManager();
+std::unique_ptr<GpuProfileCache> GpuProfileCache::Create() {
+  return base::MakeUnique<GpuDriverInfoManager>();
 }
 
 GpuDriverInfoManager::GpuDriverInfoManager() {}
