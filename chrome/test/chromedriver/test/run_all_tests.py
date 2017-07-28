@@ -193,15 +193,15 @@ def main():
       # Linux32 builds need to be special-cased, because 1) they are keyed by
       # git hash rather than commit position, and 2) come from a different
       # download site (so we can't just convert the commit position to a hash).
+      versions['61'] = '77132a2bc78e8dc9ce411e8166bfd009f6476f6f'
       versions['60'] = 'c1148176d6794fff0fd8dba2b9f7ed71ec52fed8'
       versions['59'] = 'c407e95a371a94bfd714e25eab788c9405de6975'
-      versions['58'] = '7613176285d46fbc5b4712e42bd135aae99cbba5'
       # TODO(samuong): speculative fix for crbug.com/611886
       os.environ['CHROME_DEVEL_SANDBOX'] = '/opt/chromium/chrome_sandbox'
     else:
+      versions['61'] = '488595'
       versions['60'] = '474969'
       versions['59'] = '464674'
-      versions['58'] = '454475'
     code = 0
     for version, revision in versions.iteritems():
       if options.chrome_version and version != options.chrome_version:

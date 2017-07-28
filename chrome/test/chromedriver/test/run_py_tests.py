@@ -76,13 +76,13 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1819
     'ChromeExtensionsCapabilityTest.testIFrameWithExtensionsSource',
 ]
-_VERSION_SPECIFIC_FILTER['60'] = [
+_VERSION_SPECIFIC_FILTER['61'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1819
     'ChromeExtensionsCapabilityTest.testIFrameWithExtensionsSource',
 ]
-_VERSION_SPECIFIC_FILTER['58'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1673
-    'ChromeDriverPageLoadTimeoutTest.testPageLoadTimeoutCrossDomain',
+_VERSION_SPECIFIC_FILTER['60'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1819
+    'ChromeExtensionsCapabilityTest.testIFrameWithExtensionsSource',
 ]
 
 _OS_SPECIFIC_FILTER = {}
