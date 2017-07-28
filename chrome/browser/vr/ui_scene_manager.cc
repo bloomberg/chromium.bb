@@ -9,6 +9,7 @@
 #include "cc/base/math_util.h"
 #include "chrome/browser/vr/elements/button.h"
 #include "chrome/browser/vr/elements/close_button_texture.h"
+#include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/exclusive_screen_toast.h"
 #include "chrome/browser/vr/elements/exit_prompt.h"
 #include "chrome/browser/vr/elements/exit_prompt_backplane.h"
@@ -141,6 +142,7 @@ enum DrawPhase : int {
 
 UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
                                UiScene* scene,
+                               ContentInputDelegate* content_input_delegate,
                                bool in_cct,
                                bool in_web_vr,
                                bool web_vr_autopresentation_expected)
@@ -152,7 +154,7 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
       showing_web_vr_splash_screen_(web_vr_autopresentation_expected),
       weak_ptr_factory_(this) {
   CreateBackground();
-  CreateContentQuad();
+  CreateContentQuad(content_input_delegate);
   CreateSecurityWarnings();
   CreateSystemIndicators();
   CreateUrlBar();
@@ -283,10 +285,10 @@ void UiSceneManager::CreateSystemIndicators() {
   ConfigureIndicators();
 }
 
-void UiSceneManager::CreateContentQuad() {
+void UiSceneManager::CreateContentQuad(ContentInputDelegate* delegate) {
   std::unique_ptr<UiElement> element;
 
-  element = base::MakeUnique<UiElement>();
+  element = base::MakeUnique<ContentElement>(delegate);
   element->set_debug_id(kContentQuad);
   element->set_id(AllocateId());
   element->set_draw_phase(kPhaseForeground);

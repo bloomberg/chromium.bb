@@ -19,14 +19,16 @@ void UiSceneManagerTest::SetUp() {
 
 void UiSceneManagerTest::MakeManager(InCct in_cct, InWebVr in_web_vr) {
   scene_ = base::MakeUnique<UiScene>();
-  manager_ = base::MakeUnique<UiSceneManager>(
-      browser_.get(), scene_.get(), in_cct, in_web_vr, kNotAutopresented);
+  manager_ = base::MakeUnique<UiSceneManager>(browser_.get(), scene_.get(),
+                                              &content_input_delegate_, in_cct,
+                                              in_web_vr, kNotAutopresented);
 }
 
 void UiSceneManagerTest::MakeAutoPresentedManager() {
   scene_ = base::MakeUnique<UiScene>();
   manager_ = base::MakeUnique<UiSceneManager>(
-      browser_.get(), scene_.get(), kNotInCct, kNotInWebVr, kAutopresented);
+      browser_.get(), scene_.get(), &content_input_delegate_, kNotInCct,
+      kNotInWebVr, kAutopresented);
 }
 
 bool UiSceneManagerTest::IsVisible(UiElementDebugId debug_id) const {

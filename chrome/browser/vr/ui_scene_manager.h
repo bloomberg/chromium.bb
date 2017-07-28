@@ -17,6 +17,7 @@
 
 namespace vr {
 
+class ContentInputDelegate;
 class ExclusiveScreenToast;
 class LoadingIndicator;
 class SplashScreenIcon;
@@ -31,6 +32,7 @@ class UiSceneManager {
  public:
   UiSceneManager(UiBrowserInterface* browser,
                  UiScene* scene,
+                 ContentInputDelegate* content_input_delegate,
                  bool in_cct,
                  bool in_web_vr,
                  bool web_vr_autopresentation_expected);
@@ -70,7 +72,7 @@ class UiSceneManager {
   void CreateScreenDimmer();
   void CreateSecurityWarnings();
   void CreateSystemIndicators();
-  void CreateContentQuad();
+  void CreateContentQuad(ContentInputDelegate* delegate);
   void CreateSplashScreen();
   void CreateBackground();
   void CreateUrlBar();
