@@ -48,9 +48,6 @@ bool IsSolidColorPaint(const PaintFlags& flags) {
 // Returns true if the specified drawn_rect will cover the entire canvas, and
 // that the canvas is not clipped (i.e. it covers ALL of the canvas).
 bool IsFullQuad(const SkCanvas& canvas, const SkRect& drawn_rect) {
-  if (!canvas.isClipRect())
-    return false;
-
   SkIRect clip_irect;
   if (!canvas.getDeviceClipBounds(&clip_irect))
     return false;
@@ -227,10 +224,20 @@ base::Optional<SkColor> SolidColorAnalyzer::DetermineIfSolidColor(
                           &is_transparent, &color);
         break;
       }
+      case PaintOpType::ClipRect: {
+        // SolidColorAnalyzer uses an SkNoDrawCanvas which uses an
+        // SkNoPixelsDevice which says (without looking) that the canvas's
+        // clip is always a rect.  So, if this clip could result in not
+        // a rect, this is no longer solid color.
+        const ClipRectOp* clip_op = static_cast<const ClipRectOp*>(op);
+        if (clip_op->op == SkClipOp::kDifference)
+          return base::nullopt;
+        op->Raster(&canvas, params);
+        break;
+      }
 
       // The rest of the ops should only affect our state canvas.
       case PaintOpType::Annotate:
-      case PaintOpType::ClipRect:
       case PaintOpType::Concat:
       case PaintOpType::Scale:
       case PaintOpType::SetMatrix:
