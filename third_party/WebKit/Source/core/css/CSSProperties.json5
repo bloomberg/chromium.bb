@@ -3909,16 +3909,19 @@
       name: "page-break-after",
       longhands: ["break-after"],
       api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "page-break-before",
       longhands: ["break-before"],
       api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "page-break-inside",
       longhands: ["break-inside"],
       api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "scroll-padding",
@@ -4003,16 +4006,19 @@
       name: "-webkit-column-break-after",
       longhands: ["break-after"],
       api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "-webkit-column-break-before",
       longhands: ["break-before"],
       api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "-webkit-column-break-inside",
       longhands: ["break-inside"],
       api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "column-rule",

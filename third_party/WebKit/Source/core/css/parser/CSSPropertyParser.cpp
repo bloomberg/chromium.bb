@@ -1183,78 +1183,6 @@ bool CSSPropertyParser::ConsumeBorder(bool important) {
   return range_.AtEnd();
 }
 
-static inline CSSValueID MapFromPageBreakBetween(CSSValueID value) {
-  if (value == CSSValueAlways)
-    return CSSValuePage;
-  if (value == CSSValueAuto || value == CSSValueAvoid ||
-      value == CSSValueLeft || value == CSSValueRight)
-    return value;
-  return CSSValueInvalid;
-}
-
-static inline CSSValueID MapFromColumnBreakBetween(CSSValueID value) {
-  if (value == CSSValueAlways)
-    return CSSValueColumn;
-  if (value == CSSValueAuto || value == CSSValueAvoid)
-    return value;
-  return CSSValueInvalid;
-}
-
-static inline CSSValueID MapFromColumnOrPageBreakInside(CSSValueID value) {
-  if (value == CSSValueAuto || value == CSSValueAvoid)
-    return value;
-  return CSSValueInvalid;
-}
-
-static inline CSSPropertyID MapFromLegacyBreakProperty(CSSPropertyID property) {
-  if (property == CSSPropertyPageBreakAfter ||
-      property == CSSPropertyWebkitColumnBreakAfter)
-    return CSSPropertyBreakAfter;
-  if (property == CSSPropertyPageBreakBefore ||
-      property == CSSPropertyWebkitColumnBreakBefore)
-    return CSSPropertyBreakBefore;
-  DCHECK(property == CSSPropertyPageBreakInside ||
-         property == CSSPropertyWebkitColumnBreakInside);
-  return CSSPropertyBreakInside;
-}
-
-bool CSSPropertyParser::ConsumeLegacyBreakProperty(CSSPropertyID property,
-                                                   bool important) {
-  // The fragmentation spec says that page-break-(after|before|inside) are to be
-  // treated as shorthands for their break-(after|before|inside) counterparts.
-  // We'll do the same for the non-standard properties
-  // -webkit-column-break-(after|before|inside).
-  CSSIdentifierValue* keyword = ConsumeIdent(range_);
-  if (!keyword)
-    return false;
-  if (!range_.AtEnd())
-    return false;
-  CSSValueID value = keyword->GetValueID();
-  switch (property) {
-    case CSSPropertyPageBreakAfter:
-    case CSSPropertyPageBreakBefore:
-      value = MapFromPageBreakBetween(value);
-      break;
-    case CSSPropertyWebkitColumnBreakAfter:
-    case CSSPropertyWebkitColumnBreakBefore:
-      value = MapFromColumnBreakBetween(value);
-      break;
-    case CSSPropertyPageBreakInside:
-    case CSSPropertyWebkitColumnBreakInside:
-      value = MapFromColumnOrPageBreakInside(value);
-      break;
-    default:
-      NOTREACHED();
-  }
-  if (value == CSSValueInvalid)
-    return false;
-
-  CSSPropertyID generic_break_property = MapFromLegacyBreakProperty(property);
-  AddParsedProperty(generic_break_property, property,
-                    *CSSIdentifierValue::Create(value), important);
-  return true;
-}
-
 static bool ConsumeRepeatStyleComponent(CSSParserTokenRange& range,
                                         CSSValue*& value1,
                                         CSSValue*& value2,
@@ -1797,13 +1725,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
     }
     case CSSPropertyBorder:
       return ConsumeBorder(important);
-    case CSSPropertyPageBreakAfter:
-    case CSSPropertyPageBreakBefore:
-    case CSSPropertyPageBreakInside:
-    case CSSPropertyWebkitColumnBreakAfter:
-    case CSSPropertyWebkitColumnBreakBefore:
-    case CSSPropertyWebkitColumnBreakInside:
-      return ConsumeLegacyBreakProperty(property, important);
     case CSSPropertyBackgroundRepeat:
     case CSSPropertyWebkitMaskRepeat: {
       CSSValue* result_x = nullptr;
