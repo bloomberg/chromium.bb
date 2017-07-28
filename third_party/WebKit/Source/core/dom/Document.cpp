@@ -562,7 +562,7 @@ Document::Document(const DocumentInit& initializer,
       document_classes_(document_classes),
       is_view_source_(false),
       saw_elements_in_known_namespaces_(false),
-      is_srcdoc_document_(false),
+      is_srcdoc_document_(initializer.ShouldTreatURLAsSrcdocDocument()),
       is_mobile_document_(false),
       layout_view_(0),
       context_document_(initializer.ContextDocument()),
@@ -626,8 +626,13 @@ Document::Document(const DocumentInit& initializer,
   // See fast/dom/early-frame-url.html
   // and fast/dom/location-new-window-no-crash.html, respectively.
   // FIXME: Can/should we unify this behavior?
-  if (initializer.ShouldSetURL())
+  if (initializer.ShouldSetURL()) {
     SetURL(initializer.Url());
+  } else {
+    // Even if this document has no URL, we need to initialize base URL with
+    // fallback base URL.
+    UpdateBaseURL();
+  }
 
   InitSecurityContext(initializer);
 
@@ -3526,7 +3531,7 @@ void Document::ExceptionThrown(ErrorEvent* event) {
   MainThreadDebugger::Instance()->ExceptionThrown(this, event);
 }
 
-KURL Document::urlForBinding() {
+KURL Document::urlForBinding() const {
   if (!Url().IsNull()) {
     return Url();
   }
@@ -3563,7 +3568,7 @@ void Document::UpdateBaseURL() {
   else if (!base_url_override_.IsEmpty())
     base_url_ = base_url_override_;
   else
-    base_url_ = url_;
+    base_url_ = FallbackBaseURL();
 
   GetSelectorQueryCache().Invalidate();
 
@@ -3584,6 +3589,18 @@ void Document::UpdateBaseURL() {
          Traversal<HTMLAnchorElement>::StartsAfter(*this))
       anchor.InvalidateCachedVisitedLinkHash();
   }
+}
+
+KURL Document::FallbackBaseURL() const {
+  if (IsSrcdocDocument())
+    return ParentDocument()->BaseURL();
+  if (urlForBinding().IsAboutBlankURL()) {
+    if (context_document_)
+      return context_document_->BaseURL();
+    if (Document* parent = ParentDocument())
+      return parent->BaseURL();
+  }
+  return urlForBinding();
 }
 
 const KURL& Document::BaseURL() const {
@@ -3628,8 +3645,10 @@ void Document::ProcessBaseElement() {
   KURL base_element_url;
   if (href) {
     String stripped_href = StripLeadingAndTrailingHTMLSpaces(*href);
-    if (!stripped_href.IsEmpty())
+    if (!stripped_href.IsEmpty()) {
+      // TODO(tkent): Use FallbackBaseURL(). crbug.com/739504.
       base_element_url = KURL(Url(), stripped_href);
+    }
   }
 
   if (!base_element_url.IsEmpty()) {
@@ -5343,28 +5362,9 @@ KURL Document::CompleteURLWithOverride(const String& url,
   // See also [CSS]StyleSheet::completeURL(const String&)
   if (url.IsNull())
     return KURL();
-  // This logic is deliberately spread over many statements in an attempt to
-  // track down http://crbug.com/312410.
-  const KURL& base_url = BaseURLForOverride(base_url_override);
   if (!Encoding().IsValid())
-    return KURL(base_url, url);
-  return KURL(base_url, url, Encoding());
-}
-
-const KURL& Document::BaseURLForOverride(const KURL& base_url_override) const {
-  // This logic is deliberately spread over many statements in an attempt to
-  // track down http://crbug.com/312410.
-  const KURL* base_url_from_parent = 0;
-  bool should_use_parent_base_url = base_url_override.IsEmpty();
-  if (!should_use_parent_base_url) {
-    const KURL& about_blank_url = BlankURL();
-    should_use_parent_base_url = (base_url_override == about_blank_url);
-  }
-  if (should_use_parent_base_url) {
-    if (Document* parent = ParentDocument())
-      base_url_from_parent = &parent->BaseURL();
-  }
-  return base_url_from_parent ? *base_url_from_parent : base_url_override;
+    return KURL(base_url_override, url);
+  return KURL(base_url_override, url, Encoding());
 }
 
 // static
@@ -5899,11 +5899,6 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
         GetSecurityOrigin()->BlockLocalAccessFromLocalOrigin();
       }
     }
-  }
-
-  if (initializer.ShouldTreatURLAsSrcdocDocument()) {
-    is_srcdoc_document_ = true;
-    SetBaseURLOverride(initializer.ParentBaseURL());
   }
 
   if (GetSecurityOrigin()->IsUnique() &&
