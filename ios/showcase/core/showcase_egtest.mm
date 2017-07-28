@@ -18,7 +18,7 @@
 
 // Tests that Showcase title appears after launch.
 - (void)testLaunch {
-  [[EarlGrey selectElementWithMatcher:grey_text(@"SC")]
+  [[EarlGrey selectElementWithMatcher:grey_text(@"Showcase")]
       assertWithMatcher:grey_notNil()];
 }
 
