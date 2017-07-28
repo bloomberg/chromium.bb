@@ -34,8 +34,6 @@
   const _readyPromise = v8.createPrivateSymbol('[[readyPromise]]');
   const _controlledWritableStream =
       v8.createPrivateSymbol('[[controlledWritableStream]]');
-  const _queue = v8.createPrivateSymbol('[[queue]]');
-  const _queueTotalSize = v8.createPrivateSymbol('[[queueTotalSize]]');
   const _started = v8.createPrivateSymbol('[[started]]');
   const _strategyHWM = v8.createPrivateSymbol('[[strategyHWM]]');
   const _strategySize = v8.createPrivateSymbol('[[strategySize]]');
@@ -69,9 +67,6 @@
   const RangeError = global.RangeError;
 
   const Boolean = global.Boolean;
-  const Number = global.Number;
-  const Number_isNaN = Number.isNaN;
-  const Number_isFinite = Number.isFinite;
 
   const Promise = global.Promise;
   const thenPromise = v8.uncurryThis(Promise.prototype.then);
@@ -79,7 +74,10 @@
   const Promise_reject = v8.simpleBind(Promise.reject, Promise);
 
   // From CommonOperations.js
-  const { hasOwnPropertyNoThrow } = binding.streamOperations;
+  const { _queue, _queueTotalSize, hasOwnPropertyNoThrow, rejectPromise,
+          resolvePromise, markPromiseAsHandled, promiseState, DequeueValue,
+          EnqueueValueWithSize, PeekQueueValue, ResetQueue,
+          ValidateAndNormalizeQueuingStrategy } = binding.streamOperations;
 
   // User-visible strings.
   const streamErrors = binding.streamErrors;
@@ -114,39 +112,6 @@
     //        `name for state ${state} exists in stateNames`);
     return new TypeError(
         templateErrorCannotActionOnStateStream(action, stateNames[state]));
-  }
-
-  // TODO(ricea): Share these with ReadableStream.
-  function internalError() {
-    throw new RangeError('WritableStream Internal Error');
-  }
-
-  function rejectPromise(p, reason) {
-    if (!v8.isPromise(p)) {
-      internalError();
-    }
-    v8.rejectPromise(p, reason);
-  }
-
-  function resolvePromise(p, value) {
-    if (!v8.isPromise(p)) {
-      internalError();
-    }
-    v8.resolvePromise(p, value);
-  }
-
-  function markPromiseAsHandled(p) {
-    if (!v8.isPromise(p)) {
-      internalError();
-    }
-    v8.markPromiseAsHandled(p);
-  }
-
-  function promiseState(p) {
-    if (!v8.isPromise(p)) {
-      internalError();
-    }
-    return v8.promiseState(p);
   }
 
   function rejectPromises(queue, e) {
@@ -976,62 +941,6 @@
     WritableStreamStartErroring(stream, error);
   }
 
-  // Queue-with-Sizes Operations
-  //
-  // TODO(ricea): Share these operations with ReadableStream.js.
-  function DequeueValue(container) {
-    // assert(
-    //     hasOwnProperty(container, _queue) &&
-    //         hasOwnProperty(container, _queueTotalSize),
-    //     'Assert: _container_ has [[queue]] and [[queueTotalSize]] internal ' +
-    //         'slots.');
-    // assert(container[_queue].length !== 0,
-    //        '_container_.[[queue]] is not empty.');
-    const pair = container[_queue].shift();
-    container[_queueTotalSize] -= pair.size;
-    if (container[_queueTotalSize] < 0) {
-      container[_queueTotalSize] = 0;
-    }
-    return pair.value;
-  }
-
-  function EnqueueValueWithSize(container, value, size) {
-    // assert(
-    //     hasOwnProperty(container, _queue) &&
-    //         hasOwnProperty(container, _queueTotalSize),
-    //     'Assert: _container_ has [[queue]] and [[queueTotalSize]] internal ' +
-    //         'slots.');
-    size = Number(size);
-    if (!IsFiniteNonNegativeNumber(size)) {
-      throw new RangeError(streamErrors.invalidSize);
-    }
-
-    container[_queue].push({value, size});
-    container[_queueTotalSize] += size;
-  }
-
-  function PeekQueueValue(container) {
-    // assert(
-    //     hasOwnProperty(container, _queue) &&
-    //         hasOwnProperty(container, _queueTotalSize),
-    //     'Assert: _container_ has [[queue]] and [[queueTotalSize]] internal ' +
-    //         'slots.');
-    // assert(container[_queue].length !== 0,
-    //        '_container_.[[queue]] is not empty.');
-    const pair = container[_queue].peek();
-    return pair.value;
-  }
-
-  function ResetQueue(container) {
-    // assert(
-    //     hasOwnProperty(container, _queue) &&
-    //         hasOwnProperty(container, _queueTotalSize),
-    //     'Assert: _container_ has [[queue]] and [[queueTotalSize]] internal ' +
-    //         'slots.');
-    container[_queue] = new binding.SimpleQueue();
-    container[_queueTotalSize] = 0;
-  }
-
   // Miscellaneous Operations
 
   // This differs from "CallOrNoop" in the ReadableStream implementation in
@@ -1055,33 +964,12 @@
     return Function_apply(method, O, args);
   }
 
-  function IsFiniteNonNegativeNumber(v) {
-    return Number_isFinite(v) && v >= 0;
-  }
-
   function PromiseInvokeOrNoop(O, P, args) {
     try {
       return Promise_resolve(InvokeOrNoop(O, P, args));
     } catch (e) {
       return Promise_reject(e);
     }
-  }
-
-  // TODO(ricea): Share this operation with ReadableStream.js.
-  function ValidateAndNormalizeQueuingStrategy(size, highWaterMark) {
-    if (size !== undefined && typeof size !== 'function') {
-      throw new TypeError(streamErrors.sizeNotAFunction);
-    }
-
-    highWaterMark = Number(highWaterMark);
-    if (Number_isNaN(highWaterMark)) {
-      throw new RangeError(streamErrors.invalidHWM);
-    }
-    if (highWaterMark < 0) {
-      throw new RangeError(streamErrors.invalidHWM);
-    }
-
-    return {size, highWaterMark};
   }
 
   //
