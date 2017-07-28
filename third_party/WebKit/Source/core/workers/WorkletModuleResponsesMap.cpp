@@ -8,6 +8,14 @@
 
 namespace blink {
 
+namespace {
+
+bool IsValidURL(const KURL& url) {
+  return !url.IsEmpty() && url.IsValid();
+}
+
+}  // namespace
+
 class WorkletModuleResponsesMap::Entry
     : public GarbageCollectedFinalized<Entry> {
  public:
@@ -68,6 +76,10 @@ class WorkletModuleResponsesMap::Entry
 void WorkletModuleResponsesMap::ReadOrCreateEntry(const KURL& url,
                                                   Client* client) {
   DCHECK(IsMainThread());
+  if (!IsValidURL(url)) {
+    client->OnFailed();
+    return;
+  }
 
   auto it = entries_.find(url);
   if (it != entries_.end()) {
@@ -109,6 +121,7 @@ void WorkletModuleResponsesMap::UpdateEntry(
     const KURL& url,
     const ModuleScriptCreationParams& params) {
   DCHECK(IsMainThread());
+  DCHECK(IsValidURL(url));
   DCHECK(entries_.Contains(url));
   Entry* entry = entries_.find(url)->value;
 
@@ -121,6 +134,7 @@ void WorkletModuleResponsesMap::UpdateEntry(
 
 void WorkletModuleResponsesMap::InvalidateEntry(const KURL& url) {
   DCHECK(IsMainThread());
+  DCHECK(IsValidURL(url));
   DCHECK(entries_.Contains(url));
   Entry* entry = entries_.find(url)->value;
   entry->NotifyFailure();
