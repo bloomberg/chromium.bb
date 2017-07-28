@@ -5956,16 +5956,16 @@ All users must sign out to continue.
     Manage your Android <ph name="BEGIN_LINK">&lt;a is="action-link" id="android-apps-settings-link" role="link"&gt;</ph>preferences<ph name="END_LINK">&lt;/a&gt;</ph>.
   </message>
   <message name="IDS_ARC_NOTIFICATION_TITLE" desc="Title of the first-run notification that enables Android apps.">
-    Google Play Store (beta)
+    Google Play on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
   <message name="IDS_ARC_NOTIFICATION_MESSAGE" desc="Description message of the first-run notification that enables Android apps.">
-    Over a million apps and games now available on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+    Install apps and games from Google Play
   </message>
   <message name="IDS_ARC_OPEN_PLAY_STORE_NOTIFICATION_BUTTON" desc="Label for the button in the first-run notification that enables Android apps.">
     Open Play Store
   </message>
   <message name="IDS_ARC_CANCEL_NOTIFICATION_BUTTON" desc="Label for the button in the first-run notification that cancel running Android apps.">
-    Cancel
+    No thanks
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_HEADER" desc="Title of the opt-in dialog for Android apps.">
     Google Play store now on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>

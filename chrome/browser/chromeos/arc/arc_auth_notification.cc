@@ -114,9 +114,9 @@ void ArcAuthNotification::Show(Profile* profile) {
   std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kFirstRunNotificationId,
-          l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_TITLE),
-          l10n_util::GetStringFUTF16(IDS_ARC_NOTIFICATION_MESSAGE,
+          l10n_util::GetStringFUTF16(IDS_ARC_NOTIFICATION_TITLE,
                                      ash::GetChromeOSDeviceName()),
+          l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_MESSAGE),
           resource_bundle.GetImageNamed(IDR_ARC_PLAY_STORE_NOTIFICATION),
           base::UTF8ToUTF16(kDisplaySource), GURL(), notifier_id, data,
           new ArcAuthNotificationDelegate(profile)));
