@@ -18,7 +18,7 @@ message DatabaseManagerInfo {
     optional int32 network_status_code = 1;
 
     // Time when the last update request was sent to SafeBrowsing.
-    optional int64 last_update_time_micros = 2;
+    optional int64 last_update_time_millis = 2;
   }
 
   optional UpdateInfo update_info = 1;

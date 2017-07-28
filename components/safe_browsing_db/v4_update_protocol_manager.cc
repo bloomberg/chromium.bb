@@ -13,6 +13,7 @@
 #include "base/rand_util.h"
 #include "base/timer/timer.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/safe_browsing/web_ui/webui.pb.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -376,17 +377,17 @@ void V4UpdateProtocolManager::OnURLFetchComplete(
 
   timeout_timer_.Stop();
 
-  int response_code = source->GetResponseCode();
+  last_response_code_ = source->GetResponseCode();
   net::URLRequestStatus status = source->GetStatus();
   V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
-      "SafeBrowsing.V4Update.Network.Result", status, response_code);
+      "SafeBrowsing.V4Update.Network.Result", status, last_response_code_);
   UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.V4Update.TimedOut", false);
 
   last_response_time_ = Time::Now();
 
   std::unique_ptr<ParsedServerResponse> parsed_server_response(
       new ParsedServerResponse);
-  if (status.is_success() && response_code == net::HTTP_OK) {
+  if (status.is_success() && last_response_code_ == net::HTTP_OK) {
     RecordUpdateResult(V4OperationResult::STATUS_200);
     ResetUpdateErrors();
     std::string data;
@@ -407,7 +408,7 @@ void V4UpdateProtocolManager::OnURLFetchComplete(
   } else {
     DVLOG(1) << "SafeBrowsing GetEncodedUpdates request for: "
              << source->GetURL() << " failed with error: " << status.error()
-             << " and response code: " << response_code;
+             << " and response code: " << last_response_code_;
 
     if (status.status() == net::URLRequestStatus::FAILED) {
       RecordUpdateResult(V4OperationResult::NETWORK_ERROR);
@@ -428,6 +429,12 @@ void V4UpdateProtocolManager::GetUpdateUrlAndHeaders(
     net::HttpRequestHeaders* headers) const {
   V4ProtocolManagerUtil::GetRequestUrlAndHeaders(
       req_base64, "threatListUpdates:fetch", config_, gurl, headers);
+}
+
+void V4UpdateProtocolManager::CollectUpdateInfo(
+    DatabaseManagerInfo::UpdateInfo* update_info) {
+  update_info->set_network_status_code(last_response_code_);
+  update_info->set_last_update_time_millis(last_response_time_.ToJavaTime());
 }
 
 }  // namespace safe_browsing
