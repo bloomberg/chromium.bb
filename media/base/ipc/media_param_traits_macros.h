@@ -25,6 +25,7 @@
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
 #include "media/base/video_types.h"
+#include "media/base/watch_time_keys.h"
 #include "ui/gfx/ipc/color/gfx_param_traits_macros.h"
 
 // Enum traits.
@@ -88,6 +89,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::OutputDeviceStatus,
 IPC_ENUM_TRAITS_MAX_VALUE(media::SampleFormat, media::kSampleFormatMax)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoCodec, media::kVideoCodecMax)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::WatchTimeKey,
+                          media::WatchTimeKey::kWatchTimeKeyMax);
 
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
                               media::VIDEO_CODEC_PROFILE_MIN,

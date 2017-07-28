@@ -77,8 +77,6 @@ std::string MediaLog::EventTypeToString(MediaLogEvent::Type type) {
       return "MEDIA_DEBUG_LOG_ENTRY";
     case MediaLogEvent::PROPERTY_CHANGE:
       return "PROPERTY_CHANGE";
-    case MediaLogEvent::WATCH_TIME_UPDATE:
-      return "WATCH_TIME_UPDATE";
   }
   NOTREACHED();
   return NULL;
