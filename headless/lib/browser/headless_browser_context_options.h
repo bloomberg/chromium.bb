@@ -64,6 +64,7 @@ class HeadlessBrowserContextOptions {
 
   base::Optional<std::string> product_name_and_version_;
   base::Optional<std::string> accept_language_;
+  base::Optional<std::string> user_agent_;
   std::unique_ptr<net::ProxyConfig> proxy_config_;
   base::Optional<std::string> host_resolver_rules_;
   base::Optional<gfx::Size> window_size_;
