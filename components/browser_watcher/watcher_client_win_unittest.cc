@@ -20,7 +20,6 @@
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/windows_version.h"
 #include "components/browser_watcher/exit_code_watcher_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -29,10 +28,8 @@ namespace browser_watcher {
 
 namespace {
 
-// Command line switches used to communiate to the child test.
+// Command line switch used to communiate to the child test.
 const char kParentHandle[] = "parent-handle";
-const char kLeakHandle[] = "leak-handle";
-const char kNoLeakHandle[] = "no-leak-handle";
 
 bool IsValidParentProcessHandle(base::CommandLine& cmd_line,
                                 const char* switch_name) {
@@ -78,23 +75,6 @@ MULTIPROCESS_TEST_MAIN(VerifyParentHandle) {
     return 1;
   }
 
-  // If in the legacy mode, we expect this second handle will leak into the
-  // child process. This mainly serves to verify that the legacy mode is
-  // getting tested.
-  if (cmd_line->HasSwitch(kLeakHandle) &&
-      !IsValidParentProcessHandle(*cmd_line, kLeakHandle)) {
-    LOG(ERROR) << "Parent process handle unexpectedly didn't leak.";
-    return 1;
-  }
-
-  // If not in the legacy mode, this second handle should not leak into the
-  // child process.
-  if (cmd_line->HasSwitch(kNoLeakHandle) &&
-      IsValidParentProcessHandle(*cmd_line, kLeakHandle)) {
-    LOG(ERROR) << "Parent process handle unexpectedly leaked.";
-    return 1;
-  }
-
   return 0;
 }
 
@@ -109,39 +89,19 @@ class WatcherClientTest : public base::MultiProcessTest {
     ASSERT_TRUE(self_.IsValid());
   }
 
-  enum HandlePolicy {
-    LEAK_HANDLE,
-    NO_LEAK_HANDLE
-  };
-
   // Get a base command line to launch back into this test fixture.
-  base::CommandLine GetBaseCommandLine(HandlePolicy handle_policy,
-                                       HANDLE parent_handle) {
+  base::CommandLine GetBaseCommandLine(HANDLE parent_handle) {
     base::CommandLine ret = base::GetMultiProcessTestChildBaseCommandLine();
 
     ret.AppendSwitchASCII(switches::kTestChildProcess, "VerifyParentHandle");
     ret.AppendSwitchASCII(kParentHandle, HandleToString(parent_handle));
 
-    switch (handle_policy) {
-      case LEAK_HANDLE:
-        ret.AppendSwitchASCII(kLeakHandle, HandleToString(self_.Get()));
-        break;
-
-      case NO_LEAK_HANDLE:
-        ret.AppendSwitchASCII(kNoLeakHandle, HandleToString(self_.Get()));
-        break;
-
-      default:
-        ADD_FAILURE() << "Impossible handle_policy";
-    }
-
     return ret;
   }
 
-  WatcherClient::CommandLineGenerator GetBaseCommandLineGenerator(
-      HandlePolicy handle_policy) {
+  WatcherClient::CommandLineGenerator GetBaseCommandLineGenerator() {
     return base::Bind(&WatcherClientTest::GetBaseCommandLine,
-                      base::Unretained(this), handle_policy);
+                      base::Unretained(this));
   }
 
   void AssertSuccessfulExitCode(base::Process process) {
@@ -161,7 +121,7 @@ class WatcherClientTest : public base::MultiProcessTest {
 // TODO(siggi): More testing - test WatcherClient base implementation.
 
 TEST_F(WatcherClientTest, LaunchWatcherSucceeds) {
-  WatcherClient client(GetBaseCommandLineGenerator(NO_LEAK_HANDLE));
+  WatcherClient client(GetBaseCommandLineGenerator());
 
   client.LaunchWatcher();
 
