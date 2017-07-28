@@ -81,12 +81,6 @@ IPC_MESSAGE_CONTROL2(FileSystemHostMsg_ResolveURL,
                      int /* request_id */,
                      GURL /* filesystem_url */)
 
-// WebFrameClient::deleteFileSystem() message.
-IPC_MESSAGE_CONTROL3(FileSystemHostMsg_DeleteFileSystem,
-                     int /* request_id */,
-                     GURL /* origin_url */,
-                     storage::FileSystemType /* type */)
-
 // WebFileSystem::move() message.
 IPC_MESSAGE_CONTROL3(FileSystemHostMsg_Move,
                      int /* request_id */,

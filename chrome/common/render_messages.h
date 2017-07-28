@@ -147,18 +147,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetWindowFeatures,
 // ChromeFrameHostMsg_DidGetWebApplicationInfo.
 IPC_MESSAGE_ROUTED0(ChromeFrameMsg_GetWebApplicationInfo)
 
-// chrome.principals messages ------------------------------------------------
-
-// Message sent from the renderer to the browser to get the list of browser
-// managed accounts for the given origin.
-IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_GetManagedAccounts,
-                            GURL /* current URL */,
-                            std::vector<std::string> /* managed accounts */)
-
-// Message sent from the renderer to the browser to show the browser account
-// management UI.
-IPC_MESSAGE_CONTROL0(ChromeViewHostMsg_ShowBrowserAccountManagementUI)
-
 // JavaScript related messages -----------------------------------------------
 
 // Tells the frame it is displaying an interstitial page.
@@ -303,10 +291,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedComponentUpdatedPlugin,
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
                     base::string16 /* name */,
                     std::string /* plugin group identifier */)
-
-// Sent when the renderer was prevented from displaying insecure content in
-// a secure page by a security policy.  The page may appear incomplete.
-IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DidBlockDisplayingInsecureContent)
 
 IPC_MESSAGE_ROUTED1(ChromeFrameHostMsg_DidGetWebApplicationInfo,
                     WebApplicationInfo)
