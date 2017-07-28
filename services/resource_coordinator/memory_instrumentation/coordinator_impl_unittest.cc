@@ -23,6 +23,7 @@ ACTION_P(RunClosure, closure) {
 
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::IsEmpty;
 using ::testing::Ne;
 using ::testing::NotNull;
 using ::testing::NiceMock;
@@ -181,6 +182,65 @@ TEST_F(CoordinatorImplTest, SeveralClients) {
 
   MockGlobalMemoryDumpCallback callback;
   EXPECT_CALL(callback, OnCall(true, Ne(0u), NotNull()))
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
+  RequestGlobalMemoryDump(args, callback.Get());
+  run_loop.Run();
+}
+
+TEST_F(CoordinatorImplTest, MissingChromeDump) {
+  base::RunLoop run_loop;
+
+  base::trace_event::MemoryDumpRequestArgs args = {
+      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
+
+  NiceMock<MockClientProcess> client_process(this, 1,
+                                             mojom::ProcessType::BROWSER);
+
+  EXPECT_CALL(client_process, RequestProcessMemoryDump(_, _))
+      .WillOnce(
+          Invoke([](const MemoryDumpRequestArgs& args,
+                    const MockClientProcess::RequestProcessMemoryDumpCallback&
+                        callback) {
+            auto dump = mojom::RawProcessMemoryDump::New();
+            dump->chrome_dump = mojom::ChromeMemDump::New();
+            dump->os_dump = mojom::RawOSMemDump::New();
+            callback.Run(true, args.dump_guid, std::move(dump));
+          }));
+
+  MockGlobalMemoryDumpCallback callback;
+  EXPECT_CALL(callback,
+              OnCall(true, Ne(0u),
+                     Pointee(Field(&mojom::GlobalMemoryDump::process_dumps,
+                                   IsEmpty()))))
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
+  RequestGlobalMemoryDump(args, callback.Get());
+  run_loop.Run();
+}
+
+TEST_F(CoordinatorImplTest, MissingOsDump) {
+  base::RunLoop run_loop;
+
+  base::trace_event::MemoryDumpRequestArgs args = {
+      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
+
+  NiceMock<MockClientProcess> client_process(this, 1,
+                                             mojom::ProcessType::BROWSER);
+
+  EXPECT_CALL(client_process, RequestOSMemoryDump(_, _, _))
+      .WillOnce(Invoke(
+          [](bool want_mmaps, const std::vector<base::ProcessId>& pids,
+             const MockClientProcess::RequestOSMemoryDumpCallback& callback) {
+            std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
+            callback.Run(true, std::move(results));
+          }));
+
+  MockGlobalMemoryDumpCallback callback;
+  EXPECT_CALL(callback,
+              OnCall(true, Ne(0u),
+                     Pointee(Field(&mojom::GlobalMemoryDump::process_dumps,
+                                   IsEmpty()))))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   RequestGlobalMemoryDump(args, callback.Get());
   run_loop.Run();
@@ -366,22 +426,22 @@ TEST_F(CoordinatorImplTest, OsDumps) {
           }));
   EXPECT_CALL(renderer_client, RequestOSMemoryDump(_, _, _)).Times(0);
 #else
-  EXPECT_CALL(browser_client, RequestOSMemoryDump(_, Contains(1), _))
+  EXPECT_CALL(browser_client, RequestOSMemoryDump(_, Contains(0), _))
       .WillOnce(Invoke(
           [](bool want_mmaps, const std::vector<base::ProcessId>& pids,
              const MockClientProcess::RequestOSMemoryDumpCallback& callback) {
             std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
-            results[1] = mojom::RawOSMemDump::New();
-            results[1]->resident_set_kb = 1;
+            results[0] = mojom::RawOSMemDump::New();
+            results[0]->resident_set_kb = 1;
             callback.Run(true, std::move(results));
           }));
-  EXPECT_CALL(renderer_client, RequestOSMemoryDump(_, Contains(2), _))
+  EXPECT_CALL(renderer_client, RequestOSMemoryDump(_, Contains(0), _))
       .WillOnce(Invoke(
           [](bool want_mmaps, const std::vector<base::ProcessId>& pids,
              const MockClientProcess::RequestOSMemoryDumpCallback& callback) {
             std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
-            results[2] = mojom::RawOSMemDump::New();
-            results[2]->resident_set_kb = 2;
+            results[0] = mojom::RawOSMemDump::New();
+            results[0]->resident_set_kb = 2;
             callback.Run(true, std::move(results));
           }));
 #endif  // defined(OS_LINUX)
