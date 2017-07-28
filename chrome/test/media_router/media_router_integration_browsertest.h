@@ -10,13 +10,17 @@
 
 #include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/toolbar/media_router_action.h"
+#include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
 #include "chrome/test/media_router/media_router_base_browsertest.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 
-
 namespace media_router {
+
+class MediaRouterUI;
+struct IssueInfo;
 
 class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
  public:
@@ -26,6 +30,7 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
  protected:
   // InProcessBrowserTest Overrides
   void TearDownOnMainThread() override;
+  void SetUpOnMainThread() override;
 
   // MediaRouterBaseBrowserTest Overrides
   void ParseCommandLine() override;
@@ -36,6 +41,12 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   // |sink_name|: The sink's human readable name.
   void ChooseSink(content::WebContents* web_contents,
                   const std::string& sink_name);
+
+  // Simulate user action to choose the local media cast mode in the popup
+  // dialog. This will not work unless the dialog is in the choose cast mode
+  // view. |dialog_contents|: The web contents of the popup dialog.
+  // |cast_mode_text|: The cast mode's dialog name.
+  void ClickCastMode(content::WebContents* dialog_contents, MediaCastMode mode);
 
   // Checks that the request initiated from |web_contents| to start presentation
   // failed with expected |error_name| and |error_message_substring|.
@@ -55,6 +66,10 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
       const content::ToRenderFrameHost& adapter, const std::string& script);
 
   void ClickDialog();
+
+  // Clicks on the header of the dialog. If in sinks view, will change to cast
+  // mode view, if in cast mode view, will change to sinks view.
+  void ClickHeader(content::WebContents* dialog_contents);
 
   static bool ExecuteScriptAndExtractBool(
       const content::ToRenderFrameHost& adapter,
@@ -87,6 +102,16 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   // that the presentation has successfully started if |should_succeed| is true.
   content::WebContents* StartSessionWithTestPageAndChooseSink();
 
+  // Opens the MR dialog and clicks through the motions of casting a file.
+  // Note: The system dialog portion has to be mocked out as it cannot be
+  // simulated.
+  void OpenDialogAndCastFile();
+
+  // Opens the MR dialog and clicks through the motions of choosing to cast
+  // file, file returns an issue. Note: The system dialog portion has to be
+  // mocked out as it cannot be simulated.
+  void OpenDialogAndCastFileFails();
+
   void OpenTestPage(base::FilePath::StringPieceType file);
   void OpenTestPageInNewTab(base::FilePath::StringPieceType file);
   virtual GURL GetTestPageUrl(const base::FilePath& full_path);
@@ -102,7 +127,6 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   // |web_contents|: The web contents of the test page which invokes the popup
   //                 dialog.
   content::WebContents* OpenMRDialog(content::WebContents* web_contents);
-
   bool IsRouteCreatedOnUI();
 
   bool IsRouteClosedOnUI();
@@ -151,6 +175,20 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   // Returns the active WebContents for the current window.
   content::WebContents* GetActiveWebContents();
 
+  // Gets the MediaRouterUI that is associated with the open dialog.
+  // This is needed to bypass potential issues that may arise when trying to
+  // test code that uses the native file dialog.
+  MediaRouterUI* GetMediaRouterUI(content::WebContents* media_router_dialog);
+
+  // Sets the MediaRouterFileDialog to act like a valid file was selected on
+  // opening the dialog.
+  void FileDialogSelectsFile(MediaRouterUI* media_router_ui, GURL file_url);
+
+  // Sets the MediaRouterFileDialog to act like a bad file was selected on
+  // opening the dialog.
+  void FileDialogSelectFails(MediaRouterUI* media_router_ui,
+                             const IssueInfo& issue);
+
   // Runs a basic test in which a presentation is created through the
   // MediaRouter dialog, then terminated.
   void RunBasicTest();
@@ -183,6 +221,9 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
 
   // Fields
   std::string receiver_;
+
+  // Enabled features
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class MediaRouterIntegrationIncognitoBrowserTest

@@ -384,12 +384,17 @@ void MediaRouterUI::InitForTest(
   router_ = router;
   handler_ = handler;
   create_session_request_ = std::move(create_session_request);
-  media_router_file_dialog_ = std::move(file_dialog);
+  InitForTest(std::move(file_dialog));
   InitCommon(initiator);
   if (create_session_request_) {
     OnDefaultPresentationChanged(
         create_session_request_->presentation_request());
   }
+}
+
+void MediaRouterUI::InitForTest(
+    std::unique_ptr<MediaRouterFileDialog> file_dialog) {
+  media_router_file_dialog_ = std::move(file_dialog);
 }
 
 void MediaRouterUI::OnDefaultPresentationChanged(

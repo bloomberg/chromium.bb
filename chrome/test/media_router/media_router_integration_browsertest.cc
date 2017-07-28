@@ -15,11 +15,16 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/media/router/media_router_feature.cc"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
+#include "chrome/browser/ui/webui/media_router/media_router_file_dialog.h"
+#include "chrome/browser/ui/webui/media_router/media_router_ui.h"
+#include "chrome/common/media_router/issue.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
@@ -62,12 +67,30 @@ const char kChooseSinkScript[] =
     "if (sink) {"
     "  sink.click();"
     "}";
+const char kClickCastModeScript[] =
+    "var mediaRouterContainer ="
+    "   document.getElementById('media-router-container');"
+    "var modes = Array.from(mediaRouterContainer"
+    "   .shadowRoot"
+    "   .getElementById('cast-mode-list')"
+    "   .getElementsByTagName('span'));"
+    "var mode = modes.find(mode => {"
+    "     return mode.textContent.trim() == mediaRouterContainer"
+    "         .castModeList.find(mode => mode.type == %d).description;"
+    "   });"
+    "if (mode) {"
+    "  mode.click();"
+    "}";
 const char kCloseRouteScript[] =
     "window.document.getElementById('media-router-container').shadowRoot."
     "  getElementById('route-details').shadowRoot.getElementById("
     "    'close-route-button').click()";
 const char kClickDialog[] =
     "window.document.getElementById('media-router-container').click();";
+const char kClickHeader[] =
+    "window.document.getElementById('media-router-container').shadowRoot"
+    ".getElementById('container-header').shadowRoot"
+    ".getElementById('header-text').click();";
 const char kGetSinkIdScript[] =
     "var sinks = window.document.getElementById('media-router-container')."
     "  allSinks;"
@@ -115,6 +138,38 @@ std::string GetDefaultRequestSessionId(WebContents* web_contents) {
   return session_id;
 }
 
+// File Dialog which fails on open
+class TestFailMediaRouterFileDialog : public MediaRouterFileDialog {
+ public:
+  TestFailMediaRouterFileDialog(MediaRouterFileDialogDelegate* delegate,
+                                const IssueInfo& issue)
+      : MediaRouterFileDialog(nullptr), delegate_(delegate), issue_(issue) {}
+  ~TestFailMediaRouterFileDialog() override {}
+
+  MediaRouterFileDialogDelegate* delegate_;
+  const IssueInfo issue_;
+
+  void OpenFileDialog(Browser* browser) override {
+    delegate_->FileDialogSelectionFailed(issue_);
+  }
+};
+
+// File Dialog with a preset file URL.
+class TestMediaRouterFileDialog : public MediaRouterFileDialog {
+ public:
+  TestMediaRouterFileDialog(MediaRouterFileDialogDelegate* delegate, GURL url)
+      : MediaRouterFileDialog(nullptr), delegate_(delegate), file_url_(url) {}
+  ~TestMediaRouterFileDialog() override {}
+
+  MediaRouterFileDialogDelegate* delegate_;
+  GURL file_url_;
+
+  GURL GetLastSelectedFileUrl() override { return file_url_; }
+  void OpenFileDialog(Browser* browser) override {
+    delegate_->FileDialogFileSelected(ui::SelectedFileInfo());
+  }
+};
+
 }  // namespace
 
 MediaRouterIntegrationBrowserTest::MediaRouterIntegrationBrowserTest() {
@@ -126,6 +181,11 @@ MediaRouterIntegrationBrowserTest::~MediaRouterIntegrationBrowserTest() {
 void MediaRouterIntegrationBrowserTest::TearDownOnMainThread() {
   MediaRouterBaseBrowserTest::TearDownOnMainThread();
   test_navigation_observer_.reset();
+}
+
+void MediaRouterIntegrationBrowserTest::SetUpOnMainThread() {
+  MediaRouterBaseBrowserTest::SetUpOnMainThread();
+  scoped_feature_list_.InitAndEnableFeature(kEnableCastLocalMedia);
 }
 
 void MediaRouterIntegrationBrowserTest::ExecuteJavaScriptAPI(
@@ -182,6 +242,46 @@ MediaRouterIntegrationBrowserTest::StartSessionWithTestPageAndChooseSink() {
   return web_contents;
 }
 
+void MediaRouterIntegrationBrowserTest::OpenDialogAndCastFile() {
+  SetTestData(FILE_PATH_LITERAL("local_media_sink.json"));
+  GURL file_url = GURL("file:///path/to/a/file.mp3");
+  // Open the dialog, waits for it to load
+  WebContents* dialog_contents = OpenMRDialog(GetActiveWebContents());
+  // Get the media router UI
+  MediaRouterUI* media_router_ui = GetMediaRouterUI(dialog_contents);
+  // Mock out file dialog opperations, as those can't be simulated.
+  FileDialogSelectsFile(media_router_ui, file_url);
+  // Open the Cast mode list.
+  ClickHeader(dialog_contents);
+  // Click on the desired mode.
+  ClickCastMode(dialog_contents, MediaCastMode::LOCAL_FILE);
+  // Wait for the sinks to load.
+  WaitUntilSinkDiscoveredOnUI();
+  // Click on sink.
+  ChooseSink(GetActiveWebContents(), kTestSinkName);
+  // Give casting a second to go through.
+  Wait(base::TimeDelta::FromSeconds(1));
+  // Expect that the current tab has the file open in it.
+  ASSERT_EQ(file_url, GetActiveWebContents()->GetURL());
+}
+
+void MediaRouterIntegrationBrowserTest::OpenDialogAndCastFileFails() {
+  SetTestData(FILE_PATH_LITERAL("local_media_sink.json"));
+  GURL file_url = GURL("file:///path/to/a/file.mp3");
+  // Open the dialog, waits for it to load
+  WebContents* dialog_contents = OpenMRDialog(GetActiveWebContents());
+  // Get the media router UI
+  MediaRouterUI* media_router_ui = GetMediaRouterUI(dialog_contents);
+  // Mock out file dialog opperations, as those can't be simulated.
+  FileDialogSelectFails(media_router_ui, IssueInfo());
+  // Open the Cast mode list.
+  ClickHeader(dialog_contents);
+  // Click on the desired mode.
+  ClickCastMode(dialog_contents, MediaCastMode::LOCAL_FILE);
+  // Wait for the issue to appear.
+  WaitUntilIssue();
+}
+
 void MediaRouterIntegrationBrowserTest::OpenTestPage(
     base::FilePath::StringPieceType file_name) {
   base::FilePath full_path = GetResourceFile(file_name);
@@ -223,6 +323,13 @@ void MediaRouterIntegrationBrowserTest::ChooseSink(
       base::UTF8ToUTF16(script));
 }
 
+void MediaRouterIntegrationBrowserTest::ClickCastMode(
+    WebContents* dialog_contents,
+    MediaCastMode mode) {
+  std::string script = base::StringPrintf(kClickCastModeScript, mode);
+  ASSERT_TRUE(content::ExecuteScript(dialog_contents, script));
+}
+
 void MediaRouterIntegrationBrowserTest::CheckStartFailed(
     WebContents* web_contents,
     const std::string& error_name,
@@ -238,6 +345,12 @@ void MediaRouterIntegrationBrowserTest::ClickDialog() {
   WebContents* dialog_contents = GetMRDialog(web_contents);
   ASSERT_TRUE(content::ExecuteScript(dialog_contents, kClickDialog));
 }
+
+void MediaRouterIntegrationBrowserTest::ClickHeader(
+    WebContents* dialog_contents) {
+  ASSERT_TRUE(content::ExecuteScript(dialog_contents, kClickHeader));
+}
+
 WebContents* MediaRouterIntegrationBrowserTest::GetMRDialog(
     WebContents* web_contents) {
   MediaRouterDialogControllerImpl* controller =
@@ -488,6 +601,31 @@ WebContents* MediaRouterIntegrationBrowserTest::GetActiveWebContents() {
   return browser()->tab_strip_model()->GetActiveWebContents();
 }
 
+MediaRouterUI* MediaRouterIntegrationBrowserTest::GetMediaRouterUI(
+    content::WebContents* dialog_contents) {
+  content::WebUI* web_ui = dialog_contents->GetWebUI();
+  CHECK(web_ui) << "Error getting MediaRouterUI, no WebUI at all";
+  return static_cast<MediaRouterUI*>(web_ui->GetController());
+}
+
+void MediaRouterIntegrationBrowserTest::FileDialogSelectsFile(
+    MediaRouterUI* media_router_ui,
+    GURL file_url) {
+  // Ensure that the media_router_ui is set
+  DCHECK(media_router_ui);
+  media_router_ui->InitForTest(
+      base::MakeUnique<TestMediaRouterFileDialog>(media_router_ui, file_url));
+}
+
+void MediaRouterIntegrationBrowserTest::FileDialogSelectFails(
+    MediaRouterUI* media_router_ui,
+    const IssueInfo& issue) {
+  // Ensure that the media_router_ui is set
+  DCHECK(media_router_ui);
+  media_router_ui->InitForTest(
+      base::MakeUnique<TestFailMediaRouterFileDialog>(media_router_ui, issue));
+}
+
 void MediaRouterIntegrationBrowserTest::RunBasicTest() {
   WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
   CheckSessionValidity(web_contents);
@@ -555,6 +693,43 @@ void MediaRouterIntegrationBrowserTest::RunReconnectSessionSameTabTest() {
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Basic) {
   RunBasicTest();
+}
+
+// Tests that creating a route with a local file opens the file in a new tab.
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_OpenLocalMediaFileInCurrentTab) {
+  // Start at a new tab because that's the case in which it opens in a new tab.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  // Make sure there is 1 tab.
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+
+  OpenDialogAndCastFile();
+
+  // Expect that no new tab has been opened.
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+}
+
+// Tests that creating a route with a local file opens the file in a new tab.
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_OpenLocalMediaFileInNewTab) {
+  // Start at a tab with content in it because that's when the file will open in
+  // a new tab.
+  ui_test_utils::NavigateToURL(browser(), GURL("http://google.com"));
+  // Make sure there is 1 tab.
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+
+  OpenDialogAndCastFile();
+
+  // Expect that a new tab has been opened.
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+}
+
+// Tests that creating a route with a local file opens the file in a new tab.
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_OpenLocalMediaFileFailsAndShowsIssue) {
+  OpenDialogAndCastFileFails();
+  // Expect that the issue is showing.
+  ASSERT_TRUE(IsUIShowingIssue());
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
