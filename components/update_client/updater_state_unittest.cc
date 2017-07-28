@@ -46,9 +46,9 @@ TEST_F(UpdaterStateTest, Serialize) {
   #if defined(OS_WIN)
     // The name of the Windows updater for Chrome.
     EXPECT_STREQ("Omaha", UpdaterState::GetState(false)->at("name").c_str());
-  #elif defined(OS_MACOSX)
-    EXPECT_STREQ("Keystone", UpdaterState::GetState(false)->at("name").c_str());
-  #endif
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  EXPECT_STREQ("Keystone", UpdaterState::GetState(false)->at("name").c_str());
+#endif
 #endif  // GOOGLE_CHROME_BUILD
 
   // Tests some of the remaining values.
