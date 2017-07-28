@@ -17,7 +17,7 @@ struct Target {
   FrameSinkId frame_sink_id;
   // Coordinates in the coordinate system of the target FrameSinkId.
   gfx::Point location_in_target;
-  // Different flags are defined in services/viz/hit_test/public/interfaces/
+  // Different flags are defined in services/viz/public/interfaces/hit_test/
   // hit_test_region_list.mojom.
   uint32_t flags = 0;
 };

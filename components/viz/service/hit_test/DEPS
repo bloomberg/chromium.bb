@@ -1,6 +1,6 @@
 include_rules = [
   "+components/viz/service/surfaces",
-  "+services/viz/hit_test/public/interfaces",
+  "+services/viz/public/interfaces/hit_test",
 ]
 
 specific_include_rules = {

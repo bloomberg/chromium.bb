@@ -1,4 +1,4 @@
 include_rules = [
-  "+services/viz/hit_test/public/interfaces",
+  "+services/viz/public/interfaces/hit_test",
   "+ui/gfx"
 ]

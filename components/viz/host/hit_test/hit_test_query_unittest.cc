@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-#include "services/viz/hit_test/public/interfaces/hit_test_region_list.mojom.h"
+#include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {

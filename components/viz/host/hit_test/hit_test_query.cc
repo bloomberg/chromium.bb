@@ -4,7 +4,7 @@
 
 #include "components/viz/host/hit_test/hit_test_query.h"
 
-#include "services/viz/hit_test/public/interfaces/hit_test_region_list.mojom.h"
+#include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 
 namespace viz {
 
