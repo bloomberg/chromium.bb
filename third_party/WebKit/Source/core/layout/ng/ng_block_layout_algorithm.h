@@ -141,10 +141,13 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   void HandleFloat(const NGPreviousInflowPosition&,
                    NGBlockNode,
                    NGBlockBreakToken*);
-  WTF::Optional<NGPreviousInflowPosition> HandleInflow(
-      const NGPreviousInflowPosition&,
-      NGLayoutInputNode child,
-      NGBreakToken* child_break_token);
+
+  // Handle an in-flow child. Returns true if everything went smoothly and we
+  // can continue to the next sibling. Returns false if we need to abort,
+  // because a previously unknown BFC offset now has been resolved.
+  bool HandleInflow(NGLayoutInputNode child,
+                    NGBreakToken* child_break_token,
+                    NGPreviousInflowPosition*);
 
   // Final adjustments before fragment creation. We need to prevent the
   // fragment from crossing fragmentainer boundaries, and rather create a break
