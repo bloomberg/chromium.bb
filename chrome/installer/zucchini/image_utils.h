@@ -59,7 +59,7 @@ inline bool operator==(const Reference& a, const Reference& b) {
   return a.location == b.location && a.target == b.target;
 }
 
-// Helper functions to make an offset_t, so we can distinguish file offsets from
+// Helper functions to mark an offset_t, so we can distinguish file offsets from
 // Label indexes. Implementation: Marking is flagged by the most significant bit
 // (MSB).
 constexpr inline bool IsMarked(offset_t value) {
