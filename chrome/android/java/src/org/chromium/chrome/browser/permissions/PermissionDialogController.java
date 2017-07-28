@@ -164,8 +164,7 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
             toggleTextView.announceForAccessibility(toggleMessage);
 
         } else {
-            mSwitchView.setVisibility(View.GONE);
-            toggleTextView.setVisibility(View.GONE);
+            view.findViewById(R.id.permission_dialog_persist_layout).setVisibility(View.GONE);
         }
 
         mDialog.setView(view);
