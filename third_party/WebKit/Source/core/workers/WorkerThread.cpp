@@ -519,8 +519,10 @@ void WorkerThread::PrepareForShutdownOnWorkerThread() {
     worker_inspector_controller_->Dispose();
     worker_inspector_controller_.Clear();
   }
-  GlobalScope()->Dispose();
   global_scope_scheduler_->Dispose();
+  GlobalScope()->Dispose();
+  global_scope_ = nullptr;
+
   console_message_storage_.Clear();
   loading_context_.Clear();
   GetWorkerBackingThread().BackingThread().RemoveTaskObserver(this);
@@ -530,13 +532,6 @@ void WorkerThread::PerformShutdownOnWorkerThread() {
   DCHECK(IsCurrentThread());
   DCHECK(CheckRequestedToTerminateOnWorkerThread());
   DCHECK_EQ(ThreadState::kReadyToShutdown, thread_state_);
-
-  // The below assignment will destroy the context, which will in turn notify
-  // messaging proxy. We cannot let any objects survive past thread exit,
-  // because no other thread will run GC or otherwise destroy them. If Oilpan
-  // is enabled, we detach of the context/global scope, with the final heap
-  // cleanup below sweeping it out.
-  global_scope_ = nullptr;
 
   if (IsOwningBackingThread())
     GetWorkerBackingThread().ShutdownOnBackingThread();
