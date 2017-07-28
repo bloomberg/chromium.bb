@@ -57,10 +57,14 @@ MailboxTextureHolder::MailboxTextureHolder(
 
 MailboxTextureHolder::MailboxTextureHolder(
     std::unique_ptr<TextureHolder> texture_holder)
-    : TextureHolder(texture_holder->ContextProviderWrapper()) {
+    : TextureHolder(texture_holder->ContextProviderWrapper()),
+      texture_id_(0),
+      is_converted_from_skia_texture_(true),
+      thread_id_(0) {
   DCHECK(texture_holder->IsSkiaTextureHolder());
   sk_sp<SkImage> image = texture_holder->GetSkImage();
   DCHECK(image);
+  size_ = IntSize(image->width(), image->height());
 
   if (!ContextProvider())
     return;
@@ -83,8 +87,6 @@ MailboxTextureHolder::MailboxTextureHolder(
   gl->BindTexture(GL_TEXTURE_2D, 0);
   // We changed bound textures in this function, so reset the GrContext.
   gr->resetContext(kTextureBinding_GrGLBackendState);
-  size_ = IntSize(image->width(), image->height());
-  is_converted_from_skia_texture_ = true;
   InitCommon();
 }
 
