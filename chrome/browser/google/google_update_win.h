@@ -14,7 +14,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
-class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 // These values are used for a histogram. Do not reorder.
@@ -110,6 +110,6 @@ void SetGoogleUpdateFactoryForTesting(
     const GoogleUpdate3ClassFactory& google_update_factory);
 
 void SetUpdateDriverTaskRunnerForTesting(
-    base::SequencedTaskRunner* task_runner);
+    base::SingleThreadTaskRunner* task_runner);
 
 #endif  // CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_WIN_H_

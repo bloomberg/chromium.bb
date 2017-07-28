@@ -24,6 +24,7 @@
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -64,7 +65,7 @@ enum GoogleUpdateUpgradeStatus {
 };
 
 GoogleUpdate3ClassFactory* g_google_update_factory = nullptr;
-base::SequencedTaskRunner* g_update_driver_task_runner = nullptr;
+base::SingleThreadTaskRunner* g_update_driver_task_runner = nullptr;
 
 // The time interval, in milliseconds, between polls to Google Update. This
 // value was chosen unscientificaly during an informal discussion.
@@ -309,7 +310,7 @@ class UpdateCheckDriver {
   static UpdateCheckDriver* driver_;
 
   // The task runner on which the update checks runs.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // The caller's task runner, on which methods of the |delegates_| will be
   // invoked.
@@ -390,7 +391,7 @@ UpdateCheckDriver::UpdateCheckDriver(
     : task_runner_(
           g_update_driver_task_runner
               ? g_update_driver_task_runner
-              : base::CreateSequencedTaskRunnerWithTraits(
+              : base::CreateCOMSTATaskRunnerWithTraits(
                     {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       result_runner_(base::SequencedTaskRunnerHandle::Get()),
       locale_(locale),
@@ -441,7 +442,7 @@ UpdateCheckDriver::~UpdateCheckDriver() {
 
 void UpdateCheckDriver::AddDelegate(
     const base::WeakPtr<UpdateCheckDelegate>& delegate) {
-    DCHECK(result_runner_->RunsTasksInCurrentSequence());
+  DCHECK(result_runner_->RunsTasksInCurrentSequence());
   delegates_.push_back(delegate);
 }
 
@@ -886,6 +887,6 @@ void SetGoogleUpdateFactoryForTesting(
 // TODO(calamity): Remove once a MockTimer is implemented in
 // ScopedTaskEnvironment. See https://crbug.com/708584.
 void SetUpdateDriverTaskRunnerForTesting(
-    base::SequencedTaskRunner* task_runner) {
+    base::SingleThreadTaskRunner* task_runner) {
   g_update_driver_task_runner = task_runner;
 }
