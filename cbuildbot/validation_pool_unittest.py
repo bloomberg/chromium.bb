@@ -132,7 +132,7 @@ class FakeBuilderRun(object):
 
 
 # pylint: disable=protected-access
-class _MoxBase(cros_test_lib.MockTestCase, cros_test_lib.MoxTestCase):
+class _Base(cros_test_lib.MockTestCase):
   """Base class for other test suites with numbers mocks patched in."""
 
   def setUp(self):
@@ -150,7 +150,7 @@ class _MoxBase(cros_test_lib.MockTestCase, cros_test_lib.MoxTestCase):
     cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
     # Suppress all gerrit access; having this occur is generally a sign
     # the code is either misbehaving, or that the tests are bad.
-    self.mox.StubOutWithMock(gerrit.GerritHelper, 'Query')
+    self.PatchObject(gerrit.GerritHelper, 'Query')
     self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
     self._patch_factory = patch_unittest.MockPatchFactory()
 
@@ -200,7 +200,7 @@ class FakeValidationPool(partial_mock.PartialMock):
     pass
 
 
-class TestSubmitChange(_MoxBase):
+class TestSubmitChange(_Base, cros_test_lib.MoxTestCase):
   """Test suite related to submitting changes."""
 
   def setUp(self):
@@ -267,7 +267,7 @@ class TestSubmitChange(_MoxBase):
     self.assertFalse(self._TestSubmitChange(['NEW']))
 
 
-class ValidationFailureOrTimeout(_MoxBase):
+class ValidationFailureOrTimeout(_Base):
   """Tests that HandleValidationFailure and HandleValidationTimeout functions.
 
   These tests check that HandleValidationTimeout and HandleValidationFailure
@@ -368,7 +368,7 @@ class ValidationFailureOrTimeout(_MoxBase):
     self._AssertActions(self._patches, [constants.CL_ACTION_FORGIVEN])
 
 
-class TestCoreLogic(_MoxBase):
+class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
   """Tests resolution and applying logic of validation_pool.ValidationPool."""
 
   def setUp(self):
@@ -1377,7 +1377,7 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
     return ''
 
 
-class TestPrintLinks(_MoxBase):
+class TestPrintLinks(_Base):
   """Tests that change links can be printed."""
   def testPrintLinks(self):
     changes = self.GetPatches(3)
@@ -1388,7 +1388,7 @@ class TestPrintLinks(_MoxBase):
       validation_pool.ValidationPool.PrintLinksToChanges(changes)
 
 
-class TestCreateDisjointTransactions(_MoxBase):
+class TestCreateDisjointTransactions(_Base):
   """Test the CreateDisjointTransactions function."""
 
   def setUp(self):
@@ -1523,7 +1523,7 @@ class MockValidationPool(partial_mock.PartialMock):
   RemoveReady = None
 
 
-class BaseSubmitPoolTestCase(_MoxBase):
+class BaseSubmitPoolTestCase(_Base):
   """Test full ability to submit and reject CL pools."""
 
   # Whether all slave builds passed. This would affect the submission
