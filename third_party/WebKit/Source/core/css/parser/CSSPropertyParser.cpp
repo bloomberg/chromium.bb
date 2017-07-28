@@ -1301,59 +1301,6 @@ bool CSSPropertyParser::ConsumeBackgroundShorthand(
   return true;
 }
 
-bool CSSPropertyParser::ConsumeGridAreaShorthand(bool important) {
-  DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
-  DCHECK_EQ(gridAreaShorthand().length(), 4u);
-  CSSValue* row_start_value = CSSPropertyGridUtils::ConsumeGridLine(range_);
-  if (!row_start_value)
-    return false;
-  CSSValue* column_start_value = nullptr;
-  CSSValue* row_end_value = nullptr;
-  CSSValue* column_end_value = nullptr;
-  if (ConsumeSlashIncludingWhitespace(range_)) {
-    column_start_value = CSSPropertyGridUtils::ConsumeGridLine(range_);
-    if (!column_start_value)
-      return false;
-    if (ConsumeSlashIncludingWhitespace(range_)) {
-      row_end_value = CSSPropertyGridUtils::ConsumeGridLine(range_);
-      if (!row_end_value)
-        return false;
-      if (ConsumeSlashIncludingWhitespace(range_)) {
-        column_end_value = CSSPropertyGridUtils::ConsumeGridLine(range_);
-        if (!column_end_value)
-          return false;
-      }
-    }
-  }
-  if (!range_.AtEnd())
-    return false;
-  if (!column_start_value) {
-    column_start_value = row_start_value->IsCustomIdentValue()
-                             ? row_start_value
-                             : CSSIdentifierValue::Create(CSSValueAuto);
-  }
-  if (!row_end_value) {
-    row_end_value = row_start_value->IsCustomIdentValue()
-                        ? row_start_value
-                        : CSSIdentifierValue::Create(CSSValueAuto);
-  }
-  if (!column_end_value) {
-    column_end_value = column_start_value->IsCustomIdentValue()
-                           ? column_start_value
-                           : CSSIdentifierValue::Create(CSSValueAuto);
-  }
-
-  AddParsedProperty(CSSPropertyGridRowStart, CSSPropertyGridArea,
-                    *row_start_value, important);
-  AddParsedProperty(CSSPropertyGridColumnStart, CSSPropertyGridArea,
-                    *column_start_value, important);
-  AddParsedProperty(CSSPropertyGridRowEnd, CSSPropertyGridArea, *row_end_value,
-                    important);
-  AddParsedProperty(CSSPropertyGridColumnEnd, CSSPropertyGridArea,
-                    *column_end_value, important);
-  return true;
-}
-
 bool CSSPropertyParser::ConsumeGridTemplateRowsAndAreasAndColumns(
     CSSPropertyID shorthand_id,
     bool important) {
@@ -1735,8 +1682,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
                         *column_gap, important);
       return true;
     }
-    case CSSPropertyGridArea:
-      return ConsumeGridAreaShorthand(important);
     case CSSPropertyGridTemplate:
       return ConsumeGridTemplateShorthand(CSSPropertyGridTemplate, important);
     case CSSPropertyGrid:
