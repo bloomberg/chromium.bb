@@ -15,6 +15,12 @@
 
 namespace zucchini {
 
+namespace {
+
+using SLType = InducedSuffixSort::SLType;
+
+}  // namespace
+
 using ustring = std::basic_string<unsigned char>;
 
 constexpr uint16_t kNumChar = 256;
@@ -28,12 +34,12 @@ std::vector<T> MakeVector(const std::initializer_list<T>& ilist) {
   return {ilist.begin(), ilist.end()};
 }
 
-void TestSlPartition(std::initializer_list<Sais::SLType> expected_sl_partition,
+void TestSlPartition(std::initializer_list<SLType> expected_sl_partition,
                      std::initializer_list<size_t> expected_lms_indices,
                      std::string str) {
-  using SaisImpl = Sais::Implementation<size_t, uint16_t>;
+  using SaisImpl = InducedSuffixSort::Implementation<size_t, uint16_t>;
 
-  std::vector<Sais::SLType> sl_partition(str.size());
+  std::vector<SLType> sl_partition(str.size());
   EXPECT_EQ(expected_lms_indices.size(),
             SaisImpl::BuildSLPartition(str.begin(), str.size(), kNumChar,
                                        sl_partition.rbegin()));
@@ -44,65 +50,65 @@ void TestSlPartition(std::initializer_list<Sais::SLType> expected_sl_partition,
   EXPECT_EQ(MakeVector(expected_lms_indices), lms_indices);
 }
 
-TEST(SaisTest, BuildSLPartition) {
+TEST(InducedSuffixSortTest, BuildSLPartition) {
   TestSlPartition({}, {}, "");
   TestSlPartition(
       {
-          Sais::LType,
+          SLType::LType,
       },
       {}, "a");
   TestSlPartition(
       {
-          Sais::LType, Sais::LType,
+          SLType::LType, SLType::LType,
       },
       {}, "ba");
   TestSlPartition(
       {
-          Sais::SType, Sais::LType,
+          SLType::SType, SLType::LType,
       },
       {}, "ab");
   TestSlPartition(
       {
-          Sais::SType, Sais::SType, Sais::LType,
+          SLType::SType, SLType::SType, SLType::LType,
       },
       {}, "aab");
   TestSlPartition(
       {
-          Sais::LType, Sais::LType, Sais::LType,
+          SLType::LType, SLType::LType, SLType::LType,
       },
       {}, "bba");
   TestSlPartition(
       {
-          Sais::LType, Sais::SType, Sais::LType,
+          SLType::LType, SLType::SType, SLType::LType,
       },
       {1}, "bab");
   TestSlPartition(
       {
-          Sais::LType, Sais::SType, Sais::SType, Sais::LType,
+          SLType::LType, SLType::SType, SLType::SType, SLType::LType,
       },
       {1}, "baab");
 
   TestSlPartition(
       {
-          Sais::LType,  // zucchini
-          Sais::LType,  // ucchini
-          Sais::SType,  // cchini
-          Sais::SType,  // chini
-          Sais::SType,  // hini
-          Sais::SType,  // ini
-          Sais::LType,  // ni
-          Sais::LType,  // i
+          SLType::LType,  // zucchini
+          SLType::LType,  // ucchini
+          SLType::SType,  // cchini
+          SLType::SType,  // chini
+          SLType::SType,  // hini
+          SLType::SType,  // ini
+          SLType::LType,  // ni
+          SLType::LType,  // i
       },
       {2}, "zucchini");
 }
 
 std::vector<size_t> BucketCount(const std::initializer_list<unsigned char> str,
                                 uint16_t max_key) {
-  using SaisImpl = Sais::Implementation<size_t, uint16_t>;
+  using SaisImpl = InducedSuffixSort::Implementation<size_t, uint16_t>;
   return SaisImpl::MakeBucketCount(str.begin(), str.size(), max_key);
 }
 
-TEST(SaisTest, BucketCount) {
+TEST(InducedSuffixSortTest, BucketCount) {
   using vec = std::vector<size_t>;
 
   EXPECT_EQ(vec({0, 0, 0, 0}), BucketCount({}, 4));
@@ -111,8 +117,8 @@ TEST(SaisTest, BucketCount) {
 }
 
 std::vector<size_t> InducedSortSubstring(ustring str) {
-  using SaisImpl = Sais::Implementation<size_t, uint16_t>;
-  std::vector<Sais::SLType> sl_partition(str.size());
+  using SaisImpl = InducedSuffixSort::Implementation<size_t, uint16_t>;
+  std::vector<SLType> sl_partition(str.size());
   size_t lms_count = SaisImpl::BuildSLPartition(
       str.begin(), str.size(), kNumChar, sl_partition.rbegin());
   std::vector<size_t> lms_indices(lms_count);
@@ -126,7 +132,7 @@ std::vector<size_t> InducedSortSubstring(ustring str) {
   return suffix_array;
 }
 
-TEST(SaisTest, InducedSortSubstring) {
+TEST(InducedSuffixSortTest, InducedSortSubstring) {
   using vec = std::vector<size_t>;
 
   auto us = MakeUnsignedString;
@@ -204,9 +210,9 @@ TEST(SuffixSortTest, NaiveSuffixSort) {
   }
 }
 
-TEST(SuffixSortTest, SaisSort) {
+TEST(SuffixSortTest, InducedSuffixSortSort) {
   for (const std::string& test_str : test_strs) {
-    TestSuffixSort<Sais>(MakeUnsignedString(test_str));
+    TestSuffixSort<InducedSuffixSort>(MakeUnsignedString(test_str));
   }
 }
 
@@ -217,7 +223,7 @@ TEST(SuffixSortTest, AllChar) {
 
   {
     std::vector<size_t> suffix_array =
-        MakeSuffixArray<Sais>(all_char, kNumChar);
+        MakeSuffixArray<InducedSuffixSort>(all_char, kNumChar);
     for (size_t i = 0; i < kNumChar; ++i)
       EXPECT_EQ(i, suffix_array[i]);
   }
@@ -226,7 +232,7 @@ TEST(SuffixSortTest, AllChar) {
                                               all_char.rend());
   {
     std::vector<size_t> suffix_array =
-        MakeSuffixArray<Sais>(all_char_reverse, kNumChar);
+        MakeSuffixArray<InducedSuffixSort>(all_char_reverse, kNumChar);
     for (size_t i = 0; i < kNumChar; ++i)
       EXPECT_EQ(kNumChar - i - 1, suffix_array[i]);
   }
@@ -306,7 +312,7 @@ TEST(SuffixArrayTest, LowerBoundExact) {
     ustring test_ustr = MakeUnsignedString(test_str);
 
     std::vector<size_t> suffix_array =
-        MakeSuffixArray<Sais>(test_ustr, kNumChar);
+        MakeSuffixArray<InducedSuffixSort>(test_ustr, kNumChar);
 
     for (size_t lo = 0; lo < test_str.size(); ++lo) {
       for (size_t hi = lo + 1; hi <= test_str.size(); ++hi) {

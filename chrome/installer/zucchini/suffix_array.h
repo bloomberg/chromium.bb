@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace zucchini {
 
@@ -48,7 +49,7 @@ class NaiveSuffixSort {
 // A functor class that implements suffix array induced sorting (SA-IS)
 // algorithm with linear time and memory complexity,
 // see http://ieeexplore.ieee.org/abstract/document/5582081/
-class Sais {
+class InducedSuffixSort {
  public:
   // Type requirements:
   // |InputRng| is an input random access range.
@@ -66,7 +67,7 @@ class Sais {
     using size_type = typename SAIt::value_type;
 
     static_assert(std::is_unsigned<value_type>::value,
-                  "Sais only supports input string with unsigned values");
+                  "SA-IS only supports input string with unsigned values");
     static_assert(std::is_unsigned<KeyType>::value, "KeyType must be unsigned");
 
     size_type n = static_cast<size_type>(std::end(str) - std::begin(str));
@@ -423,6 +424,9 @@ class Sais {
       InducedSort(str, length, sl_partition, lms_indices, buckets,
                   suffix_array);
     }
+
+   private:
+    DISALLOW_IMPLICIT_CONSTRUCTORS(Implementation);
   };
 };
 
