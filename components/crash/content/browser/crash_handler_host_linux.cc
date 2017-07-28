@@ -12,6 +12,8 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
@@ -21,6 +23,7 @@
 #include "base/linux_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
@@ -131,8 +134,8 @@ CrashHandlerHostLinux::~CrashHandlerHostLinux() {
 }
 
 void CrashHandlerHostLinux::StartUploaderThread() {
-  uploader_thread_.reset(
-      new base::Thread(process_type_ + "_crash_uploader"));
+  uploader_thread_ =
+      base::MakeUnique<base::Thread>(process_type_ + "_crash_uploader");
   uploader_thread_->Start();
 }
 
@@ -162,18 +165,18 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   struct msghdr msg = {0};
   struct iovec iov[kCrashIovSize];
 
-  std::unique_ptr<char[]> crash_context(new char[kCrashContextSize]);
+  auto crash_context = base::MakeUnique<char[]>(kCrashContextSize);
 #if defined(ADDRESS_SANITIZER)
-  std::unique_ptr<char[]> asan_report(new char[kMaxAsanReportSize + 1]);
+  auto asan_report = base::MakeUnique<char[]>(kMaxAsanReportSize + 1);
 #endif
 
-  std::unique_ptr<CrashKeyStorage> crash_keys(new CrashKeyStorage);
+  auto crash_keys = base::MakeUnique<CrashKeyStorage>();
   google_breakpad::SerializedNonAllocatingMap* serialized_crash_keys;
   size_t crash_keys_size = crash_keys->Serialize(
       const_cast<const google_breakpad::SerializedNonAllocatingMap**>(
           &serialized_crash_keys));
 
-  char* tid_buf_addr = NULL;
+  char* tid_buf_addr = nullptr;
   int tid_fd = -1;
   uint64_t uptime;
   size_t oom_size;
@@ -360,8 +363,7 @@ void CrashHandlerHostLinux::FindCrashingThreadAndDump(
       reinterpret_cast<ExceptionHandler::CrashContext*>(crash_context.get());
   bad_context->tid = crashing_tid;
 
-  std::unique_ptr<BreakpadInfo> info(new BreakpadInfo);
-
+  auto info = base::MakeUnique<BreakpadInfo>();
   info->fd = -1;
   info->process_type_length = process_type_.length();
   // Freed in CrashDumpTask().

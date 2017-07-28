@@ -7,15 +7,15 @@
 
 #include <sys/types.h>
 
+#include <memory>
 #include <string>
-#include <utility>
 
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequence_checker.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "build/build_config.h"
 #include "components/crash/content/app/breakpad_linux_impl.h"
 
 namespace base {
