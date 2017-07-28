@@ -37,9 +37,9 @@ class StorageMonitorMac : public StorageMonitor,
 
   void Init() override;
 
-  void UpdateDisk(const std::string& bsd_name,
-                  const StorageInfo& info,
-                  UpdateType update_type);
+  void UpdateDisk(UpdateType update_type,
+                  std::string* bsd_name,
+                  const StorageInfo& info);
 
   bool GetStorageInfoForPath(const base::FilePath& path,
                              StorageInfo* device_info) const override;

@@ -57,10 +57,11 @@ class StorageMonitorMacTest : public testing::Test {
   }
 
   void UpdateDisk(StorageInfo info, StorageMonitorMac::UpdateType update_type) {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
         base::Bind(&StorageMonitorMac::UpdateDisk,
-                   base::Unretained(monitor_.get()),
-                   "dummy_bsd_name", info, update_type));
+                   base::Unretained(monitor_.get()), update_type,
+                   base::Owned(new std::string("dummy_bsd_name")), info));
     base::RunLoop().RunUntilIdle();
   }
 
