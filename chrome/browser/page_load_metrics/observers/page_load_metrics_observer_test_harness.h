@@ -5,28 +5,47 @@
 #ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PAGE_LOAD_METRICS_OBSERVER_TEST_HARNESS_H_
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PAGE_LOAD_METRICS_OBSERVER_TEST_HARNESS_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
-#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
-#include "chrome/browser/page_load_metrics/page_load_tracker.h"
-#include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
-#include "chrome/common/page_load_metrics/test/weak_mock_timer.h"
-#include "chrome/common/url_constants.h"
+#include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_tester.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "content/public/browser/global_request_id.h"
-#include "content/public/test/web_contents_tester.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/base/page_transition_types.h"
 
+namespace base {
+class GURL;
+}  // namespace base
+
+namespace blink {
+class WebInputEvent;
+}  // namespace blink
+
+namespace content {
+struct GlobalRequestID;
+}  // namespace content
+
+namespace mojom {
+class PageLoadMetadata;
+class PageLoadTiming;
+}  // namespace mojom
+
 namespace page_load_metrics {
+
+class MetricsWebContentsObserver;
+class PageLoadTracker;
 
 // This class can be used to drive tests of PageLoadMetricsObservers. To hook up
 // an observer, override RegisterObservers and call tracker->AddObserver. This
 // will attach the observer to all main frame navigations.
+//
+// This class is mostly just a wrapper around a PageLoadMetricsObserverTester.
+// Prefer to use the tester directly if you need to compose the testing logic
+// with another test harness.
 class PageLoadMetricsObserverTestHarness
-    : public ChromeRenderViewHostTestHarness,
-      public test::WeakMockTimerProvider {
+    : public ChromeRenderViewHostTestHarness {
  public:
   // Sample URL for resource loads.
   static const char kResourceUrl[];
@@ -49,9 +68,7 @@ class PageLoadMetricsObserverTestHarness
 
   // Navigates to a URL that is not tracked by page_load_metrics. Useful for
   // forcing the OnComplete method of a PageLoadMetricsObserver to run.
-  void NavigateToUntrackedUrl() {
-    NavigateAndCommit(GURL(url::kAboutBlankURL));
-  }
+  void NavigateToUntrackedUrl();
 
   // Call this to simulate sending a PageLoadTiming IPC from the render process
   // to the browser process. These will update the timing information for the
@@ -63,9 +80,7 @@ class PageLoadMetricsObserverTestHarness
   // Simulates a loaded resource. Main frame resources must specify a
   // GlobalRequestID, using the SimulateLoadedResource() method that takes a
   // |request_id| parameter.
-  void SimulateLoadedResource(const ExtraRequestCompleteInfo& info) {
-    SimulateLoadedResource(info, content::GlobalRequestID());
-  }
+  void SimulateLoadedResource(const ExtraRequestCompleteInfo& info);
 
   // Simulates a loaded resource, with the given GlobalRequestID.
   void SimulateLoadedResource(const ExtraRequestCompleteInfo& info,
@@ -94,7 +109,7 @@ class PageLoadMetricsObserverTestHarness
  private:
   base::HistogramTester histogram_tester_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
-  MetricsWebContentsObserver* observer_;
+  std::unique_ptr<PageLoadMetricsObserverTester> tester_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsObserverTestHarness);
 };
