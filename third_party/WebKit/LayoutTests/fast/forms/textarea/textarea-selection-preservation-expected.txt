@@ -31,8 +31,8 @@ PASS ta.selectionEnd is 7
 PASS ta.selectionStart is 9
 PASS ta.selectionEnd is 9
 - set same defaultValue
-PASS ta.selectionStart is 2
-PASS ta.selectionEnd is 3
+PASS ta.selectionStart is 9
+PASS ta.selectionEnd is 9
 - append a text node
 PASS ta.selectionStart is 12
 PASS ta.selectionEnd is 12
