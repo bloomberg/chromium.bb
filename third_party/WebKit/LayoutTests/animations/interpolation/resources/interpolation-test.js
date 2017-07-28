@@ -117,6 +117,26 @@
     rebaseline: false,
   };
 
+  var cssTransitionAllInterpolation = {
+    name: 'CSS Transitions with transition: all',
+    supportsProperty: function(property) {return property.indexOf('--') !== 0;},
+    supportsValue: function() {return true;},
+    setup: function(property, from, target) {
+      target.style.setProperty(property, isNeutralKeyframe(from) ? '' : from);
+    },
+    nonInterpolationExpectations: function(from, to) {
+      return expectFlip(from, to, -Infinity);
+    },
+    interpolate: function(property, from, to, at, target) {
+      target.style.transitionDuration = '2e10s';
+      target.style.transitionDelay = '-1e10s';
+      target.style.transitionTimingFunction = createEasing(at);
+      target.style.transitionProperty = 'all';
+      target.style.setProperty(property, isNeutralKeyframe(to) ? '' : to);
+    },
+    rebaseline: false,
+  };
+
   var webAnimationsInterpolation = {
     name: 'Web Animations',
     supportsProperty: function(property) {return property.indexOf('-webkit-') !== 0;},
@@ -442,6 +462,7 @@ assertComposition({
   function runTests() {
     var interpolationMethods = [
       cssTransitionsInterpolation,
+      cssTransitionAllInterpolation,
       cssAnimationsInterpolation,
     ];
     if (webAnimationsEnabled) {
