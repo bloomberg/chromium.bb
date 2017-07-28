@@ -61,9 +61,16 @@
   </message>
 
   <!-- SSL error page: Superfish-specific -->
-  <message name="IDS_SSL_SUPERFISH_HEADING" desc="The large heading at the top of the Superfish-specific SSL interstitial.">
-    Software on your computer is stopping Chrome from safely connecting to the web
-  </message>
+  <if expr="_google_chrome">
+    <message name="IDS_SSL_SUPERFISH_HEADING" desc="The large heading at the top of the Superfish-specific SSL interstitial.">
+      Software on your computer is stopping Chrome from safely connecting to the web
+    </message>
+  </if>
+  <if expr="not _google_chrome">
+    <message name="IDS_SSL_SUPERFISH_HEADING" desc="The large heading at the top of the Superfish-specific SSL interstitial.">
+      Software on your computer is stopping Chromium from safely connecting to the web
+    </message>
+  </if>
   <message name="IDS_SSL_SUPERFISH_PRIMARY_PARAGRAPH" desc="The primary explanatory paragraph for the Superfish-specific SSL interstitial.">
     <ph name="BEGIN_PARAGRAPH">&lt;p&gt;</ph>Follow these steps to temporarily disable the software so you can get on the web. You'll need administrator privileges.<ph name="END_PARAGRAPH">&lt;/p&gt;</ph>
 
