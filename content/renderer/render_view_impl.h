@@ -46,7 +46,6 @@
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
-#include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
@@ -70,7 +69,6 @@
 #endif
 
 namespace blink {
-class WebDataSource;
 class WebDateTimeChooserCompletion;
 class WebGestureEvent;
 class WebMouseEvent;
