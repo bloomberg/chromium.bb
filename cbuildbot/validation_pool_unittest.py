@@ -132,7 +132,7 @@ class FakeBuilderRun(object):
 
 
 # pylint: disable=protected-access
-class MoxBase(patch_unittest.MockPatchBase, cros_test_lib.MoxTestCase):
+class MoxBase(cros_test_lib.MockTestCase, cros_test_lib.MoxTestCase):
   """Base class for other test suites with numbers mocks patched in."""
 
   def setUp(self):
@@ -152,6 +152,14 @@ class MoxBase(patch_unittest.MockPatchBase, cros_test_lib.MoxTestCase):
     # the code is either misbehaving, or that the tests are bad.
     self.mox.StubOutWithMock(gerrit.GerritHelper, 'Query')
     self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
+    self._patch_factory = patch_unittest.MockPatchFactory()
+
+  def MockPatch(self, *args, **kwargs):
+    return self._patch_factory.MockPatch(*args, **kwargs)
+
+  def GetPatches(self, *args, **kwargs):
+    return self._patch_factory.GetPatches(*args, **kwargs)
+
 
   def tearDown(self):
     cidb.CIDBConnectionFactory.ClearMock()
@@ -374,6 +382,7 @@ class TestCoreLogic(MoxBase):
     self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
                      side_effect=lambda x: x)
     self.StartPatcher(parallel_unittest.ParallelMock())
+    self._patch_factory = patch_unittest.MockPatchFactory(self.patch_mock)
 
   def MakePool(self, *args, **kwargs):
     """Helper for creating ValidationPool objects for Mox tests."""
@@ -1384,6 +1393,7 @@ class TestCreateDisjointTransactions(MoxBase):
 
   def setUp(self):
     self.patch_mock = self.StartPatcher(MockPatchSeries())
+    self._patch_factory = patch_unittest.MockPatchFactory(self.patch_mock)
 
   def GetPatches(self, how_many, **kwargs):
     return super(TestCreateDisjointTransactions, self).GetPatches(
@@ -1523,6 +1533,7 @@ class BaseSubmitPoolTestCase(MoxBase):
   def setUp(self):
     self.pool_mock = self.StartPatcher(MockValidationPool(self.manager))
     self.patch_mock = self.StartPatcher(MockPatchSeries())
+    self._patch_factory = patch_unittest.MockPatchFactory(self.patch_mock)
     self.PatchObject(gerrit.GerritHelper, 'QuerySingleRecord')
     # This is patched out for performance, not correctness.
     self.PatchObject(patch_series.PatchSeries, 'ReapplyChanges',

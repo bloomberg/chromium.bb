@@ -1263,14 +1263,31 @@ class MockPatchBase(cros_test_lib.MockTestCase):
   """Base test case with helper methods to generate mock patches."""
 
   def setUp(self):
-    self.patch_mock = None
+    self._patch_factory = MockPatchFactory()
+
+  def MockPatch(self, *args, **kwargs):
+    return self._patch_factory.MockPatch(*args, **kwargs)
+
+  def GetPatches(self, *args, **kwargs):
+    return self._patch_factory.GetPatches(*args, **kwargs)
+
+
+class MockPatchFactory(object):
+  """Helper class to create patches or series of them, for unit tests."""
+
+  def __init__(self, patch_mock=None):
+    """Constructor for factory.
+
+    patch_mock: Optional PatchMock instance.
+    """
+    self.patch_mock = patch_mock
     self._patch_counter = (itertools.count(1)).next
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
                 project='chromiumos/chromite',
                 remote=site_config.params.EXTERNAL_REMOTE,
                 tracking_branch='refs/heads/master', is_draft=False,
-                approvals=(), commit_message=None, mock_diff_status=None):
+                approvals=(), commit_message=None):
     """Helper function to create mock GerritPatch objects."""
     if change_id is None:
       change_id = self._patch_counter()
@@ -1309,10 +1326,6 @@ class MockPatchBase(cros_test_lib.MockTestCase):
     patch.total_fail_count = 3
     patch.commit_message = commit_message
 
-    if mock_diff_status is None:
-      mock_diff_status = {}
-    self.PatchObject(cros_patch.GerritPatch, 'GetDiffStatus',
-                     return_value=mock_diff_status)
     return patch
 
   def GetPatches(self, how_many=1, always_use_list=False, **kwargs):

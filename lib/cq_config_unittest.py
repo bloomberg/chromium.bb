@@ -14,18 +14,20 @@ import osutils
 from chromite.lib import constants
 from chromite.lib import cq_config
 from chromite.lib import git
+from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
 
-
 # pylint: disable=protected-access
-
 
 class ConfigFileTest(patch_unittest.MockPatchBase):
   """Tests for functions that read config information for a patch."""
 
   def _GetPatch(self, affected_files):
-    return self.MockPatch(
-        mock_diff_status={path: 'M' for path in affected_files})
+    p = self.MockPatch()
+    mock_diff_status = {path: 'M' for path in affected_files}
+    self.PatchObject(cros_patch.GerritPatch, 'GetDiffStatus',
+                     return_value=mock_diff_status)
+    return p
 
   def testAffectedSubdir(self):
     """Test AffectedSubdir."""
@@ -226,7 +228,9 @@ class CQConfigParserTest(patch_unittest.MockPatchBase):
           '[GENERAL]\npre-cq-configs: lakitu-pre-cq\n',
           file_rel_path=os.path.join('test', 'test-copy.py'))
       diff_dict = {f: 'M' for f in (f_1, f_2, f_3, f_4)}
-      change = self.MockPatch(mock_diff_status=diff_dict)
+      change = self.MockPatch()
+      self.PatchObject(cros_patch.GerritPatch, 'GetDiffStatus',
+                       return_value=diff_dict)
       parser = self.CreateCQConfigParser(
           change=change, common_config_file=root_ini, checkout=mock_checkout)
       union_options = parser.GetUnionedOptionsFromSubConfigs(
