@@ -97,6 +97,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
                     Pointer pointer,
                     const ui::LocatedEvent& event);
 
+  void StartDragAndDropHostDragAfterLongPress(Pointer pointer);
+  void TryStartDragAndDropHostDrag(Pointer pointer,
+                                   const gfx::Point& grid_location);
+
   // Called from AppListItemView when it receives a drag event. Returns true
   // if the drag is still happening.
   bool UpdateDragFromItem(Pointer pointer, const ui::LocatedEvent& event);
