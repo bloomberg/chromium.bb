@@ -7,6 +7,9 @@
 var NormalizedDragData;
 
 cr.define('bookmarks', function() {
+  /** @const {number} */
+  var DRAG_THRESHOLD = 15;
+
   /**
    * @param {BookmarkElement} element
    * @return {boolean}
@@ -341,6 +344,12 @@ cr.define('bookmarks', function() {
      * @private {BookmarkElement}
      */
     this.internalDragElement_ = null;
+
+    /**
+     * Where the internal drag started.
+     * @private {?{x: number, y: number}}
+     */
+    this.mouseDownPos_ = null;
   }
 
   DNDManager.prototype = {
@@ -395,6 +404,10 @@ cr.define('bookmarks', function() {
         return;
 
       this.internalDragElement_ = dragElement;
+      this.mouseDownPos_ = {
+        x: e.clientX,
+        y: e.clientY,
+      };
     },
 
     /**
@@ -420,6 +433,12 @@ cr.define('bookmarks', function() {
       // This can't be done in mousedown because the user may be shift-clicking
       // an item.
       if (!this.dragInfo_.isDragValid()) {
+        // If the mouse hasn't been moved far enough, defer to next mousemove.
+        if (Math.abs(this.mouseDownPos_.x - e.clientX) < DRAG_THRESHOLD &&
+            Math.abs(this.mouseDownPos_.y - e.clientY) < DRAG_THRESHOLD) {
+          return;
+        }
+
         var dragData = this.calculateDragData_();
         if (!dragData) {
           this.clearDragData_();
@@ -597,6 +616,7 @@ cr.define('bookmarks', function() {
     clearDragData_: function() {
       this.dndChip.hide();
       this.internalDragElement_ = null;
+      this.mouseDownPos_ = null;
 
       // Defer the clearing of the data so that the bookmark manager API's drop
       // event doesn't clear the drop data before the web drop event has a

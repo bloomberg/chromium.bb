@@ -66,7 +66,7 @@ suite('drag and drop', function() {
 
   function startInternalDrag(dragElement) {
     MockInteractions.down(dragElement);
-    move(dragElement);
+    move(dragElement, MockInteractions.topLeftOfNode(dragElement));
   }
 
   function move(target, dest) {
@@ -582,5 +582,16 @@ suite('drag and drop', function() {
 
     MockInteractions.up(dragElement);
     assertFalse(dndChip.showing_);
+  });
+
+  test('drag starts after minimal move distance', function() {
+    var dragElement = getListItem('13');
+
+    MockInteractions.down(dragElement);
+    move(dragElement);
+    assertFalse(dndManager.dragInfo_.isDragValid());
+
+    move(dragElement, MockInteractions.topLeftOfNode(dragElement));
+    assertTrue(dndManager.dragInfo_.isDragValid());
   });
 });
