@@ -58,7 +58,7 @@ NSString* const kUseCaseKey = @"useCase";
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  self.title = @"Showcase";
+  self.title = @"SC";
   self.tableView.tableFooterView = [[UIView alloc] init];
   self.tableView.rowHeight = 70.0;
   self.tableView.accessibilityIdentifier = @"showcase_home_collection";
