@@ -49,7 +49,7 @@ def get_grd_outputs(options):
 
   # Get the grit outputs.
   grit_path = os.path.join(os.getcwd(), os.path.dirname(options.grit_info))
-  sys.path.append(grit_path)
+  sys.path.insert(1, grit_path)
   import grit_info
   outputs = grit_info.Outputs(options.grd_input, grit_defines,
                               'GRIT_DIR/../gritsettings/resource_ids')

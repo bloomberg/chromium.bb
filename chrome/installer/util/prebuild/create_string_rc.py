@@ -38,8 +38,8 @@ import sys
 from xml import sax
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(BASEDIR, '../../../../tools/grit'))
-sys.path.append(os.path.join(BASEDIR, '../../../../tools/python'))
+sys.path.insert(1, os.path.join(BASEDIR, '../../../../tools/grit'))
+sys.path.insert(2, os.path.join(BASEDIR, '../../../../tools/python'))
 
 from grit.extern import tclib
 
