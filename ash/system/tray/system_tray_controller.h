@@ -30,7 +30,9 @@ class ASH_EXPORT SystemTrayController
   ~SystemTrayController() override;
 
   base::HourClockType hour_clock_type() const { return hour_clock_type_; }
-  const std::string& enterprise_domain() const { return enterprise_domain_; }
+  const std::string& enterprise_display_domain() const {
+    return enterprise_display_domain_;
+  }
   bool active_directory_managed() const { return active_directory_managed_; }
 
   // Wrappers around the mojom::SystemTrayClient interface.
@@ -70,8 +72,8 @@ class ASH_EXPORT SystemTrayController
   void SetPrimaryTrayEnabled(bool enabled) override;
   void SetPrimaryTrayVisible(bool visible) override;
   void SetUse24HourClock(bool use_24_hour) override;
-  void SetEnterpriseDomain(const std::string& enterprise_domain,
-                           bool active_directory_managed) override;
+  void SetEnterpriseDisplayDomain(const std::string& enterprise_display_domain,
+                                  bool active_directory_managed) override;
   void SetPerformanceTracingIconVisible(bool visible) override;
   void ShowUpdateIcon(mojom::UpdateSeverity severity,
                       bool factory_reset_required,
@@ -90,7 +92,7 @@ class ASH_EXPORT SystemTrayController
 
   // The domain name of the organization that manages the device. Empty if the
   // device is not enterprise enrolled or if it uses Active Directory.
-  std::string enterprise_domain_;
+  std::string enterprise_display_domain_;
 
   // Whether this is an Active Directory managed enterprise device.
   bool active_directory_managed_ = false;

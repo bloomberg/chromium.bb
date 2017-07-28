@@ -682,7 +682,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           break;
 
         case ScreenMode.SAML_INTERSTITIAL:
-          $('saml-interstitial').domain = data.enterpriseDomain;
+          $('saml-interstitial').domain = data.enterpriseDisplayDomain;
           if (this.loading)
             this.loading = false;
           // This event is for the browser tests.
@@ -1147,8 +1147,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.loading = true;
       this.startLoadingTimer_();
       var offlineLogin = $('offline-gaia');
-      if ('enterpriseDomain' in params)
-        offlineLogin.domain = params['enterpriseDomain'];
+      if ('enterpriseDisplayDomain' in params)
+        offlineLogin.domain = params['enterpriseDisplayDomain'];
       if ('emailDomain' in params)
         offlineLogin.emailDomain = '@' + params['emailDomain'];
       offlineLogin.setEmail(params.email);

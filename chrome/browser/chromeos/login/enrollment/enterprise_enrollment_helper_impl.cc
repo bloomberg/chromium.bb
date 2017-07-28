@@ -150,9 +150,9 @@ void EnterpriseEnrollmentHelperImpl::DoEnroll(const std::string& token) {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   // Re-enrollment is not implemented for Active Directory.
   if (connector->IsCloudManaged() &&
-      connector->GetEnterpriseDomain() != enrolling_user_domain_) {
+      connector->GetEnterpriseEnrollmentDomain() != enrolling_user_domain_) {
     LOG(ERROR) << "Trying to re-enroll to a different domain than "
-               << connector->GetEnterpriseDomain();
+               << connector->GetEnterpriseEnrollmentDomain();
     UMA(policy::kMetricEnrollmentPrecheckDomainMismatch);
     if (oauth_status_ != OAUTH_NOT_STARTED)
       oauth_status_ = OAUTH_FINISHED;

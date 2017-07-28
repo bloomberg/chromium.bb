@@ -148,7 +148,7 @@ bool CanChangeChannel(Profile* profile) {
       domain = email.substr(email.find('@') + 1);
     policy::BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
-    return domain == connector->GetEnterpriseDomain();
+    return domain == connector->GetEnterpriseEnrollmentDomain();
   }
 
   // On non-managed machines, only the local owner can change the channel.

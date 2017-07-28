@@ -126,7 +126,7 @@ PublicAccountUserDetails::PublicAccountUserDetails() : learn_more_(nullptr) {
   display_name = kDisplayNameMark[0] + display_name + kDisplayNameMark[0];
   // Retrieve the domain managing the device and wrap it with markers.
   base::string16 domain = base::UTF8ToUTF16(
-      Shell::Get()->system_tray_controller()->enterprise_domain());
+      Shell::Get()->system_tray_controller()->enterprise_display_domain());
   base::RemoveChars(domain, kDisplayNameMark, &domain);
   base::i18n::WrapStringWithLTRFormatting(&domain);
   // Retrieve the label text, inserting the display name and domain.
