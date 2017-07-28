@@ -64,7 +64,7 @@ void MasterHostScanCache::SetHostScanResult(const HostScanCacheEntry& entry) {
   StartTimer(entry.tether_network_guid);
 }
 
-bool MasterHostScanCache::RemoveHostScanResult(
+bool MasterHostScanCache::RemoveHostScanResultImpl(
     const std::string& tether_network_guid) {
   DCHECK(!tether_network_guid.empty());
 

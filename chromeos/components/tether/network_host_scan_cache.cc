@@ -54,7 +54,7 @@ void NetworkHostScanCache::SetHostScanResult(const HostScanCacheEntry& entry) {
   }
 }
 
-bool NetworkHostScanCache::RemoveHostScanResult(
+bool NetworkHostScanCache::RemoveHostScanResultImpl(
     const std::string& tether_network_guid) {
   DCHECK(!tether_network_guid.empty());
   return network_state_handler_->RemoveTetherNetworkState(tether_network_guid);

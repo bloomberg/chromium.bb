@@ -37,13 +37,16 @@ class NetworkHostScanCache : public HostScanCache,
 
   // HostScanCache:
   void SetHostScanResult(const HostScanCacheEntry& entry) override;
-  bool RemoveHostScanResult(const std::string& tether_network_guid) override;
   bool ExistsInCache(const std::string& tether_network_guid) override;
   std::unordered_set<std::string> GetTetherGuidsInCache() override;
   bool DoesHostRequireSetup(const std::string& tether_network_guid) override;
 
   // TetherHostResponseRecorder::Observer:
   void OnPreviouslyConnectedHostIdsChanged() override;
+
+ protected:
+  bool RemoveHostScanResultImpl(
+      const std::string& tether_network_guid) override;
 
  private:
   friend class NetworkHostScanCacheTest;
