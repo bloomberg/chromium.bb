@@ -1538,8 +1538,27 @@ cr.define('login', function() {
 
     /**
      * Focuses on input element.
+     * @param {boolean?} opt_ensureFocus If true, keep trying to focus until a
+     * focus change event is raised.
      */
-    focusInput: function() {
+    focusInput: function(opt_ensureFocus) {
+      // If |opt_ensureFocus| is set, keep setting the focus until we get a
+      // global focus change event. Sometimes focus requests are ignored while
+      // loading the page. See crbug.com/725622.
+      if (opt_ensureFocus) {
+        var INTERVAL_REPEAT_MS = 10
+        var input = this.mainInput;
+        var intervalId = setInterval(function() {
+          input.focus();
+        }, INTERVAL_REPEAT_MS);
+        window.addEventListener('focus', function refocus() {
+          if (document.activeElement != input)
+            return;
+          window.removeEventListener('focus', refocus);
+          window.clearInterval(intervalId);
+        }, true);
+      }
+
       // Move tabIndex from the whole pod to the main input.
       // Note: the |mainInput| can be the pod itself.
       this.tabIndex = -1;
@@ -1637,8 +1656,10 @@ cr.define('login', function() {
       this.updateInput_();
       this.classList.toggle('signing-in', false);
       if (takeFocus) {
-        if (!this.multiProfilesPolicyApplied)
-          this.focusInput();  // This will set a custom tab order.
+        if (!this.multiProfilesPolicyApplied) {
+          // This will set a custom tab order.
+          this.focusInput(true /*opt_ensureFocus*/);
+        }
       }
       else
         this.resetTabOrder();
