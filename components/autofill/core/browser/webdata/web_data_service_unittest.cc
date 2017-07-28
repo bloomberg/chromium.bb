@@ -12,14 +12,13 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_country.h"
@@ -59,8 +58,6 @@ class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
       std::unique_ptr<WDTypedResult> result) {
     handle_ = handle;
     result_ = std::move(static_cast<WDResult<T>*>(result.get())->GetValue());
-
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   WebDataServiceBase::Handle handle() { return handle_; }
@@ -95,23 +92,25 @@ class WebDataServiceTest : public testing::Test {
  public:
   WebDataServiceTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        db_thread_("DBThread") {}
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
  protected:
   void SetUp() override {
-    db_thread_.Start();
-
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath path = temp_dir_.GetPath().AppendASCII("TestWebDB");
 
+    // TODO(pkasting): http://crbug.com/740773 This should likely be sequenced,
+    // not single-threaded; it's also possible the various uses of this below
+    // should each use their own sequences instead of sharing this one.
+    auto db_thread =
+        base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()});
     wdbs_ = new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
-                                   db_thread_.task_runner());
+                                   db_thread);
     wdbs_->AddTable(base::WrapUnique(new AutofillTable));
     wdbs_->LoadDatabase();
 
     wds_ = new AutofillWebDataService(
-        wdbs_, base::ThreadTaskRunnerHandle::Get(), db_thread_.task_runner(),
+        wdbs_, base::ThreadTaskRunnerHandle::Get(), db_thread,
         WebDataServiceBase::ProfileErrorCallback());
     wds_->Init();
   }
@@ -119,25 +118,12 @@ class WebDataServiceTest : public testing::Test {
   void TearDown() override {
     wds_->ShutdownOnUIThread();
     wdbs_->ShutdownDatabase();
-    WaitForDatabaseThread();
     wds_ = NULL;
     wdbs_ = NULL;
-
-    base::RunLoop().RunUntilIdle();
-    db_thread_.Stop();
-  }
-
-  void WaitForDatabaseThread() {
-    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-    wds_->GetDBTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
-    done.Wait();
+    scoped_task_environment_.RunUntilIdle();
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::Thread db_thread_;
   base::FilePath profile_dir_;
   scoped_refptr<AutofillWebDataService> wds_;
   scoped_refptr<WebDatabaseService> wdbs_;
@@ -167,7 +153,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
         &AutofillWebDataService::AddObserver;
     wds_->GetDBTaskRunner()->PostTask(
         FROM_HERE, base::Bind(add_observer_func, wds_, &observer_));
-    WaitForDatabaseThread();
+    base::TaskScheduler::GetInstance()->FlushForTesting();
   }
 
   virtual void TearDown() {
@@ -224,10 +210,7 @@ TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
   static const int limit = 10;
   handle = wds_->GetFormValuesForElementName(
       name1_, base::string16(), limit, &consumer);
-
-  // The message loop will exit when the consumer is called.
-  base::RunLoop().Run();
-
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(1U, consumer.result().size());
   EXPECT_EQ(value1_, consumer.result()[0]);
@@ -304,7 +287,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileAdd) {
   AutofillWebDataServiceConsumer<std::vector<std::unique_ptr<AutofillProfile>>>
       consumer;
   WebDataServiceBase::Handle handle = wds_->GetAutofillProfiles(&consumer);
-  base::RunLoop().Run();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(1U, consumer.result().size());
   EXPECT_EQ(profile, *consumer.result()[0]);
@@ -323,7 +306,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
   AutofillWebDataServiceConsumer<std::vector<std::unique_ptr<AutofillProfile>>>
       consumer;
   WebDataServiceBase::Handle handle = wds_->GetAutofillProfiles(&consumer);
-  base::RunLoop().Run();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(1U, consumer.result().size());
   EXPECT_EQ(profile, *consumer.result()[0]);
@@ -342,7 +325,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
   AutofillWebDataServiceConsumer<std::vector<std::unique_ptr<AutofillProfile>>>
       consumer2;
   WebDataServiceBase::Handle handle2 = wds_->GetAutofillProfiles(&consumer2);
-  base::RunLoop().Run();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(handle2, consumer2.handle());
   ASSERT_EQ(0U, consumer2.result().size());
 }
@@ -368,7 +351,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   AutofillWebDataServiceConsumer<std::vector<std::unique_ptr<AutofillProfile>>>
       consumer;
   WebDataServiceBase::Handle handle = wds_->GetAutofillProfiles(&consumer);
-  base::RunLoop().Run();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(2U, consumer.result().size());
   EXPECT_EQ(profile2, *consumer.result()[0]);
@@ -390,7 +373,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   AutofillWebDataServiceConsumer<std::vector<std::unique_ptr<AutofillProfile>>>
       consumer2;
   WebDataServiceBase::Handle handle2 = wds_->GetAutofillProfiles(&consumer2);
-  base::RunLoop().Run();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(handle2, consumer2.handle());
   ASSERT_EQ(2U, consumer2.result().size());
   EXPECT_EQ(profile2_changed, *consumer2.result()[0]);
@@ -401,13 +384,12 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
 TEST_F(WebDataServiceAutofillTest, CreditAdd) {
   CreditCard card;
   wds_->AddCreditCard(card);
-  WaitForDatabaseThread();
 
   // Check that it was added.
   AutofillWebDataServiceConsumer<std::vector<std::unique_ptr<CreditCard>>>
       consumer;
   WebDataServiceBase::Handle handle = wds_->GetCreditCards(&consumer);
-  base::RunLoop().Run();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(1U, consumer.result().size());
   EXPECT_EQ(card, *consumer.result()[0]);
@@ -418,26 +400,24 @@ TEST_F(WebDataServiceAutofillTest, CreditCardRemove) {
 
   // Add a credit card.
   wds_->AddCreditCard(credit_card);
-  WaitForDatabaseThread();
 
   // Check that it was added.
   AutofillWebDataServiceConsumer<std::vector<std::unique_ptr<CreditCard>>>
       consumer;
   WebDataServiceBase::Handle handle = wds_->GetCreditCards(&consumer);
-  base::RunLoop().Run();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(1U, consumer.result().size());
   EXPECT_EQ(credit_card, *consumer.result()[0]);
 
   // Remove the credit card.
   wds_->RemoveCreditCard(credit_card.guid());
-  WaitForDatabaseThread();
 
   // Check that it was removed.
   AutofillWebDataServiceConsumer<std::vector<std::unique_ptr<CreditCard>>>
       consumer2;
   WebDataServiceBase::Handle handle2 = wds_->GetCreditCards(&consumer2);
-  base::RunLoop().Run();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(handle2, consumer2.handle());
   ASSERT_EQ(0U, consumer2.result().size());
 }
@@ -452,13 +432,12 @@ TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
 
   wds_->AddCreditCard(card1);
   wds_->AddCreditCard(card2);
-  WaitForDatabaseThread();
 
   // Check that they got added.
   AutofillWebDataServiceConsumer<std::vector<std::unique_ptr<CreditCard>>>
       consumer;
   WebDataServiceBase::Handle handle = wds_->GetCreditCards(&consumer);
-  base::RunLoop().Run();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(2U, consumer.result().size());
   EXPECT_EQ(card2, *consumer.result()[0]);
@@ -468,13 +447,12 @@ TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
   card2_changed.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Bill"));
 
   wds_->UpdateCreditCard(card2_changed);
-  WaitForDatabaseThread();
 
   // Check that the updates were made.
   AutofillWebDataServiceConsumer<std::vector<std::unique_ptr<CreditCard>>>
       consumer2;
   WebDataServiceBase::Handle handle2 = wds_->GetCreditCards(&consumer2);
-  base::RunLoop().Run();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(handle2, consumer2.handle());
   ASSERT_EQ(2U, consumer2.result().size());
   EXPECT_NE(card2, *consumer2.result()[0]);
@@ -495,7 +473,7 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
       profile_consumer;
   WebDataServiceBase::Handle handle =
       wds_->GetAutofillProfiles(&profile_consumer);
-  base::RunLoop().Run();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(handle, profile_consumer.handle());
   ASSERT_EQ(1U, profile_consumer.result().size());
   EXPECT_EQ(profile, *profile_consumer.result()[0]);
@@ -503,13 +481,12 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
   // Add a credit card.
   CreditCard credit_card;
   wds_->AddCreditCard(credit_card);
-  WaitForDatabaseThread();
 
   // Check that it was added.
   AutofillWebDataServiceConsumer<std::vector<std::unique_ptr<CreditCard>>>
       card_consumer;
   handle = wds_->GetCreditCards(&card_consumer);
-  base::RunLoop().Run();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(handle, card_consumer.handle());
   ASSERT_EQ(1U, card_consumer.result().size());
   EXPECT_EQ(credit_card, *card_consumer.result()[0]);
@@ -523,14 +500,13 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
   // Remove the profile using time range of "all time".
   wds_->RemoveAutofillDataModifiedBetween(Time(), Time());
   done_event_.TimedWait(test_timeout_);
-  WaitForDatabaseThread();
 
   // Check that the profile was removed.
   AutofillWebDataServiceConsumer<std::vector<std::unique_ptr<AutofillProfile>>>
       profile_consumer2;
   WebDataServiceBase::Handle handle2 =
       wds_->GetAutofillProfiles(&profile_consumer2);
-  base::RunLoop().Run();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(handle2, profile_consumer2.handle());
   ASSERT_EQ(0U, profile_consumer2.result().size());
 
@@ -538,7 +514,7 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
   AutofillWebDataServiceConsumer<std::vector<std::unique_ptr<CreditCard>>>
       card_consumer2;
   handle2 = wds_->GetCreditCards(&card_consumer2);
-  base::RunLoop().Run();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(handle2, card_consumer2.handle());
   ASSERT_EQ(0U, card_consumer2.result().size());
 }

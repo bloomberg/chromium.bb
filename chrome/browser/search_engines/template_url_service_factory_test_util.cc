@@ -9,6 +9,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/test/test_utils.h"
 
 TemplateURLServiceFactoryTestUtil::TemplateURLServiceFactoryTestUtil(
     TestingProfile* profile)
@@ -21,12 +22,12 @@ TemplateURLServiceFactoryTestUtil::TemplateURLServiceFactoryTestUtil(
 
 TemplateURLServiceFactoryTestUtil::~TemplateURLServiceFactoryTestUtil() {
   // Flush the message loop to make application verifiers happy.
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 void TemplateURLServiceFactoryTestUtil::VerifyLoad() {
   model()->Load();
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 TemplateURLService* TemplateURLServiceFactoryTestUtil::model() const {

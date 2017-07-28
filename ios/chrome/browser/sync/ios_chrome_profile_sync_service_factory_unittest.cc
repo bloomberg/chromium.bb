@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
@@ -29,6 +30,10 @@ class IOSChromeProfileSyncServiceFactoryTest : public testing::Test {
   void SetUp() override {
     // Some services will only be created if there is a WebDataService.
     chrome_browser_state_->CreateWebDataService();
+  }
+
+  void TearDown() override {
+    base::TaskScheduler::GetInstance()->FlushForTesting();
   }
 
  protected:

@@ -23,7 +23,6 @@
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace {
 
@@ -111,24 +110,6 @@ class AutofillCounterTest : public InProcessBrowserTest {
   void ClearCreditCardsAndAddresses() {
     web_data_service_->RemoveAutofillDataModifiedBetween(
         base::Time(), base::Time::Max());
-  }
-
-  void CallbackFromDBThread() {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&base::RunLoop::Quit,
-                       base::Unretained(run_loop_.get())));
-  }
-
-  void WaitForDBThread() {
-    run_loop_.reset(new base::RunLoop());
-
-    content::BrowserThread::PostTask(
-        content::BrowserThread::DB, FROM_HERE,
-        base::BindOnce(&AutofillCounterTest::CallbackFromDBThread,
-                       base::Unretained(this)));
-
-    run_loop_->Run();
   }
 
   // Other utils ---------------------------------------------------------------
@@ -350,20 +331,20 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, TimeRanges) {
   AddAutocompleteSuggestion("email", "example@example.com");
   AddCreditCard("0000-0000-0000-0000", "1", "2015", "1");
   AddAddress("John", "Doe", "Main Street 12345");
-  WaitForDBThread();
+  base::TaskScheduler::GetInstance()->FlushForTesting();
 
   const base::Time kTime2 = kTime1 + base::TimeDelta::FromSeconds(10);
   test_clock.SetNow(kTime2);
   AddCreditCard("0123-4567-8910-1112", "10", "2015", "1");
   AddAddress("Jane", "Smith", "Main Street 12346");
   AddAddress("John", "Smith", "Side Street 47");
-  WaitForDBThread();
+  base::TaskScheduler::GetInstance()->FlushForTesting();
 
   const base::Time kTime3 = kTime2 + base::TimeDelta::FromSeconds(10);
   test_clock.SetNow(kTime3);
   AddAutocompleteSuggestion("tel", "+987654321");
   AddCreditCard("1211-1098-7654-3210", "10", "2030", "1");
-  WaitForDBThread();
+  base::TaskScheduler::GetInstance()->FlushForTesting();
 
   // Test the results for different starting points.
   struct TestCase {
