@@ -46,6 +46,8 @@ int32_t cros_gralloc_buffer::decrease_refcount()
 
 int32_t cros_gralloc_buffer::lock(uint64_t flags, uint8_t *addr[DRV_MAX_PLANES])
 {
+	memset(addr, 0, DRV_MAX_PLANES * sizeof(*addr));
+
 	/*
 	 * Gralloc consumers don't support more than one kernel buffer per buffer object yet, so
 	 * just use the first kernel buffer.
