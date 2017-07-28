@@ -43,7 +43,7 @@ class StorageInfoProvider : public SystemInfoProvider {
   void PrepareQueryOnUIThread() override;
   void InitializeProvider(const base::Closure& do_query_info_callback) override;
 
-  virtual double GetStorageFreeSpaceFromTransientIdAsync(
+  virtual double GetStorageFreeSpaceFromTransientIdOnFileThread(
       const std::string& transient_id);
 
   const StorageUnitInfoList& storage_unit_info_list() const { return info_; }
