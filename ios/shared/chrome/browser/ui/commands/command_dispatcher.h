@@ -7,9 +7,14 @@
 
 #import <Foundation/Foundation.h>
 
+@protocol MetricsRecorder;
+
 // CommandDispatcher allows coordinators to register as command handlers for
 // specific selectors.  Other objects can call these methods on the dispatcher,
-// which in turn will forward the call to the registered handler.
+// which in turn will forward the call to the registered handler. In addition,
+// coordinators can register MetricsRecorders with selectors so that when a
+// a selector is invoked on the dispatcher, the MetricsRecorder is also
+// notified.
 @interface CommandDispatcher : NSObject
 
 // Registers the given |target| to receive forwarded messages for the given
@@ -31,6 +36,15 @@
 
 // Removes all forwarding registrations for the given |target|.
 - (void)stopDispatchingToTarget:(id)target;
+
+// Registers the given |recorder| to be notified when |selector| is invoked
+// on the dispatcher.
+- (void)registerMetricsRecorder:(id<MetricsRecorder>)recorder
+                    forSelector:(SEL)selector;
+
+// Deregisters |selector| from notifying its associated MetricsRecorder when
+// |selector| is invoked on the dispatcher.
+- (void)deregisterMetricsRecordingForSelector:(SEL)selector;
 
 @end
 
