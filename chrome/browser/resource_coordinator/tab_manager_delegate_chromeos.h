@@ -74,8 +74,7 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
                          aura::Window* lost_active) override;
 
   // Kills a process on memory pressure.
-  void LowMemoryKill(const TabStatsList& tab_stats,
-                     TabManager::DiscardTabCondition condition);
+  void LowMemoryKill(TabManager::DiscardTabCondition condition);
 
   // Returns oom_score_adj of a process if the score is cached by |this|.
   // If couldn't find the score in the cache, returns -1001 since the valid
@@ -142,9 +141,9 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   void OnFocusTabScoreAdjustmentTimeout();
 
   // Kills a process after getting all info of tabs and apps.
-  void LowMemoryKillImpl(const TabStatsList& tab_list,
-                         TabManager::DiscardTabCondition condition,
-                         std::vector<arc::ArcProcess> arc_processes);
+  void LowMemoryKillImpl(TabManager::DiscardTabCondition condition,
+                         const TabStatsList& tab_list,
+                         const std::vector<arc::ArcProcess>& arc_processes);
 
   // Public interface to adjust OOM scores.
   void AdjustOomPriorities(const TabStatsList& tab_list,

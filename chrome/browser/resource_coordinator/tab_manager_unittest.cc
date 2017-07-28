@@ -329,7 +329,7 @@ TEST_F(TabManagerTest, DiscardWebContentsAt) {
   TabStripModel tabstrip(&delegate, profile());
   tabstrip.AddObserver(&tab_manager);
 
-  TabManager::BrowserInfo browser_info;
+  BrowserInfo browser_info;
   browser_info.tab_strip_model = &tabstrip;
   browser_info.window_is_minimized = false;
   browser_info.browser_is_app = false;
@@ -551,7 +551,7 @@ TEST_F(TabManagerTest, ActivateTabResetPurgeState) {
   TabStripModel tabstrip(&delegate, profile());
   tabstrip.AddObserver(&tab_manager);
 
-  TabManager::BrowserInfo browser_info;
+  BrowserInfo browser_info;
   browser_info.tab_strip_model = &tabstrip;
   browser_info.window_is_minimized = false;
   browser_info.browser_is_app = false;
@@ -612,13 +612,13 @@ TEST_F(TabManagerTest, GetUnsortedTabStatsIsInVisibleWindow) {
   // Add the 2 TabStripModels to the TabManager.
   // The window for |tab_strip1| is visible while the window for |tab_strip2| is
   // minimized.
-  TabManager::BrowserInfo browser_info1;
+  BrowserInfo browser_info1;
   browser_info1.tab_strip_model = &tab_strip1;
   browser_info1.window_is_minimized = false;
   browser_info1.browser_is_app = false;
   tab_manager.test_browser_info_list_.push_back(browser_info1);
 
-  TabManager::BrowserInfo browser_info2;
+  BrowserInfo browser_info2;
   browser_info2.tab_strip_model = &tab_strip2;
   browser_info2.window_is_minimized = true;
   browser_info2.browser_is_app = false;
@@ -669,13 +669,13 @@ TEST_F(TabManagerTest, DiscardTabWithNonVisibleTabs) {
   // Add the 2 TabStripModels to the TabManager.
   // The window for |tab_strip1| is visible while the window for |tab_strip2|
   // is minimized.
-  TabManager::BrowserInfo browser_info1;
+  BrowserInfo browser_info1;
   browser_info1.tab_strip_model = &tab_strip1;
   browser_info1.window_is_minimized = false;
   browser_info1.browser_is_app = false;
   tab_manager.test_browser_info_list_.push_back(browser_info1);
 
-  TabManager::BrowserInfo browser_info2;
+  BrowserInfo browser_info2;
   browser_info2.tab_strip_model = &tab_strip2;
   browser_info2.window_is_minimized = true;
   browser_info2.browser_is_app = false;
