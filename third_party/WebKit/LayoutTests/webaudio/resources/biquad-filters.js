@@ -349,7 +349,7 @@ function filterData(filterCoef, signal, len) {
 
 // Map the filter type name to a function that computes the filter coefficents
 // for the given filter type.
-var filterCreatorFunction = {
+let filterCreatorFunction = {
   'lowpass': createLowpassFilter,
   'highpass': createHighpassFilter,
   'bandpass': createBandpassFilter,
@@ -360,7 +360,7 @@ var filterCreatorFunction = {
   'allpass': createAllpassFilter
 };
 
-var filterTypeName = {
+let filterTypeName = {
   'lowpass': 'Lowpass filter',
   'highpass': 'Highpass filter',
   'bandpass': 'Bandpass filter',

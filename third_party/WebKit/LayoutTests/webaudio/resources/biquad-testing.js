@@ -1,32 +1,32 @@
 // Globals, to make testing and debugging easier.
-var context;
-var filter;
-var signal;
-var renderedBuffer;
-var renderedData;
+let context;
+let filter;
+let signal;
+let renderedBuffer;
+let renderedData;
 
-var sampleRate = 44100.0;
-var pulseLengthFrames = .1 * sampleRate;
+let sampleRate = 44100.0;
+let pulseLengthFrames = .1 * sampleRate;
 
 // Maximum allowed error for the test to succeed.  Experimentally determined.
-var maxAllowedError = 5.9e-8;
+let maxAllowedError = 5.9e-8;
 
 // This must be large enough so that the filtered result is
 // essentially zero.  See comments for createTestAndRun.
-var timeStep = .1;
+let timeStep = .1;
 
 // Maximum number of filters we can process (mostly for setting the
 // render length correctly.)
-var maxFilters = 5;
+let maxFilters = 5;
 
 // How long to render.  Must be long enough for all of the filters we
 // want to test.
-var renderLengthSeconds = timeStep * (maxFilters + 1);
+let renderLengthSeconds = timeStep * (maxFilters + 1);
 
-var renderLengthSamples = Math.round(renderLengthSeconds * sampleRate);
+let renderLengthSamples = Math.round(renderLengthSeconds * sampleRate);
 
 // Number of filters that will be processed.
-var nFilters;
+let nFilters;
 
 function createImpulseBuffer(context, length) {
   let impulse = context.createBuffer(1, length, context.sampleRate);

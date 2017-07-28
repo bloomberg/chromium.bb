@@ -1,8 +1,8 @@
-var defaultSampleRate = 44100.0;
-var lengthInSeconds = 1;
+let defaultSampleRate = 44100.0;
+let lengthInSeconds = 1;
 
-var context = 0;
-var bufferLoader = 0;
+let context = 0;
+let bufferLoader = 0;
 
 // Run test by loading the file specified by |url|.  An optional sample rate can
 // be given to select a context with a different sample rate.  The default value

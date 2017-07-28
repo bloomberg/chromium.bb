@@ -1,8 +1,8 @@
-var sampleRate = 44100.0;
+let sampleRate = 44100.0;
 
-var renderLengthSeconds = 4;
-var delayTimeSeconds = 0.5;
-var toneLengthSeconds = 2;
+let renderLengthSeconds = 4;
+let delayTimeSeconds = 0.5;
+let toneLengthSeconds = 2;
 
 function createToneBuffer(context, frequency, numberOfCycles, sampleRate) {
   let duration = numberOfCycles / frequency;

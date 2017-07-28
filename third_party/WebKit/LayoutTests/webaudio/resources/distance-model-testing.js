@@ -1,24 +1,24 @@
-var sampleRate = 44100.0;
+let sampleRate = 44100.0;
 
 // How many panner nodes to create for the test.
-var nodesToCreate = 100;
+let nodesToCreate = 100;
 
 // Time step when each panner node starts.
-var timeStep = 0.001;
+let timeStep = 0.001;
 
 // Make sure we render long enough to get all of our nodes.
-var renderLengthSeconds = timeStep * (nodesToCreate + 1);
+let renderLengthSeconds = timeStep * (nodesToCreate + 1);
 
 // Length of an impulse signal.
-var pulseLengthFrames = Math.round(timeStep * sampleRate);
+let pulseLengthFrames = Math.round(timeStep * sampleRate);
 
 // Globals to make debugging a little easier.
-var context;
-var impulse;
-var bufferSource;
-var panner;
-var position;
-var time;
+let context;
+let impulse;
+let bufferSource;
+let panner;
+let position;
+let time;
 
 // For the record, these distance formulas were taken from the OpenAL
 // spec
@@ -57,7 +57,7 @@ function exponentialDistance(panner, x, y, z) {
 }
 
 // Map the distance model to the function that implements the model
-var distanceModelFunction = {
+let distanceModelFunction = {
   'linear': linearDistance,
   'inverse': inverseDistance,
   'exponential': exponentialDistance
