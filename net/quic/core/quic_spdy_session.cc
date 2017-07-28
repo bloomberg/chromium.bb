@@ -308,8 +308,7 @@ class QuicSpdySession::SpdyFramerVisitor
 
   void set_max_uncompressed_header_bytes(
       size_t set_max_uncompressed_header_bytes) {
-    header_list_.set_max_uncompressed_header_bytes(
-        set_max_uncompressed_header_bytes);
+    header_list_.set_max_header_list_size(set_max_uncompressed_header_bytes);
   }
 
  private:
@@ -334,6 +333,7 @@ QuicSpdySession::QuicSpdySession(QuicConnection* connection,
                                  QuicSession::Visitor* visitor,
                                  const QuicConfig& config)
     : QuicSession(connection, visitor, config),
+      max_inbound_header_list_size_(kDefaultMaxUncompressedHeaderSize),
       force_hol_blocking_(false),
       server_push_enabled_(true),
       stream_id_(kInvalidStreamId),
@@ -377,6 +377,14 @@ void QuicSpdySession::Initialize() {
   headers_stream_.reset(new QuicHeadersStream(this));
   DCHECK_EQ(kHeadersStreamId, headers_stream_->id());
   static_streams()[kHeadersStreamId] = headers_stream_.get();
+
+  if (FLAGS_quic_restart_flag_quic_header_list_size) {
+    QUIC_FLAG_COUNT_N(quic_restart_flag_quic_header_list_size, 1, 2);
+    set_max_uncompressed_header_bytes(max_inbound_header_list_size_);
+
+    // Limit HPACK buffering to 2x header list size limit.
+    set_max_decode_buffer_size_bytes(2 * max_inbound_header_list_size_);
+  }
 }
 
 void QuicSpdySession::OnStreamHeadersPriority(QuicStreamId stream_id,
@@ -596,7 +604,11 @@ void QuicSpdySession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   QuicSession::OnCryptoHandshakeEvent(event);
   if (FLAGS_quic_reloadable_flag_quic_send_max_header_list_size &&
       event == HANDSHAKE_CONFIRMED && config()->SupportMaxHeaderListSize()) {
-    SendMaxHeaderListSize(kDefaultMaxUncompressedHeaderSize);
+    if (FLAGS_quic_restart_flag_quic_header_list_size) {
+      SendMaxHeaderListSize(max_inbound_header_list_size_);
+    } else {
+      SendMaxHeaderListSize(kDefaultMaxUncompressedHeaderSize);
+    }
   }
 }
 
@@ -604,7 +616,7 @@ void QuicSpdySession::OnPromiseHeaderList(QuicStreamId stream_id,
                                           QuicStreamId promised_stream_id,
                                           size_t frame_len,
                                           const QuicHeaderList& header_list) {
-  string error = "OnPromiseHeaderList should be overriden in client code.";
+  string error = "OnPromiseHeaderList should be overridden in client code.";
   QUIC_BUG << error;
   connection()->CloseConnection(QUIC_INTERNAL_ERROR, error,
                                 ConnectionCloseBehavior::SILENT_CLOSE);
