@@ -47,7 +47,7 @@ class ResetSettingsHandler : public SettingsPageUIHandler {
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
   void OnJavascriptAllowed() override {}
-  void OnJavascriptDisallowed() override {}
+  void OnJavascriptDisallowed() override;
 
  protected:
   explicit ResetSettingsHandler(Profile* profile);
@@ -110,7 +110,8 @@ class ResetSettingsHandler : public SettingsPageUIHandler {
   // Contains Chrome brand code; empty for organic Chrome.
   std::string brandcode_;
 
-  base::WeakPtrFactory<ResetSettingsHandler> weak_ptr_factory_;
+  // Used to cancel callbacks when JavaScript becomes disallowed.
+  base::WeakPtrFactory<ResetSettingsHandler> callback_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResetSettingsHandler);
 };
