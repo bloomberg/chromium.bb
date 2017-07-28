@@ -1062,11 +1062,11 @@ void BoxBorderPainter::DrawDashedDottedBoxSideFromPath(
   // do the same thing as StrokeData::setupPaintDashPathEffect and should be
   // refactored to re-use that code. It would require
   // GraphicsContext::strokePath to take a length parameter.
-  float dash_length = draw_thickness;
+  float dash_length = thickness;
   float gap_length = dash_length;
   if (border_style == EBorderStyle::kDashed) {
-    dash_length *= StrokeData::DashLengthRatio(draw_thickness);
-    gap_length *= StrokeData::DashGapRatio(draw_thickness);
+    dash_length *= StrokeData::DashLengthRatio(thickness);
+    gap_length *= StrokeData::DashGapRatio(thickness);
   }
   float path_length = centerline_path.length();
   // Don't try to show dashes if we have less than 2 dashes + 2 gaps.
