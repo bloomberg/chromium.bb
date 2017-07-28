@@ -38,9 +38,11 @@
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#include "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/history/tab_history_popup_controller.h"
 #import "ios/chrome/browser/ui/image_util.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
@@ -508,6 +510,9 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     [_voiceSearchButton
         setAutoresizingMask:UIViewAutoresizingFlexibleBottomMargin |
                             UIViewAutoresizingFlexibleLeadingMargin()];
+    [_voiceSearchButton addTarget:self
+                           action:@selector(toolbarVoiceSearchButtonPressed:)
+                 forControlEvents:UIControlEventTouchUpInside];
 
     // Assign tags before calling -setUpButton, since only buttons with tags
     // have -chromeExecuteCommand added as a target.
@@ -1477,9 +1482,9 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
           ->GetVoiceSearchProvider()
           ->IsVoiceSearchEnabled()) {
     base::RecordAction(UserMetricsAction("MobileCustomRowVoiceSearch"));
-    GenericChromeCommand* command =
-        [[GenericChromeCommand alloc] initWithTag:IDC_VOICE_SEARCH];
-    [view chromeExecuteCommand:command];
+    StartVoiceSearchCommand* command =
+        [[StartVoiceSearchCommand alloc] initWithOriginView:view];
+    [self.dispatcher startVoiceSearch:command];
   }
 }
 
@@ -1519,6 +1524,17 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 
 - (void)cancelButtonPressed:(id)sender {
   [self cancelOmniboxEdit];
+}
+
+- (void)toolbarVoiceSearchButtonPressed:(id)sender {
+  if (ios::GetChromeBrowserProvider()
+          ->GetVoiceSearchProvider()
+          ->IsVoiceSearchEnabled()) {
+    UIView* view = base::mac::ObjCCastStrict<UIView>(sender);
+    StartVoiceSearchCommand* command =
+        [[StartVoiceSearchCommand alloc] initWithOriginView:view];
+    [self.dispatcher startVoiceSearch:command];
+  }
 }
 
 - (void)layoutCancelButton {

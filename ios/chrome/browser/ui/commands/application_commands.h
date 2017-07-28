@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 @class OpenNewTabCommand;
+@class StartVoiceSearchCommand;
 
 // This protocol groups commands that are part of ApplicationCommands, but
 // may also be forwarded directly to a settings navigation controller.
@@ -34,6 +35,9 @@
 // a new oen of those tabs. |newTabCommand|'s |incognito| property inidcates
 // the type of tab to open.
 - (void)switchModesAndOpenNewTab:(OpenNewTabCommand*)newTabCommand;
+
+// Starts a voice search on the current BVC.
+- (void)startVoiceSearch:(StartVoiceSearchCommand*)command;
 
 @end
 

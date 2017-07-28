@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
+@protocol ApplicationCommands;
 class AudioSessionController;
 @protocol VoiceSearchBar;
 class VoiceSearchController;
@@ -42,6 +43,12 @@ class VoiceSearchProvider {
 
   // Creates a new VoiceSearchBar.  Returns an autoreleased view.
   virtual UIView<VoiceSearchBar>* BuildVoiceSearchBar(CGRect frame) const;
+
+  // Creates a new VoiceSearchBar which uses |dispatcher| to send commands.
+  // Returns an autoreleased view.
+  virtual UIView<VoiceSearchBar>* BuildVoiceSearchBar(
+      CGRect frame,
+      id<ApplicationCommands> dispatcher) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VoiceSearchProvider);

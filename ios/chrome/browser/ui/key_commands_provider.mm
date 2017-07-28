@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#include "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -195,7 +196,10 @@
                    modifierFlags:UIKeyModifierCommand | UIKeyModifierShift
                            title:voiceSearchTitle
                           action:^{
-                            execute(IDC_VOICE_SEARCH);
+                            StartVoiceSearchCommand* command =
+                                [[StartVoiceSearchCommand alloc]
+                                    initWithOriginView:nil];
+                            [weakDispatcher startVoiceSearch:command];
                           }],
     ]];
   }

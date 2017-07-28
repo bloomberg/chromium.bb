@@ -110,6 +110,7 @@
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/commands/show_mail_composer_command.h"
+#import "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_presenter_impl.h"
@@ -1572,7 +1573,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   ProceduralBlock startVoiceSearchIfNecessaryBlock = ^void() {
     if (_startVoiceSearchAfterNewTabAnimation) {
       _startVoiceSearchAfterNewTabAnimation = NO;
-      [self startVoiceSearch];
+      [self startVoiceSearchWithOriginView:nil];
     }
   };
 
@@ -2355,7 +2356,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   CGRect frame = CGRectMake(0.0, y, width, kVoiceSearchBarHeight);
   _voiceSearchBar = ios::GetChromeBrowserProvider()
                         ->GetVoiceSearchProvider()
-                        ->BuildVoiceSearchBar(frame);
+                        ->BuildVoiceSearchBar(frame, self.dispatcher);
   [_voiceSearchBar setVoiceSearchBarDelegate:self];
   [_voiceSearchBar setHidden:YES];
   [_voiceSearchBar setAutoresizingMask:UIViewAutoresizingFlexibleTopMargin |
@@ -4223,13 +4224,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     case IDC_SHOW_READING_LIST:
       [self showReadingList];
       break;
-    case IDC_VOICE_SEARCH:
+    case IDC_VOICE_SEARCH: {
       // If the voice search command is coming from a UIView sender, store it
       // before sending the command up the responder chain.
-      if ([sender isKindOfClass:[UIView class]])
-        _voiceSearchButton = sender;
-      [super chromeExecuteCommand:sender];
-      break;
+      StartVoiceSearchCommand* command = [[StartVoiceSearchCommand alloc]
+          initWithOriginView:base::mac::ObjCCast<UIView>(sender)];
+      [self.dispatcher startVoiceSearch:command];
+    } break;
     default:
       // Unknown commands get sent up the responder chain.
       [super chromeExecuteCommand:sender];
@@ -4542,7 +4543,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 #endif  // !defined(NDEBUG)
 
-- (void)startVoiceSearch {
+- (void)startVoiceSearchWithOriginView:(UIView*)originView {
+  _voiceSearchButton = originView;
   // Delay Voice Search until new tab animations have finished.
   if (self.inNewTabAnimation) {
     _startVoiceSearchAfterNewTabAnimation = YES;

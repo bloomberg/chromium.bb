@@ -24,6 +24,8 @@ source_set("commands") {
     "show_mail_composer_command.mm",
     "show_signin_command.h",
     "show_signin_command.mm",
+    "start_voice_search_command.h",
+    "start_voice_search_command.mm",
   ]
   deps = [
     "//base",
