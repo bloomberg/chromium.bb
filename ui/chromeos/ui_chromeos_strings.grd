@@ -421,6 +421,9 @@
       <message name="IDS_STATUSBAR_LAYOUT_USA_INTERNATIONAL" desc="In the language menu button, this shows the input mode [US international keyboard].">
         US international
       </message>
+      <message name="IDS_STATUSBAR_LAYOUT_USA_INTERNATIONAL_PC" desc="In the language menu button, this shows the input mode [US international (PC) keyboard].">
+        US international (PC)
+      </message>
       <message name="IDS_STATUSBAR_LAYOUT_USA_WORKMAN" desc="In the language menu button, this shows the input mode [US Workman keyboard].">
         US Workman
       </message>
