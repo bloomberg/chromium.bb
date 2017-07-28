@@ -42,7 +42,7 @@ class TestStorageInfoProvider : public extensions::StorageInfoProvider {
   ~TestStorageInfoProvider() override;
 
   // StorageInfoProvider implementations.
-  double GetStorageFreeSpaceFromTransientIdOnFileThread(
+  double GetStorageFreeSpaceFromTransientIdAsync(
       const std::string& transient_id) override;
 
   std::vector<struct TestStorageUnitInfo> testing_data_;
@@ -57,7 +57,7 @@ TestStorageInfoProvider::TestStorageInfoProvider(
 TestStorageInfoProvider::~TestStorageInfoProvider() {
 }
 
-double TestStorageInfoProvider::GetStorageFreeSpaceFromTransientIdOnFileThread(
+double TestStorageInfoProvider::GetStorageFreeSpaceFromTransientIdAsync(
     const std::string& transient_id) {
   std::string device_id =
       StorageMonitor::GetInstance()->GetDeviceIdForTransientId(transient_id);
