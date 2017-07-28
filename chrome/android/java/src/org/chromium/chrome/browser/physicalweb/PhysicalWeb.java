@@ -175,6 +175,8 @@ public class PhysicalWeb {
      * Examines the environment in order to decide whether we should begin or end a scan.
      */
     public static void updateScans() {
+        if (SysUtils.isLowEndDevice()) return;
+
         LocationUtils locationUtils = LocationUtils.getInstance();
         if (!locationUtils.hasAndroidLocationPermission()
                 || !locationUtils.isSystemLocationSettingEnabled()
