@@ -73,9 +73,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   ServiceWorkerProviderContext* context() const { return context_.get(); }
 
   mojom::URLLoaderFactory* script_loader_factory() {
-    if (script_loader_factory_.is_bound())
-      return script_loader_factory_.get();
-    return nullptr;
+    return script_loader_factory_.get();
   }
 
   bool IsControlledByServiceWorker() const;
