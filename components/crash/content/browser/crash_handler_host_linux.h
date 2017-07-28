@@ -13,12 +13,11 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/sequence_checker.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/breakpad_linux_impl.h"
 
 namespace base {
+class SequencedTaskRunner;
 class Thread;
 }
 
@@ -64,11 +63,10 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
  private:
   void Init();
 
-  // Do work in a sequenced worker pool for OnFileCanReadWithoutBlocking().
-  void WriteDumpFile(std::unique_ptr<BreakpadInfo> info,
+  // Do work on |blocking_task_runner_| for OnFileCanReadWithoutBlocking().
+  void WriteDumpFile(BreakpadInfo* info,
                      std::unique_ptr<char[]> crash_context,
-                     pid_t crashing_pid,
-                     int signal_fd);
+                     pid_t crashing_pid);
 
   // Continue OnFileCanReadWithoutBlocking()'s work on the IO thread.
   void QueueCrashDumpTask(std::unique_ptr<BreakpadInfo> info, int signal_fd);
@@ -86,10 +84,10 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
                                  int signal_fd,
                                  int attempt);
 
-  std::string process_type_;
-  base::FilePath dumps_path_;
+  const std::string process_type_;
+  const base::FilePath dumps_path_;
 #if !defined(OS_ANDROID)
-  bool upload_;
+  const bool upload_;
 #endif
 
   int process_socket_;
@@ -99,12 +97,7 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
   std::unique_ptr<base::Thread> uploader_thread_;
   bool shutting_down_;
 
-  // Unique sequence token so that writing crash dump won't be blocked
-  // by other tasks.
-  base::SequencedWorkerPool::SequenceToken worker_pool_token_;
-
-  // Used to verify that calls to WriteDumpFile() are sequenced.
-  base::SequenceChecker write_dump_file_sequence_checker_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashHandlerHostLinux);
 };
