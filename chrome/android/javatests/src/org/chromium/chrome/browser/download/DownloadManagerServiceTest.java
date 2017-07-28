@@ -258,6 +258,7 @@ public class DownloadManagerServiceTest {
 
     private static class DownloadManagerServiceForTest extends DownloadManagerService {
         boolean mResumed;
+        DownloadSnackbarController mDownloadSnackbarController;
 
         public DownloadManagerServiceForTest(Context context, MockDownloadNotifier mockNotifier,
                 long updateDelayInMillis) {
@@ -286,6 +287,18 @@ public class DownloadManagerServiceTest {
                     DownloadManagerServiceForTest.super.scheduleUpdateIfNeeded();
                 }
             });
+        }
+
+        @Override
+        protected void setDownloadSnackbarController(
+                DownloadSnackbarController downloadSnackbarController) {
+            mDownloadSnackbarController = downloadSnackbarController;
+            super.setDownloadSnackbarController(downloadSnackbarController);
+        }
+
+        @Override
+        protected void onDownloadFailed(String fileName, int reason) {
+            mDownloadSnackbarController.onDownloadFailed("", false);
         }
     }
 
@@ -430,8 +443,16 @@ public class DownloadManagerServiceTest {
     @Feature({"Download"})
     public void testDownloadFailedIsCalled() throws InterruptedException {
         MockDownloadNotifier notifier = new MockDownloadNotifier(getTestContext());
-        DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
+        MockDownloadSnackbarController snackbarController = new MockDownloadSnackbarController();
+        final DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
                 getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                DownloadManagerService.setDownloadManagerService(dService);
+            }
+        });
+        dService.setDownloadSnackbarController(snackbarController);
         // Check that if an interrupted download cannot be resumed, it will trigger a download
         // failure.
         DownloadInfo failure =
@@ -439,6 +460,7 @@ public class DownloadManagerServiceTest {
         notifier.expect(MethodID.DOWNLOAD_FAILED, failure);
         dService.onDownloadInterrupted(failure, false);
         notifier.waitTillExpectedCallsComplete();
+        snackbarController.waitForSnackbarControllerToFinish(false);
     }
 
     @Test

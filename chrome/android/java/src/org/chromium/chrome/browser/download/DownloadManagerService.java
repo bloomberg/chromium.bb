@@ -297,7 +297,6 @@ public class DownloadManagerService
                 DownloadInfo.Builder.fromDownloadInfo(downloadInfo).setMimeType(mimeType).build();
         DownloadItem downloadItem = new DownloadItem(false, newInfo);
         updateDownloadProgress(downloadItem, status);
-        scheduleUpdateIfNeeded();
     }
 
     @Override
@@ -316,7 +315,6 @@ public class DownloadManagerService
         DownloadItem item = new DownloadItem(false, downloadInfo);
         removeAutoResumableDownload(item.getId());
         updateDownloadProgress(new DownloadItem(false, downloadInfo), DOWNLOAD_STATUS_CANCELLED);
-        scheduleUpdateIfNeeded();
     }
 
     @Override
@@ -329,7 +327,6 @@ public class DownloadManagerService
             addAutoResumableDownload(item.getId());
         }
         updateDownloadProgress(item, status);
-        scheduleUpdateIfNeeded();
 
         DownloadProgress progress = mDownloadProgressMap.get(item.getId());
         if (progress == null) return;
@@ -417,54 +414,61 @@ public class DownloadManagerService
     private void updateAllNotifications(List<DownloadProgress> progresses) {
         assert ThreadUtils.runningOnUiThread();
         for (int i = 0; i < progresses.size(); ++i) {
-            DownloadProgress progress = progresses.get(i);
-            DownloadItem item = progress.mDownloadItem;
-            DownloadInfo info = item.getDownloadInfo();
-            boolean notificationUpdateScheduled = true;
-            boolean removeFromDownloadProgressMap = true;
-            switch (progress.mDownloadStatus) {
-                case DOWNLOAD_STATUS_COMPLETE:
-                    notificationUpdateScheduled = updateDownloadSuccessNotification(progress);
-                    removeFromDownloadProgressMap = notificationUpdateScheduled;
-                    break;
-                case DOWNLOAD_STATUS_FAILED:
-                    mDownloadNotifier.notifyDownloadFailed(info);
-                    Log.w(TAG, "Download failed: " + info.getFilePath());
-                    onDownloadFailed(info.getFileName(), DownloadManager.ERROR_UNKNOWN);
-                    break;
-                case DOWNLOAD_STATUS_IN_PROGRESS:
-                    if (info.isPaused()) {
-                        mDownloadNotifier.notifyDownloadPaused(info);
-                        recordDownloadResumption(UMA_DOWNLOAD_RESUMPTION_MANUAL_PAUSE);
-                    } else {
-                        mDownloadNotifier.notifyDownloadProgress(info,
-                                progress.mStartTimeInMillis, progress.mCanDownloadWhileMetered);
-                        removeFromDownloadProgressMap = false;
-                    }
-                    break;
-                case DOWNLOAD_STATUS_CANCELLED:
-                    mDownloadNotifier.notifyDownloadCanceled(item.getContentId());
-                    break;
-                case DOWNLOAD_STATUS_INTERRUPTED:
-                    mDownloadNotifier.notifyDownloadInterrupted(info, progress.mIsAutoResumable);
-                    removeFromDownloadProgressMap = !progress.mIsAutoResumable;
-                    break;
-                default:
-                    assert false;
-                    break;
-            }
-            if (notificationUpdateScheduled) {
-                progress.mIsUpdated = false;
-            }
-            if (removeFromDownloadProgressMap) {
-                mDownloadProgressMap.remove(item.getId());
-            }
+            updateNotification(progresses.get(i));
+        }
+    }
+
+    /**
+     * Update notification for a specific download.
+     * @param progress Specific notification to update.
+     */
+    private void updateNotification(DownloadProgress progress) {
+        DownloadItem item = progress.mDownloadItem;
+        DownloadInfo info = item.getDownloadInfo();
+        boolean notificationUpdateScheduled = true;
+        boolean removeFromDownloadProgressMap = true;
+        switch (progress.mDownloadStatus) {
+            case DOWNLOAD_STATUS_COMPLETE:
+                notificationUpdateScheduled = updateDownloadSuccessNotification(progress);
+                removeFromDownloadProgressMap = notificationUpdateScheduled;
+                break;
+            case DOWNLOAD_STATUS_FAILED:
+                mDownloadNotifier.notifyDownloadFailed(info);
+                Log.w(TAG, "Download failed: " + info.getFilePath());
+                onDownloadFailed(info.getFileName(), DownloadManager.ERROR_UNKNOWN);
+                break;
+            case DOWNLOAD_STATUS_IN_PROGRESS:
+                if (info.isPaused()) {
+                    mDownloadNotifier.notifyDownloadPaused(info);
+                    recordDownloadResumption(UMA_DOWNLOAD_RESUMPTION_MANUAL_PAUSE);
+                } else {
+                    mDownloadNotifier.notifyDownloadProgress(
+                            info, progress.mStartTimeInMillis, progress.mCanDownloadWhileMetered);
+                    removeFromDownloadProgressMap = false;
+                }
+                break;
+            case DOWNLOAD_STATUS_CANCELLED:
+                mDownloadNotifier.notifyDownloadCanceled(item.getContentId());
+                break;
+            case DOWNLOAD_STATUS_INTERRUPTED:
+                mDownloadNotifier.notifyDownloadInterrupted(info, progress.mIsAutoResumable);
+                removeFromDownloadProgressMap = !progress.mIsAutoResumable;
+                break;
+            default:
+                assert false;
+                break;
+        }
+        if (notificationUpdateScheduled) {
+            progress.mIsUpdated = false;
+        }
+        if (removeFromDownloadProgressMap) {
+            mDownloadProgressMap.remove(item.getId());
         }
     }
 
     /**
      * Helper method to schedule a task to update the download success notification.
-     * @param progresses Download progress to update.
+     * @param progress Download progress to update.
      * @return True if the task can be scheduled, or false otherwise.
      */
     private boolean updateDownloadSuccessNotification(DownloadProgress progress) {
@@ -591,8 +595,8 @@ public class DownloadManagerService
      * @param downloadStatus Status of the download.
      */
     private void updateDownloadProgress(DownloadItem downloadItem, int downloadStatus) {
-        boolean isSupportedMimeType = (downloadStatus == DOWNLOAD_STATUS_COMPLETE)
-                ? isSupportedMimeType(downloadItem.getDownloadInfo().getMimeType()) : false;
+        boolean isSupportedMimeType = downloadStatus == DOWNLOAD_STATUS_COMPLETE
+                && isSupportedMimeType(downloadItem.getDownloadInfo().getMimeType());
         String id = downloadItem.getId();
         DownloadProgress progress = mDownloadProgressMap.get(id);
         long bytesReceived = downloadItem.getDownloadInfo().getBytesReceived();
@@ -613,6 +617,12 @@ public class DownloadManagerService
                 } else if (updateBytesReceived(entry, bytesReceived)) {
                     storeUmaEntries();
                 }
+
+                // This is mostly for testing, when the download is not tracked/progress is null but
+                // downloadStatus is not DOWNLOAD_STATUS_IN_PROGRESS.
+                if (downloadStatus != DOWNLOAD_STATUS_IN_PROGRESS) {
+                    updateNotification(progress);
+                }
             }
             return;
         }
@@ -631,12 +641,14 @@ public class DownloadManagerService
                         downloadItem.getDownloadInfo().getBytesReceived());
                 clearDownloadRetryCount(downloadItem.getId(), true);
                 clearDownloadRetryCount(downloadItem.getId(), false);
+                updateNotification(progress);
                 break;
             case DOWNLOAD_STATUS_INTERRUPTED:
                 entry = getUmaStatsEntry(downloadItem.getId());
                 entry.numInterruptions++;
                 updateBytesReceived(entry, bytesReceived);
                 storeUmaEntries();
+                updateNotification(progress);
                 break;
             case DOWNLOAD_STATUS_IN_PROGRESS:
                 entry = getUmaStatsEntry(downloadItem.getId());
@@ -644,6 +656,10 @@ public class DownloadManagerService
                         || updateBytesReceived(entry, bytesReceived)) {
                     entry.isPaused = downloadItem.getDownloadInfo().isPaused();
                     storeUmaEntries();
+                }
+
+                if (downloadItem.getDownloadInfo().isPaused()) {
+                    updateNotification(progress);
                 }
                 break;
             default:
@@ -837,6 +853,7 @@ public class DownloadManagerService
      * @param fileName Name of the download file.
      * @param reason Reason of failure reported by android DownloadManager
      */
+    @VisibleForTesting
     protected void onDownloadFailed(String fileName, int reason) {
         String failureMessage = getDownloadFailureMessage(fileName, reason);
         if (mDownloadSnackbarController.getSnackbarManager() != null) {
