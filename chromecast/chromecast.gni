@@ -103,6 +103,9 @@ set_defaults("cast_executable") {
 
 set_defaults("cast_shared_library") {
   configs = default_shared_library_configs
+  if (is_android) {
+    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+  }
 }
 
 set_defaults("cast_loadable_module") {
