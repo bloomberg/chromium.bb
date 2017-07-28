@@ -97,10 +97,10 @@ class SynchronousLayerTreeFrameSink
 
   // viz::CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck(
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   void ReclaimResources(
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<viz::ReturnedResource>& resources) override;
   void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
   void OnBeginFramePausedChanged(bool paused) override;
@@ -121,7 +121,7 @@ class SynchronousLayerTreeFrameSink
   // IPC handlers.
   void SetMemoryPolicy(size_t bytes_limit);
   void OnReclaimResources(uint32_t layer_tree_frame_sink_id,
-                          const std::vector<cc::ReturnedResource>& resources);
+                          const std::vector<viz::ReturnedResource>& resources);
 
   const int routing_id_;
   const uint32_t layer_tree_frame_sink_id_;

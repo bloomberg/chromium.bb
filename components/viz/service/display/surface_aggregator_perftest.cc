@@ -65,7 +65,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
 
       auto* sqs = pass->CreateAndAppendSharedQuadState();
       for (int j = 0; j < num_textures; j++) {
-        cc::TransferableResource resource;
+        TransferableResource resource;
         resource.id = j;
         resource.is_software = true;
         frame.resource_list.push_back(resource);

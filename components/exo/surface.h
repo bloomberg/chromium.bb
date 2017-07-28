@@ -14,9 +14,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "cc/resources/transferable_resource.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window.h"
@@ -328,7 +328,7 @@ class Surface : public ui::PropertyHandler {
   BufferAttachment current_buffer_;
 
   // The last resource that was sent to a surface.
-  cc::TransferableResource current_resource_;
+  viz::TransferableResource current_resource_;
 
   // Whether the last resource that was sent to a surface has an alpha channel.
   bool current_resource_has_alpha_ = false;

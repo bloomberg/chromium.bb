@@ -106,7 +106,7 @@ void GpuRootCompositorFrameSink::DisplayWillDrawAndSwap(
 void GpuRootCompositorFrameSink::DisplayDidDrawAndSwap() {}
 
 void GpuRootCompositorFrameSink::DidReceiveCompositorFrameAck(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<ReturnedResource>& resources) {
   if (client_)
     client_->DidReceiveCompositorFrameAck(resources);
 }
@@ -123,7 +123,7 @@ void GpuRootCompositorFrameSink::OnBeginFramePausedChanged(bool paused) {
 }
 
 void GpuRootCompositorFrameSink::ReclaimResources(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<ReturnedResource>& resources) {
   if (client_)
     client_->ReclaimResources(resources);
 }

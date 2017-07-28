@@ -51,17 +51,17 @@ class HardwareRenderer : public viz::CompositorFrameSinkSupportClient {
  private:
   // viz::CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck(
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   void ReclaimResources(
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<viz::ReturnedResource>& resources) override;
   void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
   void OnBeginFramePausedChanged(bool paused) override;
 
   void ReturnChildFrame(std::unique_ptr<ChildFrame> child_frame);
   void ReturnResourcesToCompositor(
-      const std::vector<cc::ReturnedResource>& resources,
+      const std::vector<viz::ReturnedResource>& resources,
       const CompositorID& compositor_id,
       uint32_t layer_tree_frame_sink_id);
 

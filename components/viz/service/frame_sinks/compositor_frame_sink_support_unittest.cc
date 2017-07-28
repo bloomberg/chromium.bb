@@ -61,14 +61,14 @@ class FakeCompositorFrameSinkSupportClient
   ~FakeCompositorFrameSinkSupportClient() override = default;
 
   void DidReceiveCompositorFrameAck(
-      const std::vector<cc::ReturnedResource>& resources) override {
+      const std::vector<ReturnedResource>& resources) override {
     InsertResources(resources);
   }
 
   void OnBeginFrame(const BeginFrameArgs& args) override {}
 
   void ReclaimResources(
-      const std::vector<cc::ReturnedResource>& resources) override {
+      const std::vector<ReturnedResource>& resources) override {
     InsertResources(resources);
   }
 
@@ -78,17 +78,17 @@ class FakeCompositorFrameSinkSupportClient
   void OnBeginFramePausedChanged(bool paused) override {}
 
   void clear_returned_resources() { returned_resources_.clear(); }
-  const std::vector<cc::ReturnedResource>& returned_resources() {
+  const std::vector<ReturnedResource>& returned_resources() {
     return returned_resources_;
   }
 
  private:
-  void InsertResources(const std::vector<cc::ReturnedResource>& resources) {
+  void InsertResources(const std::vector<ReturnedResource>& resources) {
     returned_resources_.insert(returned_resources_.end(), resources.begin(),
                                resources.end());
   }
 
-  std::vector<cc::ReturnedResource> returned_resources_;
+  std::vector<ReturnedResource> returned_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCompositorFrameSinkSupportClient);
 };
@@ -119,7 +119,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
                                           size_t num_resource_ids) {
     auto frame = test::MakeCompositorFrame();
     for (size_t i = 0u; i < num_resource_ids; ++i) {
-      cc::TransferableResource resource;
+      TransferableResource resource;
       resource.id = resource_ids[i];
       resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
       resource.mailbox_holder.sync_token = frame_sync_token_;
@@ -133,9 +133,9 @@ class CompositorFrameSinkSupportTest : public testing::Test {
   void UnrefResources(ResourceId* ids_to_unref,
                       int* counts_to_unref,
                       size_t num_ids_to_unref) {
-    std::vector<cc::ReturnedResource> unref_array;
+    std::vector<ReturnedResource> unref_array;
     for (size_t i = 0; i < num_ids_to_unref; ++i) {
-      cc::ReturnedResource resource;
+      ReturnedResource resource;
       resource.sync_token = consumer_sync_token_;
       resource.id = ids_to_unref[i];
       resource.count = counts_to_unref[i];
@@ -148,11 +148,11 @@ class CompositorFrameSinkSupportTest : public testing::Test {
                                            int* expected_returned_counts,
                                            size_t expected_resources,
                                            gpu::SyncToken expected_sync_token) {
-    const std::vector<cc::ReturnedResource>& actual_resources =
+    const std::vector<ReturnedResource>& actual_resources =
         fake_support_client_.returned_resources();
     ASSERT_EQ(expected_resources, actual_resources.size());
     for (size_t i = 0; i < expected_resources; ++i) {
-      cc::ReturnedResource resource = actual_resources[i];
+      ReturnedResource resource = actual_resources[i];
       EXPECT_EQ(expected_sync_token, resource.sync_token);
       EXPECT_EQ(expected_returned_ids[i], resource.id);
       EXPECT_EQ(expected_returned_counts[i], resource.count);
@@ -296,7 +296,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceReusedBeforeReturn) {
   // Now it should be returned.
   // We don't care how many entries are in the returned array for 7, so long as
   // the total returned count matches the submitted count.
-  const std::vector<cc::ReturnedResource>& returned =
+  const std::vector<ReturnedResource>& returned =
       fake_support_client_.returned_resources();
   size_t return_count = 0;
   for (size_t i = 0; i < returned.size(); ++i) {
@@ -513,7 +513,7 @@ TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
   LocalSurfaceId local_surface_id(7, kArbitraryToken);
   SurfaceId id(kAnotherArbitraryFrameSinkId, local_surface_id);
 
-  cc::TransferableResource resource;
+  TransferableResource resource;
   resource.id = 1;
   resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
   auto frame = test::MakeCompositorFrame();
@@ -523,7 +523,7 @@ TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
             local_surface_id);
   local_surface_id_ = LocalSurfaceId();
 
-  std::vector<cc::ReturnedResource> returned_resources = {
+  std::vector<ReturnedResource> returned_resources = {
       resource.ToReturnedResource()};
   EXPECT_TRUE(GetSurfaceForId(id));
   EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(returned_resources))
@@ -541,7 +541,7 @@ TEST_F(CompositorFrameSinkSupportTest,
       kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
   LocalSurfaceId local_surface_id(7, kArbitraryToken);
 
-  cc::TransferableResource resource;
+  TransferableResource resource;
   resource.id = 1;
   resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
   auto frame = test::MakeCompositorFrame();
@@ -556,7 +556,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   surface->AddDestructionDependency(
       SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
 
-  std::vector<cc::ReturnedResource> returned_resource = {
+  std::vector<ReturnedResource> returned_resource = {
       resource.ToReturnedResource()};
 
   EXPECT_TRUE(GetSurfaceForId(surface_id));
@@ -575,7 +575,7 @@ TEST_F(CompositorFrameSinkSupportTest,
       kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
   LocalSurfaceId local_surface_id(7, kArbitraryToken);
 
-  cc::TransferableResource resource;
+  TransferableResource resource;
   resource.id = 1;
   resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
   auto frame = test::MakeCompositorFrame();
@@ -594,7 +594,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   surface->AddDestructionDependency(
       SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
 
-  std::vector<cc::ReturnedResource> returned_resources;
+  std::vector<ReturnedResource> returned_resources;
   EXPECT_TRUE(GetSurfaceForId(surface_id));
   support->EvictCurrentSurface();
   EXPECT_TRUE(GetSurfaceForId(surface_id));

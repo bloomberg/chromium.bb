@@ -29,7 +29,6 @@
 #include "cc/resources/release_callback_impl.h"
 #include "cc/resources/return_callback.h"
 #include "cc/resources/single_release_callback_impl.h"
-#include "cc/resources/transferable_resource.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/resource_format.h"
@@ -37,6 +36,7 @@
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/resource_settings.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -194,7 +194,7 @@ class CC_EXPORT ResourceProvider
   // "in use".
   void PrepareSendToParent(
       const ResourceIdArray& resource_ids,
-      std::vector<TransferableResource>* transferable_resources);
+      std::vector<viz::TransferableResource>* transferable_resources);
 
   // Receives resources from a child, moving them from mailboxes. Resource IDs
   // passed are in the child namespace, and will be translated to the parent
@@ -203,11 +203,11 @@ class CC_EXPORT ResourceProvider
   // declaring which resources are in use. Use DeclareUsedResourcesFromChild
   // after calling this method to do that. All calls to ReceiveFromChild should
   // be followed by a DeclareUsedResourcesFromChild.
-  // NOTE: if the sync_token is set on any TransferableResource, this will
+  // NOTE: if the sync_token is set on any viz::TransferableResource, this will
   // wait on it.
   void ReceiveFromChild(
       int child,
-      const std::vector<TransferableResource>& transferable_resources);
+      const std::vector<viz::TransferableResource>& transferable_resources);
 
   // Once a set of resources have been received, they may or may not be used.
   // This declares what set of resources are currently in use from the child,
@@ -218,10 +218,10 @@ class CC_EXPORT ResourceProvider
 
   // Receives resources from the parent, moving them from mailboxes. Resource
   // IDs passed are in the child namespace.
-  // NOTE: if the sync_token is set on any TransferableResource, this will
+  // NOTE: if the sync_token is set on any viz::TransferableResource, this will
   // wait on it.
   void ReceiveReturnsFromParent(
-      const std::vector<ReturnedResource>& transferable_resources);
+      const std::vector<viz::ReturnedResource>& transferable_resources);
 
 #if defined(OS_ANDROID)
   // Send an overlay promotion hint to all resources that requested it via
@@ -735,7 +735,7 @@ class CC_EXPORT ResourceProvider
 
   void TransferResource(Resource* source,
                         viz::ResourceId id,
-                        TransferableResource* resource);
+                        viz::TransferableResource* resource);
   enum DeleteStyle {
     NORMAL,
     FOR_SHUTDOWN,

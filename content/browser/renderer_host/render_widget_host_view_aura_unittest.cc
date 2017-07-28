@@ -486,7 +486,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     return GetDelegatedFrameHost()->ReleasedFrontLockActiveForTesting();
   }
 
-  void ReclaimResources(const std::vector<cc::ReturnedResource>& resources) {
+  void ReclaimResources(const std::vector<viz::ReturnedResource>& resources) {
     GetDelegatedFrameHost()->ReclaimResources(resources);
   }
 
@@ -2404,7 +2404,7 @@ cc::CompositorFrame MakeDelegatedFrame(float scale_factor,
   pass->SetNew(1, gfx::Rect(size), damage, gfx::Transform());
   frame.render_pass_list.push_back(std::move(pass));
   if (!size.IsEmpty()) {
-    cc::TransferableResource resource;
+    viz::TransferableResource resource;
     resource.id = 1;
     frame.resource_list.push_back(std::move(resource));
   }
@@ -2425,8 +2425,8 @@ TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
   sink_->ClearMessages();
 
   // Accumulate some returned resources. This should trigger an IPC.
-  std::vector<cc::ReturnedResource> resources;
-  cc::ReturnedResource resource;
+  std::vector<viz::ReturnedResource> resources;
+  viz::ReturnedResource resource;
   resource.id = 1;
   resources.push_back(resource);
   view_->renderer_compositor_frame_sink_->Reset();
@@ -2461,7 +2461,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
 
   // Submit a frame with resources.
   cc::CompositorFrame frame = MakeDelegatedFrame(1.f, view_size, view_rect);
-  cc::TransferableResource resource;
+  viz::TransferableResource resource;
   resource.id = 1;
   frame.resource_list.push_back(resource);
   view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId, std::move(frame));

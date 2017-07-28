@@ -2639,8 +2639,8 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
     view_->SubmitCompositorFrame(local_surface_id, std::move(frame));
     view_->DidReceiveRendererFrame();
   } else {
-    std::vector<cc::ReturnedResource> resources =
-        cc::TransferableResource::ReturnResources(frame.resource_list);
+    std::vector<viz::ReturnedResource> resources =
+        viz::TransferableResource::ReturnResources(frame.resource_list);
     renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
   }
 

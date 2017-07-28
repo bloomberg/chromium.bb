@@ -65,7 +65,7 @@ class RenderThreadManager : public CompositorFrameConsumer {
   void PostExternalDrawConstraintsToChildCompositorOnRT(
       const ParentCompositorDrawConstraints& parent_draw_constraints);
   void InsertReturnedResourcesOnRT(
-      const std::vector<cc::ReturnedResource>& resources,
+      const std::vector<viz::ReturnedResource>& resources,
       const CompositorID& compositor_id,
       uint32_t layer_tree_frame_sink_id);
 

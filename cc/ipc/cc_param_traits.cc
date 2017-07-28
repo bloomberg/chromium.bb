@@ -767,7 +767,7 @@ void ParamTraits<cc::CompositorFrame>::Write(base::Pickle* m,
                                              const param_type& p) {
   WriteParam(m, p.metadata);
   size_t to_reserve = 0u;
-  to_reserve += p.resource_list.size() * sizeof(cc::TransferableResource);
+  to_reserve += p.resource_list.size() * sizeof(viz::TransferableResource);
   for (const auto& pass : p.render_pass_list) {
     to_reserve += sizeof(size_t) * 2;
     to_reserve += ReserveSizeForRenderPassWrite(*pass);

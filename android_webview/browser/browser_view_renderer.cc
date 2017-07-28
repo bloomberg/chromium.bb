@@ -315,8 +315,8 @@ void BrowserViewRenderer::ReturnUnusedResource(
   if (!child_frame.get() || !child_frame->frame.get())
     return;
 
-  std::vector<cc::ReturnedResource> resources =
-      cc::TransferableResource::ReturnResources(
+  std::vector<viz::ReturnedResource> resources =
+      viz::TransferableResource::ReturnResources(
           child_frame->frame->resource_list);
   content::SynchronousCompositor* compositor =
       FindCompositor(child_frame->compositor_id);
@@ -332,7 +332,7 @@ void BrowserViewRenderer::ReturnResourceFromParent(
   for (auto& pair : returned_resource_map) {
     CompositorID compositor_id = pair.first;
     content::SynchronousCompositor* compositor = FindCompositor(compositor_id);
-    std::vector<cc::ReturnedResource> resources;
+    std::vector<viz::ReturnedResource> resources;
     resources.swap(pair.second.resources);
 
     if (compositor && !resources.empty()) {

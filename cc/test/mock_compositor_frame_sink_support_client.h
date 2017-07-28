@@ -19,9 +19,10 @@ class MockCompositorFrameSinkSupportClient
 
   // CompositorFrameSinkSupportClient implementation.
   MOCK_METHOD1(DidReceiveCompositorFrameAck,
-               void(const std::vector<ReturnedResource>&));
+               void(const std::vector<viz::ReturnedResource>&));
   MOCK_METHOD1(OnBeginFrame, void(const viz::BeginFrameArgs&));
-  MOCK_METHOD1(ReclaimResources, void(const std::vector<ReturnedResource>&));
+  MOCK_METHOD1(ReclaimResources,
+               void(const std::vector<viz::ReturnedResource>&));
   MOCK_METHOD2(WillDrawSurface,
                void(const viz::LocalSurfaceId&, const gfx::Rect&));
   MOCK_METHOD1(OnBeginFramePausedChanged, void(bool paused));

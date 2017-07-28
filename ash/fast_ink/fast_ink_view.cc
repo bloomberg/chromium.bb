@@ -47,7 +47,7 @@ class FastInkLayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient {
   // Overridden from cc::LayerTreeFrameSinkClient:
   void SetBeginFrameSource(viz::BeginFrameSource* source) override {}
   void ReclaimResources(
-      const std::vector<cc::ReturnedResource>& resources) override {
+      const std::vector<viz::ReturnedResource>& resources) override {
     if (view_)
       view_->ReclaimResources(resources);
   }
@@ -127,7 +127,7 @@ void FastInkView::DidReceiveCompositorFrameAck() {
 }
 
 void FastInkView::ReclaimResources(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<viz::ReturnedResource>& resources) {
   DCHECK_EQ(resources.size(), 1u);
 
   auto it = resources_.find(resources.front().id);
@@ -321,7 +321,7 @@ void FastInkView::UpdateSurface() {
   gles2->OrderingBarrierCHROMIUM();
   gles2->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
 
-  cc::TransferableResource transferable_resource;
+  viz::TransferableResource transferable_resource;
   transferable_resource.id = next_resource_id_++;
   transferable_resource.format = viz::RGBA_8888;
   transferable_resource.filter = GL_LINEAR;

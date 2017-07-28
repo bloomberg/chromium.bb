@@ -2164,7 +2164,7 @@ void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
   }
 
   for (size_t i = 0u; i < num_resource_ids; ++i) {
-    cc::TransferableResource resource;
+    TransferableResource resource;
     resource.id = resource_ids[i];
     // ResourceProvider is software, so only software resources are valid.
     resource.is_software = valid;
@@ -2274,7 +2274,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
   SurfaceId surface_id(support->frame_sink_id(), local_surface_id);
 
   cc::CompositorFrame frame = test::MakeCompositorFrame();
-  cc::TransferableResource resource;
+  TransferableResource resource;
   resource.id = 11;
   // ResourceProvider is software but resource is not, so it should be
   // ignored.

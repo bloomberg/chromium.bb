@@ -25,7 +25,6 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/layers/texture_layer_impl.h"
-#include "cc/resources/returned_resource.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -40,6 +39,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1070,7 +1070,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestCallbackOnInUseResource) {
   // Transfer some resources to the parent.
   ResourceProvider::ResourceIdArray resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(id);
-  std::vector<TransferableResource> list;
+  std::vector<viz::TransferableResource> list;
   provider->PrepareSendToParent(resource_ids_to_transfer, &list);
   EXPECT_TRUE(provider->InUseByConsumer(id));
   EXPECT_CALL(test_data_.mock_callback_, ReleaseImpl(_, _, _, _)).Times(0);
@@ -1078,8 +1078,8 @@ TEST_F(TextureLayerImplWithMailboxTest, TestCallbackOnInUseResource) {
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
   EXPECT_CALL(test_data_.mock_callback_,
               ReleaseImpl(test_data_.mailbox_name1_, _, false, _)).Times(1);
-  std::vector<ReturnedResource> returned =
-      TransferableResource::ReturnResources(list);
+  std::vector<viz::ReturnedResource> returned =
+      viz::TransferableResource::ReturnResources(list);
   provider->ReceiveReturnsFromParent(returned);
 }
 

@@ -18,7 +18,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "cc/resources/returned_resource.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -28,6 +27,7 @@
 #include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -477,14 +477,15 @@ class ResourceProviderTest
 
   ResourceProviderTest() : ResourceProviderTest(true) {}
 
-  static void CollectResources(std::vector<ReturnedResource>* array,
-                               const std::vector<ReturnedResource>& returned,
-                               BlockingTaskRunner* main_thread_task_runner) {
+  static void CollectResources(
+      std::vector<viz::ReturnedResource>* array,
+      const std::vector<viz::ReturnedResource>& returned,
+      BlockingTaskRunner* main_thread_task_runner) {
     array->insert(array->end(), returned.begin(), returned.end());
   }
 
   static ReturnCallback GetReturnCallback(
-      std::vector<ReturnedResource>* array) {
+      std::vector<viz::ReturnedResource>* array) {
     return base::Bind(&ResourceProviderTest::CollectResources, array);
   }
 
@@ -666,7 +667,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
           id4_mailbox,
           SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback)));
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
@@ -678,7 +679,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     resource_ids_to_transfer.push_back(id3);
     resource_ids_to_transfer.push_back(id4);
 
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     ASSERT_EQ(4u, list.size());
@@ -770,7 +771,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     resource_ids_to_transfer.push_back(id1);
     resource_ids_to_transfer.push_back(id2);
     resource_ids_to_transfer.push_back(id3);
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     EXPECT_EQ(3u, list.size());
@@ -783,8 +784,8 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
               list[1].mailbox_holder.texture_target);
     EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
               list[2].mailbox_holder.texture_target);
-    std::vector<ReturnedResource> returned =
-        TransferableResource::ReturnResources(list);
+    std::vector<viz::ReturnedResource> returned =
+        viz::TransferableResource::ReturnResources(list);
     child_resource_provider_->ReceiveReturnsFromParent(returned);
     // ids were exported twice, we returned them only once, they should still
     // be in-use.
@@ -842,7 +843,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     resource_ids_to_transfer.push_back(id2);
     resource_ids_to_transfer.push_back(id3);
     resource_ids_to_transfer.push_back(id4);
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     ASSERT_EQ(4u, list.size());
@@ -929,7 +930,7 @@ TEST_P(ResourceProviderTest, OverlayPromotionHint) {
           id2_mailbox,
           SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback)));
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
@@ -939,7 +940,7 @@ TEST_P(ResourceProviderTest, OverlayPromotionHint) {
     resource_ids_to_transfer.push_back(id1);
     resource_ids_to_transfer.push_back(id2);
 
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     ASSERT_EQ(2u, list.size());
@@ -1038,7 +1039,7 @@ TEST_P(ResourceProviderTestNoSyncToken, TransferGLResources) {
                               GL_TEXTURE_EXTERNAL_OES),
           SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback)));
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   resource_provider_->SetChildNeedsSyncTokens(child_id, false);
@@ -1048,7 +1049,7 @@ TEST_P(ResourceProviderTestNoSyncToken, TransferGLResources) {
     resource_ids_to_transfer.push_back(id1);
     resource_ids_to_transfer.push_back(id2);
     resource_ids_to_transfer.push_back(id3);
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     ASSERT_EQ(3u, list.size());
@@ -1112,7 +1113,7 @@ TEST_P(ResourceProviderTest, SetBatchPreventsReturn) {
   viz::ResourceFormat format = viz::RGBA_8888;
 
   uint8_t data1[4] = {1, 2, 3, 4};
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
@@ -1127,7 +1128,7 @@ TEST_P(ResourceProviderTest, SetBatchPreventsReturn) {
     resource_ids_to_transfer.push_back(ids[i]);
   }
 
-  std::vector<TransferableResource> list;
+  std::vector<viz::TransferableResource> list;
   child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                 &list);
   ASSERT_EQ(2u, list.size());
@@ -1176,7 +1177,7 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   uint8_t data1[4] = {1, 2, 3, 4};
   child_resource_provider_->CopyToResource(id1, data1, size);
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
@@ -1184,7 +1185,7 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(id1);
 
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     ASSERT_EQ(1u, list.size());
@@ -1243,7 +1244,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
   uint8_t data1[4] = {1, 2, 3, 4};
   child_resource_provider_->CopyToResource(id1, data1, size);
   child_resource_provider_->EnableReadLockFencesForTesting(id1);
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
@@ -1251,7 +1252,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
   ResourceProvider::ResourceIdArray resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(id1);
 
-  std::vector<TransferableResource> list;
+  std::vector<viz::TransferableResource> list;
   child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                 &list);
   ASSERT_EQ(1u, list.size());
@@ -1304,7 +1305,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
       gfx::ColorSpace());
   child_resource_provider_->CopyToResource(id2, data, size);
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
@@ -1313,7 +1314,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
   resource_ids_to_transfer.push_back(id1);
   resource_ids_to_transfer.push_back(id2);
 
-  std::vector<TransferableResource> list;
+  std::vector<viz::TransferableResource> list;
   child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                 &list);
   ASSERT_EQ(2u, list.size());
@@ -1369,7 +1370,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
       gfx::ColorSpace());
   child_resource_provider_->CopyToResource(id2, data, size);
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
@@ -1378,7 +1379,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
   resource_ids_to_transfer.push_back(id1);
   resource_ids_to_transfer.push_back(id2);
 
-  std::vector<TransferableResource> list;
+  std::vector<viz::TransferableResource> list;
   child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                 &list);
   ASSERT_EQ(2u, list.size());
@@ -1439,7 +1440,7 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
           SingleReleaseCallbackImpl::Create(base::Bind(
               &SharedBitmapReleaseCallback, base::Passed(&shared_bitmap))));
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
@@ -1449,7 +1450,7 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
     resource_ids_to_transfer.push_back(id2);
     resource_ids_to_transfer.push_back(id3);
 
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     ASSERT_EQ(3u, list.size());
@@ -1497,14 +1498,14 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
     resource_ids_to_transfer.push_back(id1);
     resource_ids_to_transfer.push_back(id2);
 
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     EXPECT_EQ(2u, list.size());
     EXPECT_EQ(id1, list[0].id);
     EXPECT_EQ(id2, list[1].id);
-    std::vector<ReturnedResource> returned =
-        TransferableResource::ReturnResources(list);
+    std::vector<viz::ReturnedResource> returned =
+        viz::TransferableResource::ReturnResources(list);
     child_resource_provider_->ReceiveReturnsFromParent(returned);
     // ids were exported twice, we returned them only once, they should still
     // be in-use.
@@ -1564,7 +1565,7 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
     resource_ids_to_transfer.push_back(id2);
     resource_ids_to_transfer.push_back(id3);
 
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     ASSERT_EQ(3u, list.size());
@@ -1633,14 +1634,14 @@ TEST_P(ResourceProviderTest, TransferGLToSoftware) {
   uint8_t data1[4] = { 1, 2, 3, 4 };
   child_resource_provider->CopyToResource(id1, data1, size);
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(id1);
 
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider->PrepareSendToParent(resource_ids_to_transfer,
                                                  &list);
     ASSERT_EQ(1u, list.size());
@@ -1681,14 +1682,14 @@ TEST_P(ResourceProviderTest, TransferInvalidSoftware) {
   uint8_t data1[4] = { 1, 2, 3, 4 };
   child_resource_provider_->CopyToResource(id1, data1, size);
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(id1);
 
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     ASSERT_EQ(1u, list.size());
@@ -1736,7 +1737,7 @@ TEST_P(ResourceProviderTest, DeleteExportedResources) {
   uint8_t data2[4] = {5, 5, 5, 5};
   child_resource_provider_->CopyToResource(id2, data2, size);
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
@@ -1745,7 +1746,7 @@ TEST_P(ResourceProviderTest, DeleteExportedResources) {
     resource_ids_to_transfer.push_back(id1);
     resource_ids_to_transfer.push_back(id2);
 
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     ASSERT_EQ(2u, list.size());
@@ -1779,7 +1780,7 @@ TEST_P(ResourceProviderTest, DeleteExportedResources) {
     resource_ids_to_transfer.push_back(mapped_id1);
     resource_ids_to_transfer.push_back(mapped_id2);
 
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list);
 
     ASSERT_EQ(2u, list.size());
@@ -1803,8 +1804,8 @@ TEST_P(ResourceProviderTest, DeleteExportedResources) {
     EXPECT_EQ(2u, list.size());
     EXPECT_EQ(mapped_id1, list[0].id);
     EXPECT_EQ(mapped_id2, list[1].id);
-    std::vector<ReturnedResource> returned =
-        TransferableResource::ReturnResources(list);
+    std::vector<viz::ReturnedResource> returned =
+        viz::TransferableResource::ReturnResources(list);
     resource_provider_->ReceiveReturnsFromParent(returned);
 
     EXPECT_EQ(0u, resource_provider_->num_resources());
@@ -1836,7 +1837,7 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
   uint8_t data2[4] = {5, 5, 5, 5};
   child_resource_provider_->CopyToResource(id2, data2, size);
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
@@ -1845,7 +1846,7 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
     resource_ids_to_transfer.push_back(id1);
     resource_ids_to_transfer.push_back(id2);
 
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     ASSERT_EQ(2u, list.size());
@@ -1879,7 +1880,7 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
     resource_ids_to_transfer.push_back(mapped_id1);
     resource_ids_to_transfer.push_back(mapped_id2);
 
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list);
 
     ASSERT_EQ(2u, list.size());
@@ -1909,11 +1910,11 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
     EXPECT_EQ(2u, list.size());
     EXPECT_EQ(mapped_id1, list[0].id);
     EXPECT_EQ(mapped_id2, list[1].id);
-    std::vector<TransferableResource> return_list;
+    std::vector<viz::TransferableResource> return_list;
     return_list.push_back(list[1]);
     list.pop_back();
-    std::vector<ReturnedResource> returned =
-        TransferableResource::ReturnResources(return_list);
+    std::vector<viz::ReturnedResource> returned =
+        viz::TransferableResource::ReturnResources(return_list);
     resource_provider_->ReceiveReturnsFromParent(returned);
 
     EXPECT_EQ(1u, resource_provider_->num_resources());
@@ -1947,7 +1948,7 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
   uint8_t data[4] = { 1, 2, 3, 4 };
   child_resource_provider_->CopyToResource(id, data, size);
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
@@ -1955,7 +1956,7 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(id);
 
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     ASSERT_EQ(1u, list.size());
@@ -2000,7 +2001,7 @@ TEST_P(ResourceProviderTest, UnuseTransferredResources) {
   uint8_t data[4] = {1, 2, 3, 4};
   child_resource_provider_->CopyToResource(id, data, size);
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   const ResourceProvider::ResourceIdMap& map =
@@ -2010,7 +2011,7 @@ TEST_P(ResourceProviderTest, UnuseTransferredResources) {
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(id);
 
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id));
@@ -2020,7 +2021,7 @@ TEST_P(ResourceProviderTest, UnuseTransferredResources) {
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       resource_ids_to_receive);
   }
-  std::vector<TransferableResource> sent_to_top_level;
+  std::vector<viz::TransferableResource> sent_to_top_level;
   {
     // Parent transfers to top-level.
     ASSERT_TRUE(map.find(id) != map.end());
@@ -2043,7 +2044,7 @@ TEST_P(ResourceProviderTest, UnuseTransferredResources) {
     // Send the resource to the parent again.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(id);
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id));
@@ -2055,8 +2056,8 @@ TEST_P(ResourceProviderTest, UnuseTransferredResources) {
   }
   {
     // Receive returns back from top-level.
-    std::vector<ReturnedResource> returned =
-        TransferableResource::ReturnResources(sent_to_top_level);
+    std::vector<viz::ReturnedResource> returned =
+        viz::TransferableResource::ReturnResources(sent_to_top_level);
     resource_provider_->ReceiveReturnsFromParent(returned);
     // Resource is still not yet returned to the child, since it's declared used
     // in the parent.
@@ -2078,8 +2079,8 @@ TEST_P(ResourceProviderTest, UnuseTransferredResources) {
   }
   {
     // Receive returns back from top-level.
-    std::vector<ReturnedResource> returned =
-        TransferableResource::ReturnResources(sent_to_top_level);
+    std::vector<viz::ReturnedResource> returned =
+        viz::TransferableResource::ReturnResources(sent_to_top_level);
     resource_provider_->ReceiveReturnsFromParent(returned);
     // Resource is still not yet returned to the child, since it's still
     // declared used in the parent.
@@ -2183,14 +2184,14 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     SetResourceFilter(child_resource_provider.get(), id, child_filter);
     Mock::VerifyAndClearExpectations(child_context);
 
-    std::vector<ReturnedResource> returned_to_child;
+    std::vector<viz::ReturnedResource> returned_to_child;
     int child_id = parent_resource_provider->CreateChild(
         GetReturnCallback(&returned_to_child));
     {
       // Transfer some resource to the parent.
       ResourceProvider::ResourceIdArray resource_ids_to_transfer;
       resource_ids_to_transfer.push_back(id);
-      std::vector<TransferableResource> list;
+      std::vector<viz::TransferableResource> list;
 
       EXPECT_CALL(*child_context,
                   produceTextureDirectCHROMIUM(_, GL_TEXTURE_2D, _));
@@ -2314,7 +2315,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     // Transfer the resource, expect the sync points to be consistent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(resource);
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list);
     ASSERT_EQ(1u, list.size());
     EXPECT_LE(sync_token.release_count(),
@@ -2341,8 +2342,8 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
 
     // Receive the resource, then delete it, expect the sync points to be
     // consistent.
-    std::vector<ReturnedResource> returned =
-        TransferableResource::ReturnResources(list);
+    std::vector<viz::ReturnedResource> returned =
+        viz::TransferableResource::ReturnResources(list);
     resource_provider_->ReceiveReturnsFromParent(returned);
     EXPECT_EQ(1u, context()->NumTextures());
     EXPECT_FALSE(release_sync_token.HasData());
@@ -2368,7 +2369,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     // Transfer the resource, expect the sync points to be consistent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(resource);
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list);
     ASSERT_EQ(1u, list.size());
     EXPECT_LE(sync_token.release_count(),
@@ -2400,8 +2401,8 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
 
     // Then receive the resource which should release the mailbox, expect the
     // sync points to be consistent.
-    std::vector<ReturnedResource> returned =
-        TransferableResource::ReturnResources(list);
+    std::vector<viz::ReturnedResource> returned =
+        viz::TransferableResource::ReturnResources(list);
     resource_provider_->ReceiveReturnsFromParent(returned);
     EXPECT_LE(list[0].mailbox_holder.sync_token.release_count(),
               release_sync_token.release_count());
@@ -2426,14 +2427,14 @@ TEST_P(ResourceProviderTest, LostResourceInParent) {
   bool should_lose_resource =
       GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE;
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     // Transfer the resource to the parent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(resource);
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     EXPECT_EQ(1u, list.size());
@@ -2479,14 +2480,14 @@ TEST_P(ResourceProviderTest, LostResourceInGrandParent) {
       gfx::ColorSpace());
   child_resource_provider_->AllocateForTesting(resource);
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     // Transfer the resource to the parent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(resource);
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     EXPECT_EQ(1u, list.size());
@@ -2507,14 +2508,14 @@ TEST_P(ResourceProviderTest, LostResourceInGrandParent) {
     // Transfer to a grandparent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(parent_resource);
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list);
 
     // Receive back a lost resource from the grandparent.
     EXPECT_EQ(1u, list.size());
     EXPECT_EQ(parent_resource, list[0].id);
-    std::vector<ReturnedResource> returned =
-        TransferableResource::ReturnResources(list);
+    std::vector<viz::ReturnedResource> returned =
+        viz::TransferableResource::ReturnResources(list);
     EXPECT_EQ(1u, returned.size());
     EXPECT_EQ(parent_resource, returned[0].id);
     returned[0].lost = true;
@@ -2557,14 +2558,14 @@ TEST_P(ResourceProviderTest, LostMailboxInParent) {
   viz::ResourceId resource = CreateChildMailbox(
       &release_sync_token, &lost_resource, &release_called, &sync_token);
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     // Transfer the resource to the parent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(resource);
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     EXPECT_EQ(1u, list.size());
@@ -2610,14 +2611,14 @@ TEST_P(ResourceProviderTest, LostMailboxInGrandParent) {
   viz::ResourceId resource = CreateChildMailbox(
       &release_sync_token, &lost_resource, &release_called, &sync_token);
 
-  std::vector<ReturnedResource> returned_to_child;
+  std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     // Transfer the resource to the parent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(resource);
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     EXPECT_EQ(1u, list.size());
@@ -2638,14 +2639,14 @@ TEST_P(ResourceProviderTest, LostMailboxInGrandParent) {
     // Transfer to a grandparent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(parent_resource);
-    std::vector<TransferableResource> list;
+    std::vector<viz::TransferableResource> list;
     resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list);
 
     // Receive back a lost resource from the grandparent.
     EXPECT_EQ(1u, list.size());
     EXPECT_EQ(parent_resource, list[0].id);
-    std::vector<ReturnedResource> returned =
-        TransferableResource::ReturnResources(list);
+    std::vector<viz::ReturnedResource> returned =
+        viz::TransferableResource::ReturnResources(list);
     EXPECT_EQ(1u, returned.size());
     EXPECT_EQ(parent_resource, returned[0].id);
     returned[0].lost = true;
@@ -2703,7 +2704,7 @@ TEST_P(ResourceProviderTest, ShutdownWithExportedResource) {
   // Transfer the resource, so we can't release it properly on shutdown.
   ResourceProvider::ResourceIdArray resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(resource);
-  std::vector<TransferableResource> list;
+  std::vector<viz::TransferableResource> list;
   child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                 &list);
 
@@ -3375,7 +3376,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_PrepareSendToParent_NoSyncToken) {
   Mock::VerifyAndClearExpectations(context);
 
   ResourceProvider::ResourceIdArray resource_ids_to_transfer{id};
-  std::vector<TransferableResource> list;
+  std::vector<viz::TransferableResource> list;
   resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list);
   ASSERT_EQ(1u, list.size());
   EXPECT_FALSE(list[0].mailbox_holder.sync_token.HasData());

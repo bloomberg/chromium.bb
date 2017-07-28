@@ -86,17 +86,17 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
 }
 
 void CompositorFrameSinkSupport::RefResources(
-    const std::vector<cc::TransferableResource>& resources) {
+    const std::vector<TransferableResource>& resources) {
   surface_resource_holder_.RefResources(resources);
 }
 
 void CompositorFrameSinkSupport::UnrefResources(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<ReturnedResource>& resources) {
   surface_resource_holder_.UnrefResources(resources);
 }
 
 void CompositorFrameSinkSupport::ReturnResources(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<ReturnedResource>& resources) {
   if (resources.empty())
     return;
   if (!ack_pending_count_ && client_) {
@@ -109,7 +109,7 @@ void CompositorFrameSinkSupport::ReturnResources(
 }
 
 void CompositorFrameSinkSupport::ReceiveFromChild(
-    const std::vector<cc::TransferableResource>& resources) {
+    const std::vector<TransferableResource>& resources) {
   surface_resource_holder_.ReceiveFromChild(resources);
 }
 
@@ -194,8 +194,8 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
       TRACE_EVENT_INSTANT0("cc", "Invalid SurfaceInfo",
                            TRACE_EVENT_SCOPE_THREAD);
       EvictCurrentSurface();
-      std::vector<cc::ReturnedResource> resources =
-          cc::TransferableResource::ReturnResources(frame.resource_list);
+      std::vector<ReturnedResource> resources =
+          TransferableResource::ReturnResources(frame.resource_list);
       ReturnResources(resources);
       DidReceiveCompositorFrameAck();
       return true;

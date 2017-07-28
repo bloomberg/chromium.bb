@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "cc/resources/returned_resource.h"
 #include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
@@ -40,7 +40,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     virtual void SetBeginFrameSource(
         viz::BeginFrameSource* begin_frame_source) = 0;
     virtual void DidReceiveCompositorFrameAck() = 0;
-    virtual void ReclaimResources(const std::vector<cc::ReturnedResource>&) = 0;
+    virtual void ReclaimResources(
+        const std::vector<viz::ReturnedResource>&) = 0;
   };
 
   DelegatedFrameHostAndroid(ViewAndroid* view,
@@ -80,10 +81,10 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
  private:
   // viz::CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck(
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   void ReclaimResources(
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<viz::ReturnedResource>& resources) override;
   void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
   void OnBeginFramePausedChanged(bool paused) override;

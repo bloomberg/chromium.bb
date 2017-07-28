@@ -19,10 +19,10 @@ class FakeCompositorFrameSinkSupportClient
 
   // CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck(
-      const std::vector<ReturnedResource>& resources) override;
+      const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   void ReclaimResources(
-      const std::vector<ReturnedResource>& resources) override;
+      const std::vector<viz::ReturnedResource>& resources) override;
   void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
   void OnBeginFramePausedChanged(bool paused) override;
@@ -31,14 +31,14 @@ class FakeCompositorFrameSinkSupportClient
   const viz::LocalSurfaceId& last_local_surface_id() const {
     return last_local_surface_id_;
   }
-  const std::vector<ReturnedResource>& returned_resources() const {
+  const std::vector<viz::ReturnedResource>& returned_resources() const {
     return returned_resources_;
   }
 
  private:
   gfx::Rect last_damage_rect_;
   viz::LocalSurfaceId last_local_surface_id_;
-  std::vector<ReturnedResource> returned_resources_;
+  std::vector<viz::ReturnedResource> returned_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCompositorFrameSinkSupportClient);
 };

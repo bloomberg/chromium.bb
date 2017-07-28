@@ -30,7 +30,7 @@ cc::CompositorFrame MakeEmptyCompositorFrame() {
 cc::CompositorFrame MakeCompositorFrame(
     std::vector<SurfaceId> activation_dependencies,
     std::vector<SurfaceId> referenced_surfaces,
-    std::vector<cc::TransferableResource> resource_list) {
+    std::vector<TransferableResource> resource_list) {
   cc::CompositorFrame compositor_frame = test::MakeCompositorFrame();
   compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, true);
   compositor_frame.metadata.activation_dependencies =

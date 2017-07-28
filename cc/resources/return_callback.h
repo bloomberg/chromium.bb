@@ -6,12 +6,12 @@
 #define CC_RESOURCES_RETURN_CALLBACK_H_
 
 #include "base/callback.h"
-#include "cc/resources/returned_resource.h"
+#include "components/viz/common/resources/returned_resource.h"
 
 namespace cc {
 class BlockingTaskRunner;
 
-typedef base::Callback<void(const std::vector<ReturnedResource>&,
+typedef base::Callback<void(const std::vector<viz::ReturnedResource>&,
                             BlockingTaskRunner* main_thread_task_runner)>
     ReturnCallback;
 

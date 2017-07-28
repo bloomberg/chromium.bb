@@ -413,7 +413,7 @@ bool Buffer::ProduceTransferableResource(
     LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder,
     bool secure_output_only,
     bool client_usage,
-    cc::TransferableResource* resource) {
+    viz::TransferableResource* resource) {
   TRACE_EVENT0("exo", "Buffer::ProduceTransferableResource");
 
   DCHECK(attach_count_);

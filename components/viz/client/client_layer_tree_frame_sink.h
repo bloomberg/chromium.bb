@@ -57,11 +57,11 @@ class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
  private:
   // mojom::CompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<ReturnedResource>& resources) override;
   void OnBeginFrame(const BeginFrameArgs& begin_frame_args) override;
   void OnBeginFramePausedChanged(bool paused) override;
   void ReclaimResources(
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<ReturnedResource>& resources) override;
 
   // ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;

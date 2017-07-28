@@ -61,13 +61,11 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // SurfaceClient implementation.
   void OnSurfaceActivated(Surface* surface) override;
   void RefResources(
-      const std::vector<cc::TransferableResource>& resources) override;
-  void UnrefResources(
-      const std::vector<cc::ReturnedResource>& resources) override;
-  void ReturnResources(
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<TransferableResource>& resources) override;
+  void UnrefResources(const std::vector<ReturnedResource>& resources) override;
+  void ReturnResources(const std::vector<ReturnedResource>& resources) override;
   void ReceiveFromChild(
-      const std::vector<cc::TransferableResource>& resources) override;
+      const std::vector<TransferableResource>& resources) override;
 
   // FrameSinkManagerClient implementation.
   void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override;
@@ -132,7 +130,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // Counts the number of CompositorFrames that have been submitted and have not
   // yet received an ACK.
   int ack_pending_count_ = 0;
-  std::vector<cc::ReturnedResource> surface_returned_resources_;
+  std::vector<ReturnedResource> surface_returned_resources_;
 
   // The begin frame source being observered. Null if none.
   BeginFrameSource* begin_frame_source_ = nullptr;

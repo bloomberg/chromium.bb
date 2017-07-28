@@ -9,8 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
-#include "cc/resources/returned_resource.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/resources/returned_resource.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -35,7 +35,7 @@ class CC_EXPORT LayerTreeFrameSinkClient {
 
   // Returns resources sent to SubmitCompositorFrame to be reused or freed.
   virtual void ReclaimResources(
-      const std::vector<ReturnedResource>& resources) = 0;
+      const std::vector<viz::ReturnedResource>& resources) = 0;
 
   // If set, |callback| will be called subsequent to each new tree activation,
   // regardless of the compositor visibility or damage. |callback| must remain

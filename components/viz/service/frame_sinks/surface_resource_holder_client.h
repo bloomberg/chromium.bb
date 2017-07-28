@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_SURFACE_RESOURCE_HOLDER_CLIENT_H_
 #define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_SURFACE_RESOURCE_HOLDER_CLIENT_H_
 
-#include "cc/resources/returned_resource.h"
+#include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
@@ -17,7 +17,7 @@ class VIZ_SERVICE_EXPORT SurfaceResourceHolderClient {
   // ReturnResources gets called when the display compositor is done using the
   // resources so that the client can use them.
   virtual void ReturnResources(
-      const std::vector<cc::ReturnedResource>& resources) = 0;
+      const std::vector<ReturnedResource>& resources) = 0;
 };
 
 }  // namespace viz

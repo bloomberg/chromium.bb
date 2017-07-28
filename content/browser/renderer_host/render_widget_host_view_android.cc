@@ -1196,7 +1196,7 @@ void RenderWidgetHostViewAndroid::DidReceiveCompositorFrameAck() {
 }
 
 void RenderWidgetHostViewAndroid::ReclaimResources(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<viz::ReturnedResource>& resources) {
   if (resources.empty())
     return;
   std::copy(resources.begin(), resources.end(),

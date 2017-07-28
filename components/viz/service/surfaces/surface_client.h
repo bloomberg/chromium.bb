@@ -30,21 +30,21 @@ class VIZ_SERVICE_EXPORT SurfaceClient {
 
   // Increments the reference count on resources specified by |resources|.
   virtual void RefResources(
-      const std::vector<cc::TransferableResource>& resources) = 0;
+      const std::vector<TransferableResource>& resources) = 0;
 
   // Decrements the reference count on resources specified by |resources|.
   virtual void UnrefResources(
-      const std::vector<cc::ReturnedResource>& resources) = 0;
+      const std::vector<ReturnedResource>& resources) = 0;
 
   // ReturnResources gets called when the display compositor is done using the
   // resources so that the client can use them.
   virtual void ReturnResources(
-      const std::vector<cc::ReturnedResource>& resources) = 0;
+      const std::vector<ReturnedResource>& resources) = 0;
 
   // Increments the reference count of resources received from a child
   // compositor.
   virtual void ReceiveFromChild(
-      const std::vector<cc::TransferableResource>& resources) = 0;
+      const std::vector<TransferableResource>& resources) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SurfaceClient);

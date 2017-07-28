@@ -231,7 +231,7 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
 
   if (fallback_tick_running_) {
     DCHECK(frame.resource_list.empty());
-    std::vector<cc::ReturnedResource> return_resources;
+    std::vector<viz::ReturnedResource> return_resources;
     ReclaimResources(return_resources);
     did_submit_frame_ = true;
     return;
@@ -429,7 +429,7 @@ void SynchronousLayerTreeFrameSink::InvokeComposite(
 
 void SynchronousLayerTreeFrameSink::OnReclaimResources(
     uint32_t layer_tree_frame_sink_id,
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<viz::ReturnedResource>& resources) {
   // Ignore message if it's a stale one coming from a different output surface
   // (e.g. after a lost context).
   if (layer_tree_frame_sink_id != layer_tree_frame_sink_id_)
@@ -486,7 +486,7 @@ bool SynchronousLayerTreeFrameSink::CalledOnValidThread() const {
 }
 
 void SynchronousLayerTreeFrameSink::DidReceiveCompositorFrameAck(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<viz::ReturnedResource>& resources) {
   ReclaimResources(resources);
 }
 
@@ -494,7 +494,7 @@ void SynchronousLayerTreeFrameSink::OnBeginFrame(
     const viz::BeginFrameArgs& args) {}
 
 void SynchronousLayerTreeFrameSink::ReclaimResources(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<viz::ReturnedResource>& resources) {
   DCHECK(resources.empty());
   client_->ReclaimResources(resources);
 }

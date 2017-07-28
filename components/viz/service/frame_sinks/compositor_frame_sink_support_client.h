@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_COMPOSITOR_FRAME_SINK_SUPPORT_CLIENT_H_
 #define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_COMPOSITOR_FRAME_SINK_SUPPORT_CLIENT_H_
 
-#include "cc/resources/returned_resource.h"
+#include "components/viz/common/resources/returned_resource.h"
 
 namespace gfx {
 class Rect;
@@ -26,14 +26,14 @@ class CompositorFrameSinkSupportClient {
   // However, there's a fair amount of cleanup and refactoring necessary to get
   // rid of it.
   virtual void DidReceiveCompositorFrameAck(
-      const std::vector<cc::ReturnedResource>& resources) = 0;
+      const std::vector<ReturnedResource>& resources) = 0;
 
   // Notification for the client to generate a CompositorFrame.
   virtual void OnBeginFrame(const BeginFrameArgs& args) = 0;
 
   // Returns resources sent to SubmitCompositorFrame to be reused or freed.
   virtual void ReclaimResources(
-      const std::vector<cc::ReturnedResource>& resources) = 0;
+      const std::vector<ReturnedResource>& resources) = 0;
 
   // Called when surface is being scheduled for a draw.
   virtual void WillDrawSurface(const LocalSurfaceId& local_surface_id,

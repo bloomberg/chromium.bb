@@ -14,7 +14,7 @@ FakeCompositorFrameSinkSupportClient::~FakeCompositorFrameSinkSupportClient() =
     default;
 
 void FakeCompositorFrameSinkSupportClient::DidReceiveCompositorFrameAck(
-    const std::vector<ReturnedResource>& resources) {
+    const std::vector<viz::ReturnedResource>& resources) {
   returned_resources_ = resources;
 }
 
@@ -22,7 +22,7 @@ void FakeCompositorFrameSinkSupportClient::OnBeginFrame(
     const viz::BeginFrameArgs& args) {}
 
 void FakeCompositorFrameSinkSupportClient::ReclaimResources(
-    const std::vector<ReturnedResource>& resources) {
+    const std::vector<viz::ReturnedResource>& resources) {
   returned_resources_ = resources;
 }
 

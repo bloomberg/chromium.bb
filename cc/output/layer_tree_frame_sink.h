@@ -14,8 +14,8 @@
 #include "cc/cc_export.h"
 #include "cc/output/overlay_candidate_validator.h"
 #include "cc/output/vulkan_context_provider.h"
-#include "cc/resources/returned_resource.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/resources/returned_resource.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/color_space.h"
 
