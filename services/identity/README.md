@@ -103,11 +103,16 @@ drive the bringup of this interface.
 
 ## Obtaining the Information of All Accounts
 
-If you are currently calling AccountTracker::GetAccounts() or
-AccountTrackerService::GetAccounts(), the corresponding interface does not yet
-exist in the Identity Service. When we bring it up, it will have the same
-constraints and guidance as that for getting the info of the [primary
-account](#obtaining-the-information-of-the-primary-account).
+If you are currently calling AccountTracker::GetAccounts(),
+AccountTrackerService::GetAccounts(), or OAuth2TokenService::GetAccounts(), the
+corresponding interface in the Identity Service is
+IdentityManager::GetAccounts(). Note the semantics of this method carefully (as
+described in its documentation). In particular, this method returns only
+accounts that have a refresh token available, which is not necessarily the
+same behavior as AccountTracker::GetAccounts() or
+AccountTrackerService::GetAccounts() (but *is* the same behavior as
+OAuth2TokenService::GetAccounts()). If your use case is difficult to
+implement with the semantics of this method, contact blundell@chromium.org.
 
 ## Other Needs
 

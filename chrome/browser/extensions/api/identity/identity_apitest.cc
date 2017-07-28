@@ -437,7 +437,8 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
     SignIn(account_key, account_key);
   }
 
-  void SignIn(const std::string& email, const std::string& gaia) {
+  // Returns the account ID of the created account.
+  std::string SignIn(const std::string& email, const std::string& gaia) {
     AccountTrackerService* account_tracker =
         AccountTrackerServiceFactory::GetForProfile(profile());
     std::string account_id = account_tracker->SeedAccountInfo(gaia, email);
@@ -448,6 +449,8 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
     signin_manager_->SignIn(gaia, email, "password");
 #endif
     token_service_->UpdateCredentials(account_id, "refresh_token");
+
+    return account_id;
   }
 
   void AddAccount(const std::string& email, const std::string& gaia) {
@@ -555,6 +558,18 @@ IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, MultiAccountOn) {
 }
 
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, NoneSignedIn) {
+  EXPECT_TRUE(ExpectGetAccounts(std::vector<std::string>()));
+}
+
+IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, NoPrimaryAccount) {
+  AddAccount("secondary@example.com", "2");
+  EXPECT_TRUE(ExpectGetAccounts(std::vector<std::string>()));
+}
+
+IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest,
+                       PrimaryAccountHasNoRefreshToken) {
+  std::string primary_account_id = SignIn("primary@example.com", "1");
+  token_service_->RevokeCredentials(primary_account_id);
   EXPECT_TRUE(ExpectGetAccounts(std::vector<std::string>()));
 }
 
