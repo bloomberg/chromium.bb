@@ -1066,8 +1066,8 @@ void FrameLoader::CommitProvisionalLoad() {
   // Check if the destination page is allowed to access the previous page's
   // timing information.
   if (frame_->GetDocument()) {
-    RefPtr<SecurityOrigin> security_origin = SecurityOrigin::Create(
-        provisional_document_loader_->GetRequest().Url());
+    RefPtr<SecurityOrigin> security_origin =
+        SecurityOrigin::Create(provisional_document_loader_->Url());
     provisional_document_loader_->GetTiming()
         .SetHasSameOriginAsPreviousDocument(
             security_origin->CanRequest(frame_->GetDocument()->Url()));
@@ -1518,7 +1518,7 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
     Client()->DispatchWillSubmitForm(frame_load_request.Form());
 
   provisional_document_loader_->AppendRedirect(
-      provisional_document_loader_->GetRequest().Url());
+      provisional_document_loader_->Url());
 
   if (IsBackForwardLoadType(type)) {
     DCHECK(history_item);
