@@ -567,13 +567,7 @@ void WorkerThread::PerformDebuggerTaskOnWorkerThread(
   {
     MutexLocker lock(thread_state_mutex_);
     running_debugger_task_ = false;
-    if (!requested_to_terminate_)
-      return;
-    // termiante() was called while a debugger task is running. Shutdown
-    // sequence will start soon.
   }
-  // Stop further debugger tasks from running after this point.
-  inspector_task_runner_->Kill();
 }
 
 void WorkerThread::PerformDebuggerTaskDontWaitOnWorkerThread() {
