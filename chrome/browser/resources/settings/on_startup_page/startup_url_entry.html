@@ -31,11 +31,10 @@
         </button>
         <template is="cr-lazy-render" id="menu">
           <dialog is="cr-action-menu">
-            <button class="dropdown-item" role="option" on-tap="onEditTap_">
+            <button class="dropdown-item" on-tap="onEditTap_">
               $i18n{edit}
             </button>
-            <button class="dropdown-item" role="option" id="remove"
-                on-tap="onRemoveTap_">
+            <button class="dropdown-item" id="remove" on-tap="onRemoveTap_">
               $i18n{onStartupRemove}
             </button>
           </dialog>
