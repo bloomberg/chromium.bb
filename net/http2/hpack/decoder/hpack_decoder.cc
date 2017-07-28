@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/http2/hpack/decoder/http2_hpack_decoder.h"
+#include "net/http2/hpack/decoder/hpack_decoder.h"
 
 #include "base/logging.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -10,40 +10,38 @@
 
 namespace net {
 
-Http2HpackDecoder::Http2HpackDecoder(HpackDecoderListener* listener,
-                                     size_t max_string_size)
+HpackDecoder::HpackDecoder(HpackDecoderListener* listener,
+                           size_t max_string_size)
     : decoder_state_(listener),
       entry_buffer_(&decoder_state_, max_string_size),
       block_decoder_(&entry_buffer_),
       error_detected_(false) {}
 
-Http2HpackDecoder::~Http2HpackDecoder() {}
+HpackDecoder::~HpackDecoder() {}
 
-void Http2HpackDecoder::set_listener(HpackDecoderListener* listener) {
+void HpackDecoder::set_listener(HpackDecoderListener* listener) {
   return decoder_state_.set_listener(listener);
 }
 
-HpackDecoderListener* Http2HpackDecoder::listener() const {
+HpackDecoderListener* HpackDecoder::listener() const {
   return decoder_state_.listener();
 }
 
-void Http2HpackDecoder::set_tables_debug_listener(
+void HpackDecoder::set_tables_debug_listener(
     HpackDecoderTablesDebugListener* debug_listener) {
   decoder_state_.set_tables_debug_listener(debug_listener);
 }
 
-void Http2HpackDecoder::set_max_string_size_bytes(
-    size_t max_string_size_bytes) {
+void HpackDecoder::set_max_string_size_bytes(size_t max_string_size_bytes) {
   entry_buffer_.set_max_string_size_bytes(max_string_size_bytes);
 }
 
-void Http2HpackDecoder::ApplyHeaderTableSizeSetting(
-    uint32_t max_header_table_size) {
+void HpackDecoder::ApplyHeaderTableSizeSetting(uint32_t max_header_table_size) {
   decoder_state_.ApplyHeaderTableSizeSetting(max_header_table_size);
 }
 
-bool Http2HpackDecoder::StartDecodingBlock() {
-  DVLOG(3) << "Http2HpackDecoder::StartDecodingBlock, error_detected="
+bool HpackDecoder::StartDecodingBlock() {
+  DVLOG(3) << "HpackDecoder::StartDecodingBlock, error_detected="
            << (error_detected() ? "true" : "false");
   if (error_detected()) {
     return false;
@@ -56,8 +54,8 @@ bool Http2HpackDecoder::StartDecodingBlock() {
   return true;
 }
 
-bool Http2HpackDecoder::DecodeFragment(DecodeBuffer* db) {
-  DVLOG(3) << "Http2HpackDecoder::DecodeFragment, error_detected="
+bool HpackDecoder::DecodeFragment(DecodeBuffer* db) {
+  DVLOG(3) << "HpackDecoder::DecodeFragment, error_detected="
            << (error_detected() ? "true" : "false")
            << ", size=" << db->Remaining();
   if (error_detected()) {
@@ -83,8 +81,8 @@ bool Http2HpackDecoder::DecodeFragment(DecodeBuffer* db) {
   return true;
 }
 
-bool Http2HpackDecoder::EndDecodingBlock() {
-  DVLOG(3) << "Http2HpackDecoder::EndDecodingBlock, error_detected="
+bool HpackDecoder::EndDecodingBlock() {
+  DVLOG(3) << "HpackDecoder::EndDecodingBlock, error_detected="
            << (error_detected() ? "true" : "false");
   if (error_detected()) {
     return false;
@@ -102,25 +100,25 @@ bool Http2HpackDecoder::EndDecodingBlock() {
   return true;
 }
 
-bool Http2HpackDecoder::error_detected() {
+bool HpackDecoder::error_detected() {
   if (!error_detected_) {
     if (entry_buffer_.error_detected()) {
-      DVLOG(2) << "Http2HpackDecoder::error_detected in entry_buffer_";
+      DVLOG(2) << "HpackDecoder::error_detected in entry_buffer_";
       error_detected_ = true;
     } else if (decoder_state_.error_detected()) {
-      DVLOG(2) << "Http2HpackDecoder::error_detected in decoder_state_";
+      DVLOG(2) << "HpackDecoder::error_detected in decoder_state_";
       error_detected_ = true;
     }
   }
   return error_detected_;
 }
 
-size_t Http2HpackDecoder::EstimateMemoryUsage() const {
+size_t HpackDecoder::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(entry_buffer_);
 }
 
-void Http2HpackDecoder::ReportError(Http2StringPiece error_message) {
-  DVLOG(3) << "Http2HpackDecoder::ReportError is new="
+void HpackDecoder::ReportError(Http2StringPiece error_message) {
+  DVLOG(3) << "HpackDecoder::ReportError is new="
            << (!error_detected_ ? "true" : "false")
            << ", error_message: " << error_message;
   if (!error_detected_) {
