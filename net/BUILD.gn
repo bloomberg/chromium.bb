@@ -193,6 +193,8 @@ component("net") {
     "cert/internal/cert_issuer_source_static.h",
     "cert/internal/certificate_policies.cc",
     "cert/internal/certificate_policies.h",
+    "cert/internal/common_cert_errors.cc",
+    "cert/internal/common_cert_errors.h",
     "cert/internal/extended_key_usage.cc",
     "cert/internal/extended_key_usage.h",
     "cert/internal/name_constraints.cc",

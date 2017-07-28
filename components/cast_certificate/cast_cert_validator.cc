@@ -17,6 +17,7 @@
 #include "components/cast_certificate/cast_crl.h"
 #include "net/cert/internal/cert_issuer_source_static.h"
 #include "net/cert/internal/certificate_policies.h"
+#include "net/cert/internal/common_cert_errors.h"
 #include "net/cert/internal/extended_key_usage.h"
 #include "net/cert/internal/parse_certificate.h"
 #include "net/cert/internal/parse_name.h"
@@ -25,7 +26,6 @@
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/internal/simple_path_builder_delegate.h"
 #include "net/cert/internal/trust_store_in_memory.h"
-#include "net/cert/internal/verify_certificate_chain.h"
 #include "net/cert/internal/verify_signed_data.h"
 #include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
@@ -236,8 +236,8 @@ CastCertError MapToCastError(const net::CertPathBuilder::Result& result) {
     return CastCertError::ERR_CERTS_VERIFY_GENERIC;
   const net::CertPathErrors& path_errors =
       result.paths.at(result.best_result_index)->errors;
-  if (path_errors.ContainsError(net::kValidityFailedNotAfter) ||
-      path_errors.ContainsError(net::kValidityFailedNotBefore)) {
+  if (path_errors.ContainsError(net::cert_errors::kValidityFailedNotAfter) ||
+      path_errors.ContainsError(net::cert_errors::kValidityFailedNotBefore)) {
     return CastCertError::ERR_CERTS_DATE_INVALID;
   }
   return CastCertError::ERR_CERTS_VERIFY_GENERIC;
