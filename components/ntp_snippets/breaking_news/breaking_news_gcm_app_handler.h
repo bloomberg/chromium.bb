@@ -40,9 +40,6 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
                           const SuccessCallback& success_callback,
                           const ErrorCallback& error_callback)>;
 
-  using OnNewContentCallback =
-      base::Callback<void(std::unique_ptr<base::Value> content)>;
-
   BreakingNewsGCMAppHandler(
       gcm::GCMDriver* gcm_driver,
       instance_id::InstanceIDDriver* instance_id_driver,
@@ -54,7 +51,8 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
   ~BreakingNewsGCMAppHandler() override;
 
   // BreakingNewsListener overrides.
-  void StartListening(OnNewContentCallback on_new_content_callback) override;
+  void StartListening(
+      OnNewRemoteSuggestionCallback on_new_remote_suggestion_callback) override;
   void StopListening() override;
 
   // GCMAppHandler overrides.
@@ -95,7 +93,7 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
 
   // Called after every time a new message is received in OnMessage() to notify
   // the content provider.
-  OnNewContentCallback on_new_content_callback_;
+  OnNewRemoteSuggestionCallback on_new_remote_suggestion_callback_;
 
   base::WeakPtrFactory<BreakingNewsGCMAppHandler> weak_ptr_factory_;
 

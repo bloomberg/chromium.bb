@@ -7,6 +7,7 @@
 
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
+#include "components/ntp_snippets/remote/json_to_categories.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/prefs/pref_registry_simple.h"
 
@@ -56,7 +57,8 @@ class BreakingNewsSuggestionsProvider final
  private:
   // Callback called from the breaking news listener when new content has been
   // pushed from the server.
-  void OnNewContentSuggestion(std::unique_ptr<base::Value> content);
+  void OnNewRemoteSuggestion(
+      std::unique_ptr<RemoteSuggestion> remote_suggestion);
 
   // Callbacks for the RemoteSuggestionsDatabase.
   void OnDatabaseLoaded(
