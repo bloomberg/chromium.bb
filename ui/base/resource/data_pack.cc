@@ -24,31 +24,14 @@
 
 namespace {
 
-static const uint32_t kFileFormatVersion = 4;
-// Length of file header: version, entry count and text encoding type.
-static const size_t kHeaderLength = 2 * sizeof(uint32_t) + sizeof(uint8_t);
-
-#pragma pack(push, 2)
-struct DataPackEntry {
-  uint16_t resource_id;
-  uint32_t file_offset;
-
-  static int CompareById(const void* void_key, const void* void_entry) {
-    uint16_t key = *reinterpret_cast<const uint16_t*>(void_key);
-    const DataPackEntry* entry =
-        reinterpret_cast<const DataPackEntry*>(void_entry);
-    if (key < entry->resource_id) {
-      return -1;
-    } else if (key > entry->resource_id) {
-      return 1;
-    } else {
-      return 0;
-    }
-  }
-};
-#pragma pack(pop)
-
-static_assert(sizeof(DataPackEntry) == 6, "size of entry must be six");
+static const uint32_t kFileFormatV4 = 4;
+static const uint32_t kFileFormatV5 = 5;
+// int32(version), int32(resource_count), int8(encoding)
+static const size_t kHeaderLengthV4 = 2 * sizeof(uint32_t) + sizeof(uint8_t);
+// int32(version), int8(encoding), 3 bytes padding,
+// int16(resource_count), int16(alias_count)
+static const size_t kHeaderLengthV5 =
+    sizeof(uint32_t) + sizeof(uint8_t) * 4 + sizeof(uint16_t) * 2;
 
 // We're crashing when trying to load a pak file on Windows.  Add some error
 // codes for logging.
@@ -102,6 +85,30 @@ void MaybePrintResourceId(uint16_t resource_id) {
 
 namespace ui {
 
+#pragma pack(push, 2)
+struct DataPack::Entry {
+  uint16_t resource_id;
+  uint32_t file_offset;
+
+  static int CompareById(const void* void_key, const void* void_entry) {
+    uint16_t key = *reinterpret_cast<const uint16_t*>(void_key);
+    const Entry* entry = reinterpret_cast<const Entry*>(void_entry);
+    return key - entry->resource_id;
+  }
+};
+
+struct DataPack::Alias {
+  uint16_t resource_id;
+  uint16_t entry_index;
+
+  static int CompareById(const void* void_key, const void* void_entry) {
+    uint16_t key = *reinterpret_cast<const uint16_t*>(void_key);
+    const Alias* entry = reinterpret_cast<const Alias*>(void_entry);
+    return key - entry->resource_id;
+  }
+};
+#pragma pack(pop)
+
 // Abstraction of a data source (memory mapped file or in-memory buffer).
 class DataPack::DataSource {
  public:
@@ -149,9 +156,15 @@ class DataPack::BufferDataSource : public DataPack::DataSource {
 };
 
 DataPack::DataPack(ui::ScaleFactor scale_factor)
-    : resource_count_(0),
+    : resource_table_(nullptr),
+      resource_count_(0),
+      alias_table_(nullptr),
+      alias_count_(0),
       text_encoding_type_(BINARY),
       scale_factor_(scale_factor) {
+  // Static assert must be within a DataPack member to appease visiblity rules.
+  static_assert(sizeof(Entry) == 6, "size of Entry must be 6");
+  static_assert(sizeof(Alias) == 4, "size of Alias must be 4");
 }
 
 DataPack::~DataPack() {
@@ -193,29 +206,37 @@ bool DataPack::LoadFromBuffer(base::StringPiece buffer) {
 }
 
 bool DataPack::LoadImpl(std::unique_ptr<DataPack::DataSource> data_source) {
-  // Sanity check the header of the file.
-  if (kHeaderLength > data_source->GetLength()) {
+  const uint8_t* data = data_source->GetData();
+  size_t data_length = data_source->GetLength();
+  // Parse the version and check for truncated header.
+  uint32_t version = 0;
+  if (data_length > sizeof(version))
+    version = reinterpret_cast<const uint32_t*>(data)[0];
+  size_t header_length =
+      version == kFileFormatV4 ? kHeaderLengthV4 : kHeaderLengthV5;
+  if (version == 0 || data_length < header_length) {
     DLOG(ERROR) << "Data pack file corruption: incomplete file header.";
     LogDataPackError(HEADER_TRUNCATED);
     return false;
   }
 
   // Parse the header of the file.
-  // First uint32_t: version; second: resource count;
-  const uint32_t* ptr =
-      reinterpret_cast<const uint32_t*>(data_source->GetData());
-  uint32_t version = ptr[0];
-  if (version != kFileFormatVersion) {
+  if (version == kFileFormatV4) {
+    resource_count_ = reinterpret_cast<const uint32_t*>(data)[1];
+    alias_count_ = 0;
+    text_encoding_type_ = static_cast<TextEncodingType>(data[8]);
+  } else if (version == kFileFormatV5) {
+    // Version 5 added the alias table and changed the header format.
+    text_encoding_type_ = static_cast<TextEncodingType>(data[4]);
+    resource_count_ = reinterpret_cast<const uint16_t*>(data)[4];
+    alias_count_ = reinterpret_cast<const uint16_t*>(data)[5];
+  } else {
     LOG(ERROR) << "Bad data pack version: got " << version << ", expected "
-               << kFileFormatVersion;
+               << kFileFormatV4 << " or " << kFileFormatV5;
     LogDataPackError(BAD_VERSION);
     return false;
   }
-  resource_count_ = ptr[1];
 
-  // third: text encoding.
-  const uint8_t* ptr_encoding = reinterpret_cast<const uint8_t*>(ptr + 2);
-  text_encoding_type_ = static_cast<TextEncodingType>(*ptr_encoding);
   if (text_encoding_type_ != UTF8 && text_encoding_type_ != UTF16 &&
       text_encoding_type_ != BINARY) {
     LOG(ERROR) << "Bad data pack text encoding: got " << text_encoding_type_
@@ -227,35 +248,63 @@ bool DataPack::LoadImpl(std::unique_ptr<DataPack::DataSource> data_source) {
   // Sanity check the file.
   // 1) Check we have enough entries. There's an extra entry after the last item
   // which gives the length of the last item.
-  if (kHeaderLength + (resource_count_ + 1) * sizeof(DataPackEntry) >
-      data_source->GetLength()) {
-    LOG(ERROR) << "Data pack file corruption: too short for number of "
-                  "entries specified.";
+  size_t resource_table_size = (resource_count_ + 1) * sizeof(Entry);
+  size_t alias_table_size = alias_count_ * sizeof(Alias);
+  if (header_length + resource_table_size + alias_table_size > data_length) {
+    LOG(ERROR) << "Data pack file corruption: "
+               << "too short for number of entries.";
     LogDataPackError(INDEX_TRUNCATED);
     return false;
   }
+
+  resource_table_ = reinterpret_cast<const Entry*>(&data[header_length]);
+  alias_table_ = reinterpret_cast<const Alias*>(
+      &data[header_length + resource_table_size]);
+
   // 2) Verify the entries are within the appropriate bounds. There's an extra
   // entry after the last item which gives us the length of the last item.
   for (size_t i = 0; i < resource_count_ + 1; ++i) {
-    const DataPackEntry* entry = reinterpret_cast<const DataPackEntry*>(
-        data_source->GetData() + kHeaderLength + (i * sizeof(DataPackEntry)));
-    if (entry->file_offset > data_source->GetLength()) {
-      LOG(ERROR) << "Entry #" << i << " in data pack points off end of file. "
-                 << "Was the file corrupted?";
+    if (resource_table_[i].file_offset > data_length) {
+      LOG(ERROR) << "Data pack file corruption: "
+                 << "Entry #" << i << " past end.";
+      LogDataPackError(ENTRY_NOT_FOUND);
+      return false;
+    }
+  }
+
+  // 3) Verify the aliases are within the appropriate bounds.
+  for (size_t i = 0; i < alias_count_; ++i) {
+    if (alias_table_[i].entry_index >= resource_count_) {
+      LOG(ERROR) << "Data pack file corruption: "
+                 << "Alias #" << i << " past end.";
       LogDataPackError(ENTRY_NOT_FOUND);
       return false;
     }
   }
 
   data_source_ = std::move(data_source);
-
   return true;
 }
 
+const DataPack::Entry* DataPack::LookupEntryById(uint16_t resource_id) const {
+  // Search the resource table first as most resources will be in there.
+  const Entry* ret = reinterpret_cast<const Entry*>(
+      bsearch(&resource_id, resource_table_, resource_count_, sizeof(Entry),
+              Entry::CompareById));
+  if (ret == nullptr) {
+    // Search the alias table for the ~10% of entries which are aliases.
+    const Alias* alias = reinterpret_cast<const Alias*>(
+        bsearch(&resource_id, alias_table_, alias_count_, sizeof(Alias),
+                Alias::CompareById));
+    if (alias != nullptr) {
+      ret = &resource_table_[alias->entry_index];
+    }
+  }
+  return ret;
+}
+
 bool DataPack::HasResource(uint16_t resource_id) const {
-  return !!bsearch(&resource_id, data_source_->GetData() + kHeaderLength,
-                   resource_count_, sizeof(DataPackEntry),
-                   DataPackEntry::CompareById);
+  return !!LookupEntryById(resource_id);
 }
 
 bool DataPack::GetStringPiece(uint16_t resource_id,
@@ -271,20 +320,19 @@ bool DataPack::GetStringPiece(uint16_t resource_id,
   #error DataPack assumes little endian
 #endif
 
-  const DataPackEntry* target = reinterpret_cast<const DataPackEntry*>(bsearch(
-      &resource_id, data_source_->GetData() + kHeaderLength, resource_count_,
-      sizeof(DataPackEntry), DataPackEntry::CompareById));
-  if (!target) {
+  const Entry* target = LookupEntryById(resource_id);
+  if (!target)
     return false;
-  }
 
-  const DataPackEntry* next_entry = target + 1;
+  const Entry* next_entry = target + 1;
   // If the next entry points beyond the end of the file this data pack's entry
   // table is corrupt. Log an error and return false. See
   // http://crbug.com/371301.
-  if (next_entry->file_offset > data_source_->GetLength()) {
-    size_t entry_index = target - reinterpret_cast<const DataPackEntry*>(
-                                      data_source_->GetData() + kHeaderLength);
+  size_t entry_offset =
+      reinterpret_cast<const uint8_t*>(next_entry) - data_source_->GetData();
+  size_t pak_size = data_source_->GetLength();
+  if (entry_offset > pak_size || next_entry->file_offset > pak_size) {
+    size_t entry_index = target - resource_table_;
     LOG(ERROR) << "Entry #" << entry_index << " in data pack points off end "
                << "of file. This should have been caught when loading. Was the "
                << "file modified?";
@@ -320,9 +368,7 @@ ui::ScaleFactor DataPack::GetScaleFactor() const {
 void DataPack::CheckForDuplicateResources(
     const std::vector<std::unique_ptr<ResourceHandle>>& packs) {
   for (size_t i = 0; i < resource_count_ + 1; ++i) {
-    const DataPackEntry* entry = reinterpret_cast<const DataPackEntry*>(
-        data_source_->GetData() + kHeaderLength + (i * sizeof(DataPackEntry)));
-    const uint16_t resource_id = entry->resource_id;
+    const uint16_t resource_id = resource_table_[i].resource_id;
     const float resource_scale = GetScaleForScaleFactor(scale_factor_);
     for (const auto& handle : packs) {
       if (GetScaleForScaleFactor(handle->GetScaleFactor()) != resource_scale)
@@ -339,56 +385,44 @@ void DataPack::CheckForDuplicateResources(
 bool DataPack::WritePack(const base::FilePath& path,
                          const std::map<uint16_t, base::StringPiece>& resources,
                          TextEncodingType textEncodingType) {
-  FILE* file = base::OpenFile(path, "wb");
-  if (!file)
-    return false;
-
-  if (fwrite(&kFileFormatVersion, sizeof(kFileFormatVersion), 1, file) != 1) {
-    LOG(ERROR) << "Failed to write file version";
-    base::CloseFile(file);
-    return false;
-  }
-
-  // Note: the python version of this function explicitly sorted keys, but
-  // std::map is a sorted associative container, we shouldn't have to do that.
-  uint32_t entry_count = resources.size();
-  if (fwrite(&entry_count, sizeof(entry_count), 1, file) != 1) {
-    LOG(ERROR) << "Failed to write entry count";
-    base::CloseFile(file);
-    return false;
-  }
-
   if (textEncodingType != UTF8 && textEncodingType != UTF16 &&
       textEncodingType != BINARY) {
     LOG(ERROR) << "Invalid text encoding type, got " << textEncodingType
                << ", expected between " << BINARY << " and " << UTF16;
-    base::CloseFile(file);
     return false;
   }
 
-  uint8_t write_buffer = static_cast<uint8_t>(textEncodingType);
-  if (fwrite(&write_buffer, sizeof(uint8_t), 1, file) != 1) {
-    LOG(ERROR) << "Failed to write file text resources encoding";
+  FILE* file = base::OpenFile(path, "wb");
+  if (!file)
+    return false;
+
+  uint32_t encoding = static_cast<uint32_t>(textEncodingType);
+  // Note: the python version of this function explicitly sorted keys, but
+  // std::map is a sorted associative container, we shouldn't have to do that.
+  uint16_t entry_count = resources.size();
+  // Don't bother computing aliases (revisit if it becomes worth it).
+  uint16_t alias_count = 0;
+
+  if (fwrite(&kFileFormatV5, sizeof(kFileFormatV5), 1, file) != 1 ||
+      fwrite(&encoding, sizeof(uint32_t), 1, file) != 1 ||
+      fwrite(&entry_count, sizeof(entry_count), 1, file) != 1 ||
+      fwrite(&alias_count, sizeof(alias_count), 1, file) != 1) {
+    LOG(ERROR) << "Failed to write header";
     base::CloseFile(file);
     return false;
   }
 
   // Each entry is a uint16_t + a uint32_t. We have an extra entry after the
   // last item so we can compute the size of the list item.
-  uint32_t index_length = (entry_count + 1) * sizeof(DataPackEntry);
-  uint32_t data_offset = kHeaderLength + index_length;
+  uint32_t index_length = (entry_count + 1) * sizeof(Entry);
+  uint32_t data_offset = kHeaderLengthV5 + index_length;
   for (std::map<uint16_t, base::StringPiece>::const_iterator it =
            resources.begin();
        it != resources.end(); ++it) {
     uint16_t resource_id = it->first;
-    if (fwrite(&resource_id, sizeof(resource_id), 1, file) != 1) {
-      LOG(ERROR) << "Failed to write id for " << resource_id;
-      base::CloseFile(file);
-      return false;
-    }
-
-    if (fwrite(&data_offset, sizeof(data_offset), 1, file) != 1) {
-      LOG(ERROR) << "Failed to write offset for " << resource_id;
+    if (fwrite(&resource_id, sizeof(resource_id), 1, file) != 1 ||
+        fwrite(&data_offset, sizeof(data_offset), 1, file) != 1) {
+      LOG(ERROR) << "Failed to write entry for " << resource_id;
       base::CloseFile(file);
       return false;
     }
