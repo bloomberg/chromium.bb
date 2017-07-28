@@ -11,13 +11,6 @@
   <template>
     <style include="cr-shared-style">
       :host {
-        --subpage-search-underline: {
-          margin-bottom: -2px;
-          margin-top: -2px;
-        }
-      }
-
-      :host {
         --paper-input-container-underline: var(--subpage-search-underline);
         --paper-input-container-underline-focus:
             var(--subpage-search-underline);
@@ -27,6 +20,11 @@
           /* Required to align the icon in |clearSearch| vertically. */
           line-height: 0;
         };
+        --subpage-search-underline: {
+          margin-bottom: -2px;
+          margin-top: -2px;
+        }
+        user-select: none;
       }
 
       #searchIcon {
