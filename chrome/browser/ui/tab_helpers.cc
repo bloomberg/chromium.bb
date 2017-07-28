@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/installable/installable_manager.h"
+#include "chrome/browser/language/chrome_language_detection_client.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_observer.h"
 #include "chrome/browser/metrics/renderer_uptime_web_contents_observer.h"
@@ -180,6 +182,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
                         web_contents->GetBrowserContext()));
   chrome_browser_net::NetErrorTabHelper::CreateForWebContents(web_contents);
   chrome_browser_net::PredictorTabHelper::CreateForWebContents(web_contents);
+  if (base::FeatureList::IsEnabled(kDecoupleTranslateLanguageFeature)) {
+    ChromeLanguageDetectionClient::CreateForWebContents(web_contents);
+  }
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents,
       autofill::ChromeAutofillClient::FromWebContents(web_contents));

@@ -109,6 +109,9 @@ void LogTranslateEvent(const content::WebContents* const web_contents,
 
 }  // namespace
 
+const base::Feature kDecoupleTranslateLanguageFeature{
+    "DecoupleTranslateLanguageFeature", base::FEATURE_DISABLED_BY_DEFAULT};
+
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeTranslateClient);
 
 ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
@@ -379,7 +382,7 @@ void ChromeTranslateClient::WebContentsDestroyed() {
 
 void ChromeTranslateClient::OnLanguageDetermined(
     const translate::LanguageDetectionDetails& details) {
-  // TODO: Remove translate notifications and have the clients be
+  // TODO(268984): Remove translate notifications and have the clients be
   // ContentTranslateDriver::Observer directly instead.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
@@ -387,17 +390,21 @@ void ChromeTranslateClient::OnLanguageDetermined(
       content::Details<const translate::LanguageDetectionDetails>(&details));
 
   RecordLanguageDetectionEvent(details);
-  // Unless we have no language model (e.g., in incognito), notify the model
-  // about detected language of every page visited.
-  if (language_histogram_ && details.is_cld_reliable)
-    language_histogram_->OnPageVisited(details.cld_language);
+
+  // Only update language model if it isn't already being handled by the
+  // language component.
+  if (!base::FeatureList::IsEnabled(kDecoupleTranslateLanguageFeature)) {
+    // Notify the model about detected language of every page visited.
+    if (language_histogram_ && details.is_cld_reliable)
+      language_histogram_->OnPageVisited(details.cld_language);
+  }
 }
 
 void ChromeTranslateClient::OnPageTranslated(
     const std::string& original_lang,
     const std::string& translated_lang,
     translate::TranslateErrors::Type error_type) {
-  // TODO: Remove translate notifications and have the clients be
+  // TODO(268984): Remove translate notifications and have the clients be
   // ContentTranslateDriver::Observer directly instead.
   DCHECK(web_contents());
   translate::PageTranslatedDetails details;

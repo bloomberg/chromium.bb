@@ -46,6 +46,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/font_family_cache.h"
+#include "chrome/browser/language/chrome_language_detection_client.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #include "chrome/browser/media/router/receiver_presentation_service_delegate_impl.h"
@@ -3309,8 +3310,16 @@ void ChromeContentBrowserClient::InitFrameInterfaces() {
   frame_interfaces_->AddInterface<bluetooth::mojom::AdapterFactory>(
       base::Bind(&bluetooth::AdapterFactory::Create));
 
-  frame_interfaces_parameterized_->AddInterface(
-      base::Bind(&ChromeTranslateClient::BindContentTranslateDriver));
+  // Register mojo ContentTranslateDriver interface only for main frame.
+  // Use feature to determine whether translate or language code handles
+  // language detection. See crbug.com/736929.
+  if (base::FeatureList::IsEnabled(kDecoupleTranslateLanguageFeature)) {
+    frame_interfaces_parameterized_->AddInterface(
+        base::Bind(&ChromeLanguageDetectionClient::BindContentTranslateDriver));
+  } else {
+    frame_interfaces_parameterized_->AddInterface(
+        base::Bind(&ChromeTranslateClient::BindContentTranslateDriver));
+  }
 
   frame_interfaces_parameterized_->AddInterface(
       base::Bind(&autofill::ContentAutofillDriverFactory::BindAutofillDriver));
