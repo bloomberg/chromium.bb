@@ -106,7 +106,9 @@ static double do_time(int size, int iter)
     return usec;
 }
 
-static void print_neighbors(void *list, unsigned long key)
+static void print_neighbors(void *list, unsigned long key,
+                            unsigned long expected_prev,
+                            unsigned long expected_next)
 {
     unsigned long prev_key = 0;
     unsigned long next_key = 0;
@@ -119,6 +121,16 @@ static void print_neighbors(void *list, unsigned long key)
 				  &next_key, &next_value);
     printf("Neighbors of %5lu: %d %5lu %5lu\n",
 	   key, retval, prev_key, next_key);
+    if (prev_key != expected_prev) {
+        fprintf(stderr, "Unexpected neighbor: %5lu. Expected: %5lu\n",
+                prev_key, expected_prev);
+	exit(1);
+    }
+    if (next_key != expected_next) {
+        fprintf(stderr, "Unexpected neighbor: %5lu. Expected: %5lu\n",
+                next_key, expected_next);
+	exit(1);
+    }
 }
 
 int main(void)
@@ -138,13 +150,13 @@ int main(void)
     print(list);
     printf("\n==============================\n\n");
 
-    print_neighbors(list, 0);
-    print_neighbors(list, 50);
-    print_neighbors(list, 51);
-    print_neighbors(list, 123);
-    print_neighbors(list, 200);
-    print_neighbors(list, 213);
-    print_neighbors(list, 256);
+    print_neighbors(list, 0, 0, 50);
+    print_neighbors(list, 50, 0, 50);
+    print_neighbors(list, 51, 50, 123);
+    print_neighbors(list, 123, 50, 123);
+    print_neighbors(list, 200, 123, 213);
+    print_neighbors(list, 213, 123, 213);
+    print_neighbors(list, 256, 213, 256);
     printf("\n==============================\n\n");
 
     drmSLDelete(list, 50);
