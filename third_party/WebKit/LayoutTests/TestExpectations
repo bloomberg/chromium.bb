@@ -3082,3 +3082,6 @@ crbug.com/749738 [ Win7 Debug ] http/tests/devtools/console/console-format-es6.j
 crbug.com/749738 [ Win7 Debug ] inspector/editor/text-editor-word-jumps.html [ Timeout ]
 crbug.com/749738 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/console/console-format-es6.js [ Timeout ]
 
+# Sheriff failures 2017-07-28
+crbug.com/749738 [ Win7 Debug ] http/tests/devtools/console/console-format-es6-2.js [ Timeout ]
+crbug.com/749738 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/console/console-format-es6-2.js [ Timeout ]
