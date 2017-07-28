@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "components/safe_browsing/web_ui/webui.pb.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 
 namespace safe_browsing {
@@ -215,6 +216,11 @@ class V4Store {
   // which blocks resource loads.
   bool VerifyChecksum();
 
+  // Populates the DatabaseInfo message.
+  void CollectStoreInfo(
+      DatabaseManagerInfo::DatabaseInfo::StoreInfo* store_info,
+      const std::string& base_metric);
+
  protected:
   HashPrefixMap hash_prefix_map_;
 
@@ -399,6 +405,9 @@ class V4Store {
   // Writes the hash_prefix_map_ to disk as a V4StoreFileFormat proto.
   // |checksum| is used to set the |checksum| field in the final proto.
   StoreWriteResult WriteToDisk(const Checksum& checksum);
+
+  // Records the status of the update being applied to the database.
+  ApplyUpdateResult last_apply_update_result_ = APPLY_UPDATE_RESULT_MAX;
 
   // The checksum value as read from the disk, until it is verified. Once
   // verified, it is cleared.

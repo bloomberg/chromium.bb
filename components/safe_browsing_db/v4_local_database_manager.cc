@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
+#include "components/safe_browsing/web_ui/webui.pb.h"
 #include "components/safe_browsing_db/v4_feature_list.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -173,11 +174,25 @@ V4LocalDatabaseManager::PendingCheck::PendingCheck(
 V4LocalDatabaseManager::PendingCheck::~PendingCheck() {}
 
 // static
+const V4LocalDatabaseManager*
+    V4LocalDatabaseManager::current_local_database_manager_;
+
+// static
 scoped_refptr<V4LocalDatabaseManager> V4LocalDatabaseManager::Create(
     const base::FilePath& base_path,
     ExtendedReportingLevelCallback extended_reporting_level_callback) {
   return make_scoped_refptr(
       new V4LocalDatabaseManager(base_path, extended_reporting_level_callback));
+}
+
+void V4LocalDatabaseManager::CollectDatabaseManagerInfo(
+    DatabaseManagerInfo* database_manager_info) const {
+  v4_update_protocol_manager_->CollectUpdateInfo(
+      database_manager_info->mutable_update_info());
+
+  // Update the protobuf with the information from V4Database.
+  v4_database_->CollectDatabaseInfo(
+      database_manager_info->mutable_database_info());
 }
 
 V4LocalDatabaseManager::V4LocalDatabaseManager(
@@ -465,12 +480,16 @@ void V4LocalDatabaseManager::StartOnIOThread(
   SetupDatabase();
 
   enabled_ = true;
+
+  current_local_database_manager_ = this;
 }
 
 void V4LocalDatabaseManager::StopOnIOThread(bool shutdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   enabled_ = false;
+
+  current_local_database_manager_ = NULL;
 
   pending_checks_.clear();
 
