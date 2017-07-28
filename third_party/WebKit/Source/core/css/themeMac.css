@@ -36,7 +36,7 @@ button {
     border-color: #d8d8d8 #d1d1d1 #bababa;
     border-radius: 4px;
     border-style: solid;
-    /* We should specify border-width:1px to match the native button, however
-     * it's difficult to specify it with keeping the default button size.
-     */
+    border-width: 1px;
+    /* Fixed padding provided by ThemeMac::ControlPadding() - 1px for broder */
+    padding: 1px 7px 2px;
 }

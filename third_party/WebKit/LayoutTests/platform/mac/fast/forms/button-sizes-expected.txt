@@ -3,43 +3,43 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutButton {BUTTON} at (0,6) size 43.59x15 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (0,6) size 43.59x15 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,4) size 27.59x6
           LayoutText {#text} at (0,0) size 28x6
             text run at (0,0) width 28: "Test Button"
       LayoutText {#text} at (43,1) size 5x18
         text run at (43,1) width 5: " "
-      LayoutButton {BUTTON} at (47.59,5.50) size 49.11x15 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (47.59,5.50) size 49.11x15 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,3.50) size 33.11x7
           LayoutText {#text} at (0,0) size 34x7
             text run at (0,0) width 34: "Test Button"
       LayoutText {#text} at (96,1) size 5x18
         text run at (96,1) width 5: " "
-      LayoutButton {BUTTON} at (100.70,5) size 54.63x15 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (100.70,5) size 54.63x15 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,3) size 38.63x8
           LayoutText {#text} at (0,0) size 39x8
             text run at (0,0) width 39: "Test Button"
       LayoutText {#text} at (155,1) size 5x18
         text run at (155,1) width 5: " "
-      LayoutButton {BUTTON} at (159.33,5) size 60.14x15 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (159.33,5) size 60.14x15 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,2) size 44.14x10
           LayoutText {#text} at (0,0) size 45x10
             text run at (0,0) width 45: "Test Button"
       LayoutText {#text} at (219,1) size 5x18
         text run at (219,1) width 5: " "
-      LayoutButton {BUTTON} at (223.47,4) size 65.66x16 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (223.47,4) size 65.66x16 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,2) size 49.66x11
           LayoutText {#text} at (0,0) size 50x11
             text run at (0,0) width 50: "Test Button"
       LayoutText {#text} at (289,1) size 5x18
         text run at (289,1) width 5: " "
-      LayoutButton {BUTTON} at (293.13,3) size 71.17x17 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (293.13,3) size 71.17x17 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,2) size 55.17x12
           LayoutText {#text} at (0,0) size 56x12
             text run at (0,0) width 56: "Test Button"
       LayoutText {#text} at (364,1) size 5x18
         text run at (364,1) width 5: " "
-      LayoutButton {BUTTON} at (368.30,2) size 76.69x18 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (368.30,2) size 76.69x18 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,2) size 60.69x13
           LayoutText {#text} at (0,0) size 61x13
             text run at (0,0) width 61: "Test Button"
@@ -51,60 +51,60 @@ layer at (0,0) size 800x600
             text run at (0,0) width 61: "Test Button"
       LayoutText {#text} at (525,1) size 5x18
         text run at (525,1) width 5: " "
-      LayoutButton {BUTTON} at (529.67,1) size 82.20x20 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (529.67,1) size 82.20x20 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,2) size 66.20x15
           LayoutText {#text} at (0,0) size 67x15
             text run at (0,0) width 67: "Test Button"
       LayoutText {#text} at (611,1) size 5x18
         text run at (611,1) width 5: " "
-      LayoutButton {BUTTON} at (615.88,0) size 87.72x21 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (615.88,0) size 87.72x21 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,2) size 71.72x16
           LayoutText {#text} at (0,0) size 72x16
             text run at (0,0) width 72: "Test Button"
       LayoutText {#text} at (703,1) size 5x18
         text run at (703,1) width 5: " "
-      LayoutButton {BUTTON} at (0,26) size 93.23x22 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (0,26) size 93.23x22 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,2) size 77.23x17
           LayoutText {#text} at (0,0) size 78x17
             text run at (0,0) width 78: "Test Button"
       LayoutText {#text} at (93,28) size 5x18
         text run at (93,28) width 5: " "
-      LayoutButton {BUTTON} at (97.23,25) size 98.75x23 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (97.23,25) size 98.75x23 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,2) size 82.75x18
           LayoutText {#text} at (0,0) size 83x18
             text run at (0,0) width 83: "Test Button"
       LayoutText {#text} at (195,28) size 5x18
         text run at (195,28) width 5: " "
-      LayoutButton {BUTTON} at (199.98,25) size 104.27x23 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (199.98,25) size 104.27x23 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,2) size 88.27x18
           LayoutText {#text} at (0,0) size 89x18
             text run at (0,0) width 89: "Test Button"
       LayoutText {#text} at (304,28) size 5x18
         text run at (304,28) width 5: " "
-      LayoutButton {BUTTON} at (308.25,24) size 109.78x25 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (308.25,24) size 109.78x25 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,2) size 93.78x20
           LayoutText {#text} at (0,0) size 94x20
             text run at (0,0) width 94: "Test Button"
       LayoutText {#text} at (418,28) size 5x18
         text run at (418,28) width 5: " "
-      LayoutButton {BUTTON} at (422.03,23) size 115.30x26 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (422.03,23) size 115.30x26 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,2) size 99.30x21
           LayoutText {#text} at (0,0) size 100x21
             text run at (0,0) width 100: "Test Button"
       LayoutText {#text} at (537,28) size 5x18
         text run at (537,28) width 5: " "
-      LayoutButton {BUTTON} at (541.33,22) size 120.81x27 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (541.33,22) size 120.81x27 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,2) size 104.81x22
           LayoutText {#text} at (0,0) size 105x22
             text run at (0,0) width 105: "Test Button"
       LayoutText {#text} at (662,28) size 5x18
         text run at (662,28) width 5: " "
-      LayoutButton {BUTTON} at (666.14,21) size 116.39x28 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (666.14,21) size 116.39x28 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,2) size 100.39x23
           LayoutText {#text} at (0,0) size 101x23
             text run at (0,0) width 101: "Test Button"
       LayoutText {#text} at (0,0) size 0x0
-      LayoutButton {BUTTON} at (0,49) size 121.42x29 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (0,49) size 121.42x29 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,2) size 105.42x24
           LayoutText {#text} at (0,0) size 106x24
             text run at (0,0) width 106: "Test Button"

@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,1) size 310x18
           text run at (0,1) width 310 LTR override: "The text on both buttons should like this: \x{5E8}\x{5D5}\x{5EA}\x{5E4}\x{5DB}"
       LayoutBlockFlow (anonymous) at (0,105) size 784x37
-        LayoutButton {BUTTON} at (0,1) size 46.11x18 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+        LayoutButton {BUTTON} at (0,1) size 46.11x18 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
           LayoutBlockFlow (anonymous) at (8,2) size 30.11x13
             LayoutText {#text} at (0,0) size 31x13
               text run at (0,0) width 31 LTR override: "\x{5E8}\x{5D5}\x{5EA}\x{5E4}\x{5DB}"

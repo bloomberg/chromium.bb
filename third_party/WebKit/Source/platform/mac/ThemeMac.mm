@@ -456,7 +456,6 @@ LengthBox ThemeMac::ControlBorder(ControlPart part,
                                   float zoom_factor) const {
   switch (part) {
     case kSquareButtonPart:
-    case kButtonPart:
       return LengthBox(0, zoomed_box.Right().Value(), 0,
                        zoomed_box.Left().Value());
     default:
