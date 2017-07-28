@@ -870,6 +870,9 @@ extern const char kAndroidPaymentAppsDescription[];
 extern const char kAndroidSigninPromosName[];
 extern const char kAndroidSigninPromosDescription[];
 
+extern const char kAndroidViewPasswordsName[];
+extern const char kAndroidViewPasswordsDescription[];
+
 extern const char kAutofillAccessoryViewName[];
 extern const char kAutofillAccessoryViewDescription[];
 
