@@ -522,10 +522,6 @@ void AwContents::AddVisitedLinks(
       ->AddVisitedURLs(visited_link_gurls);
 }
 
-bool RegisterAwContents(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 namespace {
 
 void ShowGeolocationPromptHelperTask(const JavaObjectWeakGlobalRef& java_ref,

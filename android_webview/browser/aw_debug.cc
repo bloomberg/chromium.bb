@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/aw_debug.h"
-
 #include "android_webview/common/crash_reporter/aw_microdump_crash_reporter.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
 #include "base/android/jni_android.h"
@@ -49,10 +47,6 @@ static void SetCrashKeyValue(JNIEnv* env,
                              const JavaParamRef<jstring>& value) {
   base::debug::SetCrashKeyValue(ConvertJavaStringToUTF8(env, key),
                                 ConvertJavaStringToUTF8(env, value));
-}
-
-bool RegisterAwDebug(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace android_webview

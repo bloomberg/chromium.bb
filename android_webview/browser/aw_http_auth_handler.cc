@@ -66,8 +66,4 @@ bool AwHttpAuthHandler::HandleOnUIThread(content::WebContents* web_contents) {
                                                 realm_);
 }
 
-bool RegisterAwHttpAuthHandler(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android_webview

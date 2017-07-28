@@ -109,10 +109,6 @@ bool AwDevToolsServer::IsStarted() const {
   return is_started_;
 }
 
-bool RegisterAwDevToolsServer(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 static jlong InitRemoteDebugging(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj) {
   AwDevToolsServer* server = new AwDevToolsServer();

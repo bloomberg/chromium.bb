@@ -5,8 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_PDF_EXPORTER_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_PDF_EXPORTER_H_
 
-#include <jni.h>
-
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
@@ -49,8 +47,6 @@ class AwPdfExporter {
 
   DISALLOW_COPY_AND_ASSIGN(AwPdfExporter);
 };
-
-bool RegisterAwPdfExporter(JNIEnv* env);
 
 }  // namespace android_webview
 

@@ -231,10 +231,5 @@ ScopedJavaLocalRef<jlongArray> GetHandlers(JNIEnv* env,
   return base::android::ToJavaLongArray(env, handlers);
 }
 
-// static
-bool RegisterCustomHandlers(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace test
 }  // namespace android_webview

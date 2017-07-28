@@ -5,8 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_PICTURE_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_PICTURE_H_
 
-#include <jni.h>
-
 #include <memory>
 
 #include "base/android/jni_weak_ref.h"
@@ -37,8 +35,6 @@ class AwPicture {
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AwPicture);
 };
-
-bool RegisterAwPicture(JNIEnv* env);
 
 }  // android_webview
 

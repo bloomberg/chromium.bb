@@ -80,8 +80,6 @@ class AwPermissionRequest {
   DISALLOW_COPY_AND_ASSIGN(AwPermissionRequest);
 };
 
-bool RegisterAwPermissionRequest(JNIEnv* env);
-
 }  // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_BROWSER_PERMISSION_AW_PERMISSION_REQUEST_H_

@@ -8,9 +8,7 @@
 // This is called by the VM when the shared library is first loaded.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   base::android::InitVM(vm);
-  JNIEnv* env = base::android::AttachCurrentThread();
-  if (!android_webview::test::OnJNIOnLoadRegisterJNI(env) ||
-      !android_webview::test::OnJNIOnLoadInit()) {
+  if (!android_webview::test::OnJNIOnLoadInit()) {
     return -1;
   }
   return JNI_VERSION_1_4;

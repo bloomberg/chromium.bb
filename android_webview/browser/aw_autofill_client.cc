@@ -280,8 +280,4 @@ void AwAutofillClient::ScanCreditCard(const CreditCardScanCallback& callback) {
   NOTIMPLEMENTED();
 }
 
-bool RegisterAwAutofillClient(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android_webview

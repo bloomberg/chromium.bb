@@ -4,7 +4,6 @@
 
 #include "android_webview/lib/webview_jni_onload.h"
 
-#include "android_webview/browser/android_webview_jni_registrar.h"
 #include "android_webview/common/aw_version_info_values.h"
 #include "android_webview/lib/aw_main_delegate.h"
 #include "base/android/jni_android.h"

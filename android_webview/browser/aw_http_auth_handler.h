@@ -5,7 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_HTTP_AUTH_HANDLER_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_HTTP_AUTH_HANDLER_H_
 
-#include <jni.h>
 #include <string>
 
 #include "base/android/jni_android.h"
@@ -49,8 +48,6 @@ class AwHttpAuthHandler {
   std::string host_;
   std::string realm_;
 };
-
-bool RegisterAwHttpAuthHandler(JNIEnv* env);
 
 }  // namespace android_webview
 

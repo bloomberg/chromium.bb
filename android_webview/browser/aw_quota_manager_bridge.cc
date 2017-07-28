@@ -331,8 +331,4 @@ void AwQuotaManagerBridge::QuotaUsageCallbackImpl(int jcallback_id,
       env, obj, jcallback_id, is_quota, usage, quota);
 }
 
-bool RegisterAwQuotaManagerBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android_webview

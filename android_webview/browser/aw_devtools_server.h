@@ -5,8 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_DEVTOOLS_SERVER_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_DEVTOOLS_SERVER_H_
 
-#include <jni.h>
-
 #include <memory>
 #include <vector>
 
@@ -32,8 +30,6 @@ class AwDevToolsServer {
   bool is_started_;
   DISALLOW_COPY_AND_ASSIGN(AwDevToolsServer);
 };
-
-bool RegisterAwDevToolsServer(JNIEnv* env);
 
 }  // namespace android_webview
 

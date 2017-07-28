@@ -83,7 +83,6 @@ class TestClientCertificateDelegate
 void AwContentsClientBridgeTest::SetUp() {
   env_ = AttachCurrentThread();
   ASSERT_THAT(env_, NotNull());
-  ASSERT_TRUE(android_webview::RegisterAwContentsClientBridge(env_));
   ASSERT_TRUE(net::android::RegisterJni(env_));
   jbridge_.Reset(
       env_,

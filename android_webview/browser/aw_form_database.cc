@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/aw_form_database.h"
-
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_form_database_service.h"
@@ -34,10 +32,6 @@ jboolean HasFormData(JNIEnv*, const JavaParamRef<jclass>&) {
 // static
 void ClearFormData(JNIEnv*, const JavaParamRef<jclass>&) {
   GetFormDatabaseService()->ClearFormData();
-}
-
-bool RegisterAwFormDatabase(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace android_webview

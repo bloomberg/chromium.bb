@@ -5,7 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_METRICS_SERVICE_CLIENT_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_METRICS_SERVICE_CLIENT_H_
 
-#include <jni.h>
 #include <memory>
 #include <string>
 
@@ -91,8 +90,6 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
 
   DISALLOW_COPY_AND_ASSIGN(AwMetricsServiceClient);
 };
-
-bool RegisterAwMetricsServiceClient(JNIEnv* env);
 
 }  // namespace android_webview
 

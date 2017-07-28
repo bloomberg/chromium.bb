@@ -46,8 +46,4 @@ void AwPicture::Draw(JNIEnv* env,
   picture_->playback(canvas_holder->GetCanvas());
 }
 
-bool RegisterAwPicture(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android_webview

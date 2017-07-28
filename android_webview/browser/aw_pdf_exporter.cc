@@ -121,8 +121,4 @@ void AwPdfExporter::DidExportPdf(int fd, int page_count) {
   Java_AwPdfExporter_didExportPdf(env, obj, page_count);
 }
 
-bool RegisterAwPdfExporter(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android_webview

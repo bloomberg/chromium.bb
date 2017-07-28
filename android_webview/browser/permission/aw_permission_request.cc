@@ -88,8 +88,4 @@ void AwPermissionRequest::CancelAndDelete() {
   DeleteThis();
 }
 
-bool RegisterAwPermissionRequest(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android_webview

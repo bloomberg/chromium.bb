@@ -27,10 +27,6 @@ PopupTouchHandleDrawable::~PopupTouchHandleDrawable() {
     Java_PopupTouchHandleDrawable_destroy(env, obj);
 }
 
-bool PopupTouchHandleDrawable::RegisterPopupTouchHandleDrawable(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void PopupTouchHandleDrawable::SetEnabled(bool enabled) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);

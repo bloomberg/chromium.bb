@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "base/android/jni_android.h"
-
 namespace net {
 class URLRequestInterceptor;
 }  // namespace net
@@ -28,8 +26,6 @@ CreateContentSchemeRequestInterceptor();
 //    http://developer.android.com/reference/android/webkit/
 //      WebSettings.html#setAllowFileAccess(boolean)
 std::unique_ptr<net::URLRequestInterceptor> CreateAssetFileRequestInterceptor();
-
-bool RegisterAndroidProtocolHandler(JNIEnv* env);
 
 }  // namespace android_webview
 
