@@ -32,8 +32,8 @@ class ClockDomainTest(tab_test_case.TabTestCase):
     telemetry_sync = GetSyncEvents(
         full_trace.GetTraceFor(trace_data.TELEMETRY_PART)['traceEvents'])
 
-    assert len(chrome_sync) == 1
-    assert len(telemetry_sync) == 1
+    assert len(chrome_sync) == 1, 'Expected 1 saw %s' % len(chrome_sync)
+    assert len(telemetry_sync) == 1 , 'Expected 1 saw %s' % len(telemetry_sync)
 
     # If Telemetry and Chrome are in the same clock domain, the Chrome sync
     # timestamp should be between Telemetry's sync start and end timestamps.
