@@ -7,26 +7,20 @@
 
 namespace base {
 class CommandLine;
-class FilePath;
 }
 
 namespace crash_reporter {
 
 // Helper for running an embedded copy of crashpad_handler. Searches for and
-// removes --(process_type_switch|user_data_dir_switch)=xyz arguments in the
-// command line, and all options starting with '/' (for "/prefetch:N"), and then
-// runs crashpad::HandlerMain with the remaining arguments. If user_data_dir is
-// non-empty, a Crashpad extension to collect stability instrumentation on crash
-// is used.
+// removes --(process_type_switch)=xyz arguments in the command line, and all
+// options starting with '/' (for "/prefetch:N"), and then runs
+// crashpad::HandlerMain with the remaining arguments.
 //
-// Normally, pass switches::kProcessType and switches::kCrashpadHandler for
-// process_type_switch and user_data_dir_switch. These are accepted as
-// parameters because this component does not have access to content/, where
-// those variables live.
+// Normally, pass switches::kProcessType for process_type_switch. It's accepted
+// as a parameter because this component does not have access to content/, where
+// that variable lives.
 int RunAsCrashpadHandler(const base::CommandLine& command_line,
-                         const base::FilePath& user_data_dir,
-                         const char* process_type_switch,
-                         const char* user_data_dir_switch);
+                         const char* process_type_switch);
 
 }  // namespace crash_reporter
 

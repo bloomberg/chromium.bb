@@ -148,6 +148,9 @@ bool ReportingIsEnforcedByPolicy(bool* crash_reporting_enabled);
 // process is the main browser process.
 void InitializeProcessType();
 
+// Returns true if the process type is initialized. False otherwise.
+bool IsProcessTypeInitialized();
+
 // Returns true if invoked in a Chrome process other than the main browser
 // process. False otherwise.
 bool IsNonBrowserProcess();
@@ -156,21 +159,11 @@ bool IsNonBrowserProcess();
 // False otherwise.
 bool ProcessNeedsProfileDir(const std::string& process_type);
 
-// Returns true if the current process has the rights to access the profile.
-// False otherwise.
-bool CurrentProcessNeedsProfileDir();
-
-// Retrieves the user data directory, or an empty string on failure.
-std::wstring GetUserDataDirectory();
-
-// Retrieves an invalid user data directory specified by the user, or an empty
-// string.
-std::wstring GetInvalidUserDataDirectory();
-
-// Returns the crash dump location, respecting modifications to user-data-dir,
-// or the empty string on failure.
-// TODO(ananta): Unify this with the Browser Distribution code.
-//    http://crbug.com/604923
+// Populates |crash_dir| with the crash dump location, respecting modifications
+// to user-data-dir.
+// TODO(ananta)
+// http://crbug.com/604923
+// Unify this with the Browser Distribution code.
 std::wstring GetCrashDumpLocation();
 
 // Returns the contents of the specified |variable_name| from the environment

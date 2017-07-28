@@ -239,10 +239,8 @@ int main() {
 
   if (process_type == crash_reporter::switches::kCrashpadHandler) {
     crash_reporter::SetupFallbackCrashHandling(*command_line);
-    base::string16 user_data_dir = install_static::GetUserDataDirectory();
     return crash_reporter::RunAsCrashpadHandler(
-        *base::CommandLine::ForCurrentProcess(), base::FilePath(user_data_dir),
-        switches::kProcessType, switches::kUserDataDir);
+        *base::CommandLine::ForCurrentProcess(), switches::kProcessType);
   } else if (process_type == crash_reporter::switches::kFallbackCrashHandler) {
     return RunFallbackCrashHandler(*command_line);
   }

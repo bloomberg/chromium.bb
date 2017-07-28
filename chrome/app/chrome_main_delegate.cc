@@ -72,7 +72,6 @@
 #include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/child/v8_breakpad_support_win.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/install_static/install_util.h"
 #include "sandbox/win/src/sandbox.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #endif
@@ -391,18 +390,23 @@ struct MainFunction {
 // Initializes the user data dir. Must be called before InitializeLocalState().
 void InitializeUserDataDir(base::CommandLine* command_line) {
 #if defined(OS_WIN)
+  wchar_t user_data_dir_buf[MAX_PATH], invalid_user_data_dir_buf[MAX_PATH];
+
+  using GetUserDataDirectoryThunkFunction =
+      void (*)(wchar_t*, size_t, wchar_t*, size_t);
   HMODULE elf_module = GetModuleHandle(chrome::kChromeElfDllName);
   if (elf_module) {
     // If we're in a test, chrome_elf won't be loaded.
-
-    base::FilePath user_data_dir(install_static::GetUserDataDirectory());
-    // An empty user data directory means a failure (no fallback/default could
-    // be retrieved either).
-    CHECK(!user_data_dir.empty());
-    base::FilePath invalid_user_data_dir(
-        install_static::GetInvalidUserDataDirectory());
-    if (!invalid_user_data_dir.empty()) {
-      chrome::SetInvalidSpecifiedUserDataDir(invalid_user_data_dir);
+    GetUserDataDirectoryThunkFunction get_user_data_directory_thunk =
+        reinterpret_cast<GetUserDataDirectoryThunkFunction>(
+            GetProcAddress(elf_module, "GetUserDataDirectoryThunk"));
+    get_user_data_directory_thunk(
+        user_data_dir_buf, arraysize(user_data_dir_buf),
+        invalid_user_data_dir_buf, arraysize(invalid_user_data_dir_buf));
+    base::FilePath user_data_dir(user_data_dir_buf);
+    if (invalid_user_data_dir_buf[0] != 0) {
+      chrome::SetInvalidSpecifiedUserDataDir(
+          base::FilePath(invalid_user_data_dir_buf));
       command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
     }
     CHECK(PathService::OverrideAndCreateIfNeeded(chrome::DIR_USER_DATA,

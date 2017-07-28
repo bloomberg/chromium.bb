@@ -22,13 +22,19 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_piece.h"
-#include "components/browser_watcher/minidump_user_streams.h"
 #include "components/browser_watcher/stability_data_names.h"
 #include "third_party/crashpad/crashpad/minidump/minidump_extensions.h"
 
 namespace browser_watcher {
 
 namespace {
+
+// The stream type assigned to the minidump stream that holds the serialized
+// stability report.
+// Note: the value was obtained by adding 1 to the stream type used for holding
+// the SyzyAsan proto.
+// TODO(manzagop): centralize the stream type definitions to avoid issues.
+const uint32_t kStabilityReportStreamType = 0x4B6B0002;
 
 struct ProductDetails {
   std::string product;
