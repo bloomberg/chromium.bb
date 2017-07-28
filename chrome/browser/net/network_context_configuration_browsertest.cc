@@ -53,7 +53,8 @@ class NetworkContextConfigurationBrowserTest
   ~NetworkContextConfigurationBrowserTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
-    feature_list_.InitAndEnableFeature(features::kNetworkService);
+    if (GetParam().network_service_state == NetworkServiceState::kEnabled)
+      feature_list_.InitAndEnableFeature(features::kNetworkService);
   }
 
   void SetUpOnMainThread() override {
