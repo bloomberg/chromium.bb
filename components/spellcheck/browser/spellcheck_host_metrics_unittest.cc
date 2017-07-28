@@ -17,11 +17,6 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
-// For version specific disabled tests below (http://crbug.com/230534).
-#include "base/win/windows_version.h"
-#endif
-
 class SpellcheckHostMetricsTest : public testing::Test {
  public:
   SpellcheckHostMetricsTest() {
@@ -58,12 +53,14 @@ TEST_F(SpellcheckHostMetricsTest, RecordEnabledStats) {
   histogram_tester2.ExpectBucketCount(kMetricName, 1, 1);
 }
 
-TEST_F(SpellcheckHostMetricsTest, CustomWordStats) {
 #if defined(OS_WIN)
 // Failing consistently on Win7. See crbug.com/230534.
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-    return;
+#define MAYBE_CustomWordStats DISABLED_CustomWordStats
+#else
+#define MAYBE_CustomWordStats CustomWordStats
 #endif
+
+TEST_F(SpellcheckHostMetricsTest, MAYBE_CustomWordStats) {
   SpellCheckHostMetrics::RecordCustomWordCountStats(123);
 
   // Determine if test failures are due the statistics recorder not being

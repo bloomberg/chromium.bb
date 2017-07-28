@@ -15,7 +15,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/win/windows_version.h"
 #include "breakpad/src/client/windows/crash_generation/client_info.h"
 #include "breakpad/src/client/windows/crash_generation/crash_generation_server.h"
 #include "breakpad/src/client/windows/sender/crash_report_sender.h"
@@ -210,18 +209,16 @@ bool CrashService::Initialize(const base::FilePath& operating_dir,
   SECURITY_ATTRIBUTES security_attributes = {0};
   SECURITY_ATTRIBUTES* security_attributes_actual = NULL;
 
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    SECURITY_DESCRIPTOR* security_descriptor =
-        reinterpret_cast<SECURITY_DESCRIPTOR*>(
-            GetSecurityDescriptorForLowIntegrity());
-    DCHECK(security_descriptor != NULL);
+  SECURITY_DESCRIPTOR* security_descriptor =
+      reinterpret_cast<SECURITY_DESCRIPTOR*>(
+          GetSecurityDescriptorForLowIntegrity());
+  DCHECK(security_descriptor != NULL);
 
-    security_attributes.nLength = sizeof(security_attributes);
-    security_attributes.lpSecurityDescriptor = security_descriptor;
-    security_attributes.bInheritHandle = FALSE;
+  security_attributes.nLength = sizeof(security_attributes);
+  security_attributes.lpSecurityDescriptor = security_descriptor;
+  security_attributes.bInheritHandle = FALSE;
 
-    security_attributes_actual = &security_attributes;
-  }
+  security_attributes_actual = &security_attributes;
 
   // Create the OOP crash generator object.
   dumper_ = new CrashGenerationServer(pipe_name, security_attributes_actual,
