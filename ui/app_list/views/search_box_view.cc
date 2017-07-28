@@ -55,8 +55,11 @@ constexpr int kInnerPadding = 24;
 constexpr int kPreferredWidth = 360;
 constexpr int kPreferredWidthFullscreen = 544;
 constexpr int kSearchBoxPreferredHeight = 48;
+constexpr int kSearchBoxBorderWidth = 4;
 
 constexpr SkColor kHintTextColor = SkColorSetARGBMacro(0xFF, 0xA0, 0xA0, 0xA0);
+constexpr SkColor kSearchBoxBorderColor =
+    SkColorSetARGBMacro(0x3D, 0xFF, 0xFF, 0xFF);
 
 constexpr int kSearchBoxBorderCornerRadius = 2;
 constexpr int kSearchBoxBorderCornerRadiusSearchResult = 4;
@@ -156,13 +159,17 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
       content_container_(new views::View),
       search_box_(new views::Textfield),
       app_list_view_(app_list_view),
-      focused_view_(FOCUS_SEARCH_BOX),
-      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
+      focused_view_(is_fullscreen_app_list_enabled_ ? FOCUS_NONE
+                                                    : FOCUS_SEARCH_BOX) {
   SetLayoutManager(new views::FillLayout);
   SetPreferredSize(gfx::Size(is_fullscreen_app_list_enabled_
                                  ? kPreferredWidthFullscreen
                                  : kPreferredWidth,
                              kSearchBoxPreferredHeight));
+  // Creates an empty border as a placeholder for colored border which indicates
+  // that the search box is selected.
+  SetDefaultBorder();
   AddChildView(content_container_);
 
   SetShadow(GetShadowForZHeight(2));
@@ -290,47 +297,75 @@ bool SearchBoxView::MoveTabFocus(bool move_backwards) {
     speech_button_->SetSelected(false);
   if (close_button_)
     close_button_->SetSelected(false);
+  bool search_box_selected = false;
 
-  switch (focused_view_) {
-    case FOCUS_BACK_BUTTON:
-      focused_view_ = move_backwards ? FOCUS_BACK_BUTTON : FOCUS_SEARCH_BOX;
-      break;
-    case FOCUS_SEARCH_BOX:
-      if (move_backwards) {
+  if (is_fullscreen_app_list_enabled_) {
+    switch (focused_view_) {
+      case FOCUS_NONE:
         focused_view_ =
-            back_button_ && back_button_->visible()
-                ? FOCUS_BACK_BUTTON
-                : (is_fullscreen_app_list_enabled_ ? FOCUS_CONTENTS_VIEW
-                                                   : FOCUS_SEARCH_BOX);
-      } else {
-        focused_view_ = speech_button_ && speech_button_->visible()
-                            ? FOCUS_MIC_BUTTON
-                            : (close_button_ && close_button_->visible()
-                                   ? FOCUS_CLOSE_BUTTON
-                                   : FOCUS_CONTENTS_VIEW);
-      }
-      break;
-    case FOCUS_MIC_BUTTON:
-    case FOCUS_CLOSE_BUTTON:
-      focused_view_ = move_backwards ? FOCUS_SEARCH_BOX : FOCUS_CONTENTS_VIEW;
-      break;
-    case FOCUS_CONTENTS_VIEW:
-      if (move_backwards) {
-        focused_view_ = speech_button_ && speech_button_->visible()
-                            ? FOCUS_MIC_BUTTON
-                            : (close_button_ && close_button_->visible()
-                                   ? FOCUS_CLOSE_BUTTON
-                                   : FOCUS_SEARCH_BOX);
-      } else {
-        focused_view_ =
-            !is_fullscreen_app_list_enabled_
+            move_backwards
                 ? FOCUS_CONTENTS_VIEW
                 : (back_button_ && back_button_->visible() ? FOCUS_BACK_BUTTON
                                                            : FOCUS_SEARCH_BOX);
-      }
-      break;
-    default:
-      DCHECK(false);
+        break;
+      // TODO(weidongg): Remove handling of back button when fullscreen app list
+      // folder is supported.
+      case FOCUS_BACK_BUTTON:
+        focused_view_ = move_backwards ? FOCUS_NONE : FOCUS_SEARCH_BOX;
+        break;
+      case FOCUS_SEARCH_BOX:
+        if (move_backwards) {
+          focused_view_ = back_button_ && back_button_->visible()
+                              ? FOCUS_BACK_BUTTON
+                              : FOCUS_NONE;
+        } else {
+          focused_view_ = close_button_ && close_button_->visible()
+                              ? FOCUS_CLOSE_BUTTON
+                              : FOCUS_CONTENTS_VIEW;
+        }
+        break;
+      case FOCUS_CLOSE_BUTTON:
+        focused_view_ = move_backwards ? FOCUS_SEARCH_BOX : FOCUS_CONTENTS_VIEW;
+        break;
+      case FOCUS_CONTENTS_VIEW:
+        focused_view_ = move_backwards
+                            ? (close_button_ && close_button_->visible()
+                                   ? FOCUS_CLOSE_BUTTON
+                                   : FOCUS_SEARCH_BOX)
+                            : FOCUS_NONE;
+        break;
+      default:
+        NOTREACHED();
+    }
+  } else {
+    switch (focused_view_) {
+      case FOCUS_BACK_BUTTON:
+        focused_view_ = move_backwards ? FOCUS_BACK_BUTTON : FOCUS_SEARCH_BOX;
+        break;
+      case FOCUS_SEARCH_BOX:
+        if (move_backwards) {
+          focused_view_ = back_button_ && back_button_->visible()
+                              ? FOCUS_BACK_BUTTON
+                              : FOCUS_SEARCH_BOX;
+        } else {
+          focused_view_ = speech_button_ && speech_button_->visible()
+                              ? FOCUS_MIC_BUTTON
+                              : FOCUS_CONTENTS_VIEW;
+        }
+        break;
+      case FOCUS_MIC_BUTTON:
+        focused_view_ = move_backwards ? FOCUS_SEARCH_BOX : FOCUS_CONTENTS_VIEW;
+        break;
+      case FOCUS_CONTENTS_VIEW:
+        focused_view_ = move_backwards
+                            ? (speech_button_ && speech_button_->visible()
+                                   ? FOCUS_MIC_BUTTON
+                                   : FOCUS_SEARCH_BOX)
+                            : FOCUS_CONTENTS_VIEW;
+        break;
+      default:
+        NOTREACHED();
+    }
   }
 
   switch (focused_view_) {
@@ -339,6 +374,11 @@ bool SearchBoxView::MoveTabFocus(bool move_backwards) {
         back_button_->SetSelected(true);
       break;
     case FOCUS_SEARCH_BOX:
+      if (search_box_->text().empty()) {
+        // The search box should only be selected in PEEKING or
+        // FULLSCREEN_ALL_APPS state.
+        search_box_selected = true;
+      }
       // Set the ChromeVox focus to the search box. However, DO NOT do this if
       // we are in the search results state (i.e., if the search box has text in
       // it), because the focus is about to be shifted to the first search
@@ -359,6 +399,8 @@ bool SearchBoxView::MoveTabFocus(bool move_backwards) {
       break;
   }
 
+  SetSelected(search_box_selected);
+
   if (focused_view_ < FOCUS_CONTENTS_VIEW)
     delegate_->SetSearchResultSelection(focused_view_ == FOCUS_SEARCH_BOX);
 
@@ -372,7 +414,11 @@ void SearchBoxView::ResetTabFocus(bool on_contents) {
     speech_button_->SetSelected(false);
   if (close_button_)
     close_button_->SetSelected(false);
-  focused_view_ = on_contents ? FOCUS_CONTENTS_VIEW : FOCUS_SEARCH_BOX;
+  SetSelected(false);
+  focused_view_ =
+      on_contents
+          ? FOCUS_CONTENTS_VIEW
+          : (is_fullscreen_app_list_enabled_ ? FOCUS_NONE : FOCUS_SEARCH_BOX);
 }
 
 void SearchBoxView::SetBackButtonLabel(bool folder) {
@@ -581,6 +627,11 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
     base::TrimWhitespace(search_box_->text(), base::TrimPositions::TRIM_ALL,
                          &trimmed_query);
     app_list_view_->SetStateFromSearchBoxView(trimmed_query.empty());
+    if (!search_box_->text().empty()) {
+      // Unselect the search box when the state is transiting to HALF or
+      // FULLSCREEN_SEARCH.
+      SetSelected(false);
+    }
   }
 }
 
@@ -787,6 +838,31 @@ void SearchBoxView::UpdateBackgroundColor(SkColor color) {
 
 SearchBoxBackground* SearchBoxView::GetSearchBoxBackground() const {
   return static_cast<SearchBoxBackground*>(content_container_->background());
+}
+
+void SearchBoxView::SetDefaultBorder() {
+  if (!is_fullscreen_app_list_enabled_)
+    return;
+  SetBorder(
+      views::CreateEmptyBorder(kSearchBoxBorderWidth, kSearchBoxBorderWidth,
+                               kSearchBoxBorderWidth, kSearchBoxBorderWidth));
+}
+
+void SearchBoxView::SetSelected(bool selected) {
+  if (!is_fullscreen_app_list_enabled_)
+    return;
+  if (selected_ == selected)
+    return;
+  selected_ = selected;
+  if (selected) {
+    SetBorder(views::CreateRoundedRectBorder(
+        kSearchBoxBorderWidth, kSearchBoxBorderCornerRadiusFullscreen,
+        kSearchBoxBorderColor));
+  } else {
+    SetDefaultBorder();
+  }
+  Layout();
+  SchedulePaint();
 }
 
 }  // namespace app_list
