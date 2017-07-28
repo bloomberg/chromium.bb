@@ -156,19 +156,6 @@ class MoxBase(patch_unittest.MockPatchBase, cros_test_lib.MoxTestCase):
   def tearDown(self):
     cidb.CIDBConnectionFactory.ClearMock()
 
-  def MakeHelper(self, cros_internal=None, cros=None):
-    # pylint: disable=W0201
-    if cros_internal:
-      cros_internal = self.mox.CreateMock(gerrit.GerritHelper)
-      cros_internal.version = '2.2'
-      cros_internal.remote = site_config.params.INTERNAL_REMOTE
-    if cros:
-      cros = self.mox.CreateMock(gerrit.GerritHelper)
-      cros.remote = site_config.params.EXTERNAL_REMOTE
-      cros.version = '2.2'
-    return patch_series.HelperPool(cros_internal=cros_internal,
-                                   cros=cros)
-
 class MockPatchSeries(partial_mock.PartialMock):
   """Mock the PatchSeries functions."""
   TARGET = 'chromite.cbuildbot.patch_series.PatchSeries'

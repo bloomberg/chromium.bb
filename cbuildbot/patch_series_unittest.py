@@ -14,6 +14,7 @@ import os
 from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import validation_pool_unittest
 from chromite.lib import config_lib
+from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
@@ -97,6 +98,19 @@ class PatchSeriesTestCase(validation_pool_unittest.MoxBase,
 
   def setUp(self):
     self.StartPatcher(parallel_unittest.ParallelMock())
+
+  def MakeHelper(self, cros_internal=None, cros=None):
+    # pylint: disable=W0201
+    if cros_internal:
+      cros_internal = self.mox.CreateMock(gerrit.GerritHelper)
+      cros_internal.version = '2.2'
+      cros_internal.remote = site_config.params.INTERNAL_REMOTE
+    if cros:
+      cros = self.mox.CreateMock(gerrit.GerritHelper)
+      cros.remote = site_config.params.EXTERNAL_REMOTE
+      cros.version = '2.2'
+    return patch_series.HelperPool(cros_internal=cros_internal,
+                                   cros=cros)
 
   def GetPatchSeries(self, helper_pool=None):
     if helper_pool is None:
