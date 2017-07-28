@@ -2937,10 +2937,14 @@ crbug.com/736548 [ Mac ] css2.1/t040304-c64-uri-00-a-g.html [ Failure Pass ]
 crbug.com/v8/6529 inspector/console/console-dir.html [ NeedsManualRebaseline ]
 crbug.com/v8/6529 inspector/console/console-format.html [ NeedsManualRebaseline ]
 
+crbug.com/737959 http/tests/misc/object-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
+crbug.com/737959 virtual/off-main-thread-fetch/http/tests/misc/object-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
+crbug.com/737959 virtual/mojo-loading/http/tests/misc/object-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
+
 crbug.com/737959 http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
 crbug.com/737959 virtual/off-main-thread-fetch/http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
-crbug.com/737959 [ Mac10.11 ] virtual/off-main-thread-fetch/http/tests/misc/image-input-type-outlives-gc-without-crashing.html [ Failure Pass Crash ]
-crbug.com/737959 [ Linux ] virtual/off-main-thread-fetch/http/tests/misc/embed-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
+crbug.com/737959 virtual/off-main-thread-fetch/http/tests/misc/image-input-type-outlives-gc-without-crashing.html [ Failure Pass Crash ]
+crbug.com/737959 virtual/off-main-thread-fetch/http/tests/misc/embed-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
 
 # Awaiting rebaseline after skia roll.
 crbug.com/739559 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Failure Pass ]
