@@ -97,8 +97,6 @@ class CSSPropertyParser {
   bool ConsumePlaceItemsShorthand(bool important);
   bool ConsumePlaceSelfShorthand(bool important);
 
-  bool ConsumeLegacyBreakProperty(CSSPropertyID, bool important);
-
  private:
   // Inputs:
   CSSParserTokenRange range_;
