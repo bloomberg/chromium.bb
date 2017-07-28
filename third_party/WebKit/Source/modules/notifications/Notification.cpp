@@ -48,7 +48,6 @@
 #include "modules/notifications/NotificationData.h"
 #include "modules/notifications/NotificationManager.h"
 #include "modules/notifications/NotificationOptions.h"
-#include "modules/notifications/NotificationPermissionCallback.h"
 #include "modules/notifications/NotificationResourcesLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/bindings/ScriptState.h"
@@ -156,11 +155,6 @@ void Notification::SchedulePrepareShow() {
 
 void Notification::PrepareShow() {
   DCHECK_EQ(state_, State::kLoading);
-  if (!GetExecutionContext()->IsSecureContext()) {
-    DispatchErrorEvent();
-    return;
-  }
-
   if (NotificationManager::From(GetExecutionContext())
           ->GetPermissionStatus(GetExecutionContext()) !=
       mojom::blink::PermissionStatus::GRANTED) {
@@ -363,33 +357,17 @@ String Notification::PermissionString(
 
 String Notification::permission(ScriptState* script_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
-  mojom::blink::PermissionStatus status =
-      mojom::blink::PermissionStatus::DENIED;
-
-  if (context->IsSecureContext())
-    status = NotificationManager::From(context)->GetPermissionStatus(context);
-
-  return PermissionString(status);
+  return PermissionString(
+      NotificationManager::From(context)->GetPermissionStatus(context));
 }
 
 ScriptPromise Notification::requestPermission(
     ScriptState* script_state,
     NotificationPermissionCallback* deprecated_callback) {
   ExecutionContext* context = ExecutionContext::From(script_state);
-
-  // Sites no longer have the ability to request notification permission from
-  // insecure contexts. Inform the developer.
   if (!context->IsSecureContext()) {
     Deprecation::CountDeprecation(
         context, WebFeature::kNotificationPermissionRequestedInsecureOrigin);
-
-    String status_denied =
-        Notification::PermissionString(mojom::blink::PermissionStatus::DENIED);
-
-    if (deprecated_callback)
-      deprecated_callback->handleEvent(status_denied);
-
-    return ScriptPromise::Cast(script_state, ToV8(status_denied, script_state));
   }
 
   if (context->IsDocument()) {
