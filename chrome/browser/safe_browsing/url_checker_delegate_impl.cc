@@ -72,10 +72,18 @@ void UrlCheckerDelegateImpl::MaybeDestroyPrerenderContents(
 }
 
 void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
-    const security_interstitials::UnsafeResource& resource) {
+    const security_interstitials::UnsafeResource& resource,
+    const std::string& method,
+    const net::HttpRequestHeaders& headers,
+    bool is_main_frame,
+    bool has_user_gesture) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(&StartDisplayingBlockingPage, ui_manager_, resource));
+}
+
+bool UrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {
+  return false;
 }
 
 const SBThreatTypeSet& UrlCheckerDelegateImpl::GetThreatTypes() {

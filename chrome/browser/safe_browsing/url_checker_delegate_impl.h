@@ -26,8 +26,14 @@ class UrlCheckerDelegateImpl : public UrlCheckerDelegate {
   void MaybeDestroyPrerenderContents(
       const base::Callback<content::WebContents*()>& web_contents_getter)
       override;
+  // Only uses |resource| and ignores the rest of parameters.
   void StartDisplayingBlockingPageHelper(
-      const security_interstitials::UnsafeResource& resource) override;
+      const security_interstitials::UnsafeResource& resource,
+      const std::string& method,
+      const net::HttpRequestHeaders& headers,
+      bool is_main_frame,
+      bool has_user_gesture) override;
+  bool IsUrlWhitelisted(const GURL& url) override;
   const SBThreatTypeSet& GetThreatTypes() override;
   SafeBrowsingDatabaseManager* GetDatabaseManager() override;
   BaseUIManager* GetUIManager() override;

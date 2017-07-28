@@ -5,12 +5,18 @@
 #ifndef COMPONENTS_SAFE_BROWSING_BROWSER_URL_CHECKER_DELEGATE_H_
 #define COMPONENTS_SAFE_BROWSING_BROWSER_URL_CHECKER_DELEGATE_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 
 namespace content {
 class WebContents;
+}
+
+namespace net {
+class HttpRequestHeaders;
 }
 
 namespace security_interstitials {
@@ -22,9 +28,10 @@ namespace safe_browsing {
 class BaseUIManager;
 class SafeBrowsingDatabaseManager;
 
-// Delegate interface for SafeBrowsingUrlCheckerImpl. SafeBrowsingUrlCheckerImpl
-// is embedder-independent. It delegates to this interface those operations that
-// different embedders (Chrome and Android WebView) handle differently.
+// Delegate interface for SafeBrowsingUrlCheckerImpl and SafeBrowsing's
+// content::ResourceThrottle subclasses. They delegate to this interface those
+// operations that different embedders (Chrome and Android WebView) handle
+// differently.
 //
 // All methods should only be called from the IO thread.
 class UrlCheckerDelegate
@@ -36,7 +43,15 @@ class UrlCheckerDelegate
 
   // Starts displaying the SafeBrowsing interstitial page.
   virtual void StartDisplayingBlockingPageHelper(
-      const security_interstitials::UnsafeResource& resource) = 0;
+      const security_interstitials::UnsafeResource& resource,
+      const std::string& method,
+      const net::HttpRequestHeaders& headers,
+      bool is_main_frame,
+      bool has_user_gesture) = 0;
+
+  // A whitelisted URL is considered safe and therefore won't be checked with
+  // the SafeBrowsing database.
+  virtual bool IsUrlWhitelisted(const GURL& url) = 0;
 
   virtual const SBThreatTypeSet& GetThreatTypes() = 0;
   virtual SafeBrowsingDatabaseManager* GetDatabaseManager() = 0;

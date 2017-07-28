@@ -29,23 +29,25 @@ content::WebContents* GetWebContentsFromID(int render_process_id,
   return content::WebContents::FromRenderFrameHost(render_frame_host);
 }
 
-// This class wraps a base::OnceCallback<void(bool)> and runs it on destruction,
+// This class wraps a callback for checking URL, and runs it on destruction,
 // if it hasn't been run yet.
-class BooleanCallbackWrapper {
+class CheckUrlCallbackWrapper {
  public:
-  using BooleanCallback = base::OnceCallback<void(bool)>;
+  using Callback = base::OnceCallback<void(bool, bool)>;
 
-  explicit BooleanCallbackWrapper(BooleanCallback callback)
+  explicit CheckUrlCallbackWrapper(Callback callback)
       : callback_(std::move(callback)) {}
-  ~BooleanCallbackWrapper() {
+  ~CheckUrlCallbackWrapper() {
     if (callback_)
-      Run(false);
+      Run(true, false);
   }
 
-  void Run(bool value) { std::move(callback_).Run(value); }
+  void Run(bool proceed, bool showed_interstitial) {
+    std::move(callback_).Run(proceed, showed_interstitial);
+  }
 
  private:
-  BooleanCallback callback_;
+  Callback callback_;
 };
 
 }  // namespace
@@ -80,19 +82,24 @@ void MojoSafeBrowsingImpl::CreateCheckerAndCheck(
     int32_t render_frame_id,
     mojom::SafeBrowsingUrlCheckerRequest request,
     const GURL& url,
+    const std::string& method,
+    const std::string& headers,
     int32_t load_flags,
     content::ResourceType resource_type,
+    bool has_user_gesture,
     CreateCheckerAndCheckCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   auto checker_impl = base::MakeUnique<SafeBrowsingUrlCheckerImpl>(
-      static_cast<int>(load_flags), resource_type, delegate_,
+      headers, static_cast<int>(load_flags), resource_type, has_user_gesture,
+      delegate_,
       base::Bind(&GetWebContentsFromID, render_process_id_,
                  static_cast<int>(render_frame_id)));
 
   checker_impl->CheckUrl(
-      url, base::BindOnce(
-               &BooleanCallbackWrapper::Run,
-               base::Owned(new BooleanCallbackWrapper(std::move(callback)))));
+      url, method,
+      base::BindOnce(
+          &CheckUrlCallbackWrapper::Run,
+          base::Owned(new CheckUrlCallbackWrapper(std::move(callback)))));
   mojo::MakeStrongBinding(std::move(checker_impl), std::move(request));
 }
 

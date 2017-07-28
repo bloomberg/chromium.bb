@@ -8,13 +8,13 @@
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
 
-class GURL;
-
 namespace net {
 struct RedirectInfo;
 }
 
 namespace content {
+
+struct ResourceRequest;
 
 // A URLLoaderThrottle gets notified at various points during the process of
 // loading a resource. At each stage, it has the opportunity to defer the
@@ -39,10 +39,7 @@ class CONTENT_EXPORT URLLoaderThrottle {
   virtual ~URLLoaderThrottle() {}
 
   // Called before the resource request is started.
-  virtual void WillStartRequest(const GURL& url,
-                                int load_flags,
-                                ResourceType resource_type,
-                                bool* defer) {}
+  virtual void WillStartRequest(const ResourceRequest& request, bool* defer) {}
 
   // Called when the request was redirected.  |redirect_info| contains the
   // redirect responses's HTTP status code and some information about the new

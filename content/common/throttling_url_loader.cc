@@ -132,8 +132,7 @@ void ThrottlingURLLoader::Start(
 
   if (throttle_) {
     bool deferred = false;
-    throttle_->WillStartRequest(url_request.url, url_request.load_flags,
-                                url_request.resource_type, &deferred);
+    throttle_->WillStartRequest(url_request, &deferred);
     if (cancelled_by_throttle_)
       return;
 

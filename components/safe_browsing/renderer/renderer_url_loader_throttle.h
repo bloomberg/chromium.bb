@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_SAFE_BROWSING_RENDERER_URL_LOADER_THROTTLE_H_
-#define CHROME_RENDERER_SAFE_BROWSING_RENDERER_URL_LOADER_THROTTLE_H_
+#ifndef COMPONENTS_SAFE_BROWSING_RENDERER_RENDERER_URL_LOADER_THROTTLE_H_
+#define COMPONENTS_SAFE_BROWSING_RENDERER_RENDERER_URL_LOADER_THROTTLE_H_
 
 #include "base/memory/weak_ptr.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
@@ -25,16 +25,14 @@ class RendererURLLoaderThrottle : public content::URLLoaderThrottle {
   ~RendererURLLoaderThrottle() override;
 
   // content::URLLoaderThrottle implementation.
-  void WillStartRequest(const GURL& url,
-                        int load_flags,
-                        content::ResourceType resource_type,
+  void WillStartRequest(const content::ResourceRequest& request,
                         bool* defer) override;
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
                            bool* defer) override;
   void WillProcessResponse(bool* defer) override;
 
  private:
-  void OnCheckUrlResult(bool safe);
+  void OnCheckUrlResult(bool proceed, bool showed_interstitial);
 
   void OnConnectionError();
 
@@ -51,4 +49,4 @@ class RendererURLLoaderThrottle : public content::URLLoaderThrottle {
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_RENDERER_SAFE_BROWSING_RENDERER_URL_LOADER_THROTTLE_H_
+#endif  // COMPONENTS_SAFE_BROWSING_RENDERER_RENDERER_URL_LOADER_THROTTLE_H_

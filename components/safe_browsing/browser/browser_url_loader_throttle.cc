@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "components/safe_browsing/browser/safe_browsing_url_checker_impl.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
+#include "content/public/common/resource_request.h"
 #include "net/url_request/redirect_info.h"
 
 namespace safe_browsing {
@@ -34,9 +35,7 @@ BrowserURLLoaderThrottle::BrowserURLLoaderThrottle(
 BrowserURLLoaderThrottle::~BrowserURLLoaderThrottle() = default;
 
 void BrowserURLLoaderThrottle::WillStartRequest(
-    const GURL& url,
-    int load_flags,
-    content::ResourceType resource_type,
+    const content::ResourceRequest& request,
     bool* defer) {
   DCHECK_EQ(0u, pending_checks_);
   DCHECK(!blocked_);
@@ -44,11 +43,13 @@ void BrowserURLLoaderThrottle::WillStartRequest(
 
   pending_checks_++;
   url_checker_ = base::MakeUnique<SafeBrowsingUrlCheckerImpl>(
-      load_flags, resource_type, std::move(url_checker_delegate_),
+      request.headers, request.load_flags, request.resource_type,
+      request.has_user_gesture, std::move(url_checker_delegate_),
       web_contents_getter_);
   url_checker_->CheckUrl(
-      url, base::BindOnce(&BrowserURLLoaderThrottle::OnCheckUrlResult,
-                          base::Unretained(this)));
+      request.url, request.method,
+      base::BindOnce(&BrowserURLLoaderThrottle::OnCheckUrlResult,
+                     base::Unretained(this)));
 }
 
 void BrowserURLLoaderThrottle::WillRedirectRequest(
@@ -60,7 +61,7 @@ void BrowserURLLoaderThrottle::WillRedirectRequest(
 
   pending_checks_++;
   url_checker_->CheckUrl(
-      redirect_info.new_url,
+      redirect_info.new_url, redirect_info.new_method,
       base::BindOnce(&BrowserURLLoaderThrottle::OnCheckUrlResult,
                      base::Unretained(this)));
 }
@@ -74,14 +75,15 @@ void BrowserURLLoaderThrottle::WillProcessResponse(bool* defer) {
     *defer = true;
 }
 
-void BrowserURLLoaderThrottle::OnCheckUrlResult(bool safe) {
+void BrowserURLLoaderThrottle::OnCheckUrlResult(bool proceed,
+                                                bool showed_interstitial) {
   if (blocked_)
     return;
 
   DCHECK_LT(0u, pending_checks_);
   pending_checks_--;
 
-  if (safe) {
+  if (proceed) {
     if (pending_checks_ == 0) {
       // The resource load is not necessarily deferred, in that case Resume() is
       // a no-op.

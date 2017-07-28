@@ -4,43 +4,12 @@
 
 #include "chrome/browser/loader/safe_browsing_resource_throttle.h"
 
-#include <iterator>
-#include <utility>
-
-#include "base/logging.h"
-#include "base/trace_event/trace_event.h"
-#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing/base_ui_manager.h"
-#include "components/safe_browsing_db/util.h"
-#include "components/safe_browsing_db/v4_feature_list.h"
-#include "components/safe_browsing_db/v4_local_database_manager.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
-#include "components/security_interstitials/content/unsafe_resource.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/browser/web_contents.h"
-#include "net/url_request/redirect_info.h"
-#include "net/url_request/url_request.h"
-
-using safe_browsing::BaseUIManager;
-
-namespace {
-
-// Destroys the prerender contents associated with the web_contents, if any.
-void DestroyPrerenderContents(
-    const content::ResourceRequestInfo::WebContentsGetter&
-        web_contents_getter) {
-  content::WebContents* web_contents = web_contents_getter.Run();
-  if (web_contents) {
-    prerender::PrerenderContents* prerender_contents =
-        prerender::PrerenderContents::FromWebContents(web_contents);
-    if (prerender_contents)
-      prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
-  }
-}
-
-}  // namespace
+#include "net/http/http_request_headers.h"
 
 // static
 SafeBrowsingResourceThrottle* SafeBrowsingResourceThrottle::MaybeCreate(
@@ -65,7 +34,10 @@ SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
                safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
                safe_browsing::SB_THREAT_TYPE_URL_UNWANTED}),
           sb_service->database_manager(),
-          sb_service->ui_manager()) {}
+          sb_service->ui_manager()),
+      url_checker_delegate_(new safe_browsing::UrlCheckerDelegateImpl(
+          sb_service->database_manager(),
+          sb_service->ui_manager())) {}
 
 SafeBrowsingResourceThrottle::~SafeBrowsingResourceThrottle() {}
 
@@ -75,40 +47,14 @@ const char* SafeBrowsingResourceThrottle::GetNameForLogging() const {
 
 void SafeBrowsingResourceThrottle::MaybeDestroyPrerenderContents(
     const content::ResourceRequestInfo* info) {
-  // Destroy the prefetch with FINAL_STATUS_SAFEBROSWING.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&DestroyPrerenderContents,
-                     info->GetWebContentsGetterForRequest()));
+  url_checker_delegate_->MaybeDestroyPrerenderContents(
+      info->GetWebContentsGetterForRequest());
 }
 
 void SafeBrowsingResourceThrottle::StartDisplayingBlockingPageHelper(
     security_interstitials::UnsafeResource resource) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&SafeBrowsingResourceThrottle::StartDisplayingBlockingPage,
-                     AsWeakPtr(), ui_manager(), resource));
-}
-
-// Static
-void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
-    const base::WeakPtr<safe_browsing::BaseResourceThrottle>& throttle,
-    scoped_refptr<BaseUIManager> ui_manager,
-    const security_interstitials::UnsafeResource& resource) {
-  content::WebContents* web_contents = resource.web_contents_getter.Run();
-  if (web_contents) {
-    prerender::PrerenderContents* prerender_contents =
-        prerender::PrerenderContents::FromWebContents(web_contents);
-    if (prerender_contents) {
-      prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
-    } else {
-      ui_manager->DisplayBlockingPage(resource);
-      return;
-    }
-  }
-
-  // Tab is gone or it's being prerendered.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&SafeBrowsingResourceThrottle::Cancel, throttle));
+  // On Chrome only the first argument is used.
+  url_checker_delegate_->StartDisplayingBlockingPageHelper(
+      resource, std::string(), net::HttpRequestHeaders(),
+      false /* is_main_frame */, false /* has_user_gesture */);
 }
