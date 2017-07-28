@@ -18,6 +18,7 @@ import("//media/media_options.gni")
 import("//remoting/remoting_enable.gni")
 import("//third_party/openh264/openh264_args.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
+import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
 import("//v8/gni/v8.gni")
 import("//v8/snapshot_toolchain.gni")
@@ -525,7 +526,6 @@ group("gn_all") {
         "//skia:image_operations_bench",
         "//third_party/sqlite:sqlite_shell",
         "//ui/keyboard:keyboard_unittests",
-        "//ui/message_center:message_center_unittests",
         "//ui/snapshot:snapshot_unittests",
       ]
 
@@ -601,6 +601,10 @@ group("gn_all") {
       "//third_party/openh264:encoder",
       "//third_party/openh264:processing",
     ]
+  }
+
+  if (enable_message_center) {
+    deps += [ "//ui/message_center:message_center_unittests" ]
   }
 
   if (!is_android && !is_ios && !is_fuchsia) {

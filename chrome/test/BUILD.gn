@@ -168,15 +168,17 @@ static_library("test_support") {
     "//ui/events:events_base",
     "//ui/gfx:test_support",
     "//ui/gl",
-    "//ui/message_center:test_support",
   ]
 
   if (enable_plugins) {
     public_deps += [ "//ppapi/shared_impl" ]
   }
 
+  if (enable_message_center) {
+    public_deps += [ "//ui/message_center:test_support" ]
+  }
+
   if (is_android) {
-    public_deps -= [ "//ui/message_center:test_support" ]
     sources -= [
       "base/dialog_test_browser_window.cc",
       "base/dialog_test_browser_window.h",

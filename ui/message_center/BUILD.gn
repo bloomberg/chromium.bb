@@ -4,8 +4,9 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//testing/test.gni")
 import("//components/vector_icons/vector_icons.gni")
+import("//testing/test.gni")
+import("//ui/base/ui_features.gni")
 
 aggregate_vector_icons("message_center_vector_icons") {
   icon_directory = "vector_icons"
@@ -32,7 +33,7 @@ component("message_center") {
 
   defines = [ "MESSAGE_CENTER_IMPLEMENTATION" ]
 
-  if (!is_ios && !is_android) {
+  if (enable_message_center) {
     deps += [
       ":message_center_vector_icons",
       "//base:i18n",
@@ -192,16 +193,17 @@ component("message_center") {
   }
 }
 
-static_library("test_support") {
-  testonly = true
+if (enable_message_center) {
+  static_library("test_support") {
+    testonly = true
 
-  if (!is_ios && !is_android) {
     sources = [
       "fake_message_center.cc",
       "fake_message_center.h",
       "fake_message_center_tray_delegate.cc",
       "fake_message_center_tray_delegate.h",
     ]
+
     deps = [
       "//base",
       "//base/test:test_support",
@@ -209,53 +211,52 @@ static_library("test_support") {
       "//ui/gfx",
       "//ui/gfx/geometry",
     ]
+
+    public_deps = [
+      ":message_center",
+    ]
   }
 
-  public_deps = [
-    ":message_center",
-  ]
-}
-
-test("message_center_unittests") {
-  sources = [
-    "test/run_all_unittests.cc",
-  ]
-
-  deps = [
-    ":message_center",
-    ":test_support",
-    "//base",
-    "//base/test:test_support",
-    "//skia",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//ui/base",
-    "//ui/base:test_support",
-    "//ui/events",
-    "//ui/events:test_support",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//ui/gl",
-    "//ui/gl:test_support",
-    "//ui/resources",
-    "//ui/resources:ui_test_pak",
-    "//url",
-  ]
-
-  data_deps = [
-    "//third_party/mesa:osmesa",
-    "//ui/resources:ui_test_pak_data",
-  ]
-
-  if (!is_ios && !is_android) {
-    sources += [
+  test("message_center_unittests") {
+    sources = [
       "cocoa/notification_controller_unittest.mm",
       "cocoa/popup_collection_unittest.mm",
       "cocoa/popup_controller_unittest.mm",
       "message_center_impl_unittest.cc",
       "message_center_tray_unittest.cc",
+      "mojo/struct_traits_unittest.cc",
       "notification_delegate_unittest.cc",
       "notification_list_unittest.cc",
+      "test/run_all_unittests.cc",
+    ]
+
+    deps = [
+      ":message_center",
+      ":test_support",
+      "//base",
+      "//base/test:test_support",
+      "//mojo/edk/system",
+      "//skia",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//ui/base",
+      "//ui/base:test_support",
+      "//ui/events",
+      "//ui/events:test_support",
+      "//ui/gfx",
+      "//ui/gfx:test_support",
+      "//ui/gfx/geometry",
+      "//ui/gl",
+      "//ui/gl:test_support",
+      "//ui/message_center/mojo:test_interfaces",
+      "//ui/resources",
+      "//ui/resources:ui_test_pak",
+      "//url",
+    ]
+
+    data_deps = [
+      "//third_party/mesa:osmesa",
+      "//ui/resources:ui_test_pak_data",
     ]
 
     if (is_mac) {
@@ -281,14 +282,5 @@ test("message_center_unittests") {
         "//ui/views:test_support",
       ]
     }
-
-    if (!is_ios) {
-      sources += [ "mojo/struct_traits_unittest.cc" ]
-      deps += [
-        "//mojo/edk/system",
-        "//ui/gfx:test_support",
-        "//ui/message_center/mojo:test_interfaces",
-      ]
-    }
-  }  # !is_ios && !is_android
+  }
 }
