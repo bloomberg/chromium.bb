@@ -20,8 +20,6 @@ sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
 import getos
 platform = getos.GetPlatform()
 
-# TODO(binji): ugly hack -- can I get the browser in a cleaner way?
-sys.path.append(os.path.join(SRC_DIR, 'chrome', 'test', 'nacl_test_injection'))
 import find_chrome
 browser_path = find_chrome.FindChrome(SRC_DIR, ['Debug', 'Release'])
 

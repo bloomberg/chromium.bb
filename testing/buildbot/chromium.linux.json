@@ -4386,10 +4386,6 @@
       {
         "name": "checkperms",
         "script": "checkperms.py"
-      },
-      {
-        "name": "nacl_integration",
-        "script": "nacl_integration.py"
       }
     ]
   },
@@ -4986,12 +4982,6 @@
           "can_use_on_swarming_builders": true,
           "shards": 4
         }
-      }
-    ],
-    "scripts": [
-      {
-        "name": "nacl_integration",
-        "script": "nacl_integration.py"
       }
     ]
   },
