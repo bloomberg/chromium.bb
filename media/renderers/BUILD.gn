@@ -22,7 +22,9 @@ source_set("renderers") {
   ]
 
   deps = [
+    "//base",
     "//gpu/command_buffer/client:gles2_interface",
+    "//media/base",
     "//skia",
     "//third_party/libyuv",
   ]
