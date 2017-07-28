@@ -47,7 +47,6 @@
   const Infinity = global.Infinity;
 
   const defineProperty = global.Object.defineProperty;
-  const hasOwnProperty = v8.uncurryThis(global.Object.hasOwnProperty);
   const callFunction = v8.uncurryThis(global.Function.prototype.call);
   const applyFunction = v8.uncurryThis(global.Function.prototype.apply);
 
@@ -62,6 +61,9 @@
   const thenPromise = v8.uncurryThis(Promise.prototype.then);
   const Promise_resolve = v8.simpleBind(Promise.resolve, Promise);
   const Promise_reject = v8.simpleBind(Promise.reject, Promise);
+
+  // From CommonOperations.js
+  const { hasOwnPropertyNoThrow } = binding.streamOperations;
 
   const streamErrors = binding.streamErrors;
   const errCancelLockedStream =
@@ -778,7 +780,7 @@
   }
 
   function IsReadableStream(x) {
-    return hasOwnProperty(x, _controller);
+    return hasOwnPropertyNoThrow(x, _controller);
   }
 
   function IsReadableStreamDisturbed(stream) {
@@ -790,11 +792,11 @@
   }
 
   function IsReadableStreamDefaultController(x) {
-    return hasOwnProperty(x, _controlledReadableStream);
+    return hasOwnPropertyNoThrow(x, _controlledReadableStream);
   }
 
   function IsReadableStreamDefaultReader(x) {
-    return hasOwnProperty(x, _readRequests);
+    return hasOwnPropertyNoThrow(x, _readRequests);
   }
 
   function IsReadableStreamReadable(stream) {
