@@ -35,7 +35,6 @@
 #include "modules/storage/DOMWindowStorage.h"
 #include "modules/storage/InspectorDOMStorageAgent.h"
 #include "modules/storage/Storage.h"
-#include "modules/storage/StorageClient.h"
 #include "modules/storage/StorageEvent.h"
 #include "modules/storage/StorageNamespace.h"
 #include "modules/storage/StorageNamespaceController.h"
@@ -150,8 +149,7 @@ bool StorageArea::CanAccessStorage(LocalFrame* frame) {
       StorageNamespaceController::From(frame->GetPage());
   if (!controller)
     return false;
-  bool result =
-      controller->GetStorageClient()->CanAccessStorage(frame, storage_type_);
+  bool result = controller->CanAccessStorage(frame, storage_type_);
   // Move attention to the new LocalFrame.
   frame_used_for_can_access_storage_ = frame;
   can_access_storage_cached_result_ = result;

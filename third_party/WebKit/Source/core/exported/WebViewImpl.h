@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "core/CoreExport.h"
 #include "core/editing/spellcheck/SpellCheckerClientImpl.h"
 #include "core/exported/WebPagePopupImpl.h"
 #include "core/exported/WebViewBase.h"
@@ -44,8 +45,6 @@
 #include "core/page/EditorClient.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "core/page/PageWidgetDelegate.h"
-#include "modules/encryptedmedia/MediaKeysClient.h"
-#include "modules/storage/StorageClient.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
@@ -70,7 +69,6 @@
 #include "public/platform/WebVector.h"
 #include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebPageImportanceSignals.h"
-#include "web/WebExport.h"
 
 namespace blink {
 
@@ -97,7 +95,7 @@ class WebRemoteFrame;
 class WebSettingsImpl;
 class WebViewScheduler;
 
-class WEB_EXPORT WebViewImpl final
+class CORE_EXPORT WebViewImpl final
     : NON_EXPORTED_BASE(public WebViewBase),
       NON_EXPORTED_BASE(public WebGestureCurveTarget),
       public PageWidgetEventHandler,
@@ -214,7 +212,7 @@ class WEB_EXPORT WebViewImpl final
   void EnableAutoResizeMode(const WebSize& min_size,
                             const WebSize& max_size) override;
   void DisableAutoResizeMode() override;
-  void PerformMediaPlayerAction(const WebMediaPlayerAction& action,
+  void PerformMediaPlayerAction(const WebMediaPlayerAction&,
                                 const WebPoint& location) override;
   void PerformPluginAction(const WebPluginAction&, const WebPoint&) override;
   void AudioStateChanged(bool is_audio_playing) override;
@@ -586,7 +584,6 @@ class WEB_EXPORT WebViewImpl final
   ContextMenuClient context_menu_client_;
   EditorClient editor_client_;
   SpellCheckerClientImpl spell_checker_client_impl_;
-  StorageClient storage_client_impl_;
 
   WebSize size_;
   // If true, automatically resize the layout view around its content.
@@ -669,7 +666,6 @@ class WEB_EXPORT WebViewImpl final
   GraphicsLayer* visual_viewport_container_layer_;
   bool matches_heuristics_for_gpu_rasterization_;
 
-  MediaKeysClient media_keys_client_impl_;
   std::unique_ptr<WebActiveGestureAnimation> gesture_animation_;
   WebPoint position_on_fling_start_;
   WebPoint global_position_on_fling_start_;

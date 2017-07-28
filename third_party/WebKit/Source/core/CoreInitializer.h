@@ -48,11 +48,13 @@ class MediaControls;
 class Page;
 class Settings;
 class ShadowRoot;
+class WebCredentialManagerClient;
 class WebFrameClient;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerSource;
 class WebRemotePlaybackClient;
+class WebViewClient;
 class WorkerClients;
 
 class CORE_EXPORT CoreInitializer {
@@ -93,16 +95,24 @@ class CORE_EXPORT CoreInitializer {
   virtual LinkResource* CreateServiceWorkerLinkResource(
       HTMLLinkElement*) const = 0;
 
-  virtual void OnClearWindowObjectInMainWorld(Document&, const Settings&) = 0;
+  virtual void OnClearWindowObjectInMainWorld(Document&,
+                                              const Settings&) const = 0;
 
   virtual std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       WebFrameClient*,
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
-      WebMediaPlayerClient*) = 0;
+      WebMediaPlayerClient*) const = 0;
 
   virtual WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
-      HTMLMediaElement&) = 0;
+      HTMLMediaElement&) const = 0;
+
+  virtual void ProvideCredentialManagerClient(
+      Page&,
+      WebCredentialManagerClient*) const = 0;
+
+  virtual void ProvideModulesToPage(Page&, WebViewClient*) const = 0;
+  virtual void ForceNextWebGLContextCreationToFail() const = 0;
 
  protected:
   // CoreInitializer is only instantiated by subclass ModulesInitializer.

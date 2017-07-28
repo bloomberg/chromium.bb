@@ -63,6 +63,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -165,7 +166,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
-#include "web/WebViewImpl.h"
 
 using blink::URLTestHelpers::ToKURL;
 using blink::testing::RunPendingTasks;

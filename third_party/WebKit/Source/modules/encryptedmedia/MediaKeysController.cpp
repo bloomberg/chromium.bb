@@ -4,8 +4,10 @@
 
 #include "modules/encryptedmedia/MediaKeysController.h"
 
-#include "modules/encryptedmedia/MediaKeysClient.h"
+#include "core/dom/Document.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "public/platform/WebContentDecryptionModule.h"
+#include "public/web/WebFrameClient.h"
 
 namespace blink {
 
@@ -13,18 +15,19 @@ const char* MediaKeysController::SupplementName() {
   return "MediaKeysController";
 }
 
-MediaKeysController::MediaKeysController(MediaKeysClient* client)
-    : client_(client) {}
+MediaKeysController::MediaKeysController() {}
 
 WebEncryptedMediaClient* MediaKeysController::EncryptedMediaClient(
     ExecutionContext* context) {
-  return client_->EncryptedMediaClient(context);
+  Document* document = ToDocument(context);
+  WebLocalFrameBase* web_frame =
+      WebLocalFrameBase::FromFrame(document->GetFrame());
+  return web_frame->Client()->EncryptedMediaClient();
 }
 
-void MediaKeysController::ProvideMediaKeysTo(Page& page,
-                                             MediaKeysClient* client) {
+void MediaKeysController::ProvideMediaKeysTo(Page& page) {
   MediaKeysController::ProvideTo(page, SupplementName(),
-                                 new MediaKeysController(client));
+                                 new MediaKeysController());
 }
 
 }  // namespace blink
