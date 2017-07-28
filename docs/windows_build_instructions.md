@@ -199,18 +199,16 @@ in the editor that appears when you create your output directory
 (`gn args out/Default`) or on the gn gen command line
 (`gn gen out/Default --args="is_component_build = true is_debug = true"`).
 Some helpful settings to consider using include:
-* `use_jumbo_builds = true` - *Experimental* [Jumbo/unity](jumbo.md) builds.
+* `use_jumbo_build = true` - *Experimental* [Jumbo/unity](jumbo.md) builds.
 * `is_component_build = true` - this uses more, smaller DLLs, and incremental
 linking.
-* `use_nacl = false` - this disables Native Client which is usually not needed for
-local builds.
+* `enable_nacl = false` - this disables Native Client which is usually not
+needed for local builds.
 * `target_cpu = "x86"` - x86 builds are slightly faster than x64 builds and
 support incremental linking for more targets. Note that if you set this but
-don't' set use_nacl = false then build times may get worse.
+don't' set enable_nacl = false then build times may get worse.
 * `remove_webcore_debug_symbols = true` - turn off source-level debugging for
 blink to reduce build times, appropriate if you don't plan to debug blink.
-* `use_jumbo_build = true` - compile multiple translation units as one, for
-faster builds (applies only to some components).
 * `win_linker_timing = true` - this should not generally be set but can be
 helpful when trying to understand build times or incremental linking failures.
 
