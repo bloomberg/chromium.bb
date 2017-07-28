@@ -351,7 +351,7 @@ TEST_F(UsbDeviceHandleTest, CancelOnClose) {
   ASSERT_EQ(UsbTransferStatus::CANCELLED, completion.status());
 }
 
-TEST_F(UsbDeviceHandleTest, CancelOnDisconnect) {
+TEST_F(UsbDeviceHandleTest, ErrorOnDisconnect) {
   if (!UsbTestGadget::IsTestEnabled()) {
     return;
   }
@@ -379,7 +379,12 @@ TEST_F(UsbDeviceHandleTest, CancelOnDisconnect) {
 
   ASSERT_TRUE(gadget->Disconnect());
   completion.WaitForResult();
-  ASSERT_EQ(UsbTransferStatus::DISCONNECT, completion.status());
+  // Depending on timing the transfer can be cancelled by the disconnection, be
+  // rejected because the device is already missing or result in another generic
+  // error as the device drops off the bus.
+  EXPECT_TRUE(completion.status() == UsbTransferStatus::CANCELLED ||
+              completion.status() == UsbTransferStatus::DISCONNECT ||
+              completion.status() == UsbTransferStatus::TRANSFER_ERROR);
 
   handle->Close();
 }
