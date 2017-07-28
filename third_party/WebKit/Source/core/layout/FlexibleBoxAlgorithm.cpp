@@ -164,6 +164,68 @@ void FlexLine::FreezeInflexibleItems() {
   initial_free_space = remaining_free_space;
 }
 
+bool FlexLine::ResolveFlexibleLengths() {
+  LayoutUnit total_violation;
+  LayoutUnit used_free_space;
+  Vector<FlexItem*> min_violations;
+  Vector<FlexItem*> max_violations;
+
+  FlexSign flex_sign = Sign();
+  double sum_flex_factors =
+      (flex_sign == kPositiveFlexibility) ? total_flex_grow : total_flex_shrink;
+  if (sum_flex_factors > 0 && sum_flex_factors < 1) {
+    LayoutUnit fractional(initial_free_space * sum_flex_factors);
+    if (fractional.Abs() < remaining_free_space.Abs())
+      remaining_free_space = fractional;
+  }
+
+  for (size_t i = 0; i < line_items.size(); ++i) {
+    FlexItem& flex_item = line_items[i];
+    LayoutBox* child = flex_item.box;
+
+    // This check also covers out-of-flow children.
+    if (flex_item.frozen)
+      continue;
+
+    LayoutUnit child_size = flex_item.flex_base_content_size;
+    double extra_space = 0;
+    if (remaining_free_space > 0 && total_flex_grow > 0 &&
+        flex_sign == kPositiveFlexibility && std::isfinite(total_flex_grow)) {
+      extra_space =
+          remaining_free_space * child->Style()->FlexGrow() / total_flex_grow;
+    } else if (remaining_free_space < 0 && total_weighted_flex_shrink > 0 &&
+               flex_sign == kNegativeFlexibility &&
+               std::isfinite(total_weighted_flex_shrink) &&
+               child->Style()->FlexShrink()) {
+      extra_space = remaining_free_space * child->Style()->FlexShrink() *
+                    flex_item.flex_base_content_size /
+                    total_weighted_flex_shrink;
+    }
+    if (std::isfinite(extra_space))
+      child_size += LayoutUnit::FromFloatRound(extra_space);
+
+    LayoutUnit adjusted_child_size = flex_item.ClampSizeToMinAndMax(child_size);
+    DCHECK_GE(adjusted_child_size, 0);
+    flex_item.flexed_content_size = adjusted_child_size;
+    used_free_space += adjusted_child_size - flex_item.flex_base_content_size;
+
+    LayoutUnit violation = adjusted_child_size - child_size;
+    if (violation > 0)
+      min_violations.push_back(&flex_item);
+    else if (violation < 0)
+      max_violations.push_back(&flex_item);
+    total_violation += violation;
+  }
+
+  if (total_violation) {
+    FreezeViolations(total_violation < 0 ? max_violations : min_violations);
+  } else {
+    remaining_free_space -= used_free_space;
+  }
+
+  return !total_violation;
+}
+
 FlexLayoutAlgorithm::FlexLayoutAlgorithm(const ComputedStyle* style,
                                          LayoutUnit line_break_length,
                                          Vector<FlexItem>& all_items)
