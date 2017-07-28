@@ -30,9 +30,11 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
+import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -49,16 +51,16 @@ public class CustomTabIntentDataProvider {
     // The type of UI for Custom Tab to use.
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({
-        CUSTOM_TABS_UI_TYPE_DEFAULT,
-        CUSTOM_TABS_UI_TYPE_MEDIA_VIEWER,
-        CUSTOM_TABS_UI_TYPE_PAYMENT_REQUEST,
-        CUSTOM_TABS_UI_TYPE_INFO_PAGE,
+            CUSTOM_TABS_UI_TYPE_DEFAULT, CUSTOM_TABS_UI_TYPE_MEDIA_VIEWER,
+            CUSTOM_TABS_UI_TYPE_PAYMENT_REQUEST, CUSTOM_TABS_UI_TYPE_INFO_PAGE,
+            CUSTOM_TABS_UI_TYPE_READER_MODE,
     })
     public @interface CustomTabsUiType {}
     public static final int CUSTOM_TABS_UI_TYPE_DEFAULT = 0;
     public static final int CUSTOM_TABS_UI_TYPE_MEDIA_VIEWER = 1;
     public static final int CUSTOM_TABS_UI_TYPE_PAYMENT_REQUEST = 2;
     public static final int CUSTOM_TABS_UI_TYPE_INFO_PAGE = 3;
+    public static final int CUSTOM_TABS_UI_TYPE_READER_MODE = 4;
 
     /**
      * Extra used to keep the caller alive. Its value is an Intent.
@@ -109,6 +111,10 @@ public class CustomTabIntentDataProvider {
             ANIMATION_BUNDLE_PREFIX + "animEnterRes";
     private static final String BUNDLE_EXIT_ANIMATION_RESOURCE =
             ANIMATION_BUNDLE_PREFIX + "animExitRes";
+    private static final String FIRST_PARTY_PITFALL_MSG =
+            "The intent contains a non-default UI type, but it is not from a first-party app. "
+            + "To make locally-built Chrome a first-party app, sign with release-test "
+            + "signing keys and run on userdebug devices. See use_signing_keys GN arg.";
 
     private final CustomTabsSessionToken mSession;
     private final boolean mIsTrustedIntent;
@@ -145,6 +151,15 @@ public class CustomTabIntentDataProvider {
      */
     public static void addPaymentRequestUIExtras(Intent intent) {
         intent.putExtra(EXTRA_UI_TYPE, CUSTOM_TABS_UI_TYPE_PAYMENT_REQUEST);
+        intent.putExtra(EXTRA_IS_OPENED_BY_CHROME, true);
+        IntentHandler.addTrustedIntentExtras(intent);
+    }
+
+    /**
+     * Add extras to customize menu items for opening Reader Mode UI custom tab from Chrome.
+     */
+    public static void addReaderModeUIExtras(Intent intent) {
+        intent.putExtra(EXTRA_UI_TYPE, CUSTOM_TABS_UI_TYPE_READER_MODE);
         intent.putExtra(EXTRA_IS_OPENED_BY_CHROME, true);
         IntentHandler.addTrustedIntentExtras(intent);
     }
@@ -199,16 +214,8 @@ public class CustomTabIntentDataProvider {
 
         final int requestedUiType =
                 IntentUtils.safeGetIntExtra(intent, EXTRA_UI_TYPE, CUSTOM_TABS_UI_TYPE_DEFAULT);
-        if (requestedUiType == CUSTOM_TABS_UI_TYPE_MEDIA_VIEWER && mIsTrustedIntent) {
-            mUiType = CUSTOM_TABS_UI_TYPE_MEDIA_VIEWER;
-        } else if (requestedUiType == CUSTOM_TABS_UI_TYPE_PAYMENT_REQUEST && mIsTrustedIntent
-                && mIsOpenedByChrome) {
-            mUiType = CUSTOM_TABS_UI_TYPE_PAYMENT_REQUEST;
-        } else if (requestedUiType == CUSTOM_TABS_UI_TYPE_INFO_PAGE && mIsTrustedIntent) {
-            mUiType = CUSTOM_TABS_UI_TYPE_INFO_PAGE;
-        } else {
-            mUiType = CUSTOM_TABS_UI_TYPE_DEFAULT;
-        }
+        mUiType = verifiedUiType(requestedUiType, context);
+
         mAnimationBundle = IntentUtils.safeGetBundleExtra(
                 intent, CustomTabsIntent.EXTRA_EXIT_ANIMATION_BUNDLE);
         mTitleVisibilityState = IntentUtils.safeGetIntExtra(intent,
@@ -230,6 +237,29 @@ public class CustomTabIntentDataProvider {
         mDisableStar = IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_STAR_BUTTON, false);
         mDisableDownload = IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_DOWNLOAD_BUTTON,
                 false);
+    }
+
+    /**
+     * Get the verified UI type, according to the intent extras, and whether the intent is trusted.
+     * @param requestedUiType requested UI type in the intent, unqualified
+     * @return verified UI type
+     */
+    private int verifiedUiType(int requestedUiType, Context context) {
+        if (!mIsTrustedIntent) {
+            if (ChromeVersionInfo.isLocalBuild()) {
+                Toast.makeText(context, FIRST_PARTY_PITFALL_MSG, Toast.LENGTH_LONG).show();
+                Log.w(TAG, FIRST_PARTY_PITFALL_MSG);
+            }
+            return CUSTOM_TABS_UI_TYPE_DEFAULT;
+        }
+
+        if (requestedUiType == CUSTOM_TABS_UI_TYPE_PAYMENT_REQUEST) {
+            if (!mIsOpenedByChrome) {
+                return CUSTOM_TABS_UI_TYPE_DEFAULT;
+            }
+        }
+
+        return requestedUiType;
     }
 
     /**

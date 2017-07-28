@@ -147,7 +147,8 @@ public class ChromeLauncherActivity extends Activity
                 MultiWindowUtils.getInstance().shouldRunInLegacyMultiInstanceMode(this);
         mIntentHandler = new IntentHandler(this, getPackageName());
         mIsCustomTabIntent = isCustomTabIntent(getIntent());
-        if (!mIsCustomTabIntent) {
+        // If the intent was created by Reader Mode, ignore herb and custom tab information.
+        if (!mIsCustomTabIntent && !ReaderModeManager.isReaderModeCreatedIntent(getIntent())) {
             mIsHerbIntent = isHerbIntent();
             mIsCustomTabIntent = mIsHerbIntent;
         }

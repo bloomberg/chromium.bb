@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.customtabs;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 import static org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule.LONG_TIMEOUT_MS;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_MEDIA_VIEWER;
+import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_READER_MODE;
 
 import android.app.Activity;
 import android.app.Instrumentation;
@@ -564,6 +565,30 @@ public class CustomTabActivityTest {
         Assert.assertFalse(menu.findItem(R.id.add_to_homescreen_id).isVisible());
         Assert.assertFalse(menu.findItem(R.id.request_desktop_site_row_menu_id).isVisible());
         Assert.assertFalse(menu.findItem(R.id.open_in_browser_id).isVisible());
+    }
+
+    /**
+     * Test the entries in app menu for Reader Mode.
+     */
+    @Test
+    @SmallTest
+    @RetryOnFailure
+    public void testAppMenuForReaderMode() throws InterruptedException {
+        Intent intent = createMinimalCustomTabIntent();
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE, CUSTOM_TABS_UI_TYPE_READER_MODE);
+        IntentHandler.addTrustedIntentExtras(intent);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        openAppMenuAndAssertMenuShown();
+        Menu menu =
+                mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        final int expectedMenuSize = 2;
+        final int actualMenuSize = getActualMenuSize(menu);
+
+        Assert.assertNotNull("App menu is not initialized: ", menu);
+        Assert.assertEquals(expectedMenuSize, actualMenuSize);
+        Assert.assertTrue(menu.findItem(R.id.find_in_page_id).isVisible());
+        Assert.assertTrue(menu.findItem(R.id.reader_mode_prefs_id).isVisible());
     }
 
     /**

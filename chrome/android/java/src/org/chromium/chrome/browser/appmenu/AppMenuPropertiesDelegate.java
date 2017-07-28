@@ -93,6 +93,9 @@ public class AppMenuPropertiesDelegate {
             isOverviewMenu = !isBottomSheetNtpMenu && isOverview;
             isTabletEmptyModeMenu = false;
         }
+        int visibleMenus = (isPageMenu ? 1 : 0) + (isOverviewMenu ? 1 : 0)
+                + (isTabletEmptyModeMenu ? 1 : 0) + (isBottomSheetNtpMenu ? 1 : 0);
+        assert visibleMenus == 1;
 
         menu.setGroupVisible(R.id.PAGE_MENU, isPageMenu);
         menu.setGroupVisible(R.id.OVERVIEW_MODE_MENU, isOverviewMenu);

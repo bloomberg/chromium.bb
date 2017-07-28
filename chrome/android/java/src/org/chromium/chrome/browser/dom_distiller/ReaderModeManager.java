@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.infobar.ReaderModeInfoBar;
 import org.chromium.chrome.browser.tab.Tab;
@@ -485,6 +486,9 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
         builder.setShowTitle(true);
         CustomTabsIntent customTabsIntent = builder.build();
         customTabsIntent.intent.setClassName(mChromeActivity, CustomTabActivity.class.getName());
+
+        // Customize items on menu as Reader Mode UI to show 'Find in page' and 'Preference' only.
+        CustomTabIntentDataProvider.addReaderModeUIExtras(customTabsIntent.intent);
 
         // Add the parent ID as an intent extra for back button functionality.
         customTabsIntent.intent.putExtra(
