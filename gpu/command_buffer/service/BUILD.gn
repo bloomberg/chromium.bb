@@ -107,6 +107,8 @@ target(link_target_type, "service_sources") {
     "mailbox_manager_sync.h",
     "memory_program_cache.cc",
     "memory_program_cache.h",
+    "passthrough_program_cache.cc",
+    "passthrough_program_cache.h",
     "path_manager.cc",
     "path_manager.h",
     "preemption_flag.h",
