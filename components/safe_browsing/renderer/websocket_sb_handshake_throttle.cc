@@ -57,16 +57,17 @@ void WebSocketSBHandshakeThrottle::ThrottleHandshake(
   int load_flags = 0;
   start_time_ = base::TimeTicks::Now();
   safe_browsing_->CreateCheckerAndCheck(
-      render_frame_id, mojo::MakeRequest(&url_checker_), url, load_flags,
-      content::RESOURCE_TYPE_SUB_RESOURCE,
+      render_frame_id, mojo::MakeRequest(&url_checker_), url, "GET",
+      std::string(), load_flags, content::RESOURCE_TYPE_SUB_RESOURCE, false,
       base::BindOnce(&WebSocketSBHandshakeThrottle::OnCheckResult,
                      weak_factory_.GetWeakPtr()));
 }
 
-void WebSocketSBHandshakeThrottle::OnCheckResult(bool safe) {
+void WebSocketSBHandshakeThrottle::OnCheckResult(bool proceed,
+                                                 bool showed_interstitial) {
   DCHECK(!start_time_.is_null());
   base::TimeDelta elapsed = base::TimeTicks::Now() - start_time_;
-  if (safe) {
+  if (proceed) {
     result_ = Result::SAFE;
     UMA_HISTOGRAM_TIMES("SafeBrowsing.WebSocket.Elapsed.Safe", elapsed);
     callbacks_->OnSuccess();

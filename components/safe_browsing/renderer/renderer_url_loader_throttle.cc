@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/safe_browsing/renderer_url_loader_throttle.h"
+#include "components/safe_browsing/renderer/renderer_url_loader_throttle.h"
 
 #include "base/logging.h"
+#include "content/public/common/resource_request.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/url_request/redirect_info.h"
 
@@ -20,9 +21,7 @@ RendererURLLoaderThrottle::RendererURLLoaderThrottle(
 RendererURLLoaderThrottle::~RendererURLLoaderThrottle() = default;
 
 void RendererURLLoaderThrottle::WillStartRequest(
-    const GURL& url,
-    int load_flags,
-    content::ResourceType resource_type,
+    const content::ResourceRequest& request,
     bool* defer) {
   DCHECK_EQ(0u, pending_checks_);
   DCHECK(!blocked_);
@@ -32,8 +31,9 @@ void RendererURLLoaderThrottle::WillStartRequest(
   // Use a weak pointer to self because |safe_browsing_| is not owned by this
   // object.
   safe_browsing_->CreateCheckerAndCheck(
-      render_frame_id_, mojo::MakeRequest(&url_checker_), url, load_flags,
-      resource_type,
+      render_frame_id_, mojo::MakeRequest(&url_checker_), request.url,
+      request.method, request.headers, request.load_flags,
+      request.resource_type, request.has_user_gesture,
       base::BindOnce(&RendererURLLoaderThrottle::OnCheckUrlResult,
                      weak_factory_.GetWeakPtr()));
   safe_browsing_ = nullptr;
@@ -56,7 +56,7 @@ void RendererURLLoaderThrottle::WillRedirectRequest(
 
   pending_checks_++;
   url_checker_->CheckUrl(
-      redirect_info.new_url,
+      redirect_info.new_url, redirect_info.new_method,
       base::BindOnce(&RendererURLLoaderThrottle::OnCheckUrlResult,
                      base::Unretained(this)));
 }
@@ -70,14 +70,15 @@ void RendererURLLoaderThrottle::WillProcessResponse(bool* defer) {
     *defer = true;
 }
 
-void RendererURLLoaderThrottle::OnCheckUrlResult(bool safe) {
+void RendererURLLoaderThrottle::OnCheckUrlResult(bool proceed,
+                                                 bool showed_interstitial) {
   if (blocked_ || !url_checker_)
     return;
 
   DCHECK_LT(0u, pending_checks_);
   pending_checks_--;
 
-  if (safe) {
+  if (proceed) {
     if (pending_checks_ == 0) {
       // The resource load is not necessarily deferred, in that case Resume() is
       // a no-op.

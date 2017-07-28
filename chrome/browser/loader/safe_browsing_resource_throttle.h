@@ -5,33 +5,19 @@
 #ifndef CHROME_BROWSER_LOADER_SAFE_BROWSING_RESOURCE_THROTTLE_H_
 #define CHROME_BROWSER_LOADER_SAFE_BROWSING_RESOURCE_THROTTLE_H_
 
-#include <string>
-#include <vector>
-
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 #include "components/safe_browsing/base_resource_throttle.h"
-#include "components/safe_browsing/base_ui_manager.h"
-#include "components/safe_browsing_db/database_manager.h"
-#include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_type.h"
-#include "url/gurl.h"
-
-namespace content {
-class ResourceRequestInfo;
-}
 
 namespace net {
 class URLRequest;
 }
 
 namespace safe_browsing {
-class BaseUIManager;
+class SafeBrowsingService;
 }
 
 // SafeBrowsingResourceThrottle functions as its base class
@@ -89,12 +75,7 @@ class SafeBrowsingResourceThrottle
   void StartDisplayingBlockingPageHelper(
       security_interstitials::UnsafeResource resource) override;
 
-  // Starts displaying the safe browsing interstitial page if it's not
-  // prerendering. Called on the UI thread.
-  static void StartDisplayingBlockingPage(
-      const base::WeakPtr<safe_browsing::BaseResourceThrottle>& throttle,
-      scoped_refptr<safe_browsing::BaseUIManager> ui_manager,
-      const security_interstitials::UnsafeResource& resource);
+  scoped_refptr<safe_browsing::UrlCheckerDelegate> url_checker_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingResourceThrottle);
 };

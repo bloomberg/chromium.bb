@@ -161,10 +161,7 @@ class TestURLLoaderThrottle : public URLLoaderThrottle {
 
  private:
   // URLLoaderThrottle implementation.
-  void WillStartRequest(const GURL& url,
-                        int load_flags,
-                        ResourceType resource_type,
-                        bool* defer) override {
+  void WillStartRequest(const ResourceRequest& request, bool* defer) override {
     will_start_request_called_++;
     if (will_start_request_callback_)
       will_start_request_callback_.Run(delegate_, defer);

@@ -35,9 +35,7 @@ class BrowserURLLoaderThrottle : public content::URLLoaderThrottle {
   ~BrowserURLLoaderThrottle() override;
 
   // content::URLLoaderThrottle implementation.
-  void WillStartRequest(const GURL& url,
-                        int load_flags,
-                        content::ResourceType resource_type,
+  void WillStartRequest(const content::ResourceRequest& request,
                         bool* defer) override;
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
                            bool* defer) override;
@@ -50,7 +48,7 @@ class BrowserURLLoaderThrottle : public content::URLLoaderThrottle {
       scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
       const base::Callback<content::WebContents*()>& web_contents_getter);
 
-  void OnCheckUrlResult(bool safe);
+  void OnCheckUrlResult(bool proceed, bool showed_interstitial);
 
   // The following member stays valid until |url_checker_| is created.
   scoped_refptr<UrlCheckerDelegate> url_checker_delegate_;

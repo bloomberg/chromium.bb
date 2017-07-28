@@ -32,8 +32,11 @@ class MojoSafeBrowsingImpl : public mojom::SafeBrowsing {
   void CreateCheckerAndCheck(int32_t render_frame_id,
                              mojom::SafeBrowsingUrlCheckerRequest request,
                              const GURL& url,
+                             const std::string& method,
+                             const std::string& headers,
                              int32_t load_flags,
                              content::ResourceType resource_type,
+                             bool has_user_gesture,
                              CreateCheckerAndCheckCallback callback) override;
 
   scoped_refptr<UrlCheckerDelegate> delegate_;

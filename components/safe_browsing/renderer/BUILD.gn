@@ -22,8 +22,10 @@ source_set("renderer") {
   }
 }
 
-source_set("websocket_sb_handshake_throttle") {
+source_set("throttles") {
   sources = [
+    "renderer_url_loader_throttle.cc",
+    "renderer_url_loader_throttle.h",
     "websocket_sb_handshake_throttle.cc",
     "websocket_sb_handshake_throttle.h",
   ]
@@ -34,6 +36,7 @@ source_set("websocket_sb_handshake_throttle") {
     "//content/public/common:common",
     "//content/public/renderer:renderer",
     "//ipc",
+    "//net",
     "//services/service_manager/public/cpp:cpp",
     "//third_party/WebKit/public:blink",
     "//url:url",
@@ -47,7 +50,7 @@ source_set("websocket_sb_handshake_throttle_unittest") {
   ]
 
   deps = [
-    ":websocket_sb_handshake_throttle",
+    ":throttles",
     "//base:base",
     "//base/test:test_support",
     "//components/safe_browsing/common:interfaces",
