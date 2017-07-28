@@ -452,8 +452,6 @@ source_set("common") {
     "browser/aw_content_browser_client.h",
     "browser/aw_contents.cc",
     "browser/aw_contents.h",
-    "browser/aw_contents_background_thread_client.cc",
-    "browser/aw_contents_background_thread_client.h",
     "browser/aw_contents_client_bridge.cc",
     "browser/aw_contents_client_bridge.h",
     "browser/aw_contents_io_thread_client.cc",
