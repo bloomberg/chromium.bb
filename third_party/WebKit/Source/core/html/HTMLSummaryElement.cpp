@@ -94,7 +94,7 @@ static bool IsClickableControl(Node* node) {
 }
 
 bool HTMLSummaryElement::SupportsFocus() const {
-  return IsMainSummary();
+  return IsMainSummary() || HTMLElement::SupportsFocus();
 }
 
 void HTMLSummaryElement::DefaultEventHandler(Event* event) {
