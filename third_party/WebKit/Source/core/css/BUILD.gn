@@ -570,6 +570,7 @@ blink_core_sources("css") {
     "properties/CSSShorthandPropertyAPIFlexFlow.cpp",
     "properties/CSSShorthandPropertyAPIFont.cpp",
     "properties/CSSShorthandPropertyAPIFontVariant.cpp",
+    "properties/CSSShorthandPropertyAPIGridArea.cpp",
     "properties/CSSShorthandPropertyAPIGridColumn.cpp",
     "properties/CSSShorthandPropertyAPIGridRow.cpp",
     "properties/CSSShorthandPropertyAPIListStyle.cpp",

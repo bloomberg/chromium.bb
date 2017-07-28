@@ -3837,6 +3837,7 @@
       name: "grid-area",
       longhands: ["grid-row-start", "grid-column-start", "grid-row-end", "grid-column-end"],
       api_class: true,
+      api_methods: ["parseShorthand"],
       runtime_flag: "CSSGridLayout",
     },
     {

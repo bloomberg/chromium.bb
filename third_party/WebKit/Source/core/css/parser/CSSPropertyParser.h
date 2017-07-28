@@ -91,7 +91,6 @@ class CSSPropertyParser {
   bool ConsumeGridTemplateRowsAndAreasAndColumns(CSSPropertyID, bool important);
   bool ConsumeGridTemplateShorthand(CSSPropertyID, bool important);
   bool ConsumeGridShorthand(bool important);
-  bool ConsumeGridAreaShorthand(bool important);
 
   bool ConsumePlaceContentShorthand(bool important);
   bool ConsumePlaceItemsShorthand(bool important);
