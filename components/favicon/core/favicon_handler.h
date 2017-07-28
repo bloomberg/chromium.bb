@@ -163,8 +163,11 @@ class FaviconHandler {
   bool HasPendingTasksForTest();
 
   // Get the maximal icon size in pixels for a handler of type |handler_type|.
+  // |candidates_from_web_manifest| represents whether the icons are coming
+  // from a Web Manifest.
   static int GetMaximalIconSize(
-      FaviconDriverObserver::NotificationIconType handler_type);
+      FaviconDriverObserver::NotificationIconType handler_type,
+      bool candidates_from_web_manifest);
 
  private:
   // Used to track a candidate for the favicon.
@@ -206,8 +209,7 @@ class FaviconHandler {
   // Called when the actual list of favicon candidates to be processed is
   // available, which can be either icon URLs listed in the HTML head instead
   // or, if a Web Manifest was provided, the list of icons there.
-  void OnGotFinalIconURLCandidates(const std::vector<FaviconURL>& candidates,
-                                   const std::vector<int>& desired_pixel_sizes);
+  void OnGotFinalIconURLCandidates(const std::vector<FaviconURL>& candidates);
 
   // Called when the history request for favicon data mapped to |url_| has
   // completed and the renderer has told us the icon URLs used by |url_|
