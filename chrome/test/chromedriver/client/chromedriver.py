@@ -55,6 +55,10 @@ class NoSuchCookie(ChromeDriverException):
   pass
 class InvalidArgument(ChromeDriverException):
   pass
+class ElementNotInteractable(ChromeDriverException):
+  pass
+class UnsupportedOperation(ChromeDriverException):
+  pass
 
 def _ExceptionForLegacyResponse(response):
   exception_class_map = {
@@ -67,6 +71,8 @@ def _ExceptionForLegacyResponse(response):
     12: InvalidElementState,
     13: UnknownError,
     14: InvalidArgument,
+    15: ElementNotInteractable,
+    16: UnsupportedOperation,
     17: JavaScriptError,
     19: XPathLookupError,
     21: Timeout,
@@ -104,7 +110,9 @@ def _ExceptionForStandardResponse(response):
     'invalid selector': InvalidSelector,
     'session not created exception': SessionNotCreatedException,
     'no such cookie': NoSuchCookie,
-    'invalid argument': InvalidArgument
+    'invalid argument': InvalidArgument,
+    'element not interactable': ElementNotInteractable,
+    'unsupported operation': UnsupportedOperation,
   }
 
   error = response['error']

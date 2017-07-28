@@ -82,9 +82,12 @@ Status ExecuteSetAlertValue(Session* session,
 
   if (type == "prompt")
     session->prompt_text.reset(new std::string(text));
+  else if (type == "alert" || type == "confirm")
+    return Status(kElementNotInteractable,
+                  "User dialog does not have a text box input field.");
   else
-    return Status(kElementNotVisible,
-                  " User dialog does not have a text box input field.");
+    return Status(kUnsupportedOperation,
+                  "Text can only be sent to window.prompt dialogs.");
   return Status(kOk);
 }
 

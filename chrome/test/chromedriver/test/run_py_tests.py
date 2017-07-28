@@ -830,6 +830,25 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEquals(False,
                       self._driver.ExecuteScript('return window.confirmed'))
 
+  def testSendTextToAlert(self):
+    self._driver.ExecuteScript('prompt = window.prompt()')
+    self.assertTrue(self._driver.IsAlertOpen())
+    self._driver.HandleAlert(True, 'TextToPrompt')
+    self.assertEquals('TextToPrompt',
+                      self._driver.ExecuteScript('return prompt'))
+    self._driver.ExecuteScript('window.confirmed = confirm(\'HI\');')
+    self.assertRaises(chromedriver.ElementNotInteractable,
+                 self._driver.HandleAlert,
+                 True, 'textToConfirm')
+    self._driver.HandleAlert(True) #for closing the previous alert.
+    self._driver.ExecuteScript('window.onbeforeunload=function(){return true}')
+    self._driver.FindElement('tag name', 'body').Click()
+    self._driver.Refresh()
+    self.assertTrue(self._driver.IsAlertOpen())
+    self.assertRaises(chromedriver.UnsupportedOperation,
+                 self._driver.HandleAlert,
+                 True, 'textToOnBeforeUnload')
+
   def testAlertOnNewWindow(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     old_windows = self._driver.GetWindowHandles()

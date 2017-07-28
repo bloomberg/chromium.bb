@@ -135,6 +135,8 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'CombinedInputActionsTest.testCanClickOnLinks',
     'CombinedInputActionsTest.testCanClickOnLinksWithAnOffset',
     'CombinedInputActionsTest.testMouseMovementWorksWhenNavigatingToAnotherPage',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1138
+    'AlertsTest.testSettingTheValueOfAnAlertThrows',
 ]
 
 _OS_NEGATIVE_FILTER = {}
