@@ -63,7 +63,7 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   const char* LayerTypeAsString() const override;
   void FreeTextureMailbox();
 
-  ResourceId external_texture_resource_;
+  viz::ResourceId external_texture_resource_;
   bool premultiplied_alpha_;
   bool blend_background_color_;
   bool flipped_;

@@ -7618,7 +7618,7 @@ class BlendStateCheckLayer : public LayerImpl {
   gfx::Rect quad_rect_;
   gfx::Rect opaque_content_rect_;
   gfx::Rect quad_visible_rect_;
-  ResourceId resource_id_;
+  viz::ResourceId resource_id_;
 };
 
 TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
@@ -8902,14 +8902,14 @@ TEST_F(LayerTreeHostImplTest, UIResourceManagement) {
   UIResourceBitmap bitmap(gfx::Size(1, 1), is_opaque);
   host_impl_->CreateUIResource(ui_resource_id, bitmap);
   EXPECT_EQ(1u, context3d->NumTextures());
-  ResourceId id1 = host_impl_->ResourceIdForUIResource(ui_resource_id);
+  viz::ResourceId id1 = host_impl_->ResourceIdForUIResource(ui_resource_id);
   EXPECT_NE(0u, id1);
 
   // Multiple requests with the same id is allowed.  The previous texture is
   // deleted.
   host_impl_->CreateUIResource(ui_resource_id, bitmap);
   EXPECT_EQ(1u, context3d->NumTextures());
-  ResourceId id2 = host_impl_->ResourceIdForUIResource(ui_resource_id);
+  viz::ResourceId id2 = host_impl_->ResourceIdForUIResource(ui_resource_id);
   EXPECT_NE(0u, id2);
   EXPECT_NE(id1, id2);
 
@@ -8951,7 +8951,7 @@ TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
   UIResourceId ui_resource_id = 1;
   host_impl_->CreateUIResource(ui_resource_id, bitmap);
   EXPECT_EQ(1u, context3d->NumTextures());
-  ResourceId id1 = host_impl_->ResourceIdForUIResource(ui_resource_id);
+  viz::ResourceId id1 = host_impl_->ResourceIdForUIResource(ui_resource_id);
   EXPECT_NE(0u, id1);
 }
 

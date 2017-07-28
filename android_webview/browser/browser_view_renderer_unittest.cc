@@ -341,7 +341,7 @@ RENDERING_TEST_F(ClientIsInvisibleAfterDetachTest);
 
 class ResourceRenderingTest : public RenderingTest {
  public:
-  using ResourceCountMap = std::map<cc::ResourceId, int>;
+  using ResourceCountMap = std::map<viz::ResourceId, int>;
   using LayerTreeFrameSinkResourceCountMap =
       std::map<uint32_t, ResourceCountMap>;
 
@@ -401,7 +401,7 @@ class ResourceRenderingTest : public RenderingTest {
 class SwitchLayerTreeFrameSinkIdTest : public ResourceRenderingTest {
   struct FrameInfo {
     uint32_t layer_tree_frame_sink_id;
-    cc::ResourceId resource_id;  // Each frame contains a single resource.
+    viz::ResourceId resource_id;  // Each frame contains a single resource.
   };
 
   std::unique_ptr<content::SynchronousCompositor::Frame> GetFrame(
@@ -463,8 +463,8 @@ class RenderThreadManagerDeletionTest : public ResourceRenderingTest {
     }
 
     const uint32_t layer_tree_frame_sink_id = 0u;
-    const cc::ResourceId resource_id =
-        static_cast<cc::ResourceId>(frame_number);
+    const viz::ResourceId resource_id =
+        static_cast<viz::ResourceId>(frame_number);
 
     std::unique_ptr<content::SynchronousCompositor::Frame> frame(
         new content::SynchronousCompositor::Frame);
@@ -525,8 +525,8 @@ class RenderThreadManagerSwitchTest : public ResourceRenderingTest {
     }
 
     const uint32_t layer_tree_frame_sink_id = 0u;
-    const cc::ResourceId resource_id =
-        static_cast<cc::ResourceId>(frame_number);
+    const viz::ResourceId resource_id =
+        static_cast<viz::ResourceId>(frame_number);
 
     std::unique_ptr<content::SynchronousCompositor::Frame> frame(
         new content::SynchronousCompositor::Frame);

@@ -543,18 +543,18 @@ bool ResourceProvider::IsRenderBufferFormatSupported(
   return false;
 }
 
-bool ResourceProvider::InUseByConsumer(ResourceId id) {
+bool ResourceProvider::InUseByConsumer(viz::ResourceId id) {
   Resource* resource = GetResource(id);
   return resource->lock_for_read_count > 0 || resource->exported_count > 0 ||
          resource->lost;
 }
 
-bool ResourceProvider::IsLost(ResourceId id) {
+bool ResourceProvider::IsLost(viz::ResourceId id) {
   Resource* resource = GetResource(id);
   return resource->lost;
 }
 
-void ResourceProvider::LoseResourceForTesting(ResourceId id) {
+void ResourceProvider::LoseResourceForTesting(viz::ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(resource);
   resource->lost = true;
@@ -568,7 +568,7 @@ viz::ResourceFormat ResourceProvider::YuvResourceFormat(int bits) const {
   }
 }
 
-ResourceId ResourceProvider::CreateResource(
+viz::ResourceId ResourceProvider::CreateResource(
     const gfx::Size& size,
     TextureHint hint,
     viz::ResourceFormat format,
@@ -597,7 +597,7 @@ ResourceId ResourceProvider::CreateResource(
   return 0;
 }
 
-ResourceId ResourceProvider::CreateGpuMemoryBufferResource(
+viz::ResourceId ResourceProvider::CreateGpuMemoryBufferResource(
     const gfx::Size& size,
     TextureHint hint,
     viz::ResourceFormat format,
@@ -619,7 +619,7 @@ ResourceId ResourceProvider::CreateGpuMemoryBufferResource(
   return 0;
 }
 
-ResourceId ResourceProvider::CreateGLTexture(
+viz::ResourceId ResourceProvider::CreateGLTexture(
     const gfx::Size& size,
     TextureHint hint,
     ResourceType type,
@@ -637,7 +637,7 @@ ResourceId ResourceProvider::CreateGLTexture(
                       ? GetImageTextureTarget(usage, format)
                       : GL_TEXTURE_2D;
 
-  ResourceId id = next_id_++;
+  viz::ResourceId id = next_id_++;
   Resource* resource =
       InsertResource(id, Resource(0, size, Resource::INTERNAL, target,
                                   GL_LINEAR, hint, type, format));
@@ -647,8 +647,9 @@ ResourceId ResourceProvider::CreateGLTexture(
   return id;
 }
 
-ResourceId ResourceProvider::CreateBitmap(const gfx::Size& size,
-                                          const gfx::ColorSpace& color_space) {
+viz::ResourceId ResourceProvider::CreateBitmap(
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   std::unique_ptr<viz::SharedBitmap> bitmap =
@@ -656,7 +657,7 @@ ResourceId ResourceProvider::CreateBitmap(const gfx::Size& size,
   uint8_t* pixels = bitmap->pixels();
   DCHECK(pixels);
 
-  ResourceId id = next_id_++;
+  viz::ResourceId id = next_id_++;
   Resource* resource = InsertResource(
       id,
       Resource(pixels, bitmap.release(), size, Resource::INTERNAL, GL_LINEAR));
@@ -665,13 +666,13 @@ ResourceId ResourceProvider::CreateBitmap(const gfx::Size& size,
   return id;
 }
 
-ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
+viz::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     const viz::TextureMailbox& mailbox,
     std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl,
     bool read_lock_fences_enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Just store the information. Mailbox will be consumed in LockForRead().
-  ResourceId id = next_id_++;
+  viz::ResourceId id = next_id_++;
   DCHECK(mailbox.IsValid());
   Resource* resource = nullptr;
   if (mailbox.IsTexture()) {
@@ -710,14 +711,14 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
   return id;
 }
 
-ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
+viz::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     const viz::TextureMailbox& mailbox,
     std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl) {
   return CreateResourceFromTextureMailbox(
       mailbox, std::move(release_callback_impl), false);
 }
 
-void ResourceProvider::DeleteResource(ResourceId id) {
+void ResourceProvider::DeleteResource(viz::ResourceId id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ResourceMap::iterator it = resources_.find(id);
   CHECK(it != resources_.end());
@@ -847,15 +848,15 @@ void ResourceProvider::FlushPendingDeletions() const {
 }
 
 ResourceProvider::ResourceType ResourceProvider::GetResourceType(
-    ResourceId id) {
+    viz::ResourceId id) {
   return GetResource(id)->type;
 }
 
-GLenum ResourceProvider::GetResourceTextureTarget(ResourceId id) {
+GLenum ResourceProvider::GetResourceTextureTarget(viz::ResourceId id) {
   return GetResource(id)->target;
 }
 
-bool ResourceProvider::IsImmutable(ResourceId id) {
+bool ResourceProvider::IsImmutable(viz::ResourceId id) {
   if (IsGpuResourceType(settings_.default_resource_type)) {
     return GetTextureHint(id) == TEXTURE_HINT_IMMUTABLE;
   } else {
@@ -865,7 +866,8 @@ bool ResourceProvider::IsImmutable(ResourceId id) {
   }
 }
 
-ResourceProvider::TextureHint ResourceProvider::GetTextureHint(ResourceId id) {
+ResourceProvider::TextureHint ResourceProvider::GetTextureHint(
+    viz::ResourceId id) {
   return GetResource(id)->hint;
 }
 
@@ -876,7 +878,7 @@ gfx::ColorSpace ResourceProvider::GetResourceColorSpaceForRaster(
   return resource->color_space;
 }
 
-void ResourceProvider::CopyToResource(ResourceId id,
+void ResourceProvider::CopyToResource(viz::ResourceId id,
                                       const uint8_t* image,
                                       const gfx::Size& image_size) {
   Resource* resource = GetResource(id);
@@ -928,7 +930,7 @@ void ResourceProvider::CopyToResource(ResourceId id,
 gpu::SyncToken ResourceProvider::GetSyncTokenForResources(
     const ResourceIdArray& resource_ids) {
   gpu::SyncToken latest_sync_token;
-  for (ResourceId id : resource_ids) {
+  for (viz::ResourceId id : resource_ids) {
     const gpu::SyncToken& sync_token = GetResource(id)->mailbox().sync_token();
     if (sync_token.release_count() > latest_sync_token.release_count())
       latest_sync_token = sync_token;
@@ -937,7 +939,7 @@ gpu::SyncToken ResourceProvider::GetSyncTokenForResources(
 }
 
 ResourceProvider::Resource* ResourceProvider::InsertResource(
-    ResourceId id,
+    viz::ResourceId id,
     Resource resource) {
   std::pair<ResourceMap::iterator, bool> result =
       resources_.insert(ResourceMap::value_type(id, std::move(resource)));
@@ -945,7 +947,7 @@ ResourceProvider::Resource* ResourceProvider::InsertResource(
   return &result.first->second;
 }
 
-ResourceProvider::Resource* ResourceProvider::GetResource(ResourceId id) {
+ResourceProvider::Resource* ResourceProvider::GetResource(viz::ResourceId id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(id);
   ResourceMap::iterator it = resources_.find(id);
@@ -953,7 +955,8 @@ ResourceProvider::Resource* ResourceProvider::GetResource(ResourceId id) {
   return &it->second;
 }
 
-const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
+const ResourceProvider::Resource* ResourceProvider::LockForRead(
+    viz::ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(!resource->locked_for_write) << "locked for write: "
                                       << resource->locked_for_write;
@@ -999,7 +1002,7 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
   return resource;
 }
 
-void ResourceProvider::UnlockForRead(ResourceId id) {
+void ResourceProvider::UnlockForRead(viz::ResourceId id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ResourceMap::iterator it = resources_.find(id);
   CHECK(it != resources_.end());
@@ -1025,7 +1028,7 @@ void ResourceProvider::UnlockForRead(ResourceId id) {
   }
 }
 
-ResourceProvider::Resource* ResourceProvider::LockForWrite(ResourceId id) {
+ResourceProvider::Resource* ResourceProvider::LockForWrite(viz::ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(CanLockForWrite(id));
   if (resource->allocated)
@@ -1035,30 +1038,30 @@ ResourceProvider::Resource* ResourceProvider::LockForWrite(ResourceId id) {
   return resource;
 }
 
-bool ResourceProvider::CanLockForWrite(ResourceId id) {
+bool ResourceProvider::CanLockForWrite(viz::ResourceId id) {
   Resource* resource = GetResource(id);
   return !resource->locked_for_write && !resource->lock_for_read_count &&
          !resource->exported_count && resource->origin == Resource::INTERNAL &&
          !resource->lost && ReadLockFenceHasPassed(resource);
 }
 
-bool ResourceProvider::IsOverlayCandidate(ResourceId id) {
+bool ResourceProvider::IsOverlayCandidate(viz::ResourceId id) {
   Resource* resource = GetResource(id);
   return resource->is_overlay_candidate;
 }
 
-gfx::BufferFormat ResourceProvider::GetBufferFormat(ResourceId id) {
+gfx::BufferFormat ResourceProvider::GetBufferFormat(viz::ResourceId id) {
   Resource* resource = GetResource(id);
   return resource->buffer_format;
 }
 
 #if defined(OS_ANDROID)
-bool ResourceProvider::IsBackedBySurfaceTexture(ResourceId id) {
+bool ResourceProvider::IsBackedBySurfaceTexture(viz::ResourceId id) {
   Resource* resource = GetResource(id);
   return resource->is_backed_by_surface_texture;
 }
 
-bool ResourceProvider::WantsPromotionHint(ResourceId id) {
+bool ResourceProvider::WantsPromotionHint(viz::ResourceId id) {
   return wants_promotion_hints_set_.count(id) > 0;
 }
 
@@ -1074,7 +1077,7 @@ void ResourceProvider::UnlockForWrite(Resource* resource) {
   resource->locked_for_write = false;
 }
 
-void ResourceProvider::EnableReadLockFencesForTesting(ResourceId id) {
+void ResourceProvider::EnableReadLockFencesForTesting(viz::ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(resource);
   resource->read_lock_fences_enabled = true;
@@ -1082,7 +1085,7 @@ void ResourceProvider::EnableReadLockFencesForTesting(ResourceId id) {
 
 ResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
     ResourceProvider* resource_provider,
-    ResourceId resource_id)
+    viz::ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
   const Resource* resource = resource_provider->LockForRead(resource_id);
   texture_id_ = resource->gl_id;
@@ -1097,7 +1100,7 @@ ResourceProvider::ScopedReadLockGL::~ScopedReadLockGL() {
 
 ResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
     ResourceProvider* resource_provider,
-    ResourceId resource_id,
+    viz::ResourceId resource_id,
     GLenum filter)
     : resource_lock_(resource_provider, resource_id),
       unit_(GL_TEXTURE0),
@@ -1105,7 +1108,7 @@ ResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
 
 ResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
     ResourceProvider* resource_provider,
-    ResourceId resource_id,
+    viz::ResourceId resource_id,
     GLenum unit,
     GLenum filter)
     : resource_lock_(resource_provider, resource_id),
@@ -1116,7 +1119,7 @@ ResourceProvider::ScopedSamplerGL::~ScopedSamplerGL() {}
 
 ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(
     ResourceProvider* resource_provider,
-    ResourceId resource_id,
+    viz::ResourceId resource_id,
     bool create_mailbox)
     : resource_provider_(resource_provider),
       resource_id_(resource_id),
@@ -1216,7 +1219,7 @@ void ResourceProvider::PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
 
 ResourceProvider::ScopedReadLockSoftware::ScopedReadLockSoftware(
     ResourceProvider* resource_provider,
-    ResourceId resource_id)
+    viz::ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
   const Resource* resource = resource_provider->LockForRead(resource_id);
   resource_provider->PopulateSkBitmapWithResource(&sk_bitmap_, resource);
@@ -1228,7 +1231,7 @@ ResourceProvider::ScopedReadLockSoftware::~ScopedReadLockSoftware() {
 
 ResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     ResourceProvider* resource_provider,
-    ResourceId resource_id)
+    viz::ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
   const Resource* resource = resource_provider->LockForRead(resource_id);
   if (resource->gl_id) {
@@ -1264,7 +1267,7 @@ ResourceProvider::ScopedReadLockSkImage::~ScopedReadLockSkImage() {
 
 ResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(
     ResourceProvider* resource_provider,
-    ResourceId resource_id)
+    viz::ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
   Resource* resource = resource_provider->LockForWrite(resource_id);
   resource_provider->PopulateSkBitmapWithResource(&sk_bitmap_, resource);
@@ -1282,7 +1285,7 @@ ResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware() {
 
 ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
     ScopedWriteLockGpuMemoryBuffer(ResourceProvider* resource_provider,
-                                   ResourceId resource_id)
+                                   viz::ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
   Resource* resource = resource_provider->LockForWrite(resource_id);
   DCHECK(IsGpuResourceType(resource->type));
@@ -1400,7 +1403,7 @@ void ResourceProvider::DestroyChildInternal(ChildMap::iterator it,
 
   for (ResourceIdMap::iterator child_it = child.child_to_parent_map.begin();
        child_it != child.child_to_parent_map.end(); ++child_it) {
-    ResourceId id = child_it->second;
+    viz::ResourceId id = child_it->second;
     resources_for_child.push_back(id);
   }
 
@@ -1428,7 +1431,7 @@ void ResourceProvider::PrepareSendToParent(
   // as pointers so we don't have to look up the resource id multiple times.
   std::vector<Resource*> resources;
   resources.reserve(resource_ids.size());
-  for (const ResourceId id : resource_ids)
+  for (const viz::ResourceId id : resource_ids)
     resources.push_back(GetResource(id));
 
   // Lazily create any mailboxes and verify all unverified sync tokens.
@@ -1478,7 +1481,7 @@ void ResourceProvider::PrepareSendToParent(
   DCHECK_EQ(resources.size(), resource_ids.size());
   for (size_t i = 0; i < resources.size(); ++i) {
     Resource* source = resources[i];
-    const ResourceId id = resource_ids[i];
+    const viz::ResourceId id = resource_ids[i];
 
     DCHECK(!settings_.delegated_sync_points_required ||
            !source->needs_sync_token());
@@ -1521,7 +1524,7 @@ void ResourceProvider::ReceiveFromChild(
       continue;
     }
 
-    ResourceId local_id = next_id_++;
+    viz::ResourceId local_id = next_id_++;
     Resource* resource = nullptr;
     if (it->is_software) {
       resource = InsertResource(local_id,
@@ -1558,7 +1561,7 @@ void ResourceProvider::ReceiveFromChild(
 
 void ResourceProvider::DeclareUsedResourcesFromChild(
     int child,
-    const ResourceIdSet& resources_from_child) {
+    const viz::ResourceIdSet& resources_from_child) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   ChildMap::iterator child_it = children_.find(child);
@@ -1569,7 +1572,7 @@ void ResourceProvider::DeclareUsedResourcesFromChild(
   ResourceIdArray unused;
   for (ResourceIdMap::iterator it = child_info.child_to_parent_map.begin();
        it != child_info.child_to_parent_map.end(); ++it) {
-    ResourceId local_id = it->second;
+    viz::ResourceId local_id = it->second;
     bool resource_is_in_use = resources_from_child.count(it->first) > 0;
     if (!resource_is_in_use)
       unused.push_back(local_id);
@@ -1585,7 +1588,7 @@ void ResourceProvider::ReceiveReturnsFromParent(
   std::unordered_map<int, ResourceIdArray> resources_for_child;
 
   for (const ReturnedResource& returned : resources) {
-    ResourceId local_id = returned.id;
+    viz::ResourceId local_id = returned.id;
     ResourceMap::iterator map_iterator = resources_.find(local_id);
     // Resource was already lost (e.g. it belonged to a child that was
     // destroyed).
@@ -1705,7 +1708,7 @@ void ResourceProvider::CreateMailboxAndBindResource(
 }
 
 void ResourceProvider::TransferResource(Resource* source,
-                                        ResourceId id,
+                                        viz::ResourceId id,
                                         TransferableResource* resource) {
   DCHECK(!source->locked_for_write);
   DCHECK(!source->lock_for_read_count);
@@ -1764,14 +1767,14 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
 
   GLES2Interface* gl = ContextGL();
 
-  for (ResourceId local_id : unused) {
+  for (viz::ResourceId local_id : unused) {
     ResourceMap::iterator it = resources_.find(local_id);
     CHECK(it != resources_.end());
     Resource& resource = it->second;
 
     DCHECK(!resource.locked_for_write);
 
-    ResourceId child_id = resource.id_in_child;
+    viz::ResourceId child_id = resource.id_in_child;
     DCHECK(child_info->child_to_parent_map.count(child_id));
 
     bool is_lost = resource.lost ||
@@ -1862,7 +1865,7 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   }
 }
 
-GLenum ResourceProvider::BindForSampling(ResourceId resource_id,
+GLenum ResourceProvider::BindForSampling(viz::ResourceId resource_id,
                                          GLenum unit,
                                          GLenum filter) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -1888,7 +1891,7 @@ GLenum ResourceProvider::BindForSampling(ResourceId resource_id,
   return target;
 }
 
-void ResourceProvider::CreateForTesting(ResourceId id) {
+void ResourceProvider::CreateForTesting(viz::ResourceId id) {
   LazyCreate(GetResource(id));
 }
 
@@ -1922,7 +1925,7 @@ void ResourceProvider::LazyCreate(Resource* resource) {
   }
 }
 
-void ResourceProvider::AllocateForTesting(ResourceId id) {
+void ResourceProvider::AllocateForTesting(viz::ResourceId id) {
   LazyAllocate(GetResource(id));
 }
 
@@ -2017,7 +2020,7 @@ void ResourceProvider::BindImageForSampling(Resource* resource) {
   resource->SetLocallyUsed();
 }
 
-void ResourceProvider::WaitSyncTokenIfNeeded(ResourceId id) {
+void ResourceProvider::WaitSyncTokenIfNeeded(viz::ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(resource->allocated);
@@ -2045,7 +2048,7 @@ GLenum ResourceProvider::GetImageTextureTarget(gfx::BufferUsage usage,
   return found->second;
 }
 
-void ResourceProvider::ValidateResource(ResourceId id) const {
+void ResourceProvider::ValidateResource(viz::ResourceId id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(id);
   DCHECK(resources_.find(id) != resources_.end());

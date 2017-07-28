@@ -61,7 +61,7 @@ class DrawQuadPerfTest : public testing::Test {
       TextureDrawQuad* quad =
           render_pass_->CreateAndAppendDrawQuad<TextureDrawQuad>();
       gfx::Rect rect(0, 0, 100, 100);
-      ResourceId resource_id = 1;
+      viz::ResourceId resource_id = 1;
       bool premultiplied_alpha = true;
       gfx::PointF uv_top_left(0, 0);
       gfx::PointF uv_bottom_right(1, 1);
@@ -86,7 +86,7 @@ class DrawQuadPerfTest : public testing::Test {
     timer_.Reset();
     do {
       for (auto* quad : quads) {
-        for (ResourceId& resource_id : quad->resources)
+        for (viz::ResourceId& resource_id : quad->resources)
           ++resource_id;
       }
       timer_.NextLap();

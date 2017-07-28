@@ -174,7 +174,7 @@ bool OneCopyRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
 }
 
 bool OneCopyRasterBufferProvider::IsResourceReadyToDraw(
-    ResourceId resource_id) const {
+    viz::ResourceId resource_id) const {
   if (!async_worker_context_enabled_)
     return true;
 

@@ -177,7 +177,7 @@ TEST(DrawQuadTest, CopyDebugBorderDrawQuad) {
 TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   RenderPassId render_pass_id = 61;
-  ResourceId mask_resource_id = 78;
+  viz::ResourceId mask_resource_id = 78;
   gfx::RectF mask_uv_rect(0, 0, 33.f, 19.f);
   gfx::Size mask_texture_size(128, 134);
   gfx::Vector2dF filters_scale;
@@ -238,7 +238,7 @@ TEST(DrawQuadTest, CopySolidColorDrawQuad) {
 TEST(DrawQuadTest, CopyStreamVideoDrawQuad) {
   gfx::Rect opaque_rect(33, 47, 10, 12);
   gfx::Rect visible_rect(40, 50, 30, 20);
-  ResourceId resource_id = 64;
+  viz::ResourceId resource_id = 64;
   gfx::Size resource_size_in_pixels = gfx::Size(40, 41);
   gfx::Transform matrix = gfx::Transform(0.5, 0.25, 1, 0.75, 0, 1);
   CREATE_SHARED_STATE();
@@ -365,10 +365,10 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   gfx::RectF uv_tex_coord_rect(20, 25, 15, 10);
   gfx::Size ya_tex_size(32, 68);
   gfx::Size uv_tex_size(41, 51);
-  ResourceId y_plane_resource_id = 45;
-  ResourceId u_plane_resource_id = 532;
-  ResourceId v_plane_resource_id = 4;
-  ResourceId a_plane_resource_id = 63;
+  viz::ResourceId y_plane_resource_id = 45;
+  viz::ResourceId u_plane_resource_id = 532;
+  viz::ResourceId v_plane_resource_id = 4;
+  viz::ResourceId a_plane_resource_id = 63;
   float resource_offset = 0.5f;
   float resource_multiplier = 2.001f;
   uint32_t bits_per_channel = 5;
@@ -465,7 +465,7 @@ class DrawQuadIteratorTest : public testing::Test {
  protected:
   int IterateAndCount(DrawQuad* quad) {
     num_resources_ = 0;
-    for (ResourceId& resource_id : quad->resources) {
+    for (viz::ResourceId& resource_id : quad->resources) {
       ++num_resources_;
       ++resource_id;
     }
@@ -489,7 +489,7 @@ TEST_F(DrawQuadIteratorTest, DebugBorderDrawQuad) {
 TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   int render_pass_id = 61;
-  ResourceId mask_resource_id = 78;
+  viz::ResourceId mask_resource_id = 78;
   gfx::RectF mask_uv_rect(0.f, 0.f, 33.f, 19.f);
   gfx::Size mask_texture_size(128, 134);
   gfx::Vector2dF filters_scale(2.f, 3.f);
@@ -507,7 +507,7 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   EXPECT_EQ(1, IterateAndCount(quad_new));
   EXPECT_EQ(mask_resource_id + 1, quad_new->mask_resource_id());
 
-  ResourceId new_mask_resource_id = 0;
+  viz::ResourceId new_mask_resource_id = 0;
   gfx::Rect quad_rect(30, 40, 50, 60);
   quad_new->SetNew(shared_state, quad_rect, visible_rect, render_pass_id,
                    new_mask_resource_id, mask_uv_rect, mask_texture_size,
@@ -530,7 +530,7 @@ TEST_F(DrawQuadIteratorTest, SolidColorDrawQuad) {
 TEST_F(DrawQuadIteratorTest, StreamVideoDrawQuad) {
   gfx::Rect opaque_rect(33, 47, 10, 12);
   gfx::Rect visible_rect(40, 50, 30, 20);
-  ResourceId resource_id = 64;
+  viz::ResourceId resource_id = 64;
   gfx::Size resource_size_in_pixels = gfx::Size(40, 41);
   gfx::Transform matrix = gfx::Transform(0.5, 0.25, 1, 0.75, 0, 1);
 
@@ -602,10 +602,10 @@ TEST_F(DrawQuadIteratorTest, YUVVideoDrawQuad) {
   gfx::RectF uv_tex_coord_rect(0.0f, 0.0f, 0.375f, 0.25f);
   gfx::Size ya_tex_size(32, 68);
   gfx::Size uv_tex_size(41, 51);
-  ResourceId y_plane_resource_id = 45;
-  ResourceId u_plane_resource_id = 532;
-  ResourceId v_plane_resource_id = 4;
-  ResourceId a_plane_resource_id = 63;
+  viz::ResourceId y_plane_resource_id = 45;
+  viz::ResourceId u_plane_resource_id = 532;
+  viz::ResourceId v_plane_resource_id = 4;
+  viz::ResourceId a_plane_resource_id = 63;
   YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::JPEG;
   gfx::ColorSpace video_color_space = gfx::ColorSpace::CreateJpeg();
 

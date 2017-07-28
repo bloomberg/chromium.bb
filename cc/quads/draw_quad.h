@@ -8,9 +8,9 @@
 #include <stddef.h>
 
 #include "base/callback.h"
-#include "cc/base/resource_id.h"
 #include "cc/cc_export.h"
 #include "cc/quads/shared_quad_state.h"
+#include "components/viz/common/resources/resource_id.h"
 
 namespace base {
 namespace trace_event {
@@ -116,20 +116,20 @@ class CC_EXPORT DrawQuad {
     enum : size_t { kMaxResourceIdCount = 4 };
     Resources();
 
-    ResourceId* begin() { return ids; }
-    ResourceId* end() {
+    viz::ResourceId* begin() { return ids; }
+    viz::ResourceId* end() {
       DCHECK_LE(count, kMaxResourceIdCount);
       return ids + count;
     }
 
-    const ResourceId* begin() const { return ids; }
-    const ResourceId* end() const {
+    const viz::ResourceId* begin() const { return ids; }
+    const viz::ResourceId* end() const {
       DCHECK_LE(count, kMaxResourceIdCount);
       return ids + count;
     }
 
     uint32_t count;
-    ResourceId ids[kMaxResourceIdCount];
+    viz::ResourceId ids[kMaxResourceIdCount];
   };
 
   Resources resources;

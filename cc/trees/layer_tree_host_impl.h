@@ -528,12 +528,12 @@ class CC_EXPORT LayerTreeHostImpl
   void EvictAllUIResources();
   bool EvictedUIResourcesExist() const;
 
-  virtual ResourceId ResourceIdForUIResource(UIResourceId uid) const;
+  virtual viz::ResourceId ResourceIdForUIResource(UIResourceId uid) const;
 
   virtual bool IsUIResourceOpaque(UIResourceId uid) const;
 
   struct UIResourceData {
-    ResourceId resource_id;
+    viz::ResourceId resource_id;
     bool opaque;
   };
 

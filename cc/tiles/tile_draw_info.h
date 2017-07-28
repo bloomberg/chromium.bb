@@ -48,7 +48,7 @@ class CC_EXPORT TileDrawInfo {
     return false;
   }
 
-  ResourceId resource_id() const {
+  viz::ResourceId resource_id() const {
     DCHECK(mode_ == RESOURCE_MODE);
     DCHECK(resource_);
     return resource_->id();

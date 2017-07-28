@@ -1062,7 +1062,7 @@ TEST_F(TextureLayerImplWithMailboxTest,
 
 TEST_F(TextureLayerImplWithMailboxTest, TestCallbackOnInUseResource) {
   ResourceProvider* provider = host_impl_.active_tree()->resource_provider();
-  ResourceId id = provider->CreateResourceFromTextureMailbox(
+  viz::ResourceId id = provider->CreateResourceFromTextureMailbox(
       test_data_.mailbox1_,
       SingleReleaseCallbackImpl::Create(test_data_.release_mailbox1_impl_));
   provider->AllocateForTesting(id);

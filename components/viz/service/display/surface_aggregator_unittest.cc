@@ -2146,7 +2146,7 @@ class SurfaceAggregatorWithResourcesTest : public testing::Test {
   std::unique_ptr<SurfaceAggregator> aggregator_;
 };
 
-void SubmitCompositorFrameWithResources(cc::ResourceId* resource_ids,
+void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
                                         size_t num_resource_ids,
                                         bool valid,
                                         SurfaceId child_id,
@@ -2200,7 +2200,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   LocalSurfaceId local_surface_id(7u, base::UnguessableToken::Create());
   SurfaceId surface_id(support->frame_sink_id(), local_surface_id);
 
-  cc::ResourceId ids[] = {11, 12, 13};
+  ResourceId ids[] = {11, 12, 13};
   SubmitCompositorFrameWithResources(ids, arraysize(ids), true, SurfaceId(),
                                      support.get(), surface_id);
 
@@ -2215,7 +2215,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   frame = aggregator_->Aggregate(surface_id);
 
   ASSERT_EQ(3u, client.returned_resources().size());
-  cc::ResourceId returned_ids[3];
+  ResourceId returned_ids[3];
   for (size_t i = 0; i < 3; ++i) {
     returned_ids[i] = client.returned_resources()[i].id;
   }
@@ -2238,7 +2238,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, ReturnResourcesAsSurfacesChange) {
   SurfaceId surface_id1(support->frame_sink_id(), local_surface_id1);
   SurfaceId surface_id2(support->frame_sink_id(), local_surface_id2);
 
-  cc::ResourceId ids[] = {11, 12, 13};
+  ResourceId ids[] = {11, 12, 13};
   SubmitCompositorFrameWithResources(ids, arraysize(ids), true, SurfaceId(),
                                      support.get(), surface_id1);
 
@@ -2255,7 +2255,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, ReturnResourcesAsSurfacesChange) {
   frame = aggregator_->Aggregate(surface_id2);
 
   ASSERT_EQ(3u, client.returned_resources().size());
-  cc::ResourceId returned_ids[3];
+  ResourceId returned_ids[3];
   for (size_t i = 0; i < 3; ++i) {
     returned_ids[i] = client.returned_resources()[i].id;
   }
@@ -2309,10 +2309,10 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
   LocalSurfaceId local_frame2_id(8u, base::UnguessableToken::Create());
   SurfaceId surface2_id(support2->frame_sink_id(), local_frame2_id);
 
-  cc::ResourceId ids[] = {11, 12, 13};
+  ResourceId ids[] = {11, 12, 13};
   SubmitCompositorFrameWithResources(ids, arraysize(ids), true, SurfaceId(),
                                      support1.get(), surface1_id);
-  cc::ResourceId ids2[] = {14, 15, 16};
+  ResourceId ids2[] = {14, 15, 16};
   SubmitCompositorFrameWithResources(ids2, arraysize(ids2), true, SurfaceId(),
                                      support2.get(), surface2_id);
 
@@ -2328,7 +2328,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
 
   // surface1_id wasn't referenced, so its resources should be returned.
   ASSERT_EQ(3u, client.returned_resources().size());
-  cc::ResourceId returned_ids[3];
+  ResourceId returned_ids[3];
   for (size_t i = 0; i < 3; ++i) {
     returned_ids[i] = client.returned_resources()[i].id;
   }
@@ -2362,16 +2362,16 @@ TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
   SurfaceId child_surface_id(child_support->frame_sink_id(),
                              child_local_surface_id);
 
-  cc::ResourceId ids[] = {14, 15, 16};
+  ResourceId ids[] = {14, 15, 16};
   SubmitCompositorFrameWithResources(ids, arraysize(ids), true, SurfaceId(),
                                      child_support.get(), child_surface_id);
 
-  cc::ResourceId ids2[] = {17, 18, 19};
+  ResourceId ids2[] = {17, 18, 19};
   SubmitCompositorFrameWithResources(ids2, arraysize(ids2), false,
                                      child_surface_id, middle_support.get(),
                                      middle_surface_id);
 
-  cc::ResourceId ids3[] = {20, 21, 22};
+  ResourceId ids3[] = {20, 21, 22};
   SubmitCompositorFrameWithResources(ids3, arraysize(ids3), true,
                                      middle_surface_id, root_support.get(),
                                      root_surface_id);
@@ -2412,7 +2412,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
   LocalSurfaceId local_frame2_id(8u, base::UnguessableToken::Create());
   SurfaceId surface2_id(support2->frame_sink_id(), local_frame2_id);
 
-  cc::ResourceId ids[] = {11, 12, 13};
+  ResourceId ids[] = {11, 12, 13};
   SubmitCompositorFrameWithResources(ids, arraysize(ids), true, SurfaceId(),
                                      support1.get(), surface1_id);
 

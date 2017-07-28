@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_BASE_RESOURCE_ID_H_
-#define CC_BASE_RESOURCE_ID_H_
+#ifndef COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_ID_H_
+#define COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_ID_H_
 
 #include <stdint.h>
 
 #include "base/containers/flat_set.h"
 
-namespace cc {
+namespace viz {
 
 using ResourceId = uint32_t;
 using ResourceIdSet = base::flat_set<ResourceId>;
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_BASE_RESOURCE_ID_H_
+#endif  // COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_ID_H_

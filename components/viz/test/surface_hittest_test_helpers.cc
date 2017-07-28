@@ -43,7 +43,7 @@ void CreateRenderPassDrawQuad(cc::RenderPass* pass,
   cc::RenderPassDrawQuad* render_pass_quad =
       pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
   render_pass_quad->SetNew(pass->shared_quad_state_list.back(), quad_rect,
-                           quad_rect, render_pass_id, cc::ResourceId(),
+                           quad_rect, render_pass_id, ResourceId(),
                            gfx::RectF(), gfx::Size(), gfx::Vector2dF(),
                            gfx::PointF(), gfx::RectF());
 }

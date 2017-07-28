@@ -1980,7 +1980,7 @@ TEST_F(TileManagerTest, PartialRasterSuccessfullyDisabled) {
 class MockReadyToDrawRasterBufferProviderImpl
     : public FakeRasterBufferProviderImpl {
  public:
-  MOCK_CONST_METHOD1(IsResourceReadyToDraw, bool(ResourceId resource_id));
+  MOCK_CONST_METHOD1(IsResourceReadyToDraw, bool(viz::ResourceId resource_id));
   MOCK_CONST_METHOD3(
       SetReadyToDrawCallback,
       uint64_t(const ResourceProvider::ResourceIdArray& resource_ids,

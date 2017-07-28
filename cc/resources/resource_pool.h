@@ -69,7 +69,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
 
   // Called when a resource's content has been fully replaced (and is completely
   // valid). Updates the resource's content ID to its new value.
-  void OnContentReplaced(ResourceId resource_id, uint64_t content_id);
+  void OnContentReplaced(viz::ResourceId resource_id, uint64_t content_id);
   void ReleaseResource(Resource* resource);
 
   void SetResourceUsageLimits(size_t max_memory_usage_bytes,
@@ -187,7 +187,8 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   ResourceDeque unused_resources_;
   ResourceDeque busy_resources_;
 
-  using InUseResourceMap = std::map<ResourceId, std::unique_ptr<PoolResource>>;
+  using InUseResourceMap =
+      std::map<viz::ResourceId, std::unique_ptr<PoolResource>>;
   InUseResourceMap in_use_resources_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

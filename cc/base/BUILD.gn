@@ -35,7 +35,6 @@ component("base") {
     "region.h",
     "render_surface_filters.cc",
     "render_surface_filters.h",
-    "resource_id.h",
     "reverse_spiral_iterator.cc",
     "reverse_spiral_iterator.h",
     "rolling_time_delta_history.cc",

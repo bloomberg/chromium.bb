@@ -337,7 +337,7 @@ void NinePatchGenerator::AppendQuads(LayerImpl* layer_impl,
   if (!ui_resource_id)
     return;
 
-  ResourceId resource =
+  viz::ResourceId resource =
       layer_impl->layer_tree_impl()->ResourceIdForUIResource(ui_resource_id);
 
   if (!resource)

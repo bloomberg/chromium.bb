@@ -47,7 +47,9 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
 
   static const TileDrawQuad* MaterialCast(const DrawQuad*);
 
-  ResourceId resource_id() const { return resources.ids[kResourceIdIndex]; }
+  viz::ResourceId resource_id() const {
+    return resources.ids[kResourceIdIndex];
+  }
 
  private:
   void ExtendValue(base::trace_event::TracedValue* value) const override;

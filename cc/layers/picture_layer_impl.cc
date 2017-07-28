@@ -839,7 +839,7 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
 }
 
 void PictureLayerImpl::GetContentsResourceId(
-    ResourceId* resource_id,
+    viz::ResourceId* resource_id,
     gfx::Size* resource_size,
     gfx::SizeF* resource_uv_size) const {
   // The bounds and the pile size may differ if the pile wasn't updated (ie.

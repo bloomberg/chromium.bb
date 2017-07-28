@@ -41,7 +41,7 @@ bool FakeRasterBufferProviderImpl::CanPartialRasterIntoProvidedResource()
 }
 
 bool FakeRasterBufferProviderImpl::IsResourceReadyToDraw(
-    ResourceId resource_id) const {
+    viz::ResourceId resource_id) const {
   return true;
 }
 

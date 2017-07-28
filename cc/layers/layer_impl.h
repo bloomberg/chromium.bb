@@ -148,7 +148,7 @@ class CC_EXPORT LayerImpl {
 #endif
   }
 
-  virtual void GetContentsResourceId(ResourceId* resource_id,
+  virtual void GetContentsResourceId(viz::ResourceId* resource_id,
                                      gfx::Size* resource_size,
                                      gfx::SizeF* resource_uv_size) const;
 

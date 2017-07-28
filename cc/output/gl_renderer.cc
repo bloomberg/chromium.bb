@@ -570,7 +570,7 @@ void GLRenderer::BeginDrawingFrame() {
   ResourceProvider* resource_provider = resource_provider_;
   for (const auto& pass : *current_frame()->render_passes_in_draw_order) {
     for (auto* quad : pass->quad_list) {
-      for (ResourceId resource_id : quad->resources)
+      for (viz::ResourceId resource_id : quad->resources)
         resource_provider->WaitSyncTokenIfNeeded(resource_id);
     }
   }
@@ -1861,7 +1861,7 @@ void GLRenderer::DrawTileQuad(const TileDrawQuad* quad,
 }
 
 void GLRenderer::DrawContentQuad(const ContentDrawQuadBase* quad,
-                                 ResourceId resource_id,
+                                 viz::ResourceId resource_id,
                                  const gfx::QuadF* clip_region) {
   gfx::Transform device_transform =
       current_frame()->window_matrix * current_frame()->projection_matrix *
@@ -1893,7 +1893,7 @@ void GLRenderer::DrawContentQuad(const ContentDrawQuadBase* quad,
 }
 
 void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
-                                   ResourceId resource_id,
+                                   viz::ResourceId resource_id,
                                    const gfx::Transform& device_transform,
                                    const gfx::QuadF& aa_quad,
                                    const gfx::QuadF* clip_region) {
@@ -2001,7 +2001,7 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
 }
 
 void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
-                                     ResourceId resource_id,
+                                     viz::ResourceId resource_id,
                                      const gfx::QuadF* clip_region) {
   gfx::RectF tex_coord_rect = MathUtil::ScaleRectProportional(
       quad->tex_coord_rect, gfx::RectF(quad->rect),
@@ -3266,7 +3266,8 @@ void GLRenderer::ScheduleCALayers() {
       continue;
     }
 
-    ResourceId contents_resource_id = ca_layer_overlay.contents_resource_id;
+    viz::ResourceId contents_resource_id =
+        ca_layer_overlay.contents_resource_id;
     unsigned texture_id = 0;
     if (contents_resource_id) {
       pending_overlay_resources_.push_back(

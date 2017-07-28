@@ -31,12 +31,12 @@ LayerTreeFrameSinkHolder::~LayerTreeFrameSinkHolder() {
 }
 
 bool LayerTreeFrameSinkHolder::HasReleaseCallbackForResource(
-    cc::ResourceId id) {
+    viz::ResourceId id) {
   return release_callbacks_.find(id) != release_callbacks_.end();
 }
 
 void LayerTreeFrameSinkHolder::SetResourceReleaseCallback(
-    cc::ResourceId id,
+    viz::ResourceId id,
     const viz::ReleaseCallback& callback) {
   DCHECK(!callback.is_null());
   release_callbacks_[id] = callback;

@@ -96,16 +96,16 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
 
   static const YUVVideoDrawQuad* MaterialCast(const DrawQuad*);
 
-  ResourceId y_plane_resource_id() const {
+  viz::ResourceId y_plane_resource_id() const {
     return resources.ids[kYPlaneResourceIdIndex];
   }
-  ResourceId u_plane_resource_id() const {
+  viz::ResourceId u_plane_resource_id() const {
     return resources.ids[kUPlaneResourceIdIndex];
   }
-  ResourceId v_plane_resource_id() const {
+  viz::ResourceId v_plane_resource_id() const {
     return resources.ids[kVPlaneResourceIdIndex];
   }
-  ResourceId a_plane_resource_id() const {
+  viz::ResourceId a_plane_resource_id() const {
     return resources.ids[kAPlaneResourceIdIndex];
   }
 

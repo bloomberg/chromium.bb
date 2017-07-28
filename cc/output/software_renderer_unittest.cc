@@ -141,10 +141,10 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   gfx::Rect inner_rect(gfx::Point(1, 1), inner_size);
   InitializeRenderer(base::WrapUnique(new SoftwareOutputDevice));
 
-  ResourceId resource_yellow = resource_provider()->CreateResource(
+  viz::ResourceId resource_yellow = resource_provider()->CreateResource(
       outer_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, viz::RGBA_8888,
       gfx::ColorSpace());
-  ResourceId resource_cyan = resource_provider()->CreateResource(
+  viz::ResourceId resource_cyan = resource_provider()->CreateResource(
       inner_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, viz::RGBA_8888,
       gfx::ColorSpace());
 
@@ -207,7 +207,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   visible_rect.Inset(1, 2, 3, 4);
   InitializeRenderer(base::WrapUnique(new SoftwareOutputDevice));
 
-  ResourceId resource_cyan = resource_provider()->CreateResource(
+  viz::ResourceId resource_cyan = resource_provider()->CreateResource(
       tile_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, viz::RGBA_8888,
       gfx::ColorSpace());
 

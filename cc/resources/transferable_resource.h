@@ -9,9 +9,9 @@
 
 #include <vector>
 
-#include "cc/base/resource_id.h"
 #include "cc/cc_export.h"
 #include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/resources/resource_id.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
@@ -29,7 +29,7 @@ struct CC_EXPORT TransferableResource {
   static std::vector<ReturnedResource> ReturnResources(
       const std::vector<TransferableResource>& input);
 
-  ResourceId id;
+  viz::ResourceId id;
   // Refer to ResourceProvider::Resource for the meaning of the following data.
   viz::ResourceFormat format;
   gfx::BufferFormat buffer_format;

@@ -124,7 +124,7 @@ bool ZeroCopyRasterBufferProvider::CanPartialRasterIntoProvidedResource()
 }
 
 bool ZeroCopyRasterBufferProvider::IsResourceReadyToDraw(
-    ResourceId resource_id) const {
+    viz::ResourceId resource_id) const {
   // Zero-copy resources are immediately ready to draw.
   return true;
 }
