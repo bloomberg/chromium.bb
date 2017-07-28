@@ -5,9 +5,6 @@
 #import "components/storage_monitor/image_capture_device.h"
 
 #include "base/files/file_util.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/task_scheduler/task_traits.h"
-#include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace storage_monitor {
@@ -16,7 +13,7 @@ namespace {
 
 base::File::Error RenameFile(const base::FilePath& downloaded_filename,
                              const base::FilePath& desired_filename) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   bool success = base::ReplaceFile(downloaded_filename, desired_filename, NULL);
   return success ? base::File::FILE_OK : base::File::FILE_ERROR_NOT_FOUND;
 }
@@ -220,15 +217,12 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   base::FilePath saveAsPath = saveDir.Append(saveAsFilename);
   base::FilePath savedPath = saveDir.Append(savedFilename);
   // Shared result value from file-copy closure to tell-listener closure.
-  // This is worth blocking shutdown, as otherwise a file that has been
-  // downloaded will be incorrectly named.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE,
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
-       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::Bind(&storage_monitor::RenameFile, savedPath, saveAsPath),
-      base::Bind(&storage_monitor::ReturnRenameResultToListener, listener_,
-                 name));
+      base::Bind(
+          &storage_monitor::ReturnRenameResultToListener, listener_, name));
 }
 
 @end  // ImageCaptureDevice
