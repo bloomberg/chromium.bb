@@ -48,6 +48,11 @@ InspectorTest.deleteServiceWorkerRegistration = function(scope)
     });
 }
 
+InspectorTest.makeFetchInServiceWorker = function(scope, url, requestInitializer, callback)
+{
+    InspectorTest.callFunctionInPageAsync("makeFetchInServiceWorker", [scope, url, requestInitializer]).then(callback);
+}
+
 };
 
 var registrations = {};
@@ -69,4 +74,18 @@ function unregisterServiceWorker(scope)
     if (!registration)
         return Promise.reject("ServiceWorker for " + scope + " is not registered");
     return registration.unregister().then(() => delete registrations[scope]);
+}
+
+function makeFetchInServiceWorker(scope, url, requestInitializer)
+{
+    let script = 'resources/network-fetch-worker.js';
+
+    return navigator.serviceWorker.register(script, {scope: scope})
+        .then((registration) => {
+          let worker = registration.installing;
+          return new Promise(resolve => {
+            navigator.serviceWorker.onmessage = e => { resolve(e.data); }
+            worker.postMessage({url: url, init: requestInitializer});
+          });
+        });
 }

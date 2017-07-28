@@ -114,6 +114,7 @@ webkit.org/b/90488 [ Debug ] inspector-protocol/ [ Slow ]
 crbug.com/451577 inspector/console [ Slow ]
 crbug.com/679833 http/tests/inspector/network/network-datareceived.html [ Slow ]
 crbug.com/679833 virtual/mojo-loading/http/tests/inspector/network/network-datareceived.html [ Slow ]
+crbug.com/679833 virtual/off-main-thread-fetch/http/tests/inspector/network/network-datareceived.html [ Slow ]
 
 # Debugger and profiler tests are slow in Release as well.
 crbug.com/450493 inspector/sources/ [ Slow ]

@@ -1,0 +1,41 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="service-workers-test.js"></script>
+<script src="../resources-test.js"></script>
+<script src="../console-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+
+function test()
+{
+    let scope = "http://127.0.0.1:8000/inspector/service-workers/resources/network-fetch-worker-scope";
+
+    // Need to enable networkInWorkers experiment for off-main-thread-fetch virtual test.
+    Runtime.experiments.enableForTest("networkInWorkers");
+
+    InspectorTest.recordNetwork();
+
+    InspectorTest.makeFetchInServiceWorker(scope, '../../network/resources/resource.php', {}, fetchCallback);
+
+    function fetchCallback(result)
+    {
+        InspectorTest.addResult('Fetch in worker result: ' + result.value);
+
+        var requests = InspectorTest.networkRequests();
+        requests.forEach((request) => {
+          InspectorTest.addResult(request.url());
+          InspectorTest.addResult("resource.type: " + request.resourceType());
+          InspectorTest.addResult("request.failed: " + !!request.failed);
+        });
+
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests fetch in Service Workers.</p>
+</body>
+</html>
