@@ -299,8 +299,9 @@ bool LayerImpl::IsSnapped() {
 void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   DCHECK(layer->IsActive());
 
-  // The ElementId should be set first because other setters depend on it such
-  // as LayerImpl::SetScrollClipLayer.
+  // The element id should be set first because other setters may
+  // depend on it. Referencing element id on a layer is
+  // deprecated. http://crbug.com/709137
   layer->SetElementId(element_id_);
 
   layer->has_transform_node_ = has_transform_node_;

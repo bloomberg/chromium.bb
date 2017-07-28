@@ -1144,8 +1144,9 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   TRACE_EVENT0("cc", "Layer::PushPropertiesTo");
   DCHECK(layer_tree_host_);
 
-  // The ElementId should be set first because other setters depend on it such
-  // as LayerImpl::SetScrollClipLayer.
+  // The element id should be set first because other setters may
+  // depend on it. Referencing element id on a layer is
+  // deprecated. http://crbug.com/709137
   layer->SetElementId(inputs_.element_id);
   layer->SetHasTransformNode(has_transform_node_);
   layer->SetBackgroundColor(inputs_.background_color);
