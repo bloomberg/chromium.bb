@@ -3117,7 +3117,7 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
                );
         assert(tx_size == TX_32X32
 #if CONFIG_TX64X64
-               || tx_size == TX64X64
+               || tx_size == TX_64X64
 #endif  // CONFIG_TX64X64
                );
         // In this case, we continue to the bottom square sub-block.
@@ -3190,7 +3190,7 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
                );
         assert(tx_size == TX_32X32
 #if CONFIG_TX64X64
-               || tx_size == TX64X64
+               || tx_size == TX_64X64
 #endif  // CONFIG_TX64X64
                );
         // In this case, we continue to the right square sub-block.
