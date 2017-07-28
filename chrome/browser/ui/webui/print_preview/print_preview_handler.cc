@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_reader.h"
@@ -94,14 +95,11 @@
 #include "chromeos/printing/printer_configuration.h"
 #endif
 
-#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-#include "chrome/browser/printing/cloud_print/privet_constants.h"
-#endif
-
 using content::BrowserThread;
 using content::RenderFrameHost;
 using content::WebContents;
 using printing::PrintViewManager;
+using printing::PrinterType;
 
 namespace {
 
@@ -194,9 +192,6 @@ const char kDefaultDestinationSelectionRules[] =
 
 // Id of the predefined PDF printer.
 const char kLocalPdfPrinterId[] = "Save as PDF";
-
-// Timeout for searching for privet printers, in seconds.
-const int kPrivetTimeoutSec = 5;
 
 // Get the print job settings dictionary from |json_str|. Returns NULL on
 // failure.
@@ -454,14 +449,6 @@ void CreateDirectoryIfNeeded(const base::FilePath& path) {
     base::CreateDirectory(path);
 }
 
-bool PrivetPrintingEnabled() {
-#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-  return true;
-#else
-  return false;
-#endif
-}
-
 }  // namespace
 
 class PrintPreviewHandler::AccessTokenService
@@ -616,20 +603,15 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("forceOpenNewTab",
       base::Bind(&PrintPreviewHandler::HandleForceOpenNewTab,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("getPrivetPrinters",
-      base::Bind(&PrintPreviewHandler::HandleGetPrivetPrinters,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("getPrivetPrinterCapabilities",
-      base::Bind(&PrintPreviewHandler::HandleGetPrivetPrinterCapabilities,
+  web_ui()->RegisterMessageCallback(
+      "getExtensionOrPrivetPrinters",
+      base::Bind(&PrintPreviewHandler::HandleGetExtensionOrPrivetPrinters,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getExtensionPrinters",
-      base::Bind(&PrintPreviewHandler::HandleGetExtensionPrinters,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getExtensionPrinterCapabilities",
-      base::Bind(&PrintPreviewHandler::HandleGetExtensionPrinterCapabilities,
-                 base::Unretained(this)));
+      "getExtensionOrPrivetPrinterCapabilities",
+      base::Bind(
+          &PrintPreviewHandler::HandleGetExtensionOrPrivetPrinterCapabilities,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "grantExtensionPrinterAccess",
       base::Bind(&PrintPreviewHandler::HandleGrantExtensionPrinterAccess,
@@ -678,69 +660,26 @@ void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* args) {
                  weak_factory_.GetWeakPtr(), callback_id));
 }
 
-void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
-  CHECK(!callback_id.empty());
-  if (!PrivetPrintingEnabled()) {
-    RejectJavascriptCallback(base::Value(callback_id), base::Value());
-    return;
-  }
-#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-  using local_discovery::ServiceDiscoverySharedClient;
-  scoped_refptr<ServiceDiscoverySharedClient> service_discovery =
-      ServiceDiscoverySharedClient::GetInstance();
-  DCHECK(privet_search_callback_id_.empty());
-  privet_search_callback_id_ = callback_id;
-  StartPrivetLister(service_discovery);
-#endif
-}
-
-void PrintPreviewHandler::StopPrivetLister() {
-#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-  privet_lister_timer_.reset();
-  if (PrivetPrintingEnabled() && printer_lister_) {
-    printer_lister_->Stop();
-  }
-  ResolveJavascriptCallback(base::Value(privet_search_callback_id_),
-                            base::Value());
-  privet_search_callback_id_.clear();
-#endif
-}
-
-void PrintPreviewHandler::HandleGetPrivetPrinterCapabilities(
-    const base::ListValue* args) {
-  std::string callback_id;
-  std::string printer_name;
-  if (!args->GetString(0, &callback_id) || !args->GetString(1, &printer_name) ||
-      callback_id.empty() || printer_name.empty()) {
-    RejectJavascriptCallback(base::Value(callback_id), base::Value());
-    return;
-  }
-#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-  if (CreatePrivetHTTP(
-          printer_name,
-          base::Bind(&PrintPreviewHandler::PrivetCapabilitiesUpdateClient,
-                     weak_factory_.GetWeakPtr(), callback_id))) {
-    return;
-  }
-#endif
-  RejectJavascriptCallback(base::Value(callback_id), base::Value());
-}
-
-void PrintPreviewHandler::HandleGetExtensionPrinters(
+void PrintPreviewHandler::HandleGetExtensionOrPrivetPrinters(
     const base::ListValue* args) {
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
   CHECK(!callback_id.empty());
+  int type;
+  CHECK(args->GetInteger(1, &type));
+  PrinterType printer_type = static_cast<PrinterType>(type);
 
-  EnsureExtensionPrinterHandlerSet();
+  PrinterHandler* handler = GetPrinterHandler(printer_type);
+  if (!handler) {
+    RejectJavascriptCallback(base::Value(callback_id), base::Value());
+    return;
+  }
   // Make sure all in progress requests are canceled before new printer search
   // starts.
-  extension_printer_handler_->Reset();
-  extension_printer_handler_->StartGetPrinters(
-      base::Bind(&PrintPreviewHandler::OnGotPrintersForExtension,
-                 weak_factory_.GetWeakPtr(), callback_id));
+  handler->Reset();
+  handler->StartGetPrinters(
+      base::Bind(&PrintPreviewHandler::OnGotPrintersForExtensionOrPrivet,
+                 weak_factory_.GetWeakPtr(), callback_id, printer_type));
 }
 
 void PrintPreviewHandler::HandleGrantExtensionPrinterAccess(
@@ -751,27 +690,35 @@ void PrintPreviewHandler::HandleGrantExtensionPrinterAccess(
             args->GetString(1, &printer_id) && !callback_id.empty();
   DCHECK(ok);
 
-  EnsureExtensionPrinterHandlerSet();
-  extension_printer_handler_->StartGrantPrinterAccess(
-      printer_id, base::Bind(&PrintPreviewHandler::OnGotExtensionPrinterInfo,
-                             weak_factory_.GetWeakPtr(), callback_id));
+  GetPrinterHandler(PrinterType::kExtensionPrinter)
+      ->StartGrantPrinterAccess(
+          printer_id,
+          base::Bind(&PrintPreviewHandler::OnGotExtensionPrinterInfo,
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
-void PrintPreviewHandler::HandleGetExtensionPrinterCapabilities(
+void PrintPreviewHandler::HandleGetExtensionOrPrivetPrinterCapabilities(
     const base::ListValue* args) {
   std::string callback_id;
   std::string printer_name;
+  int type;
   if (!args->GetString(0, &callback_id) || !args->GetString(1, &printer_name) ||
-      callback_id.empty() || printer_name.empty()) {
+      !args->GetInteger(2, &type) || callback_id.empty() ||
+      printer_name.empty()) {
+    RejectJavascriptCallback(base::Value(callback_id), base::Value());
+    return;
+  }
+  PrinterType printer_type = static_cast<PrinterType>(type);
+
+  PrinterHandler* handler = GetPrinterHandler(printer_type);
+  if (!handler) {
     RejectJavascriptCallback(base::Value(callback_id), base::Value());
     return;
   }
 
-  EnsureExtensionPrinterHandlerSet();
-  extension_printer_handler_->StartGetCapability(
-      printer_name,
-      base::Bind(&PrintPreviewHandler::OnGotExtensionPrinterCapabilities,
-                 weak_factory_.GetWeakPtr(), callback_id));
+  handler->StartGetCapability(
+      printer_name, base::Bind(&PrintPreviewHandler::OnGotPrinterCapabilities,
+                               weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
@@ -920,39 +867,28 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   }
 
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-  if (print_with_privet && PrivetPrintingEnabled()) {
-    std::string printer_name;
-    std::string print_ticket;
-    std::string capabilities;
+  if (print_with_privet) {
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintWithPrivet", page_count);
     ReportUserActionHistogram(PRINT_WITH_PRIVET);
-
-    int width = 0;
-    int height = 0;
-    if (!settings->GetString(printing::kSettingDeviceName, &printer_name) ||
-        !settings->GetString(printing::kSettingTicket, &print_ticket) ||
-        !settings->GetString(printing::kSettingCapabilities, &capabilities) ||
-        !settings->GetInteger(printing::kSettingPageWidth, &width) ||
-        !settings->GetInteger(printing::kSettingPageHeight, &height) ||
-        width <= 0 || height <= 0) {
-      NOTREACHED();
-      RejectJavascriptCallback(base::Value(callback_id), base::Value(-1));
-      return;
-    }
-
-    DCHECK(privet_print_callback_id_.empty());
-    privet_print_callback_id_ = callback_id;
-    PrintToPrivetPrinter(callback_id, printer_name, print_ticket, capabilities,
-                         gfx::Size(width, height));
-    return;
   }
 #endif
-
   if (print_with_extension) {
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintWithExtension",
                          page_count);
     ReportUserActionHistogram(PRINT_WITH_EXTENSION);
+  }
 
+  scoped_refptr<base::RefCountedBytes> data;
+  base::string16 title;
+  if (!GetPreviewDataAndTitle(&data, &title)) {
+    // Nothing to print, no preview available.
+    RejectJavascriptCallback(
+        base::Value(callback_id),
+        print_with_privet ? base::Value(-1) : base::Value("NO_DATA"));
+    return;
+  }
+
+  if (print_with_privet || print_with_extension) {
     std::string destination_id;
     std::string print_ticket;
     std::string capabilities;
@@ -965,33 +901,19 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
         !settings->GetInteger(printing::kSettingPageHeight, &height) ||
         width <= 0 || height <= 0) {
       NOTREACHED();
-      RejectJavascriptCallback(base::Value(callback_id), base::Value("FAILED"));
+      RejectJavascriptCallback(
+          base::Value(callback_id),
+          print_with_privet ? base::Value(-1) : base::Value("FAILED"));
       return;
     }
 
-    base::string16 title;
-    scoped_refptr<base::RefCountedBytes> data;
-    if (!GetPreviewDataAndTitle(&data, &title)) {
-      LOG(ERROR) << "Nothing to print; no preview available.";
-      RejectJavascriptCallback(base::Value(callback_id),
-                               base::Value("NO_DATA"));
-      return;
-    }
-
-    EnsureExtensionPrinterHandlerSet();
-    extension_printer_handler_->StartPrint(
-        destination_id, capabilities, title, print_ticket,
-        gfx::Size(width, height), data,
-        base::Bind(&PrintPreviewHandler::OnExtensionPrintResult,
-                   weak_factory_.GetWeakPtr(), callback_id));
-    return;
-  }
-
-  scoped_refptr<base::RefCountedBytes> data;
-  base::string16 title;
-  if (!GetPreviewDataAndTitle(&data, &title)) {
-    // Nothing to print, no preview available.
-    RejectJavascriptCallback(base::Value(callback_id), base::Value());
+    PrinterHandler* handler =
+        GetPrinterHandler(print_with_privet ? PrinterType::kPrivetPrinter
+                                            : PrinterType::kExtensionPrinter);
+    handler->StartPrint(destination_id, capabilities, title, print_ticket,
+                        gfx::Size(width, height), data,
+                        base::Bind(&PrintPreviewHandler::OnPrintResult,
+                                   weak_factory_.GetWeakPtr(), callback_id));
     return;
   }
 
@@ -1658,236 +1580,43 @@ bool PrintPreviewHandler::GetPreviewDataAndTitle(
   return true;
 }
 
+PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
+    PrinterType printer_type) {
+  if (printer_type == PrinterType::kExtensionPrinter) {
+    if (!extension_printer_handler_) {
+      extension_printer_handler_ = PrinterHandler::CreateForExtensionPrinters(
+          Profile::FromWebUI(web_ui()));
+    }
+    return extension_printer_handler_.get();
+  }
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-void PrintPreviewHandler::StartPrivetLister(const scoped_refptr<
-    local_discovery::ServiceDiscoverySharedClient>& client) {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  DCHECK(!service_discovery_client_.get() ||
-         service_discovery_client_.get() == client.get());
-  service_discovery_client_ = client;
-  printer_lister_ = base::MakeUnique<cloud_print::PrivetLocalPrinterLister>(
-      service_discovery_client_.get(), profile->GetRequestContext(), this);
-  privet_lister_timer_.reset(new base::OneShotTimer());
-  privet_lister_timer_->Start(FROM_HERE,
-                              base::TimeDelta::FromSeconds(kPrivetTimeoutSec),
-                              this, &PrintPreviewHandler::StopPrivetLister);
-  printer_lister_->Start();
-}
-
-void PrintPreviewHandler::LocalPrinterChanged(
-    const std::string& name,
-    bool has_local_printing,
-    const cloud_print::DeviceDescription& description) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (has_local_printing ||
-      command_line->HasSwitch(switches::kEnablePrintPreviewRegisterPromos)) {
-    base::DictionaryValue info;
-    FillPrinterDescription(name, description, has_local_printing, &info);
-    FireWebUIListener("privet-printer-added", info);
+  if (printer_type == PrinterType::kPrivetPrinter) {
+    if (!privet_printer_handler_) {
+      privet_printer_handler_ =
+          PrinterHandler::CreateForPrivetPrinters(Profile::FromWebUI(web_ui()));
+    }
+    return privet_printer_handler_.get();
   }
+#endif
+  return nullptr;
 }
 
-void PrintPreviewHandler::LocalPrinterRemoved(const std::string& name) {
-}
-
-void PrintPreviewHandler::LocalPrinterCacheFlushed() {
-}
-
-void PrintPreviewHandler::PrivetCapabilitiesUpdateClient(
+void PrintPreviewHandler::OnGotPrintersForExtensionOrPrivet(
     const std::string& callback_id,
-    std::unique_ptr<cloud_print::PrivetHTTPClient> http_client) {
-  if (!PrivetUpdateClient(callback_id, std::move(http_client)))
-    return;
-
-  privet_capabilities_operation_ =
-      privet_http_client_->CreateCapabilitiesOperation(
-          base::Bind(&PrintPreviewHandler::OnPrivetCapabilities,
-                     weak_factory_.GetWeakPtr(), callback_id));
-  privet_capabilities_operation_->Start();
-}
-
-bool PrintPreviewHandler::PrivetUpdateClient(
-    const std::string& callback_id,
-    std::unique_ptr<cloud_print::PrivetHTTPClient> http_client) {
-  if (!http_client) {
-    RejectJavascriptCallback(base::Value(callback_id), base::Value());
-    privet_http_resolution_.reset();
-    if (callback_id == privet_print_callback_id_)
-      privet_print_callback_id_.clear();
-    return false;
-  }
-
-  privet_local_print_operation_.reset();
-  privet_capabilities_operation_.reset();
-  privet_http_client_ = cloud_print::PrivetV1HTTPClient::CreateDefault(
-      std::move(http_client));
-
-  privet_http_resolution_.reset();
-
-  return true;
-}
-
-void PrintPreviewHandler::PrivetLocalPrintUpdateClient(
-    const std::string& callback_id,
-    std::string print_ticket,
-    std::string capabilities,
-    gfx::Size page_size,
-    std::unique_ptr<cloud_print::PrivetHTTPClient> http_client) {
-  if (!PrivetUpdateClient(callback_id, std::move(http_client)))
-    return;
-
-  StartPrivetLocalPrint(print_ticket, capabilities, page_size);
-}
-
-void PrintPreviewHandler::StartPrivetLocalPrint(const std::string& print_ticket,
-                                                const std::string& capabilities,
-                                                const gfx::Size& page_size) {
-  privet_local_print_operation_ =
-      privet_http_client_->CreateLocalPrintOperation(this);
-
-  privet_local_print_operation_->SetTicket(print_ticket);
-  privet_local_print_operation_->SetCapabilities(capabilities);
-
-  scoped_refptr<base::RefCountedBytes> data;
-  base::string16 title;
-
-  if (!GetPreviewDataAndTitle(&data, &title)) {
-    RejectJavascriptCallback(base::Value(privet_print_callback_id_),
-                             base::Value(-1));
-    privet_print_callback_id_.clear();
-    return;
-  }
-
-  privet_local_print_operation_->SetJobname(base::UTF16ToUTF8(title));
-  privet_local_print_operation_->SetPageSize(page_size);
-  privet_local_print_operation_->SetData(data.get());
-
-  Profile* profile = Profile::FromWebUI(web_ui());
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfileIfExists(profile);
-
-  if (signin_manager) {
-    privet_local_print_operation_->SetUsername(
-        signin_manager->GetAuthenticatedAccountInfo().email);
-  }
-
-  privet_local_print_operation_->Start();
-}
-
-void PrintPreviewHandler::OnPrivetCapabilities(
-    const std::string& callback_id,
-    const base::DictionaryValue* capabilities) {
-  std::string name = privet_capabilities_operation_->GetHTTPClient()->GetName();
-
-  if (!capabilities || capabilities->HasKey(cloud_print::kPrivetKeyError) ||
-      !printer_lister_) {
-    RejectJavascriptCallback(base::Value(callback_id), base::Value());
-    return;
-  }
-
-  const cloud_print::DeviceDescription* description =
-      printer_lister_->GetDeviceDescription(name);
-
-  if (!description) {
-    RejectJavascriptCallback(base::Value(callback_id), base::Value());
-    return;
-  }
-
-  std::unique_ptr<base::DictionaryValue> printer_info =
-      base::MakeUnique<base::DictionaryValue>();
-  FillPrinterDescription(name, *description, true, printer_info.get());
-  base::DictionaryValue printer_info_and_caps;
-  printer_info_and_caps.SetDictionary("printer", std::move(printer_info));
-  std::unique_ptr<base::DictionaryValue> capabilities_copy =
-      capabilities->CreateDeepCopy();
-  printer_info_and_caps.SetDictionary("capabilities",
-                                      std::move(capabilities_copy));
-  ResolveJavascriptCallback(base::Value(callback_id), printer_info_and_caps);
-
-  privet_capabilities_operation_.reset();
-}
-
-void PrintPreviewHandler::PrintToPrivetPrinter(const std::string& callback_id,
-                                               const std::string& device_name,
-                                               const std::string& ticket,
-                                               const std::string& capabilities,
-                                               const gfx::Size& page_size) {
-  if (!CreatePrivetHTTP(
-          device_name,
-          base::Bind(&PrintPreviewHandler::PrivetLocalPrintUpdateClient,
-                     weak_factory_.GetWeakPtr(), callback_id, ticket,
-                     capabilities, page_size))) {
-    RejectJavascriptCallback(base::Value(privet_print_callback_id_),
-                             base::Value(-1));
-    privet_print_callback_id_.clear();
-  }
-}
-
-bool PrintPreviewHandler::CreatePrivetHTTP(
-    const std::string& name,
-    const cloud_print::PrivetHTTPAsynchronousFactory::ResultCallback&
-        callback) {
-  const cloud_print::DeviceDescription* device_description =
-      printer_lister_ ? printer_lister_->GetDeviceDescription(name) : NULL;
-
-  if (!device_description)
-    return false;
-
-  privet_http_factory_ =
-      cloud_print::PrivetHTTPAsynchronousFactory::CreateInstance(
-          Profile::FromWebUI(web_ui())->GetRequestContext());
-  privet_http_resolution_ = privet_http_factory_->CreatePrivetHTTP(name);
-  privet_http_resolution_->Start(device_description->address, callback);
-
-  return true;
-}
-
-void PrintPreviewHandler::OnPrivetPrintingDone(
-    const cloud_print::PrivetLocalPrintOperation* print_operation) {
-  ResolveJavascriptCallback(base::Value(privet_print_callback_id_),
-                            base::Value());
-  privet_print_callback_id_.clear();
-}
-
-void PrintPreviewHandler::OnPrivetPrintingError(
-    const cloud_print::PrivetLocalPrintOperation* print_operation,
-    int http_code) {
-  RejectJavascriptCallback(base::Value(privet_print_callback_id_),
-                           base::Value(http_code));
-  privet_print_callback_id_.clear();
-}
-
-void PrintPreviewHandler::FillPrinterDescription(
-    const std::string& name,
-    const cloud_print::DeviceDescription& description,
-    bool has_local_printing,
-    base::DictionaryValue* printer_value) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
-  printer_value->SetString("serviceName", name);
-  printer_value->SetString("name", description.name);
-  printer_value->SetBoolean("hasLocalPrinting", has_local_printing);
-  printer_value->SetBoolean(
-      "isUnregistered",
-      description.id.empty() &&
-      command_line->HasSwitch(switches::kEnablePrintPreviewRegisterPromos));
-  printer_value->SetString("cloudID", description.id);
-}
-#endif  // BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-
-void PrintPreviewHandler::EnsureExtensionPrinterHandlerSet() {
-  if (extension_printer_handler_)
-    return;
-
-  extension_printer_handler_ =
-      PrinterHandler::CreateForExtensionPrinters(Profile::FromWebUI(web_ui()));
-}
-
-void PrintPreviewHandler::OnGotPrintersForExtension(
-    const std::string& callback_id,
+    printing::PrinterType printer_type,
     const base::ListValue& printers,
     bool done) {
-  FireWebUIListener("extension-printers-added", printers);
+  DCHECK(printer_type == PrinterType::kExtensionPrinter ||
+         printer_type == PrinterType::kPrivetPrinter);
+  if (!printers.empty()) {
+    if (printer_type == PrinterType::kExtensionPrinter) {
+      FireWebUIListener("extension-printers-added", printers);
+    } else {
+      const base::Value* printer;
+      CHECK(printers.Get(0, &printer));
+      FireWebUIListener("privet-printer-added", *printer);
+    }
+  }
   if (done) {
     ResolveJavascriptCallback(base::Value(callback_id), base::Value());
   }
@@ -1903,7 +1632,7 @@ void PrintPreviewHandler::OnGotExtensionPrinterInfo(
   ResolveJavascriptCallback(base::Value(callback_id), printer_info);
 }
 
-void PrintPreviewHandler::OnGotExtensionPrinterCapabilities(
+void PrintPreviewHandler::OnGotPrinterCapabilities(
     const std::string& callback_id,
     const base::DictionaryValue& capabilities) {
   if (capabilities.empty()) {
@@ -1913,14 +1642,14 @@ void PrintPreviewHandler::OnGotExtensionPrinterCapabilities(
   ResolveJavascriptCallback(base::Value(callback_id), capabilities);
 }
 
-void PrintPreviewHandler::OnExtensionPrintResult(const std::string& callback_id,
-                                                 bool success,
-                                                 const std::string& status) {
+void PrintPreviewHandler::OnPrintResult(const std::string& callback_id,
+                                        bool success,
+                                        const base::Value& error) {
   if (success) {
     ResolveJavascriptCallback(base::Value(callback_id), base::Value());
     return;
   }
-  RejectJavascriptCallback(base::Value(callback_id), base::Value(status));
+  RejectJavascriptCallback(base::Value(callback_id), error);
 }
 
 void PrintPreviewHandler::RegisterForGaiaCookieChanges() {

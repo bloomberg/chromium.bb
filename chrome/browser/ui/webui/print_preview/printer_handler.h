@@ -11,16 +11,16 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "chrome/common/features.h"
 
 namespace base {
 class DictionaryValue;
 class ListValue;
-class RefCountedMemory;
+class RefCountedBytes;
+class Value;
 }
 
-namespace content {
-class BrowserContext;
-}
+class Profile;
 
 namespace gfx {
 class Size;
@@ -37,13 +37,19 @@ class PrinterHandler {
   using GetCapabilityCallback =
       base::Callback<void(const base::DictionaryValue& capability)>;
   using PrintCallback =
-      base::Callback<void(bool success, const std::string& error)>;
+      base::Callback<void(bool success, const base::Value& error)>;
   using GetPrinterInfoCallback =
       base::Callback<void(const base::DictionaryValue& printer_info)>;
 
-  // Creates an instance of an PrinterHandler for extension printers.
+  // Creates an instance of a PrinterHandler for extension printers.
   static std::unique_ptr<PrinterHandler> CreateForExtensionPrinters(
-      content::BrowserContext* browser_context);
+      Profile* profile);
+
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
+  // Creates an instance of a PrinterHandler for privet printers.
+  static std::unique_ptr<PrinterHandler> CreateForPrivetPrinters(
+      Profile* profile);
+#endif
 
   virtual ~PrinterHandler() {}
 
@@ -83,7 +89,7 @@ class PrinterHandler {
       const base::string16& job_title,
       const std::string& ticket_json,
       const gfx::Size& page_size,
-      const scoped_refptr<base::RefCountedMemory>& print_data,
+      const scoped_refptr<base::RefCountedBytes>& print_data,
       const PrintCallback& callback) = 0;
 };
 
