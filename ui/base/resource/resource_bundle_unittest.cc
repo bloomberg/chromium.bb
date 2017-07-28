@@ -23,6 +23,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/data_pack.h"
+#include "ui/base/resource/data_pack_literal.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image_skia.h"
@@ -38,14 +39,6 @@ using ::testing::Return;
 using ::testing::ReturnArg;
 
 namespace ui {
-
-extern const char kSamplePakContents[];
-extern const size_t kSamplePakSize;
-extern const char kSamplePakContents2x[];
-extern const size_t kSamplePakSize2x;
-extern const char kEmptyPakContents[];
-extern const size_t kEmptyPakSize;
-
 namespace {
 
 const unsigned char kPngMagic[8] = { 0x89, 'P', 'N', 'G', 13, 10, 26, 10 };
@@ -416,8 +409,8 @@ TEST_F(ResourceBundleImageTest, GetRawDataResource) {
       dir_path().Append(FILE_PATH_LITERAL("sample_2x.pak"));
 
   // Dump contents into the pak files.
-  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContents,
-      kSamplePakSize), static_cast<int>(kSamplePakSize));
+  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContentsV4, kSamplePakSizeV4),
+            static_cast<int>(kSamplePakSizeV4));
   ASSERT_EQ(base::WriteFile(data_2x_path, kSamplePakContents2x,
       kSamplePakSize2x), static_cast<int>(kSamplePakSize2x));
 
