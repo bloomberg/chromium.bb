@@ -49,12 +49,8 @@ while ($true) {
       $cipd_lock_file = [IO.File]::OpenWrite($cipd_lock)
 
       if (!(Test-Path $client)) {
-          echo "Bootstrapping cipd client for $plat-$arch..."
-          echo "From $url"
+          echo "Bootstrapping cipd client for $plat-$arch from $url..."
 
-          # TODO(iannucci): It would be really nice if there was a way to get this to
-          # show progress without also completely destroying the download speed, but
-          # I can't seem to find a way to do it. Patches welcome :)
           $wc = (New-Object System.Net.WebClient)
           $wc.Headers.add('User-Agent', $user_agent)
           $wc.DownloadFile($url, $client)
