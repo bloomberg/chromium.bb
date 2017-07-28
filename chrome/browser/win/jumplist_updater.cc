@@ -114,9 +114,6 @@ bool JumpListUpdater::IsEnabled() {
 }
 
 bool JumpListUpdater::BeginUpdate() {
-  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
-  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplistUpdater.BeginUpdateDuration");
-
   // This instance is expected to be one-time-use only.
   DCHECK(!destination_list_.Get());
 
@@ -153,9 +150,6 @@ bool JumpListUpdater::BeginUpdate() {
 }
 
 bool JumpListUpdater::CommitUpdate() {
-  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
-  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplistUpdater.CommitUpdateDuration");
-
   if (!destination_list_.Get())
     return false;
 
@@ -203,9 +197,6 @@ bool JumpListUpdater::AddTasks(const ShellLinkItemList& link_items) {
 bool JumpListUpdater::AddCustomCategory(const base::string16& category_name,
                                         const ShellLinkItemList& link_items,
                                         size_t max_items) {
-  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
-  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplistUpdater.AddCustomCategoryDuration");
-
   if (!destination_list_.Get())
     return false;
 

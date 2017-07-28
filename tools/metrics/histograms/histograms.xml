@@ -89614,6 +89614,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WinJumplistUpdater.AddCustomCategoryDuration" units="ms">
+  <obsolete>
+    Obsolete 07/26/2017 as it's no longer needed.
+  </obsolete>
   <owner>chengx@chromium.org</owner>
   <summary>Time spent in JumpListUpdater::AddCustomCategory.</summary>
 </histogram>
@@ -89627,11 +89630,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WinJumplistUpdater.BeginUpdateDuration" units="ms">
+  <obsolete>
+    Obsolete 07/26/2017 as it's no longer needed.
+  </obsolete>
   <owner>chengx@chromium.org</owner>
   <summary>Time spent in JumpListUpdater::BeginUpdate.</summary>
 </histogram>
 
 <histogram name="WinJumplistUpdater.CommitUpdateDuration" units="ms">
+  <obsolete>
+    Obsolete 07/26/2017 as it's no longer needed.
+  </obsolete>
   <owner>chengx@chromium.org</owner>
   <summary>Time spent in JumpListUpdater::CommitUpdate.</summary>
 </histogram>
