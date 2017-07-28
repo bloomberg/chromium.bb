@@ -11,15 +11,20 @@
 #include "core/dom/SecurityContext.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
+#include "core/workers/WorkletModuleResponsesMapProxy.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace blink {
 
 class EventQueue;
 class Modulator;
+class WorkletModuleResponsesMap;
+class WorkletPendingTasks;
 
 class CORE_EXPORT WorkletGlobalScope
     : public GarbageCollectedFinalized<WorkletGlobalScope>,
@@ -72,6 +77,19 @@ class CORE_EXPORT WorkletGlobalScope
     return nullptr;
   }  // WorkletGlobalScopes don't have timers.
 
+  // Implementation of the "fetch and invoke a worklet script" algorithm:
+  // https://drafts.css-houdini.org/worklets/#fetch-and-invoke-a-worklet-script
+  // When script evaluation is done or any exception happens, it's notified to
+  // the given WorkletPendingTasks via |outside_settings_task_runner| (i.e., the
+  // parent frame's task runner).
+  void FetchAndInvokeScript(const KURL& module_url_record,
+                            WorkletModuleResponsesMap*,
+                            WebURLRequest::FetchCredentialsMode,
+                            RefPtr<WebTaskRunner> outside_settings_task_runner,
+                            WorkletPendingTasks*);
+
+  WorkletModuleResponsesMapProxy* ModuleResponsesMapProxy() const;
+
   void SetModulator(Modulator*);
 
   DECLARE_VIRTUAL_TRACE();
@@ -93,8 +111,9 @@ class CORE_EXPORT WorkletGlobalScope
   EventTarget* ErrorEventTarget() final { return nullptr; }
   void DidUpdateSecurityOrigin() final {}
 
-  KURL url_;
-  String user_agent_;
+  const KURL url_;
+  const String user_agent_;
+  Member<WorkletModuleResponsesMapProxy> module_responses_map_proxy_;
   // LocalDOMWindow::modulator_ workaround equivalent.
   // TODO(kouhei): Remove this.
   TraceWrapperMember<Modulator> modulator_;
