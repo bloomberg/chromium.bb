@@ -147,26 +147,13 @@ class PathFinder(object):
         side effects of adding the directory to sys.path or importing breakpad.
         """
         return (self._check_paths_for_depot_tools(self._sys_path) or
-                self._check_paths_for_depot_tools(self._env_path) or
-                self._check_upward_for_depot_tools())
+                self._check_paths_for_depot_tools(self._env_path))
 
     def _check_paths_for_depot_tools(self, paths):
         for path in paths:
             if path.rstrip(self._dirsep).endswith('depot_tools'):
                 return path
         return None
-
-    def _check_upward_for_depot_tools(self):
-        # TODO(qyearsley): Remove this, since on Chromium developer machines
-        # we generally assume that depot_tools is in PATH.
-        fs = self._filesystem
-        prev_dir = ''
-        current_dir = fs.dirname(self._webkit_base())
-        while current_dir != prev_dir:
-            if fs.exists(fs.join(current_dir, 'depot_tools', 'pylint.py')):
-                return fs.join(current_dir, 'depot_tools')
-            prev_dir = current_dir
-            current_dir = fs.dirname(current_dir)
 
     def path_from_depot_tools_base(self, *comps):
         return self._filesystem.join(self.depot_tools_base(), *comps)
