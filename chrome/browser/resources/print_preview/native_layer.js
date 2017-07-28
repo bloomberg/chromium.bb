@@ -77,6 +77,16 @@ print_preview.PrinterSetupResponse;
  */
 print_preview.ProvisionalDestinationInfo;
 
+/**
+ * Printer types for capabilities and printer list requests.
+ * Should match PrinterType in print_preview_handler.h
+ * @enum {number}
+ */
+print_preview.PrinterType = {
+  PRIVET_PRINTER: 0,
+  EXTENSION_PRINTER: 1,
+};
+
 cr.define('print_preview', function() {
   'use strict';
 
@@ -190,7 +200,9 @@ cr.define('print_preview', function() {
      *     Rejected if privet printers are not enabled.
      */
     getPrivetPrinters: function() {
-      return cr.sendWithPromise('getPrivetPrinters');
+      return cr.sendWithPromise(
+          'getExtensionOrPrivetPrinters',
+          print_preview.PrinterType.PRIVET_PRINTER);
     },
 
     /**
@@ -200,7 +212,9 @@ cr.define('print_preview', function() {
      *     have been sent.
      */
     getExtensionPrinters: function() {
-      return cr.sendWithPromise('getExtensionPrinters');
+      return cr.sendWithPromise(
+          'getExtensionOrPrivetPrinters',
+          print_preview.PrinterType.EXTENSION_PRINTER);
     },
 
     /**
@@ -217,24 +231,27 @@ cr.define('print_preview', function() {
      * Requests the privet destination's printing capabilities. Returns a
      * promise that will be resolved with capabilities and printer information
      * if capabilities are obtained successfully.
-     * @param {string} destinationId ID of the destination.
+     * @param {string} destinationId The ID of the destination
      * @return {!Promise<!print_preview.PrivetPrinterCapabilitiesResponse>}
      */
     getPrivetPrinterCapabilities: function(destinationId) {
-      return cr.sendWithPromise('getPrivetPrinterCapabilities', destinationId);
+      return cr.sendWithPromise(
+          'getExtensionOrPrivetPrinterCapabilities', destinationId,
+          print_preview.PrinterType.PRIVET_PRINTER);
     },
 
     /**
      * Requests the extension destination's printing capabilities. Returns a
-     * promise that will be resolved with the ID and capabilities if
-     * capabilities are obtained successfully.
+     * promise that will be resolved with the capabilities if capabilities are
+     * obtained successfully.
      * @param {string} destinationId The ID of the destination whose
      *     capabilities are requested.
      * @return {!Promise<!print_preview.Cdd>}
      */
     getExtensionPrinterCapabilities: function(destinationId) {
       return cr.sendWithPromise(
-          'getExtensionPrinterCapabilities', destinationId);
+          'getExtensionOrPrivetPrinterCapabilities', destinationId,
+          print_preview.PrinterType.EXTENSION_PRINTER);
     },
 
     /**

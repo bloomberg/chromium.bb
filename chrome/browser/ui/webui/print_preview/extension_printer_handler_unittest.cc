@@ -17,6 +17,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
@@ -188,6 +189,9 @@ const char kContentTypePWG[] = "image/pwg-raster";
 // Print request status considered to be successful by fake PrinterProviderAPI.
 const char kPrintRequestSuccess[] = "OK";
 
+constexpr unsigned char kPrintData[] = "print data, PDF";
+constexpr size_t kPrintDataLength = sizeof(kPrintData);
+
 // Used as a callback to StartGetPrinters in tests.
 // Increases |*call_count| and records values returned by StartGetPrinters.
 void RecordPrinterList(size_t* call_count,
@@ -215,10 +219,10 @@ void RecordPrintResult(size_t* call_count,
                        bool* success_out,
                        std::string* status_out,
                        bool success,
-                       const std::string& status) {
+                       const base::Value& status) {
   ++(*call_count);
   *success_out = success;
-  *status_out = status;
+  *status_out = status.GetString();
 }
 
 // Used as a callback to StartGrantPrinterAccess in tests.
@@ -662,9 +666,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf) {
   bool success = false;
   std::string status;
 
-  scoped_refptr<base::RefCountedString> print_data(
-      new base::RefCountedString());
-  print_data->data() = "print data, PDF";
+  scoped_refptr<base::RefCountedBytes> print_data(
+      new base::RefCountedBytes(kPrintData, kPrintDataLength));
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
@@ -686,7 +689,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf) {
   EXPECT_EQ(kContentTypePDF, print_job->content_type);
   EXPECT_TRUE(print_job->document_path.empty());
   ASSERT_TRUE(print_job->document_bytes);
-  EXPECT_EQ(print_data->data(),
+  EXPECT_EQ(RefCountedMemoryToString(print_data),
             RefCountedMemoryToString(print_job->document_bytes));
 
   fake_api->TriggerNextPrintCallback(kPrintRequestSuccess);
@@ -701,9 +704,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf_Reset) {
   bool success = false;
   std::string status;
 
-  scoped_refptr<base::RefCountedString> print_data(
-      new base::RefCountedString());
-  print_data->data() = "print data, PDF";
+  scoped_refptr<base::RefCountedBytes> print_data(
+      new base::RefCountedBytes(kPrintData, kPrintDataLength));
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
@@ -728,9 +730,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_All) {
   bool success = false;
   std::string status;
 
-  scoped_refptr<base::RefCountedString> print_data(
-      new base::RefCountedString());
-  print_data->data() = "print data, PDF";
+  scoped_refptr<base::RefCountedBytes> print_data(
+      new base::RefCountedBytes(kPrintData, kPrintDataLength));
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
@@ -753,7 +754,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_All) {
   EXPECT_EQ(kContentTypePDF, print_job->content_type);
   EXPECT_TRUE(print_job->document_path.empty());
   ASSERT_TRUE(print_job->document_bytes);
-  EXPECT_EQ(print_data->data(),
+  EXPECT_EQ(RefCountedMemoryToString(print_data),
             RefCountedMemoryToString(print_job->document_bytes));
 
   fake_api->TriggerNextPrintCallback(kPrintRequestSuccess);
@@ -768,9 +769,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
   bool success = false;
   std::string status;
 
-  scoped_refptr<base::RefCountedString> print_data(
-      new base::RefCountedString());
-  print_data->data() = "print data, PDF";
+  scoped_refptr<base::RefCountedBytes> print_data(
+      new base::RefCountedBytes(kPrintData, kPrintDataLength));
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
@@ -822,9 +822,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
   bool success = false;
   std::string status;
 
-  scoped_refptr<base::RefCountedString> print_data(
-      new base::RefCountedString());
-  print_data->data() = "print data, PDF";
+  scoped_refptr<base::RefCountedBytes> print_data(
+      new base::RefCountedBytes(kPrintData, kPrintDataLength));
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
@@ -876,9 +875,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_Reset) {
   bool success = false;
   std::string status;
 
-  scoped_refptr<base::RefCountedString> print_data(
-      new base::RefCountedString());
-  print_data->data() = "print data, PDF";
+  scoped_refptr<base::RefCountedBytes> print_data(
+      new base::RefCountedBytes(kPrintData, kPrintDataLength));
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
@@ -906,9 +904,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_InvalidTicket) {
   bool success = false;
   std::string status;
 
-  scoped_refptr<base::RefCountedString> print_data(
-      new base::RefCountedString());
-  print_data->data() = "print data, PDF";
+  scoped_refptr<base::RefCountedBytes> print_data(
+      new base::RefCountedBytes(kPrintData, kPrintDataLength));
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
@@ -929,9 +926,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_FailedConversion) {
 
   pwg_raster_converter_->FailConversion();
 
-  scoped_refptr<base::RefCountedString> print_data(
-      new base::RefCountedString());
-  print_data->data() = "print data, PDF";
+  scoped_refptr<base::RefCountedBytes> print_data(
+      new base::RefCountedBytes(kPrintData, kPrintDataLength));
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(

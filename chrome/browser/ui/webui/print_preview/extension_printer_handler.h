@@ -18,12 +18,11 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
+class RefCountedBytes;
 class RefCountedMemory;
 }
 
-namespace content {
-class BrowserContext;
-}
+class Profile;
 
 namespace cloud_devices {
 class CloudDeviceDescription;
@@ -48,7 +47,7 @@ class ExtensionPrinterHandler : public PrinterHandler {
   using PrintJobCallback = base::Callback<void(
       std::unique_ptr<extensions::PrinterProviderPrintJob>)>;
 
-  explicit ExtensionPrinterHandler(content::BrowserContext* browser_context);
+  explicit ExtensionPrinterHandler(Profile* profile);
 
   ~ExtensionPrinterHandler() override;
 
@@ -58,14 +57,14 @@ class ExtensionPrinterHandler : public PrinterHandler {
       const PrinterHandler::GetPrintersCallback& callback) override;
   void StartGetCapability(
       const std::string& destination_id,
-      const PrinterHandler::GetCapabilityCallback& calback) override;
+      const PrinterHandler::GetCapabilityCallback& callback) override;
   // TODO(tbarzic): It might make sense to have the strings in a single struct.
   void StartPrint(const std::string& destination_id,
                   const std::string& capability,
                   const base::string16& job_title,
                   const std::string& ticket_json,
                   const gfx::Size& page_size,
-                  const scoped_refptr<base::RefCountedMemory>& print_data,
+                  const scoped_refptr<base::RefCountedBytes>& print_data,
                   const PrinterHandler::PrintCallback& callback) override;
   void StartGrantPrinterAccess(
       const std::string& printer_id,
@@ -113,7 +112,7 @@ class ExtensionPrinterHandler : public PrinterHandler {
       const PrinterHandler::GetPrintersCallback& callback,
       const std::vector<scoped_refptr<device::UsbDevice>>& devices);
 
-  content::BrowserContext* browser_context_;
+  Profile* profile_;
 
   std::unique_ptr<printing::PWGRasterConverter> pwg_raster_converter_;
   int pending_enumeration_count_ = 0;

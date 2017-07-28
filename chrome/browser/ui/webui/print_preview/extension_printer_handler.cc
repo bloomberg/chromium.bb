@@ -18,6 +18,7 @@
 #include "base/strings/string_split.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/printing/pwg_raster_converter.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "device/base/device_client.h"
@@ -120,9 +121,8 @@ bool ParseProvisionalUsbPrinterId(const std::string& printer_id,
 
 }  // namespace
 
-ExtensionPrinterHandler::ExtensionPrinterHandler(
-    content::BrowserContext* browser_context)
-    : browser_context_(browser_context), weak_ptr_factory_(this) {}
+ExtensionPrinterHandler::ExtensionPrinterHandler(Profile* profile)
+    : profile_(profile), weak_ptr_factory_(this) {}
 
 ExtensionPrinterHandler::~ExtensionPrinterHandler() {
 }
@@ -141,7 +141,7 @@ void ExtensionPrinterHandler::StartGetPrinters(
   pending_enumeration_count_ = 1;
 
   bool extension_supports_usb_printers = false;
-  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
   for (const auto& extension : registry->enabled_extensions()) {
     if (UsbPrinterManifestData::Get(extension.get()) &&
         HasUsbPrinterProviderPermissions(extension.get())) {
@@ -159,7 +159,7 @@ void ExtensionPrinterHandler::StartGetPrinters(
   }
 
   extensions::PrinterProviderAPIFactory::GetInstance()
-      ->GetForBrowserContext(browser_context_)
+      ->GetForBrowserContext(profile_)
       ->DispatchGetPrintersRequested(
           base::Bind(&ExtensionPrinterHandler::WrapGetPrintersCallback,
                      weak_ptr_factory_.GetWeakPtr(), callback));
@@ -169,7 +169,7 @@ void ExtensionPrinterHandler::StartGetCapability(
     const std::string& destination_id,
     const PrinterHandler::GetCapabilityCallback& callback) {
   extensions::PrinterProviderAPIFactory::GetInstance()
-      ->GetForBrowserContext(browser_context_)
+      ->GetForBrowserContext(profile_)
       ->DispatchGetCapabilityRequested(
           destination_id,
           base::Bind(&ExtensionPrinterHandler::WrapGetCapabilityCallback,
@@ -182,7 +182,7 @@ void ExtensionPrinterHandler::StartPrint(
     const base::string16& job_title,
     const std::string& ticket_json,
     const gfx::Size& page_size,
-    const scoped_refptr<base::RefCountedMemory>& print_data,
+    const scoped_refptr<base::RefCountedBytes>& print_data,
     const PrinterHandler::PrintCallback& callback) {
   std::unique_ptr<extensions::PrinterProviderPrintJob> print_job(
       new extensions::PrinterProviderPrintJob());
@@ -239,11 +239,11 @@ void ExtensionPrinterHandler::StartGrantPrinterAccess(
   }
 
   DevicePermissionsManager* permissions_manager =
-      DevicePermissionsManager::Get(browser_context_);
+      DevicePermissionsManager::Get(profile_);
   permissions_manager->AllowUsbDevice(extension_id, device);
 
   extensions::PrinterProviderAPIFactory::GetInstance()
-      ->GetForBrowserContext(browser_context_)
+      ->GetForBrowserContext(profile_)
       ->DispatchGetUsbPrinterInfoRequested(
           extension_id, device,
           base::Bind(&ExtensionPrinterHandler::WrapGetPrinterInfoCallback,
@@ -281,7 +281,7 @@ void ExtensionPrinterHandler::DispatchPrintJob(
   }
 
   extensions::PrinterProviderAPIFactory::GetInstance()
-      ->GetForBrowserContext(browser_context_)
+      ->GetForBrowserContext(profile_)
       ->DispatchPrintRequested(
           *print_job, base::Bind(&ExtensionPrinterHandler::WrapPrintCallback,
                                  weak_ptr_factory_.GetWeakPtr(), callback));
@@ -308,7 +308,7 @@ void ExtensionPrinterHandler::WrapPrintCallback(
     const PrinterHandler::PrintCallback& callback,
     bool success,
     const std::string& status) {
-  callback.Run(success, status);
+  callback.Run(success, base::Value(status));
 }
 
 void ExtensionPrinterHandler::WrapGetPrinterInfoCallback(
@@ -320,9 +320,9 @@ void ExtensionPrinterHandler::WrapGetPrinterInfoCallback(
 void ExtensionPrinterHandler::OnUsbDevicesEnumerated(
     const PrinterHandler::GetPrintersCallback& callback,
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
   DevicePermissionsManager* permissions_manager =
-      DevicePermissionsManager::Get(browser_context_);
+      DevicePermissionsManager::Get(profile_);
 
   ListBuilder printer_list;
 
