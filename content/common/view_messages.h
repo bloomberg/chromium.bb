@@ -432,12 +432,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_PluginActionAt,
 // Sets the page scale for the current main frame to the given page scale.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetPageScale, float /* page_scale_factor */)
 
-// Used to tell a render view whether it should expose various bindings
-// that allow JS content extended privileges.  See BindingsPolicy for valid
-// flag values.
-IPC_MESSAGE_ROUTED1(ViewMsg_AllowBindings,
-                    int /* enabled_bindings_flags */)
-
 // Tell the renderer to add a property to the WebUI binding object.  This
 // only works if we allowed WebUI bindings.
 IPC_MESSAGE_ROUTED2(ViewMsg_SetWebUIProperty,
@@ -593,10 +587,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetBeginFramePaused, bool /* paused */)
 
 // Sent by the browser when the renderer should generate a new frame.
 IPC_MESSAGE_ROUTED1(ViewMsg_BeginFrame, viz::BeginFrameArgs /* args */)
-
-// Sent by the browser to deliver a compositor proto to the renderer.
-IPC_MESSAGE_ROUTED1(ViewMsg_HandleCompositorProto,
-                    std::vector<uint8_t> /* proto */)
 
 // Sets the viewport intersection on the widget for an out-of-process iframe.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetViewportIntersection,

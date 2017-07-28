@@ -235,11 +235,6 @@ IPC_MESSAGE_ROUTED1(InputMsg_ImeFinishComposingText, bool /* keep_selection */)
 IPC_MESSAGE_ROUTED1(InputMsg_SetEditCommandsForNextKeyEvent,
                     std::vector<content::EditCommand> /* edit_commands */)
 
-// Message payload is the name/value of a WebCore edit command to execute.
-IPC_MESSAGE_ROUTED2(InputMsg_ExecuteEditCommand,
-                    std::string, /* name */
-                    std::string /* value */)
-
 // Message payload is the name of a WebCore edit command to execute.
 IPC_MESSAGE_ROUTED1(InputMsg_ExecuteNoValueEditCommand, std::string /* name */)
 

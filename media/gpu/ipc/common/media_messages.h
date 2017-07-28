@@ -70,9 +70,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateVideoDecoder,
                            int32_t /* decoder_route_id */,
                            bool /* succeeded */)
 
-// Set a CDM on the decoder to handle encrypted buffers.
-IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_SetCdm, int32_t /* CDM ID */)
-
 // Send input buffer for decoding.
 IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_Decode, media::BitstreamBuffer)
 
