@@ -171,8 +171,12 @@ static EphemeralRangeInFlatTree CalcSelection(
       const PositionInFlatTree& base =
           CreateVisiblePosition(ToPositionInFlatTree(selection_in_dom.Base()))
               .DeepEquivalent();
+      if (base.IsNull())
+        return {};
       const PositionInFlatTree end_position =
           NextPositionOf(base, PositionMoveType::kGraphemeCluster);
+      if (end_position.IsNull())
+        return {};
       return base <= end_position
                  ? EphemeralRangeInFlatTree(base, end_position)
                  : EphemeralRangeInFlatTree(end_position, base);
