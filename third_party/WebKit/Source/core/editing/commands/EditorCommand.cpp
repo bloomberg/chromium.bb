@@ -2168,15 +2168,10 @@ static bool EnabledInRichlyEditableText(LocalFrame& frame,
   if (source == kCommandFromMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
-  return !frame.Selection()
-              .ComputeVisibleSelectionInDOMTreeDeprecated()
-              .IsNone() &&
-         frame.Selection()
-             .ComputeVisibleSelectionInDOMTreeDeprecated()
-             .IsContentRichlyEditable() &&
-         frame.Selection()
-             .ComputeVisibleSelectionInDOMTreeDeprecated()
-             .RootEditableElement();
+  const VisibleSelection& selection =
+      frame.Selection().ComputeVisibleSelectionInDOMTree();
+  return !selection.IsNone() && selection.IsContentRichlyEditable() &&
+         selection.RootEditableElement();
 }
 
 static bool EnabledPaste(LocalFrame& frame,
