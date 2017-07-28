@@ -2347,7 +2347,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 
 #if CONFIG_EXT_INTER
-  if ((bsize < BLOCK_8X8 && unify_bsize) ||
+  if ((bsize < BLOCK_8X8 && !unify_bsize) ||
       (mbmi->mode != ZEROMV && mbmi->mode != ZERO_ZEROMV))
 #else
   if ((bsize < BLOCK_8X8 && !unify_bsize) || mbmi->mode != ZEROMV)

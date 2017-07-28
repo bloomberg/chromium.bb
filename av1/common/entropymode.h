@@ -202,7 +202,9 @@ typedef struct frame_contexts {
       INTER_SINGLEREF_COMP_MODES)];
 #endif  // CONFIG_COMPOUND_SINGLEREF
   aom_prob compound_type_prob[BLOCK_SIZES_ALL][COMPOUND_TYPES - 1];
+#if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
   aom_cdf_prob compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES)];
+#endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
 #if CONFIG_INTERINTRA
   aom_prob interintra_prob[BLOCK_SIZE_GROUPS];
   aom_prob wedge_interintra_prob[BLOCK_SIZES_ALL];

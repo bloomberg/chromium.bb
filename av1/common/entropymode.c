@@ -649,9 +649,6 @@ static const aom_cdf_prob
       { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
       { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
     };
-#else
-static const aom_cdf_prob default_compound_type_cdf[BLOCK_SIZES_ALL]
-                                                   [CDF_SIZE(COMPOUND_TYPES)];
 #endif  // CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 
 #if CONFIG_INTERINTRA
@@ -4710,7 +4707,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
            default_inter_singleref_comp_mode_cdf);
 #endif  // CONFIG_COMPOUND_SINGLEREF
   av1_copy(fc->compound_type_prob, default_compound_type_probs);
+#if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
   av1_copy(fc->compound_type_cdf, default_compound_type_cdf);
+#endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
 #if CONFIG_INTERINTRA
   av1_copy(fc->interintra_prob, default_interintra_prob);
   av1_copy(fc->wedge_interintra_prob, default_wedge_interintra_prob);
