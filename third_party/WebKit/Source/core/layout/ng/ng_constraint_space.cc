@@ -203,7 +203,8 @@ bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
          margin_strut_ == other.margin_strut_ &&
          bfc_offset_ == other.bfc_offset_ &&
          floats_bfc_offset_ == other.floats_bfc_offset_ &&
-         clearance_offset_ == other.clearance_offset_;
+         clearance_offset_ == other.clearance_offset_ &&
+         baseline_requests_ == other.baseline_requests_;
 }
 
 bool NGConstraintSpace::operator!=(const NGConstraintSpace& other) const {

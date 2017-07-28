@@ -66,6 +66,30 @@ TODO(layout-dev): Document with lots of pretty pictures.
 
 TODO(layout-dev): Document with lots of pretty pictures.
 
+### Fragment Caching ###
+
+After layout, we cache the resulting fragment to avoid redoing all of layout
+the next time. You can read the full [design
+document](https://docs.google.com/document/d/1RjH_Ofa8O_ucGvaDCEgsBVECPqUTiQKR3zNyVTr-L_I/edit).
+
+Here's how it works:
+
+* We store the input constraint space and the resulting fragment on the
+  [LayoutNGBlockFlow](layout_ng_block_flow.h). However, we only do that if
+  we have no break token to simplify the initial implementation. We call
+  `LayoutNGBlockFlow::SetCachedLayoutResult` from `NGBlockNode::Layout`.
+* Once cached, `NGBlockNode::Layout` checks at the beginning if we already
+  have a cached result by calling `LayoutNGBlockFlow::CachedLayoutResult`.
+  If that returns a layout result, we return it and are done.
+* `CachedLayoutResult` will always clone the fragment (but without the offset)
+  so that the parent algorithm can position this fragment.
+* We only reuse a layout result if the constraint space is identical (using
+  `operator==`), if there was no break token (a current limitation, we may
+  lift this eventually), and if the node is not marked for layout. We need
+  the `NeedsLayout()` check because we currently have no other way to ensure
+  that relayout happens when style or children change. Eventually we need to
+  rethink this part as we transition away from legacy layout.
+
 ### Code coverage ###
 
 The latest code coverage (from Feb 14 2017) can be found [here](https://glebl.users.x20web.corp.google.com/www/layout_ng_code_coverage/index.html).

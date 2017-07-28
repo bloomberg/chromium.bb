@@ -12,11 +12,15 @@
 
 namespace blink {
 
+class NGBreakToken;
+class NGConstraintSpace;
+class NGLayoutResult;
+
 // This overrides the default layout block algorithm to use Layout NG.
 class CORE_EXPORT LayoutNGBlockFlow final : public LayoutBlockFlow {
  public:
   explicit LayoutNGBlockFlow(Element*);
-  ~LayoutNGBlockFlow() override = default;
+  ~LayoutNGBlockFlow() override;
 
   void UpdateBlockLayout(bool relayout_children) override;
 
@@ -29,12 +33,25 @@ class CORE_EXPORT LayoutNGBlockFlow final : public LayoutBlockFlow {
   int FirstLineBoxBaseline() const override;
   int InlineBlockBaseline(LineDirectionMode) const override;
 
+  // Returns the last layout result for this block flow with the given
+  // constraint space and break token, or null if it is not up-to-date or
+  // otherwise unavailable.
+  RefPtr<NGLayoutResult> CachedLayoutResult(NGConstraintSpace*,
+                                            NGBreakToken*) const;
+
+  void SetCachedLayoutResult(NGConstraintSpace*,
+                             NGBreakToken*,
+                             RefPtr<NGLayoutResult>);
+
  private:
   bool IsOfType(LayoutObjectType) const override;
 
   void UpdateMargins(const NGConstraintSpace&);
 
   std::unique_ptr<NGInlineNodeData> ng_inline_node_data_;
+
+  RefPtr<NGLayoutResult> cached_result_;
+  RefPtr<NGConstraintSpace> cached_constraint_space_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGBlockFlow, IsLayoutNGBlockFlow());

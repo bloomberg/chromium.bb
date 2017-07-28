@@ -27,14 +27,14 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final : public NGPhysicalFragment {
 
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
 
+  // Compute baseline for the specified baseline type.
+  LayoutUnit BaselinePosition(FontBaseline) const;
+
   RefPtr<NGPhysicalFragment> CloneWithoutOffset() const {
     Vector<RefPtr<NGPhysicalFragment>> children_copy(children_);
     return AdoptRef(new NGPhysicalLineBoxFragment(size_, children_copy,
                                                   metrics_, break_token_));
   }
-
-  // Compute baseline for the specified baseline type.
-  LayoutUnit BaselinePosition(FontBaseline) const;
 
  private:
   Vector<RefPtr<NGPhysicalFragment>> children_;
