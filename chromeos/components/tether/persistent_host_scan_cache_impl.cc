@@ -149,7 +149,7 @@ void PersistentHostScanCacheImpl::SetHostScanResult(
   StoreCacheEntriesToPrefs(entries);
 }
 
-bool PersistentHostScanCacheImpl::RemoveHostScanResult(
+bool PersistentHostScanCacheImpl::RemoveHostScanResultImpl(
     const std::string& tether_network_guid) {
   std::unordered_map<std::string, HostScanCacheEntry> entries =
       GetStoredCacheEntries();

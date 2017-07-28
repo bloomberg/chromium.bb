@@ -30,7 +30,7 @@ void FakeHostScanCache::SetHostScanResult(const HostScanCacheEntry& entry) {
   cache_.emplace(entry.tether_network_guid, entry);
 }
 
-bool FakeHostScanCache::RemoveHostScanResult(
+bool FakeHostScanCache::RemoveHostScanResultImpl(
     const std::string& tether_network_guid) {
   return cache_.erase(tether_network_guid) > 0;
 }

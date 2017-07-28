@@ -32,7 +32,6 @@ class PersistentHostScanCacheImpl : public PersistentHostScanCache {
 
   // HostScanCache:
   void SetHostScanResult(const HostScanCacheEntry& entry) override;
-  bool RemoveHostScanResult(const std::string& tether_network_guid) override;
   bool ExistsInCache(const std::string& tether_network_guid) override;
   std::unordered_set<std::string> GetTetherGuidsInCache() override;
   bool DoesHostRequireSetup(const std::string& tether_network_guid) override;
@@ -40,6 +39,10 @@ class PersistentHostScanCacheImpl : public PersistentHostScanCache {
   // PersistentHostScanCache:
   std::unordered_map<std::string, HostScanCacheEntry> GetStoredCacheEntries()
       override;
+
+ protected:
+  bool RemoveHostScanResultImpl(
+      const std::string& tether_network_guid) override;
 
  private:
   void StoreCacheEntriesToPrefs(
