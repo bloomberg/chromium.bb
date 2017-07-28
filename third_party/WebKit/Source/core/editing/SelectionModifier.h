@@ -79,6 +79,7 @@ class SelectionModifier {
   VisiblePosition ModifyMovingRight(TextGranularity);
   VisiblePosition ModifyMovingForward(TextGranularity);
   VisiblePosition ModifyExtendingLeft(TextGranularity);
+  VisiblePosition ModifyExtendingLeftInternal(TextGranularity);
   VisiblePosition ModifyExtendingBackward(TextGranularity);
   VisiblePosition ModifyExtendingBackwardInternal(TextGranularity);
   VisiblePosition ModifyMovingLeft(TextGranularity);
