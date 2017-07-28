@@ -90,12 +90,12 @@ bool TranslateURLFetcher::Request(
               TranslateEnabled: false
             }
           }
-          policy_exception_justification:
-            "There is no policy for disabling download of the list of "
-            "supported languages. It is considered not required as the list is "
-            "needed for rendering user interfaces, and Chrome does not send "
-            "privacy/security sensitive data to the server on downloading it."
-        })");
+        }
+        comments:
+          "There is no policy for disabling download of the list of "
+          "supported languages. It is considered not required as the list is "
+          "needed for rendering user interfaces, and Chrome does not send "
+          "privacy/security sensitive data to the server on downloading it.")");
   // Create and initialize the URL fetcher.
   fetcher_ = net::URLFetcher::Create(id_, url_, net::URLFetcher::GET, this,
                                      traffic_annotation);

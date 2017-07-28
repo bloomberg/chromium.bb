@@ -180,11 +180,12 @@ void PortAllocatorSession::TryCreateRelaySession() {
               RemoteAccessHostFirewallTraversal: false
             }
           }
-          policy_exception_justification:
-            "Above specified policy is only applicable on the host side and "
-            "doesn't have effect in Android and iOS client apps. The product "
-            "is shipped separately from Chromium, except on Chrome OS."
-        })");
+        }
+        comments:
+          "Above specified policy is only applicable on the host side and "
+          "doesn't have effect in Android and iOS client apps. The product "
+          "is shipped separately from Chromium, except on Chrome OS."
+        )");
   std::unique_ptr<UrlRequest> url_request =
       transport_context_->url_request_factory()->CreateUrlRequest(
           UrlRequest::Type::GET, url, traffic_annotation);
