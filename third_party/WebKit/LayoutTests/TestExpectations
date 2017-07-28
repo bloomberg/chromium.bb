@@ -1399,6 +1399,7 @@ crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
 crbug.com/491764 http/tests/inspector/service-workers/user-agent-override.html [ Pass Timeout ]
 crbug.com/491764 virtual/mojo-loading/http/tests/inspector/service-workers/user-agent-override.html [ Pass Timeout ]
+crbug.com/491764 virtual/off-main-thread-fetch/http/tests/inspector/service-workers/user-agent-override.html [ Pass Timeout ]
 
 # Fails with leak detector.
 crbug.com/622915 [ Linux ] ietestcenter/css3/grid/grid-column-003.htm [ Skip ]
@@ -2316,9 +2317,6 @@ crbug.com/701047 [ Mac10.12 ] editing/style/block-styles-007.html [ Failure ]
 
 crbug.com/664873 http/tests/xmlhttprequest/small-chunks-response-text.html [ Failure Pass ]
 crbug.com/664873 virtual/mojo-loading/http/tests/xmlhttprequest/small-chunks-response-text.html [ Failure Pass ]
-
-# off-main-thread-fetch: This is an experimental feature.
-crbug.com/443374 virtual/off-main-thread-fetch/http/tests/inspector/service-workers/user-agent-override.html [ Failure ]
 
 crbug.com/660295 inspector/elements/elements-panel-restore-selection-when-node-comes-later.html [ Pass Failure ]
 crbug.com/735245 http/tests/inspector/application-panel/storage-view-reports-quota.html [ Pass Timeout ]

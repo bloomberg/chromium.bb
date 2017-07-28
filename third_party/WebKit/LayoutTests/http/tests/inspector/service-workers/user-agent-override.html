@@ -7,6 +7,9 @@
 <script>
 function test()
 {
+    // Need to enable networkInWorkers experiment for off-main-thread-fetch virtual test.
+    Runtime.experiments.enableForTest("networkInWorkers");
+
     function waitForTarget()
     {
         return new Promise(function(resolve) {
