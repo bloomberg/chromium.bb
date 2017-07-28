@@ -2036,12 +2036,16 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
     int ref;
 
 #if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
-    for (ref = 0; ref < 1 + is_inter_anyref_comp_mode(mbmi->mode); ++ref) {
+    for (ref = 0; ref < 1 + is_inter_anyref_comp_mode(mbmi->mode); ++ref)
+#else
+    for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref)
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+    {
       const MV_REFERENCE_FRAME frame =
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
           has_second_ref(mbmi) ? mbmi->ref_frame[ref] : mbmi->ref_frame[0];
 #else
-    for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
-      const MV_REFERENCE_FRAME frame = mbmi->ref_frame[ref];
+          mbmi->ref_frame[ref];
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
       if (frame < LAST_FRAME) {
 #if CONFIG_INTRABC
@@ -2093,8 +2097,8 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #elif CONFIG_CB4X4
         const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
 #else
-      const BLOCK_SIZE plane_bsize =
-          get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
+        const BLOCK_SIZE plane_bsize =
+            get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
 #endif
         const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
         const int max_blocks_high = max_block_high(xd, plane_bsize, plane);

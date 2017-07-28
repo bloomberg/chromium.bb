@@ -251,16 +251,14 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
   uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
   mbmi->ref_mv_idx = 0;
 
+  if (mbmi->mode == NEWMV
 #if CONFIG_EXT_INTER
+      || mbmi->mode == NEW_NEWMV
 #if CONFIG_COMPOUND_SINGLEREF
-  if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV ||
-      mbmi->mode == SR_NEW_NEWMV) {
-#else   // !CONFIG_COMPOUND_SINGLEREF
-  if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) {
+      || mbmi->mode == SR_NEW_NEWMV
 #endif  // CONFIG_COMPOUND_SINGLEREF
-#else   // !CONFIG_EXT_INTER
-  if (mbmi->mode == NEWMV) {
 #endif  // CONFIG_EXT_INTER
+      ) {
     int idx;
     for (idx = 0; idx < 2; ++idx) {
       if (xd->ref_mv_count[ref_frame_type] > idx + 1) {
@@ -538,10 +536,11 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
   const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   if (xd->lossless[xd->mi[0]->mbmi.segment_id]) return TX_4X4;
 #if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
-  if (bsize > BLOCK_4X4) {
+  if (bsize > BLOCK_4X4)
 #else
-  if (bsize >= BLOCK_8X8) {
+  if (bsize >= BLOCK_8X8)
 #endif  // CONFIG_CB4X4 && CONFIG_VAR_TX
+  {
     if ((!is_inter || allow_select_inter) && tx_mode == TX_MODE_SELECT) {
       const int32_t tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
                                            : intra_tx_size_cat_lookup[bsize];
@@ -2371,10 +2370,11 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
 #if CONFIG_EXT_INTER
   if ((bsize < BLOCK_8X8 && unify_bsize) ||
-      (mbmi->mode != ZEROMV && mbmi->mode != ZERO_ZEROMV)) {
+      (mbmi->mode != ZEROMV && mbmi->mode != ZERO_ZEROMV))
 #else
-  if ((bsize < BLOCK_8X8 && !unify_bsize) || mbmi->mode != ZEROMV) {
+  if ((bsize < BLOCK_8X8 && !unify_bsize) || mbmi->mode != ZEROMV)
 #endif  // CONFIG_EXT_INTER
+  {
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       av1_find_best_ref_mvs(allow_hp, ref_mvs[mbmi->ref_frame[ref]],
                             &nearestmv[ref], &nearmv[ref]);
@@ -2384,22 +2384,24 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_EXT_INTER
 #if CONFIG_COMPOUND_SINGLEREF
   if ((is_compound || is_singleref_comp_mode) &&
-      (bsize >= BLOCK_8X8 || unify_bsize) && mbmi->mode != ZERO_ZEROMV) {
+      (bsize >= BLOCK_8X8 || unify_bsize) && mbmi->mode != ZERO_ZEROMV)
 #else   // !CONFIG_COMPOUND_SINGLEREF
   if (is_compound && (bsize >= BLOCK_8X8 || unify_bsize) &&
-      mbmi->mode != ZERO_ZEROMV) {
+      mbmi->mode != ZERO_ZEROMV)
 #endif  // CONFIG_COMPOUND_SINGLEREF
 #else   // !CONFIG_EXT_INTER
   if (is_compound && (bsize >= BLOCK_8X8 || unify_bsize) &&
-      mbmi->mode != NEWMV && mbmi->mode != ZEROMV) {
+      mbmi->mode != NEWMV && mbmi->mode != ZEROMV)
 #endif  // CONFIG_EXT_INTER
+  {
     uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
 
 #if CONFIG_EXT_INTER
-    if (xd->ref_mv_count[ref_frame_type] > 0) {
+    if (xd->ref_mv_count[ref_frame_type] > 0)
 #else
-    if (xd->ref_mv_count[ref_frame_type] == 1 && mbmi->mode == NEARESTMV) {
+    if (xd->ref_mv_count[ref_frame_type] == 1 && mbmi->mode == NEARESTMV)
 #endif  // CONFIG_EXT_INTER
+    {
 #if CONFIG_EXT_INTER
       if (mbmi->mode == NEAREST_NEARESTMV) {
 #endif  // CONFIG_EXT_INTER
@@ -2495,10 +2497,11 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
           b_mode = read_inter_mode(ec_ctx, xd, r, mode_ctx);
 
 #if CONFIG_EXT_INTER
-        if (b_mode != ZEROMV && b_mode != ZERO_ZEROMV) {
+        if (b_mode != ZEROMV && b_mode != ZERO_ZEROMV)
 #else
-        if (b_mode != ZEROMV) {
+        if (b_mode != ZEROMV)
 #endif  // CONFIG_EXT_INTER
+        {
           CANDIDATE_MV ref_mv_stack[2][MAX_REF_MV_STACK_SIZE];
           uint8_t ref_mv_count[2];
           for (ref = 0; ref < 1 + is_compound; ++ref)
