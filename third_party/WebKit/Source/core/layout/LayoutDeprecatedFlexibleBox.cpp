@@ -1195,9 +1195,11 @@ void LayoutDeprecatedFlexibleBox::ApplyLineClamp(FlexBoxIterator& iterator,
     // due to truncation.
     LayoutUnit block_left_edge = dest_block.LogicalLeftOffsetForLine(
         last_visible_line->Y(), kDoNotIndentText);
-    last_visible_line->PlaceEllipsis(
-        ellipsis_str, left_to_right, block_left_edge, block_right_edge,
-        LayoutUnit(total_width), LayoutUnit(), false, ForceEllipsis);
+    InlineBox* box_truncation_starts_at = nullptr;
+    last_visible_line->PlaceEllipsis(ellipsis_str, left_to_right,
+                                     block_left_edge, block_right_edge,
+                                     LayoutUnit(total_width), LayoutUnit(),
+                                     &box_truncation_starts_at, ForceEllipsis);
     dest_block.SetHasMarkupTruncation(true);
   }
 }
