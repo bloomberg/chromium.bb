@@ -91,12 +91,19 @@ _OS_SPECIFIC_FILTER['win'] = [
     'ChromeLogPathCapabilityTest.testChromeLogPath',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=992
     'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1900
+    'ChromeExtensionsCapabilityTest.testCanInspectBackgroundPage',
+    'ChromeExtensionsCapabilityTest.testCanLaunchApp',
 ]
 _OS_SPECIFIC_FILTER['linux'] = [
     # Xvfb doesn't support maximization.
     'ChromeDriverTest.testWindowMaximize',
 ]
-_OS_SPECIFIC_FILTER['mac'] = []
+_OS_SPECIFIC_FILTER['mac'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1900
+    'ChromeExtensionsCapabilityTest.testCanInspectBackgroundPage',
+    'ChromeExtensionsCapabilityTest.testCanLaunchApp',
+]
 
 _DESKTOP_NEGATIVE_FILTER = [
     # Desktop doesn't support touch (without --touch-events).
