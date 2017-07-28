@@ -171,7 +171,7 @@ class CORE_EXPORT FrameLoader final {
 
   void UpdateForSameDocumentNavigation(const KURL&,
                                        SameDocumentNavigationSource,
-                                       RefPtr<SerializedScriptValue>,
+                                       PassRefPtr<SerializedScriptValue>,
                                        HistoryScrollRestorationType,
                                        FrameLoadType,
                                        Document*);

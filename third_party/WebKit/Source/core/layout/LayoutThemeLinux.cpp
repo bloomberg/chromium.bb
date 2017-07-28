@@ -8,7 +8,7 @@
 
 namespace blink {
 
-RefPtr<LayoutTheme> LayoutThemeLinux::Create() {
+PassRefPtr<LayoutTheme> LayoutThemeLinux::Create() {
   return AdoptRef(new LayoutThemeLinux());
 }
 

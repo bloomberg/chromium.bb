@@ -6,7 +6,7 @@
 #define CSSUnsetValue_h
 
 #include "core/css/CSSValue.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

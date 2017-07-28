@@ -110,7 +110,7 @@ class LayoutItem {
     return layout_object_->MutableStyleRef();
   }
 
-  void SetStyle(RefPtr<ComputedStyle> style) {
+  void SetStyle(PassRefPtr<ComputedStyle> style) {
     layout_object_->SetStyle(std::move(style));
   }
 
@@ -222,7 +222,7 @@ class LayoutItem {
     layout_object_->InvalidatePaintRectangle(dirty_rect);
   }
 
-  RefPtr<ComputedStyle> GetUncachedPseudoStyle(
+  PassRefPtr<ComputedStyle> GetUncachedPseudoStyle(
       const PseudoStyleRequest& pseudo_style_request,
       const ComputedStyle* parent_style = nullptr) const {
     return layout_object_->GetUncachedPseudoStyle(pseudo_style_request,

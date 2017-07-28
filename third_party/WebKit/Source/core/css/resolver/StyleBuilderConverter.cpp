@@ -86,7 +86,7 @@ static GridLength ConvertGridTrackBreadth(const StyleResolverState& state,
 
 }  // namespace
 
-RefPtr<StyleReflection> StyleBuilderConverter::ConvertBoxReflect(
+PassRefPtr<StyleReflection> StyleBuilderConverter::ConvertBoxReflect(
     StyleResolverState& state,
     const CSSValue& value) {
   if (value.IsIdentifierValue()) {
@@ -137,7 +137,7 @@ LengthBox StyleBuilderConverter::ConvertClip(StyleResolverState& state,
                    ConvertLengthOrAuto(state, *rect.Left()));
 }
 
-RefPtr<ClipPathOperation> StyleBuilderConverter::ConvertClipPath(
+PassRefPtr<ClipPathOperation> StyleBuilderConverter::ConvertClipPath(
     StyleResolverState& state,
     const CSSValue& value) {
   if (value.IsBasicShapeValue())
@@ -255,9 +255,9 @@ FontDescription::FamilyDescription StyleBuilderConverter::ConvertFontFamily(
       &state.GetDocument());
 }
 
-RefPtr<FontFeatureSettings> StyleBuilderConverter::ConvertFontFeatureSettings(
-    StyleResolverState& state,
-    const CSSValue& value) {
+PassRefPtr<FontFeatureSettings>
+StyleBuilderConverter::ConvertFontFeatureSettings(StyleResolverState& state,
+                                                  const CSSValue& value) {
   if (value.IsIdentifierValue() &&
       ToCSSIdentifierValue(value).GetValueID() == CSSValueNormal)
     return FontBuilder::InitialFeatureSettings();
@@ -272,7 +272,7 @@ RefPtr<FontFeatureSettings> StyleBuilderConverter::ConvertFontFeatureSettings(
   return settings;
 }
 
-RefPtr<FontVariationSettings>
+PassRefPtr<FontVariationSettings>
 StyleBuilderConverter::ConvertFontVariationSettings(StyleResolverState& state,
                                                     const CSSValue& value) {
   if (value.IsIdentifierValue() &&
@@ -1081,8 +1081,9 @@ Length StyleBuilderConverter::ConvertQuirkyLength(StyleResolverState& state,
   return length;
 }
 
-RefPtr<QuotesData> StyleBuilderConverter::ConvertQuotes(StyleResolverState&,
-                                                        const CSSValue& value) {
+PassRefPtr<QuotesData> StyleBuilderConverter::ConvertQuotes(
+    StyleResolverState&,
+    const CSSValue& value) {
   if (value.IsValueList()) {
     const CSSValueList& list = ToCSSValueList(value);
     RefPtr<QuotesData> quotes = QuotesData::Create();
@@ -1153,12 +1154,12 @@ ShadowData StyleBuilderConverter::ConvertShadow(
   return ShadowData(FloatPoint(x, y), blur, spread, shadow_style, color);
 }
 
-RefPtr<ShadowList> StyleBuilderConverter::ConvertShadowList(
+PassRefPtr<ShadowList> StyleBuilderConverter::ConvertShadowList(
     StyleResolverState& state,
     const CSSValue& value) {
   if (value.IsIdentifierValue()) {
     DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueNone);
-    return RefPtr<ShadowList>();
+    return PassRefPtr<ShadowList>();
   }
 
   ShadowDataVector shadows;
@@ -1210,7 +1211,7 @@ float StyleBuilderConverter::ConvertSpacing(StyleResolverState& state,
       state.CssToLengthConversionData());
 }
 
-RefPtr<SVGDashArray> StyleBuilderConverter::ConvertStrokeDasharray(
+PassRefPtr<SVGDashArray> StyleBuilderConverter::ConvertStrokeDasharray(
     StyleResolverState& state,
     const CSSValue& value) {
   if (!value.IsValueList())
@@ -1338,7 +1339,7 @@ ScrollSnapAlign StyleBuilderConverter::ConvertSnapAlign(StyleResolverState&,
   return snapAlign;
 }
 
-RefPtr<TranslateTransformOperation> StyleBuilderConverter::ConvertTranslate(
+PassRefPtr<TranslateTransformOperation> StyleBuilderConverter::ConvertTranslate(
     StyleResolverState& state,
     const CSSValue& value) {
   if (value.IsIdentifierValue()) {
@@ -1381,7 +1382,7 @@ Rotation StyleBuilderConverter::ConvertRotation(const CSSValue& value) {
   return Rotation(FloatPoint3D(x, y, z), angle);
 }
 
-RefPtr<RotateTransformOperation> StyleBuilderConverter::ConvertRotate(
+PassRefPtr<RotateTransformOperation> StyleBuilderConverter::ConvertRotate(
     StyleResolverState& state,
     const CSSValue& value) {
   if (value.IsIdentifierValue()) {
@@ -1393,7 +1394,7 @@ RefPtr<RotateTransformOperation> StyleBuilderConverter::ConvertRotate(
                                           TransformOperation::kRotate3D);
 }
 
-RefPtr<ScaleTransformOperation> StyleBuilderConverter::ConvertScale(
+PassRefPtr<ScaleTransformOperation> StyleBuilderConverter::ConvertScale(
     StyleResolverState& state,
     const CSSValue& value) {
   if (value.IsIdentifierValue()) {
@@ -1424,7 +1425,7 @@ RespectImageOrientationEnum StyleBuilderConverter::ConvertImageOrientation(
              : kDoNotRespectImageOrientation;
 }
 
-RefPtr<StylePath> StyleBuilderConverter::ConvertPathOrNone(
+PassRefPtr<StylePath> StyleBuilderConverter::ConvertPathOrNone(
     StyleResolverState& state,
     const CSSValue& value) {
   if (value.IsPathValue())
@@ -1433,7 +1434,7 @@ RefPtr<StylePath> StyleBuilderConverter::ConvertPathOrNone(
   return nullptr;
 }
 
-RefPtr<BasicShape> StyleBuilderConverter::ConvertOffsetPath(
+PassRefPtr<BasicShape> StyleBuilderConverter::ConvertOffsetPath(
     StyleResolverState& state,
     const CSSValue& value) {
   if (value.IsRayValue())

@@ -21,7 +21,7 @@ StylePath::StylePath(std::unique_ptr<SVGPathByteStream> path_byte_stream)
 
 StylePath::~StylePath() {}
 
-RefPtr<StylePath> StylePath::Create(
+PassRefPtr<StylePath> StylePath::Create(
     std::unique_ptr<SVGPathByteStream> path_byte_stream) {
   return AdoptRef(new StylePath(std::move(path_byte_stream)));
 }
@@ -66,7 +66,7 @@ void StylePath::GetPath(Path&, const FloatRect&) {
   NOTREACHED();
 }
 
-RefPtr<BasicShape> StylePath::Blend(const BasicShape*, double) const {
+PassRefPtr<BasicShape> StylePath::Blend(const BasicShape*, double) const {
   // TODO(ericwilligers): Implement animation for offset-path.
   NOTREACHED();
   return nullptr;

@@ -52,7 +52,7 @@ FloatPoint LayoutSVGResourceLinearGradient::EndPoint(
                                         *attributes.X2(), *attributes.Y2());
 }
 
-RefPtr<Gradient> LayoutSVGResourceLinearGradient::BuildGradient() const {
+PassRefPtr<Gradient> LayoutSVGResourceLinearGradient::BuildGradient() const {
   const LinearGradientAttributes& attributes = this->Attributes();
   RefPtr<Gradient> gradient = Gradient::CreateLinear(
       StartPoint(attributes), EndPoint(attributes),

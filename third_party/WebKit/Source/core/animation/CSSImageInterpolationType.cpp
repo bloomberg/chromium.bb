@@ -18,8 +18,8 @@ class CSSImageNonInterpolableValue : public NonInterpolableValue {
  public:
   ~CSSImageNonInterpolableValue() final {}
 
-  static RefPtr<CSSImageNonInterpolableValue> Create(CSSValue* start,
-                                                     CSSValue* end) {
+  static PassRefPtr<CSSImageNonInterpolableValue> Create(CSSValue* start,
+                                                         CSSValue* end) {
     return AdoptRef(new CSSImageNonInterpolableValue(start, end));
   }
 
@@ -29,9 +29,9 @@ class CSSImageNonInterpolableValue : public NonInterpolableValue {
            DataEquivalent(end_, other.end_);
   }
 
-  static RefPtr<CSSImageNonInterpolableValue> Merge(
-      RefPtr<NonInterpolableValue> start,
-      RefPtr<NonInterpolableValue> end);
+  static PassRefPtr<CSSImageNonInterpolableValue> Merge(
+      PassRefPtr<NonInterpolableValue> start,
+      PassRefPtr<NonInterpolableValue> end);
 
   CSSValue* Crossfade(double progress) const {
     if (is_single_ || progress <= 0)
@@ -61,9 +61,9 @@ class CSSImageNonInterpolableValue : public NonInterpolableValue {
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSImageNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSImageNonInterpolableValue);
 
-RefPtr<CSSImageNonInterpolableValue> CSSImageNonInterpolableValue::Merge(
-    RefPtr<NonInterpolableValue> start,
-    RefPtr<NonInterpolableValue> end) {
+PassRefPtr<CSSImageNonInterpolableValue> CSSImageNonInterpolableValue::Merge(
+    PassRefPtr<NonInterpolableValue> start,
+    PassRefPtr<NonInterpolableValue> end) {
   const CSSImageNonInterpolableValue& start_image_pair =
       ToCSSImageNonInterpolableValue(*start);
   const CSSImageNonInterpolableValue& end_image_pair =

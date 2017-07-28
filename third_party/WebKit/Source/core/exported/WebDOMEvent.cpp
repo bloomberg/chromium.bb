@@ -31,7 +31,7 @@
 #include "public/web/WebDOMEvent.h"
 
 #include "core/events/Event.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

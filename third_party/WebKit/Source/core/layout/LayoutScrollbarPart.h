@@ -76,7 +76,7 @@ class LayoutScrollbarPart final : public LayoutBlock {
   LayoutObject* ScrollbarStyleSource() const;
 
   // Must call setStyleWithWritingModeOfParent() instead.
-  void SetStyle(RefPtr<ComputedStyle>) = delete;
+  void SetStyle(PassRefPtr<ComputedStyle>) = delete;
 
   // Expose for LayoutScrollbar and PaintInvalidationCapableScrollableArea for
   // paint invalidation.

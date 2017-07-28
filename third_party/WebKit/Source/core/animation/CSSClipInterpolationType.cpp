@@ -82,7 +82,7 @@ class CSSClipNonInterpolableValue : public NonInterpolableValue {
  public:
   ~CSSClipNonInterpolableValue() final {}
 
-  static RefPtr<CSSClipNonInterpolableValue> Create(
+  static PassRefPtr<CSSClipNonInterpolableValue> Create(
       const ClipAutos& clip_autos) {
     return AdoptRef(new CSSClipNonInterpolableValue(clip_autos));
   }

@@ -20,8 +20,9 @@ class AnimationAnimationInputHelpersTest : public ::testing::Test {
                                                                  *document);
   }
 
-  RefPtr<TimingFunction> ParseTimingFunction(const String& string,
-                                             ExceptionState& exception_state) {
+  PassRefPtr<TimingFunction> ParseTimingFunction(
+      const String& string,
+      ExceptionState& exception_state) {
     return AnimationInputHelpers::ParseTimingFunction(string, document,
                                                       exception_state);
   }

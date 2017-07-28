@@ -285,7 +285,7 @@ static HistoryCommitType LoadTypeToCommitType(FrameLoadType type) {
 void DocumentLoader::UpdateForSameDocumentNavigation(
     const KURL& new_url,
     SameDocumentNavigationSource same_document_navigation_source,
-    RefPtr<SerializedScriptValue> data,
+    PassRefPtr<SerializedScriptValue> data,
     HistoryScrollRestorationType scroll_restoration_type,
     FrameLoadType type,
     Document* initiating_document) {

@@ -48,7 +48,7 @@ class LayoutSVGResourceRadialGradient final : public LayoutSVGResourceGradient {
     return Attributes().GradientTransform();
   }
   bool CollectGradientAttributes() override;
-  RefPtr<Gradient> BuildGradient() const override;
+  PassRefPtr<Gradient> BuildGradient() const override;
 
   FloatPoint CenterPoint(const RadialGradientAttributes&) const;
   FloatPoint FocalPoint(const RadialGradientAttributes&) const;

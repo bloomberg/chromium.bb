@@ -24,7 +24,7 @@ void SetV8ObjectPropertyAsNumber(v8::Isolate*,
 
 class SampleTestInterpolation : public LegacyStyleInterpolation {
  public:
-  static RefPtr<LegacyStyleInterpolation> Create(
+  static PassRefPtr<LegacyStyleInterpolation> Create(
       std::unique_ptr<InterpolableValue> start,
       std::unique_ptr<InterpolableValue> end) {
     return AdoptRef(

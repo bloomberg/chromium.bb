@@ -27,24 +27,24 @@ PropertyHandleSet AnimatableValueKeyframe::Properties() const {
   return properties;
 }
 
-RefPtr<Keyframe> AnimatableValueKeyframe::Clone() const {
+PassRefPtr<Keyframe> AnimatableValueKeyframe::Clone() const {
   return AdoptRef(new AnimatableValueKeyframe(*this));
 }
 
-RefPtr<Keyframe::PropertySpecificKeyframe>
+PassRefPtr<Keyframe::PropertySpecificKeyframe>
 AnimatableValueKeyframe::CreatePropertySpecificKeyframe(
     const PropertyHandle& property) const {
   return PropertySpecificKeyframe::Create(
       Offset(), &Easing(), PropertyValue(property.CssProperty()), Composite());
 }
 
-RefPtr<Keyframe::PropertySpecificKeyframe>
+PassRefPtr<Keyframe::PropertySpecificKeyframe>
 AnimatableValueKeyframe::PropertySpecificKeyframe::CloneWithOffset(
     double offset) const {
   return Create(offset, easing_, value_, composite_);
 }
 
-RefPtr<Interpolation>
+PassRefPtr<Interpolation>
 AnimatableValueKeyframe::PropertySpecificKeyframe::CreateInterpolation(
     const PropertyHandle& property,
     const Keyframe::PropertySpecificKeyframe& end) const {

@@ -216,7 +216,7 @@ bool RemoteFontFaceSource::IsLowPriorityLoadingAllowedForRemoteFont() const {
   return is_intervention_triggered_ && IsInterventionV2Enabled();
 }
 
-RefPtr<SimpleFontData> RemoteFontFaceSource::CreateFontData(
+PassRefPtr<SimpleFontData> RemoteFontFaceSource::CreateFontData(
     const FontDescription& font_description) {
   if (period_ == kFailurePeriod || !IsValid())
     return nullptr;
@@ -235,7 +235,7 @@ RefPtr<SimpleFontData> RemoteFontFaceSource::CreateFontData(
       CustomFontData::Create());
 }
 
-RefPtr<SimpleFontData> RemoteFontFaceSource::CreateLoadingFallbackFontData(
+PassRefPtr<SimpleFontData> RemoteFontFaceSource::CreateLoadingFallbackFontData(
     const FontDescription& font_description) {
   // This temporary font is not retained and should not be returned.
   FontCachePurgePreventer font_cache_purge_preventer;

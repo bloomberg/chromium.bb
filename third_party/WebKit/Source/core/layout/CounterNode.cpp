@@ -91,9 +91,9 @@ CounterNode::~CounterNode() {
   ResetLayoutObjects();
 }
 
-RefPtr<CounterNode> CounterNode::Create(LayoutObject& owner,
-                                        bool has_reset_type,
-                                        int value) {
+PassRefPtr<CounterNode> CounterNode::Create(LayoutObject& owner,
+                                            bool has_reset_type,
+                                            int value) {
   return AdoptRef(new CounterNode(owner, has_reset_type, value));
 }
 

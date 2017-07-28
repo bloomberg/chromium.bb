@@ -34,7 +34,7 @@ class CSSTimingData {
 
   static double InitialDelay() { return 0; }
   static double InitialDuration() { return 0; }
-  static RefPtr<TimingFunction> InitialTimingFunction() {
+  static PassRefPtr<TimingFunction> InitialTimingFunction() {
     return CubicBezierTimingFunction::Preset(
         CubicBezierTimingFunction::EaseType::EASE);
   }

@@ -39,6 +39,7 @@
 #include "core/editing/EphemeralRange.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

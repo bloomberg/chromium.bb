@@ -47,7 +47,7 @@ class BasicShapePropertyFunctions {
 
   static void SetBasicShape(CSSPropertyID property,
                             ComputedStyle& style,
-                            RefPtr<BasicShape> shape) {
+                            PassRefPtr<BasicShape> shape) {
     switch (property) {
       case CSSPropertyShapeOutside:
         style.SetShapeOutside(

@@ -86,7 +86,7 @@ const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
 
 void DedicatedWorkerGlobalScope::postMessage(
     ScriptState* script_state,
-    RefPtr<SerializedScriptValue> message,
+    PassRefPtr<SerializedScriptValue> message,
     const MessagePortArray& ports,
     ExceptionState& exception_state) {
   // Disentangle the port in preparation for sending it to the remote context.

@@ -36,7 +36,7 @@ class LayoutObject;
 class FEImage final : public FilterEffect {
  public:
   static FEImage* CreateWithImage(Filter*,
-                                  RefPtr<Image>,
+                                  PassRefPtr<Image>,
                                   SVGPreserveAspectRatio*);
   static FEImage* CreateWithIRIReference(Filter*,
                                          TreeScope&,
@@ -53,7 +53,7 @@ class FEImage final : public FilterEffect {
 
  private:
   ~FEImage() override {}
-  FEImage(Filter*, RefPtr<Image>, SVGPreserveAspectRatio*);
+  FEImage(Filter*, PassRefPtr<Image>, SVGPreserveAspectRatio*);
   FEImage(Filter*, TreeScope&, const String&, SVGPreserveAspectRatio*);
   LayoutObject* ReferencedLayoutObject() const;
 

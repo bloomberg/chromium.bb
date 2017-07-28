@@ -60,12 +60,12 @@ class CORE_EXPORT History final : public GarbageCollectedFinalized<History>,
   void forward(ScriptState*);
   void go(ScriptState*, int delta);
 
-  void pushState(RefPtr<SerializedScriptValue>,
+  void pushState(PassRefPtr<SerializedScriptValue>,
                  const String& title,
                  const String& url,
                  ExceptionState&);
 
-  void replaceState(RefPtr<SerializedScriptValue> data,
+  void replaceState(PassRefPtr<SerializedScriptValue> data,
                     const String& title,
                     const String& url,
                     ExceptionState& exception_state) {
@@ -94,7 +94,7 @@ class CORE_EXPORT History final : public GarbageCollectedFinalized<History>,
 
   KURL UrlForState(const String& url);
 
-  void StateObjectAdded(RefPtr<SerializedScriptValue>,
+  void StateObjectAdded(PassRefPtr<SerializedScriptValue>,
                         const String& title,
                         const String& url,
                         HistoryScrollRestorationType,

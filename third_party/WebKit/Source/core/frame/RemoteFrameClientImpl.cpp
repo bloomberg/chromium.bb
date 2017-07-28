@@ -131,9 +131,10 @@ unsigned RemoteFrameClientImpl::BackForwardLength() {
   return 2;
 }
 
-void RemoteFrameClientImpl::ForwardPostMessage(MessageEvent* event,
-                                               RefPtr<SecurityOrigin> target,
-                                               LocalFrame* source_frame) const {
+void RemoteFrameClientImpl::ForwardPostMessage(
+    MessageEvent* event,
+    PassRefPtr<SecurityOrigin> target,
+    LocalFrame* source_frame) const {
   if (web_frame_->Client()) {
     web_frame_->Client()->ForwardPostMessage(
         WebLocalFrameBase::FromFrame(source_frame), web_frame_,

@@ -227,7 +227,7 @@ class XMLHttpRequest::BlobLoader final
       public FileReaderLoaderClient {
  public:
   static BlobLoader* Create(XMLHttpRequest* xhr,
-                            RefPtr<BlobDataHandle> handle) {
+                            PassRefPtr<BlobDataHandle> handle) {
     return new BlobLoader(xhr, std::move(handle));
   }
 
@@ -247,7 +247,7 @@ class XMLHttpRequest::BlobLoader final
   DEFINE_INLINE_TRACE() { visitor->Trace(xhr_); }
 
  private:
-  BlobLoader(XMLHttpRequest* xhr, RefPtr<BlobDataHandle> handle)
+  BlobLoader(XMLHttpRequest* xhr, PassRefPtr<BlobDataHandle> handle)
       : xhr_(xhr),
         loader_(
             FileReaderLoader::Create(FileReaderLoader::kReadByClient, this)) {
@@ -282,7 +282,7 @@ XMLHttpRequest* XMLHttpRequest::Create(ExecutionContext* context) {
 XMLHttpRequest::XMLHttpRequest(
     ExecutionContext* context,
     bool is_isolated_world,
-    RefPtr<SecurityOrigin> isolated_world_security_origin)
+    PassRefPtr<SecurityOrigin> isolated_world_security_origin)
     : SuspendableObject(context),
       timeout_milliseconds_(0),
       response_blob_(this, nullptr),
@@ -966,7 +966,7 @@ void XMLHttpRequest::SendBytesData(const void* data,
 }
 
 void XMLHttpRequest::SendForInspectorXHRReplay(
-    RefPtr<EncodedFormData> form_data,
+    PassRefPtr<EncodedFormData> form_data,
     ExceptionState& exception_state) {
   CreateRequest(form_data ? form_data->DeepCopy() : nullptr, exception_state);
   exception_code_ = exception_state.Code();
@@ -992,7 +992,7 @@ void XMLHttpRequest::ThrowForLoadFailureIfNeeded(
   exception_state.ThrowDOMException(exception_code_, message);
 }
 
-void XMLHttpRequest::CreateRequest(RefPtr<EncodedFormData> http_body,
+void XMLHttpRequest::CreateRequest(PassRefPtr<EncodedFormData> http_body,
                                    ExceptionState& exception_state) {
   // Only GET request is supported for blob URL.
   if (url_.ProtocolIs("blob") && method_ != HTTPNames::GET) {
@@ -1647,7 +1647,7 @@ void XMLHttpRequest::DidFailLoadingFromBlob() {
   HandleNetworkError();
 }
 
-RefPtr<BlobDataHandle> XMLHttpRequest::CreateBlobDataHandleFromResponse() {
+PassRefPtr<BlobDataHandle> XMLHttpRequest::CreateBlobDataHandleFromResponse() {
   DCHECK(downloading_to_file_);
   std::unique_ptr<BlobData> blob_data = BlobData::Create();
   String file_path = response_.DownloadedFilePath();

@@ -28,6 +28,7 @@
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {

@@ -298,7 +298,7 @@ LayoutUnit LayoutTextControlSingleLine::ComputeControlLogicalHeight(
   return line_height + non_content_height;
 }
 
-RefPtr<ComputedStyle> LayoutTextControlSingleLine::CreateInnerEditorStyle(
+PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::CreateInnerEditorStyle(
     const ComputedStyle& start_style) const {
   RefPtr<ComputedStyle> text_block_style = ComputedStyle::Create();
   text_block_style->InheritFrom(start_style);

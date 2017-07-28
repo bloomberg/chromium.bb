@@ -118,7 +118,7 @@ const int kMaxGlobalGPUMemoryUsage =
 // misinterpreted as a user-input value
 const int kUndefinedQualityValue = -1.0;
 
-RefPtr<Image> CreateTransparentImage(const IntSize& size) {
+PassRefPtr<Image> CreateTransparentImage(const IntSize& size) {
   if (!ImageBuffer::CanCreateImageBuffer(size))
     return nullptr;
   sk_sp<SkSurface> surface =
@@ -1138,9 +1138,10 @@ void HTMLCanvasElement::EnsureUnacceleratedImageBuffer() {
   did_fail_to_create_image_buffer_ = !image_buffer_;
 }
 
-RefPtr<Image> HTMLCanvasElement::CopiedImage(SourceDrawingBuffer source_buffer,
-                                             AccelerationHint hint,
-                                             SnapshotReason snapshot_reason) {
+PassRefPtr<Image> HTMLCanvasElement::CopiedImage(
+    SourceDrawingBuffer source_buffer,
+    AccelerationHint hint,
+    SnapshotReason snapshot_reason) {
   if (!IsPaintable())
     return nullptr;
   if (!context_)
@@ -1237,7 +1238,7 @@ void HTMLCanvasElement::WillDrawImageTo2DContext(CanvasImageSource* source) {
   }
 }
 
-RefPtr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
+PassRefPtr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint hint,
     SnapshotReason reason,

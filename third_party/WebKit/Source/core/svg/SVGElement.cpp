@@ -1070,7 +1070,7 @@ void SVGElement::SynchronizeAnimatedSVGAttribute(
   }
 }
 
-RefPtr<ComputedStyle> SVGElement::CustomStyleForLayoutObject() {
+PassRefPtr<ComputedStyle> SVGElement::CustomStyleForLayoutObject() {
   if (!CorrespondingElement())
     return GetDocument().EnsureStyleResolver().StyleForElement(this);
 

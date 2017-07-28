@@ -39,7 +39,7 @@
 #include "core/html/forms/FormController.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

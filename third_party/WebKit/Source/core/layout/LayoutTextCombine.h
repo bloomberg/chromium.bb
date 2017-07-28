@@ -31,7 +31,7 @@ namespace blink {
 // for the layout, while its inline box is in horizontal flow.
 class LayoutTextCombine final : public LayoutText {
  public:
-  LayoutTextCombine(Node*, RefPtr<StringImpl>);
+  LayoutTextCombine(Node*, PassRefPtr<StringImpl>);
 
   void UpdateFont();
   bool IsCombined() const { return is_combined_; }

@@ -7,7 +7,7 @@
 
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

@@ -53,12 +53,12 @@ InterpolationValue CSSPathInterpolationType::MaybeConvertInitial(
 class InheritedPathChecker : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedPathChecker> Create(
-      RefPtr<StylePath> style_path) {
+      PassRefPtr<StylePath> style_path) {
     return WTF::WrapUnique(new InheritedPathChecker(std::move(style_path)));
   }
 
  private:
-  InheritedPathChecker(RefPtr<StylePath> style_path)
+  InheritedPathChecker(PassRefPtr<StylePath> style_path)
       : style_path_(std::move(style_path)) {}
 
   bool IsValid(const StyleResolverState& state,

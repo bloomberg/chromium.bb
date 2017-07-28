@@ -80,7 +80,7 @@ v8::Local<v8::Object> DOMArrayBuffer::Wrap(
   return AssociateWithWrapper(isolate, wrapper_type_info, wrapper);
 }
 
-DOMArrayBuffer* DOMArrayBuffer::Create(RefPtr<SharedBuffer> shared_buffer) {
+DOMArrayBuffer* DOMArrayBuffer::Create(PassRefPtr<SharedBuffer> shared_buffer) {
   WTF::ArrayBufferContents contents(shared_buffer->size(), 1,
                                     WTF::ArrayBufferContents::kNotShared,
                                     WTF::ArrayBufferContents::kDontInitialize);

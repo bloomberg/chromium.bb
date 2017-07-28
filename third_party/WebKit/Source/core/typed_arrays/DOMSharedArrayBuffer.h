@@ -15,7 +15,7 @@ class CORE_EXPORT DOMSharedArrayBuffer final : public DOMArrayBufferBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMSharedArrayBuffer* Create(RefPtr<WTF::ArrayBuffer> buffer) {
+  static DOMSharedArrayBuffer* Create(PassRefPtr<WTF::ArrayBuffer> buffer) {
     DCHECK(buffer->IsShared());
     return new DOMSharedArrayBuffer(std::move(buffer));
   }
@@ -41,7 +41,7 @@ class CORE_EXPORT DOMSharedArrayBuffer final : public DOMArrayBufferBase {
                              v8::Local<v8::Object> creation_context) override;
 
  private:
-  explicit DOMSharedArrayBuffer(RefPtr<WTF::ArrayBuffer> buffer)
+  explicit DOMSharedArrayBuffer(PassRefPtr<WTF::ArrayBuffer> buffer)
       : DOMArrayBufferBase(std::move(buffer)) {}
 };
 

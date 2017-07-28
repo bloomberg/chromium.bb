@@ -17,13 +17,13 @@ namespace blink {
 class CSSLengthNonInterpolableValue : public NonInterpolableValue {
  public:
   ~CSSLengthNonInterpolableValue() final { NOTREACHED(); }
-  static RefPtr<CSSLengthNonInterpolableValue> Create(bool has_percentage) {
+  static PassRefPtr<CSSLengthNonInterpolableValue> Create(bool has_percentage) {
     DEFINE_STATIC_REF(CSSLengthNonInterpolableValue, singleton,
                       AdoptRef(new CSSLengthNonInterpolableValue()));
     DCHECK(singleton);
     return has_percentage ? singleton : nullptr;
   }
-  static RefPtr<CSSLengthNonInterpolableValue> Merge(
+  static PassRefPtr<CSSLengthNonInterpolableValue> Merge(
       const NonInterpolableValue* a,
       const NonInterpolableValue* b) {
     return Create(HasPercentage(a) || HasPercentage(b));

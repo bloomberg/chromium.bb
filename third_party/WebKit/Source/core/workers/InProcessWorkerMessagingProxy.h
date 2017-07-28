@@ -36,7 +36,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -56,7 +56,7 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
                               const String& user_agent,
                               const String& source_code,
                               const String& referrer_policy);
-  void PostMessageToWorkerGlobalScope(RefPtr<SerializedScriptValue>,
+  void PostMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>,
                                       MessagePortChannelArray);
 
   // Implements ThreadedMessagingProxyBase.
@@ -66,7 +66,7 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
 
   // These methods come from worker context thread via
   // InProcessWorkerObjectProxy and are called on the parent context thread.
-  void PostMessageToWorkerObject(RefPtr<SerializedScriptValue>,
+  void PostMessageToWorkerObject(PassRefPtr<SerializedScriptValue>,
                                  MessagePortChannelArray);
   void DispatchErrorEvent(const String& error_message,
                           std::unique_ptr<SourceLocation>,

@@ -868,7 +868,7 @@ void HTMLImageElement::SetLayoutDisposition(
   }
 }
 
-RefPtr<ComputedStyle> HTMLImageElement::CustomStyleForLayoutObject() {
+PassRefPtr<ComputedStyle> HTMLImageElement::CustomStyleForLayoutObject() {
   switch (layout_disposition_) {
     case LayoutDisposition::kPrimaryContent:  // Fall through.
     case LayoutDisposition::kCollapsed:

@@ -25,7 +25,7 @@ PropertyHandleSet TransitionKeyframe::Properties() const {
   return result;
 }
 
-RefPtr<Keyframe::PropertySpecificKeyframe>
+PassRefPtr<Keyframe::PropertySpecificKeyframe>
 TransitionKeyframe::CreatePropertySpecificKeyframe(
     const PropertyHandle& property) const {
   DCHECK(property == property_);
@@ -33,7 +33,7 @@ TransitionKeyframe::CreatePropertySpecificKeyframe(
                                           value_->Clone(), compositor_value_);
 }
 
-RefPtr<Interpolation>
+PassRefPtr<Interpolation>
 TransitionKeyframe::PropertySpecificKeyframe::CreateInterpolation(
     const PropertyHandle& property,
     const Keyframe::PropertySpecificKeyframe& other_super_class) const {

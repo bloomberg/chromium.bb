@@ -36,8 +36,8 @@ struct IndentMode {
 
 class CSSTextIndentNonInterpolableValue : public NonInterpolableValue {
  public:
-  static RefPtr<CSSTextIndentNonInterpolableValue> Create(
-      RefPtr<NonInterpolableValue> length_non_interpolable_value,
+  static PassRefPtr<CSSTextIndentNonInterpolableValue> Create(
+      PassRefPtr<NonInterpolableValue> length_non_interpolable_value,
       const IndentMode& mode) {
     return AdoptRef(new CSSTextIndentNonInterpolableValue(
         std::move(length_non_interpolable_value), mode));
@@ -55,7 +55,7 @@ class CSSTextIndentNonInterpolableValue : public NonInterpolableValue {
 
  private:
   CSSTextIndentNonInterpolableValue(
-      RefPtr<NonInterpolableValue> length_non_interpolable_value,
+      PassRefPtr<NonInterpolableValue> length_non_interpolable_value,
       const IndentMode& mode)
       : length_non_interpolable_value_(
             std::move(length_non_interpolable_value)),

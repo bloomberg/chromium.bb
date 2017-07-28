@@ -8,7 +8,7 @@
 #include <memory>
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "platform/wtf/Deque.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/Vector.h"
@@ -25,7 +25,7 @@ namespace blink {
 // thread kicks a consumer task on Blink main thread.
 class TokenizedChunkQueue : public ThreadSafeRefCounted<TokenizedChunkQueue> {
  public:
-  static RefPtr<TokenizedChunkQueue> Create() {
+  static PassRefPtr<TokenizedChunkQueue> Create() {
     return AdoptRef(new TokenizedChunkQueue);
   }
 

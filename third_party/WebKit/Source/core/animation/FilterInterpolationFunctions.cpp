@@ -18,9 +18,9 @@ namespace blink {
 
 class FilterNonInterpolableValue : public NonInterpolableValue {
  public:
-  static RefPtr<FilterNonInterpolableValue> Create(
+  static PassRefPtr<FilterNonInterpolableValue> Create(
       FilterOperation::OperationType type,
-      RefPtr<NonInterpolableValue> type_non_interpolable_value) {
+      PassRefPtr<NonInterpolableValue> type_non_interpolable_value) {
     return AdoptRef(new FilterNonInterpolableValue(
         type, std::move(type_non_interpolable_value)));
   }
@@ -35,7 +35,7 @@ class FilterNonInterpolableValue : public NonInterpolableValue {
  private:
   FilterNonInterpolableValue(
       FilterOperation::OperationType type,
-      RefPtr<NonInterpolableValue> type_non_interpolable_value)
+      PassRefPtr<NonInterpolableValue> type_non_interpolable_value)
       : type_(type),
         type_non_interpolable_value_(std::move(type_non_interpolable_value)) {}
 

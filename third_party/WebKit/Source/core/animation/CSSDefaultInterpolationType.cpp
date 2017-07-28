@@ -14,7 +14,7 @@ class CSSDefaultNonInterpolableValue : public NonInterpolableValue {
  public:
   ~CSSDefaultNonInterpolableValue() final {}
 
-  static RefPtr<CSSDefaultNonInterpolableValue> Create(
+  static PassRefPtr<CSSDefaultNonInterpolableValue> Create(
       const CSSValue* css_value) {
     return AdoptRef(new CSSDefaultNonInterpolableValue(css_value));
   }

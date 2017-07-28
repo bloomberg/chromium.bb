@@ -32,7 +32,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/html/HTMLOptionElement.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "public/platform/WebString.h"
 
 namespace blink {

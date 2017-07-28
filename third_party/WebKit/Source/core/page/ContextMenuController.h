@@ -31,6 +31,7 @@
 #include "core/layout/HitTestResult.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {

@@ -45,7 +45,9 @@ class LayoutCounter;
 
 class CounterNode : public RefCounted<CounterNode> {
  public:
-  static RefPtr<CounterNode> Create(LayoutObject&, bool is_reset, int value);
+  static PassRefPtr<CounterNode> Create(LayoutObject&,
+                                        bool is_reset,
+                                        int value);
   ~CounterNode();
   bool ActsAsReset() const { return has_reset_type_ || !parent_; }
   bool HasResetType() const { return has_reset_type_; }

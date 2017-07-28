@@ -98,7 +98,7 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudo_id)
   }
 }
 
-RefPtr<ComputedStyle> PseudoElement::CustomStyleForLayoutObject() {
+PassRefPtr<ComputedStyle> PseudoElement::CustomStyleForLayoutObject() {
   return ParentOrShadowHostElement()->PseudoStyle(
       PseudoStyleRequest(pseudo_id_));
 }

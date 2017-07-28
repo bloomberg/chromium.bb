@@ -31,8 +31,8 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/transforms/AffineTransform.h"
 #include "platform/transforms/TransformationMatrix.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
@@ -44,13 +44,13 @@ namespace blink {
 // to be taken when this is done.
 class HitTestingTransformState : public RefCounted<HitTestingTransformState> {
  public:
-  static RefPtr<HitTestingTransformState> Create(const FloatPoint& p,
-                                                 const FloatQuad& quad,
-                                                 const FloatQuad& area) {
+  static PassRefPtr<HitTestingTransformState> Create(const FloatPoint& p,
+                                                     const FloatQuad& quad,
+                                                     const FloatQuad& area) {
     return AdoptRef(new HitTestingTransformState(p, quad, area));
   }
 
-  static RefPtr<HitTestingTransformState> Create(
+  static PassRefPtr<HitTestingTransformState> Create(
       const HitTestingTransformState& other) {
     return AdoptRef(new HitTestingTransformState(other));
   }

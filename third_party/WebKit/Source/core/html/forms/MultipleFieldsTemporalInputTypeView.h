@@ -96,8 +96,8 @@ class MultipleFieldsTemporalInputTypeView final
   // InputTypeView functions
   void Blur() final;
   void ClosePopupView() override;
-  RefPtr<ComputedStyle> CustomStyleForLayoutObject(
-      RefPtr<ComputedStyle>) override;
+  PassRefPtr<ComputedStyle> CustomStyleForLayoutObject(
+      PassRefPtr<ComputedStyle>) override;
   void CreateShadowSubtree() final;
   void DestroyShadowSubtree() final;
   void DisabledAttributeChanged() final;

@@ -31,6 +31,7 @@
 #include "core/dom/SimulatedClickOptions.h"
 #include "core/events/EventDispatchResult.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {

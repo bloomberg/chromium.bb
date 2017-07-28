@@ -14,7 +14,7 @@ class CSSFontVariationSettingsNonInterpolableValue
  public:
   ~CSSFontVariationSettingsNonInterpolableValue() final {}
 
-  static RefPtr<CSSFontVariationSettingsNonInterpolableValue> Create(
+  static PassRefPtr<CSSFontVariationSettingsNonInterpolableValue> Create(
       Vector<AtomicString> tags) {
     return AdoptRef(
         new CSSFontVariationSettingsNonInterpolableValue(std::move(tags)));

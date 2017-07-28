@@ -704,7 +704,8 @@ class CORE_EXPORT LocalFrameView final
   void BeginLifecycleUpdates();
 
   // Paint properties for SPv2 Only.
-  void SetPreTranslation(RefPtr<TransformPaintPropertyNode> pre_translation) {
+  void SetPreTranslation(
+      PassRefPtr<TransformPaintPropertyNode> pre_translation) {
     pre_translation_ = std::move(pre_translation);
   }
   TransformPaintPropertyNode* PreTranslation() const {
@@ -712,14 +713,14 @@ class CORE_EXPORT LocalFrameView final
   }
 
   void SetScrollTranslation(
-      RefPtr<TransformPaintPropertyNode> scroll_translation) {
+      PassRefPtr<TransformPaintPropertyNode> scroll_translation) {
     scroll_translation_ = std::move(scroll_translation);
   }
   TransformPaintPropertyNode* ScrollTranslation() const {
     return scroll_translation_.Get();
   }
 
-  void SetContentClip(RefPtr<ClipPaintPropertyNode> content_clip) {
+  void SetContentClip(PassRefPtr<ClipPaintPropertyNode> content_clip) {
     content_clip_ = std::move(content_clip);
   }
   ClipPaintPropertyNode* ContentClip() const { return content_clip_.Get(); }

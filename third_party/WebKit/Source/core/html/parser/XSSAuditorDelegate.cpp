@@ -80,7 +80,7 @@ DEFINE_TRACE(XSSAuditorDelegate) {
   visitor->Trace(document_);
 }
 
-RefPtr<EncodedFormData> XSSAuditorDelegate::GenerateViolationReport(
+PassRefPtr<EncodedFormData> XSSAuditorDelegate::GenerateViolationReport(
     const XSSInfo& xss_info) {
   DCHECK(IsMainThread());
 

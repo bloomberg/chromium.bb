@@ -34,7 +34,7 @@
 
 namespace blink {
 
-RefPtr<AnimatableValue> AnimatableFilterOperations::InterpolateTo(
+PassRefPtr<AnimatableValue> AnimatableFilterOperations::InterpolateTo(
     const AnimatableValue* value,
     double fraction) const {
   const AnimatableFilterOperations* target =

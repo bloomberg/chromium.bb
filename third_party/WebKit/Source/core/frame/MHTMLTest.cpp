@@ -148,7 +148,7 @@ class MHTMLTest : public ::testing::Test {
     AddResource("http://www.test.com/ol-dot.png", "image/png", "ol-dot.png");
   }
 
-  static RefPtr<RawData> GenerateMHTMLData(
+  static PassRefPtr<RawData> GenerateMHTMLData(
       const Vector<SerializedResource>& resources,
       MHTMLArchive::EncodingPolicy encoding_policy,
       const String& title,
@@ -176,14 +176,14 @@ class MHTMLTest : public ::testing::Test {
     return mhtml_data;
   }
 
-  RefPtr<RawData> Serialize(const char* title,
-                            const char* mime,
-                            MHTMLArchive::EncodingPolicy encoding_policy) {
+  PassRefPtr<RawData> Serialize(const char* title,
+                                const char* mime,
+                                MHTMLArchive::EncodingPolicy encoding_policy) {
     return GenerateMHTMLData(resources_, encoding_policy, title, mime);
   }
 
  private:
-  RefPtr<SharedBuffer> ReadFile(const char* file_name) {
+  PassRefPtr<SharedBuffer> ReadFile(const char* file_name) {
     String file_path = file_path_ + file_name;
     return testing::ReadFromFile(file_path);
   }

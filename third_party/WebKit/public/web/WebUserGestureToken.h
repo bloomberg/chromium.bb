@@ -56,7 +56,7 @@ class WebUserGestureToken {
   bool IsNull() const { return token_.IsNull(); }
 
 #if BLINK_IMPLEMENTATION
-  explicit WebUserGestureToken(RefPtr<UserGestureToken>);
+  explicit WebUserGestureToken(PassRefPtr<UserGestureToken>);
   operator PassRefPtr<UserGestureToken>() const;
 #endif
 

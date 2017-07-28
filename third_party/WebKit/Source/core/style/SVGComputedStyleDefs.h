@@ -122,8 +122,10 @@ enum EPaintOrder {
 // Inherited/Non-Inherited Style Datastructures
 class StyleFillData : public RefCounted<StyleFillData> {
  public:
-  static RefPtr<StyleFillData> Create() { return AdoptRef(new StyleFillData); }
-  RefPtr<StyleFillData> Copy() const {
+  static PassRefPtr<StyleFillData> Create() {
+    return AdoptRef(new StyleFillData);
+  }
+  PassRefPtr<StyleFillData> Copy() const {
     return AdoptRef(new StyleFillData(*this));
   }
 
@@ -168,11 +170,11 @@ class UnzoomedLength {
 
 class CORE_EXPORT StyleStrokeData : public RefCounted<StyleStrokeData> {
  public:
-  static RefPtr<StyleStrokeData> Create() {
+  static PassRefPtr<StyleStrokeData> Create() {
     return AdoptRef(new StyleStrokeData);
   }
 
-  RefPtr<StyleStrokeData> Copy() const {
+  PassRefPtr<StyleStrokeData> Copy() const {
     return AdoptRef(new StyleStrokeData(*this));
   }
 
@@ -202,8 +204,10 @@ class CORE_EXPORT StyleStrokeData : public RefCounted<StyleStrokeData> {
 
 class StyleStopData : public RefCounted<StyleStopData> {
  public:
-  static RefPtr<StyleStopData> Create() { return AdoptRef(new StyleStopData); }
-  RefPtr<StyleStopData> Copy() const {
+  static PassRefPtr<StyleStopData> Create() {
+    return AdoptRef(new StyleStopData);
+  }
+  PassRefPtr<StyleStopData> Copy() const {
     return AdoptRef(new StyleStopData(*this));
   }
 
@@ -223,8 +227,10 @@ class StyleStopData : public RefCounted<StyleStopData> {
 // Note: the rule for this class is, *no inheritance* of these props
 class CORE_EXPORT StyleMiscData : public RefCounted<StyleMiscData> {
  public:
-  static RefPtr<StyleMiscData> Create() { return AdoptRef(new StyleMiscData); }
-  RefPtr<StyleMiscData> Copy() const {
+  static PassRefPtr<StyleMiscData> Create() {
+    return AdoptRef(new StyleMiscData);
+  }
+  PassRefPtr<StyleMiscData> Copy() const {
     return AdoptRef(new StyleMiscData(*this));
   }
 
@@ -247,10 +253,10 @@ class CORE_EXPORT StyleMiscData : public RefCounted<StyleMiscData> {
 // Non-inherited resources
 class StyleResourceData : public RefCounted<StyleResourceData> {
  public:
-  static RefPtr<StyleResourceData> Create() {
+  static PassRefPtr<StyleResourceData> Create() {
     return AdoptRef(new StyleResourceData);
   }
-  RefPtr<StyleResourceData> Copy() const {
+  PassRefPtr<StyleResourceData> Copy() const {
     return AdoptRef(new StyleResourceData(*this));
   }
 
@@ -270,10 +276,10 @@ class StyleResourceData : public RefCounted<StyleResourceData> {
 class StyleInheritedResourceData
     : public RefCounted<StyleInheritedResourceData> {
  public:
-  static RefPtr<StyleInheritedResourceData> Create() {
+  static PassRefPtr<StyleInheritedResourceData> Create() {
     return AdoptRef(new StyleInheritedResourceData);
   }
-  RefPtr<StyleInheritedResourceData> Copy() const {
+  PassRefPtr<StyleInheritedResourceData> Copy() const {
     return AdoptRef(new StyleInheritedResourceData(*this));
   }
 
@@ -294,10 +300,10 @@ class StyleInheritedResourceData
 // Geometry properties
 class StyleGeometryData : public RefCounted<StyleGeometryData> {
  public:
-  static RefPtr<StyleGeometryData> Create() {
+  static PassRefPtr<StyleGeometryData> Create() {
     return AdoptRef(new StyleGeometryData);
   }
-  RefPtr<StyleGeometryData> Copy() const;
+  PassRefPtr<StyleGeometryData> Copy() const;
   bool operator==(const StyleGeometryData&) const;
   bool operator!=(const StyleGeometryData& other) const {
     return !(*this == other);

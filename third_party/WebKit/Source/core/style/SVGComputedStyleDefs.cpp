@@ -176,7 +176,7 @@ inline StyleGeometryData::StyleGeometryData(const StyleGeometryData& other)
       rx(other.rx),
       ry(other.ry) {}
 
-RefPtr<StyleGeometryData> StyleGeometryData::Copy() const {
+PassRefPtr<StyleGeometryData> StyleGeometryData::Copy() const {
   return AdoptRef(new StyleGeometryData(*this));
 }
 

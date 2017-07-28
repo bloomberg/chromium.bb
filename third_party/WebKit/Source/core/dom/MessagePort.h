@@ -35,6 +35,7 @@
 #include "core/events/EventTarget.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebMessagePortChannel.h"
@@ -63,7 +64,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   ~MessagePort() override;
 
   void postMessage(ScriptState*,
-                   RefPtr<SerializedScriptValue> message,
+                   PassRefPtr<SerializedScriptValue> message,
                    const MessagePortArray&,
                    ExceptionState&);
   static bool CanTransferArrayBuffersAndImageBitmaps() { return false; }

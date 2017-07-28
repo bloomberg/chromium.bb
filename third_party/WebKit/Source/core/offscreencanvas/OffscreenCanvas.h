@@ -133,10 +133,10 @@ class CORE_EXPORT OffscreenCanvas final
                                   ExceptionState&) final;
 
   // CanvasImageSource implementation
-  RefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                        AccelerationHint,
-                                        SnapshotReason,
-                                        const FloatSize&) final;
+  PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
+                                            AccelerationHint,
+                                            SnapshotReason,
+                                            const FloatSize&) final;
   bool WouldTaintOrigin(SecurityOrigin*) const final { return !origin_clean_; }
   FloatSize ElementSize(const FloatSize& default_object_size) const final {
     return FloatSize(width(), height());

@@ -42,10 +42,10 @@ String CSSPaintValue::GetName() const {
   return name_->Value();
 }
 
-RefPtr<Image> CSSPaintValue::GetImage(const ImageResourceObserver& client,
-                                      const Document& document,
-                                      const ComputedStyle&,
-                                      const IntSize& size) {
+PassRefPtr<Image> CSSPaintValue::GetImage(const ImageResourceObserver& client,
+                                          const Document& document,
+                                          const ComputedStyle&,
+                                          const IntSize& size) {
   if (!generator_) {
     generator_ = CSSPaintImageGenerator::Create(
         GetName(), document, paint_image_generator_observer_);

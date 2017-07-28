@@ -138,7 +138,7 @@ void FontBuilder::SetSizeAdjust(float aspect_value) {
   font_description_.SetSizeAdjust(aspect_value);
 }
 
-void FontBuilder::SetLocale(RefPtr<const LayoutLocale> locale) {
+void FontBuilder::SetLocale(PassRefPtr<const LayoutLocale> locale) {
   Set(PropertySetFlag::kLocale);
 
   font_description_.SetLocale(std::move(locale));
@@ -181,12 +181,13 @@ void FontBuilder::SetFontSmoothing(FontSmoothingMode foont_smoothing_mode) {
   font_description_.SetFontSmoothing(foont_smoothing_mode);
 }
 
-void FontBuilder::SetFeatureSettings(RefPtr<FontFeatureSettings> settings) {
+void FontBuilder::SetFeatureSettings(PassRefPtr<FontFeatureSettings> settings) {
   Set(PropertySetFlag::kFeatureSettings);
   font_description_.SetFeatureSettings(std::move(settings));
 }
 
-void FontBuilder::SetVariationSettings(RefPtr<FontVariationSettings> settings) {
+void FontBuilder::SetVariationSettings(
+    PassRefPtr<FontVariationSettings> settings) {
   Set(PropertySetFlag::kVariationSettings);
   font_description_.SetVariationSettings(std::move(settings));
 }

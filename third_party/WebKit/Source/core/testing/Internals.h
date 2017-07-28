@@ -415,8 +415,8 @@ class Internals final : public GarbageCollected<Internals>,
   DOMRectList* draggableRegions(Document*, ExceptionState&);
   DOMRectList* nonDraggableRegions(Document*, ExceptionState&);
 
-  DOMArrayBuffer* serializeObject(RefPtr<SerializedScriptValue>) const;
-  RefPtr<SerializedScriptValue> deserializeBuffer(DOMArrayBuffer*) const;
+  DOMArrayBuffer* serializeObject(PassRefPtr<SerializedScriptValue>) const;
+  PassRefPtr<SerializedScriptValue> deserializeBuffer(DOMArrayBuffer*) const;
 
   DOMArrayBuffer* serializeWithInlineWasm(ScriptValue) const;
   ScriptValue deserializeBufferContainingWasm(ScriptState*,

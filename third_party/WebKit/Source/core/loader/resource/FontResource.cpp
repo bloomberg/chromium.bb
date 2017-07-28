@@ -131,7 +131,7 @@ void FontResource::StartLoadLimitTimers() {
                                            BLINK_FROM_HERE);
 }
 
-RefPtr<FontCustomPlatformData> FontResource::GetCustomFontData() {
+PassRefPtr<FontCustomPlatformData> FontResource::GetCustomFontData() {
   if (!font_data_ && !ErrorOccurred() && !IsLoading()) {
     if (Data())
       font_data_ = FontCustomPlatformData::Create(Data(), ots_parsing_message_);

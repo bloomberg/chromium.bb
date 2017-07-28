@@ -29,6 +29,7 @@
 
 #include "core/CoreExport.h"
 #include "core/events/TreeScopeEventContext.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {

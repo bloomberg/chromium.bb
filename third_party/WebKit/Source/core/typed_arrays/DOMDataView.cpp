@@ -15,9 +15,9 @@ namespace {
 
 class DataView final : public ArrayBufferView {
  public:
-  static RefPtr<DataView> Create(ArrayBuffer* buffer,
-                                 unsigned byte_offset,
-                                 unsigned byte_length) {
+  static PassRefPtr<DataView> Create(ArrayBuffer* buffer,
+                                     unsigned byte_offset,
+                                     unsigned byte_length) {
     CheckedNumeric<uint32_t> checked_max = byte_offset;
     checked_max += byte_length;
     CHECK_LE(checked_max.ValueOrDie(), buffer->ByteLength());

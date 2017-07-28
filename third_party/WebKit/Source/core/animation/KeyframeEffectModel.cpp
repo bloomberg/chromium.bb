@@ -273,14 +273,14 @@ bool KeyframeEffectModelBase::IsReplaceOnly() {
 
 Keyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(
     double offset,
-    RefPtr<TimingFunction> easing,
+    PassRefPtr<TimingFunction> easing,
     EffectModel::CompositeOperation composite)
     : offset_(offset), easing_(std::move(easing)), composite_(composite) {
   DCHECK(!IsNull(offset));
 }
 
 void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::AppendKeyframe(
-    RefPtr<Keyframe::PropertySpecificKeyframe> keyframe) {
+    PassRefPtr<Keyframe::PropertySpecificKeyframe> keyframe) {
   DCHECK(keyframes_.IsEmpty() ||
          keyframes_.back()->Offset() <= keyframe->Offset());
   keyframes_.push_back(std::move(keyframe));
@@ -307,7 +307,8 @@ void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::
 }
 
 bool KeyframeEffectModelBase::PropertySpecificKeyframeGroup::
-    AddSyntheticKeyframeIfRequired(RefPtr<TimingFunction> zero_offset_easing) {
+    AddSyntheticKeyframeIfRequired(
+        PassRefPtr<TimingFunction> zero_offset_easing) {
   DCHECK(!keyframes_.IsEmpty());
 
   bool added_synthetic_keyframe = false;

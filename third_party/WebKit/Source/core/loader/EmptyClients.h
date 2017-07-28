@@ -464,7 +464,7 @@ class CORE_EXPORT EmptyRemoteFrameClient
   void Reload(FrameLoadType, ClientRedirectPolicy) override {}
   unsigned BackForwardLength() override { return 0; }
   void ForwardPostMessage(MessageEvent*,
-                          RefPtr<SecurityOrigin> target,
+                          PassRefPtr<SecurityOrigin> target,
                           LocalFrame* source_frame) const override {}
   void FrameRectsChanged(const IntRect& frame_rect) override {}
   void UpdateRemoteViewportIntersection(

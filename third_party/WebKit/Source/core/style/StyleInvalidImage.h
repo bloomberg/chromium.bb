@@ -35,10 +35,10 @@ class StyleInvalidImage final : public StyleImage {
   bool UsesImageContainerSize() const override { return false; }
   void AddClient(ImageResourceObserver*) override {}
   void RemoveClient(ImageResourceObserver*) override {}
-  RefPtr<Image> GetImage(const ImageResourceObserver&,
-                         const Document&,
-                         const ComputedStyle&,
-                         const IntSize&) const override {
+  PassRefPtr<Image> GetImage(const ImageResourceObserver&,
+                             const Document&,
+                             const ComputedStyle&,
+                             const IntSize&) const override {
     return nullptr;
   }
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override {

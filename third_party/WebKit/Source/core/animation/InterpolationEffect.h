@@ -34,8 +34,8 @@ class CORE_EXPORT InterpolationEffect {
                                double iteration_duration,
                                Vector<RefPtr<Interpolation>>&) const;
 
-  void AddInterpolation(RefPtr<Interpolation> interpolation,
-                        RefPtr<TimingFunction> easing,
+  void AddInterpolation(PassRefPtr<Interpolation> interpolation,
+                        PassRefPtr<TimingFunction> easing,
                         double start,
                         double end,
                         double apply_from,
@@ -54,8 +54,8 @@ class CORE_EXPORT InterpolationEffect {
 
  private:
   struct InterpolationRecord {
-    InterpolationRecord(RefPtr<Interpolation> interpolation,
-                        RefPtr<TimingFunction> easing,
+    InterpolationRecord(PassRefPtr<Interpolation> interpolation,
+                        PassRefPtr<TimingFunction> easing,
                         double start,
                         double end,
                         double apply_from,

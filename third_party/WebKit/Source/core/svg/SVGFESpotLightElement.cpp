@@ -30,7 +30,7 @@ inline SVGFESpotLightElement::SVGFESpotLightElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGFESpotLightElement)
 
-RefPtr<LightSource> SVGFESpotLightElement::GetLightSource(
+PassRefPtr<LightSource> SVGFESpotLightElement::GetLightSource(
     Filter* filter) const {
   return SpotLightSource::Create(filter->Resolve3dPoint(GetPosition()),
                                  filter->Resolve3dPoint(PointsAt()),

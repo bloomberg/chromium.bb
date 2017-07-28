@@ -45,7 +45,8 @@ class CORE_EXPORT LayoutFullScreen final : public LayoutFlexibleBox {
 
   void ResetPlaceholder() { placeholder_ = nullptr; }
   LayoutBlockFlow* Placeholder() { return placeholder_; }
-  void CreatePlaceholder(RefPtr<ComputedStyle>, const LayoutRect& frame_rect);
+  void CreatePlaceholder(PassRefPtr<ComputedStyle>,
+                         const LayoutRect& frame_rect);
 
   static LayoutObject* WrapLayoutObject(LayoutObject*,
                                         LayoutObject*,
@@ -57,7 +58,7 @@ class CORE_EXPORT LayoutFullScreen final : public LayoutFlexibleBox {
   bool AnonymousHasStylePropagationOverride() override { return true; }
 
   // Must call setStyleWithWritingModeOfParent() instead.
-  void SetStyle(RefPtr<ComputedStyle>) = delete;
+  void SetStyle(PassRefPtr<ComputedStyle>) = delete;
 
  private:
   LayoutFullScreen();

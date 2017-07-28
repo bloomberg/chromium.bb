@@ -26,9 +26,9 @@ class CSSPaintImageGeneratorImpl final : public CSSPaintImageGenerator {
                                         Observer*);
   ~CSSPaintImageGeneratorImpl() override;
 
-  RefPtr<Image> Paint(const ImageResourceObserver&,
-                      const IntSize&,
-                      const CSSStyleValueVector*) final;
+  PassRefPtr<Image> Paint(const ImageResourceObserver&,
+                          const IntSize&,
+                          const CSSStyleValueVector*) final;
   const Vector<CSSPropertyID>& NativeInvalidationProperties() const final;
   const Vector<AtomicString>& CustomInvalidationProperties() const final;
   bool HasAlpha() const final;

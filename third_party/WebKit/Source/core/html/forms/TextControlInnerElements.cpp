@@ -73,7 +73,7 @@ EditingViewPortElement* EditingViewPortElement::Create(Document& document) {
   return element;
 }
 
-RefPtr<ComputedStyle> EditingViewPortElement::CustomStyleForLayoutObject() {
+PassRefPtr<ComputedStyle> EditingViewPortElement::CustomStyleForLayoutObject() {
   // FXIME: Move these styles to html.css.
 
   RefPtr<ComputedStyle> style = ComputedStyle::Create();
@@ -133,7 +133,7 @@ LayoutObject* TextControlInnerEditorElement::CreateLayoutObject(
   return new LayoutTextControlInnerEditor(this);
 }
 
-RefPtr<ComputedStyle>
+PassRefPtr<ComputedStyle>
 TextControlInnerEditorElement::CustomStyleForLayoutObject() {
   LayoutObject* parent_layout_object = OwnerShadowHost()->GetLayoutObject();
   if (!parent_layout_object || !parent_layout_object->IsTextControl())
