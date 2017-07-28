@@ -974,6 +974,7 @@ public class Tab
     /**
      * @return The web contents associated with this tab.
      */
+    @Nullable
     public WebContents getWebContents() {
         return mContentViewCore != null ? mContentViewCore.getWebContents() : null;
     }
