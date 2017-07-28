@@ -1020,6 +1020,9 @@ crbug.com/492664 external/wpt/css/css-writing-modes-3/clip-rect-vrl-006.xht [ Fa
 crbug.com/492664 external/wpt/css/css-writing-modes-3/clip-rect-vrl-008.xht [ Failure ]
 crbug.com/492664 external/wpt/css/css-writing-modes-3/line-box-direction-vrl-009.xht [ Failure ]
 
+crbug.com/749760 compositing/overflow/relpos-under-abspos-border-radius.html [ Failure ]
+crbug.com/749760 virtual/prefer_compositing_to_lcd_text/compositing/overflow/relpos-under-abspos-border-radius.html [ Failure ]
+
 crbug.com/637255 [ Win10 ] media/video-transformed.html [ Pass Failure ]
 
 # These tests pass but images do not match because tests are stricter than the spec.

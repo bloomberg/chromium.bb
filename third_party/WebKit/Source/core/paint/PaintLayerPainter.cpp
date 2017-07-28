@@ -434,6 +434,8 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       paint_layer_.ConvertToLayerCoords(local_painting_info.root_layer,
                                         offset_to_clipper);
       local_painting_info.paint_dirty_rect.MoveBy(offset_to_clipper);
+      // Overflow clip of the compositing container is irrelevant.
+      respect_overflow_clip = kIgnoreOverflowClip;
     }
 
     // TODO(trchen): We haven't decided how to handle visual fragmentation with
@@ -509,9 +511,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
         fragment.foreground_rect.Move(negative_offset);
         fragment.pagination_offset.Move(negative_offset);
       }
-    }
-
-    if (should_paint_content) {
+    } else if (should_paint_content) {
       // TODO(wangxianzhu): This is for old slow scrolling. Implement similar
       // optimization for slimming paint v2.
       should_paint_content = AtLeastOneFragmentIntersectsDamageRect(
