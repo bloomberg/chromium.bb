@@ -33,6 +33,9 @@ class WorkerContentSettingsClient : public blink::WebContentSettingsClient {
   bool RequestFileSystemAccessSync() override;
   bool AllowIndexedDB(const blink::WebString& name,
                       const blink::WebSecurityOrigin&) override;
+  bool AllowRunningInsecureContent(bool allowed_per_settings,
+                                   const blink::WebSecurityOrigin& context,
+                                   const blink::WebURL& url) override;
 
  private:
   // Loading document context for this worker.
@@ -40,6 +43,7 @@ class WorkerContentSettingsClient : public blink::WebContentSettingsClient {
   bool is_unique_origin_;
   GURL document_origin_url_;
   GURL top_frame_origin_url_;
+  bool allow_running_insecure_content_;
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerContentSettingsClient);

@@ -37,6 +37,10 @@
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/workers/WorkerContentSettingsClient.h"
+#include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerOrWorkletGlobalScope.h"
+#include "core/workers/WorkerSettings.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/NetworkUtils.h"
 #include "platform/weborigin/SchemeRegistry.h"
@@ -45,6 +49,8 @@
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebMixedContent.h"
+#include "public/platform/WebSecurityOrigin.h"
+#include "public/platform/WebWorkerFetchContext.h"
 
 namespace blink {
 
@@ -218,7 +224,7 @@ Frame* MixedContentChecker::InWhichFrameIsContentMixed(
 
 // static
 void MixedContentChecker::LogToConsoleAboutFetch(
-    LocalFrame* frame,
+    ExecutionContext* execution_context,
     const KURL& main_resource_url,
     const KURL& url,
     WebURLRequest::RequestContext request_context,
@@ -235,11 +241,11 @@ void MixedContentChecker::LogToConsoleAboutFetch(
   MessageLevel message_level =
       allowed ? kWarningMessageLevel : kErrorMessageLevel;
   if (source_location) {
-    frame->GetDocument()->AddConsoleMessage(
+    execution_context->AddConsoleMessage(
         ConsoleMessage::Create(kSecurityMessageSource, message_level, message,
                                std::move(source_location)));
   } else {
-    frame->GetDocument()->AddConsoleMessage(
+    execution_context->AddConsoleMessage(
         ConsoleMessage::Create(kSecurityMessageSource, message_level, message));
   }
 }
@@ -409,8 +415,69 @@ bool MixedContentChecker::ShouldBlockFetch(
   };
 
   if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
-    LogToConsoleAboutFetch(frame, MainResourceUrlForFrame(mixed_frame), url,
+    LogToConsoleAboutFetch(frame->GetDocument(),
+                           MainResourceUrlForFrame(mixed_frame), url,
                            request_context, allowed, nullptr);
+  }
+  return !allowed;
+}
+
+// static
+bool MixedContentChecker::ShouldBlockFetchOnWorker(
+    WorkerOrWorkletGlobalScope* global_scope,
+    WebWorkerFetchContext* worker_fetch_context,
+    const ResourceRequest& request,
+    const KURL& url,
+    SecurityViolationReportingPolicy reporting_policy) {
+  if (!MixedContentChecker::IsMixedContent(global_scope->GetSecurityOrigin(),
+                                           url)) {
+    return false;
+  }
+
+  UseCounter::Count(global_scope, WebFeature::kMixedContentPresent);
+  UseCounter::Count(global_scope, WebFeature::kMixedContentBlockable);
+  if (ContentSecurityPolicy* policy = global_scope->GetContentSecurityPolicy())
+    policy->ReportMixedContent(url, request.GetRedirectStatus());
+
+  // Blocks all mixed content request from worklets.
+  // TODO(horo): Revise this when the spec is updated.
+  // Worklets spec: https://www.w3.org/TR/worklets-1/#security-considerations
+  // Spec issue: https://github.com/w3c/css-houdini-drafts/issues/92
+  if (!global_scope->IsWorkerGlobalScope())
+    return true;
+
+  WorkerGlobalScope* worker_global_scope = ToWorkerGlobalScope(global_scope);
+  WorkerSettings* settings = worker_global_scope->GetWorkerSettings();
+  DCHECK(settings);
+  bool allowed = false;
+  if (!settings->GetAllowRunningOfInsecureContent() &&
+      worker_fetch_context->IsOnSubframe()) {
+    UseCounter::Count(global_scope,
+                      WebFeature::kBlockableMixedContentInSubframeBlocked);
+    allowed = false;
+  } else {
+    bool strict_mode = worker_global_scope->GetInsecureRequestPolicy() &
+                           kBlockAllMixedContent ||
+                       settings->GetStrictMixedContentChecking();
+    bool should_ask_embedder =
+        !strict_mode && (!settings->GetStrictlyBlockBlockableMixedContent() ||
+                         settings->GetAllowRunningOfInsecureContent());
+    allowed = should_ask_embedder &&
+              WorkerContentSettingsClient::From(*global_scope)
+                  ->AllowRunningInsecureContent(
+                      settings->GetAllowRunningOfInsecureContent(),
+                      global_scope->GetSecurityOrigin(), url);
+    if (allowed) {
+      worker_fetch_context->DidRunInsecureContent(
+          WebSecurityOrigin(global_scope->GetSecurityOrigin()), url);
+      UseCounter::Count(global_scope,
+                        WebFeature::kMixedContentBlockableAllowed);
+    }
+  }
+
+  if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
+    LogToConsoleAboutFetch(global_scope, global_scope->Url(), url,
+                           request.GetRequestContext(), allowed, nullptr);
   }
   return !allowed;
 }
@@ -599,8 +666,8 @@ void MixedContentChecker::MixedContentFound(
     bool had_redirect,
     std::unique_ptr<SourceLocation> source_location) {
   // Logs to the frame console.
-  LogToConsoleAboutFetch(frame, main_resource_url, mixed_content_url,
-                         request_context, was_allowed,
+  LogToConsoleAboutFetch(frame->GetDocument(), main_resource_url,
+                         mixed_content_url, request_context, was_allowed,
                          std::move(source_location));
   // Reports to the CSP policy.
   ContentSecurityPolicy* policy =

@@ -42,12 +42,15 @@
 
 namespace blink {
 
+class ExecutionContext;
 class Frame;
 class LocalFrame;
 class KURL;
 class ResourceResponse;
 class SecurityOrigin;
 class SourceLocation;
+class WorkerOrWorkletGlobalScope;
+class WebWorkerFetchContext;
 
 // Checks resource loads for mixed content. If PlzNavigate is enabled then this
 // class only checks for sub-resource loads while frame-level loads are
@@ -69,15 +72,22 @@ class CORE_EXPORT MixedContentChecker final {
                                const KURL&,
                                SecurityViolationReportingPolicy =
                                    SecurityViolationReportingPolicy::kReport);
-  static bool ShouldBlockFetch(LocalFrame* frame,
-                               const ResourceRequest& request,
-                               const KURL& url,
-                               SecurityViolationReportingPolicy status =
-                                   SecurityViolationReportingPolicy::kReport) {
+  static bool ShouldBlockFetch(
+      LocalFrame* frame,
+      const ResourceRequest& request,
+      const KURL& url,
+      SecurityViolationReportingPolicy reporting_policy =
+          SecurityViolationReportingPolicy::kReport) {
     return ShouldBlockFetch(frame, request.GetRequestContext(),
                             request.GetFrameType(), request.GetRedirectStatus(),
-                            url, status);
+                            url, reporting_policy);
   }
+
+  static bool ShouldBlockFetchOnWorker(WorkerOrWorkletGlobalScope*,
+                                       WebWorkerFetchContext*,
+                                       const ResourceRequest&,
+                                       const KURL&,
+                                       SecurityViolationReportingPolicy);
 
   static bool ShouldBlockWebSocket(
       LocalFrame*,
@@ -125,7 +135,7 @@ class CORE_EXPORT MixedContentChecker final {
                                            const KURL&,
                                            const LocalFrame*);
 
-  static void LogToConsoleAboutFetch(LocalFrame*,
+  static void LogToConsoleAboutFetch(ExecutionContext*,
                                      const KURL&,
                                      const KURL&,
                                      WebURLRequest::RequestContext,

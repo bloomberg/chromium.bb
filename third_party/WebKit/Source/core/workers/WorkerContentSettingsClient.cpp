@@ -32,6 +32,8 @@
 
 #include <memory>
 #include "core/workers/WorkerGlobalScope.h"
+#include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 
 namespace blink {
@@ -53,6 +55,17 @@ bool WorkerContentSettingsClient::AllowIndexedDB(const WebString& name) {
   if (!client_)
     return true;
   return client_->AllowIndexedDB(name, WebSecurityOrigin());
+}
+
+bool WorkerContentSettingsClient::AllowRunningInsecureContent(
+    bool enabled_per_settings,
+    SecurityOrigin* origin,
+    const KURL& url) {
+  if (client_) {
+    return client_->AllowRunningInsecureContent(enabled_per_settings,
+                                                WebSecurityOrigin(origin), url);
+  }
+  return enabled_per_settings;
 }
 
 const char* WorkerContentSettingsClient::SupplementName() {

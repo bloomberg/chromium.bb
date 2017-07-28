@@ -9,16 +9,15 @@ namespace blink {
 WorkerSettings::WorkerSettings(Settings* settings) {
   if (settings)
     this->CopyFlagValuesFromSettings(settings);
-  else
-    this->SetDefaultValues();
 }
 
 void WorkerSettings::CopyFlagValuesFromSettings(Settings* settings) {
   disable_reading_from_canvas_ = settings->GetDisableReadingFromCanvas();
-}
-
-void WorkerSettings::SetDefaultValues() {
-  disable_reading_from_canvas_ = false;
+  strict_mixed_content_checking_ = settings->GetStrictMixedContentChecking();
+  allow_running_of_insecure_content_ =
+      settings->GetAllowRunningOfInsecureContent();
+  strictly_block_blockable_mixed_content_ =
+      settings->GetStrictlyBlockBlockableMixedContent();
 }
 
 }  // namespace blink
