@@ -138,6 +138,10 @@ class FlexLine {
   // This modifies remaining_free_space.
   void FreezeViolations(Vector<FlexItem*>& violations);
 
+  // Should be called in a loop until it returns false.
+  // This modifies remaining_free_space.
+  bool ResolveFlexibleLengths();
+
   Vector<FlexItem> line_items;
   const LayoutUnit sum_flex_base_size;
   double total_flex_grow;

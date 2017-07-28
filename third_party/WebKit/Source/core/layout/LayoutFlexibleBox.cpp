@@ -919,9 +919,7 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
         MainAxisContentExtent(current_line->sum_hypothetical_main_size));
     current_line->FreezeInflexibleItems();
 
-    while (!ResolveFlexibleLengths(current_line,
-                                   current_line->initial_free_space,
-                                   current_line->remaining_free_space)) {
+    while (!current_line->ResolveFlexibleLengths()) {
       DCHECK_GE(current_line->total_flex_grow, 0);
       DCHECK_GE(current_line->total_weighted_flex_shrink, 0);
     }
@@ -1274,76 +1272,6 @@ FlexItem LayoutFlexibleBox::ConstructFlexItem(LayoutBox& child,
       IsHorizontalFlow() ? child.MarginWidth() : child.MarginHeight();
   return FlexItem(&child, child_inner_flex_base_size, sizes, border_and_padding,
                   margin);
-}
-
-// Returns true if we successfully ran the algorithm and sized the flex items.
-bool LayoutFlexibleBox::ResolveFlexibleLengths(
-    FlexLine* line,
-    LayoutUnit initial_free_space,
-    LayoutUnit& remaining_free_space) {
-  LayoutUnit total_violation;
-  LayoutUnit used_free_space;
-  Vector<FlexItem*> min_violations;
-  Vector<FlexItem*> max_violations;
-
-  FlexSign flex_sign = line->Sign();
-  double sum_flex_factors = (flex_sign == kPositiveFlexibility)
-                                ? line->total_flex_grow
-                                : line->total_flex_shrink;
-  if (sum_flex_factors > 0 && sum_flex_factors < 1) {
-    LayoutUnit fractional(initial_free_space * sum_flex_factors);
-    if (fractional.Abs() < remaining_free_space.Abs())
-      remaining_free_space = fractional;
-  }
-
-  for (size_t i = 0; i < line->line_items.size(); ++i) {
-    FlexItem& flex_item = line->line_items[i];
-    LayoutBox* child = flex_item.box;
-
-    // This check also covers out-of-flow children.
-    if (flex_item.frozen)
-      continue;
-
-    LayoutUnit child_size = flex_item.flex_base_content_size;
-    double extra_space = 0;
-    if (remaining_free_space > 0 && line->total_flex_grow > 0 &&
-        flex_sign == kPositiveFlexibility &&
-        std::isfinite(line->total_flex_grow)) {
-      extra_space = remaining_free_space * child->Style()->FlexGrow() /
-                    line->total_flex_grow;
-    } else if (remaining_free_space < 0 &&
-               line->total_weighted_flex_shrink > 0 &&
-               flex_sign == kNegativeFlexibility &&
-               std::isfinite(line->total_weighted_flex_shrink) &&
-               child->Style()->FlexShrink()) {
-      extra_space = remaining_free_space * child->Style()->FlexShrink() *
-                    flex_item.flex_base_content_size /
-                    line->total_weighted_flex_shrink;
-    }
-    if (std::isfinite(extra_space))
-      child_size += LayoutUnit::FromFloatRound(extra_space);
-
-    LayoutUnit adjusted_child_size = flex_item.ClampSizeToMinAndMax(child_size);
-    DCHECK_GE(adjusted_child_size, 0);
-    flex_item.flexed_content_size = adjusted_child_size;
-    used_free_space += adjusted_child_size - flex_item.flex_base_content_size;
-
-    LayoutUnit violation = adjusted_child_size - child_size;
-    if (violation > 0)
-      min_violations.push_back(&flex_item);
-    else if (violation < 0)
-      max_violations.push_back(&flex_item);
-    total_violation += violation;
-  }
-
-  if (total_violation) {
-    line->FreezeViolations(total_violation < 0 ? max_violations
-                                               : min_violations);
-  } else {
-    remaining_free_space -= used_free_space;
-  }
-
-  return !total_violation;
 }
 
 static LayoutUnit InitialContentPositionOffset(
