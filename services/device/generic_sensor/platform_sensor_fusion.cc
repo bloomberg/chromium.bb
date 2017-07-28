@@ -28,8 +28,7 @@ PlatformSensorFusion::PlatformSensorFusion(
     } else {
       provider->CreateSensor(
           source_sensor_types[i],
-          base::Bind(&PlatformSensorFusion::CreateSensorCallback,
-                     base::Unretained(this), i));
+          base::Bind(&PlatformSensorFusion::CreateSensorCallback, this, i));
     }
   }
 }
