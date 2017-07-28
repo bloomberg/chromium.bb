@@ -5,8 +5,8 @@
 #include "components/exo/layer_tree_frame_sink_holder.h"
 
 #include "cc/output/layer_tree_frame_sink.h"
-#include "cc/resources/returned_resource.h"
 #include "components/exo/surface_tree_host.h"
+#include "components/viz/common/resources/returned_resource.h"
 
 namespace exo {
 
@@ -60,7 +60,7 @@ void LayerTreeFrameSinkHolder::SetBeginFrameSource(
 }
 
 void LayerTreeFrameSinkHolder::ReclaimResources(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<viz::ReturnedResource>& resources) {
   for (auto& resource : resources) {
     auto it = release_callbacks_.find(resource.id);
     DCHECK(it != release_callbacks_.end());

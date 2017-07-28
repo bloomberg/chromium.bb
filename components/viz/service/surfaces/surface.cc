@@ -10,9 +10,9 @@
 #include <algorithm>
 
 #include "base/stl_util.h"
-#include "cc/resources/returned_resource.h"
-#include "cc/resources/transferable_resource.h"
 #include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/resources/returned_resource.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/surfaces/surface_manager.h"
@@ -53,14 +53,12 @@ void Surface::SetPreviousFrameSurface(Surface* surface) {
   surface->TakeLatencyInfoFromPendingFrame(&frame.metadata.latency_info);
 }
 
-void Surface::RefResources(
-    const std::vector<cc::TransferableResource>& resources) {
+void Surface::RefResources(const std::vector<TransferableResource>& resources) {
   if (surface_client_)
     surface_client_->RefResources(resources);
 }
 
-void Surface::UnrefResources(
-    const std::vector<cc::ReturnedResource>& resources) {
+void Surface::UnrefResources(const std::vector<ReturnedResource>& resources) {
   if (surface_client_)
     surface_client_->UnrefResources(resources);
 }
@@ -115,8 +113,8 @@ bool Surface::QueueFrame(cc::CompositorFrame frame,
   }
 
   if (closed_) {
-    std::vector<cc::ReturnedResource> resources =
-        cc::TransferableResource::ReturnResources(frame.resource_list);
+    std::vector<ReturnedResource> resources =
+        TransferableResource::ReturnResources(frame.resource_list);
     surface_client_->ReturnResources(resources);
     callback.Run();
     return true;
@@ -380,9 +378,8 @@ void Surface::UnrefFrameResourcesAndRunDrawCallback(
   if (!frame_data || !surface_client_)
     return;
 
-  std::vector<cc::ReturnedResource> resources =
-      cc::TransferableResource::ReturnResources(
-          frame_data->frame.resource_list);
+  std::vector<ReturnedResource> resources =
+      TransferableResource::ReturnResources(frame_data->frame.resource_list);
   // No point in returning same sync token to sender.
   for (auto& resource : resources)
     resource.sync_token.Clear();

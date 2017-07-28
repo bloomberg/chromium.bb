@@ -11,7 +11,7 @@
 #include "cc/cc_export.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/quads/render_pass.h"
-#include "cc/resources/transferable_resource.h"
+#include "components/viz/common/resources/transferable_resource.h"
 
 namespace cc {
 
@@ -31,7 +31,7 @@ class CC_EXPORT CompositorFrame {
   CompositorFrame& operator=(CompositorFrame&& other);
 
   CompositorFrameMetadata metadata;
-  std::vector<TransferableResource> resource_list;
+  std::vector<viz::TransferableResource> resource_list;
   // This list is in the order that each RenderPass will be drawn. The last one
   // is the "root" RenderPass that all others are directly or indirectly drawn
   // into.

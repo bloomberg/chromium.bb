@@ -11,7 +11,7 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/resources/transferable_resource.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -56,7 +56,7 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
       LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder,
       bool secure_output_only,
       bool client_usage,
-      cc::TransferableResource* resource);
+      viz::TransferableResource* resource);
 
   // This should be called when the buffer is attached to a Surface.
   void OnAttach();

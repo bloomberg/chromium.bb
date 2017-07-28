@@ -12,9 +12,9 @@ namespace mojo {
 
 // static
 bool StructTraits<cc::mojom::TransferableResourceDataView,
-                  cc::TransferableResource>::
+                  viz::TransferableResource>::
     Read(cc::mojom::TransferableResourceDataView data,
-         cc::TransferableResource* out) {
+         viz::TransferableResource* out) {
   if (!data.ReadSize(&out->size) ||
       !data.ReadMailboxHolder(&out->mailbox_holder) ||
       !data.ReadColorSpace(&out->color_space))

@@ -107,10 +107,10 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // viz::CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck(
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   void ReclaimResources(
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<viz::ReturnedResource>& resources) override;
   void WillDrawSurface(const viz::LocalSurfaceId& id,
                        const gfx::Rect& damage_rect) override;
   void OnBeginFramePausedChanged(bool paused) override;
@@ -279,7 +279,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
   gfx::Size current_surface_size_;
   float current_scale_factor_;
-  std::vector<cc::ReturnedResource> surface_returned_resources_;
+  std::vector<viz::ReturnedResource> surface_returned_resources_;
 
   // This lock is the one waiting for a frame of the right size to come back
   // from the renderer/GPU process. It is set from the moment the aura window

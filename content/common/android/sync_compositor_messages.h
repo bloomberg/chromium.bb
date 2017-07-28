@@ -156,7 +156,7 @@ IPC_MESSAGE_ROUTED1(SyncCompositorMsg_SetMemoryPolicy,
 
 IPC_MESSAGE_ROUTED2(SyncCompositorMsg_ReclaimResources,
                     uint32_t /* layer_tree_frame_sink_id */,
-                    std::vector<cc::ReturnedResource> /* resources */);
+                    std::vector<viz::ReturnedResource> /* resources */);
 
 IPC_MESSAGE_ROUTED1(SyncCompositorMsg_SetScroll, gfx::ScrollOffset);
 

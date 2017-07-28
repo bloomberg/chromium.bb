@@ -127,7 +127,7 @@ void ClientLayerTreeFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
 }
 
 void ClientLayerTreeFrameSink::DidReceiveCompositorFrameAck(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<ReturnedResource>& resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   client_->ReclaimResources(resources);
   client_->DidReceiveCompositorFrameAck();
@@ -146,7 +146,7 @@ void ClientLayerTreeFrameSink::OnBeginFramePausedChanged(bool paused) {
 }
 
 void ClientLayerTreeFrameSink::ReclaimResources(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<ReturnedResource>& resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   client_->ReclaimResources(resources);
 }

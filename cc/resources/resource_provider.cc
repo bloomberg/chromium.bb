@@ -23,10 +23,10 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/resources/resource_util.h"
-#include "cc/resources/returned_resource.h"
-#include "cc/resources/transferable_resource.h"
 #include "components/viz/common/resources/platform_color.h"
+#include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -1423,7 +1423,7 @@ const ResourceProvider::ResourceIdMap& ResourceProvider::GetChildToParentMap(
 
 void ResourceProvider::PrepareSendToParent(
     const ResourceIdArray& resource_ids,
-    std::vector<TransferableResource>* list) {
+    std::vector<viz::TransferableResource>* list) {
   DCHECK(thread_checker_.CalledOnValidThread());
   GLES2Interface* gl = ContextGL();
 
@@ -1488,7 +1488,7 @@ void ResourceProvider::PrepareSendToParent(
     DCHECK(!settings_.delegated_sync_points_required ||
            Resource::LOCALLY_USED != source->synchronization_state());
 
-    TransferableResource resource;
+    viz::TransferableResource resource;
     TransferResource(source, id, &resource);
 
     source->exported_count++;
@@ -1498,12 +1498,13 @@ void ResourceProvider::PrepareSendToParent(
 
 void ResourceProvider::ReceiveFromChild(
     int child,
-    const std::vector<TransferableResource>& resources) {
+    const std::vector<viz::TransferableResource>& resources) {
   DCHECK(thread_checker_.CalledOnValidThread());
   GLES2Interface* gl = ContextGL();
   Child& child_info = children_.find(child)->second;
   DCHECK(!child_info.marked_for_deletion);
-  for (std::vector<TransferableResource>::const_iterator it = resources.begin();
+  for (std::vector<viz::TransferableResource>::const_iterator it =
+           resources.begin();
        it != resources.end(); ++it) {
     ResourceIdMap::iterator resource_in_map_it =
         child_info.child_to_parent_map.find(it->id);
@@ -1517,7 +1518,7 @@ void ResourceProvider::ReceiveFromChild(
     if ((!it->is_software && !gl) ||
         (it->is_software && !shared_bitmap_manager_)) {
       TRACE_EVENT0("cc", "ResourceProvider::ReceiveFromChild dropping invalid");
-      std::vector<ReturnedResource> to_return;
+      std::vector<viz::ReturnedResource> to_return;
       to_return.push_back(it->ToReturnedResource());
       child_info.return_callback.Run(to_return,
                                      blocking_main_thread_task_runner_);
@@ -1581,13 +1582,13 @@ void ResourceProvider::DeclareUsedResourcesFromChild(
 }
 
 void ResourceProvider::ReceiveReturnsFromParent(
-    const std::vector<ReturnedResource>& resources) {
+    const std::vector<viz::ReturnedResource>& resources) {
   DCHECK(thread_checker_.CalledOnValidThread());
   GLES2Interface* gl = ContextGL();
 
   std::unordered_map<int, ResourceIdArray> resources_for_child;
 
-  for (const ReturnedResource& returned : resources) {
+  for (const viz::ReturnedResource& returned : resources) {
     viz::ResourceId local_id = returned.id;
     ResourceMap::iterator map_iterator = resources_.find(local_id);
     // Resource was already lost (e.g. it belonged to a child that was
@@ -1709,7 +1710,7 @@ void ResourceProvider::CreateMailboxAndBindResource(
 
 void ResourceProvider::TransferResource(Resource* source,
                                         viz::ResourceId id,
-                                        TransferableResource* resource) {
+                                        viz::TransferableResource* resource) {
   DCHECK(!source->locked_for_write);
   DCHECK(!source->lock_for_read_count);
   DCHECK(source->origin != Resource::EXTERNAL || source->mailbox().IsValid());
@@ -1760,9 +1761,9 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   if (unused.empty() && !child_info->marked_for_deletion)
     return;
 
-  std::vector<ReturnedResource> to_return;
+  std::vector<viz::ReturnedResource> to_return;
   to_return.reserve(unused.size());
-  std::vector<ReturnedResource*> need_synchronization_resources;
+  std::vector<viz::ReturnedResource*> need_synchronization_resources;
   std::vector<GLbyte*> unverified_sync_tokens;
 
   GLES2Interface* gl = ContextGL();
@@ -1812,7 +1813,7 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
       resource.SetLocallyUsed();
     }
 
-    ReturnedResource returned;
+    viz::ReturnedResource returned;
     returned.id = child_id;
     returned.sync_token = resource.mailbox().sync_token();
     returned.count = resource.imported_count;
@@ -1852,7 +1853,7 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   }
 
   // Set sync token after verification.
-  for (ReturnedResource* returned : need_synchronization_resources)
+  for (viz::ReturnedResource* returned : need_synchronization_resources)
     returned->sync_token = new_sync_token;
 
   if (!to_return.empty())

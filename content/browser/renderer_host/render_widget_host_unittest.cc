@@ -243,7 +243,7 @@ cc::CompositorFrame MakeCompositorFrame(float scale_factor, gfx::Size size) {
   pass->SetNew(1, gfx::Rect(size), gfx::Rect(), gfx::Transform());
   frame.render_pass_list.push_back(std::move(pass));
   if (!size.IsEmpty()) {
-    cc::TransferableResource resource;
+    viz::TransferableResource resource;
     resource.id = 1;
     frame.resource_list.push_back(std::move(resource));
   }

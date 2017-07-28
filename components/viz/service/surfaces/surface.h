@@ -74,10 +74,10 @@ class VIZ_SERVICE_EXPORT Surface : public SurfaceDeadlineObserver {
   void SetPreviousFrameSurface(Surface* surface);
 
   // Increments the reference count on resources specified by |resources|.
-  void RefResources(const std::vector<cc::TransferableResource>& resources);
+  void RefResources(const std::vector<TransferableResource>& resources);
 
   // Decrements the reference count on resources specified by |resources|.
-  void UnrefResources(const std::vector<cc::ReturnedResource>& resources);
+  void UnrefResources(const std::vector<ReturnedResource>& resources);
 
   bool needs_sync_tokens() const { return needs_sync_tokens_; }
 

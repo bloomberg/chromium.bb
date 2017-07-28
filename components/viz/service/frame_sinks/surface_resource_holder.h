@@ -8,9 +8,9 @@
 #include <unordered_map>
 
 #include "base/macros.h"
-#include "cc/resources/returned_resource.h"
-#include "cc/resources/transferable_resource.h"
 #include "components/viz/common/resources/resource_id.h"
+#include "components/viz/common/resources/returned_resource.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
@@ -26,9 +26,9 @@ class VIZ_SERVICE_EXPORT SurfaceResourceHolder {
   ~SurfaceResourceHolder();
 
   void Reset();
-  void ReceiveFromChild(const std::vector<cc::TransferableResource>& resources);
-  void RefResources(const std::vector<cc::TransferableResource>& resources);
-  void UnrefResources(const std::vector<cc::ReturnedResource>& resources);
+  void ReceiveFromChild(const std::vector<TransferableResource>& resources);
+  void RefResources(const std::vector<TransferableResource>& resources);
+  void UnrefResources(const std::vector<ReturnedResource>& resources);
 
  private:
   SurfaceResourceHolderClient* client_;

@@ -21,17 +21,17 @@ class FakeRendererCompositorFrameSink
   ~FakeRendererCompositorFrameSink() override;
 
   bool did_receive_ack() { return did_receive_ack_; }
-  std::vector<cc::ReturnedResource>& last_reclaimed_resources() {
+  std::vector<viz::ReturnedResource>& last_reclaimed_resources() {
     return last_reclaimed_resources_;
   }
 
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args) override {}
   void OnBeginFramePausedChanged(bool paused) override {}
   void ReclaimResources(
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<viz::ReturnedResource>& resources) override;
 
   // Resets test data.
   void Reset();
@@ -43,7 +43,7 @@ class FakeRendererCompositorFrameSink
   mojo::Binding<viz::mojom::CompositorFrameSinkClient> binding_;
   viz::mojom::CompositorFrameSinkPtr sink_;
   bool did_receive_ack_ = false;
-  std::vector<cc::ReturnedResource> last_reclaimed_resources_;
+  std::vector<viz::ReturnedResource> last_reclaimed_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRendererCompositorFrameSink);
 };

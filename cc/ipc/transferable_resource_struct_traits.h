@@ -6,61 +6,61 @@
 #define CC_IPC_TRANSFERABLE_RESOURCE_STRUCT_TRAITS_H_
 
 #include "cc/ipc/transferable_resource.mojom-shared.h"
-#include "cc/resources/transferable_resource.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 
 namespace mojo {
 
 template <>
 struct StructTraits<cc::mojom::TransferableResourceDataView,
-                    cc::TransferableResource> {
-  static uint32_t id(const cc::TransferableResource& resource) {
+                    viz::TransferableResource> {
+  static uint32_t id(const viz::TransferableResource& resource) {
     return resource.id;
   }
 
   static cc::mojom::ResourceFormat format(
-      const cc::TransferableResource& resource) {
+      const viz::TransferableResource& resource) {
     return static_cast<cc::mojom::ResourceFormat>(resource.format);
   }
 
   static gfx::mojom::BufferFormat buffer_format(
-      const cc::TransferableResource& resource) {
+      const viz::TransferableResource& resource) {
     return static_cast<gfx::mojom::BufferFormat>(resource.buffer_format);
   }
 
-  static uint32_t filter(const cc::TransferableResource& resource) {
+  static uint32_t filter(const viz::TransferableResource& resource) {
     return resource.filter;
   }
 
-  static gfx::Size size(const cc::TransferableResource& resource) {
+  static gfx::Size size(const viz::TransferableResource& resource) {
     return resource.size;
   }
 
   static const gpu::MailboxHolder& mailbox_holder(
-      const cc::TransferableResource& resource) {
+      const viz::TransferableResource& resource) {
     return resource.mailbox_holder;
   }
 
   static bool read_lock_fences_enabled(
-      const cc::TransferableResource& resource) {
+      const viz::TransferableResource& resource) {
     return resource.read_lock_fences_enabled;
   }
 
-  static bool is_software(const cc::TransferableResource& resource) {
+  static bool is_software(const viz::TransferableResource& resource) {
     return resource.is_software;
   }
 
   static uint32_t shared_bitmap_sequence_number(
-      const cc::TransferableResource& resource) {
+      const viz::TransferableResource& resource) {
     return resource.shared_bitmap_sequence_number;
   }
 
-  static bool is_overlay_candidate(const cc::TransferableResource& resource) {
+  static bool is_overlay_candidate(const viz::TransferableResource& resource) {
     return resource.is_overlay_candidate;
   }
 
   static bool is_backed_by_surface_texture(
-      const cc::TransferableResource& resource) {
+      const viz::TransferableResource& resource) {
 #if defined(OS_ANDROID)
     // TransferableResource has this in an #ifdef, but mojo doesn't let us.
     // TODO(https://crbug.com/671901)
@@ -70,7 +70,7 @@ struct StructTraits<cc::mojom::TransferableResourceDataView,
 #endif
   }
 
-  static bool wants_promotion_hint(const cc::TransferableResource& resource) {
+  static bool wants_promotion_hint(const viz::TransferableResource& resource) {
 #if defined(OS_ANDROID)
     // TransferableResource has this in an #ifdef, but mojo doesn't let us.
     // TODO(https://crbug.com/671901)
@@ -81,12 +81,12 @@ struct StructTraits<cc::mojom::TransferableResourceDataView,
   }
 
   static const gfx::ColorSpace& color_space(
-      const cc::TransferableResource& resource) {
+      const viz::TransferableResource& resource) {
     return resource.color_space;
   }
 
   static bool Read(cc::mojom::TransferableResourceDataView data,
-                   cc::TransferableResource* out);
+                   viz::TransferableResource* out);
 };
 
 }  // namespace mojo

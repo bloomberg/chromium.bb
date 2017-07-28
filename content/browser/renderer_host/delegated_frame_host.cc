@@ -405,8 +405,8 @@ void DelegatedFrameHost::SubmitCompositorFrame(
       gfx::ConvertRectToDIP(frame_device_scale_factor, damage_rect);
 
   if (ShouldSkipFrame(frame_size_in_dip)) {
-    std::vector<cc::ReturnedResource> resources =
-        cc::TransferableResource::ReturnResources(frame.resource_list);
+    std::vector<viz::ReturnedResource> resources =
+        viz::TransferableResource::ReturnResources(frame.resource_list);
 
     skipped_latency_info_list_.insert(skipped_latency_info_list_.end(),
                                       frame.metadata.latency_info.begin(),
@@ -493,12 +493,12 @@ void DelegatedFrameHost::ClearDelegatedFrame() {
 }
 
 void DelegatedFrameHost::DidReceiveCompositorFrameAck(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<viz::ReturnedResource>& resources) {
   renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
 }
 
 void DelegatedFrameHost::ReclaimResources(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<viz::ReturnedResource>& resources) {
   renderer_compositor_frame_sink_->ReclaimResources(resources);
 }
 

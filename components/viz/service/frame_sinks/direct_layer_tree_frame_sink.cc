@@ -141,7 +141,7 @@ void DirectLayerTreeFrameSink::DisplayDidDrawAndSwap() {
 }
 
 void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAck(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<ReturnedResource>& resources) {
   client_->ReclaimResources(resources);
   client_->DidReceiveCompositorFrameAck();
 }
@@ -151,7 +151,7 @@ void DirectLayerTreeFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
 }
 
 void DirectLayerTreeFrameSink::ReclaimResources(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<ReturnedResource>& resources) {
   client_->ReclaimResources(resources);
 }
 

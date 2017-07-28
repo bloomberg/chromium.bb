@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/returned_resource.h"
-#include "cc/resources/transferable_resource.h"
+#include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/common/resources/returned_resource.h"
 
-namespace cc {
+namespace viz {
 
 TransferableResource::TransferableResource()
     : id(0),
-      format(viz::RGBA_8888),
+      format(RGBA_8888),
       buffer_format(gfx::BufferFormat::RGBA_8888),
       filter(0),
       read_lock_fences_enabled(false),
@@ -25,8 +25,7 @@ TransferableResource::TransferableResource()
 TransferableResource::TransferableResource(const TransferableResource& other) =
     default;
 
-TransferableResource::~TransferableResource() {
-}
+TransferableResource::~TransferableResource() {}
 
 ReturnedResource TransferableResource::ToReturnedResource() const {
   ReturnedResource returned;
@@ -46,4 +45,4 @@ std::vector<ReturnedResource> TransferableResource::ReturnResources(
   return out;
 }
 
-}  // namespace cc
+}  // namespace viz

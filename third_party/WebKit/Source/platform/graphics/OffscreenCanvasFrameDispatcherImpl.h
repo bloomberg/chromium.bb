@@ -46,11 +46,11 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
 
   // viz::mojom::blink::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
-      const WTF::Vector<cc::ReturnedResource>& resources) final;
+      const WTF::Vector<viz::ReturnedResource>& resources) final;
   void OnBeginFrame(const viz::BeginFrameArgs&) final;
   void OnBeginFramePausedChanged(bool paused) final{};
   void ReclaimResources(
-      const WTF::Vector<cc::ReturnedResource>& resources) final;
+      const WTF::Vector<viz::ReturnedResource>& resources) final;
 
   // This enum is used in histogram, so it should be append-only.
   enum OffscreenCanvasCommitType {
@@ -111,11 +111,11 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
 
   viz::BeginFrameAck current_begin_frame_ack_;
 
-  void SetTransferableResourceToSharedBitmap(cc::TransferableResource&,
+  void SetTransferableResourceToSharedBitmap(viz::TransferableResource&,
                                              RefPtr<StaticBitmapImage>);
-  void SetTransferableResourceToSharedGPUContext(cc::TransferableResource&,
+  void SetTransferableResourceToSharedGPUContext(viz::TransferableResource&,
                                                  RefPtr<StaticBitmapImage>);
-  void SetTransferableResourceToStaticBitmapImage(cc::TransferableResource&,
+  void SetTransferableResourceToStaticBitmapImage(viz::TransferableResource&,
                                                   RefPtr<StaticBitmapImage>);
 };
 

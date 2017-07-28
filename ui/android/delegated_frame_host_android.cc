@@ -176,7 +176,7 @@ void DelegatedFrameHostAndroid::DetachFromCompositor() {
 }
 
 void DelegatedFrameHostAndroid::DidReceiveCompositorFrameAck(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<viz::ReturnedResource>& resources) {
   client_->ReclaimResources(resources);
   client_->DidReceiveCompositorFrameAck();
 }
@@ -186,7 +186,7 @@ void DelegatedFrameHostAndroid::OnBeginFrame(const viz::BeginFrameArgs& args) {
 }
 
 void DelegatedFrameHostAndroid::ReclaimResources(
-    const std::vector<cc::ReturnedResource>& resources) {
+    const std::vector<viz::ReturnedResource>& resources) {
   client_->ReclaimResources(resources);
 }
 

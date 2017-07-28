@@ -230,9 +230,9 @@ class CCSerializationPerfTest : public testing::Test {
   static void RunComplexCompositorFrameTest(const std::string& test_name) {
     CompositorFrame frame;
 
-    std::vector<TransferableResource>& resource_list = frame.resource_list;
+    std::vector<viz::TransferableResource>& resource_list = frame.resource_list;
     for (uint32_t i = 0; i < 80; ++i) {
-      TransferableResource arbitrary_resource;
+      viz::TransferableResource arbitrary_resource;
       resource_list.push_back(arbitrary_resource);
     }
 

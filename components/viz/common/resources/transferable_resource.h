@@ -2,25 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RESOURCES_TRANSFERABLE_RESOURCE_H_
-#define CC_RESOURCES_TRANSFERABLE_RESOURCE_H_
+#ifndef COMPONENTS_VIZ_COMMON_RESOURCES_TRANSFERABLE_RESOURCE_H_
+#define COMPONENTS_VIZ_COMMON_RESOURCES_TRANSFERABLE_RESOURCE_H_
 
 #include <stdint.h>
 
 #include <vector>
 
-#include "cc/cc_export.h"
+#include "build/build_config.h"
 #include "components/viz/common/quads/resource_format.h"
 #include "components/viz/common/resources/resource_id.h"
+#include "components/viz/common/viz_common_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace cc {
+namespace viz {
+
 struct ReturnedResource;
 
-struct CC_EXPORT TransferableResource {
+struct VIZ_COMMON_EXPORT TransferableResource {
   TransferableResource();
   TransferableResource(const TransferableResource& other);
   ~TransferableResource();
@@ -29,9 +31,9 @@ struct CC_EXPORT TransferableResource {
   static std::vector<ReturnedResource> ReturnResources(
       const std::vector<TransferableResource>& input);
 
-  viz::ResourceId id;
+  ResourceId id;
   // Refer to ResourceProvider::Resource for the meaning of the following data.
-  viz::ResourceFormat format;
+  ResourceFormat format;
   gfx::BufferFormat buffer_format;
   uint32_t filter;
   gfx::Size size;
@@ -47,6 +49,6 @@ struct CC_EXPORT TransferableResource {
   gfx::ColorSpace color_space;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_RESOURCES_TRANSFERABLE_RESOURCE_H_
+#endif  // COMPONENTS_VIZ_COMMON_RESOURCES_TRANSFERABLE_RESOURCE_H_

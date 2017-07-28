@@ -34,7 +34,7 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
       const gfx::Transform& transform_for_tile_priority) override;
   void ReturnResources(
       uint32_t layer_tree_frame_sink_id,
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<viz::ReturnedResource>& resources) override;
   bool DemandDrawSw(SkCanvas* canvas) override;
   void SetMemoryPolicy(size_t bytes_limit) override {}
   void DidChangeRootLayerScrollOffset(
@@ -52,7 +52,7 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
     ~ReturnedResources();
 
     uint32_t layer_tree_frame_sink_id;
-    std::vector<cc::ReturnedResource> resources;
+    std::vector<viz::ReturnedResource> resources;
   };
   using FrameAckArray = std::vector<ReturnedResources>;
   void SwapReturnedResources(FrameAckArray* array);

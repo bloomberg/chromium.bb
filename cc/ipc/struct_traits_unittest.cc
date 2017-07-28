@@ -87,7 +87,7 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     std::move(callback).Run(std::move(r));
   }
 
-  void EchoReturnedResource(const ReturnedResource& r,
+  void EchoReturnedResource(const viz::ReturnedResource& r,
                             EchoReturnedResourceCallback callback) override {
     std::move(callback).Run(r);
   }
@@ -118,7 +118,7 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   }
 
   void EchoTransferableResource(
-      const TransferableResource& t,
+      const viz::TransferableResource& t,
       EchoTransferableResourceCallback callback) override {
     std::move(callback).Run(t);
   }
@@ -244,13 +244,13 @@ TEST_F(StructTraitsTest, CompositorFrame) {
       render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   solid_quad->SetNew(sqs, rect2, rect2, color2, force_anti_aliasing_off);
 
-  // TransferableResource constants.
+  // viz::TransferableResource constants.
   const uint32_t tr_id = 1337;
   const viz::ResourceFormat tr_format = viz::ALPHA_8;
   const gfx::BufferFormat tr_buffer_format = gfx::BufferFormat::R_8;
   const uint32_t tr_filter = 1234;
   const gfx::Size tr_size(1234, 5678);
-  TransferableResource resource;
+  viz::TransferableResource resource;
   resource.id = tr_id;
   resource.format = tr_format;
   resource.buffer_format = tr_buffer_format;
@@ -287,7 +287,7 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   EXPECT_EQ(begin_frame_ack, output.metadata.begin_frame_ack);
 
   ASSERT_EQ(1u, output.resource_list.size());
-  TransferableResource out_resource = output.resource_list[0];
+  viz::TransferableResource out_resource = output.resource_list[0];
   EXPECT_EQ(tr_id, out_resource.id);
   EXPECT_EQ(tr_format, out_resource.format);
   EXPECT_EQ(tr_buffer_format, out_resource.buffer_format);
@@ -981,13 +981,13 @@ TEST_F(StructTraitsTest, ReturnedResource) {
   const int count = 1234;
   const bool lost = true;
 
-  ReturnedResource input;
+  viz::ReturnedResource input;
   input.id = id;
   input.sync_token = sync_token;
   input.count = count;
   input.lost = lost;
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  ReturnedResource output;
+  viz::ReturnedResource output;
   proxy->EchoReturnedResource(input, &output);
   EXPECT_EQ(id, output.id);
   EXPECT_EQ(sync_token, output.sync_token);
@@ -1142,7 +1142,7 @@ TEST_F(StructTraitsTest, TransferableResource) {
       gpu::SyncToken(command_buffer_namespace, extra_data_field,
                      command_buffer_id, release_count);
   mailbox_holder.texture_target = texture_target;
-  TransferableResource input;
+  viz::TransferableResource input;
   input.id = id;
   input.format = format;
   input.filter = filter;
@@ -1153,7 +1153,7 @@ TEST_F(StructTraitsTest, TransferableResource) {
   input.shared_bitmap_sequence_number = shared_bitmap_sequence_number;
   input.is_overlay_candidate = is_overlay_candidate;
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  TransferableResource output;
+  viz::TransferableResource output;
   proxy->EchoTransferableResource(input, &output);
   EXPECT_EQ(id, output.id);
   EXPECT_EQ(format, output.format);

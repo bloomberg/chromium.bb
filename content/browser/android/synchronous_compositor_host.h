@@ -56,7 +56,7 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   bool DemandDrawSw(SkCanvas* canvas) override;
   void ReturnResources(
       uint32_t layer_tree_frame_sink_id,
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<viz::ReturnedResource>& resources) override;
   void SetMemoryPolicy(size_t bytes_limit) override;
   void DidChangeRootLayerScrollOffset(
       const gfx::ScrollOffset& root_offset) override;

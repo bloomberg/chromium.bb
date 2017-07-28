@@ -47,10 +47,10 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
 
   // viz::CompositorFrameSinkSupportClient:
   void DidReceiveCompositorFrameAck(
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   void ReclaimResources(
-      const std::vector<cc::ReturnedResource>& resources) override;
+      const std::vector<viz::ReturnedResource>& resources) override;
   void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override {}
   void OnBeginFramePausedChanged(bool paused) override;

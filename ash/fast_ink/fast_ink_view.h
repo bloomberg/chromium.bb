@@ -18,16 +18,16 @@ namespace aura {
 class Window;
 }
 
-namespace cc {
-struct ReturnedResource;
-}
-
 namespace gfx {
 class GpuMemoryBuffer;
 }
 
 namespace views {
 class Widget;
+}
+
+namespace viz {
+struct ReturnedResource;
 }
 
 namespace ash {
@@ -59,7 +59,7 @@ class FastInkView : public views::View {
   void DidReceiveCompositorFrameAck();
 
   // Call this to return resources so they can be reused or freed.
-  void ReclaimResources(const std::vector<cc::ReturnedResource>& resources);
+  void ReclaimResources(const std::vector<viz::ReturnedResource>& resources);
 
   void UpdateBuffer();
   void UpdateSurface();
