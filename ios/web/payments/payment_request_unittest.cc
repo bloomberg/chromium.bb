@@ -312,7 +312,139 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   EXPECT_EQ(expected_request, output_request);
 }
 
-// PaymentResponse serialization tests.
+// PaymentRequest serialization tests.
+
+// Tests that serializing a default PaymentCurrencyAmount yields the expected
+// result.
+TEST(PaymentRequestTest, EmptyPaymentCurrencyAmountDictionary) {
+  base::DictionaryValue expected_value;
+
+  expected_value.SetString("currency", "");
+  expected_value.SetString("value", "");
+  expected_value.SetString("currencySystem", "urn:iso:std:iso:4217");
+
+  PaymentCurrencyAmount payment_currency_amount;
+  EXPECT_TRUE(
+      expected_value.Equals(payment_currency_amount.ToDictionaryValue().get()));
+}
+
+// Tests that serializing a populated PaymentCurrencyAmount yields the expected
+// result.
+TEST(PaymentRequestTest, PopulatedCurrencyAmountDictionary) {
+  base::DictionaryValue expected_value;
+
+  expected_value.SetString("currency", "AUD");
+  expected_value.SetString("value", "-438.23");
+  expected_value.SetString("currencySystem", "urn:iso:std:iso:123456789");
+
+  PaymentCurrencyAmount payment_currency_amount;
+  payment_currency_amount.currency = base::ASCIIToUTF16("AUD");
+  payment_currency_amount.value = base::ASCIIToUTF16("-438.23");
+  payment_currency_amount.currency_system =
+      base::ASCIIToUTF16("urn:iso:std:iso:123456789");
+
+  EXPECT_TRUE(
+      expected_value.Equals(payment_currency_amount.ToDictionaryValue().get()));
+}
+
+// Tests that serializing a default PaymentItem yields the expected result.
+TEST(PaymentRequestTest, EmptyPaymentItemDictionary) {
+  base::DictionaryValue expected_value;
+
+  expected_value.SetString("label", "");
+  std::unique_ptr<base::DictionaryValue> amount_dict =
+      base::MakeUnique<base::DictionaryValue>();
+  amount_dict->SetString("currency", "");
+  amount_dict->SetString("value", "");
+  amount_dict->SetString("currencySystem", "urn:iso:std:iso:4217");
+  expected_value.SetDictionary("amount", std::move(amount_dict));
+  expected_value.SetBoolean("pending", false);
+
+  PaymentItem payment_item;
+  EXPECT_TRUE(expected_value.Equals(payment_item.ToDictionaryValue().get()));
+}
+
+// Tests that serializing a populated PaymentItem yields the expected result.
+TEST(PaymentRequestTest, PopulatedPaymentItemDictionary) {
+  base::DictionaryValue expected_value;
+
+  expected_value.SetString("label", "Payment Total");
+  std::unique_ptr<base::DictionaryValue> amount_dict =
+      base::MakeUnique<base::DictionaryValue>();
+  amount_dict->SetString("currency", "NZD");
+  amount_dict->SetString("value", "2,242,093.00");
+  amount_dict->SetString("currencySystem", "urn:iso:std:iso:4217");
+  expected_value.SetDictionary("amount", std::move(amount_dict));
+  expected_value.SetBoolean("pending", true);
+
+  PaymentItem payment_item;
+  payment_item.label = base::ASCIIToUTF16("Payment Total");
+  payment_item.amount.currency = base::ASCIIToUTF16("NZD");
+  payment_item.amount.value = base::ASCIIToUTF16("2,242,093.00");
+  payment_item.pending = true;
+
+  EXPECT_TRUE(expected_value.Equals(payment_item.ToDictionaryValue().get()));
+}
+
+// Tests that serializing a default PaymentDetailsModifier yields the expected
+// result.
+TEST(PaymentRequestTest, EmptyPaymentDetailsModifierDictionary) {
+  base::DictionaryValue expected_value;
+
+  std::unique_ptr<base::ListValue> supported_methods_list =
+      base::MakeUnique<base::ListValue>();
+  expected_value.SetList("supportedMethods", std::move(supported_methods_list));
+  std::unique_ptr<base::DictionaryValue> item_dict =
+      base::MakeUnique<base::DictionaryValue>();
+  item_dict->SetString("label", "");
+  std::unique_ptr<base::DictionaryValue> amount_dict =
+      base::MakeUnique<base::DictionaryValue>();
+  amount_dict->SetString("currency", "");
+  amount_dict->SetString("value", "");
+  amount_dict->SetString("currencySystem", "urn:iso:std:iso:4217");
+  item_dict->SetDictionary("amount", std::move(amount_dict));
+  item_dict->SetBoolean("pending", false);
+  expected_value.SetDictionary("total", std::move(item_dict));
+
+  PaymentDetailsModifier payment_detials_modififer;
+  EXPECT_TRUE(expected_value.Equals(
+      payment_detials_modififer.ToDictionaryValue().get()));
+}
+
+// Tests that serializing a populated PaymentDetailsModifier yields the expected
+// result.
+TEST(PaymentRequestTest, PopulatedDetailsModifierDictionary) {
+  base::DictionaryValue expected_value;
+
+  std::unique_ptr<base::ListValue> supported_methods_list =
+      base::MakeUnique<base::ListValue>();
+  supported_methods_list->GetList().emplace_back("visa");
+  supported_methods_list->GetList().emplace_back("amex");
+  expected_value.SetList("supportedMethods", std::move(supported_methods_list));
+  std::unique_ptr<base::DictionaryValue> item_dict =
+      base::MakeUnique<base::DictionaryValue>();
+  item_dict->SetString("label", "Gratuity");
+  std::unique_ptr<base::DictionaryValue> amount_dict =
+      base::MakeUnique<base::DictionaryValue>();
+  amount_dict->SetString("currency", "USD");
+  amount_dict->SetString("value", "139.99");
+  amount_dict->SetString("currencySystem", "urn:iso:std:iso:4217");
+  item_dict->SetDictionary("amount", std::move(amount_dict));
+  item_dict->SetBoolean("pending", false);
+  expected_value.SetDictionary("total", std::move(item_dict));
+
+  PaymentDetailsModifier payment_detials_modififer;
+  payment_detials_modififer.supported_methods.push_back(
+      base::ASCIIToUTF16("visa"));
+  payment_detials_modififer.supported_methods.push_back(
+      base::ASCIIToUTF16("amex"));
+  payment_detials_modififer.total.label = base::ASCIIToUTF16("Gratuity");
+  payment_detials_modififer.total.amount.currency = base::ASCIIToUTF16("USD");
+  payment_detials_modififer.total.amount.value = base::ASCIIToUTF16("139.99");
+
+  EXPECT_TRUE(expected_value.Equals(
+      payment_detials_modififer.ToDictionaryValue().get()));
+}
 
 // Tests that serializing a default PaymentResponse yields the expected result.
 TEST(PaymentRequestTest, EmptyResponseDictionary) {

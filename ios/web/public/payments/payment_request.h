@@ -38,6 +38,10 @@ class PaymentCurrencyAmount {
   // Returns true if the required values are present.
   bool FromDictionaryValue(const base::DictionaryValue& value);
 
+  // Creates a base::DictionaryValue with the properties of this
+  // PaymentCurrencyAmount.
+  std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
+
   // A currency identifier. The most common identifiers are three-letter
   // alphabetic codes as defined by ISO 4217 (for example, "USD" for US Dollars)
   // however any string is considered valid.
@@ -64,6 +68,10 @@ class PaymentItem {
   // Populates the properties of this PaymentItem from |value|. Returns true if
   // the required values are present.
   bool FromDictionaryValue(const base::DictionaryValue& value);
+
+  // Creates a base::DictionaryValue with the properties of this
+  // PaymentItem.
+  std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
 
   // A human-readable description of the item.
   base::string16 label;
@@ -118,6 +126,10 @@ class PaymentDetailsModifier {
 
   bool operator==(const PaymentDetailsModifier& other) const;
   bool operator!=(const PaymentDetailsModifier& other) const;
+
+  // Creates a base::DictionaryValue with the properties of this
+  // PaymentDetailsModifier.
+  std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
 
   // A sequence of payment method identifiers. The remaining fields in the
   // PaymentDetailsModifier apply only if the user selects a payment method

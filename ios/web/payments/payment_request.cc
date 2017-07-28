@@ -5,6 +5,7 @@
 #include "ios/web/public/payments/payment_request.h"
 
 #include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 
@@ -23,6 +24,9 @@ static const char kPaymentDetailsDisplayItems[] = "displayItems";
 static const char kPaymentDetailsError[] = "error";
 static const char kPaymentDetailsShippingOptions[] = "shippingOptions";
 static const char kPaymentDetailsTotal[] = "total";
+static const char kPaymentDetailsModifierSupportedMethods[] =
+    "supportedMethods";
+static const char kPaymentDetailsModifierTotal[] = "total";
 static const char kPaymentItemAmount[] = "amount";
 static const char kPaymentItemLabel[] = "label";
 static const char kPaymentItemPending[] = "pending";
@@ -88,6 +92,20 @@ bool PaymentCurrencyAmount::FromDictionaryValue(
   return true;
 }
 
+std::unique_ptr<base::DictionaryValue>
+PaymentCurrencyAmount::ToDictionaryValue() const {
+  std::unique_ptr<base::DictionaryValue> result =
+      base::MakeUnique<base::DictionaryValue>();
+
+  result->SetString(kPaymentCurrencyAmountCurrency, this->currency);
+  result->SetString(kPaymentCurrencyAmountValue, this->value);
+  if (!this->currency_system.empty())
+    result->SetString(kPaymentCurrencyAmountCurrencySystem,
+                      this->currency_system);
+
+  return result;
+}
+
 PaymentItem::PaymentItem() : pending(false) {}
 PaymentItem::~PaymentItem() = default;
 
@@ -117,6 +135,17 @@ bool PaymentItem::FromDictionaryValue(const base::DictionaryValue& value) {
   value.GetBoolean(kPaymentItemPending, &this->pending);
 
   return true;
+}
+
+std::unique_ptr<base::DictionaryValue> PaymentItem::ToDictionaryValue() const {
+  std::unique_ptr<base::DictionaryValue> result =
+      base::MakeUnique<base::DictionaryValue>();
+
+  result->SetString(kPaymentItemLabel, this->label);
+  result->SetDictionary(kPaymentItemAmount, this->amount.ToDictionaryValue());
+  result->SetBoolean(kPaymentItemPending, this->pending);
+
+  return result;
 }
 
 PaymentShippingOption::PaymentShippingOption() : selected(false) {}
@@ -174,6 +203,24 @@ bool PaymentDetailsModifier::operator==(
 bool PaymentDetailsModifier::operator!=(
     const PaymentDetailsModifier& other) const {
   return !(*this == other);
+}
+
+std::unique_ptr<base::DictionaryValue>
+PaymentDetailsModifier::ToDictionaryValue() const {
+  std::unique_ptr<base::DictionaryValue> result =
+      base::MakeUnique<base::DictionaryValue>();
+
+  std::unique_ptr<base::ListValue> methods =
+      base::MakeUnique<base::ListValue>();
+  size_t numMethods = this->supported_methods.size();
+  for (size_t i = 0; i < numMethods; i++) {
+    methods->GetList().emplace_back(this->supported_methods[i]);
+  }
+  result->SetList(kPaymentDetailsModifierSupportedMethods, std::move(methods));
+  result->SetDictionary(kPaymentDetailsModifierTotal,
+                        this->total.ToDictionaryValue());
+
+  return result;
 }
 
 PaymentDetails::PaymentDetails() {}
