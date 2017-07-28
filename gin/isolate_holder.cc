@@ -15,7 +15,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
-#include "build/build_config.h"
 #include "gin/debug_impl.h"
 #include "gin/function_template.h"
 #include "gin/per_isolate_data.h"
@@ -36,22 +35,15 @@ IsolateHolder::IsolateHolder(
 IsolateHolder::IsolateHolder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     AccessMode access_mode)
-    : IsolateHolder(std::move(task_runner),
-                    access_mode,
-                    kAllowAtomicsWait,
-                    nullptr,
-                    nullptr) {}
+    : IsolateHolder(std::move(task_runner), access_mode, kAllowAtomicsWait) {}
 
 IsolateHolder::IsolateHolder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     AccessMode access_mode,
-    AllowAtomicsWaitMode atomics_wait_mode,
-    intptr_t* reference,
-    v8::StartupData* startup_data)
+    AllowAtomicsWaitMode atomics_wait_mode)
     : access_mode_(access_mode) {
   v8::ArrayBuffer::Allocator* allocator = g_array_buffer_allocator;
   CHECK(allocator) << "You need to invoke gin::IsolateHolder::Initialize first";
-
   v8::Isolate::CreateParams params;
   params.entry_hook = DebugImpl::GetFunctionEntryHook();
   params.code_event_handler = DebugImpl::GetJitCodeEventHandler();
@@ -59,28 +51,45 @@ IsolateHolder::IsolateHolder(
                                        base::SysInfo::AmountOfVirtualMemory());
   params.array_buffer_allocator = allocator;
   params.allow_atomics_wait = atomics_wait_mode == kAllowAtomicsWait;
-  params.external_references = reference;
-
-  if (startup_data) {
-    CHECK(reference);
-    V8Initializer::GetV8ContextSnapshotData(&startup_data->data,
-                                            &startup_data->raw_size);
-    if (startup_data->data) {
-      params.snapshot_blob = startup_data;
-    }
-  }
   isolate_ = v8::Isolate::New(params);
-
-  SetUp(std::move(task_runner));
+  isolate_data_.reset(
+      new PerIsolateData(isolate_, allocator, access_mode, task_runner));
+  isolate_memory_dump_provider_.reset(new V8IsolateMemoryDumpProvider(this));
+#if defined(OS_WIN)
+  {
+    void* code_range;
+    size_t size;
+    isolate_->GetCodeRange(&code_range, &size);
+    Debug::CodeRangeCreatedCallback callback =
+        DebugImpl::GetCodeRangeCreatedCallback();
+    if (code_range && size && callback)
+      callback(code_range, size);
+  }
+#endif
 }
 
 IsolateHolder::IsolateHolder(intptr_t* reference_table,
                              v8::StartupData* existing_blob)
     : snapshot_creator_(
           new v8::SnapshotCreator(reference_table, existing_blob)),
-      isolate_(snapshot_creator_->GetIsolate()),
-      access_mode_(AccessMode::kSingleThread) {
-  SetUp(nullptr);
+      access_mode_(kSingleThread) {
+  v8::ArrayBuffer::Allocator* allocator = g_array_buffer_allocator;
+  CHECK(allocator) << "You need to invoke gin::IsolateHolder::Initialize first";
+  isolate_ = snapshot_creator_->GetIsolate();
+  isolate_data_.reset(
+      new PerIsolateData(isolate_, allocator, access_mode_, nullptr));
+  isolate_memory_dump_provider_.reset(new V8IsolateMemoryDumpProvider(this));
+#if defined(OS_WIN)
+  {
+    void* code_range;
+    size_t size;
+    isolate_->GetCodeRange(&code_range, &size);
+    Debug::CodeRangeCreatedCallback callback =
+        DebugImpl::GetCodeRangeCreatedCallback();
+    if (code_range && size && callback)
+      callback(code_range, size);
+  }
+#endif
 }
 
 IsolateHolder::~IsolateHolder() {
@@ -100,7 +109,7 @@ IsolateHolder::~IsolateHolder() {
   isolate_memory_dump_provider_.reset();
   isolate_data_.reset();
   isolate_->Dispose();
-  isolate_ = nullptr;
+  isolate_ = NULL;
 }
 
 // static
@@ -128,26 +137,6 @@ void IsolateHolder::EnableIdleTasks(
     std::unique_ptr<V8IdleTaskRunner> idle_task_runner) {
   DCHECK(isolate_data_.get());
   isolate_data_->EnableIdleTasks(std::move(idle_task_runner));
-}
-
-void IsolateHolder::SetUp(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  v8::ArrayBuffer::Allocator* allocator = g_array_buffer_allocator;
-  CHECK(allocator) << "You need to invoke gin::IsolateHolder::Initialize first";
-  isolate_data_.reset(
-      new PerIsolateData(isolate_, allocator, access_mode_, task_runner));
-  isolate_memory_dump_provider_.reset(new V8IsolateMemoryDumpProvider(this));
-#if defined(OS_WIN)
-  {
-    void* code_range;
-    size_t size;
-    isolate_->GetCodeRange(&code_range, &size);
-    Debug::CodeRangeCreatedCallback callback =
-        DebugImpl::GetCodeRangeCreatedCallback();
-    if (code_range && size && callback)
-      callback(code_range, size);
-  }
-#endif
 }
 
 }  // namespace gin

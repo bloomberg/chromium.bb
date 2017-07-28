@@ -60,12 +60,6 @@ class PLATFORM_EXPORT V8PerIsolateData {
   WTF_MAKE_NONCOPYABLE(V8PerIsolateData);
 
  public:
-  enum class V8ContextSnapshotMode {
-    kTakeSnapshot,
-    kDontUseSnapshot,
-    kUseSnapshot,
-  };
-
   class EndOfScopeTask {
     USING_FAST_MALLOC(EndOfScopeTask);
 
@@ -107,9 +101,7 @@ class PLATFORM_EXPORT V8PerIsolateData {
     virtual ~Data() = default;
   };
 
-  static v8::Isolate* Initialize(WebTaskRunner*,
-                                 intptr_t* refernce_table,
-                                 V8ContextSnapshotMode);
+  static v8::Isolate* Initialize(WebTaskRunner*);
 
   static V8PerIsolateData* From(v8::Isolate* isolate) {
     DCHECK(isolate);
@@ -151,17 +143,6 @@ class PLATFORM_EXPORT V8PerIsolateData {
   void SetInterfaceTemplate(const DOMWrapperWorld&,
                             const void* key,
                             v8::Local<v8::FunctionTemplate>);
-
-  // When v8::SnapshotCreator::CreateBlob() is called, we must not have
-  // persistent handles in Blink. This method clears them.
-  void ClearPersistentsForV8ContextSnapshot();
-
-  v8::SnapshotCreator* GetSnapshotCreator() const {
-    return isolate_holder_.snapshot_creator();
-  }
-  V8ContextSnapshotMode GetV8ContextSnapshotMode() const {
-    return v8_context_snapshot_mode_;
-  }
 
   // Accessor to the cache of cross-origin accessible operation's templates.
   // Created templates get automatically cached.
@@ -243,14 +224,11 @@ class PLATFORM_EXPORT V8PerIsolateData {
   }
 
  private:
-  V8PerIsolateData(WebTaskRunner*,
-                   intptr_t* reference_table,
-                   V8ContextSnapshotMode);
-  explicit V8PerIsolateData(intptr_t* reference_table);
+  explicit V8PerIsolateData(WebTaskRunner*);
   ~V8PerIsolateData();
 
-  using V8FunctionTemplateMap =
-      HashMap<const void*, v8::Eternal<v8::FunctionTemplate>>;
+  typedef HashMap<const void*, v8::Eternal<v8::FunctionTemplate>>
+      V8FunctionTemplateMap;
   V8FunctionTemplateMap& SelectInterfaceTemplateMap(const DOMWrapperWorld&);
   V8FunctionTemplateMap& SelectOperationTemplateMap(const DOMWrapperWorld&);
   bool HasInstance(const WrapperTypeInfo* untrusted,
@@ -260,16 +238,12 @@ class PLATFORM_EXPORT V8PerIsolateData {
                                                      v8::Local<v8::Value>,
                                                      V8FunctionTemplateMap&);
 
-  V8ContextSnapshotMode v8_context_snapshot_mode_;
-  // This isolate_holder_ must be initialized before initializing some other
-  // members below.
   gin::IsolateHolder isolate_holder_;
 
-  // interface_template_map_for_{,non_}main_world holds function templates for
+  // m_interfaceTemplateMapFor{,Non}MainWorld holds function templates for
   // the inerface objects.
   V8FunctionTemplateMap interface_template_map_for_main_world_;
   V8FunctionTemplateMap interface_template_map_for_non_main_world_;
-
   // m_operationTemplateMapFor{,Non}MainWorld holds function templates for
   // the cross-origin accessible DOM operations.
   V8FunctionTemplateMap operation_template_map_for_main_world_;
@@ -277,16 +251,6 @@ class PLATFORM_EXPORT V8PerIsolateData {
 
   // Contains lists of eternal names, such as dictionary keys.
   HashMap<const void*, Vector<v8::Eternal<v8::Name>>> eternal_name_cache_;
-
-  // Members required for the V8 context snapshot.
-  // v8::Context is created from this blob data image. This needs to be
-  // instantiated before |isolate_holder_| gets instantiated.
-  v8::StartupData startup_data_;
-  // When taking a V8 context snapshot, we can't keep V8 objects with eternal
-  // handles. So we use a special interface map that doesn't use eternal handles
-  // instead of the default V8FunctionTemplateMap.
-  V8GlobalValueMap<const WrapperTypeInfo*, v8::FunctionTemplate, v8::kNotWeak>
-      interface_template_map_for_v8_context_snapshot_;
 
   std::unique_ptr<StringCache> string_cache_;
   std::unique_ptr<V8PrivateProperty> private_property_;
