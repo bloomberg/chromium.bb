@@ -16,6 +16,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/bubble_anchor_helper.h"
@@ -24,6 +25,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/page_info/permission_selector_button.h"
+#include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
 #import "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/common/url_constants.h"
@@ -1257,47 +1259,6 @@ void PageInfoUIBridge::set_bubble_controller(
   bubble_controller_ = controller;
 }
 
-void PageInfoUIBridge::Show(gfx::NativeWindow parent,
-                            Profile* profile,
-                            content::WebContents* web_contents,
-                            const GURL& virtual_url,
-                            const security_state::SecurityInfo& security_info) {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    chrome::ShowPageInfoBubbleViews(parent, profile, web_contents, virtual_url,
-                                    security_info);
-    return;
-  }
-
-  // Don't show the bubble if it's already being shown. Since this method is
-  // called each time the location icon is clicked, each click toggles the
-  // bubble in and out.
-  if (g_is_bubble_showing)
-    return;
-
-  // Create the bridge. This will be owned by the bubble controller.
-  PageInfoUIBridge* bridge = new PageInfoUIBridge(web_contents);
-
-  // Create the bubble controller. It will dealloc itself when it closes,
-  // resetting |g_is_bubble_showing|.
-  PageInfoBubbleController* bubble_controller =
-      [[PageInfoBubbleController alloc] initWithParentWindow:parent
-                                            pageInfoUIBridge:bridge
-                                                 webContents:web_contents
-                                                         url:virtual_url];
-
-  if (!IsInternalURL(virtual_url)) {
-    // Initialize the presenter, which holds the model and controls the UI.
-    // This is also owned by the bubble controller.
-    PageInfo* presenter =
-        new PageInfo(bridge, profile,
-                     TabSpecificContentSettings::FromWebContents(web_contents),
-                     web_contents, virtual_url, security_info);
-    [bubble_controller setPresenter:presenter];
-  }
-
-  [bubble_controller showWindow:nil];
-}
-
 void PageInfoUIBridge::SetIdentityInfo(
     const PageInfoUI::IdentityInfo& identity_info) {
   [bubble_controller_ setIdentityInfo:identity_info];
@@ -1329,4 +1290,45 @@ void PageInfoUIBridge::DidFinishNavigation(
   }
   // If the browser navigates to another page, close the bubble.
   [bubble_controller_ close];
+}
+
+void ShowPageInfoDialogImpl(Browser* browser,
+                            content::WebContents* web_contents,
+                            const GURL& virtual_url,
+                            const security_state::SecurityInfo& security_info) {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    chrome::ShowPageInfoBubbleViews(browser, web_contents, virtual_url,
+                                    security_info);
+    return;
+  }
+
+  // Don't show the bubble if it's already being shown. Since this method is
+  // called each time the location icon is clicked, each click toggles the
+  // bubble in and out.
+  if (g_is_bubble_showing)
+    return;
+
+  // Create the bridge. This will be owned by the bubble controller.
+  PageInfoUIBridge* bridge = new PageInfoUIBridge(web_contents);
+  NSWindow* parent = browser->window()->GetNativeWindow();
+
+  // Create the bubble controller. It will dealloc itself when it closes,
+  // resetting |g_is_bubble_showing|.
+  PageInfoBubbleController* bubble_controller =
+      [[PageInfoBubbleController alloc] initWithParentWindow:parent
+                                            pageInfoUIBridge:bridge
+                                                 webContents:web_contents
+                                                         url:virtual_url];
+
+  if (!IsInternalURL(virtual_url)) {
+    // Initialize the presenter, which holds the model and controls the UI.
+    // This is also owned by the bubble controller.
+    PageInfo* presenter =
+        new PageInfo(bridge, browser->profile(),
+                     TabSpecificContentSettings::FromWebContents(web_contents),
+                     web_contents, virtual_url, security_info);
+    [bubble_controller setPresenter:presenter];
+  }
+
+  [bubble_controller showWindow:nil];
 }

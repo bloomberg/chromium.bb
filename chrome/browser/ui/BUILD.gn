@@ -800,6 +800,8 @@ split_static_library("ui") {
       "omnibox/clipboard_utils.cc",
       "omnibox/clipboard_utils.h",
       "overlay/overlay_window.h",
+      "page_info/page_info_dialog.cc",
+      "page_info/page_info_dialog.h",
       "page_info/page_info_infobar_delegate.cc",
       "page_info/page_info_infobar_delegate.h",
       "page_info/permission_menu_model.cc",

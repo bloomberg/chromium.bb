@@ -298,11 +298,6 @@ SimpleWebViewDialog::GetContentSettingBubbleModelDelegate() {
   return bubble_model_delegate_.get();
 }
 
-void SimpleWebViewDialog::ShowPageInfo(content::WebContents* web_contents) {
-  NOTIMPLEMENTED();
-  // TODO (markusheintz@): implement this
-}
-
 content::WebContents* SimpleWebViewDialog::GetActiveWebContents() const {
   return web_view_->web_contents();
 }

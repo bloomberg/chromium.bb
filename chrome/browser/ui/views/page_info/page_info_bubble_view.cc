@@ -15,14 +15,18 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/page_info/page_info.h"
+#include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
@@ -40,6 +44,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
@@ -59,6 +64,15 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "url/gurl.h"
+
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#endif
+
+using bubble_anchor_util::GetPageInfoAnchorRect;
+using bubble_anchor_util::GetPageInfoAnchorView;
 
 namespace {
 
@@ -202,6 +216,7 @@ class InternalPageInfoBubbleView : public views::BubbleDialogDelegateView {
   // If |anchor_view| is nullptr, or has no Widget, |parent_window| may be
   // provided to ensure this bubble is closed when the parent closes.
   InternalPageInfoBubbleView(views::View* anchor_view,
+                             const gfx::Rect& anchor_rect,
                              gfx::NativeView parent_window,
                              const GURL& url);
   ~InternalPageInfoBubbleView() override;
@@ -211,8 +226,6 @@ class InternalPageInfoBubbleView : public views::BubbleDialogDelegateView {
   int GetDialogButtons() const override;
 
  private:
-  friend class PageInfoBubbleView;
-
   // Used around icon and inside bubble border.
   static constexpr int kSpacing = 12;
 
@@ -321,12 +334,15 @@ void BubbleHeaderView::AddResetDecisionsLabel() {
 
 InternalPageInfoBubbleView::InternalPageInfoBubbleView(
     views::View* anchor_view,
+    const gfx::Rect& anchor_rect,
     gfx::NativeView parent_window,
     const GURL& url)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT) {
   g_shown_bubble_type = PageInfoBubbleView::BUBBLE_INTERNAL_PAGE;
   g_page_info_bubble = this;
   set_parent_window(parent_window);
+  if (!anchor_view)
+    SetAnchorRect(anchor_rect);
 
   int text = IDS_PAGE_INFO_INTERNAL_PAGE;
   int icon = IDR_PRODUCT_LOGO_16;
@@ -383,42 +399,28 @@ int InternalPageInfoBubbleView::GetDialogButtons() const {
 PageInfoBubbleView::~PageInfoBubbleView() {}
 
 // static
-views::BubbleDialogDelegateView* PageInfoBubbleView::ShowBubble(
-    views::View* anchor_view,
-    views::WidgetObserver* widget_observer,
-    const gfx::Rect& anchor_rect,
-    Profile* profile,
+views::BubbleDialogDelegateView* PageInfoBubbleView::CreatePageInfoBubble(
+    Browser* browser,
     content::WebContents* web_contents,
     const GURL& url,
     const security_state::SecurityInfo& security_info) {
+  views::View* anchor_view = GetPageInfoAnchorView(browser);
+  gfx::Rect anchor_rect =
+      anchor_view ? gfx::Rect() : GetPageInfoAnchorRect(browser);
   gfx::NativeView parent_window =
-      anchor_view ? nullptr : web_contents->GetNativeView();
+      platform_util::GetViewForWindow(browser->window()->GetNativeWindow());
+
   if (url.SchemeIs(content::kChromeUIScheme) ||
       url.SchemeIs(content::kChromeDevToolsScheme) ||
       url.SchemeIs(extensions::kExtensionScheme) ||
       url.SchemeIs(content::kViewSourceScheme)) {
-    // Use the concrete type so that |SetAnchorRect| can be called as a friend.
-    InternalPageInfoBubbleView* bubble =
-        new InternalPageInfoBubbleView(anchor_view, parent_window, url);
-    if (!anchor_view) {
-      bubble->SetAnchorRect(anchor_rect);
-    }
-    if (widget_observer) {
-      bubble->GetWidget()->AddObserver(widget_observer);
-    }
-    bubble->GetWidget()->Show();
-    return bubble;
+    return new InternalPageInfoBubbleView(anchor_view, anchor_rect,
+                                          parent_window, url);
   }
-  PageInfoBubbleView* bubble = new PageInfoBubbleView(
-      anchor_view, parent_window, profile, web_contents, url, security_info);
-  if (!anchor_view) {
-    bubble->SetAnchorRect(anchor_rect);
-  }
-  if (widget_observer) {
-    bubble->GetWidget()->AddObserver(widget_observer);
-  }
-  bubble->GetWidget()->Show();
-  return bubble;
+
+  return new PageInfoBubbleView(anchor_view, anchor_rect, parent_window,
+                                browser->profile(), web_contents, url,
+                                security_info);
 }
 
 // static
@@ -433,6 +435,7 @@ views::BubbleDialogDelegateView* PageInfoBubbleView::GetPageInfoBubble() {
 
 PageInfoBubbleView::PageInfoBubbleView(
     views::View* anchor_view,
+    const gfx::Rect& anchor_rect,
     gfx::NativeView parent_window,
     Profile* profile,
     content::WebContents* web_contents,
@@ -450,6 +453,8 @@ PageInfoBubbleView::PageInfoBubbleView(
   g_shown_bubble_type = BUBBLE_PAGE_INFO;
   g_page_info_bubble = this;
   set_parent_window(parent_window);
+  if (!anchor_view)
+    SetAnchorRect(anchor_rect);
 
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(
@@ -824,3 +829,18 @@ void PageInfoBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
       NOTREACHED();
   }
 }
+
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+void ShowPageInfoDialogImpl(Browser* browser,
+                            content::WebContents* web_contents,
+                            const GURL& virtual_url,
+                            const security_state::SecurityInfo& security_info) {
+  views::BubbleDialogDelegateView* bubble =
+      PageInfoBubbleView::CreatePageInfoBubble(browser, web_contents,
+                                               virtual_url, security_info);
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  bubble->GetWidget()->AddObserver(
+      browser_view->GetLocationBarView()->location_icon_view());
+  bubble->GetWidget()->Show();
+}
+#endif

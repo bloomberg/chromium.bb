@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 
+#include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
@@ -73,11 +74,7 @@ SkColor LocationIconView::GetTextColor() const {
 }
 
 bool LocationIconView::ShowBubble(const ui::Event& event) {
-  WebContents* contents = location_bar_->GetWebContents();
-  if (!contents)
-    return false;
-  location_bar_->delegate()->ShowPageInfo(contents);
-  return true;
+  return ShowPageInfoDialog(location_bar_->GetWebContents());
 }
 
 void LocationIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {

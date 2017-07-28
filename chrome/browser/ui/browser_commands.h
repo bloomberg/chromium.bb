@@ -105,7 +105,6 @@ void ManagePasswordsForPage(Browser* browser);
 void SavePage(Browser* browser);
 bool CanSavePage(const Browser* browser);
 void ShowFindBar(Browser* browser);
-bool ShowPageInfo(Browser* browser, content::WebContents* web_contents);
 void Print(Browser* browser);
 bool CanPrint(Browser* browser);
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)

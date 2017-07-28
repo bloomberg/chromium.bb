@@ -84,9 +84,6 @@ class LocationBarView : public LocationBar,
     virtual ContentSettingBubbleModelDelegate*
         GetContentSettingBubbleModelDelegate() = 0;
 
-    // Shows permissions and settings for the given web contents.
-    virtual void ShowPageInfo(content::WebContents* web_contents) = 0;
-
    protected:
     virtual ~Delegate() {}
   };
