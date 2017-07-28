@@ -119,14 +119,11 @@ UsbTransferStatus ConvertTransferResult(int rc) {
       return UsbTransferStatus::COMPLETED;
     case EPIPE:
       return UsbTransferStatus::STALLED;
-    case ENODEV:
-    case ESHUTDOWN:
-    case EPROTO:
-      return UsbTransferStatus::DISCONNECT;
     default:
-      // TODO(reillyg): Add a specific error message whenever one of the cases
-      // above fails to match.
-      USB_LOG(ERROR) << "Unknown system error: "
+      // Other errors are difficult to map to UsbTransferStatus and may be
+      // emitted in situations that vary by host controller. Log the specific
+      // error and return a generic one.
+      USB_LOG(ERROR) << "Low-level transfer error: "
                      << logging::SystemErrorCodeToString(rc);
       return UsbTransferStatus::TRANSFER_ERROR;
   }

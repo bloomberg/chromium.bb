@@ -37,7 +37,7 @@ namespace {
 
 const char kDeviceStateChangeInProgress[] =
     "An operation that changes the device state is in progress.";
-const char kDeviceUnavailable[] = "Device unavailable.";
+const char kDeviceDisconnected[] = "The device was disconnected.";
 const char kInterfaceNotFound[] =
     "The interface number provided is not supported by the device in its "
     "current configuration.";
@@ -58,7 +58,7 @@ DOMException* ConvertFatalTransferStatus(const UsbTransferStatus& status) {
     case UsbTransferStatus::CANCELLED:
       return DOMException::Create(kAbortError, "The transfer was cancelled.");
     case UsbTransferStatus::DISCONNECT:
-      return DOMException::Create(kNotFoundError, kDeviceUnavailable);
+      return DOMException::Create(kNotFoundError, kDeviceDisconnected);
     case UsbTransferStatus::COMPLETED:
     case UsbTransferStatus::STALLED:
     case UsbTransferStatus::BABBLE:
@@ -513,7 +513,7 @@ int USBDevice::FindAlternateIndex(size_t interface_index,
 bool USBDevice::EnsureNoDeviceOrInterfaceChangeInProgress(
     ScriptPromiseResolver* resolver) const {
   if (!device_)
-    resolver->Reject(DOMException::Create(kNotFoundError, kDeviceUnavailable));
+    resolver->Reject(DOMException::Create(kNotFoundError, kDeviceDisconnected));
   else if (device_state_change_in_progress_)
     resolver->Reject(
         DOMException::Create(kInvalidStateError, kDeviceStateChangeInProgress));
@@ -527,7 +527,7 @@ bool USBDevice::EnsureNoDeviceOrInterfaceChangeInProgress(
 
 bool USBDevice::EnsureDeviceConfigured(ScriptPromiseResolver* resolver) const {
   if (!device_)
-    resolver->Reject(DOMException::Create(kNotFoundError, kDeviceUnavailable));
+    resolver->Reject(DOMException::Create(kNotFoundError, kDeviceDisconnected));
   else if (device_state_change_in_progress_)
     resolver->Reject(
         DOMException::Create(kInvalidStateError, kDeviceStateChangeInProgress));
@@ -919,7 +919,7 @@ void USBDevice::OnConnectionError() {
   device_.reset();
   opened_ = false;
   for (ScriptPromiseResolver* resolver : device_requests_)
-    resolver->Reject(DOMException::Create(kNotFoundError, kDeviceUnavailable));
+    resolver->Reject(DOMException::Create(kNotFoundError, kDeviceDisconnected));
   device_requests_.clear();
 }
 
