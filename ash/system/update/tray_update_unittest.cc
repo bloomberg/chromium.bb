@@ -54,4 +54,35 @@ TEST_F(TrayUpdateTest, VisibilityAfterFlashUpdate) {
   EXPECT_EQ("Restart to update Adobe Flash Player", base::UTF16ToUTF8(label));
 }
 
+// Tests that the update icon's visibility after an update becomes
+// available for downloading over cellular connection.
+TEST_F(TrayUpdateTest, VisibilityAfterUpdateOverCellularAvailable) {
+  SystemTray* tray = GetPrimarySystemTray();
+  TrayUpdate* tray_update = tray->tray_update();
+
+  // The system starts with no update pending, so the icon isn't visible.
+  EXPECT_FALSE(tray_update->tray_view()->visible());
+
+  // Simulate an update available for downloading over cellular connection.
+  Shell::Get()
+      ->system_tray_controller()
+      ->SetUpdateOverCellularAvailableIconVisible(true);
+
+  // Tray item is now visible.
+  EXPECT_TRUE(tray_update->tray_view()->visible());
+
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  base::string16 label = tray_update->GetLabelForTesting()->text();
+  EXPECT_EQ("Click to view update details", base::UTF16ToUTF8(label));
+
+  // Simulate the user's one time permission on downloading the update is
+  // granted.
+  Shell::Get()
+      ->system_tray_controller()
+      ->SetUpdateOverCellularAvailableIconVisible(false);
+
+  // Tray item disappears.
+  EXPECT_FALSE(tray_update->tray_view()->visible());
+}
+
 }  // namespace ash

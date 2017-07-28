@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "chromeos/dbus/update_engine_client.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -39,8 +38,7 @@ class SystemTrayDelegateChromeOS
     : public ash::SystemTrayDelegate,
       public content::NotificationObserver,
       public chrome::BrowserListObserver,
-      public extensions::AppWindowRegistry::Observer,
-      public UpdateEngineClient::Observer {
+      public extensions::AppWindowRegistry::Observer {
  public:
   SystemTrayDelegateChromeOS();
   ~SystemTrayDelegateChromeOS() override;
@@ -90,9 +88,6 @@ class SystemTrayDelegateChromeOS
 
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details);
-
-  // Overridden from UpdateEngineClient::Observer.
-  void OnUpdateOverCellularTargetSet(bool success) override;
 
   std::unique_ptr<content::NotificationRegistrar> registrar_;
   std::unique_ptr<PrefChangeRegistrar> user_pref_registrar_;

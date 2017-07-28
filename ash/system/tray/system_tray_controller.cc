@@ -217,14 +217,15 @@ void SystemTrayController::ShowUpdateIcon(mojom::UpdateSeverity severity,
   }
 }
 
-void SystemTrayController::ShowUpdateOverCellularAvailableIcon() {
+void SystemTrayController::SetUpdateOverCellularAvailableIconVisible(
+    bool visible) {
   // Show the icon on all displays.
   for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
     ash::SystemTray* tray = root_window_controller->GetSystemTray();
     // External monitors might not have a tray yet.
     if (!tray)
       continue;
-    tray->tray_update()->ShowUpdateOverCellularAvailableIcon();
+    tray->tray_update()->SetUpdateOverCellularAvailableIconVisible(visible);
   }
 }
 

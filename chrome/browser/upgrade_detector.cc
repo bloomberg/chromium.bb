@@ -110,6 +110,11 @@ void UpgradeDetector::NotifyUpdateOverCellularAvailable() {
     observer.OnUpdateOverCellularAvailable();
 }
 
+void UpgradeDetector::NotifyUpdateOverCellularOneTimePermissionGranted() {
+  for (auto& observer : observer_list_)
+    observer.OnUpdateOverCellularOneTimePermissionGranted();
+}
+
 void UpgradeDetector::TriggerCriticalUpdate() {
   const base::TimeDelta idle_timer = UseTestingIntervals() ?
       base::TimeDelta::FromSeconds(kIdleRepeatingTimerWait) :

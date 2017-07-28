@@ -93,13 +93,19 @@ class VersionUpdater {
                           const ChannelCallback& callback) = 0;
   virtual void GetEolStatus(const EolStatusCallback& callback) = 0;
 
-  // Set the update over cellular target in |target_version| and |target_size|
-  // arguments maintained by update engine. The arguments are later used by
-  // update engine to match the given target with the server head and to allow
-  // update over cellular to this given target.
-  virtual void SetUpdateOverCellularTarget(const StatusCallback& callback,
-                                           const std::string& target_version,
-                                           int64_t target_size) = 0;
+  // Sets a one time permission on a certain update in Update Engine.
+  // - update_version: the Chrome OS version we want to update to.
+  // - update_size: the size of that Chrome OS version in bytes.
+  // These two parameters are a failsafe to prevent downloading an update that
+  // the user didn't agree to. They should be set using the version and size we
+  // received from update engine when it broadcasts NEED_PERMISSION_TO_UPDATE.
+  // They are used by update engine to double-check with update server in case
+  // there's a new update available or a delta update becomes a full update with
+  // a larger size.
+  virtual void SetUpdateOverCellularOneTimePermission(
+      const StatusCallback& callback,
+      const std::string& update_version,
+      int64_t update_size) = 0;
 #endif
 };
 

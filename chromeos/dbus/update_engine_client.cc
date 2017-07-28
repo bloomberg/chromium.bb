@@ -247,24 +247,27 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void SetUpdateOverCellularTarget(
-      const std::string& target_version,
-      int64_t target_size,
-      const SetUpdateOverCellularTargetCallback& callback) override {
+  void SetUpdateOverCellularOneTimePermission(
+      const std::string& update_version,
+      int64_t update_size,
+      const UpdateOverCellularOneTimePermissionCallback& callback) override {
+    // TODO(weidongg): Change 'kSetUpdateOverCellularTarget' to
+    // 'kSetUpdateOverCellularOneTimePermission'
     dbus::MethodCall method_call(update_engine::kUpdateEngineInterface,
                                  update_engine::kSetUpdateOverCellularTarget);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(target_version);
-    writer.AppendInt64(target_size);
+    writer.AppendString(update_version);
+    writer.AppendInt64(update_size);
 
     VLOG(1) << "Requesting UpdateEngine to allow updates over cellular "
-            << "to target version: \"" << target_version << "\" "
-            << "target_size: " << target_size;
+            << "to target version: \"" << update_version << "\" "
+            << "target_size: " << update_size;
 
     return update_engine_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&UpdateEngineClientImpl::OnSetUpdateOverCellularTarget,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::Bind(
+            &UpdateEngineClientImpl::OnSetUpdateOverCellularOneTimePermission,
+            weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
  protected:
@@ -464,9 +467,10 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     callback.Run();
   }
 
-  // Called when a response for SetUpdateOverCellularPermission() is received.
-  void OnSetUpdateOverCellularTarget(
-      const SetUpdateOverCellularTargetCallback& callback,
+  // Called when a response for SetUpdateOverCellularOneTimePermission() is
+  // received.
+  void OnSetUpdateOverCellularOneTimePermission(
+      const UpdateOverCellularOneTimePermissionCallback& callback,
       dbus::Response* response) {
     bool success = true;
     if (!response) {
@@ -475,8 +479,10 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
                  << " call failed";
     }
 
-    for (auto& observer : observers_) {
-      observer.OnUpdateOverCellularTargetSet(success);
+    if (success) {
+      for (auto& observer : observers_) {
+        observer.OnUpdateOverCellularOneTimePermissionGranted();
+      }
     }
 
     callback.Run(success);
@@ -587,10 +593,10 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
     callback.Run();
   }
 
-  void SetUpdateOverCellularTarget(
-      const std::string& target_version,
-      int64_t target_size,
-      const SetUpdateOverCellularTargetCallback& callback) override {}
+  void SetUpdateOverCellularOneTimePermission(
+      const std::string& update_version,
+      int64_t update_size,
+      const UpdateOverCellularOneTimePermissionCallback& callback) override {}
 
   std::string current_channel_;
   std::string target_channel_;

@@ -568,22 +568,22 @@ void AboutHandler::HandleRequestUpdateOverCellular(
     const base::ListValue* args) {
   CHECK_EQ(2U, args->GetSize());
 
-  std::string target_version;
-  std::string target_size_string;
-  int64_t target_size;
+  std::string update_version;
+  std::string update_size_string;
+  int64_t update_size;
 
-  CHECK(args->GetString(0, &target_version));
-  CHECK(args->GetString(1, &target_size_string));
-  CHECK(base::StringToInt64(target_size_string, &target_size));
+  CHECK(args->GetString(0, &update_version));
+  CHECK(args->GetString(1, &update_size_string));
+  CHECK(base::StringToInt64(update_size_string, &update_size));
 
-  RequestUpdateOverCellular(target_version, target_size);
+  RequestUpdateOverCellular(update_version, update_size);
 }
 
-void AboutHandler::RequestUpdateOverCellular(const std::string& target_version,
-                                             int64_t target_size) {
-  version_updater_->SetUpdateOverCellularTarget(
+void AboutHandler::RequestUpdateOverCellular(const std::string& update_version,
+                                             int64_t update_size) {
+  version_updater_->SetUpdateOverCellularOneTimePermission(
       base::Bind(&AboutHandler::SetUpdateStatus, base::Unretained(this)),
-      target_version, target_size);
+      update_version, update_size);
 }
 
 #endif  // defined(OS_CHROMEOS)
