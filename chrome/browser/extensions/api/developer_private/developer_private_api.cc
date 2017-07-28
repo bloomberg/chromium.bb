@@ -1057,8 +1057,9 @@ bool DeveloperPrivateLoadDirectoryFunction::LoadByFileSystemAPI(
 
   project_base_path_ = project_path;
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
           &DeveloperPrivateLoadDirectoryFunction::ClearExistingDirectoryContent,
           this, project_base_path_));
@@ -1077,7 +1078,6 @@ void DeveloperPrivateLoadDirectoryFunction::Load() {
 
 void DeveloperPrivateLoadDirectoryFunction::ClearExistingDirectoryContent(
     const base::FilePath& project_path) {
-
   // Clear the project directory before copying new files.
   base::DeleteFile(project_path, true /*recursive*/);
 
@@ -1168,8 +1168,9 @@ void DeveloperPrivateLoadDirectoryFunction::SnapshotFileCallback(
     return;
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&DeveloperPrivateLoadDirectoryFunction::CopyFile, this,
                      src_path, target_path));
 }
