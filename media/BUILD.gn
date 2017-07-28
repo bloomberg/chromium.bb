@@ -113,6 +113,9 @@ component("media") {
     "//media/filters",
     "//media/formats",
     "//media/renderers",
+
+    # media_switches.h needs ppapi/features/features.h.
+    "//ppapi/features",
     "//ui/gfx:color_space",
   ]
 
