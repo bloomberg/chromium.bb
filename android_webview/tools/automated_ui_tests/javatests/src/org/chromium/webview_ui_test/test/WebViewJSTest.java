@@ -15,13 +15,13 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static android.support.test.espresso.web.sugar.Web.onWebView;
 
 import android.support.test.filters.MediumTest;
-import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.webview_ui_test.WebViewUiTestActivity;
 import org.chromium.webview_ui_test.test.util.UseLayout;
 import org.chromium.webview_ui_test.test.util.WebViewUiTestRule;
@@ -32,8 +32,7 @@ import org.chromium.webview_ui_test.test.util.WebViewUiTestRule;
  *
  * The ActivityTestRule used in this test ensures that Javascripts and webpages are loaded
  */
-// TODO(yolandyan): Switch to BaseJUnit4ClassRunner once it is committed
-@RunWith(AndroidJUnit4.class)
+@RunWith(BaseJUnit4ClassRunner.class)
 public class WebViewJSTest {
     @Rule
     public WebViewUiTestRule mWebViewActivityRule = new WebViewUiTestRule(
