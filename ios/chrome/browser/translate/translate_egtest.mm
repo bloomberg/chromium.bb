@@ -107,6 +107,20 @@ NSString* GetTranslateInfobarSwitchLabel(const std::string& language) {
       IDS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE, base::UTF8ToUTF16(language)));
 }
 
+// Returns a matcher for the button with label "Cancel" in the language picker.
+// TODO(crbug.com/750344): Change the matcher to use accessibility ID.
+id<GREYMatcher> LanguagePickerCancelButton() {
+  return grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(@"Cancel"),
+                    grey_userInteractionEnabled(), nil);
+}
+
+// Returns a matcher for the button with label "Done" in the language picker.
+// TODO(crbug.com/750344): Change the matcher to use accessibility ID.
+id<GREYMatcher> LanguagePickerDoneButton() {
+  return grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(@"Done"),
+                    grey_userInteractionEnabled(), nil);
+}
+
 #pragma mark - TestResponseProvider
 
 // A ResponseProvider that provides html responses of texts in different
@@ -603,9 +617,8 @@ using translate::LanguageDetectionController;
 
   // The language picker uses the system accessibility labels (thus no
   // IDS_CANCEL here).
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
-                                   @"Cancel")] assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:LanguagePickerCancelButton()]
+      assertWithMatcher:grey_notNil()];
 
   // Change the language using the picker.
   NSString* const kPickedLanguage = @"Finnish";
@@ -614,9 +627,9 @@ using translate::LanguageDetectionController;
       grey_sufficientlyVisible(), nil);
   [[EarlGrey selectElementWithMatcher:languageMatcher]
       performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
-                                   @"Done")] performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:LanguagePickerDoneButton()]
+      performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    kPickedLanguage)]
