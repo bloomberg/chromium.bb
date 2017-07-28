@@ -424,6 +424,8 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // Cache of scratch memory
   std::vector<uint8_t> scratch_memory_;
 
+  std::unique_ptr<DCLayerSharedState> dc_layer_shared_state_;
+
   base::WeakPtrFactory<GLES2DecoderPassthroughImpl> weak_ptr_factory_;
 
 // Include the prototypes of all the doer functions from a separate header to

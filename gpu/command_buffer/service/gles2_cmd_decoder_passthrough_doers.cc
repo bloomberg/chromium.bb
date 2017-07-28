@@ -6,6 +6,8 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_version_info.h"
 
 namespace gpu {
@@ -3652,13 +3654,28 @@ error::Error GLES2DecoderPassthroughImpl::DoReleaseTexImage2DCHROMIUM(
     return error::kNoError;
   }
 
+  GLuint current_client_texture =
+      bound_textures_[GL_TEXTURE_2D][active_texture_unit_];
+  if (current_client_texture == 0) {
+    InsertError(GL_INVALID_OPERATION, "No texture bound");
+    return error::kNoError;
+  }
+
   gl::GLImage* image = group_->image_manager()->LookupImage(imageId);
   if (image == nullptr) {
     InsertError(GL_INVALID_OPERATION, "No image found with the given ID");
     return error::kNoError;
   }
 
-  image->ReleaseTexImage(target);
+  scoped_refptr<TexturePassthrough> passthrough_texture =
+      resources_->texture_object_map[current_client_texture];
+  DCHECK(passthrough_texture != nullptr);
+  // Only release the image if it is currently bound
+  if (passthrough_texture->GetLevelImage(target, 0) != image) {
+    image->ReleaseTexImage(target);
+    passthrough_texture->SetLevelImage(target, 0, nullptr);
+  }
+
   return error::kNoError;
 }
 
@@ -3804,7 +3821,19 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerSharedStateCHROMIUM(
     const GLfloat* clip_rect,
     GLint z_order,
     const GLfloat* transform) {
-  NOTIMPLEMENTED();
+  if (!dc_layer_shared_state_) {
+    dc_layer_shared_state_.reset(new DCLayerSharedState);
+  }
+  dc_layer_shared_state_->opacity = opacity;
+  dc_layer_shared_state_->is_clipped = is_clipped ? true : false;
+  dc_layer_shared_state_->clip_rect = gfx::ToEnclosingRect(
+      gfx::RectF(clip_rect[0], clip_rect[1], clip_rect[2], clip_rect[3]));
+  dc_layer_shared_state_->z_order = z_order;
+  dc_layer_shared_state_->transform = gfx::Transform(
+      transform[0], transform[1], transform[2], transform[3], transform[4],
+      transform[5], transform[6], transform[7], transform[8], transform[9],
+      transform[10], transform[11], transform[12], transform[13], transform[14],
+      transform[15]);
   return error::kNoError;
 }
 
@@ -3814,8 +3843,71 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerCHROMIUM(
     const GLfloat* contents_rect,
     GLuint background_color,
     GLuint edge_aa_mask,
+    GLenum filter,
     const GLfloat* bounds_rect) {
-  NOTIMPLEMENTED();
+  switch (filter) {
+    case GL_NEAREST:
+    case GL_LINEAR:
+      break;
+    default:
+      InsertError(GL_INVALID_OPERATION, "invalid filter.");
+      return error::kNoError;
+  }
+
+  if (!dc_layer_shared_state_) {
+    InsertError(GL_INVALID_OPERATION,
+                "glScheduleDCLayerSharedStateCHROMIUM has not been called.");
+    return error::kNoError;
+  }
+
+  if (num_textures < 0 || num_textures > 4) {
+    InsertError(GL_INVALID_OPERATION,
+                "number of textures greater than maximum of 4.");
+    return error::kNoError;
+  }
+
+  gfx::RectF contents_rect_object(contents_rect[0], contents_rect[1],
+                                  contents_rect[2], contents_rect[3]);
+  gfx::RectF bounds_rect_object(bounds_rect[0], bounds_rect[1], bounds_rect[2],
+                                bounds_rect[3]);
+
+  std::vector<scoped_refptr<gl::GLImage>> images(num_textures);
+  for (int i = 0; i < num_textures; ++i) {
+    GLuint contents_texture_client_id = contents_texture_ids[i];
+    if (contents_texture_client_id != 0) {
+      auto texture_iter =
+          resources_->texture_object_map.find(contents_texture_client_id);
+      if (texture_iter == resources_->texture_object_map.end()) {
+        InsertError(GL_INVALID_VALUE, "unknown texture.");
+        return error::kNoError;
+      }
+
+      scoped_refptr<TexturePassthrough> passthrough_texture =
+          texture_iter->second;
+      DCHECK(passthrough_texture != nullptr);
+      DCHECK(passthrough_texture->target() == GL_TEXTURE_2D);
+
+      scoped_refptr<gl::GLImage> image =
+          passthrough_texture->GetLevelImage(GL_TEXTURE_2D, 0);
+      if (image == nullptr) {
+        InsertError(GL_INVALID_VALUE, "unsupported texture format");
+        return error::kNoError;
+      }
+      images[i] = image;
+    }
+  }
+
+  ui::DCRendererLayerParams params(
+      dc_layer_shared_state_->is_clipped, dc_layer_shared_state_->clip_rect,
+      dc_layer_shared_state_->z_order, dc_layer_shared_state_->transform,
+      images, contents_rect_object, gfx::ToEnclosingRect(bounds_rect_object),
+      background_color, edge_aa_mask, dc_layer_shared_state_->opacity, filter);
+
+  if (!surface_->ScheduleDCLayer(params)) {
+    InsertError(GL_INVALID_OPERATION, "failed to schedule DCLayer");
+    return error::kNoError;
+  }
+
   return error::kNoError;
 }
 
@@ -4130,13 +4222,52 @@ error::Error GLES2DecoderPassthroughImpl::DoSetDrawRectangleCHROMIUM(
     GLint y,
     GLint width,
     GLint height) {
-  NOTIMPLEMENTED();
+  FlushErrors();
+
+  GLint current_framebuffer = 0;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &current_framebuffer);
+  if (current_framebuffer != 0) {
+    InsertError(GL_INVALID_OPERATION, "framebuffer must not be bound.");
+    return error::kNoError;
+  }
+
+  if (!surface_->SupportsDCLayers()) {
+    InsertError(GL_INVALID_OPERATION,
+                "surface doesn't support SetDrawRectangle.");
+    return error::kNoError;
+  }
+
+  gfx::Rect rect(x, y, width, height);
+  if (!surface_->SetDrawRectangle(rect)) {
+    InsertError(GL_INVALID_OPERATION, "SetDrawRectangle failed on surface");
+    return error::kNoError;
+  }
+
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoSetEnableDCLayersCHROMIUM(
     GLboolean enable) {
-  NOTIMPLEMENTED();
+  FlushErrors();
+
+  GLint current_framebuffer = 0;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &current_framebuffer);
+  if (current_framebuffer != 0) {
+    InsertError(GL_INVALID_OPERATION, "framebuffer must not be bound.");
+    return error::kNoError;
+  }
+
+  if (!surface_->SupportsDCLayers()) {
+    InsertError(GL_INVALID_OPERATION,
+                "surface doesn't support SetDrawRectangle.");
+    return error::kNoError;
+  }
+
+  if (!surface_->SetEnableDCLayers(!!enable)) {
+    InsertError(GL_INVALID_OPERATION, "SetEnableDCLayers failed on surface.");
+    return error::kNoError;
+  }
+
   return error::kNoError;
 }
 

@@ -12,6 +12,8 @@
 
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
 
 // Define this for extra GL error debugging (slower).
@@ -35,6 +37,22 @@ struct Capabilities;
 class FeatureInfo;
 
 namespace gles2 {
+
+struct CALayerSharedState {
+  float opacity;
+  bool is_clipped;
+  gfx::Rect clip_rect;
+  int sorting_context_id;
+  gfx::Transform transform;
+};
+
+struct DCLayerSharedState {
+  float opacity;
+  bool is_clipped;
+  gfx::Rect clip_rect;
+  int z_order;
+  gfx::Transform transform;
+};
 
 std::vector<int> GetAllGLErrors();
 
