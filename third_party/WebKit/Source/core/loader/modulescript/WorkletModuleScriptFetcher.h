@@ -13,6 +13,16 @@
 
 namespace blink {
 
+// WorkletModuleScriptFetcher implements the custom fetch logic for worklet's
+// module loading defined in:
+// https://drafts.css-houdini.org/worklets/#fetch-a-worklet-script
+//
+// This class works as follows. First, this queries WorkletModuleResponsesMap
+// about whether a module script in question has already been cached. If the
+// module script is in the map, this retrieves it as ModuleScriptCreationParams
+// and returns it to its client. If the module script isn't in the map, this
+// fetches the module script via the default module fetch path and then caches
+// it in the map.
 class CORE_EXPORT WorkletModuleScriptFetcher final
     : public ModuleScriptFetcher,
       public WorkletModuleResponsesMap::Client {
