@@ -16,15 +16,13 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_loader.h"
 #include "chrome/common/url_constants.h"
 #include "components/user_manager/user_image/user_image.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
-
-using content::BrowserThread;
 
 namespace chromeos {
 namespace {
@@ -37,8 +35,6 @@ const char* kWhitelistedDirectories[] = {
 void ImageLoaded(
     const content::URLDataSource::GotDataCallback& got_data_callback,
     std::unique_ptr<user_manager::UserImage> user_image) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   if (user_image->has_image_bytes())
     got_data_callback.Run(user_image->image_bytes());
   else
@@ -48,11 +44,9 @@ void ImageLoaded(
 }  // namespace
 
 ImageSource::ImageSource() : weak_factory_(this) {
-  base::SequencedWorkerPool* blocking_pool =
-      BrowserThread::GetBlockingPool();
-  task_runner_ = blocking_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-      blocking_pool->GetSequenceToken(),
-      base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+  task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
 ImageSource::~ImageSource() {
