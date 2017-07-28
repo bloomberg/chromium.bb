@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/fps_meter.h"
 
 #include "base/macros.h"
+#include "chrome/browser/vr/test/animation_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace vr {
@@ -13,14 +14,6 @@ namespace {
 
 static constexpr double kTolerance = 0.01;
 
-base::TimeTicks usToTicks(uint64_t us) {
-  return base::TimeTicks::FromInternalValue(us);
-}
-
-base::TimeDelta usToDelta(uint64_t us) {
-  return base::TimeDelta::FromInternalValue(us);
-}
-
 }  // namespace
 
 TEST(FPSMeter, GetFPSWithTooFewFrames) {
@@ -28,11 +21,11 @@ TEST(FPSMeter, GetFPSWithTooFewFrames) {
   EXPECT_FALSE(meter.CanComputeFPS());
   EXPECT_FLOAT_EQ(0.0, meter.GetFPS());
 
-  meter.AddFrame(usToTicks(16000));
+  meter.AddFrame(MicrosecondsToTicks(16000));
   EXPECT_FALSE(meter.CanComputeFPS());
   EXPECT_FLOAT_EQ(0.0, meter.GetFPS());
 
-  meter.AddFrame(usToTicks(32000));
+  meter.AddFrame(MicrosecondsToTicks(32000));
   EXPECT_TRUE(meter.CanComputeFPS());
   EXPECT_LT(0.0, meter.GetFPS());
 }
@@ -42,8 +35,8 @@ TEST(FPSMeter, AccurateFPSWithManyFrames) {
   EXPECT_FALSE(meter.CanComputeFPS());
   EXPECT_FLOAT_EQ(0.0, meter.GetFPS());
 
-  base::TimeTicks now = usToTicks(1);
-  base::TimeDelta frame_time = usToDelta(16666);
+  base::TimeTicks now = MicrosecondsToTicks(1);
+  base::TimeDelta frame_time = MicrosecondsToDelta(16666);
 
   meter.AddFrame(now);
   EXPECT_FALSE(meter.CanComputeFPS());
@@ -62,7 +55,7 @@ TEST(FPSMeter, AccurateFPSWithHigherFramerate) {
   EXPECT_FALSE(meter.CanComputeFPS());
   EXPECT_FLOAT_EQ(0.0, meter.GetFPS());
 
-  base::TimeTicks now = usToTicks(1);
+  base::TimeTicks now = MicrosecondsToTicks(1);
   base::TimeDelta frame_time = base::TimeDelta::FromSecondsD(1.0 / 90.0);
 
   meter.AddFrame(now);

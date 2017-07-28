@@ -23,8 +23,8 @@ std::unique_ptr<cc::Animation> CreateBoundsAnimation(int id,
                                                      const gfx::SizeF& to,
                                                      base::TimeDelta duration);
 
-base::TimeTicks UsToTicks(uint64_t us);
-base::TimeDelta UsToDelta(uint64_t us);
+base::TimeTicks MicrosecondsToTicks(uint64_t us);
+base::TimeDelta MicrosecondsToDelta(uint64_t us);
 
 base::TimeTicks MsToTicks(uint64_t us);
 base::TimeDelta MsToDelta(uint64_t us);
