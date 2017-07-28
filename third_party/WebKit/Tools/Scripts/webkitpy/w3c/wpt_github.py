@@ -133,18 +133,6 @@ class WPTGitHub(object):
         if status_code not in (200, 204):
             raise GitHubError('Received non-200 status code attempting to delete label: {}'.format(status_code))
 
-    def in_flight_pull_requests(self):
-        path = '/search/issues?q=repo:{}/{}%20is:open%20type:pr%20label:{}'.format(
-            WPT_GH_ORG,
-            WPT_GH_REPO_NAME,
-            EXPORT_PR_LABEL
-        )
-        data, status_code = self.request(path, method='GET')
-        if status_code == 200:
-            return [self.make_pr_from_item(item) for item in data['items']]
-        else:
-            raise Exception('Non-200 status code (%s): %s' % (status_code, data))
-
     def make_pr_from_item(self, item):
         labels = [label['name'] for label in item['labels']]
         return PullRequest(
