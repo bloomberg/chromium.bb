@@ -141,6 +141,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   bool CheckConsistency();
   void UpdateFrameHost(RenderFrameHostImpl* frame_host);
   void MaybeReattachToRenderFrame();
+  void SendMessageFromProcessor(int session_id, const std::string& message);
   void GrantPolicy(RenderFrameHostImpl* host);
   void RevokePolicy(RenderFrameHostImpl* host);
 

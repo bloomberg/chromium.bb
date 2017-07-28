@@ -168,16 +168,14 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     last_shown_certificate_ = certificate;
   }
 
-  base::DictionaryValue* SendCommand(
-      const std::string& method,
-      std::unique_ptr<base::DictionaryValue> params) {
-    return SendCommand(method, std::move(params), true);
+  void SendCommand(const std::string& method,
+                   std::unique_ptr<base::DictionaryValue> params) {
+    SendCommand(method, std::move(params), true);
   }
 
-  base::DictionaryValue* SendCommand(
-      const std::string& method,
-      std::unique_ptr<base::DictionaryValue> params,
-      bool wait) {
+  void SendCommand(const std::string& method,
+                   std::unique_ptr<base::DictionaryValue> params,
+                   bool wait) {
     in_dispatch_ = true;
     base::DictionaryValue command;
     command.SetInteger(kIdParam, ++last_sent_id_);
@@ -190,13 +188,9 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     agent_host_->DispatchProtocolMessage(this, json_command);
     // Some messages are dispatched synchronously.
     // Only run loop if we are not finished yet.
-    if (in_dispatch_ && wait) {
+    if (in_dispatch_ && wait)
       WaitForResponse();
-      in_dispatch_ = false;
-      return result_.get();
-    }
     in_dispatch_ = false;
-    return nullptr;
   }
 
   void WaitForResponse() {
@@ -972,32 +966,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSiteNoDetach) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url2, 1);
 
   EXPECT_EQ(0u, notifications_.size());
-}
-
-IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSiteNavigation) {
-  content::SetupCrossSiteRedirector(embedded_test_server());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  GURL test_url1 =
-      embedded_test_server()->GetURL("A.com", "/devtools/navigation.html");
-  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url1, 1);
-  Attach();
-  SendCommand("Page.enable", nullptr, false);
-
-  GURL test_url2 =
-      embedded_test_server()->GetURL("B.com", "/devtools/navigation.html");
-  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
-  params->SetString("url", test_url2.spec());
-  base::DictionaryValue* result =
-      SendCommand("Page.navigate", std::move(params));
-  std::string frame_id;
-  EXPECT_TRUE(result->GetString("frameId", &frame_id));
-
-  params = WaitForNotification("Page.frameStoppedLoading");
-  std::string stopped_id;
-  EXPECT_TRUE(params->GetString("frameId", &stopped_id));
-
-  EXPECT_EQ(stopped_id, frame_id);
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSiteCrash) {
