@@ -2266,8 +2266,6 @@ crbug.com/658997 virtual/service-worker-script-streaming/external/wpt/service-wo
 crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
 crbug.com/435547 virtual/mojo-loading/http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
 
-crbug.com/749212 [ Mac10.10 ] webaudio/internals/audiosource-premature-gc.html [ Crash Pass ]
-
 crbug.com/747502 paint/roundedrects/input-with-rounded-rect-and-shadow.html [ NeedsManualRebaseline ]
 crbug.com/747502 fast/borders/border-radius-with-box-shadow.html [ NeedsManualRebaseline ]
 crbug.com/747502 paint/roundedrects/circle-with-shadow.html [ NeedsManualRebaseline ]
