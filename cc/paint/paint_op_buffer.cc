@@ -153,6 +153,11 @@ void RasterWithAlpha(const PaintOp* op,
         flags_op->RasterWithFlags(canvas, &alpha_flags, params);
       }
     }
+  } else {
+    bool unset = bounds.x() == PaintOp::kUnsetRect.x();
+    canvas->saveLayerAlpha(unset ? nullptr : &bounds, alpha);
+    op->Raster(canvas, params);
+    canvas->restore();
   }
 }
 
