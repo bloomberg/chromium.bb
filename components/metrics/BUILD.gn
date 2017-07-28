@@ -18,6 +18,8 @@ static_library("metrics") {
     "daily_event.h",
     "data_use_tracker.cc",
     "data_use_tracker.h",
+    "delegating_provider.cc",
+    "delegating_provider.h",
     "drive_metrics_provider.cc",
     "drive_metrics_provider.h",
     "drive_metrics_provider_android.cc",

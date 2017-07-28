@@ -129,7 +129,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -260,8 +259,7 @@ void MetricsService::InitializeMetricsRecordingState() {
       base::Bind(&MetricsServiceClient::GetStandardUploadInterval,
                  base::Unretained(client_))));
 
-  for (auto& provider : metrics_providers_)
-    provider->Init();
+  delegating_provider_.Init();
 }
 
 void MetricsService::Start() {
@@ -321,8 +319,7 @@ void MetricsService::EnableRecording() {
   if (!log_manager_.current_log())
     OpenNewLog();
 
-  for (auto& provider : metrics_providers_)
-    provider->OnRecordingEnabled();
+  delegating_provider_.OnRecordingEnabled();
 
   base::RemoveActionCallback(action_callback_);
   action_callback_ = base::Bind(&MetricsService::OnUserAction,
@@ -339,8 +336,7 @@ void MetricsService::DisableRecording() {
 
   base::RemoveActionCallback(action_callback_);
 
-  for (auto& provider : metrics_providers_)
-    provider->OnRecordingDisabled();
+  delegating_provider_.OnRecordingDisabled();
 
   PushPendingLogsToPersistentStorage();
 }
@@ -397,8 +393,7 @@ void MetricsService::OnAppEnterBackground() {
 
   // Give providers a chance to persist histograms as part of being
   // backgrounded.
-  for (auto& provider : metrics_providers_)
-    provider->OnAppEnterBackground();
+  delegating_provider_.OnAppEnterBackground();
 
   // At this point, there's no way of knowing when the process will be
   // killed, so this has to be treated similar to a shutdown, closing and
@@ -442,8 +437,7 @@ void MetricsService::RecordBreakpadHasDebugger(bool has_debugger) {
 }
 
 void MetricsService::ClearSavedStabilityMetrics() {
-  for (auto& provider : metrics_providers_)
-    provider->ClearSavedStabilityMetrics();
+  delegating_provider_.ClearSavedStabilityMetrics();
 }
 
 void MetricsService::PushExternalLog(const std::string& log) {
@@ -493,10 +487,9 @@ void MetricsService::InitializeMetricsState() {
     manager.SetExecutionPhase(ExecutionPhase::UNINITIALIZED_PHASE);
   }
 
-  // ProvidersHaveInitialStabilityMetrics is called first to ensure it is never
-  // bypassed.
+  // HasPreviousSessionData is called first to ensure it is never bypassed.
   const bool is_initial_stability_log_required =
-      ProvidersHaveInitialStabilityMetrics() ||
+      delegating_provider_.HasPreviousSessionData() ||
       !state_manager_->clean_exit_beacon()->exited_cleanly();
   bool has_initial_stability_log = false;
   if (is_initial_stability_log_required) {
@@ -563,7 +556,7 @@ void MetricsService::FinishedInitTask() {
   // Create the initial log.
   if (!initial_metrics_log_.get()) {
     initial_metrics_log_ = CreateLog(MetricsLog::ONGOING_LOG);
-    NotifyOnDidCreateMetricsLog();
+    delegating_provider_.OnDidCreateMetricsLog();
   }
 
   rotation_scheduler_->InitTaskComplete();
@@ -591,13 +584,6 @@ void MetricsService::GetUptimes(PrefService* pref,
   }
 }
 
-void MetricsService::NotifyOnDidCreateMetricsLog() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  for (auto& provider : metrics_providers_)
-    provider->OnDidCreateMetricsLog();
-}
-
-
 //------------------------------------------------------------------------------
 // Recording control methods
 
@@ -605,7 +591,7 @@ void MetricsService::OpenNewLog() {
   DCHECK(!log_manager_.current_log());
 
   log_manager_.BeginLoggingWithLog(CreateLog(MetricsLog::ONGOING_LOG));
-  NotifyOnDidCreateMetricsLog();
+  delegating_provider_.OnDidCreateMetricsLog();
   if (state_ == INITIALIZED) {
     // We only need to schedule that run once.
     state_ = INIT_TASK_SCHEDULED;
@@ -624,12 +610,8 @@ void MetricsService::OpenNewLog() {
 }
 
 void MetricsService::StartInitTask() {
-  base::Closure barrier = base::BarrierClosure(
-      metrics_providers_.size(), base::Bind(&MetricsService::FinishedInitTask,
+  delegating_provider_.AsyncInit(base::Bind(&MetricsService::FinishedInitTask,
                                             self_ptr_factory_.GetWeakPtr()));
-  for (auto& provider : metrics_providers_) {
-    provider->AsyncInit(barrier);
-  }
 }
 
 void MetricsService::CloseCurrentLog() {
@@ -653,8 +635,8 @@ void MetricsService::CloseCurrentLog() {
   base::TimeDelta incremental_uptime;
   base::TimeDelta uptime;
   GetUptimes(local_state_, &incremental_uptime, &uptime);
-  current_log->RecordCurrentSessionData(metrics_providers_, incremental_uptime,
-                                        uptime);
+  current_log->RecordCurrentSessionData(&delegating_provider_,
+                                        incremental_uptime, uptime);
   RecordCurrentHistograms();
   current_log->TruncateEvents();
   DVLOG(1) << "Generated an ongoing log.";
@@ -740,18 +722,6 @@ void MetricsService::OnFinalLogInfoCollectionDone() {
   HandleIdleSinceLastTransmission(true);
 }
 
-bool MetricsService::ProvidersHaveInitialStabilityMetrics() {
-  // Check whether any metrics provider has initial stability metrics.
-  // All providers are queried (rather than stopping after the first "true"
-  // response) in case they do any kind of setup work in preparation for
-  // the later call to RecordInitialHistogramSnapshots().
-  bool has_stability_metrics = false;
-  for (auto& provider : metrics_providers_)
-    has_stability_metrics |= provider->HasPreviousSessionData();
-
-  return has_stability_metrics;
-}
-
 bool MetricsService::PrepareInitialStabilityLog(
     const std::string& prefs_previous_version) {
   DCHECK_EQ(INITIALIZED, state_);
@@ -759,7 +729,7 @@ bool MetricsService::PrepareInitialStabilityLog(
   std::unique_ptr<MetricsLog> initial_stability_log(
       CreateLog(MetricsLog::INITIAL_STABILITY_LOG));
 
-  // Do not call NotifyOnDidCreateMetricsLog here because the stability
+  // Do not call OnDidCreateMetricsLog here because the stability
   // log describes stats from the _previous_ session.
   std::string system_profile_app_version;
   if (!initial_stability_log->LoadSavedEnvironmentFromPrefs(
@@ -774,7 +744,7 @@ bool MetricsService::PrepareInitialStabilityLog(
 
   // Note: Some stability providers may record stability stats via histograms,
   //       so this call has to be after BeginLoggingWithLog().
-  log_manager_.current_log()->RecordPreviousSessionData(metrics_providers_);
+  log_manager_.current_log()->RecordPreviousSessionData(&delegating_provider_);
   RecordCurrentStabilityHistograms();
 
   DVLOG(1) << "Generated an stability log.";
@@ -804,7 +774,7 @@ void MetricsService::PrepareInitialMetricsLog() {
   // Note: Some stability providers may record stability stats via histograms,
   //       so this call has to be after BeginLoggingWithLog().
   log_manager_.current_log()->RecordCurrentSessionData(
-      metrics_providers_, base::TimeDelta(), base::TimeDelta());
+      &delegating_provider_, base::TimeDelta(), base::TimeDelta());
   RecordCurrentHistograms();
 
   DVLOG(1) << "Generated an initial log.";
@@ -832,7 +802,7 @@ bool MetricsService::UmaMetricsProperlyShutdown() {
 void MetricsService::RegisterMetricsProvider(
     std::unique_ptr<MetricsProvider> provider) {
   DCHECK_EQ(INITIALIZED, state_);
-  metrics_providers_.push_back(std::move(provider));
+  delegating_provider_.RegisterMetricsProvider(std::move(provider));
 }
 
 void MetricsService::CheckForClonedInstall() {
@@ -847,8 +817,9 @@ std::unique_ptr<MetricsLog> MetricsService::CreateLog(
 
 void MetricsService::RecordCurrentEnvironment(MetricsLog* log) {
   DCHECK(client_);
-  std::string serialized_environment = log->RecordEnvironment(
-      metrics_providers_, GetInstallDate(), GetMetricsReportingEnabledDate());
+  std::string serialized_environment =
+      log->RecordEnvironment(&delegating_provider_, GetInstallDate(),
+                             GetMetricsReportingEnabledDate());
   client_->OnEnvironmentUpdate(&serialized_environment);
 }
 
@@ -861,8 +832,7 @@ void MetricsService::RecordCurrentHistograms() {
   base::StatisticsRecorder::PrepareDeltas(
       true, base::Histogram::kNoFlags,
       base::Histogram::kUmaTargetedHistogramFlag, &histogram_snapshot_manager_);
-  for (auto& provider : metrics_providers_)
-    provider->RecordHistogramSnapshots(&histogram_snapshot_manager_);
+  delegating_provider_.RecordHistogramSnapshots(&histogram_snapshot_manager_);
 }
 
 void MetricsService::RecordCurrentStabilityHistograms() {
@@ -873,8 +843,8 @@ void MetricsService::RecordCurrentStabilityHistograms() {
       true, base::Histogram::kNoFlags,
       base::Histogram::kUmaStabilityHistogramFlag,
       &histogram_snapshot_manager_);
-  for (auto& provider : metrics_providers_)
-    provider->RecordInitialHistogramSnapshots(&histogram_snapshot_manager_);
+  delegating_provider_.RecordInitialHistogramSnapshots(
+      &histogram_snapshot_manager_);
 }
 
 bool MetricsService::PrepareProviderMetricsLog() {
@@ -884,7 +854,7 @@ bool MetricsService::PrepareProviderMetricsLog() {
   // those will be overwritten when an embedded profile is extracted.
   std::unique_ptr<MetricsLog> log = CreateLog(MetricsLog::INDEPENDENT_LOG);
 
-  for (auto& provider : metrics_providers_) {
+  for (auto& provider : delegating_provider_.GetProviders()) {
     if (log->LoadIndependentMetrics(provider.get())) {
       log_manager_.PauseCurrentLog();
       log_manager_.BeginLoggingWithLog(std::move(log));

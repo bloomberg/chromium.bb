@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
+#include "components/metrics/delegating_provider.h"
 #include "components/metrics/environment_recorder.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -255,8 +256,8 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
   TestMetricsLog log(
       kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
 
-  log.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
-                        kInstallDate, kEnabledDate);
+  DelegatingProvider delegating_provider;
+  log.RecordEnvironment(&delegating_provider, kInstallDate, kEnabledDate);
   // Check that the system profile on the log has the correct values set.
   CheckSystemProfile(log.system_profile());
 
@@ -272,15 +273,16 @@ TEST_F(MetricsLogTest, RecordEnvironmentEnableDefault) {
   TestMetricsLog log_unknown(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
                              &client, &prefs_);
 
-  log_unknown.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
-                                kInstallDate, kEnabledDate);
+  DelegatingProvider delegating_provider;
+  log_unknown.RecordEnvironment(&delegating_provider, kInstallDate,
+                                kEnabledDate);
   EXPECT_FALSE(log_unknown.system_profile().has_uma_default_state());
 
   client.set_enable_default(EnableMetricsDefault::OPT_IN);
   TestMetricsLog log_opt_in(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
                             &client, &prefs_);
-  log_opt_in.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
-                               kInstallDate, kEnabledDate);
+  log_opt_in.RecordEnvironment(&delegating_provider, kInstallDate,
+                               kEnabledDate);
   EXPECT_TRUE(log_opt_in.system_profile().has_uma_default_state());
   EXPECT_EQ(SystemProfileProto_UmaDefaultState_OPT_IN,
             log_opt_in.system_profile().uma_default_state());
@@ -288,8 +290,8 @@ TEST_F(MetricsLogTest, RecordEnvironmentEnableDefault) {
   client.set_enable_default(EnableMetricsDefault::OPT_OUT);
   TestMetricsLog log_opt_out(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
                              &client, &prefs_);
-  log_opt_out.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
-                                kInstallDate, kEnabledDate);
+  log_opt_out.RecordEnvironment(&delegating_provider, kInstallDate,
+                                kEnabledDate);
   EXPECT_TRUE(log_opt_out.system_profile().has_uma_default_state());
   EXPECT_EQ(SystemProfileProto_UmaDefaultState_OPT_OUT,
             log_opt_out.system_profile().uma_default_state());
@@ -297,8 +299,8 @@ TEST_F(MetricsLogTest, RecordEnvironmentEnableDefault) {
   client.set_reporting_is_managed(true);
   TestMetricsLog log_managed(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
                              &client, &prefs_);
-  log_managed.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
-                                kInstallDate, kEnabledDate);
+  log_managed.RecordEnvironment(&delegating_provider, kInstallDate,
+                                kEnabledDate);
   EXPECT_TRUE(log_managed.system_profile().has_uma_default_state());
   EXPECT_EQ(SystemProfileProto_UmaDefaultState_POLICY_FORCED_ENABLED,
             log_managed.system_profile().uma_default_state());
@@ -312,10 +314,11 @@ TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
                      &client,
                      &prefs_);
   TestMetricsProvider* test_provider = new TestMetricsProvider();
-  std::vector<std::unique_ptr<MetricsProvider>> metrics_providers;
-  metrics_providers.push_back(base::WrapUnique<MetricsProvider>(test_provider));
-  log.RecordEnvironment(metrics_providers, kInstallDate, kEnabledDate);
-  log.RecordPreviousSessionData(metrics_providers);
+  DelegatingProvider delegating_provider;
+  delegating_provider.RegisterMetricsProvider(
+      base::WrapUnique<MetricsProvider>(test_provider));
+  log.RecordEnvironment(&delegating_provider, kInstallDate, kEnabledDate);
+  log.RecordPreviousSessionData(&delegating_provider);
 
   // The test provider should have been called upon to provide initial
   // stability and regular stability metrics.
@@ -328,10 +331,11 @@ TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
   TestMetricsLog log(
       kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
   TestMetricsProvider* test_provider = new TestMetricsProvider();
-  std::vector<std::unique_ptr<MetricsProvider>> metrics_providers;
-  metrics_providers.push_back(base::WrapUnique<MetricsProvider>(test_provider));
-  log.RecordEnvironment(metrics_providers, kInstallDate, kEnabledDate);
-  log.RecordCurrentSessionData(metrics_providers, base::TimeDelta(),
+  DelegatingProvider delegating_provider;
+  delegating_provider.RegisterMetricsProvider(
+      base::WrapUnique<MetricsProvider>(test_provider));
+  log.RecordEnvironment(&delegating_provider, kInstallDate, kEnabledDate);
+  log.RecordCurrentSessionData(&delegating_provider, base::TimeDelta(),
                                base::TimeDelta());
 
   // The test provider should have been called upon to provide regular but not

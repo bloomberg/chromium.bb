@@ -26,6 +26,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/metrics/clean_exit_beacon.h"
+#include "components/metrics/delegating_provider.h"
 #include "components/metrics/execution_phase.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
@@ -240,9 +241,6 @@ class MetricsService : public base::HistogramFlattener {
   // Set up client ID, session ID, etc.
   void InitializeMetricsState();
 
-  // Notifies providers when a new metrics log is created.
-  void NotifyOnDidCreateMetricsLog();
-
   // Opens a new log for recording user experience metrics.
   void OpenNewLog();
 
@@ -263,10 +261,6 @@ class MetricsService : public base::HistogramFlattener {
   // Called by the client via a callback when final log info collection is
   // complete.
   void OnFinalLogInfoCollectionDone();
-
-  // Returns true if any of the registered metrics providers have critical
-  // stability metrics to report in an initial stability log.
-  bool ProvidersHaveInitialStabilityMetrics();
 
   // Prepares the initial stability log, which is only logged when the previous
   // run of Chrome crashed.  This log contains any stability metrics left over
@@ -328,7 +322,7 @@ class MetricsService : public base::HistogramFlattener {
   MetricsServiceClient* const client_;
 
   // Registered metrics providers.
-  std::vector<std::unique_ptr<MetricsProvider>> metrics_providers_;
+  DelegatingProvider delegating_provider_;
 
   PrefService* local_state_;
 

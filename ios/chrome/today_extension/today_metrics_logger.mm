@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "components/metrics/delegating_provider.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -241,9 +242,9 @@ bool TodayMetricsLogger::CreateNewLog() {
                                  metrics_service_client_.get(),
                                  pref_service_.get()));
 
-  log_->RecordEnvironment(
-      std::vector<std::unique_ptr<metrics::MetricsProvider>>(),
-      [install_date longLongValue], [enabled_date longLongValue]);
+  metrics::DelegatingProvider delegating_provider;
+  log_->RecordEnvironment(&delegating_provider, [install_date longLongValue],
+                          [enabled_date longLongValue]);
 
   return true;
 }
