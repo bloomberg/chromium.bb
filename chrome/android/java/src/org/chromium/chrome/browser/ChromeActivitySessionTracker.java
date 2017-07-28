@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge;
+import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -156,7 +157,7 @@ public class ChromeActivitySessionTracker {
     private void onForegroundSessionEnd() {
         if (!mIsStarted) return;
         UmaUtils.recordBackgroundTime();
-        ChromeApplication.flushPersistentData();
+        ProfileManagerUtils.flushPersistentDataForAllProfiles();
         mIsStarted = false;
         mPowerBroadcastReceiver.onForegroundSessionEnd();
 

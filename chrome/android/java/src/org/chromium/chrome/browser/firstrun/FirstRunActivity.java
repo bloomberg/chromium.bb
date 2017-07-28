@@ -19,7 +19,6 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -28,6 +27,7 @@ import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
+import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -529,7 +529,9 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     }
 
     protected void flushPersistentData() {
-        if (mNativeSideIsInitialized) ChromeApplication.flushPersistentData();
+        if (mNativeSideIsInitialized) {
+            ProfileManagerUtils.flushPersistentDataForAllProfiles();
+        }
     }
 
     /**
