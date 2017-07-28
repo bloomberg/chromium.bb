@@ -14,7 +14,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -139,13 +138,9 @@ class TrayUpdate::UpdateView : public ActionableView {
 };
 
 TrayUpdate::TrayUpdate(SystemTray* system_tray)
-    : TrayImageItem(system_tray, kSystemTrayUpdateIcon, UMA_UPDATE) {
-  Shell::Get()->system_tray_notifier()->AddUpdateObserver(this);
-}
+    : TrayImageItem(system_tray, kSystemTrayUpdateIcon, UMA_UPDATE) {}
 
-TrayUpdate::~TrayUpdate() {
-  Shell::Get()->system_tray_notifier()->RemoveUpdateObserver(this);
-}
+TrayUpdate::~TrayUpdate() {}
 
 bool TrayUpdate::GetInitialVisibility() {
   // If chrome tells ash there is an update available before this item's system
@@ -163,16 +158,6 @@ views::View* TrayUpdate::CreateDefaultView(LoginStatus status) {
 
 void TrayUpdate::OnDefaultViewDestroyed() {
   update_view_ = nullptr;
-}
-
-void TrayUpdate::OnUpdateOverCellularTargetSet(bool success) {
-  if (!success)
-    return;
-
-  tray_view()->SetVisible(false);
-  update_over_cellular_available_ = false;
-  if (update_view_)
-    update_view_->GetWidget()->Close();
 }
 
 void TrayUpdate::ShowUpdateIcon(mojom::UpdateSeverity severity,
@@ -193,14 +178,14 @@ views::Label* TrayUpdate::GetLabelForTesting() {
   return update_view_ ? update_view_->update_label_ : nullptr;
 }
 
-void TrayUpdate::ShowUpdateOverCellularAvailableIcon() {
-  update_over_cellular_available_ = true;
-
-  // TODO(weidongg/691108): adjust severity according the amount of time passing
-  // after update is available over cellular connection.
-  // Use low severity for update available over cellular connection.
-  SetIconColor(IconColorForUpdateSeverity(mojom::UpdateSeverity::LOW, false));
-  tray_view()->SetVisible(true);
+void TrayUpdate::SetUpdateOverCellularAvailableIconVisible(bool visible) {
+  // TODO(weidongg/691108): adjust severity according the amount of time
+  // passing after update is available over cellular connection. Use low
+  // severity for update available over cellular connection.
+  if (visible)
+    SetIconColor(IconColorForUpdateSeverity(mojom::UpdateSeverity::LOW, false));
+  update_over_cellular_available_ = visible;
+  tray_view()->SetVisible(visible);
 }
 
 }  // namespace ash

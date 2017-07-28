@@ -175,27 +175,29 @@ void VersionUpdaterCros::SetChannel(const std::string& channel,
       SetChannel(channel, is_powerwash_allowed);
 }
 
-void VersionUpdaterCros::SetUpdateOverCellularTarget(
+void VersionUpdaterCros::SetUpdateOverCellularOneTimePermission(
     const StatusCallback& callback,
-    const std::string& target_version,
-    int64_t target_size) {
+    const std::string& update_version,
+    int64_t update_size) {
   callback_ = callback;
   DBusThreadManager::Get()
       ->GetUpdateEngineClient()
-      ->SetUpdateOverCellularTarget(
-          target_version, target_size,
-          base::Bind(&VersionUpdaterCros::OnSetUpdateOverCellularTarget,
-                     weak_ptr_factory_.GetWeakPtr()));
+      ->SetUpdateOverCellularOneTimePermission(
+          update_version, update_size,
+          base::Bind(
+              &VersionUpdaterCros::OnSetUpdateOverCellularOneTimePermission,
+              weak_ptr_factory_.GetWeakPtr()));
 }
 
-void VersionUpdaterCros::OnSetUpdateOverCellularTarget(bool success) {
+void VersionUpdaterCros::OnSetUpdateOverCellularOneTimePermission(
+    bool success) {
   if (success) {
-    // Target is set successfully, so we can proceed to update.
+    // One time permission is set successfully, so we can proceed to update.
     CheckForUpdate(callback_, VersionUpdater::PromoteCallback());
   } else {
     // TODO(weidongg/691108): invoke callback to signal about page to show
     // appropriate error message.
-    LOG(ERROR) << "Error setting update over cellular target.";
+    LOG(ERROR) << "Error setting update over cellular one time permission.";
     callback_.Run(VersionUpdater::FAILED, 0, std::string(), 0,
                   base::string16());
   }

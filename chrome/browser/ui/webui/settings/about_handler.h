@@ -107,12 +107,12 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   void HandleRequestUpdate(const base::ListValue* args);
 
   // Checks for and applies update over cellular connection, triggered by JS.
-  // Target version and size should be included in the list of arguments.
+  // Update version and size should be included in the list of arguments.
   void HandleRequestUpdateOverCellular(const base::ListValue* args);
 
-  // Checks for and applies update over cellular connection to the given target.
-  void RequestUpdateOverCellular(const std::string& target_version,
-                                 int64_t target_size);
+  // Checks for and applies update over cellular connection.
+  void RequestUpdateOverCellular(const std::string& update_version,
+                                 int64_t update_size);
 
 #endif
 

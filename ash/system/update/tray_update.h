@@ -7,8 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/tray/tray_image_item.h"
-#include "ash/system/update/update_observer.h"
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
@@ -27,7 +25,7 @@ enum class UpdateType;
 // The system update tray item. The tray icon stays visible once an update
 // notification is received. The icon only disappears after a reboot to apply
 // the update. Exported for test.
-class ASH_EXPORT TrayUpdate : public TrayImageItem, public UpdateObserver {
+class ASH_EXPORT TrayUpdate : public TrayImageItem {
  public:
   explicit TrayUpdate(SystemTray* system_tray);
   ~TrayUpdate() override;
@@ -39,14 +37,17 @@ class ASH_EXPORT TrayUpdate : public TrayImageItem, public UpdateObserver {
                       bool factory_reset_required,
                       mojom::UpdateType update_type);
 
-  // Shows an icon in the system tray indicating that a software update is
-  // available but user's agreement is required as current connection is
-  // cellular. Once shown the icon persists until reboot.
-  void ShowUpdateOverCellularAvailableIcon();
+  // If |visible| is true, shows an icon in the system tray which indicates that
+  // a software update is available but user's agreement is required as current
+  // connection is cellular. If |visible| is false, hides the icon because the
+  // user's one time permission on update over cellular connection has been
+  // granted.
+  void SetUpdateOverCellularAvailableIconVisible(bool visible);
+
+  // Expose label information for testing.
+  views::Label* GetLabelForTesting();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(TrayUpdateTest, VisibilityAfterUpdate);
-  FRIEND_TEST_ALL_PREFIXES(TrayUpdateTest, VisibilityAfterFlashUpdate);
 
   class UpdateView;
 
@@ -55,11 +56,6 @@ class ASH_EXPORT TrayUpdate : public TrayImageItem, public UpdateObserver {
   views::View* CreateDefaultView(LoginStatus status) override;
   void OnDefaultViewDestroyed() override;
 
-  // Overridden from UpdateObserver.
-  void OnUpdateOverCellularTargetSet(bool success) override;
-
-  // Expose label information for testing.
-  views::Label* GetLabelForTesting();
   UpdateView* update_view_;
 
   // If an external monitor is connected then the system tray may be created

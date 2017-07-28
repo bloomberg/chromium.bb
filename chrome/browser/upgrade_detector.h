@@ -127,6 +127,10 @@ class UpgradeDetector {
   // over cellular connection.
   void NotifyUpdateOverCellularAvailable();
 
+  // Notifies that the user's one time permission on update over cellular
+  // connection has been granted.
+  void NotifyUpdateOverCellularOneTimePermissionGranted();
+
   // Triggers a critical update, which starts a timer that checks the machine
   // idle state. Protected and virtual so that it could be overridden by tests.
   virtual void TriggerCriticalUpdate();

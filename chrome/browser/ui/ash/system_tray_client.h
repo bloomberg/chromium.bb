@@ -93,14 +93,12 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
   // Requests that ash show the update available icon.
   void HandleUpdateAvailable();
 
-  // Requests that ash show the update over cellular available icon.
-  void HandleUpdateOverCellularAvailable();
-
   // chromeos::system::SystemClockObserver:
   void OnSystemClockChanged(chromeos::system::SystemClock* clock) override;
 
   // UpgradeObserver implementation.
   void OnUpdateOverCellularAvailable() override;
+  void OnUpdateOverCellularOneTimePermissionGranted() override;
   void OnUpgradeRecommended() override;
 
   // policy::CloudPolicyStore::Observer

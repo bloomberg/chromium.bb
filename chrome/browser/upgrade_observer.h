@@ -13,6 +13,10 @@ class UpgradeObserver {
   // user's agreement as current connection is cellular.
   virtual void OnUpdateOverCellularAvailable() {}
 
+  // Triggered when the user's one time permission on update over cellular
+  // connection has been granted.
+  virtual void OnUpdateOverCellularOneTimePermissionGranted() {}
+
   // Triggered when Chrome believes an update has been installed and available
   // for long enough with the user shutting down to let it take effect. See
   // upgrade_detector.cc for details on how long it waits. No details are
