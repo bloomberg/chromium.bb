@@ -92,7 +92,7 @@ CSSVariableData* CSSVariableResolver::ValueForCustomProperty(
   return new_variable_data.Get();
 }
 
-RefPtr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
+PassRefPtr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
     AtomicString name,
     const CSSVariableData& variable_data,
     bool& cycle_detected) {

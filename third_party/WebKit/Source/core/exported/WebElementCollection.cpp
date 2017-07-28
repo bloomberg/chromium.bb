@@ -33,7 +33,7 @@
 
 #include "core/dom/Element.h"
 #include "core/html/HTMLCollection.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "public/web/WebElement.h"
 
 namespace blink {

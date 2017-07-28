@@ -31,8 +31,8 @@ class CSSCustomFontData final : public CustomFontData {
  public:
   enum FallbackVisibility { kInvisibleFallback, kVisibleFallback };
 
-  static RefPtr<CSSCustomFontData> Create(RemoteFontFaceSource* source,
-                                          FallbackVisibility visibility) {
+  static PassRefPtr<CSSCustomFontData> Create(RemoteFontFaceSource* source,
+                                              FallbackVisibility visibility) {
     return AdoptRef(new CSSCustomFontData(source, visibility));
   }
 

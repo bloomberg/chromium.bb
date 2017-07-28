@@ -27,7 +27,7 @@ namespace {
 static KeyframeEffect* CreateInfiniteKeyFrameEffect(
     Element& element,
     CSSPropertyID property_id,
-    RefPtr<AnimatableValue> value) {
+    PassRefPtr<AnimatableValue> value) {
   AnimatableValueKeyframeVector keyframes(2);
   keyframes[0] = AnimatableValueKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
@@ -49,7 +49,7 @@ static KeyframeEffect* CreateInfiniteKeyFrameEffect(
 static KeyframeEffect* UpdateInfiniteKeyframeEffect(
     const KeyframeEffect& keyframe_effect,
     CSSPropertyID property_id,
-    RefPtr<AnimatableValue> value) {
+    PassRefPtr<AnimatableValue> value) {
   const KeyframeVector& old_frames =
       ToAnimatableValueKeyframeEffectModel(keyframe_effect.Model())
           ->GetFrames();
@@ -65,10 +65,11 @@ static KeyframeEffect* UpdateInfiniteKeyframeEffect(
                                 keyframe_effect.SpecifiedTiming());
 }
 
-static Animation* CreateOrUpdateAnimation(Animation* animation,
-                                          Element& element,
-                                          CSSPropertyID property_id,
-                                          RefPtr<AnimatableValue> new_value) {
+static Animation* CreateOrUpdateAnimation(
+    Animation* animation,
+    Element& element,
+    CSSPropertyID property_id,
+    PassRefPtr<AnimatableValue> new_value) {
   if (!animation) {
     KeyframeEffect* keyframe_effect = CreateInfiniteKeyFrameEffect(
         element, property_id, std::move(new_value));

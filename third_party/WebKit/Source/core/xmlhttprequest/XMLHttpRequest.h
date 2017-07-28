@@ -41,6 +41,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Forward.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/WTFString.h"
@@ -157,7 +158,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   String responseURL();
 
   // For Inspector.
-  void SendForInspectorXHRReplay(RefPtr<EncodedFormData>, ExceptionState&);
+  void SendForInspectorXHRReplay(PassRefPtr<EncodedFormData>, ExceptionState&);
 
   XMLHttpRequestUpload* upload();
   bool IsAsync() { return async_; }
@@ -171,7 +172,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   class BlobLoader;
   XMLHttpRequest(ExecutionContext*,
                  bool is_isolated_world,
-                 RefPtr<SecurityOrigin>);
+                 PassRefPtr<SecurityOrigin>);
 
   Document* GetDocument() const;
 
@@ -198,7 +199,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   void DidFinishLoadingFromBlob();
   void DidFailLoadingFromBlob();
 
-  RefPtr<BlobDataHandle> CreateBlobDataHandleFromResponse();
+  PassRefPtr<BlobDataHandle> CreateBlobDataHandleFromResponse();
 
   // DocumentParserClient
   void NotifyParserStopped() override;
@@ -260,7 +261,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   void ClearResponse();
   void ClearRequest();
 
-  void CreateRequest(RefPtr<EncodedFormData>, ExceptionState&);
+  void CreateRequest(PassRefPtr<EncodedFormData>, ExceptionState&);
 
   // Dispatches a response ProgressEvent.
   void DispatchProgressEvent(const AtomicString&, long long, long long);

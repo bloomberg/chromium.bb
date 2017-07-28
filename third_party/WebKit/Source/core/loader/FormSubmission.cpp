@@ -147,7 +147,7 @@ inline FormSubmission::FormSubmission(SubmitMethod method,
                                       const AtomicString& target,
                                       const AtomicString& content_type,
                                       HTMLFormElement* form,
-                                      RefPtr<EncodedFormData> data,
+                                      PassRefPtr<EncodedFormData> data,
                                       const String& boundary,
                                       Event* event)
     : method_(method),

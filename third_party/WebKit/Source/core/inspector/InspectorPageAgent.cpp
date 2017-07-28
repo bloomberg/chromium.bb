@@ -218,7 +218,7 @@ static void MaybeEncodeTextContent(const String& text_content,
 }
 
 static void MaybeEncodeTextContent(const String& text_content,
-                                   RefPtr<const SharedBuffer> buffer,
+                                   PassRefPtr<const SharedBuffer> buffer,
                                    String* result,
                                    bool* base64_encoded) {
   if (!buffer) {
@@ -232,11 +232,12 @@ static void MaybeEncodeTextContent(const String& text_content,
 }
 
 // static
-bool InspectorPageAgent::SharedBufferContent(RefPtr<const SharedBuffer> buffer,
-                                             const String& mime_type,
-                                             const String& text_encoding_name,
-                                             String* result,
-                                             bool* base64_encoded) {
+bool InspectorPageAgent::SharedBufferContent(
+    PassRefPtr<const SharedBuffer> buffer,
+    const String& mime_type,
+    const String& text_encoding_name,
+    String* result,
+    bool* base64_encoded) {
   if (!buffer)
     return false;
 

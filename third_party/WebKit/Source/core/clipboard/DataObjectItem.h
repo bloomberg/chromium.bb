@@ -57,7 +57,7 @@ class CORE_EXPORT DataObjectItem
   static DataObjectItem* CreateFromHTML(const String& html,
                                         const KURL& base_url);
   static DataObjectItem* CreateFromSharedBuffer(
-      RefPtr<SharedBuffer>,
+      PassRefPtr<SharedBuffer>,
       const KURL&,
       const String& file_extension,
       const AtomicString& content_disposition);
@@ -71,7 +71,7 @@ class CORE_EXPORT DataObjectItem
 
   // Used to support legacy DataTransfer APIs and renderer->browser
   // serialization.
-  RefPtr<SharedBuffer> GetSharedBuffer() const { return shared_buffer_; }
+  PassRefPtr<SharedBuffer> GetSharedBuffer() const { return shared_buffer_; }
   String FilenameExtension() const { return filename_extension_; }
   String Title() const { return title_; }
   KURL BaseURL() const { return base_url_; }

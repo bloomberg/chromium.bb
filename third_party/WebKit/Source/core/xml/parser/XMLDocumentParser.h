@@ -53,11 +53,11 @@ class Text;
 
 class XMLParserContext : public RefCounted<XMLParserContext> {
  public:
-  static RefPtr<XMLParserContext> CreateMemoryParser(xmlSAXHandlerPtr,
-                                                     void* user_data,
-                                                     const CString& chunk);
-  static RefPtr<XMLParserContext> CreateStringParser(xmlSAXHandlerPtr,
-                                                     void* user_data);
+  static PassRefPtr<XMLParserContext> CreateMemoryParser(xmlSAXHandlerPtr,
+                                                         void* user_data,
+                                                         const CString& chunk);
+  static PassRefPtr<XMLParserContext> CreateStringParser(xmlSAXHandlerPtr,
+                                                         void* user_data);
   ~XMLParserContext();
   xmlParserCtxtPtr Context() const { return context_; }
 

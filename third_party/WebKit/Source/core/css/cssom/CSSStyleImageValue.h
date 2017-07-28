@@ -40,10 +40,10 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
     return true;
   }
   FloatSize ElementSize(const FloatSize& default_object_size) const final;
-  RefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                        AccelerationHint,
-                                        SnapshotReason,
-                                        const FloatSize&) final {
+  PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
+                                            AccelerationHint,
+                                            SnapshotReason,
+                                            const FloatSize&) final {
     return GetImage();
   }
   bool IsAccelerated() const override;
@@ -78,7 +78,7 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
   const CSSImageValue* CssImageValue() const { return image_value_.Get(); };
 
  private:
-  RefPtr<Image> GetImage() const;
+  PassRefPtr<Image> GetImage() const;
 
   Member<const CSSImageValue> image_value_;
 };

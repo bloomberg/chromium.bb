@@ -60,10 +60,10 @@ class NonInterpolableList : public NonInterpolableValue {
  public:
   ~NonInterpolableList() final {}
 
-  static RefPtr<NonInterpolableList> Create() {
+  static PassRefPtr<NonInterpolableList> Create() {
     return AdoptRef(new NonInterpolableList());
   }
-  static RefPtr<NonInterpolableList> Create(
+  static PassRefPtr<NonInterpolableList> Create(
       Vector<RefPtr<NonInterpolableValue>>&& list) {
     return AdoptRef(new NonInterpolableList(std::move(list)));
   }

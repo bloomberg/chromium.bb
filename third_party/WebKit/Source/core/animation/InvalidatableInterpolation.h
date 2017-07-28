@@ -31,10 +31,10 @@ namespace blink {
 // objects.
 class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
  public:
-  static RefPtr<InvalidatableInterpolation> Create(
+  static PassRefPtr<InvalidatableInterpolation> Create(
       const PropertyHandle& property,
-      RefPtr<PropertySpecificKeyframe> start_keyframe,
-      RefPtr<PropertySpecificKeyframe> end_keyframe) {
+      PassRefPtr<PropertySpecificKeyframe> start_keyframe,
+      PassRefPtr<PropertySpecificKeyframe> end_keyframe) {
     return AdoptRef(new InvalidatableInterpolation(
         property, std::move(start_keyframe), std::move(end_keyframe)));
   }
@@ -48,9 +48,10 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
   virtual bool IsInvalidatableInterpolation() const { return true; }
 
  private:
-  InvalidatableInterpolation(const PropertyHandle& property,
-                             RefPtr<PropertySpecificKeyframe> start_keyframe,
-                             RefPtr<PropertySpecificKeyframe> end_keyframe)
+  InvalidatableInterpolation(
+      const PropertyHandle& property,
+      PassRefPtr<PropertySpecificKeyframe> start_keyframe,
+      PassRefPtr<PropertySpecificKeyframe> end_keyframe)
       : Interpolation(),
         property_(property),
         interpolation_types_(nullptr),

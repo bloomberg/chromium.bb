@@ -27,7 +27,7 @@
 #define XMLDocument_h
 
 #include "core/dom/Document.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

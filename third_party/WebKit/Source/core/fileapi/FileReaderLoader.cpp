@@ -45,6 +45,7 @@
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
@@ -68,7 +69,7 @@ FileReaderLoader::~FileReaderLoader() {
 }
 
 void FileReaderLoader::Start(ExecutionContext* execution_context,
-                             RefPtr<BlobDataHandle> blob_data) {
+                             PassRefPtr<BlobDataHandle> blob_data) {
   DCHECK(execution_context);
   // The blob is read by routing through the request handling layer given a
   // temporary public url.

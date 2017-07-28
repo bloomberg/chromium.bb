@@ -116,7 +116,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   void SetTitle(const String& title) { title_ = title; }
   // Set by LinkStyle iff CORS-enabled fetch of stylesheet succeeded from this
   // origin.
-  void SetAllowRuleAccessFromOrigin(RefPtr<SecurityOrigin> allowed_origin);
+  void SetAllowRuleAccessFromOrigin(PassRefPtr<SecurityOrigin> allowed_origin);
 
   class RuleMutationScope {
     WTF_MAKE_NONCOPYABLE(RuleMutationScope);

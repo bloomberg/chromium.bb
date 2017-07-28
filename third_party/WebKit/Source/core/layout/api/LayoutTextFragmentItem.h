@@ -26,7 +26,7 @@ class LayoutTextFragmentItem : public LayoutTextItem {
 
   LayoutTextFragmentItem() {}
 
-  void SetTextFragment(RefPtr<StringImpl> text,
+  void SetTextFragment(PassRefPtr<StringImpl> text,
                        unsigned start,
                        unsigned length) {
     ToTextFragment()->SetTextFragment(std::move(text), start, length);

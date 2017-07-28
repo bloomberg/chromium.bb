@@ -67,7 +67,7 @@ void StyleGeneratedImage::RemoveClient(ImageResourceObserver* observer) {
   image_generator_value_->RemoveClient(observer);
 }
 
-RefPtr<Image> StyleGeneratedImage::GetImage(
+PassRefPtr<Image> StyleGeneratedImage::GetImage(
     const ImageResourceObserver& observer,
     const Document& document,
     const ComputedStyle& style,

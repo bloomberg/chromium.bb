@@ -21,7 +21,7 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImage.h"
 

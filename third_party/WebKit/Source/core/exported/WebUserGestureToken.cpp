@@ -46,7 +46,7 @@ void WebUserGestureToken::SetJavascriptPrompt() {
   token_->SetTimeoutPolicy(UserGestureToken::kHasPaused);
 }
 
-WebUserGestureToken::WebUserGestureToken(RefPtr<UserGestureToken> token) {
+WebUserGestureToken::WebUserGestureToken(PassRefPtr<UserGestureToken> token) {
   token_ = std::move(token);
 }
 

@@ -15,14 +15,14 @@ namespace blink {
 
 class DummyFontFaceSource : public CSSFontFaceSource {
  public:
-  RefPtr<SimpleFontData> CreateFontData(const FontDescription&) override {
+  PassRefPtr<SimpleFontData> CreateFontData(const FontDescription&) override {
     return SimpleFontData::Create(
         FontPlatformData(SkTypeface::MakeDefault(), "", 0, false, false));
   }
 
   DummyFontFaceSource() {}
 
-  RefPtr<SimpleFontData> GetFontDataForSize(float size) {
+  PassRefPtr<SimpleFontData> GetFontDataForSize(float size) {
     FontDescription font_description;
     font_description.SetSizeAdjust(size);
     font_description.SetAdjustedSize(size);

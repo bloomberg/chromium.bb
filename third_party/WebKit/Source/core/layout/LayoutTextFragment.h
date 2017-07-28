@@ -70,8 +70,8 @@ class LayoutTextFragment final : public LayoutText {
 
   RefPtr<StringImpl> OriginalText() const override;
 
-  void SetText(RefPtr<StringImpl>, bool force = false) override;
-  void SetTextFragment(RefPtr<StringImpl>, unsigned start, unsigned length);
+  void SetText(PassRefPtr<StringImpl>, bool force = false) override;
+  void SetTextFragment(PassRefPtr<StringImpl>, unsigned start, unsigned length);
 
   void TransformText() override;
 

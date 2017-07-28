@@ -25,7 +25,7 @@ class LayoutTextControlItem : public LayoutBoxModel {
 
   LayoutTextControlItem() {}
 
-  RefPtr<ComputedStyle> CreateInnerEditorStyle(
+  PassRefPtr<ComputedStyle> CreateInnerEditorStyle(
       const ComputedStyle& start_style) const {
     return ToTextControl()->CreateInnerEditorStyle(start_style);
   }

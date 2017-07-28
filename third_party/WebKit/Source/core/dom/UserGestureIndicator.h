@@ -28,9 +28,9 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
 
   // Creates a UserGestureToken with the given status. Also if a non-null
   // Document* is provided, associates the token with the document.
-  static RefPtr<UserGestureToken> Create(Document*,
-                                         Status = kPossiblyExistingGesture);
-  static RefPtr<UserGestureToken> Adopt(Document*, UserGestureToken*);
+  static PassRefPtr<UserGestureToken> Create(Document*,
+                                             Status = kPossiblyExistingGesture);
+  static PassRefPtr<UserGestureToken> Adopt(Document*, UserGestureToken*);
 
   ~UserGestureToken() {}
   bool HasGestures() const;

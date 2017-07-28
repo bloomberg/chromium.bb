@@ -564,7 +564,7 @@ void Editor::WriteSelectionToPasteboard() {
                                              CanSmartCopyOrDelete());
 }
 
-static RefPtr<Image> ImageFromNode(const Node& node) {
+static PassRefPtr<Image> ImageFromNode(const Node& node) {
   DCHECK(!node.GetDocument().NeedsLayoutTreeUpdate());
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       node.GetDocument().Lifecycle());

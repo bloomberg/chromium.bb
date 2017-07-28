@@ -52,14 +52,14 @@ class InheritedShadowListChecker
  public:
   static std::unique_ptr<InheritedShadowListChecker> Create(
       CSSPropertyID property,
-      RefPtr<ShadowList> shadow_list) {
+      PassRefPtr<ShadowList> shadow_list) {
     return WTF::WrapUnique(
         new InheritedShadowListChecker(property, std::move(shadow_list)));
   }
 
  private:
   InheritedShadowListChecker(CSSPropertyID property,
-                             RefPtr<ShadowList> shadow_list)
+                             PassRefPtr<ShadowList> shadow_list)
       : property_(property), shadow_list_(std::move(shadow_list)) {}
 
   bool IsValid(const StyleResolverState& state,
@@ -141,7 +141,7 @@ void CSSShadowListInterpolationType::Composite(
       ShadowInterpolationFunctions::Composite);
 }
 
-static RefPtr<ShadowList> CreateShadowList(
+static PassRefPtr<ShadowList> CreateShadowList(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     const StyleResolverState& state) {

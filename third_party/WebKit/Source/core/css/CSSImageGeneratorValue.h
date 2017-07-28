@@ -58,10 +58,10 @@ class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
 
   void AddClient(const ImageResourceObserver*, const IntSize&);
   void RemoveClient(const ImageResourceObserver*);
-  RefPtr<Image> GetImage(const ImageResourceObserver&,
-                         const Document&,
-                         const ComputedStyle&,
-                         const IntSize&);
+  PassRefPtr<Image> GetImage(const ImageResourceObserver&,
+                             const Document&,
+                             const ComputedStyle&,
+                             const IntSize&);
 
   bool IsFixedSize() const;
   IntSize FixedSize(const Document&, const FloatSize& default_object_size);
@@ -84,7 +84,7 @@ class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
                   const Document&,
                   const ComputedStyle&,
                   const IntSize&);
-  void PutImage(const IntSize&, RefPtr<Image>);
+  void PutImage(const IntSize&, PassRefPtr<Image>);
   const ClientSizeCountMap& Clients() const { return clients_; }
 
   HashCountedSet<IntSize>

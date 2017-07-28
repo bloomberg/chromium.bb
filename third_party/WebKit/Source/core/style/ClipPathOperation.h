@@ -64,7 +64,7 @@ class ClipPathOperation : public RefCounted<ClipPathOperation> {
 
 class ReferenceClipPathOperation final : public ClipPathOperation {
  public:
-  static RefPtr<ReferenceClipPathOperation> Create(
+  static PassRefPtr<ReferenceClipPathOperation> Create(
       const String& url,
       SVGElementProxy& element_proxy) {
     return AdoptRef(new ReferenceClipPathOperation(url, element_proxy));
@@ -96,7 +96,8 @@ DEFINE_TYPE_CASTS(ReferenceClipPathOperation,
 
 class ShapeClipPathOperation final : public ClipPathOperation {
  public:
-  static RefPtr<ShapeClipPathOperation> Create(RefPtr<BasicShape> shape) {
+  static PassRefPtr<ShapeClipPathOperation> Create(
+      PassRefPtr<BasicShape> shape) {
     return AdoptRef(new ShapeClipPathOperation(std::move(shape)));
   }
 
@@ -115,7 +116,8 @@ class ShapeClipPathOperation final : public ClipPathOperation {
   bool operator==(const ClipPathOperation&) const override;
   OperationType GetType() const override { return SHAPE; }
 
-  ShapeClipPathOperation(RefPtr<BasicShape> shape) : shape_(std::move(shape)) {}
+  ShapeClipPathOperation(PassRefPtr<BasicShape> shape)
+      : shape_(std::move(shape)) {}
 
   RefPtr<BasicShape> shape_;
   std::unique_ptr<Path> path_;

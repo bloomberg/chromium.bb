@@ -27,7 +27,7 @@
 #define RadioNodeList_h
 
 #include "core/dom/LiveNodeList.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/text/AtomicString.h"
 
 namespace blink {

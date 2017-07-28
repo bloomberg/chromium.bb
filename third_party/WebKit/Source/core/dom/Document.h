@@ -64,7 +64,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 
@@ -517,8 +517,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void UpdateStyleAndLayoutIgnorePendingStylesheets(
       RunPostLayoutTasks = kRunPostLayoutTasksAsyhnchronously);
   void UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(Node*);
-  RefPtr<ComputedStyle> StyleForElementIgnoringPendingStylesheets(Element*);
-  RefPtr<ComputedStyle> StyleForPage(int page_index);
+  PassRefPtr<ComputedStyle> StyleForElementIgnoringPendingStylesheets(Element*);
+  PassRefPtr<ComputedStyle> StyleForPage(int page_index);
 
   // Ensures that location-based data will be valid for a given node.
   //
@@ -1248,7 +1248,7 @@ class CORE_EXPORT Document : public ContainerNode,
   enum HttpRefreshType { kHttpRefreshFromHeader, kHttpRefreshFromMetaTag };
   void MaybeHandleHttpRefresh(const String&, HttpRefreshType);
 
-  void UpdateSecurityOrigin(RefPtr<SecurityOrigin>);
+  void UpdateSecurityOrigin(PassRefPtr<SecurityOrigin>);
 
   void SetHasViewportUnits() { has_viewport_units_ = true; }
   bool HasViewportUnits() const { return has_viewport_units_; }

@@ -55,14 +55,14 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
                                const AtomicString& method,
                                const KURL&,
                                bool async,
-                               RefPtr<EncodedFormData>,
+                               PassRefPtr<EncodedFormData>,
                                bool include_credentials);
 
   void AddHeader(const AtomicString& key, const AtomicString& value);
   const AtomicString& Method() const { return method_; }
   const KURL& Url() const { return url_; }
   bool Async() const { return async_; }
-  RefPtr<EncodedFormData> FormData() const { return form_data_; }
+  PassRefPtr<EncodedFormData> FormData() const { return form_data_; }
   const HTTPHeaderMap& Headers() const { return headers_; }
   bool IncludeCredentials() const { return include_credentials_; }
   ExecutionContext* GetExecutionContext() const { return execution_context_; }
@@ -74,7 +74,7 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
                 const AtomicString& method,
                 const KURL&,
                 bool async,
-                RefPtr<EncodedFormData>,
+                PassRefPtr<EncodedFormData>,
                 bool include_credentials);
 
   Member<ExecutionContext> execution_context_;
@@ -132,8 +132,10 @@ class NetworkResourcesData final
       text_encoding_name_ = text_encoding_name;
     }
 
-    RefPtr<SharedBuffer> Buffer() const { return buffer_; }
-    void SetBuffer(RefPtr<SharedBuffer> buffer) { buffer_ = std::move(buffer); }
+    PassRefPtr<SharedBuffer> Buffer() const { return buffer_; }
+    void SetBuffer(PassRefPtr<SharedBuffer> buffer) {
+      buffer_ = std::move(buffer);
+    }
 
     Resource* CachedResource() const { return cached_resource_.Get(); }
     void SetResource(Resource*);
@@ -146,7 +148,7 @@ class NetworkResourcesData final
     BlobDataHandle* DownloadedFileBlob() const {
       return downloaded_file_blob_.Get();
     }
-    void SetDownloadedFileBlob(RefPtr<BlobDataHandle> blob) {
+    void SetDownloadedFileBlob(PassRefPtr<BlobDataHandle> blob) {
       downloaded_file_blob_ = std::move(blob);
     }
 

@@ -20,7 +20,7 @@ struct PairwiseInterpolationValue {
   PairwiseInterpolationValue(
       std::unique_ptr<InterpolableValue> start_interpolable_value,
       std::unique_ptr<InterpolableValue> end_interpolable_value,
-      RefPtr<NonInterpolableValue> non_interpolable_value = nullptr)
+      PassRefPtr<NonInterpolableValue> non_interpolable_value = nullptr)
       : start_interpolable_value(std::move(start_interpolable_value)),
         end_interpolable_value(std::move(end_interpolable_value)),
         non_interpolable_value(std::move(non_interpolable_value)) {}

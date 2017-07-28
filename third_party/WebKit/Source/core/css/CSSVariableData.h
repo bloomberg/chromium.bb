@@ -9,7 +9,7 @@
 #include "core/css/parser/CSSParserToken.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -22,14 +22,14 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   USING_FAST_MALLOC(CSSVariableData);
 
  public:
-  static RefPtr<CSSVariableData> Create(const CSSParserTokenRange& range,
-                                        bool is_animation_tainted,
-                                        bool needs_variable_resolution) {
+  static PassRefPtr<CSSVariableData> Create(const CSSParserTokenRange& range,
+                                            bool is_animation_tainted,
+                                            bool needs_variable_resolution) {
     return AdoptRef(new CSSVariableData(range, is_animation_tainted,
                                         needs_variable_resolution));
   }
 
-  static RefPtr<CSSVariableData> CreateResolved(
+  static PassRefPtr<CSSVariableData> CreateResolved(
       const Vector<CSSParserToken>& resolved_tokens,
       Vector<String> backing_strings,
       bool is_animation_tainted) {

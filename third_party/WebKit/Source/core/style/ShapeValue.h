@@ -35,7 +35,7 @@
 #include "core/style/ComputedStyleConstants.h"
 #include "core/style/DataEquivalency.h"
 #include "core/style/StyleImage.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -48,7 +48,7 @@ class ShapeValue final : public GarbageCollectedFinalized<ShapeValue> {
     kImage
   };
 
-  static ShapeValue* CreateShapeValue(RefPtr<BasicShape> shape,
+  static ShapeValue* CreateShapeValue(PassRefPtr<BasicShape> shape,
                                       CSSBoxType css_box) {
     return new ShapeValue(std::move(shape), css_box);
   }
@@ -84,7 +84,7 @@ class ShapeValue final : public GarbageCollectedFinalized<ShapeValue> {
   DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(image_); }
 
  private:
-  ShapeValue(RefPtr<BasicShape> shape, CSSBoxType css_box)
+  ShapeValue(PassRefPtr<BasicShape> shape, CSSBoxType css_box)
       : type_(kShape), shape_(std::move(shape)), css_box_(css_box) {}
   ShapeValue(ShapeValueType type) : type_(type), css_box_(kBoxMissing) {}
   ShapeValue(StyleImage* image)

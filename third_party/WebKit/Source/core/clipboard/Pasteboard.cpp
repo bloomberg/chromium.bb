@@ -35,6 +35,7 @@
 #include "platform/clipboard/ClipboardUtilities.h"
 #include "platform/graphics/Image.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDragData.h"

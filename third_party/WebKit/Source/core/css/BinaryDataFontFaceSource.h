@@ -20,7 +20,7 @@ class BinaryDataFontFaceSource final : public CSSFontFaceSource {
   bool IsValid() const override;
 
  private:
-  RefPtr<SimpleFontData> CreateFontData(const FontDescription&) override;
+  PassRefPtr<SimpleFontData> CreateFontData(const FontDescription&) override;
 
   RefPtr<FontCustomPlatformData> custom_platform_data_;
 };

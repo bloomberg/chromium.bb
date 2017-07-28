@@ -53,7 +53,7 @@ class LayoutImageResource
   void ResetAnimation();
   bool MaybeAnimated() const;
 
-  virtual RefPtr<Image> GetImage(const IntSize&) const;
+  virtual PassRefPtr<Image> GetImage(const IntSize&) const;
   virtual bool ErrorOccurred() const {
     return cached_image_ && cached_image_->ErrorOccurred();
   }

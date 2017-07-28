@@ -102,10 +102,11 @@ DEFINE_TRACE(CSSGradientColorStop) {
   visitor->Trace(color_);
 }
 
-RefPtr<Image> CSSGradientValue::GetImage(const ImageResourceObserver& client,
-                                         const Document& document,
-                                         const ComputedStyle& style,
-                                         const IntSize& size) {
+PassRefPtr<Image> CSSGradientValue::GetImage(
+    const ImageResourceObserver& client,
+    const Document& document,
+    const ComputedStyle& style,
+    const IntSize& size) {
   if (size.IsEmpty())
     return nullptr;
 
@@ -965,7 +966,7 @@ static void EndPointsFromAngle(float angle_deg,
   first_point.Set(half_width - end_x, half_height + end_y);
 }
 
-RefPtr<Gradient> CSSLinearGradientValue::CreateGradient(
+PassRefPtr<Gradient> CSSLinearGradientValue::CreateGradient(
     const CSSToLengthConversionData& conversion_data,
     const IntSize& size,
     const LayoutObject& object) {
@@ -1331,7 +1332,7 @@ FloatSize RadiusToCorner(const FloatPoint& point,
 
 }  // anonymous namespace
 
-RefPtr<Gradient> CSSRadialGradientValue::CreateGradient(
+PassRefPtr<Gradient> CSSRadialGradientValue::CreateGradient(
     const CSSToLengthConversionData& conversion_data,
     const IntSize& size,
     const LayoutObject& object) {
@@ -1508,7 +1509,7 @@ String CSSConicGradientValue::CustomCSSText() const {
   return result.ToString();
 }
 
-RefPtr<Gradient> CSSConicGradientValue::CreateGradient(
+PassRefPtr<Gradient> CSSConicGradientValue::CreateGradient(
     const CSSToLengthConversionData& conversion_data,
     const IntSize& size,
     const LayoutObject& object) {

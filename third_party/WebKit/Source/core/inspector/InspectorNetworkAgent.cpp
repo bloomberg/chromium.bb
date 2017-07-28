@@ -150,7 +150,7 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
 
  public:
   InspectorFileReaderLoaderClient(
-      RefPtr<BlobDataHandle> blob,
+      PassRefPtr<BlobDataHandle> blob,
       const String& mime_type,
       const String& text_encoding_name,
       std::unique_ptr<GetResponseBodyCallback> callback)
@@ -940,7 +940,7 @@ void InspectorNetworkAgent::WillLoadXHR(XMLHttpRequest* xhr,
                                         const AtomicString& method,
                                         const KURL& url,
                                         bool async,
-                                        RefPtr<EncodedFormData> form_data,
+                                        PassRefPtr<EncodedFormData> form_data,
                                         const HTTPHeaderMap& headers,
                                         bool include_credentials) {
   DCHECK(xhr);

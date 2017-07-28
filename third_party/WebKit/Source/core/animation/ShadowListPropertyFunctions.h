@@ -29,7 +29,7 @@ class ShadowListPropertyFunctions {
   }
   static void SetShadowList(CSSPropertyID property,
                             ComputedStyle& style,
-                            RefPtr<ShadowList> shadow_list) {
+                            PassRefPtr<ShadowList> shadow_list) {
     switch (property) {
       case CSSPropertyBoxShadow:
         style.SetBoxShadow(std::move(shadow_list));

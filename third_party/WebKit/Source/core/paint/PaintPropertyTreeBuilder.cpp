@@ -42,7 +42,7 @@ PaintPropertyTreeBuilderFragmentContext::
 // True if a new property was created, false if an existing one was updated.
 static bool UpdatePreTranslation(
     LocalFrameView& frame_view,
-    RefPtr<const TransformPaintPropertyNode> parent,
+    PassRefPtr<const TransformPaintPropertyNode> parent,
     const TransformationMatrix& matrix,
     const FloatPoint3D& origin) {
   DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
@@ -58,8 +58,8 @@ static bool UpdatePreTranslation(
 // True if a new property was created, false if an existing one was updated.
 static bool UpdateContentClip(
     LocalFrameView& frame_view,
-    RefPtr<const ClipPaintPropertyNode> parent,
-    RefPtr<const TransformPaintPropertyNode> local_transform_space,
+    PassRefPtr<const ClipPaintPropertyNode> parent,
+    PassRefPtr<const TransformPaintPropertyNode> local_transform_space,
     const FloatRoundedRect& clip_rect,
     bool& clip_changed) {
   DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
@@ -80,10 +80,10 @@ static bool UpdateContentClip(
 // (which can affect descendants), false if an existing one was updated.
 static bool UpdateScrollTranslation(
     LocalFrameView& frame_view,
-    RefPtr<const TransformPaintPropertyNode> parent,
+    PassRefPtr<const TransformPaintPropertyNode> parent,
     const TransformationMatrix& matrix,
     const FloatPoint3D& origin,
-    RefPtr<const ScrollPaintPropertyNode> scroll_parent,
+    PassRefPtr<const ScrollPaintPropertyNode> scroll_parent,
     const IntSize& clip,
     const IntSize& bounds,
     bool user_scrollable_horizontal,

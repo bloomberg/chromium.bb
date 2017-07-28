@@ -53,6 +53,7 @@
 #include "platform/transforms/TransformOperations.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "platform/wtf/HashFunctions.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -173,7 +174,7 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
     return timing;
   }
 
-  RefPtr<AnimatableValueKeyframe> CreateReplaceOpKeyframe(
+  PassRefPtr<AnimatableValueKeyframe> CreateReplaceOpKeyframe(
       CSSPropertyID id,
       AnimatableValue* value,
       double offset = 0) {
@@ -186,7 +187,7 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
     return keyframe;
   }
 
-  RefPtr<AnimatableValueKeyframe> CreateDefaultKeyframe(
+  PassRefPtr<AnimatableValueKeyframe> CreateDefaultKeyframe(
       CSSPropertyID id,
       EffectModel::CompositeOperation op,
       double offset = 0) {

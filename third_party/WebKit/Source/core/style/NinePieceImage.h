@@ -46,10 +46,10 @@ enum ENinePieceImageRule {
 class CORE_EXPORT NinePieceImageData
     : public RefCountedCopyable<NinePieceImageData> {
  public:
-  static RefPtr<NinePieceImageData> Create() {
+  static PassRefPtr<NinePieceImageData> Create() {
     return AdoptRef(new NinePieceImageData);
   }
-  RefPtr<NinePieceImageData> Copy() const {
+  PassRefPtr<NinePieceImageData> Copy() const {
     return AdoptRef(new NinePieceImageData(*this));
   }
 

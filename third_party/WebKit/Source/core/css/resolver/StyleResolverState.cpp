@@ -78,7 +78,7 @@ StyleResolverState::~StyleResolverState() {
   animation_update_.Clear();
 }
 
-void StyleResolverState::SetStyle(RefPtr<ComputedStyle> style) {
+void StyleResolverState::SetStyle(PassRefPtr<ComputedStyle> style) {
   // FIXME: Improve RAII of StyleResolverState to remove this function.
   style_ = std::move(style);
   css_to_length_conversion_data_ = CSSToLengthConversionData(

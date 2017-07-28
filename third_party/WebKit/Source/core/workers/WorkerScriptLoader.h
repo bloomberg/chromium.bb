@@ -37,8 +37,8 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Functional.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
@@ -56,7 +56,7 @@ class CORE_EXPORT WorkerScriptLoader final
   USING_FAST_MALLOC(WorkerScriptLoader);
 
  public:
-  static RefPtr<WorkerScriptLoader> Create() {
+  static PassRefPtr<WorkerScriptLoader> Create() {
     return AdoptRef(new WorkerScriptLoader());
   }
 

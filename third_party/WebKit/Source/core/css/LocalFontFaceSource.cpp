@@ -17,7 +17,7 @@ bool LocalFontFaceSource::IsLocalFontAvailable(
       font_description, font_name_);
 }
 
-RefPtr<SimpleFontData> LocalFontFaceSource::CreateFontData(
+PassRefPtr<SimpleFontData> LocalFontFaceSource::CreateFontData(
     const FontDescription& font_description) {
   // FIXME(drott) crbug.com/627143: We still have the issue of matching family
   // name instead of postscript name for local fonts. However, we should

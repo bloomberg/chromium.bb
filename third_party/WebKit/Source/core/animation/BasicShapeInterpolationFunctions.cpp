@@ -14,11 +14,11 @@ namespace blink {
 
 class BasicShapeNonInterpolableValue : public NonInterpolableValue {
  public:
-  static RefPtr<NonInterpolableValue> Create(BasicShape::ShapeType type) {
+  static PassRefPtr<NonInterpolableValue> Create(BasicShape::ShapeType type) {
     return AdoptRef(new BasicShapeNonInterpolableValue(type));
   }
-  static RefPtr<NonInterpolableValue> CreatePolygon(WindRule wind_rule,
-                                                    size_t size) {
+  static PassRefPtr<NonInterpolableValue> CreatePolygon(WindRule wind_rule,
+                                                        size_t size) {
     return AdoptRef(new BasicShapeNonInterpolableValue(wind_rule, size));
   }
 
@@ -214,7 +214,7 @@ std::unique_ptr<InterpolableValue> CreateNeutralValue() {
   return std::move(list);
 }
 
-RefPtr<BasicShape> CreateBasicShape(
+PassRefPtr<BasicShape> CreateBasicShape(
     const InterpolableValue& interpolable_value,
     const CSSToLengthConversionData& conversion_data) {
   RefPtr<BasicShapeCircle> circle = BasicShapeCircle::Create();
@@ -289,7 +289,7 @@ std::unique_ptr<InterpolableValue> CreateNeutralValue() {
   return std::move(list);
 }
 
-RefPtr<BasicShape> CreateBasicShape(
+PassRefPtr<BasicShape> CreateBasicShape(
     const InterpolableValue& interpolable_value,
     const CSSToLengthConversionData& conversion_data) {
   RefPtr<BasicShapeEllipse> ellipse = BasicShapeEllipse::Create();
@@ -415,7 +415,7 @@ std::unique_ptr<InterpolableValue> CreateNeutralValue() {
   return std::move(list);
 }
 
-RefPtr<BasicShape> CreateBasicShape(
+PassRefPtr<BasicShape> CreateBasicShape(
     const InterpolableValue& interpolable_value,
     const CSSToLengthConversionData& conversion_data) {
   RefPtr<BasicShapeInset> inset = BasicShapeInset::Create();
@@ -479,7 +479,7 @@ std::unique_ptr<InterpolableValue> CreateNeutralValue(
   return std::move(list);
 }
 
-RefPtr<BasicShape> CreateBasicShape(
+PassRefPtr<BasicShape> CreateBasicShape(
     const InterpolableValue& interpolable_value,
     const BasicShapeNonInterpolableValue& non_interpolable_value,
     const CSSToLengthConversionData& conversion_data) {
@@ -568,7 +568,7 @@ bool BasicShapeInterpolationFunctions::ShapesAreCompatible(
       ToBasicShapeNonInterpolableValue(b));
 }
 
-RefPtr<BasicShape> BasicShapeInterpolationFunctions::CreateBasicShape(
+PassRefPtr<BasicShape> BasicShapeInterpolationFunctions::CreateBasicShape(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue& untyped_non_interpolable_value,
     const CSSToLengthConversionData& conversion_data) {

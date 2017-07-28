@@ -95,7 +95,7 @@ class CORE_EXPORT InspectorPageAgent final
   static bool CachedResourceContent(Resource*,
                                     String* result,
                                     bool* base64_encoded);
-  static bool SharedBufferContent(RefPtr<const SharedBuffer>,
+  static bool SharedBufferContent(PassRefPtr<const SharedBuffer>,
                                   const String& mime_type,
                                   const String& text_encoding_name,
                                   String* result,

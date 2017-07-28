@@ -22,9 +22,9 @@ std::unique_ptr<InterpolableValue> CreateNeutralValue(
     const NonInterpolableValue&);
 bool ShapesAreCompatible(const NonInterpolableValue&,
                          const NonInterpolableValue&);
-RefPtr<BasicShape> CreateBasicShape(const InterpolableValue&,
-                                    const NonInterpolableValue&,
-                                    const CSSToLengthConversionData&);
+PassRefPtr<BasicShape> CreateBasicShape(const InterpolableValue&,
+                                        const NonInterpolableValue&,
+                                        const CSSToLengthConversionData&);
 
 }  // namespace BasicShapeInterpolationFunctions
 

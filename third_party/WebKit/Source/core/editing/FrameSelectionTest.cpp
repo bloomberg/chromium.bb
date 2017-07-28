@@ -22,6 +22,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "testing/gtest/include/gtest/gtest.h"

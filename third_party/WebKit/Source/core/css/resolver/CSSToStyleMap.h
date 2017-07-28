@@ -80,7 +80,7 @@ class CSSToStyleMap {
 
   // Pass a Document* if allow_step_middle is true so that the usage can be
   // counted.
-  static RefPtr<TimingFunction> MapAnimationTimingFunction(
+  static PassRefPtr<TimingFunction> MapAnimationTimingFunction(
       const CSSValue&,
       bool allow_step_middle = false,
       Document* = nullptr);

@@ -19,7 +19,7 @@ class SVGTransformNonInterpolableValue : public NonInterpolableValue {
  public:
   virtual ~SVGTransformNonInterpolableValue() {}
 
-  static RefPtr<SVGTransformNonInterpolableValue> Create(
+  static PassRefPtr<SVGTransformNonInterpolableValue> Create(
       Vector<SVGTransformType>& transform_types) {
     return AdoptRef(new SVGTransformNonInterpolableValue(transform_types));
   }

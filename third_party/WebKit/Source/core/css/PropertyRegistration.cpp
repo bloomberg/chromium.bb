@@ -27,7 +27,7 @@ PropertyRegistration::PropertyRegistration(
     const CSSSyntaxDescriptor& syntax,
     bool inherits,
     const CSSValue* initial,
-    RefPtr<CSSVariableData> initial_variable_data)
+    PassRefPtr<CSSVariableData> initial_variable_data)
     : syntax_(syntax),
       inherits_(inherits),
       initial_(initial),

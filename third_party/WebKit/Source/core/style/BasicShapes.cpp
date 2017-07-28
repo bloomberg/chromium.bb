@@ -105,8 +105,8 @@ void BasicShapeCircle::GetPath(Path& path, const FloatRect& bounding_box) {
                             radius * 2));
 }
 
-RefPtr<BasicShape> BasicShapeCircle::Blend(const BasicShape* other,
-                                           double progress) const {
+PassRefPtr<BasicShape> BasicShapeCircle::Blend(const BasicShape* other,
+                                               double progress) const {
   DCHECK_EQ(GetType(), other->GetType());
   const BasicShapeCircle* o = ToBasicShapeCircle(other);
   RefPtr<BasicShapeCircle> result = BasicShapeCircle::Create();
@@ -153,8 +153,8 @@ void BasicShapeEllipse::GetPath(Path& path, const FloatRect& bounding_box) {
                             radius_x * 2, radius_y * 2));
 }
 
-RefPtr<BasicShape> BasicShapeEllipse::Blend(const BasicShape* other,
-                                            double progress) const {
+PassRefPtr<BasicShape> BasicShapeEllipse::Blend(const BasicShape* other,
+                                                double progress) const {
   DCHECK_EQ(GetType(), other->GetType());
   const BasicShapeEllipse* o = ToBasicShapeEllipse(other);
   RefPtr<BasicShapeEllipse> result = BasicShapeEllipse::Create();
@@ -200,8 +200,8 @@ void BasicShapePolygon::GetPath(Path& path, const FloatRect& bounding_box) {
   path.CloseSubpath();
 }
 
-RefPtr<BasicShape> BasicShapePolygon::Blend(const BasicShape* other,
-                                            double progress) const {
+PassRefPtr<BasicShape> BasicShapePolygon::Blend(const BasicShape* other,
+                                                double progress) const {
   DCHECK(other);
   DCHECK(IsSameType(*other));
 
@@ -271,8 +271,8 @@ static inline LengthSize BlendLengthSize(const LengthSize& to,
       to.Height().Blend(from.Height(), progress, kValueRangeNonNegative));
 }
 
-RefPtr<BasicShape> BasicShapeInset::Blend(const BasicShape* other,
-                                          double progress) const {
+PassRefPtr<BasicShape> BasicShapeInset::Blend(const BasicShape* other,
+                                              double progress) const {
   DCHECK(other);
   DCHECK(IsSameType(*other));
 

@@ -20,7 +20,7 @@ class TypedInterpolationValue {
   static std::unique_ptr<TypedInterpolationValue> Create(
       const InterpolationType& type,
       std::unique_ptr<InterpolableValue> interpolable_value,
-      RefPtr<NonInterpolableValue> non_interpolable_value = nullptr) {
+      PassRefPtr<NonInterpolableValue> non_interpolable_value = nullptr) {
     return WTF::WrapUnique(
         new TypedInterpolationValue(type, std::move(interpolable_value),
                                     std::move(non_interpolable_value)));
@@ -44,9 +44,10 @@ class TypedInterpolationValue {
   InterpolationValue& MutableValue() { return value_; }
 
  private:
-  TypedInterpolationValue(const InterpolationType& type,
-                          std::unique_ptr<InterpolableValue> interpolable_value,
-                          RefPtr<NonInterpolableValue> non_interpolable_value)
+  TypedInterpolationValue(
+      const InterpolationType& type,
+      std::unique_ptr<InterpolableValue> interpolable_value,
+      PassRefPtr<NonInterpolableValue> non_interpolable_value)
       : type_(type),
         value_(std::move(interpolable_value),
                std::move(non_interpolable_value)) {

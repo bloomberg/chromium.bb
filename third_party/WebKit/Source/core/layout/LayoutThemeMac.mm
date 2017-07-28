@@ -1046,7 +1046,7 @@ LayoutTheme& LayoutTheme::NativeTheme() {
   return *layout_theme;
 }
 
-RefPtr<LayoutTheme> LayoutThemeMac::Create() {
+PassRefPtr<LayoutTheme> LayoutThemeMac::Create() {
   return AdoptRef(new LayoutThemeMac);
 }
 

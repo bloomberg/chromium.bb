@@ -33,7 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/FileChooser.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebFileChooserCompletion.h"
@@ -43,7 +43,7 @@ namespace blink {
 class CORE_EXPORT WebFileChooserCompletionImpl final
     : public NON_EXPORTED_BASE(WebFileChooserCompletion) {
  public:
-  explicit WebFileChooserCompletionImpl(RefPtr<FileChooser>);
+  explicit WebFileChooserCompletionImpl(PassRefPtr<FileChooser>);
   ~WebFileChooserCompletionImpl() override;
   void DidChooseFile(const WebVector<WebString>& file_names) override;
   void DidChooseFile(const WebVector<SelectedFileInfo>& files) override;

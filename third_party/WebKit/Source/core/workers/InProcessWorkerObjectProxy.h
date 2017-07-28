@@ -38,7 +38,7 @@
 #include "core/workers/WorkerReportingProxy.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/WeakPtr.h"
 
 namespace blink {
@@ -65,10 +65,10 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public ThreadedObjectProxyBase {
       ParentFrameTaskRunners*);
   ~InProcessWorkerObjectProxy() override;
 
-  void PostMessageToWorkerObject(RefPtr<SerializedScriptValue>,
+  void PostMessageToWorkerObject(PassRefPtr<SerializedScriptValue>,
                                  MessagePortChannelArray);
   void ProcessUnhandledException(int exception_id, WorkerThread*);
-  void ProcessMessageFromWorkerObject(RefPtr<SerializedScriptValue> message,
+  void ProcessMessageFromWorkerObject(PassRefPtr<SerializedScriptValue> message,
                                       MessagePortChannelArray channels,
                                       WorkerThread*);
 

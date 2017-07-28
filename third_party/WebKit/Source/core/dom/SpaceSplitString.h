@@ -61,8 +61,8 @@ class CORE_EXPORT SpaceSplitString {
  private:
   class Data : public RefCounted<Data> {
    public:
-    static RefPtr<Data> Create(const AtomicString&);
-    static RefPtr<Data> CreateUnique(const Data&);
+    static PassRefPtr<Data> Create(const AtomicString&);
+    static PassRefPtr<Data> CreateUnique(const Data&);
 
     ~Data();
 

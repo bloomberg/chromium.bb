@@ -29,7 +29,7 @@ class InheritedTranslateChecker
   ~InheritedTranslateChecker() {}
 
   static std::unique_ptr<InheritedTranslateChecker> Create(
-      RefPtr<TranslateTransformOperation> inherited_translate) {
+      PassRefPtr<TranslateTransformOperation> inherited_translate) {
     return WTF::WrapUnique(
         new InheritedTranslateChecker(std::move(inherited_translate)));
   }
@@ -47,7 +47,7 @@ class InheritedTranslateChecker
 
  private:
   InheritedTranslateChecker(
-      RefPtr<TranslateTransformOperation> inherited_translate)
+      PassRefPtr<TranslateTransformOperation> inherited_translate)
       : inherited_translate_(std::move(inherited_translate)) {}
 
   RefPtr<TransformOperation> inherited_translate_;

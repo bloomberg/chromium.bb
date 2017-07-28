@@ -28,7 +28,7 @@
 #include "core/css/StyleSheet.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

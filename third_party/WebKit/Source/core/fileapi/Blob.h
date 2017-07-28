@@ -40,7 +40,7 @@
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -67,7 +67,7 @@ class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>,
       const BlobPropertyBag&,
       ExceptionState&);
 
-  static Blob* Create(RefPtr<BlobDataHandle> blob_data_handle) {
+  static Blob* Create(PassRefPtr<BlobDataHandle> blob_data_handle) {
     return new Blob(std::move(blob_data_handle));
   }
 
@@ -103,7 +103,9 @@ class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>,
 
   String type() const { return blob_data_handle_->GetType(); }
   String Uuid() const { return blob_data_handle_->Uuid(); }
-  RefPtr<BlobDataHandle> GetBlobDataHandle() const { return blob_data_handle_; }
+  PassRefPtr<BlobDataHandle> GetBlobDataHandle() const {
+    return blob_data_handle_;
+  }
   // True for all File instances, including the user-built ones.
   virtual bool IsFile() const { return false; }
   // Only true for File instances that are backed by platform files.
@@ -122,7 +124,7 @@ class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>,
   DEFINE_INLINE_TRACE() {}
 
  protected:
-  explicit Blob(RefPtr<BlobDataHandle>);
+  explicit Blob(PassRefPtr<BlobDataHandle>);
 
   static void PopulateBlobData(
       BlobData*,

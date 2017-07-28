@@ -126,7 +126,7 @@ class CORE_EXPORT ImageResource final
   bool HasClientsOrObservers() const override;
 
   void UpdateImageAndClearBuffer();
-  void UpdateImage(RefPtr<SharedBuffer>,
+  void UpdateImage(PassRefPtr<SharedBuffer>,
                    ImageResourceContent::UpdateImageOption,
                    bool all_data_received);
 

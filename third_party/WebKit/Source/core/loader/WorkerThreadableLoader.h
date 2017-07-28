@@ -38,6 +38,7 @@
 #include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "platform/WaitableEvent.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/Vector.h"
@@ -146,7 +147,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
                                std::unique_ptr<CrossThreadResourceRequestData>,
                                const ThreadableLoaderOptions&,
                                const ResourceLoaderOptions&,
-                               RefPtr<WaitableEventWithTasks>);
+                               PassRefPtr<WaitableEventWithTasks>);
     ~MainThreadLoaderHolder() override;
 
     void OverrideTimeout(unsigned long timeout_millisecond);

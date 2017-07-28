@@ -29,7 +29,7 @@ void RemoteDOMWindow::FrameDetached() {
 }
 
 void RemoteDOMWindow::SchedulePostMessage(MessageEvent* event,
-                                          RefPtr<SecurityOrigin> target,
+                                          PassRefPtr<SecurityOrigin> target,
                                           Document* source) {
   GetFrame()->Client()->ForwardPostMessage(event, std::move(target),
                                            source->GetFrame());

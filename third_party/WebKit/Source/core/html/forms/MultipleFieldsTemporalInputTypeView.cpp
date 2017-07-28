@@ -331,9 +331,9 @@ void MultipleFieldsTemporalInputTypeView::Blur() {
     edit->BlurByOwner();
 }
 
-RefPtr<ComputedStyle>
+PassRefPtr<ComputedStyle>
 MultipleFieldsTemporalInputTypeView::CustomStyleForLayoutObject(
-    RefPtr<ComputedStyle> original_style) {
+    PassRefPtr<ComputedStyle> original_style) {
   EDisplay original_display = original_style->Display();
   EDisplay new_display = original_display;
   if (original_display == EDisplay::kInline ||

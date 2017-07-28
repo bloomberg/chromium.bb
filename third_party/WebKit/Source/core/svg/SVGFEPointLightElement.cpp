@@ -30,7 +30,7 @@ inline SVGFEPointLightElement::SVGFEPointLightElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGFEPointLightElement)
 
-RefPtr<LightSource> SVGFEPointLightElement::GetLightSource(
+PassRefPtr<LightSource> SVGFEPointLightElement::GetLightSource(
     Filter* filter) const {
   return PointLightSource::Create(filter->Resolve3dPoint(GetPosition()));
 }

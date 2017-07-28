@@ -31,7 +31,7 @@ class CORE_TEMPLATE_CLASS_EXPORT DOMTypedArray final
  public:
   typedef typename WTFTypedArray::ValueType ValueType;
 
-  static ThisType* Create(RefPtr<WTFTypedArray> buffer_view) {
+  static ThisType* Create(PassRefPtr<WTFTypedArray> buffer_view) {
     return new ThisType(std::move(buffer_view));
   }
   static ThisType* Create(unsigned length) {
@@ -40,7 +40,7 @@ class CORE_TEMPLATE_CLASS_EXPORT DOMTypedArray final
   static ThisType* Create(const ValueType* array, unsigned length) {
     return Create(WTFTypedArray::Create(array, length));
   }
-  static ThisType* Create(RefPtr<WTF::ArrayBuffer> buffer,
+  static ThisType* Create(PassRefPtr<WTF::ArrayBuffer> buffer,
                           unsigned byte_offset,
                           unsigned length) {
     return Create(
@@ -78,9 +78,9 @@ class CORE_TEMPLATE_CLASS_EXPORT DOMTypedArray final
                              v8::Local<v8::Object> creation_context) override;
 
  private:
-  explicit DOMTypedArray(RefPtr<WTFTypedArray> buffer_view)
+  explicit DOMTypedArray(PassRefPtr<WTFTypedArray> buffer_view)
       : DOMArrayBufferView(std::move(buffer_view)) {}
-  DOMTypedArray(RefPtr<WTFTypedArray> buffer_view,
+  DOMTypedArray(PassRefPtr<WTFTypedArray> buffer_view,
                 DOMArrayBufferBase* dom_array_buffer)
       : DOMArrayBufferView(std::move(buffer_view), dom_array_buffer) {}
 };

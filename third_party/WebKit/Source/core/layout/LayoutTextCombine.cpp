@@ -26,7 +26,7 @@ namespace blink {
 
 const float kTextCombineMargin = 1.1f;  // Allow em + 10% margin
 
-LayoutTextCombine::LayoutTextCombine(Node* node, RefPtr<StringImpl> string)
+LayoutTextCombine::LayoutTextCombine(Node* node, PassRefPtr<StringImpl> string)
     : LayoutText(node, std::move(string)),
       combined_text_width_(0),
       scale_x_(1.0f),
