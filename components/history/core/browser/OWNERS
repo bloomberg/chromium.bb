@@ -1,1 +1,3 @@
+per-file typed_url_sync_bridge*=gangwu@chromium.org
+per-file typed_url_syncable_service*=gangwu@chromium.org
 per-file typed_url_syncable_service*=zea@chromium.org
