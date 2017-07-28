@@ -24,7 +24,7 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::ContextMenuItemWithText;
+using testing::ButtonWithAccessibilityLabel;
 using testing::ElementToDismissContextMenu;
 
 // Context menu test cases for the web shell.
@@ -57,7 +57,7 @@ using testing::ElementToDismissContextMenu;
       performAction:web::LongPressElementForContextMenu(
                         linkID, true /* menu should appear */)];
 
-  id<GREYMatcher> copyItem = ContextMenuItemWithText(@"Copy Link");
+  id<GREYMatcher> copyItem = ButtonWithAccessibilityLabel(@"Copy Link");
 
   // Context menu should have a "copy link" item.
   [[EarlGrey selectElementWithMatcher:copyItem]
@@ -96,7 +96,7 @@ using testing::ElementToDismissContextMenu;
       performAction:web::LongPressElementForContextMenu(
                         linkID, false /* menu shouldn't appear */)];
 
-  id<GREYMatcher> copyItem = ContextMenuItemWithText(@"Copy Link");
+  id<GREYMatcher> copyItem = ButtonWithAccessibilityLabel(@"Copy Link");
 
   // Verify no context menu.
   [[EarlGrey selectElementWithMatcher:copyItem] assertWithMatcher:grey_nil()];
@@ -129,7 +129,7 @@ using testing::ElementToDismissContextMenu;
       performAction:web::LongPressElementForContextMenu(
                         linkID, false /* menu shouldn't appear */)];
 
-  id<GREYMatcher> copyItem = ContextMenuItemWithText(@"Copy Link");
+  id<GREYMatcher> copyItem = ButtonWithAccessibilityLabel(@"Copy Link");
 
   // Verify no context menu.
   [[EarlGrey selectElementWithMatcher:copyItem] assertWithMatcher:grey_nil()];
@@ -163,7 +163,7 @@ using testing::ElementToDismissContextMenu;
       performAction:web::LongPressElementForContextMenu(
                         linkID, true /* menu should appear */)];
 
-  id<GREYMatcher> copyItem = ContextMenuItemWithText(@"Copy Link");
+  id<GREYMatcher> copyItem = ButtonWithAccessibilityLabel(@"Copy Link");
 
   // Context menu should have a "copy link" item.
   [[EarlGrey selectElementWithMatcher:copyItem]
