@@ -4,6 +4,7 @@
 
 package org.chromium.device.gamepad;
 
+import android.os.Build;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
@@ -27,6 +28,16 @@ import java.util.BitSet;
 @Config(manifest = Config.NONE)
 public class GamepadMappingsTest {
     private static final float ERROR_TOLERANCE = 0.000001f;
+    /**
+     * Product ID for Xbox One S gamepads with updated firmware connected over Bluetooth.
+     * Microsoft released a firmware update for this gamepad that changes the button and axis
+     * assignments. We distinguish between them by comparing the product ID.
+     */
+    private static final int XBOX_ONE_S_PRODUCT_ID = 0x02fd;
+    /**
+     * The device ID string for Xbox One S gamepads connected over Bluetooth.
+     */
+    private static final String XBOX_WIRELESS_DEVICE_NAME = "Xbox Wireless Controller";
     /**
      * Set bits indicate that we don't expect the button at mMappedButtons[index] to be mapped.
      */
@@ -291,6 +302,71 @@ public class GamepadMappingsTest {
 
         expectNoThumbstickButtons();
         assertMapping();
+    }
+
+    @Test
+    @Feature({"Gamepad"})
+    public void testXboxOneSBluetooth2016FirmwareMappings() throws Exception {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            GamepadMappings mappings =
+                    GamepadMappings.getMappings(GamepadMappings.XBOX_ONE_S_2016_FIRMWARE_PRODUCT_ID,
+                            GamepadMappings.XBOX_ONE_S_2016_FIRMWARE_VENDOR_ID);
+            mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
+
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.PRIMARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_A], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.SECONDARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_B], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.TERTIARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_C], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.QUATERNARY],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_X], ERROR_TOLERANCE);
+
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_SHOULDER],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_Y], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_SHOULDER],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_Z], ERROR_TOLERANCE);
+
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_THUMBSTICK],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_L2], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_THUMBSTICK],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_R2], ERROR_TOLERANCE);
+
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.BACK_SELECT],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_L1], ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.START],
+                    mRawButtons[KeyEvent.KEYCODE_BUTTON_R1], ERROR_TOLERANCE);
+
+            // The triggers range from -1 to 1 with -1 as the idle value.
+            float leftTriggerValue = (mRawAxes[MotionEvent.AXIS_Z] + 1.0f) / 2.0f;
+            float rightTriggerValue = (mRawAxes[MotionEvent.AXIS_RZ] + 1.0f) / 2.0f;
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_TRIGGER], leftTriggerValue,
+                    ERROR_TOLERANCE);
+            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER],
+                    rightTriggerValue, ERROR_TOLERANCE);
+
+            assertMappedHatAxisToDpadButtons();
+            assertMappedXYAxes();
+            assertMappedRXAndRYAxesToRightStick();
+            expectNoMetaButton();
+
+            assertMapping();
+        }
+    }
+
+    @Test
+    @Feature({"Gamepad"})
+    public void testXboxOneSBluetoothUsesDefaultMappings() throws Exception {
+        // Test that Xbox One S gamepads with updated firmware connected over Bluetooth use the
+        // default mapping.
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            GamepadMappings deviceIdMappings = GamepadMappings.getMappings(
+                    XBOX_ONE_S_PRODUCT_ID, GamepadMappings.XBOX_ONE_S_2016_FIRMWARE_VENDOR_ID);
+            Assert.assertNull(deviceIdMappings);
+        }
+
+        GamepadMappings deviceNameMappings = GamepadMappings.getMappings(XBOX_WIRELESS_DEVICE_NAME);
+        Assert.assertNull(deviceNameMappings);
     }
 
     /**
