@@ -114,8 +114,6 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
     const VisibleSelectionTemplate<Strategy>& other)
     : base_(other.base_),
       extent_(other.extent_),
-      start_(other.start_),
-      end_(other.end_),
       affinity_(other.affinity_),
       selection_type_(other.selection_type_),
       base_is_first_(other.base_is_first_),
@@ -126,8 +124,6 @@ VisibleSelectionTemplate<Strategy>& VisibleSelectionTemplate<Strategy>::
 operator=(const VisibleSelectionTemplate<Strategy>& other) {
   base_ = other.base_;
   extent_ = other.extent_;
-  start_ = other.start_;
-  end_ = other.end_;
   affinity_ = other.affinity_;
   selection_type_ = other.selection_type_;
   base_is_first_ = other.base_is_first_;
@@ -144,6 +140,16 @@ SelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::AsSelection()
   return builder.SetAffinity(affinity_)
       .SetIsDirectional(is_directional_)
       .Build();
+}
+
+template <typename Strategy>
+PositionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::Start() const {
+  return base_is_first_ ? base_ : extent_;
+}
+
+template <typename Strategy>
+PositionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::End() const {
+  return base_is_first_ ? extent_ : base_;
 }
 
 EphemeralRange FirstEphemeralRangeOf(const VisibleSelection& selection) {
@@ -200,7 +206,10 @@ VisibleSelectionTemplate<Strategy>::AppendTrailingWhitespace() const {
   if (End() == new_end)
     return *this;
   VisibleSelectionTemplate<Strategy> result = *this;
-  result.end_ = new_end;
+  if (base_is_first_)
+    result.extent_ = new_end;
+  else
+    result.base_ = new_end;
   return result;
 }
 
@@ -459,7 +468,7 @@ void VisibleSelectionTemplate<Strategy>::Validate(
       CanonicalizeSelection(passed_selection);
 
   if (canonicalized_selection.IsNone()) {
-    base_ = extent_ = start_ = end_ = PositionTemplate<Strategy>();
+    base_ = extent_ = PositionTemplate<Strategy>();
     base_is_first_ = true;
     selection_type_ = kNoSelection;
     affinity_ = TextAffinity::kDownstream;
@@ -527,10 +536,8 @@ void VisibleSelectionTemplate<Strategy>::Validate(
     // Affinity only makes sense for a caret
     affinity_ = TextAffinity::kDownstream;
   }
-  start_ = range.StartPosition();
-  end_ = range.EndPosition();
-  base_ = base_is_first_ ? start_ : end_;
-  extent_ = base_is_first_ ? end_ : start_;
+  base_ = base_is_first_ ? range.StartPosition() : range.EndPosition();
+  extent_ = base_is_first_ ? range.EndPosition() : range.StartPosition();
 }
 
 template <typename Strategy>
@@ -540,7 +547,7 @@ bool VisibleSelectionTemplate<Strategy>::IsValidFor(
     return true;
 
   return base_.GetDocument() == &document && !base_.IsOrphan() &&
-         !extent_.IsOrphan() && !start_.IsOrphan() && !end_.IsOrphan();
+         !extent_.IsOrphan();
 }
 
 // TODO(yosin) This function breaks the invariant of this class.
@@ -563,13 +570,6 @@ VisibleSelectionTemplate<Strategy>::CreateWithoutValidationDeprecated(
   visible_selection.base_ = base;
   visible_selection.extent_ = extent;
   visible_selection.base_is_first_ = base.CompareTo(extent) <= 0;
-  if (visible_selection.base_is_first_) {
-    visible_selection.start_ = base;
-    visible_selection.end_ = extent;
-  } else {
-    visible_selection.start_ = extent;
-    visible_selection.end_ = base;
-  }
   if (base == extent) {
     visible_selection.selection_type_ = kCaretSelection;
     visible_selection.affinity_ = affinity;
@@ -805,8 +805,6 @@ template <typename Strategy>
 DEFINE_TRACE(VisibleSelectionTemplate<Strategy>) {
   visitor->Trace(base_);
   visitor->Trace(extent_);
-  visitor->Trace(start_);
-  visitor->Trace(end_);
 }
 
 #ifndef NDEBUG
