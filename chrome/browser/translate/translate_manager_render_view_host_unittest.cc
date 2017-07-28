@@ -40,6 +40,7 @@
 #include "components/translate/content/common/translate.mojom.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_language_list.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_pref_names.h"
@@ -64,10 +65,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "url/gurl.h"
-
-#if !defined(USE_AURA)
-#include "components/translate/core/browser/translate_infobar_delegate.h"
-#endif
 
 namespace {
 
@@ -354,7 +351,6 @@ class TranslateManagerRenderViewHostTest
     return InfoBarService::FromWebContents(web_contents());
   }
 
-#if !defined(USE_AURA)
   // Returns the translate infobar if there is 1 infobar and it is a translate
   // infobar.
   translate::TranslateInfoBarDelegate* GetTranslateInfoBar() {
@@ -364,6 +360,7 @@ class TranslateManagerRenderViewHostTest
         NULL;
   }
 
+#if !defined(USE_AURA)
   // If there is 1 infobar and it is a translate infobar, closes it and returns
   // true.  Returns false otherwise.
   bool CloseTranslateInfoBar() {
@@ -613,9 +610,9 @@ TEST_F(TranslateManagerRenderViewHostTest, FetchLanguagesFromTranslateServer) {
   }
 }
 
-// The rest of the tests in this file depend on the translate infobar. They
-// should be ported to use the translate bubble. On Aura there is no infobar
-// so the tests are not compiled.
+// The following tests depend on the translate infobar. They should be ported to
+// use the translate bubble. On Aura there is no infobar so the tests are not
+// compiled.
 #if !defined(USE_AURA)
 TEST_F(TranslateManagerRenderViewHostTest, NormalTranslate) {
   // See BubbleNormalTranslate for corresponding bubble UX testing.
@@ -1648,17 +1645,11 @@ TEST_F(TranslateManagerRenderViewHostTest, ScriptExpires) {
   EXPECT_EQ("en", target_lang);
 }
 
-TEST_F(TranslateManagerRenderViewHostTest, DownloadsAndHistoryNotTranslated) {
-  ASSERT_FALSE(
-      TranslateService::IsTranslatableURL(GURL(chrome::kChromeUIDownloadsURL)));
-  ASSERT_FALSE(
-      TranslateService::IsTranslatableURL(GURL(chrome::kChromeUIHistoryURL)));
-}
-
+#else
+// The following tests depend on the translate bubble UI.
 TEST_F(TranslateManagerRenderViewHostTest, BubbleNormalTranslate) {
   // See NormalTranslate for corresponding infobar UX testing.
-  if (!TranslateService::IsTranslateBubbleEnabled())
-    return;
+  EXPECT_TRUE(TranslateService::IsTranslateBubbleEnabled());
 
   MockTranslateBubbleFactory* factory = new MockTranslateBubbleFactory;
   std::unique_ptr<TranslateBubbleFactory> factory_ptr(factory);
@@ -1699,8 +1690,7 @@ TEST_F(TranslateManagerRenderViewHostTest, BubbleNormalTranslate) {
 
 TEST_F(TranslateManagerRenderViewHostTest, BubbleTranslateScriptNotAvailable) {
   // See TranslateScriptNotAvailable for corresponding infobar UX testing.
-  if (!TranslateService::IsTranslateBubbleEnabled())
-    return;
+  EXPECT_TRUE(TranslateService::IsTranslateBubbleEnabled());
 
   MockTranslateBubbleFactory* factory = new MockTranslateBubbleFactory;
   std::unique_ptr<TranslateBubbleFactory> factory_ptr(factory);
@@ -1731,8 +1721,7 @@ TEST_F(TranslateManagerRenderViewHostTest, BubbleTranslateScriptNotAvailable) {
 
 TEST_F(TranslateManagerRenderViewHostTest, BubbleUnknownLanguage) {
   // See TranslateUnknownLanguage for corresponding infobar UX testing.
-  if (!TranslateService::IsTranslateBubbleEnabled())
-    return;
+  EXPECT_TRUE(TranslateService::IsTranslateBubbleEnabled());
 
   MockTranslateBubbleFactory* factory = new MockTranslateBubbleFactory;
   std::unique_ptr<TranslateBubbleFactory> factory_ptr(factory);

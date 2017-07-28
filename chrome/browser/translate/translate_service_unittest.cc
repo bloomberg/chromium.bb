@@ -5,6 +5,7 @@
 #include "chrome/browser/translate/translate_service.h"
 
 #include "build/build_config.h"
+#include "chrome/common/url_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -80,5 +81,15 @@ TEST(TranslateServiceTest, GetTargetLanguage) {
   EXPECT_EQ("fr", TranslateService::GetTargetLanguage(&prefs));
 
   download_manager->ResetForTesting();
+  TranslateService::ShutdownForTesting();
+}
+
+// Tests that download and history URLs are not translatable.
+TEST(TranslateServiceTest, DownloadsAndHistoryNotTranslated) {
+  TranslateService::InitializeForTesting();
+  EXPECT_FALSE(
+      TranslateService::IsTranslatableURL(GURL(chrome::kChromeUIDownloadsURL)));
+  EXPECT_FALSE(
+      TranslateService::IsTranslatableURL(GURL(chrome::kChromeUIHistoryURL)));
   TranslateService::ShutdownForTesting();
 }
