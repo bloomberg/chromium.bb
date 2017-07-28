@@ -1,6 +1,5 @@
 The test verifies CSS.getMatchedStylesForNode when used concurrently with the CSSOM modifications.
 
-
 Running test: testModifyRule
 --------------
 Original rule:

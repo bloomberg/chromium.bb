@@ -1,3 +1,4 @@
+Verify that media queries are reported properly.
 mediaRule #0
     text: (max-width: 0px), (min-width: 1000em)
     source: mediaRule

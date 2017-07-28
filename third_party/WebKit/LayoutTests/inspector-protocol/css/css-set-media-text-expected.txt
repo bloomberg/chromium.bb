@@ -1,3 +1,4 @@
+Tests CSS.setMediaText method.
 ==== Initial style sheet text ====
 @media screen and (min-width: 700px) and (max-device-height: 200em) {
     body {

@@ -1,3 +1,4 @@
+Test that keyframe rules are reported.
 Dumping CSS keyframed animations: 
 @keyframes animName {
     0% {

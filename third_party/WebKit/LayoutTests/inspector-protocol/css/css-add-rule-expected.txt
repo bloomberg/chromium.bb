@@ -1,5 +1,4 @@
 The test verifies functionality of protocol method CSS.addRule.
-
 ==== Initial style sheet text ====
 #test {
     box-sizing: border-box;

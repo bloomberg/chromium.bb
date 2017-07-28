@@ -1,5 +1,4 @@
-This text is bold
-
+Test that ::content pseudo selector is reported in matched rules.
 Dumping matched rules: 
 :host ::content * {    regular
     font-weight: bold;

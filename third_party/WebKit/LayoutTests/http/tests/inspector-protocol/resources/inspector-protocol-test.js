@@ -237,9 +237,11 @@ TestRunner.Session = class {
     return this.sendRawCommand(requestId, JSON.stringify(messageObject));
   }
 
-  async evaluate(code) {
-    if (typeof code === 'function')
-      code = `(${code.toString()})()`;
+  async evaluate(code, ...args) {
+    if (typeof code === 'function') {
+      var argsString = args.map(JSON.stringify.bind(JSON)).join(', ');
+      code = `(${code.toString()})(${argsString})`;
+    }
     var response = await this.protocol.Runtime.evaluate({expression: code, returnByValue: true});
     if (response.error) {
       this._testRunner.log(`Error while evaluating '${code}': ${response.error}`);
@@ -249,9 +251,11 @@ TestRunner.Session = class {
     }
   }
 
-  async evaluateAsync(code) {
-    if (typeof code === 'function')
-      code = `(${code.toString()})()`;
+  async evaluateAsync(code, ...args) {
+    if (typeof code === 'function') {
+      var argsString = args.map(JSON.stringify.bind(JSON)).join(', ');
+      code = `(${code.toString()})(${argsString})`;
+    }
     var response = await this.protocol.Runtime.evaluate({expression: code, returnByValue: true, awaitPromise: true});
     if (response.error) {
       this._testRunner.log(`Error while evaluating async '${code}': ${response.error}`);
