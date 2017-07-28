@@ -5,8 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_H_
 
-#include <jni.h>
-
 #include <list>
 #include <memory>
 #include <string>
@@ -423,8 +421,6 @@ class AwContents : public FindHelper::Listener,
 
   DISALLOW_COPY_AND_ASSIGN(AwContents);
 };
-
-bool RegisterAwContents(JNIEnv* env);
 
 }  // namespace android_webview
 

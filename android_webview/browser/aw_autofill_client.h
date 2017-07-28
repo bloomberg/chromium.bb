@@ -5,7 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_AUTOFILL_CLIENT_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_AUTOFILL_CLIENT_H_
 
-#include <jni.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -135,8 +134,6 @@ class AwAutofillClient : public autofill::AutofillClient,
 
   DISALLOW_COPY_AND_ASSIGN(AwAutofillClient);
 };
-
-bool RegisterAwAutofillClient(JNIEnv* env);
 
 }  // namespace android_webview
 

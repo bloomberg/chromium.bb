@@ -219,10 +219,6 @@ bool ContentSchemeRequestInterceptor::ShouldHandleRequest(
 
 namespace android_webview {
 
-bool RegisterAndroidProtocolHandler(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 // static
 std::unique_ptr<net::URLRequestInterceptor>
 CreateContentSchemeRequestInterceptor() {

@@ -23,8 +23,6 @@ class PopupTouchHandleDrawable : public ui::TouchHandleDrawable {
                            float horizontal_padding_ratio);
   ~PopupTouchHandleDrawable() override;
 
-  static bool RegisterPopupTouchHandleDrawable(JNIEnv* env);
-
   // ui::TouchHandleDrawable implementation.
   void SetEnabled(bool enabled) override;
   void SetOrientation(ui::TouchHandleOrientation orientation,

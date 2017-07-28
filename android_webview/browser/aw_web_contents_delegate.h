@@ -5,8 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_WEB_CONTENTS_DELEGATE_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_WEB_CONTENTS_DELEGATE_H_
 
-#include <jni.h>
-
 #include "components/web_contents_delegate_android/web_contents_delegate_android.h"
 
 namespace android_webview {
@@ -66,8 +64,6 @@ class AwWebContentsDelegate
  private:
   bool is_fullscreen_;
 };
-
-bool RegisterAwWebContentsDelegate(JNIEnv* env);
 
 }  // namespace android_webview
 

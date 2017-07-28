@@ -5,7 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_QUOTA_MANAGER_BRIDGE_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_QUOTA_MANAGER_BRIDGE_H_
 
-#include <jni.h>
 #include <stdint.h>
 
 #include <string>
@@ -92,8 +91,6 @@ class AwQuotaManagerBridge
 
   DISALLOW_COPY_AND_ASSIGN(AwQuotaManagerBridge);
 };
-
-bool RegisterAwQuotaManagerBridge(JNIEnv* env);
 
 }  // namespace android_webview
 

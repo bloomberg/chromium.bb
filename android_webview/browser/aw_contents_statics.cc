@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/aw_contents_statics.h"
-
 #include "android_webview/browser/address_parser.h"
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
@@ -141,10 +139,6 @@ ScopedJavaLocalRef<jstring> FindAddress(JNIEnv* env,
   if (android_webview::address_parser::FindAddress(content_16, &result_16))
     return base::android::ConvertUTF16ToJavaString(env, result_16);
   return ScopedJavaLocalRef<jstring>();
-}
-
-bool RegisterAwContentsStatics(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace android_webview

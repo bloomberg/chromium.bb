@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/token_binding_manager_bridge.h"
-
 #include "android_webview/browser/net/token_binding_manager.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -110,10 +108,6 @@ static void DeleteAllTokenBindingKeys(JNIEnv* env,
   TokenBindingManager::DeletionCompleteCallback complete_callback =
       base::Bind(&OnDeletionComplete, j_callback);
   TokenBindingManager::GetInstance()->DeleteAllKeys(complete_callback);
-}
-
-bool RegisterTokenBindingManager(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace android_webview

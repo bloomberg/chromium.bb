@@ -100,8 +100,4 @@ static jlong Create(JNIEnv* env,
       new AwGLFunctor(JavaObjectWeakGlobalRef(env, obj)));
 }
 
-bool RegisterAwGLFunctor(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android_webview

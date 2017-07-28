@@ -272,8 +272,4 @@ void SetMetricsEnabled(JNIEnv* env,
   g_lazy_instance_.Pointer()->SetMetricsEnabled(enabled);
 }
 
-bool RegisterAwMetricsServiceClient(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android_webview

@@ -5,8 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_GL_FUNCTOR_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_GL_FUNCTOR_H_
 
-#include <jni.h>
-
 #include "android_webview/browser/compositor_frame_consumer.h"
 #include "android_webview/browser/render_thread_manager.h"
 #include "android_webview/browser/render_thread_manager_client.h"
@@ -38,8 +36,6 @@ class AwGLFunctor : public RenderThreadManagerClient {
   JavaObjectWeakGlobalRef java_ref_;
   RenderThreadManager render_thread_manager_;
 };
-
-bool RegisterAwGLFunctor(JNIEnv* env);
 
 }  // namespace android_webview
 

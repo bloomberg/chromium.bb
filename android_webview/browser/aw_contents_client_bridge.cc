@@ -571,8 +571,4 @@ void AwContentsClientBridge::CancelJsResult(JNIEnv*,
   pending_js_dialog_callbacks_.Remove(id);
 }
 
-bool RegisterAwContentsClientBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android_webview

@@ -5,7 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_CLIENT_BRIDGE_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_CLIENT_BRIDGE_H_
 
-#include <jni.h>
 #include <memory>
 
 #include "android_webview/browser/aw_safe_browsing_resource_throttle.h"
@@ -150,8 +149,6 @@ class AwContentsClientBridge {
   IDMap<std::unique_ptr<content::ClientCertificateDelegate>>
       pending_client_cert_request_delegates_;
 };
-
-bool RegisterAwContentsClientBridge(JNIEnv* env);
 
 }  // namespace android_webview
 

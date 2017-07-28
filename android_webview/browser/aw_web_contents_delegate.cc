@@ -311,8 +311,4 @@ static void FilesSelectedInChooser(
   rfh->FilesSelectedInChooser(files, mode);
 }
 
-bool RegisterAwWebContentsDelegate(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android_webview

@@ -37,7 +37,6 @@ source_set("aw_java_test_native_support") {
     "../../../net/test/embedded_test_server/android/embedded_test_server_android.cc",
     "../../../net/test/embedded_test_server/android/embedded_test_server_android.h",
     "aw_embedded_test_server.cc",
-    "aw_embedded_test_server.h",
     "aw_test_entry_point.cc",
     "aw_test_jni_onload.cc",
     "aw_test_jni_onload.h",

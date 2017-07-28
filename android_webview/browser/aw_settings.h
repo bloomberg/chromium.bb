@@ -5,8 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_SETTINGS_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_SETTINGS_H_
 
-#include <jni.h>
-
 #include <memory>
 
 #include "base/android/jni_weak_ref.h"
@@ -76,8 +74,6 @@ class AwSettings : public content::WebContentsObserver {
 
   JavaObjectWeakGlobalRef aw_settings_;
 };
-
-bool RegisterAwSettings(JNIEnv* env);
 
 }  // namespace android_webview
 

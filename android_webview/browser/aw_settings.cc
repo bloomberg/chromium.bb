@@ -484,8 +484,4 @@ static ScopedJavaLocalRef<jstring> GetDefaultUserAgent(
   return base::android::ConvertUTF8ToJavaString(env, GetUserAgent());
 }
 
-bool RegisterAwSettings(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android_webview
