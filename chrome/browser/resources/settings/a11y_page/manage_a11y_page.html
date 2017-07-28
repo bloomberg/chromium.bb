@@ -131,7 +131,7 @@
             pref="{{prefs.settings.a11y.switch_access}}"
             label="$i18n{switchAccessLabel}">
           <button is="paper-icon-button-light"
-              class="icon-settings more-actions"
+              class="icon-settings" slot="more-actions"
               on-tap="onSwitchAccessSettingsTap_"
               hidden="[[!prefs.settings.a11y.switch_access.value]]"
               aria-label="$i18n{selectToSpeakOptionsLabel}">
