@@ -88,8 +88,9 @@ void StorageInfoProvider::GetAllStoragesIntoInfoList() {
   }
 }
 
-double StorageInfoProvider::GetStorageFreeSpaceFromTransientIdAsync(
+double StorageInfoProvider::GetStorageFreeSpaceFromTransientIdOnFileThread(
     const std::string& transient_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   std::vector<StorageInfo> storage_list =
       StorageMonitor::GetInstance()->GetAllAvailableStorages();
 
