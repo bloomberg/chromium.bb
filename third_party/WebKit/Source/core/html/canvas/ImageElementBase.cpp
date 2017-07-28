@@ -25,7 +25,7 @@ bool ImageElementBase::IsSVGSource() const {
   return CachedImage() && CachedImage()->GetImage()->IsSVGImage();
 }
 
-PassRefPtr<Image> ImageElementBase::GetSourceImageForCanvas(
+RefPtr<Image> ImageElementBase::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint,
     SnapshotReason,

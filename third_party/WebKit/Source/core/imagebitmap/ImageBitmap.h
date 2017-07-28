@@ -17,7 +17,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
@@ -69,8 +69,8 @@ class CORE_EXPORT ImageBitmap final
   static ImageBitmap* Create(ImageBitmap*,
                              Optional<IntRect>,
                              const ImageBitmapOptions& = ImageBitmapOptions());
-  static ImageBitmap* Create(PassRefPtr<StaticBitmapImage>);
-  static ImageBitmap* Create(PassRefPtr<StaticBitmapImage>,
+  static ImageBitmap* Create(RefPtr<StaticBitmapImage>);
+  static ImageBitmap* Create(RefPtr<StaticBitmapImage>,
                              Optional<IntRect>,
                              const ImageBitmapOptions& = ImageBitmapOptions());
   // This function is called by structured-cloning an ImageBitmap.
@@ -100,10 +100,10 @@ class CORE_EXPORT ImageBitmap final
   using WebType = sk_sp<SkImage>;
   static ImageBitmap* Take(ScriptPromiseResolver*, sk_sp<SkImage>);
 
-  PassRefPtr<StaticBitmapImage> BitmapImage() const { return image_; }
-  PassRefPtr<Uint8Array> CopyBitmapData();
-  PassRefPtr<Uint8Array> CopyBitmapData(AlphaDisposition,
-                                        DataColorFormat = kRGBAColorType);
+  RefPtr<StaticBitmapImage> BitmapImage() const { return image_; }
+  RefPtr<Uint8Array> CopyBitmapData();
+  RefPtr<Uint8Array> CopyBitmapData(AlphaDisposition,
+                                    DataColorFormat = kRGBAColorType);
   unsigned long width() const;
   unsigned long height() const;
   IntSize Size() const;
@@ -111,7 +111,7 @@ class CORE_EXPORT ImageBitmap final
   bool IsNeutered() const { return is_neutered_; }
   bool OriginClean() const { return image_->OriginClean(); }
   bool IsPremultiplied() const { return image_->IsPremultiplied(); }
-  PassRefPtr<StaticBitmapImage> Transfer();
+  RefPtr<StaticBitmapImage> Transfer();
   void close();
 
   ~ImageBitmap() override;
@@ -119,10 +119,10 @@ class CORE_EXPORT ImageBitmap final
   CanvasColorParams GetCanvasColorParams();
 
   // CanvasImageSource implementation
-  PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                            AccelerationHint,
-                                            SnapshotReason,
-                                            const FloatSize&) override;
+  RefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
+                                        AccelerationHint,
+                                        SnapshotReason,
+                                        const FloatSize&) override;
   bool WouldTaintOrigin(SecurityOrigin*) const override {
     return !image_->OriginClean();
   }
@@ -168,7 +168,7 @@ class CORE_EXPORT ImageBitmap final
   ImageBitmap(OffscreenCanvas*, Optional<IntRect>, const ImageBitmapOptions&);
   ImageBitmap(ImageData*, Optional<IntRect>, const ImageBitmapOptions&);
   ImageBitmap(ImageBitmap*, Optional<IntRect>, const ImageBitmapOptions&);
-  ImageBitmap(PassRefPtr<StaticBitmapImage>);
+  ImageBitmap(RefPtr<StaticBitmapImage>);
   ImageBitmap(RefPtr<StaticBitmapImage>,
               Optional<IntRect>,
               const ImageBitmapOptions&);

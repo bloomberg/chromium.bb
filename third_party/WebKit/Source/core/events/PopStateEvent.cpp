@@ -44,7 +44,7 @@ PopStateEvent::PopStateEvent(ScriptState* script_state,
   }
 }
 
-PopStateEvent::PopStateEvent(PassRefPtr<SerializedScriptValue> serialized_state,
+PopStateEvent::PopStateEvent(RefPtr<SerializedScriptValue> serialized_state,
                              History* history)
     : Event(EventTypeNames::popstate, false, true),
       serialized_state_(std::move(serialized_state)),
@@ -72,7 +72,7 @@ PopStateEvent* PopStateEvent::Create() {
 }
 
 PopStateEvent* PopStateEvent::Create(
-    PassRefPtr<SerializedScriptValue> serialized_state,
+    RefPtr<SerializedScriptValue> serialized_state,
     History* history) {
   return new PopStateEvent(std::move(serialized_state), history);
 }

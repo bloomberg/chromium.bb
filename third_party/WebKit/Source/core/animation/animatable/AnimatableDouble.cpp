@@ -35,7 +35,7 @@
 
 namespace blink {
 
-PassRefPtr<AnimatableValue> AnimatableDouble::InterpolateTo(
+RefPtr<AnimatableValue> AnimatableDouble::InterpolateTo(
     const AnimatableValue* value,
     double fraction) const {
   const AnimatableDouble* other = ToAnimatableDouble(value);

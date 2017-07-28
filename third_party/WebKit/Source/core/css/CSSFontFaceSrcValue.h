@@ -30,7 +30,7 @@
 #include "core/loader/resource/FontResource.h"
 #include "platform/loader/fetch/ResourceOwner.h"
 #include "platform/weborigin/Referrer.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

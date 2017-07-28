@@ -173,7 +173,7 @@ class CSSAnimationUpdate final {
       const PropertyHandle& property,
       RefPtr<const ComputedStyle> from,
       RefPtr<const ComputedStyle> to,
-      PassRefPtr<const ComputedStyle> reversing_adjusted_start_value,
+      RefPtr<const ComputedStyle> reversing_adjusted_start_value,
       double reversing_shortening_factor,
       const InertEffect& effect) {
     NewTransition new_transition;

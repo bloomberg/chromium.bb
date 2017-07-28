@@ -36,7 +36,7 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
   ~LayoutTextControl() override;
 
   TextControlElement* GetTextControlElement() const;
-  virtual PassRefPtr<ComputedStyle> CreateInnerEditorStyle(
+  virtual RefPtr<ComputedStyle> CreateInnerEditorStyle(
       const ComputedStyle& start_style) const = 0;
 
   const char* GetName() const override { return "LayoutTextControl"; }

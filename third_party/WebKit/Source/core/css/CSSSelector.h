@@ -382,7 +382,7 @@ class CORE_EXPORT CSSSelector {
   CSSSelector& operator=(const CSSSelector&);
 
   struct RareData : public RefCounted<RareData> {
-    static PassRefPtr<RareData> Create(const AtomicString& value) {
+    static RefPtr<RareData> Create(const AtomicString& value) {
       return AdoptRef(new RareData(value));
     }
     ~RareData();

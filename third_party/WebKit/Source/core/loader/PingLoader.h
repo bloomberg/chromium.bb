@@ -71,7 +71,7 @@ class CORE_EXPORT PingLoader {
                                 const KURL& destination_url);
   static void SendViolationReport(LocalFrame*,
                                   const KURL& report_url,
-                                  PassRefPtr<EncodedFormData> report,
+                                  RefPtr<EncodedFormData> report,
                                   ViolationReportType);
 
   // The last argument is guaranteed to be set to the size of payload if

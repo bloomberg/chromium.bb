@@ -221,7 +221,7 @@ class CORE_EXPORT InvalidationSet {
 
 class CORE_EXPORT DescendantInvalidationSet final : public InvalidationSet {
  public:
-  static PassRefPtr<DescendantInvalidationSet> Create() {
+  static RefPtr<DescendantInvalidationSet> Create() {
     return AdoptRef(new DescendantInvalidationSet);
   }
 
@@ -231,8 +231,8 @@ class CORE_EXPORT DescendantInvalidationSet final : public InvalidationSet {
 
 class CORE_EXPORT SiblingInvalidationSet final : public InvalidationSet {
  public:
-  static PassRefPtr<SiblingInvalidationSet> Create(
-      PassRefPtr<DescendantInvalidationSet> descendants) {
+  static RefPtr<SiblingInvalidationSet> Create(
+      RefPtr<DescendantInvalidationSet> descendants) {
     return AdoptRef(new SiblingInvalidationSet(std::move(descendants)));
   }
 
@@ -256,7 +256,7 @@ class CORE_EXPORT SiblingInvalidationSet final : public InvalidationSet {
 
  private:
   explicit SiblingInvalidationSet(
-      PassRefPtr<DescendantInvalidationSet> descendants);
+      RefPtr<DescendantInvalidationSet> descendants);
 
   // Indicates the maximum possible number of siblings affected.
   unsigned max_direct_adjacent_selectors_;

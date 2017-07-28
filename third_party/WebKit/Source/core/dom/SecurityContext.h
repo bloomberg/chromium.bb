@@ -33,7 +33,6 @@
 #include "platform/weborigin/Suborigin.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"
@@ -65,7 +64,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   // Explicitly override the security origin for this security context.
   // Note: It is dangerous to change the security origin of a script context
   //       that already contains content.
-  void SetSecurityOrigin(PassRefPtr<SecurityOrigin>);
+  void SetSecurityOrigin(RefPtr<SecurityOrigin>);
   virtual void DidUpdateSecurityOrigin() = 0;
 
   SandboxFlags GetSandboxFlags() const { return sandbox_flags_; }

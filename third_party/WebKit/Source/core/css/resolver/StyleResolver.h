@@ -70,29 +70,29 @@ class CORE_EXPORT StyleResolver final
   ~StyleResolver();
   void Dispose();
 
-  PassRefPtr<ComputedStyle> StyleForElement(
+  RefPtr<ComputedStyle> StyleForElement(
       Element*,
       const ComputedStyle* parent_style = nullptr,
       const ComputedStyle* layout_parent_style = nullptr,
       RuleMatchingBehavior = kMatchAllRules);
 
-  static PassRefPtr<AnimatableValue> CreateAnimatableValueSnapshot(
+  static RefPtr<AnimatableValue> CreateAnimatableValueSnapshot(
       Element&,
       const ComputedStyle& base_style,
       const ComputedStyle* parent_style,
       CSSPropertyID,
       const CSSValue*);
 
-  PassRefPtr<ComputedStyle> PseudoStyleForElement(
+  RefPtr<ComputedStyle> PseudoStyleForElement(
       Element*,
       const PseudoStyleRequest&,
       const ComputedStyle* parent_style,
       const ComputedStyle* layout_parent_style);
 
-  PassRefPtr<ComputedStyle> StyleForPage(int page_index);
-  PassRefPtr<ComputedStyle> StyleForText(Text*);
+  RefPtr<ComputedStyle> StyleForPage(int page_index);
+  RefPtr<ComputedStyle> StyleForText(Text*);
 
-  static PassRefPtr<ComputedStyle> StyleForViewport(Document&);
+  static RefPtr<ComputedStyle> StyleForViewport(Document&);
 
   // TODO(esprehn): StyleResolver should probably not contain tree walking
   // state, instead we should pass a context object during recalcStyle.
@@ -148,7 +148,7 @@ class CORE_EXPORT StyleResolver final
  private:
   explicit StyleResolver(Document&);
 
-  static PassRefPtr<ComputedStyle> InitialStyleForElement(Document&);
+  static RefPtr<ComputedStyle> InitialStyleForElement(Document&);
 
   // FIXME: This should probably go away, folded into FontBuilder.
   void UpdateFont(StyleResolverState&);

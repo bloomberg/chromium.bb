@@ -19,7 +19,7 @@ class StyleRay : public BasicShape {
     kSides
   };
 
-  static PassRefPtr<StyleRay> Create(float angle, RaySize, bool contain);
+  static RefPtr<StyleRay> Create(float angle, RaySize, bool contain);
   virtual ~StyleRay() {}
 
   float Angle() const { return angle_; }
@@ -27,7 +27,7 @@ class StyleRay : public BasicShape {
   bool Contain() const { return contain_; }
 
   void GetPath(Path&, const FloatRect&) override;
-  PassRefPtr<BasicShape> Blend(const BasicShape*, double) const override;
+  RefPtr<BasicShape> Blend(const BasicShape*, double) const override;
   bool operator==(const BasicShape&) const override;
 
   ShapeType GetType() const override { return kStyleRayType; }

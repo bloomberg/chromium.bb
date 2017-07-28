@@ -674,7 +674,7 @@ ResourcePriority ImageResource::PriorityFromObservers() {
 }
 
 void ImageResource::UpdateImage(
-    PassRefPtr<SharedBuffer> shared_buffer,
+    RefPtr<SharedBuffer> shared_buffer,
     ImageResourceContent::UpdateImageOption update_image_option,
     bool all_data_received) {
   bool is_multipart = !!multipart_parser_;

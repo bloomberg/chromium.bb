@@ -25,16 +25,15 @@ namespace internal {
 class IdleRequestCallbackWrapper
     : public RefCounted<IdleRequestCallbackWrapper> {
  public:
-  static PassRefPtr<IdleRequestCallbackWrapper> Create(
+  static RefPtr<IdleRequestCallbackWrapper> Create(
       ScriptedIdleTaskController::CallbackId id,
       ScriptedIdleTaskController* controller) {
     return AdoptRef(new IdleRequestCallbackWrapper(id, controller));
   }
   virtual ~IdleRequestCallbackWrapper() {}
 
-  static void IdleTaskFired(
-      PassRefPtr<IdleRequestCallbackWrapper> callback_wrapper,
-      double deadline_seconds) {
+  static void IdleTaskFired(RefPtr<IdleRequestCallbackWrapper> callback_wrapper,
+                            double deadline_seconds) {
     // TODO(rmcilroy): Implement clamping of deadline in some form.
     if (ScriptedIdleTaskController* controller =
             callback_wrapper->Controller()) {
@@ -55,7 +54,7 @@ class IdleRequestCallbackWrapper
   }
 
   static void TimeoutFired(
-      PassRefPtr<IdleRequestCallbackWrapper> callback_wrapper) {
+      RefPtr<IdleRequestCallbackWrapper> callback_wrapper) {
     if (ScriptedIdleTaskController* controller =
             callback_wrapper->Controller()) {
       controller->CallbackFired(callback_wrapper->Id(),

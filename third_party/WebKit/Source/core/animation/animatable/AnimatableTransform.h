@@ -40,7 +40,7 @@ namespace blink {
 class CORE_EXPORT AnimatableTransform final : public AnimatableValue {
  public:
   ~AnimatableTransform() override {}
-  static PassRefPtr<AnimatableTransform> Create(
+  static RefPtr<AnimatableTransform> Create(
       const TransformOperations& transform,
       double zoom) {
     return AdoptRef(new AnimatableTransform(transform, zoom));
@@ -51,8 +51,8 @@ class CORE_EXPORT AnimatableTransform final : public AnimatableValue {
   double Zoom() const { return zoom_; }
 
  protected:
-  PassRefPtr<AnimatableValue> InterpolateTo(const AnimatableValue*,
-                                            double fraction) const override;
+  RefPtr<AnimatableValue> InterpolateTo(const AnimatableValue*,
+                                        double fraction) const override;
 
  private:
   explicit AnimatableTransform(const TransformOperations& transform,

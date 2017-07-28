@@ -240,7 +240,7 @@ class CORE_EXPORT EventHandler final
 
   void NotifyElementActivated();
 
-  PassRefPtr<UserGestureToken> TakeLastMouseDownGestureToken() {
+  RefPtr<UserGestureToken> TakeLastMouseDownGestureToken() {
     return std::move(last_mouse_down_user_gesture_token_);
   }
 

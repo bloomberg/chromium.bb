@@ -89,7 +89,7 @@ class LayoutScrollbar final : public Scrollbar {
 
   void UpdateScrollbarParts(bool destroy = false);
 
-  PassRefPtr<ComputedStyle> GetScrollbarPseudoStyle(ScrollbarPart, PseudoId);
+  RefPtr<ComputedStyle> GetScrollbarPseudoStyle(ScrollbarPart, PseudoId);
   void UpdateScrollbarPart(ScrollbarPart, bool destroy = false);
 
   // The element that supplies our style information.

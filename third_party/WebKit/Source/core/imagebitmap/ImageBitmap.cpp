@@ -176,8 +176,8 @@ SkImageInfo GetSkImageInfo(const RefPtr<StaticBitmapImage>& image) {
                            skia_image->refColorSpace());
 }
 
-PassRefPtr<Uint8Array> CopyImageData(const RefPtr<StaticBitmapImage>& input,
-                                     const SkImageInfo& info) {
+RefPtr<Uint8Array> CopyImageData(const RefPtr<StaticBitmapImage>& input,
+                                 const SkImageInfo& info) {
   unsigned width = static_cast<unsigned>(input->width());
   RefPtr<ArrayBuffer> dst_buffer =
       ArrayBuffer::CreateOrNull(width * input->height(), info.bytesPerPixel());
@@ -191,7 +191,7 @@ PassRefPtr<Uint8Array> CopyImageData(const RefPtr<StaticBitmapImage>& input,
   return dst_pixels;
 }
 
-PassRefPtr<Uint8Array> CopyImageData(const RefPtr<StaticBitmapImage>& input) {
+RefPtr<Uint8Array> CopyImageData(const RefPtr<StaticBitmapImage>& input) {
   SkImageInfo info = GetSkImageInfo(input);
   return CopyImageData(std::move(input), info);
 }
@@ -390,7 +390,7 @@ bool ImageBitmap::IsSourceSizeValid(int source_width,
   return true;
 }
 
-static PassRefPtr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
+static RefPtr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
     RefPtr<Image>&& image,
     ImageBitmap::ParsedOptions& parsed_options,
     ColorBehavior color_behavior = ColorBehavior::TransformToGlobalTarget()) {
@@ -716,11 +716,11 @@ ImageBitmap::ImageBitmap(RefPtr<StaticBitmapImage> image,
   image_->SetPremultiplied(parsed_options.premultiply_alpha);
 }
 
-ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image) {
+ImageBitmap::ImageBitmap(RefPtr<StaticBitmapImage> image) {
   image_ = std::move(image);
 }
 
-PassRefPtr<StaticBitmapImage> ImageBitmap::Transfer() {
+RefPtr<StaticBitmapImage> ImageBitmap::Transfer() {
   DCHECK(!IsNeutered());
   is_neutered_ = true;
   image_->Transfer();
@@ -767,13 +767,13 @@ ImageBitmap* ImageBitmap::Create(ImageBitmap* bitmap,
   return new ImageBitmap(bitmap, crop_rect, options);
 }
 
-ImageBitmap* ImageBitmap::Create(PassRefPtr<StaticBitmapImage> image,
+ImageBitmap* ImageBitmap::Create(RefPtr<StaticBitmapImage> image,
                                  Optional<IntRect> crop_rect,
                                  const ImageBitmapOptions& options) {
   return new ImageBitmap(std::move(image), crop_rect, options);
 }
 
-ImageBitmap* ImageBitmap::Create(PassRefPtr<StaticBitmapImage> image) {
+ImageBitmap* ImageBitmap::Create(RefPtr<StaticBitmapImage> image) {
   return new ImageBitmap(std::move(image));
 }
 
@@ -925,8 +925,8 @@ CanvasColorParams ImageBitmap::GetCanvasColorParams() {
   return CanvasColorParams(GetSkImageInfo(image_));
 }
 
-PassRefPtr<Uint8Array> ImageBitmap::CopyBitmapData(AlphaDisposition alpha_op,
-                                                   DataColorFormat format) {
+RefPtr<Uint8Array> ImageBitmap::CopyBitmapData(AlphaDisposition alpha_op,
+                                               DataColorFormat format) {
   SkImageInfo info = GetSkImageInfo(image_);
   auto color_type = info.colorType();
   if (color_type == kN32_SkColorType && format == kRGBAColorType)
@@ -939,7 +939,7 @@ PassRefPtr<Uint8Array> ImageBitmap::CopyBitmapData(AlphaDisposition alpha_op,
   return CopyImageData(image_, info);
 }
 
-PassRefPtr<Uint8Array> ImageBitmap::CopyBitmapData() {
+RefPtr<Uint8Array> ImageBitmap::CopyBitmapData() {
   return CopyImageData(image_);
 }
 
@@ -984,11 +984,10 @@ ScriptPromise ImageBitmap::CreateImageBitmap(ScriptState* script_state,
       script_state, Create(this, crop_rect, options));
 }
 
-PassRefPtr<Image> ImageBitmap::GetSourceImageForCanvas(
-    SourceImageStatus* status,
-    AccelerationHint,
-    SnapshotReason,
-    const FloatSize&) {
+RefPtr<Image> ImageBitmap::GetSourceImageForCanvas(SourceImageStatus* status,
+                                                   AccelerationHint,
+                                                   SnapshotReason,
+                                                   const FloatSize&) {
   *status = kNormalSourceImageStatus;
   if (!image_)
     return nullptr;

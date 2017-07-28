@@ -112,10 +112,10 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   KURL PosterImageURL() const override;
 
   // CanvasImageSource implementation
-  PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                            AccelerationHint,
-                                            SnapshotReason,
-                                            const FloatSize&) override;
+  RefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
+                                        AccelerationHint,
+                                        SnapshotReason,
+                                        const FloatSize&) override;
   bool IsVideoElement() const override { return true; }
   bool WouldTaintOrigin(SecurityOrigin*) const override;
   FloatSize ElementSize(const FloatSize&) const override;

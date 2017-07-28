@@ -233,7 +233,7 @@ void DataObject::AddFilename(const String& filename,
       File::CreateForUserProvidedFile(filename, display_name), file_system_id));
 }
 
-void DataObject::AddSharedBuffer(PassRefPtr<SharedBuffer> buffer,
+void DataObject::AddSharedBuffer(RefPtr<SharedBuffer> buffer,
                                  const KURL& source_url,
                                  const String& filename_extension,
                                  const AtomicString& content_disposition) {

@@ -89,7 +89,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
   // Indexed properties
   DOMWindow* AnonymousIndexedGetter(uint32_t index) const;
 
-  void postMessage(PassRefPtr<SerializedScriptValue> message,
+  void postMessage(RefPtr<SerializedScriptValue> message,
                    const MessagePortArray&,
                    const String& target_origin,
                    LocalDOMWindow* source,
@@ -116,7 +116,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
   explicit DOMWindow(Frame&);
 
   virtual void SchedulePostMessage(MessageEvent*,
-                                   PassRefPtr<SecurityOrigin> target,
+                                   RefPtr<SecurityOrigin> target,
                                    Document* source) = 0;
 
   void DisconnectFromFrame() { frame_ = nullptr; }

@@ -84,7 +84,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CurrentTime.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebDragData.h"

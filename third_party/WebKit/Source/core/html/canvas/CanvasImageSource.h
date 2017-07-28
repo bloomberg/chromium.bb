@@ -31,7 +31,7 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
@@ -50,10 +50,10 @@ enum SourceImageStatus {
 
 class CORE_EXPORT CanvasImageSource {
  public:
-  virtual PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                                    AccelerationHint,
-                                                    SnapshotReason,
-                                                    const FloatSize&) = 0;
+  virtual RefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
+                                                AccelerationHint,
+                                                SnapshotReason,
+                                                const FloatSize&) = 0;
 
   // IMPORTANT: Result must be independent of whether destinationContext is
   // already tainted because this function may be used to determine whether

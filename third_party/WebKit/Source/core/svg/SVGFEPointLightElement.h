@@ -33,7 +33,7 @@ class SVGFEPointLightElement final : public SVGFELightElement {
  private:
   explicit SVGFEPointLightElement(Document&);
 
-  PassRefPtr<LightSource> GetLightSource(Filter*) const override;
+  RefPtr<LightSource> GetLightSource(Filter*) const override;
 };
 
 }  // namespace blink

@@ -116,7 +116,7 @@ class CORE_EXPORT CSSCalcValue : public GarbageCollected<CSSCalcValue> {
   static CSSCalcExpressionNode* CreateExpressionNode(double pixels,
                                                      double percent);
 
-  PassRefPtr<CalculationValue> ToCalcValue(
+  RefPtr<CalculationValue> ToCalcValue(
       const CSSToLengthConversionData& conversion_data) const {
     PixelsAndPercent value(0, 0);
     expression_->AccumulatePixelsAndPercent(conversion_data, value);

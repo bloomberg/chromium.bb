@@ -150,7 +150,7 @@ class CORE_EXPORT SVGElement : public Element {
 
   void SynchronizeAnimatedSVGAttribute(const QualifiedName&) const;
 
-  PassRefPtr<ComputedStyle> CustomStyleForLayoutObject() final;
+  RefPtr<ComputedStyle> CustomStyleForLayoutObject() final;
   bool LayoutObjectIsNeeded(const ComputedStyle&) override;
 
 #if DCHECK_IS_ON()

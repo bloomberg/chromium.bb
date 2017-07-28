@@ -518,7 +518,7 @@ void StyleResolver::CollectTreeBoundaryCrossingRulesV0CascadeOrder(
   }
 }
 
-PassRefPtr<ComputedStyle> StyleResolver::StyleForViewport(Document& document) {
+RefPtr<ComputedStyle> StyleResolver::StyleForViewport(Document& document) {
   RefPtr<ComputedStyle> viewport_style = InitialStyleForElement(document);
 
   viewport_style->SetZIndex(0);
@@ -587,7 +587,7 @@ static void UpdateBaseComputedStyle(StyleResolverState& state,
   }
 }
 
-PassRefPtr<ComputedStyle> StyleResolver::StyleForElement(
+RefPtr<ComputedStyle> StyleResolver::StyleForElement(
     Element* element,
     const ComputedStyle* default_parent,
     const ComputedStyle* default_layout_parent,
@@ -752,7 +752,7 @@ PassRefPtr<ComputedStyle> StyleResolver::StyleForElement(
 
 // TODO(alancutter): Create compositor keyframe values directly instead of
 // intermediate AnimatableValues.
-PassRefPtr<AnimatableValue> StyleResolver::CreateAnimatableValueSnapshot(
+RefPtr<AnimatableValue> StyleResolver::CreateAnimatableValueSnapshot(
     Element& element,
     const ComputedStyle& base_style,
     const ComputedStyle* parent_style,
@@ -922,7 +922,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
   return true;
 }
 
-PassRefPtr<ComputedStyle> StyleResolver::PseudoStyleForElement(
+RefPtr<ComputedStyle> StyleResolver::PseudoStyleForElement(
     Element* element,
     const PseudoStyleRequest& pseudo_style_request,
     const ComputedStyle* parent_style,
@@ -948,7 +948,7 @@ PassRefPtr<ComputedStyle> StyleResolver::PseudoStyleForElement(
   return state.TakeStyle();
 }
 
-PassRefPtr<ComputedStyle> StyleResolver::StyleForPage(int page_index) {
+RefPtr<ComputedStyle> StyleResolver::StyleForPage(int page_index) {
   RefPtr<ComputedStyle> initial_style = InitialStyleForElement(GetDocument());
   StyleResolverState state(GetDocument(), GetDocument().documentElement(),
                            initial_style.Get(), initial_style.Get());
@@ -991,7 +991,7 @@ PassRefPtr<ComputedStyle> StyleResolver::StyleForPage(int page_index) {
   return state.TakeStyle();
 }
 
-PassRefPtr<ComputedStyle> StyleResolver::InitialStyleForElement(
+RefPtr<ComputedStyle> StyleResolver::InitialStyleForElement(
     Document& document) {
   const LocalFrame* frame = document.GetFrame();
 
@@ -1015,7 +1015,7 @@ PassRefPtr<ComputedStyle> StyleResolver::InitialStyleForElement(
   return initial_style;
 }
 
-PassRefPtr<ComputedStyle> StyleResolver::StyleForText(Text* text_node) {
+RefPtr<ComputedStyle> StyleResolver::StyleForText(Text* text_node) {
   DCHECK(text_node);
 
   Node* parent_node = LayoutTreeBuilderTraversal::Parent(*text_node);

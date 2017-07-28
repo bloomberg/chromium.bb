@@ -88,7 +88,7 @@ int LayoutTextControlMultiLine::BaselinePosition(
                                      line_position_mode);
 }
 
-PassRefPtr<ComputedStyle> LayoutTextControlMultiLine::CreateInnerEditorStyle(
+RefPtr<ComputedStyle> LayoutTextControlMultiLine::CreateInnerEditorStyle(
     const ComputedStyle& start_style) const {
   RefPtr<ComputedStyle> text_block_style = ComputedStyle::Create();
   text_block_style->InheritFrom(start_style);

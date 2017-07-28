@@ -31,15 +31,15 @@ const double kUserGestureTimeout = 1.0;
 const double kUserGestureOutOfProcessTimeout = 10.0;
 
 // static
-PassRefPtr<UserGestureToken> UserGestureToken::Create(Document* document,
-                                                      Status status) {
+RefPtr<UserGestureToken> UserGestureToken::Create(Document* document,
+                                                  Status status) {
   SetHasReceivedUserGesture(document);
   return AdoptRef(new UserGestureToken(status));
 }
 
 // static
-PassRefPtr<UserGestureToken> UserGestureToken::Adopt(Document* document,
-                                                     UserGestureToken* token) {
+RefPtr<UserGestureToken> UserGestureToken::Adopt(Document* document,
+                                                 UserGestureToken* token) {
   if (!token || !token->HasGestures())
     return nullptr;
   SetHasReceivedUserGesture(document);

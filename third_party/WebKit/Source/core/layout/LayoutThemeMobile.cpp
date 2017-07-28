@@ -34,7 +34,7 @@
 
 namespace blink {
 
-PassRefPtr<LayoutTheme> LayoutThemeMobile::Create() {
+RefPtr<LayoutTheme> LayoutThemeMobile::Create() {
   return AdoptRef(new LayoutThemeMobile());
 }
 

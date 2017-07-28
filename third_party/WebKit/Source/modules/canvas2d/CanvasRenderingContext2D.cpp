@@ -616,7 +616,7 @@ ImageBuffer* CanvasRenderingContext2D::GetImageBuffer() const {
       ->GetOrCreateImageBuffer();
 }
 
-PassRefPtr<StaticBitmapImage> blink::CanvasRenderingContext2D::GetImage(
+RefPtr<StaticBitmapImage> blink::CanvasRenderingContext2D::GetImage(
     AccelerationHint hint,
     SnapshotReason reason) const {
   if (!HasImageBuffer())

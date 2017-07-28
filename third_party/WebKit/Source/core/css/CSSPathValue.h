@@ -9,7 +9,6 @@
 #include "core/css/CSSValue.h"
 #include "core/style/StylePath.h"
 #include "core/svg/SVGPathByteStream.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {
@@ -20,7 +19,7 @@ namespace cssvalue {
 
 class CSSPathValue : public CSSValue {
  public:
-  static CSSPathValue* Create(PassRefPtr<StylePath>);
+  static CSSPathValue* Create(RefPtr<StylePath>);
   static CSSPathValue* Create(std::unique_ptr<SVGPathByteStream>);
 
   static CSSPathValue& EmptyPathValue();
@@ -37,7 +36,7 @@ class CSSPathValue : public CSSValue {
   }
 
  private:
-  CSSPathValue(PassRefPtr<StylePath>);
+  CSSPathValue(RefPtr<StylePath>);
 
   RefPtr<StylePath> style_path_;
 };

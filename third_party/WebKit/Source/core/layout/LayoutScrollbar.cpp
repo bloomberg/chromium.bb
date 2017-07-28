@@ -140,7 +140,7 @@ void LayoutScrollbar::SetPressedPart(ScrollbarPart part) {
   UpdateScrollbarPart(kTrackBGPart);
 }
 
-PassRefPtr<ComputedStyle> LayoutScrollbar::GetScrollbarPseudoStyle(
+RefPtr<ComputedStyle> LayoutScrollbar::GetScrollbarPseudoStyle(
     ScrollbarPart part_type,
     PseudoId pseudo_id) {
   if (!StyleSource())
@@ -222,7 +222,7 @@ void LayoutScrollbar::UpdateScrollbarPart(ScrollbarPart part_type,
   RefPtr<ComputedStyle> part_style =
       !destroy ? GetScrollbarPseudoStyle(part_type,
                                          PseudoForScrollbarPart(part_type))
-               : PassRefPtr<ComputedStyle>(nullptr);
+               : RefPtr<ComputedStyle>(nullptr);
 
   bool need_layout_object =
       !destroy && part_style && part_style->Display() != EDisplay::kNone;

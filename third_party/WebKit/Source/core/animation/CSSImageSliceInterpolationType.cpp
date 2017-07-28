@@ -57,7 +57,7 @@ struct SliceTypes {
 
 class CSSImageSliceNonInterpolableValue : public NonInterpolableValue {
  public:
-  static PassRefPtr<CSSImageSliceNonInterpolableValue> Create(
+  static RefPtr<CSSImageSliceNonInterpolableValue> Create(
       const SliceTypes& types) {
     return AdoptRef(new CSSImageSliceNonInterpolableValue(types));
   }

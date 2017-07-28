@@ -56,7 +56,7 @@ class CORE_EXPORT MessageEvent final : public Event {
     return new MessageEvent(origin, last_event_id, source, ports, suborigin);
   }
   static MessageEvent* Create(MessagePortArray* ports,
-                              PassRefPtr<SerializedScriptValue> data,
+                              RefPtr<SerializedScriptValue> data,
                               const String& origin = String(),
                               const String& last_event_id = String(),
                               EventTarget* source = nullptr,
@@ -65,7 +65,7 @@ class CORE_EXPORT MessageEvent final : public Event {
                             ports, suborigin);
   }
   static MessageEvent* Create(MessagePortChannelArray channels,
-                              PassRefPtr<SerializedScriptValue> data,
+                              RefPtr<SerializedScriptValue> data,
                               const String& origin = String(),
                               const String& last_event_id = String(),
                               EventTarget* source = nullptr,
@@ -181,13 +181,13 @@ class CORE_EXPORT MessageEvent final : public Event {
                EventTarget* source,
                MessagePortArray*,
                const String& suborigin);
-  MessageEvent(PassRefPtr<SerializedScriptValue> data,
+  MessageEvent(RefPtr<SerializedScriptValue> data,
                const String& origin,
                const String& last_event_id,
                EventTarget* source,
                MessagePortArray*,
                const String& suborigin);
-  MessageEvent(PassRefPtr<SerializedScriptValue> data,
+  MessageEvent(RefPtr<SerializedScriptValue> data,
                const String& origin,
                const String& last_event_id,
                EventTarget* source,

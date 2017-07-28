@@ -74,7 +74,7 @@ class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
 
   ~FileReaderLoader() override;
 
-  void Start(ExecutionContext*, PassRefPtr<BlobDataHandle>);
+  void Start(ExecutionContext*, RefPtr<BlobDataHandle>);
   void Cancel();
 
   // ThreadableLoaderClient

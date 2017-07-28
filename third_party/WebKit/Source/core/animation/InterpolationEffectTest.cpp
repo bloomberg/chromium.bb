@@ -23,7 +23,7 @@ class AnimationInterpolationEffectTest : public ::testing::Test {
     return interpolation.GetCachedValueForTesting();
   }
 
-  double GetInterpolableNumber(PassRefPtr<Interpolation> value) {
+  double GetInterpolableNumber(RefPtr<Interpolation> value) {
     LegacyStyleInterpolation& interpolation =
         ToLegacyStyleInterpolation(*value.Get());
     return ToInterpolableNumber(InterpolationValue(interpolation))->Value();
