@@ -136,9 +136,7 @@ bool TestAutofillClient::ShouldShowSigninPromo() {
   return false;
 }
 
-void TestAutofillClient::StartSigninFlow() {}
-
-void TestAutofillClient::ShowHttpNotSecureExplanation() {}
+void TestAutofillClient::ExecuteCommand(int id) {}
 
 bool TestAutofillClient::IsAutofillSupported() {
   return true;

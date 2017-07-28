@@ -78,9 +78,7 @@ class MockAutofillClient : public TestAutofillClient {
 
   MOCK_METHOD0(HideAutofillPopup, void());
 
-  MOCK_METHOD0(StartSigninFlow, void());
-
-  MOCK_METHOD0(ShowHttpNotSecureExplanation, void());
+  MOCK_METHOD1(ExecuteCommand, void(int));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
@@ -262,7 +260,8 @@ TEST_F(AutofillExternalDelegateUnitTest,
   EXPECT_EQ(1, user_action_tester.GetActionCount(
                    "Signin_Impression_FromAutofillDropdown"));
 
-  EXPECT_CALL(autofill_client_, StartSigninFlow());
+  EXPECT_CALL(autofill_client_,
+              ExecuteCommand(autofill::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO));
   EXPECT_CALL(autofill_client_, HideAutofillPopup());
 
   // This should trigger a call to start the signin flow and hide the popup
@@ -667,7 +666,8 @@ TEST_F(AutofillExternalDelegateUnitTest, ScanCreditCardPromptMetricsTest) {
 // Test that autofill client will start the signin flow after the user accepted
 // the suggestion to sign in.
 TEST_F(AutofillExternalDelegateUnitTest, SigninPromoMenuItem) {
-  EXPECT_CALL(autofill_client_, StartSigninFlow());
+  EXPECT_CALL(autofill_client_,
+              ExecuteCommand(autofill::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO));
   EXPECT_CALL(autofill_client_, HideAutofillPopup());
   external_delegate_->DidAcceptSuggestion(
       base::string16(), POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO, 0);
@@ -676,7 +676,9 @@ TEST_F(AutofillExternalDelegateUnitTest, SigninPromoMenuItem) {
 // Test that autofill client will open the security indicator help center url
 // after the user accepted the http warning message suggestion item.
 TEST_F(AutofillExternalDelegateUnitTest, HttpWarningMessageItem) {
-  EXPECT_CALL(autofill_client_, ShowHttpNotSecureExplanation());
+  EXPECT_CALL(
+      autofill_client_,
+      ExecuteCommand(autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE));
   EXPECT_CALL(autofill_client_, HideAutofillPopup());
   external_delegate_->DidAcceptSuggestion(
       base::string16(), POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE, 0);

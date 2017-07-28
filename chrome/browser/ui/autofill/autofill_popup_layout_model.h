@@ -32,21 +32,21 @@ class AutofillPopupLayoutModel {
   ~AutofillPopupLayoutModel();
 
   // The minimum amount of padding between the Autofill name and subtext,
-  // in pixels.
+  // in dip.
   static const int kNamePadding = 15;
 
   // The minimum amount of padding between the Autofill http warning message
-  // name and subtext, in pixels.
+  // name and subtext, in dip.
   static const int kHttpWarningNamePadding = 8;
 
-  // The amount of padding around icons in pixels.
+  // The amount of padding around icons in dip.
   static const int kIconPadding = 5;
 
-  // The amount of horizontal padding around icons in pixels for HTTP warning
-  // message.
-  static const int kHttpWarningIconPadding = 8;
+  // The amount of horizontal padding around icons in dip for the case, when
+  // icon is located on the left side.
+  static const int kPaddingAfterLeadingIcon = 8;
 
-  // The amount of padding at the end of the popup in pixels.
+  // The amount of padding at the end of the popup in dip.
   static const int kEndPadding = 8;
 
 #if !defined(OS_ANDROID)

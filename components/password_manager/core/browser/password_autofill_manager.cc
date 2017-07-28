@@ -17,6 +17,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
@@ -27,6 +28,7 @@
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -246,6 +248,21 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
       }
   }
 
+#if !defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kEnableManualFallbacksFilling) &&
+      (options & autofill::IS_PASSWORD_FIELD)) {
+    suggestions.push_back(autofill::Suggestion());
+    suggestions.back().frontend_id = autofill::POPUP_ITEM_ID_SEPARATOR;
+
+    autofill::Suggestion all_saved_passwords(
+        l10n_util::GetStringUTF8(IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK),
+        std::string(), "showAllSavedPasswords",
+        autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
+    suggestions.push_back(all_saved_passwords);
+  }
+#endif
+
   autofill_client_->ShowAutofillPopup(bounds,
                                       text_direction,
                                       suggestions,
@@ -308,7 +325,8 @@ void PasswordAutofillManager::OnPopupHidden() {
 void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
                                                   int identifier) {
   ClearPreviewedForm();
-  if (identifier == autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE)
+  if (identifier == autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE ||
+      identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY)
     return;
   bool success =
       PreviewSuggestion(form_data_key_, GetUsernameFromSuggestion(value));
@@ -318,10 +336,9 @@ void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
 void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
                                                   int identifier,
                                                   int position) {
-  if (identifier == autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE) {
-    metrics_util::LogShowedHttpNotSecureExplanation();
-    autofill_client_->ShowHttpNotSecureExplanation();
-  } else {
+  autofill_client_->ExecuteCommand(identifier);
+  if (identifier != autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE &&
+      identifier != autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY) {
     bool success =
         FillSuggestion(form_data_key_, GetUsernameFromSuggestion(value));
     DCHECK(success);

@@ -214,11 +214,7 @@ bool AutofillClientIOS::ShouldShowSigninPromo() {
   return false;
 }
 
-void AutofillClientIOS::StartSigninFlow() {
-  NOTIMPLEMENTED();
-}
-
-void AutofillClientIOS::ShowHttpNotSecureExplanation() {
+void AutofillClientIOS::ExecuteCommand(int id) {
   NOTIMPLEMENTED();
 }
 
