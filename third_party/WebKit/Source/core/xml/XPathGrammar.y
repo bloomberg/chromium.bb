@@ -36,12 +36,12 @@
 #include "core/xml/XPathVariableReference.h"
 #include "platform/wtf/allocator/Partitions.h"
 
-void* yyFastMalloc(size_t size)
+void* YyFastMalloc(size_t size)
 {
-    return WTF::Partitions::FastMalloc(size, nullptr);
+  return WTF::Partitions::FastMalloc(size, nullptr);
 }
 
-#define YYMALLOC yyFastMalloc
+#define YYMALLOC YyFastMalloc
 #define YYFREE WTF::Partitions::FastFree
 
 #define YYENABLE_NLS 0
@@ -57,16 +57,16 @@ using blink::XPath::Step;
 
 %union
 {
-    blink::XPath::Step::Axis axis;
-    blink::XPath::Step::NodeTest* nodeTest;
-    blink::XPath::NumericOp::Opcode numop;
-    blink::XPath::EqTestOp::Opcode eqop;
-    String* str;
-    blink::XPath::Expression* expr;
-    blink::HeapVector<blink::Member<blink::XPath::Predicate>>* predList;
-    blink::HeapVector<blink::Member<blink::XPath::Expression>>* argList;
-    blink::XPath::Step* step;
-    blink::XPath::LocationPath* locationPath;
+  blink::XPath::Step::Axis axis;
+  blink::XPath::Step::NodeTest* node_test;
+  blink::XPath::NumericOp::Opcode num_op;
+  blink::XPath::EqTestOp::Opcode eq_op;
+  String* str;
+  blink::XPath::Expression* expr;
+  blink::HeapVector<blink::Member<blink::XPath::Predicate>>* pred_list;
+  blink::HeapVector<blink::Member<blink::XPath::Expression>>* arg_list;
+  blink::XPath::Step* step;
+  blink::XPath::LocationPath* location_path;
 }
 
 %{
@@ -76,8 +76,8 @@ static void xpathyyerror(void*, const char*) { }
 
 %}
 
-%left <numop> MULOP
-%left <eqop> EQOP RELOP
+%left <num_op> MULOP
+%left <eq_op> EQOP RELOP
 %left PLUS MINUS
 %left OR AND
 %token <axis> AXISNAME
@@ -87,21 +87,21 @@ static void xpathyyerror(void*, const char*) { }
 %token <str> NAMETEST
 %token XPATH_ERROR
 
-%type <locationPath> LocationPath
-%type <locationPath> AbsoluteLocationPath
-%type <locationPath> RelativeLocationPath
+%type <location_path> LocationPath
+%type <location_path> AbsoluteLocationPath
+%type <location_path> RelativeLocationPath
 %type <step> Step
 %type <axis> AxisSpecifier
 %type <step> DescendantOrSelf
-%type <nodeTest> NodeTest
+%type <node_test> NodeTest
 %type <expr> Predicate
-%type <predList> OptionalPredicateList
-%type <predList> PredicateList
+%type <pred_list> OptionalPredicateList
+%type <pred_list> PredicateList
 %type <step> AbbreviatedStep
 %type <expr> Expr
 %type <expr> PrimaryExpr
 %type <expr> FunctionCall
-%type <argList> ArgumentList
+%type <arg_list> ArgumentList
 %type <expr> Argument
 %type <expr> UnionExpr
 %type <expr> PathExpr
@@ -119,106 +119,106 @@ static void xpathyyerror(void*, const char*) { }
 Expr:
     OrExpr
     {
-        parser->top_expr_ = $1;
+      parser->top_expr_ = $1;
     }
     ;
 
 LocationPath:
     RelativeLocationPath
     {
-        $$->SetAbsolute(false);
+      $$->SetAbsolute(false);
     }
     |
     AbsoluteLocationPath
     {
-        $$->SetAbsolute(true);
+      $$->SetAbsolute(true);
     }
     ;
 
 AbsoluteLocationPath:
     '/'
     {
-        $$ = new blink::XPath::LocationPath;
+      $$ = new blink::XPath::LocationPath;
     }
     |
     '/' RelativeLocationPath
     {
-        $$ = $2;
+      $$ = $2;
     }
     |
     DescendantOrSelf RelativeLocationPath
     {
-        $$ = $2;
-        $$->InsertFirstStep($1);
+      $$ = $2;
+      $$->InsertFirstStep($1);
     }
     ;
 
 RelativeLocationPath:
     Step
     {
-        $$ = new blink::XPath::LocationPath;
-        $$->AppendStep($1);
+      $$ = new blink::XPath::LocationPath;
+      $$->AppendStep($1);
     }
     |
     RelativeLocationPath '/' Step
     {
-        $$->AppendStep($3);
+      $$->AppendStep($3);
     }
     |
     RelativeLocationPath DescendantOrSelf Step
     {
-        $$->AppendStep($2);
-        $$->AppendStep($3);
+      $$->AppendStep($2);
+      $$->AppendStep($3);
     }
     ;
 
 Step:
     NodeTest OptionalPredicateList
     {
-        if ($2)
-            $$ = new Step(Step::kChildAxis, *$1, *$2);
-        else
-            $$ = new Step(Step::kChildAxis, *$1);
+      if ($2)
+        $$ = new Step(Step::kChildAxis, *$1, *$2);
+      else
+        $$ = new Step(Step::kChildAxis, *$1);
     }
     |
     NAMETEST OptionalPredicateList
     {
-        AtomicString localName;
-        AtomicString namespaceURI;
-        if (!parser->ExpandQName(*$1, localName, namespaceURI)) {
-            parser->got_namespace_error_ = true;
-            YYABORT;
-        }
+      AtomicString local_name;
+      AtomicString namespace_uri;
+      if (!parser->ExpandQName(*$1, local_name, namespace_uri)) {
+        parser->got_namespace_error_ = true;
+        YYABORT;
+      }
 
-        if ($2)
-            $$ = new Step(Step::kChildAxis, Step::NodeTest(Step::NodeTest::kNameTest, localName, namespaceURI), *$2);
-        else
-            $$ = new Step(Step::kChildAxis, Step::NodeTest(Step::NodeTest::kNameTest, localName, namespaceURI));
-        parser->DeleteString($1);
+      if ($2)
+        $$ = new Step(Step::kChildAxis, Step::NodeTest(Step::NodeTest::kNameTest, local_name, namespace_uri), *$2);
+      else
+        $$ = new Step(Step::kChildAxis, Step::NodeTest(Step::NodeTest::kNameTest, local_name, namespace_uri));
+       parser->DeleteString($1);
     }
     |
     AxisSpecifier NodeTest OptionalPredicateList
     {
-        if ($3)
-            $$ = new Step($1, *$2, *$3);
-        else
-            $$ = new Step($1, *$2);
+      if ($3)
+        $$ = new Step($1, *$2, *$3);
+      else
+        $$ = new Step($1, *$2);
     }
     |
     AxisSpecifier NAMETEST OptionalPredicateList
     {
-        AtomicString localName;
-        AtomicString namespaceURI;
-        if (!parser->ExpandQName(*$2, localName, namespaceURI)) {
-            parser->got_namespace_error_ = true;
-            YYABORT;
-        }
+      AtomicString local_name;
+      AtomicString namespace_uri;
+      if (!parser->ExpandQName(*$2, local_name, namespace_uri)) {
+        parser->got_namespace_error_ = true;
+        YYABORT;
+      }
 
-        if ($3)
-            $$ = new Step($1, Step::NodeTest(Step::NodeTest::kNameTest, localName, namespaceURI), *$3);
-        else
-            $$ = new Step($1, Step::NodeTest(Step::NodeTest::kNameTest, localName, namespaceURI));
-        parser->DeleteString($2);
+      if ($3)
+        $$ = new Step($1, Step::NodeTest(Step::NodeTest::kNameTest, local_name, namespace_uri), *$3);
+      else
+        $$ = new Step($1, Step::NodeTest(Step::NodeTest::kNameTest, local_name, namespace_uri));
+      parser->DeleteString($2);
     }
     |
     AbbreviatedStep
@@ -229,41 +229,41 @@ AxisSpecifier:
     |
     '@'
     {
-        $$ = Step::kAttributeAxis;
+      $$ = Step::kAttributeAxis;
     }
     ;
 
 NodeTest:
     NODETYPE '(' ')'
     {
-        if (*$1 == "node")
-            $$ = new Step::NodeTest(Step::NodeTest::kAnyNodeTest);
-        else if (*$1 == "text")
-            $$ = new Step::NodeTest(Step::NodeTest::kTextNodeTest);
-        else if (*$1 == "comment")
-            $$ = new Step::NodeTest(Step::NodeTest::kCommentNodeTest);
+      if (*$1 == "node")
+        $$ = new Step::NodeTest(Step::NodeTest::kAnyNodeTest);
+      else if (*$1 == "text")
+        $$ = new Step::NodeTest(Step::NodeTest::kTextNodeTest);
+      else if (*$1 == "comment")
+        $$ = new Step::NodeTest(Step::NodeTest::kCommentNodeTest);
 
-        parser->DeleteString($1);
+      parser->DeleteString($1);
     }
     |
     PI '(' ')'
     {
-        $$ = new Step::NodeTest(Step::NodeTest::kProcessingInstructionNodeTest);
-        parser->DeleteString($1);
+      $$ = new Step::NodeTest(Step::NodeTest::kProcessingInstructionNodeTest);
+      parser->DeleteString($1);
     }
     |
     PI '(' LITERAL ')'
     {
-        $$ = new Step::NodeTest(Step::NodeTest::kProcessingInstructionNodeTest, $3->StripWhiteSpace());
-        parser->DeleteString($1);
-        parser->DeleteString($3);
+      $$ = new Step::NodeTest(Step::NodeTest::kProcessingInstructionNodeTest, $3->StripWhiteSpace());
+      parser->DeleteString($1);
+      parser->DeleteString($3);
     }
     ;
 
 OptionalPredicateList:
     /* empty */
     {
-        $$ = 0;
+      $$ = 0;
     }
     |
     PredicateList
@@ -272,64 +272,64 @@ OptionalPredicateList:
 PredicateList:
     Predicate
     {
-        $$ = new blink::HeapVector<blink::Member<blink::XPath::Predicate>>;
-        $$->push_back(new blink::XPath::Predicate($1));
+      $$ = new blink::HeapVector<blink::Member<blink::XPath::Predicate>>;
+      $$->push_back(new blink::XPath::Predicate($1));
     }
     |
     PredicateList Predicate
     {
-        $$->push_back(new blink::XPath::Predicate($2));
+      $$->push_back(new blink::XPath::Predicate($2));
     }
     ;
 
 Predicate:
     '[' Expr ']'
     {
-        $$ = $2;
+      $$ = $2;
     }
     ;
 
 DescendantOrSelf:
     SLASHSLASH
     {
-        $$ = new Step(Step::kDescendantOrSelfAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
+      $$ = new Step(Step::kDescendantOrSelfAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
     }
     ;
 
 AbbreviatedStep:
     '.'
     {
-        $$ = new Step(Step::kSelfAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
+      $$ = new Step(Step::kSelfAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
     }
     |
     DOTDOT
     {
-        $$ = new Step(Step::kParentAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
+      $$ = new Step(Step::kParentAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
     }
     ;
 
 PrimaryExpr:
     VARIABLEREFERENCE
     {
-        $$ = new blink::XPath::VariableReference(*$1);
-        parser->DeleteString($1);
+      $$ = new blink::XPath::VariableReference(*$1);
+      parser->DeleteString($1);
     }
     |
     '(' Expr ')'
     {
-        $$ = $2;
+      $$ = $2;
     }
     |
     LITERAL
     {
-        $$ = new blink::XPath::StringExpression(*$1);
-        parser->DeleteString($1);
+      $$ = new blink::XPath::StringExpression(*$1);
+      parser->DeleteString($1);
     }
     |
     NUMBER
     {
-        $$ = new blink::XPath::Number($1->ToDouble());
-        parser->DeleteString($1);
+      $$ = new blink::XPath::Number($1->ToDouble());
+      parser->DeleteString($1);
     }
     |
     FunctionCall
@@ -338,31 +338,31 @@ PrimaryExpr:
 FunctionCall:
     FUNCTIONNAME '(' ')'
     {
-        $$ = blink::XPath::CreateFunction(*$1);
-        if (!$$)
-            YYABORT;
-        parser->DeleteString($1);
+      $$ = blink::XPath::CreateFunction(*$1);
+      if (!$$)
+        YYABORT;
+      parser->DeleteString($1);
     }
     |
     FUNCTIONNAME '(' ArgumentList ')'
     {
-        $$ = blink::XPath::CreateFunction(*$1, *$3);
-        if (!$$)
-            YYABORT;
-        parser->DeleteString($1);
+      $$ = blink::XPath::CreateFunction(*$1, *$3);
+      if (!$$)
+        YYABORT;
+      parser->DeleteString($1);
     }
     ;
 
 ArgumentList:
     Argument
     {
-        $$ = new blink::HeapVector<blink::Member<blink::XPath::Expression>>;
-        $$->push_back($1);
+      $$ = new blink::HeapVector<blink::Member<blink::XPath::Expression>>;
+      $$->push_back($1);
     }
     |
     ArgumentList ',' Argument
     {
-        $$->push_back($3);
+      $$->push_back($3);
     }
     ;
 
@@ -375,31 +375,31 @@ UnionExpr:
     |
     UnionExpr '|' PathExpr
     {
-        $$ = new blink::XPath::Union;
-        $$->AddSubExpression($1);
-        $$->AddSubExpression($3);
+      $$ = new blink::XPath::Union;
+      $$->AddSubExpression($1);
+      $$->AddSubExpression($3);
     }
     ;
 
 PathExpr:
     LocationPath
     {
-        $$ = $1;
+      $$ = $1;
     }
     |
     FilterExpr
     |
     FilterExpr '/' RelativeLocationPath
     {
-        $3->SetAbsolute(true);
-        $$ = new blink::XPath::Path($1, $3);
+      $3->SetAbsolute(true);
+      $$ = new blink::XPath::Path($1, $3);
     }
     |
     FilterExpr DescendantOrSelf RelativeLocationPath
     {
-        $3->InsertFirstStep($2);
-        $3->SetAbsolute(true);
-        $$ = new blink::XPath::Path($1, $3);
+      $3->InsertFirstStep($2);
+      $3->SetAbsolute(true);
+      $$ = new blink::XPath::Path($1, $3);
     }
     ;
 
@@ -408,7 +408,7 @@ FilterExpr:
     |
     PrimaryExpr PredicateList
     {
-        $$ = new blink::XPath::Filter($1, *$2);
+      $$ = new blink::XPath::Filter($1, *$2);
     }
     ;
 
@@ -417,7 +417,7 @@ OrExpr:
     |
     OrExpr OR AndExpr
     {
-        $$ = new blink::XPath::LogicalOp(blink::XPath::LogicalOp::kOP_Or, $1, $3);
+      $$ = new blink::XPath::LogicalOp(blink::XPath::LogicalOp::kOP_Or, $1, $3);
     }
     ;
 
@@ -426,7 +426,7 @@ AndExpr:
     |
     AndExpr AND EqualityExpr
     {
-        $$ = new blink::XPath::LogicalOp(blink::XPath::LogicalOp::kOP_And, $1, $3);
+      $$ = new blink::XPath::LogicalOp(blink::XPath::LogicalOp::kOP_And, $1, $3);
     }
     ;
 
@@ -435,7 +435,7 @@ EqualityExpr:
     |
     EqualityExpr EQOP RelationalExpr
     {
-        $$ = new blink::XPath::EqTestOp($2, $1, $3);
+      $$ = new blink::XPath::EqTestOp($2, $1, $3);
     }
     ;
 
@@ -444,7 +444,7 @@ RelationalExpr:
     |
     RelationalExpr RELOP AdditiveExpr
     {
-        $$ = new blink::XPath::EqTestOp($2, $1, $3);
+      $$ = new blink::XPath::EqTestOp($2, $1, $3);
     }
     ;
 
@@ -453,12 +453,12 @@ AdditiveExpr:
     |
     AdditiveExpr PLUS MultiplicativeExpr
     {
-        $$ = new blink::XPath::NumericOp(blink::XPath::NumericOp::kOP_Add, $1, $3);
+      $$ = new blink::XPath::NumericOp(blink::XPath::NumericOp::kOP_Add, $1, $3);
     }
     |
     AdditiveExpr MINUS MultiplicativeExpr
     {
-        $$ = new blink::XPath::NumericOp(blink::XPath::NumericOp::kOP_Sub, $1, $3);
+      $$ = new blink::XPath::NumericOp(blink::XPath::NumericOp::kOP_Sub, $1, $3);
     }
     ;
 
@@ -467,7 +467,7 @@ MultiplicativeExpr:
     |
     MultiplicativeExpr MULOP UnaryExpr
     {
-        $$ = new blink::XPath::NumericOp($2, $1, $3);
+      $$ = new blink::XPath::NumericOp($2, $1, $3);
     }
     ;
 
@@ -476,8 +476,8 @@ UnaryExpr:
     |
     MINUS UnaryExpr
     {
-        $$ = new blink::XPath::Negative;
-        $$->AddSubExpression($2);
+      $$ = new blink::XPath::Negative;
+      $$->AddSubExpression($2);
     }
     ;
 

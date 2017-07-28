@@ -430,11 +430,11 @@ int Parser::Lex(void* data) {
       yylval->axis = tok.axis;
       break;
     case MULOP:
-      yylval->numop = tok.numop;
+      yylval->num_op = tok.numop;
       break;
     case RELOP:
     case EQOP:
-      yylval->eqop = tok.eqop;
+      yylval->eq_op = tok.eqop;
       break;
     case NODETYPE:
     case PI:
