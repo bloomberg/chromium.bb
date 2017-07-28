@@ -275,9 +275,23 @@ class ScriptURLLoaderFactory : public mojom::URLLoaderFactory {
 
     // TODO: Make sure we don't handle the redirected request.
 
-    // For installed worker we fallback to the network for now.
-    if (ServiceWorkerVersion::IsInstalled(version->status())) {
-      DCHECK(!ServiceWorkerUtils::IsScriptStreamingEnabled());
+    // If script streaming is enabled, for installed service workers, typically
+    // all the scripts are served via script streaming, so we don't come here.
+    // However, we still come here when the service worker is A) importing a
+    // script that was never installed, or B) loading the same script twice.
+    // For now, return false here to fallback to network. Eventually, A) should
+    // be deprecated (https://crbug.com/719052), and B) should be handled by
+    // script streaming as well, see the TODO in
+    // WebServiceWorkerInstalledScriptsManagerImpl::GetRawScriptData().
+    //
+    // When script streaming is not enabled, we get here even for the main
+    // script. Therefore, ScriptURLLoader must handle the request (even though
+    // it currently just does a network fetch for now), because it sets the
+    // main script's HTTP Response Info (via
+    // ServiceWorkerVersion::SetMainScriptHttpResponseInfo()) which otherwise
+    // would never be set.
+    if (ServiceWorkerVersion::IsInstalled(version->status()) &&
+        ServiceWorkerUtils::IsScriptStreamingEnabled()) {
       return false;
     }
 
@@ -546,16 +560,6 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
       render_thread_id_, provider_id(), GetOrCreateServiceWorkerHandle(version),
       notify_controllerchange,
       version ? version->used_features() : std::set<uint32_t>()));
-}
-
-void ServiceWorkerProviderHost::CreateScriptURLLoaderFactory(
-    mojom::URLLoaderFactoryAssociatedRequest script_loader_factory_request) {
-  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
-  mojo::MakeStrongAssociatedBinding(
-      base::MakeUnique<ScriptURLLoaderFactory>(
-          context_, AsWeakPtr(), context_->blob_storage_context(),
-          context_->loader_factory_getter()),
-      std::move(script_loader_factory_request));
 }
 
 bool ServiceWorkerProviderHost::IsProviderForClient() const {
@@ -925,6 +929,18 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   provider_info->attributes = std::move(attrs);
   provider_info->registration = std::move(info);
   provider_info->client_request = mojo::MakeRequest(&provider_);
+
+  mojom::URLLoaderFactoryAssociatedPtrInfo script_loader_factory_ptr_info;
+  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+    mojo::MakeStrongAssociatedBinding(
+        base::MakeUnique<ScriptURLLoaderFactory>(
+            context_, AsWeakPtr(), context_->blob_storage_context(),
+            context_->loader_factory_getter()),
+        mojo::MakeRequest(&script_loader_factory_ptr_info));
+    provider_info->script_loader_factory_ptr_info =
+        std::move(script_loader_factory_ptr_info);
+  }
+
   binding_.Bind(mojo::MakeRequest(&provider_info->host_ptr_info));
   binding_.set_connection_error_handler(
       base::Bind(&RemoveProviderHost, context_, process_id, provider_id()));
