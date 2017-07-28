@@ -537,6 +537,8 @@ split_static_library("browser") {
     "invalidation/profile_invalidation_provider_factory.h",
     "io_thread.cc",
     "io_thread.h",
+    "language/chrome_language_detection_client.cc",
+    "language/chrome_language_detection_client.h",
     "language/url_language_histogram_factory.cc",
     "language/url_language_histogram_factory.h",
     "lifetime/application_lifetime.cc",

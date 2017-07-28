@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
@@ -40,6 +41,9 @@ struct LanguageDetectionDetails;
 }  // namespace translate
 
 enum class ShowTranslateBubbleResult;
+
+// Flag to control the "translate / language" separation feature.
+extern const base::Feature kDecoupleTranslateLanguageFeature;
 
 class ChromeTranslateClient
     : public translate::TranslateClient,
