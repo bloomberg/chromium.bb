@@ -600,6 +600,41 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
     self.assertEqual(slave_stages[0]['build_config'], 'build_config')
     self.assertEqual(slave_stages[0]['name'], 'My Stage')
 
+  def testGetMasterStages(self):
+    """test GetMasterStages."""
+    self._PrepareDatabase()
+
+    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
+
+    master_build_id = bot_db.InsertBuild('master',
+                                         waterfall.WATERFALL_INTERNAL,
+                                         _random(),
+                                         'master',
+                                         'master.hostname')
+
+    build_id_1 = bot_db.InsertBuild('slave1',
+                                    waterfall.WATERFALL_INTERNAL,
+                                    _random(),
+                                    'slave1',
+                                    'bot_hostname',
+                                    master_build_id=master_build_id,
+                                    buildbucket_id='bb_id_1')
+
+    bot_db.InsertBuildStage(
+        master_build_id, 'master_build_stage_1', board='test1')
+    bot_db.InsertBuildStage(
+        master_build_id, 'master_build_stage_2', board='test2')
+    bot_db.InsertBuildStage(
+        build_id_1, 'build_1_stage', board='test1')
+
+    master_stages = bot_db.GetMasterStages(master_build_id)
+    self.assertEqual(len(master_stages), 2)
+
+    self.assertEqual(master_stages[0]['status'], 'planned')
+    self.assertEqual(master_stages[0]['build_config'], 'master')
+    self.assertEqual(master_stages[0]['name'], 'master_build_stage_1')
+    self.assertEqual(master_stages[1]['name'], 'master_build_stage_2')
+
   def testGetSlaveStages(self):
     """test GetSlaveStages."""
     self._PrepareDatabase()

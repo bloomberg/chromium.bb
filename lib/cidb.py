@@ -114,8 +114,6 @@ def minimum_schema(min_version):
   return decorator
 
 
-
-
 # Tuple to keep arguments that modify SQL query retry behaviour of
 # SchemaVersionedMySQLConnection.
 SqlConnectionRetryArgs = collections.namedtuple(
@@ -570,6 +568,7 @@ class SchemaVersionedMySQLConnection(object):
       The result of .execute(...)
     """
     f = lambda: engine.execute(query, *args, **kwargs)
+
     logging.info('Running cidb query on pid %s, repr(query) starts with %s',
                  os.getpid(), repr(query)[:100])
     return self._RunFunctorWithRetries(f)
@@ -648,6 +647,27 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       'build_number', 'builder_name', 'platform_version', 'full_version',
       'milestone_version', 'important', 'buildbucket_id', 'summary',
       'buildbot_generation', 'master_build_id', 'bot_hostname', 'deadline')
+
+  _SQL_FETCH_ANNOTATIONS = (
+      'SELECT aT.build_id, aT.last_updated, last_annotator, '
+      'failure_category, failure_message, blame_url, notes, deleted, '
+      'bT.last_updated, bT.id, buildbot_generation, builder_name, '
+      'waterfall, build_number, build_config, bot_hostname, status, '
+      'start_time, finish_time, status_pickle, build_type, final, '
+      'chrome_version, milestone_version, platform_version, summary, '
+      'full_version, sdk_version, toolchain_url, metadata_url, '
+      'deadline, important, buildbucket_id, unibuild, suite_scheduling'
+      ' FROM annotationsTable aT'
+      ' JOIN buildTable bT ON aT.build_id = bT.id')
+  BAD_CL_ANNOTATION_KEYS = (
+      'master_build_id', 'last_annotated', 'last_annotator',
+      'failure_category', 'failure_message', 'blame_url', 'notes', 'deleted',
+      'build_last_updated', 'id', 'buildbot_generation', 'builder_name',
+      'waterfall', 'build_number', 'build_config', 'bot_hostname', 'status',
+      'start_time', 'finish_time', 'status_pickle', 'build_type', 'final',
+      'chrome_version', 'milestone_version', 'platform_version', 'summary',
+      'full_version', 'sdk_version', 'toolchain_url', 'metadata_url',
+      'deadline', 'important', 'buildbucket_id', 'unibuild', 'suite_scheduling')
 
   def __init__(self, db_credentials_dir, for_service=False,
                query_retry_args=SqlConnectionRetryArgs(8, 4, 2)):
@@ -1217,8 +1237,60 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         return []
 
   @minimum_schema(30)
+  def _GetStages(self, master_build_id, is_master=False, buildbucket_ids=None):
+    """Gets stages of master/slave builds of a given master build.
+
+    Args:
+      master_build_id: build id of the master build to fetch the master/slave
+                       builds' stages for.
+      is_master: boolean, if the query is for a master build's stages. If true,
+                 return all the stages in the master build. Otherwise return
+                 stages in the slave builds.
+      buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
+        to given master_build_id. If buildbucket_ids is given, only fetch
+        the stages of builds with |buildbucket_id| in buildbucket_ids.
+        Default to None.
+
+    Returns:
+      A list containing, for each stage of master/slave builds found,
+      a dictionary with keys (id, build_id, name, board, status, last_updated,
+      start_time, finish_time, final, build_config).
+      If buildbucket_ids is None, the list contains all stages found; else, it
+      only contains the stages with |buildbucket_id| in buildbucket_ids.
+    """
+    bs_table_columns = ['id', 'build_id', 'name', 'board', 'status',
+                        'last_updated', 'start_time', 'finish_time', 'final']
+    bs_prepended_columns = ['bs.' + x for x in bs_table_columns]
+
+    b_table_columns = ['build_config', 'important']
+    b_prepended_columns = ['b.' + x for x in b_table_columns]
+
+    # define query for a master build
+    id_key = 'id' if is_master else 'master_build_id'
+
+    query = ('SELECT %s, %s FROM buildStageTable bs JOIN '
+             'buildTable b ON bs.build_id=b.id WHERE b.%s=%d' %
+             (', '.join(bs_prepended_columns),
+              ', '.join(b_prepended_columns),
+              id_key,
+              master_build_id))
+
+
+    if buildbucket_ids is not None:
+      if not buildbucket_ids:
+        return []
+
+      query += (' AND b.buildbucket_id IN (%s)' %
+                (','.join('"%s"' % x for x in buildbucket_ids)))
+
+    results = self._Execute(query).fetchall()
+
+    columns = bs_table_columns + b_table_columns
+    return [dict(zip(columns, values)) for values in results]
+
+  @minimum_schema(30)
   def GetSlaveStages(self, master_build_id, buildbucket_ids=None):
-    """Gets the stages of slave builds to given master_build_id.
+    """Gets the stages of all slave builds to given master_build_id.
 
     Args:
       master_build_id: build id of the master build to fetch the slave
@@ -1236,27 +1308,23 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       else, it only contains the stages of the slaves with |buildbucket_id|
       in buildbucket_ids.
     """
-    bs_table_columns = ['id', 'build_id', 'name', 'board', 'status',
-                        'last_updated', 'start_time', 'finish_time', 'final']
-    bs_prepended_columns = ['bs.' + x for x in bs_table_columns]
+    return self._GetStages(master_build_id, buildbucket_ids=buildbucket_ids)
 
-    query = ('SELECT %s, b.build_config FROM buildStageTable bs JOIN '
-             'buildTable b ON build_id = b.id WHERE b.master_build_id = %d' %
-             (', '.join(bs_prepended_columns), master_build_id))
+  @minimum_schema(30)
+  def GetMasterStages(self, master_build_id):
+    """Gets the stages of a master build.
 
-    results = []
-    if buildbucket_ids is None:
-      results = self._Execute(query).fetchall()
-    else:
-      if not buildbucket_ids:
-        return []
+    Args:
+      master_build_id: build id of the master build to fetch the slave
+                       stages for.
 
-      query += (' AND b.buildbucket_id IN (%s)' %
-                (','.join('"%s"' % x for x in buildbucket_ids)))
-      results = self._Execute(query).fetchall()
+    Returns:
+      A list containing, for each stage of master build found,
+      a dictionary with keys (id, build_id, name, board, status, last_updated,
+      start_time, finish_time, final, build_config).
+    """
+    return self._GetStages(master_build_id, is_master=True)
 
-    columns = bs_table_columns + ['build_config']
-    return [dict(zip(columns, values)) for values in results]
 
   @minimum_schema(44)
   def GetBuildsFailures(self, build_ids):
@@ -1522,6 +1590,48 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return [r['platform_version'] for r in results]
 
   @minimum_schema(47)
+  def GetAnnotatedBuilds(self, build_config, num_results, start_date=None,
+                         end_date=None):
+    """Returns most recent failed builds with additional failure information.
+
+    By default this function returns the all failed builds. Some arguments can
+    restrict the result to older builds.
+
+    Args:
+      build_config: config name of the build.
+      num_results: Number of builds to search back. Set this to
+          CIDBConnection.NUM_RESULTS_NO_LIMIT to request no limit on the number
+          of results.
+      start_date: (Optional, type: datetime.date) Get builds that occured on or
+          after this date.
+      end_date: (Optional, type:datetime.date) Get builds that occured on or
+          before this date.
+
+    Returns:
+      A sorted list of dicts containing up to |number| dictionaries for
+      build statuses in descending order. Valid keys in the dictionary are
+      described in BAD_CL_ANNOTATION_KEYS.
+    """
+    where_clauses = ['build_config = "%s"' % build_config]
+    if start_date is not None:
+      where_clauses.append('date(start_time) >= date("%s")' %
+                           start_date.strftime(self._DATE_FORMAT))
+    if end_date is not None:
+      where_clauses.append('date(start_time) <= date("%s")' %
+                           end_date.strftime(self._DATE_FORMAT))
+
+    query = ('%s AND %s' %
+             (self._SQL_FETCH_ANNOTATIONS, ' AND '.join(where_clauses)))
+
+    if num_results != self.NUM_RESULTS_NO_LIMIT:
+      query += ' LIMIT %d' % num_results
+
+    results = self._Execute(query).fetchall()
+
+    return [dict(zip(CIDBConnection.BAD_CL_ANNOTATION_KEYS, values))
+            for values in results]
+
+  @minimum_schema(47)
   def GetMostRecentBuild(self, waterfall, build_config, milestone_version=None):
     """Returns basic information about most recent completed build.
 
@@ -1636,6 +1746,37 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     results = self._Execute(
         '%s WHERE %s' % (self._SQL_FETCH_ACTIONS, clause)).fetchall()
     return [clactions.CLAction(*values) for values in results]
+
+  def GetFailuresForChange(self, change_number, change_source, master_build_id):
+    """Gets all the failures for a given change during a given master build.
+
+    Note that the failures are from the master build and all its slaves.
+
+    Args:
+      change_number: Gerrit number
+      change_source: string, source of change, 'external' or 'internal'
+      master_build_id: Master Build id in the annotation table
+
+    Returns:
+      A list of failure_message_lib.StageFailure instances.
+    """
+    # preprocess keys for query
+    keys = list(failure_message_lib.FAILURE_KEYS)
+    keys[keys.index('id')] = 'fV.id'
+    keys[keys.index('timestamp')] = 'fV.timestamp'
+    keys[keys.index('build_id')] = 'fV.build_id'
+    keys[keys.index('buildbucket_id')] = 'fV.buildbucket_id'
+    columns_string = ', '.join(keys)
+
+    query = ('SELECT %s FROM clActionTable clT JOIN failureView fV '
+             'ON clT.build_id = fV.build_id '
+             'WHERE clT.change_number = %s AND clT.change_source = "%s" '
+             'AND (fV.master_build_id = %s OR clT.build_id = %s) ' %
+             (columns_string, str(change_number), change_source,
+              str(master_build_id), str(master_build_id)))
+    results = self._Execute(query).fetchall()
+
+    return [failure_message_lib.StageFailure(*values) for values in results]
 
   @minimum_schema(11)
   def GetActionsForBuild(self, build_id):
