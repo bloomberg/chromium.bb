@@ -52,6 +52,17 @@ function makeFetch(url, requestInitializer)
     }).catch(e => e);
 }
 
+function makeFetchInWorker(url, requestInitializer)
+{
+    return new Promise((resolve) => {
+      var worker = new Worker('/inspector/network/resources/fetch-worker.js');
+      worker.onmessage = (event) => {
+        resolve(event.data);
+      };
+      worker.postMessage({url: url, init: requestInitializer});
+    });
+}
+
 var initialize_NetworkTest = function() {
 
 InspectorTest.preloadPanel("network");
@@ -174,6 +185,11 @@ InspectorTest.makeXHR = function(method, url, async, user, password, headers, wi
 InspectorTest.makeFetch = function(url, requestInitializer, callback)
 {
     InspectorTest.callFunctionInPageAsync("makeFetch", [url, requestInitializer]).then(callback);
+}
+
+InspectorTest.makeFetchInWorker = function(url, requestInitializer, callback)
+{
+    InspectorTest.callFunctionInPageAsync("makeFetchInWorker", [url, requestInitializer]).then(callback);
 }
 
 /**

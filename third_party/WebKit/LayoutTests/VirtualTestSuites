@@ -144,6 +144,11 @@
   },
   {
     "prefix": "off-main-thread-fetch",
+    "base": "http/tests/inspector/network",
+    "args": ["--enable-features=OffMainThreadFetch"]
+  },
+  {
+    "prefix": "off-main-thread-fetch",
     "base": "http/tests/inspector/service-workers",
     "args": ["--enable-features=OffMainThreadFetch"]
   },
