@@ -182,36 +182,36 @@ FIFOSmokeTestParam smoke_test_params[] = {
   // Test case 0 (OSX): 256 Pull, 128 Push, Minimal jitter.
   // WebThread's priority is lower than the device thread, so its jitter range
   // is slightly bigger than the other.
-  {48000, 2, 8192, 1000, 256, 1, 128, 2},
+  {48000, 2, 8192, 250, 256, 1, 128, 2},
 
   // Test case 1 (Windows): 441 Pull, 128 Push. Moderate Jitter.
   // Windows' audio callback is known to be ~10ms and UMA data shows the
   // evidence for it. The jitter range was determined speculatively.
-  {44100, 2, 8192, 1000, 441, 2, 128, 3},
+  {44100, 2, 8192, 250, 441, 2, 128, 3},
 
   // Test case 2 (Ubuntu/Linux): 512 Pull, 128 Push. Unstable callback, but
   // fast CPU. A typical configuration for Ubuntu + PulseAudio setup.
   // PulseAudio's callback is known to be rather unstable.
-  {48000, 2, 8192, 1000, 512, 8, 128, 1},
+  {48000, 2, 8192, 250, 512, 8, 128, 1},
 
   // Test case 3 (Android-Reference): 512 Pull, 128 Push. Similar to Linux, but
   // low profile CPU.
-  {44100, 2, 8192, 1000, 512, 8, 128, 3},
+  {44100, 2, 8192, 250, 512, 8, 128, 3},
 
   // Test case 4 (Android-ExternalA): 441 Pull, 128 Push. Extreme jitter with
   // low profile CPU.
-  {44100, 2, 8192, 1000, 441, 24, 128, 8},
+  {44100, 2, 8192, 250, 441, 24, 128, 8},
 
   // Test case 5 (Android-ExternalB): 5768 Pull, 128 Push. Huge callback with
   // large jitter. Low profile CPU.
-  {44100, 2, 8192, 1000, 5768, 120, 128, 12},
+  {44100, 2, 8192, 250, 5768, 120, 128, 12},
 
   // Test case 6 (User-specified buffer size): 960 Pull, 128 Push. Minimal
   // Jitter. 960 frames = 20ms at 48KHz.
-  {48000, 2, 8192, 1000, 960, 1, 128, 1},
+  {48000, 2, 8192, 250, 960, 1, 128, 1},
 
-  // Test case 7 (Longer test duration): 256 Pull, 128 Push. 10 seconds.
-  {48000, 2, 8192, 10000, 256, 0, 128, 1}
+  // Test case 7 (Longer test duration): 256 Pull, 128 Push. 2.5 seconds.
+  {48000, 2, 8192, 2500, 256, 0, 128, 1}
 };
 
 INSTANTIATE_TEST_CASE_P(PushPullFIFOSmokeTest,
