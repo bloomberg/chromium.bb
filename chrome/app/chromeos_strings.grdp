@@ -6189,6 +6189,27 @@ All users must sign out to continue.
   <message name="IDS_WAIT_FOR_CONTAINER_READY_INTRO_MESSAGE" desc="Introduction message for the wait for container ready OOBE screen">
     Ask it questions. Tell it to do things. It's your personal Google, always ready to help.
   </message>
+  <message name="IDS_VOICE_INTERACTION_LOGO" desc="Logo label for voice interaction.">
+    Google assistant logo
+  </message>
+  <message name="IDS_VOICE_INTERACTION_ERROR_SCREEN_TITLE_LOCALE" desc="Title of the error screen when voice interaction is disabled due to unsupported locale.">
+    The Google Assistant doesn’t speak this language.
+  </message>
+  <message name="IDS_VOICE_INTERACTION_ERROR_SCREEN_TITLE_ACCOUNT" desc="Title of the error screen when voice interaction is disabled due to unsupported account.">
+    The Google Assistant isn't enabled for your account.
+  </message>
+  <message name="IDS_VOICE_INTERACTION_ERROR_SCREEN_MESSAGE_LOCALE" desc="Error message of the error screen when voice interaction is disabld due to unsupported locale.">
+    Sorry, the Google Assistant doesn’t currently have support for your locale.
+  </message>
+  <message name="IDS_VOICE_INTERACTION_ERROR_SCREEN_MESSAGE_ACCOUNT" desc="Error message of the error screen when voice interaction is disabled due to Unsupported account.">
+    Sorry, the Google Assistant doesn’t currently work with your account.
+  </message>
+  <message name="IDS_VOICE_INTERACTION_ERROR_SCREEN_LINK" desc="Text on the learn more link for voice interaction error screen.">
+    Learn more
+  </message>
+  <message name="IDS_VOICE_INTERACTION_ERROR_SCREEN_BUTTON" desc="Button label for accept voice interaction error message.">
+    OK
+  </message>
 
   <!-- Print Job Notification -->
   <message name="IDS_PRINT_JOB_PRINTING_NOTIFICATION_TITLE" desc="Title of the printing-in-progress notification.">
