@@ -11,6 +11,10 @@
 struct SupportedKeySystemRequest;
 struct SupportedKeySystemResponse;
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace cdm {
 
 // Message filter for EME on Android. It is responsible for getting the
@@ -26,14 +30,16 @@ class CdmMessageFilterAndroid : public content::BrowserMessageFilter {
 
   // BrowserMessageFilter implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OverrideThreadForMessage(const IPC::Message& message,
-                                content::BrowserThread::ID* thread) override;
+  base::TaskRunner* OverrideTaskRunnerForMessage(
+      const IPC::Message& message) override;
 
   // Query the key system information.
   void OnQueryKeySystemSupport(const SupportedKeySystemRequest& request,
                                SupportedKeySystemResponse* response);
 
   void OnGetPlatformKeySystemNames(std::vector<std::string>* key_systems);
+
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // By default, rendering of secure codecs is supported when AndroidOverlay is
   // enabled. However, on platforms like Cast on Android, secure codecs are
