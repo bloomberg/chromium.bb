@@ -2,9 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <iostream>
+
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/process/memory.h"
+#include "build/build_config.h"
 #include "chrome/installer/zucchini/main_utils.h"
+
+#if defined(OS_WIN)
+#include "base/win/process_startup_helper.h"
+#endif  // defined(OS_WIN)
 
 namespace {
 
@@ -18,21 +26,23 @@ void InitLogging() {
   CHECK(logging_res);
 }
 
+void InitErrorHandling(const base::CommandLine& command_line) {
+  base::EnableTerminationOnHeapCorruption();
+  base::EnableTerminationOnOutOfMemory();
+#if defined(OS_WIN)
+  base::win::RegisterInvalidParamHandler();
+  base::win::SetupCRT(command_line);
+#endif  // defined(OS_WIN)
+}
+
 }  // namespace
 
 int main(int argc, const char* argv[]) {
-  ResourceUsageTracker tracker;
+  // Initialize infrastructure from base.
   base::CommandLine::Init(argc, argv);
-  InitLogging();
-
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-
-  // Instantiate Command registry and register Zucchini features.
-  CommandRegistry registry;
-  registry.Register(&kCommandGen);
-  registry.Register(&kCommandApply);
-
-  registry.RunOrExit(command_line);
-  return 0;
+  InitLogging();
+  InitErrorHandling(command_line);
+  return static_cast<int>(RunZucchiniCommand(command_line, std::cerr));
 }
