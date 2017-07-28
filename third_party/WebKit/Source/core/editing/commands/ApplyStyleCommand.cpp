@@ -117,8 +117,8 @@ ApplyStyleCommand::ApplyStyleCommand(Document& document,
       style_(style->Copy()),
       input_type_(input_type),
       property_level_(property_level),
-      start_(MostForwardCaretPosition(EndingSelection().Start())),
-      end_(MostBackwardCaretPosition(EndingSelection().End())),
+      start_(MostForwardCaretPosition(EndingVisibleSelection().Start())),
+      end_(MostBackwardCaretPosition(EndingVisibleSelection().End())),
       use_ending_selection_(true),
       styled_inline_element_(nullptr),
       remove_only_(false),
@@ -144,8 +144,8 @@ ApplyStyleCommand::ApplyStyleCommand(Element* element, bool remove_only)
       style_(EditingStyle::Create()),
       input_type_(InputEvent::InputType::kNone),
       property_level_(kPropertyDefault),
-      start_(MostForwardCaretPosition(EndingSelection().Start())),
-      end_(MostBackwardCaretPosition(EndingSelection().End())),
+      start_(MostForwardCaretPosition(EndingVisibleSelection().Start())),
+      end_(MostBackwardCaretPosition(EndingVisibleSelection().End())),
       use_ending_selection_(true),
       styled_inline_element_(element),
       remove_only_(remove_only),
@@ -160,8 +160,8 @@ ApplyStyleCommand::ApplyStyleCommand(
       style_(style->Copy()),
       input_type_(input_type),
       property_level_(kPropertyDefault),
-      start_(MostForwardCaretPosition(EndingSelection().Start())),
-      end_(MostBackwardCaretPosition(EndingSelection().End())),
+      start_(MostForwardCaretPosition(EndingVisibleSelection().Start())),
+      end_(MostBackwardCaretPosition(EndingVisibleSelection().End())),
       use_ending_selection_(true),
       styled_inline_element_(nullptr),
       remove_only_(true),
@@ -175,25 +175,26 @@ void ApplyStyleCommand::UpdateStartEnd(const Position& new_start,
   if (!use_ending_selection_ && (new_start != start_ || new_end != end_))
     use_ending_selection_ = true;
 
-  SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(new_start)
-                         .Extend(new_end)
-                         .SetIsDirectional(EndingSelection().IsDirectional())
-                         .Build());
+  SetEndingSelection(
+      SelectionInDOMTree::Builder()
+          .Collapse(new_start)
+          .Extend(new_end)
+          .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+          .Build());
   start_ = new_start;
   end_ = new_end;
 }
 
 Position ApplyStyleCommand::StartPosition() {
   if (use_ending_selection_)
-    return EndingSelection().Start();
+    return EndingVisibleSelection().Start();
 
   return start_;
 }
 
 Position ApplyStyleCommand::EndPosition() {
   if (use_ending_selection_)
-    return EndingSelection().End();
+    return EndingVisibleSelection().End();
 
   return end_;
 }

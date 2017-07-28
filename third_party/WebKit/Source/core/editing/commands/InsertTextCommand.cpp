@@ -80,24 +80,25 @@ void InsertTextCommand::SetEndingSelectionWithoutValidation(
   // We could have inserted a part of composed character sequence,
   // so we are basically treating ending selection as a range to avoid
   // validation. <http://bugs.webkit.org/show_bug.cgi?id=15781>
-  SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(start_position)
-                         .Extend(end_position)
-                         .SetIsDirectional(EndingSelection().IsDirectional())
-                         .Build());
+  SetEndingSelection(
+      SelectionInDOMTree::Builder()
+          .Collapse(start_position)
+          .Extend(end_position)
+          .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+          .Build());
 }
 
 // This avoids the expense of a full fledged delete operation, and avoids a
 // layout that typically results from text removal.
 bool InsertTextCommand::PerformTrivialReplace(const String& text,
                                               bool select_inserted_text) {
-  if (!EndingSelection().IsRange())
+  if (!EndingVisibleSelection().IsRange())
     return false;
 
   if (text.Contains('\t') || text.Contains(' ') || text.Contains('\n'))
     return false;
 
-  Position start = EndingSelection().Start();
+  Position start = EndingVisibleSelection().Start();
   Position end_position = ReplaceSelectedTextInNode(text);
   if (end_position.IsNull())
     return false;
@@ -105,16 +106,17 @@ bool InsertTextCommand::PerformTrivialReplace(const String& text,
   SetEndingSelectionWithoutValidation(start, end_position);
   if (select_inserted_text)
     return true;
-  SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(EndingSelection().End())
-                         .SetIsDirectional(EndingSelection().IsDirectional())
-                         .Build());
+  SetEndingSelection(
+      SelectionInDOMTree::Builder()
+          .Collapse(EndingVisibleSelection().End())
+          .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+          .Build());
   return true;
 }
 
 bool InsertTextCommand::PerformOverwrite(const String& text,
                                          bool select_inserted_text) {
-  Position start = EndingSelection().Start();
+  Position start = EndingVisibleSelection().Start();
   if (start.IsNull() || !start.IsOffsetInAnchor() ||
       !start.ComputeContainerNode()->IsTextNode())
     return false;
@@ -132,29 +134,30 @@ bool InsertTextCommand::PerformOverwrite(const String& text,
   Position end_position =
       Position(text_node, start.OffsetInContainerNode() + text.length());
   SetEndingSelectionWithoutValidation(start, end_position);
-  if (select_inserted_text || EndingSelection().IsNone())
+  if (select_inserted_text || EndingVisibleSelection().IsNone())
     return true;
-  SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(EndingSelection().End())
-                         .SetIsDirectional(EndingSelection().IsDirectional())
-                         .Build());
+  SetEndingSelection(
+      SelectionInDOMTree::Builder()
+          .Collapse(EndingVisibleSelection().End())
+          .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+          .Build());
   return true;
 }
 
 void InsertTextCommand::DoApply(EditingState* editing_state) {
   DCHECK_EQ(text_.find('\n'), kNotFound);
 
-  if (!EndingSelection().IsNonOrphanedCaretOrRange())
+  if (!EndingVisibleSelection().IsNonOrphanedCaretOrRange())
     return;
 
   // Delete the current selection.
   // FIXME: This delete operation blows away the typing style.
-  if (EndingSelection().IsRange()) {
+  if (EndingVisibleSelection().IsRange()) {
     if (PerformTrivialReplace(text_, select_inserted_text_))
       return;
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
     bool end_of_selection_was_at_start_of_block =
-        IsStartOfBlock(EndingSelection().VisibleEnd());
+        IsStartOfBlock(EndingVisibleSelection().VisibleEnd());
     DeleteSelection(editing_state, false, true, false, false);
     if (editing_state->IsAborted())
       return;
@@ -163,7 +166,7 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
     // in the DOM), the VisibleSelection cannot be canonicalized to anything
     // other than NoSelection. The rest of this function requires a real
     // endingSelection, so bail out.
-    if (EndingSelection().IsNone())
+    if (EndingVisibleSelection().IsNone())
       return;
     if (end_of_selection_was_at_start_of_block) {
       if (EditingStyle* typing_style =
@@ -177,7 +180,7 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  Position start_position(EndingSelection().Start());
+  Position start_position(EndingVisibleSelection().Start());
 
   Position placeholder;
   // We want to remove preserved newlines and brs that will collapse (and thus
@@ -276,7 +279,7 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
           GetDocument().GetFrame()->GetEditor().TypingStyle()) {
     typing_style->PrepareToApplyAt(end_position,
                                    EditingStyle::kPreserveWritingDirection);
-    if (!typing_style->IsEmpty() && !EndingSelection().IsNone()) {
+    if (!typing_style->IsEmpty() && !EndingVisibleSelection().IsNone()) {
       ApplyStyle(typing_style, editing_state);
       if (editing_state->IsAborted())
         return;
@@ -285,10 +288,10 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
 
   if (!select_inserted_text_) {
     SelectionInDOMTree::Builder builder;
-    builder.SetAffinity(EndingSelection().Affinity());
-    builder.SetIsDirectional(EndingSelection().IsDirectional());
-    if (EndingSelection().End().IsNotNull())
-      builder.Collapse(EndingSelection().End());
+    builder.SetAffinity(EndingVisibleSelection().Affinity());
+    builder.SetIsDirectional(EndingVisibleSelection().IsDirectional());
+    if (EndingVisibleSelection().End().IsNotNull())
+      builder.Collapse(EndingVisibleSelection().End());
     SetEndingSelection(builder.Build());
   }
 }
