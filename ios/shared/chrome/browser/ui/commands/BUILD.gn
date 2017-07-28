@@ -9,6 +9,7 @@ source_set("commands") {
   ]
   deps = [
     "//base",
+    "//ios/shared/chrome/browser/ui/metrics",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -22,6 +23,7 @@ source_set("unit_tests") {
   deps = [
     ":commands",
     "//base",
+    "//ios/shared/chrome/browser/ui/metrics",
     "//testing/gtest",
   ]
 
