@@ -9,8 +9,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/value_store/value_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,10 +63,7 @@ class ValueStoreTest : public testing::TestWithParam<ValueStoreTestParam> {
  private:
   base::ScopedTempDir temp_dir_;
 
-  // Need these so that the DCHECKs for running on FILE or UI threads pass.
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 #endif  // EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_UNITTEST_H_

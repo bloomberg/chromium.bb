@@ -6,10 +6,8 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "content/public/browser/browser_thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -53,7 +51,7 @@ ValueStore::Status LeveldbScopedDatabase::Read(
     const std::string& scope,
     const std::string& key,
     std::unique_ptr<base::Value>* value) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   ValueStore::Status status = EnsureDbIsOpen();
   if (!status.ok())
@@ -67,7 +65,7 @@ ValueStore::Status LeveldbScopedDatabase::Read(
 
 ValueStore::Status LeveldbScopedDatabase::Read(const std::string& scope,
                                                base::DictionaryValue* values) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   ValueStore::Status status = EnsureDbIsOpen();
   if (!status.ok())
