@@ -1368,7 +1368,7 @@ String InspectorDOMAgent::DocumentURLString(Document* document) {
 
 // static
 String InspectorDOMAgent::DocumentBaseURLString(Document* document) {
-  return document->BaseURLForOverride(document->BaseURL()).GetString();
+  return document->BaseURL().GetString();
 }
 
 static protocol::DOM::ShadowRootType GetShadowRootType(

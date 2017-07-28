@@ -74,6 +74,7 @@ KURL HTMLBaseElement::href() const {
   if (attribute_value.IsNull())
     return GetDocument().Url();
 
+  // TODO(tkent): Use FallbackBaseURL(). crbug.com/739504.
   KURL url = GetDocument().Encoding().IsValid()
                  ? KURL(GetDocument().Url(),
                         StripLeadingAndTrailingHTMLSpaces(attribute_value))
