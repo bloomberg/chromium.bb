@@ -405,14 +405,20 @@ TEST_F(AppListViewFullscreenTest, StartPageTabFocusTest) {
   start_page_view->UpdateForTesting();
   EXPECT_EQ(apps_num, GetVisibleViews(start_page_view->tile_views()));
 
-  // Initial focus should be on search box text field.
+  // Initially, no view gets focus.
+  EXPECT_EQ(FOCUS_NONE, search_box_view->get_focused_view_for_test());
+  EXPECT_EQ(StartPageView::kNoSelection,
+            start_page_view->GetSelectedIndexForTest());
+
+  // Hitting tab key sets focus on search box.
+  ui::KeyEvent tab(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_NONE);
+  search_box_view->search_box()->OnKeyEvent(&tab);
   EXPECT_EQ(FOCUS_SEARCH_BOX, search_box_view->get_focused_view_for_test());
   EXPECT_EQ(StartPageView::kNoSelection,
             start_page_view->GetSelectedIndexForTest());
 
-  // Tapping tab key when focus is on search box text field moves focus through
-  // suggestion apps.
-  ui::KeyEvent tab(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_NONE);
+  // Hitting tab key when focus is on search box moves focus through suggestion
+  // apps.
   for (size_t i = 0; i < apps_num; i++) {
     search_box_view->search_box()->OnKeyEvent(&tab);
     EXPECT_EQ(FOCUS_CONTENTS_VIEW,
@@ -420,22 +426,21 @@ TEST_F(AppListViewFullscreenTest, StartPageTabFocusTest) {
     EXPECT_EQ(static_cast<int>(i), start_page_view->GetSelectedIndexForTest());
   }
 
-  // Tapping tab key when focus is on the last suggestion app moves focus to
+  // Hitting tab key when focus is on the last suggestion app moves focus to
   // expand arrow view.
   search_box_view->search_box()->OnKeyEvent(&tab);
   EXPECT_EQ(FOCUS_CONTENTS_VIEW, search_box_view->get_focused_view_for_test());
   EXPECT_EQ(StartPageView::kExpandArrowSelection,
             start_page_view->GetSelectedIndexForTest());
 
-  // Tapping tab key when focus is on the expand arrow view moves focus back to
-  // search box text field.
+  // Hitting tab key when focus is on the expand arrow view clears focus.
   search_box_view->search_box()->OnKeyEvent(&tab);
-  EXPECT_EQ(FOCUS_SEARCH_BOX, search_box_view->get_focused_view_for_test());
+  EXPECT_EQ(FOCUS_NONE, search_box_view->get_focused_view_for_test());
   EXPECT_EQ(StartPageView::kNoSelection,
             start_page_view->GetSelectedIndexForTest());
 
-  // Tapping shift-tab key when focus is on search box text field moves focus
-  // to the expand arrow view.
+  // Hitting shift-tab key when no view gets focus sets focus to the expand
+  // arrow view.
   ui::KeyEvent shift_tab(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
   search_box_view->search_box()->OnKeyEvent(&shift_tab);
   EXPECT_EQ(FOCUS_CONTENTS_VIEW, search_box_view->get_focused_view_for_test());
