@@ -304,7 +304,8 @@ void ArcAccessibilityHelperBridge::OnWindowActivated(
     }
   }
 
-  if (!found_entry) {
+  if (!found_entry && GetFilterTypeForProfile(profile_) ==
+                          arc::mojom::AccessibilityFilterType::ALL) {
     fallback_tree_->Focus(gained_active);
     return;
   }
