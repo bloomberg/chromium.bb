@@ -1560,11 +1560,12 @@ class DevtoolsInterceptionWithAuthProxyTest
     FinishAsynchronousTest();
   }
 
-  std::unique_ptr<net::ProxyConfig> GetProxyConfig() override {
+  void CustomizeHeadlessBrowserContext(
+      HeadlessBrowserContext::Builder& builder) override {
     std::unique_ptr<net::ProxyConfig> proxy_config(new net::ProxyConfig);
     proxy_config->proxy_rules().ParseFromString(
         proxy_server_.host_port_pair().ToString());
-    return proxy_config;
+    builder.SetProxyConfig(std::move(proxy_config));
   }
 
  private:
@@ -1574,5 +1575,29 @@ class DevtoolsInterceptionWithAuthProxyTest
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevtoolsInterceptionWithAuthProxyTest);
+
+class NavigatorLanguages : public HeadlessAsyncDevTooledBrowserTest {
+ public:
+  void RunDevTooledTest() override {
+    devtools_client_->GetRuntime()->Evaluate(
+        "JSON.stringify(navigator.languages)",
+        base::Bind(&NavigatorLanguages::OnResult, base::Unretained(this)));
+  }
+
+  void OnResult(std::unique_ptr<runtime::EvaluateResult> result) {
+    std::string value;
+    EXPECT_TRUE(result->GetResult()->HasValue());
+    EXPECT_TRUE(result->GetResult()->GetValue()->GetAsString(&value));
+    EXPECT_EQ("[\"en-UK\",\"DE\",\"FR\"]", value);
+    FinishAsynchronousTest();
+  }
+
+  void CustomizeHeadlessBrowserContext(
+      HeadlessBrowserContext::Builder& builder) override {
+    builder.SetAcceptLanguage("en-UK, DE, FR");
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(NavigatorLanguages);
 
 }  // namespace headless
