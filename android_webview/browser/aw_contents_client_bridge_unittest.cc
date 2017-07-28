@@ -16,7 +16,6 @@
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "jni/MockAwContentsClientBridge_jni.h"
-#include "net/android/net_jni_registrar.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_private_key.h"
@@ -83,7 +82,6 @@ class TestClientCertificateDelegate
 void AwContentsClientBridgeTest::SetUp() {
   env_ = AttachCurrentThread();
   ASSERT_THAT(env_, NotNull());
-  ASSERT_TRUE(net::android::RegisterJni(env_));
   jbridge_.Reset(
       env_,
       Java_MockAwContentsClientBridge_getAwContentsClientBridge(env_).obj());
