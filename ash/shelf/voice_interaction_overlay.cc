@@ -23,6 +23,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/presenter/app_list.h"
@@ -35,11 +37,11 @@
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -97,31 +99,121 @@ constexpr float kMinimumRectScale = 0.0001f;
 // were causing visual anomalies.
 constexpr float kMinimumCircleScale = 0.001f;
 
-class VoiceInteractionIcon : public ui::Layer, public ui::LayerDelegate {
+// These are voice interaction logo specs.
+constexpr float kMoleculeOffsetXDip[] = {-10.f, 10.f, 10.f, 19.f};
+constexpr float kMoleculeOffsetYDip[] = {-8.f, -2.f, 13.f, -9.f};
+constexpr float kMoleculeRadiusDip[] = {12.f, 6.f, 7.f, 3.f};
+constexpr float kMoleculeAmplitude = 2.f;
+constexpr SkColor kMoleculeColors[] = {
+    static_cast<SkColor>(0xFF4184F3),  // Blue
+    static_cast<SkColor>(0xFFEA4335),  // Red
+    static_cast<SkColor>(0xFFFBBC05),  // Yellow
+    static_cast<SkColor>(0xFF34A853)   // Green
+};
+constexpr int kMoleculeAnimationDurationMs = 1200;
+constexpr int kMoleculeAnimationOffset = 50;
+constexpr int kMoleculeOrder[] = {0, 2, 3, 1};
+
+}  // namespace
+
+class VoiceInteractionIcon : public ui::Layer {
  public:
-  VoiceInteractionIcon() {
+  VoiceInteractionIcon() : Layer(ui::LAYER_NOT_DRAWN) {
     set_name("VoiceInteractionOverlay:ICON_LAYER");
     SetBounds(gfx::Rect(0, 0, kIconInitSizeDip, kIconInitSizeDip));
     SetFillsBoundsOpaquely(false);
     SetMasksToBounds(false);
-    set_delegate(this);
+
+    InitMoleculeShape();
   }
+
+  void StartAnimation() {
+    animation_timer_.Start(FROM_HERE,
+                           base::TimeDelta::FromMilliseconds(
+                               base::TimeTicks::kMillisecondsPerSecond /
+                               gfx::LinearAnimation::kDefaultFrameRate),
+                           this, &VoiceInteractionIcon::AnimationProgressed);
+  }
+
+  void StopAnimation() { animation_timer_.Stop(); }
 
  private:
-  // ui::LayerDelegate:
-  void OnPaintLayer(const ui::PaintContext& context) override {
-    ui::PaintRecorder recorder(context, size());
-    gfx::PaintVectorIcon(recorder.canvas(), kShelfVoiceInteractionIcon,
-                         kIconInitSizeDip, 0);
+  enum Dot {
+    BLUE_DOT = 0,
+    RED_DOT,
+    YELLOW_DOT,
+    GREEN_DOT,
+    // The total number of shapes, not an actual shape.
+    DOT_COUNT
+  };
+
+  std::string ToLayerName(Dot dot) {
+    switch (dot) {
+      case BLUE_DOT:
+        return "BLUE_DOT";
+      case RED_DOT:
+        return "RED_DOT";
+      case YELLOW_DOT:
+        return "YELLOW_DOT";
+      case GREEN_DOT:
+        return "GREEN_DOT";
+      case DOT_COUNT:
+        NOTREACHED() << "The DOT_COUNT value should never be used.";
+        return "DOT_COUNT";
+    }
+    return "UNKNOWN";
   }
 
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
+  void AnimationProgressed() {
+    gfx::Transform transform;
 
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+    uint64_t now = base::TimeTicks::Now().since_origin().InMilliseconds();
+    for (int i = 0; i < DOT_COUNT; ++i) {
+      float normalizedTime =
+          ((now - kMoleculeAnimationOffset * kMoleculeOrder[i]) %
+           kMoleculeAnimationDurationMs) /
+          static_cast<float>(kMoleculeAnimationDurationMs);
+
+      transform.MakeIdentity();
+      transform.Translate(0,
+                          kMoleculeAmplitude * sin(normalizedTime * 2 * M_PI));
+
+      dot_layers_[i]->SetTransform(transform);
+    }
+  }
+
+  /**
+   * Convenience method to place dots to Molecule shape used by Molecule
+   * animations.
+   */
+  void InitMoleculeShape() {
+    for (int i = 0; i < DOT_COUNT; ++i) {
+      dot_layer_delegates_[i] = base::MakeUnique<views::CircleLayerDelegate>(
+          kMoleculeColors[i], kMoleculeRadiusDip[i]);
+      dot_layers_[i] = base::MakeUnique<ui::Layer>();
+
+      dot_layers_[i]->SetBounds(gfx::Rect(
+          kIconInitSizeDip / 2 + kMoleculeOffsetXDip[i] - kMoleculeRadiusDip[i],
+          kIconInitSizeDip / 2 + kMoleculeOffsetYDip[i] - kMoleculeRadiusDip[i],
+          kMoleculeRadiusDip[i] * 2, kMoleculeRadiusDip[i] * 2));
+      dot_layers_[i]->SetFillsBoundsOpaquely(false);
+      dot_layers_[i]->set_delegate(dot_layer_delegates_[i].get());
+      dot_layers_[i]->SetVisible(true);
+      dot_layers_[i]->SetOpacity(1.0);
+      dot_layers_[i]->SetMasksToBounds(false);
+      dot_layers_[i]->set_name("DOT:" + ToLayerName(static_cast<Dot>(i)));
+
+      Add(dot_layers_[i].get());
+    }
+  }
+
+  std::unique_ptr<ui::Layer> dot_layers_[DOT_COUNT];
+  std::unique_ptr<views::CircleLayerDelegate> dot_layer_delegates_[DOT_COUNT];
+
+  base::RepeatingTimer animation_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(VoiceInteractionIcon);
 };
-}  // namespace
 
 class VoiceInteractionIconBackground : public ui::Layer,
                                        public ui::LayerDelegate {
@@ -664,6 +756,7 @@ void VoiceInteractionOverlay::BurstAnimation() {
     transform.Scale(scale_factor, scale_factor);
 
     icon_layer_->SetTransform(transform);
+    icon_layer_->StartAnimation();
   }
 
   // Setup background animation.
@@ -796,6 +889,7 @@ void VoiceInteractionOverlay::HideAnimation() {
         ui::LayerAnimator::PreemptionStrategy::ENQUEUE_NEW_ANIMATION);
 
     icon_layer_->SetOpacity(0);
+    icon_layer_->StopAnimation();
   }
 
   // Setup background animation.
