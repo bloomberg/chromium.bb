@@ -78,7 +78,7 @@ constexpr int kPageFlipZoneSize = 40;
 constexpr int kPageFlipDelayInMs = 1000;
 
 // The drag and drop proxy should get scaled by this factor.
-constexpr float kDragAndDropProxyScale = 1.5f;
+constexpr float kDragAndDropProxyScale = 1.2f;
 
 // Delays in milliseconds to show folder dropping preview circle.
 constexpr int kFolderDroppingDelay = 150;
@@ -437,6 +437,26 @@ void AppsGridView::InitiateDrag(AppListItemView* view,
   drag_view_start_ = gfx::Point(drag_view_->x(), drag_view_->y());
 }
 
+void AppsGridView::StartDragAndDropHostDragAfterLongPress(Pointer pointer) {
+  TryStartDragAndDropHostDrag(pointer, drag_start_grid_view_);
+}
+
+void AppsGridView::TryStartDragAndDropHostDrag(
+    Pointer pointer,
+    const gfx::Point& grid_location) {
+  drag_pointer_ = pointer;
+  // Move the view to the front so that it appears on top of other views.
+  ReorderChildView(drag_view_, -1);
+  bounds_animator_.StopAnimatingView(drag_view_);
+  // Stopping the animation may have invalidated our drag view due to the
+  // view hierarchy changing.
+  if (!drag_view_)
+    return;
+
+  if (!dragging_for_reparent_item_)
+    StartDragAndDropHostDrag(grid_location);
+}
+
 bool AppsGridView::UpdateDragFromItem(Pointer pointer,
                                       const ui::LocatedEvent& event) {
   if (!drag_view_)
@@ -466,19 +486,8 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
     return;  // Drag canceled.
 
   gfx::Vector2d drag_vector(point - drag_start_grid_view_);
-  if (!dragging() && ExceededDragThreshold(drag_vector)) {
-    drag_pointer_ = pointer;
-    // Move the view to the front so that it appears on top of other views.
-    ReorderChildView(drag_view_, -1);
-    bounds_animator_.StopAnimatingView(drag_view_);
-    // Stopping the animation may have invalidated our drag view due to the
-    // view hierarchy changing.
-    if (!drag_view_)
-      return;
-
-    if (!dragging_for_reparent_item_)
-      StartDragAndDropHostDrag(point);
-  }
+  if (!dragging() && ExceededDragThreshold(drag_vector))
+    TryStartDragAndDropHostDrag(pointer, point);
 
   if (drag_pointer_ != pointer)
     return;
@@ -1517,7 +1526,7 @@ void AppsGridView::CalculateReorderDropTarget(const gfx::Point& point,
 
   int x_offset_direction = 0;
   if (grid_index == reorder_placeholder_) {
-    x_offset_direction = reorder_placeholder_center.x() < point.x() ? -1 : 1;
+    x_offset_direction = reorder_placeholder_center.x() <= point.x() ? -1 : 1;
   } else {
     x_offset_direction = reorder_placeholder_ < grid_index ? -1 : 1;
   }
