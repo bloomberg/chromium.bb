@@ -21,6 +21,11 @@ PlatformSensorProviderWin* PlatformSensorProviderWin::GetInstance() {
       base::LeakySingletonTraits<PlatformSensorProviderWin>>::get();
 }
 
+#if defined(__clang__)
+// Disable optimization to work around a Clang miscompile (crbug.com/749826).
+// TODO(hans): Remove once we roll past the Clang fix in r309343.
+[[clang::optnone]]
+#endif
 void PlatformSensorProviderWin::SetSensorManagerForTesting(
     base::win::ScopedComPtr<ISensorManager> sensor_manager) {
   sensor_manager_ = sensor_manager;
