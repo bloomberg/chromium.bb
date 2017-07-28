@@ -1,2 +1,5 @@
 # Mac stuff.
 per-file *_mac*=ccameron@chromium.org
+
+# Win stuff
+per-file *_win*=stanisc@chromium.org
