@@ -22,8 +22,5 @@ FAIL Add candidate for media stream 2 with null ufrag should succeed promise_tes
 FAIL Add candidate with invalid ufrag should reject with OperationError promise_test: Unhandled rejection with value: object "OperationError: TEST_ERROR"
 FAIL Add candidate with invalid candidate string should reject with OperationError promise_test: Unhandled rejection with value: object "OperationError: TEST_ERROR"
 FAIL Add candidate with sdpMid belonging to different ufrag should reject with OperationError promise_test: Unhandled rejection with value: object "OperationError: TEST_ERROR"
-FAIL Add candidate with invalid candidate string should never resolve when pc is closed assert_unreached: Pending promise should never be resolved. Instead it is rejected with: OperationError: TEST_ERROR Reached unreachable code
-FAIL Add candidate with invalid sdpMid should never resolve when pc is closed assert_unreached: Pending promise should never be resolved. Instead it is rejected with: OperationError: TEST_ERROR Reached unreachable code
-FAIL Add candidate with invalid sdpMLineIndex should never resolve when pc is closed assert_unreached: Pending promise should never be resolved. Instead it is rejected with: OperationError: TEST_ERROR Reached unreachable code
 Harness: the test ran to completion.
 
