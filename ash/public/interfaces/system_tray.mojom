@@ -24,9 +24,10 @@ interface SystemTray {
   SetUse24HourClock(bool use_24_hour);
 
   // Creates or updates an item in the system tray menu with information about
-  // enterprise management. The item appears if |enterprise_domain| is not empty
-  // or |active_directory_managed| is true.
-  SetEnterpriseDomain(string enterprise_domain, bool active_directory_managed);
+  // enterprise management. The item appears if |enterprise_display_domain| is
+  // not empty or |active_directory_managed| is true.
+  SetEnterpriseDisplayDomain(string enterprise_display_domain,
+                             bool active_directory_managed);
 
   // Shows or hides an item in the system tray indicating that performance
   // tracing is running.

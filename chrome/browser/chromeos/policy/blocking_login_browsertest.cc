@@ -252,7 +252,8 @@ IN_PROC_BROWSER_TEST_P(BlockingLoginTest, LoginBlocksForUser) {
 
     EXPECT_FALSE(user_manager->IsUserLoggedIn());
     EXPECT_TRUE(browser_policy_connector()->IsEnterpriseManaged());
-    EXPECT_EQ(kDomain, browser_policy_connector()->GetEnterpriseDomain());
+    EXPECT_EQ(kDomain,
+              browser_policy_connector()->GetEnterpriseEnrollmentDomain());
     EXPECT_FALSE(profile_added_);
     RunUntilIdle();
     EXPECT_FALSE(

@@ -79,18 +79,18 @@ cr.define('cr.login', function() {
                      // not called before dispatching |authCopleted|.
                      // Default is |true|.
     'flow',          // One of 'default', 'enterprise', or 'theftprotection'.
-    'enterpriseDomain',     // Domain in which hosting device is (or should be)
-                            // enrolled.
-    'emailDomain',          // Value used to prefill domain for email.
-    'chromeType',           // Type of Chrome OS device, e.g. "chromebox".
-    'clientVersion',        // Version of the Chrome build.
-    'platformVersion',      // Version of the OS build.
-    'releaseChannel',       // Installation channel.
-    'endpointGen',          // Current endpoint generation.
-    'gapsCookie',           // GAPS cookie
-    'chromeOSApiVersion',   // GAIA Chrome OS API version
-    'menuGuestMode',        // Enables "Guest mode" menu item
-    'menuKeyboardOptions',  // Enables "Keyboard options" menu item
+    'enterpriseEnrollmentDomain',  // Domain in which hosting device is (or
+                                   // should be) enrolled.
+    'emailDomain',                 // Value used to prefill domain for email.
+    'chromeType',                // Type of Chrome OS device, e.g. "chromebox".
+    'clientVersion',             // Version of the Chrome build.
+    'platformVersion',           // Version of the OS build.
+    'releaseChannel',            // Installation channel.
+    'endpointGen',               // Current endpoint generation.
+    'gapsCookie',                // GAPS cookie
+    'chromeOSApiVersion',        // GAIA Chrome OS API version
+    'menuGuestMode',             // Enables "Guest mode" menu item
+    'menuKeyboardOptions',       // Enables "Keyboard options" menu item
     'menuEnterpriseEnrollment',  // Enables "Enterprise enrollment" menu item.
 
     // The email fields allow for the following possibilities:
@@ -287,7 +287,7 @@ cr.define('cr.login', function() {
   Authenticator.prototype.constructInitialFrameUrl_ = function(data) {
     if (data.doSamlRedirect) {
       var url = this.idpOrigin_ + SAML_REDIRECTION_PATH;
-      url = appendParam(url, 'domain', data.enterpriseDomain);
+      url = appendParam(url, 'domain', data.enterpriseEnrollmentDomain);
       url = appendParam(
           url, 'continue',
           data.gaiaUrl + 'o/oauth2/programmatic_auth?hl=' + data.hl +
@@ -311,8 +311,9 @@ cr.define('cr.login', function() {
         url = appendParam(url, 'chrometype', data.chromeType);
       if (data.clientId)
         url = appendParam(url, 'client_id', data.clientId);
-      if (data.enterpriseDomain)
-        url = appendParam(url, 'manageddomain', data.enterpriseDomain);
+      if (data.enterpriseEnrollmentDomain)
+        url =
+            appendParam(url, 'manageddomain', data.enterpriseEnrollmentDomain);
       if (data.clientVersion)
         url = appendParam(url, 'client_version', data.clientVersion);
       if (data.platformVersion)

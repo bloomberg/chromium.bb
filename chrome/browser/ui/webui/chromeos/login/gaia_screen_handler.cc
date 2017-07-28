@@ -117,10 +117,16 @@ GaiaScreenMode GetGaiaScreenMode(const std::string& email, bool use_offline) {
   return GAIA_SCREEN_MODE_DEFAULT;
 }
 
-std::string GetEnterpriseDomain() {
+std::string GetEnterpriseDisplayDomain() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->GetEnterpriseDomain();
+  return connector->GetEnterpriseDisplayDomain();
+}
+
+std::string GetEnterpriseEnrollmentDomain() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->GetEnterpriseEnrollmentDomain();
 }
 
 std::string GetRealm() {
@@ -315,9 +321,15 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
     params.SetString("realm", realm);
   }
 
-  std::string enterprise_domain(GetEnterpriseDomain());
-  if (!enterprise_domain.empty())
-    params.SetString("enterpriseDomain", enterprise_domain);
+  const std::string enterprise_display_domain(GetEnterpriseDisplayDomain());
+  const std::string enterprise_enrollment_domain(
+      GetEnterpriseEnrollmentDomain());
+  if (!enterprise_display_domain.empty())
+    params.SetString("enterpriseDisplayDomain", enterprise_display_domain);
+  if (!enterprise_enrollment_domain.empty()) {
+    params.SetString("enterpriseEnrollmentDomain",
+                     enterprise_enrollment_domain);
+  }
 
   params.SetString("chromeType", GetChromeType());
   params.SetString("clientId",

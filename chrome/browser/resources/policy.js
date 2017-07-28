@@ -45,9 +45,13 @@ cr.define('policy', function() {
         // status item with the domain the device is enrolled into.
         this.querySelector('.legend').textContent =
             loadTimeData.getString('statusDevice');
-        var domain = this.querySelector('.domain');
-        domain.textContent = status.domain;
-        domain.parentElement.hidden = false;
+        var enrollmentDomain =
+            this.querySelector('.enterprise-enrollment-domain');
+        enrollmentDomain.textContent = status.enterpriseEnrollmentDomain;
+        enrollmentDomain.parentElement.hidden = false;
+        var displayDomain = this.querySelector('.enterprise-display-domain');
+        displayDomain.textContent = status.enterpriseDisplayDomain;
+        displayDomain.parentElement.hidden = false;
 
         // Populate the device naming information.
         // Populate the asset identifier.

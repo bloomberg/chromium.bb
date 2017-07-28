@@ -65,7 +65,7 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
   void UpdateEnterpriseInfo();
 
   // Set enterprise domain name and device asset ID.
-  void SetEnterpriseInfo(const std::string& domain_name,
+  void SetEnterpriseInfo(const std::string& enterprise_display_domain,
                          const std::string& asset_id);
 
   // Creates a serial number string.

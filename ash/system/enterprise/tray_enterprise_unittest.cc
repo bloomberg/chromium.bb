@@ -27,8 +27,8 @@ TEST_F(TrayEnterpriseTest, ItemVisible) {
 
   // Simulate enterprise information becoming available.
   const bool active_directory = false;
-  Shell::Get()->system_tray_controller()->SetEnterpriseDomain("example.com",
-                                                              active_directory);
+  Shell::Get()->system_tray_controller()->SetEnterpriseDisplayDomain(
+      "example.com", active_directory);
 
   // Enterprise managed devices show an item.
   system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
@@ -45,8 +45,8 @@ TEST_F(TrayEnterpriseTest, ItemVisibleForActiveDirectory) {
   // devices do not have a domain.
   const std::string empty_domain;
   const bool active_directory = true;
-  Shell::Get()->system_tray_controller()->SetEnterpriseDomain(empty_domain,
-                                                              active_directory);
+  Shell::Get()->system_tray_controller()->SetEnterpriseDisplayDomain(
+      empty_domain, active_directory);
 
   // Active Directory managed devices show an item.
   system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);

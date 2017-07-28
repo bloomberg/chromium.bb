@@ -246,8 +246,11 @@
   <message name="IDS_POLICY_STATUS_USER" desc="Title for the user policy status box.">
     User policies
   </message>
-  <message name="IDS_POLICY_LABEL_DOMAIN" desc="Label for the enrollment domain in the device policy status box.">
+  <message name="IDS_POLICY_LABEL_ENTERPRISE_ENROLLMENT_DOMAIN" desc="Label for the enrollment domain in the device policy status box.">
     Enrollment domain:
+  </message>
+  <message name="IDS_POLICY_LABEL_ENTERPRISE_DISPLAY_DOMAIN" desc="Label for the display domain in the device policy status box.">
+    Display domain:
   </message>
   <message name="IDS_POLICY_LABEL_USERNAME" desc="Label for the username in the user policy status box.">
     User:

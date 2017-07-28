@@ -26,10 +26,10 @@ base::string16 GetEnterpriseMessage() {
   if (controller->active_directory_managed())
     return l10n_util::GetStringUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED);
 
-  if (!controller->enterprise_domain().empty()) {
+  if (!controller->enterprise_display_domain().empty()) {
     return l10n_util::GetStringFUTF16(
         IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
-        base::UTF8ToUTF16(controller->enterprise_domain()));
+        base::UTF8ToUTF16(controller->enterprise_display_domain()));
   }
   return base::string16();
 }

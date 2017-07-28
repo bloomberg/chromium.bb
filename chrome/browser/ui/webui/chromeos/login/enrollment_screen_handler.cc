@@ -100,12 +100,11 @@ bool IsProxyError(NetworkStateInformer::State state,
          reason == NetworkError::ERROR_REASON_PROXY_CONNECTION_FAILED;
 }
 
-
-// Returns the enterprise domain after enrollment, or an empty string.
-std::string GetEnterpriseDomain() {
+// Returns the enterprise display domain after enrollment, or an empty string.
+std::string GetEnterpriseDisplayDomain() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->GetEnterpriseDomain();
+  return connector->GetEnterpriseDisplayDomain();
 }
 
 }  // namespace
@@ -255,10 +254,12 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
     policy::EnrollmentStatus status) {
   switch (status.status()) {
     case policy::EnrollmentStatus::SUCCESS:
-      if (config_.is_mode_attestation())
-        ShowAttestationBasedEnrollmentSuccessScreen(GetEnterpriseDomain());
-      else
+      if (config_.is_mode_attestation()) {
+        ShowAttestationBasedEnrollmentSuccessScreen(
+            GetEnterpriseDisplayDomain());
+      } else {
         ShowStep(kEnrollmentStepSuccess);
+      }
       return;
     case policy::EnrollmentStatus::NO_STATE_KEYS:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_NO_STATE_KEYS, false);

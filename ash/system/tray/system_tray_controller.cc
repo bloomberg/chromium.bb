@@ -191,10 +191,10 @@ void SystemTrayController::SetUse24HourClock(bool use_24_hour) {
   Shell::Get()->system_tray_notifier()->NotifyDateFormatChanged();
 }
 
-void SystemTrayController::SetEnterpriseDomain(
-    const std::string& enterprise_domain,
+void SystemTrayController::SetEnterpriseDisplayDomain(
+    const std::string& enterprise_display_domain,
     bool active_directory_managed) {
-  enterprise_domain_ = enterprise_domain;
+  enterprise_display_domain_ = enterprise_display_domain;
   active_directory_managed_ = active_directory_managed;
   Shell::Get()->system_tray_notifier()->NotifyEnterpriseDomainChanged();
 }

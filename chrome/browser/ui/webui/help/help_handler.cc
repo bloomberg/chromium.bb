@@ -138,7 +138,7 @@ bool CanChangeChannel(Profile* profile) {
       domain = email.substr(email.find('@') + 1);
     policy::BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
-    return domain == connector->GetEnterpriseDomain();
+    return domain == connector->GetEnterpriseEnrollmentDomain();
   } else {
     chromeos::OwnerSettingsServiceChromeOS* service =
         chromeos::OwnerSettingsServiceChromeOSFactory::GetInstance()
