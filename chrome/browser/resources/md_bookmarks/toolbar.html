@@ -63,39 +63,34 @@
       </button>
     </cr-toolbar>
     <template is="cr-lazy-render" id="dropdown">
-      <dialog is="cr-action-menu" role="menu">
+      <dialog is="cr-action-menu">
         <button id="sortButton"
             class="dropdown-item"
             on-tap="onSortTap_"
-            disabled="[[!canSortFolder_]]"
-            role="menuitem">
+            disabled="[[!canSortFolder_]]">
           $i18n{menuSort}
         </button>
         <hr>
         <button id="addBookmarkButton"
             class="dropdown-item"
             on-tap="onAddBookmarkTap_"
-            disabled="[[!canChangeList_]]"
-            role="menuitem">
+            disabled="[[!canChangeList_]]">
           $i18n{menuAddBookmark}
         </button>
         <button class="dropdown-item"
             on-tap="onAddFolderTap_"
-            disabled="[[!canChangeList_]]"
-            role="menuitem">
+            disabled="[[!canChangeList_]]">
           $i18n{menuAddFolder}
         </button>
         <hr>
         <button id="importBookmarkButton"
             class="dropdown-item"
             on-tap="onImportTap_"
-            disabled="[[!globalCanEdit_]]"
-            role="menuitem">
+            disabled="[[!globalCanEdit_]]">
           $i18n{menuImport}
         </button>
         <button class="dropdown-item"
-            on-tap="onExportTap_"
-            role="menuitem">
+            on-tap="onExportTap_">
           $i18n{menuExport}
         </button>
       </dialog>

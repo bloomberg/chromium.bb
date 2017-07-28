@@ -35,22 +35,23 @@
           title="$i18n{moreActions}" on-tap="onDotsTap_"></button>
       <template is="cr-lazy-render" id="menu">
         <dialog is="cr-action-menu">
-          <button class="dropdown-item" role="option" id="view"
+          <button class="dropdown-item" id="view"
               on-tap="onViewTap_">
             $i18n{certificateManagerView}
           </button>
-          <button class="dropdown-item" role="option" id="edit"
+          <button class="dropdown-item" id="edit"
               hidden$="[[!canEdit_(certificateType, model)]]"
               on-tap="onEditTap_">
             $i18n{edit}
           </button>
-          <button class="dropdown-item" role="option" id="export"
+          <button class="dropdown-item" id="export"
               hidden$="[[!canExport_(certificateType, model)]]"
               on-tap="onExportTap_">
             $i18n{certificateManagerExport}
           </button>
-          <button class="dropdown-item" role="option" id="delete"
-              hidden$="[[!canDelete_(model)]]" on-tap="onDeleteTap_">
+          <button class="dropdown-item" id="delete"
+              hidden$="[[!canDelete_(model)]]"
+              on-tap="onDeleteTap_">
             $i18n{certificateManagerDelete}
           </button>
         </dialog>

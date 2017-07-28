@@ -58,16 +58,18 @@
           focus-type="cr-menu-button">
       </button>
       <dialog is="cr-action-menu">
-        <button class="dropdown-item" role="option" on-tap="onMakeDefaultTap_"
+        <button class="dropdown-item" on-tap="onMakeDefaultTap_"
             hidden$="[[!engine.canBeDefault]]" id="makeDefault">
           $i18n{searchEnginesMakeDefault}
         </button>
-        <button class="dropdown-item" role="option" on-tap="onEditTap_"
-            hidden$="[[!engine.canBeEdited]]"
-            id="edit">$i18n{edit}</button>
-        <button class="dropdown-item" role="option" on-tap="onDeleteTap_"
-            hidden$="[[!engine.canBeRemoved]]"
-            id="delete">$i18n{searchEnginesRemoveFromList}</button>
+        <button class="dropdown-item" on-tap="onEditTap_"
+            hidden$="[[!engine.canBeEdited]]" id="edit">
+          $i18n{edit}
+        </button>
+        <button class="dropdown-item" on-tap="onDeleteTap_"
+            hidden$="[[!engine.canBeRemoved]]" id="delete">
+          $i18n{searchEnginesRemoveFromList}
+        </button>
       </dialog>
     </div>
     <template is="dom-if" if="[[engine.extension]]">

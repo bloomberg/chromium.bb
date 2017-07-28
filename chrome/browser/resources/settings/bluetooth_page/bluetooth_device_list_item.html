@@ -37,11 +37,10 @@
             title="$i18n{moreActions}" on-keydown="ignoreEnterKey_">
         </button>
         <dialog id="dotsMenu" is="cr-action-menu">
-          <button class="dropdown-item" role="option"
-              on-tap="onConnectActionTap_">
+          <button class="dropdown-item" on-tap="onConnectActionTap_">
             [[getConnectActionText_(device.connected)]]
           </button>
-          <button class="dropdown-item" role="option" on-tap="onRemoveTap_">
+          <button class="dropdown-item" on-tap="onRemoveTap_">
             $i18n{bluetoothRemove}
           </button>
         </dialog>

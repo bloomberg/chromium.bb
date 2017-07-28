@@ -195,6 +195,24 @@ suite('CrActionMenu', function() {
     assertEquals(items[0], menu.root.activeElement);
   });
 
+  test('items automatically given accessibility role', function() {
+    var newItem = document.createElement('button');
+    newItem.classList.add('dropdown-item');
+
+    items[1].setAttribute('role', 'checkbox');
+    menu.showAt(dots);
+
+    return PolymerTest.flushTasks().then(() => {
+      assertEquals('menuitem', items[0].getAttribute('role'));
+      assertEquals('checkbox', items[1].getAttribute('role'));
+
+      menu.insertBefore(newItem, items[0]);
+      return PolymerTest.flushTasks();
+    }).then(() => {
+      assertEquals('menuitem', newItem.getAttribute('role'));
+    });
+  });
+
   test('positioning', function() {
     // A 40x10 box at (100, 250).
     var config = {
