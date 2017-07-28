@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x36
   LayoutBlockFlow {HTML} at (0,0) size 800x36
     LayoutBlockFlow {BODY} at (8,8) size 784x20
-      LayoutTextControl {INPUT} at (0,4) size 100x2 [bgcolor=#FFFFFF]
+      LayoutTextControl {INPUT} at (0,3.50) size 100x2 [bgcolor=#FFFFFF]
       LayoutText {#text} at (0,0) size 0x0
-layer at (8,-5) size 100x37 backgroundClip at (8,0) size 100x32 clip at (8,0) size 100x32
+layer at (8,-6) size 100x37 backgroundClip at (8,0) size 100x31 clip at (8,0) size 100x31
   LayoutBlockFlow {DIV} at (0,-17.50) size 100x37
     LayoutText {#text} at (0,0) size 67x36
       text run at (0,0) width 67: "FAIL"

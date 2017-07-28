@@ -8,19 +8,19 @@ layer at (0,0) size 800x209
           text run at (0,0) width 262: "The word \"fail\" should not appear below."
       LayoutBlockFlow {DIV} at (16,36) size 240x140.63 [color=#FFFFFF] [bgcolor=#FFFFFF]
         LayoutBlockFlow (floating) {P} at (0,0) size 42.52x20.31 [color=#000080]
-          LayoutText {#text} at (0,0) size 43x19
+          LayoutText {#text} at (0,0) size 43x20
             text run at (0,0) width 43: "TEST:"
         LayoutBlockFlow (floating) {P} at (0.02,20.31) size 239.98x20.31 [color=#00FFFF] [bgcolor=#008080]
-          LayoutText {#text} at (101,0) size 38x19
+          LayoutText {#text} at (101,0) size 38x20
             text run at (101,0) width 38: "PASS"
         LayoutText {#text} at (42,0) size 236x140
           text run at (42,0) width 189: "fail fail fail fail fail fail fail fail"
-          text run at (0,41) width 48: "fail fail "
-          text run at (48,41) width 188: "fail fail fail fail fail fail fail fail"
-          text run at (0,61) width 48: "fail fail "
-          text run at (48,61) width 188: "fail fail fail fail fail fail fail fail"
-          text run at (0,81) width 48: "fail fail "
-          text run at (48,81) width 188: "fail fail fail fail fail fail fail fail"
-          text run at (0,101) width 48: "fail fail "
-          text run at (48,101) width 188: "fail fail fail fail fail fail fail fail"
-          text run at (0,121) width 44: "fail fail"
+          text run at (0,40) width 48: "fail fail "
+          text run at (48,40) width 188: "fail fail fail fail fail fail fail fail"
+          text run at (0,60) width 48: "fail fail "
+          text run at (48,60) width 188: "fail fail fail fail fail fail fail fail"
+          text run at (0,80) width 48: "fail fail "
+          text run at (48,80) width 188: "fail fail fail fail fail fail fail fail"
+          text run at (0,100) width 48: "fail fail "
+          text run at (48,100) width 188: "fail fail fail fail fail fail fail fail"
+          text run at (0,120) width 44: "fail fail"

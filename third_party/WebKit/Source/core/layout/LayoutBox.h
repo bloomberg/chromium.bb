@@ -1131,9 +1131,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   PaintLayer* EnclosingFloatPaintingLayer() const;
 
-  virtual int FirstLineBoxBaseline() const { return -1; }
-  virtual int InlineBlockBaseline(LineDirectionMode) const {
-    return -1;
+  virtual LayoutUnit FirstLineBoxBaseline() const { return LayoutUnit(-1); }
+  virtual LayoutUnit InlineBlockBaseline(LineDirectionMode) const {
+    return LayoutUnit(-1);
   }  // Returns -1 if we should skip this box when computing the baseline of an
      // inline-block.
 
@@ -1182,7 +1182,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       bool first_line,
       LineDirectionMode,
       LinePositionMode = kPositionOnContainingLine) const override;
-  int BaselinePosition(
+  LayoutUnit BaselinePosition(
       FontBaseline,
       bool first_line,
       LineDirectionMode,

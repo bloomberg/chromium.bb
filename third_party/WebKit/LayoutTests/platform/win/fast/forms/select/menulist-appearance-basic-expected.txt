@@ -94,7 +94,7 @@ layer at (0,0) size 800x525
       LayoutText {#text} at (325,186) size 4x19
         text run at (325,186) width 4: " "
       LayoutBR {BR} at (329,186) size 0x19
-      LayoutMenuList {SELECT} at (6,230) size 64x28 [bgcolor=#FFFFFF] [border: (1.50px solid #A9A9A9)]
+      LayoutMenuList {SELECT} at (6,229.50) size 64x28 [bgcolor=#FFFFFF] [border: (1.50px solid #A9A9A9)]
         LayoutBlockFlow (anonymous) at (1.50,1.50) size 61x26
           LayoutText (anonymous) at (6,1) size 28x23
             text run at (6,1) width 28: "foo"
@@ -106,7 +106,7 @@ layer at (0,0) size 800x525
             text run at (8,2) width 37: "foo"
       LayoutText {#text} at (181,236) size 4x19
         text run at (181,236) width 4: " "
-      LayoutMenuList {SELECT} at (187,242) size 34x13 [bgcolor=#FFFFFF] [border: (0.50px solid #A9A9A9)]
+      LayoutMenuList {SELECT} at (187,241.50) size 34x13 [bgcolor=#FFFFFF] [border: (0.50px solid #A9A9A9)]
         LayoutBlockFlow (anonymous) at (0.50,0.50) size 33x12
           LayoutText (anonymous) at (2,0) size 14x12
             text run at (2,0) width 14: "foo"

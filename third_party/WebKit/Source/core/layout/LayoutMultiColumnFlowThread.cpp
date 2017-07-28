@@ -428,17 +428,18 @@ LayoutPoint LayoutMultiColumnFlowThread::VisualPointToFlowThreadPoint(
                     : visual_point;
 }
 
-int LayoutMultiColumnFlowThread::InlineBlockBaseline(
+LayoutUnit LayoutMultiColumnFlowThread::InlineBlockBaseline(
     LineDirectionMode line_direction) const {
   LayoutUnit baseline_in_flow_thread =
-      LayoutUnit(LayoutFlowThread::InlineBlockBaseline(line_direction));
+      LayoutFlowThread::InlineBlockBaseline(line_direction);
   LayoutMultiColumnSet* column_set =
       ColumnSetAtBlockOffset(baseline_in_flow_thread, kAssociateWithLatterPage);
   if (!column_set)
-    return baseline_in_flow_thread.ToInt();
-  return (baseline_in_flow_thread -
-          column_set->PageLogicalTopForOffset(baseline_in_flow_thread))
-      .Ceil();
+    return baseline_in_flow_thread;
+  return LayoutUnit(
+      (baseline_in_flow_thread -
+       column_set->PageLogicalTopForOffset(baseline_in_flow_thread))
+          .Ceil());
 }
 
 LayoutMultiColumnSet* LayoutMultiColumnFlowThread::ColumnSetAtBlockOffset(

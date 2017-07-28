@@ -327,7 +327,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
       bool first_line,
       LineDirectionMode,
       LinePositionMode = kPositionOnContainingLine) const final;
-  int BaselinePosition(
+  LayoutUnit BaselinePosition(
       FontBaseline,
       bool first_line,
       LineDirectionMode,

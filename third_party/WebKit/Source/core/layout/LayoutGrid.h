@@ -249,13 +249,13 @@ class LayoutGrid final : public LayoutBlock {
   void UpdateAutoMarginsInColumnAxisIfNeeded(LayoutBox&);
   void UpdateAutoMarginsInRowAxisIfNeeded(LayoutBox&);
 
-  int BaselinePosition(
+  LayoutUnit BaselinePosition(
       FontBaseline,
       bool first_line,
       LineDirectionMode,
       LinePositionMode = kPositionOnContainingLine) const override;
-  int FirstLineBoxBaseline() const override;
-  int InlineBlockBaseline(LineDirectionMode) const override;
+  LayoutUnit FirstLineBoxBaseline() const override;
+  LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;
 
   bool IsHorizontalGridAxis(GridAxis) const;
   bool IsParallelToBlockAxisForChild(const LayoutBox&, GridAxis) const;
@@ -291,10 +291,10 @@ class LayoutGrid final : public LayoutBlock {
   static LayoutUnit OverrideContainingBlockContentSizeForChild(
       const LayoutBox& child,
       GridTrackSizingDirection);
-  static int SynthesizedBaselineFromContentBox(const LayoutBox&,
-                                               LineDirectionMode);
-  static int SynthesizedBaselineFromBorderBox(const LayoutBox&,
-                                              LineDirectionMode);
+  static LayoutUnit SynthesizedBaselineFromContentBox(const LayoutBox&,
+                                                      LineDirectionMode);
+  static LayoutUnit SynthesizedBaselineFromBorderBox(const LayoutBox&,
+                                                     LineDirectionMode);
   static const StyleContentAlignmentData& ContentAlignmentNormalBehavior();
 
   typedef HashMap<unsigned,

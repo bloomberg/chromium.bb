@@ -8,7 +8,7 @@ PASS getElemById('select2').setAttribute('size', '4'); clientHeight('select2') =
 PASS getElemById('select2').setAttribute('size', '5'); clientHeight('select2') > clientHeight('select1') is true
 PASS getElemById('select2').setAttribute('size', '8'); clientHeight('select2') is within 1 of 114
 PASS getElemById('select2').setAttribute('size', '12'); clientHeight('select2') is within 1 of 171
-PASS getElemById('select2').setAttribute('size', '16'); clientHeight('select2') is within 1 of 228
+FAIL getElemById('select2').setAttribute('size', '16'); clientHeight('select2') should be within 1 of 224. Was 227.
 PASS successfullyParsed is true
 
 TEST COMPLETE

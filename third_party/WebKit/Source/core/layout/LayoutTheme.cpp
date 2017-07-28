@@ -393,18 +393,19 @@ Color LayoutTheme::PlatformInactiveListBoxSelectionForegroundColor() const {
   return PlatformInactiveSelectionForegroundColor();
 }
 
-int LayoutTheme::BaselinePosition(const LayoutObject* o) const {
+LayoutUnit LayoutTheme::BaselinePosition(const LayoutObject* o) const {
   if (!o->IsBox())
-    return 0;
+    return LayoutUnit();
 
   const LayoutBox* box = ToLayoutBox(o);
 
-  if (platform_theme_)
+  if (platform_theme_) {
     return box->Size().Height() + box->MarginTop() +
-           platform_theme_->BaselinePositionAdjustment(
-               o->Style()->Appearance()) *
-               o->Style()->EffectiveZoom();
-  return (box->Size().Height() + box->MarginTop()).ToInt();
+           LayoutUnit(platform_theme_->BaselinePositionAdjustment(
+                          o->Style()->Appearance()) *
+                      o->Style()->EffectiveZoom());
+  }
+  return box->Size().Height() + box->MarginTop();
 }
 
 bool LayoutTheme::IsControlContainer(ControlPart appearance) const {

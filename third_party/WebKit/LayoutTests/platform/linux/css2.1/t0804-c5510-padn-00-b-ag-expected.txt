@@ -28,5 +28,5 @@ layer at (0,0) size 800x392
           LayoutText {#text} at (24,24) size 90x10
             text run at (24,24) width 90: "x x x x x"
         LayoutBlockFlow {P} at (0,272) size 138x57.97 [bgcolor=#FFFF00]
-          LayoutText {#text} at (23,24) size 91x10
-            text run at (23,24) width 91: "x x x x x"
+          LayoutText {#text} at (23,23) size 91x11
+            text run at (23,23) width 91: "x x x x x"

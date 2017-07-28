@@ -94,7 +94,7 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
     return first->Start() < second->Start();
   }
 
-  int BaselinePosition(FontBaseline) const final;
+  LayoutUnit BaselinePosition(FontBaseline) const final;
   LayoutUnit LineHeight() const final;
 
   bool GetEmphasisMarkPosition(const ComputedStyle&,

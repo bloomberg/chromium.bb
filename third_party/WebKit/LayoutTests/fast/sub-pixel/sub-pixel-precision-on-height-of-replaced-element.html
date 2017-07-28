@@ -13,6 +13,10 @@
 <div id='container' data-expected-height=16>
     <div id="replaced" style="padding: 3.23px">Text</div>
 </div>
+
+<!-- Div below was added to stop pixel snapping from failing this test. -->
+<div style="height: 0.57px"></div>
+
 <div id='container' data-expected-height=17>
     <div id="replaced" style="padding: 3.73px">Text</div>
 </div>

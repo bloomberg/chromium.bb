@@ -38,7 +38,7 @@ class LineLayoutBoxModel : public LineLayoutItem {
                                     line_position_mode);
   }
 
-  int BaselinePosition(
+  LayoutUnit BaselinePosition(
       FontBaseline font_baseline,
       bool first_line,
       LineDirectionMode line_direction_mode,

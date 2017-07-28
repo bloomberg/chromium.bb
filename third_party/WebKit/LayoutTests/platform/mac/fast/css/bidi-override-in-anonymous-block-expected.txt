@@ -10,7 +10,7 @@ layer at (0,0) size 785x1223 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 66x18
           text run at (0,0) width 66: "Single div"
       LayoutBlockFlow {DIV} at (1.42,68) size 766.16x20.84 [border: (1.42px solid #000000)]
-        LayoutText {#text} at (742,1) size 23x18
+        LayoutText {#text} at (742,1) size 23x19
           text run at (742,1) width 23 RTL override: "abc"
       LayoutBlockFlow {P} at (0,104.84) size 769x18
         LayoutText {#text} at (0,0) size 419x18
@@ -26,10 +26,10 @@ layer at (0,0) size 785x1223 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 426x18
           text run at (0,0) width 426: "The following 2 textes should be identical, ignorning whitespaces:"
       LayoutBlockFlow {DIV} at (1.42,227.69) size 766.16x20.84 [border: (1.42px solid #000000)]
-        LayoutText {#text} at (738,1) size 27x18
+        LayoutText {#text} at (738,1) size 27x19
           text run at (738,1) width 27 RTL override: "abc "
-        LayoutInline {SPAN} at (0,0) size 23x18
-          LayoutText {#text} at (716,1) size 23x18
+        LayoutInline {SPAN} at (0,0) size 23x19
+          LayoutText {#text} at (716,1) size 23x19
             text run at (716,1) width 23 RTL override: "abc"
       LayoutBlockFlow {P} at (0,264.53) size 769x18
         LayoutText {#text} at (0,0) size 419x18
@@ -45,10 +45,10 @@ layer at (0,0) size 785x1223 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 426x18
           text run at (0,0) width 426: "The following 2 textes should be identical, ignorning whitespaces:"
       LayoutBlockFlow {DIV} at (1.42,387.38) size 766.16x20.84 [border: (1.42px solid #000000)]
-        LayoutInline {SPAN} at (0,0) size 27x18
-          LayoutText {#text} at (738,1) size 27x18
+        LayoutInline {SPAN} at (0,0) size 27x19
+          LayoutText {#text} at (738,1) size 27x19
             text run at (738,1) width 27 RTL override: "abc "
-        LayoutText {#text} at (716,1) size 23x18
+        LayoutText {#text} at (716,1) size 23x19
           text run at (716,1) width 23 RTL override: "abc"
       LayoutBlockFlow {P} at (0,424.22) size 769x18
         LayoutText {#text} at (0,0) size 75x18

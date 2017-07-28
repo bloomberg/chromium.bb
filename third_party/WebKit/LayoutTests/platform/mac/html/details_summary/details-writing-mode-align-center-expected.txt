@@ -37,12 +37,12 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (2,2) size 120x120
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x18
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x18
-                    LayoutDetailsMarker {DIV} at (21.75,3) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (21.75,3.45) size 10.55x10.55: right
                     LayoutText {#text} at (38,0) size 61x18
                       text run at (38,0) width 61: "summary"
                 LayoutBlockFlow {DETAILS} at (0,18) size 120x18
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x18
-                    LayoutDetailsMarker {DIV} at (21.75,3) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (21.75,3.45) size 10.55x10.55: down
                     LayoutText {#text} at (38,0) size 61x18
                       text run at (38,0) width 61: "summary"
                   LayoutBlockFlow {DIV} at (0,18) size 120x0
@@ -50,12 +50,12 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (2,2) size 120x120
                 LayoutBlockFlow {DETAILS} at (0,0) size 18x120
                   LayoutBlockFlow {SUMMARY} at (0,0) size 18x120
-                    LayoutDetailsMarker {DIV} at (4.45,21.75) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (3.73,21.75) size 10.55x10.55: down
                     LayoutText {#text} at (0,38) size 18x61
                       text run at (0,38) width 60: "summary"
                 LayoutBlockFlow {DETAILS} at (18,0) size 18x120
                   LayoutBlockFlow {SUMMARY} at (0,0) size 18x120
-                    LayoutDetailsMarker {DIV} at (4.45,21.75) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (3.73,21.75) size 10.55x10.55: right
                     LayoutText {#text} at (0,38) size 18x61
                       text run at (0,38) width 60: "summary"
                   LayoutBlockFlow {DIV} at (18,0) size 0x120
@@ -63,12 +63,12 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (2,2) size 120x120
                 LayoutBlockFlow {DETAILS} at (0,0) size 18x120
                   LayoutBlockFlow {SUMMARY} at (0,0) size 18x120
-                    LayoutDetailsMarker {DIV} at (3,21.75) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (3.72,21.75) size 10.55x10.55: down
                     LayoutText {#text} at (0,38) size 18x61
                       text run at (0,38) width 60: "summary"
                 LayoutBlockFlow {DETAILS} at (18,0) size 18x120
                   LayoutBlockFlow {SUMMARY} at (0,0) size 18x120
-                    LayoutDetailsMarker {DIV} at (3,21.75) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (3.72,21.75) size 10.55x10.55: left
                     LayoutText {#text} at (0,38) size 18x61
                       text run at (0,38) width 60: "summary"
                   LayoutBlockFlow {DIV} at (18,0) size 0x120
@@ -80,12 +80,12 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (2,2) size 120x120
                 LayoutBlockFlow {DETAILS} at (0,0) size 120x18
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x18
-                    LayoutDetailsMarker {DIV} at (87.69,3) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (87.69,3.45) size 10.55x10.55: left
                     LayoutText {#text} at (21,0) size 61x18
                       text run at (21,0) width 61: "summary"
                 LayoutBlockFlow {DETAILS} at (0,18) size 120x18
                   LayoutBlockFlow {SUMMARY} at (0,0) size 120x18
-                    LayoutDetailsMarker {DIV} at (87.69,3) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (87.69,3.45) size 10.55x10.55: down
                     LayoutText {#text} at (21,0) size 61x18
                       text run at (21,0) width 61: "summary"
                   LayoutBlockFlow {DIV} at (0,18) size 120x0
@@ -93,12 +93,12 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (2,2) size 120x120
                 LayoutBlockFlow {DETAILS} at (0,0) size 18x120
                   LayoutBlockFlow {SUMMARY} at (0,0) size 18x120
-                    LayoutDetailsMarker {DIV} at (4.45,87.69) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (3.73,87.69) size 10.55x10.55: up
                     LayoutText {#text} at (0,21) size 18x61
                       text run at (0,21) width 60: "summary"
                 LayoutBlockFlow {DETAILS} at (18,0) size 18x120
                   LayoutBlockFlow {SUMMARY} at (0,0) size 18x120
-                    LayoutDetailsMarker {DIV} at (4.45,87.69) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (3.73,87.69) size 10.55x10.55: right
                     LayoutText {#text} at (0,21) size 18x61
                       text run at (0,21) width 60: "summary"
                   LayoutBlockFlow {DIV} at (18,0) size 0x120
@@ -106,12 +106,12 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (2,2) size 120x120
                 LayoutBlockFlow {DETAILS} at (0,0) size 18x120
                   LayoutBlockFlow {SUMMARY} at (0,0) size 18x120
-                    LayoutDetailsMarker {DIV} at (3,87.69) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (3.72,87.69) size 10.55x10.55: up
                     LayoutText {#text} at (0,21) size 18x61
                       text run at (0,21) width 60: "summary"
                 LayoutBlockFlow {DETAILS} at (18,0) size 18x120
                   LayoutBlockFlow {SUMMARY} at (0,0) size 18x120
-                    LayoutDetailsMarker {DIV} at (3,87.69) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (3.72,87.69) size 10.55x10.55: left
                     LayoutText {#text} at (0,21) size 18x61
                       text run at (0,21) width 60: "summary"
                   LayoutBlockFlow {DIV} at (18,0) size 0x120

@@ -89,8 +89,8 @@ layer at (0,0) size 800x617 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             LayoutTableCell {TD} at (2,2) size 77x25 [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (1,1) size 75x23 [border: (2px solid #0000FF)]
                 LayoutTextControl {INPUT} at (2,2) size 71x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-            LayoutTableCell {TD} at (81,2) size 39x65 [r=0 c=1 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (1,1) size 37x63 [border: (2px solid #0000FF)]
+            LayoutTableCell {TD} at (81,2) size 39x64.75 [r=0 c=1 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (1,1) size 37x62.75 [border: (2px solid #0000FF)]
             LayoutTableCell {TD} at (122,2) size 242x24 [r=0 c=2 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (1,1) size 240x22 [border: (2px solid #0000FF)]
                 LayoutFileUploadControl {INPUT} at (2,2) size 236x18 "No file chosen"
@@ -244,8 +244,8 @@ layer at (16,244) size 65x13
   LayoutBlockFlow {DIV} at (3,3) size 65x13
     LayoutText {#text} at (0,0) size 46x13
       text run at (0,0) width 46: "text field"
-layer at (92,242) size 32x59 clip at (93,243) size 19x56 scrollHeight 71
-  LayoutListBox {SELECT} at (2,2.25) size 32.19x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+layer at (92,241) size 32x59 clip at (93,242) size 19x57 scrollHeight 71
+  LayoutListBox {SELECT} at (2,2) size 32.19x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 19.19x14.19
       LayoutText {#text} at (2,0) size 16x13
         text run at (2,0) width 16: "list"

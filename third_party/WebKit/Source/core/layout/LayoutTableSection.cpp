@@ -782,29 +782,30 @@ bool LayoutTableSection::RowHasVisibilityCollapse(unsigned row) const {
 // row's boundaries then adjust row height accordingly.
 void LayoutTableSection::UpdateBaselineForCell(LayoutTableCell* cell,
                                                unsigned row,
-                                               int& baseline_descent) {
+                                               LayoutUnit& baseline_descent) {
   if (!cell->IsBaselineAligned())
     return;
 
   // Ignoring the intrinsic padding as it depends on knowing the row's baseline,
   // which won't be accurate until the end of this function.
-  int baseline_position =
+  LayoutUnit baseline_position =
       cell->CellBaselinePosition() - cell->IntrinsicPaddingBefore();
   if (baseline_position >
       cell->BorderBefore() +
           (cell->PaddingBefore() - cell->IntrinsicPaddingBefore())) {
     grid_[row].baseline = std::max(grid_[row].baseline, baseline_position);
 
-    int cell_start_row_baseline_descent = 0;
+    LayoutUnit cell_start_row_baseline_descent;
     if (cell->RowSpan() == 1) {
       baseline_descent =
           std::max(baseline_descent,
                    cell->LogicalHeightForRowSizing() - baseline_position);
       cell_start_row_baseline_descent = baseline_descent;
     }
-    row_pos_[row + 1] =
-        std::max<int>(row_pos_[row + 1], row_pos_[row] + grid_[row].baseline +
-                                             cell_start_row_baseline_descent);
+    row_pos_[row + 1] = std::max(
+        row_pos_[row + 1],
+        (row_pos_[row] + grid_[row].baseline + cell_start_row_baseline_descent)
+            .ToInt());
   }
 }
 
@@ -840,8 +841,8 @@ int LayoutTableSection::CalcRowLogicalHeight() {
   is_any_row_collapsed_ = false;
 
   for (unsigned r = 0; r < grid_.size(); r++) {
-    grid_[r].baseline = -1;
-    int baseline_descent = 0;
+    grid_[r].baseline = LayoutUnit(-1);
+    LayoutUnit baseline_descent;
 
     if (!is_any_row_collapsed_)
       is_any_row_collapsed_ = RowHasVisibilityCollapse(r);
@@ -1399,21 +1400,20 @@ void LayoutTableSection::MarkAllCellsWidthsDirtyAndOrNeedsLayout(
   }
 }
 
-int LayoutTableSection::FirstLineBoxBaseline() const {
+LayoutUnit LayoutTableSection::FirstLineBoxBaseline() const {
   if (!grid_.size())
-    return -1;
+    return LayoutUnit(-1);
 
-  int first_line_baseline = grid_[0].baseline;
+  LayoutUnit first_line_baseline(grid_[0].baseline);
   if (first_line_baseline >= 0)
     return first_line_baseline + row_pos_[0];
 
   for (const auto& grid_cell : grid_[0].grid_cells) {
     if (const auto* cell = grid_cell.PrimaryCell()) {
-      first_line_baseline =
-          std::max<int>(first_line_baseline,
-                        (cell->LogicalTop() + cell->BorderBefore() +
-                         cell->PaddingBefore() + cell->ContentLogicalHeight())
-                            .ToInt());
+      first_line_baseline = std::max<LayoutUnit>(
+          first_line_baseline, cell->LogicalTop() + cell->BorderBefore() +
+                                   cell->PaddingBefore() +
+                                   cell->ContentLogicalHeight());
     }
   }
 
@@ -1857,7 +1857,7 @@ void LayoutTableSection::RelayoutCellIfFlexed(LayoutTableCell& cell,
   // If the baseline moved, we may have to update the data for our row. Find
   // out the new baseline.
   if (cell.IsBaselineAligned()) {
-    int baseline = cell.CellBaselinePosition();
+    LayoutUnit baseline = cell.CellBaselinePosition();
     if (baseline > cell.BorderBefore() + cell.PaddingBefore())
       grid_[row_index].baseline = std::max(grid_[row_index].baseline, baseline);
   }

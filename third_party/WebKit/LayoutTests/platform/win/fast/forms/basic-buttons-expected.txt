@@ -74,14 +74,14 @@ layer at (0,0) size 800x354
             LayoutTableCell {TD} at (0,80) size 161x22 [r=3 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 84x19
                 text run at (1,1) width 84: "padding: 10%"
-            LayoutTableCell {TD} at (161,75) size 58x33 [r=3 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (161,75) size 58x33.19 [r=3 c=1 rs=1 cs=1]
               LayoutButton {BUTTON} at (1,1) size 25.19x31.19 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                 LayoutBlockFlow (anonymous) at (7.59,7.59) size 10x16
                   LayoutImage {IMG} at (0,3) size 10x10
             LayoutTableCell {TD} at (219,80) size 150x22 [r=3 c=2 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 104x19
                 text run at (1,1) width 104: "(31, 25) (27, 21)"
-            LayoutTableCell {TD} at (369,68) size 126x47 [r=3 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (369,68) size 126x46.78 [r=3 c=3 rs=1 cs=1]
               LayoutButton {INPUT} at (1,1) size 45.78x44.78 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                 LayoutBlockFlow (anonymous) at (14.39,14.39) size 17x16
                   LayoutText {#text} at (0,0) size 17x16

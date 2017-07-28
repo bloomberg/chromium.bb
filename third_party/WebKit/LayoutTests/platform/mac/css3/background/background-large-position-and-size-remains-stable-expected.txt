@@ -5,15 +5,15 @@ layer at (0,0) size 800x434
     LayoutBlockFlow {BODY} at (8,8) size 784x418
       LayoutBlockFlow {DIV} at (0,0) size 671x200
         LayoutBlockFlow {DIV} at (0,0) size 177.75x177.75 [border: (5px solid #000000)]
-        LayoutText {#text} at (177,164) size 5x18
-          text run at (177,164) width 5: " "
+        LayoutText {#text} at (177,163) size 5x19
+          text run at (177,163) width 5: " "
         LayoutBlockFlow {DIV} at (181.75,0) size 177.75x177.75 [border: (5px solid #000000)]
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,200) size 784x18
         LayoutBR {BR} at (0,0) size 0x18
       LayoutBlockFlow {DIV} at (0,218) size 671x200
         LayoutBlockFlow {DIV} at (0,0) size 177.75x177.75 [border: (5px solid #000000)]
-        LayoutText {#text} at (177,164) size 5x18
-          text run at (177,164) width 5: " "
+        LayoutText {#text} at (177,163) size 5x19
+          text run at (177,163) width 5: " "
         LayoutBlockFlow {DIV} at (181.75,0) size 177.75x177.75 [border: (5px solid #000000)]
         LayoutText {#text} at (0,0) size 0x0

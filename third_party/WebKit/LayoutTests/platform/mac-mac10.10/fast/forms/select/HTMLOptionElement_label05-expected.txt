@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (679,14) size 1x0
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,26) size 134x73 clip at (9,27) size 121x71
-  LayoutListBox {SELECT} at (0,18.06) size 134.41x72.94 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (0,18) size 134.41x72.94 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 121.41x14.19
       LayoutText {#text} at (2,0) size 118x13
         text run at (2,0) width 118: "This text should appear"

@@ -12,48 +12,48 @@ layer at (0,0) size 800x408
       LayoutTable {TABLE} at (0,36) size 650x100
         LayoutTableSection {TBODY} at (0,0) size 650x100
           LayoutTableRow {TR} at (0,2) size 650x47
-            LayoutTableCell {TD} at (2,2) size 156x47 [r=0 c=0 rs=1 cs=1]
-            LayoutTableCell {TD} at (160,2) size 164x47 [r=0 c=1 rs=1 cs=1]
-            LayoutTableCell {TD} at (326,2) size 156x47 [r=0 c=2 rs=1 cs=1]
-            LayoutTableCell {TD} at (484,2) size 164x47 [r=0 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (2,2) size 156x46.56 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (160,2) size 164x46.56 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (326,2) size 156x46.56 [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (484,2) size 164x46.56 [r=0 c=3 rs=1 cs=1]
           LayoutTableRow {TR} at (0,51) size 650x47
-            LayoutTableCell {TD} at (2,51) size 156x47 [r=1 c=0 rs=1 cs=1]
-            LayoutTableCell {TD} at (160,51) size 164x47 [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (2,51) size 156x46.56 [r=1 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (160,51) size 164x46.56 [r=1 c=1 rs=1 cs=1]
       LayoutBlockFlow (anonymous) at (0,136) size 784x18
         LayoutText {#text} at (0,0) size 447x18
           text run at (0,0) width 447: "All the items in the following select elements should be right-aligned."
       LayoutTable {TABLE} at (0,154) size 644x100
         LayoutTableSection {TBODY} at (0,0) size 644x100
           LayoutTableRow {TR} at (0,2) size 644x47
-            LayoutTableCell {TD} at (2,2) size 164x47 [r=0 c=0 rs=1 cs=1]
-            LayoutTableCell {TD} at (168,2) size 153x47 [r=0 c=1 rs=1 cs=1]
-            LayoutTableCell {TD} at (323,2) size 164x47 [r=0 c=2 rs=1 cs=1]
-            LayoutTableCell {TD} at (489,2) size 153x47 [r=0 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (2,2) size 164x46.56 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (168,2) size 153x46.56 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (323,2) size 164x46.56 [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (489,2) size 153x46.56 [r=0 c=3 rs=1 cs=1]
           LayoutTableRow {TR} at (0,51) size 644x47
-            LayoutTableCell {TD} at (2,51) size 164x47 [r=1 c=0 rs=1 cs=1]
-            LayoutTableCell {TD} at (168,51) size 153x47 [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (2,51) size 164x46.56 [r=1 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (168,51) size 153x46.56 [r=1 c=1 rs=1 cs=1]
       LayoutBlockFlow (anonymous) at (0,254) size 784x18
         LayoutText {#text} at (0,0) size 456x18
           text run at (0,0) width 456: "All the items in the following select elements should be center-aligned."
       LayoutTable {TABLE} at (0,272) size 680x51
         LayoutTableSection {TBODY} at (0,0) size 680x51
           LayoutTableRow {TR} at (0,2) size 680x47
-            LayoutTableCell {TD} at (2,2) size 172x47 [r=0 c=0 rs=1 cs=1]
-            LayoutTableCell {TD} at (176,2) size 163x47 [r=0 c=1 rs=1 cs=1]
-            LayoutTableCell {TD} at (341,2) size 172x47 [r=0 c=2 rs=1 cs=1]
-            LayoutTableCell {TD} at (515,2) size 163x47 [r=0 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (2,2) size 172x46.56 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (176,2) size 163x46.56 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (341,2) size 172x46.56 [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (515,2) size 163x46.56 [r=0 c=3 rs=1 cs=1]
       LayoutBlockFlow (anonymous) at (0,323) size 784x18
         LayoutText {#text} at (0,0) size 296x18
           text run at (0,0) width 296: "The following tables check mixed alignments."
       LayoutTable {TABLE} at (0,341) size 728x51
         LayoutTableSection {TBODY} at (0,0) size 728x51
           LayoutTableRow {TR} at (0,2) size 728x47
-            LayoutTableCell {TD} at (2,2) size 170x47 [r=0 c=0 rs=1 cs=1]
-            LayoutTableCell {TD} at (174,2) size 170x47 [r=0 c=1 rs=1 cs=1]
-            LayoutTableCell {TD} at (346,2) size 189x47 [r=0 c=2 rs=1 cs=1]
-            LayoutTableCell {TD} at (537,2) size 189x47 [r=0 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (2,2) size 170x46.56 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (174,2) size 170x46.56 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (346,2) size 189x46.56 [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (537,2) size 189x46.56 [r=0 c=3 rs=1 cs=1]
 layer at (11,47) size 154x45 clip at (12,48) size 141x43
-  LayoutListBox {SELECT} at (1,1.44) size 153.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 153.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 140.88x14.19
       LayoutText {#text} at (2,0) size 118x13
         text run at (2,0) width 118: "This is an English text"
@@ -64,7 +64,7 @@ layer at (11,47) size 154x45 clip at (12,48) size 141x43
       LayoutText {#text} at (2,0) size 85x13
         text run at (2,0) width 85: "Some more text"
 layer at (169,47) size 161x45 clip at (170,48) size 148x43
-  LayoutListBox {SELECT} at (1,1.44) size 161.36x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 161.36x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 148.36x14.19
       LayoutText {#text} at (2,0) size 84x13
         text run at (2,0) width 84 RTL: "\x{5D6}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D1}\x{5E2}\x{5D1}\x{5E8}\x{5D9}\x{5EA}"
@@ -75,7 +75,7 @@ layer at (169,47) size 161x45 clip at (170,48) size 148x43
       LayoutText {#text} at (2,0) size 78x13
         text run at (2,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
 layer at (335,47) size 154x45 clip at (347,48) size 141x43
-  LayoutListBox {SELECT} at (1,1.44) size 153.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 153.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (12,1) size 140.88x14.19
       LayoutText {#text} at (2,0) size 118x13
         text run at (2,0) width 118: "This is an English text"
@@ -86,7 +86,7 @@ layer at (335,47) size 154x45 clip at (347,48) size 141x43
       LayoutText {#text} at (2,0) size 85x13
         text run at (2,0) width 85: "Some more text"
 layer at (493,47) size 161x45 clip at (505,48) size 148x43
-  LayoutListBox {SELECT} at (1,1.44) size 161.36x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 161.36x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (12,1) size 148.36x14.19
       LayoutText {#text} at (2,0) size 84x13
         text run at (2,0) width 84 RTL: "\x{5D6}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D1}\x{5E2}\x{5D1}\x{5E8}\x{5D9}\x{5EA}"
@@ -97,7 +97,7 @@ layer at (493,47) size 161x45 clip at (505,48) size 148x43
       LayoutText {#text} at (2,0) size 78x13
         text run at (2,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
 layer at (11,96) size 154x45 clip at (12,97) size 141x43
-  LayoutListBox {SELECT} at (1,1.44) size 153.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 153.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 140.88x14.19
       LayoutText {#text} at (2,0) size 118x13
         text run at (2,0) width 118: "This is an English text"
@@ -108,7 +108,7 @@ layer at (11,96) size 154x45 clip at (12,97) size 141x43
       LayoutText {#text} at (2,0) size 85x13
         text run at (2,0) width 85: "Some more text"
 layer at (169,96) size 161x45 clip at (170,97) size 148x43
-  LayoutListBox {SELECT} at (1,1.44) size 161.36x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 161.36x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 148.36x14.19
       LayoutText {#text} at (2,0) size 84x13
         text run at (2,0) width 84 RTL: "\x{5D6}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D1}\x{5E2}\x{5D1}\x{5E8}\x{5D9}\x{5EA}"
@@ -119,7 +119,7 @@ layer at (169,96) size 161x45 clip at (170,97) size 148x43
       LayoutText {#text} at (2,0) size 78x13
         text run at (2,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
 layer at (11,165) size 162x45 clip at (23,166) size 149x43
-  LayoutListBox {SELECT} at (1,1.44) size 161.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 161.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (12,1) size 148.88x14.19
       LayoutText {#text} at (29,0) size 118x13
         text run at (29,0) width 118: "This is an English text"
@@ -130,7 +130,7 @@ layer at (11,165) size 162x45 clip at (23,166) size 149x43
       LayoutText {#text} at (62,0) size 85x13
         text run at (62,0) width 85: "Some more text"
 layer at (177,165) size 151x45 clip at (189,166) size 138x43
-  LayoutListBox {SELECT} at (1,1.44) size 150.94x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 150.94x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (12,1) size 137.94x14.19
       LayoutText {#text} at (52,0) size 84x13
         text run at (52,0) width 84 RTL: "\x{5D6}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D1}\x{5E2}\x{5D1}\x{5E8}\x{5D9}\x{5EA}"
@@ -141,7 +141,7 @@ layer at (177,165) size 151x45 clip at (189,166) size 138x43
       LayoutText {#text} at (58,0) size 78x13
         text run at (58,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
 layer at (332,165) size 162x45 clip at (344,166) size 149x43
-  LayoutListBox {SELECT} at (1,1.44) size 161.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 161.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (12,1) size 148.88x14.19
       LayoutText {#text} at (29,0) size 118x13
         text run at (29,0) width 118: "This is an English text"
@@ -152,7 +152,7 @@ layer at (332,165) size 162x45 clip at (344,166) size 149x43
       LayoutText {#text} at (62,0) size 85x13
         text run at (62,0) width 85: "Some more text"
 layer at (498,165) size 151x45 clip at (510,166) size 138x43
-  LayoutListBox {SELECT} at (1,1.44) size 150.94x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 150.94x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (12,1) size 137.94x14.19
       LayoutText {#text} at (52,0) size 84x13
         text run at (52,0) width 84 RTL: "\x{5D6}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D1}\x{5E2}\x{5D1}\x{5E8}\x{5D9}\x{5EA}"
@@ -163,7 +163,7 @@ layer at (498,165) size 151x45 clip at (510,166) size 138x43
       LayoutText {#text} at (58,0) size 78x13
         text run at (58,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
 layer at (11,214) size 162x45 clip at (12,215) size 149x43
-  LayoutListBox {SELECT} at (1,1.44) size 161.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 161.88x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 148.88x14.19
       LayoutText {#text} at (29,0) size 118x13
         text run at (29,0) width 118: "This is an English text"
@@ -174,7 +174,7 @@ layer at (11,214) size 162x45 clip at (12,215) size 149x43
       LayoutText {#text} at (62,0) size 85x13
         text run at (62,0) width 85: "Some more text"
 layer at (177,214) size 151x45 clip at (178,215) size 138x43
-  LayoutListBox {SELECT} at (1,1.44) size 150.94x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 150.94x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 137.94x14.19
       LayoutText {#text} at (52,0) size 84x13
         text run at (52,0) width 84 RTL: "\x{5D6}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D1}\x{5E2}\x{5D1}\x{5E8}\x{5D9}\x{5EA}"
@@ -185,7 +185,7 @@ layer at (177,214) size 151x45 clip at (178,215) size 138x43
       LayoutText {#text} at (58,0) size 78x13
         text run at (58,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
 layer at (11,283) size 170x45 clip at (23,284) size 157x43
-  LayoutListBox {SELECT} at (1,1.44) size 169.73x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 169.73x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (12,1) size 156.73x14.19
       LayoutText {#text} at (19,0) size 119x13
         text run at (19,0) width 119: "This is an English text"
@@ -196,7 +196,7 @@ layer at (11,283) size 170x45 clip at (23,284) size 157x43
       LayoutText {#text} at (35,0) size 86x13
         text run at (35,0) width 86: "Some more text"
 layer at (185,283) size 161x45 clip at (197,284) size 148x43
-  LayoutListBox {SELECT} at (1,1.44) size 160.55x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 160.55x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (12,1) size 147.55x14.19
       LayoutText {#text} at (32,0) size 84x13
         text run at (32,0) width 84 RTL: "\x{5D6}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D1}\x{5E2}\x{5D1}\x{5E8}\x{5D9}\x{5EA}"
@@ -207,7 +207,7 @@ layer at (185,283) size 161x45 clip at (197,284) size 148x43
       LayoutText {#text} at (35,0) size 78x13
         text run at (35,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
 layer at (350,283) size 170x45 clip at (351,284) size 157x43
-  LayoutListBox {SELECT} at (1,1.44) size 169.73x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 169.73x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 156.73x14.19
       LayoutText {#text} at (19,0) size 119x13
         text run at (19,0) width 119: "This is an English text"
@@ -218,7 +218,7 @@ layer at (350,283) size 170x45 clip at (351,284) size 157x43
       LayoutText {#text} at (35,0) size 86x13
         text run at (35,0) width 86: "Some more text"
 layer at (524,283) size 161x45 clip at (525,284) size 148x43
-  LayoutListBox {SELECT} at (1,1.44) size 160.55x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 160.55x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 147.55x14.19
       LayoutText {#text} at (32,0) size 84x13
         text run at (32,0) width 84 RTL: "\x{5D6}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D1}\x{5E2}\x{5D1}\x{5E8}\x{5D9}\x{5EA}"
@@ -229,7 +229,7 @@ layer at (524,283) size 161x45 clip at (525,284) size 148x43
       LayoutText {#text} at (35,0) size 78x13
         text run at (35,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
 layer at (11,352) size 167x45 clip at (23,353) size 154x43
-  LayoutListBox {SELECT} at (1,1.44) size 167.33x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 167.33x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (12,1) size 154.33x14.19
       LayoutText {#text} at (2,0) size 151x13
         text run at (2,0) width 151: "This should be right aligned"
@@ -240,7 +240,7 @@ layer at (11,352) size 167x45 clip at (23,353) size 154x43
       LayoutText {#text} at (38,0) size 79x13
         text run at (38,0) width 79: "Center aligned"
 layer at (183,352) size 167x45 clip at (184,353) size 154x43
-  LayoutListBox {SELECT} at (1,1.44) size 167.33x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 167.33x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 154.33x14.19
       LayoutText {#text} at (2,0) size 143x13
         text run at (2,0) width 143: "This should be left aligned"
@@ -251,7 +251,7 @@ layer at (183,352) size 167x45 clip at (184,353) size 154x43
       LayoutText {#text} at (38,0) size 79x13
         text run at (38,0) width 79: "Center aligned"
 layer at (355,352) size 187x45 clip at (367,353) size 174x43
-  LayoutListBox {SELECT} at (1,1.44) size 186.78x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 186.78x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (12,1) size 173.78x14.19
       LayoutText {#text} at (12,0) size 160x13
         text run at (12,0) width 160 RTL: "\x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D6}\x{5D4} \x{5E6}\x{5E8}\x{5D9}\x{5DA} \x{5DC}\x{5D4}\x{5D9}\x{5D5}\x{5EA} \x{5DE}\x{5D9}\x{5D5}\x{5E9}\x{5E8} \x{5DC}\x{5D9}\x{5DE}\x{5D9}\x{5DF}"
@@ -262,7 +262,7 @@ layer at (355,352) size 187x45 clip at (367,353) size 174x43
       LayoutText {#text} at (53,0) size 68x13
         text run at (53,0) width 68 RTL: "\x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5DE}\x{5DE}\x{5D5}\x{5E8}\x{5DB}\x{5D6}"
 layer at (546,352) size 187x45 clip at (547,353) size 174x43
-  LayoutListBox {SELECT} at (1,1.44) size 186.78x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (1,1) size 186.78x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 173.78x14.19
       LayoutText {#text} at (2,0) size 170x13
         text run at (2,0) width 170 RTL: "\x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D6}\x{5D4} \x{5E6}\x{5E8}\x{5D9}\x{5DA} \x{5DC}\x{5D4}\x{5D9}\x{5D5}\x{5EA} \x{5DE}\x{5D9}\x{5D5}\x{5E9}\x{5E8} \x{5DC}\x{5E9}\x{5DE}\x{5D0}\x{5DC}"

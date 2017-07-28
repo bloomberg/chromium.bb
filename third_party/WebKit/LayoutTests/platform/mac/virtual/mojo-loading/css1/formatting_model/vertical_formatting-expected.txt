@@ -81,9 +81,9 @@ layer at (0,0) size 785x2487 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,0) width 738: "There should be two centimeters between this paragraph and the one below, because negative margins collapse to a"
           text run at (0,18) width 467: "negative margin with the largest absolute value of the margins collapsed."
       LayoutBlockFlow {P} at (0,1042.88) size 769x73.78
-        LayoutText {#text} at (0,38) size 754x36
-          text run at (0,38) width 754: "This is a paragraph, which I should make very long so that you can easily see how much space there is between it and"
-          text run at (0,56) width 208: "the one below it and to the right."
+        LayoutText {#text} at (0,37) size 754x37
+          text run at (0,37) width 754: "This is a paragraph, which I should make very long so that you can easily see how much space there is between it and"
+          text run at (0,55) width 208: "the one below it and to the right."
       LayoutBlockFlow (floating) {P} at (0,1192.22) size 384.50x54
         LayoutText {#text} at (0,0) size 362x54
           text run at (0,0) width 362: "There should be two centimeters between this paragraph"
@@ -100,8 +100,8 @@ layer at (0,0) size 785x2487 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (561,0) width 199: "Padding does not collapse, and"
           text run at (0,18) width 239: "there is 1cm of padding on each side."
       LayoutBlockFlow {P} at (0,1336) size 769x55.78
-        LayoutText {#text} at (0,38) size 171x18
-          text run at (0,38) width 171: "This is the next paragraph."
+        LayoutText {#text} at (0,37) size 171x19
+          text run at (0,37) width 171: "This is the next paragraph."
       LayoutTable {TABLE} at (0,1407.78) size 769x1063 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x1061
           LayoutTableRow {TR} at (0,0) size 767x26
@@ -148,9 +148,9 @@ layer at (0,0) size 785x2487 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,0) width 738: "There should be two centimeters between this paragraph and the one below, because negative margins collapse to a"
                   text run at (0,18) width 467: "negative margin with the largest absolute value of the margins collapsed."
               LayoutBlockFlow {P} at (4,681.88) size 747x73.78
-                LayoutText {#text} at (0,38) size 727x36
-                  text run at (0,38) width 727: "This is a paragraph, which I should make very long so that you can easily see how much space there is between it"
-                  text run at (0,56) width 236: "and the one below it and to the right."
+                LayoutText {#text} at (0,37) size 727x37
+                  text run at (0,37) width 727: "This is a paragraph, which I should make very long so that you can easily see how much space there is between it"
+                  text run at (0,55) width 236: "and the one below it and to the right."
               LayoutBlockFlow (floating) {P} at (4,831.22) size 373.50x54
                 LayoutText {#text} at (0,0) size 362x54
                   text run at (0,0) width 362: "There should be two centimeters between this paragraph"
@@ -167,7 +167,7 @@ layer at (0,0) size 785x2487 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (561,0) width 172: "Padding does not collapse,"
                   text run at (0,18) width 266: "and there is 1cm of padding on each side."
               LayoutBlockFlow {P} at (4,975) size 747x55.78
-                LayoutText {#text} at (0,38) size 171x18
-                  text run at (0,38) width 171: "This is the next paragraph."
+                LayoutText {#text} at (0,37) size 171x19
+                  text run at (0,37) width 171: "This is the next paragraph."
 layer at (8,355) size 769x2 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,347) size 769x2 [border: (1px inset #EEEEEE)]

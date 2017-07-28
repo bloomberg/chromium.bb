@@ -39,7 +39,7 @@ layer at (0,0) size 785x2222 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (80,98) width 31: "test. "
           text run at (110,98) width 472: "Both the content background and the padding should be aqua (light blue)."
       LayoutBlockFlow {P} at (0,651) size 769x456.50 [bgcolor=#00FFFF]
-        LayoutText {#text} at (192,192) size 370x72
+        LayoutText {#text} at (192,192) size 370x73
           text run at (192,192) width 342: "This element should have an overall padding of 25%,"
           text run at (192,210) width 370: "which is calculated with respect to the width of the parent"
           text run at (192,228) width 59: "element. "
@@ -81,12 +81,12 @@ layer at (0,0) size 785x2222 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (80,98) width 47: "to test. "
                   text run at (126,98) width 472: "Both the content background and the padding should be aqua (light blue)."
               LayoutBlockFlow {P} at (4,500) size 747x445.50 [bgcolor=#00FFFF]
-                LayoutText {#text} at (186,187) size 371x72
-                  text run at (186,187) width 343: "This element should have an overall padding of 25%,"
-                  text run at (186,205) width 371: "which is calculated with respect to the width of the parent"
-                  text run at (186,223) width 60: "element. "
-                  text run at (245,223) width 292: "Both the content background and the padding"
-                  text run at (186,241) width 177: "should be aqua (light blue)."
+                LayoutText {#text} at (186,186) size 371x73
+                  text run at (186,186) width 343: "This element should have an overall padding of 25%,"
+                  text run at (186,204) width 371: "which is calculated with respect to the width of the parent"
+                  text run at (186,222) width 60: "element. "
+                  text run at (245,222) width 292: "Both the content background and the padding"
+                  text run at (186,240) width 177: "should be aqua (light blue)."
               LayoutBlockFlow {P} at (4,961.50) size 747x36 [bgcolor=#00FFFF]
                 LayoutText {#text} at (0,0) size 735x36
                   text run at (0,0) width 550: "This element should have no padding, since negative padding values are not allowed. "

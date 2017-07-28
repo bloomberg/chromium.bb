@@ -55,10 +55,10 @@ class LayoutButton final : public LayoutFlexibleBox {
   bool HasControlClip() const override;
   LayoutRect ControlClipRect(const LayoutPoint&) const override;
 
-  int BaselinePosition(FontBaseline,
-                       bool first_line,
-                       LineDirectionMode,
-                       LinePositionMode) const override;
+  LayoutUnit BaselinePosition(FontBaseline,
+                              bool first_line,
+                              LineDirectionMode,
+                              LinePositionMode) const override;
 
  private:
   void UpdateAnonymousChildStyle(const LayoutObject& child,

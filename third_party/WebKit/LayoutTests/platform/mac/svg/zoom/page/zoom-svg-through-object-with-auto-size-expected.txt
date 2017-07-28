@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x174
-  LayoutBlockFlow {HTML} at (0,0) size 800x174.09
-    LayoutBlockFlow {BODY} at (5.55,5.55) size 788.91x163
-      LayoutText {#text} at (159,150) size 4x13
-        text run at (159,150) width 4: " "
+  LayoutBlockFlow {HTML} at (0,0) size 800x173.77
+    LayoutBlockFlow {BODY} at (5.55,5.55) size 788.91x162.67
+      LayoutText {#text} at (159,149) size 4x14
+        text run at (159,149) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
 layer at (6,6) size 160x160
   LayoutEmbeddedObject {OBJECT} at (0,0) size 159.67x159.67 [border: (1.38px dashed #800000)]

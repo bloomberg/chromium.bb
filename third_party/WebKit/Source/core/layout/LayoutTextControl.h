@@ -77,7 +77,7 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
   LayoutObject* LayoutSpecialExcludedChild(bool relayout_children,
                                            SubtreeLayoutScope&) override;
 
-  int FirstLineBoxBaseline() const override;
+  LayoutUnit FirstLineBoxBaseline() const override;
   // We need to override this function because we don't want overflow:hidden on
   // an <input> to affect the baseline calculation. This is necessary because we
   // are an inline-block element as an implementation detail which would
@@ -115,17 +115,17 @@ class LayoutTextControlInnerContainer final : public LayoutFlexibleBox {
       : LayoutFlexibleBox(element) {}
   ~LayoutTextControlInnerContainer() override {}
 
-  int BaselinePosition(FontBaseline baseline,
-                       bool first_line,
-                       LineDirectionMode direction,
-                       LinePositionMode position) const override {
+  LayoutUnit BaselinePosition(FontBaseline baseline,
+                              bool first_line,
+                              LineDirectionMode direction,
+                              LinePositionMode position) const override {
     return LayoutBlock::BaselinePosition(baseline, first_line, direction,
                                          position);
   }
-  int FirstLineBoxBaseline() const override {
+  LayoutUnit FirstLineBoxBaseline() const override {
     return LayoutBlock::FirstLineBoxBaseline();
   }
-  int InlineBlockBaseline(LineDirectionMode direction) const override {
+  LayoutUnit InlineBlockBaseline(LineDirectionMode direction) const override {
     return LayoutBlock::InlineBlockBaseline(direction);
   }
   bool ShouldIgnoreOverflowPropertyForInlineBlockBaseline() const override {

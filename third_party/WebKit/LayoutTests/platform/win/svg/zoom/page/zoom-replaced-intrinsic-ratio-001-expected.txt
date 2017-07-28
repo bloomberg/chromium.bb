@@ -9,7 +9,7 @@ layer at (0,0) size 800x474
           text run at (0,7) width 133: "be of the same width. There must be"
           text run at (0,16) width 26: "no red."
       LayoutBlockFlow {P} at (9.83,46.08) size 120.38x27.75 [bgcolor=#008000] [border: (9.25px solid #0000FF)]
-        LayoutText {#text} at (9,7) size 3x12
+        LayoutText {#text} at (9,7) size 3x13
           text run at (9,7) width 3: " "
       LayoutBlockFlow {P} at (0.58,129.38) size 138.88x9.25
         LayoutText {#text} at (0,-2) size 12x12
@@ -18,11 +18,11 @@ layer at (0,0) size 800x474
       LayoutTable (anonymous) at (0.58,258.97) size 138x45
         LayoutTableSection (anonymous) at (0,0) size 138x45
           LayoutTableRow (anonymous) at (0,0) size 138x45
-            LayoutTableCell {P} at (0,0) size 138x45 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {P} at (0,0) size 138x44.75 [r=0 c=0 rs=1 cs=1]
       LayoutTable {TABLE} at (0.58,359.52) size 138x45
         LayoutTableSection {TBODY} at (0,0) size 138x45
           LayoutTableRow {TR} at (0,0) size 138x45
-            LayoutTableCell {TD} at (0,0) size 138x45 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (0,0) size 138x44.75 [r=0 c=0 rs=1 cs=1]
       LayoutBlockFlow (floating) {P} at (0.58,460.06) size 138.88x9.25
 layer at (14,134) size 121x44
   LayoutEmbeddedObject {OBJECT} at (9.25,-0.25) size 120.38x43.97 [bgcolor=#FF0000] [border: (9.25px solid #0000FF)]

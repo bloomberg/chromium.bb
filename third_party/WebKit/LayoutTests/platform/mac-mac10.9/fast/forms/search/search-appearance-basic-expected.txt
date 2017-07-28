@@ -70,7 +70,7 @@ layer at (0,0) size 800x365
         LayoutText {#text} at (482,60) size 4x18
           text run at (482,60) width 4: " "
         LayoutBR {BR} at (486,60) size 0x18
-        LayoutTextControl {INPUT} at (6,99) size 174x28 [bgcolor=#FFFFFF] [border: (3px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (6,98.50) size 174x28 [bgcolor=#FFFFFF] [border: (3px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (4.50,4.50) size 165x19
             LayoutBlockFlow {DIV} at (0,0) size 147.50x19
         LayoutText {#text} at (186,105) size 4x18
@@ -81,7 +81,7 @@ layer at (0,0) size 800x365
         LayoutText {#text} at (451,105) size 4x18
           text run at (451,105) width 4: " "
         LayoutBR {BR} at (455,105) size 0x18
-        LayoutTextControl {INPUT} at (6,153) size 174x28 [bgcolor=#FFFFFF] [border: (3px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (6,152.50) size 174x28 [bgcolor=#FFFFFF] [border: (3px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (4.50,4.50) size 165x19
             LayoutBlockFlow {DIV} at (0,0) size 147.50x19
         LayoutText {#text} at (186,159) size 4x18
@@ -144,7 +144,7 @@ layer at (341,197) size 125x16
   LayoutBlockFlow {DIV} at (0,0) size 125x16
     LayoutText {#text} at (0,0) size 21x16
       text run at (0,0) width 21: "foo"
-layer at (19,240) size 148x19 backgroundClip at (19,240) size 147x19 clip at (19,240) size 147x19
+layer at (19,239) size 148x19 backgroundClip at (19,239) size 147x19 clip at (19,239) size 147x19
   LayoutBlockFlow {DIV} at (0,0) size 147.50x19
     LayoutText {#text} at (0,0) size 27x19
       text run at (0,0) width 27: "foo"
@@ -152,7 +152,7 @@ layer at (212,234) size 209x26
   LayoutBlockFlow {DIV} at (0,0) size 209x26
     LayoutText {#text} at (0,0) size 36x26
       text run at (0,0) width 36: "foo"
-layer at (19,294) size 148x19 backgroundClip at (19,294) size 147x19 clip at (19,294) size 147x19
+layer at (19,293) size 148x19 backgroundClip at (19,293) size 147x19 clip at (19,293) size 147x19
   LayoutBlockFlow {DIV} at (0,0) size 147.50x19
     LayoutText {#text} at (0,0) size 27x19
       text run at (0,0) width 27: "foo"

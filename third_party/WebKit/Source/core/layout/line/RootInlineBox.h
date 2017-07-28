@@ -132,7 +132,7 @@ class RootInlineBox : public InlineFlowBox {
 
   void ClearTruncation() final;
 
-  int BaselinePosition(FontBaseline baseline_type) const final;
+  LayoutUnit BaselinePosition(FontBaseline baseline_type) const final;
   LayoutUnit LineHeight() const final;
 
   void Paint(const PaintInfo&,
@@ -185,8 +185,8 @@ class RootInlineBox : public InlineFlowBox {
 
   void AscentAndDescentForBox(InlineBox*,
                               GlyphOverflowAndFallbackFontsMap&,
-                              int& ascent,
-                              int& descent,
+                              LayoutUnit& ascent,
+                              LayoutUnit& descent,
                               bool& affects_ascent,
                               bool& affects_descent) const;
   LayoutUnit VerticalPositionForBox(InlineBox*, VerticalPositionCache&);

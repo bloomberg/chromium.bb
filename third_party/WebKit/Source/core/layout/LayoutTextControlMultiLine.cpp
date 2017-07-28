@@ -79,7 +79,7 @@ LayoutUnit LayoutTextControlMultiLine::ComputeControlLogicalHeight(
          non_content_height;
 }
 
-int LayoutTextControlMultiLine::BaselinePosition(
+LayoutUnit LayoutTextControlMultiLine::BaselinePosition(
     FontBaseline baseline_type,
     bool first_line,
     LineDirectionMode direction,

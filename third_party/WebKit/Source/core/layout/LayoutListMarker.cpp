@@ -354,7 +354,7 @@ LayoutUnit LayoutListMarker::LineHeight(
   return LayoutBox::LineHeight(first_line, direction, line_position_mode);
 }
 
-int LayoutListMarker::BaselinePosition(
+LayoutUnit LayoutListMarker::BaselinePosition(
     FontBaseline baseline_type,
     bool first_line,
     LineDirectionMode direction,

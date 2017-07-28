@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x248
-  LayoutBlockFlow {HTML} at (0,0) size 800x248.16
-    LayoutBlockFlow {BODY} at (16.58,16.58) size 766.84x215
+layer at (0,0) size 800x249
+  LayoutBlockFlow {HTML} at (0,0) size 800x248.52
+    LayoutBlockFlow {BODY} at (16.58,16.58) size 766.84x215.36
       LayoutSVGRoot {svg} at (0,0) size 207.36x207.36
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceClipper {clipPath} [id="clip1"] [clipPathUnits=userSpaceOnUse]

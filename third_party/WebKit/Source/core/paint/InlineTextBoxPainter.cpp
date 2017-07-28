@@ -266,14 +266,15 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   LayoutUnit logical_extent = logical_visual_overflow.Width();
 
   // We round the y-axis to ensure consistent line heights.
-  LayoutPoint adjusted_paint_offset =
-      LayoutPoint(paint_offset.X(), LayoutUnit(paint_offset.Y().Round()));
+  LayoutPoint adjusted_paint_offset(paint_offset);
 
   if (inline_text_box_.IsHorizontal()) {
+    adjusted_paint_offset.SetY(LayoutUnit(adjusted_paint_offset.Y().Round()));
     if (!paint_info.GetCullRect().IntersectsHorizontalRange(
             logical_start, logical_start + logical_extent))
       return;
   } else {
+    adjusted_paint_offset.SetX(LayoutUnit(adjusted_paint_offset.X().Round()));
     if (!paint_info.GetCullRect().IntersectsVerticalRange(
             logical_start, logical_start + logical_extent))
       return;
@@ -318,8 +319,14 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
       inline_text_box_.GetLineLayoutItem().StyleRef(
           inline_text_box_.IsFirstLineStyle());
 
-  LayoutPoint box_origin(inline_text_box_.PhysicalLocation());
-  box_origin.Move(adjusted_paint_offset.X(), adjusted_paint_offset.Y());
+  LayoutPoint box_origin(inline_text_box_.PhysicalLocation() + paint_offset);
+
+  if (inline_text_box_.IsHorizontal()) {
+    box_origin.SetY(LayoutUnit(box_origin.Y().Round()));
+  } else {
+    box_origin.SetX(LayoutUnit(box_origin.X().Round()));
+  }
+
   LayoutRect box_rect(box_origin, LayoutSize(inline_text_box_.LogicalWidth(),
                                              inline_text_box_.LogicalHeight()));
 

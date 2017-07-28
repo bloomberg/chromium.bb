@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
         LayoutTextControl {INPUT} at (0,0) size 156x45 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (3,14.50) size 150x16
             LayoutBlockFlow {DIV} at (0,0) size 137x16
-        LayoutText {#text} at (156,12) size 4x19
+        LayoutText {#text} at (156,12) size 4x20
           text run at (156,12) width 4: " "
         LayoutTextControl {INPUT} at (160,0) size 154x45 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0

@@ -22,9 +22,9 @@ layer at (0,0) size 800x199
                       LayoutText {#text} at (95,5) size 54x14
                         text run at (95,5) width 54: "PNG Image"
                   LayoutTableRow {tr} at (0,93) size 491x82
-                    LayoutTableCell {td} at (1,93) size 244x82 [r=2 c=0 rs=1 cs=1]
+                    LayoutTableCell {td} at (1,93) size 244x82.44 [r=2 c=0 rs=1 cs=1]
                       LayoutText {#text} at (0,0) size 0x0
-                    LayoutTableCell {td} at (246,93) size 244x82 [r=2 c=1 rs=1 cs=1]
+                    LayoutTableCell {td} at (246,93) size 244x82.44 [r=2 c=1 rs=1 cs=1]
                       LayoutImage {img} at (5,5) size 138.88x69.44
                       LayoutText {#text} at (0,0) size 0x0
 layer at (257,110) size 139x69

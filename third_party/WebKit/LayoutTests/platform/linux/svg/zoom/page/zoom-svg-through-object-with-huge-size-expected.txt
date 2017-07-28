@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x353
-  LayoutBlockFlow {html} at (0,0) size 800x353.44
-    LayoutBlockFlow {body} at (5.55,11.11) size 788.91x331.22
+  LayoutBlockFlow {html} at (0,0) size 800x353.20
+    LayoutBlockFlow {body} at (5.55,11.11) size 788.91x330.98
       LayoutBlockFlow {p} at (0,0) size 788.91x14
         LayoutText {#text} at (0,0) size 89x14
           text run at (0,0) width 89: "Text above the rect"
-      LayoutBlockFlow (anonymous) at (0,25.11) size 788.91x281
+      LayoutBlockFlow (anonymous) at (0,25.11) size 788.91x280.77
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {p} at (0,317.22) size 788.91x14
+      LayoutBlockFlow {p} at (0,316.98) size 788.91x14
         LayoutText {#text} at (0,0) size 89x14
           text run at (0,0) width 89: "Text below the rect"
 layer at (6,36) size 278x278

@@ -74,7 +74,7 @@ layer at (0,0) size 800x295
             LayoutTableCell {TD} at (0,65) size 170x20 [r=3 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 90x18
                 text run at (1,1) width 90: "padding: 10%"
-            LayoutTableCell {TD} at (170,62) size 61x27 [r=3 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (170,62) size 61x26.78 [r=3 c=1 rs=1 cs=1]
               LayoutButton {BUTTON} at (1,1) size 25.78x24.78 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
                 LayoutBlockFlow (anonymous) at (7.89,5.89) size 10x13
                   LayoutImage {IMG} at (0,1) size 10x10

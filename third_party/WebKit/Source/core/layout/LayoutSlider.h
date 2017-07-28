@@ -45,7 +45,7 @@ class LayoutSlider final : public LayoutFlexibleBox {
     return type == kLayoutObjectSlider || LayoutFlexibleBox::IsOfType(type);
   }
 
-  int BaselinePosition(
+  LayoutUnit BaselinePosition(
       FontBaseline,
       bool first_line,
       LineDirectionMode,

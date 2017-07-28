@@ -110,13 +110,13 @@ void LayoutNGBlockFlow::ResetNGInlineNodeData() {
   ng_inline_node_data_ = WTF::MakeUnique<NGInlineNodeData>();
 }
 
-int LayoutNGBlockFlow::FirstLineBoxBaseline() const {
+LayoutUnit LayoutNGBlockFlow::FirstLineBoxBaseline() const {
   // TODO(kojii): Implement. This will stop working once we stop creating line
   // boxes.
   return LayoutBlockFlow::FirstLineBoxBaseline();
 }
 
-int LayoutNGBlockFlow::InlineBlockBaseline(
+LayoutUnit LayoutNGBlockFlow::InlineBlockBaseline(
     LineDirectionMode line_direction) const {
   // TODO(kojii): Implement. This will stop working once we stop creating line
   // boxes.

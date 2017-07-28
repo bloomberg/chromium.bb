@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
             text run at (0,0) width 26: "Test Button"
       LayoutText {#text} at (41,2) size 5x18
         text run at (41,2) width 5: " "
-      LayoutButton {BUTTON} at (45.89,7) size 47.06x15 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+      LayoutButton {BUTTON} at (45.89,6.50) size 47.06x15 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
         LayoutBlockFlow (anonymous) at (8,3.50) size 31.06x7
           LayoutText {#text} at (0,0) size 32x7
             text run at (0,0) width 32: "Test Button"

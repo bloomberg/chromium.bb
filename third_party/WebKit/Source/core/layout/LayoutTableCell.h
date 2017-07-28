@@ -191,7 +191,7 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
 
   void Paint(const PaintInfo&, const LayoutPoint&) const override;
 
-  int CellBaselinePosition() const;
+  LayoutUnit CellBaselinePosition() const;
   bool IsBaselineAligned() const {
     EVerticalAlign va = Style()->VerticalAlign();
     return va == EVerticalAlign::kBaseline ||

@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
           LayoutBR {BR} at (75,15) size 0x0
           LayoutText {#text} at (0,20) size 75x19
             text run at (0,20) width 75: "Hello world."
-      LayoutText {#text} at (116,45) size 4x19
+      LayoutText {#text} at (116,45) size 4x20
         text run at (116,45) width 4: " "
       LayoutFieldset {FIELDSET} at (122,20) size 112.89x57.59 [border: (2px groove #C0C0C0)]
         LayoutBlockFlow {LEGEND} at (14,0) size 84.89x20

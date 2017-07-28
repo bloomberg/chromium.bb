@@ -1305,12 +1305,13 @@ LayoutTableCell* LayoutTable::CellFollowing(const LayoutTableCell& cell) const {
   return cell.Section()->PrimaryCellAt(cell.RowIndex(), eff_col);
 }
 
-int LayoutTable::BaselinePosition(FontBaseline baseline_type,
-                                  bool first_line,
-                                  LineDirectionMode direction,
-                                  LinePositionMode line_position_mode) const {
+LayoutUnit LayoutTable::BaselinePosition(
+    FontBaseline baseline_type,
+    bool first_line,
+    LineDirectionMode direction,
+    LinePositionMode line_position_mode) const {
   DCHECK_EQ(line_position_mode, kPositionOnContainingLine);
-  int baseline = FirstLineBoxBaseline();
+  LayoutUnit baseline = FirstLineBoxBaseline();
   if (baseline != -1) {
     if (IsInline())
       return BeforeMarginInLineDirection(direction) + baseline;
@@ -1321,38 +1322,38 @@ int LayoutTable::BaselinePosition(FontBaseline baseline_type,
                                      line_position_mode);
 }
 
-int LayoutTable::InlineBlockBaseline(LineDirectionMode) const {
+LayoutUnit LayoutTable::InlineBlockBaseline(LineDirectionMode) const {
   // Tables are skipped when computing an inline-block's baseline.
-  return -1;
+  return LayoutUnit(-1);
 }
 
-int LayoutTable::FirstLineBoxBaseline() const {
+LayoutUnit LayoutTable::FirstLineBoxBaseline() const {
   // The baseline of a 'table' is the same as the 'inline-table' baseline per
   // CSS 3 Flexbox (CSS 2.1 doesn't define the baseline of a 'table' only an
   // 'inline-table'). This is also needed to properly determine the baseline of
   // a cell if it has a table child.
 
   if (IsWritingModeRoot())
-    return -1;
+    return LayoutUnit(-1);
 
   RecalcSectionsIfNeeded();
 
   const LayoutTableSection* top_non_empty_section = this->TopNonEmptySection();
   if (!top_non_empty_section)
-    return -1;
+    return LayoutUnit(-1);
 
-  int baseline = top_non_empty_section->FirstLineBoxBaseline();
+  LayoutUnit baseline = top_non_empty_section->FirstLineBoxBaseline();
   if (baseline >= 0)
-    return (top_non_empty_section->LogicalTop() + baseline).ToInt();
+    return top_non_empty_section->LogicalTop() + baseline;
 
   // FF, Presto and IE use the top of the section as the baseline if its first
   // row is empty of cells or content.
   // The baseline of an empty row isn't specified by CSS 2.1.
   if (top_non_empty_section->FirstRow() &&
       !top_non_empty_section->FirstRow()->FirstCell())
-    return top_non_empty_section->LogicalTop().ToInt();
+    return top_non_empty_section->LogicalTop();
 
-  return -1;
+  return LayoutUnit(-1);
 }
 
 LayoutRect LayoutTable::OverflowClipRect(

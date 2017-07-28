@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1378
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x1378 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x1378
-    LayoutBlockFlow {BODY} at (8,8) size 769x1362 [bgcolor=#CCCCCC]
+  LayoutBlockFlow {HTML} at (0,0) size 785x1377.50
+    LayoutBlockFlow {BODY} at (8,8) size 769x1361.50 [bgcolor=#CCCCCC]
       LayoutBlockFlow {P} at (0,0) size 769x18
         LayoutText {#text} at (0,0) size 363x18
           text run at (0,0) width 363: "The style declarations which apply to the text below are:"
@@ -20,13 +20,13 @@ layer at (0,0) size 785x1378 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,168) size 769x18
         LayoutText {#text} at (0,0) size 291x18
           text run at (0,0) width 291: "The square above should be fifty pixels wide."
-      LayoutBlockFlow (anonymous) at (0,202) size 769x385
+      LayoutBlockFlow (anonymous) at (0,202) size 769x384.50
         LayoutImage {IMG} at (0,0) size 384.50x384.50
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {P} at (0,603) size 769x18
+      LayoutBlockFlow {P} at (0,602.50) size 769x18
         LayoutText {#text} at (0,0) size 683x18
           text run at (0,0) width 683: "The square above should be half as wide as the image's parent element (either the BODY or the table cell)."
-      LayoutBlockFlow {P} at (0,637) size 384.50x108
+      LayoutBlockFlow {P} at (0,636.50) size 384.50x108
         LayoutText {#text} at (0,0) size 375x72
           text run at (0,0) width 336: "This paragraph should be half the width of its parent"
           text run at (0,18) width 375: "element (either the BODY or the table, which should itself"
@@ -39,7 +39,7 @@ layer at (0,0) size 785x1378 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,72) size 379x36
           text run at (0,72) width 379: "property without the need for the user to resize the viewing"
           text run at (0,90) width 55: "window."
-      LayoutTable {TABLE} at (0,761) size 384x601 [border: (1px outset #808080)]
+      LayoutTable {TABLE} at (0,760.50) size 384x601 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 382x599
           LayoutTableRow {TR} at (0,0) size 382x26
             LayoutTableCell {TD} at (0,0) size 382x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]

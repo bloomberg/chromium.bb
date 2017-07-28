@@ -395,9 +395,10 @@ void NGBlockNode::CopyBaselinesFromOldLayout(
         AddAtomicInlineBaselineFromOldLayout(request, true, builder);
         break;
       case NGBaselineAlgorithmType::kFirstLine: {
-        int position = box_->FirstLineBoxBaseline();
-        if (position != -1)
-          builder->AddBaseline(request, LayoutUnit(position));
+        LayoutUnit position = box_->FirstLineBoxBaseline();
+        if (position != -1) {
+          builder->AddBaseline(request, position);
+        }
         break;
       }
     }

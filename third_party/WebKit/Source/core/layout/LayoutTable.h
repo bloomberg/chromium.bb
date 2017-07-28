@@ -472,13 +472,13 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
                    const LayoutPoint& accumulated_offset,
                    HitTestAction) override;
 
-  int BaselinePosition(
+  LayoutUnit BaselinePosition(
       FontBaseline,
       bool first_line,
       LineDirectionMode,
       LinePositionMode = kPositionOnContainingLine) const override;
-  int FirstLineBoxBaseline() const override;
-  int InlineBlockBaseline(LineDirectionMode) const override;
+  LayoutUnit FirstLineBoxBaseline() const override;
+  LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;
 
   ColAndColGroup SlowColElementAtAbsoluteColumn(unsigned col) const;
 
