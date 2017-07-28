@@ -1519,7 +1519,7 @@ static void idct32x32_add(const tran_low_t *input, uint8_t *dest, int stride,
 static void idct64x64_add(const tran_low_t *input, uint8_t *dest, int stride,
                           const TxfmParam *txfm_param) {
   (void)txfm_param;
-  av1_iht64x64_4096_add(input, dest, stride, DCT_DCT);
+  av1_iht64x64_4096_add(input, dest, stride, txfm_param);
 }
 #endif  // CONFIG_TX64X64
 

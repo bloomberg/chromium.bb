@@ -1843,6 +1843,9 @@ int av1_get_palette_color_index_context(const uint8_t *color_map, int stride,
 #if CONFIG_VAR_TX
 static const aom_prob default_txfm_partition_probs[TXFM_PARTITION_CONTEXTS] = {
   250, 231, 212, 241, 166, 66, 241, 230, 135, 243, 154, 64, 248, 161, 63, 128,
+#if CONFIG_TX64X64
+  128, 128, 128, 128, 128, 128
+#endif  // CONFIG_TX64X64
 };
 #if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob
@@ -1862,10 +1865,18 @@ static const aom_cdf_prob
       { AOM_ICDF(248 * 128), AOM_ICDF(32768), 0 },
       { AOM_ICDF(161 * 128), AOM_ICDF(32768), 0 },
       { AOM_ICDF(63 * 128), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 }
+      { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
+#if CONFIG_TX64X64
+      { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 } { AOM_ICDF(128 * 128),
+                                                    AOM_ICDF(32768), 0 } {
+          AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 } { AOM_ICDF(128 * 128),
+                                                      AOM_ICDF(32768), 0 } {
+          AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 } { AOM_ICDF(128 * 128),
+                                                      AOM_ICDF(32768), 0 }
+#endif  // CONFIG_TX64X64
     };
 #endif  // CONFIG_NEW_MULTISYMBOL
-#endif
+#endif  // CONFIG_VAR_TX
 
 static const aom_prob default_skip_probs[SKIP_CONTEXTS] = { 192, 128, 64 };
 #if CONFIG_NEW_MULTISYMBOL
