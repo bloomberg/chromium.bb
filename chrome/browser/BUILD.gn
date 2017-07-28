@@ -950,6 +950,8 @@ split_static_library("browser") {
     "platform_util_internal.h",
     "platform_util_mac.mm",
     "platform_util_win.cc",
+    "plugins/pdf_plugin_placeholder_observer.cc",
+    "plugins/pdf_plugin_placeholder_observer.h",
     "policy/chrome_browser_policy_connector.cc",
     "policy/chrome_browser_policy_connector.h",
     "policy/cloud/cloud_policy_invalidator.cc",
