@@ -277,6 +277,9 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
     is_repeating_header_group_ = HeaderGroupShouldRepeat();
   }
 
+  // Check whether row or row group has visibility:collapse.
+  bool RowHasVisibilityCollapse(unsigned row) const;
+
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   bool NodeAtPoint(HitTestResult&,
@@ -394,6 +397,15 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   // To know a row's height at |rowIndex|, use the formula:
   // m_rowPos[rowIndex + 1] - m_rowPos[rowIndex]
   Vector<int> row_pos_;
+
+  // The amount of height collapsed in each row.
+  //
+  // This is used to adjust the padding of row-spanning cells. The padding
+  // should stay the same as if the row were not collapsed.
+  Vector<int> row_collapsed_height_;
+
+  // Whether any row in the table section is or has been collapsed.
+  bool is_any_row_collapsed_;
 
   // The current insertion position in the grid.
   // The position is used when inserting a new cell into the section to

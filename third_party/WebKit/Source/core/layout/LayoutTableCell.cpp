@@ -223,7 +223,8 @@ void LayoutTableCell::AddLayerHitTestRects(
                                   adjusted_layer_offset, container_rect);
 }
 
-void LayoutTableCell::ComputeIntrinsicPadding(int row_height,
+void LayoutTableCell::ComputeIntrinsicPadding(int collapsed_height,
+                                              int row_height,
                                               EVerticalAlign vertical_align,
                                               SubtreeLayoutScope& layouter) {
   int old_intrinsic_padding_before = IntrinsicPaddingBefore();
@@ -249,12 +250,13 @@ void LayoutTableCell::ComputeIntrinsicPadding(int row_height,
     case EVerticalAlign::kTop:
       break;
     case EVerticalAlign::kMiddle:
-      intrinsic_padding_before =
-          (row_height - logical_height_without_intrinsic_padding) / 2;
+      intrinsic_padding_before = (row_height + collapsed_height -
+                                  logical_height_without_intrinsic_padding) /
+                                 2;
       break;
     case EVerticalAlign::kBottom:
-      intrinsic_padding_before =
-          row_height - logical_height_without_intrinsic_padding;
+      intrinsic_padding_before = row_height + collapsed_height -
+                                 logical_height_without_intrinsic_padding;
       break;
     case EVerticalAlign::kBaselineMiddle:
       break;
@@ -446,6 +448,20 @@ void LayoutTableCell::ComputeOverflow(LayoutUnit old_client_after_edge,
   rect.ExpandEdges(LayoutUnit(top), LayoutUnit(right), LayoutUnit(bottom),
                    LayoutUnit(left));
   collapsed_border_values_->SetLocalVisualRect(rect);
+}
+
+bool LayoutTableCell::ShouldClipOverflow() const {
+  if (LayoutBox::ShouldClipOverflow())
+    return true;
+  unsigned row_span = RowSpan();
+  if (row_span == 1)
+    return false;
+  unsigned row_index = RowIndex();
+  for (unsigned r = row_index; r < row_index + row_span; r++) {
+    if (Section()->RowHasVisibilityCollapse(r))
+      return true;
+  }
+  return false;
 }
 
 int LayoutTableCell::CellBaselinePosition() const {
