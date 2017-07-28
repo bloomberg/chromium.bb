@@ -54,7 +54,21 @@
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_31" file="default_user_images/avatar_recordplayer.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_32" file="default_user_images/avatar_upsidedown.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_33" file="default_user_images/avatar_cat.png" />
-      
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_34" file="default_user_images/origami/avatar_penguin.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_35" file="default_user_images/origami/avatar_fox.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_36" file="default_user_images/origami/avatar_snail.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_37" file="default_user_images/origami/avatar_redbutterfly.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_38" file="default_user_images/origami/avatar_cat.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_39" file="default_user_images/origami/avatar_corgi.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_40" file="default_user_images/origami/avatar_rabbit.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_41" file="default_user_images/origami/avatar_pinkbutterfly.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_42" file="default_user_images/origami/avatar_monkey.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_43" file="default_user_images/origami/avatar_dragon.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_44" file="default_user_images/origami/avatar_elephant.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_45" file="default_user_images/origami/avatar_panda.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_46" file="default_user_images/origami/avatar_unicorn.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_47" file="default_user_images/origami/avatar_butterflies.png" />
+
       <!-- Print Job Notification images. -->
       <structure type="chrome_scaled_image" name="IDR_PRINT_NOTIFICATION_CANCEL" file="print_notification/cancel.png" />
       <structure type="chrome_scaled_image" name="IDR_PRINT_NOTIFICATION_PAUSE" file="print_notification/pause.png" />
