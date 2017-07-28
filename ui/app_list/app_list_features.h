@@ -25,6 +25,9 @@ APP_LIST_EXPORT extern const base::Feature kEnableAnswerCard;
 // may be loaded via mock URLs and are not shown to the user.
 APP_LIST_EXPORT extern const base::Feature kEnableAnswerCardDarkRun;
 
+// Enables background blur for the app list, lock screen, and tab switcher.
+APP_LIST_EXPORT extern const base::Feature kEnableBackgroundBlur;
+
 // Enables the fullscreen app list.
 APP_LIST_EXPORT extern const base::Feature kEnableFullscreenAppList;
 

@@ -23415,6 +23415,7 @@ from previous Chrome versions.
   <int value="562979188" label="DesktopIOSPromotion:enabled"/>
   <int value="567368307" label="enable-experimental-canvas-features"/>
   <int value="575394365" label="AndroidPaymentApps:disabled"/>
+  <int value="576878329" label="enable-background-blur"/>
   <int value="581118445" label="enable-eol-notification"/>
   <int value="581355159" label="ContentSuggestionsCategoryRanker:disabled"/>
   <int value="582187448" label="DontPrefetchLibraries:enabled"/>
