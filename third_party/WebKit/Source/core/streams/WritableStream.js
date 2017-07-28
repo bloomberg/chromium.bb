@@ -78,6 +78,9 @@
   const Promise_resolve = v8.simpleBind(Promise.resolve, Promise);
   const Promise_reject = v8.simpleBind(Promise.reject, Promise);
 
+  // From CommonOperations.js
+  const { hasOwnPropertyNoThrow } = binding.streamOperations;
+
   // User-visible strings.
   const streamErrors = binding.streamErrors;
   const errAbortLockedStream = 'Cannot abort a writable stream that is locked to a writer';
@@ -203,7 +206,7 @@
   }
 
   function IsWritableStream(x) {
-    return hasOwnProperty(x, _writableStreamController);
+    return hasOwnPropertyNoThrow(x, _writableStreamController);
   }
 
   function IsWritableStreamLocked(stream) {
@@ -616,7 +619,7 @@
   // Writable Stream Writer Abstract Operations
 
   function IsWritableStreamDefaultWriter(x) {
-    return hasOwnProperty(x, _ownerWritableStream);
+    return hasOwnPropertyNoThrow(x, _ownerWritableStream);
   }
 
   function WritableStreamDefaultWriterAbort(writer, reason) {
@@ -838,7 +841,7 @@
   // Writable Stream Default Controller Abstract Operations
 
   function IsWritableStreamDefaultController(x) {
-    return hasOwnProperty(x, _underlyingSink);
+    return hasOwnPropertyNoThrow(x, _underlyingSink);
   }
 
   function WritableStreamDefaultControllerClose(controller) {
