@@ -1052,11 +1052,20 @@ float GtkUi::GetRawDeviceScaleFactor() {
   if (display::Display::HasForceDeviceScaleFactor())
     return display::Display::GetForcedDeviceScaleFactor();
 
+#if GTK_MAJOR_VERSION == 2
+  GtkSettings* gtk_settings = gtk_settings_get_default();
+  gint gtk_dpi = -1;
+  g_object_get(gtk_settings, "gtk-xft-dpi", &gtk_dpi, nullptr);
+  const float scale_factor = gtk_dpi / (1024 * kDefaultDPI);
+#else
   GdkScreen* screen = gdk_screen_get_default();
   gint scale = gtk_widget_get_scale_factor(fake_window_);
+  DCHECK_GT(scale, 0);
   gdouble resolution = gdk_screen_get_resolution(screen);
   const float scale_factor =
       resolution <= 0 ? scale : resolution * scale / kDefaultDPI;
+#endif
+
   // Blacklist scaling factors <120% (crbug.com/484400) and round
   // to 1 decimal to prevent rendering problems (crbug.com/485183).
   return scale_factor < 1.2f ? 1.0f : roundf(scale_factor * 10) / 10;
