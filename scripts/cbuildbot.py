@@ -662,6 +662,10 @@ def _CreateParser():
                                'tool. Bootstrap the projects based on the git '
                                'cache files instead of fetching them directly '
                                'from the GoB servers.')
+  group.add_remote_option('--sanity-check-build', action='store_true',
+                          default=False, dest='sanity_check_build',
+                          api=constants.REEXEC_API_SANITY_CHECK_BUILD,
+                          help='Run the build as a sanity check build.')
 
   parser.add_option_group(group)
 
