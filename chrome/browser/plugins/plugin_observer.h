@@ -49,7 +49,6 @@ class PluginObserver : public content::WebContentsObserver,
   void RemoveComponentObserver(int placeholder_id);
   void OnShowFlashPermissionBubble();
   void OnCouldNotLoadPlugin(const base::FilePath& plugin_path);
-  void OnOpenPDF(content::RenderFrameHost* render_frame_host, const GURL& url);
 
   // Stores all PluginPlaceholderHosts, keyed by their routing ID.
   std::map<int, std::unique_ptr<PluginPlaceholderHost>> plugin_placeholders_;

@@ -36,7 +36,6 @@
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -257,7 +256,6 @@ void PluginObserver::PluginCrashed(const base::FilePath& plugin_path,
 bool PluginObserver::OnMessageReceived(
       const IPC::Message& message,
       content::RenderFrameHost* render_frame_host) {
-  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PluginObserver, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedOutdatedPlugin,
                         OnBlockedOutdatedPlugin)
@@ -269,14 +267,6 @@ bool PluginObserver::OnMessageReceived(
                         OnShowFlashPermissionBubble)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CouldNotLoadPlugin,
                         OnCouldNotLoadPlugin)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  if (handled)
-    return true;
-
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(PluginObserver, message, render_frame_host)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_OpenPDF, OnOpenPDF)
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
 
@@ -343,19 +333,4 @@ void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {
       l10n_util::GetStringFUTF16(IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT,
                                  plugin_name),
       true);
-}
-
-void PluginObserver::OnOpenPDF(content::RenderFrameHost* render_frame_host,
-                               const GURL& url) {
-  if (!content::ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
-          render_frame_host->GetRoutingID(), url))
-    return;
-
-  web_contents()->OpenURL(content::OpenURLParams(
-      url,
-      content::Referrer::SanitizeForRequest(
-          url, content::Referrer(web_contents()->GetURL(),
-                                 blink::kWebReferrerPolicyDefault)),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
 }
