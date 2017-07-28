@@ -37,7 +37,7 @@ class IndicatorView : public views::View {
   }
 
  private:
-  SkColor color_;
+  SkColor color_ = SK_ColorTRANSPARENT;
   DISALLOW_COPY_AND_ASSIGN(IndicatorView);
 };
 
