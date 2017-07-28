@@ -22492,10 +22492,10 @@
         ]
     },
     "som-dispatcher": {
+        "active_waterfall": "chromeos",
         "boards": [],
         "build_type": "generic",
         "builder_class_name": "alert_builders.SomDispatcherBuilder",
-        "buildslave_type": "gce_wimpy",
         "description": "Updates alerts displayed on SoM website. go/som/chromeos",
         "hw_tests_override": [],
         "important": true,

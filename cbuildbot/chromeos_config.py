@@ -3452,7 +3452,8 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_type=constants.GENERIC_TYPE,
       boards=[],
       builder_class_name='alert_builders.SomDispatcherBuilder',
-      buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
+      active_waterfall=constants.WATERFALL_INTERNAL,
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
   site_config.AddWithoutTemplate(
