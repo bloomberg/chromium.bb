@@ -99,7 +99,6 @@ class TestImporter(object):
 
         self._delete_orphaned_baselines()
 
-        # TODO(qyearsley): Consider updating manifest after adding baselines.
         self._generate_manifest()
 
         # TODO(qyearsley): Consider running the imported tests with
@@ -162,6 +161,7 @@ class TestImporter(object):
         if try_results and self.git_cl.some_failed(try_results):
             self.fetch_new_expectations_and_baselines()
             if self.host.git().has_working_directory_changes():
+                self._generate_manifest()
                 message = 'Update test expectations and baselines.'
                 self.check_run(['git', 'commit', '-a', '-m', message])
                 self._upload_patchset(message)
