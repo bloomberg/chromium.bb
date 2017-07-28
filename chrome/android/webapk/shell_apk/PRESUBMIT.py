@@ -72,7 +72,7 @@ def _CheckWamMintTriggerRule(input_api, output_api):
         wam_mint_trigger_is_updated = True
 
   if wam_mint_trigger_update_needed and not wam_mint_trigger_is_updated:
-    return [output_api.PresubmitError(
+    return [output_api.PresubmitPromptWarning(
         '{} in {} needs to updated due to changes in:'.format(
             WAM_MINT_TRIGGER_VARIABLE, SHELL_APK_VERSION_LOCAL_PATH),
         items=problems)]
