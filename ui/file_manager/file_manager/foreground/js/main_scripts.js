@@ -149,6 +149,7 @@
 // <include src="share_client.js">
 // <include src="spinner_controller.js">
 // <include src="task_controller.js">
+// <include src="task_history.js">
 // <include src="toolbar_controller.js">
 // <include src="thumbnail_loader.js">
 // <include src="list_thumbnail_loader.js">

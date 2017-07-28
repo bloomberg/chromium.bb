@@ -18,9 +18,16 @@ function setUp() {
   // Behavior of window.chrome depends on each test case. window.chrome should
   // be initialized properly inside each test function.
   window.chrome = {
-    runtime: {
-      id: 'test-extension-id',
-      lastError: null
+    runtime: {id: 'test-extension-id', lastError: null},
+
+    storage: {
+      onChanged: {addListener: function(callback) {}},
+      local: {
+        get: function(key, callback) {
+          callback({})
+        },
+        set: function(value) {}
+      }
     }
   };
 
