@@ -60,6 +60,13 @@ function TaskController(
   this.metadataUpdateController_ = metadataUpdateController;
 
   /**
+   * @type {!TaskHistory}
+   * @const
+   * @private
+   */
+  this.taskHistory_ = new TaskHistory();
+
+  /**
    * @private {boolean}
    */
   this.canExecuteDefaultTask_ = false;
@@ -112,6 +119,8 @@ function TaskController(
   this.selectionHandler_.addEventListener(
       FileSelectionHandler.EventType.CHANGE_THROTTLED,
       this.updateTasks_.bind(this));
+  this.taskHistory_.addEventListener(
+      TaskHistory.EventType.UPDATE, this.updateTasks_.bind(this));
   chrome.fileManagerPrivate.onAppsUpdated.addListener(
       this.updateTasks_.bind(this));
 }
@@ -345,7 +354,8 @@ TaskController.prototype.getFileTasks = function() {
         return FileTasks
             .create(
                 this.volumeManager_, this.metadataModel_, this.directoryModel_,
-                this.ui_, selection.entries, assert(selection.mimeTypes))
+                this.ui_, selection.entries, assert(selection.mimeTypes),
+                this.taskHistory_)
             .then(function(tasks) {
               if (this.selectionHandler_.selection !== selection) {
                 if (util.isSameEntries(this.tasksEntries_, selection.entries))
@@ -420,13 +430,14 @@ TaskController.prototype.updateContextMenuTaskItems_ = function(items) {
  * @param {FileEntry} entry
  */
 TaskController.prototype.executeEntryTask = function(entry) {
-  this.metadataModel_.get([entry], ['contentMimeType']).then(
-      function(props) {
-        FileTasks.create(
+  this.metadataModel_.get([entry], ['contentMimeType']).then(function(props) {
+    FileTasks
+        .create(
             this.volumeManager_, this.metadataModel_, this.directoryModel_,
-            this.ui_, [entry], [props[0].contentMimeType || null])
-            .then(function(tasks) {
-              tasks.executeDefault();
-            });
-      }.bind(this));
+            this.ui_, [entry], [props[0].contentMimeType || null],
+            this.taskHistory_)
+        .then(function(tasks) {
+          tasks.executeDefault();
+        });
+  }.bind(this));
 };

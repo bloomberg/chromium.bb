@@ -246,6 +246,7 @@
       'dependencies': [
         'directory_model',
         'metadata/compiled_resources2.gyp:metadata_model',
+        'task_history',
         'ui/compiled_resources2.gyp:file_manager_ui',
         'volume_manager_wrapper',
       ],
@@ -553,8 +554,17 @@
         'file_tasks',
         'metadata/compiled_resources2.gyp:metadata_model',
         'metadata_update_controller',
+        'task_history',
         'ui/compiled_resources2.gyp:file_manager_ui',
         'volume_manager_wrapper',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'task_history',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:event_target',
+        '<(EXTERNS_GYP):chrome_extensions',
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
