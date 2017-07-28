@@ -46,7 +46,7 @@ class CORE_EXPORT PropertyRegistration
                        const CSSSyntaxDescriptor&,
                        bool inherits,
                        const CSSValue* initial,
-                       PassRefPtr<CSSVariableData> initial_variable_data);
+                       RefPtr<CSSVariableData> initial_variable_data);
 
   const CSSSyntaxDescriptor syntax_;
   const bool inherits_;

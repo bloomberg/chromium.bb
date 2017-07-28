@@ -743,7 +743,7 @@ ScriptPromise WebGLRenderingContextBase::commit(
       script_state, exception_state);
 }
 
-PassRefPtr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
+RefPtr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
     AccelerationHint hint,
     SnapshotReason reason) const {
   if (!GetDrawingBuffer())

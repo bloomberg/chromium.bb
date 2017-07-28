@@ -35,8 +35,8 @@
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

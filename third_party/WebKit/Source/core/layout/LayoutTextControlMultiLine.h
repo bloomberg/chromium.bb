@@ -58,7 +58,7 @@ class LayoutTextControlMultiLine final : public LayoutTextControl {
       LinePositionMode = kPositionOnContainingLine) const override;
   int InlineBlockBaseline(LineDirectionMode) const override { return -1; }
 
-  PassRefPtr<ComputedStyle> CreateInnerEditorStyle(
+  RefPtr<ComputedStyle> CreateInnerEditorStyle(
       const ComputedStyle& start_style) const override;
   LayoutObject* LayoutSpecialExcludedChild(bool relayout_children,
                                            SubtreeLayoutScope&) override;

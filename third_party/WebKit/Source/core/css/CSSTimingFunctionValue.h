@@ -29,7 +29,7 @@
 #include "core/css/CSSValue.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/TimingFunction.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

@@ -407,7 +407,7 @@ CSSTransitionData::TransitionProperty CSSToStyleMap::MapAnimationProperty(
       CSSTransitionData::kTransitionNone);
 }
 
-PassRefPtr<TimingFunction> CSSToStyleMap::MapAnimationTimingFunction(
+RefPtr<TimingFunction> CSSToStyleMap::MapAnimationTimingFunction(
     const CSSValue& value,
     bool allow_step_middle,
     Document* document) {

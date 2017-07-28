@@ -35,8 +35,8 @@ class ClipRects : public RefCounted<ClipRects> {
   USING_FAST_MALLOC(ClipRects);
 
  public:
-  static PassRefPtr<ClipRects> Create() { return AdoptRef(new ClipRects); }
-  static PassRefPtr<ClipRects> Create(const ClipRects& other) {
+  static RefPtr<ClipRects> Create() { return AdoptRef(new ClipRects); }
+  static RefPtr<ClipRects> Create(const ClipRects& other) {
     return AdoptRef(new ClipRects(other));
   }
 

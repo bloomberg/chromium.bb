@@ -1069,7 +1069,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const HitTestingTransformState* unflattened_transform_state,
       bool depth_sort_descendants);
 
-  PassRefPtr<HitTestingTransformState> CreateLocalTransformState(
+  RefPtr<HitTestingTransformState> CreateLocalTransformState(
       PaintLayer* root_layer,
       PaintLayer* container_layer,
       const LayoutRect& hit_test_rect,

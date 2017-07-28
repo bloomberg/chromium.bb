@@ -403,7 +403,7 @@ class CORE_EXPORT HTMLInputElement
   RadioButtonGroupScope* GetRadioButtonGroupScope() const;
   void AddToRadioButtonGroup();
   void RemoveFromRadioButtonGroup();
-  PassRefPtr<ComputedStyle> CustomStyleForLayoutObject() override;
+  RefPtr<ComputedStyle> CustomStyleForLayoutObject() override;
 
   AtomicString name_;
   // The value string in |value| value mode.

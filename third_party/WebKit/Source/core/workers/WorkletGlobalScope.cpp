@@ -19,12 +19,11 @@
 
 namespace blink {
 
-WorkletGlobalScope::WorkletGlobalScope(
-    const KURL& url,
-    const String& user_agent,
-    PassRefPtr<SecurityOrigin> security_origin,
-    v8::Isolate* isolate,
-    WorkerClients* worker_clients)
+WorkletGlobalScope::WorkletGlobalScope(const KURL& url,
+                                       const String& user_agent,
+                                       RefPtr<SecurityOrigin> security_origin,
+                                       v8::Isolate* isolate,
+                                       WorkerClients* worker_clients)
     : WorkerOrWorkletGlobalScope(isolate, worker_clients),
       url_(url),
       user_agent_(user_agent),

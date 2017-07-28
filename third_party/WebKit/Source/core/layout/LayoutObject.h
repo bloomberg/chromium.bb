@@ -432,7 +432,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Gets ::selection pseudo style from Shadow host(in case of input elements)
   // or from parent element.
-  PassRefPtr<ComputedStyle> GetUncachedSelectionStyle() const;
+  RefPtr<ComputedStyle> GetUncachedSelectionStyle() const;
 
  public:
 #ifndef NDEBUG
@@ -866,7 +866,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   ComputedStyle* GetCachedPseudoStyle(
       PseudoId,
       const ComputedStyle* parent_style = nullptr) const;
-  PassRefPtr<ComputedStyle> GetUncachedPseudoStyle(
+  RefPtr<ComputedStyle> GetUncachedPseudoStyle(
       const PseudoStyleRequest&,
       const ComputedStyle* parent_style = nullptr) const;
 
@@ -1142,21 +1142,20 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       MarkingBehavior marking_behaviour = kMarkContainerChain);
 
   // Set the style of the object and update the state of the object accordingly.
-  void SetStyle(PassRefPtr<ComputedStyle>);
+  void SetStyle(RefPtr<ComputedStyle>);
 
   // Set the style of the object if it's generated content.
-  void SetPseudoStyle(PassRefPtr<ComputedStyle>);
+  void SetPseudoStyle(RefPtr<ComputedStyle>);
 
   // Updates only the local style ptr of the object.  Does not update the state
   // of the object, and so only should be called when the style is known not to
   // have changed (or from setStyle).
-  void SetStyleInternal(PassRefPtr<ComputedStyle> style) {
+  void SetStyleInternal(RefPtr<ComputedStyle> style) {
     style_ = std::move(style);
   }
 
-  void SetStyleWithWritingModeOf(PassRefPtr<ComputedStyle>,
-                                 LayoutObject* parent);
-  void SetStyleWithWritingModeOfParent(PassRefPtr<ComputedStyle>);
+  void SetStyleWithWritingModeOf(RefPtr<ComputedStyle>, LayoutObject* parent);
+  void SetStyleWithWritingModeOfParent(RefPtr<ComputedStyle>);
   void AddChildWithWritingModeOfParent(LayoutObject* new_child,
                                        LayoutObject* before_child);
 
@@ -2054,7 +2053,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
  private:
   // Used only by applyFirstLineChanges to get a first line style based off of a
   // given new style, without accessing the cache.
-  PassRefPtr<ComputedStyle> UncachedFirstLineStyle() const;
+  RefPtr<ComputedStyle> UncachedFirstLineStyle() const;
 
   // Adjusts a visual rect in the space of |visual_rect_| to be in the space of
   // the |paint_invalidation_container|, if needed. They can be different only

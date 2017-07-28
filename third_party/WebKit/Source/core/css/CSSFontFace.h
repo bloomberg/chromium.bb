@@ -34,7 +34,7 @@
 #include "platform/fonts/UnicodeRangeSet.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -57,7 +57,7 @@ class CORE_EXPORT CSSFontFace final
 
   FontFace* GetFontFace() const { return font_face_; }
 
-  PassRefPtr<UnicodeRangeSet> Ranges() { return ranges_; }
+  RefPtr<UnicodeRangeSet> Ranges() { return ranges_; }
 
   void SetSegmentedFontFace(CSSSegmentedFontFace*);
   void ClearSegmentedFontFace() { segmented_font_face_ = nullptr; }
@@ -71,7 +71,7 @@ class CORE_EXPORT CSSFontFace final
   void FontLoaded(RemoteFontFaceSource*);
   void DidBecomeVisibleFallback(RemoteFontFaceSource*);
 
-  PassRefPtr<SimpleFontData> GetFontData(const FontDescription&);
+  RefPtr<SimpleFontData> GetFontData(const FontDescription&);
 
   FontFace::LoadStatusType LoadStatus() const {
     return font_face_->LoadStatus();

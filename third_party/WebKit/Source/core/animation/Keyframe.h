@@ -40,9 +40,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   }
   EffectModel::CompositeOperation Composite() const { return composite_; }
 
-  void SetEasing(PassRefPtr<TimingFunction> easing) {
-    easing_ = std::move(easing);
-  }
+  void SetEasing(RefPtr<TimingFunction> easing) { easing_ = std::move(easing); }
   TimingFunction& Easing() const { return *easing_; }
 
   static bool CompareOffsets(const RefPtr<Keyframe>& a,
@@ -52,8 +50,8 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
 
   virtual PropertyHandleSet Properties() const = 0;
 
-  virtual PassRefPtr<Keyframe> Clone() const = 0;
-  PassRefPtr<Keyframe> CloneWithOffset(double offset) const {
+  virtual RefPtr<Keyframe> Clone() const = 0;
+  RefPtr<Keyframe> CloneWithOffset(double offset) const {
     RefPtr<Keyframe> the_clone = Clone();
     the_clone->SetOffset(offset);
     return the_clone;
@@ -77,7 +75,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
       return composite_ == EffectModel::kCompositeReplace ? 0 : 1;
     }
     virtual bool IsNeutral() const = 0;
-    virtual PassRefPtr<PropertySpecificKeyframe> CloneWithOffset(
+    virtual RefPtr<PropertySpecificKeyframe> CloneWithOffset(
         double offset) const = 0;
 
     // FIXME: Remove this once CompositorAnimations no longer depends on
@@ -98,16 +96,16 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
     virtual bool IsSVGPropertySpecificKeyframe() const { return false; }
     virtual bool IsTransitionPropertySpecificKeyframe() const { return false; }
 
-    virtual PassRefPtr<PropertySpecificKeyframe> NeutralKeyframe(
+    virtual RefPtr<PropertySpecificKeyframe> NeutralKeyframe(
         double offset,
-        PassRefPtr<TimingFunction> easing) const = 0;
-    virtual PassRefPtr<Interpolation> CreateInterpolation(
+        RefPtr<TimingFunction> easing) const = 0;
+    virtual RefPtr<Interpolation> CreateInterpolation(
         const PropertyHandle&,
         const Keyframe::PropertySpecificKeyframe& end) const;
 
    protected:
     PropertySpecificKeyframe(double offset,
-                             PassRefPtr<TimingFunction> easing,
+                             RefPtr<TimingFunction> easing,
                              EffectModel::CompositeOperation);
 
     double offset_;
@@ -115,7 +113,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
     EffectModel::CompositeOperation composite_;
   };
 
-  virtual PassRefPtr<PropertySpecificKeyframe> CreatePropertySpecificKeyframe(
+  virtual RefPtr<PropertySpecificKeyframe> CreatePropertySpecificKeyframe(
       const PropertyHandle&) const = 0;
 
  protected:
@@ -125,7 +123,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
         easing_(LinearTimingFunction::Shared()) {}
   Keyframe(double offset,
            EffectModel::CompositeOperation composite,
-           PassRefPtr<TimingFunction> easing)
+           RefPtr<TimingFunction> easing)
       : offset_(offset), composite_(composite), easing_(std::move(easing)) {}
 
   double offset_;

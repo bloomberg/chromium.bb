@@ -31,7 +31,6 @@
 #include "core/xml/parser/SharedBufferReader.h"
 
 #include "platform/SharedBuffer.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 
 #include <algorithm>
@@ -39,7 +38,7 @@
 
 namespace blink {
 
-SharedBufferReader::SharedBufferReader(PassRefPtr<const SharedBuffer> buffer)
+SharedBufferReader::SharedBufferReader(RefPtr<const SharedBuffer> buffer)
     : buffer_(std::move(buffer)), current_offset_(0) {}
 
 SharedBufferReader::~SharedBufferReader() {}

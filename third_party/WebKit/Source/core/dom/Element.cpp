@@ -1891,7 +1891,7 @@ void Element::DetachLayoutTree(const AttachContext& context) {
   DCHECK(NeedsAttach());
 }
 
-PassRefPtr<ComputedStyle> Element::StyleForLayoutObject() {
+RefPtr<ComputedStyle> Element::StyleForLayoutObject() {
   DCHECK(GetDocument().InStyleRecalc());
 
   RefPtr<ComputedStyle> style;
@@ -1926,7 +1926,7 @@ PassRefPtr<ComputedStyle> Element::StyleForLayoutObject() {
   return style;
 }
 
-PassRefPtr<ComputedStyle> Element::OriginalStyleForLayoutObject() {
+RefPtr<ComputedStyle> Element::OriginalStyleForLayoutObject() {
   DCHECK(GetDocument().InStyleRecalc());
   return GetDocument().EnsureStyleResolver().StyleForElement(this);
 }
@@ -2020,7 +2020,7 @@ void Element::RecalcStyle(StyleRecalcChange change) {
     DidRecalcStyle();
 }
 
-PassRefPtr<ComputedStyle> Element::PropagateInheritedProperties(
+RefPtr<ComputedStyle> Element::PropagateInheritedProperties(
     StyleRecalcChange change) {
   if (change != kIndependentInherit)
     return nullptr;
@@ -3336,8 +3336,7 @@ bool Element::ShouldStoreNonLayoutObjectComputedStyle(
          isHTMLOptGroupElement(*this) || isHTMLOptionElement(*this);
 }
 
-void Element::StoreNonLayoutObjectComputedStyle(
-    PassRefPtr<ComputedStyle> style) {
+void Element::StoreNonLayoutObjectComputedStyle(RefPtr<ComputedStyle> style) {
   DCHECK(style);
   DCHECK(ShouldStoreNonLayoutObjectComputedStyle(*style));
   EnsureElementRareData().SetComputedStyle(std::move(style));
@@ -3497,7 +3496,7 @@ ComputedStyle* Element::PseudoStyle(const PseudoStyleRequest& request,
   return nullptr;
 }
 
-PassRefPtr<ComputedStyle> Element::GetUncachedPseudoStyle(
+RefPtr<ComputedStyle> Element::GetUncachedPseudoStyle(
     const PseudoStyleRequest& request,
     const ComputedStyle* parent_style) {
   const ComputedStyle* style = GetComputedStyle();
@@ -4008,7 +4007,7 @@ void Element::DidRecalcStyle() {
   DCHECK(HasCustomStyleCallbacks());
 }
 
-PassRefPtr<ComputedStyle> Element::CustomStyleForLayoutObject() {
+RefPtr<ComputedStyle> Element::CustomStyleForLayoutObject() {
   DCHECK(HasCustomStyleCallbacks());
   return nullptr;
 }

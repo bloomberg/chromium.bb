@@ -29,8 +29,8 @@ class TestFontSelector : public FontSelector {
 
   ~TestFontSelector() override {}
 
-  PassRefPtr<FontData> GetFontData(const FontDescription& font_description,
-                                   const AtomicString& family_name) override {
+  RefPtr<FontData> GetFontData(const FontDescription& font_description,
+                               const AtomicString& family_name) override {
     FontPlatformData platform_data = custom_platform_data_->GetFontPlatformData(
         font_description.EffectiveFontSize(),
         font_description.IsSyntheticBold(),

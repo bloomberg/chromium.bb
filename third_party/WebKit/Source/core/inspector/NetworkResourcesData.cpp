@@ -44,7 +44,7 @@ XHRReplayData* XHRReplayData::Create(ExecutionContext* execution_context,
                                      const AtomicString& method,
                                      const KURL& url,
                                      bool async,
-                                     PassRefPtr<EncodedFormData> form_data,
+                                     RefPtr<EncodedFormData> form_data,
                                      bool include_credentials) {
   return new XHRReplayData(execution_context, method, url, async,
                            std::move(form_data), include_credentials);
@@ -59,7 +59,7 @@ XHRReplayData::XHRReplayData(ExecutionContext* execution_context,
                              const AtomicString& method,
                              const KURL& url,
                              bool async,
-                             PassRefPtr<EncodedFormData> form_data,
+                             RefPtr<EncodedFormData> form_data,
                              bool include_credentials)
     : execution_context_(execution_context),
       method_(method),

@@ -52,7 +52,7 @@ void CSSPaintImageGeneratorImpl::NotifyGeneratorReady() {
   observer_->PaintImageGeneratorReady();
 }
 
-PassRefPtr<Image> CSSPaintImageGeneratorImpl::Paint(
+RefPtr<Image> CSSPaintImageGeneratorImpl::Paint(
     const ImageResourceObserver& observer,
     const IntSize& size,
     const CSSStyleValueVector* data) {

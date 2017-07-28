@@ -53,8 +53,8 @@ class CORE_EXPORT AbstractInlineTextBox
       : line_layout_item_(line_layout_item),
         inline_text_box_(inline_text_box) {}
 
-  static PassRefPtr<AbstractInlineTextBox> GetOrCreate(LineLayoutText,
-                                                       InlineTextBox*);
+  static RefPtr<AbstractInlineTextBox> GetOrCreate(LineLayoutText,
+                                                   InlineTextBox*);
   static void WillDestroy(InlineTextBox*);
 
   friend class LayoutText;
@@ -75,7 +75,7 @@ class CORE_EXPORT AbstractInlineTextBox
 
   LineLayoutText GetLineLayoutItem() const { return line_layout_item_; }
 
-  PassRefPtr<AbstractInlineTextBox> NextInlineTextBox() const;
+  RefPtr<AbstractInlineTextBox> NextInlineTextBox() const;
   LayoutRect LocalBounds() const;
   unsigned Len() const;
   Direction GetDirection() const;
@@ -85,8 +85,8 @@ class CORE_EXPORT AbstractInlineTextBox
   String GetText() const;
   bool IsFirst() const;
   bool IsLast() const;
-  PassRefPtr<AbstractInlineTextBox> NextOnLine() const;
-  PassRefPtr<AbstractInlineTextBox> PreviousOnLine() const;
+  RefPtr<AbstractInlineTextBox> NextOnLine() const;
+  RefPtr<AbstractInlineTextBox> PreviousOnLine() const;
 
  private:
   void Detach();

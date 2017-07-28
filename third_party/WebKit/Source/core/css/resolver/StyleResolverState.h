@@ -80,10 +80,10 @@ class CORE_EXPORT StyleResolverState {
     return element_context_;
   }
 
-  void SetStyle(PassRefPtr<ComputedStyle>);
+  void SetStyle(RefPtr<ComputedStyle>);
   const ComputedStyle* Style() const { return style_.Get(); }
   ComputedStyle* Style() { return style_.Get(); }
-  PassRefPtr<ComputedStyle> TakeStyle() { return std::move(style_); }
+  RefPtr<ComputedStyle> TakeStyle() { return std::move(style_); }
 
   ComputedStyle& MutableStyleRef() const { return *style_; }
   const ComputedStyle& StyleRef() const { return MutableStyleRef(); }

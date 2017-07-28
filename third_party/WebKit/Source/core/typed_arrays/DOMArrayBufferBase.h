@@ -36,7 +36,7 @@ class CORE_EXPORT DOMArrayBufferBase
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:
-  explicit DOMArrayBufferBase(PassRefPtr<WTF::ArrayBuffer> buffer)
+  explicit DOMArrayBufferBase(RefPtr<WTF::ArrayBuffer> buffer)
       : buffer_(std::move(buffer)) {
     DCHECK(buffer_);
   }

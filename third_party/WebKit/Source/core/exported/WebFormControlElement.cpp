@@ -38,7 +38,7 @@
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

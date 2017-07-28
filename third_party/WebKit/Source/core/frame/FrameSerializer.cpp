@@ -514,7 +514,7 @@ bool FrameSerializer::ShouldAddURL(const KURL& url) {
 void FrameSerializer::AddToResources(
     const String& mime_type,
     ResourceHasCacheControlNoStoreHeader has_cache_control_no_store_header,
-    PassRefPtr<const SharedBuffer> data,
+    RefPtr<const SharedBuffer> data,
     const KURL& url) {
   if (delegate_.ShouldSkipResource(has_cache_control_no_store_header))
     return;

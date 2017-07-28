@@ -43,8 +43,8 @@ class SVGPaintServer {
 
  public:
   explicit SVGPaintServer(Color);
-  SVGPaintServer(PassRefPtr<Gradient>, const AffineTransform&);
-  SVGPaintServer(PassRefPtr<Pattern>, const AffineTransform&);
+  SVGPaintServer(RefPtr<Gradient>, const AffineTransform&);
+  SVGPaintServer(RefPtr<Pattern>, const AffineTransform&);
 
   static SVGPaintServer RequestForLayoutObject(const LayoutObject&,
                                                const ComputedStyle&,

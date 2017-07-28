@@ -21,7 +21,7 @@ class UnderlyingFilterListChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<UnderlyingFilterListChecker> Create(
-      PassRefPtr<NonInterpolableList> non_interpolable_list) {
+      RefPtr<NonInterpolableList> non_interpolable_list) {
     return WTF::WrapUnique(
         new UnderlyingFilterListChecker(std::move(non_interpolable_list)));
   }
@@ -43,8 +43,7 @@ class UnderlyingFilterListChecker
   }
 
  private:
-  UnderlyingFilterListChecker(
-      PassRefPtr<NonInterpolableList> non_interpolable_list)
+  UnderlyingFilterListChecker(RefPtr<NonInterpolableList> non_interpolable_list)
       : non_interpolable_list_(std::move(non_interpolable_list)) {}
 
   RefPtr<NonInterpolableList> non_interpolable_list_;

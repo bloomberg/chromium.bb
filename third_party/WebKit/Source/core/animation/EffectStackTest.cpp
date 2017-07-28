@@ -47,7 +47,7 @@ class AnimationEffectStackTest : public ::testing::Test {
   }
 
   EffectModel* MakeEffectModel(CSSPropertyID id,
-                               PassRefPtr<AnimatableValue> value) {
+                               RefPtr<AnimatableValue> value) {
     AnimatableValueKeyframeVector keyframes(2);
     keyframes[0] = AnimatableValueKeyframe::Create();
     keyframes[0]->SetOffset(0.0);

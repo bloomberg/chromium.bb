@@ -6,7 +6,7 @@
 #define HTMLImageFallbackHelper_h
 
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
@@ -18,9 +18,9 @@ class HTMLImageFallbackHelper {
 
  public:
   static void CreateAltTextShadowTree(Element&);
-  static PassRefPtr<ComputedStyle> CustomStyleForAltText(
+  static RefPtr<ComputedStyle> CustomStyleForAltText(
       Element&,
-      PassRefPtr<ComputedStyle> new_style);
+      RefPtr<ComputedStyle> new_style);
 };
 
 }  // namespace blink

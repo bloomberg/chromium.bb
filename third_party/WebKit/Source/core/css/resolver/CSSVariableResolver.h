@@ -84,9 +84,9 @@ class CSSVariableResolver {
   // if necessary.
   CSSVariableData* ValueForCustomProperty(AtomicString name);
   // Resolves the CSSVariableData from a custom property declaration.
-  PassRefPtr<CSSVariableData> ResolveCustomProperty(AtomicString name,
-                                                    const CSSVariableData&,
-                                                    bool& cycle_detected);
+  RefPtr<CSSVariableData> ResolveCustomProperty(AtomicString name,
+                                                const CSSVariableData&,
+                                                bool& cycle_detected);
 
   const StyleResolverState& state_;
   StyleInheritedVariables* inherited_variables_;

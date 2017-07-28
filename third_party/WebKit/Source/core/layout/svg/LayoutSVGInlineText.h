@@ -31,7 +31,7 @@ namespace blink {
 
 class LayoutSVGInlineText final : public LayoutText {
  public:
-  LayoutSVGInlineText(Node*, PassRefPtr<StringImpl>);
+  LayoutSVGInlineText(Node*, RefPtr<StringImpl>);
 
   bool CharacterStartsNewTextChunk(int position) const;
   SVGCharacterDataMap& CharacterDataMap() { return character_data_map_; }

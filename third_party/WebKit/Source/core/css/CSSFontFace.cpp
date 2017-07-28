@@ -88,7 +88,7 @@ void CSSFontFace::DidBecomeVisibleFallback(RemoteFontFaceSource* source) {
     segmented_font_face_->FontFaceInvalidated();
 }
 
-PassRefPtr<SimpleFontData> CSSFontFace::GetFontData(
+RefPtr<SimpleFontData> CSSFontFace::GetFontData(
     const FontDescription& font_description) {
   if (!IsValid())
     return nullptr;

@@ -147,9 +147,9 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
   CanvasRenderingContext* RenderingContext() const { return context_.Get(); }
 
   void EnsureUnacceleratedImageBuffer();
-  PassRefPtr<Image> CopiedImage(SourceDrawingBuffer,
-                                AccelerationHint,
-                                SnapshotReason);
+  RefPtr<Image> CopiedImage(SourceDrawingBuffer,
+                            AccelerationHint,
+                            SnapshotReason);
   void ClearCopiedImage();
 
   bool OriginClean() const;
@@ -186,10 +186,10 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
   void PageVisibilityChanged() override;
 
   // CanvasImageSource implementation
-  PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                            AccelerationHint,
-                                            SnapshotReason,
-                                            const FloatSize&) override;
+  RefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
+                                        AccelerationHint,
+                                        SnapshotReason,
+                                        const FloatSize&) override;
   bool WouldTaintOrigin(SecurityOrigin*) const override;
   FloatSize ElementSize(const FloatSize&) const override;
   bool IsCanvasElement() const override { return true; }

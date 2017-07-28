@@ -168,7 +168,7 @@ SpaceSplitString::Data::~Data() {
     SharedDataMap().erase(key_string_);
 }
 
-PassRefPtr<SpaceSplitString::Data> SpaceSplitString::Data::Create(
+RefPtr<SpaceSplitString::Data> SpaceSplitString::Data::Create(
     const AtomicString& string) {
   Data*& data = SharedDataMap().insert(string, nullptr).stored_value->value;
   if (!data) {
@@ -178,7 +178,7 @@ PassRefPtr<SpaceSplitString::Data> SpaceSplitString::Data::Create(
   return data;
 }
 
-PassRefPtr<SpaceSplitString::Data> SpaceSplitString::Data::CreateUnique(
+RefPtr<SpaceSplitString::Data> SpaceSplitString::Data::CreateUnique(
     const Data& other) {
   return AdoptRef(new SpaceSplitString::Data(other));
 }

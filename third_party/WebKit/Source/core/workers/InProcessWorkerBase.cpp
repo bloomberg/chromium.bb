@@ -27,7 +27,7 @@ InProcessWorkerBase::~InProcessWorkerBase() {
 }
 
 void InProcessWorkerBase::postMessage(ScriptState* script_state,
-                                      PassRefPtr<SerializedScriptValue> message,
+                                      RefPtr<SerializedScriptValue> message,
                                       const MessagePortArray& ports,
                                       ExceptionState& exception_state) {
   DCHECK(context_proxy_);

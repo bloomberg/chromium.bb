@@ -136,7 +136,7 @@ class DateTimeEditElement final : public HTMLDivElement,
   void UpdateUIState();
 
   // Element function.
-  PassRefPtr<ComputedStyle> CustomStyleForLayoutObject() override;
+  RefPtr<ComputedStyle> CustomStyleForLayoutObject() override;
   bool IsDateTimeEditElement() const override;
 
   // DateTimeFieldElement::FieldOwner functions.

@@ -696,7 +696,7 @@ static void InitializeLibXMLIfNecessary() {
   did_init = true;
 }
 
-PassRefPtr<XMLParserContext> XMLParserContext::CreateStringParser(
+RefPtr<XMLParserContext> XMLParserContext::CreateStringParser(
     xmlSAXHandlerPtr handlers,
     void* user_data) {
   InitializeLibXMLIfNecessary();
@@ -708,7 +708,7 @@ PassRefPtr<XMLParserContext> XMLParserContext::CreateStringParser(
 }
 
 // Chunk should be encoded in UTF-8
-PassRefPtr<XMLParserContext> XMLParserContext::CreateMemoryParser(
+RefPtr<XMLParserContext> XMLParserContext::CreateMemoryParser(
     xmlSAXHandlerPtr handlers,
     void* user_data,
     const CString& chunk) {

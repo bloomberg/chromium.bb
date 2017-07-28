@@ -74,7 +74,7 @@ MessageEvent::MessageEvent(const String& origin,
   DCHECK(IsValidSource(source_.Get()));
 }
 
-MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data,
+MessageEvent::MessageEvent(RefPtr<SerializedScriptValue> data,
                            const String& origin,
                            const String& last_event_id,
                            EventTarget* source,
@@ -94,7 +94,7 @@ MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data,
   DCHECK(IsValidSource(source_.Get()));
 }
 
-MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data,
+MessageEvent::MessageEvent(RefPtr<SerializedScriptValue> data,
                            const String& origin,
                            const String& last_event_id,
                            EventTarget* source,

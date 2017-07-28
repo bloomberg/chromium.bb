@@ -42,7 +42,7 @@
 namespace blink {
 
 FEImage::FEImage(Filter* filter,
-                 PassRefPtr<Image> image,
+                 RefPtr<Image> image,
                  SVGPreserveAspectRatio* preserve_aspect_ratio)
     : FilterEffect(filter),
       image_(std::move(image)),
@@ -70,7 +70,7 @@ DEFINE_TRACE(FEImage) {
 
 FEImage* FEImage::CreateWithImage(
     Filter* filter,
-    PassRefPtr<Image> image,
+    RefPtr<Image> image,
     SVGPreserveAspectRatio* preserve_aspect_ratio) {
   return new FEImage(filter, std::move(image), preserve_aspect_ratio);
 }

@@ -14,7 +14,7 @@ namespace blink {
 
 namespace {
 
-static PassRefPtr<ComputedStyle> CreateWhitespaceStyle(EWhiteSpace whitespace) {
+static RefPtr<ComputedStyle> CreateWhitespaceStyle(EWhiteSpace whitespace) {
   RefPtr<ComputedStyle> style(ComputedStyle::Create());
   style->SetWhiteSpace(whitespace);
   return style;

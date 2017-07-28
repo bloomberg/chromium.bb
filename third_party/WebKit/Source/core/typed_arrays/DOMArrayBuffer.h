@@ -17,7 +17,7 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMArrayBuffer* Create(PassRefPtr<WTF::ArrayBuffer> buffer) {
+  static DOMArrayBuffer* Create(RefPtr<WTF::ArrayBuffer> buffer) {
     return new DOMArrayBuffer(std::move(buffer));
   }
   static DOMArrayBuffer* Create(unsigned num_elements,
@@ -30,7 +30,7 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
   static DOMArrayBuffer* Create(WTF::ArrayBufferContents& contents) {
     return Create(WTF::ArrayBuffer::Create(contents));
   }
-  static DOMArrayBuffer* Create(PassRefPtr<SharedBuffer>);
+  static DOMArrayBuffer* Create(RefPtr<SharedBuffer>);
 
   // Only for use by XMLHttpRequest::responseArrayBuffer and
   // Internals::serializeObject.
@@ -54,7 +54,7 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
                              v8::Local<v8::Object> creation_context) override;
 
  private:
-  explicit DOMArrayBuffer(PassRefPtr<WTF::ArrayBuffer> buffer)
+  explicit DOMArrayBuffer(RefPtr<WTF::ArrayBuffer> buffer)
       : DOMArrayBufferBase(std::move(buffer)) {}
 };
 

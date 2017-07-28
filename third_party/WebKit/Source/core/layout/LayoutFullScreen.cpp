@@ -44,7 +44,7 @@ class LayoutFullScreenPlaceholder final : public LayoutBlockFlow {
   }
 
   // Must call setStyleWithWritingModeOfParent() instead.
-  void SetStyle(PassRefPtr<ComputedStyle>) = delete;
+  void SetStyle(RefPtr<ComputedStyle>) = delete;
 
  private:
   bool IsOfType(LayoutObjectType type) const override {
@@ -202,7 +202,7 @@ void LayoutFullScreen::UnwrapLayoutObject() {
   Destroy();
 }
 
-void LayoutFullScreen::CreatePlaceholder(PassRefPtr<ComputedStyle> style,
+void LayoutFullScreen::CreatePlaceholder(RefPtr<ComputedStyle> style,
                                          const LayoutRect& frame_rect) {
   if (style->Width().IsAuto())
     style->SetWidth(Length(frame_rect.Width(), kFixed));

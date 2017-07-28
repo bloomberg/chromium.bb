@@ -28,9 +28,9 @@ class CORE_EXPORT AnimationInputHelpers {
                                                                 const Element&);
   static const QualifiedName* KeyframeAttributeToSVGAttribute(const String&,
                                                               Element&);
-  static PassRefPtr<TimingFunction> ParseTimingFunction(const String&,
-                                                        Document*,
-                                                        ExceptionState&);
+  static RefPtr<TimingFunction> ParseTimingFunction(const String&,
+                                                    Document*,
+                                                    ExceptionState&);
 };
 
 }  // namespace blink

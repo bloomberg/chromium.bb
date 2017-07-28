@@ -115,7 +115,7 @@ class FormSubmission : public GarbageCollectedFinalized<FormSubmission> {
                  const AtomicString& target,
                  const AtomicString& content_type,
                  HTMLFormElement*,
-                 PassRefPtr<EncodedFormData>,
+                 RefPtr<EncodedFormData>,
                  const String& boundary,
                  Event*);
   // FormSubmission for DialogMethod

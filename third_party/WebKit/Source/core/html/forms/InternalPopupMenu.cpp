@@ -73,8 +73,8 @@ class PopupMenuCSSFontSelector : public CSSFontSelector,
 
   // We don't override willUseFontData() for now because the old PopupListBox
   // only worked with fonts loaded when opening the popup.
-  PassRefPtr<FontData> GetFontData(const FontDescription&,
-                                   const AtomicString&) override;
+  RefPtr<FontData> GetFontData(const FontDescription&,
+                               const AtomicString&) override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -95,7 +95,7 @@ PopupMenuCSSFontSelector::PopupMenuCSSFontSelector(
 
 PopupMenuCSSFontSelector::~PopupMenuCSSFontSelector() {}
 
-PassRefPtr<FontData> PopupMenuCSSFontSelector::GetFontData(
+RefPtr<FontData> PopupMenuCSSFontSelector::GetFontData(
     const FontDescription& description,
     const AtomicString& name) {
   return owner_font_selector_->GetFontData(description, name);

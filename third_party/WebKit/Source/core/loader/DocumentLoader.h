@@ -126,7 +126,7 @@ class CORE_EXPORT DocumentLoader
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag);
   void UpdateForSameDocumentNavigation(const KURL&,
                                        SameDocumentNavigationSource,
-                                       PassRefPtr<SerializedScriptValue>,
+                                       RefPtr<SerializedScriptValue>,
                                        HistoryScrollRestorationType,
                                        FrameLoadType,
                                        Document*);

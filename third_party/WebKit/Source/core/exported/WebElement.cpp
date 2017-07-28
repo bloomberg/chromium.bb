@@ -37,7 +37,7 @@
 #include "core/html/TextControlElement.h"
 #include "core/html/custom/V0CustomElementProcessingStack.h"
 #include "platform/graphics/Image.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebRect.h"

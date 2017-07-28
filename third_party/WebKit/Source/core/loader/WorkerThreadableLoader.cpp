@@ -108,7 +108,7 @@ struct WorkerThreadableLoader::TaskWithLocation final {
 class WorkerThreadableLoader::WaitableEventWithTasks final
     : public ThreadSafeRefCounted<WaitableEventWithTasks> {
  public:
-  static PassRefPtr<WaitableEventWithTasks> Create() {
+  static RefPtr<WaitableEventWithTasks> Create() {
     return AdoptRef(new WaitableEventWithTasks);
   }
 
@@ -162,8 +162,7 @@ class WorkerThreadableLoader::WaitableEventWithTasks final
 class WorkerThreadableLoader::SyncTaskForwarder final
     : public WorkerThreadableLoader::TaskForwarder {
  public:
-  explicit SyncTaskForwarder(
-      PassRefPtr<WaitableEventWithTasks> event_with_tasks)
+  explicit SyncTaskForwarder(RefPtr<WaitableEventWithTasks> event_with_tasks)
       : event_with_tasks_(std::move(event_with_tasks)) {
     DCHECK(IsMainThread());
   }
@@ -431,7 +430,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::CreateAndStart(
     std::unique_ptr<CrossThreadResourceRequestData> request,
     const ThreadableLoaderOptions& options,
     const ResourceLoaderOptions& resource_loader_options,
-    PassRefPtr<WaitableEventWithTasks> event_with_tasks) {
+    RefPtr<WaitableEventWithTasks> event_with_tasks) {
   DCHECK(IsMainThread());
   TaskForwarder* forwarder;
   if (event_with_tasks)
