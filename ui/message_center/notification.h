@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "mojo/public/cpp/bindings/struct_traits.h"  // nogncheck
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification_delegate.h"
@@ -21,17 +22,11 @@
 #include "ui/message_center/notifier_settings.h"
 #include "url/gurl.h"
 
-#if !defined(OS_IOS)
-#include "mojo/public/cpp/bindings/struct_traits.h"  // nogncheck
-#endif
-
 namespace message_center {
 
-#if !defined(OS_IOS)
 namespace mojom {
 class NotificationDataView;
 }
-#endif
 
 // Represents an individual item in NOTIFICATION_TYPE_MULTIPLE notifications.
 struct MESSAGE_CENTER_EXPORT NotificationItem {
@@ -381,6 +376,8 @@ class MESSAGE_CENTER_EXPORT Notification {
   base::string16 display_source_;
 
  private:
+  friend struct mojo::StructTraits<mojom::NotificationDataView, Notification>;
+
   // The origin URL of the script which requested the notification.
   // Can be empty if requested through a chrome app or extension or if
   // it's a system notification.
@@ -394,10 +391,6 @@ class MESSAGE_CENTER_EXPORT Notification {
   // A proxy object that allows access back to the JavaScript object that
   // represents the notification, for firing events.
   scoped_refptr<NotificationDelegate> delegate_;
-
-#if !defined(OS_IOS)
-  friend struct mojo::StructTraits<mojom::NotificationDataView, Notification>;
-#endif
 };
 
 }  // namespace message_center

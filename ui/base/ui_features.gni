@@ -13,6 +13,9 @@ declare_args() {
 
   # Whether the platform provides a native accessibility toolkit.
   has_native_accessibility = use_atk || is_win || is_mac
+
+  # Whether the message center should be included for displaying notifications.
+  enable_message_center = is_win || is_mac || is_linux || is_chromeos
 }
 
 enable_hidpi = is_mac || is_win || is_linux
