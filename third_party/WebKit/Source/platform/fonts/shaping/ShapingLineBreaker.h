@@ -46,7 +46,8 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
   // The output parameter breakOffset indicates the resulting break offset.
   PassRefPtr<ShapeResult> ShapeLine(unsigned start_offset,
                                     LayoutUnit available_space,
-                                    unsigned* break_offset);
+                                    unsigned* break_offset,
+                                    bool* has_hanging_spaces_out = nullptr);
 
  private:
   PassRefPtr<ShapeResult> Shape(TextDirection, unsigned start, unsigned end);

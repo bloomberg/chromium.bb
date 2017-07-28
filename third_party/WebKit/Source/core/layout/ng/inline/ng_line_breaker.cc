@@ -281,12 +281,24 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
 
     line_.position = next_position;
     item_result->no_break_opportunities_inside = is_overflow;
-    if (item_result->end_offset < item.EndOffset()) {
+    if (item_result->end_offset < item.EndOffset())
       offset_ = item_result->end_offset;
-      return is_overflow ? LineBreakState::kIsBreakable
-                         : LineBreakState::kBreakAfterTrailings;
+    else
+      MoveToNextOf(item);
+    if (item_result->end_offset < item.EndOffset() ||
+        item_result->has_hanging_spaces) {
+      // The break point found. If it fits, break this line after including
+      // trailing objects (end margins etc.)
+      if (!is_overflow)
+        return LineBreakState::kBreakAfterTrailings;
+
+      // If overflow, proceed to the possible break point before start
+      // rewinding. TODO(kojii): This could be more efficient if we knew there
+      // was a break opportunity and that rewind will succeed.
+      return LineBreakState::kIsBreakable;
     }
-    MoveToNextOf(item);
+
+    DCHECK(is_overflow || item_result->start_offset != item.StartOffset());
     return item_result->prohibit_break_after ? LineBreakState::kNotBreakable
                                              : LineBreakState::kIsBreakable;
   }
@@ -325,8 +337,15 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
                              &spacing_);
   available_width = std::max(LayoutUnit(0), available_width);
   item_result->shape_result = breaker.ShapeLine(
-      item_result->start_offset, available_width, &item_result->end_offset);
-  item_result->inline_size = item_result->shape_result->SnappedWidth();
+      item_result->start_offset, available_width, &item_result->end_offset,
+      &item_result->has_hanging_spaces);
+  if (item_result->has_hanging_spaces) {
+    // Hanging spaces do not expand min-content. Handle them simliar to visual
+    // overflow. Some details are different, but it's the closest behavior.
+    item_result->inline_size = available_width;
+  } else {
+    item_result->inline_size = item_result->shape_result->SnappedWidth();
+  }
 #endif
   DCHECK_GT(item_result->end_offset, item_result->start_offset);
   // * If width <= available_width:
@@ -608,7 +627,9 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
           std::min(-next_width_to_rewind, item_result->inline_size - 1);
       BreakText(item_result, item, item_available_width);
       if (item_result->inline_size <= item_available_width) {
-        DCHECK_LT(item_result->end_offset, item.EndOffset());
+        DCHECK(item_result->end_offset < item.EndOffset() ||
+               (item_result->end_offset == item.EndOffset() &&
+                item_result->has_hanging_spaces));
         DCHECK(!item_result->prohibit_break_after);
         return Rewind(line_info, i + 1);
       }
