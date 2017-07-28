@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ui/omnibox/chrome_omnibox_client_ios.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
@@ -156,7 +157,8 @@ void ChromeOmniboxClientIOS::DiscardNonCommittedNavigations() {
 }
 
 const base::string16& ChromeOmniboxClientIOS::GetTitle() const {
-  return controller_->GetWebState()->GetTitle();
+  return CurrentPageExists() ? controller_->GetWebState()->GetTitle()
+                             : base::EmptyString16();
 }
 
 gfx::Image ChromeOmniboxClientIOS::GetFavicon() const {
