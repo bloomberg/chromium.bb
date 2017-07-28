@@ -9,6 +9,7 @@ from __future__ import print_function
 import SimpleHTTPServer
 import SocketServer
 import argparse
+import cgi
 import codecs
 import os
 import re
@@ -16,6 +17,7 @@ import socket
 import sys
 import threading
 import time
+import urllib
 import webbrowser
 from xml.etree import ElementTree
 
@@ -124,6 +126,7 @@ class Server(SocketServer.TCPServer):
 
 class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
   def do_GET(self):
+    self.path = urllib.unquote(self.path)
     path = self.path
 
     # strip off the repo and branch info, if present, for compatibility
@@ -226,12 +229,13 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
   def _DoNotFound(self):
     self._WriteHeader('text/html', status_code=404)
-    self.wfile.write('<html><body>%s not found</body></html>' % self.path)
+    self.wfile.write(
+        '<html><body>%s not found</body></html>' % cgi.escape(self.path))
 
   def _DoUnknown(self):
     self._WriteHeader('text/html', status_code=501)
     self.wfile.write('<html><body>I do not know how to serve %s.</body>'
-                       '</html>' % self.path)
+                     '</html>' % cgi.escape(self.path))
 
   def _DoDirListing(self, full_path):
     self._WriteHeader('text/html')
@@ -239,27 +243,32 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     self.wfile.write('<div class="doc">')
 
     self.wfile.write('<div class="Breadcrumbs">\n')
-    self.wfile.write('<a class="Breadcrumbs-crumb">%s</a>\n' % self.path)
+    self.wfile.write(
+        '<a class="Breadcrumbs-crumb">%s</a>\n' % cgi.escape(self.path))
     self.wfile.write('</div>\n')
+
+    escaped_dir = cgi.escape(self.path.rstrip('/'), quote=True)
 
     for _, dirs, files in os.walk(full_path):
       for f in sorted(files):
         if f.startswith('.'):
           continue
+        f = cgi.escape(f, quote=True)
         if f.endswith('.md'):
           bold = ('<b>', '</b>')
         else:
           bold = ('', '')
         self.wfile.write('<a href="%s/%s">%s%s%s</a><br/>\n' %
-                         (self.path.rstrip('/'), f, bold[0], f, bold[1]))
+                         (escaped_dir, f, bold[0], f, bold[1]))
 
       self.wfile.write('<br/>\n')
 
       for d in sorted(dirs):
         if d.startswith('.'):
           continue
+        d = cgi.escape(d, quote=True)
         self.wfile.write('<a href="%s/%s">%s/</a><br/>\n' %
-                         (self.path.rstrip('/'), d, d))
+                         (escaped_dir, d, d))
 
       break
 
