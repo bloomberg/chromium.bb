@@ -72,6 +72,8 @@ public abstract class SuggestionsMetrics {
     /**
      * Records metrics for the visit to the provided content suggestion, such as the time spent on
      * the website, or if the user comes back to the starting point.
+     * @param tab The tab we want to record the visit on. It should have a live WebContents.
+     * @param suggestion The suggestion that prompted the visit.
      */
     public static void recordVisit(Tab tab, SnippetArticle suggestion) {
         @CategoryInt

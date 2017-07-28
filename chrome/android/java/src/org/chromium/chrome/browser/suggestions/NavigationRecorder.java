@@ -38,6 +38,8 @@ public class NavigationRecorder extends EmptyTabObserver {
 
     /** Private because users should not hold to references to the instance. */
     private NavigationRecorder(final Tab tab, Callback<VisitData> visitEndCallback) {
+        assert tab.getWebContents() != null;
+
         mVisitEndCallback = visitEndCallback;
 
         // onLoadUrl below covers many exit conditions to stop recording but not all,

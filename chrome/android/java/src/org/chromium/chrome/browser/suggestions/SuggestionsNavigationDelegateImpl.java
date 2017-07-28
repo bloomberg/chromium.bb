@@ -141,7 +141,11 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
         }
 
         Tab loadingTab = openUrl(windowOpenDisposition, loadUrlParams);
-        if (loadingTab != null) SuggestionsMetrics.recordVisit(loadingTab, article);
+        if (loadingTab != null && loadingTab.getWebContents() != null) {
+            // TODO(https://crbug.com/665915): Handle cases where webcontents is null by waiting
+            // for it to be added, probably using TabObserver#webContentsCreated().
+            SuggestionsMetrics.recordVisit(loadingTab, article);
+        }
     }
 
     @Override
