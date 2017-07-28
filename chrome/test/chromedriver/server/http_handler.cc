@@ -673,6 +673,7 @@ HttpHandler::PrepareStandardResponse(
     case kXPathLookupError:
     case kNoAlertOpen:
     case kInvalidArgument:
+    case kElementNotInteractable:
     case kNoSuchExecutionContext:
       response.reset(new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
       break;
@@ -694,6 +695,7 @@ HttpHandler::PrepareStandardResponse(
     case kChromeNotReachable:
     case kDisconnected:
     case kForbidden:
+    case kUnsupportedOperation:
     case kTabCrashed:
       response.reset(
           new net::HttpServerResponseInfo(net::HTTP_INTERNAL_SERVER_ERROR));
