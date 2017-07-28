@@ -737,6 +737,11 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   if (command_line.HasSwitch(switches::kWinJumplistAction)) {
     jumplist::LogJumplistActionFromSwitchValue(
         command_line.GetSwitchValueASCII(switches::kWinJumplistAction));
+    // Use a non-NULL pointer to indicate JumpList has been used. We re-use
+    // chrome::kJumpListIconDirname as the key to the data.
+    last_used_profile->SetUserData(
+        chrome::kJumpListIconDirname,
+        base::WrapUnique(new base::SupportsUserData::Data()));
   }
 #endif  // defined(OS_WIN)
 
