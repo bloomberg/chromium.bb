@@ -7,7 +7,6 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -172,7 +171,6 @@ void configureVoiceSearchButton(UIButton* voiceSearchButton,
 
   [voiceSearchButton setAdjustsImageWhenHighlighted:NO];
   [voiceSearchButton setImage:micImage forState:UIControlStateNormal];
-  [voiceSearchButton setTag:IDC_VOICE_SEARCH];
   [voiceSearchButton setAccessibilityLabel:l10n_util::GetNSString(
                                                IDS_IOS_ACCNAME_VOICE_SEARCH)];
   [voiceSearchButton setAccessibilityIdentifier:@"Voice Search"];

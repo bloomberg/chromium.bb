@@ -11,10 +11,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
@@ -117,7 +119,8 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
   NewTabPageHeaderView* _headerView;
   WhatsNewHeaderView* _promoHeaderView;
   __weak id<GoogleLandingDataSource> _dataSource;
-  __weak id<UrlLoader, OmniboxFocuser> _dispatcher;
+  __weak id<ApplicationCommands, BrowserCommands, UrlLoader, OmniboxFocuser>
+      _dispatcher;
 }
 
 // Whether the Google logo or doodle is being shown.
@@ -207,6 +210,7 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 
 @implementation GoogleLandingViewController
 
+@synthesize dispatcher = _dispatcher;
 @synthesize logoVendor = _logoVendor;
 // Property declared in NewTabPagePanelProtocol.
 @synthesize delegate = _delegate;
@@ -321,14 +325,6 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
   _dataSource = dataSource;
 }
 
-- (id<UrlLoader, OmniboxFocuser>)dispatcher {
-  return _dispatcher;
-}
-
-- (void)setDispatcher:(id<UrlLoader, OmniboxFocuser>)dispatcher {
-  _dispatcher = dispatcher;
-}
-
 #pragma mark - Private
 
 - (CGSize)mostVisitedCellSize {
@@ -441,7 +437,10 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 - (void)loadVoiceSearch:(id)sender {
   DCHECK(self.voiceSearchIsEnabled);
   base::RecordAction(UserMetricsAction("MobileNTPMostVisitedVoiceSearch"));
-  [sender chromeExecuteCommand:sender];
+  UIView* view = base::mac::ObjCCastStrict<UIView>(sender);
+  StartVoiceSearchCommand* command =
+      [[StartVoiceSearchCommand alloc] initWithOriginView:view];
+  [self.dispatcher startVoiceSearch:command];
 }
 
 - (void)preloadVoiceSearch:(id)sender {

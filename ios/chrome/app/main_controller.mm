@@ -109,6 +109,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
+#import "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/downloads/download_manager_controller.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
@@ -385,7 +386,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 // Shows the tab switcher UI.
 - (void)showTabSwitcher;
 // Starts a voice search on the current BVC.
-- (void)startVoiceSearch;
+- (void)startVoiceSearchInCurrentBVCWithOriginView:(UIView*)originView;
 // Dismisses the tab switcher UI without animation into the given model.
 - (void)dismissTabSwitcherWithoutAnimationInModel:(TabModel*)tabModel;
 // Dismisses and clears |signinInteractionController|.
@@ -1360,6 +1361,18 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   [self.currentBVC.dispatcher openNewTab:command];
 }
 
+- (void)startVoiceSearch:(StartVoiceSearchCommand*)command {
+  if (!_isProcessingTabSwitcherCommand) {
+    [self startVoiceSearchInCurrentBVCWithOriginView:command.originView];
+    _isProcessingVoiceSearchCommand = YES;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
+                                 kExpectedTransitionDurationInNanoSeconds),
+                   dispatch_get_main_queue(), ^{
+                     _isProcessingVoiceSearchCommand = NO;
+                   });
+  }
+}
+
 #pragma mark - chromeExecuteCommand
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -1418,15 +1431,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
       [self.currentBVC chromeExecuteCommand:sender];
       break;
     case IDC_VOICE_SEARCH: {
-      if (!_isProcessingTabSwitcherCommand) {
-        [self startVoiceSearch];
-        _isProcessingVoiceSearchCommand = YES;
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
-                                     kExpectedTransitionDurationInNanoSeconds),
-                       dispatch_get_main_queue(), ^{
-                         _isProcessingVoiceSearchCommand = NO;
-                       });
-      }
+      StartVoiceSearchCommand* command =
+          [[StartVoiceSearchCommand alloc] initWithOriginView:nil];
+      [self startVoiceSearch:command];
     } break;
 
     case IDC_CLEAR_BROWSING_DATA_IOS: {
@@ -1502,15 +1509,15 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   [self closeSettingsAnimated:YES completion:completion];
 }
 
-- (void)startVoiceSearch {
+- (void)startVoiceSearchInCurrentBVCWithOriginView:(UIView*)originView {
   // If the background (non-current) BVC is playing TTS audio, call
   // -startVoiceSearch on it to stop the TTS.
   BrowserViewController* backgroundBVC =
       self.mainBVC == self.currentBVC ? self.otrBVC : self.mainBVC;
   if (backgroundBVC.playingTTS)
-    [backgroundBVC startVoiceSearch];
+    [backgroundBVC startVoiceSearchWithOriginView:originView];
   else
-    [self.currentBVC startVoiceSearch];
+    [self.currentBVC startVoiceSearchWithOriginView:originView];
 }
 
 #pragma mark - Preferences Management
@@ -1829,7 +1836,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   // current BVC.
   if (self.startVoiceSearchAfterTabSwitcherDismissal) {
     self.startVoiceSearchAfterTabSwitcherDismissal = NO;
-    [self.currentBVC startVoiceSearch];
+    [self.currentBVC startVoiceSearchWithOriginView:nil];
   } else if (self.startQRScannerAfterTabSwitcherDismissal) {
     self.startQRScannerAfterTabSwitcherDismissal = NO;
     [self.currentBVC.dispatcher showQRScanner];
@@ -2190,7 +2197,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   ProceduralBlock tabOpenedCompletion;
   if ([_startupParameters launchVoiceSearch]) {
     tabOpenedCompletion = ^{
-      [self startVoiceSearch];
+      [self startVoiceSearchInCurrentBVCWithOriginView:nil];
     };
   }
   if ([_startupParameters launchQRScanner]) {

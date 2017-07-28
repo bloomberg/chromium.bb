@@ -136,8 +136,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // related to showing the previously selected tab.
 - (void)expectNewForegroundTab;
 
-// Shows the voice search UI.
-- (void)startVoiceSearch;
+// Shows the voice search UI. |originView|'s center is used for the presentation
+// and dismissal animations of the Voice Search UI. |originView| can be nil.
+- (void)startVoiceSearchWithOriginView:(UIView*)originView;
 
 // Focuses the omnibox.
 - (void)focusOmnibox;
