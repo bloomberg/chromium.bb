@@ -6,7 +6,7 @@ window.screenX = 10px
 window.screenY = 20px
 Viewport: = ?none
 @media orientation = landscape
-window.orientation = 0
+window.orientation
 @media resolution = 96dpi
 @media device-pixel-ratio = 1
 window.devicePixelRatio = 1
