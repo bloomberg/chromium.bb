@@ -65,15 +65,20 @@ InterpolationValue CSSFontWeightInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState* state,
     ConversionCheckers& conversion_checkers) const {
-  if (!value.IsIdentifierValue())
-    return nullptr;
+  if (value.IsPrimitiveValue()) {
+    return CreateFontWeightValue(
+        FontSelectionValue(ToCSSPrimitiveValue(value).GetFloatValue()));
+  }
 
+  CHECK(value.IsIdentifierValue());
   const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
   CSSValueID keyword = identifier_value.GetValueID();
 
   switch (keyword) {
     case CSSValueInvalid:
       return nullptr;
+    case CSSValueNormal:
+      return CreateFontWeightValue(NormalWeightValue());
 
     case CSSValueBolder:
     case CSSValueLighter: {
@@ -82,15 +87,16 @@ InterpolationValue CSSFontWeightInterpolationType::MaybeConvertValue(
           state->ParentStyle()->GetFontWeight();
       conversion_checkers.push_back(
           InheritedFontWeightChecker::Create(inherited_font_weight));
-      if (keyword == CSSValueBolder)
+      if (keyword == CSSValueBolder) {
         return CreateFontWeightValue(
             FontDescription::BolderWeight(inherited_font_weight));
+      }
       return CreateFontWeightValue(
           FontDescription::LighterWeight(inherited_font_weight));
     }
     default:
-      return CreateFontWeightValue(
-          identifier_value.ConvertTo<FontSelectionValueWeight>());
+      NOTREACHED();
+      return nullptr;
   }
 }
 

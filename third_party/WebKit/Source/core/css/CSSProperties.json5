@@ -525,7 +525,6 @@
       interpolable: true,
       name_for_methods: "Weight",
       priority: "High",
-      type_name: "FontSelectionValueWeight",
     },
     {
       name: "font-feature-settings",
