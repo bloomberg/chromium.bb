@@ -4,6 +4,7 @@
 
 #import "ios/showcase/test/showcase_eg_utils.h"
 
+#include "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,8 +16,9 @@ namespace {
 // Matcher for the back button on screens presented from the Showcase home
 // screen.
 id<GREYMatcher> BackButton() {
-  return grey_kindOfClass(
-      NSClassFromString(@"_UINavigationBarBackIndicatorView"));
+  return grey_allOf(grey_accessibilityLabel(@"SC"),
+                    grey_accessibilityTrait(UIAccessibilityTraitButton),
+                    grey_userInteractionEnabled(), nil);
 }
 
 // Matcher for the Showcase home screen view.
