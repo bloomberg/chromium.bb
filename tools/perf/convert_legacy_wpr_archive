@@ -82,6 +82,7 @@ def upload(page_sets_json_file, bucket):
       m = list(set(m))
       for f in m:
         wprgo_file = os.path.join(dir_path, f + ".wprgo")
+        wprsha1_file = os.path.join(dir_path, f + ".wpr.sha1")
         if not os.path.exists(wprgo_file):
           raise Exception('file "%s" does not exist' % wprgo_file)
         cmd = ['third_party/depot_tools/upload_to_google_storage.py', '--bucket',
@@ -90,9 +91,11 @@ def upload(page_sets_json_file, bucket):
         return_code = subprocess.call(cmd)
         if return_code != 0:
           raise Exception("fail to upload wprgo file %s\n" % wprgo_file)
+        subprocess.call(['rm', wprsha1_file])
         count += 1
     print "successfully upload %d wprgo files in %s to buckets: %s\n" % (count,
         page_sets_json_file, bucket)
+    print "remember to run \"git add *.wprgo.sha1\" to include them in your CL\n"
 
 def GetStorySet(benchmark):
   # Create a dummy options object which hold default values that are expected
@@ -144,6 +147,10 @@ def main():
   dir_path = os.path.abspath(os.path.dirname(page_sets_json_file))
   cert_file = os.path.join(path_util.GetWprGoDir(), 'wpr_cert.pem')
   key_file = os.path.join(path_util.GetWprGoDir(), 'wpr_key.pem')
+  binary_manager.InitDependencyManager(None)
+  go_binary_path = binary_manager.FetchPath('wpr_go',
+                                            py_utils.GetHostArchName(),
+                                            py_utils.GetHostOsName())
   with open(page_sets_json_file, 'r+') as json_file:
     content = json_file.read()
     m = re.findall(r'"(\w*).wpr"', content)
@@ -167,10 +174,6 @@ def main():
       print wpr_cmd
       wpr_server = subprocess.Popen(' '.join(wpr_cmd), shell=True)
       time.sleep(10)
-      binary_manager.InitDependencyManager(None)
-      go_binary_path = binary_manager.FetchPath('wpr_go',
-                                                py_utils.GetHostArchName(),
-                                                py_utils.GetHostOsName())
       go_cmd = [go_binary_path,
                 'convert',
                 '--input_file=%s' % temp_file,
