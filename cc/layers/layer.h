@@ -484,7 +484,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void OnFilterAnimated(const FilterOperations& filters);
   void OnOpacityAnimated(float opacity);
   void OnTransformAnimated(const gfx::Transform& transform);
-  void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset);
 
   bool ScrollOffsetAnimationWasInterrupted() const;
 
