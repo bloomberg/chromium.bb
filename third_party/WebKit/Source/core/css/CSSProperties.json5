@@ -683,10 +683,14 @@
     },
     {
       name: "background-attachment",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       custom_all: true,
     },
     {
       name: "background-blend-mode",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       custom_all: true,
     },
     {
@@ -1709,6 +1713,8 @@
     },
     {
       name: "mask-source-type",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       custom_all: true,
       runtime_flag: "CSSMaskSourceType",
     },
@@ -3161,6 +3167,8 @@
     },
     {
       name: "-webkit-mask-composite",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       custom_all: true,
     },
     {

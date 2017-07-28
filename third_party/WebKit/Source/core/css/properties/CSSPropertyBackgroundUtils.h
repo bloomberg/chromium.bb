@@ -22,6 +22,11 @@ class CSSPropertyBackgroundUtils {
   // background-related properties have their APIs.
   static void AddBackgroundValue(CSSValue*& list, CSSValue*);
 
+  static CSSValue* ConsumeBackgroundAttachment(CSSParserTokenRange&);
+  static CSSValue* ConsumeBackgroundBlendMode(CSSParserTokenRange&);
+  static CSSValue* ConsumeBackgroundComposite(CSSParserTokenRange&);
+  static CSSValue* ConsumeMaskSourceType(CSSParserTokenRange&);
+
   static bool ConsumeBackgroundPosition(CSSParserTokenRange&,
                                         const CSSParserContext&,
                                         CSSPropertyParserHelpers::UnitlessQuirk,

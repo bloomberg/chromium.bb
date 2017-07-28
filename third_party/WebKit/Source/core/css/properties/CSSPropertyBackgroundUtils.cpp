@@ -4,8 +4,10 @@
 
 #include "core/css/properties/CSSPropertyBackgroundUtils.h"
 
+#include "core/CSSValueKeywords.h"
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/CSSValueList.h"
+#include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
@@ -24,6 +26,34 @@ void CSSPropertyBackgroundUtils::AddBackgroundValue(CSSValue*& list,
     // To conserve memory we don't actually wrap a single value in a list.
     list = value;
   }
+}
+
+CSSValue* CSSPropertyBackgroundUtils::ConsumeBackgroundAttachment(
+    CSSParserTokenRange& range) {
+  return CSSPropertyParserHelpers::ConsumeIdent<CSSValueScroll, CSSValueFixed,
+                                                CSSValueLocal>(range);
+}
+
+CSSValue* CSSPropertyBackgroundUtils::ConsumeBackgroundBlendMode(
+    CSSParserTokenRange& range) {
+  CSSValueID id = range.Peek().Id();
+  if (id == CSSValueNormal || id == CSSValueOverlay ||
+      (id >= CSSValueMultiply && id <= CSSValueLuminosity))
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  return nullptr;
+}
+
+CSSValue* CSSPropertyBackgroundUtils::ConsumeBackgroundComposite(
+    CSSParserTokenRange& range) {
+  return CSSPropertyParserHelpers::ConsumeIdentRange(range, CSSValueClear,
+                                                     CSSValuePlusLighter);
+}
+
+CSSValue* CSSPropertyBackgroundUtils::ConsumeMaskSourceType(
+    CSSParserTokenRange& range) {
+  DCHECK(RuntimeEnabledFeatures::CSSMaskSourceTypeEnabled());
+  return CSSPropertyParserHelpers::ConsumeIdent<CSSValueAuto, CSSValueAlpha,
+                                                CSSValueLuminance>(range);
 }
 
 bool CSSPropertyBackgroundUtils::ConsumeBackgroundPosition(
