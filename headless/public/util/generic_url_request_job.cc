@@ -22,6 +22,7 @@
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 
 namespace headless {
@@ -55,6 +56,25 @@ void GenericURLRequestJob::SetExtraRequestHeaders(
     const net::HttpRequestHeaders& headers) {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   extra_request_headers_ = headers;
+
+  if (!request_->referrer().empty()) {
+    extra_request_headers_.SetHeader(net::HttpRequestHeaders::kReferer,
+                                     request_->referrer());
+  }
+
+  const net::HttpUserAgentSettings* user_agent_settings =
+      request()->context()->http_user_agent_settings();
+  if (user_agent_settings) {
+    // If set the |user_agent_settings| accept language is a fallback.
+    extra_request_headers_.SetHeaderIfMissing(
+        net::HttpRequestHeaders::kAcceptLanguage,
+        user_agent_settings->GetAcceptLanguage());
+    // If set the |user_agent_settings| user agent is an override.
+    if (!user_agent_settings->GetUserAgent().empty()) {
+      extra_request_headers_.SetHeader(net::HttpRequestHeaders::kUserAgent,
+                                       user_agent_settings->GetUserAgent());
+    }
+  }
 }
 
 void GenericURLRequestJob::Start() {
@@ -107,11 +127,6 @@ void GenericURLRequestJob::OnCookiesAvailable(
   std::string cookie = net::CookieStore::BuildCookieLine(cookie_list);
   if (!cookie.empty())
     extra_request_headers_.SetHeader(net::HttpRequestHeaders::kCookie, cookie);
-
-  if (!request_->referrer().empty()) {
-    extra_request_headers_.SetHeader(net::HttpRequestHeaders::kReferer,
-                                     request_->referrer());
-  }
 
   done_callback.Run();
 }

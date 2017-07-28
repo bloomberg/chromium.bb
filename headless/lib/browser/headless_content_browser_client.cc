@@ -30,6 +30,7 @@
 #include "headless/lib/headless_macros.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
 
 #if defined(HEADLESS_USE_BREAKPAD)
@@ -221,6 +222,25 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
   if (breakpad::IsCrashReporterEnabled())
     command_line->AppendSwitch(::switches::kEnableCrashReporter);
 #endif  // defined(HEADLESS_USE_BREAKPAD)
+
+  // If we're spawning a renderer, then override the language switch.
+  if (command_line->GetSwitchValueASCII(::switches::kProcessType) ==
+      ::switches::kRendererProcess) {
+    content::RenderProcessHost* render_process_host =
+        content::RenderProcessHost::FromID(child_process_id);
+    if (render_process_host) {
+      HeadlessBrowserContextImpl* headless_browser_context_impl =
+          HeadlessBrowserContextImpl::From(
+              render_process_host->GetBrowserContext());
+      std::vector<base::StringPiece> languages = base::SplitStringPiece(
+          headless_browser_context_impl->options()->accept_language(), ",",
+          base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+      if (!languages.empty()) {
+        command_line->AppendSwitchASCII(::switches::kLang,
+                                        languages[0].as_string());
+      }
+    }
+  }
 }
 
 void HeadlessContentBrowserClient::AllowCertificateError(
