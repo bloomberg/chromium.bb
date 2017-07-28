@@ -25,6 +25,7 @@
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
+#include "ui/accessibility/platform/ax_platform_unique_id.h"
 #include "ui/base/win/atl_module.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -306,16 +307,34 @@ AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
   return ax_platform_node.Get();
 }
 
+using UniqueIdMap = base::hash_map<int32_t, AXPlatformNode*>;
+// Map from each AXPlatformNode's unique id to its instance.
+base::LazyInstance<UniqueIdMap>::DestructorAtExit g_unique_id_map =
+    LAZY_INSTANCE_INITIALIZER;
+
+// static
+AXPlatformNode* AXPlatformNodeWin::GetFromUniqueId(int32_t unique_id) {
+  UniqueIdMap* unique_ids = g_unique_id_map.Pointer();
+  auto iter = unique_ids->find(unique_id);
+  if (iter != unique_ids->end())
+    return iter->second;
+
+  return nullptr;
+}
 //
 // AXPlatformNodeWin
 //
 
-AXPlatformNodeWin::AXPlatformNodeWin() {
+AXPlatformNodeWin::AXPlatformNodeWin()
+    : unique_id_(ui::GetNextAXPlatformNodeUniqueId()) {
+  g_unique_id_map.Get()[unique_id_] = this;
 }
 
 AXPlatformNodeWin::~AXPlatformNodeWin() {
   for (ui::AXPlatformNodeRelationWin* relation : relations_)
     relation->Release();
+  if (unique_id_)
+    g_unique_id_map.Get().erase(unique_id_);
 }
 
 void AXPlatformNodeWin::CalculateRelationships() {
@@ -532,7 +551,13 @@ void AXPlatformNodeWin::Dispose() {
 }
 
 void AXPlatformNodeWin::Destroy() {
+  g_unique_id_map.Get().erase(unique_id_);
+  unique_id_ = 0;
+
   RemoveAlertTarget();
+
+  // This will end up calling Dispose() which may result in deleting this object
+  // if there are no more outstanding references.
   AXPlatformNodeBase::Destroy();
 }
 
