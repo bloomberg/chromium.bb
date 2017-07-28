@@ -37,9 +37,11 @@ class WebSocketSBHandshakeThrottle : public blink::WebSocketHandshakeThrottle {
     SAFE = 1,
     BLOCKED = 2,
     ABANDONED = 3,
+    NOT_SUPPORTED = 4,
     RESULT_COUNT
   };
   void OnCheckResult(bool proceed, bool showed_interstitial);
+  void OnConnectionError();
 
   GURL url_;
   blink::WebCallbacks<void, const blink::WebString&>* callbacks_;

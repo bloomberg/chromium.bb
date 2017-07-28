@@ -146,6 +146,13 @@ TEST_F(WebSocketSBHandshakeThrottleTest, Unsafe) {
       fake_callbacks_.message_);
 }
 
+TEST_F(WebSocketSBHandshakeThrottleTest, MojoServiceNotThere) {
+  mojo_binding_.Close();
+  throttle_->ThrottleHandshake(GURL(kTestUrl), nullptr, &fake_callbacks_);
+  fake_callbacks_.RunUntilCalled();
+  EXPECT_EQ(FakeWebCallbacks::RESULT_SUCCESS, fake_callbacks_.result_);
+}
+
 }  // namespace
 
 }  // namespace safe_browsing
