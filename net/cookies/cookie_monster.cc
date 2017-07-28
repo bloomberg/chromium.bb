@@ -1331,6 +1331,10 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
       } else {
         histogram_cookie_delete_equivalent_->Add(
             COOKIE_DELETE_EQUIVALENT_FOUND);
+        if (cc->Value() == ecc.Value()) {
+          histogram_cookie_delete_equivalent_->Add(
+              COOKIE_DELETE_EQUIVALENT_FOUND_WITH_SAME_VALUE);
+        }
         InternalDeleteCookie(curit, true, already_expired
                                               ? DELETE_COOKIE_EXPIRED_OVERWRITE
                                               : DELETE_COOKIE_OVERWRITE);

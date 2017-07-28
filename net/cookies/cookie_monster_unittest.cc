@@ -2923,6 +2923,9 @@ TEST_F(CookieMonsterTest, CookieDeleteEquivalentHistogramTest) {
   histograms.ExpectBucketCount(cookie_source_histogram,
                                CookieMonster::COOKIE_DELETE_EQUIVALENT_FOUND,
                                1);
+  histograms.ExpectBucketCount(
+      cookie_source_histogram,
+      CookieMonster::COOKIE_DELETE_EQUIVALENT_FOUND_WITH_SAME_VALUE, 0);
 
   // Set a secure cookie from a secure origin that matches the name of an
   // already existing cookie and is not equivalent.
@@ -2932,6 +2935,20 @@ TEST_F(CookieMonsterTest, CookieDeleteEquivalentHistogramTest) {
   histograms.ExpectBucketCount(cookie_source_histogram,
                                CookieMonster::COOKIE_DELETE_EQUIVALENT_ATTEMPT,
                                7);
+
+  // Set a cookie that matches both the name and value of an already existing
+  // cookie.
+  EXPECT_TRUE(SetCookie(cm.get(), https_www_foo_.url(), "A=D; secure"));
+  histograms.ExpectTotalCount(cookie_source_histogram, 14);
+  histograms.ExpectBucketCount(cookie_source_histogram,
+                               CookieMonster::COOKIE_DELETE_EQUIVALENT_ATTEMPT,
+                               8);
+  histograms.ExpectBucketCount(cookie_source_histogram,
+                               CookieMonster::COOKIE_DELETE_EQUIVALENT_FOUND,
+                               2);
+  histograms.ExpectBucketCount(
+      cookie_source_histogram,
+      CookieMonster::COOKIE_DELETE_EQUIVALENT_FOUND_WITH_SAME_VALUE, 1);
 }
 
 TEST_F(CookieMonsterTest, SetSecureCookies) {

@@ -173,6 +173,24 @@ void LogChannelIDAndCookieStores(const GURL& url,
                             EPHEMERALITY_MAX);
 }
 
+void LogCookieAgeForNonSecureRequest(const net::CookieList& cookie_list,
+                                     const net::URLRequest& request) {
+  base::Time oldest = base::Time::Max();
+  for (const auto& cookie : cookie_list)
+    oldest = std::min(cookie.CreationDate(), oldest);
+  base::TimeDelta delta = base::Time::Now() - oldest;
+
+  if (net::registry_controlled_domains::SameDomainOrHost(
+          request.url(), request.first_party_for_cookies(),
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+    UMA_HISTOGRAM_COUNTS_1000("Cookie.AgeForNonSecureSameSiteRequest",
+                              delta.InDays());
+  } else {
+    UMA_HISTOGRAM_COUNTS_1000("Cookie.AgeForNonSecureCrossSiteRequest",
+                              delta.InDays());
+  }
+}
+
 }  // namespace
 
 namespace net {
@@ -202,6 +220,7 @@ URLRequestJob* URLRequestHttpJob::Factory(URLRequest* request,
     if (hsts && hsts->ShouldUpgradeToSSL(url.host())) {
       GURL::Replacements replacements;
       replacements.SetSchemeStr(
+
           url.SchemeIs(url::kHttpScheme) ? url::kHttpsScheme : url::kWssScheme);
       return new URLRequestRedirectJob(
           request, network_delegate, url.ReplaceComponents(replacements),
@@ -727,6 +746,9 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
 
 void URLRequestHttpJob::SetCookieHeaderAndStart(const CookieList& cookie_list) {
   if (!cookie_list.empty() && CanGetCookies(cookie_list)) {
+    if (!request_info_.url.SchemeIsCryptographic())
+      LogCookieAgeForNonSecureRequest(cookie_list, *request_);
+
     request_info_.extra_headers.SetHeader(
         HttpRequestHeaders::kCookie, CookieStore::BuildCookieLine(cookie_list));
     // Disable privacy mode as we are sending cookies anyway.
