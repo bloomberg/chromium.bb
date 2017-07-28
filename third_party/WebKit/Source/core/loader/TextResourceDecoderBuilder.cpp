@@ -134,11 +134,14 @@ std::unique_ptr<TextResourceDecoder> TextResourceDecoderBuilder::BuildFor(
             ? encoding_from_domain
             : WTF::TextEncoding(
                   frame->GetSettings()->GetDefaultTextEncodingName());
-    // Disable autodetection for XML to honor the default encoding (UTF-8) for
-    // unlabelled documents.
+    // Disable autodetection for XML/JSON to honor the default encoding (UTF-8)
+    // for unlabelled documents.
     if (DOMImplementation::IsXMLMIMEType(mime_type_)) {
       decoder = TextResourceDecoder::Create(TextResourceDecoderOptions(
           TextResourceDecoderOptions::kXMLContent, default_encoding));
+    } else if (DOMImplementation::IsJSONMIMEType(mime_type_)) {
+      decoder = TextResourceDecoder::Create(TextResourceDecoderOptions(
+          TextResourceDecoderOptions::kJSONContent, default_encoding));
     } else {
       WTF::TextEncoding hint_encoding;
       if (use_hint_encoding &&

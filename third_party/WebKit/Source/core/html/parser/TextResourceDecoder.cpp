@@ -108,7 +108,8 @@ const WTF::TextEncoding& TextResourceDecoder::DefaultEncoding(
     const WTF::TextEncoding& specified_default_encoding) {
   // Despite 8.5 "Text/xml with Omitted Charset" of RFC 3023, we assume UTF-8
   // instead of US-ASCII for text/xml. This matches Firefox.
-  if (content_type == TextResourceDecoderOptions::kXMLContent)
+  if (content_type == TextResourceDecoderOptions::kXMLContent ||
+      content_type == TextResourceDecoderOptions::kJSONContent)
     return UTF8Encoding();
   if (!specified_default_encoding.IsValid())
     return Latin1Encoding();
