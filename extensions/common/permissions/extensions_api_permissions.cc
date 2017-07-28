@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/socket_permission.h"
 #include "extensions/common/permissions/usb_device_permission.h"
@@ -117,6 +118,8 @@ ExtensionsAPIPermissions::GetAllPermissions() const {
            APIPermissionInfo::kFlagInternal},
       {APIPermission::kWebRequest, "webRequest"},
       {APIPermission::kWebRequestBlocking, "webRequestBlocking"},
+      {APIPermission::kDeclarativeNetRequest,
+       declarative_net_request::kAPIPermission},
       {APIPermission::kWebView, "webview",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kWindowShape, "app.window.shape"},
