@@ -49,10 +49,12 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
 
   ~CompositeEditCommand() override;
 
-  const VisibleSelection& StartingSelection() const {
+  const VisibleSelection& StartingVisibleSelection() const {
     return starting_selection_;
   }
-  const VisibleSelection& EndingSelection() const { return ending_selection_; }
+  const VisibleSelection& EndingVisibleSelection() const {
+    return ending_selection_;
+  }
 
   void SetStartingSelection(const VisibleSelection&);
   void SetEndingSelection(const SelectionInDOMTree&);

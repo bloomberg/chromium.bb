@@ -94,7 +94,7 @@ CompositeEditCommand::~CompositeEditCommand() {
 
 bool CompositeEditCommand::Apply() {
   DCHECK(!IsCommandGroupWrapper());
-  if (!EndingSelection().IsContentRichlyEditable()) {
+  if (!EndingVisibleSelection().IsContentRichlyEditable()) {
     switch (GetInputType()) {
       case InputEvent::InputType::kInsertText:
       case InputEvent::InputType::kInsertLineBreak:
@@ -151,8 +151,9 @@ UndoStep* CompositeEditCommand::EnsureUndoStep() {
   while (command && command->Parent())
     command = command->Parent();
   if (!command->undo_step_) {
-    command->undo_step_ = UndoStep::Create(&GetDocument(), StartingSelection(),
-                                           EndingSelection(), GetInputType());
+    command->undo_step_ =
+        UndoStep::Create(&GetDocument(), StartingVisibleSelection(),
+                         EndingVisibleSelection(), GetInputType());
   }
   return command->undo_step_.Get();
 }
@@ -204,7 +205,7 @@ void CompositeEditCommand::ApplyCommandToComposite(
     const VisibleSelection& selection,
     EditingState* editing_state) {
   command->SetParent(this);
-  if (selection != command->EndingSelection()) {
+  if (selection != command->EndingVisibleSelection()) {
     command->SetStartingSelection(selection);
     command->SetEndingVisibleSelection(selection);
   }
@@ -548,8 +549,8 @@ void CompositeEditCommand::ReplaceTextInNode(Text* node,
 }
 
 Position CompositeEditCommand::ReplaceSelectedTextInNode(const String& text) {
-  Position start = EndingSelection().Start();
-  Position end = EndingSelection().End();
+  Position start = EndingVisibleSelection().Start();
+  Position end = EndingVisibleSelection().End();
   if (start.ComputeContainerNode() != end.ComputeContainerNode() ||
       !start.ComputeContainerNode()->IsTextNode() ||
       IsTabHTMLSpanElementTextNode(start.ComputeContainerNode()))
@@ -607,7 +608,7 @@ void CompositeEditCommand::DeleteSelection(EditingState* editing_state,
                                            bool merge_blocks_after_delete,
                                            bool expand_for_special_elements,
                                            bool sanitize_markup) {
-  if (EndingSelection().IsRange())
+  if (EndingVisibleSelection().IsRange())
     ApplyCommandToComposite(
         DeleteSelectionCommand::Create(
             GetDocument(), smart_delete, merge_blocks_after_delete,
@@ -774,7 +775,7 @@ void CompositeEditCommand::
 }
 
 void CompositeEditCommand::RebalanceWhitespace() {
-  VisibleSelection selection = EndingSelection();
+  VisibleSelection selection = EndingVisibleSelection();
   if (selection.IsNone())
     return;
 
@@ -1207,7 +1208,7 @@ void CompositeEditCommand::CleanupAfterDeletion(EditingState* editing_state,
                                                 VisiblePosition destination) {
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  VisiblePosition caret_after_delete = EndingSelection().VisibleStart();
+  VisiblePosition caret_after_delete = EndingVisibleSelection().VisibleStart();
   Node* destination_node = destination.DeepEquivalent().AnchorNode();
   if (caret_after_delete.DeepEquivalent() != destination.DeepEquivalent() &&
       IsStartOfParagraph(caret_after_delete) &&
@@ -1374,11 +1375,11 @@ void CompositeEditCommand::MoveParagraphs(
   int start_index = -1;
   int end_index = -1;
   int destination_index = -1;
-  bool original_is_directional = EndingSelection().IsDirectional();
+  bool original_is_directional = EndingVisibleSelection().IsDirectional();
   if (should_preserve_selection == kPreserveSelection &&
-      !EndingSelection().IsNone()) {
-    VisiblePosition visible_start = EndingSelection().VisibleStart();
-    VisiblePosition visible_end = EndingSelection().VisibleEnd();
+      !EndingVisibleSelection().IsNone()) {
+    VisiblePosition visible_start = EndingVisibleSelection().VisibleStart();
+    VisiblePosition visible_end = EndingVisibleSelection().VisibleEnd();
 
     bool start_after_paragraph =
         ComparePositions(visible_start, end_of_paragraph_to_move) > 0;
@@ -1514,7 +1515,7 @@ void CompositeEditCommand::MoveParagraphs(
           .Collapse(destination.ToPositionWithAffinity())
           .SetIsDirectional(original_is_directional)
           .Build();
-  if (EndingSelection().IsNone()) {
+  if (EndingVisibleSelection().IsNone()) {
     // We abort executing command since |destination| becomes invisible.
     editing_state->Abort();
     return;
@@ -1536,14 +1537,14 @@ void CompositeEditCommand::MoveParagraphs(
   GetDocument()
       .GetFrame()
       ->GetSpellChecker()
-      .MarkMisspellingsForMovingParagraphs(EndingSelection());
+      .MarkMisspellingsForMovingParagraphs(EndingVisibleSelection());
 
   // If the selection is in an empty paragraph, restore styles from the old
   // empty paragraph to the new empty paragraph.
   bool selection_is_empty_paragraph =
-      EndingSelection().IsCaret() &&
-      IsStartOfParagraph(EndingSelection().VisibleStart()) &&
-      IsEndOfParagraph(EndingSelection().VisibleStart());
+      EndingVisibleSelection().IsCaret() &&
+      IsStartOfParagraph(EndingVisibleSelection().VisibleStart()) &&
+      IsEndOfParagraph(EndingVisibleSelection().VisibleStart());
   if (style_in_empty_paragraph && selection_is_empty_paragraph) {
     ApplyStyle(style_in_empty_paragraph, editing_state);
     if (editing_state->IsAborted())
@@ -1584,11 +1585,11 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
     EditingState* editing_state) {
   DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
   Node* empty_list_item =
-      EnclosingEmptyListItem(EndingSelection().VisibleStart());
+      EnclosingEmptyListItem(EndingVisibleSelection().VisibleStart());
   if (!empty_list_item)
     return false;
 
-  EditingStyle* style = EditingStyle::Create(EndingSelection().Start());
+  EditingStyle* style = EditingStyle::Create(EndingVisibleSelection().Start());
   style->MergeTypingStyle(&GetDocument());
 
   ContainerNode* list_node = empty_list_item->parentNode();
@@ -1678,12 +1679,13 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
   if (editing_state->IsAborted())
     return false;
 
-  SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(Position::FirstPositionInNode(*new_block))
-                         .SetIsDirectional(EndingSelection().IsDirectional())
-                         .Build());
+  SetEndingSelection(
+      SelectionInDOMTree::Builder()
+          .Collapse(Position::FirstPositionInNode(*new_block))
+          .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+          .Build());
 
-  style->PrepareToApplyAt(EndingSelection().Start());
+  style->PrepareToApplyAt(EndingVisibleSelection().Start());
   if (!style->IsEmpty()) {
     ApplyStyle(style, editing_state);
     if (editing_state->IsAborted())
@@ -1698,12 +1700,12 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
 // delete, unquote that paragraph.
 bool CompositeEditCommand::BreakOutOfEmptyMailBlockquotedParagraph(
     EditingState* editing_state) {
-  if (!EndingSelection().IsCaret())
+  if (!EndingVisibleSelection().IsCaret())
     return false;
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  VisiblePosition caret = EndingSelection().VisibleStart();
+  VisiblePosition caret = EndingVisibleSelection().VisibleStart();
   HTMLQuoteElement* highest_blockquote =
       ToHTMLQuoteElement(HighestEnclosingNodeOfType(
           caret.DeepEquivalent(), &IsMailHTMLBlockquoteElement));
@@ -1740,10 +1742,11 @@ bool CompositeEditCommand::BreakOutOfEmptyMailBlockquotedParagraph(
       return false;
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
-  SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(at_br.ToPositionWithAffinity())
-                         .SetIsDirectional(EndingSelection().IsDirectional())
-                         .Build());
+  SetEndingSelection(
+      SelectionInDOMTree::Builder()
+          .Collapse(at_br.ToPositionWithAffinity())
+          .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+          .Build());
 
   // If this is an empty paragraph there must be a line break here.
   if (!LineBreakExistsAtVisiblePosition(caret))

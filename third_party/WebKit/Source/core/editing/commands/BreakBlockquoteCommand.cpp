@@ -84,14 +84,14 @@ static HTMLQuoteElement* TopBlockquoteOf(const Position& start) {
 }
 
 void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
-  if (EndingSelection().IsNone())
+  if (EndingVisibleSelection().IsNone())
     return;
 
-  if (!TopBlockquoteOf(EndingSelection().Start()))
+  if (!TopBlockquoteOf(EndingVisibleSelection().Start()))
     return;
 
   // Delete the current selection.
-  if (EndingSelection().IsRange()) {
+  if (EndingVisibleSelection().IsRange()) {
     DeleteSelection(editing_state, false, false);
     if (editing_state->IsAborted())
       return;
@@ -100,23 +100,23 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
   // This is a scenario that should never happen, but we want to
   // make sure we don't dereference a null pointer below.
 
-  DCHECK(!EndingSelection().IsNone());
+  DCHECK(!EndingVisibleSelection().IsNone());
 
-  if (EndingSelection().IsNone())
+  if (EndingVisibleSelection().IsNone())
     return;
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  VisiblePosition visible_pos = EndingSelection().VisibleStart();
+  VisiblePosition visible_pos = EndingVisibleSelection().VisibleStart();
 
   // pos is a position equivalent to the caret.  We use downstream() so that pos
   // will be in the first node that we need to move (there are a few exceptions
   // to this, see below).
-  Position pos = MostForwardCaretPosition(EndingSelection().Start());
+  Position pos = MostForwardCaretPosition(EndingVisibleSelection().Start());
 
   // Find the top-most blockquote from the start.
   HTMLQuoteElement* const top_blockquote =
-      TopBlockquoteOf(EndingSelection().Start());
+      TopBlockquoteOf(EndingVisibleSelection().Start());
   if (!top_blockquote || !top_blockquote->parentNode())
     return;
 
@@ -133,10 +133,11 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
     InsertNodeBefore(break_element, top_blockquote, editing_state);
     if (editing_state->IsAborted())
       return;
-    SetEndingSelection(SelectionInDOMTree::Builder()
-                           .Collapse(Position::BeforeNode(*break_element))
-                           .SetIsDirectional(EndingSelection().IsDirectional())
-                           .Build());
+    SetEndingSelection(
+        SelectionInDOMTree::Builder()
+            .Collapse(Position::BeforeNode(*break_element))
+            .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+            .Build());
     RebalanceWhitespace();
     return;
   }
@@ -151,10 +152,11 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
   // If we're inserting the break at the end of the quoted content, we don't
   // need to break the quote.
   if (is_last_vis_pos_in_node) {
-    SetEndingSelection(SelectionInDOMTree::Builder()
-                           .Collapse(Position::BeforeNode(*break_element))
-                           .SetIsDirectional(EndingSelection().IsDirectional())
-                           .Build());
+    SetEndingSelection(
+        SelectionInDOMTree::Builder()
+            .Collapse(Position::BeforeNode(*break_element))
+            .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+            .Build());
     RebalanceWhitespace();
     return;
   }
@@ -196,10 +198,11 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
 
   // If there's nothing inside topBlockquote to move, we're finished.
   if (!start_node->IsDescendantOf(top_blockquote)) {
-    SetEndingSelection(SelectionInDOMTree::Builder()
-                           .Collapse(FirstPositionInOrBeforeNode(start_node))
-                           .SetIsDirectional(EndingSelection().IsDirectional())
-                           .Build());
+    SetEndingSelection(
+        SelectionInDOMTree::Builder()
+            .Collapse(FirstPositionInOrBeforeNode(start_node))
+            .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+            .Build());
     return;
   }
 
@@ -281,10 +284,11 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
     return;
 
   // Put the selection right before the break.
-  SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(Position::BeforeNode(*break_element))
-                         .SetIsDirectional(EndingSelection().IsDirectional())
-                         .Build());
+  SetEndingSelection(
+      SelectionInDOMTree::Builder()
+          .Collapse(Position::BeforeNode(*break_element))
+          .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+          .Build());
   RebalanceWhitespace();
 }
 

@@ -945,7 +945,7 @@ void Editor::AppliedEditing(CompositeEditCommand* cmd) {
       cmd->TextDataForInputEvent(), IsComposingFromCommand(cmd));
 
   const SelectionInDOMTree& new_selection = CorrectedSelectionAfterCommand(
-      cmd->EndingSelection(), GetFrame().GetDocument());
+      cmd->EndingVisibleSelection(), GetFrame().GetDocument());
 
   // Don't clear the typing style with this selection change. We do those things
   // elsewhere if necessary.

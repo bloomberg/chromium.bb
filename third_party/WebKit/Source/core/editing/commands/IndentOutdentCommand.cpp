@@ -199,7 +199,7 @@ void IndentOutdentCommand::IndentIntoBlockquote(const Position& start,
 
 void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
   VisiblePosition visible_start_of_paragraph =
-      StartOfParagraph(EndingSelection().VisibleStart());
+      StartOfParagraph(EndingVisibleSelection().VisibleStart());
   VisiblePosition visible_end_of_paragraph =
       EndOfParagraph(visible_start_of_paragraph);
 
@@ -352,7 +352,7 @@ void IndentOutdentCommand::OutdentRegion(
     return;
   }
 
-  Position original_selection_end = EndingSelection().End();
+  Position original_selection_end = EndingVisibleSelection().End();
   Position end_after_selection =
       EndOfParagraph(NextPositionOf(end_of_last_paragraph)).DeepEquivalent();
 
@@ -386,7 +386,8 @@ void IndentOutdentCommand::OutdentRegion(
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
     if (end_of_next_paragraph.IsNotNull() &&
         !end_of_next_paragraph.IsConnected()) {
-      end_of_current_paragraph = CreateVisiblePosition(EndingSelection().End());
+      end_of_current_paragraph =
+          CreateVisiblePosition(EndingVisibleSelection().End());
       end_of_next_paragraph =
           EndOfParagraph(NextPositionOf(end_of_current_paragraph))
               .ToPositionWithAffinity();

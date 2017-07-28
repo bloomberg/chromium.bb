@@ -383,7 +383,7 @@ void SpellChecker::MarkMisspellingsAfterApplyingCommand(
 
   if (!IsSpellCheckingEnabled())
     return;
-  if (!IsSpellCheckingEnabledFor(cmd.EndingSelection()))
+  if (!IsSpellCheckingEnabledFor(cmd.EndingVisibleSelection()))
     return;
 
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
@@ -421,8 +421,9 @@ void SpellChecker::MarkMisspellingsAfterTypingCommand(
   // selection is never marked, this does a check to see if typing made a new
   // word that is not in the current selection.  Basically, you get this by
   // being at the end of a word and typing a space.
-  VisiblePosition start = CreateVisiblePosition(
-      cmd.EndingSelection().Start(), cmd.EndingSelection().Affinity());
+  VisiblePosition start =
+      CreateVisiblePosition(cmd.EndingVisibleSelection().Start(),
+                            cmd.EndingVisibleSelection().Affinity());
   VisiblePosition previous = PreviousPositionOf(start);
 
   VisiblePosition word_start_of_previous =
@@ -499,7 +500,7 @@ void SpellChecker::MarkMisspellingsAfterReplaceSelectionCommand(
   if (inserted_range.IsNull())
     return;
 
-  Node* node = cmd.EndingSelection().RootEditableElement();
+  Node* node = cmd.EndingVisibleSelection().RootEditableElement();
   if (!node)
     return;
 

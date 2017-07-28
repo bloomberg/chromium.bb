@@ -133,15 +133,15 @@ InsertIncrementalTextCommand::InsertIncrementalTextCommand(
     : InsertTextCommand(document, text, select_inserted_text, rebalance_type) {}
 
 void InsertIncrementalTextCommand::DoApply(EditingState* editing_state) {
-  const Element* element = EndingSelection().RootEditableElement();
+  const Element* element = EndingVisibleSelection().RootEditableElement();
   DCHECK(element);
 
-  const EphemeralRange selection_range(EndingSelection().Start(),
-                                       EndingSelection().End());
+  const EphemeralRange selection_range(EndingVisibleSelection().Start(),
+                                       EndingVisibleSelection().End());
   const String old_text = PlainText(selection_range);
   const String& new_text = text_;
 
-  const Position& selection_start = EndingSelection().Start();
+  const Position& selection_start = EndingVisibleSelection().Start();
   const size_t new_text_length = new_text.length();
   const size_t old_text_length = old_text.length();
   const size_t common_prefix_length = ComputeCommonGraphemeClusterPrefixLength(
@@ -160,7 +160,7 @@ void InsertIncrementalTextCommand::DoApply(EditingState* editing_state) {
                                       common_suffix_length);
   const VisibleSelection& selection_for_insertion =
       ComputeSelectionForInsertion(selection_range, offset, length,
-                                   EndingSelection().IsDirectional());
+                                   EndingVisibleSelection().IsDirectional());
 
   SetEndingSelectionWithoutValidation(selection_for_insertion.Start(),
                                       selection_for_insertion.End());
