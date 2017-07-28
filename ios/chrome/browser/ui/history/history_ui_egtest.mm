@@ -6,6 +6,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#include "base/ios/ios_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/browsing_data/core/pref_names.h"
@@ -275,6 +276,12 @@ void MockSignIn() {
 // in, and that tapping on the link in the message opens a new tab with the sync
 // help page.
 - (void)testHistoryEntriesStatusCell {
+  // TODO(crbug.com/747445): Re-enable this test on iOS 11 once the sign in UI
+  // is fixed.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   [self loadTestURLs];
   [self openHistoryPanel];
   // Assert that no message is shown when the user is not signed in.
