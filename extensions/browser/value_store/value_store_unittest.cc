@@ -10,8 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 
-using content::BrowserThread;
-
 namespace {
 
 // To save typing ValueStore::DEFAULTS everywhere.
@@ -130,9 +128,7 @@ ValueStoreTest::ValueStoreTest()
       dict1_(new base::DictionaryValue()),
       dict3_(new base::DictionaryValue()),
       dict12_(new base::DictionaryValue()),
-      dict123_(new base::DictionaryValue()),
-      ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
-      file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {
+      dict123_(new base::DictionaryValue()) {
   val1_.reset(new base::Value(key1_ + "Value"));
   val2_.reset(new base::Value(key2_ + "Value"));
   val3_.reset(new base::Value(key3_ + "Value"));
