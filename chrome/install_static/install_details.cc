@@ -4,11 +4,13 @@
 
 #include "chrome/install_static/install_details.h"
 
+#include <assert.h>
 #include <string.h>
 
 #include <type_traits>
 
 #include "chrome/install_static/install_modes.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome_elf/nt_registry/nt_registry.h"
 #include "components/version_info/version_info_values.h"
 
@@ -84,7 +86,5 @@ PrimaryInstallDetails::PrimaryInstallDetails() : InstallDetails(&payload_) {
   payload_.size = sizeof(payload_);
   payload_.product_version = &kProductVersion[0];
 }
-
-PrimaryInstallDetails::~PrimaryInstallDetails() {}
 
 }  // namespace install_static

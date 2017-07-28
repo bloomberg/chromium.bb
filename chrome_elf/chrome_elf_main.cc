@@ -29,6 +29,21 @@ void SignalChromeElf() {
   blacklist::ResetBeacon();
 }
 
+extern "C" void GetUserDataDirectoryThunk(wchar_t* user_data_dir,
+                                          size_t user_data_dir_length,
+                                          wchar_t* invalid_user_data_dir,
+                                          size_t invalid_user_data_dir_length) {
+  std::wstring user_data_dir_str, invalid_user_data_dir_str;
+  bool ret = install_static::GetUserDataDirectory(&user_data_dir_str,
+                                                  &invalid_user_data_dir_str);
+  assert(ret);
+  install_static::IgnoreUnused(ret);
+  wcsncpy_s(user_data_dir, user_data_dir_length, user_data_dir_str.c_str(),
+            _TRUNCATE);
+  wcsncpy_s(invalid_user_data_dir, invalid_user_data_dir_length,
+            invalid_user_data_dir_str.c_str(), _TRUNCATE);
+}
+
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
   if (reason == DLL_PROCESS_ATTACH) {
     install_static::InitializeProductDetailsForPrimaryModule();
@@ -36,6 +51,8 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
     // CRT on initialization installs an exception filter which calls
     // TerminateProcess. We need to hook CRT's attempt to set an exception.
     elf_crash::DisableSetUnhandledExceptionFilter();
+
+    install_static::InitializeProcessType();
 
     __try {
       blacklist::Initialize(false);  // Don't force, abort if beacon is present.

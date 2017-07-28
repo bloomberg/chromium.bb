@@ -187,7 +187,7 @@ void HeadlessContentMainDelegate::InitCrashReporter(
 // TODO(dvallet): Ideally we would also want to avoid this for component builds.
 #elif defined(OS_WIN) && !defined(CHROME_MULTIPLE_DLL)
   crash_reporter::InitializeCrashpadWithEmbeddedHandler(process_type.empty(),
-                                                        process_type, "");
+                                                        process_type);
 #endif  // defined(HEADLESS_USE_BREAKPAD)
 }
 

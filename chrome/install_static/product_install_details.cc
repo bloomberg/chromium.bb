@@ -11,7 +11,6 @@
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
-#include "chrome/install_static/user_data_dir.h"
 #include "chrome_elf/nt_registry/nt_registry.h"
 
 namespace install_static {
@@ -139,15 +138,6 @@ std::unique_ptr<PrimaryInstallDetails> MakeProductDetails(
                                         &update_cohort_name));
   details->set_update_ap(update_ap);
   details->set_update_cohort_name(update_cohort_name);
-
-  if (CurrentProcessNeedsProfileDir()) {
-    std::wstring user_data_dir;
-    std::wstring invalid_user_data_dir;
-    install_static::DeriveUserDataDirectory(*mode, &user_data_dir,
-                                            &invalid_user_data_dir);
-    details->set_user_data_dir(user_data_dir);
-    details->set_invalid_user_data_dir(invalid_user_data_dir);
-  }
 
   return details;
 }

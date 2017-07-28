@@ -25,20 +25,19 @@ struct InstallConstants;
 // function once on startup and use the result for subsequent callers, otherwise
 // there's a race with registry modification (which could cause a different
 // derivation) so different subsystems would see different values). In normal
-// usage, it should be called only once and cached.
-bool DeriveUserDataDirectoryImpl(
+// usage, it should be called only once and cached. GetUserDataDirectory() does
+// this, and should be preferred.
+bool GetUserDataDirectoryImpl(
     const std::wstring& user_data_dir_from_command_line,
     const InstallConstants& mode,
     std::wstring* result,
     std::wstring* invalid_supplied_directory);
 
 // Retrieves the user data directory, and any invalid directory specified on the
-// command line, for reporting an error to the user. This function should only
-// be called once on startup and the result should be cached, to avoid
-// derivation inconsistencies.
-bool DeriveUserDataDirectory(const InstallConstants& mode,
-                             std::wstring* user_data_directory,
-                             std::wstring* invalid_user_data_directory);
+// command line, for reporting an error to the user. These values are cached on
+// the first call. |invalid_user_data_directory| may be null if not required.
+bool GetUserDataDirectory(std::wstring* user_data_directory,
+                          std::wstring* invalid_user_data_directory);
 
 }  // namespace install_static
 

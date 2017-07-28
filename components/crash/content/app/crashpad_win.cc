@@ -52,11 +52,9 @@ void GetPlatformCrashpadAnnotations(
 #endif
 }
 
-base::FilePath PlatformCrashpadInitialization(
-    bool initial_client,
-    bool browser_process,
-    bool embedded_handler,
-    const std::string& user_data_dir) {
+base::FilePath PlatformCrashpadInitialization(bool initial_client,
+                                              bool browser_process,
+                                              bool embedded_handler) {
   base::FilePath database_path;  // Only valid in the browser process.
   base::FilePath metrics_path;  // Only valid in the browser process.
 
@@ -109,10 +107,6 @@ base::FilePath PlatformCrashpadInitialization(
     if (embedded_handler) {
       start_arguments.push_back(std::string("--type=") +
                                 switches::kCrashpadHandler);
-      if (!user_data_dir.empty()) {
-        start_arguments.push_back(std::string("--user-data-dir=") +
-                                  user_data_dir);
-      }
       // The prefetch argument added here has to be documented in
       // chrome_switches.cc, below the kPrefetchArgument* constants. A constant
       // can't be used here because crashpad can't depend on Chrome.

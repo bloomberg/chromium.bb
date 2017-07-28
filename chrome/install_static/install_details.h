@@ -5,21 +5,18 @@
 #ifndef CHROME_INSTALL_STATIC_INSTALL_DETAILS_H_
 #define CHROME_INSTALL_STATIC_INSTALL_DETAILS_H_
 
-#include <assert.h>
-
 #include <memory>
 #include <string>
 
 #include "chrome/install_static/install_constants.h"
 #include "chrome/install_static/install_modes.h"
-#include "chrome/install_static/install_util.h"
 
 namespace install_static {
 
 class PrimaryInstallDetails;
 class ScopedInstallDetails;
 
-// Details relating to how Chrome is installed or being run. This class and
+// Details relating to how Chrome is installed. This class and
 // PrimaryInstallDetails (below) are used in tandem so that one instance of the
 // latter may be initialized early during process startup and then shared with
 // other modules in the process. For example, chrome_elf creates the instance
@@ -62,14 +59,6 @@ class InstallDetails {
 
     // True if installed in C:\Program Files{, {x86)}; otherwise, false.
     bool system_level;
-
-    // The user data directory. An empty value is interpreted as a failure to
-    // determine the user data directory.
-    const wchar_t* user_data_dir;
-
-    // An invalid user data directory that was provided by the user, or the
-    // empty string.
-    const wchar_t* invalid_user_data_dir;
   };
 
   InstallDetails(const InstallDetails&) = delete;
@@ -163,19 +152,6 @@ class InstallDetails {
 
   bool system_level() const { return payload_->system_level; }
 
-  std::wstring user_data_dir() const {
-    assert(CurrentProcessNeedsProfileDir());
-    return payload_->user_data_dir ? std::wstring(payload_->user_data_dir)
-                                   : std::wstring();
-  }
-
-  std::wstring invalid_user_data_dir() const {
-    assert(CurrentProcessNeedsProfileDir());
-    return payload_->invalid_user_data_dir
-               ? std::wstring(payload_->invalid_user_data_dir)
-               : std::wstring();
-  }
-
   // Returns the path to the installation's ClientState registry key. This
   // registry key is used to hold various installation-related values, including
   // an indication of consent for usage stats.
@@ -230,7 +206,6 @@ class PrimaryInstallDetails : public InstallDetails {
   PrimaryInstallDetails(const PrimaryInstallDetails&) = delete;
   PrimaryInstallDetails(PrimaryInstallDetails&&) = delete;
   PrimaryInstallDetails& operator=(const PrimaryInstallDetails&) = delete;
-  ~PrimaryInstallDetails() override;
 
   void set_mode(const InstallConstants* mode) { payload_.mode = mode; }
   void set_channel(const std::wstring& channel) {
@@ -249,21 +224,11 @@ class PrimaryInstallDetails : public InstallDetails {
   void set_system_level(bool system_level) {
     payload_.system_level = system_level;
   }
-  void set_user_data_dir(const std::wstring& user_data_dir) {
-    user_data_dir_ = user_data_dir;
-    payload_.user_data_dir = user_data_dir_.c_str();
-  }
-  void set_invalid_user_data_dir(const std::wstring& invalid_user_data_dir) {
-    invalid_user_data_dir_ = invalid_user_data_dir;
-    payload_.invalid_user_data_dir = invalid_user_data_dir_.c_str();
-  }
 
  private:
   std::wstring channel_;
   std::wstring update_ap_;
   std::wstring update_cohort_name_;
-  std::wstring user_data_dir_;
-  std::wstring invalid_user_data_dir_;
   Payload payload_ = Payload();
 };
 
