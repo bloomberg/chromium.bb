@@ -14,6 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/task_scheduler/post_task.h"
 
 namespace content {
 class WebContents;
@@ -135,6 +136,8 @@ class AwContentsIoThreadClient {
   bool pending_association_;
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
   base::android::ScopedJavaGlobalRef<jobject> bg_thread_client_object_;
+  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_ =
+      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
 
   DISALLOW_COPY_AND_ASSIGN(AwContentsIoThreadClient);
 };
