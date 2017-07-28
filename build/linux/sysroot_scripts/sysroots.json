@@ -1,32 +1,32 @@
 {
     "jessie_amd64": {
-        "Revision": "ebb50a1c59e577567470b00582f81ed14222353e",
-        "Sha1Sum": "6df0d3f81752547694cafba80f7353189287428f",
+        "Revision": "6f7741c4222de05cd5f2fbb9f02d34f76e5a3134",
+        "Sha1Sum": "bb80a97e9629c6b7d51a7e50feed5b20e822a608",
         "SysrootDir": "debian_jessie_amd64-sysroot",
-        "Tarball": "debian_jessie_amd64_sysroot.tgz"
+        "Tarball": "debian_jessie_amd64_sysroot.tar.xz"
     },
     "jessie_arm": {
-        "Revision": "ebb50a1c59e577567470b00582f81ed14222353e",
-        "Sha1Sum": "fd0bf9053f11cccd631629f93d4c448ca28a1d85",
+        "Revision": "6f7741c4222de05cd5f2fbb9f02d34f76e5a3134",
+        "Sha1Sum": "cb3965eb1ba9bc0b2f13efeb410a0a8e32ef5466",
         "SysrootDir": "debian_jessie_arm-sysroot",
-        "Tarball": "debian_jessie_arm_sysroot.tgz"
+        "Tarball": "debian_jessie_arm_sysroot.tar.xz"
     },
     "jessie_arm64": {
-        "Revision": "ebb50a1c59e577567470b00582f81ed14222353e",
-        "Sha1Sum": "ba54db4a00cb8bc8165ee86cfc3f141a64c822e7",
+        "Revision": "6f7741c4222de05cd5f2fbb9f02d34f76e5a3134",
+        "Sha1Sum": "64355bb029d30b0454ecf3f7189708039d70ec36",
         "SysrootDir": "debian_jessie_arm64-sysroot",
-        "Tarball": "debian_jessie_arm64_sysroot.tgz"
+        "Tarball": "debian_jessie_arm64_sysroot.tar.xz"
     },
     "jessie_i386": {
-        "Revision": "ebb50a1c59e577567470b00582f81ed14222353e",
-        "Sha1Sum": "70e26036a0f38509bb632a2db92e09d773a8edc6",
+        "Revision": "6f7741c4222de05cd5f2fbb9f02d34f76e5a3134",
+        "Sha1Sum": "534219ee0f1f19363bb18afda1a0cca97f052171",
         "SysrootDir": "debian_jessie_i386-sysroot",
-        "Tarball": "debian_jessie_i386_sysroot.tgz"
+        "Tarball": "debian_jessie_i386_sysroot.tar.xz"
     },
     "jessie_mips": {
-        "Revision": "ebb50a1c59e577567470b00582f81ed14222353e",
-        "Sha1Sum": "6a64a448a3412b00a6fed39d9641e3aea45456ca",
+        "Revision": "6f7741c4222de05cd5f2fbb9f02d34f76e5a3134",
+        "Sha1Sum": "ee248cd235b418cf155571ac5b0cb2d252f89142",
         "SysrootDir": "debian_jessie_mips-sysroot",
-        "Tarball": "debian_jessie_mips_sysroot.tgz"
+        "Tarball": "debian_jessie_mips_sysroot.tar.xz"
     }
 }
