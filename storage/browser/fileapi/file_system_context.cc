@@ -105,6 +105,7 @@ int FileSystemContext::GetPermissionPolicy(FileSystemType type) {
     case kFileSystemTypeRestrictedNativeLocal:
     case kFileSystemTypeArcContent:
     case kFileSystemTypeArcDocumentsProvider:
+    case kFileSystemTypeRecent:
       return FILE_PERMISSION_READ_ONLY |
              FILE_PERMISSION_USE_FILE_PERMISSION;
 
