@@ -55,8 +55,8 @@ sk_sp<PaintShader> ImagePattern::CreateShader(const SkMatrix& local_matrix) {
   // Create a transparent image 2 pixels wider and/or taller than the
   // original, then copy the orignal into the middle of it.
   const SkRect tile_bounds =
-      SkRect::MakeWH(tile_image_.sk_image()->width() + 2 * border_pixel_x,
-                     tile_image_.sk_image()->height() + 2 * border_pixel_y);
+      SkRect::MakeWH(tile_image_.width() + 2 * border_pixel_x,
+                     tile_image_.height() + 2 * border_pixel_y);
   PaintRecorder recorder;
   auto* canvas = recorder.beginRecording(tile_bounds);
 
@@ -76,7 +76,7 @@ sk_sp<PaintShader> ImagePattern::CreateShader(const SkMatrix& local_matrix) {
 }
 
 bool ImagePattern::IsTextureBacked() const {
-  return tile_image_.sk_image() && tile_image_.sk_image()->isTextureBacked();
+  return tile_image_ && tile_image_.GetSkImage()->isTextureBacked();
 }
 
 }  // namespace blink

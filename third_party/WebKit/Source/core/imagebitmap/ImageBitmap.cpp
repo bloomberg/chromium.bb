@@ -167,7 +167,7 @@ bool DstBufferSizeHasOverflow(const ImageBitmap::ParsedOptions& options) {
 }
 
 SkImageInfo GetSkImageInfo(const RefPtr<StaticBitmapImage>& image) {
-  sk_sp<SkImage> skia_image = image->ImageForCurrentFrame();
+  sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
   SkColorType color_type = kN32_SkColorType;
   if (skia_image->colorSpace() && skia_image->colorSpace()->gammaIsLinear())
     color_type = kRGBA_F16_SkColorType;
@@ -186,8 +186,8 @@ PassRefPtr<Uint8Array> CopyImageData(const RefPtr<StaticBitmapImage>& input,
   unsigned byte_length = dst_buffer->ByteLength();
   RefPtr<Uint8Array> dst_pixels =
       Uint8Array::Create(std::move(dst_buffer), 0, byte_length);
-  input->ImageForCurrentFrame()->readPixels(info, dst_pixels->Data(),
-                                            width * info.bytesPerPixel(), 0, 0);
+  input->PaintImageForCurrentFrame().GetSkImage()->readPixels(
+      info, dst_pixels->Data(), width * info.bytesPerPixel(), 0, 0);
   return dst_pixels;
 }
 
@@ -232,7 +232,7 @@ RefPtr<StaticBitmapImage> GetImageWithAlphaDisposition(
   SkAlphaType alpha_type = kPremul_SkAlphaType;
   if (alpha_disposition == kDontPremultiplyAlpha)
     alpha_type = kUnpremul_SkAlphaType;
-  sk_sp<SkImage> skia_image = image->ImageForCurrentFrame();
+  sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
   if (skia_image->alphaType() == alpha_type)
     return image;
 
@@ -248,7 +248,7 @@ RefPtr<StaticBitmapImage> ScaleImage(RefPtr<StaticBitmapImage>&& image,
                                      unsigned resize_width,
                                      unsigned resize_height,
                                      SkFilterQuality resize_quality) {
-  sk_sp<SkImage> skia_image = image->ImageForCurrentFrame();
+  sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
   SkAlphaType original_alpha = skia_image->alphaType();
   auto pm_image = skia_image;
   auto pm_info = GetSkImageInfo(image);
@@ -307,7 +307,7 @@ RefPtr<StaticBitmapImage> ApplyColorSpaceConversion(
     image = image->ConvertToColorSpace(options.color_params.GetSkColorSpace(),
                                        SkTransferFunctionBehavior::kIgnore);
   }
-  sk_sp<SkImage> skia_image = image->ImageForCurrentFrame();
+  sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
   if (!options.color_canvas_extensions_enabled || !skia_image->colorSpace())
     return image;
 
@@ -403,7 +403,7 @@ static PassRefPtr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
   if (src_rect.IsEmpty())
     return MakeBlankImage(parsed_options);
 
-  sk_sp<SkImage> skia_image = image->ImageForCurrentFrame();
+  sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
   // Attempt to get raw unpremultiplied image data, executed only when
   // skia_image is premultiplied.
   if ((((!image->IsSVGImage() && !skia_image->isOpaque()) || !skia_image) &&
@@ -469,7 +469,7 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
 
   // In the case where the source image is lazy-decoded, m_image may not be in
   // a decoded state, we trigger it here.
-  sk_sp<SkImage> sk_image = image_->ImageForCurrentFrame();
+  sk_sp<SkImage> sk_image = image_->PaintImageForCurrentFrame().GetSkImage();
   SkPixmap pixmap;
   if (!sk_image->isTextureBacked() && !sk_image->peekPixels(&pixmap)) {
     sk_sp<SkColorSpace> dst_color_space = nullptr;

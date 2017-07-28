@@ -134,17 +134,35 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
       ImageBitmap::Create(image_element, crop_rect,
                           &(image_element->GetDocument()), default_options);
 
-  ASSERT_EQ(image_bitmap_no_crop->BitmapImage()->ImageForCurrentFrame(),
-            image_element->CachedImage()->GetImage()->ImageForCurrentFrame());
-  ASSERT_NE(image_bitmap_interior_crop->BitmapImage()->ImageForCurrentFrame(),
-            image_element->CachedImage()->GetImage()->ImageForCurrentFrame());
-  ASSERT_NE(image_bitmap_exterior_crop->BitmapImage()->ImageForCurrentFrame(),
-            image_element->CachedImage()->GetImage()->ImageForCurrentFrame());
+  ASSERT_EQ(image_bitmap_no_crop->BitmapImage()
+                ->PaintImageForCurrentFrame()
+                .GetSkImage(),
+            image_element->CachedImage()
+                ->GetImage()
+                ->PaintImageForCurrentFrame()
+                .GetSkImage());
+  ASSERT_NE(image_bitmap_interior_crop->BitmapImage()
+                ->PaintImageForCurrentFrame()
+                .GetSkImage(),
+            image_element->CachedImage()
+                ->GetImage()
+                ->PaintImageForCurrentFrame()
+                .GetSkImage());
+  ASSERT_NE(image_bitmap_exterior_crop->BitmapImage()
+                ->PaintImageForCurrentFrame()
+                .GetSkImage(),
+            image_element->CachedImage()
+                ->GetImage()
+                ->PaintImageForCurrentFrame()
+                .GetSkImage());
 
   RefPtr<StaticBitmapImage> empty_image =
       image_bitmap_outside_crop->BitmapImage();
-  ASSERT_NE(empty_image->ImageForCurrentFrame(),
-            image_element->CachedImage()->GetImage()->ImageForCurrentFrame());
+  ASSERT_NE(empty_image->PaintImageForCurrentFrame().GetSkImage(),
+            image_element->CachedImage()
+                ->GetImage()
+                ->PaintImageForCurrentFrame()
+                .GetSkImage());
 }
 
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a
@@ -163,31 +181,50 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
       IntRect(0, 0, image_->width(), image_->height());
   ImageBitmap* image_bitmap = ImageBitmap::Create(
       image, crop_rect, &(image->GetDocument()), default_options);
-  ASSERT_EQ(image_bitmap->BitmapImage()->ImageForCurrentFrame(),
-            original_image_resource->GetImage()->ImageForCurrentFrame());
+  ASSERT_EQ(
+      image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage(),
+      original_image_resource->GetImage()
+          ->PaintImageForCurrentFrame()
+          .GetSkImage());
 
   ImageResourceContent* new_image_resource = ImageResourceContent::CreateLoaded(
       StaticBitmapImage::Create(image2_).Get());
   image->SetImageForTest(new_image_resource);
 
   {
-    ASSERT_EQ(image_bitmap->BitmapImage()->ImageForCurrentFrame(),
-              original_image_resource->GetImage()->ImageForCurrentFrame());
-    SkImage* image1 = image_bitmap->BitmapImage()->ImageForCurrentFrame().get();
+    ASSERT_EQ(
+        image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage(),
+        original_image_resource->GetImage()
+            ->PaintImageForCurrentFrame()
+            .GetSkImage());
+    SkImage* image1 = image_bitmap->BitmapImage()
+                          ->PaintImageForCurrentFrame()
+                          .GetSkImage()
+                          .get();
     ASSERT_NE(image1, nullptr);
-    SkImage* image2 =
-        original_image_resource->GetImage()->ImageForCurrentFrame().get();
+    SkImage* image2 = original_image_resource->GetImage()
+                          ->PaintImageForCurrentFrame()
+                          .GetSkImage()
+                          .get();
     ASSERT_NE(image2, nullptr);
     ASSERT_EQ(image1, image2);
   }
 
   {
-    ASSERT_NE(image_bitmap->BitmapImage()->ImageForCurrentFrame(),
-              new_image_resource->GetImage()->ImageForCurrentFrame());
-    SkImage* image1 = image_bitmap->BitmapImage()->ImageForCurrentFrame().get();
+    ASSERT_NE(
+        image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage(),
+        new_image_resource->GetImage()
+            ->PaintImageForCurrentFrame()
+            .GetSkImage());
+    SkImage* image1 = image_bitmap->BitmapImage()
+                          ->PaintImageForCurrentFrame()
+                          .GetSkImage()
+                          .get();
     ASSERT_NE(image1, nullptr);
-    SkImage* image2 =
-        new_image_resource->GetImage()->ImageForCurrentFrame().get();
+    SkImage* image2 = new_image_resource->GetImage()
+                          ->PaintImageForCurrentFrame()
+                          .GetSkImage()
+                          .get();
     ASSERT_NE(image2, nullptr);
     ASSERT_NE(image1, image2);
   }
@@ -283,8 +320,10 @@ TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionHTMLImageElement) {
     ImageBitmap* image_bitmap = ImageBitmap::Create(
         image_element, crop_rect, &(image_element->GetDocument()), options);
 
-    SkImage* converted_image =
-        image_bitmap->BitmapImage()->ImageForCurrentFrame().get();
+    SkImage* converted_image = image_bitmap->BitmapImage()
+                                   ->PaintImageForCurrentFrame()
+                                   .GetSkImage()
+                                   .get();
 
     switch (color_space_conversion) {
       case ColorSpaceConversion::NONE:
@@ -407,8 +446,10 @@ TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionImageBitmap) {
     options = PrepareBitmapOptionsAndSetRuntimeFlags(color_space_conversion);
     ImageBitmap* image_bitmap =
         ImageBitmap::Create(source_image_bitmap, crop_rect, options);
-    SkImage* converted_image =
-        image_bitmap->BitmapImage()->ImageForCurrentFrame().get();
+    SkImage* converted_image = image_bitmap->BitmapImage()
+                                   ->PaintImageForCurrentFrame()
+                                   .GetSkImage()
+                                   .get();
 
     switch (color_space_conversion) {
       case ColorSpaceConversion::NONE:
@@ -522,8 +563,10 @@ TEST_F(ImageBitmapTest,
     ImageBitmap* image_bitmap = ImageBitmap::Create(
         StaticBitmapImage::Create(image), crop_rect, options);
 
-    SkImage* converted_image =
-        image_bitmap->BitmapImage()->ImageForCurrentFrame().get();
+    SkImage* converted_image = image_bitmap->BitmapImage()
+                                   ->PaintImageForCurrentFrame()
+                                   .GetSkImage()
+                                   .get();
 
     switch (color_space_conversion) {
       case ColorSpaceConversion::NONE:
@@ -618,8 +661,10 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
     ImageBitmap* image_bitmap =
         ImageBitmap::Create(image_data, crop_rect, options);
 
-    SkImage* converted_image =
-        image_bitmap->BitmapImage()->ImageForCurrentFrame().get();
+    SkImage* converted_image = image_bitmap->BitmapImage()
+                                   ->PaintImageForCurrentFrame()
+                                   .GetSkImage()
+                                   .get();
 
     switch (color_space_conversion) {
       case ColorSpaceConversion::NONE:

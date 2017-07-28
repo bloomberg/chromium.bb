@@ -255,7 +255,7 @@ TEST_F(BitmapImageTest, recachingFrameAfterDataChanged) {
   image_->DataChanged(true);
   EXPECT_EQ(0, LastDecodedSizeChange());
   // Recaching the first frame also shouldn't affect decoded size.
-  image_->ImageForCurrentFrame();
+  image_->PaintImageForCurrentFrame();
   EXPECT_EQ(0, LastDecodedSizeChange());
 }
 

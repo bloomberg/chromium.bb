@@ -75,8 +75,8 @@ class ScopedImageFlags {
 
     SkMatrix total_image_matrix = matrix;
     total_image_matrix.preConcat(ctm);
-    SkRect src_rect = SkRect::MakeIWH(paint_image.sk_image()->width(),
-                                      paint_image.sk_image()->height());
+    SkRect src_rect =
+        SkRect::MakeIWH(paint_image.width(), paint_image.height());
     holder_ = image_provider->GetDecodedImage(
         paint_image, src_rect, flags.getFilterQuality(), total_image_matrix);
 
@@ -1252,8 +1252,7 @@ void DrawImageOp::RasterWithFlags(const DrawImageOp* op,
   SkPaint paint = flags->ToSkPaint();
 
   if (params.image_provider) {
-    SkRect image_rect = SkRect::MakeIWH(op->image.sk_image()->width(),
-                                        op->image.sk_image()->height());
+    SkRect image_rect = SkRect::MakeIWH(op->image.width(), op->image.height());
     auto decoded_image_holder = params.image_provider->GetDecodedImage(
         op->image, image_rect,
         flags ? flags->getFilterQuality() : kNone_SkFilterQuality,
@@ -1278,7 +1277,7 @@ void DrawImageOp::RasterWithFlags(const DrawImageOp* op,
     if (need_scale)
       canvas->restore();
   } else {
-    canvas->drawImage(op->image.sk_image().get(), op->left, op->top, &paint);
+    canvas->drawImage(op->image.GetSkImage().get(), op->left, op->top, &paint);
   }
 }
 
@@ -1321,8 +1320,8 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
     canvas->drawImageRect(decoded_image.image().get(), adjusted_src, op->dst,
                           &paint, skconstraint);
   } else {
-    canvas->drawImageRect(op->image.sk_image().get(), op->src, op->dst, &paint,
-                          skconstraint);
+    canvas->drawImageRect(op->image.GetSkImage().get(), op->src, op->dst,
+                          &paint, skconstraint);
   }
 }
 
@@ -1546,9 +1545,9 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
     }
     case PaintOpType::DrawImage: {
       auto* image_op = static_cast<const DrawImageOp*>(op);
-      *rect = SkRect::MakeXYWH(image_op->left, image_op->top,
-                               image_op->image.sk_image()->width(),
-                               image_op->image.sk_image()->height());
+      *rect =
+          SkRect::MakeXYWH(image_op->left, image_op->top,
+                           image_op->image.width(), image_op->image.height());
       rect->sort();
       return true;
     }
@@ -1701,7 +1700,7 @@ DrawImageOp::DrawImageOp(const PaintImage& image,
 bool DrawImageOp::HasDiscardableImages() const {
   // TODO(khushalsagar): Callers should not be able to change the lazy generated
   // state for a PaintImage.
-  return image.sk_image()->isLazyGenerated();
+  return image.IsLazyGenerated();
 }
 
 DrawImageOp::~DrawImageOp() = default;
@@ -1720,7 +1719,7 @@ DrawImageRectOp::DrawImageRectOp(const PaintImage& image,
       constraint(constraint) {}
 
 bool DrawImageRectOp::HasDiscardableImages() const {
-  return image.sk_image()->isLazyGenerated();
+  return image.IsLazyGenerated();
 }
 
 DrawImageRectOp::~DrawImageRectOp() = default;

@@ -537,7 +537,8 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
         FloatSize());
     if (status != kNormalSourceImageStatus)
       return;
-    sk_sp<SkImage> image = source_image->ImageForCurrentFrame();
+    sk_sp<SkImage> image =
+        source_image->PaintImageForCurrentFrame().GetSkImage();
     for (CanvasDrawListener* listener : listeners_) {
       if (listener->NeedsNewFrame()) {
         listener->SendNewFrame(image);
@@ -654,7 +655,7 @@ ImageData* HTMLCanvasElement::ToImageData(SourceDrawingBuffer source_buffer,
       if (snapshot) {
         SkImageInfo image_info = SkImageInfo::Make(
             width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
-        snapshot->ImageForCurrentFrame()->readPixels(
+        snapshot->PaintImageForCurrentFrame().GetSkImage()->readPixels(
             image_info, image_data->data()->Data(), image_info.minRowBytes(), 0,
             0);
       }
@@ -680,7 +681,7 @@ ImageData* HTMLCanvasElement::ToImageData(SourceDrawingBuffer source_buffer,
   if (snapshot) {
     SkImageInfo image_info = SkImageInfo::Make(
         width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
-    snapshot->ImageForCurrentFrame()->readPixels(
+    snapshot->PaintImageForCurrentFrame().GetSkImage()->readPixels(
         image_info, image_data->data()->Data(), image_info.minRowBytes(), 0, 0);
   }
 

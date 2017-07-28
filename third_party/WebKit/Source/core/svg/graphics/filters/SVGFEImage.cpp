@@ -198,7 +198,8 @@ sk_sp<SkImageFilter> FEImage::CreateImageFilter() {
   if (auto* layout_object = ReferencedLayoutObject())
     return CreateImageFilterForLayoutObject(*layout_object);
 
-  sk_sp<SkImage> image = image_ ? image_->ImageForCurrentFrame() : nullptr;
+  sk_sp<SkImage> image =
+      image_ ? image_->PaintImageForCurrentFrame().GetSkImage() : nullptr;
   if (!image) {
     // "A href reference that is an empty image (zero width or zero height),
     //  that fails to download, is non-existent, or that cannot be displayed

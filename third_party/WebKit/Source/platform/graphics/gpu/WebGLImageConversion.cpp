@@ -2798,7 +2798,7 @@ void WebGLImageConversion::ImageExtractor::ExtractImage(
   if (!image_)
     return;
 
-  sk_sp<SkImage> skia_image = image_->ImageForCurrentFrame();
+  sk_sp<SkImage> skia_image = image_->PaintImageForCurrentFrame().GetSkImage();
   SkImageInfo info =
       skia_image ? SkImageInfo::MakeN32Premul(image_->width(), image_->height())
                  : SkImageInfo::MakeUnknown();

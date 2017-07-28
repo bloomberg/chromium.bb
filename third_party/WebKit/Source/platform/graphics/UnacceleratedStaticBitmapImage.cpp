@@ -40,8 +40,9 @@ void UnacceleratedStaticBitmapImage::Draw(PaintCanvas* canvas,
                                 PaintImageForCurrentFrame());
 }
 
-sk_sp<SkImage> UnacceleratedStaticBitmapImage::ImageForCurrentFrame() {
-  return image_;
+void UnacceleratedStaticBitmapImage::PopulateImageForCurrentFrame(
+    PaintImageBuilder& builder) {
+  builder.set_image(image_);
 }
 
 }  // namespace blink

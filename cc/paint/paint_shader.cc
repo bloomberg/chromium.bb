@@ -174,7 +174,7 @@ sk_sp<SkShader> PaintShader::GetSkShader() const {
           local_matrix_ ? &*local_matrix_ : nullptr);
       break;
     case Type::kImage:
-      cached_shader_ = image_.sk_image()->makeShader(
+      cached_shader_ = image_.GetSkImage()->makeShader(
           tx_, ty_, local_matrix_ ? &*local_matrix_ : nullptr);
       break;
     case Type::kPaintRecord: {

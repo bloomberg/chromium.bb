@@ -69,8 +69,8 @@ void GeneratedImage::DrawPattern(GraphicsContext& dest_context,
   dest_context.DrawRect(dest_rect, fill_flags);
 }
 
-sk_sp<SkImage> GeneratedImage::ImageForCurrentFrame() {
-  return nullptr;
+void GeneratedImage::PopulateImageForCurrentFrame(PaintImageBuilder& builder) {
+  builder.set_image(nullptr);
 }
 
 }  // namespace blink

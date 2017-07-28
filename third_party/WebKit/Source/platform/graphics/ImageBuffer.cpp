@@ -224,7 +224,7 @@ bool ImageBuffer::CopyToPlatformTexture(SnapshotReason reason,
 
   // Get the texture ID, flushing pending operations if needed.
   const GrGLTextureInfo* texture_info = skia::GrBackendObjectToGrGLTextureInfo(
-      image->ImageForCurrentFrame()->getTextureHandle(true));
+      image->PaintImageForCurrentFrame().GetSkImage()->getTextureHandle(true));
   if (!texture_info || !texture_info->fID)
     return false;
 
@@ -387,7 +387,7 @@ bool ImageBuffer::GetImageData(Multiply multiplied,
       rect.Width(), rect.Height(), color_type, alpha_type,
       surface_->color_params().GetSkColorSpaceForSkSurfaces());
 
-  snapshot->ImageForCurrentFrame()->readPixels(
+  snapshot->PaintImageForCurrentFrame().GetSkImage()->readPixels(
       info, result.Data(), bytes_per_pixel * rect.Width(), rect.X(), rect.Y());
   gpu_readback_invoked_in_current_frame_ = true;
   result.Transfer(contents);
@@ -504,7 +504,8 @@ void ImageBuffer::SetSurface(std::unique_ptr<ImageBufferSurface> surface) {
   if (surface->IsRecording() && image->IsTextureBacked()) {
     // Using a GPU-backed image with RecordingImageBufferSurface
     // will fail at playback time.
-    sk_sp<SkImage> texture_image = image->ImageForCurrentFrame();
+    sk_sp<SkImage> texture_image =
+        image->PaintImageForCurrentFrame().GetSkImage();
     // Must tear down AcceleratedStaticBitmapImage before calling
     // makeNonTextureImage()
     image.Clear();
@@ -515,7 +516,8 @@ void ImageBuffer::SetSurface(std::unique_ptr<ImageBufferSurface> surface) {
   auto completion_state = PaintImage::CompletionState::UNKNOWN;
   static PaintImage::Id unknown_stable_id = PaintImage::GetNextId();
   surface->Canvas()->drawImage(
-      PaintImage(unknown_stable_id, image->ImageForCurrentFrame(),
+      PaintImage(unknown_stable_id,
+                 image->PaintImageForCurrentFrame().GetSkImage(),
                  animation_type, completion_state),
       0, 0);
 

@@ -4,6 +4,8 @@
 
 #include "cc/paint/paint_image.h"
 #include "base/atomic_sequence_num.h"
+#include "cc/paint/paint_record.h"
+#include "ui/gfx/skia_util.h"
 
 namespace cc {
 namespace {
@@ -17,8 +19,8 @@ PaintImage::PaintImage(Id id,
                        CompletionState completion_state,
                        size_t frame_count,
                        bool is_multipart)
-    : id_(id),
-      sk_image_(std::move(sk_image)),
+    : sk_image_(std::move(sk_image)),
+      id_(id),
       animation_type_(animation_type),
       completion_state_(completion_state),
       frame_count_(frame_count),
@@ -45,7 +47,25 @@ PaintImage::Id PaintImage::GetNextId() {
 PaintImage PaintImage::CloneWithSkImage(sk_sp<SkImage> new_image) const {
   PaintImage result(*this);
   result.sk_image_ = std::move(new_image);
+  result.cached_sk_image_ = nullptr;
+  result.paint_record_ = nullptr;
+  result.paint_record_rect_ = gfx::Rect();
   return result;
+}
+
+const sk_sp<SkImage>& PaintImage::GetSkImage() const {
+  if (cached_sk_image_)
+    return cached_sk_image_;
+
+  if (sk_image_) {
+    cached_sk_image_ = sk_image_;
+  } else if (paint_record_) {
+    cached_sk_image_ = SkImage::MakeFromPicture(
+        ToSkPicture(paint_record_, gfx::RectToSkRect(paint_record_rect_)),
+        SkISize::Make(paint_record_rect_.width(), paint_record_rect_.height()),
+        nullptr, nullptr, SkImage::BitDepth::kU8, SkColorSpace::MakeSRGB());
+  }
+  return cached_sk_image_;
 }
 
 }  // namespace cc

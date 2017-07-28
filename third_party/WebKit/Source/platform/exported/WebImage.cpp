@@ -130,7 +130,7 @@ WebImage::WebImage(PassRefPtr<Image> image) {
   if (!image)
     return;
 
-  if (sk_sp<SkImage> sk_image = image->ImageForCurrentFrame())
+  if (sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage())
     sk_image->asLegacyBitmap(&bitmap_, SkImage::kRO_LegacyBitmapMode);
 }
 

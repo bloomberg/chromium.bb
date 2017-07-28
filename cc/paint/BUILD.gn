@@ -25,6 +25,8 @@ cc_component("paint") {
     "paint_flags.h",
     "paint_image.cc",
     "paint_image.h",
+    "paint_image_builder.cc",
+    "paint_image_builder.h",
     "paint_op_buffer.cc",
     "paint_op_buffer.h",
     "paint_op_reader.cc",

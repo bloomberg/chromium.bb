@@ -33,7 +33,7 @@ class CC_PAINT_EXPORT DrawImage {
   bool operator==(const DrawImage& other) const;
 
   const PaintImage& paint_image() const { return paint_image_; }
-  const sk_sp<SkImage>& image() const { return paint_image_.sk_image(); }
+  const sk_sp<SkImage>& image() const { return paint_image_.GetSkImage(); }
   const SkSize& scale() const { return scale_; }
   const SkIRect& src_rect() const { return src_rect_; }
   SkFilterQuality filter_quality() const { return filter_quality_; }

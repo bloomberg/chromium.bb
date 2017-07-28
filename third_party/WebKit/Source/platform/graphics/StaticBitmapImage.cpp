@@ -33,7 +33,7 @@ void StaticBitmapImage::DrawHelper(PaintCanvas* canvas,
                                    ImageClampingMode clamp_mode,
                                    const PaintImage& image) {
   FloatRect adjusted_src_rect = src_rect;
-  adjusted_src_rect.Intersect(SkRect::Make(image.sk_image()->bounds()));
+  adjusted_src_rect.Intersect(SkRect::MakeWH(image.width(), image.height()));
 
   if (dst_rect.IsEmpty() || adjusted_src_rect.IsEmpty())
     return;  // Nothing to draw.
@@ -45,7 +45,7 @@ void StaticBitmapImage::DrawHelper(PaintCanvas* canvas,
 RefPtr<StaticBitmapImage> StaticBitmapImage::ConvertToColorSpace(
     sk_sp<SkColorSpace> target,
     SkTransferFunctionBehavior premulBehavior) {
-  sk_sp<SkImage> skia_image = ImageForCurrentFrame();
+  sk_sp<SkImage> skia_image = PaintImageForCurrentFrame().GetSkImage();
   sk_sp<SkImage> converted_skia_image =
       skia_image->makeColorSpace(target, premulBehavior);
 

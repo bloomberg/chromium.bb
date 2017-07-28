@@ -6,9 +6,11 @@
 #define PaintImage_h
 
 #include "cc/paint/paint_image.h"
+#include "cc/paint/paint_image_builder.h"
 
 namespace blink {
 using cc::PaintImage;
+using cc::PaintImageBuilder;
 }
 
 #endif  // PaintImage_h

@@ -51,8 +51,6 @@ class TestImage : public Image {
 
   IntSize Size() const override { return size_; }
 
-  sk_sp<SkImage> ImageForCurrentFrame() override { return image_; }
-
   void DestroyDecodedData() override {
     // Image pure virtual stub.
   }
@@ -80,6 +78,10 @@ class TestImage : public Image {
     return SkSurface::MakeRaster(SkImageInfo::MakeN32(
         size.Width(), size.Height(),
         opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType));
+  }
+
+  void PopulateImageForCurrentFrame(PaintImageBuilder& builder) override {
+    builder.set_image(image_);
   }
 
   IntSize size_;

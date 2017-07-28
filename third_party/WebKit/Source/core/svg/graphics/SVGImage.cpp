@@ -314,8 +314,8 @@ void SVGImage::DrawForContainer(PaintCanvas* canvas,
   });
 }
 
-sk_sp<SkImage> SVGImage::ImageForCurrentFrame() {
-  return ImageForCurrentFrameForContainer(NullURL(), Size());
+void SVGImage::PopulateImageForCurrentFrame(PaintImageBuilder& builder) {
+  PopulatePaintRecordForCurrentFrameForContainer(builder, NullURL(), Size());
 }
 
 void SVGImage::DrawPatternForContainer(GraphicsContext& context,
@@ -390,23 +390,20 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForContainer(
   return recorder.finishRecordingAsPicture();
 }
 
-sk_sp<SkImage> SVGImage::ImageForCurrentFrameForContainer(
+void SVGImage::PopulatePaintRecordForCurrentFrameForContainer(
+    PaintImageBuilder& builder,
     const KURL& url,
     const IntSize& container_size) {
   if (!page_)
-    return nullptr;
+    return;
 
-  const FloatRect container_rect((FloatPoint()), FloatSize(container_size));
+  const IntRect container_rect(IntPoint(), container_size);
 
   PaintRecorder recorder;
   PaintCanvas* canvas = recorder.beginRecording(container_rect);
-  DrawForContainer(canvas, PaintFlags(), container_rect.Size(), 1,
+  DrawForContainer(canvas, PaintFlags(), FloatSize(container_rect.Size()), 1,
                    container_rect, container_rect, url);
-
-  return SkImage::MakeFromPicture(
-      ToSkPicture(recorder.finishRecordingAsPicture(), container_rect),
-      SkISize::Make(container_size.Width(), container_size.Height()), nullptr,
-      nullptr, SkImage::BitDepth::kU8, SkColorSpace::MakeSRGB());
+  builder.set_paint_record(recorder.finishRecordingAsPicture(), container_rect);
 }
 
 static bool DrawNeedsLayer(const PaintFlags& flags) {
