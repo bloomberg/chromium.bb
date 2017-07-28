@@ -44,10 +44,7 @@ class WebState;
 // called before the tab |webState| is associated with is removed.
 - (void)stopTrackingWebState:(web::WebState*)webState;
 
-// Enables or disables the Payment Request API for the active webState. If
-// |enabled| is YES, the API may still not be enabled if the flag is not set;
-// the -enabled property will indicate the current status. This method functions
-// asynchronously.
+// Enables or disables the Payment Request API for the active webState.
 - (void)enablePaymentRequest:(BOOL)enabled;
 
 // If there is a pending request, cancels it and dismisses the UI. This must be

@@ -112,10 +112,6 @@ struct PendingPaymentResponse {
   // up).
   BOOL _activeWebStateEnabled;
 
-  // True when close has been called and the PaymentRequest coordinator has
-  // been destroyed.
-  BOOL _closed;
-
   // Coordinator used to create and present the PaymentRequest view controller.
   PaymentRequestCoordinator* _paymentRequestCoordinator;
 
@@ -147,10 +143,7 @@ struct PendingPaymentResponse {
 // The payments::PaymentRequest instance currently showing, if any.
 @property(nonatomic, assign) payments::PaymentRequest* pendingPaymentRequest;
 
-// Synchronous method executed by -asynchronouslyEnablePaymentRequest:
-- (void)doEnablePaymentRequest:(BOOL)enabled;
-
-// Terminates the pending request with an error message and dismisses the UI.
+// Terminates the pending request with |errorMessage| and dismisses the UI.
 // Invokes the callback once the request has been terminated.
 - (void)terminatePendingRequestWithErrorMessage:(NSString*)errorMessage
                                        callback:
@@ -253,20 +246,21 @@ struct PendingPaymentResponse {
 }
 
 - (void)setActiveWebState:(web::WebState*)webState {
-  // First cancel any pending request.
   [self cancelRequest];
-  [self disconnectActiveWebState];
-  if (webState) {
+  [self disableActiveWebState];
+
+  _paymentRequestJsManager = nil;
+  _activeWebStateObserver.reset();
+  _activeWebState = webState;
+  [self enableActiveWebState];
+
+  if (_activeWebState) {
     _paymentRequestJsManager =
         base::mac::ObjCCastStrict<JSPaymentRequestManager>(
-            [webState->GetJSInjectionReceiver()
+            [_activeWebState->GetJSInjectionReceiver()
                 instanceOfClass:[JSPaymentRequestManager class]]);
-    _activeWebState = webState;
     _activeWebStateObserver =
-        base::MakeUnique<web::WebStateObserverBridge>(webState, self);
-    [self enableActiveWebState];
-  } else {
-    _activeWebState = nullptr;
+        base::MakeUnique<web::WebStateObserverBridge>(_activeWebState, self);
   }
 }
 
@@ -278,22 +272,14 @@ struct PendingPaymentResponse {
 }
 
 - (void)enablePaymentRequest:(BOOL)enabled {
-  // Asynchronously enables PaymentRequest, so that some preferences
-  // (UIAccessibilityIsVoiceOverRunning(), for example) have time to synchronize
-  // with their own notifications.
-  __weak PaymentRequestManager* weakSelf = self;
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [weakSelf doEnablePaymentRequest:enabled];
-  });
-}
+  if (_enabled == enabled)
+    return;
 
-- (void)doEnablePaymentRequest:(BOOL)enabled {
-  BOOL changing = _enabled != enabled;
-  if (changing) {
-    if (!enabled) {
-      [self dismissUI];
-    }
-    _enabled = enabled;
+  _enabled = enabled;
+  if (!enabled) {
+    [self cancelRequest];
+    [self disableActiveWebState];
+  } else {
     [self enableActiveWebState];
   }
 }
@@ -318,35 +304,20 @@ struct PendingPaymentResponse {
 }
 
 - (void)close {
-  if (_closed)
-    return;
-
-  _closed = YES;
-  [self disableActiveWebState];
-  [self setActiveWebState:nil];
-  [self dismissUI];
+  [self setActiveWebState:nullptr];
 }
 
 - (void)enableActiveWebState {
-  if (!_activeWebState) {
-    return;
-  }
-
-  if (_enabled) {
-    if (!_activeWebStateEnabled) {
-      __weak PaymentRequestManager* weakSelf = self;
-      auto callback = base::BindBlockArc(
-          ^bool(const base::DictionaryValue& JSON, const GURL& originURL,
-                bool userIsInteracting) {
-            // |originURL| and |userIsInteracting| aren't used.
-            return [weakSelf handleScriptCommand:JSON];
-          });
-      _activeWebState->AddScriptCommandCallback(callback, kCommandPrefix);
-
-      _activeWebStateEnabled = YES;
-    }
-  } else {
-    [self disableActiveWebState];
+  if (_activeWebState && !_activeWebStateEnabled) {
+    __weak PaymentRequestManager* weakSelf = self;
+    auto callback = base::BindBlockArc(^bool(const base::DictionaryValue& JSON,
+                                             const GURL& originURL,
+                                             bool userIsInteracting) {
+      // |originURL| and |userIsInteracting| aren't used.
+      return [weakSelf handleScriptCommand:JSON];
+    });
+    _activeWebState->AddScriptCommandCallback(callback, kCommandPrefix);
+    _activeWebStateEnabled = YES;
   }
 }
 
@@ -354,14 +325,6 @@ struct PendingPaymentResponse {
   if (_activeWebState && _activeWebStateEnabled) {
     _activeWebState->RemoveScriptCommandCallback(kCommandPrefix);
     _activeWebStateEnabled = NO;
-  }
-}
-
-- (void)disconnectActiveWebState {
-  if (_activeWebState) {
-    _paymentRequestJsManager = nil;
-    _activeWebStateObserver.reset();
-    [self disableActiveWebState];
   }
 }
 
