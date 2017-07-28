@@ -41,8 +41,6 @@ class BackgroundSyncNetworkObserverAndroid
         base::Callback<void(net::NetworkChangeNotifier::ConnectionType)>
             callback);
 
-    static bool RegisterNetworkObserver(JNIEnv* env);
-
     // Called from BackgroundSyncNetworkObserver.java over JNI whenever the
     // connection type changes. This updates the current connection type seen by
     // this class and calls the |network_changed_callback| provided to the

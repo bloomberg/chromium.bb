@@ -21,8 +21,6 @@ namespace content {
 // This class must be used on the UI thread.
 class ContentVideoView {
  public:
-  static bool RegisterContentVideoView(JNIEnv* env);
-
   // Returns the singleton object or NULL.
   static ContentVideoView* GetInstance();
 

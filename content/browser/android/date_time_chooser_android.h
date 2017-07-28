@@ -53,9 +53,6 @@ class DateTimeChooserAndroid {
   DISALLOW_COPY_AND_ASSIGN(DateTimeChooserAndroid);
 };
 
-// Native JNI methods
-bool RegisterDateTimeChooserAndroid(JNIEnv* env);
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_ANDROID_DATE_TIME_CHOOSER_ANDROID_H_

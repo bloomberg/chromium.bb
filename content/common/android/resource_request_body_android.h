@@ -14,8 +14,6 @@ namespace content {
 
 class ResourceRequestBody;
 
-bool RegisterResourceRequestBody(JNIEnv* env);
-
 // Returns an instance of org.chromium.content_public.common.ResourceRequestBody
 // that contains serialized representation of the |native_object|.
 base::android::ScopedJavaLocalRef<jobject>

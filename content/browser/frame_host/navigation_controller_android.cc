@@ -68,11 +68,6 @@ static void AddNavigationEntryToHistory(JNIEnv* env,
 
 namespace content {
 
-// static
-bool NavigationControllerAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 NavigationControllerAndroid::NavigationControllerAndroid(
     NavigationControllerImpl* navigation_controller)
     : navigation_controller_(navigation_controller) {

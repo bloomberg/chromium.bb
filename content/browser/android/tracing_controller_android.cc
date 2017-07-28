@@ -117,8 +117,4 @@ static ScopedJavaLocalRef<jstring> GetDefaultCategories(
       env, trace_config.ToCategoryFilterString());
 }
 
-bool RegisterTracingControllerAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace content

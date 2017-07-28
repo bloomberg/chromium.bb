@@ -40,8 +40,6 @@ class InterstitialPageDelegateAndroid : public InterstitialPageDelegate {
   void OnDontProceed() override;
   void CommandReceived(const std::string& command) override;
 
-  static bool RegisterInterstitialPageDelegateAndroid(JNIEnv* env);
-
  private:
   JavaObjectWeakGlobalRef weak_java_obj_;
 

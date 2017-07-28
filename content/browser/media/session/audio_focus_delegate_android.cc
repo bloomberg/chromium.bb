@@ -12,11 +12,6 @@ using base::android::JavaParamRef;
 
 namespace content {
 
-// static
-bool AudioFocusDelegateAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 AudioFocusDelegateAndroid::AudioFocusDelegateAndroid(
     MediaSessionImpl* media_session)
     : media_session_(media_session) {}

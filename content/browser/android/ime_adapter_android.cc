@@ -62,10 +62,6 @@ NativeWebKeyboardEvent NativeWebKeyboardEventFromKeyEvent(
 
 }  // anonymous namespace
 
-bool RegisterImeAdapter(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 jlong Init(JNIEnv* env,
            const JavaParamRef<jobject>& obj,
            const JavaParamRef<jobject>& jweb_contents) {

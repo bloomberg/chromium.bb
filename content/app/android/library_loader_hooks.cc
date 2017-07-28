@@ -6,7 +6,6 @@
 
 #include "base/android/command_line_android.h"
 #include "base/android/jni_android.h"
-#include "base/android/jni_registrar.h"
 #include "base/android/jni_string.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/base_switches.h"
@@ -17,100 +16,11 @@
 #include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
 #include "components/tracing/common/trace_startup.h"
-#include "content/app/android/app_jni_registrar.h"
-#include "content/browser/android/browser_jni_registrar.h"
-#include "content/common/android/common_jni_registrar.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
-#include "device/bluetooth/android/bluetooth_jni_registrar.h"
-#include "device/gamepad/android/gamepad_jni_registrar.h"
-#include "device/geolocation/android/geolocation_jni_registrar.h"
-#include "device/sensors/android/device_sensor_jni_registrar.h"
-#include "device/usb/android/usb_jni_registrar.h"
-#include "media/base/android/media_jni_registrar.h"
-#include "media/capture/content/android/screen_capture_jni_registrar.h"
-#include "media/capture/video/android/capture_jni_registrar.h"
-#include "media/midi/midi_jni_registrar.h"
-#include "mojo/android/system/mojo_jni_registrar.h"
-#include "net/android/net_jni_registrar.h"
-#include "ui/android/ui_android_jni_registrar.h"
-#include "ui/base/android/ui_base_jni_registrar.h"
-#include "ui/gfx/android/gfx_jni_registrar.h"
-#include "ui/gl/android/gl_jni_registrar.h"
-#include "ui/shell_dialogs/android/shell_dialogs_jni_registrar.h"
 
 namespace content {
-
-bool EnsureJniRegistered(JNIEnv* env) {
-  static bool g_jni_init_done = false;
-
-  if (!g_jni_init_done) {
-    if (!gfx::android::RegisterJni(env))
-      return false;
-
-    if (!net::android::RegisterJni(env))
-      return false;
-
-    if (!ui::android::RegisterJni(env))
-      return false;
-
-    if (!ui::gl::android::RegisterJni(env))
-      return false;
-
-    if (!ui::shell_dialogs::RegisterJni(env))
-      return false;
-
-    if (!content::android::RegisterCommonJni(env))
-      return false;
-
-    if (base::android::GetLibraryProcessType(env) ==
-        base::android::PROCESS_BROWSER) {
-      if (!content::android::RegisterBrowserJni(env))
-        return false;
-    }
-
-    if (!content::android::RegisterAppJni(env))
-      return false;
-
-    if (!device::android::RegisterBluetoothJni(env))
-      return false;
-
-    if (!device::android::RegisterDeviceSensorJni(env))
-      return false;
-
-    if (!device::android::RegisterGamepadJni(env))
-      return false;
-
-    if (!device::android::RegisterGeolocationJni(env))
-      return false;
-
-    if (!device::android::RegisterUsbJni(env))
-      return false;
-
-    if (!media::RegisterJni(env))
-      return false;
-
-    if (!media::RegisterCaptureJni(env))
-      return false;
-
-    if (!media::RegisterScreenCaptureJni(env))
-      return false;
-
-    if (!midi::RegisterJni(env))
-      return false;
-
-    if (!mojo::android::RegisterSystemJni(env))
-      return false;
-
-    if (!ui::RegisterUIAndroidJni(env))
-      return false;
-
-    g_jni_init_done = true;
-  }
-
-  return true;
-}
 
 bool LibraryLoaded(JNIEnv* env, jclass clazz) {
   // Enable startup tracing asap to avoid early TRACE_EVENT calls being ignored.

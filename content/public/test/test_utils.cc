@@ -34,11 +34,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_util.h"
 
-#if defined(OS_ANDROID)
-#include "content/browser/android/browser_jni_registrar.h"
-#include "mojo/android/system/mojo_jni_registrar.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -229,15 +224,6 @@ void EnableFeatureWithParam(const base::Feature& feature,
   variations::testing::VariationParamsManager::AppendVariationParams(
       kFakeTrialName, kFakeTrialGroupName, param_values, command_line);
 }
-
-#if defined(OS_ANDROID)
-// Registers content/browser and mojo JNI bindings necessary for some types of
-// tests.
-bool RegisterJniForTesting(JNIEnv* env) {
-  return mojo::android::RegisterSystemJni(env) &&
-         content::android::RegisterBrowserJni(env);
-}
-#endif
 
 MessageLoopRunner::MessageLoopRunner(QuitMode quit_mode)
     : quit_mode_(quit_mode), loop_running_(false), quit_closure_called_(false) {

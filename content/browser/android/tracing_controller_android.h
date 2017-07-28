@@ -44,9 +44,6 @@ class TracingControllerAndroid {
   DISALLOW_COPY_AND_ASSIGN(TracingControllerAndroid);
 };
 
-// Register this class's native methods through jni.
-bool RegisterTracingControllerAndroid(JNIEnv* env);
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_ANDROID_TRACING_CONTROLLER_ANDROID_H_

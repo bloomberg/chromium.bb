@@ -103,8 +103,4 @@ void SmartSelectionClient::OnSurroundingTextReceived(int callback_data,
   }
 }
 
-bool RegisterSmartSelectionClient(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace content

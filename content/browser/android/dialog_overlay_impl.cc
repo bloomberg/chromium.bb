@@ -15,11 +15,6 @@ using base::android::ScopedJavaLocalRef;
 
 namespace content {
 
-// static
-bool DialogOverlayImpl::RegisterDialogOverlayImpl(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& obj,
                   jlong high,

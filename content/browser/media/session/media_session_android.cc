@@ -39,11 +39,6 @@ MediaSessionAndroid::MediaSessionAndroid(MediaSessionImpl* session)
 MediaSessionAndroid::~MediaSessionAndroid() = default;
 
 // static
-bool MediaSessionAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 ScopedJavaLocalRef<jobject> GetMediaSessionFromWebContents(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,

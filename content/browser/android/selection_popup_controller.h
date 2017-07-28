@@ -43,8 +43,6 @@ class SelectionPopupController : public RenderWidgetHostConnector {
   JavaObjectWeakGlobalRef java_obj_;
 };
 
-bool RegisterSelectionPopupController(JNIEnv* env);
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_ANDROID_SELECTION_POPUP_CONTROLLER_H_

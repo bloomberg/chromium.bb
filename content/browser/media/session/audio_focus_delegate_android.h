@@ -16,8 +16,6 @@ namespace content {
 // Android. It is also proxying the JNI calls.
 class AudioFocusDelegateAndroid : public AudioFocusDelegate {
  public:
-  static bool Register(JNIEnv* env);
-
   explicit AudioFocusDelegateAndroid(MediaSessionImpl* media_session);
   ~AudioFocusDelegateAndroid() override;
 

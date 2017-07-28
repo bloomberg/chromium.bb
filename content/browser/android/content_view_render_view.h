@@ -19,9 +19,6 @@ class Compositor;
 
 class ContentViewRenderView : public CompositorClient {
  public:
-  // Registers the JNI methods for ContentViewRender.
-  static bool RegisterContentViewRenderView(JNIEnv* env);
-
   ContentViewRenderView(JNIEnv* env,
                         jobject obj,
                         gfx::NativeWindow root_window);

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/app/android/content_child_process_service_delegate.h"
-
 #include <android/native_window_jni.h>
 #include <cpu-features.h>
 
@@ -154,10 +152,6 @@ void RetrieveFileDescriptorsIdsToKeys(JNIEnv* env,
   Java_ContentChildProcessServiceDelegate_setFileDescriptorsIdsToKeys(
       env, obj, base::android::ToJavaIntArray(env, ids),
       base::android::ToJavaArrayOfStrings(env, keys));
-}
-
-bool RegisterContentChildProcessServiceDelegate(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace content

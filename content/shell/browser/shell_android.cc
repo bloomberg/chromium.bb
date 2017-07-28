@@ -100,11 +100,6 @@ void Shell::Close() {
 }
 
 // static
-bool Shell::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 void CloseShell(JNIEnv* env,
                 const JavaParamRef<jclass>& clazz,
                 jlong shellPtr) {

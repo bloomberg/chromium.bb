@@ -219,9 +219,4 @@ void SpeechRecognizerImplAndroid::OnRecognitionEnd(
   listener()->OnRecognitionEnd(session_id());
 }
 
-// static
-bool SpeechRecognizerImplAndroid::RegisterSpeechRecognizer(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace content

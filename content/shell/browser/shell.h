@@ -115,9 +115,6 @@ class Shell : public WebContentsDelegate,
   // Public to be called by an ObjC bridge object.
   void ActionPerformed(int control);
   void URLEntered(const std::string& url_string);
-#elif defined(OS_ANDROID)
-  // Registers the Android Java to native methods.
-  static bool Register(JNIEnv* env);
 #endif
 
   // WebContentsDelegate

@@ -103,11 +103,4 @@ void DateTimeChooserAndroid::ShowDialog(
     ReplaceDateTime(env, j_date_time_chooser_, dialog_value);
 }
 
-// ----------------------------------------------------------------------------
-// Native JNI methods
-// ----------------------------------------------------------------------------
-bool RegisterDateTimeChooserAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace content

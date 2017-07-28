@@ -10,7 +10,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "content/browser/android/content_view_statics.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_process_host.h"
@@ -100,11 +99,3 @@ static void SetWebKitSharedTimersSuspended(JNIEnv* env,
     g_suspended_processes_watcher.Pointer()->ResumeWebkitSharedTimers();
   }
 }
-
-namespace content {
-
-bool RegisterWebViewStatics(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-}  // namespace content

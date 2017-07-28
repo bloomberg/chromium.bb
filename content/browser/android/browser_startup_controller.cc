@@ -27,10 +27,6 @@ bool ShouldStartGpuProcessOnBrowserStartup() {
       env);
 }
 
-bool RegisterBrowserStartupController(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 static void SetCommandLineFlags(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,

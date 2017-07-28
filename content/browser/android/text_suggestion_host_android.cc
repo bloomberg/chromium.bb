@@ -24,10 +24,6 @@ using base::android::ToJavaArrayOfStrings;
 
 namespace content {
 
-bool RegisterTextSuggestionHost(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 jlong Init(JNIEnv* env,
            const JavaParamRef<jobject>& obj,
            const JavaParamRef<jobject>& jweb_contents) {

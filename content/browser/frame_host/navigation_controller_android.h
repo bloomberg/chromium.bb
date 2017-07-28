@@ -21,8 +21,6 @@ class NavigationControllerImpl;
 // with its native counterpart.
 class CONTENT_EXPORT NavigationControllerAndroid {
  public:
-  static bool Register(JNIEnv* env);
-
   explicit NavigationControllerAndroid(
       NavigationControllerImpl* navigation_controller);
   ~NavigationControllerAndroid();

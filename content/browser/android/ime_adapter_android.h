@@ -124,8 +124,6 @@ class CONTENT_EXPORT ImeAdapterAndroid : public RenderWidgetHostConnector {
   JavaObjectWeakGlobalRef java_ime_adapter_;
 };
 
-bool RegisterImeAdapter(JNIEnv* env);
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_ANDROID_IME_ADAPTER_ANDROID_H_

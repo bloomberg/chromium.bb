@@ -52,8 +52,6 @@ class AppWebMessagePort {
   DISALLOW_COPY_AND_ASSIGN(AppWebMessagePort);
 };
 
-bool RegisterAppWebMessagePort(JNIEnv* env);
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_ANDROID_APP_WEB_MESSAGE_PORT_H_

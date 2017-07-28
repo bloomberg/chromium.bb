@@ -24,7 +24,6 @@
 #include "content/browser/android/gesture_event_type.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
-#include "content/browser/android/load_url_params.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
@@ -1101,10 +1100,6 @@ static ScopedJavaLocalRef<jobject> FromWebContentsAndroid(
     return ScopedJavaLocalRef<jobject>();
 
   return view->GetJavaObject();
-}
-
-bool RegisterContentViewCore(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace content

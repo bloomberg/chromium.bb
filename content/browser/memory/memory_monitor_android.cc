@@ -83,11 +83,6 @@ std::unique_ptr<MemoryMonitorAndroid> MemoryMonitorAndroid::Create() {
   return base::WrapUnique(new MemoryMonitorAndroid(std::move(delegate)));
 }
 
-// static
-bool MemoryMonitorAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 MemoryMonitorAndroid::MemoryMonitorAndroid(std::unique_ptr<Delegate> delegate)
     : delegate_(std::move(delegate)) {
   DCHECK(delegate_.get());

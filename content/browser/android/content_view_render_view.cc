@@ -29,11 +29,6 @@ using base::android::ScopedJavaLocalRef;
 
 namespace content {
 
-// static
-bool ContentViewRenderView::RegisterContentViewRenderView(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 ContentViewRenderView::ContentViewRenderView(JNIEnv* env,
                                              jobject obj,
                                              gfx::NativeWindow root_window)

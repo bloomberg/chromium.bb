@@ -28,8 +28,6 @@ class MediaSessionAndroid final : public MediaSessionObserver {
   // avoid leaking the Java object outside.
   struct JavaObjectGetter;
 
-  static bool Register(JNIEnv* env);
-
   explicit MediaSessionAndroid(MediaSessionImpl* session);
   ~MediaSessionAndroid() override;
 

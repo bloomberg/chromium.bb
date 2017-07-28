@@ -22,9 +22,6 @@ namespace content {
 class DialogOverlayImpl : public ContentViewCoreObserver,
                           public WebContentsObserver {
  public:
-  // Registers the JNI methods for DialogOverlayImpl.
-  static bool RegisterDialogOverlayImpl(JNIEnv* env);
-
   // This may not call back into |obj| directly, but must post.  This is because
   // |obj| is still being initialized.
   DialogOverlayImpl(const base::android::JavaParamRef<jobject>& obj,

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/child_process_launcher_helper_android.h"
-
 #include <memory>
 
 #include "base/android/apk_assets.h"
@@ -226,9 +224,5 @@ size_t ChildProcessLauncherHelper::GetNumberOfRendererSlots() {
 }
 
 }  // namespace internal
-
-bool RegisterChildProcessLauncher(JNIEnv* env) {
-  return internal::RegisterNativesImpl(env);
-}
 
 }  // namespace content
