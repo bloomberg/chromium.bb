@@ -8,7 +8,6 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/macros.h"
-#include "base/process/process.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/multi_key_equivalent_button.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util_mac.h"
@@ -157,9 +156,8 @@ class HungRendererWebContentsObserverBridge
 
 - (IBAction)kill:(id)sender {
   if (hungContents_) {
-    base::Process process = base::Process::DeprecatedGetProcessFromHandle(
-        hungContents_->GetRenderProcessHost()->GetHandle());
-    process.Terminate(content::RESULT_CODE_HUNG, false);
+    hungContents_->GetRenderProcessHost()->Shutdown(content::RESULT_CODE_HUNG,
+                                                    false);
   }
   // Cannot call performClose:, because the close button is disabled.
   [self close];
