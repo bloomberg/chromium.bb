@@ -19,7 +19,7 @@
       ]
     },
     "infra_step": true,
-    "name": "apply_gerrit"
+    "name": "Custom apply gerrit step"
   },
   {
     "name": "$result",

@@ -48,12 +48,20 @@ def RunSteps(api):
       api.properties.get('gerrit_no_rebase_patch_ref'))
 
   if api.properties.get('test_apply_gerrit_ref'):
+    prop2arg = {
+        'gerrit_custom_repo': 'gerrit_repo',
+        'gerrit_custom_ref': 'gerrit_ref',
+        'gerrit_custom_step_name': 'step_name',
+    }
+    kwargs = {
+        prop2arg[p]: api.properties.get(p)
+        for p in prop2arg if api.properties.get(p)
+    }
     api.bot_update.apply_gerrit_ref(
         root='/tmp/test/root',
         gerrit_no_reset=gerrit_no_reset,
         gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref,
-        gerrit_repo=api.properties.get('gerrit_custom_repo'),
-        gerrit_ref=api.properties.get('gerrit_custom_ref'),
+        **kwargs
     )
   else:
     bot_update_step = api.bot_update.ensure_checkout(
@@ -165,6 +173,7 @@ def GenTests(api):
       gerrit_no_reset=1,
       gerrit_custom_repo='https://custom/repo',
       gerrit_custom_ref='refs/changes/custom/1234567/1',
+      gerrit_custom_step_name='Custom apply gerrit step',
       test_apply_gerrit_ref=True,
   )
   yield api.test('tryjob_v8') + api.properties(
