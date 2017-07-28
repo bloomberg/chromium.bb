@@ -102,7 +102,7 @@ source_set("slew_volume") {
   ]
 }
 
-alsa_owns_volume = !enable_assistant
+alsa_owns_volume = !enable_assistant && chromecast_branding != "google"
 
 buildflag_header("alsa_features") {
   header = "alsa_features.h"
