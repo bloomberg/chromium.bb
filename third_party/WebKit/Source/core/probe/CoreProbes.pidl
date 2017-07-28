@@ -117,6 +117,7 @@ interface CoreProbes {
   void loadEventFired([Keep] LocalFrame*);
   void frameAttachedToParent([Keep] LocalFrame*);
   void frameDetachedFromParent([Keep] LocalFrame*);
+  void willCommitLoad([Keep] LocalFrame*, DocumentLoader*);
   void didCommitLoad([Keep] LocalFrame*, DocumentLoader*);
   void frameDocumentUpdated([Keep] LocalFrame*);
   void frameStartedLoading([Keep] LocalFrame*, FrameLoadType);

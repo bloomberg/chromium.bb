@@ -245,6 +245,7 @@ class CORE_EXPORT DocumentLoader
                           ParserSynchronizationPolicy,
                           const KURL& overriding_url);
   void DidInstallNewDocument(Document*);
+  void WillCommitNavigation();
   void DidCommitNavigation();
 
   void EnsureWriter(const AtomicString& mime_type,

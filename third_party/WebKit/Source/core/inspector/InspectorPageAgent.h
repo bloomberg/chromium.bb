@@ -158,7 +158,7 @@ class CORE_EXPORT InspectorPageAgent final
   void DidClearDocumentOfWindowObject(LocalFrame*);
   void DomContentLoadedEventFired(LocalFrame*);
   void LoadEventFired(LocalFrame*);
-  void DidCommitLoad(LocalFrame*, DocumentLoader*);
+  void WillCommitLoad(LocalFrame*, DocumentLoader*);
   void FrameAttachedToParent(LocalFrame*);
   void FrameDetachedFromParent(LocalFrame*);
   void FrameStartedLoading(LocalFrame*, FrameLoadType);

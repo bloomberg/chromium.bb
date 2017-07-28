@@ -731,7 +731,7 @@ void InspectorPageAgent::LoadEventFired(LocalFrame* frame) {
   GetFrontend()->loadEventFired(MonotonicallyIncreasingTime());
 }
 
-void InspectorPageAgent::DidCommitLoad(LocalFrame*, DocumentLoader* loader) {
+void InspectorPageAgent::WillCommitLoad(LocalFrame*, DocumentLoader* loader) {
   if (loader->GetFrame() == inspected_frames_->Root()) {
     FinishReload();
     script_to_evaluate_on_load_once_ = pending_script_to_evaluate_on_load_once_;
@@ -834,15 +834,15 @@ void InspectorPageAgent::WindowCreated(LocalFrame* created) {
 
 std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
     LocalFrame* frame) {
+  DocumentLoader* loader = frame->Loader().GetDocumentLoader();
+  KURL url = loader->GetRequest().Url();
   std::unique_ptr<protocol::Page::Frame> frame_object =
       protocol::Page::Frame::create()
           .setId(FrameId(frame))
-          .setLoaderId(
-              IdentifiersFactory::LoaderId(frame->Loader().GetDocumentLoader()))
-          .setUrl(UrlWithoutFragment(frame->GetDocument()->Url()).GetString())
+          .setLoaderId(IdentifiersFactory::LoaderId(loader))
+          .setUrl(UrlWithoutFragment(url).GetString())
           .setMimeType(frame->Loader().GetDocumentLoader()->ResponseMIMEType())
-          .setSecurityOrigin(
-              frame->GetDocument()->GetSecurityOrigin()->ToRawString())
+          .setSecurityOrigin(SecurityOrigin::Create(url)->ToRawString())
           .build();
   // FIXME: This doesn't work for OOPI.
   Frame* parent_frame = frame->Tree().Parent();
@@ -854,11 +854,9 @@ std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
       name = frame->DeprecatedLocalOwner()->getAttribute(HTMLNames::idAttr);
     frame_object->setName(name);
   }
-  if (frame->GetDocument() && frame->GetDocument()->Loader() &&
-      !frame->GetDocument()->Loader()->UnreachableURL().IsEmpty()) {
-    frame_object->setUnreachableUrl(
-        frame->GetDocument()->Loader()->UnreachableURL().GetString());
-  }
+
+  if (loader && !loader->UnreachableURL().IsEmpty())
+    frame_object->setUnreachableUrl(loader->UnreachableURL().GetString());
   return frame_object;
 }
 

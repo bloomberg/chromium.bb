@@ -126,7 +126,7 @@
       probes: [
         "didChangeViewport",
         "didClearDocumentOfWindowObject",
-        "didCommitLoad",
+        "willCommitLoad",
         "didResizeMainFrame",
         "didRunJavaScriptDialog",
         "domContentLoadedEventFired",
