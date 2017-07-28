@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/bubble_anchor_util.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
@@ -30,8 +31,7 @@
 namespace chrome {
 
 void ShowPageInfoBubbleViews(
-    gfx::NativeWindow browser_window,
-    Profile* profile,
+    Browser* browser,
     content::WebContents* web_contents,
     const GURL& virtual_url,
     const security_state::SecurityInfo& security_info) {
@@ -47,12 +47,12 @@ void ShowPageInfoBubbleViews(
     return;
   }
 
-  Browser* browser = chrome::FindBrowserWithWindow(browser_window);
-  const gfx::Rect anchor = bubble_anchor_util::GetPageInfoAnchorRect(browser);
   views::BubbleDialogDelegateView* bubble =
-      PageInfoBubbleView::ShowBubble(nullptr, nullptr, anchor, profile,
-                                     web_contents, virtual_url, security_info);
-  KeepBubbleAnchored(bubble, GetPageInfoDecoration(browser_window));
+      PageInfoBubbleView::CreatePageInfoBubble(browser, web_contents,
+                                               virtual_url, security_info);
+  bubble->GetWidget()->Show();
+  KeepBubbleAnchored(
+      bubble, GetPageInfoDecoration(browser->window()->GetNativeWindow()));
 }
 
 void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,

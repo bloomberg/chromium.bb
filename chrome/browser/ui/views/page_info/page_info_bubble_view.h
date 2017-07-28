@@ -23,6 +23,7 @@
 #include "ui/views/controls/styled_label_listener.h"
 
 class GURL;
+class Browser;
 class BubbleHeaderView;
 class Profile;
 
@@ -45,7 +46,6 @@ class PageInfoBubbleViewTestApi;
 namespace views {
 class Link;
 class Widget;
-class WidgetObserver;
 }
 
 enum : int {
@@ -76,15 +76,13 @@ class PageInfoBubbleView : public content::WebContentsObserver,
     BUBBLE_INTERNAL_PAGE
   };
 
-  // If |anchor_view| is null, |anchor_rect| is used to anchor the bubble.
-  static views::BubbleDialogDelegateView* ShowBubble(
-      views::View* anchor_view,
-      views::WidgetObserver* widget_observer,
-      const gfx::Rect& anchor_rect,
-      Profile* profile,
+  // Creates the appropriate page info bubble for the given |url|.
+  static views::BubbleDialogDelegateView* CreatePageInfoBubble(
+      Browser* browser,
       content::WebContents* web_contents,
       const GURL& url,
       const security_state::SecurityInfo& security_info);
+
   // Returns the type of the bubble being shown.
   static BubbleType GetShownBubbleType();
 
@@ -95,6 +93,7 @@ class PageInfoBubbleView : public content::WebContentsObserver,
   friend class test::PageInfoBubbleViewTestApi;
 
   PageInfoBubbleView(views::View* anchor_view,
+                     const gfx::Rect& anchor_rect,
                      gfx::NativeView parent_window,
                      Profile* profile,
                      content::WebContents* web_contents,

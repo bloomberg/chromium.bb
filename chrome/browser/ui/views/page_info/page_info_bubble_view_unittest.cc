@@ -50,7 +50,7 @@ class PageInfoBubbleViewTestApi {
 
     security_state::SecurityInfo security_info;
     views::View* anchor_view = nullptr;
-    view_ = new PageInfoBubbleView(anchor_view, parent_, profile_,
+    view_ = new PageInfoBubbleView(anchor_view, gfx::Rect(), parent_, profile_,
                                    web_contents_, GURL(kUrl), security_info);
   }
 

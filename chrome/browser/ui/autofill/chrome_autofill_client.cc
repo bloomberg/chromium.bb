@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/autofill/credit_card_scanner_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/web_data_service_factory.h"
@@ -386,8 +387,7 @@ void ChromeAutofillClient::ShowHttpNotSecureExplanation() {
 #if !defined(OS_ANDROID)
   // On desktop platforms, open Page Info, which briefly explains the HTTP
   // warning message and provides a link to the Help Center for more details.
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  if (browser && chrome::ShowPageInfo(browser, web_contents()))
+  if (ShowPageInfoDialog(web_contents()))
     return;
 // Otherwise fall through to the section below that opens the URL directly.
 #endif

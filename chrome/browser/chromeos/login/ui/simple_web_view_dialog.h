@@ -78,7 +78,6 @@ class SimpleWebViewDialog : public views::ButtonListener,
   const ToolbarModel* GetToolbarModel() const override;
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
-  void ShowPageInfo(content::WebContents* web_contents) override;
 
   // Implements ChromeToolbarModelDelegate:
   content::WebContents* GetActiveWebContents() const override;

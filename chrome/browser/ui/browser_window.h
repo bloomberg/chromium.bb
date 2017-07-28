@@ -28,7 +28,6 @@ class ExclusiveAccessContext;
 class FindBar;
 class GURL;
 class LocationBar;
-class Profile;
 class StatusBubble;
 class ToolbarActionsBar;
 
@@ -52,10 +51,6 @@ namespace gfx {
 class Rect;
 class Size;
 }
-
-namespace security_state {
-struct SecurityInfo;
-}  // namespace security_state
 
 namespace signin_metrics {
 enum class AccessPoint;
@@ -286,15 +281,6 @@ class BrowserWindow : public ui::BaseWindow {
   // ThemeService calls this when a user has changed their theme, indicating
   // that it's time to redraw everything.
   virtual void UserChangedTheme() = 0;
-
-  // Shows Page Info using the specified information. |virtual_url| is the
-  // virtual url of the page/frame the info applies to, and |security_info|
-  // contains the security state for that page/frame.
-  virtual void ShowPageInfo(
-      Profile* profile,
-      content::WebContents* web_contents,
-      const GURL& virtual_url,
-      const security_state::SecurityInfo& security_info) = 0;
 
   // Shows the app menu (for accessibility).
   virtual void ShowAppMenu() = 0;

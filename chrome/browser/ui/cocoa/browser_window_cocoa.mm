@@ -41,7 +41,6 @@
 #include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/nsmenuitem_additions.h"
-#import "chrome/browser/ui/cocoa/page_info/page_info_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 #include "chrome/browser/ui/cocoa/restart_browser.h"
 #include "chrome/browser/ui/cocoa/status_bubble_mac.h"
@@ -564,15 +563,6 @@ void BrowserWindowCocoa::UserChangedTheme() {
   if (locationBar) {
     locationBar->OnThemeChanged();
   }
-}
-
-void BrowserWindowCocoa::ShowPageInfo(
-    Profile* profile,
-    content::WebContents* web_contents,
-    const GURL& virtual_url,
-    const security_state::SecurityInfo& security_info) {
-  PageInfoUIBridge::Show(window(), profile, web_contents, virtual_url,
-                         security_info);
 }
 
 void BrowserWindowCocoa::ShowAppMenu() {

@@ -76,12 +76,10 @@
 #include "chrome/browser/ui/views/ime/ime_warning_bubble_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/new_back_shortcut_bubble.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
-#include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -1244,17 +1242,6 @@ void BrowserView::ConfirmBrowserCloseWithPendingDownloads(
 
 void BrowserView::UserChangedTheme() {
   frame_->FrameTypeChanged();
-}
-
-void BrowserView::ShowPageInfo(
-    Profile* profile,
-    content::WebContents* web_contents,
-    const GURL& virtual_url,
-    const security_state::SecurityInfo& security_info) {
-  PageInfoBubbleView::ShowBubble(
-      GetLocationBarView()->GetSecurityBubbleAnchorView(),
-      GetLocationBarView()->location_icon_view(), gfx::Rect(), profile,
-      web_contents, virtual_url, security_info);
 }
 
 void BrowserView::ShowAppMenu() {

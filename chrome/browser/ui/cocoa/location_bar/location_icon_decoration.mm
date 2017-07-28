@@ -7,11 +7,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/drag_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/web_contents.h"
@@ -112,20 +111,12 @@ bool LocationIconDecoration::HasHoverAndPressEffect() {
 }
 
 bool LocationIconDecoration::OnMousePressed(NSRect frame, NSPoint location) {
-  // TODO(macourteau): this code (for displaying the page info bubble) should be
-  // pulled out into LocationBarViewMac (or maybe even further), as other
-  // decorations currently depend on this decoration only to show the page info
-  // bubble.
-
   // Do not show page info if the user has been editing the location
   // bar, or the location bar is at the NTP.
   if (owner_->GetOmniboxView()->IsEditingOrEmpty())
     return true;
 
-  WebContents* tab = owner_->GetWebContents();
-  Browser* browser = chrome::FindBrowserWithWebContents(tab);
-  chrome::ShowPageInfo(browser, tab);
-  return true;
+  return ShowPageInfoDialog(owner_->GetWebContents());
 }
 
 NSString* LocationIconDecoration::GetToolTip() {
