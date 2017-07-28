@@ -89,6 +89,7 @@ class CORE_EXPORT WorkletGlobalScope
                             WorkletPendingTasks*);
 
   WorkletModuleResponsesMapProxy* ModuleResponsesMapProxy() const;
+  void SetModuleResponsesMapProxyForTesting(WorkletModuleResponsesMapProxy*);
 
   void SetModulator(Modulator*);
 

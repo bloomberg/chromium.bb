@@ -116,6 +116,12 @@ WorkletModuleResponsesMapProxy* WorkletGlobalScope::ModuleResponsesMapProxy()
   return module_responses_map_proxy_;
 }
 
+void WorkletGlobalScope::SetModuleResponsesMapProxyForTesting(
+    WorkletModuleResponsesMapProxy* proxy) {
+  DCHECK(!module_responses_map_proxy_);
+  module_responses_map_proxy_ = proxy;
+}
+
 void WorkletGlobalScope::SetModulator(Modulator* modulator) {
   modulator_ = modulator;
 }

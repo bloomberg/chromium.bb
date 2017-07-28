@@ -10,11 +10,11 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/modulescript/ModuleScriptLoaderClient.h"
 #include "core/loader/modulescript/ModuleScriptLoaderRegistry.h"
-#include "platform/loader/fetch/FetchUtils.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
+#include "core/loader/modulescript/WorkletModuleScriptFetcher.h"
+#include "core/workers/MainThreadWorkletGlobalScope.h"
+#include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceLoadingLog.h"
-#include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/text/AtomicString.h"
 
@@ -69,7 +69,6 @@ void ModuleScriptLoader::AdvanceState(ModuleScriptLoader::State new_state) {
   if (state_ == State::kFinished) {
     registry_->ReleaseFinishedLoader(this);
     client_->NotifyNewSingleModuleFinished(module_script_);
-    SetResource(nullptr);
   }
 }
 
@@ -134,6 +133,9 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
   fetch_params.SetDecoderOptions(
       TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
 
+  nonce_ = module_request.Nonce();
+  parser_state_ = module_request.ParserState();
+
   // Step 6. If the caller specified custom steps to perform the fetch,
   // perform them on request, setting the is top-level flag if the top-level
   // module fetch flag is set. Return from this algorithm, and when the custom
@@ -141,106 +143,41 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
   // steps.
   // Otherwise, fetch request. Return from this algorithm, and run the remaining
   // steps as part of the fetch's process response for the response response.
-  // TODO(ServiceWorker team): Perform the "custom steps" for module usage
-  // inside service worker.
-  nonce_ = module_request.Nonce();
-  parser_state_ = module_request.ParserState();
-
-  ScriptResource* resource = ScriptResource::Fetch(fetch_params, fetcher);
-  if (state_ == State::kFinished) {
-    // ScriptResource::fetch() has succeeded synchronously,
-    // ::notifyFinished() already took care of the |resource|.
-    return;
+  ExecutionContext* execution_context =
+      ExecutionContext::From(modulator_->GetScriptState());
+  if (execution_context->IsMainThreadWorkletGlobalScope()) {
+    MainThreadWorkletGlobalScope* global_scope =
+        ToMainThreadWorkletGlobalScope(execution_context);
+    module_fetcher_ =
+        new WorkletModuleScriptFetcher(fetch_params, fetcher, modulator_, this,
+                                       global_scope->ModuleResponsesMapProxy());
+  } else {
+    module_fetcher_ =
+        new ModuleScriptFetcher(fetch_params, fetcher, modulator_, this);
   }
-
-  if (!resource) {
-    // ScriptResource::fetch() has failed synchronously.
-    AdvanceState(State::kFinished);
-    return;
-  }
-
-  // ScriptResource::fetch() is processed asynchronously.
-  SetResource(resource);
+  module_fetcher_->Fetch();
 }
 
-namespace {
-
-bool WasModuleLoadSuccessful(Resource* resource,
-                             ConsoleMessage** error_message = nullptr) {
-  // Implements conditions in Step 7 of
-  // https://html.spec.whatwg.org/#fetch-a-single-module-script
-
-  // - response's type is "error"
-  if (resource->ErrorOccurred()) {
-    return false;
-  }
-
-  const auto& response = resource->GetResponse();
-  // - response's status is not an ok status
-  if (response.IsHTTP() && !FetchUtils::IsOkStatus(response.HttpStatusCode())) {
-    return false;
-  }
-
-  // The result of extracting a MIME type from response's header list
-  // (ignoring parameters) is not a JavaScript MIME type
-  // Note: For historical reasons, fetching a classic script does not include
-  // MIME type checking. In contrast, module scripts will fail to load if they
-  // are not of a correct MIME type.
-  // We use ResourceResponse::httpContentType() instead of mimeType(), as
-  // mimeType() may be rewritten by mime sniffer.
-  if (!MIMETypeRegistry::IsSupportedJavaScriptMIMEType(
-          response.HttpContentType())) {
-    if (error_message) {
-      String message =
-          "Failed to load module script: The server responded with a "
-          "non-JavaScript MIME type of \"" +
-          response.HttpContentType() +
-          "\". Strict MIME type checking is enforced for module scripts per "
-          "HTML spec.";
-      *error_message = ConsoleMessage::CreateForRequest(
-          kJSMessageSource, kErrorMessageLevel, message,
-          response.Url().GetString(), resource->Identifier());
-    }
-    return false;
-  }
-
-  return true;
-}
-
-}  // namespace
-
-// ScriptResourceClient callback handler
-void ModuleScriptLoader::NotifyFinished(Resource*) {
+void ModuleScriptLoader::NotifyFetchFinished(
+    const WTF::Optional<ModuleScriptCreationParams>& params) {
   // Note: "conditions" referred in Step 7 is implemented in
   // wasModuleLoadSuccessful().
   // Step 7. If any of the following conditions are met, set moduleMap[url] to
   // null, asynchronously complete this algorithm with null, and abort these
   // steps.
-  ConsoleMessage* error_message = nullptr;
-  if (!WasModuleLoadSuccessful(GetResource(), &error_message)) {
-    if (error_message) {
-      ExecutionContext::From(modulator_->GetScriptState())
-          ->AddConsoleMessage(error_message);
-    }
-
+  if (!params.has_value()) {
     AdvanceState(State::kFinished);
     return;
   }
 
   // Step 8. Let source text be the result of UTF-8 decoding response's body.
-  String source_text = GetResource()->SourceText();
-
-  AccessControlStatus access_control_status =
-      GetResource()->CalculateAccessControlStatus();
-
   // Step 9. Let module script be the result of creating a module script given
   // source text, module map settings object, response's url, cryptographic
   // nonce, parser state, and credentials mode.
   module_script_ = ModuleScript::Create(
-      source_text, modulator_, GetResource()->GetResponse().Url(), nonce_,
-      parser_state_,
-      GetResource()->GetResourceRequest().GetFetchCredentialsMode(),
-      access_control_status);
+      params->GetSourceText(), modulator_, params->GetResponseUrl(), nonce_,
+      parser_state_, params->GetFetchCredentialsMode(),
+      params->GetAccessControlStatus());
 
   AdvanceState(State::kFinished);
 }
@@ -250,7 +187,7 @@ DEFINE_TRACE(ModuleScriptLoader) {
   visitor->Trace(module_script_);
   visitor->Trace(registry_);
   visitor->Trace(client_);
-  ResourceOwner<ScriptResource>::Trace(visitor);
+  visitor->Trace(module_fetcher_);
 }
 
 }  // namespace blink
