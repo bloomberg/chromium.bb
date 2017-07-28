@@ -467,7 +467,7 @@ void V8GCController::CollectGarbage(v8::Isolate* isolate, bool only_minor_gc) {
   builder.Append(only_minor_gc ? "true" : "false");
   builder.Append(")");
   V8ScriptRunner::CompileAndRunInternalScript(
-      V8String(isolate, builder.ToString()), isolate);
+      script_state.Get(), V8String(isolate, builder.ToString()), isolate);
   script_state->DisposePerContextData();
 }
 

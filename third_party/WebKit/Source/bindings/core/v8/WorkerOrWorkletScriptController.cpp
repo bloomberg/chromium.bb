@@ -268,9 +268,10 @@ ScriptValue WorkerOrWorkletScriptController::Evaluate(
 
   v8::Local<v8::Script> compiled_script;
   v8::MaybeLocal<v8::Value> maybe_result;
-  if (V8ScriptRunner::CompileScript(
-          script, file_name, String(), script_start_position, isolate_,
-          cache_handler, kSharableCrossOrigin, v8_cache_options)
+  if (V8ScriptRunner::CompileScript(script_state_.Get(), script, file_name,
+                                    String(), script_start_position,
+                                    cache_handler, kSharableCrossOrigin,
+                                    v8_cache_options)
           .ToLocal(&compiled_script))
     maybe_result = V8ScriptRunner::RunCompiledScript(isolate_, compiled_script,
                                                      global_scope_);
