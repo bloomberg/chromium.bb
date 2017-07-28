@@ -2254,7 +2254,7 @@ const char kTouchscreenCalibrationName[] =
 
 const char kTouchscreenCalibrationDescription[] =
     "If enabled, the user can calibrate the touch screen displays in "
-    "chrome://md-settings/display.";
+    "chrome://settings/display.";
 
 const char kTeamDrivesName[] = "Enable Team Drives Integration";
 const char kTeamDrivesDescription[] =

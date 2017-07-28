@@ -93,7 +93,7 @@ SettingsAutofillSectionBrowserTest.prototype = {
 
   /** @override */
   browsePreload:
-      'chrome://md-settings/passwords_and_forms_page/autofill_section.html',
+      'chrome://settings/passwords_and_forms_page/autofill_section.html',
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([

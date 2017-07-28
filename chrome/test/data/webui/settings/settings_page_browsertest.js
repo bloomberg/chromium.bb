@@ -21,7 +21,7 @@ SettingsPageBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://md-settings/',
+  browsePreload: 'chrome://settings/',
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([

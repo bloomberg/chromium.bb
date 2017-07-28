@@ -17,7 +17,7 @@ SettingsAnimationBrowserTest.prototype = {
   __proto__: testing.Test.prototype,
 
   /** @override */
-  browsePreload: 'chrome://md-settings/animation/animation.html',
+  browsePreload: 'chrome://settings/animation/animation.html',
 
   /** @override */
   extraLibraries: [

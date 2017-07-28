@@ -17,8 +17,6 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_state_change_observer_win.h"
 #endif
 
-class GURL;
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -27,16 +25,13 @@ namespace settings {
 
 class SettingsPageUIHandler;
 
-// Exposed for testing.
-bool IsValidOrigin(const GURL& url);
-
-// The WebUI handler for chrome://md-settings.
+// The WebUI handler for chrome://settings.
 class MdSettingsUI : public content::WebUIController,
                      public content::WebContentsObserver {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  MdSettingsUI(content::WebUI* web_ui, const GURL& url);
+  explicit MdSettingsUI(content::WebUI* web_ui);
   ~MdSettingsUI() override;
 
   // content::WebContentsObserver:

@@ -25,14 +25,14 @@ PasswordsAndFormsBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://md-settings/passwords_and_forms_page/' +
-    'passwords_and_forms_page.html',
+  browsePreload: 'chrome://settings/passwords_and_forms_page/' +
+      'passwords_and_forms_page.html',
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-      '../fake_chrome_event.js',
-      'fake_settings_private.js',
-      'ensure_lazy_loaded.js',
+    '../fake_chrome_event.js',
+    'fake_settings_private.js',
+    'ensure_lazy_loaded.js',
   ]),
 
   /** @override */

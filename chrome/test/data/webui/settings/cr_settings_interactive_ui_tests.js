@@ -53,7 +53,7 @@ CrSettingsFocusRowBehavior.prototype = {
   __proto__: CrSettingsInteractiveUITest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://md-settings/focus_row_behavior.html',
+  browsePreload: 'chrome://settings/focus_row_behavior.html',
 
   /** @override */
   extraLibraries: CrSettingsInteractiveUITest.prototype.extraLibraries.concat([
@@ -77,7 +77,7 @@ CrSettingsSyncPageTest.prototype = {
   __proto__: CrSettingsInteractiveUITest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://md-settings/people_page/sync_page.html',
+  browsePreload: 'chrome://settings/people_page/sync_page.html',
 
   /** @override */
   extraLibraries: CrSettingsInteractiveUITest.prototype.extraLibraries.concat([
@@ -100,8 +100,7 @@ CrSettingsAnimatedPagesTest.prototype = {
   __proto__: CrSettingsInteractiveUITest.prototype,
 
   /** @override */
-  browsePreload:
-      'chrome://md-settings/settings_page/settings_animated_pages.html',
+  browsePreload: 'chrome://settings/settings_page/settings_animated_pages.html',
 
   extraLibraries: CrSettingsInteractiveUITest.prototype.extraLibraries.concat([
     'settings_animated_pages_test.js',

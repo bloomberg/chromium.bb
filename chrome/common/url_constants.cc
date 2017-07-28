@@ -68,7 +68,6 @@ const char kChromeUIInstantURL[] = "chrome://instant/";
 const char kChromeUIInterstitialURL[] = "chrome://interstitials/";
 const char kChromeUIInvalidationsURL[] = "chrome://invalidations/";
 const char kChromeUIMdPolicyURL[] = "chrome://md-policy/";
-const char kChromeUIMdSettingsURL[] = "chrome://md-settings/";
 const char kChromeUINaClURL[] = "chrome://nacl/";
 const char kChromeUINetInternalsURL[] = "chrome://net-internals/";
 const char kChromeUINewProfileURL[] = "chrome://newprofile/";
@@ -135,9 +134,7 @@ const char kChromeUISlowURL[] = "chrome://slow/";
 const char kChromeUISystemInfoURL[] = "chrome://system/";
 const char kChromeUITermsOemURL[] = "chrome://terms/oem";
 const char kChromeUIUserImageURL[] = "chrome://userimage/";
-// TODO(xdai): Change it to chrome://settings/cupsPrinters after M56 since MD
-// settings is going to launch in Chrome OS in M57.
-const char kChromeUIMdCupsSettingsURL[] = "chrome://md-settings/cupsPrinters";
+const char kChromeUIMdCupsSettingsURL[] = "chrome://settings/cupsPrinters";
 const char kCupsPrintLearnMoreURL[] =
     "https://support.google.com/chromebook?p=chromebook_printing";
 #endif  // defined(OS_CHROMEOS)
@@ -223,7 +220,6 @@ const char kChromeUIKillHost[] = "kill";
 const char kChromeUILargeIconHost[] = "large-icon";
 const char kChromeUILocalStateHost[] = "local-state";
 const char kChromeUIMdPolicyHost[] = "md-policy";
-const char kChromeUIMdSettingsHost[] = "md-settings";
 const char kChromeUIMediaEngagementHost[] = "media-engagement";
 const char kChromeUINaClHost[] = "nacl";
 const char kChromeUINetExportHost[] = "net-export";

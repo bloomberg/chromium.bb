@@ -52,8 +52,8 @@ PolymerTest.prototype = {
     PolymerTest.importUrls_ = [];
     PolymerTest.scriptUrls_ = [];
 
-    // Importing a URL like "chrome://md-settings/foo" redirects to the base
-    // ("chrome://md-settings") page, which due to how browsePreload works can
+    // Importing a URL like "chrome://settings/foo" redirects to the base
+    // ("chrome://settings") page, which due to how browsePreload works can
     // result in duplicate imports. Wrap document.registerElement so failures
     // caused by re-registering Polymer elements are caught; otherwise Chrome
     // simply throws "Script error" which is unhelpful.

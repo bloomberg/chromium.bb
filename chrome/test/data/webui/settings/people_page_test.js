@@ -280,26 +280,30 @@ cr.define('settings_people_page', function() {
       });
 
       test('NavigateDirectlyToSignOutURL', function() {
-        // Navigate to chrome://md-settings/signOut
+        // Navigate to chrome://settings/signOut
         settings.navigateTo(settings.routes.SIGN_OUT);
 
-        return new Promise(
-            function(resolve) { peoplePage.async(resolve); }).then(function() {
-          assertTrue(peoplePage.$$('#disconnectDialog').open);
-          return profileInfoBrowserProxy.whenCalled('getProfileStatsCount');
-        }).then(function() {
-          // 'getProfileStatsCount' can be the first message sent to the handler
-          // if the user navigates directly to chrome://md-settings/signOut. if
-          // so, it should not cause a crash.
-          new settings.ProfileInfoBrowserProxyImpl().getProfileStatsCount();
+        return new Promise(function(resolve) {
+                 peoplePage.async(resolve);
+               })
+            .then(function() {
+              assertTrue(peoplePage.$$('#disconnectDialog').open);
+              return profileInfoBrowserProxy.whenCalled('getProfileStatsCount');
+            })
+            .then(function() {
+              // 'getProfileStatsCount' can be the first message sent to the
+              // handler if the user navigates directly to
+              // chrome://settings/signOut. if so, it should not cause a crash.
+              new settings.ProfileInfoBrowserProxyImpl().getProfileStatsCount();
 
-          // Close the disconnect dialog.
-          MockInteractions.tap(peoplePage.$$('#disconnectConfirm'));
-        }).then(function() {
-          return new Promise(function(resolve) {
-            listenOnce(window, 'popstate', resolve);
-          });
-        });
+              // Close the disconnect dialog.
+              MockInteractions.tap(peoplePage.$$('#disconnectConfirm'));
+            })
+            .then(function() {
+              return new Promise(function(resolve) {
+                listenOnce(window, 'popstate', resolve);
+              });
+            });
       });
 
       test('Signout dialog suppressed when not signed in', function() {

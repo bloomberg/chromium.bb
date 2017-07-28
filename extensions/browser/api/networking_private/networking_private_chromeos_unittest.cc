@@ -474,7 +474,7 @@ TEST_F(NetworkingPrivateApiTest, SetNetworkRestrictedPropertiesFromWebUI) {
   scoped_refptr<NetworkingPrivateSetPropertiesFunction> set_properties =
       new NetworkingPrivateSetPropertiesFunction();
   set_properties->set_source_context_type(Feature::WEBUI_CONTEXT);
-  set_properties->set_source_url(GURL("chrome://md-settings/networkDetail"));
+  set_properties->set_source_url(GURL("chrome://settings/networkDetail"));
 
   const char kCombinedSettings[] =
       R"({
@@ -671,7 +671,7 @@ TEST_F(NetworkingPrivateApiTest, CreateL2TPVpnFromWebUi) {
   scoped_refptr<NetworkingPrivateCreateNetworkFunction> create_network =
       new NetworkingPrivateCreateNetworkFunction();
   create_network->set_source_context_type(Feature::WEBUI_CONTEXT);
-  create_network->set_source_url(GURL("chrome://md-settings/networkDetail"));
+  create_network->set_source_url(GURL("chrome://settings/networkDetail"));
   std::unique_ptr<base::Value> result = RunFunctionAndReturnValue(
       create_network.get(),
       base::StringPrintf("[false, %s]", kL2tpIpsecConfig));
@@ -703,7 +703,7 @@ TEST_F(NetworkingPrivateApiTest, CreateL2TPVpnFromWebUi) {
   scoped_refptr<NetworkingPrivateSetPropertiesFunction> set_properties =
       new NetworkingPrivateSetPropertiesFunction();
   set_properties->set_source_context_type(Feature::WEBUI_CONTEXT);
-  set_properties->set_source_url(GURL("chrome://md-settings/networkDetail"));
+  set_properties->set_source_url(GURL("chrome://settings/networkDetail"));
   result = RunFunctionAndReturnValue(
       set_properties.get(),
       base::StringPrintf(
@@ -731,7 +731,7 @@ TEST_F(NetworkingPrivateApiTest, CreateOpenVpnFromWebUiAndSetProperties) {
   scoped_refptr<NetworkingPrivateCreateNetworkFunction> create_network =
       new NetworkingPrivateCreateNetworkFunction();
   create_network->set_source_context_type(Feature::WEBUI_CONTEXT);
-  create_network->set_source_url(GURL("chrome://md-settings/networkDetail"));
+  create_network->set_source_url(GURL("chrome://settings/networkDetail"));
   std::unique_ptr<base::Value> result = RunFunctionAndReturnValue(
       create_network.get(), base::StringPrintf("[false, %s]", kOpenVpnConfig));
 
@@ -763,7 +763,7 @@ TEST_F(NetworkingPrivateApiTest, CreateOpenVpnFromWebUiAndSetProperties) {
   scoped_refptr<NetworkingPrivateSetPropertiesFunction> set_properties =
       new NetworkingPrivateSetPropertiesFunction();
   set_properties->set_source_context_type(Feature::WEBUI_CONTEXT);
-  set_properties->set_source_url(GURL("chrome://md-settings/networkDetail"));
+  set_properties->set_source_url(GURL("chrome://settings/networkDetail"));
   result = RunFunctionAndReturnValue(
       set_properties.get(),
       base::StringPrintf(
@@ -882,7 +882,7 @@ TEST_F(NetworkingPrivateApiTest,
   scoped_refptr<NetworkingPrivateCreateNetworkFunction> create_network =
       new NetworkingPrivateCreateNetworkFunction();
   create_network->set_source_context_type(Feature::WEBUI_CONTEXT);
-  create_network->set_source_url(GURL("chrome://md-settings/networkDetail"));
+  create_network->set_source_url(GURL("chrome://settings/networkDetail"));
   std::unique_ptr<base::Value> result = RunFunctionAndReturnValue(
       create_network.get(), base::StringPrintf("[false, %s]", kNetworkConfig));
   ASSERT_TRUE(result);
@@ -1107,7 +1107,7 @@ TEST_F(NetworkingPrivateApiTest, GetCellularPropertiesFromWebUi) {
   scoped_refptr<NetworkingPrivateGetPropertiesFunction> get_properties =
       new NetworkingPrivateGetPropertiesFunction();
   get_properties->set_source_context_type(Feature::WEBUI_CONTEXT);
-  get_properties->set_source_url(GURL("chrome://md-settings/networkDetail"));
+  get_properties->set_source_url(GURL("chrome://settings/networkDetail"));
 
   std::unique_ptr<base::Value> result = RunFunctionAndReturnValue(
       get_properties.get(), base::StringPrintf(R"(["%s"])", kCellularGuid));
