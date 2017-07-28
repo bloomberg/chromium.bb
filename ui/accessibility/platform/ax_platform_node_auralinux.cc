@@ -474,8 +474,12 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_EXPANDED);
   if (data.HasState(ui::AX_STATE_FOCUSABLE))
     atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSABLE);
+#if defined(ATK_CHECK_VERSION)
+#if ATK_CHECK_VERSION(2, 11, 2)
   if (data.HasState(ui::AX_STATE_HASPOPUP))
     atk_state_set_add_state(atk_state_set, ATK_STATE_HAS_POPUP);
+#endif
+#endif
   if (data.HasState(ui::AX_STATE_SELECTED))
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTED);
   if (data.HasState(ui::AX_STATE_SELECTABLE))
