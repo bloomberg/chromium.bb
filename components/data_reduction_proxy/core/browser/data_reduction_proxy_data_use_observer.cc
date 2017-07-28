@@ -22,7 +22,7 @@ namespace {
 class DataUseUserDataBytes : public base::SupportsUserData::Data {
  public:
   // Key used to store data usage in userdata until the page URL is available.
-  static const void* kUserDataKey;
+  static const void* const kUserDataKey;
 
   DataUseUserDataBytes(int64_t network_bytes, int64_t original_bytes)
       : network_bytes_(network_bytes), original_bytes_(original_bytes) {}
@@ -45,7 +45,7 @@ class DataUseUserDataBytes : public base::SupportsUserData::Data {
 const char kOtherHostName[] = "Other";
 
 // static
-const void* DataUseUserDataBytes::kUserDataKey =
+const void* const DataUseUserDataBytes::kUserDataKey =
     &DataUseUserDataBytes::kUserDataKey;
 
 }  // namespace

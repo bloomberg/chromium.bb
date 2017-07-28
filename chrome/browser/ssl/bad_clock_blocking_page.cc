@@ -53,7 +53,7 @@ std::unique_ptr<ChromeMetricsHelper> CreateMetricsHelper(
 }  // namespace
 
 // static
-InterstitialPageDelegate::TypeID BadClockBlockingPage::kTypeForTesting =
+const InterstitialPageDelegate::TypeID BadClockBlockingPage::kTypeForTesting =
     &BadClockBlockingPage::kTypeForTesting;
 
 // Note that we always create a navigation entry with SSL errors.

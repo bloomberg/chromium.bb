@@ -34,7 +34,7 @@ class AwSafeBrowsingResourceThrottle
     BACK_TO_SAFETY,
   };
 
-  static const void* kUserDataKey;
+  static const void* const kUserDataKey;
 
   // Will construct an AwSafeBrowsingResourceThrottle if GMS exists on device
   // and supports safebrowsing.

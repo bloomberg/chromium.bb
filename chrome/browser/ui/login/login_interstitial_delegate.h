@@ -23,7 +23,7 @@ class WebContents;
 class LoginInterstitialDelegate : public content::InterstitialPageDelegate {
  public:
   // Interstitial type, used in tests.
-  static content::InterstitialPageDelegate::TypeID kTypeForTesting;
+  static const content::InterstitialPageDelegate::TypeID kTypeForTesting;
 
   LoginInterstitialDelegate(content::WebContents* web_contents,
                             const GURL& request_url,

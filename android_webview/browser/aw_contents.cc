@@ -111,8 +111,8 @@ std::string g_locale;
 
 std::string g_locale_list;
 
-const void* kAwContentsUserDataKey = &kAwContentsUserDataKey;
-const void* kComputedRendererPriorityUserDataKey =
+const void* const kAwContentsUserDataKey = &kAwContentsUserDataKey;
+const void* const kComputedRendererPriorityUserDataKey =
     &kComputedRendererPriorityUserDataKey;
 
 class AwContentsUserData : public base::SupportsUserData::Data {

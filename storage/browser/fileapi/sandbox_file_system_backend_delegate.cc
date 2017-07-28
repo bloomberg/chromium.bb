@@ -53,10 +53,8 @@ const char kTemporaryDirectoryName[] = "t";
 const char kPersistentDirectoryName[] = "p";
 const char kSyncableDirectoryName[] = "s";
 
-const char* kPrepopulateTypes[] = {
-  kPersistentDirectoryName,
-  kTemporaryDirectoryName
-};
+const char* const kPrepopulateTypes[] = {kPersistentDirectoryName,
+                                         kTemporaryDirectoryName};
 
 enum FileSystemError {
   kOK = 0,

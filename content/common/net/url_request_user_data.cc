@@ -14,7 +14,7 @@ URLRequestUserData::URLRequestUserData(int render_process_id,
 URLRequestUserData::~URLRequestUserData() {}
 
 // static
-const void* URLRequestUserData::kUserDataKey =
-    static_cast<const void*>(&URLRequestUserData::kUserDataKey);
+const void* const URLRequestUserData::kUserDataKey =
+    &URLRequestUserData::kUserDataKey;
 
 }  // namespace content

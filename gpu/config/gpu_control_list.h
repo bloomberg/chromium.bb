@@ -124,7 +124,7 @@ class GPU_EXPORT GpuControlList {
 
   struct GPU_EXPORT MachineModelInfo {
     size_t machine_model_name_size;
-    const char** machine_model_names;
+    const char* const* machine_model_names;
     Version machine_model_version;
 
     bool Contains(const GPUInfo& gpu_info) const;
@@ -180,7 +180,7 @@ class GPU_EXPORT GpuControlList {
     size_t feature_size;
     const int* features;
     size_t disabled_extension_size;
-    const char** disabled_extensions;
+    const char* const* disabled_extensions;
     size_t cr_bug_size;
     const uint32_t* cr_bugs;
     Conditions conditions;

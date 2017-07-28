@@ -247,7 +247,7 @@ ChooserContextBase* GetUsbChooserContext(Profile* profile) {
 // The list of chooser types that need to display entries in the Website
 // Settings UI. THE ORDER OF THESE ITEMS IS IMPORTANT. To propose changing it,
 // email security-dev@chromium.org.
-PageInfo::ChooserUIInfo kChooserUIInfo[] = {
+const PageInfo::ChooserUIInfo kChooserUIInfo[] = {
     {CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, &GetUsbChooserContext,
      IDR_BLOCKED_USB, IDR_ALLOWED_USB, IDS_PAGE_INFO_USB_DEVICE_LABEL,
      IDS_PAGE_INFO_DELETE_USB_DEVICE, "name"},

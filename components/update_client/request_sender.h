@@ -45,7 +45,11 @@ class RequestSender : public net::URLFetcherDelegate {
   using RequestSenderCallback = base::Callback<
       void(int error, const std::string& response, int retry_after_sec)>;
 
-  static int kErrorResponseNotTrusted;
+  // This value is chosen not to conflict with network errors defined by
+  // net/base/net_error_list.h. The callers don't have to handle this error in
+  // any meaningful way, but this value may be reported in UMA stats, therefore
+  // avoiding collisions with known network errors is desirable.
+  enum : int { kErrorResponseNotTrusted = -10000 };
 
   explicit RequestSender(const scoped_refptr<Configurator>& config);
   ~RequestSender() override;

@@ -38,12 +38,8 @@ const char kIdProfileImageUrl[] = "profileImageUrl";
 const char kIdDefaultProfileImageUrl[] = "defaultProfileImageUrl";
 
 // These correspond to enum FamilyInfoFetcher::FamilyMemberRole, in order.
-const char* kFamilyMemberRoleStrings[] = {
-  "headOfHousehold",
-  "parent",
-  "member",
-  "child"
-};
+const char* const kFamilyMemberRoleStrings[] = {"headOfHousehold", "parent",
+                                                "member", "child"};
 
 FamilyInfoFetcher::FamilyProfile::FamilyProfile() {
 }

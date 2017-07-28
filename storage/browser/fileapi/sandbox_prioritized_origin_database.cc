@@ -13,13 +13,13 @@
 
 namespace storage {
 
-const base::FilePath::CharType*
-SandboxPrioritizedOriginDatabase::kPrimaryDirectory =
-    FILE_PATH_LITERAL("primary");
+const base::FilePath::CharType* const
+    SandboxPrioritizedOriginDatabase::kPrimaryDirectory =
+        FILE_PATH_LITERAL("primary");
 
-const base::FilePath::CharType*
-SandboxPrioritizedOriginDatabase::kPrimaryOriginFile =
-    FILE_PATH_LITERAL("primary.origin");
+const base::FilePath::CharType* const
+    SandboxPrioritizedOriginDatabase::kPrimaryOriginFile =
+        FILE_PATH_LITERAL("primary.origin");
 
 namespace {
 

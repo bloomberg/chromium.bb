@@ -27,10 +27,10 @@
 namespace gpu {
 namespace gles2 {
 
-static const char* kGpuTraceSourceNames[] = {
-  "TraceCHROMIUM", // kTraceCHROMIUM,
-  "TraceCmd", // kTraceDecoder,
-  "Disjoint", // kTraceDisjoint, // Used internally.
+constexpr const char* kGpuTraceSourceNames[] = {
+    "TraceCHROMIUM",  // kTraceCHROMIUM,
+    "TraceCmd",       // kTraceDecoder,
+    "Disjoint",       // kTraceDisjoint, // Used internally.
 };
 static_assert(NUM_TRACER_SOURCES == arraysize(kGpuTraceSourceNames),
               "Trace source names must match enumeration.");

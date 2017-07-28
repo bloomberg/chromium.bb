@@ -131,12 +131,12 @@ static_assert(
 
 // For backward compatibility "ntp_opened" value is kept and denotes the
 // SURFACE_OPENED trigger type.
-const char* kTriggerTypeNames[] = {"persistent_scheduler_wake_up", "ntp_opened",
-                                   "browser_foregrounded",
-                                   "browser_cold_start"};
+const char* const kTriggerTypeNames[] = {"persistent_scheduler_wake_up",
+                                         "ntp_opened", "browser_foregrounded",
+                                         "browser_cold_start"};
 
-const char* kTriggerTypesParamName = "scheduler_trigger_types";
-const char* kTriggerTypesParamValueForEmptyList = "-";
+const char* const kTriggerTypesParamName = "scheduler_trigger_types";
+const char* const kTriggerTypesParamValueForEmptyList = "-";
 
 const int kBlockBackgroundFetchesMinutesAfterClearingHistory = 30;
 
@@ -825,8 +825,8 @@ RemoteSuggestionsSchedulerImpl::GetEnabledTriggerTypes() {
 
   std::set<TriggerType> enabled_types;
   for (const auto& token : tokens) {
-    auto** it = std::find(std::begin(kTriggerTypeNames),
-                          std::end(kTriggerTypeNames), token);
+    auto* const* it = std::find(std::begin(kTriggerTypeNames),
+                                std::end(kTriggerTypeNames), token);
     if (it == std::end(kTriggerTypeNames)) {
       DLOG(WARNING) << "Failed to parse variation param "
                     << kTriggerTypesParamName << " with string value "

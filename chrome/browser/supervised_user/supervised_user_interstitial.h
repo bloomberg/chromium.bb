@@ -32,7 +32,7 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
   ~SupervisedUserInterstitial() override;
 
   // Interstitial type, used for testing.
-  static content::InterstitialPageDelegate::TypeID kTypeForTesting;
+  static const content::InterstitialPageDelegate::TypeID kTypeForTesting;
 
   static void Show(content::WebContents* web_contents,
                    const GURL& url,

@@ -524,19 +524,19 @@ const GoogleConfigParams kGoogleConfigs[] = {
     {"redirector.googlevideo.com", false, false, false},
 };
 
-const char* kGoogleStandardCollectors[] = {
-  "https://beacons.gcp.gvt2.com/domainreliability/upload",
-  "https://beacons.gvt2.com/domainreliability/upload",
-  "https://beacons2.gvt2.com/domainreliability/upload",
-  "https://beacons3.gvt2.com/domainreliability/upload",
-  "https://beacons4.gvt2.com/domainreliability/upload",
-  "https://beacons5.gvt2.com/domainreliability/upload",
-  "https://beacons5.gvt3.com/domainreliability/upload",
-  "https://clients2.google.com/domainreliability/upload",
+const char* const kGoogleStandardCollectors[] = {
+    "https://beacons.gcp.gvt2.com/domainreliability/upload",
+    "https://beacons.gvt2.com/domainreliability/upload",
+    "https://beacons2.gvt2.com/domainreliability/upload",
+    "https://beacons3.gvt2.com/domainreliability/upload",
+    "https://beacons4.gvt2.com/domainreliability/upload",
+    "https://beacons5.gvt2.com/domainreliability/upload",
+    "https://beacons5.gvt3.com/domainreliability/upload",
+    "https://clients2.google.com/domainreliability/upload",
 };
 
-const char* kGoogleOriginSpecificCollectorPathString =
-  "/domainreliability/upload";
+const char* const kGoogleOriginSpecificCollectorPathString =
+    "/domainreliability/upload";
 
 static std::unique_ptr<DomainReliabilityConfig> CreateGoogleConfig(
     const GoogleConfigParams& params,

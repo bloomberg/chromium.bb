@@ -12,7 +12,7 @@ namespace {
 // Whenever a feature is added to |kAllFeatures|, it should also be added as
 // DEFINE_VARIATION_PARAM in the header, and also added to the
 // |kIPHDemoModeChoiceVariations| array.
-const base::Feature* kAllFeatures[] = {
+const base::Feature* const kAllFeatures[] = {
     &kIPHDummyFeature,  // Ensures non-empty array for all platforms.
 #if defined(OS_ANDROID)
     &kIPHDataSaverDetailFeature,

@@ -11,7 +11,7 @@ URLRequestServiceWorkerData::URLRequestServiceWorkerData() {}
 URLRequestServiceWorkerData::~URLRequestServiceWorkerData() {}
 
 // static
-const void* URLRequestServiceWorkerData::kUserDataKey =
-    static_cast<const void*>(&URLRequestServiceWorkerData::kUserDataKey);
+const void* const URLRequestServiceWorkerData::kUserDataKey =
+    &URLRequestServiceWorkerData::kUserDataKey;
 
 }  // namespace content

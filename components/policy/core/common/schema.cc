@@ -176,7 +176,7 @@ class Schema::InternalStorage
     return schema_data_.int_enums + index;
   }
 
-  const char** string_enums(int index) const {
+  const char* const* string_enums(int index) const {
     return schema_data_.string_enums + index;
   }
 

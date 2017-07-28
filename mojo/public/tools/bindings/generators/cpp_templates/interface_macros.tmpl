@@ -77,7 +77,7 @@ const {{method.name}}Callback& callback
 class {{message_typename}}
     : public mojo::internal::UnserializedMessageContext {
  public:
-  static mojo::internal::UnserializedMessageContext::Tag kMessageTag;
+  static const mojo::internal::UnserializedMessageContext::Tag kMessageTag;
 
   explicit {{message_typename}}(
       uint32_t message_flags
@@ -187,6 +187,6 @@ class {{message_typename}}
   DISALLOW_COPY_AND_ASSIGN({{message_typename}});
 };
 
-mojo::internal::UnserializedMessageContext::Tag
+const mojo::internal::UnserializedMessageContext::Tag
 {{message_typename}}::kMessageTag = {};
 {%- endmacro -%}

@@ -25,9 +25,9 @@
 namespace data_use_measurement {
 
 // static
-const void* ChromeDataUseAscriber::DataUseRecorderEntryAsUserData::
-    kUserDataKey = static_cast<void*>(
-        &ChromeDataUseAscriber::DataUseRecorderEntryAsUserData::kUserDataKey);
+const void* const
+    ChromeDataUseAscriber::DataUseRecorderEntryAsUserData::kUserDataKey =
+        &ChromeDataUseAscriber::DataUseRecorderEntryAsUserData::kUserDataKey;
 
 ChromeDataUseAscriber::DataUseRecorderEntryAsUserData::
     DataUseRecorderEntryAsUserData(DataUseRecorderEntry entry)

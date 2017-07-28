@@ -27,7 +27,8 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
                                public base::MemoryCoordinatorClient {
  public:
   // Delay before a resource is considered expired.
-  static base::TimeDelta kDefaultExpirationDelay;
+  static constexpr base::TimeDelta kDefaultExpirationDelay =
+      base::TimeDelta::FromSeconds(5);
 
   static std::unique_ptr<ResourcePool> CreateForGpuMemoryBufferResources(
       ResourceProvider* resource_provider,

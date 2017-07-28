@@ -77,7 +77,7 @@ typedef StreamParser* (*ParserFactoryFunction)(
 struct SupportedTypeInfo {
   const char* type;
   const ParserFactoryFunction factory_function;
-  const CodecInfo** codecs;
+  const CodecInfo* const* codecs;
 };
 
 static const CodecInfo kVP8CodecInfo = { "vp8", CodecInfo::VIDEO, NULL,
@@ -91,15 +91,12 @@ static const CodecInfo kVorbisCodecInfo = { "vorbis", CodecInfo::AUDIO, NULL,
 static const CodecInfo kOpusCodecInfo = { "opus", CodecInfo::AUDIO, NULL,
                                           CodecInfo::HISTOGRAM_OPUS };
 
-static const CodecInfo* kVideoWebMCodecs[] = {
+static const CodecInfo* const kVideoWebMCodecs[] = {
     &kVP8CodecInfo,    &kLegacyVP9CodecInfo, &kVP9CodecInfo,
     &kVorbisCodecInfo, &kOpusCodecInfo,      NULL};
 
-static const CodecInfo* kAudioWebMCodecs[] = {
-  &kVorbisCodecInfo,
-  &kOpusCodecInfo,
-  NULL
-};
+static const CodecInfo* const kAudioWebMCodecs[] = {&kVorbisCodecInfo,
+                                                    &kOpusCodecInfo, NULL};
 
 static StreamParser* BuildWebMParser(const std::vector<std::string>& codecs,
                                      MediaLog* media_log) {
@@ -202,7 +199,7 @@ static const CodecInfo kEAC3CodecInfo3 = {"mp4a.A6", CodecInfo::AUDIO, NULL,
                                           CodecInfo::HISTOGRAM_EAC3};
 #endif
 
-static const CodecInfo* kVideoMP4Codecs[] = {
+static const CodecInfo* const kVideoMP4Codecs[] = {
     &kH264AVC1CodecInfo,         &kH264AVC3CodecInfo,
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
     &kHEVCHEV1CodecInfo,         &kHEVCHVC1CodecInfo,
@@ -216,17 +213,17 @@ static const CodecInfo* kVideoMP4Codecs[] = {
     &kMPEG4VP09CodecInfo,        &kMPEG4AACCodecInfo,
     &kMPEG2AACLCCodecInfo,       NULL};
 
-static const CodecInfo* kAudioMP4Codecs[] = {&kMPEG4AACCodecInfo,
-                                             &kMPEG2AACLCCodecInfo,
+static const CodecInfo* const kAudioMP4Codecs[] = {&kMPEG4AACCodecInfo,
+                                                   &kMPEG2AACLCCodecInfo,
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
-                                             &kAC3CodecInfo1,
-                                             &kAC3CodecInfo2,
-                                             &kAC3CodecInfo3,
-                                             &kEAC3CodecInfo1,
-                                             &kEAC3CodecInfo2,
-                                             &kEAC3CodecInfo3,
+                                                   &kAC3CodecInfo1,
+                                                   &kAC3CodecInfo2,
+                                                   &kAC3CodecInfo3,
+                                                   &kEAC3CodecInfo1,
+                                                   &kEAC3CodecInfo2,
+                                                   &kEAC3CodecInfo3,
 #endif
-                                             NULL};
+                                                   NULL};
 
 static StreamParser* BuildMP4Parser(const std::vector<std::string>& codecs,
                                     MediaLog* media_log) {
@@ -267,10 +264,7 @@ static StreamParser* BuildMP4Parser(const std::vector<std::string>& codecs,
 static const CodecInfo kMP3CodecInfo = { NULL, CodecInfo::AUDIO, NULL,
                                          CodecInfo::HISTOGRAM_MP3 };
 
-static const CodecInfo* kAudioMP3Codecs[] = {
-  &kMP3CodecInfo,
-  NULL
-};
+static const CodecInfo* const kAudioMP3Codecs[] = {&kMP3CodecInfo, NULL};
 
 static StreamParser* BuildMP3Parser(const std::vector<std::string>& codecs,
                                     MediaLog* media_log) {
@@ -279,10 +273,7 @@ static StreamParser* BuildMP3Parser(const std::vector<std::string>& codecs,
 
 static const CodecInfo kADTSCodecInfo = { NULL, CodecInfo::AUDIO, NULL,
                                           CodecInfo::HISTOGRAM_MPEG4AAC };
-static const CodecInfo* kAudioADTSCodecs[] = {
-  &kADTSCodecInfo,
-  NULL
-};
+static const CodecInfo* const kAudioADTSCodecs[] = {&kADTSCodecInfo, NULL};
 
 static StreamParser* BuildADTSParser(const std::vector<std::string>& codecs,
                                      MediaLog* media_log) {
@@ -300,13 +291,13 @@ static const CodecInfo kMPEG2TS_MP3CodecInfo1 = {
 static const CodecInfo kMPEG2TS_MP3CodecInfo2 = {
     "mp4a.6B", CodecInfo::AUDIO, NULL, CodecInfo::HISTOGRAM_MP3};
 
-static const CodecInfo* kVideoMP2TCodecs[] = {&kH264AVC1CodecInfo,
-                                              &kH264AVC3CodecInfo,
-                                              &kMPEG2TS_MP3CodecInfo1,
-                                              &kMPEG2TS_MP3CodecInfo2,
-                                              &kMPEG4AACCodecInfo,
-                                              &kMPEG2AACLCCodecInfo,
-                                              NULL};
+static const CodecInfo* const kVideoMP2TCodecs[] = {&kH264AVC1CodecInfo,
+                                                    &kH264AVC3CodecInfo,
+                                                    &kMPEG2TS_MP3CodecInfo1,
+                                                    &kMPEG2TS_MP3CodecInfo2,
+                                                    &kMPEG4AACCodecInfo,
+                                                    &kMPEG2AACLCCodecInfo,
+                                                    NULL};
 
 static StreamParser* BuildMP2TParser(const std::vector<std::string>& codecs,
                                      MediaLog* media_log) {

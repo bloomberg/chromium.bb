@@ -37,13 +37,13 @@ class WebContents;
 class CONTENT_EXPORT DevToolsAgentHost
     : public base::RefCounted<DevToolsAgentHost> {
  public:
-  static char kTypePage[];
-  static char kTypeFrame[];
-  static char kTypeSharedWorker[];
-  static char kTypeServiceWorker[];
-  static char kTypeBrowser[];
-  static char kTypeGuest[];
-  static char kTypeOther[];
+  static const char kTypePage[];
+  static const char kTypeFrame[];
+  static const char kTypeSharedWorker[];
+  static const char kTypeServiceWorker[];
+  static const char kTypeBrowser[];
+  static const char kTypeGuest[];
+  static const char kTypeOther[];
 
   // Latest DevTools protocol version supported.
   static std::string GetProtocolVersion();

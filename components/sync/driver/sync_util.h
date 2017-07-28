@@ -19,10 +19,10 @@ namespace syncer {
 namespace internal {
 
 // Default sync server URL. Visible for testing.
-extern const char* kSyncServerUrl;
+extern const char* const kSyncServerUrl;
 
 // Sync server URL for dev channel users. Visible for testing.
-extern const char* kSyncDevServerUrl;
+extern const char* const kSyncDevServerUrl;
 
 // Formats user agent string from system string and channel. Visible for
 // testing.

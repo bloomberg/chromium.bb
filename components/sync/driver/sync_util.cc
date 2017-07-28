@@ -48,9 +48,10 @@ std::string GetSystemString(bool is_tablet) {
 namespace syncer {
 namespace internal {
 
-const char* kSyncServerUrl = "https://clients4.google.com/chrome-sync";
+const char* const kSyncServerUrl = "https://clients4.google.com/chrome-sync";
 
-const char* kSyncDevServerUrl = "https://clients4.google.com/chrome-sync/dev";
+const char* const kSyncDevServerUrl =
+    "https://clients4.google.com/chrome-sync/dev";
 
 std::string FormatUserAgentForSync(const std::string& system,
                                    version_info::Channel channel) {

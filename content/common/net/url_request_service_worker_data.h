@@ -20,7 +20,7 @@ class URLRequestServiceWorkerData : public base::SupportsUserData::Data {
   URLRequestServiceWorkerData();
   ~URLRequestServiceWorkerData() override;
 
-  static const void* kUserDataKey;
+  static const void* const kUserDataKey;
 };
 
 }  // namespace content
