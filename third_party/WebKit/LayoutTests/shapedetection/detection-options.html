@@ -10,8 +10,8 @@
 </body>
 <script>
 promise_test(async function() {
-  var img = document.getElementById("img");
   var mock = mockFaceDetectionProvider;
+  var img = document.getElementById("img");
 
   var detectorWithDefault = new FaceDetector();
   var faceDetectionResult = await detectorWithDefault.detect(img);

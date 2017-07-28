@@ -8,7 +8,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/shared_memory.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/shape_detection/barcode_detection_impl.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 

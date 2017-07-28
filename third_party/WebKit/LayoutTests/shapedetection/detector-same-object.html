@@ -3,6 +3,7 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/services/shape_detection/public/interfaces/barcodedetection.mojom.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/barcodedetection_provider.mojom.js"></script>
 <script src="file:///gen/services/shape_detection/public/interfaces/facedetection.mojom.js"></script>
 <script src="file:///gen/services/shape_detection/public/interfaces/facedetection_provider.mojom.js"></script>
 <script src="file:///gen/services/shape_detection/public/interfaces/textdetection.mojom.js"></script>
@@ -14,7 +15,6 @@
 var createTestForImageData = function(createDetector, mock,
                                       detectionResultTest) {
   async_test(function(t) {
-
     var img = new Image();
     img.onload = async function() {
 
@@ -67,7 +67,7 @@ generate_tests(createTestForImageData, [
   [
     "Barcode - detect(ImageData), [SameObject]",
     () => { return new BarcodeDetector(); },
-    mockBarcodeDetection,
+    mockBarcodeDetectionProvider,
     CheckDetectedBarcodesSameObjects
   ],
   [
