@@ -74,28 +74,6 @@ class CORE_EXPORT FrameSelection final
   }
   ~FrameSelection();
 
-  enum SetSelectionOption {
-    kUserTriggered = 1,
-    kCloseTyping = 1 << 1,
-    kClearTypingStyle = 1 << 2,
-    kDoNotSetFocus = 1 << 3,
-    kDoNotClearStrategy = 1 << 4,
-  };
-  static_assert(kUserTriggered == static_cast<int>(SetSelectionBy::kUser),
-                "|kUserTriggered| should equal to |SetSelectionBy::kUser|");
-
-  // Union of values in SetSelectionOption and SetSelectionBy
-  typedef unsigned SetSelectionOptions;
-  static constexpr SetSelectionBy ConvertSelectionOptionsToSetSelectionBy(
-      SetSelectionOptions options) {
-    return static_cast<SetSelectionBy>(options &
-                                       static_cast<int>(SetSelectionBy::kUser));
-  }
-  static constexpr SetSelectionOptions
-  ConvertSetSelectionByToSetSelectionOptions(SetSelectionBy set_selection_by) {
-    return static_cast<SetSelectionOptions>(set_selection_by);
-  }
-
   bool IsAvailable() const { return LifecycleContext(); }
   // You should not call |document()| when |!isAvailable()|.
   Document& GetDocument() const;
@@ -116,12 +94,11 @@ class CORE_EXPORT FrameSelection final
 
   void SetSelection(const SelectionInDOMTree&, const SetSelectionData&);
 
-  // TODO(editing-dev): We should use |SetSelectionData| version of
-  // |SetSelection()|.
-  void SetSelection(const SelectionInDOMTree&,
-                    SetSelectionOptions = kCloseTyping | kClearTypingStyle,
-                    CursorAlignOnScroll = CursorAlignOnScroll::kIfNeeded,
-                    TextGranularity = TextGranularity::kCharacter);
+  // TODO(editing-dev): We should rename this function to
+  // SetSelectionAndEndTyping()
+  // Set selection with end of typing processing == close typing and clear
+  // typing style.
+  void SetSelection(const SelectionInDOMTree&);
   void SelectAll(SetSelectionBy);
   void SelectAll();
   void Clear();
@@ -133,12 +110,8 @@ class CORE_EXPORT FrameSelection final
   // setSelectionDeprecated() returns true if didSetSelectionDeprecated() should
   // be called.
   bool SetSelectionDeprecated(const SelectionInDOMTree&,
-                              SetSelectionOptions = kCloseTyping |
-                                                    kClearTypingStyle,
-                              TextGranularity = TextGranularity::kCharacter);
-  void DidSetSelectionDeprecated(
-      SetSelectionOptions = kCloseTyping | kClearTypingStyle,
-      CursorAlignOnScroll = CursorAlignOnScroll::kIfNeeded);
+                              const SetSelectionData&);
+  void DidSetSelectionDeprecated(const SetSelectionData&);
 
   // Call this after doing user-triggered selections to make it easy to delete
   // the frame you entirely selected.

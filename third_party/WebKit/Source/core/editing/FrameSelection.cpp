@@ -187,28 +187,20 @@ void FrameSelection::MoveCaretSelection(const IntPoint& point) {
 
 void FrameSelection::SetSelection(const SelectionInDOMTree& selection,
                                   const SetSelectionData& data) {
-  const SetSelectionOptions options =
-      (data.GetSetSelectionBy() == SetSelectionBy::kUser ? kUserTriggered : 0) |
-      (data.ShouldCloseTyping() ? kCloseTyping : 0) |
-      (data.ShouldClearTypingStyle() ? kClearTypingStyle : 0) |
-      (data.DoNotSetFocus() ? kDoNotSetFocus : 0) |
-      (data.DoNotClearStrategy() ? kDoNotClearStrategy : 0);
-  SetSelection(selection, options, data.GetCursorAlignOnScroll(),
-               data.Granularity());
+  if (SetSelectionDeprecated(selection, data))
+    DidSetSelectionDeprecated(data);
 }
 
-void FrameSelection::SetSelection(const SelectionInDOMTree& passed_selection,
-                                  SetSelectionOptions options,
-                                  CursorAlignOnScroll align,
-                                  TextGranularity granularity) {
-  if (SetSelectionDeprecated(passed_selection, options, granularity))
-    DidSetSelectionDeprecated(options, align);
+void FrameSelection::SetSelection(const SelectionInDOMTree& selection) {
+  SetSelection(selection, SetSelectionData::Builder()
+                              .SetShouldCloseTyping(true)
+                              .SetShouldClearTypingStyle(true)
+                              .Build());
 }
 
 bool FrameSelection::SetSelectionDeprecated(
     const SelectionInDOMTree& passed_selection,
-    SetSelectionOptions options,
-    TextGranularity granularity) {
+    const SetSelectionData& options) {
   DCHECK(IsAvailable());
   passed_selection.AssertValidFor(GetDocument());
 
@@ -216,19 +208,16 @@ bool FrameSelection::SetSelectionDeprecated(
   if (ShouldAlwaysUseDirectionalSelection(frame_))
     builder.SetIsDirectional(true);
   SelectionInDOMTree new_selection = builder.Build();
-  if (granularity_strategy_ &&
-      (options & FrameSelection::kDoNotClearStrategy) == 0)
+  if (granularity_strategy_ && !options.DoNotClearStrategy())
     granularity_strategy_->Clear();
-  bool close_typing = options & kCloseTyping;
-  bool should_clear_typing_style = options & kClearTypingStyle;
-  granularity_ = granularity;
+  granularity_ = options.Granularity();
 
   // TODO(yosin): We should move to call |TypingCommand::closeTyping()| to
   // |Editor| class.
-  if (close_typing)
+  if (options.ShouldCloseTyping())
     TypingCommand::CloseTyping(frame_);
 
-  if (should_clear_typing_style)
+  if (options.ShouldClearTypingStyle())
     frame_->GetEditor().ClearTypingStyle();
 
   const SelectionInDOMTree old_selection_in_dom_tree =
@@ -245,16 +234,16 @@ bool FrameSelection::SetSelectionDeprecated(
   // |oldSelection| before setting focus
   frame_->GetEditor().RespondToChangedSelection(
       old_selection_in_dom_tree.ComputeStartPosition(),
-      options & kCloseTyping ? TypingContinuation::kEnd
-                             : TypingContinuation::kContinue);
+      options.ShouldCloseTyping() ? TypingContinuation::kEnd
+                                  : TypingContinuation::kContinue);
   DCHECK_EQ(current_document, GetDocument());
   return true;
 }
 
-void FrameSelection::DidSetSelectionDeprecated(SetSelectionOptions options,
-                                               CursorAlignOnScroll align) {
+void FrameSelection::DidSetSelectionDeprecated(
+    const SetSelectionData& options) {
   const Document& current_document = GetDocument();
-  if (!GetSelectionInDOMTree().IsNone() && !(options & kDoNotSetFocus)) {
+  if (!GetSelectionInDOMTree().IsNone() && !options.DoNotSetFocus()) {
     SetFocusedNodeIfNeeded();
     // |setFocusedNodeIfNeeded()| dispatches sync events "FocusOut" and
     // "FocusIn", |m_frame| may associate to another document.
@@ -275,7 +264,7 @@ void FrameSelection::DidSetSelectionDeprecated(SetSelectionOptions options,
 
   // TODO(yosin): Can we move this to at end of this function?
   // This may dispatch a synchronous focus-related events.
-  if (!(options & kDoNotSetFocus)) {
+  if (!options.DoNotSetFocus()) {
     SelectFrameElementInParentIfFullySelected();
     if (!IsAvailable() || GetDocument() != current_document) {
       // editing/selection/selectallchildren-crash.html and
@@ -284,11 +273,10 @@ void FrameSelection::DidSetSelectionDeprecated(SetSelectionOptions options,
       return;
     }
   }
-
-  SetSelectionBy set_selection_by =
-      ConvertSelectionOptionsToSetSelectionBy(options);
+  const SetSelectionBy set_selection_by = options.GetSetSelectionBy();
   NotifyTextControlOfSelectionChange(set_selection_by);
   if (set_selection_by == SetSelectionBy::kUser) {
+    const CursorAlignOnScroll align = options.GetCursorAlignOnScroll();
     ScrollAlignment alignment;
 
     if (frame_->GetEditor()
