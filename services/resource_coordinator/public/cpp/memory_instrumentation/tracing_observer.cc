@@ -4,11 +4,16 @@
 
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/tracing_observer.h"
 
+#include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event_argument.h"
 
 namespace memory_instrumentation {
+
+using base::trace_event::TracedValue;
+using base::trace_event::ProcessMemoryDump;
 
 namespace {
 
@@ -21,6 +26,57 @@ bool IsMemoryInfraTracingEnabled() {
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
       base::trace_event::MemoryDumpManager::kTraceCategory, &enabled);
   return enabled;
+}
+
+void OsDumpAsValueInto(TracedValue* value, const mojom::OSMemDump& os_dump) {
+  value->SetString(
+      "resident_set_bytes",
+      base::StringPrintf("%" PRIx32, os_dump.resident_set_kb * 1024));
+  value->SetString(
+      "private_footprint_bytes",
+      base::StringPrintf("%" PRIx32, os_dump.private_footprint_kb * 1024));
+}
+
+void MemoryMapsAsValueInto(TracedValue* value,
+                           const std::vector<mojom::VmRegionPtr>& memory_maps) {
+  static const char kHexFmt[] = "%" PRIx64;
+
+  // Refer to the design doc goo.gl/sxfFY8 for the semantics of these fields.
+  value->BeginArray("vm_regions");
+  for (const auto& region : memory_maps) {
+    value->BeginDictionary();
+
+    value->SetString("sa", base::StringPrintf(kHexFmt, region->start_address));
+    value->SetString("sz", base::StringPrintf(kHexFmt, region->size_in_bytes));
+    if (region->module_timestamp)
+      value->SetString("ts",
+                       base::StringPrintf(kHexFmt, region->module_timestamp));
+    value->SetInteger("pf", region->protection_flags);
+    value->SetString("mf", region->mapped_file);
+
+    value->BeginDictionary("bs");  // byte stats
+    value->SetString(
+        "pss",
+        base::StringPrintf(kHexFmt, region->byte_stats_proportional_resident));
+    value->SetString(
+        "pd",
+        base::StringPrintf(kHexFmt, region->byte_stats_private_dirty_resident));
+    value->SetString(
+        "pc",
+        base::StringPrintf(kHexFmt, region->byte_stats_private_clean_resident));
+    value->SetString(
+        "sd",
+        base::StringPrintf(kHexFmt, region->byte_stats_shared_dirty_resident));
+    value->SetString(
+        "sc",
+        base::StringPrintf(kHexFmt, region->byte_stats_shared_clean_resident));
+    value->SetString("sw",
+                     base::StringPrintf(kHexFmt, region->byte_stats_swapped));
+    value->EndDictionary();
+
+    value->EndDictionary();
+  }
+  value->EndArray();
 }
 
 };  // namespace
@@ -62,41 +118,48 @@ void TracingObserver::OnTraceLogEnabled() {
       base::MakeUnique<base::trace_event::TraceConfig::MemoryDumpConfig>(
           memory_dump_config);
 
-  memory_dump_manager_->SetupForTracing(memory_dump_config);
+  if (memory_dump_manager_)
+    memory_dump_manager_->SetupForTracing(memory_dump_config);
 }
 
 void TracingObserver::OnTraceLogDisabled() {
-  memory_dump_manager_->TeardownForTracing();
+  if (memory_dump_manager_)
+    memory_dump_manager_->TeardownForTracing();
   memory_dump_config_.reset();
 }
 
-bool TracingObserver::AddDumpToTraceIfEnabled(
-    const base::trace_event::MemoryDumpRequestArgs* req_args,
-    const base::ProcessId pid,
-    const base::trace_event::ProcessMemoryDump* process_memory_dump) {
+bool TracingObserver::ShouldAddToTrace(
+    const base::trace_event::MemoryDumpRequestArgs& args) {
   // If tracing has been disabled early out to avoid the cost of serializing the
   // dump then ignoring the result.
   if (!IsMemoryInfraTracingEnabled())
     return false;
   // If the dump mode is too detailed don't add to trace to avoid accidentally
   // including PII.
-  if (!IsDumpModeAllowed(req_args->level_of_detail))
+  if (!IsDumpModeAllowed(args.level_of_detail))
     return false;
 
-  CHECK_NE(base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-           req_args->dump_type);
+  // SUMMARY_ONLY dumps are just return the summarized result in the
+  // ProcessMemoryDumpCallback. These shouldn't be added to the trace to
+  // avoid confusing trace consumers.
+  if (args.dump_type == base::trace_event::MemoryDumpType::SUMMARY_ONLY)
+    return false;
 
-  const uint64_t dump_guid = req_args->dump_guid;
+  return true;
+}
 
-  std::unique_ptr<base::trace_event::TracedValue> traced_value(
-      new base::trace_event::TracedValue);
-  process_memory_dump->AsValueInto(traced_value.get());
-  traced_value->SetString("level_of_detail",
-                          base::trace_event::MemoryDumpLevelOfDetailToString(
-                              req_args->level_of_detail));
+void TracingObserver::AddToTrace(
+    const base::trace_event::MemoryDumpRequestArgs& args,
+    const base::ProcessId pid,
+    std::unique_ptr<TracedValue> traced_value) {
+  CHECK_NE(base::trace_event::MemoryDumpType::SUMMARY_ONLY, args.dump_type);
+
+  traced_value->SetString(
+      "level_of_detail",
+      base::trace_event::MemoryDumpLevelOfDetailToString(args.level_of_detail));
+  const uint64_t dump_guid = args.dump_guid;
   const char* const event_name =
-      base::trace_event::MemoryDumpTypeToString(req_args->dump_type);
-
+      base::trace_event::MemoryDumpTypeToString(args.dump_type);
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> event_value(
       std::move(traced_value));
   TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_PROCESS_ID(
@@ -106,7 +169,44 @@ bool TracingObserver::AddDumpToTraceIfEnabled(
       event_name, trace_event_internal::kGlobalScope, dump_guid, pid,
       kTraceEventNumArgs, kTraceEventArgNames, kTraceEventArgTypes,
       nullptr /* arg_values */, &event_value, TRACE_EVENT_FLAG_HAS_ID);
+}
 
+bool TracingObserver::AddDumpToTraceIfEnabled(
+    const base::trace_event::MemoryDumpRequestArgs& args,
+    const base::ProcessId pid,
+    const ProcessMemoryDump* process_memory_dump) {
+  if (!ShouldAddToTrace(args))
+    return false;
+
+  std::unique_ptr<TracedValue> traced_value = base::MakeUnique<TracedValue>();
+  process_memory_dump->AsValueInto(traced_value.get());
+
+  AddToTrace(args, pid, std::move(traced_value));
+
+  return true;
+}
+
+bool TracingObserver::AddOsDumpToTraceIfEnabled(
+    const base::trace_event::MemoryDumpRequestArgs& args,
+    const base::ProcessId pid,
+    const mojom::OSMemDump* os_dump,
+    const std::vector<mojom::VmRegionPtr>* memory_maps) {
+  if (!ShouldAddToTrace(args))
+    return false;
+
+  std::unique_ptr<TracedValue> traced_value = base::MakeUnique<TracedValue>();
+
+  traced_value->BeginDictionary("process_totals");
+  OsDumpAsValueInto(traced_value.get(), *os_dump);
+  traced_value->EndDictionary();
+
+  if (memory_maps->size()) {
+    traced_value->BeginDictionary("process_mmaps");
+    MemoryMapsAsValueInto(traced_value.get(), *memory_maps);
+    traced_value->EndDictionary();
+  }
+
+  AddToTrace(args, pid, std::move(traced_value));
   return true;
 }
 

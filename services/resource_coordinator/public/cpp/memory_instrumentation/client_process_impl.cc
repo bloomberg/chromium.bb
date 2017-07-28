@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/tracing_observer.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -22,18 +23,6 @@
 namespace memory_instrumentation {
 
 namespace {
-
-mojom::RawOSMemDumpPtr CreateOsDumpFromProcessMemoryDump(
-    const base::trace_event::ProcessMemoryDump* pmd) {
-  mojom::RawOSMemDumpPtr result = mojom::RawOSMemDump::New();
-  if (pmd->has_process_totals()) {
-    const base::trace_event::ProcessMemoryTotals* totals =
-        pmd->process_totals();
-    result->resident_set_kb = totals->resident_set_bytes() / 1024;
-    result->platform_private_footprint = totals->GetPlatformPrivateFootprint();
-  }
-  return result;
-}
 
 uint32_t GetDumpsSumKb(const std::string& pattern,
                        const base::trace_event::ProcessMemoryDump* pmd) {
@@ -78,10 +67,7 @@ mojom::RawProcessMemoryDumpPtr CreateDumpSummary(
           GetDumpsSumKb("partition_alloc/partitions/*", process_memory_dump);
       result->chrome_dump->blink_gc_total_kb =
           GetDumpsSumKb("blink_gc", process_memory_dump);
-      result->os_dump = CreateOsDumpFromProcessMemoryDump(process_memory_dump);
-    } else {
-      result->extra_processes_dumps[pid] =
-          CreateOsDumpFromProcessMemoryDump(process_memory_dump);
+      result->os_dump = mojom::RawOSMemDump::New();
     }
   }
   return result;
@@ -171,7 +157,7 @@ void ClientProcessImpl::OnProcessMemoryDumpDone(
     // avoid confusing trace consumers.
     if (req_args.dump_type != base::trace_event::MemoryDumpType::SUMMARY_ONLY) {
       bool added_to_trace = tracing_observer_->AddDumpToTraceIfEnabled(
-          &req_args, pid, process_memory_dump);
+          req_args, pid, process_memory_dump);
 
       success = success && added_to_trace;
     }
@@ -207,9 +193,18 @@ void ClientProcessImpl::RequestGlobalMemoryDump_NoCallback(
 
 void ClientProcessImpl::RequestOSMemoryDump(
     bool want_mmaps,
-    const std::vector<base::ProcessId>& ids,
+    const std::vector<base::ProcessId>& pids,
     const RequestOSMemoryDumpCallback& callback) {
   std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
+  for (const base::ProcessId& pid : pids) {
+    mojom::RawOSMemDumpPtr result = mojom::RawOSMemDump::New();
+    bool success = true;
+    success = success && OSMetrics::FillOSMemoryDump(pid, result.get());
+    if (want_mmaps)
+      success = success && OSMetrics::FillProcessMemoryMaps(pid, result.get());
+    if (success)
+      results[pid] = std::move(result);
+  }
   callback.Run(true, std::move(results));
 }
 

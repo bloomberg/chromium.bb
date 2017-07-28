@@ -9,6 +9,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_export.h"
+#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace memory_instrumentation {
 
@@ -26,13 +27,23 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT TracingObserver
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
 
-  bool AddDumpToTraceIfEnabled(const base::trace_event::MemoryDumpRequestArgs*,
+  bool AddDumpToTraceIfEnabled(const base::trace_event::MemoryDumpRequestArgs&,
                                const base::ProcessId,
                                const base::trace_event::ProcessMemoryDump*);
+  bool AddOsDumpToTraceIfEnabled(
+      const base::trace_event::MemoryDumpRequestArgs&,
+      const base::ProcessId,
+      const mojom::OSMemDump*,
+      const std::vector<mojom::VmRegionPtr>*);
 
  private:
   // Returns true if the dump mode is allowed for current tracing session.
   bool IsDumpModeAllowed(base::trace_event::MemoryDumpLevelOfDetail) const;
+
+  bool ShouldAddToTrace(const base::trace_event::MemoryDumpRequestArgs&);
+  void AddToTrace(const base::trace_event::MemoryDumpRequestArgs&,
+                  const base::ProcessId,
+                  std::unique_ptr<base::trace_event::TracedValue>);
 
   base::trace_event::MemoryDumpManager* const memory_dump_manager_;
   base::trace_event::TraceLog* const trace_log_;

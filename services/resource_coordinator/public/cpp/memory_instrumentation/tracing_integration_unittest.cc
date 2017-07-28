@@ -572,8 +572,6 @@ TEST_F(MemoryTracingIntegrationTest, TestSummaryComputation) {
             ->AddScalar(size, bytes, 2 * kB);
         pmd->CreateAllocatorDump("partition_alloc/partitions/not_ignored_2")
             ->AddScalar(size, bytes, 2 * kB);
-        pmd->process_totals()->set_resident_set_bytes(5 * kB);
-        pmd->set_has_process_totals();
         return true;
       }));
 
@@ -598,9 +596,6 @@ TEST_F(MemoryTracingIntegrationTest, TestSummaryComputation) {
   // partition_alloc has partition_alloc/allocated_objects/* which is a subset
   // of partition_alloc/partitions/* so we only count the latter.
   EXPECT_EQ(4u, (*result)->chrome_dump->partition_alloc_total_kb);
-
-  // resident_set_kb should read from process_totals.
-  EXPECT_EQ(5u, (*result)->os_dump->resident_set_kb);
 };
 
 TEST_F(MemoryTracingIntegrationTest, DumpOnBehalfOfOtherProcess) {

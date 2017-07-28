@@ -343,18 +343,6 @@ void ProcessMemoryDump::TakeAllDumpsFrom(ProcessMemoryDump* other) {
 }
 
 void ProcessMemoryDump::AsValueInto(TracedValue* value) const {
-  if (has_process_totals_) {
-    value->BeginDictionary("process_totals");
-    process_totals_.AsValueInto(value);
-    value->EndDictionary();
-  }
-
-  if (has_process_mmaps_) {
-    value->BeginDictionary("process_mmaps");
-    process_mmaps_.AsValueInto(value);
-    value->EndDictionary();
-  }
-
   if (allocator_dumps_.size() > 0) {
     value->BeginDictionary("allocators");
     for (const auto& allocator_dump_it : allocator_dumps_)
