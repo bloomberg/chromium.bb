@@ -46,6 +46,8 @@ int32_t cros_gralloc_buffer::decrease_refcount()
 
 int32_t cros_gralloc_buffer::lock(uint64_t flags, uint8_t *addr[DRV_MAX_PLANES])
 {
+	void *vaddr = nullptr;
+
 	memset(addr, 0, DRV_MAX_PLANES * sizeof(*addr));
 
 	/*
@@ -58,7 +60,6 @@ int32_t cros_gralloc_buffer::lock(uint64_t flags, uint8_t *addr[DRV_MAX_PLANES])
 	}
 
 	if (flags) {
-		void *vaddr;
 		if (lock_data_[0]) {
 			vaddr = lock_data_[0]->addr;
 		} else {
@@ -70,12 +71,10 @@ int32_t cros_gralloc_buffer::lock(uint64_t flags, uint8_t *addr[DRV_MAX_PLANES])
 			cros_gralloc_error("Mapping failed.");
 			return -EFAULT;
 		}
-
-		addr[0] = static_cast<uint8_t *>(vaddr);
 	}
 
 	for (uint32_t plane = 0; plane < num_planes_; plane++)
-		addr[plane] = addr[0] + drv_bo_get_plane_offset(bo_, plane);
+		addr[plane] = static_cast<uint8_t *>(vaddr) + drv_bo_get_plane_offset(bo_, plane);
 
 	lockcount_++;
 	return 0;
