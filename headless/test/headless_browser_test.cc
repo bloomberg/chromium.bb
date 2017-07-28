@@ -239,9 +239,7 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
     builder.EnableUnsafeNetworkAccessWithMojoBindings(true);
     builder.AddTabSocketMojoBindings();
   }
-  std::unique_ptr<net::ProxyConfig> proxy_config = GetProxyConfig();
-  if (proxy_config)
-    builder.SetProxyConfig(std::move(proxy_config));
+  CustomizeHeadlessBrowserContext(builder);
   browser_context_ = builder.Build();
 
   browser()->SetDefaultBrowserContext(browser_context_);
@@ -272,14 +270,7 @@ bool HeadlessAsyncDevTooledBrowserTest::GetAllowTabSockets() {
   return false;
 }
 
-bool HeadlessAsyncDevTooledBrowserTest::
-    GetCreateTabSocketOnlyForIsolatedWorld() {
-  return false;
-}
-
-std::unique_ptr<net::ProxyConfig>
-HeadlessAsyncDevTooledBrowserTest::GetProxyConfig() {
-  return nullptr;
-}
+void HeadlessAsyncDevTooledBrowserTest::CustomizeHeadlessBrowserContext(
+    HeadlessBrowserContext::Builder& builder) {}
 
 }  // namespace headless

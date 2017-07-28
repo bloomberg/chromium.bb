@@ -27,6 +27,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/origin_util.h"
+#include "content/public/common/renderer_preferences.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
@@ -226,6 +227,8 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
 #if BUILDFLAG(ENABLE_BASIC_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
   HeadlessPrintManager::CreateForWebContents(web_contents);
 #endif
+  web_contents->GetMutableRendererPrefs()->accept_languages =
+      browser_context->options()->accept_language();
   web_contents_->SetDelegate(web_contents_delegate_.get());
   render_process_host_->AddObserver(this);
   agent_host_->AddObserver(this);

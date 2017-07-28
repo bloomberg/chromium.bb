@@ -141,12 +141,9 @@ class HeadlessAsyncDevTooledBrowserTest : public HeadlessBrowserTest,
   // Whether to allow TabSockets when creating |web_contents_|.
   virtual bool GetAllowTabSockets();
 
-  // Selects between creating the TabSocket only in an isolated world or the
-  // main world.
-  virtual bool GetCreateTabSocketOnlyForIsolatedWorld();
-
-  // Returns the ProxyConfig to us, if any.  By default null is returned.
-  virtual std::unique_ptr<net::ProxyConfig> GetProxyConfig();
+  // Allows the HeadlessBrowserContext used in testing to be customized.
+  virtual void CustomizeHeadlessBrowserContext(
+      HeadlessBrowserContext::Builder& builder);
 
  protected:
   void RunTest();
