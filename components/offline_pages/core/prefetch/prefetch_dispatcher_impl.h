@@ -47,10 +47,19 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
   friend class PrefetchDispatcherTest;
 
   void DisposeTask();
-  void DidPrefetchRequest(const std::string& request_name_for_logging,
-                          PrefetchRequestStatus status,
-                          const std::string& operation_name,
-                          const std::vector<RenderPageInfo>& pages);
+
+  // Callbacks for network requests.
+  void DidGenerateBundleRequest(PrefetchRequestStatus status,
+                                const std::string& operation_name,
+                                const std::vector<RenderPageInfo>& pages);
+  void DidGetOperationRequest(PrefetchRequestStatus status,
+                              const std::string& operation_name,
+                              const std::vector<RenderPageInfo>& pages);
+  void LogRequestResult(const std::string& request_name_for_logging,
+                        PrefetchRequestStatus status,
+                        const std::string& operation_name,
+                        const std::vector<RenderPageInfo>& pages);
+
   // Adds the Action tasks to the queue. See PrefetchDispatcher interface
   // declaration for Action tasks definition.
   void QueueActionTasks();
