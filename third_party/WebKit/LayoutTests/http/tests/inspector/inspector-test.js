@@ -1,3 +1,9 @@
+/**
+ * These test helper APIs are being migrated to
+ * third_party/WebKit/Source/devtools/front_end/integration_test_runner
+ * See crbug.com/667560
+ */
+
 if (window.GCController)
     GCController.collectAll();
 
