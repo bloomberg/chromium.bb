@@ -705,10 +705,22 @@ need to be translated for each locale.-->
       </if>
 
       <!-- App list -->
-      <message name="IDS_SUGGESTED_APPS_INDICATOR" desc="Indicator text in app list on top of suggested apps.">
+      <message name="IDS_SUGGESTED_APPS_INDICATOR" desc="Indicator text in the launcher on top of suggested apps.">
         SUGGESTED APPS
       </message>
-      <message name="IDS_ALL_APPS_INDICATOR" desc="Indicator text in app list on top of all apps.">
+      <message name="IDS_FREQUENTLY_USED_INDICATOR" desc="Indicator text in the launcher on top of frequently used apps.">
+        FREQUENTLY USED
+      </message>
+      <message name="IDS_RECOMMENDED_APPS_INDICATOR" desc="Indicator text in the launcher on top of reccomended apps.">
+        RECOMMENDED APPS
+      </message>
+      <message name="IDS_MOST_LIKELY_INDICATOR" desc="Indicator text in the launcher on top of most likely apps to be clicked.">
+        MOST LIKELY
+      </message>
+      <message name="IDS_APP_SUGGESTIONS_INDICATOR" desc="Indicator text in the launcher on top of app suggestions.">
+        APP SUGGESTIONS
+      </message>
+      <message name="IDS_ALL_APPS_INDICATOR" desc="Indicator text in the launcher on top of all apps.">
         ALL APPS
       </message>
       <message name="IDS_APP_LIST_BACK" desc="The name of the button that goes to the previous screen in the launcher.">

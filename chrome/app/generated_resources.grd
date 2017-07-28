@@ -3581,7 +3581,7 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       </message>
 
       <message name="IDS_EXTENSION_PERMISSION_LINE" desc="Template for item in list of privileges that an extension or app has">
-          • <ph name="PERMISSION">$1<ex>Read and change all your data on the websites you visit</ex></ph>
+          • <ph name="PERMISSION">$1<ex>Read and change all your data on the websites you visit</ex></ph>
       </message>
       <message name="IDS_EXTENSION_RATING_COUNT" desc="Number of ratings an app or extensions has (displayed after star icons)">
         (<ph name="RATING_COUNT">$1<ex>46</ex></ph>)
@@ -11070,6 +11070,24 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         </message>
         <message name="IDS_SEARCH_BOX_HINT_FULLSCREEN" desc="Hint text for the search box in fullscreen app list window.">
           Search your device, apps, web...
+        </message>
+        <message name="IDS_APP_LIST_STATE_PEEKING" desc="Accessibility announcement for the app list when only suggested apps are shown.">
+        Launcher, suggested apps
+        </message>
+        <message name="IDS_APP_LIST_STATE_HALF" desc="Accessibility announcement for the app list when search results are shown.">
+        Launcher, search results
+        </message>
+        <message name="IDS_APP_LIST_STATE_FULLSCREEN_ALL_APPS" desc="Accessibility announcement for the app list when all apps are shown in fullscreen.">
+        Launcher, all apps
+        </message>
+        <message name="IDS_APP_LIST_STATE_FULLSCREEN_SEARCH" desc="Accessibility announcement for the app list when search results are shown in fullscreen.">
+        Launcher, fullscreen search results
+        </message>
+        <message name="IDS_APP_LIST_EXPAND_BUTTON" desc="Tooltip for the button that expands the app list from suggested apps to a fullscreen view which shows all apps.">
+        Expand to all apps
+        </message>
+        <message name="IDS_APP_LIST_CLEAR_SEARCHBOX" desc="Tooltip for the button that clears all text from the search box in the app list.">
+        Clear searchbox text button
         </message>
         <message name="IDS_SEARCH_BOX_HOTWORD_HINT" desc="Hint text for the search box in app list window when the hotword is enabled.">
           Search, or say "Ok Google"
