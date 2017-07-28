@@ -42,7 +42,6 @@ using autofill::FormFieldData;
 using autofill::PersonalDataManager;
 using autofill::PersonalDataManagerObserver;
 using base::WaitableEvent;
-using content::BrowserThread;
 using sync_datatype_helper::test;
 using testing::_;
 
@@ -59,23 +58,6 @@ class MockWebDataServiceObserver
                void(const AutofillChangeList& changes));
 };
 
-void RunOnDBThreadAndSignal(base::Closure task,
-                            base::WaitableEvent* done_event) {
-  if (!task.is_null()) {
-    task.Run();
-  }
-  done_event->Signal();
-}
-
-void RunOnDBThreadAndBlock(scoped_refptr<AutofillWebDataService> wds,
-                           base::Closure task) {
-  WaitableEvent done_event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                           base::WaitableEvent::InitialState::NOT_SIGNALED);
-  wds->GetDBTaskRunner()->PostTask(
-      FROM_HERE, BindOnce(&RunOnDBThreadAndSignal, task, &done_event));
-  done_event.Wait();
-}
-
 void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
   WaitableEvent done_event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -90,7 +72,8 @@ void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
   void(AutofillWebDataService::*add_observer_func)(
       AutofillWebDataServiceObserverOnDBThread*) =
       &AutofillWebDataService::AddObserver;
-  RunOnDBThreadAndBlock(wds, Bind(add_observer_func, wds, &mock_observer));
+  wds->GetDBTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(add_observer_func, wds, &mock_observer));
 
   wds->RemoveFormValueForElementName(key.name(), key.value());
   done_event.Wait();
@@ -98,7 +81,8 @@ void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
   void(AutofillWebDataService::*remove_observer_func)(
       AutofillWebDataServiceObserverOnDBThread*) =
       &AutofillWebDataService::RemoveObserver;
-  RunOnDBThreadAndBlock(wds, Bind(remove_observer_func, wds, &mock_observer));
+  wds->GetDBTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(remove_observer_func, wds, &mock_observer));
 }
 
 void GetAllAutofillEntriesOnDBThread(AutofillWebDataService* wds,
@@ -110,22 +94,11 @@ void GetAllAutofillEntriesOnDBThread(AutofillWebDataService* wds,
 
 std::vector<AutofillEntry> GetAllAutofillEntries(AutofillWebDataService* wds) {
   std::vector<AutofillEntry> entries;
-  RunOnDBThreadAndBlock(
-      wds, Bind(&GetAllAutofillEntriesOnDBThread, Unretained(wds), &entries));
+  wds->GetDBTaskRunner()->PostTask(FROM_HERE,
+                                   base::Bind(&GetAllAutofillEntriesOnDBThread,
+                                              base::Unretained(wds), &entries));
+  base::TaskScheduler::GetInstance()->FlushForTesting();
   return entries;
-}
-
-// UI thread returns from the update operations on the DB thread and schedules
-// the sync. This function blocks until after this scheduled sync is complete by
-// scheduling additional empty task on DB Thread. Call after AddKeys/RemoveKey.
-void BlockForPendingDBThreadTasks(int profile) {
-  // The order of the notifications is undefined, so sync change sometimes is
-  // posted after the notification for observer_helper. Post new task to db
-  // thread that guaranteed to be after sync and would be blocking until
-  // completion.
-  scoped_refptr<AutofillWebDataService> wds =
-      autofill_helper::GetWebDataService(profile);
-  RunOnDBThreadAndBlock(wds, base::Closure());
 }
 
 bool ProfilesMatchImpl(
@@ -250,21 +223,23 @@ void AddKeys(int profile, const std::set<AutofillKey>& keys) {
   void(AutofillWebDataService::*add_observer_func)(
       AutofillWebDataServiceObserverOnDBThread*) =
       &AutofillWebDataService::AddObserver;
-  RunOnDBThreadAndBlock(wds, Bind(add_observer_func, wds, &mock_observer));
+  wds->GetDBTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(add_observer_func, wds, &mock_observer));
 
   wds->AddFormFields(form_fields);
   done_event.Wait();
-  BlockForPendingDBThreadTasks(profile);
+  base::TaskScheduler::GetInstance()->FlushForTesting();
 
   void(AutofillWebDataService::*remove_observer_func)(
       AutofillWebDataServiceObserverOnDBThread*) =
       &AutofillWebDataService::RemoveObserver;
-  RunOnDBThreadAndBlock(wds, Bind(remove_observer_func, wds, &mock_observer));
+  wds->GetDBTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(remove_observer_func, wds, &mock_observer));
 }
 
 void RemoveKey(int profile, const AutofillKey& key) {
   RemoveKeyDontBlockForSync(profile, key);
-  BlockForPendingDBThreadTasks(profile);
+  base::TaskScheduler::GetInstance()->FlushForTesting();
 }
 
 void RemoveKeys(int profile) {
@@ -272,7 +247,7 @@ void RemoveKeys(int profile) {
   for (const AutofillEntry& entry : keys) {
     RemoveKeyDontBlockForSync(profile, entry.key());
   }
-  BlockForPendingDBThreadTasks(profile);
+  base::TaskScheduler::GetInstance()->FlushForTesting();
 }
 
 std::set<AutofillEntry> GetAllKeys(int profile) {
@@ -344,7 +319,7 @@ std::vector<AutofillProfile*> GetAllAutoFillProfiles(int profile) {
   // data, but this shouldn't cause problems. While PersonalDataManager will
   // cancel outstanding queries, this is only instigated on the UI thread, which
   // we are about to block, which means we are safe.
-  BlockForPendingDBThreadTasks(profile);
+  base::TaskScheduler::GetInstance()->FlushForTesting();
 
   return pdm->web_profiles();
 }
@@ -399,7 +374,7 @@ bool AutofillProfileChecker::Wait() {
   // Similar to GetAllAutoFillProfiles() we need to make sure we are not reading
   // before any locally instigated async writes. This is run exactly one time
   // before the first IsExitConditionSatisfied() is called.
-  BlockForPendingDBThreadTasks(profile_a_);
+  base::TaskScheduler::GetInstance()->FlushForTesting();
   return StatusChangeChecker::Wait();
 }
 

@@ -250,7 +250,6 @@ std::unique_ptr<KeyedService> BuildWebDataService(
   return base::MakeUnique<WebDataServiceWrapper>(
       context_path, g_browser_process->GetApplicationLocale(),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::DB),
       sync_start_util::GetFlareForSyncableService(context_path),
       &TestProfileErrorCallback);
 }

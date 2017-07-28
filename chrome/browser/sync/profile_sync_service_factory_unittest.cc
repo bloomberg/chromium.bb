@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
 #include "chrome/common/features.h"
 #include "chrome/test/base/testing_profile.h"
@@ -32,6 +33,10 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
   void SetUp() override {
     // Some services will only be created if there is a WebDataService.
     profile_->CreateWebDataService();
+  }
+
+  void TearDown() override {
+    base::TaskScheduler::GetInstance()->FlushForTesting();
   }
 
  protected:

@@ -188,7 +188,6 @@ KeyedService* WebDataServiceFactory::BuildServiceInstanceFor(
   return new WebDataServiceWrapper(
       profile_path, g_browser_process->GetApplicationLocale(),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::DB),
       sync_start_util::GetFlareForSyncableService(profile_path),
       &ProfileErrorCallback);
 }

@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
@@ -84,10 +85,15 @@ WebDataServiceWrapper::WebDataServiceWrapper(
     const base::FilePath& context_path,
     const std::string& application_locale,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
     const syncer::SyncableService::StartSyncFlare& flare,
     const ShowErrorCallback& show_error_callback) {
   base::FilePath path = context_path.Append(kWebDataFilename);
+  // TODO(pkasting): http://crbug.com/740773 This should likely be sequenced,
+  // not single-threaded; it's also possible the various uses of this below
+  // should each use their own sequences instead of sharing this one.
+  auto db_thread = base::CreateSingleThreadTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   web_database_ = new WebDatabaseService(path, ui_thread, db_thread);
 
   // All tables objects that participate in managing the database must
