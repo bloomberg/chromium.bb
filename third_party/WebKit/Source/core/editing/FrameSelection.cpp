@@ -178,8 +178,11 @@ void FrameSelection::MoveCaretSelection(const IntPoint& point) {
   builder.SetIsHandleVisible(true);
   if (position.IsNotNull())
     builder.Collapse(position.ToPositionWithAffinity());
-  SetSelection(builder.Build(),
-               kCloseTyping | kClearTypingStyle | kUserTriggered);
+  SetSelection(builder.Build(), SetSelectionData::Builder()
+                                    .SetShouldCloseTyping(true)
+                                    .SetShouldClearTypingStyle(true)
+                                    .SetSetSelectionBy(SetSelectionBy::kUser)
+                                    .Build());
 }
 
 void FrameSelection::SetSelection(const SelectionInDOMTree& selection,
@@ -381,10 +384,12 @@ bool FrameSelection::Modify(SelectionModifyAlteration alter,
     return true;
   }
 
-  const SetSelectionOptions options =
-      kCloseTyping | kClearTypingStyle |
-      ConvertSetSelectionByToSetSelectionOptions(set_selection_by);
-  SetSelection(selection_modifier.Selection().AsSelection(), options);
+  SetSelection(selection_modifier.Selection().AsSelection(),
+               SetSelectionData::Builder()
+                   .SetShouldCloseTyping(true)
+                   .SetShouldClearTypingStyle(true)
+                   .SetSetSelectionBy(set_selection_by)
+                   .Build());
 
   if (granularity == TextGranularity::kLine ||
       granularity == TextGranularity::kParagraph)
@@ -1063,8 +1068,11 @@ bool FrameSelection::SelectWordAroundPosition(const VisiblePosition& position) {
                        .Collapse(start.ToPositionWithAffinity())
                        .Extend(end.DeepEquivalent())
                        .Build(),
-                   kCloseTyping | kClearTypingStyle,
-                   CursorAlignOnScroll::kIfNeeded, TextGranularity::kWord);
+                   SetSelectionData::Builder()
+                       .SetShouldCloseTyping(true)
+                       .SetShouldClearTypingStyle(true)
+                       .SetGranularity(TextGranularity::kWord)
+                       .Build());
       return true;
     }
   }
@@ -1097,15 +1105,17 @@ void FrameSelection::MoveRangeSelectionExtent(const IntPoint& contents_point) {
   if (ComputeVisibleSelectionInDOMTree().IsNone())
     return;
 
-  const SetSelectionOptions kOptions =
-      FrameSelection::kCloseTyping | FrameSelection::kClearTypingStyle |
-      FrameSelection::kDoNotClearStrategy | kUserTriggered;
   SetSelection(
       SelectionInDOMTree::Builder(
           GetGranularityStrategy()->UpdateExtent(contents_point, frame_))
           .SetIsHandleVisible(true)
           .Build(),
-      kOptions);
+      SetSelectionData::Builder()
+          .SetShouldCloseTyping(true)
+          .SetShouldClearTypingStyle(true)
+          .SetDoNotClearStrategy(true)
+          .SetSetSelectionBy(SetSelectionBy::kUser)
+          .Build());
 }
 
 // TODO(yosin): We should make |FrameSelection::moveRangeSelection()| to take
@@ -1140,8 +1150,11 @@ void FrameSelection::MoveRangeSelection(const VisiblePosition& base_position,
   }
   builder.SetAffinity(visible_selection.Affinity());
   builder.SetIsHandleVisible(IsHandleVisible());
-  SetSelection(builder.Build(), kCloseTyping | kClearTypingStyle,
-               CursorAlignOnScroll::kIfNeeded, granularity);
+  SetSelection(builder.Build(), SetSelectionData::Builder()
+                                    .SetShouldCloseTyping(true)
+                                    .SetShouldClearTypingStyle(true)
+                                    .SetGranularity(granularity)
+                                    .Build());
 }
 
 void FrameSelection::SetCaretVisible(bool caret_is_visible) {
