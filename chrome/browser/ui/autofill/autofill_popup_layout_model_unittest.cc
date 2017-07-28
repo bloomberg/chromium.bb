@@ -95,24 +95,24 @@ TEST_F(AutofillPopupLayoutModelTest, RowWidthWithoutText) {
 
   // Refer to GetSuggestions() in TestAutofillPopupViewDelegate.
   EXPECT_EQ(base_size,
-            layout_model()->RowWidthWithoutText(0, /* with_label= */ false));
+            layout_model()->RowWidthWithoutText(0, /* has_substext= */ false));
   EXPECT_EQ(base_size + subtext_increase,
-            layout_model()->RowWidthWithoutText(1, /* with_label= */ true));
+            layout_model()->RowWidthWithoutText(1, /* has_substext= */ true));
   EXPECT_EQ(base_size + AutofillPopupLayoutModel::kIconPadding +
                 ui::ResourceBundle::GetSharedInstance()
                     .GetImageNamed(IDR_AUTOFILL_CC_AMEX)
                     .Width(),
-            layout_model()->RowWidthWithoutText(2, /* with_label= */ false));
+            layout_model()->RowWidthWithoutText(2, /* has_substext= */ false));
   EXPECT_EQ(base_size + subtext_increase +
                 AutofillPopupLayoutModel::kIconPadding +
                 ui::ResourceBundle::GetSharedInstance()
                     .GetImageNamed(IDR_AUTOFILL_CC_GENERIC)
                     .Width(),
-            layout_model()->RowWidthWithoutText(3, /* with_label= */ true));
+            layout_model()->RowWidthWithoutText(3, /* has_substext= */ true));
   EXPECT_EQ(base_size + AutofillPopupLayoutModel::kHttpWarningNamePadding +
-                AutofillPopupLayoutModel::kHttpWarningIconPadding +
+                AutofillPopupLayoutModel::kPaddingAfterLeadingIcon +
                 layout_model()->GetIconImage(4).width(),
-            layout_model()->RowWidthWithoutText(4, /* with_label= */ true));
+            layout_model()->RowWidthWithoutText(4, /* has_substext= */ true));
 }
 #endif
 

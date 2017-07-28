@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -26,6 +27,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 
 #if !defined(OS_ANDROID)
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "components/toolbar/vector_icons.h"  // nogncheck
 #endif
 
@@ -42,8 +44,6 @@ const size_t kSeparatorHeight = 1;
 #if !defined(OS_ANDROID)
 // Size difference between the normal font and the smaller font, in pixels.
 const int kSmallerFontSizeDelta = -1;
-
-const int kHttpWarningIconWidth = 16;
 #endif
 
 const struct {
@@ -110,7 +110,7 @@ int AutofillPopupLayoutModel::GetDesiredPopupWidth() const {
   for (size_t i = 0; i < suggestions.size(); ++i) {
     int label_size = delegate_->GetElidedLabelWidthForRow(i);
     int row_size = delegate_->GetElidedValueWidthForRow(i) + label_size +
-                   RowWidthWithoutText(i, /* with_label= */ label_size > 0);
+                   RowWidthWithoutText(i, /* has_subtext= */ label_size > 0);
 
     popup_width = std::max(popup_width, row_size);
   }
@@ -119,35 +119,30 @@ int AutofillPopupLayoutModel::GetDesiredPopupWidth() const {
 }
 
 int AutofillPopupLayoutModel::RowWidthWithoutText(int row,
-                                                  bool with_label) const {
+                                                  bool has_subtext) const {
   std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
   bool is_warning_message = (suggestions[row].frontend_id ==
                              POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
+  const bool is_row_with_ =
+      (is_warning_message || (suggestions[row].frontend_id ==
+                              POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY));
 
-  int row_size = kEndPadding;
-
-  if (with_label)
+  int row_size = 2 * (kEndPadding + kPopupBorderThickness);
+  if (has_subtext)
     row_size += is_warning_message ? kHttpWarningNamePadding : kNamePadding;
 
   // Add the Autofill icon size, if required.
   const base::string16& icon = suggestions[row].icon;
   if (!icon.empty()) {
     row_size += GetIconImage(row).width() +
-                (is_warning_message ? kHttpWarningIconPadding : kIconPadding);
+                (is_row_with_ ? kPaddingAfterLeadingIcon : kIconPadding);
   }
-
-  // Add the padding at the end.
-  row_size += kEndPadding;
-
-  // Add room for the popup border.
-  row_size += 2 * kPopupBorderThickness;
-
   return row_size;
 }
 
 int AutofillPopupLayoutModel::GetAvailableWidthForRow(int row,
-                                                      bool with_label) const {
-  return popup_bounds_.width() - RowWidthWithoutText(row, with_label);
+                                                      bool has_subtext) const {
+  return popup_bounds_.width() - RowWidthWithoutText(row, has_subtext);
 }
 
 void AutofillPopupLayoutModel::UpdatePopupBounds() {
@@ -180,6 +175,7 @@ const gfx::FontList& AutofillPopupLayoutModel::GetValueFontListForRow(
     case POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE:
     case POPUP_ITEM_ID_TITLE:
     case POPUP_ITEM_ID_PASSWORD_ENTRY:
+    case POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:
       return normal_font_list_;
     case POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY:
     case POPUP_ITEM_ID_DATALIST_ENTRY:
@@ -216,18 +212,22 @@ ui::NativeTheme::ColorId AutofillPopupLayoutModel::GetValueFontColorIDForRow(
 gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
   std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
   const base::string16& icon_str = suggestions[index].icon;
+  constexpr int kIconSize = 16;
 
   // For http warning message, get icon images from VectorIcon, which is the
   // same as security indicator icons in location bar.
-  if (suggestions[index].frontend_id ==
-      POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE) {
-    if (icon_str == base::ASCIIToUTF16("httpWarning")) {
-      return gfx::CreateVectorIcon(toolbar::kHttpIcon, kHttpWarningIconWidth,
-                                   gfx::kChromeIconGrey);
-    }
-    DCHECK_EQ(icon_str, base::ASCIIToUTF16("httpsInvalid"));
-    return gfx::CreateVectorIcon(toolbar::kHttpsInvalidIcon,
-                                 kHttpWarningIconWidth, gfx::kGoogleRed700);
+  if (icon_str == base::ASCIIToUTF16("httpWarning")) {
+    return gfx::CreateVectorIcon(toolbar::kHttpIcon, kIconSize,
+                                 gfx::kChromeIconGrey);
+  }
+  if (icon_str == base::ASCIIToUTF16("httpsInvalid")) {
+    return gfx::CreateVectorIcon(toolbar::kHttpsInvalidIcon, kIconSize,
+                                 gfx::kGoogleRed700);
+  }
+
+  if (icon_str == base::ASCIIToUTF16("showAllSavedPasswords")) {
+    return gfx::CreateVectorIcon(kOpenInNewIcon, kIconSize,
+                                 gfx::kChromeIconGrey);
   }
 
   // For other suggestion entries, get icon from PNG files.
@@ -235,7 +235,7 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
   DCHECK_NE(-1, icon_id);
   return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon_id);
 }
-#endif
+#endif  // !defined(OS_ANDROID)
 
 int AutofillPopupLayoutModel::LineFromY(int y) const {
   std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();

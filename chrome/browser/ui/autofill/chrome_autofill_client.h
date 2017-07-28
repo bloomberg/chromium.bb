@@ -87,9 +87,8 @@ class ChromeAutofillClient
                              const base::string16& profile_full_name) override;
   bool IsContextSecure() override;
   bool ShouldShowSigninPromo() override;
-  void StartSigninFlow() override;
-  void ShowHttpNotSecureExplanation() override;
   bool IsAutofillSupported() override;
+  void ExecuteCommand(int id) override;
 
   // content::WebContentsObserver implementation.
   void MainFrameWasResized(bool width_changed) override;
@@ -106,6 +105,8 @@ class ChromeAutofillClient
  private:
   explicit ChromeAutofillClient(content::WebContents* web_contents);
   friend class content::WebContentsUserData<ChromeAutofillClient>;
+
+  void ShowHttpNotSecureExplanation();
 
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
   CardUnmaskPromptControllerImpl unmask_controller_;

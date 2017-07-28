@@ -462,6 +462,12 @@ void AppendFieldTypeUkm(const FormData& form,
   }
 }
 
+class MockAutofillClient : public TestAutofillClient {
+ public:
+  MockAutofillClient() {}
+  MOCK_METHOD1(ExecuteCommand, void(int));
+};
+
 }  // namespace
 
 // This is defined in the autofill_metrics.cc implementation file.
@@ -480,7 +486,7 @@ class AutofillMetricsTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
-  TestAutofillClient autofill_client_;
+  MockAutofillClient autofill_client_;
   std::unique_ptr<AccountTrackerService> account_tracker_;
   std::unique_ptr<FakeSigninManagerBase> signin_manager_;
   std::unique_ptr<TestSigninClient> signin_client_;
@@ -5187,11 +5193,10 @@ TEST_F(AutofillMetricsParseQueryResponseTest, PartialNoServerData) {
 
 // Test that the Form-Not-Secure warning user action is recorded.
 TEST_F(AutofillMetricsTest, ShowHttpNotSecureExplanationUserAction) {
-  base::UserActionTester user_action_tester;
+  EXPECT_CALL(autofill_client_,
+              ExecuteCommand(POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE));
   external_delegate_->DidAcceptSuggestion(
       ASCIIToUTF16("Test"), POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE, 0);
-  EXPECT_EQ(1, user_action_tester.GetActionCount(
-                   "Autofill_ShowedHttpNotSecureExplanation"));
 }
 
 // Tests that credit card form submissions are logged specially when the form is

@@ -186,16 +186,12 @@ class AutofillClient : public RiskDataLoader {
   // Whether it is appropriate to show a signin promo for this user.
   virtual bool ShouldShowSigninPromo() = 0;
 
-  // Starts the signin flow. Should not be called if ShouldShowSigninPromo()
-  // returns false.
-  virtual void StartSigninFlow() = 0;
-
-  // Shows the explanation of http not secure warning message.
-  virtual void ShowHttpNotSecureExplanation() = 0;
-
   // Whether Autofill is currently supported by the client. If false, all
   // features of Autofill are disabled, including Autocomplete.
   virtual bool IsAutofillSupported() = 0;
+
+  // Handles simple actions for the autofill popups.
+  virtual void ExecuteCommand(int id) = 0;
 };
 
 }  // namespace autofill
