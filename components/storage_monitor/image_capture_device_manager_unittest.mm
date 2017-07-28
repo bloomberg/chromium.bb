@@ -11,7 +11,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/memory/weak_ptr.h"
-#include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/storage_monitor/image_capture_device.h"
 #include "components/storage_monitor/image_capture_device_manager.h"
 #include "components/storage_monitor/test_storage_monitor.h"
@@ -240,6 +240,10 @@ class TestCameraListener
 
 class ImageCaptureDeviceManagerTest : public testing::Test {
  public:
+  ImageCaptureDeviceManagerTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+
   void SetUp() override { monitor_ = TestStorageMonitor::CreateAndInstall(); }
 
   void TearDown() override { TestStorageMonitor::Destroy(); }
@@ -263,7 +267,10 @@ class ImageCaptureDeviceManagerTest : public testing::Test {
                   moreGoing:NO];
   }
 
+  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle thread_bundle_;
   TestStorageMonitor* monitor_;
   TestCameraListener listener_;
@@ -360,7 +367,7 @@ TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
   // return us a not-found error.
   base::FilePath temp_file = temp_dir.GetPath().Append("tempfile");
   [camera downloadFile:std::string("nonexistent") localPath:temp_file];
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
   ASSERT_EQ(1U, listener_.downloads().size());
   EXPECT_EQ("nonexistent", listener_.downloads()[0]);
   EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, listener_.last_error());
@@ -371,7 +378,7 @@ TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
   // library behavior. Our code then renames the file onto the requested
   // destination.
   [camera downloadFile:kTestFileName localPath:temp_file];
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   ASSERT_EQ(2U, listener_.downloads().size());
   EXPECT_EQ(kTestFileName, listener_.downloads()[1]);
@@ -408,7 +415,7 @@ TEST_F(ImageCaptureDeviceManagerTest, TestSubdirectories) {
   base::FilePath temp_file = temp_dir.GetPath().Append("tempfile");
 
   [camera downloadFile:("dir/" + kTestFileName) localPath:temp_file];
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   char file_contents[5];
   ASSERT_EQ(4, base::ReadFile(temp_file, file_contents,
