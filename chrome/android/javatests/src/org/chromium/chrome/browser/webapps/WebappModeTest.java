@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.ScalableTimeout;
@@ -271,9 +272,11 @@ public class WebappModeTest {
     }
 
     /** Test that on first launch {@link WebappDataStorage#hasBeenLaunched()} is set. */
+    // Flaky even with RetryOnFailure: http://crbug.com/749375
+    @DisabledTest
     @Test
-    @MediumTest
-    @Feature({"Webapps"})
+    //    @MediumTest
+    //    @Feature({"Webapps"})
     public void testSetsHasBeenLaunchedOnFirstLaunch() throws Exception {
         WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPP_1_ID);
         Assert.assertFalse(storage.hasBeenLaunched());
