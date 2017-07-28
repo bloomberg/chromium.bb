@@ -72,6 +72,9 @@ class SelectionModifier {
   VisiblePosition StartForPlatform() const;
   VisiblePosition EndForPlatform() const;
   LayoutUnit LineDirectionPointForBlockDirectionNavigation(const Position&);
+  VisiblePosition ComputeModifyPosition(SelectionModifyAlteration,
+                                        SelectionModifyDirection,
+                                        TextGranularity);
   VisiblePosition ModifyExtendingRight(TextGranularity);
   VisiblePosition ModifyExtendingRightInternal(TextGranularity);
   VisiblePosition ModifyExtendingForward(TextGranularity);
