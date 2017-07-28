@@ -28,14 +28,20 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
                                  Page*) const override;
   LinkResource* CreateServiceWorkerLinkResource(
       HTMLLinkElement*) const override;
-  void OnClearWindowObjectInMainWorld(Document&, const Settings&) override;
+  void OnClearWindowObjectInMainWorld(Document&,
+                                      const Settings&) const override;
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       WebFrameClient*,
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
-      WebMediaPlayerClient*) override;
+      WebMediaPlayerClient*) const override;
   WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
-      HTMLMediaElement&) override;
+      HTMLMediaElement&) const override;
+
+  void ProvideCredentialManagerClient(Page&, WebCredentialManagerClient*)
+      const override;
+  void ProvideModulesToPage(Page&, WebViewClient*) const override;
+  void ForceNextWebGLContextCreationToFail() const override;
 };
 
 }  // namespace blink

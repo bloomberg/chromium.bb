@@ -41,8 +41,6 @@ component("web") {
     "WebFactoryImpl.cpp",
     "WebFactoryImpl.h",
     "WebKit.cpp",
-    "WebViewImpl.cpp",
-    "WebViewImpl.h",
   ]
 
   if (is_mac) {

@@ -28,12 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/WebViewImpl.h"
+#include "core/exported/WebViewImpl.h"
 
 #include <memory>
 
 #include "build/build_config.h"
 #include "core/CSSValueKeywords.h"
+#include "core/CoreInitializer.h"
 #include "core/HTMLNames.h"
 #include "core/animation/CompositorMutatorImpl.h"
 #include "core/clipboard/DataObject.h"
@@ -106,13 +107,6 @@
 #include "core/paint/PaintLayer.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
-#include "modules/credentialmanager/CredentialManagerClient.h"
-#include "modules/encryptedmedia/MediaKeysController.h"
-#include "modules/quota/StorageQuotaClient.h"
-#include "modules/speech/SpeechRecognitionClientProxy.h"
-#include "modules/storage/StorageNamespaceController.h"
-#include "modules/webdatabase/DatabaseClient.h"
-#include "modules/webgl/WebGLRenderingContext.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
 #include "platform/Cursor.h"
@@ -280,8 +274,8 @@ void WebView::ResetVisitedLinkState(bool invalidate_visited_link_hashes) {
 void WebViewImpl::SetCredentialManagerClient(
     WebCredentialManagerClient* web_credential_manager_client) {
   DCHECK(page_);
-  ProvideCredentialManagerClientTo(
-      *page_, new CredentialManagerClient(web_credential_manager_client));
+  CoreInitializer::GetInstance().ProvideCredentialManagerClient(
+      *page_, web_credential_manager_client);
 }
 
 void WebViewImpl::SetPrerendererClient(
@@ -298,7 +292,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       context_menu_client_(*this),
       editor_client_(*this),
       spell_checker_client_impl_(this),
-      storage_client_impl_(this),
       should_auto_resize_(false),
       zoom_level_(0),
       minimum_zoom_level_(ZoomFactorToZoomLevel(kMinTextSizeMultiplier)),
@@ -348,18 +341,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
   page_clients.spell_checker_client = &spell_checker_client_impl_;
 
   page_ = Page::CreateOrdinary(page_clients);
-  MediaKeysController::ProvideMediaKeysTo(*page_, &media_keys_client_impl_);
-  ProvideSpeechRecognitionTo(
-      *page_, SpeechRecognitionClientProxy::Create(
-                  client ? client->SpeechRecognizer() : nullptr));
-  ProvideContextFeaturesTo(*page_, ContextFeaturesClientImpl::Create());
-  ProvideDatabaseClientTo(*page_, new DatabaseClient);
-
-  ProvideStorageQuotaClientTo(*page_, StorageQuotaClient::Create());
+  CoreInitializer::GetInstance().ProvideModulesToPage(*page_, client_);
   page_->SetValidationMessageClient(ValidationMessageClientImpl::Create(*this));
-  StorageNamespaceController::ProvideStorageNamespaceTo(*page_,
-                                                        &storage_client_impl_);
-
   SetVisibilityState(visibility_state, true);
 
   InitializeLayerTreeView();
@@ -447,9 +430,10 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
 
   PageWidgetEventHandler::HandleMouseDown(main_frame, event);
 
-  if (event.button == WebMouseEvent::Button::kLeft && mouse_capture_node_)
+  if (event.button == WebMouseEvent::Button::kLeft && mouse_capture_node_) {
     mouse_capture_gesture_token_ =
         main_frame.GetEventHandler().TakeLastMouseDownGestureToken();
+  }
 
   if (page_popup_ && page_popup &&
       page_popup_->HasSamePopupClient(page_popup.Get())) {
@@ -553,8 +537,9 @@ bool WebViewImpl::ScrollBy(const WebFloatSize& delta,
                            const WebFloatSize& velocity) {
   DCHECK_NE(fling_source_device_, kWebGestureDeviceUninitialized);
   if (!page_ || !page_->MainFrame() || !page_->MainFrame()->IsLocalFrame() ||
-      !page_->DeprecatedLocalMainFrame()->View())
+      !page_->DeprecatedLocalMainFrame()->View()) {
     return false;
+  }
 
   if (fling_source_device_ == kWebGestureDeviceTouchpad) {
     bool enable_touchpad_scroll_latching =
@@ -610,20 +595,20 @@ bool WebViewImpl::ScrollBy(const WebFloatSize& delta,
     }
 
     return scroll_update_handled;
-  } else {
-    WebGestureEvent synthetic_gesture_event = CreateGestureScrollEventFromFling(
-        WebInputEvent::kGestureScrollUpdate, fling_source_device_);
-    synthetic_gesture_event.data.scroll_update.prevent_propagation = true;
-    synthetic_gesture_event.data.scroll_update.delta_x = delta.width;
-    synthetic_gesture_event.data.scroll_update.delta_y = delta.height;
-    synthetic_gesture_event.data.scroll_update.velocity_x = velocity.width;
-    synthetic_gesture_event.data.scroll_update.velocity_y = velocity.height;
-    synthetic_gesture_event.data.scroll_update.inertial_phase =
-        WebGestureEvent::kMomentumPhase;
-
-    return HandleGestureEvent(synthetic_gesture_event) !=
-           WebInputEventResult::kNotHandled;
   }
+
+  WebGestureEvent synthetic_gesture_event = CreateGestureScrollEventFromFling(
+      WebInputEvent::kGestureScrollUpdate, fling_source_device_);
+  synthetic_gesture_event.data.scroll_update.prevent_propagation = true;
+  synthetic_gesture_event.data.scroll_update.delta_x = delta.width;
+  synthetic_gesture_event.data.scroll_update.delta_y = delta.height;
+  synthetic_gesture_event.data.scroll_update.velocity_x = velocity.width;
+  synthetic_gesture_event.data.scroll_update.velocity_y = velocity.height;
+  synthetic_gesture_event.data.scroll_update.inertial_phase =
+      WebGestureEvent::kMomentumPhase;
+
+  return HandleGestureEvent(synthetic_gesture_event) !=
+         WebInputEventResult::kNotHandled;
 }
 
 WebInputEventResult WebViewImpl::HandleGestureEvent(
@@ -1190,9 +1175,10 @@ WebInputEventResult WebViewImpl::HandleCharEvent(
     return page_popup_->HandleKeyEvent(event);
 
   LocalFrame* frame = ToLocalFrame(FocusedCoreFrame());
-  if (!frame)
+  if (!frame) {
     return suppress ? WebInputEventResult::kHandledSuppressed
                     : WebInputEventResult::kNotHandled;
+  }
 
   EventHandler& handler = frame->GetEventHandler();
 
@@ -1360,11 +1346,12 @@ void WebViewImpl::ComputeScaleAndScrollForBlockRect(
   }  // Otherwise top align the block.
 
   // Do the same thing for horizontal alignment.
-  if (rect.width < screen_width)
+  if (rect.width < screen_width) {
     rect.x -= 0.5 * (screen_width - rect.width);
-  else
+  } else {
     rect.x = std::max<float>(
         rect.x, hit_point_in_root_frame.x + padding - screen_width);
+  }
   scroll.x = rect.x;
   scroll.y = rect.y;
 
@@ -1641,10 +1628,11 @@ void WebViewImpl::ShowContextMenuForElement(WebElement element) {
   GetPage()->GetContextMenuController().ClearContextMenu();
   {
     ContextMenuAllowedScope scope;
-    if (LocalFrame* focused_frame =
-            ToLocalFrame(GetPage()->GetFocusController().FocusedOrMainFrame()))
+    if (LocalFrame* focused_frame = ToLocalFrame(
+            GetPage()->GetFocusController().FocusedOrMainFrame())) {
       focused_frame->GetEventHandler().ShowNonLocatedContextMenu(
           element.Unwrap<Element>());
+    }
   }
 }
 
@@ -1957,9 +1945,9 @@ void WebViewImpl::BeginFrame(double last_frame_time_monotonic) {
 
   // Create synthetic wheel events as necessary for fling.
   if (gesture_animation_) {
-    if (gesture_animation_->Animate(last_frame_time_monotonic))
+    if (gesture_animation_->Animate(last_frame_time_monotonic)) {
       MainFrameImpl()->FrameWidget()->ScheduleAnimation();
-    else {
+    } else {
       DCHECK_NE(fling_source_device_, kWebGestureDeviceUninitialized);
       WebGestureDevice last_fling_source_device = fling_source_device_;
       EndActiveFlingAnimation();
@@ -2554,9 +2542,10 @@ bool WebViewImpl::GetCompositionCharacterBounds(WebVector<WebRect>& bounds) {
 // WebView --------------------------------------------------------------------
 
 WebSettingsImpl* WebViewImpl::SettingsImpl() {
-  if (!web_settings_)
+  if (!web_settings_) {
     web_settings_ = WTF::WrapUnique(
         new WebSettingsImpl(&page_->GetSettings(), dev_tools_emulator_.Get()));
+  }
   DCHECK(web_settings_);
   return web_settings_.get();
 }
@@ -2701,9 +2690,10 @@ bool WebViewImpl::ScrollFocusedEditableElementIntoRect(
   bool need_animation;
   ComputeScaleAndScrollForFocusedNode(element, zoom_in_to_legible_scale, scale,
                                       scroll, need_animation);
-  if (need_animation)
+  if (need_animation) {
     StartPageScaleAnimation(scroll, false, scale,
                             scrollAndScaleAnimationDurationInSeconds);
+  }
 
   return true;
 }
@@ -3103,9 +3093,10 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
 
     // If we don't support mobile viewports, allow GPU rasterization.
     matches_heuristics_for_gpu_rasterization_ = true;
-    if (layer_tree_view_)
+    if (layer_tree_view_) {
       layer_tree_view_->HeuristicsForGpuRasterizationUpdated(
           matches_heuristics_for_gpu_rasterization_);
+    }
     return;
   }
 
@@ -3113,9 +3104,10 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
 
   matches_heuristics_for_gpu_rasterization_ =
       description.MatchesHeuristicsForGpuRasterization();
-  if (layer_tree_view_)
+  if (layer_tree_view_) {
     layer_tree_view_->HeuristicsForGpuRasterizationUpdated(
         matches_heuristics_for_gpu_rasterization_);
+  }
 
   Length default_min_width = document->ViewportDefaultMinWidth();
   if (default_min_width.IsAuto())
@@ -3208,11 +3200,12 @@ IntSize WebViewImpl::ContentsSize() const {
 }
 
 WebSize WebViewImpl::ContentsPreferredMinimumSize() {
-  if (MainFrameImpl())
+  if (MainFrameImpl()) {
     MainFrameImpl()
         ->GetFrame()
         ->View()
         ->UpdateLifecycleToCompositingCleanPlusScrolling();
+  }
 
   Document* document = page_->MainFrame()->IsLocalFrame()
                            ? page_->DeprecatedLocalMainFrame()->GetDocument()
@@ -3379,11 +3372,12 @@ void WebViewImpl::ConfigureAutoResizeMode() {
       !MainFrameImpl()->GetFrame()->View())
     return;
 
-  if (should_auto_resize_)
+  if (should_auto_resize_) {
     MainFrameImpl()->GetFrame()->View()->EnableAutoSizeMode(min_auto_size_,
                                                             max_auto_size_);
-  else
+  } else {
     MainFrameImpl()->GetFrame()->View()->DisableAutoSizeMode();
+  }
 }
 
 unsigned long WebViewImpl::CreateUniqueIdentifierForRequest() {
@@ -4027,10 +4021,11 @@ void WebViewImpl::SetVisibilityState(WebPageVisibilityState visibility_state,
          visibility_state == kWebPageVisibilityStateHidden ||
          visibility_state == kWebPageVisibilityStatePrerender);
 
-  if (GetPage())
+  if (GetPage()) {
     page_->SetVisibilityState(
         static_cast<PageVisibilityState>(static_cast<int>(visibility_state)),
         is_initial_state);
+  }
 
   bool visible = visibility_state == kWebPageVisibilityStateVisible;
   if (layer_tree_view_ && !override_compositor_visibility_)
@@ -4048,7 +4043,7 @@ void WebViewImpl::SetCompositorVisibility(bool is_visible) {
 }
 
 void WebViewImpl::ForceNextWebGLContextCreationToFail() {
-  WebGLRenderingContext::ForceNextWebGLContextCreationToFail();
+  CoreInitializer::GetInstance().ForceNextWebGLContextCreationToFail();
 }
 
 void WebViewImpl::ForceNextDrawingBufferCreationToFail() {

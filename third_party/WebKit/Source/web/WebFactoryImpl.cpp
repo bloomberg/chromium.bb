@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "web/WebFactoryImpl.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/page/ChromeClientImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 

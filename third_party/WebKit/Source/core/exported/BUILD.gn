@@ -93,6 +93,8 @@ blink_core_sources("exported") {
     "WebUserGestureToken.cpp",
     "WebViewBase.cpp",
     "WebViewBase.h",
+    "WebViewImpl.cpp",
+    "WebViewImpl.h",
   ]
 
   jumbo_excluded_sources = [

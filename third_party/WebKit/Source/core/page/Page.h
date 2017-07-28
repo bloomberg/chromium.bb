@@ -166,7 +166,10 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   void SetOpenedByDOM();
 
   PageAnimator& Animator() { return *animator_; }
-  ChromeClient& GetChromeClient() const { return *chrome_client_; }
+  ChromeClient& GetChromeClient() const {
+    DCHECK(chrome_client_) << "No chrome client";
+    return *chrome_client_;
+  }
   AutoscrollController& GetAutoscrollController() const {
     return *autoscroll_controller_;
   }
