@@ -4,7 +4,10 @@
 
 #include "chrome/browser/gpu/gl_string_manager.h"
 
+#include <memory>
+
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
@@ -21,8 +24,8 @@ void GpuProfileCache::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-GpuProfileCache* GpuProfileCache::Create() {
-  return new GLStringManager();
+std::unique_ptr<GpuProfileCache> GpuProfileCache::Create() {
+  return base::MakeUnique<GLStringManager>();
 }
 
 GLStringManager::GLStringManager() {

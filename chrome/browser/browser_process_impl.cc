@@ -662,8 +662,8 @@ IconManager* BrowserProcessImpl::icon_manager() {
 
 GpuProfileCache* BrowserProcessImpl::gpu_profile_cache() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!gpu_profile_cache_.get())
-    gpu_profile_cache_.reset(GpuProfileCache::Create());
+  if (!gpu_profile_cache_)
+    gpu_profile_cache_ = GpuProfileCache::Create();
   return gpu_profile_cache_.get();
 }
 
