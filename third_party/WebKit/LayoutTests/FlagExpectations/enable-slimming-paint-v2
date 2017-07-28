@@ -1734,7 +1734,6 @@ Bug(none) paint/pagination/composited-paginated-inline.html [ Failure ]
 
 Bug(none) paint/invalidation/reflection-repaint-test.html [ Failure ]
 Bug(none) compositing/overflow/border-radius-outside-bounds-of-compositing-ancestor.html [ Failure ]
-Bug(none) fast/clip/css-clip-filter-order.html [ Failure ]
 Bug(none) fast/forms/validation-bubble-appearance-edge.html [ Failure ]
 Bug(none) fast/forms/validation-bubble-appearance-iframe.html [ Failure ]
 Bug(none) fast/forms/validation-bubble-appearance-rtl-ui.html [ Failure ]

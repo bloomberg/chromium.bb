@@ -460,10 +460,10 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     } else if (image_filter && !paint_layer_.EnclosingPaginationLayer()) {
       // Clipping in the presence of filters needs to happen in two phases.
       // It proceeds like this:
-      // 1. Apply clips inside the filter (including any clips on
-      //  paint_layer_), not including the dirty rect.
-      // 2. Paint the filter.
-      // 3. Apply clips outside the filter.
+      // 1. Apply overflow clip to normal-flow contents.
+      // 2. Paint layer contents into the filter.
+      // 3. Apply all inherited clips (including dirty rect) plus CSS clip
+      //    of the current layer to the filter output.
       //
       // It is critical to avoid clipping to the dirty rect or any clips
       // above the filter before applying the filter, because content which
@@ -472,16 +472,16 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       //
       // #1 is applied in the lines below.  #3 is applied in FilterPainter,
       // and computed just before construction of the FilterPainter.
-      paint_layer_.AppendSingleFragmentIgnoringPagination(
-          layer_fragments, &paint_layer_,
-          LayoutRect(LayoutRect::InfiniteIntRect()), cache_slot,
-          PaintLayer::kUseGeometryMapper, kIgnorePlatformOverlayScrollbarSize,
-          kRespectOverflowClip, nullptr,
-          local_painting_info.sub_pixel_accumulation);
-
-      layer_fragments[0].layer_bounds.MoveBy(offset_from_root);
-      layer_fragments[0].background_rect.MoveBy(offset_from_root);
-      layer_fragments[0].foreground_rect.MoveBy(offset_from_root);
+      LayoutRect foreground_clip(LayoutRect::InfiniteIntRect());
+      if (paint_layer_.GetLayoutObject().IsBox()) {
+        const LayoutBox& box = ToLayoutBox(paint_layer_.GetLayoutObject());
+        if (box.ShouldClipOverflow())
+          foreground_clip = box.OverflowClipRect(offset_from_root);
+      }
+      PaintLayerFragment& fragment = layer_fragments.emplace_back();
+      fragment.SetRects(
+          LayoutRect(offset_from_root, LayoutSize(paint_layer_.size())),
+          LayoutRect(LayoutRect::InfiniteIntRect()), foreground_clip);
     } else {
       paint_layer_for_fragments->CollectFragments(
           layer_fragments, local_painting_info.root_layer,

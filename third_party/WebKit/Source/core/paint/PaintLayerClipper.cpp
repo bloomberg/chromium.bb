@@ -291,13 +291,8 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
     background_rect.Intersect(paint_dirty_rect);
 
     foreground_rect = background_rect;
-
-    LayoutBoxModelObject& layout_object = layer_.GetLayoutObject();
-    if (layout_object.HasClip()) {
-      LayoutRect new_pos_clip = ToLayoutBox(layout_object).ClipRect(offset);
-      foreground_rect.Intersect(new_pos_clip);
-    }
     if (ShouldClipOverflow(context)) {
+      LayoutBoxModelObject& layout_object = layer_.GetLayoutObject();
       LayoutRect overflow_and_clip_rect =
           ToLayoutBox(layout_object)
               .OverflowClipRect(offset,
@@ -526,6 +521,13 @@ LayoutRect PaintLayerClipper::LocalVisualRect() const {
           // PaintLayer are in physical coordinates, so the overflow has to be
           // flipped.
           layer_bounds_with_visual_overflow);
+  // At this point layer_bounds_with_visual_overflow only includes the visual
+  // overflow induced by paint, prior to applying filters. This function is
+  // expected the return the final visual rect after filtering.
+  if (layer_.PaintsWithFilters()) {
+    layer_bounds_with_visual_overflow =
+        layer_.MapLayoutRectForFilter(layer_bounds_with_visual_overflow);
+  }
   return layer_bounds_with_visual_overflow;
 }
 
