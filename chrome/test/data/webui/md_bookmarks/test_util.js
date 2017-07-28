@@ -95,8 +95,10 @@ function normalizeSet(set) {
  * rewritten to command-clicks on Mac.
  * @param {HTMLElement} element
  * @param {Object=} config
+ * @param {string=} eventName
  */
-function customClick(element, config) {
+function customClick(element, config, eventName) {
+  eventName = eventName || 'click';
   var props = {
     bubbles: true,
     cancelable: true,
@@ -119,7 +121,7 @@ function customClick(element, config) {
 
   element.dispatchEvent(new MouseEvent('mousedown', props));
   element.dispatchEvent(new MouseEvent('mouseup', props));
-  element.dispatchEvent(new MouseEvent('click', props));
+  element.dispatchEvent(new MouseEvent(eventName, props));
   if (config && config.detail == 2)
     element.dispatchEvent(new MouseEvent('dblclick', props));
 }

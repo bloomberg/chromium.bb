@@ -420,6 +420,12 @@ suite('<bookmarks-item> CommandManager integration', function() {
     customClick(element, config);
   }
 
+  function simulateMiddleClick(element, config) {
+    config = config || {};
+    config.button = 1;
+    customClick(element, config, 'auxclick');
+  }
+
   test('double click opens folders in bookmark manager', function() {
     simulateDoubleClick(items[0]);
     assertEquals(store.data.selectedFolder, '11');
@@ -444,6 +450,30 @@ suite('<bookmarks-item> CommandManager integration', function() {
     simulateDoubleClick(items[2], {ctrlKey: true});
 
     assertOpenedTabs(['http://111/', 'http://13/']);
+  });
+
+  test('middle-click opens clicked item in new tab', function() {
+    // Select multiple items.
+    customClick(items[1]);
+    customClick(items[2], {shiftKey: true});
+
+    // Only the middle-clicked item is opened.
+    simulateMiddleClick(items[2]);
+    assertDeepEquals(['13'], normalizeSet(store.data.selection.items));
+    assertOpenedTabs(['http://13/']);
+    assertFalse(openedTabs[0].active);
+  });
+
+  test('middle-click does not open folders', function() {
+    simulateMiddleClick(items[0]);
+    assertDeepEquals(['11'], normalizeSet(store.data.selection.items));
+    assertOpenedTabs([]);
+  });
+
+  test('shift-middle click opens in foreground tab', function() {
+    simulateMiddleClick(items[1], {shiftKey: true});
+    assertOpenedTabs(['http://12/']);
+    assertTrue(openedTabs[0].active);
   });
 });
 
