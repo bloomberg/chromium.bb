@@ -99,8 +99,6 @@ void ResourceMultiBufferDataProvider::Start() {
   // so will disable the http cache, and possibly other proxies
   // along the way. See crbug/504194 and crbug/689989 for more information.
 
-  url_data_->frame()->SetReferrerForRequest(request, blink::WebURL());
-
   // Disable compression, compression for audio/video doesn't make sense...
   request.SetHTTPHeaderField(
       WebString::FromUTF8(net::HttpRequestHeaders::kAcceptEncoding),
