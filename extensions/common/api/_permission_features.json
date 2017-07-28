@@ -164,6 +164,11 @@
     "extension_types": ["platform_app"],
     "platforms": ["chromeos"]
   },
+  "declarativeNetRequest": {
+    "channel": "trunk",
+    "extension_types": ["extension"],
+    "min_manifest_version": 2
+  },
   "declarativeWebRequest": {
       "channel": "beta",
       "extension_types": ["extension", "legacy_packaged_app"]

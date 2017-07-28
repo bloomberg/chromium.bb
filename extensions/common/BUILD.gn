@@ -58,6 +58,13 @@ if (enable_extensions) {
       "api/declarative/declarative_manifest_data.h",
       "api/declarative/declarative_manifest_handler.cc",
       "api/declarative/declarative_manifest_handler.h",
+      "api/declarative_net_request/constants.h",
+      "api/declarative_net_request/dnr_manifest_data.cc",
+      "api/declarative_net_request/dnr_manifest_data.h",
+      "api/declarative_net_request/dnr_manifest_handler.cc",
+      "api/declarative_net_request/dnr_manifest_handler.h",
+      "api/declarative_net_request/utils.cc",
+      "api/declarative_net_request/utils.h",
       "api/messaging/message.h",
       "api/messaging/port_id.cc",
       "api/messaging/port_id.h",
@@ -328,6 +335,7 @@ if (enable_extensions) {
     testonly = true
     sources = [
       "api/declarative/declarative_manifest_unittest.cc",
+      "api/declarative_net_request/dnr_manifest_unittest.cc",
       "api/printer_provider/usb_printer_manifest_unittest.cc",
       "api/sockets/sockets_manifest_permission_unittest.cc",
       "csp_validator_unittest.cc",

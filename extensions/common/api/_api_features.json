@@ -118,6 +118,10 @@
   "clipboard.setImageData": {
     "dependencies": ["permission:clipboardWrite"]
   },
+  "declarativeNetRequest": {
+    "dependencies": ["permission:declarativeNetRequest"],
+    "contexts": ["blessed_extension"]
+  },
   "declarativeWebRequest": {
     "dependencies": ["permission:declarativeWebRequest"],
     "contexts": ["blessed_extension"]
