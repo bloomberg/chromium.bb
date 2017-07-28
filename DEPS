@@ -1067,6 +1067,16 @@ hooks_os = {
       ],
     },
     {
+      'name': 'desugar',
+      'pattern': '.',
+      'action': ['python',
+                 'src/build/android/update_deps/update_third_party_deps.py',
+                 'download',
+                 '-b', 'chromium-android-tools/bazel/desugar',
+                 '-l', 'third_party/bazel/desugar'
+      ],
+    },
+    {
       'name': 'apk-patch-size-estimator',
       'pattern': '.',
       'action': ['python',
