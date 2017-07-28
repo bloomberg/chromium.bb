@@ -230,8 +230,7 @@ TEST_F(PasswordStoreWinTest, ReportIE7Import) {
       password_manager::metrics_util::IE7_RESULTS_PRESENT, 1);
 }
 
-// Hangs flakily, http://crbug.com/71385.
-TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
+TEST_F(PasswordStoreWinTest, ConvertIE7Login) {
   IE7PasswordInfo password_info;
   ASSERT_TRUE(CreateIE7PasswordInfo(L"http://example.com/origin",
                                     base::Time::FromDoubleT(1),
@@ -256,13 +255,12 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
       L"submit_element",
       L"username_element",
       L"password_element",
-      L"",
-      L"",
+      nullptr,
+      nullptr,
       true,
       1,
   };
-  PasswordStore::FormDigest form(
-      *CreatePasswordFormFromDataForTesting(form_data));
+  PasswordStore::FormDigest form(*FillPasswordFormWithData(form_data));
 
   // The returned form will not have 'action' or '*_element' fields set. This
   // is because credentials imported from IE don't have this information.
@@ -270,18 +268,17 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
       PasswordForm::SCHEME_HTML,
       "http://example.com/",
       "http://example.com/origin",
-      "",
-      L"",
-      L"",
-      L"",
+      nullptr,
+      nullptr,
+      nullptr,
+      nullptr,
       L"abcdefgh",
       L"abcdefghijkl",
       true,
       1,
   };
   std::vector<std::unique_ptr<PasswordForm>> expected_forms;
-  expected_forms.push_back(
-      CreatePasswordFormFromDataForTesting(expected_form_data));
+  expected_forms.push_back(PasswordFormFromData(expected_form_data));
 
   // The IE7 password should be returned.
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(
@@ -303,13 +300,12 @@ TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
       L"submit_element",
       L"username_element",
       L"password_element",
-      L"",
-      L"",
+      nullptr,
+      nullptr,
       true,
       1,
   };
-  PasswordStore::FormDigest form(
-      *CreatePasswordFormFromDataForTesting(form_data));
+  PasswordStore::FormDigest form(*FillPasswordFormWithData(form_data));
 
   MockPasswordStoreConsumer consumer;
   store_->GetLogins(form, &consumer);
@@ -325,8 +321,7 @@ TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
   content::RunAllBlockingPoolTasksUntilIdle();
 }
 
-// Hangs flakily, see http://crbug.com/43836.
-TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
+TEST_F(PasswordStoreWinTest, MultipleWDSQueriesOnDifferentThreads) {
   IE7PasswordInfo password_info;
   ASSERT_TRUE(CreateIE7PasswordInfo(L"http://example.com/origin",
                                     base::Time::FromDoubleT(1),
@@ -346,30 +341,30 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
       L"submit_element",
       L"username_element",
       L"password_element",
-      L"",
-      L"",
+      nullptr,
+      nullptr,
       true,
       1,
   };
-  PasswordStore::FormDigest form(
-      *CreatePasswordFormFromDataForTesting(form_data));
+  PasswordStore::FormDigest form(*FillPasswordFormWithData(form_data));
 
+  // The returned form will not have 'action' or '*_element' fields set. This
+  // is because credentials imported from IE don't have this information.
   PasswordFormData expected_form_data = {
       PasswordForm::SCHEME_HTML,
       "http://example.com/",
       "http://example.com/origin",
-      "http://example.com/action",
-      L"submit_element",
-      L"username_element",
-      L"password_element",
+      nullptr,
+      nullptr,
+      nullptr,
+      nullptr,
       L"abcdefgh",
       L"abcdefghijkl",
       true,
       1,
   };
   std::vector<std::unique_ptr<PasswordForm>> expected_forms;
-  expected_forms.push_back(
-      CreatePasswordFormFromDataForTesting(expected_form_data));
+  expected_forms.push_back(PasswordFormFromData(expected_form_data));
 
   // The IE7 password should be returned.
   EXPECT_CALL(password_consumer,
@@ -397,13 +392,12 @@ TEST_F(PasswordStoreWinTest, EmptyLogins) {
       L"submit_element",
       L"username_element",
       L"password_element",
-      L"",
-      L"",
+      nullptr,
+      nullptr,
       true,
       1,
   };
-  PasswordStore::FormDigest form(
-      *CreatePasswordFormFromDataForTesting(form_data));
+  PasswordStore::FormDigest form(*FillPasswordFormWithData(form_data));
 
   MockPasswordStoreConsumer consumer;
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));

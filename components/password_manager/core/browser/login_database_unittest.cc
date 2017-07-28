@@ -794,34 +794,39 @@ TEST_F(LoginDatabaseTest,
        GetLoginsForSameOrganizationName_OnlyWebHTTPFormsAreConsidered) {
   static constexpr const struct {
     const PasswordFormData form_data;
+    bool use_federated_login;
     const char* other_queried_signon_realm;
     bool expected_matches_itself;
     bool expected_matches_other_realm;
   } kTestCases[] = {
       {{PasswordForm::SCHEME_HTML, "https://example.com/",
         "https://example.com/origin", "", L"", L"", L"", L"u", L"p", false, 1},
+       false,
        nullptr,
        true,
        true},
       {{PasswordForm::SCHEME_BASIC, "http://example.com/realm",
         "http://example.com/", "", L"", L"", L"", L"u", L"p", false, 1},
+       false,
        nullptr,
        false,
        false},
       {{PasswordForm::SCHEME_OTHER, "ftp://example.com/realm",
         "ftp://example.com/", "", L"", L"", L"", L"u", L"p", false, 1},
+       false,
        "http://example.com/realm",
        false,
        false},
       {{PasswordForm::SCHEME_HTML,
         "federation://example.com/accounts.google.com",
-        "https://example.com/orgin", "", L"", L"", L"", L"u",
-        kTestingFederatedLoginMarker, false, 1},
+        "https://example.com/orgin", "", L"", L"", L"", L"u", L"", false, 1},
+       true,
        "http://example.com/",
        false,
        false},
       {{PasswordForm::SCHEME_HTML, "android://hash@example.com/",
         "android://hash@example.com/", "", L"", L"", L"", L"u", L"p", false, 1},
+       false,
        "http://example.com/",
        false,
        false},
@@ -830,8 +835,8 @@ TEST_F(LoginDatabaseTest,
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(test_case.form_data.signon_realm);
 
-    std::unique_ptr<PasswordForm> form =
-        CreatePasswordFormFromDataForTesting(test_case.form_data);
+    std::unique_ptr<PasswordForm> form = FillPasswordFormWithData(
+        test_case.form_data, test_case.use_federated_login);
     ASSERT_EQ(AddChangeForForm(*form), db().AddLogin(*form));
 
     std::vector<std::unique_ptr<PasswordForm>> same_organization_forms;
@@ -918,7 +923,7 @@ TEST_F(LoginDatabaseTest, GetLoginsForSameOrganizationName_DetailsOfMatching) {
     SCOPED_TRACE(test_case.saved_signon_realm);
     SCOPED_TRACE(test_case.queried_signon_realm);
 
-    std::unique_ptr<PasswordForm> form = CreatePasswordFormFromDataForTesting(
+    std::unique_ptr<PasswordForm> form = FillPasswordFormWithData(
         {PasswordForm::SCHEME_HTML, test_case.saved_signon_realm,
          test_case.saved_signon_realm, "", L"", L"", L"", L"u", L"p", true, 1});
     std::vector<std::unique_ptr<PasswordForm>> result;

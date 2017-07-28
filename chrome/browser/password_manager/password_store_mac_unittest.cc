@@ -278,8 +278,7 @@ TEST_P(PasswordStoreMacTest, OperationsOnABadDatabaseSilentlyFail) {
       L"12345",
       true,
       1};
-  std::unique_ptr<PasswordForm> form =
-      CreatePasswordFormFromDataForTesting(www_form_data);
+  std::unique_ptr<PasswordForm> form = FillPasswordFormWithData(www_form_data);
   std::unique_ptr<PasswordForm> blacklisted_form(new PasswordForm(*form));
   blacklisted_form->signon_realm = "http://foo.example.com";
   blacklisted_form->origin = GURL("http://foo.example.com/origin");

@@ -746,7 +746,7 @@ class PasswordSyncableServiceAndroidAutofillTest : public testing::Test {
   }
 
   static autofill::PasswordForm FormWithCorrectTag(PasswordFormData data) {
-    autofill::PasswordForm form = *CreatePasswordFormFromDataForTesting(data);
+    autofill::PasswordForm form = *FillPasswordFormWithData(data);
     form.signon_realm = kAndroidCorrectRealm;
     form.origin = GURL(kAndroidCorrectRealm);
     form.date_synced = PasswordSyncableServiceWrapper::time();
@@ -755,7 +755,7 @@ class PasswordSyncableServiceAndroidAutofillTest : public testing::Test {
 
   static autofill::PasswordForm FormWithAndroidAutofillTag(
       PasswordFormData data) {
-    autofill::PasswordForm form = *CreatePasswordFormFromDataForTesting(data);
+    autofill::PasswordForm form = *FillPasswordFormWithData(data);
     form.signon_realm = kAndroidAutofillRealm;
     form.origin = GURL(kAndroidAutofillRealm);
     form.date_synced = PasswordSyncableServiceWrapper::time();
@@ -777,7 +777,7 @@ class PasswordSyncableServiceAndroidAutofillTest : public testing::Test {
     testing::Message message;
     message << prefix;
     if (data)
-      message << *CreatePasswordFormFromDataForTesting(*data);
+      message << *FillPasswordFormWithData(*data);
     else
       message << "NULL";
     return message;
@@ -807,19 +807,17 @@ TEST_F(PasswordSyncableServiceAndroidAutofillTest, FourWayMerge) {
       expected_sync_updates.push_back(FormWithCorrectTag(*latest_data));
     if (latest_data != &data[1])
       expected_sync_updates.push_back(FormWithAndroidAutofillTag(*latest_data));
-    autofill::PasswordForm local_correct =
-        *CreatePasswordFormFromDataForTesting(data[2]);
-    autofill::PasswordForm local_incorrect =
-        *CreatePasswordFormFromDataForTesting(data[3]);
+    autofill::PasswordForm local_correct = *FillPasswordFormWithData(data[2]);
+    autofill::PasswordForm local_incorrect = *FillPasswordFormWithData(data[3]);
     syncer::SyncData sync_correct =
-        SyncDataFromPassword(*CreatePasswordFormFromDataForTesting(data[0]));
+        SyncDataFromPassword(*FillPasswordFormWithData(data[0]));
     syncer::SyncData sync_incorrect =
-        SyncDataFromPassword(*CreatePasswordFormFromDataForTesting(data[1]));
+        SyncDataFromPassword(*FillPasswordFormWithData(data[1]));
 
-    SCOPED_TRACE(*CreatePasswordFormFromDataForTesting(data[0]));
-    SCOPED_TRACE(*CreatePasswordFormFromDataForTesting(data[1]));
-    SCOPED_TRACE(*CreatePasswordFormFromDataForTesting(data[2]));
-    SCOPED_TRACE(*CreatePasswordFormFromDataForTesting(data[3]));
+    SCOPED_TRACE(*FillPasswordFormWithData(data[0]));
+    SCOPED_TRACE(*FillPasswordFormWithData(data[1]));
+    SCOPED_TRACE(*FillPasswordFormWithData(data[2]));
+    SCOPED_TRACE(*FillPasswordFormWithData(data[3]));
 
     for (bool correct_sync_first : {true, false}) {
       auto wrapper = base::MakeUnique<PasswordSyncableServiceWrapper>();
@@ -930,15 +928,14 @@ TEST_F(PasswordSyncableServiceAndroidAutofillTest, ThreeWayMerge) {
       std::vector<autofill::PasswordForm> stored_forms;
       for (int i = 2; i < 4; ++i) {
         if (data[i])
-          stored_forms.push_back(
-              *CreatePasswordFormFromDataForTesting(*data[i]));
+          stored_forms.push_back(*FillPasswordFormWithData(*data[i]));
       }
 
       SyncDataList sync_list;
       for (int i = 0; i < 2; ++i) {
         if (data[i]) {
-          sync_list.push_back(SyncDataFromPassword(
-              *CreatePasswordFormFromDataForTesting(*data[i])));
+          sync_list.push_back(
+              SyncDataFromPassword(*FillPasswordFormWithData(*data[i])));
         }
       }
 
@@ -1026,8 +1023,7 @@ TEST_F(PasswordSyncableServiceAndroidAutofillTest, TwoWayServerAndLocalMerge) {
           base::MakeUnique<testing::StrictMock<MockSyncChangeProcessor>>();
 
       EXPECT_CALL(*wrapper->password_store(), FillAutofillableLogins(_))
-          .WillOnce(
-              AppendForm(*CreatePasswordFormFromDataForTesting(local_data)));
+          .WillOnce(AppendForm(*FillPasswordFormWithData(local_data)));
       EXPECT_CALL(*wrapper->password_store(), FillBlacklistLogins(_))
           .WillOnce(Return(true));
       if (!local_data_correct || latest_data == &sync_data) {
@@ -1089,8 +1085,8 @@ TEST_F(PasswordSyncableServiceAndroidAutofillTest, TwoWayServerAndLocalMerge) {
                                             expected_sync_updates[1].second))));
       }
 
-      SyncDataList sync_list = {SyncDataFromPassword(
-          *CreatePasswordFormFromDataForTesting(sync_data))};
+      SyncDataList sync_list = {
+          SyncDataFromPassword(*FillPasswordFormWithData(sync_data))};
       wrapper->service()->MergeDataAndStartSyncing(
           syncer::PASSWORDS, sync_list, std::move(processor),
           std::unique_ptr<syncer::SyncErrorFactory>());
@@ -1122,7 +1118,7 @@ TEST_F(PasswordSyncableServiceAndroidAutofillTest, OneEntryOnly) {
 
     if (entry_is_local) {
       EXPECT_CALL(*wrapper->password_store(), FillAutofillableLogins(_))
-          .WillOnce(AppendForm(*CreatePasswordFormFromDataForTesting(data)));
+          .WillOnce(AppendForm(*FillPasswordFormWithData(data)));
     } else {
       EXPECT_CALL(*wrapper->password_store(), FillAutofillableLogins(_))
           .WillOnce(Return(true));
@@ -1150,7 +1146,7 @@ TEST_F(PasswordSyncableServiceAndroidAutofillTest, OneEntryOnly) {
     SyncDataList sync_list;
     if (!entry_is_local) {
       sync_list.push_back(
-          SyncDataFromPassword(*CreatePasswordFormFromDataForTesting(data)));
+          SyncDataFromPassword(*FillPasswordFormWithData(data)));
     }
     wrapper->service()->MergeDataAndStartSyncing(
         syncer::PASSWORDS, sync_list, std::move(processor),

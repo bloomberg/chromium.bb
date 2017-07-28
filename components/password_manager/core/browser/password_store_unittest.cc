@@ -177,7 +177,7 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   // Build the forms vector and add the forms to the store.
   std::vector<std::unique_ptr<PasswordForm>> all_forms;
   for (size_t i = 0; i < arraysize(form_data); ++i) {
-    all_forms.push_back(CreatePasswordFormFromDataForTesting(form_data[i]));
+    all_forms.push_back(FillPasswordFormWithData(form_data[i]));
     store->AddLogin(*all_forms.back());
   }
   base::RunLoop().RunUntilIdle();
@@ -271,7 +271,7 @@ TEST_F(PasswordStoreTest, GetLoginImpl) {
   // For each attribute in the primary key, create one form that mismatches on
   // that attribute.
   std::unique_ptr<PasswordForm> test_form(
-      CreatePasswordFormFromDataForTesting(kTestCredential));
+      FillPasswordFormWithData(kTestCredential));
   std::unique_ptr<PasswordForm> mismatching_form_1(
       new PasswordForm(*test_form));
   mismatching_form_1->signon_realm = kTestPSLMatchingWebRealm;
@@ -333,7 +333,7 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::unique_ptr<PasswordForm> old_form(
-      CreatePasswordFormFromDataForTesting(kTestCredentials[0]));
+      FillPasswordFormWithData(kTestCredentials[0]));
   store->AddLogin(*old_form);
   base::RunLoop().RunUntilIdle();
 
@@ -341,7 +341,7 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
   store->AddObserver(&mock_observer);
 
   std::unique_ptr<PasswordForm> new_form(
-      CreatePasswordFormFromDataForTesting(kTestCredentials[1]));
+      FillPasswordFormWithData(kTestCredentials[1]));
   EXPECT_CALL(mock_observer, OnLoginsChanged(testing::SizeIs(2u)));
   PasswordForm old_primary_key;
   old_primary_key.signon_realm = old_form->signon_realm;
@@ -387,7 +387,7 @@ TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::unique_ptr<PasswordForm> test_form(
-      CreatePasswordFormFromDataForTesting(kTestCredential));
+      FillPasswordFormWithData(kTestCredential));
   store->AddLogin(*test_form);
   base::RunLoop().RunUntilIdle();
 
@@ -445,8 +445,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
   for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
-    all_credentials.push_back(
-        CreatePasswordFormFromDataForTesting(kTestCredentials[i]));
+    all_credentials.push_back(FillPasswordFormWithData(kTestCredentials[i]));
     store->AddLogin(*all_credentials.back());
     base::RunLoop().RunUntilIdle();
   }
@@ -483,62 +482,61 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
 // and PSL matching credentials, and the credentials for these two Android
 // applications, but not for the unaffiliated Android application.
 TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
-  /* clang-format off */
-  static const PasswordFormData kTestCredentials[] = {
+  static constexpr const struct {
+    PasswordFormData form_data;
+    bool use_federated_login;
+  } kTestCredentials[] = {
       // Credential that is an exact match of the observed form.
-      {PasswordForm::SCHEME_HTML,
-       kTestWebRealm1,
-       kTestWebOrigin1,
-       "", L"", L"",  L"",
-       L"username_value_1",
-       L"", true, 1},
+      {
+          {PasswordForm::SCHEME_HTML, kTestWebRealm1, kTestWebOrigin1, "", L"",
+           L"", L"", L"username_value_1", L"", true, 1},
+          false,
+      },
       // Credential that is a PSL match of the observed form.
-      {PasswordForm::SCHEME_HTML,
-       kTestPSLMatchingWebRealm,
-       kTestPSLMatchingWebOrigin,
-       "", L"", L"",  L"",
-       L"username_value_2",
-       L"", true, 1},
+      {
+          {PasswordForm::SCHEME_HTML, kTestPSLMatchingWebRealm,
+           kTestPSLMatchingWebOrigin, "", L"", L"", L"", L"username_value_2",
+           L"", true, 1},
+          false,
+      },
       // Credential for an Android application affiliated with the realm of the
       // observed from.
-      {PasswordForm::SCHEME_HTML,
-       kTestAndroidRealm1,
-       "", "", L"", L"", L"",
-       L"username_value_3",
-       L"", true, 1},
+      {
+          {PasswordForm::SCHEME_HTML, kTestAndroidRealm1, "", "", L"", L"", L"",
+           L"username_value_3", L"", true, 1},
+          false,
+      },
       // Second credential for the same Android application.
-      {PasswordForm::SCHEME_HTML,
-       kTestAndroidRealm1,
-       "", "", L"", L"", L"",
-       L"username_value_3b",
-       L"", true, 1},
+      {
+          {PasswordForm::SCHEME_HTML, kTestAndroidRealm1, "", "", L"", L"", L"",
+           L"username_value_3b", L"", true, 1},
+          false,
+      },
       // Third credential for the same application which is username-only.
-      {PasswordForm::SCHEME_USERNAME_ONLY,
-       kTestAndroidRealm1,
-       "", "", L"", L"", L"",
-       L"username_value_3c",
-       L"", true, 1},
+      {
+          {PasswordForm::SCHEME_USERNAME_ONLY, kTestAndroidRealm1, "", "", L"",
+           L"", L"", L"username_value_3c", L"", true, 1},
+          false,
+      },
       // Credential for another Android application affiliated with the realm
       // of the observed from.
-      {PasswordForm::SCHEME_HTML,
-       kTestAndroidRealm2,
-       "", "", L"", L"", L"",
-       L"username_value_4",
-       L"", true, 1},
+      {
+          {PasswordForm::SCHEME_HTML, kTestAndroidRealm2, "", "", L"", L"", L"",
+           L"username_value_4", L"", true, 1},
+          false,
+      },
       // Federated credential for this second Android application.
-      {PasswordForm::SCHEME_HTML,
-       kTestAndroidRealm2,
-       "", "", L"", L"", L"",
-       L"username_value_4b",
-       kTestingFederatedLoginMarker, true, 1},
+      {
+          {PasswordForm::SCHEME_HTML, kTestAndroidRealm2, "", "", L"", L"", L"",
+           L"username_value_4b", L"", true, 1},
+          true,
+      },
       // Credential for an unrelated Android application.
-      {PasswordForm::SCHEME_HTML,
-       kTestUnrelatedAndroidRealm,
-       "", "", L"", L"", L"",
-       L"username_value_5",
-       L"", true, 1}
-       };
-  /* clang-format on */
+      {
+          {PasswordForm::SCHEME_HTML, kTestUnrelatedAndroidRealm, "", "", L"",
+           L"", L"", L"username_value_5", L"", true, 1},
+          false,
+      }};
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       base::SequencedTaskRunnerHandle::Get(),
@@ -550,9 +548,9 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
   store->SetAffiliatedMatchHelper(base::WrapUnique(mock_helper));
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
-  for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
+  for (const auto& i : kTestCredentials) {
     all_credentials.push_back(
-        CreatePasswordFormFromDataForTesting(kTestCredentials[i]));
+        FillPasswordFormWithData(i.form_data, i.use_federated_login));
     store->AddLogin(*all_credentials.back());
     base::RunLoop().RunUntilIdle();
   }
@@ -736,7 +734,7 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
       std::vector<std::unique_ptr<PasswordForm>> all_credentials;
       for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
         all_credentials.push_back(
-            CreatePasswordFormFromDataForTesting(kTestCredentials[i]));
+            FillPasswordFormWithData(kTestCredentials[i]));
         all_credentials.back()->date_synced =
             all_credentials.back()->date_created;
         store->AddLogin(*all_credentials.back());
@@ -833,8 +831,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliationAndBrandingInformation) {
 
     std::vector<std::unique_ptr<PasswordForm>> all_credentials;
     for (const auto& test_credential : kTestCredentials) {
-      all_credentials.push_back(
-          CreatePasswordFormFromDataForTesting(test_credential));
+      all_credentials.push_back(FillPasswordFormWithData(test_credential));
       all_credentials.back()->blacklisted_by_user = blacklisted;
       store->AddLogin(*all_credentials.back());
       base::RunLoop().RunUntilIdle();
@@ -922,12 +919,12 @@ TEST_F(PasswordStoreTest, GetLoginsForSameOrganizationName) {
 
   std::vector<std::unique_ptr<PasswordForm>> expected_results;
   for (const auto& form_data : kSameOrganizationCredentials) {
-    expected_results.push_back(CreatePasswordFormFromDataForTesting(form_data));
+    expected_results.push_back(FillPasswordFormWithData(form_data));
     store->AddLogin(*expected_results.back());
   }
 
   for (const auto& form_data : kNotSameOrganizationCredentials) {
-    store->AddLogin(*CreatePasswordFormFromDataForTesting(form_data));
+    store->AddLogin(*FillPasswordFormWithData(form_data));
   }
 
   const std::string observed_form_realm = kTestWebRealm1;
@@ -957,7 +954,7 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   for (const auto& test_credentials : kTestCredentials) {
-    auto credentials = CreatePasswordFormFromDataForTesting(test_credentials);
+    auto credentials = FillPasswordFormWithData(test_credentials);
     store->AddLogin(*credentials);
     base::RunLoop().RunUntilIdle();
   }

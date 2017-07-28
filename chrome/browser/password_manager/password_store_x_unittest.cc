@@ -289,7 +289,7 @@ void InitExpectedForms(bool autofillable,
         autofillable ? L"password_value" : nullptr,
         autofillable,
         static_cast<double>(i + 1)};
-    forms->push_back(CreatePasswordFormFromDataForTesting(data));
+    forms->push_back(FillPasswordFormWithData(data));
   }
 }
 
@@ -426,8 +426,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
       L"password_value",
       true,
       1};
-  std::unique_ptr<PasswordForm> form =
-      CreatePasswordFormFromDataForTesting(form_data);
+  std::unique_ptr<PasswordForm> form = FillPasswordFormWithData(form_data);
 
   password_manager::MockPasswordStoreObserver observer;
   store->AddObserver(&observer);
