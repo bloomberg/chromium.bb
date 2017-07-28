@@ -18,9 +18,9 @@ config("libphonenumber_config") {
     "dist/cpp/src",
     "$root_gen_dir/third_party/libphonenumber",
   ]
-  defines = [ 
+  defines = [
     "I18N_PHONENUMBERS_USE_ICU_REGEXP=1",
-    "I18N_PHONENUMBERS_USE_ALTERNATE_FORMATS=1"
+    "I18N_PHONENUMBERS_USE_ALTERNATE_FORMATS=1",
   ]
   if (!is_android) {
     defines += [ "I18N_PHONENUMBERS_NO_THREAD_SAFETY=1" ]

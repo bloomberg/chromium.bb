@@ -54,8 +54,8 @@ source_set("normalizing_input_filter") {
 
   deps = [
     "//remoting/base",
-    "//third_party/webrtc/rtc_base:rtc_base_approved",
     "//third_party/webrtc/modules/desktop_capture:primitives",
+    "//third_party/webrtc/rtc_base:rtc_base_approved",
     "//ui/events:dom_keycode_converter",
   ]
 }

@@ -9,9 +9,8 @@ android_library("url_formatter_java") {
     "//base:base_java",
   ]
 
-  java_files = [
-    "java/src/org/chromium/components/url_formatter/UrlFormatter.java",
-  ]
+  java_files =
+      [ "java/src/org/chromium/components/url_formatter/UrlFormatter.java" ]
 }
 
 generate_jni("jni_headers") {

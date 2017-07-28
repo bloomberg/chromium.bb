@@ -463,8 +463,8 @@ test("test_opus_api") {
 
 test("test_opus_encode") {
   sources = [
-    "src/tests/test_opus_encode.c",
     "src/tests/opus_encode_regressions.c",
+    "src/tests/test_opus_encode.c",
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]

@@ -22,6 +22,8 @@ config("libxslt_warnings") {
 
 static_library("libxslt") {
   sources = [
+    "linux/config.h",
+    "mac/config.h",
     "src/libxslt/attributes.c",
     "src/libxslt/attributes.h",
     "src/libxslt/attrvt.c",
@@ -67,8 +69,6 @@ static_library("libxslt") {
     "src/libxslt/xsltutils.c",
     "src/libxslt/xsltutils.h",
     "src/libxslt/xsltwin32config.h",
-    "linux/config.h",
-    "mac/config.h",
     "win32/config.h",
   ]
 

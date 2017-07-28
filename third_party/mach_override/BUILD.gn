@@ -42,7 +42,7 @@ static_library("libudis86") {
     "//build/config/compiler:chromium_code",
 
     # For UD_ASSERT(!"message");
-   "//build/config/clang:extra_warnings",
+    "//build/config/clang:extra_warnings",
   ]
   configs += [
     "//build/config/compiler:no_chromium_code",

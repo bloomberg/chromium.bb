@@ -14,14 +14,14 @@ common_data = [
 group("motopho_latency_test") {
   testonly = true
   data = common_data + [
-    "./latency/__init__.py",
-    "./latency/android_webvr_latency_test.py",
-    "./latency/latency_test_config.py",
-    "./latency/motopho_thread.py",
-    "./latency/robot_arm.py",
-    "./latency/run_latency_test.py",
-    "./latency/webvr_latency_test.py",
-  ]
+           "./latency/__init__.py",
+           "./latency/android_webvr_latency_test.py",
+           "./latency/latency_test_config.py",
+           "./latency/motopho_thread.py",
+           "./latency/robot_arm.py",
+           "./latency/run_latency_test.py",
+           "./latency/webvr_latency_test.py",
+         ]
   data_deps = [
     "//chrome/android:chrome_public_apk",
   ]
@@ -30,12 +30,12 @@ group("motopho_latency_test") {
 group("vrcore_fps_test") {
   testonly = true
   data = common_data + [
-    "./vrcore_fps/__init__.py",
-    "./vrcore_fps/run_vrcore_fps_test.py",
-    "./vrcore_fps/vrcore_fps_test.py",
-    "./vrcore_fps/vrcore_fps_test_config.py",
-    "./vrcore_fps/vr_perf_summary.py",
-  ]
+           "./vrcore_fps/__init__.py",
+           "./vrcore_fps/run_vrcore_fps_test.py",
+           "./vrcore_fps/vrcore_fps_test.py",
+           "./vrcore_fps/vrcore_fps_test_config.py",
+           "./vrcore_fps/vr_perf_summary.py",
+         ]
   data_deps = [
     "//chrome/android:chrome_public_apk",
   ]
