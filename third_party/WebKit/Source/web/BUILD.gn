@@ -71,12 +71,8 @@ test("webkit_unit_tests") {
     # FIXME: Move the tests from web/tests/ to appropriate places.
     # crbug.com/353585
 
-    "tests/AccessibilityObjectModelTest.cpp",
-    "tests/HTMLImportSheetsTest.cpp",
     "tests/LayoutGeometryMapTest.cpp",
     "tests/RunAllTests.cpp",
-    "tests/ScrollMetricsTest.cpp",
-    "tests/SmoothScrollTest.cpp",
     "tests/SpinLockTest.cpp",
     "tests/VirtualTimeTest.cpp",
     "tests/WebFrameSerializerSanitizationTest.cpp",
