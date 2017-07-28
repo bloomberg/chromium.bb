@@ -31,7 +31,8 @@ OverlayCheck_Params::OverlayCheck_Params(
       format(candidate.format),
       display_rect(gfx::ToNearestRect(candidate.display_rect)),
       crop_rect(candidate.crop_rect),
-      plane_z_order(candidate.plane_z_order) {}
+      plane_z_order(candidate.plane_z_order),
+      is_overlay_candidate(candidate.overlay_handled) {}
 
 OverlayCheck_Params::OverlayCheck_Params(const OverlayCheck_Params& other) =
     default;
