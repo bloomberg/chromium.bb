@@ -414,9 +414,10 @@ class LegacyInputRouterImplTest : public testing::Test {
         InputHostMsg_SetTouchAction(0, touch_action));
   }
 
-  void OnSetWhiteListedTouchAction(cc::TouchAction white_listed_touch_action) {
-    input_router_->OnMessageReceived(
-        InputHostMsg_SetWhiteListedTouchAction(0, white_listed_touch_action));
+  void OnSetWhiteListedTouchAction(cc::TouchAction white_listed_touch_action,
+                                   uint32_t unique_touch_event_id) {
+    input_router_->OnMessageReceived(InputHostMsg_SetWhiteListedTouchAction(
+        0, white_listed_touch_action, unique_touch_event_id));
   }
 
   size_t GetSentMessageCountAndResetSink() {
@@ -2061,7 +2062,7 @@ TEST_F(LegacyInputRouterImplAsyncWheelEventEnabledTest, OverscrollDispatch) {
 TEST_F(LegacyInputRouterImplTest, OnSetWhiteListedTouchAction) {
   cc::TouchAction touch_action = cc::kTouchActionPanY;
   input_router_->OnMessageReceived(
-      InputHostMsg_SetWhiteListedTouchAction(0, touch_action));
+      InputHostMsg_SetWhiteListedTouchAction(0, touch_action, 0));
   cc::TouchAction white_listed_touch_action =
       client_->GetAndResetWhiteListedTouchAction();
   EXPECT_EQ(touch_action, white_listed_touch_action);

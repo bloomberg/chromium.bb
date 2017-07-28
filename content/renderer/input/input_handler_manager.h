@@ -113,7 +113,9 @@ class CONTENT_EXPORT InputHandlerManager {
       const ui::LatencyInfo& latency_info);
 
   // Called from the compositor's thread.
-  void SetWhiteListedTouchAction(int routing_id, cc::TouchAction touch_action);
+  void SetWhiteListedTouchAction(int routing_id,
+                                 cc::TouchAction touch_action,
+                                 uint32_t unique_touch_event_id);
 
  private:
   // Called from the compositor's thread.

@@ -284,8 +284,10 @@ void InputHandlerManager::DispatchNonBlockingEventToMainThread(
 
 void InputHandlerManager::SetWhiteListedTouchAction(
     int routing_id,
-    cc::TouchAction touch_action) {
-  client_->SetWhiteListedTouchAction(routing_id, touch_action);
+    cc::TouchAction touch_action,
+    uint32_t unique_touch_event_id) {
+  client_->SetWhiteListedTouchAction(routing_id, touch_action,
+                                     unique_touch_event_id);
 }
 
 }  // namespace content
