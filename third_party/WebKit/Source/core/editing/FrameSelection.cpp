@@ -968,7 +968,7 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   const VisibleSelection& selection = ComputeVisibleSelectionInDOMTree();
-  if (selection.GetSelectionType() == kNoSelection)
+  if (selection.IsNone())
     return;
 
   // FIXME: This code only handles scrolling the startContainer's layer, but
