@@ -3,28 +3,22 @@
 // found in the LICENSE file.
 
 cr.define('settings_people_page_change_picture', function() {
-  /**
-   * @constructor
-   * @implements {settings.ChangePictureBrowserProxy}
-   * @extends {TestBrowserProxy}
-   */
-  var TestChangePictureBrowserProxy = function() {
-    TestBrowserProxy.call(this, [
-      'initialize',
-      'selectDefaultImage',
-      'selectOldImage',
-      'selectProfileImage',
-      'photoTaken',
-      'chooseFile',
-      'requestSelectedImage',
-    ]);
-  };
-
-  TestChangePictureBrowserProxy.prototype = {
-    __proto__: TestBrowserProxy.prototype,
+  /** @implements {settings.ChangePictureBrowserProxy} */
+  class TestChangePictureBrowserProxy extends TestBrowserProxy {
+    constructor() {
+      super([
+        'initialize',
+        'selectDefaultImage',
+        'selectOldImage',
+        'selectProfileImage',
+        'photoTaken',
+        'chooseFile',
+        'requestSelectedImage',
+      ]);
+    }
 
     /** @override */
-    initialize: function() {
+    initialize() {
       cr.webUIListenerCallback('profile-image-changed',
                                'fake-profile-image-url',
                                false /* selected */);
@@ -58,46 +52,46 @@ cr.define('settings_people_page_change_picture', function() {
       });
 
       this.methodCalled('initialize');
-    },
+    }
 
     /** @override */
-    selectDefaultImage: function(imageUrl) {
+    selectDefaultImage(imageUrl) {
       cr.webUIListenerCallback('selected-image-changed', imageUrl);
       this.methodCalled('selectDefaultImage', [imageUrl]);
-    },
+    }
 
     /** @override */
-    selectOldImage: function() {
+    selectOldImage() {
       cr.webUIListenerCallback('old-image-changed', {
         url: 'fake-old-image.jpg',
         index: 1,
       });
       this.methodCalled('selectOldImage');
-    },
+    }
 
     /** @override */
-    selectProfileImage: function() {
+    selectProfileImage() {
       cr.webUIListenerCallback('profile-image-changed',
                                'fake-profile-image-url',
                                true /* selected */);
       this.methodCalled('selectProfileImage');
-    },
+    }
 
     /** @override */
-    photoTaken: function() {
+    photoTaken() {
       this.methodCalled('photoTaken');
-    },
+    }
 
     /** @override */
-    chooseFile: function() {
+    chooseFile() {
       this.methodCalled('chooseFile');
-    },
+    }
 
     /** @override */
-    requestSelectedImage: function() {
+    requestSelectedImage() {
       this.methodCalled('requestSelectedImage');
-    },
-  };
+    }
+  }
 
   function registerChangePictureTests() {
     suite('ChangePictureTests', function() {

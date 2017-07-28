@@ -3,90 +3,90 @@
 // found in the LICENSE file.
 
 cr.define('settings_about_page', function() {
-  /**
-   * @constructor
-   * @implements {settings.AboutPageBrowserProxy}
-   * @extends {TestBrowserProxy}
-   */
-  var TestAboutPageBrowserProxy = function() {
-    var methodNames = [
-      'pageReady',
-      'refreshUpdateStatus',
-      'openHelpPage',
-      'openFeedbackDialog',
-    ];
+  /** @implements {settings.AboutPageBrowserProxy} */
+  class TestAboutPageBrowserProxy extends TestBrowserProxy {
+    constructor() {
+      var methodNames = [
+        'pageReady',
+        'refreshUpdateStatus',
+        'openHelpPage',
+        'openFeedbackDialog',
+      ];
 
-    if (cr.isChromeOS) {
-      methodNames.push(
-        'getChannelInfo',
-        'getVersionInfo',
-        'getRegulatoryInfo',
-        'setChannel');
+      if (cr.isChromeOS) {
+        methodNames.push(
+          'getChannelInfo',
+          'getVersionInfo',
+          'getRegulatoryInfo',
+          'setChannel');
+      }
+
+      if (cr.isMac)
+        methodNames.push('promoteUpdater');
+
+      super(methodNames);
+
+      /** @private {!UpdateStatus} */
+      this.updateStatus_ = UpdateStatus.UPDATED;
+
+      if (cr.isChromeOS) {
+        /** @private {!VersionInfo} */
+        this.versionInfo_ = {
+          arcVersion: '',
+          osFirmware: '',
+          osVersion: '',
+        };
+
+        /** @private {!ChannelInfo} */
+        this.channelInfo_ = {
+          currentChannel: BrowserChannel.BETA,
+          targetChannel: BrowserChannel.BETA,
+          canChangeChannel: true,
+        };
+
+        /** @private {?RegulatoryInfo} */
+        this.regulatoryInfo_ = null;
+      }
     }
-
-    if (cr.isMac)
-      methodNames.push('promoteUpdater');
-
-    TestBrowserProxy.call(this, methodNames);
-
-    /** @private {!UpdateStatus} */
-    this.updateStatus_ = UpdateStatus.UPDATED;
-
-    if (cr.isChromeOS) {
-      /** @private {!VersionInfo} */
-      this.versionInfo_ = {
-        arcVersion: '',
-        osFirmware: '',
-        osVersion: '',
-      };
-
-      /** @private {!ChannelInfo} */
-      this.channelInfo_ = {
-        currentChannel: BrowserChannel.BETA,
-        targetChannel: BrowserChannel.BETA,
-        canChangeChannel: true,
-      };
-
-      /** @private {?RegulatoryInfo} */
-      this.regulatoryInfo_ = null;
-    }
-  };
-
-  TestAboutPageBrowserProxy.prototype = {
-    __proto__: TestBrowserProxy.prototype,
 
     /** @param {!UpdateStatus} updateStatus */
-    setUpdateStatus: function(updateStatus) {
+    setUpdateStatus(updateStatus) {
       this.updateStatus_ = updateStatus;
-    },
+    }
 
-    sendStatusNoInternet: function() {
+    sendStatusNoInternet() {
       cr.webUIListenerCallback('update-status-changed', {
         progress: 0,
         status: UpdateStatus.FAILED,
         message: 'offline',
         connectionTypes: 'no internet',
       });
-    },
+    }
 
     /** @override */
-    pageReady: function() { this.methodCalled('pageReady'); },
+    pageReady() {
+      this.methodCalled('pageReady');
+    }
 
     /** @override */
-    refreshUpdateStatus: function() {
+    refreshUpdateStatus() {
       cr.webUIListenerCallback('update-status-changed', {
         progress: 1,
         status: this.updateStatus_,
       });
       this.methodCalled('refreshUpdateStatus');
-    },
+    }
 
     /** @override */
-    openFeedbackDialog: function() { this.methodCalled('openFeedbackDialog'); },
+    openFeedbackDialog() {
+      this.methodCalled('openFeedbackDialog');
+    }
 
     /** @override */
-    openHelpPage: function() { this.methodCalled('openHelpPage'); },
-  };
+    openHelpPage() {
+      this.methodCalled('openHelpPage');
+    }
+  }
 
   if (cr.isMac) {
     /** @override */

@@ -34,60 +34,56 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'DISABLED_EasyUnlock', function() {
    * for allowing tests to know when a method was called, as well as
    * specifying mock responses.
    *
-   * @constructor
    * @implements {settings.EasyUnlockBrowserProxy}
-   * @extends {TestBrowserProxy}
    */
-  var TestEasyUnlockBrowserProxy = function() {
-    TestBrowserProxy.call(this, [
-      'getEnabledStatus',
-      'startTurnOnFlow',
-      'getTurnOffFlowStatus',
-      'startTurnOffFlow',
-      'cancelTurnOffFlow',
-    ]);
+  class TestEasyUnlockBrowserProxy extends TestBrowserProxy {
+    constructor() {
+      super([
+        'getEnabledStatus',
+        'startTurnOnFlow',
+        'getTurnOffFlowStatus',
+        'startTurnOffFlow',
+        'cancelTurnOffFlow',
+      ]);
 
-    /** @private {boolean} */
-    this.isEnabled_ = false;
-  };
-
-  TestEasyUnlockBrowserProxy.prototype = {
-    __proto__: TestBrowserProxy.prototype,
+      /** @private {boolean} */
+      this.isEnabled_ = false;
+    }
 
     /**
      * @param {boolean} easyUnlockEnabled
      */
-    setEnabledStatus: function(easyUnlockEnabled) {
+    setEnabledStatus(easyUnlockEnabled) {
       this.isEnabled_ = easyUnlockEnabled;
-    },
+    }
 
     /** @override */
-    getEnabledStatus: function() {
+    getEnabledStatus() {
       this.methodCalled('getEnabledStatus');
       return Promise.resolve(this.isEnabled_);
-    },
+    }
 
     /** @override */
-    startTurnOnFlow: function() {
+    startTurnOnFlow() {
       this.methodCalled('startTurnOnFlow');
-    },
+    }
 
     /** @override */
-    getTurnOffFlowStatus: function() {
+    getTurnOffFlowStatus() {
       this.methodCalled('getTurnOffFlowStatus');
       return Promise.resolve('idle');
-    },
+    }
 
     /** @override */
-    startTurnOffFlow: function() {
+    startTurnOffFlow() {
       this.methodCalled('startTurnOffFlow');
-    },
+    }
 
     /** @override */
-    cancelTurnOffFlow: function() {
+    cancelTurnOffFlow() {
       this.methodCalled('cancelTurnOffFlow');
-    },
-  };
+    }
+  }
 
   /** @type {?SettingsLockScreenElement} */
   var lockScreen = null;

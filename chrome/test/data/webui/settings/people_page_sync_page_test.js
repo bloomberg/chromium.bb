@@ -3,48 +3,42 @@
 // found in the LICENSE file.
 
 cr.define('settings_people_page_sync_page', function() {
-  /**
-   * @constructor
-   * @implements {settings.SyncBrowserProxy}
-   * @extends {TestBrowserProxy}
-   */
-  var TestSyncBrowserProxy = function() {
-    TestBrowserProxy.call(this, [
-      'didNavigateToSyncPage',
-      'didNavigateAwayFromSyncPage',
-      'setSyncDatatypes',
-      'setSyncEncryption',
-    ]);
+  /** @implements {settings.SyncBrowserProxy} */
+  class TestSyncBrowserProxy extends TestBrowserProxy {
+    constructor() {
+      super([
+        'didNavigateToSyncPage',
+        'didNavigateAwayFromSyncPage',
+        'setSyncDatatypes',
+        'setSyncEncryption',
+      ]);
 
-    /* @type {!settings.PageStatus} */
-    this.encryptionResponse = settings.PageStatus.CONFIGURE;
-  };
-
-  TestSyncBrowserProxy.prototype = {
-    __proto__: TestBrowserProxy.prototype,
+      /* @type {!settings.PageStatus} */
+      this.encryptionResponse = settings.PageStatus.CONFIGURE;
+    }
 
     /** @override */
-    didNavigateToSyncPage: function() {
+    didNavigateToSyncPage() {
       this.methodCalled('didNavigateToSyncPage');
-    },
+    }
 
     /** @override */
-    didNavigateAwayFromSyncPage: function() {
+    didNavigateAwayFromSyncPage() {
       this.methodCalled('didNavigateAwayFromSyncPage');
-    },
+    }
 
     /** @override */
-    setSyncDatatypes: function(syncPrefs) {
+    setSyncDatatypes(syncPrefs) {
       this.methodCalled('setSyncDatatypes', syncPrefs);
       return Promise.resolve(settings.PageStatus.CONFIGURE);
-    },
+    }
 
     /** @override */
-    setSyncEncryption: function(syncPrefs) {
+    setSyncEncryption(syncPrefs) {
       this.methodCalled('setSyncEncryption', syncPrefs);
       return Promise.resolve(this.encryptionResponse);
-    },
-  };
+    }
+  }
 
   function registerAdvancedSyncSettingsTests() {
     suite('AdvancedSyncSettingsTests', function() {

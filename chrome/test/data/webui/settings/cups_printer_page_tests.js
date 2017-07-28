@@ -2,65 +2,59 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @constructor
- * @implements {settings.CupsPrintersBrowserProxy}
- * @extends {TestBrowserProxy}
- */
-var TestCupsPrintersBrowserProxy = function() {
-  TestBrowserProxy.call(this, [
-    'getCupsPrintersList',
-    'getCupsPrinterManufacturersList',
-    'getCupsPrinterModelsList',
-    'getPrinterInfo',
-    'startDiscoveringPrinters',
-    'stopDiscoveringPrinters',
-  ]);
-};
+/** @implements {settings.CupsPrintersBrowserProxy} */
+class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'getCupsPrintersList',
+      'getCupsPrinterManufacturersList',
+      'getCupsPrinterModelsList',
+      'getPrinterInfo',
+      'startDiscoveringPrinters',
+      'stopDiscoveringPrinters',
+    ]);
 
-TestCupsPrintersBrowserProxy.prototype = {
-  __proto__: TestBrowserProxy.prototype,
-
-  printerList: [],
-  manufacturers: [],
-  models: [],
-  printerInfo: {},
+    this.printerList = [];
+    this.manufacturers = [];
+    this.models = [];
+    this.printerInfo = {};
+  }
 
   /** @override */
-  getCupsPrintersList: function() {
+  getCupsPrintersList() {
     this.methodCalled('getCupsPrintersList');
     return Promise.resolve(this.printerList);
-  },
+  }
 
   /** @override */
-  getCupsPrinterManufacturersList: function() {
+  getCupsPrinterManufacturersList() {
     this.methodCalled('getCupsPrinterManufacturersList');
     return Promise.resolve(this.manufacturers);
-  },
+  }
 
   /** @override */
-  getCupsPrinterModelsList: function(manufacturer) {
+  getCupsPrinterModelsList(manufacturer) {
     this.methodCalled('getCupsPrinterModelsList', manufacturer);
     return Promise.resolve(this.models);
-  },
+  }
 
   /** @override */
-  getPrinterInfo: function(newPrinter) {
+  getPrinterInfo(newPrinter) {
     this.methodCalled('getPrinterInfo', newPrinter);
     // Reject all calls for now.
     return Promise.reject();
-  },
+  }
 
   /** @override */
-  startDiscoveringPrinters: function() {
+  startDiscoveringPrinters() {
     this.methodCalled('startDiscoveringPrinters');
-  },
+  }
 
   /** @override */
-  stopDiscoveringPrinters: function() {
+  stopDiscoveringPrinters() {
     this.methodCalled('stopDiscoveringPrinters');
-  },
-};
+  }
+}
 
 suite('CupsAddPrinterDialogTests', function() {
   function fillAddManuallyDialog(addDialog) {

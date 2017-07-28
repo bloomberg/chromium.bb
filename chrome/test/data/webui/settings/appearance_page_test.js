@@ -2,91 +2,85 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @constructor
- * @implements {settings.AppearanceBrowserProxy}
- * @extends {TestBrowserProxy}
- */
-var TestAppearanceBrowserProxy = function() {
-  TestBrowserProxy.call(this, [
-    'getDefaultZoom',
-    'getThemeInfo',
-    'isSupervised',
-    'openWallpaperManager',
-    'useDefaultTheme',
-    'useSystemTheme',
-    'validateStartupPage',
-  ]);
+/** @implements {settings.AppearanceBrowserProxy} */
+class TestAppearanceBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'getDefaultZoom',
+      'getThemeInfo',
+      'isSupervised',
+      'openWallpaperManager',
+      'useDefaultTheme',
+      'useSystemTheme',
+      'validateStartupPage',
+    ]);
 
-  /** @private */
-  this.defaultZoom_ = 1;
+    /** @private */
+    this.defaultZoom_ = 1;
 
-  /** @private */
-  this.isSupervised_ = false;
+    /** @private */
+    this.isSupervised_ = false;
 
-  /** @private */
-  this.isHomeUrlValid_ = true;
-};
-
-TestAppearanceBrowserProxy.prototype = {
-  __proto__: TestBrowserProxy.prototype,
+    /** @private */
+    this.isHomeUrlValid_ = true;
+  }
 
   /** @override */
-  getDefaultZoom: function() {
+  getDefaultZoom() {
     this.methodCalled('getDefaultZoom');
     return Promise.resolve(this.defaultZoom_);
-  },
+  }
 
   /** @override */
-  getThemeInfo: function(themeId) {
+  getThemeInfo(themeId) {
     this.methodCalled('getThemeInfo', themeId);
     return Promise.resolve({name: 'Sports car red'});
-  },
+  }
 
   /** @override */
-  isSupervised: function() {
+  isSupervised() {
     this.methodCalled('isSupervised');
     return this.isSupervised_;
-  },
+  }
 
   /** @override */
-  openWallpaperManager: function() {
+  openWallpaperManager() {
     this.methodCalled('openWallpaperManager');
-  },
+  }
 
   /** @override */
-  useDefaultTheme: function() {
+  useDefaultTheme() {
     this.methodCalled('useDefaultTheme');
-  },
+  }
 
   /** @override */
-  useSystemTheme: function() {
+  useSystemTheme() {
     this.methodCalled('useSystemTheme');
-  },
+  }
 
   /** @param {number} defaultZoom */
-  setDefaultZoom: function(defaultZoom) {
+  setDefaultZoom(defaultZoom) {
     this.defaultZoom_ = defaultZoom;
-  },
+  }
 
   /** @param {boolean} Whether the user is supervised */
-  setIsSupervised: function(isSupervised) {
+  setIsSupervised(isSupervised) {
     this.isSupervised_ = isSupervised;
-  },
+  }
 
   /** @override */
-  validateStartupPage: function(url) {
+  validateStartupPage(url) {
     this.methodCalled('validateStartupPage', url);
     return Promise.resolve(this.isHomeUrlValid_);
-  },
+  }
 
   /**
    * @param {boolean} isValid
    */
-   setValidStartupPageResponse: function(isValid) {
-     this.isHomeUrlValid_ = isValid;
-   }
-};
+  setValidStartupPageResponse(isValid) {
+    this.isHomeUrlValid_ = isValid;
+  }
+}
 
 var appearancePage = null;
 
