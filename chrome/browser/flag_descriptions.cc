@@ -185,11 +185,6 @@ const char kDisableAudioForDesktopShareDescription[] =
     "With this flag on, desktop share picker window will not let the user "
     "choose whether to share audio.";
 
-const char kDisableNightLightName[] = "Disable Night Light";
-const char kDisableNightLightDescription[] =
-    "Disable the Night Light feature which controls the color temperature of "
-    "the screen.";
-
 const char kDisableTabForDesktopShareName[] =
     "Disable Desktop Share with tab source";
 const char kDisableTabForDesktopShareDescription[] =
@@ -373,6 +368,11 @@ const char kEnableNetworkServiceName[] = "Enable network service";
 const char kEnableNetworkServiceDescription[] =
     "Enables the network service, which makes network requests through a "
     "separate service. Note: most features don't work with this yet.";
+
+const char kEnableNightLightName[] = "Enable Night Light";
+const char kEnableNightLightDescription[] =
+    "Enable the Night Light feature which controls the color temperature of "
+    "the screen.";
 
 const char kEnablePictureInPictureName[] = "Enable picture in picture.";
 const char kEnablePictureInPictureDescription[] =
