@@ -97,7 +97,7 @@ void LinkStyle::SetCSSStyleSheet(
       }
       SubresourceIntegrity::ReportInfo report_info;
       check_result = SubresourceIntegrity::CheckSubresourceIntegrity(
-          owner_->FastGetAttribute(integrityAttr), data, size,
+          cached_style_sheet->IntegrityMetadata(), data, size,
           KURL(base_url, href), *cached_style_sheet, report_info);
       SubresourceIntegrityHelper::DoReport(GetDocument(), report_info);
       disposition = check_result ? ResourceIntegrityDisposition::kPassed
