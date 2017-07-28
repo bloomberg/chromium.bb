@@ -70,6 +70,8 @@ bool RankerURLFetcher::Request(
           cookies_allowed: NO
           setting:
             "NA"
+          policy_exception_justification:
+            "Not implemented, considered not necessary as no user data is sent."
         })");
   // Create and initialize the URL fetcher.
   fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this,
