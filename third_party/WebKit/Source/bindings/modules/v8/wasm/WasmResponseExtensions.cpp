@@ -27,8 +27,7 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
   FetchDataLoaderAsWasmModule(ScriptPromiseResolver* resolver,
                               ScriptState* script_state)
       : resolver_(resolver),
-        builder_(script_state->GetIsolate(),
-                 v8::Local<v8::Promise>::Cast(resolver->Promise().V8Value())),
+        builder_(script_state->GetIsolate()),
         script_state_(script_state) {}
 
   void Start(BytesConsumer* consumer,
@@ -66,13 +65,32 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
           break;
         }
         case BytesConsumer::Result::kDone: {
+          v8::Isolate* isolate = script_state_->GetIsolate();
           ScriptState::Scope scope(script_state_.Get());
-          builder_.Finish();
+
+          {
+            // The TryCatch destructor will clear the exception. We
+            // scope the block here to ensure tight control over the
+            // lifetime of the exception.
+            v8::TryCatch trycatch(isolate);
+            v8::Local<v8::WasmCompiledModule> module;
+            if (builder_.Finish().ToLocal(&module)) {
+              DCHECK(!trycatch.HasCaught());
+              ScriptValue script_value(script_state_.Get(), module);
+              resolver_->Resolve(script_value);
+            } else {
+              DCHECK(trycatch.HasCaught());
+              resolver_->Reject(trycatch.Exception());
+            }
+          }
+
           client_->DidFetchDataLoadedCustomFormat();
           return;
         }
         case BytesConsumer::Result::kError: {
-          return AbortCompilation();
+          // TODO(mtrofin): do we need an abort on the wasm side?
+          // Something like "m_outStream->abort()" maybe?
+          return RejectPromise();
         }
       }
     }
@@ -80,7 +98,7 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
 
   void Cancel() override {
     consumer_->Cancel();
-    return AbortCompilation();
+    return RejectPromise();
   }
 
   DEFINE_INLINE_TRACE() {
@@ -94,14 +112,14 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
  private:
   // TODO(mtrofin): replace with spec-ed error types, once spec clarifies
   // what they are.
-  void AbortCompilation() {
-    builder_.Abort(V8ThrowException::CreateTypeError(
+  void RejectPromise() {
+    resolver_->Reject(V8ThrowException::CreateTypeError(
         script_state_->GetIsolate(), "Could not download wasm module"));
   }
   Member<BytesConsumer> consumer_;
   Member<ScriptPromiseResolver> resolver_;
   Member<FetchDataLoader::Client> client_;
-  v8::WasmModuleObjectBuilderStreaming builder_;
+  v8::WasmModuleObjectBuilder builder_;
   const RefPtr<ScriptState> script_state_;
 };
 

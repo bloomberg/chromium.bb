@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 const incrementer_url = '../wasm/resources/load-wasm.php';
-const invalid_wasm_url = '../wasm/resources/load-wasm.php?name=invalid-wasm.wasm'
 
 function AssertType(obj, type) {
   assert_equals(obj.constructor, type);
@@ -11,10 +10,6 @@ function AssertType(obj, type) {
 
 function AssertTypeError(obj) {
   return AssertType(obj, TypeError);
-}
-
-function AssertCompileError(obj) {
-  return AssertType(obj, WebAssembly.CompileError);
 }
 
 function TestStreamedCompile() {
@@ -177,16 +172,4 @@ function TestInstantiateComplexModule() {
   return Promise.resolve(buildImportingModuleBytes())
     .then(b => WebAssembly.instantiateStreaming(b, ffi))
     .then(pair => AssertType(pair.instance, WebAssembly.Instance));
-}
-
-function CompileFromInvalidDownload() {
-  return WebAssembly.compileStreaming(fetch(invalid_wasm_url))
-    .then(assert_unreached,
-          AssertCompileError);
-}
-
-function InstantiateFromInvalidDownload() {
-  return WebAssembly.instantiateStreaming(fetch(invalid_wasm_url))
-    .then(assert_unreached,
-          AssertCompileError);
 }
