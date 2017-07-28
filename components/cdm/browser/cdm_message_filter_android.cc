@@ -11,9 +11,9 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/cdm/common/cdm_messages_android.h"
 #include "content/public/browser/android/android_overlay_provider.h"
-#include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_drm_bridge.h"
@@ -22,7 +22,6 @@
 #include "media/base/video_codecs.h"
 #include "media/media_features.h"
 
-using content::BrowserThread;
 using media::MediaDrmBridge;
 using media::SupportedCodecs;
 
@@ -96,6 +95,8 @@ static SupportedCodecs GetSupportedCodecs(
 
 CdmMessageFilterAndroid::CdmMessageFilterAndroid(bool can_use_secure_codecs)
     : BrowserMessageFilter(EncryptedMediaMsgStart),
+      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND})),
       force_to_support_secure_codecs_(can_use_secure_codecs) {}
 
 CdmMessageFilterAndroid::~CdmMessageFilterAndroid() {}
@@ -112,11 +113,13 @@ bool CdmMessageFilterAndroid::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void CdmMessageFilterAndroid::OverrideThreadForMessage(
-    const IPC::Message& message, BrowserThread::ID* thread) {
+base::TaskRunner* CdmMessageFilterAndroid::OverrideTaskRunnerForMessage(
+    const IPC::Message& message) {
   // Move the IPC handling to FILE thread as it is not very cheap.
   if (message.type() == ChromeViewHostMsg_QueryKeySystemSupport::ID)
-    *thread = BrowserThread::FILE;
+    return task_runner_.get();
+
+  return nullptr;
 }
 
 void CdmMessageFilterAndroid::OnQueryKeySystemSupport(
