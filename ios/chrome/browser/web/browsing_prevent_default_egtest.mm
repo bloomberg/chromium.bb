@@ -110,17 +110,13 @@ class ScopedBlockPopupsPref {
 // Taps a link with onclick="event.preventDefault()" and target="_blank" and
 // verifies that the URL didn't change and no tabs were opened.
 - (void)testPreventDefaultOverridesTargetBlank {
-  const std::string linkID =
-      "webScenarioBrowsingLinkPreventDefaultOverridesTargetBlank";
-  [self runTestAndVerifyNoNavigationForLinkID:linkID];
+  [self runTestAndVerifyNoNavigationForLinkID:"overrides-target-blank"];
 }
 
 // Tests clicking a link with target="_blank" and event 'preventDefault()' and
 // 'stopPropagation()' does not change the current URL nor open a new tab.
 - (void)testPreventDefaultOverridesStopPropagation {
-  const std::string linkID =
-      "webScenarioBrowsingLinkPreventDefaultOverridesStopPropagation";
-  [self runTestAndVerifyNoNavigationForLinkID:linkID];
+  [self runTestAndVerifyNoNavigationForLinkID:"overrides-stop-propagation"];
 }
 
 // Tests clicking a link with event 'preventDefault()' and URL loaded by
@@ -136,16 +132,7 @@ class ScopedBlockPopupsPref {
   [ChromeEarlGrey waitForMainTabCount:1];
 
   // Tap on the test link.
-  const std::string linkID =
-      "webScenarioBrowsingLinkPreventDefaultOverridesWindowOpen";
-  chrome_test_util::TapWebViewElementWithId(linkID);
-
-  // TODO(crbug.com/747434): It seems like the text 'Click done' isn't visible
-  // long enough on iOS11.  It's possible this is an issue in Earl Grey, iOS11,
-  // or just the extra text check is unnecessary.
-  if (!base::ios::IsRunningOnIOS11OrLater()) {
-    [ChromeEarlGrey waitForWebViewContainingText:"Click done"];
-  }
+  [ChromeEarlGrey tapWebViewElementWithID:@"overrides-window-open"];
 
   // Check that the tab navigated to about:blank and no new tabs were opened.
   [[GREYCondition
