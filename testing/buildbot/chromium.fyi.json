@@ -8,7 +8,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--shared-prefs-file=../../chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
+          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
           "--additional-apk=../../third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk"
         ],
         "name": "chrome_public_test_vr_apk-nonddready-cardboard-current-kitkat",
@@ -27,7 +27,7 @@
       },
       {
         "args": [
-          "--shared-prefs-file=../../chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
+          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
           "--additional-apk=../../third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk"
         ],
         "name": "chrome_public_test_vr_apk-nonddready-cardboard-current-lollipop",
@@ -46,7 +46,7 @@
       },
       {
         "args": [
-          "--shared-prefs-file=../../chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
+          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
           "--additional-apk=../../third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk"
         ],
         "name": "chrome_public_test_vr_apk-nonddready-cardboard-current-marshmallow",
@@ -65,7 +65,7 @@
       },
       {
         "args": [
-          "--shared-prefs-file=../../chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
+          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
           "--replace-system-package=com.google.vr.vrcore,../../third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk"
         ],
         "name": "chrome_public_test_vr_apk-marlin-cardboard-nougat",
@@ -84,7 +84,7 @@
       },
       {
         "args": [
-          "--shared-prefs-file=../../chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
+          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
           "--replace-system-package=com.google.vr.vrcore,../../third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk"
         ],
         "name": "chrome_public_test_vr_apk-marlin-ddview-nougat",
@@ -103,7 +103,7 @@
       },
       {
         "args": [
-          "--shared-prefs-file=../../chrome/android/shared_preference_files/test/vr_ddview_don_setupcomplete.json",
+          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_don_setupcomplete.json",
           "--replace-system-package=com.google.vr.vrcore,../../third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
           "--annotation=Restriction=DON_Enabled",
           "--don-enabled"
@@ -130,7 +130,7 @@
       },
       {
         "args": [
-          "--shared-prefs-file=../../chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
+          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
           "--replace-system-package=com.google.vr.vrcore,../../third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
           "--test-filter=WebViewWebVrTest#*"
         ],
