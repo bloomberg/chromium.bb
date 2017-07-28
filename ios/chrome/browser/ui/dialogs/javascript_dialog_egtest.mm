@@ -35,6 +35,7 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::OKButton;
 using web::test::HttpServer;
@@ -572,7 +573,7 @@ void TapSuppressDialogsButton() {
                         kLinkID, true /* menu should appear */)];
 
   // Tap on the "Open In New Tab" button.
-  id<GREYMatcher> newTabMatcher = testing::ContextMenuItemWithText(
+  id<GREYMatcher> newTabMatcher = ButtonWithAccessibilityLabel(
       l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB));
   [[EarlGrey selectElementWithMatcher:newTabMatcher] performAction:grey_tap()];
 
