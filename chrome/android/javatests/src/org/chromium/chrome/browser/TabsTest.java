@@ -1801,9 +1801,10 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         assertTrue("WebContentsObserver was never destroyed", webContentsDestroyCalled.get());
     }
 
-    @MediumTest
-    @Feature({"Android-TabSwitcher"})
-    @RetryOnFailure
+    // Flaky even with RetryOnFailure: http://crbug.com/649429
+    @DisabledTest
+    //    @MediumTest
+    //    @Feature({"Android-TabSwitcher"})
     public void testIncognitoTabsNotRestoredAfterSwipe() throws Exception {
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         startMainActivityWithURL(mTestServer.getURL(TEST_PAGE_FILE_PATH));
