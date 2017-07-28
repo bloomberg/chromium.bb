@@ -83,8 +83,9 @@ TEST(AnimationPlayerTest, AddRemoveAnimations) {
   AnimationPlayer player;
   EXPECT_TRUE(player.animations().empty());
 
-  player.AddAnimation(CreateBoundsAnimation(
-      1, 1, gfx::SizeF(10, 100), gfx::SizeF(20, 200), UsToDelta(10000)));
+  player.AddAnimation(CreateBoundsAnimation(1, 1, gfx::SizeF(10, 100),
+                                            gfx::SizeF(20, 200),
+                                            MicrosecondsToDelta(10000)));
   EXPECT_EQ(1ul, player.animations().size());
   EXPECT_EQ(TargetProperty::BOUNDS,
             player.animations()[0]->target_property_id());
@@ -94,14 +95,14 @@ TEST(AnimationPlayerTest, AddRemoveAnimations) {
   cc::TransformOperations to_operations;
   to_operations.AppendTranslate(20, 200, 2000);
   player.AddAnimation(CreateTransformAnimation(
-      2, 2, from_operations, to_operations, UsToDelta(10000)));
+      2, 2, from_operations, to_operations, MicrosecondsToDelta(10000)));
 
   EXPECT_EQ(2ul, player.animations().size());
   EXPECT_EQ(TargetProperty::TRANSFORM,
             player.animations()[1]->target_property_id());
 
   player.AddAnimation(CreateTransformAnimation(
-      3, 3, from_operations, to_operations, UsToDelta(10000)));
+      3, 3, from_operations, to_operations, MicrosecondsToDelta(10000)));
   EXPECT_EQ(3ul, player.animations().size());
   EXPECT_EQ(TargetProperty::TRANSFORM,
             player.animations()[2]->target_property_id());
@@ -120,22 +121,23 @@ TEST(AnimationPlayerTest, AnimationLifecycle) {
   AnimationPlayer player;
   player.set_target(&target);
 
-  player.AddAnimation(CreateBoundsAnimation(
-      1, 1, gfx::SizeF(10, 100), gfx::SizeF(20, 200), UsToDelta(10000)));
+  player.AddAnimation(CreateBoundsAnimation(1, 1, gfx::SizeF(10, 100),
+                                            gfx::SizeF(20, 200),
+                                            MicrosecondsToDelta(10000)));
   EXPECT_EQ(1ul, player.animations().size());
   EXPECT_EQ(TargetProperty::BOUNDS,
             player.animations()[0]->target_property_id());
   EXPECT_EQ(cc::Animation::WAITING_FOR_TARGET_AVAILABILITY,
             player.animations()[0]->run_state());
 
-  base::TimeTicks start_time = UsToTicks(1);
+  base::TimeTicks start_time = MicrosecondsToTicks(1);
   player.Tick(start_time);
   EXPECT_EQ(cc::Animation::RUNNING, player.animations()[0]->run_state());
 
   EXPECT_SIZEF_EQ(gfx::SizeF(10, 100), target.size());
 
   // Tick beyond the animation
-  player.Tick(start_time + UsToDelta(20000));
+  player.Tick(start_time + MicrosecondsToDelta(20000));
 
   EXPECT_TRUE(player.animations().empty());
 
@@ -148,28 +150,30 @@ TEST(AnimationPlayerTest, AnimationQueue) {
   AnimationPlayer player;
   player.set_target(&target);
 
-  player.AddAnimation(CreateBoundsAnimation(
-      1, 1, gfx::SizeF(10, 100), gfx::SizeF(20, 200), UsToDelta(10000)));
+  player.AddAnimation(CreateBoundsAnimation(1, 1, gfx::SizeF(10, 100),
+                                            gfx::SizeF(20, 200),
+                                            MicrosecondsToDelta(10000)));
   EXPECT_EQ(1ul, player.animations().size());
   EXPECT_EQ(TargetProperty::BOUNDS,
             player.animations()[0]->target_property_id());
   EXPECT_EQ(cc::Animation::WAITING_FOR_TARGET_AVAILABILITY,
             player.animations()[0]->run_state());
 
-  base::TimeTicks start_time = UsToTicks(1);
+  base::TimeTicks start_time = MicrosecondsToTicks(1);
   player.Tick(start_time);
   EXPECT_EQ(cc::Animation::RUNNING, player.animations()[0]->run_state());
   EXPECT_SIZEF_EQ(gfx::SizeF(10, 100), target.size());
 
-  player.AddAnimation(CreateBoundsAnimation(
-      2, 2, gfx::SizeF(10, 100), gfx::SizeF(20, 200), UsToDelta(10000)));
+  player.AddAnimation(CreateBoundsAnimation(2, 2, gfx::SizeF(10, 100),
+                                            gfx::SizeF(20, 200),
+                                            MicrosecondsToDelta(10000)));
 
   cc::TransformOperations from_operations;
   from_operations.AppendTranslate(10, 100, 1000);
   cc::TransformOperations to_operations;
   to_operations.AppendTranslate(20, 200, 2000);
   player.AddAnimation(CreateTransformAnimation(
-      3, 2, from_operations, to_operations, UsToDelta(10000)));
+      3, 2, from_operations, to_operations, MicrosecondsToDelta(10000)));
 
   EXPECT_EQ(3ul, player.animations().size());
   EXPECT_EQ(TargetProperty::BOUNDS,
@@ -178,7 +182,7 @@ TEST(AnimationPlayerTest, AnimationQueue) {
             player.animations()[2]->target_property_id());
   int id1 = player.animations()[1]->id();
 
-  player.Tick(start_time + UsToDelta(1));
+  player.Tick(start_time + MicrosecondsToDelta(1));
 
   // Only the transform animation should have started (since there's no
   // conflicting animation).
@@ -193,14 +197,14 @@ TEST(AnimationPlayerTest, AnimationQueue) {
   // animation) to get removed and for the second bounds animation to start.
   // TODO(vollick): this will also change when groups are supported
   // (crbug.com/742358).
-  player.Tick(start_time + UsToDelta(15000));
+  player.Tick(start_time + MicrosecondsToDelta(15000));
 
   EXPECT_EQ(1ul, player.animations().size());
   EXPECT_EQ(cc::Animation::RUNNING, player.animations()[0]->run_state());
   EXPECT_EQ(id1, player.animations()[0]->id());
 
   // Tick beyond all animations. There should be none remaining.
-  player.Tick(start_time + UsToDelta(30000));
+  player.Tick(start_time + MicrosecondsToDelta(30000));
   EXPECT_TRUE(player.animations().empty());
 }
 
@@ -210,10 +214,10 @@ TEST(AnimationPlayerTest, OpacityTransitions) {
   player.set_target(&target);
   Transition transition;
   transition.target_properties = {TargetProperty::OPACITY};
-  transition.duration = UsToDelta(10000);
+  transition.duration = MicrosecondsToDelta(10000);
   player.set_transition(transition);
 
-  base::TimeTicks start_time = UsToTicks(1000000);
+  base::TimeTicks start_time = MicrosecondsToTicks(1000000);
   player.Tick(start_time);
 
   float from = 1.0f;
@@ -229,11 +233,11 @@ TEST(AnimationPlayerTest, OpacityTransitions) {
   player.TransitionFloatTo(start_time, TargetProperty::OPACITY, from, nearby);
   EXPECT_EQ(animation_id, player.animations().front()->id());
 
-  player.Tick(start_time + UsToDelta(5000));
+  player.Tick(start_time + MicrosecondsToDelta(5000));
   EXPECT_GT(from, target.opacity());
   EXPECT_LT(to, target.opacity());
 
-  player.Tick(start_time + UsToDelta(10000));
+  player.Tick(start_time + MicrosecondsToDelta(10000));
   EXPECT_EQ(to, target.opacity());
 }
 
@@ -243,10 +247,10 @@ TEST(AnimationPlayerTest, ReversedOpacityTransitions) {
   player.set_target(&target);
   Transition transition;
   transition.target_properties = {TargetProperty::OPACITY};
-  transition.duration = UsToDelta(10000);
+  transition.duration = MicrosecondsToDelta(10000);
   player.set_transition(transition);
 
-  base::TimeTicks start_time = UsToTicks(1000000);
+  base::TimeTicks start_time = MicrosecondsToTicks(1000000);
   player.Tick(start_time);
 
   float from = 1.0f;
@@ -256,17 +260,17 @@ TEST(AnimationPlayerTest, ReversedOpacityTransitions) {
   EXPECT_EQ(from, target.opacity());
   player.Tick(start_time);
 
-  player.Tick(start_time + UsToDelta(1000));
+  player.Tick(start_time + MicrosecondsToDelta(1000));
   float value_before_reversing = target.opacity();
   EXPECT_GT(from, value_before_reversing);
   EXPECT_LT(to, value_before_reversing);
 
-  player.TransitionFloatTo(start_time + UsToDelta(1000),
+  player.TransitionFloatTo(start_time + MicrosecondsToDelta(1000),
                            TargetProperty::OPACITY, target.opacity(), from);
-  player.Tick(start_time + UsToDelta(1000));
+  player.Tick(start_time + MicrosecondsToDelta(1000));
   EXPECT_FLOAT_EQ(value_before_reversing, target.opacity());
 
-  player.Tick(start_time + UsToDelta(2000));
+  player.Tick(start_time + MicrosecondsToDelta(2000));
   EXPECT_EQ(from, target.opacity());
 }
 
@@ -278,9 +282,9 @@ TEST(AnimationPlayerTest, LayoutOffsetTransitions) {
   player.set_target(&target);
   Transition transition;
   transition.target_properties = {TargetProperty::LAYOUT_OFFSET};
-  transition.duration = UsToDelta(10000);
+  transition.duration = MicrosecondsToDelta(10000);
   player.set_transition(transition);
-  base::TimeTicks start_time = UsToTicks(1000000);
+  base::TimeTicks start_time = MicrosecondsToTicks(1000000);
   player.Tick(start_time);
 
   cc::TransformOperations from = target.layout_offset();
@@ -302,11 +306,11 @@ TEST(AnimationPlayerTest, LayoutOffsetTransitions) {
       start_time, TargetProperty::LAYOUT_OFFSET, from, nearby);
   EXPECT_EQ(animation_id, player.animations().front()->id());
 
-  player.Tick(start_time + UsToDelta(5000));
+  player.Tick(start_time + MicrosecondsToDelta(5000));
   EXPECT_LT(from.at(0).translate.x, target.layout_offset().at(0).translate.x);
   EXPECT_GT(to.at(0).translate.x, target.layout_offset().at(0).translate.x);
 
-  player.Tick(start_time + UsToDelta(10000));
+  player.Tick(start_time + MicrosecondsToDelta(10000));
   EXPECT_TRUE(to.ApproximatelyEqual(target.layout_offset(), tolerance));
 }
 
@@ -318,9 +322,9 @@ TEST(AnimationPlayerTest, TransformTransitions) {
   player.set_target(&target);
   Transition transition;
   transition.target_properties = {TargetProperty::TRANSFORM};
-  transition.duration = UsToDelta(10000);
+  transition.duration = MicrosecondsToDelta(10000);
   player.set_transition(transition);
-  base::TimeTicks start_time = UsToTicks(1000000);
+  base::TimeTicks start_time = MicrosecondsToTicks(1000000);
   player.Tick(start_time);
 
   cc::TransformOperations from = target.operations();
@@ -344,11 +348,11 @@ TEST(AnimationPlayerTest, TransformTransitions) {
                                          from, nearby);
   EXPECT_EQ(animation_id, player.animations().front()->id());
 
-  player.Tick(start_time + UsToDelta(5000));
+  player.Tick(start_time + MicrosecondsToDelta(5000));
   EXPECT_LT(from.at(0).translate.x, target.operations().at(0).translate.x);
   EXPECT_GT(to.at(0).translate.x, target.operations().at(0).translate.x);
 
-  player.Tick(start_time + UsToDelta(10000));
+  player.Tick(start_time + MicrosecondsToDelta(10000));
   EXPECT_TRUE(to.ApproximatelyEqual(target.operations(), tolerance));
 }
 
@@ -360,9 +364,9 @@ TEST(AnimationPlayerTest, ReversedTransformTransitions) {
   player.set_target(&target);
   Transition transition;
   transition.target_properties = {TargetProperty::TRANSFORM};
-  transition.duration = UsToDelta(10000);
+  transition.duration = MicrosecondsToDelta(10000);
   player.set_transition(transition);
-  base::TimeTicks start_time = UsToTicks(1000000);
+  base::TimeTicks start_time = MicrosecondsToTicks(1000000);
   player.Tick(start_time);
 
   cc::TransformOperations from = target.operations();
@@ -378,19 +382,19 @@ TEST(AnimationPlayerTest, ReversedTransformTransitions) {
   EXPECT_TRUE(from.ApproximatelyEqual(target.operations(), tolerance));
   player.Tick(start_time);
 
-  player.Tick(start_time + UsToDelta(1000));
+  player.Tick(start_time + MicrosecondsToDelta(1000));
   cc::TransformOperations value_before_reversing = target.operations();
   EXPECT_LT(from.at(0).translate.x, target.operations().at(0).translate.x);
   EXPECT_GT(to.at(0).translate.x, target.operations().at(0).translate.x);
 
-  player.TransitionTransformOperationsTo(start_time + UsToDelta(1000),
+  player.TransitionTransformOperationsTo(start_time + MicrosecondsToDelta(1000),
                                          TargetProperty::TRANSFORM,
                                          target.operations(), from);
-  player.Tick(start_time + UsToDelta(1000));
+  player.Tick(start_time + MicrosecondsToDelta(1000));
   EXPECT_TRUE(value_before_reversing.ApproximatelyEqual(target.operations(),
                                                         tolerance));
 
-  player.Tick(start_time + UsToDelta(2000));
+  player.Tick(start_time + MicrosecondsToDelta(2000));
   EXPECT_TRUE(from.ApproximatelyEqual(target.operations(), tolerance));
 }
 
@@ -400,9 +404,9 @@ TEST(AnimationPlayerTest, BoundsTransitions) {
   player.set_target(&target);
   Transition transition;
   transition.target_properties = {TargetProperty::BOUNDS};
-  transition.duration = UsToDelta(10000);
+  transition.duration = MicrosecondsToDelta(10000);
   player.set_transition(transition);
-  base::TimeTicks start_time = UsToTicks(1000000);
+  base::TimeTicks start_time = MicrosecondsToTicks(1000000);
   player.Tick(start_time);
 
   gfx::SizeF from = target.size();
@@ -420,13 +424,13 @@ TEST(AnimationPlayerTest, BoundsTransitions) {
   player.TransitionSizeTo(start_time, TargetProperty::BOUNDS, from, nearby);
   EXPECT_EQ(animation_id, player.animations().front()->id());
 
-  player.Tick(start_time + UsToDelta(5000));
+  player.Tick(start_time + MicrosecondsToDelta(5000));
   EXPECT_LT(from.width(), target.size().width());
   EXPECT_GT(to.width(), target.size().width());
   EXPECT_LT(from.height(), target.size().height());
   EXPECT_GT(to.height(), target.size().height());
 
-  player.Tick(start_time + UsToDelta(10000));
+  player.Tick(start_time + MicrosecondsToDelta(10000));
   EXPECT_FLOAT_SIZE_EQ(to, target.size());
 }
 
@@ -436,9 +440,9 @@ TEST(AnimationPlayerTest, ReversedBoundsTransitions) {
   player.set_target(&target);
   Transition transition;
   transition.target_properties = {TargetProperty::BOUNDS};
-  transition.duration = UsToDelta(10000);
+  transition.duration = MicrosecondsToDelta(10000);
   player.set_transition(transition);
-  base::TimeTicks start_time = UsToTicks(1000000);
+  base::TimeTicks start_time = MicrosecondsToTicks(1000000);
   player.Tick(start_time);
 
   gfx::SizeF from = target.size();
@@ -449,19 +453,19 @@ TEST(AnimationPlayerTest, ReversedBoundsTransitions) {
   EXPECT_FLOAT_SIZE_EQ(from, target.size());
   player.Tick(start_time);
 
-  player.Tick(start_time + UsToDelta(1000));
+  player.Tick(start_time + MicrosecondsToDelta(1000));
   gfx::SizeF value_before_reversing = target.size();
   EXPECT_LT(from.width(), target.size().width());
   EXPECT_GT(to.width(), target.size().width());
   EXPECT_LT(from.height(), target.size().height());
   EXPECT_GT(to.height(), target.size().height());
 
-  player.TransitionSizeTo(start_time + UsToDelta(1000), TargetProperty::BOUNDS,
-                          target.size(), from);
-  player.Tick(start_time + UsToDelta(1000));
+  player.TransitionSizeTo(start_time + MicrosecondsToDelta(1000),
+                          TargetProperty::BOUNDS, target.size(), from);
+  player.Tick(start_time + MicrosecondsToDelta(1000));
   EXPECT_FLOAT_SIZE_EQ(value_before_reversing, target.size());
 
-  player.Tick(start_time + UsToDelta(2000));
+  player.Tick(start_time + MicrosecondsToDelta(2000));
   EXPECT_FLOAT_SIZE_EQ(from, target.size());
 }
 
@@ -471,9 +475,9 @@ TEST(AnimationPlayerTest, BackgroundColorTransitions) {
   player.set_target(&target);
   Transition transition;
   transition.target_properties = {TargetProperty::BACKGROUND_COLOR};
-  transition.duration = UsToDelta(10000);
+  transition.duration = MicrosecondsToDelta(10000);
   player.set_transition(transition);
-  base::TimeTicks start_time = UsToTicks(1000000);
+  base::TimeTicks start_time = MicrosecondsToTicks(1000000);
   player.Tick(start_time);
 
   SkColor from = SK_ColorRED;
@@ -485,7 +489,7 @@ TEST(AnimationPlayerTest, BackgroundColorTransitions) {
   EXPECT_EQ(from, target.background_color());
   player.Tick(start_time);
 
-  player.Tick(start_time + UsToDelta(5000));
+  player.Tick(start_time + MicrosecondsToDelta(5000));
   EXPECT_GT(SkColorGetR(from), SkColorGetR(target.background_color()));
   EXPECT_LT(SkColorGetR(to), SkColorGetR(target.background_color()));
   EXPECT_LT(SkColorGetG(from), SkColorGetG(target.background_color()));
@@ -493,7 +497,7 @@ TEST(AnimationPlayerTest, BackgroundColorTransitions) {
   EXPECT_EQ(0u, SkColorGetB(target.background_color()));
   EXPECT_EQ(255u, SkColorGetA(target.background_color()));
 
-  player.Tick(start_time + UsToDelta(10000));
+  player.Tick(start_time + MicrosecondsToDelta(10000));
   EXPECT_EQ(to, target.background_color());
 }
 
@@ -503,9 +507,9 @@ TEST(AnimationPlayerTest, ReversedBackgroundColorTransitions) {
   player.set_target(&target);
   Transition transition;
   transition.target_properties = {TargetProperty::BACKGROUND_COLOR};
-  transition.duration = UsToDelta(10000);
+  transition.duration = MicrosecondsToDelta(10000);
   player.set_transition(transition);
-  base::TimeTicks start_time = UsToTicks(1000000);
+  base::TimeTicks start_time = MicrosecondsToTicks(1000000);
   player.Tick(start_time);
 
   SkColor from = SK_ColorRED;
@@ -517,7 +521,7 @@ TEST(AnimationPlayerTest, ReversedBackgroundColorTransitions) {
   EXPECT_EQ(from, target.background_color());
   player.Tick(start_time);
 
-  player.Tick(start_time + UsToDelta(1000));
+  player.Tick(start_time + MicrosecondsToDelta(1000));
   SkColor value_before_reversing = target.background_color();
   EXPECT_GT(SkColorGetR(from), SkColorGetR(target.background_color()));
   EXPECT_LT(SkColorGetR(to), SkColorGetR(target.background_color()));
@@ -526,13 +530,13 @@ TEST(AnimationPlayerTest, ReversedBackgroundColorTransitions) {
   EXPECT_EQ(0u, SkColorGetB(target.background_color()));
   EXPECT_EQ(255u, SkColorGetA(target.background_color()));
 
-  player.TransitionColorTo(start_time + UsToDelta(1000),
+  player.TransitionColorTo(start_time + MicrosecondsToDelta(1000),
                            TargetProperty::BACKGROUND_COLOR,
                            target.background_color(), from);
-  player.Tick(start_time + UsToDelta(1000));
+  player.Tick(start_time + MicrosecondsToDelta(1000));
   EXPECT_EQ(value_before_reversing, target.background_color());
 
-  player.Tick(start_time + UsToDelta(2000));
+  player.Tick(start_time + MicrosecondsToDelta(2000));
   EXPECT_EQ(from, target.background_color());
 }
 
@@ -542,9 +546,9 @@ TEST(AnimationPlayerTest, VisibilityTransitions) {
   player.set_target(&target);
   Transition transition;
   transition.target_properties = {TargetProperty::VISIBILITY};
-  transition.duration = UsToDelta(10000);
+  transition.duration = MicrosecondsToDelta(10000);
   player.set_transition(transition);
-  base::TimeTicks start_time = UsToTicks(1000000);
+  base::TimeTicks start_time = MicrosecondsToTicks(1000000);
   player.Tick(start_time);
 
   bool from = true;
@@ -555,10 +559,10 @@ TEST(AnimationPlayerTest, VisibilityTransitions) {
   EXPECT_EQ(from, target.visible());
   player.Tick(start_time);
 
-  player.Tick(start_time + UsToDelta(5000));
+  player.Tick(start_time + MicrosecondsToDelta(5000));
   EXPECT_EQ(from, target.visible());
 
-  player.Tick(start_time + UsToDelta(10000));
+  player.Tick(start_time + MicrosecondsToDelta(10000));
   EXPECT_EQ(to, target.visible());
 }
 
@@ -568,9 +572,9 @@ TEST(AnimationPlayerTest, ReversedVisibilityTransitions) {
   player.set_target(&target);
   Transition transition;
   transition.target_properties = {TargetProperty::VISIBILITY};
-  transition.duration = UsToDelta(10000);
+  transition.duration = MicrosecondsToDelta(10000);
   player.set_transition(transition);
-  base::TimeTicks start_time = UsToTicks(1000000);
+  base::TimeTicks start_time = MicrosecondsToTicks(1000000);
   player.Tick(start_time);
 
   bool from = true;
@@ -584,17 +588,17 @@ TEST(AnimationPlayerTest, ReversedVisibilityTransitions) {
   EXPECT_EQ(from, target.visible());
   player.Tick(start_time);
 
-  player.Tick(start_time + UsToDelta(1000));
+  player.Tick(start_time + MicrosecondsToDelta(1000));
   bool value_before_reversing = target.visible();
   EXPECT_EQ(from, value_before_reversing);
 
-  player.TransitionBooleanTo(start_time + UsToDelta(1000),
+  player.TransitionBooleanTo(start_time + MicrosecondsToDelta(1000),
                              TargetProperty::VISIBILITY, target.visible(),
                              from);
-  player.Tick(start_time + UsToDelta(1000));
+  player.Tick(start_time + MicrosecondsToDelta(1000));
   EXPECT_EQ(value_before_reversing, target.visible());
 
-  player.Tick(start_time + UsToDelta(2000));
+  player.Tick(start_time + MicrosecondsToDelta(2000));
   EXPECT_EQ(from, target.visible());
 }
 
@@ -604,10 +608,10 @@ TEST(AnimationPlayerTest, DoubleReversedTransitions) {
   player.set_target(&target);
   Transition transition;
   transition.target_properties = {TargetProperty::OPACITY};
-  transition.duration = UsToDelta(10000);
+  transition.duration = MicrosecondsToDelta(10000);
   player.set_transition(transition);
 
-  base::TimeTicks start_time = UsToTicks(1000000);
+  base::TimeTicks start_time = MicrosecondsToTicks(1000000);
   player.Tick(start_time);
 
   float from = 1.0f;
@@ -617,23 +621,23 @@ TEST(AnimationPlayerTest, DoubleReversedTransitions) {
   EXPECT_EQ(from, target.opacity());
   player.Tick(start_time);
 
-  player.Tick(start_time + UsToDelta(1000));
+  player.Tick(start_time + MicrosecondsToDelta(1000));
   float value_before_reversing = target.opacity();
   EXPECT_GT(from, value_before_reversing);
   EXPECT_LT(to, value_before_reversing);
 
-  player.TransitionFloatTo(start_time + UsToDelta(1000),
+  player.TransitionFloatTo(start_time + MicrosecondsToDelta(1000),
                            TargetProperty::OPACITY, target.opacity(), from);
-  player.Tick(start_time + UsToDelta(1000));
+  player.Tick(start_time + MicrosecondsToDelta(1000));
   EXPECT_FLOAT_EQ(value_before_reversing, target.opacity());
 
-  player.Tick(start_time + UsToDelta(1500));
+  player.Tick(start_time + MicrosecondsToDelta(1500));
   value_before_reversing = target.opacity();
   // If the code for reversing transitions does not account for an existing time
   // offset, then reversing a second time will give incorrect values.
-  player.TransitionFloatTo(start_time + UsToDelta(1500),
+  player.TransitionFloatTo(start_time + MicrosecondsToDelta(1500),
                            TargetProperty::OPACITY, target.opacity(), to);
-  player.Tick(start_time + UsToDelta(1500));
+  player.Tick(start_time + MicrosecondsToDelta(1500));
   EXPECT_FLOAT_EQ(value_before_reversing, target.opacity());
 }
 
@@ -643,10 +647,10 @@ TEST(AnimationPlayerTest, RedundantTransition) {
   player.set_target(&target);
   Transition transition;
   transition.target_properties = {TargetProperty::OPACITY};
-  transition.duration = UsToDelta(10000);
+  transition.duration = MicrosecondsToDelta(10000);
   player.set_transition(transition);
 
-  base::TimeTicks start_time = UsToTicks(1000000);
+  base::TimeTicks start_time = MicrosecondsToTicks(1000000);
   player.Tick(start_time);
 
   float from = 1.0f;
@@ -656,7 +660,7 @@ TEST(AnimationPlayerTest, RedundantTransition) {
   EXPECT_EQ(from, target.opacity());
   player.Tick(start_time);
 
-  player.Tick(start_time + UsToDelta(1000));
+  player.Tick(start_time + MicrosecondsToDelta(1000));
   float value_before_redundant_transition = target.opacity();
 
   // While an existing transition is in progress to the same value, we should
@@ -674,10 +678,10 @@ TEST(AnimationPlayerTest, TransitionToSameValue) {
   player.set_target(&target);
   Transition transition;
   transition.target_properties = {TargetProperty::OPACITY};
-  transition.duration = UsToDelta(10000);
+  transition.duration = MicrosecondsToDelta(10000);
   player.set_transition(transition);
 
-  base::TimeTicks start_time = UsToTicks(1000000);
+  base::TimeTicks start_time = MicrosecondsToTicks(1000000);
   player.Tick(start_time);
 
   // Transitioning to the same value should be a no-op.

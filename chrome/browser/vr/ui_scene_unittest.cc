@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_transform_operations.h"
+#include "chrome/browser/vr/test/animation_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform_util.h"
 
@@ -26,10 +27,6 @@
 namespace vr {
 
 namespace {
-
-base::TimeTicks usToTicks(uint64_t us) {
-  return base::TimeTicks::FromInternalValue(us);
-}
 
 void addElement(UiScene* scene, int id) {
   auto element = base::MakeUnique<UiElement>();
@@ -98,7 +95,7 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   gfx::Point3F origin(0, 0, 0);
   gfx::Point3F point(1, 0, 0);
 
-  scene.OnBeginFrame(usToTicks(1));
+  scene.OnBeginFrame(MicrosecondsToTicks(1));
   child->screen_space_transform().TransformPoint(&origin);
   child->screen_space_transform().TransformPoint(&point);
   EXPECT_VEC3F_NEAR(gfx::Point3F(6, 10, 0), origin);
@@ -119,7 +116,7 @@ TEST(UiScene, Opacity) {
   element->SetOpacity(0.5);
   scene.AddUiElement(std::move(element));
 
-  scene.OnBeginFrame(usToTicks(0));
+  scene.OnBeginFrame(MicrosecondsToTicks(0));
   EXPECT_EQ(0.5f, scene.GetUiElementById(0)->computed_opacity());
   EXPECT_EQ(0.25f, scene.GetUiElementById(1)->computed_opacity());
 }
@@ -138,7 +135,7 @@ TEST(UiScene, LockToFov) {
   element->set_lock_to_fov(false);
   scene.AddUiElement(std::move(element));
 
-  scene.OnBeginFrame(usToTicks(0));
+  scene.OnBeginFrame(MicrosecondsToTicks(0));
   EXPECT_TRUE(scene.GetUiElementById(0)->computed_lock_to_fov());
   EXPECT_TRUE(scene.GetUiElementById(1)->computed_lock_to_fov());
 }
@@ -170,7 +167,7 @@ TEST_P(AnchoringTest, VerifyCorrectPosition) {
   element->set_y_anchoring(GetParam().y_anchoring);
   scene.AddUiElement(std::move(element));
 
-  scene.OnBeginFrame(usToTicks(0));
+  scene.OnBeginFrame(MicrosecondsToTicks(0));
   const UiElement* child = scene.GetUiElementById(1);
   EXPECT_NEAR(GetParam().expected_x, child->GetCenter().x(), TOLERANCE);
   EXPECT_NEAR(GetParam().expected_y, child->GetCenter().y(), TOLERANCE);

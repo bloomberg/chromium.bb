@@ -39,20 +39,21 @@ std::unique_ptr<cc::Animation> CreateBoundsAnimation(int id,
   return animation;
 }
 
-base::TimeTicks UsToTicks(uint64_t us) {
-  return base::TimeTicks::FromInternalValue(us);
+base::TimeTicks MicrosecondsToTicks(uint64_t us) {
+  base::TimeTicks to_return;
+  return base::TimeDelta::FromMicroseconds(us) + to_return;
 }
 
-base::TimeDelta UsToDelta(uint64_t us) {
-  return base::TimeDelta::FromInternalValue(us);
+base::TimeDelta MicrosecondsToDelta(uint64_t us) {
+  return base::TimeDelta::FromMicroseconds(us);
 }
 
 base::TimeTicks MsToTicks(uint64_t ms) {
-  return UsToTicks(1000 * ms);
+  return MicrosecondsToTicks(1000 * ms);
 }
 
 base::TimeDelta MsToDelta(uint64_t ms) {
-  return UsToDelta(1000 * ms);
+  return MicrosecondsToDelta(1000 * ms);
 }
 
 }  // namespace vr
