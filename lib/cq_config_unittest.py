@@ -13,17 +13,18 @@ import osutils
 
 from chromite.lib import constants
 from chromite.lib import cq_config
+from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
 
 # pylint: disable=protected-access
 
-class ConfigFileTest(patch_unittest.MockPatchBase):
+class ConfigFileTest(cros_test_lib.MockTestCase):
   """Tests for functions that read config information for a patch."""
 
   def _GetPatch(self, affected_files):
-    p = self.MockPatch()
+    p = patch_unittest.MockPatchFactory().MockPatch()
     mock_diff_status = {path: 'M' for path in affected_files}
     self.PatchObject(cros_patch.GerritPatch, 'GetDiffStatus',
                      return_value=mock_diff_status)
@@ -71,12 +72,13 @@ class ConfigFileTest(patch_unittest.MockPatchBase):
         cq_config.CQConfigParser.GetCommonConfigFileForChange('/', p),
         '/a/b/COMMIT-QUEUE.ini')
 
-class CQConfigParserTest(patch_unittest.MockPatchBase):
+class CQConfigParserTest(cros_test_lib.MockTestCase):
   """Tests for CQConfigParser."""
 
   def setUp(self):
+    self._patch_factory = patch_unittest.MockPatchFactory()
     self.build_root = '/build_root/'
-    self.change = self.MockPatch()
+    self.change = self._patch_factory.MockPatch()
     self.checkout = mock.Mock()
     self.common_config_file = '/build_root/repo/COMMIT-QUEUE.ini'
 
@@ -228,7 +230,7 @@ class CQConfigParserTest(patch_unittest.MockPatchBase):
           '[GENERAL]\npre-cq-configs: lakitu-pre-cq\n',
           file_rel_path=os.path.join('test', 'test-copy.py'))
       diff_dict = {f: 'M' for f in (f_1, f_2, f_3, f_4)}
-      change = self.MockPatch()
+      change = self._patch_factory.MockPatch()
       self.PatchObject(cros_patch.GerritPatch, 'GetDiffStatus',
                        return_value=diff_dict)
       parser = self.CreateCQConfigParser(

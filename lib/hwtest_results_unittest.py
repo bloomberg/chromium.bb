@@ -29,12 +29,13 @@ class HWTestResultTest(cros_test_lib.MockTestCase):
         'security_NetworkListeners'), 'security_NetworkListeners')
 
 
-class HWTestResultManagerTest(patch_unittest.MockPatchBase):
+class HWTestResultManagerTest(cros_test_lib.MockTestCase):
   """Tests for HWTestResultManager."""
 
   def setUp(self):
     self.manager = hwtest_results.HWTestResultManager()
     self.db = fake_cidb.FakeCIDBConnection()
+    self._patch_factory = patch_unittest.MockPatchFactory()
 
   def _ReportHWTestResults(self):
     build_1 = self.db.InsertBuild('build_1', constants.WATERFALL_INTERNAL, 1,
@@ -131,8 +132,8 @@ class HWTestResultManagerTest(patch_unittest.MockPatchBase):
   def testFindHWTestFailureSuspects(self):
     """Test FindHWTestFailureSuspects."""
     self.PatchObject(git.ManifestCheckout, 'Cached')
-    c1 = self.MockPatch(change_id=1, patch_number=1)
-    c2 = self.MockPatch(change_id=2, patch_number=1)
+    c1 = self._patch_factory.MockPatch(change_id=1, patch_number=1)
+    c2 = self._patch_factory.MockPatch(change_id=2, patch_number=1)
     test_1 = mock.Mock()
     test_2 = mock.Mock()
     self.PatchObject(hwtest_results.HWTestResultManager,
@@ -147,8 +148,8 @@ class HWTestResultManagerTest(patch_unittest.MockPatchBase):
   def testFindHWTestFailureSuspectsNoAssignees(self):
     """Test FindHWTestFailureSuspects when failures don't have assignees."""
     self.PatchObject(git.ManifestCheckout, 'Cached')
-    c1 = self.MockPatch(change_id=1, patch_number=1)
-    c2 = self.MockPatch(change_id=2, patch_number=1)
+    c1 = self._patch_factory.MockPatch(change_id=1, patch_number=1)
+    c2 = self._patch_factory.MockPatch(change_id=2, patch_number=1)
     test_1 = mock.Mock()
     test_2 = mock.Mock()
     self.PatchObject(hwtest_results.HWTestResultManager,
@@ -163,8 +164,8 @@ class HWTestResultManagerTest(patch_unittest.MockPatchBase):
   def testFindHWTestFailureSuspectsNoFailedHWTests(self):
     """Test FindHWTestFailureSuspects with empty failed HWTests."""
     self.PatchObject(git.ManifestCheckout, 'Cached')
-    c1 = self.MockPatch(change_id=1, patch_number=1)
-    c2 = self.MockPatch(change_id=2, patch_number=1)
+    c1 = self._patch_factory.MockPatch(change_id=1, patch_number=1)
+    c2 = self._patch_factory.MockPatch(change_id=2, patch_number=1)
     suspects, no_assignee_hwtests = self.manager.FindHWTestFailureSuspects(
         [c1, c2], mock.Mock(), set())
 

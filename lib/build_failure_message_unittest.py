@@ -10,6 +10,7 @@ import mock
 
 from chromite.lib import build_failure_message
 from chromite.lib import constants
+from chromite.lib import cros_test_lib
 from chromite.lib import failure_message_lib
 from chromite.lib import failure_message_lib_unittest
 from chromite.lib import hwtest_results
@@ -21,7 +22,7 @@ from chromite.lib import triage_lib
 failure_message_helper = failure_message_lib_unittest.FailureMessageHelper()
 
 
-class BuildFailureMessageTests(patch_unittest.MockPatchBase):
+class BuildFailureMessageTests(cros_test_lib.MockTestCase):
   """Tests for BuildFailureMessage."""
 
   def ConstructBuildFailureMessage(self, message_summary="message_summary",
@@ -29,6 +30,9 @@ class BuildFailureMessageTests(patch_unittest.MockPatchBase):
                                    reason='reason', builder='builder'):
     return build_failure_message.BuildFailureMessage(
         message_summary, failure_messages, internal, reason, builder)
+
+  def setUp(self):
+    self._patch_factory = patch_unittest.MockPatchFactory()
 
   def _GetBuildFailureMessageWithMixedMsgs(self):
     failure_messages = (
@@ -135,12 +139,14 @@ class BuildFailureMessageTests(patch_unittest.MockPatchBase):
         {constants.EXCEPTION_CATEGORY_LAB}))
 
   def _GetMockChanges(self):
-    mock_change_1 = self.MockPatch(
+    mock_change_1 = self._patch_factory.MockPatch(
         project='chromiumos/overlays/chromiumos-overlay')
-    mock_change_2 = self.MockPatch(
+    mock_change_2 = self._patch_factory.MockPatch(
         project='chromiumos/overlays/chromiumos-overlay')
-    mock_change_3 = self.MockPatch(project='chromiumos/chromite')
-    mock_change_4 = self.MockPatch(project='chromeos/chromeos-admin')
+    mock_change_3 = self._patch_factory.MockPatch(
+        project='chromiumos/chromite')
+    mock_change_4 = self._patch_factory.MockPatch(
+        project='chromeos/chromeos-admin')
     return [mock_change_1, mock_change_2, mock_change_3, mock_change_4]
 
   def _CreateBuildFailure(self):

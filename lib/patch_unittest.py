@@ -1259,19 +1259,6 @@ class TestFormatting(cros_test_lib.TestCase):
                     ['145462399', 'I47ea3', 'i47ea3'.ljust(41, '0')])
 
 
-class MockPatchBase(cros_test_lib.MockTestCase):
-  """Base test case with helper methods to generate mock patches."""
-
-  def setUp(self):
-    self._patch_factory = MockPatchFactory()
-
-  def MockPatch(self, *args, **kwargs):
-    return self._patch_factory.MockPatch(*args, **kwargs)
-
-  def GetPatches(self, *args, **kwargs):
-    return self._patch_factory.GetPatches(*args, **kwargs)
-
-
 class MockPatchFactory(object):
   """Helper class to create patches or series of them, for unit tests."""
 
@@ -1345,12 +1332,12 @@ class MockPatchFactory(object):
     return patches
 
 
-class DependencyErrorTests(MockPatchBase):
+class DependencyErrorTests(cros_test_lib.MockTestCase):
   """Tests for DependencyError."""
 
   def testGetRootError(self):
     """Test GetRootError on nested DependencyError."""
-    p_1, p_2, p_3 = self.GetPatches(how_many=3)
+    p_1, p_2, p_3 = MockPatchFactory().GetPatches(how_many=3)
     ex_1 = cros_patch.ApplyPatchException(p_1)
     ex_2 = cros_patch.DependencyError(p_2, ex_1)
     ex_3 = cros_patch.DependencyError(p_3, ex_2)
@@ -1359,7 +1346,7 @@ class DependencyErrorTests(MockPatchBase):
 
   def testGetRootErrorOnCircurlarError(self):
     """Test GetRootError on circular"""
-    p_1, p_2, p_3 = self.GetPatches(how_many=3)
+    p_1, p_2, p_3 = MockPatchFactory().GetPatches(how_many=3)
     ex_1 = cros_patch.DependencyError(p_2, cros_patch.ApplyPatchException(p_1))
     ex_2 = cros_patch.DependencyError(p_2, ex_1)
     ex_3 = cros_patch.DependencyError(p_3, ex_2)

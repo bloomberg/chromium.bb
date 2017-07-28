@@ -14,6 +14,7 @@ from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import relevant_changes
 from chromite.lib import builder_status_lib
 from chromite.lib import build_failure_message
+from chromite.lib import cros_test_lib
 from chromite.lib import clactions
 from chromite.lib import constants
 from chromite.lib import fake_cidb
@@ -23,7 +24,7 @@ from chromite.lib import triage_lib
 
 
 # pylint: disable=protected-access
-class RelevantChangesTest(patch_unittest.MockPatchBase):
+class RelevantChangesTest(cros_test_lib.MockTestCase):
   """Tests for RelevantChanges."""
 
   def setUp(self):
@@ -34,6 +35,7 @@ class RelevantChangesTest(patch_unittest.MockPatchBase):
     self.fake_cidb = fake_cidb.FakeCIDBConnection()
     self.master_build_id = self.fake_cidb.InsertBuild(
         self._bot_id, 'chromeos', '1', self._bot_id, 'bot_hostname')
+    self._patch_factory = patch_unittest.MockPatchFactory()
 
   def _InsertSlaveBuildAndCLActions(self, slave_config, changes=None,
                                     master_build_id=None,
@@ -43,7 +45,7 @@ class RelevantChangesTest(patch_unittest.MockPatchBase):
       master_build_id = self.master_build_id
 
     if changes is None:
-      changes = set(self.GetPatches(how_many=4))
+      changes = set(self._patch_factory.GetPatches(how_many=4))
 
     test_build_id = self.fake_cidb.InsertBuild(
         slave_config, 'chromeos', '2', slave_config, 'bot_hostname',
@@ -101,8 +103,8 @@ class RelevantChangesTest(patch_unittest.MockPatchBase):
 
   def testGetRelevantChangesForSlaves(self):
     """Tests the logic of GetRelevantChangesForSlaves()."""
-    change_set1 = set(self.GetPatches(how_many=2))
-    change_set2 = set(self.GetPatches(how_many=3))
+    change_set1 = set(self._patch_factory.GetPatches(how_many=2))
+    change_set2 = set(self._patch_factory.GetPatches(how_many=3))
     changes = set.union(change_set1, change_set2)
     no_stat = ['no_stat-paladin']
     config_map = {'123': 'foo-paladin',
@@ -167,7 +169,7 @@ class RelevantChangesTest(patch_unittest.MockPatchBase):
     new_master_build_id = self.fake_cidb.InsertBuild(
         self._bot_id, 'chromeos', '1', self._bot_id, 'bot_hostname',
         master_build_id=self.master_build_id)
-    changes = self.GetPatches(how_many=2)
+    changes = self._patch_factory.GetPatches(how_many=2)
     self._InsertSlaveBuildAndCLActions(
         'slave_1', changes=changes, master_build_id=self.master_build_id)
     change_relevant_slaves_dict = {
@@ -186,7 +188,7 @@ class RelevantChangesTest(patch_unittest.MockPatchBase):
     new_master_build_id = self.fake_cidb.InsertBuild(
         self._bot_id, 'chromeos', '1', self._bot_id, 'bot_hostname',
         master_build_id=self.master_build_id)
-    changes = self.GetPatches(how_many=2)
+    changes = self._patch_factory.GetPatches(how_many=2)
     self._InsertSlaveBuildAndCLActions(
         'slave_5', changes=changes, master_build_id=self.master_build_id,
         action=constants.CL_ACTION_RELEVANT_TO_SLAVE)
@@ -206,7 +208,7 @@ class RelevantChangesTest(patch_unittest.MockPatchBase):
     new_master_build_id = self.fake_cidb.InsertBuild(
         self._bot_id, 'chromeos', '1', self._bot_id, 'bot_hostname',
         master_build_id=self.master_build_id)
-    changes = self.GetPatches(how_many=2)
+    changes = self._patch_factory.GetPatches(how_many=2)
     self._InsertSlaveBuildAndCLActions(
         'slave_1', changes=changes, master_build_id=self.master_build_id,
         action=constants.CL_ACTION_RELEVANT_TO_SLAVE,
@@ -227,7 +229,7 @@ class RelevantChangesTest(patch_unittest.MockPatchBase):
     new_master_build_id = self.fake_cidb.InsertBuild(
         self._bot_id, 'chromeos', '1', self._bot_id, 'bot_hostname',
         master_build_id=self.master_build_id)
-    changes = self.GetPatches(how_many=2)
+    changes = self._patch_factory.GetPatches(how_many=2)
     self._InsertSlaveBuildAndCLActions(
         'slave_1', changes=changes, master_build_id=new_master_build_id,
         action=constants.CL_ACTION_RELEVANT_TO_SLAVE)
@@ -251,7 +253,7 @@ class RelevantChangesTest(patch_unittest.MockPatchBase):
     new_master_build_id = self.fake_cidb.InsertBuild(
         self._bot_id, 'chromeos', '1', self._bot_id, 'bot_hostname',
         master_build_id=self.master_build_id)
-    changes = self.GetPatches(how_many=2)
+    changes = self._patch_factory.GetPatches(how_many=2)
     self._InsertSlaveBuildAndCLActions(
         'slave_1', changes=changes, master_build_id=self.master_build_id,
         status=constants.BUILDER_STATUS_FAILED,
@@ -286,7 +288,7 @@ class RelevantChangesTest(patch_unittest.MockPatchBase):
     self.assertDictEqual(result, expected)
 
 
-class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
+class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
   """Tests for TriageRelevantChanges."""
   FAIL = constants.BUILDER_STATUS_FAILED
   PASS = constants.BUILDER_STATUS_PASSED
@@ -299,6 +301,7 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
 
   def setUp(self):
     self._bot_id = 'master-paladin'
+    self._patch_factory = patch_unittest.MockPatchFactory()
     self.site_config = chromeos_config.GetConfig()
     self.build_config = self.site_config[self._bot_id]
     self.fake_cidb = fake_cidb.FakeCIDBConnection()
@@ -310,7 +313,7 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
                             for bb_info in self.buildbucket_info_dict.values()]
     self.master_build_id = self.fake_cidb.InsertBuild(
         self._bot_id, 'chromeos', '1', self._bot_id, 'bot_hostname')
-    self.changes = self.GetPatches(how_many=4)
+    self.changes = self._patch_factory.GetPatches(how_many=4)
     self._InsertCLActionsForBuild(self.master_build_id, self.changes,
                                   constants.CL_ACTION_PICKED_UP)
     self.version = '9289.0.0-rc2'
@@ -405,7 +408,7 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
 
   def _BuildDependMap(self):
     """Helper method to build dependency_map for GetDependChanges tests."""
-    p = self.GetPatches(how_many=6)
+    p = self._patch_factory.GetPatches(how_many=6)
     dependency_map = {
         # p1, p2, p3 depend on p0
         p[0]: {p[1], p[2], p[3]},
@@ -1155,7 +1158,7 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
     self._MockForTestShouldSelfDestruct()
     triage_changes = self.GetTriageRelevantChanges()
     triage_changes.might_submit = set()
-    triage_changes.will_not_submit = self.GetPatches(how_many=2)
+    triage_changes.will_not_submit = self._patch_factory.GetPatches(how_many=2)
 
     self._MockAllCompletedSlavesPassedUploadPrebuiltsStage(True)
     self._MockAllUncompletedSlavesPassedUploadPrebuiltsStage(True)

@@ -473,12 +473,12 @@ class ReportStageNoSyncTest(AbstractReportStageTestCase):
 
 
 class DetectRelevantChangesStageTest(
-    generic_stages_unittest.AbstractStageTestCase,
-    patch_unittest.MockPatchBase):
+    generic_stages_unittest.AbstractStageTestCase):
   """Test the DetectRelevantChangesStage."""
 
   def setUp(self):
-    self.changes = self.GetPatches(how_many=2)
+    self._patch_factory = patch_unittest.MockPatchFactory()
+    self.changes = self._patch_factory.GetPatches(how_many=2)
 
     self._Prepare()
 

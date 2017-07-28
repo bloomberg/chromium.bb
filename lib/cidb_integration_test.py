@@ -987,11 +987,12 @@ class HWTestResultTableTest(CIDBIntegrationTest):
     self.assertItemsEqual(bot_db.GetHWTestResultsForBuilds([3]), [])
 
 
-class CLActionTableTest(CIDBIntegrationTest, patch_unittest.MockPatchBase):
+class CLActionTableTest(CIDBIntegrationTest):
   """Tests for CLActionTable."""
 
   def setUp(self):
-    self.changes = self.GetPatches(how_many=3)
+    self._patch_factory = patch_unittest.MockPatchFactory()
+    self.changes = self._patch_factory.GetPatches(how_many=3)
     self.actions = [
         clactions.CLAction.FromGerritPatchAndAction(
             self.changes[0], constants.CL_ACTION_PICKED_UP),
@@ -1056,8 +1057,9 @@ class CLActionTableTest(CIDBIntegrationTest, patch_unittest.MockPatchBase):
     self._AssertAction(result[3], self.build_config_2, self.changes[1])
 
     # Test GetActionsForChanges with ignore_patch_number
-    change_1 = self.MockPatch(change_id=int(self.changes[0].gerrit_number),
-                              patch_number=10)
+    change_1 = self._patch_factory.MockPatch(
+        change_id=int(self.changes[0].gerrit_number),
+        patch_number=10)
     result = bot_db.GetActionsForChanges([change_1])
     self.assertEqual(len(result), 2)
     result = bot_db.GetActionsForChanges([change_1], ignore_patch_number=False)

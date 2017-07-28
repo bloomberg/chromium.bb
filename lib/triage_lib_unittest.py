@@ -13,6 +13,7 @@ from chromite.lib import build_failure_message
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cq_config
+from chromite.lib import cros_test_lib
 from chromite.lib import failure_message_lib_unittest
 from chromite.lib import gerrit
 from chromite.lib import patch as cros_patch
@@ -25,15 +26,16 @@ site_config = config_lib.GetConfig()
 failure_msg_helper = failure_message_lib_unittest.FailureMessageHelper()
 
 
-class GetTestSubsystemForChangeTests(patch_unittest.MockPatchBase):
+class GetTestSubsystemForChangeTests(cros_test_lib.MockTestCase):
   """Tests for GetTestSubsystemForChange."""
 
   def setUp(self):
     self.PatchObject(cq_config.CQConfigParser, 'GetCommonConfigFileForChange')
+    self._patch_factory = patch_unittest.MockPatchFactory()
 
   def testGetSubsystemFromValidCommitMessage(self):
     """Test whether we can get subsystem from commit message."""
-    change = self.MockPatch(
+    change = self._patch_factory.MockPatch(
         commit_message='First line\nThird line\nsubsystem: network audio\n'
                        'subsystem: wifi')
     self.PatchObject(cq_config.CQConfigParser, 'GetOption',
@@ -43,7 +45,7 @@ class GetTestSubsystemForChangeTests(patch_unittest.MockPatchBase):
 
   def testGetSubsystemFromInvalidCommitMessage(self):
     """Test get subsystem from config file when commit message not have it."""
-    change = self.MockPatch(
+    change = self._patch_factory.MockPatch(
         commit_message='First line\nThird line\n')
     self.PatchObject(cq_config.CQConfigParser, 'GetOption',
                      return_value='power light')
@@ -52,7 +54,7 @@ class GetTestSubsystemForChangeTests(patch_unittest.MockPatchBase):
 
   def testGetDefaultSubsystem(self):
     """Test if we can get default subsystem when subsystem is not specified."""
-    change = self.MockPatch(
+    change = self._patch_factory.MockPatch(
         commit_message='First line\nThird line\n')
     self.PatchObject(cq_config.CQConfigParser, 'GetOption',
                      return_value=None)
@@ -96,22 +98,24 @@ class MessageHelper(object):
         stage_name=stage)
 
 # pylint: disable=protected-access
-class TestFindSuspects(patch_unittest.MockPatchBase):
+class TestFindSuspects(cros_test_lib.MockTestCase):
   """Tests CalculateSuspects."""
 
   def setUp(self):
     overlay = 'chromiumos/overlays/chromiumos-overlay'
-    self.overlay_patch = self.GetPatches(project=overlay)
+    self._patch_factory = patch_unittest.MockPatchFactory()
+    self.overlay_patch = self._patch_factory.GetPatches(project=overlay)
     chromite = 'chromiumos/chromite'
-    self.chromite_patch = self.GetPatches(project=chromite)
+    self.chromite_patch = self._patch_factory.GetPatches(project=chromite)
     self.power_manager = 'chromiumos/platform2/power_manager'
     self.power_manager_pkg = 'chromeos-base/power_manager'
-    self.power_manager_patch = self.GetPatches(project=self.power_manager)
+    self.power_manager_patch = self._patch_factory.GetPatches(
+        project=self.power_manager)
     self.kernel = 'chromiumos/third_party/kernel/foo'
     self.kernel_pkg = 'sys-kernel/chromeos-kernel-foo'
-    self.kernel_patch = self.GetPatches(project=self.kernel)
+    self.kernel_patch = self._patch_factory.GetPatches(project=self.kernel)
     self.secret = 'chromeos/secret'
-    self.secret_patch = self.GetPatches(
+    self.secret_patch = self._patch_factory.GetPatches(
         project=self.secret, remote=site_config.params.INTERNAL_REMOTE)
     self.PatchObject(cros_patch.GitRepoPatch, 'GetCheckout')
     self.PatchObject(cros_patch.GitRepoPatch, 'GetDiffStatus')
@@ -254,8 +258,8 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     approvals2 = [{'type': 'VRIF', 'value': '1', 'grantedOn': 1391733002},
                   {'type': 'CRVW', 'value': '-2', 'grantedOn': 1391733002},
                   {'type': 'COMR', 'value': '1', 'grantedOn': 1391733002},]
-    suspects = [self.MockPatch(approvals=approvals1),
-                self.MockPatch(approvals=approvals2)]
+    suspects = [self._patch_factory.MockPatch(approvals=approvals1),
+                self._patch_factory.MockPatch(approvals=approvals2)]
     changes = [self.kernel_patch, self.chromite_patch] + suspects
     self._AssertSuspects(changes, suspects, lab_fail=False, infra_fail=False)
     self._AssertSuspects(changes, suspects, lab_fail=True, infra_fail=False)
@@ -397,12 +401,13 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     self.assertItemsEqual(suspects.keys(), self.changes)
 
 
-class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
+class TestGetFullyVerifiedChanges(cros_test_lib.MockTestCase):
   """Tests GetFullyVerifiedChanges() and related functions."""
 
   def setUp(self):
     self.build_root = '/foo/build/root'
-    self.changes = self.GetPatches(how_many=5)
+    self._patch_factory = patch_unittest.MockPatchFactory()
+    self.changes = self._patch_factory.GetPatches(how_many=5)
 
   def testChangesNoAllTested(self):
     """Tests that those changes are fully verified."""
@@ -592,11 +597,12 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
         constants.STRATEGY_CQ_PARTIAL_IGNORED_STAGES)
 
 
-class SuspectChangesTest(patch_unittest.MockPatchBase):
+class SuspectChangesTest(cros_test_lib.MockTestCase):
   """Tests for SuspectChanges."""
 
   def setUp(self):
-    self.patches = self.GetPatches(how_many=3)
+    self._patch_factory = patch_unittest.MockPatchFactory()
+    self.patches = self._patch_factory.GetPatches(how_many=3)
 
   def _CreateSuspectChanges(self, suspect_dict=None):
     return triage_lib.SuspectChanges(suspect_dict)

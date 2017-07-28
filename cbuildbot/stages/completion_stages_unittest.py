@@ -32,7 +32,6 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import fake_cidb
 from chromite.lib import hwtest_results
-from chromite.lib import patch_unittest
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
 
@@ -583,8 +582,7 @@ class CanaryCompletionStageTest(
 
 
 class BaseCommitQueueCompletionStageTest(
-    generic_stages_unittest.AbstractStageTestCase,
-    patch_unittest.MockPatchBase):
+    generic_stages_unittest.AbstractStageTestCase):
   """Tests how CQ handles changes in CommitQueueCompletionStage."""
 
   def setUp(self):

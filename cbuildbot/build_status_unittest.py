@@ -15,8 +15,9 @@ from chromite.cbuildbot import relevant_changes
 from chromite.cbuildbot import validation_pool_unittest
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
-from chromite.lib import constants
 from chromite.lib import config_lib
+from chromite.lib import constants
+from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.lib import metadata_lib
 from chromite.lib import patch_unittest
@@ -185,7 +186,7 @@ class CIDBStatusInfos(object):
     return cidb_status
 
 
-class SlaveStatusTest(patch_unittest.MockPatchBase):
+class SlaveStatusTest(cros_test_lib.MockTestCase):
   """Test methods testing methods in SalveStatus class."""
 
   def setUp(self):
@@ -204,6 +205,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     self.db = fake_cidb.FakeCIDBConnection()
     self.buildbucket_client = mock.Mock()
     self.PatchObject(tree_status, 'GetExperimentalBuilders', return_value=[])
+    self._patch_factory = patch_unittest.MockPatchFactory()
 
   def _GetSlaveStatus(self, start_time=None, builders_array=None,
                       master_build_id=None, db=None, config=None,
@@ -285,17 +287,17 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
 
   def testGetSlaveStatusWithValidationPool(self):
     """Test build SlaveStatus with ValidationPool."""
-    self.patch_mock = self.StartPatcher(
+    patch_mock = self.StartPatcher(
         validation_pool_unittest.MockPatchSeries())
-    p = self.GetPatches(how_many=3)
+    p = self._patch_factory.GetPatches(how_many=3)
     pool = validation_pool_unittest.MakePool(applied=p)
 
-    self.patch_mock.SetGerritDependencies(p[0], [])
-    self.patch_mock.SetGerritDependencies(p[1], [])
-    self.patch_mock.SetGerritDependencies(p[2], [])
+    patch_mock.SetGerritDependencies(p[0], [])
+    patch_mock.SetGerritDependencies(p[1], [])
+    patch_mock.SetGerritDependencies(p[2], [])
 
-    self.patch_mock.SetCQDependencies(p[1], [p[0]])
-    self.patch_mock.SetCQDependencies(p[2], [p[0]])
+    patch_mock.SetCQDependencies(p[1], [p[0]])
+    patch_mock.SetCQDependencies(p[2], [p[0]])
 
     slave_status = self._GetSlaveStatus(
         builders_array=self._GetFullBuildConfigs(),
