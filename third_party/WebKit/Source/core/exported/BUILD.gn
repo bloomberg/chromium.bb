@@ -91,6 +91,7 @@ blink_core_sources("exported") {
     "WebTextCheckingResult.cpp",
     "WebUserGestureIndicator.cpp",
     "WebUserGestureToken.cpp",
+    "WebV8ContextSnapshot.cpp",
     "WebViewBase.cpp",
     "WebViewBase.h",
     "WebViewImpl.cpp",
