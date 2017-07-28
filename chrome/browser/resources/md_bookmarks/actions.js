@@ -193,14 +193,15 @@ cr.define('bookmarks.actions', function() {
   /**
    * @param {Array<string>} ids
    * @param {BookmarksPageState} state
+   * @param {string=} anchor
    * @return {!Action}
    */
-  function selectAll(ids, state) {
+  function selectAll(ids, state, anchor) {
     return {
       name: 'select-items',
       clear: true,
       toggle: false,
-      anchor: state.selection.anchor,
+      anchor: anchor ? anchor : state.selection.anchor,
       items: ids,
     };
   }

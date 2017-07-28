@@ -7,12 +7,21 @@ suite('<bookmarks-command-manager>', function() {
   var store;
   var lastCommand;
   var lastCommandIds;
+  var bmpCopyFunction;
+  var bmpPasteFunction;
 
   suiteSetup(function() {
     // Overwrite bookmarkManagerPrivate APIs which will crash if called with
     // fake data.
+    bmpCopyFunction = chrome.bookmarkManagerPrivate.copy;
+    bmpPasteFunction = chrome.bookmarkManagerPrivate.paste;
     chrome.bookmarkManagerPrivate.copy = function() {};
     chrome.bookmarkManagerPrivate.removeTrees = function() {};
+  });
+
+  suiteTeardown(function() {
+    chrome.bookmarkManagerPrivate.copy = bmpCopyFunction;
+    chrome.bookmarkManagerPrivate.paste = bmpPasteFunction;
   });
 
   setup(function() {
@@ -139,11 +148,10 @@ suite('<bookmarks-command-manager>', function() {
       lastPaste = selectedFolder;
     };
 
-    var modifier = cr.isMac ? 'meta' : 'ctrl';
-
     store.data.selection.items = new Set(['11', '13']);
     store.notifyObservers();
 
+    var modifier = cr.isMac ? 'meta' : 'ctrl';
     MockInteractions.pressAndReleaseKeyOn(document.body, '', modifier, 'x');
     assertDeepEquals(['11', '13'], lastCut);
     MockInteractions.pressAndReleaseKeyOn(document.body, '', modifier, 'v');
@@ -436,5 +444,81 @@ suite('<bookmarks-item> CommandManager integration', function() {
     simulateDoubleClick(items[2], {ctrlKey: true});
 
     assertOpenedTabs(['http://111/', 'http://13/']);
+  });
+});
+
+suite('<bookmarks-command-manager> whole page integration', function() {
+  var app;
+  var store;
+  var commandManager;
+
+  var testFolderId;
+
+  function create(bookmark) {
+    return new Promise(function(resolve) {
+      chrome.bookmarks.create(bookmark, resolve);
+    });
+  }
+
+  suiteSetup(function() {
+    var testFolder = {
+      parentId: '1',
+      title: 'Test',
+    };
+    return create(testFolder).then(function(testFolderNode) {
+      testFolderId = testFolderNode.id;
+      var testItem = {
+        parentId: testFolderId,
+        title: 'Test bookmark',
+        url: 'https://www.example.com/',
+      };
+      return Promise.all([
+        create(testItem),
+        create(testItem),
+      ]);
+    });
+  });
+
+  setup(function() {
+    store = new bookmarks.TestStore({});
+    store.replaceSingleton();
+    store.setReducersEnabled(true);
+    var promise = store.acceptInitOnce();
+    var app = document.createElement('bookmarks-app');
+    replaceBody(app);
+
+    commandManager = bookmarks.CommandManager.getInstance();
+
+    return promise.then(() => {
+      store.dispatch(bookmarks.actions.selectFolder(testFolderId));
+    });
+  });
+
+  test('paste selects newly created items', function() {
+    var displayedIdsBefore = bookmarks.util.getDisplayedList(store.data);
+    commandManager.handle(Command.SELECT_ALL, new Set());
+    commandManager.handle(Command.COPY, new Set(displayedIdsBefore));
+
+    store.expectAction('select-items');
+    commandManager.handle(Command.PASTE, new Set());
+
+    return store.waitForAction('select-items').then(function(action) {
+      var displayedIdsAfter = bookmarks.util.getDisplayedList(store.data);
+      assertEquals(4, displayedIdsAfter.length);
+
+      // The start of the list shouldn't change.
+      assertEquals(displayedIdsBefore[0], displayedIdsAfter[0]);
+      assertEquals(displayedIdsBefore[1], displayedIdsAfter[1]);
+
+      // The two pasted items should be selected at the end of the list.
+      assertEquals(action.items[0], displayedIdsAfter[2]);
+      assertEquals(action.items[1], displayedIdsAfter[3]);
+      assertEquals(2, action.items.length);
+      assertEquals(action.anchor, displayedIdsAfter[2]);
+    });
+  });
+
+  suiteTeardown(function(done) {
+    chrome.bookmarks.removeTree(testFolderId, () => done());
   });
 });

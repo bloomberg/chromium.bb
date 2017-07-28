@@ -70,6 +70,13 @@ suite('<bookmarks-list>', function() {
     list.displayedIds_ = ['1', '3', '7', '5'];
     assertDeepEquals(list.displayedIds_, list.displayedList_.map(n => n.id));
   });
+
+  test('selects all valid IDs on highlight-items', function() {
+    list.fire('highlight-items', ['10', '1', '3', '9']);
+    assertEquals('select-items', store.lastAction.name);
+    assertEquals('1', store.lastAction.anchor);
+    assertDeepEquals(['1', '3'], store.lastAction.items);
+  });
 });
 
 suite('<bookmarks-list> integration test', function() {

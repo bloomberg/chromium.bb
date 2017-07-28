@@ -77,6 +77,7 @@ Polymer({
   detached: function() {
     window.removeEventListener('resize', this.boundUpdateSidebarWidth_);
     this.dndManager_.destroy();
+    bookmarks.ApiListener.destroy();
   },
 
   /**
