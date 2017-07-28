@@ -277,6 +277,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   // Clear node's current relationships and set them to the default values.
   void CalculateRelationships();
+  static AXPlatformNode* GetFromUniqueId(int32_t unique_id);
+  int32_t unique_id() const { return unique_id_; }
 
   // AXPlatformNode overrides.
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
@@ -650,6 +652,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   void Dispose() override;
 
  private:
+  int32_t unique_id_;
+
   int MSAAEvent(ui::AXEvent event);
   bool IsWebAreaForPresentationalIframe();
   bool ShouldNodeHaveReadonlyStateByDefault(const AXNodeData& data) const;

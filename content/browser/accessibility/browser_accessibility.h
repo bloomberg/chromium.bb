@@ -75,8 +75,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   virtual ~BrowserAccessibility();
 
-  static BrowserAccessibility* GetFromUniqueID(int32_t unique_id);
-
   // Called only once, immediately after construction. The constructor doesn't
   // take any arguments because in the Windows subclass we use a special
   // function to construct a COM object.
@@ -207,7 +205,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   BrowserAccessibilityManager* manager() const { return manager_; }
   bool instance_active() const { return node_ && manager_; }
   ui::AXNode* node() const { return node_; }
-  int32_t unique_id() const { return unique_id_; }
 
   // These access the internal accessibility tree, which doesn't necessarily
   // reflect the accessibility tree that should be exposed on each platform.

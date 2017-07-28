@@ -137,7 +137,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_uniqueID(LONG* unique_id) {
   if (!unique_id)
     return E_INVALIDARG;
 
-  *unique_id = -owner()->unique_id();
+  *unique_id = -AXPlatformNodeWin::unique_id();
   return S_OK;
 }
 
@@ -1249,8 +1249,8 @@ STDMETHODIMP BrowserAccessibilityComWin::get_hyperlink(
   }
 
   int32_t id = hyperlinks()[index];
-  BrowserAccessibilityComWin* link =
-      ToBrowserAccessibilityComWin(owner()->GetFromUniqueID(id));
+  auto* link = static_cast<BrowserAccessibilityComWin*>(
+      AXPlatformNodeWin::GetFromUniqueId(id));
   if (!link)
     return E_FAIL;
 
@@ -1708,7 +1708,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_nodeInfo(
   *name_space_id = 0;
   *node_value = SysAllocString(value().c_str());
   *num_children = owner()->PlatformChildCount();
-  *unique_id = -owner()->unique_id();
+  *unique_id = -AXPlatformNodeWin::unique_id();
 
   if (owner()->IsDocument()) {
     *node_type = NODETYPE_DOCUMENT;
@@ -2462,7 +2462,7 @@ void BrowserAccessibilityComWin::UpdateStep2ComputeHypertext() {
       win_attributes_->hypertext += child->name();
     } else {
       int32_t char_offset = static_cast<int32_t>(owner()->GetText().size());
-      int32_t child_unique_id = child->owner()->unique_id();
+      int32_t child_unique_id = child->unique_id();
       int32_t index = hyperlinks().size();
       win_attributes_->hyperlink_offset_to_index[char_offset] = index;
       win_attributes_->hyperlinks.push_back(child_unique_id);
@@ -2575,12 +2575,6 @@ void BrowserAccessibilityComWin::Destroy() {
 void BrowserAccessibilityComWin::Init(ui::AXPlatformNodeDelegate* delegate) {
   owner_ = static_cast<BrowserAccessibilityWin*>(delegate);
   AXPlatformNodeBase::Init(delegate);
-}
-
-ui::AXPlatformNode* BrowserAccessibilityComWin::GetFromUniqueId(
-    int32_t unique_id) {
-  return ToBrowserAccessibilityComWin(
-      BrowserAccessibility::GetFromUniqueID(unique_id));
 }
 
 std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
@@ -2831,8 +2825,8 @@ BrowserAccessibilityComWin* BrowserAccessibilityComWin::GetTargetFromChildID(
     return ToBrowserAccessibilityComWin(
         owner()->PlatformGetChild(child_id - 1));
 
-  BrowserAccessibilityComWin* child = ToBrowserAccessibilityComWin(
-      BrowserAccessibility::GetFromUniqueID(-child_id));
+  auto* child = static_cast<BrowserAccessibilityComWin*>(
+      AXPlatformNodeWin::GetFromUniqueId(-child_id));
   if (child && child->owner()->IsDescendantOf(owner()))
     return child;
 
@@ -2906,8 +2900,8 @@ BrowserAccessibilityComWin::GetHyperlinkFromHypertextOffset(int offset) const {
   DCHECK_GE(index, 0);
   DCHECK_LT(index, static_cast<int32_t>(hyperlinks().size()));
   int32_t id = hyperlinks()[index];
-  BrowserAccessibilityComWin* hyperlink =
-      ToBrowserAccessibilityComWin(owner()->GetFromUniqueID(id));
+  auto* hyperlink = static_cast<BrowserAccessibilityComWin*>(
+      AXPlatformNodeWin::GetFromUniqueId(id));
   if (!hyperlink)
     return nullptr;
   return hyperlink;
@@ -2918,8 +2912,8 @@ int32_t BrowserAccessibilityComWin::GetHyperlinkIndexFromChild(
   if (hyperlinks().empty())
     return -1;
 
-  auto iterator = std::find(hyperlinks().begin(), hyperlinks().end(),
-                            child.owner()->unique_id());
+  auto iterator =
+      std::find(hyperlinks().begin(), hyperlinks().end(), child.unique_id());
   if (iterator == hyperlinks().end())
     return -1;
 

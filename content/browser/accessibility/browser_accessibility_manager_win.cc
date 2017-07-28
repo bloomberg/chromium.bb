@@ -202,7 +202,7 @@ BrowserAccessibilityEvent::Result
   // argument to NotifyWinEvent; the AT client will then call get_accChild
   // on the HWND's accessibility object and pass it that same id, which
   // we can use to retrieve the IAccessible for this node.
-  LONG child_id = -target->unique_id();
+  LONG child_id = -(ToBrowserAccessibilityWin(target)->GetCOM()->unique_id());
   ::NotifyWinEvent(win_event_type, hwnd, OBJID_CLIENT, child_id);
   return BrowserAccessibilityEvent::Sent;
 }

@@ -4,7 +4,9 @@
 
 #include "content/browser/accessibility/browser_accessibility_android.h"
 
+#include "base/containers/hash_tables.h"
 #include "base/i18n/break_iterator.h"
+#include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -16,6 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
+#include "ui/accessibility/platform/ax_platform_unique_id.h"
 #include "ui/accessibility/platform/ax_snapshot_node_android_platform.h"
 
 namespace aria_strings {
@@ -62,8 +65,31 @@ BrowserAccessibility* BrowserAccessibility::Create() {
   return new BrowserAccessibilityAndroid();
 }
 
-BrowserAccessibilityAndroid::BrowserAccessibilityAndroid() {
+using UniqueIdMap = base::hash_map<int32_t, BrowserAccessibilityAndroid*>;
+// Map from each AXPlatformNode's unique id to its instance.
+base::LazyInstance<UniqueIdMap>::DestructorAtExit g_unique_id_map =
+    LAZY_INSTANCE_INITIALIZER;
+
+// static
+BrowserAccessibilityAndroid* BrowserAccessibilityAndroid::GetFromUniqueId(
+    int32_t unique_id) {
+  UniqueIdMap* unique_ids = g_unique_id_map.Pointer();
+  auto iter = unique_ids->find(unique_id);
+  if (iter != unique_ids->end())
+    return iter->second;
+
+  return nullptr;
+}
+
+BrowserAccessibilityAndroid::BrowserAccessibilityAndroid()
+    : unique_id_(ui::GetNextAXPlatformNodeUniqueId()) {
+  g_unique_id_map.Get()[unique_id_] = this;
   first_time_ = true;
+}
+
+BrowserAccessibilityAndroid::~BrowserAccessibilityAndroid() {
+  if (unique_id_)
+    g_unique_id_map.Get().erase(unique_id_);
 }
 
 bool BrowserAccessibilityAndroid::IsNative() const {
