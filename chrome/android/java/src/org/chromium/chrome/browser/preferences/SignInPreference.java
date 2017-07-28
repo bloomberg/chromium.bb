@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListener;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 
@@ -38,9 +39,10 @@ import java.util.Collections;
  * the user's name, email, profile image and sync error icon if necessary when the user is signed
  * in.
  */
-public class SignInPreference extends Preference
-        implements SignInAllowedObserver, ProfileDataCache.Observer,
-                   AndroidSyncSettings.AndroidSyncSettingsObserver, SyncStateChangedListener {
+public class SignInPreference
+        extends Preference implements SignInAllowedObserver, ProfileDataCache.Observer,
+                                      AndroidSyncSettings.AndroidSyncSettingsObserver,
+                                      SyncStateChangedListener, AccountsChangeObserver {
     private boolean mShowingPromo;
     private boolean mViewEnabled;
     private SigninPromoController mSigninPromoController;
@@ -58,8 +60,8 @@ public class SignInPreference extends Preference
     protected void onAttachedToHierarchy(PreferenceManager preferenceManager) {
         super.onAttachedToHierarchy(preferenceManager);
 
-        SigninManager manager = SigninManager.get(getContext());
-        manager.addSignInAllowedObserver(this);
+        AccountManagerFacade.get().addObserver(this);
+        SigninManager.get(getContext()).addSignInAllowedObserver(this);
         mProfileDataCache.addObserver(this);
         FirstRunSignInProcessor.updateSigninManagerFirstRunCheckDone(getContext());
         AndroidSyncSettings.registerObserver(getContext(), this);
@@ -73,8 +75,8 @@ public class SignInPreference extends Preference
 
     @Override
     protected void onPrepareForRemoval() {
-        SigninManager manager = SigninManager.get(getContext());
-        manager.removeSignInAllowedObserver(this);
+        AccountManagerFacade.get().removeObserver(this);
+        SigninManager.get(getContext()).removeSignInAllowedObserver(this);
         mProfileDataCache.removeObserver(this);
         AndroidSyncSettings.unregisterObserver(getContext(), this);
         ProfileSyncService syncService = ProfileSyncService.get();
@@ -232,6 +234,12 @@ public class SignInPreference extends Preference
     // AndroidSyncSettings.AndroidSyncSettingsObserver
     @Override
     public void androidSyncSettingsChanged() {
+        update();
+    }
+
+    // AccountsChangeObserver
+    @Override
+    public void onAccountsChanged() {
         update();
     }
 }
