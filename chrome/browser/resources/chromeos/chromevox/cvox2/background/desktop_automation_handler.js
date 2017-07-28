@@ -20,6 +20,7 @@ var AutomationNode = chrome.automation.AutomationNode;
 var Dir = constants.Dir;
 var EventType = chrome.automation.EventType;
 var RoleType = chrome.automation.RoleType;
+var StateType = chrome.automation.StateType;
 
 /**
  * @param {!AutomationNode} node
@@ -261,20 +262,10 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onChildrenChanged: function(evt) {
-    if (evt.target.state.richlyEditable) {
-      // Generic tree changes within richly editable text e.g. inline text box
-      // data might require editable text updates. Further note that children
-      // change events can and do come after text/text selection changes.
-      var rootEditable = evt.target;
-      rootEditable = AutomationUtil.getEditableRoot(rootEditable);
-      if (rootEditable) {
-        this.onEditableChanged_(new CustomAutomationEvent(
-            EventType.TEXT_CHANGED, rootEditable, evt.eventFrom));
-      }
-      return;
-    }
-
     if (!this.shouldOutput_(evt))
+      return;
+
+    if (evt.target.state.richlyEditable)
       return;
 
     var curRange = ChromeVoxState.instance.currentRange;
@@ -424,8 +415,10 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onValueChanged: function(evt) {
-    // Delegate to the edit text handler if this is an editable.
-    if (evt.target.state.editable) {
+    // Delegate to the edit text handler if this is an editable but not richly
+    // editable which gets handled in text and text selection changed events.
+    if (evt.target.state[StateType.EDITABLE] &&
+        !evt.target.state[StateType.RICHLY_EDITABLE]) {
       this.onEditableChanged_(evt);
       return;
     }
