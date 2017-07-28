@@ -2479,24 +2479,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   SamplerState default_sampler_state_;
 
-  struct CALayerSharedState{
-    float opacity;
-    bool is_clipped;
-    gfx::Rect clip_rect;
-    int sorting_context_id;
-    gfx::Transform transform;
-  };
-
   std::unique_ptr<CALayerSharedState> ca_layer_shared_state_;
-
-  struct DCLayerSharedState {
-    float opacity;
-    bool is_clipped;
-    gfx::Rect clip_rect;
-    int z_order;
-    gfx::Transform transform;
-  };
-
   std::unique_ptr<DCLayerSharedState> dc_layer_shared_state_;
 
   base::WeakPtrFactory<GLES2DecoderImpl> weak_ptr_factory_;

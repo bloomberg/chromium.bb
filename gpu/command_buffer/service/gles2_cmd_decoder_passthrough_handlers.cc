@@ -1829,10 +1829,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleDCLayerCHROMIUM(
   const GLfloat* contents_rect = mem;
   GLuint background_color = static_cast<GLuint>(c.background_color);
   GLuint edge_aa_mask = static_cast<GLuint>(c.edge_aa_mask);
+  GLenum filter = static_cast<GLenum>(c.filter);
   const GLfloat* bounds_rect = mem + 4;
   error::Error error = DoScheduleDCLayerCHROMIUM(
       num_textures, contents_texture_ids, contents_rect, background_color,
-      edge_aa_mask, bounds_rect);
+      edge_aa_mask, filter, bounds_rect);
   if (error != error::kNoError) {
     return error;
   }

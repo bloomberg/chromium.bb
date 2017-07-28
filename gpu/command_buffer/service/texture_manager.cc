@@ -488,7 +488,9 @@ void TextureBase::SetMailboxManager(MailboxManager* mailbox_manager) {
 }
 
 TexturePassthrough::TexturePassthrough(GLuint service_id, GLenum target)
-    : TextureBase(service_id), have_context_(true) {
+    : TextureBase(service_id),
+      have_context_(true),
+      level_images_(target == GL_TEXTURE_CUBE_MAP ? 6 : 1) {
   TextureBase::SetTarget(target);
 }
 
@@ -501,6 +503,38 @@ TexturePassthrough::~TexturePassthrough() {
 
 void TexturePassthrough::MarkContextLost() {
   have_context_ = false;
+}
+
+void TexturePassthrough::SetLevelImage(GLenum target,
+                                       GLint level,
+                                       gl::GLImage* image) {
+  size_t face_idx = GLES2Util::GLTargetToFaceIndex(target);
+  DCHECK(face_idx < level_images_.size());
+  DCHECK(level >= 0);
+
+  // Don't allocate space for the images until needed
+  if (static_cast<GLint>(level_images_[face_idx].size()) <= level) {
+    level_images_[face_idx].resize(level + 1);
+  }
+
+  level_images_[face_idx][level] = image;
+}
+
+gl::GLImage* TexturePassthrough::GetLevelImage(GLenum target,
+                                               GLint level) const {
+  if (GLES2Util::GLFaceTargetToTextureTarget(target) != target_) {
+    return nullptr;
+  }
+
+  size_t face_idx = GLES2Util::GLTargetToFaceIndex(target);
+  DCHECK(face_idx < level_images_.size());
+  DCHECK(level >= 0);
+
+  if (static_cast<GLint>(level_images_[face_idx].size()) < level) {
+    return nullptr;
+  }
+
+  return level_images_[face_idx][level].get();
 }
 
 Texture::Texture(GLuint service_id)

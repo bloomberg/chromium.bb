@@ -50,8 +50,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
     else
       vsync_provider.reset(new gl::VSyncProviderWin(surface_handle));
 
-    if (gl::GLSurfaceEGL::IsDirectCompositionSupported() &&
-        !delegate->GetGpuPreferences().use_passthrough_cmd_decoder) {
+    if (gl::GLSurfaceEGL::IsDirectCompositionSupported()) {
       scoped_refptr<DirectCompositionSurfaceWin> egl_surface =
           make_scoped_refptr(new DirectCompositionSurfaceWin(
               std::move(vsync_provider), delegate, surface_handle));

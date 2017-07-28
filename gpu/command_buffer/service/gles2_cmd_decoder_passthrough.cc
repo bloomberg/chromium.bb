@@ -525,9 +525,11 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.flips_vertically = !offscreen_ && surface_->FlipsVertically();
   caps.multisample_compatibility =
       feature_info_->feature_flags().ext_multisample_compatibility;
+  caps.dc_layers = !offscreen_ && surface_->SupportsDCLayers();
 
   // TODO:
   // caps.commit_overlay_planes
+  // caps.use_dc_overlays_for_video = surface_->UseOverlaysForVideo();
 
   return caps;
 }
@@ -1088,6 +1090,13 @@ error::Error GLES2DecoderPassthroughImpl::BindTexImage2DCHROMIUMImpl(
     return error::kNoError;
   }
 
+  GLuint current_client_texture =
+      bound_textures_[GL_TEXTURE_2D][active_texture_unit_];
+  if (current_client_texture == 0) {
+    InsertError(GL_INVALID_OPERATION, "No texture bound");
+    return error::kNoError;
+  }
+
   if (internalformat) {
     if (!image->BindTexImageWithInternalformat(target, internalformat)) {
       image->CopyTexImage(target);
@@ -1097,6 +1106,11 @@ error::Error GLES2DecoderPassthroughImpl::BindTexImage2DCHROMIUMImpl(
       image->CopyTexImage(target);
     }
   }
+
+  scoped_refptr<TexturePassthrough> passthrough_texture =
+      resources_->texture_object_map[current_client_texture];
+  DCHECK(passthrough_texture != nullptr);
+  passthrough_texture->SetLevelImage(target, 0, image);
 
   return error::kNoError;
 }

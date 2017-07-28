@@ -88,6 +88,9 @@ class TexturePassthrough final : public TextureBase,
   // native GL texture in the destructor
   void MarkContextLost();
 
+  void SetLevelImage(GLenum target, GLint level, gl::GLImage* image);
+  gl::GLImage* GetLevelImage(GLenum target, GLint level) const;
+
  protected:
   ~TexturePassthrough() override;
 
@@ -95,6 +98,9 @@ class TexturePassthrough final : public TextureBase,
   friend class base::RefCounted<TexturePassthrough>;
 
   bool have_context_;
+
+  // Bound images divided into faces and then levels
+  std::vector<std::vector<scoped_refptr<gl::GLImage>>> level_images_;
 
   DISALLOW_COPY_AND_ASSIGN(TexturePassthrough);
 };
