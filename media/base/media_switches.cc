@@ -67,13 +67,12 @@ const char kUseCras[] = "use-cras";
 
 // For automated testing of protected content, this switch allows specific
 // domains (e.g. example.com) to skip asking the user for permission to share
-// their personal identifier. In this context, domain does not include the
-// port number. This flag will have no effect if user-data-dir is not set and
-// will not affect the user's content settings.
+// the protected media identifier. In this context, domain does not include the
+// port number. User's content settings will not be affected by enabling this
+// switch.
 // Reference: http://crbug.com/718608
 // Example:
 // --unsafely-allow-protected-media-identifier-for-domain=a.com,b.ca
-// --user-data-dir=/test/only/profile/dir
 const char kUnsafelyAllowProtectedMediaIdentifierForDomain[] =
     "unsafely-allow-protected-media-identifier-for-domain";
 

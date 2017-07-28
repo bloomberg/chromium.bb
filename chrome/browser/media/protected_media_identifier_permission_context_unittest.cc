@@ -36,8 +36,7 @@ TEST_F(ProtectedMediaIdentifierPermissionContextTest,
   ASSERT_FALSE(IsOriginWhitelisted(requesting_origin_));
 
   // Add the switch value that the
-  // ProtectedMediaIdentifierPermissionContext::reads from
-  command_line_->AppendSwitchASCII(switches::kUserDataDir, "/dir/for/testing");
+  // ProtectedMediaIdentifierPermissionContext reads from
   command_line_->AppendSwitchASCII(
       switches::kUnsafelyAllowProtectedMediaIdentifierForDomain, "example.com");
 
@@ -51,8 +50,7 @@ TEST_F(ProtectedMediaIdentifierPermissionContextTest,
   ASSERT_FALSE(IsOriginWhitelisted(requesting_origin_));
 
   // Add the switch value that the
-  // ProtectedMediaIdentifierPermissionContext::reads from
-  command_line_->AppendSwitchASCII(switches::kUserDataDir, "/dir/for/testing");
+  // ProtectedMediaIdentifierPermissionContext reads from
   command_line_->AppendSwitchASCII(
       switches::kUnsafelyAllowProtectedMediaIdentifierForDomain,
       "example.ca,example.com,example.edu");
@@ -67,8 +65,7 @@ TEST_F(ProtectedMediaIdentifierPermissionContextTest,
   ASSERT_FALSE(IsOriginWhitelisted(requesting_sub_domain_origin_));
 
   // Add the switch value that the
-  // ProtectedMediaIdentifierPermissionContext::reads from
-  command_line_->AppendSwitchASCII(switches::kUserDataDir, "/dir/for/testing");
+  // ProtectedMediaIdentifierPermissionContext reads from
   command_line_->AppendSwitchASCII(
       switches::kUnsafelyAllowProtectedMediaIdentifierForDomain, "example.com");
 
@@ -76,30 +73,3 @@ TEST_F(ProtectedMediaIdentifierPermissionContextTest,
   ASSERT_TRUE(IsOriginWhitelisted(requesting_sub_domain_origin_));
 }
 
-TEST_F(ProtectedMediaIdentifierPermissionContextTest,
-       BypassRequiresUserDataDir) {
-  // The request should need to ask for permission
-  ASSERT_FALSE(IsOriginWhitelisted(requesting_origin_));
-
-  // Add the switch value that the
-  // ProtectedMediaIdentifierPermissionContext::reads from
-  command_line_->AppendSwitchASCII(
-      switches::kUnsafelyAllowProtectedMediaIdentifierForDomain, "example.com");
-
-  // The request should still need to ask for permission
-  ASSERT_FALSE(IsOriginWhitelisted(requesting_origin_));
-
-  // Set the user data dir switch but do not give it a value, this should still
-  // require the request to ask for permission.
-  command_line_->AppendSwitch(switches::kUserDataDir);
-
-  // The request should still need to ask for permission
-  ASSERT_FALSE(IsOriginWhitelisted(requesting_origin_));
-
-  // Set the user data dir so the request should no longer need to ask for
-  // permission
-  command_line_->AppendSwitchASCII(switches::kUserDataDir, "/dir/for/testing");
-
-  // The request should no longer need to ask for permission
-  ASSERT_TRUE(IsOriginWhitelisted(requesting_origin_));
-}

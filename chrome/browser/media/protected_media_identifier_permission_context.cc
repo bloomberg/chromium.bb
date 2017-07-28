@@ -131,10 +131,6 @@ bool ProtectedMediaIdentifierPermissionContext::IsOriginWhitelisted(
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  if (command_line.GetSwitchValueASCII(switches::kUserDataDir).empty()) {
-    return false;
-  }
-
   const std::string whitelist = command_line.GetSwitchValueASCII(
       switches::kUnsafelyAllowProtectedMediaIdentifierForDomain);
 
