@@ -67,67 +67,35 @@ require_administrator_manifest = "//build/win/require_administrator.manifest"
 #   }
 
 if (is_win) {
-  # This is the environment file that tool_wrapper.py will use for the current
-  # toolchain. It is placed in root_build_dir by the toolchain setup. This
-  # variable is the path relative to the root_build_dir which is what
-  # tool_wrapper.py expects as an argument.
-  _environment_file = "environment.$current_cpu"
-
   template("windows_manifest") {
-    manifest_action_name = "${target_name}__gen_manifest"
     config_name = "${target_name}__config"
     source_set_name = target_name
 
-    output_manifest = "$target_gen_dir/$source_set_name.manifest"
-
-    # Make the final .manifest file.
-    action(manifest_action_name) {
+    config(config_name) {
       visibility = [ ":$source_set_name" ]
-
-      script = "//build/toolchain/win/tool_wrapper.py"
-
       assert(defined(invoker.sources),
              "\"sources\" must be defined for a windows_manifest target")
-      inputs = invoker.sources
+      manifests = []
+      foreach(i, rebase_path(invoker.sources, root_build_dir)) {
+        manifests += [ "/manifestinput:" + i ]
+      }
+      ldflags = [
+                  "/manifest:embed",
 
-      outputs = [
-        output_manifest,
-      ]
+                  # We handle UAC by adding explicit .manifest files instead.
+                  "/manifestuac:no",
+                ] + manifests
+    }
 
-      args = [
-        "manifest-wrapper",
-        _environment_file,
-        "mt.exe",
-        "-nologo",
-        "-manifest",
-      ]
-      args += rebase_path(invoker.sources, root_build_dir)
-      args += [ "-out:" + rebase_path(output_manifest, root_build_dir) ]
+    # This source set only exists to add a dep on the invoker's deps and to
+    # add a public_config that sets ldflags on dependents.
+    source_set(source_set_name) {
+      forward_variables_from(invoker, [ "visibility" ])
+      public_configs = [ ":$config_name" ]
 
       # Apply any dependencies from the invoker to this target, since those
       # dependencies may have created the input manifest files.
       forward_variables_from(invoker, [ "deps" ])
-    }
-
-    config(config_name) {
-      visibility = [ ":$source_set_name" ]
-      ldflags = [
-        "/manifest:embed",
-        "/manifestinput:" + rebase_path(output_manifest, root_build_dir),
-
-        # We handle UAC by adding explicit .manifest files instead.
-        "/manifestuac:no",
-      ]
-    }
-
-    # This source set only exists to add a dep on manifest_action_name and to
-    # add a public_config that sets ldflags on dependents.
-    source_set(source_set_name) {
-      forward_variables_from(invoker, [ "visibility" ])
-      deps = [
-        ":$manifest_action_name",
-      ]
-      public_configs = [ ":$config_name" ]
     }
   }
 } else {
