@@ -24,16 +24,20 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            {{#intent_filters}}
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"></action>
                 <category android:name="android.intent.category.DEFAULT"></category>
                 <category android:name="android.intent.category.BROWSABLE"></category>
                 <data android:scheme="{{{scope_url_scheme}}}" android:host="{{{scope_url_host}}}" android:pathPrefix="{{{scope_url_path}}}"></data>
             </intent-filter>
+            {{/intent_filters}}
         </activity>
         <meta-data android:name="org.chromium.webapk.shell_apk.shellApkVersion" android:value="{{{shell_apk_version}}}" />
-        {{#runtime_host}}<meta-data android:name="org.chromium.webapk.shell_apk.runtimeHost" android:value="{{{runtime_host}}}" />{{/runtime_host}}
-        {{#runtime_host_application_name}}<meta-data android:name="org.chromium.webapk.shell_apk.runtimeHostApplicationName" android:value="{{{runtime_host_application_name}}}" />{{/runtime_host_application_name}}
+        {{#bound_webapk}}
+        <meta-data android:name="org.chromium.webapk.shell_apk.runtimeHost" android:value="{{{runtime_host}}}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.runtimeHostApplicationName" android:value="{{{runtime_host_application_name}}}" />
+        {{/bound_webapk}}
         <meta-data android:name="org.chromium.webapk.shell_apk.startUrl" android:value="{{{start_url}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.scope" android:value="{{{scope_url}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.displayMode" android:value="{{{display_mode}}}" />
@@ -41,7 +45,12 @@
         <meta-data android:name="org.chromium.webapk.shell_apk.themeColor" android:value="{{{theme_color}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.backgroundColor" android:value="{{{background_color}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.iconId" android:resource="@mipmap/app_icon" />
+
+        {{!  Hashes of icons should be taken of the icons as they are available on the web. The icon
+             bytes should not be transformed (e.g. decoded / encoded) prior to taking the hash.
+        }}
         <meta-data android:name="org.chromium.webapk.shell_apk.iconUrlsAndIconMurmur2Hashes" android:value="{{{icon_urls_and_icon_murmur2_hashes}}}" />
+
         <meta-data android:name="org.chromium.webapk.shell_apk.webManifestUrl" android:value="{{{web_manifest_url}}}" />
         {{#badge_icon_id}}<meta-data android:name="org.chromium.webapk.shell_apk.badgeIconId" android:resource="{{{badge_icon_id}}}" />{{/badge_icon_id}}
         <service
