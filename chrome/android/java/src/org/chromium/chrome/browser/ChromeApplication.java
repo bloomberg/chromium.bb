@@ -6,8 +6,6 @@ package org.chromium.chrome.browser;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.SystemClock;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -89,47 +87,7 @@ public class ChromeApplication extends ContentApplication {
         return nativeGetBrowserUserAgent();
     }
 
-    /**
-     * The host activity should call this during its onPause() handler to ensure
-     * all state is saved when the app is suspended.  Calling ChromiumApplication.onStop() does
-     * this for you.
-     */
-    public static void flushPersistentData() {
-        try {
-            TraceEvent.begin("ChromiumApplication.flushPersistentData");
-            nativeFlushPersistentData();
-        } finally {
-            TraceEvent.end("ChromiumApplication.flushPersistentData");
-        }
-    }
-
-    /**
-     * Removes all session cookies (cookies with no expiration date) after device reboots.
-     * This function will incorrectly clear cookies when Daylight Savings Time changes the clock.
-     * Without a way to get a monotonically increasing system clock, the boot timestamp will be off
-     * by one hour.  However, this should only happen at most once when the clock changes since the
-     * updated timestamp is immediately saved.
-     */
-    public static void removeSessionCookies() {
-        long lastKnownBootTimestamp =
-                ContextUtils.getAppSharedPreferences().getLong(PREF_BOOT_TIMESTAMP, 0);
-        long bootTimestamp = System.currentTimeMillis() - SystemClock.uptimeMillis();
-        long difference = bootTimestamp - lastKnownBootTimestamp;
-
-        // Allow some leeway to account for fractions of milliseconds.
-        if (Math.abs(difference) > BOOT_TIMESTAMP_MARGIN_MS) {
-            nativeRemoveSessionCookies();
-
-            SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putLong(PREF_BOOT_TIMESTAMP, bootTimestamp);
-            editor.apply();
-        }
-    }
-
-    private static native void nativeRemoveSessionCookies();
     private static native String nativeGetBrowserUserAgent();
-    private static native void nativeFlushPersistentData();
 
     /**
      * Returns the singleton instance of the DocumentTabModelSelector.
