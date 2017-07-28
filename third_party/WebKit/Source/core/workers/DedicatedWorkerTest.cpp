@@ -156,7 +156,6 @@ class InProcessWorkerMessagingProxyForTest
   enum class Notification {
     kMessageConfirmed,
     kPendingActivityReported,
-    kThreadTerminated,
   };
 
   // Blocks the main thread until some event is notified.
@@ -184,15 +183,6 @@ class InProcessWorkerMessagingProxyForTest
     EXPECT_TRUE(IsMainThread());
     InProcessWorkerMessagingProxy::PendingActivityFinished();
     events_.push_back(Notification::kPendingActivityReported);
-    if (blocking_)
-      testing::ExitRunLoop();
-    blocking_ = false;
-  }
-
-  void WorkerThreadTerminated() override {
-    EXPECT_TRUE(IsMainThread());
-    ThreadedMessagingProxyBase::WorkerThreadTerminated();
-    events_.push_back(Notification::kThreadTerminated);
     if (blocking_)
       testing::ExitRunLoop();
     blocking_ = false;
@@ -253,8 +243,7 @@ class DedicatedWorkerTest : public ::testing::Test {
 
   void TearDown() override {
     GetWorkerThread()->Terminate();
-    EXPECT_EQ(Notification::kThreadTerminated,
-              WorkerMessagingProxy()->WaitForNotification());
+    GetWorkerThread()->WaitForShutdownForTesting();
   }
 
   void DispatchMessageEvent() {
@@ -416,8 +405,7 @@ TEST_F(DedicatedWorkerTest, PendingActivity_SetIntervalOnMessageEvent) {
   EXPECT_FALSE(WorkerMessagingProxy()->HasPendingActivity());
 }
 
-// Test is flaky. crbug.com/699712
-TEST_F(DedicatedWorkerTest, DISABLED_UseCounter) {
+TEST_F(DedicatedWorkerTest, UseCounter) {
   const String source_code = "// Do nothing";
   WorkerMessagingProxy()->StartWithSourceCode(source_code);
 
