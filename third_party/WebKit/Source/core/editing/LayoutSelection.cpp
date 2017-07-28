@@ -140,7 +140,7 @@ static PositionInFlatTree FindLastVisiblePosition(
   return MostBackwardCaretPosition(CreateVisiblePosition(end).DeepEquivalent());
 }
 
-static EphemeralRangeInFlatTree CalcSelection(
+static EphemeralRangeInFlatTree CalcSelectionInFlatTree(
     const FrameSelection& frame_selection) {
   const SelectionInDOMTree& selection_in_dom =
       frame_selection.GetSelectionInDOMTree();
@@ -154,18 +154,8 @@ static EphemeralRangeInFlatTree CalcSelection(
           ToPositionInFlatTree(selection_in_dom.Extent());
       if (base.IsNull() || extent.IsNull() || base == extent)
         return {};
-      const bool base_is_first = base.CompareTo(extent) <= 0;
-      const PositionInFlatTree& start = base_is_first ? base : extent;
-      const PositionInFlatTree& end = base_is_first ? extent : base;
-      const PositionInFlatTree& visible_start = FindFirstVisiblePosition(start);
-      const PositionInFlatTree& visible_end = FindLastVisiblePosition(end);
-      if (visible_start.IsNull() || visible_end.IsNull())
-        return {};
-      // This case happens if we have
-      // <div>foo<div style="visibility:hidden">^bar|</div>baz</div>.
-      if (visible_start >= visible_end)
-        return {};
-      return {visible_start, visible_end};
+      return base <= extent ? EphemeralRangeInFlatTree(base, extent)
+                            : EphemeralRangeInFlatTree(extent, base);
     }
     case SelectionMode::kBlockCursor: {
       const PositionInFlatTree& base =
@@ -409,13 +399,24 @@ static SelectionMarkingRange CalcSelectionRangeAndSetSelectionState(
   if (selection_in_dom.IsNone())
     return {};
 
-  const EphemeralRangeInFlatTree& selection = CalcSelection(frame_selection);
+  const EphemeralRangeInFlatTree& selection =
+      CalcSelectionInFlatTree(frame_selection);
   if (selection.IsCollapsed() || frame_selection.IsHidden())
     return {};
 
-  const PositionInFlatTree start_pos = selection.StartPosition();
-  const PositionInFlatTree end_pos = selection.EndPosition();
-  DCHECK_LE(start_pos, end_pos);
+  // Find first/last LayoutObject and its offset.
+  // TODO(yoichio): This traverse and marking(L405-L427) should be on Flat tree
+  // rather than Layout tree.
+  const PositionInFlatTree& start_pos =
+      FindFirstVisiblePosition(selection.StartPosition());
+  const PositionInFlatTree& end_pos =
+      FindLastVisiblePosition(selection.EndPosition());
+  if (start_pos.IsNull() || end_pos.IsNull())
+    return {};
+  // This case happens if we have
+  // <div>foo<div style="visibility:hidden">^bar|</div>baz</div>.
+  if (start_pos >= end_pos)
+    return {};
   LayoutObject* start_layout_object = start_pos.AnchorNode()->GetLayoutObject();
   LayoutObject* end_layout_object = end_pos.AnchorNode()->GetLayoutObject();
   DCHECK(start_layout_object);
