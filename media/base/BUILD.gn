@@ -35,6 +35,7 @@ target(link_target_type, "base") {
   # depend on "media" target directly.
   visibility = [
     "//media/formats",
+    "//media/renderers",
 
     # TODO(xhwang): Clean up the dependency graph within "media" target.
     "//media/audio",
