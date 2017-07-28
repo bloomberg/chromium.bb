@@ -31,6 +31,9 @@ ASH_EXPORT bool ShouldShowPalette();
 // given point (in screen space).
 ASH_EXPORT bool PaletteContainsPointInScreen(const gfx::Point& point);
 
+// Returns true if the device has an internal stylus.
+ASH_EXPORT bool HasInternalStylus();
+
 }  // namespace palette_utils
 }  // namespace ash
 
