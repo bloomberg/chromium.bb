@@ -20,7 +20,7 @@ layer at (0,0) size 800x600
             text run at (180,350) width 4: " "
           LayoutBlockFlow {DIV} at (194,195) size 160x160 [border: (30px solid #000000)]
           LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (370,417) size 4x19
+      LayoutText {#text} at (370,417) size 4x20
         text run at (370,417) width 4: " "
       LayoutBlockFlow {DIV} at (374,0) size 370x438.81 [border: (1px solid #000000)]
         LayoutBlockFlow {H2} at (1,20.91) size 368x27

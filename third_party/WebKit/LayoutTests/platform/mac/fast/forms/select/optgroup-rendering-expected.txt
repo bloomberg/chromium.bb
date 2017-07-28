@@ -1,19 +1,19 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x321
-  LayoutBlockFlow {HTML} at (0,0) size 800x321
-    LayoutBlockFlow {BODY} at (8,8) size 784x305
-      LayoutBlockFlow {FORM} at (0,0) size 784x305
-        LayoutText {#text} at (68,268) size 5x18
-          text run at (68,268) width 5: " "
-        LayoutBR {BR} at (72,268) size 1x18
-        LayoutMenuList {SELECT} at (0,287) size 74x18 [bgcolor=#F8F8F8]
+  LayoutBlockFlow {HTML} at (0,0) size 800x320.75
+    LayoutBlockFlow {BODY} at (8,8) size 784x304.75
+      LayoutBlockFlow {FORM} at (0,0) size 784x304.75
+        LayoutText {#text} at (68,267) size 5x19
+          text run at (68,267) width 5: " "
+        LayoutBR {BR} at (72,267) size 1x19
+        LayoutMenuList {SELECT} at (0,286.75) size 74x18 [bgcolor=#F8F8F8]
           LayoutBlockFlow (anonymous) at (0,0) size 74x18
             LayoutText (anonymous) at (8,2) size 31x13
               text run at (8,2) width 31: "Three"
         LayoutText {#text} at (0,0) size 0x0
 layer at (8,8) size 69x286 clip at (9,9) size 56x284
-  LayoutListBox {SELECT} at (0,0.25) size 68.50x285.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (0,0) size 68.50x285.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTGROUP} at (1,1) size 55.50x70.94 [color=#008000]
       LayoutBlockFlow {DIV} at (0,0) size 55.50x14.19
         LayoutText {#text} at (2,0) size 45x13

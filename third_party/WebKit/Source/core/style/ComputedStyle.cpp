@@ -1590,10 +1590,12 @@ LayoutUnit ComputedStyle::ComputedLineHeightAsFixed() const {
   if (lh.IsNegative() && GetFont().PrimaryFont())
     return GetFont().PrimaryFont()->GetFontMetrics().FixedLineSpacing();
 
-  if (lh.IsPercentOrCalc())
-    return MinimumValueForLength(lh, ComputedFontSizeAsFixed());
+  if (lh.IsPercentOrCalc()) {
+    return LayoutUnit(
+        MinimumValueForLength(lh, ComputedFontSizeAsFixed()).ToInt());
+  }
 
-  return LayoutUnit::FromFloatRound(lh.Value());
+  return LayoutUnit(floorf(lh.Value()));
 }
 
 void ComputedStyle::SetWordSpacing(float word_spacing) {

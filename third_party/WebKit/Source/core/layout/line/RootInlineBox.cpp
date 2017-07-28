@@ -78,7 +78,7 @@ void RootInlineBox::ClearTruncation() {
   }
 }
 
-int RootInlineBox::BaselinePosition(FontBaseline baseline_type) const {
+LayoutUnit RootInlineBox::BaselinePosition(FontBaseline baseline_type) const {
   return BoxModelObject().BaselinePosition(
       baseline_type, IsFirstLineStyle(),
       IsHorizontal() ? kHorizontalLine : kVerticalLine,
@@ -224,11 +224,11 @@ void RootInlineBox::ChildRemoved(InlineBox* box) {
 }
 
 static inline void ApplyLineHeightStep(uint8_t line_height_step,
-                                       int& max_ascent,
-                                       int& max_descent) {
+                                       LayoutUnit& max_ascent,
+                                       LayoutUnit& max_descent) {
   // Round up to the multiple of units, by adding spaces to over/under equally.
   // https://drafts.csswg.org/css-rhythm/#line-height-step
-  int remainder = (max_ascent + max_descent) % line_height_step;
+  int remainder = (max_ascent + max_descent).ToInt() % line_height_step;
   if (!remainder)
     return;
   DCHECK_GT(remainder, 0);
@@ -247,8 +247,8 @@ LayoutUnit RootInlineBox::AlignBoxesInBlockDirection(
 
   LayoutUnit max_position_top;
   LayoutUnit max_position_bottom;
-  int max_ascent = 0;
-  int max_descent = 0;
+  LayoutUnit max_ascent;
+  LayoutUnit max_descent;
   bool set_max_ascent = false;
   bool set_max_descent = false;
 
@@ -567,10 +567,10 @@ LayoutRect RootInlineBox::PaddedLayoutOverflowRect(
   return line_layout_overflow;
 }
 
-static void SetAscentAndDescent(int& ascent,
-                                int& descent,
-                                int new_ascent,
-                                int new_descent,
+static void SetAscentAndDescent(LayoutUnit& ascent,
+                                LayoutUnit& descent,
+                                LayoutUnit new_ascent,
+                                LayoutUnit new_descent,
                                 bool& ascent_descent_set) {
   if (!ascent_descent_set) {
     ascent_descent_set = true;
@@ -585,15 +585,15 @@ static void SetAscentAndDescent(int& ascent,
 void RootInlineBox::AscentAndDescentForBox(
     InlineBox* box,
     GlyphOverflowAndFallbackFontsMap& text_box_data_map,
-    int& ascent,
-    int& descent,
+    LayoutUnit& ascent,
+    LayoutUnit& descent,
     bool& affects_ascent,
     bool& affects_descent) const {
   bool ascent_descent_set = false;
 
   if (box->GetLineLayoutItem().IsAtomicInlineLevel()) {
     ascent = box->BaselinePosition(BaselineType());
-    descent = RoundToInt(box->LineHeight() - ascent);
+    descent = box->LineHeight() - ascent;
 
     // Replaced elements always affect both the ascent and descent.
     affects_ascent = true;
@@ -623,12 +623,12 @@ void RootInlineBox::AscentAndDescentForBox(
                               .PrimaryFont());
     for (size_t i = 0; i < used_fonts->size(); ++i) {
       const FontMetrics& font_metrics = used_fonts->at(i)->GetFontMetrics();
-      int used_font_ascent = font_metrics.Ascent(BaselineType());
-      int used_font_descent = font_metrics.Descent(BaselineType());
-      int half_leading =
-          (font_metrics.LineSpacing() - font_metrics.Height()) / 2;
-      int used_font_ascent_and_leading = used_font_ascent + half_leading;
-      int used_font_descent_and_leading =
+      LayoutUnit used_font_ascent(font_metrics.Ascent(BaselineType()));
+      LayoutUnit used_font_descent(font_metrics.Descent(BaselineType()));
+      LayoutUnit half_leading(
+          (font_metrics.LineSpacing() - font_metrics.Height()) / 2);
+      LayoutUnit used_font_ascent_and_leading = used_font_ascent + half_leading;
+      LayoutUnit used_font_descent_and_leading =
           font_metrics.LineSpacing() - used_font_ascent_and_leading;
       if (include_leading) {
         SetAscentAndDescent(ascent, descent, used_font_ascent_and_leading,
@@ -644,9 +644,8 @@ void RootInlineBox::AscentAndDescentForBox(
 
   // If leading is included for the box, then we compute that box.
   if (include_leading && !set_used_font_with_leading) {
-    int ascent_with_leading = box->BaselinePosition(BaselineType());
-    int descent_with_leading =
-        (box->LineHeight() - ascent_with_leading).ToInt();
+    LayoutUnit ascent_with_leading = box->BaselinePosition(BaselineType());
+    LayoutUnit descent_with_leading = box->LineHeight() - ascent_with_leading;
     SetAscentAndDescent(ascent, descent, ascent_with_leading,
                         descent_with_leading, ascent_descent_set);
 

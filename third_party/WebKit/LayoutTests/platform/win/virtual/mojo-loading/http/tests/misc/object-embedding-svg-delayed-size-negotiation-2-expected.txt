@@ -18,11 +18,11 @@ layer at (0,0) size 800x462
       LayoutTable (anonymous) at (0.50,252.50) size 135x44
         LayoutTableSection (anonymous) at (0,0) size 135x44
           LayoutTableRow (anonymous) at (0,0) size 135x44
-            LayoutTableCell {P} at (0,0) size 135x44 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {P} at (0,0) size 135x43.75 [r=0 c=0 rs=1 cs=1]
       LayoutTable {TABLE} at (0.50,350.50) size 135x44
         LayoutTableSection {TBODY} at (0,0) size 135x44
           LayoutTableRow {TR} at (0,0) size 135x44
-            LayoutTableCell {TD} at (0,0) size 135x44 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (0,0) size 135x43.75 [r=0 c=0 rs=1 cs=1]
       LayoutBlockFlow (floating) {P} at (0.50,448.50) size 135x9
 layer at (14,131) size 117x43
   LayoutEmbeddedObject {OBJECT} at (9,0) size 117x42.75 [bgcolor=#FF0000] [border: (9px solid #0000FF)]

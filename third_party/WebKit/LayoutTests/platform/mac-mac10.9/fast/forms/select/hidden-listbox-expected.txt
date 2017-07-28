@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (522,14) size 1x0
       LayoutText {#text} at (0,0) size 0x0
 hidden layer at (8,26) size 179x59 clip at (9,27) size 166x57
-  LayoutListBox {SELECT} at (0,18.25) size 178.84x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+  LayoutListBox {SELECT} at (0,18) size 178.84x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 165.84x14.19
       LayoutText {#text} at (2,0) size 162x13
         text run at (2,0) width 162: "This text should not be visible"

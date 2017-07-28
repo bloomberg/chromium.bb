@@ -518,12 +518,12 @@ FontBaseline InlineFlowBox::DominantBaseline() const {
   return kAlphabeticBaseline;
 }
 
-void InlineFlowBox::AdjustMaxAscentAndDescent(int& max_ascent,
-                                              int& max_descent,
+void InlineFlowBox::AdjustMaxAscentAndDescent(LayoutUnit& max_ascent,
+                                              LayoutUnit& max_descent,
                                               int max_position_top,
                                               int max_position_bottom) {
-  int original_max_ascent = max_ascent;
-  int original_max_descent = max_descent;
+  LayoutUnit original_max_ascent(max_ascent);
+  LayoutUnit original_max_descent(max_descent);
   for (InlineBox* curr = FirstChild(); curr; curr = curr->NextOnLine()) {
     // The computed lineheight needs to be extended for the
     // positioned elements
@@ -557,8 +557,8 @@ void InlineFlowBox::ComputeLogicalBoxHeights(
     RootInlineBox* root_box,
     LayoutUnit& max_position_top,
     LayoutUnit& max_position_bottom,
-    int& max_ascent,
-    int& max_descent,
+    LayoutUnit& max_ascent,
+    LayoutUnit& max_descent,
     bool& set_max_ascent,
     bool& set_max_descent,
     bool no_quirks_mode,
@@ -593,8 +593,8 @@ void InlineFlowBox::ComputeLogicalBoxHeights(
 
   if (IsRootInlineBox()) {
     // Examine our root box.
-    int ascent = 0;
-    int descent = 0;
+    LayoutUnit ascent;
+    LayoutUnit descent;
     root_box->AscentAndDescentForBox(root_box, text_box_data_map, ascent,
                                      descent, affects_ascent, affects_descent);
     if (no_quirks_mode || HasTextChildren() ||
@@ -631,8 +631,8 @@ void InlineFlowBox::ComputeLogicalBoxHeights(
     curr->SetLogicalTop(
         root_box->VerticalPositionForBox(curr, vertical_position_cache));
 
-    int ascent = 0;
-    int descent = 0;
+    LayoutUnit ascent;
+    LayoutUnit descent;
     root_box->AscentAndDescentForBox(curr, text_box_data_map, ascent, descent,
                                      affects_ascent, affects_descent);
 
@@ -657,8 +657,8 @@ void InlineFlowBox::ComputeLogicalBoxHeights(
       // that ascent and descent (including leading), can end up being negative.
       // The setMaxAscent and setMaxDescent booleans are used to ensure that
       // we're willing to initially set maxAscent/Descent to negative values.
-      ascent -= curr->LogicalTop().Round();
-      descent += curr->LogicalTop().Round();
+      ascent -= curr->LogicalTop();
+      descent += curr->LogicalTop();
       if (affects_ascent && (max_ascent < ascent || !set_max_ascent)) {
         max_ascent = ascent;
         set_max_ascent = true;
@@ -681,7 +681,7 @@ void InlineFlowBox::ComputeLogicalBoxHeights(
 void InlineFlowBox::PlaceBoxesInBlockDirection(
     LayoutUnit top,
     LayoutUnit max_height,
-    int max_ascent,
+    LayoutUnit max_ascent,
     bool no_quirks_mode,
     LayoutUnit& line_top,
     LayoutUnit& line_bottom,
@@ -703,8 +703,7 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
     // RootInlineBoxes are always placed at pixel boundaries in their logical y
     // direction. Not doing so results in incorrect layout of text decorations,
     // most notably underlines.
-    SetLogicalTop(LayoutUnit(
-        RoundToInt(top + max_ascent - font_metrics.Ascent(baseline_type))));
+    SetLogicalTop(top + max_ascent - font_metrics.Ascent(baseline_type));
   }
 
   LayoutUnit adjustment_for_children_with_same_line_height_and_baseline;
@@ -739,7 +738,8 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
           !(inline_flow_box->DescendantsHaveSameLineHeightAndBaseline() &&
             inline_flow_box->HasTextDescendants()))
         child_affects_top_bottom_pos = false;
-      int pos_adjust = max_ascent - curr->BaselinePosition(baseline_type);
+      LayoutUnit pos_adjust =
+          max_ascent - curr->BaselinePosition(baseline_type);
       curr->SetLogicalTop(curr->LogicalTop() + top + pos_adjust);
     }
 

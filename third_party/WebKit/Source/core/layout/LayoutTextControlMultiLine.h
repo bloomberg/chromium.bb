@@ -51,12 +51,14 @@ class LayoutTextControlMultiLine final : public LayoutTextControl {
       LayoutUnit non_content_height) const override;
   // We override the two baseline functions because we want our baseline to be
   // the bottom of our margin box.
-  int BaselinePosition(
+  LayoutUnit BaselinePosition(
       FontBaseline,
       bool first_line,
       LineDirectionMode,
       LinePositionMode = kPositionOnContainingLine) const override;
-  int InlineBlockBaseline(LineDirectionMode) const override { return -1; }
+  LayoutUnit InlineBlockBaseline(LineDirectionMode) const override {
+    return LayoutUnit(-1);
+  }
 
   PassRefPtr<ComputedStyle> CreateInnerEditorStyle(
       const ComputedStyle& start_style) const override;

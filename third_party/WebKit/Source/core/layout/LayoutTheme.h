@@ -25,6 +25,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
+#include "platform/LayoutUnit.h"
 #include "platform/ThemeTypes.h"
 #include "platform/fonts/FontSelectionTypes.h"
 #include "platform/graphics/Color.h"
@@ -91,7 +92,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   // only be used if a baseline position cannot be determined by examining child
   // content. Checkboxes and radio buttons are examples of controls that need to
   // do this.
-  virtual int BaselinePosition(const LayoutObject*) const;
+  virtual LayoutUnit BaselinePosition(const LayoutObject*) const;
 
   // A method for asking if a control is a container or not.  Leaf controls have
   // to have some special behavior (like the baseline position API above).

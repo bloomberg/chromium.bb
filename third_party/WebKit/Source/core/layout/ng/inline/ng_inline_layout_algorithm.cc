@@ -225,10 +225,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
 
   box_states_.OnEndPlaceItems(&line_box, baseline_type_, position);
 
-  // The baselines are always placed at pixel boundaries. Not doing so results
-  // in incorrect layout of text decorations, most notably underlines.
   LayoutUnit baseline = line_info->LineTop() + line_box.Metrics().ascent;
-  baseline = LayoutUnit(baseline.Round());
 
   // Check if the line fits into the constraint space in block direction.
   LayoutUnit line_bottom = baseline + line_box.Metrics().descent;

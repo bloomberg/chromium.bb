@@ -10,6 +10,6 @@ layer at (0,0) size 800x118
         LayoutText {#text} at (32,0) size 39x18
           text run at (32,0) width 39: "TEST"
       LayoutBlockFlow {DIV} at (16,68) size 192x18 [color=#FFFF00] [bgcolor=#000080]
-        LayoutImage {IMG} at (0,12) size 32x1.59
+        LayoutImage {IMG} at (0,12.41) size 32x1.59
         LayoutText {#text} at (32,0) size 39x18
           text run at (32,0) width 39: "TEST"

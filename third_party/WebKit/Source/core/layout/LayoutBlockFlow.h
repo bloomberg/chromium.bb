@@ -171,8 +171,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   // |stopRootInlineBox|, if specified.
   int LineCount(const RootInlineBox* stop_root_inline_box = nullptr) const;
 
-  int FirstLineBoxBaseline() const override;
-  int InlineBlockBaseline(LineDirectionMode) const override;
+  LayoutUnit FirstLineBoxBaseline() const override;
+  LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;
 
   void RemoveFloatingObjectsFromDescendants();
   void MarkAllDescendantsWithFloatsForLayout(

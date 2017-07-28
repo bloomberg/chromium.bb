@@ -7,10 +7,10 @@ layer at (0,0) size 800x242
         LayoutText {#text} at (0,4) size 408x18
           text run at (0,4) width 252: "In the following test, the purple square "
           text run at (251,4) width 157: "should be on the left (\x{21E6}"
-        LayoutImage {IMG} at (407.45,3) size 19.19x19.19
+        LayoutImage {IMG} at (407.45,2.81) size 19.19x19.19
         LayoutText {#text} at (426,4) size 221x18
           text run at (426,4) width 221: "), and the teal square on the right ("
-        LayoutImage {IMG} at (646.56,3) size 19.19x19.19
+        LayoutImage {IMG} at (646.56,2.81) size 19.19x19.19
         LayoutText {#text} at (665,4) size 760x38
           text run at (665,4) width 95: "\x{21E8}) of the blue"
           text run at (0,24) width 63: "rectangle."

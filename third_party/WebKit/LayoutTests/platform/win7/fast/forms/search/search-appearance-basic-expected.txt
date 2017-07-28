@@ -70,7 +70,7 @@ layer at (0,0) size 800x406
         LayoutText {#text} at (723,73) size 4x19
           text run at (723,73) width 4: " "
         LayoutBR {BR} at (727,73) size 0x19
-        LayoutTextControl {INPUT} at (6,119) size 233x33 [bgcolor=#FFFFFF] [border: (3px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (6,118.50) size 233x33 [bgcolor=#FFFFFF] [border: (3px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (4.50,4.50) size 224x24
             LayoutBlockFlow {DIV} at (0,0) size 204x24
         LayoutText {#text} at (245,127) size 4x19
@@ -81,7 +81,7 @@ layer at (0,0) size 800x406
         LayoutText {#text} at (576,127) size 4x19
           text run at (576,127) width 4: " "
         LayoutBR {BR} at (580,127) size 0x19
-        LayoutTextControl {INPUT} at (6,180) size 233x33 [bgcolor=#FFFFFF] [border: (3px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (6,179.50) size 233x33 [bgcolor=#FFFFFF] [border: (3px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (4.50,4.50) size 224x24
             LayoutBlockFlow {DIV} at (0,0) size 204x24
         LayoutText {#text} at (245,188) size 4x19
@@ -144,7 +144,7 @@ layer at (451,212) size 252x28
   LayoutBlockFlow {DIV} at (0,0) size 252x28
     LayoutText {#text} at (0,0) size 33x27
       text run at (0,0) width 33: "foo"
-layer at (19,269) size 204x24
+layer at (19,268) size 204x24
   LayoutBlockFlow {DIV} at (0,0) size 204x24
     LayoutText {#text} at (0,0) size 28x23
       text run at (0,0) width 28: "foo"
@@ -152,7 +152,7 @@ layer at (271,261) size 272x33
   LayoutBlockFlow {DIV} at (0,0) size 272x33
     LayoutText {#text} at (0,0) size 37x32
       text run at (0,0) width 37: "foo"
-layer at (19,330) size 204x24
+layer at (19,329) size 204x24
   LayoutBlockFlow {DIV} at (0,0) size 204x24
     LayoutText {#text} at (0,0) size 28x23
       text run at (0,0) width 28: "foo"
@@ -188,11 +188,11 @@ layer at (416,219) size 14x14 transparent
   LayoutBlockFlow {DIV} at (207,5) size 14x14
 layer at (704,218) size 17x17 transparent
   LayoutBlockFlow {DIV} at (253,5.50) size 17x17
-layer at (224,274) size 14x14 transparent
+layer at (224,273) size 14x14 transparent
   LayoutBlockFlow {DIV} at (205.50,5) size 14x14
 layer at (545,268) size 19x19 transparent
   LayoutBlockFlow {DIV} at (274,7) size 19x19
-layer at (224,335) size 14x14 transparent
+layer at (224,334) size 14x14 transparent
   LayoutBlockFlow {DIV} at (205.50,5) size 14x14
 layer at (545,329) size 19x19 transparent
   LayoutBlockFlow {DIV} at (274,7) size 19x19

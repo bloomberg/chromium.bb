@@ -56,7 +56,7 @@ layer at (0,0) size 800x241
       LayoutText {#text} at (163,135) size 4x19
         text run at (163,135) width 4: " "
       LayoutBR {BR} at (167,135) size 0x19
-      LayoutButton {INPUT} at (6,181) size 52x33 [bgcolor=#C0C0C0] [border: (3px outset #C0C0C0)]
+      LayoutButton {INPUT} at (6,180.50) size 52x33 [bgcolor=#C0C0C0] [border: (3px outset #C0C0C0)]
         LayoutBlockFlow (anonymous) at (12,4.50) size 28x24
           LayoutText {#text} at (0,0) size 28x23
             text run at (0,0) width 28: "foo"

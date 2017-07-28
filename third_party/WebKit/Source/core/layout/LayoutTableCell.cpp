@@ -241,10 +241,12 @@ void LayoutTableCell::ComputeIntrinsicPadding(int collapsed_height,
     case EVerticalAlign::kTextBottom:
     case EVerticalAlign::kLength:
     case EVerticalAlign::kBaseline: {
-      int baseline = CellBaselinePosition();
-      if (baseline > BorderBefore() + PaddingBefore())
-        intrinsic_padding_before = Section()->RowBaseline(RowIndex()) -
-                                   (baseline - old_intrinsic_padding_before);
+      LayoutUnit baseline = CellBaselinePosition();
+      if (baseline > BorderBefore() + PaddingBefore()) {
+        intrinsic_padding_before = (Section()->RowBaseline(RowIndex()) -
+                                    (baseline - old_intrinsic_padding_before))
+                                       .Round();
+      }
       break;
     }
     case EVerticalAlign::kTop:
@@ -292,7 +294,7 @@ void LayoutTableCell::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
-  int old_cell_baseline = CellBaselinePosition();
+  LayoutUnit old_cell_baseline = CellBaselinePosition();
   UpdateBlockLayout(CellWidthChanged());
 
   // If we have replaced content, the intrinsic height of our content may have
@@ -303,13 +305,16 @@ void LayoutTableCell::UpdateLayout() {
   // has changed push the new content up into the intrinsic padding and relayout
   // so that the rest of table and row layout can use the correct baseline and
   // height for this cell.
+  // The Round() calls are in place because intrinsic_padding_before_ isn't sub
+  // pixel yet.
   if (IsBaselineAligned() && Section()->RowBaseline(RowIndex()) &&
-      CellBaselinePosition() > Section()->RowBaseline(RowIndex())) {
-    int new_intrinsic_padding_before =
-        std::max(IntrinsicPaddingBefore() -
-                     std::max(CellBaselinePosition() - old_cell_baseline, 0),
-                 0);
-    SetIntrinsicPaddingBefore(new_intrinsic_padding_before);
+      CellBaselinePosition().Round() >
+          Section()->RowBaseline(RowIndex()).Round()) {
+    LayoutUnit new_intrinsic_padding_before = std::max(
+        IntrinsicPaddingBefore() -
+            std::max(CellBaselinePosition() - old_cell_baseline, LayoutUnit()),
+        LayoutUnit());
+    SetIntrinsicPaddingBefore(new_intrinsic_padding_before.Round());
     SubtreeLayoutScope layouter(*this);
     layouter.SetNeedsLayout(this, LayoutInvalidationReason::kTableChanged);
     UpdateBlockLayout(CellWidthChanged());
@@ -464,16 +469,16 @@ bool LayoutTableCell::ShouldClipOverflow() const {
   return false;
 }
 
-int LayoutTableCell::CellBaselinePosition() const {
+LayoutUnit LayoutTableCell::CellBaselinePosition() const {
   // <http://www.w3.org/TR/2007/CR-CSS21-20070719/tables.html#height-layout>:
   // The baseline of a cell is the baseline of the first in-flow line box in the
   // cell, or the first in-flow table-row in the cell, whichever comes first. If
   // there is no such line box or table-row, the baseline is the bottom of
   // content edge of the cell box.
-  int first_line_baseline = FirstLineBoxBaseline();
+  LayoutUnit first_line_baseline = FirstLineBoxBaseline();
   if (first_line_baseline != -1)
     return first_line_baseline;
-  return (BorderBefore() + PaddingBefore() + ContentLogicalHeight()).ToInt();
+  return BorderBefore() + PaddingBefore() + ContentLogicalHeight();
 }
 
 void LayoutTableCell::StyleDidChange(StyleDifference diff,

@@ -8,7 +8,7 @@ layer at (0,0) size 800x312
           text run at (0,0) width 249: "Left and right sides should look the same."
       LayoutBlockFlow (anonymous) at (0,36) size 784x252
         LayoutBlockFlow {DIV} at (50,50) size 202x152 [border: (1px solid #000000)]
-        LayoutText {#text} at (302,151) size 4x19
+        LayoutText {#text} at (302,151) size 4x20
           text run at (302,151) width 4: " "
         LayoutText {#text} at (0,0) size 0x0
 layer at (59,140) size 200x88

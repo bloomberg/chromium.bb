@@ -103,9 +103,9 @@ void InlineTextBox::Move(const LayoutSize& delta) {
   }
 }
 
-int InlineTextBox::BaselinePosition(FontBaseline baseline_type) const {
+LayoutUnit InlineTextBox::BaselinePosition(FontBaseline baseline_type) const {
   if (!IsText() || !Parent())
-    return 0;
+    return LayoutUnit();
   if (Parent()->GetLineLayoutItem() == GetLineLayoutItem().Parent())
     return Parent()->BaselinePosition(baseline_type);
   return LineLayoutBoxModel(GetLineLayoutItem().Parent())

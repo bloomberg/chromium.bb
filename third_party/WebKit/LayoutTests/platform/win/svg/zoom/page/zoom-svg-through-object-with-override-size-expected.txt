@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x377
-  LayoutBlockFlow {HTML} at (0,0) size 800x377.09
-    LayoutBlockFlow {BODY} at (5.55,5.55) size 788.91x366
-      LayoutText {#text} at (348,338) size 4x14
-        text run at (348,338) width 4: " "
-      LayoutBR {BR} at (351,338) size 1x14
-      LayoutText {#text} at (0,352) size 231x14
-        text run at (0,352) width 231: "The image of Tux should fill the entire red square."
+  LayoutBlockFlow {HTML} at (0,0) size 800x376.69
+    LayoutBlockFlow {BODY} at (5.55,5.55) size 788.91x365.59
+      LayoutText {#text} at (348,337) size 4x15
+        text run at (348,337) width 4: " "
+      LayoutBR {BR} at (351,337) size 1x15
+      LayoutText {#text} at (0,351) size 231x15
+        text run at (0,351) width 231: "The image of Tux should fill the entire red square."
 layer at (6,6) size 349x349
   LayoutEmbeddedObject {OBJECT} at (0,0) size 348.59x348.59 [border: (0.69px solid #FF0000)]
     layer at (0,0) size 347x347

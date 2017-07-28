@@ -135,8 +135,8 @@ void InlineBox::ShowBox(int printed_characters) const {
           GetLineLayoutItem().DecoratedName().Ascii().data(),
           GetLineLayoutItem().DebugPointer(), X().ToFloat(), Y().ToFloat(),
           Width().ToFloat(), Height().ToFloat(),
-          BaselinePosition(kAlphabeticBaseline),
-          BaselinePosition(kIdeographicBaseline));
+          BaselinePosition(kAlphabeticBaseline).ToInt(),
+          BaselinePosition(kIdeographicBaseline).ToInt());
 }
 #endif
 
@@ -166,7 +166,7 @@ LayoutUnit InlineBox::LogicalHeight() const {
   return result;
 }
 
-int InlineBox::BaselinePosition(FontBaseline baseline_type) const {
+LayoutUnit InlineBox::BaselinePosition(FontBaseline baseline_type) const {
   return BoxModelObject().BaselinePosition(
       baseline_type, bitfields_.FirstLine(),
       IsHorizontal() ? kHorizontalLine : kVerticalLine,

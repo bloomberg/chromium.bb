@@ -22,10 +22,10 @@ layer at (0,0) size 800x600
           text run at (500,0) width 244: "\x{201C}Seven\x{201D}. The scroller should be at the"
           text run at (0,18) width 155: "bottom of the scroll bar "
           text run at (154,18) width 88: "to reflect this."
-      LayoutBlockFlow (anonymous) at (0,104) size 784x59
+      LayoutBlockFlow (anonymous) at (0,104) size 784x58.75
         LayoutText {#text} at (0,0) size 0x0
-layer at (8,112) size 49x59 clip at (9,113) size 36x57 scrollY 43.00 scrollHeight 100
-  LayoutListBox {SELECT} at (0,0.25) size 48.64x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+layer at (8,112) size 49x59 clip at (9,113) size 36x57 scrollY 42.00 scrollHeight 99
+  LayoutListBox {SELECT} at (0,0) size 48.64x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 35.64x14.19
       LayoutText {#text} at (2,0) size 22x13
         text run at (2,0) width 22: "One"

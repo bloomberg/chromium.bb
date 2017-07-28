@@ -39,13 +39,14 @@ LayoutSlider::LayoutSlider(HTMLInputElement* element)
 
 LayoutSlider::~LayoutSlider() {}
 
-int LayoutSlider::BaselinePosition(FontBaseline,
-                                   bool /*firstLine*/,
-                                   LineDirectionMode,
-                                   LinePositionMode line_position_mode) const {
+LayoutUnit LayoutSlider::BaselinePosition(
+    FontBaseline,
+    bool /*firstLine*/,
+    LineDirectionMode,
+    LinePositionMode line_position_mode) const {
   DCHECK_EQ(line_position_mode, kPositionOnContainingLine);
   // FIXME: Patch this function for writing-mode.
-  return (Size().Height() + MarginTop()).ToInt();
+  return Size().Height() + MarginTop();
 }
 
 void LayoutSlider::ComputeIntrinsicLogicalWidths(

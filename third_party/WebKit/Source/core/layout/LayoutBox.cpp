@@ -5306,20 +5306,21 @@ LayoutUnit LayoutBox::LineHeight(bool /*firstLine*/,
 }
 
 DISABLE_CFI_PERF
-int LayoutBox::BaselinePosition(FontBaseline baseline_type,
-                                bool /*firstLine*/,
-                                LineDirectionMode direction,
-                                LinePositionMode line_position_mode) const {
+LayoutUnit LayoutBox::BaselinePosition(
+    FontBaseline baseline_type,
+    bool /*firstLine*/,
+    LineDirectionMode direction,
+    LinePositionMode line_position_mode) const {
   DCHECK_EQ(line_position_mode, kPositionOnContainingLine);
   if (IsAtomicInlineLevel()) {
-    int result = direction == kHorizontalLine
-                     ? RoundToInt(MarginHeight() + Size().Height())
-                     : RoundToInt(MarginWidth() + Size().Width());
+    LayoutUnit result = direction == kHorizontalLine
+                            ? MarginHeight() + Size().Height()
+                            : MarginWidth() + Size().Width();
     if (baseline_type == kAlphabeticBaseline)
       return result;
     return result - result / 2;
   }
-  return 0;
+  return LayoutUnit();
 }
 
 PaintLayer* LayoutBox::EnclosingFloatPaintingLayer() const {

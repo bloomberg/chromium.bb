@@ -1677,31 +1677,30 @@ void LayoutGrid::UpdateAutoMarginsInColumnAxisIfNeeded(LayoutBox& child) {
 
 // TODO(lajava): This logic is shared by LayoutFlexibleBox, so it might be
 // refactored somehow.
-int LayoutGrid::SynthesizedBaselineFromContentBox(const LayoutBox& box,
-                                                  LineDirectionMode direction) {
+LayoutUnit LayoutGrid::SynthesizedBaselineFromContentBox(
+    const LayoutBox& box,
+    LineDirectionMode direction) {
   if (direction == kHorizontalLine) {
-    return (box.Size().Height() - box.BorderBottom() - box.PaddingBottom() -
-            box.HorizontalScrollbarHeight())
-        .ToInt();
+    return box.Size().Height() - box.BorderBottom() - box.PaddingBottom() -
+           box.HorizontalScrollbarHeight();
   }
-  return (box.Size().Width() - box.BorderLeft() - box.PaddingLeft() -
-          box.VerticalScrollbarWidth())
-      .ToInt();
+  return box.Size().Width() - box.BorderLeft() - box.PaddingLeft() -
+         box.VerticalScrollbarWidth();
 }
 
-int LayoutGrid::SynthesizedBaselineFromBorderBox(const LayoutBox& box,
-                                                 LineDirectionMode direction) {
-  return (direction == kHorizontalLine ? box.Size().Height()
-                                       : box.Size().Width())
-      .ToInt();
+LayoutUnit LayoutGrid::SynthesizedBaselineFromBorderBox(
+    const LayoutBox& box,
+    LineDirectionMode direction) {
+  return direction == kHorizontalLine ? box.Size().Height()
+                                      : box.Size().Width();
 }
 
-int LayoutGrid::BaselinePosition(FontBaseline,
-                                 bool,
-                                 LineDirectionMode direction,
-                                 LinePositionMode mode) const {
+LayoutUnit LayoutGrid::BaselinePosition(FontBaseline,
+                                        bool,
+                                        LineDirectionMode direction,
+                                        LinePositionMode mode) const {
   DCHECK_EQ(mode, kPositionOnContainingLine);
-  int baseline = FirstLineBoxBaseline();
+  LayoutUnit baseline = FirstLineBoxBaseline();
   // We take content-box's bottom if no valid baseline.
   if (baseline == -1)
     baseline = SynthesizedBaselineFromContentBox(*this, direction);
@@ -1709,9 +1708,9 @@ int LayoutGrid::BaselinePosition(FontBaseline,
   return baseline + BeforeMarginInLineDirection(direction);
 }
 
-int LayoutGrid::FirstLineBoxBaseline() const {
+LayoutUnit LayoutGrid::FirstLineBoxBaseline() const {
   if (IsWritingModeRoot() || !grid_.HasGridItems())
-    return -1;
+    return LayoutUnit(-1);
   const LayoutBox* baseline_child = nullptr;
   const LayoutBox* first_child = nullptr;
   bool is_baseline_aligned = false;
@@ -1742,11 +1741,12 @@ int LayoutGrid::FirstLineBoxBaseline() const {
   }
 
   if (!baseline_child)
-    return -1;
+    return LayoutUnit(-1);
 
-  int baseline = GridLayoutUtils::IsOrthogonalChild(*this, *baseline_child)
-                     ? -1
-                     : baseline_child->FirstLineBoxBaseline();
+  LayoutUnit baseline =
+      GridLayoutUtils::IsOrthogonalChild(*this, *baseline_child)
+          ? LayoutUnit(-1)
+          : baseline_child->FirstLineBoxBaseline();
   // We take border-box's bottom if no valid baseline.
   if (baseline == -1) {
     // TODO (lajava): We should pass |direction| into
@@ -1755,21 +1755,20 @@ int LayoutGrid::FirstLineBoxBaseline() const {
     // orthogonal to its container.
     LineDirectionMode direction =
         IsHorizontalWritingMode() ? kHorizontalLine : kVerticalLine;
-    return (SynthesizedBaselineFromBorderBox(*baseline_child, direction) +
-            baseline_child->LogicalTop())
-        .ToInt();
+    return SynthesizedBaselineFromBorderBox(*baseline_child, direction) +
+           baseline_child->LogicalTop();
   }
 
-  return (baseline + baseline_child->LogicalTop()).ToInt();
+  return baseline + baseline_child->LogicalTop();
 }
 
-int LayoutGrid::InlineBlockBaseline(LineDirectionMode direction) const {
-  int baseline = FirstLineBoxBaseline();
+LayoutUnit LayoutGrid::InlineBlockBaseline(LineDirectionMode direction) const {
+  LayoutUnit baseline = FirstLineBoxBaseline();
   if (baseline != -1)
     return baseline;
 
-  int margin_height =
-      (direction == kHorizontalLine ? MarginTop() : MarginRight()).ToInt();
+  LayoutUnit margin_height =
+      direction == kHorizontalLine ? MarginTop() : MarginRight();
   return SynthesizedBaselineFromContentBox(*this, direction) + margin_height;
 }
 
@@ -1846,9 +1845,9 @@ LayoutUnit LayoutGrid::AscentForChild(const LayoutBox& child,
   LayoutUnit margin = IsDescentBaselineForChild(child, baseline_axis)
                           ? MarginUnderForChild(child, baseline_axis)
                           : MarginOverForChild(child, baseline_axis);
-  int baseline = IsParallelToBlockAxisForChild(child, baseline_axis)
-                     ? child.FirstLineBoxBaseline()
-                     : -1;
+  LayoutUnit baseline = IsParallelToBlockAxisForChild(child, baseline_axis)
+                            ? child.FirstLineBoxBaseline()
+                            : LayoutUnit(-1);
   // We take border-box's under edge if no valid baseline.
   if (baseline == -1) {
     if (IsHorizontalGridAxis(baseline_axis)) {
@@ -1858,7 +1857,7 @@ LayoutUnit LayoutGrid::AscentForChild(const LayoutBox& child,
     }
     return child.Size().Height() + margin;
   }
-  return LayoutUnit(baseline) + margin;
+  return baseline + margin;
 }
 
 LayoutUnit LayoutGrid::DescentForChild(const LayoutBox& child,

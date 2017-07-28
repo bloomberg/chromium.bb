@@ -304,7 +304,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
                                        logical_width_, LogicalHeight());
   }
 
-  virtual int BaselinePosition(FontBaseline baseline_type) const;
+  virtual LayoutUnit BaselinePosition(FontBaseline baseline_type) const;
   virtual LayoutUnit LineHeight() const;
 
   virtual int CaretMinOffset() const;

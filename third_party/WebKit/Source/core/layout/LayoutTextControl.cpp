@@ -342,8 +342,8 @@ LayoutObject* LayoutTextControl::LayoutSpecialExcludedChild(
   return placeholder_layout_object;
 }
 
-int LayoutTextControl::FirstLineBoxBaseline() const {
-  int result = LayoutBlock::FirstLineBoxBaseline();
+LayoutUnit LayoutTextControl::FirstLineBoxBaseline() const {
+  LayoutUnit result = LayoutBlock::FirstLineBoxBaseline();
   if (result != -1)
     return result;
 
@@ -351,7 +351,7 @@ int LayoutTextControl::FirstLineBoxBaseline() const {
   // compute the baseline because lineboxes do not exist.
   Element* inner_editor = InnerEditorElement();
   if (!inner_editor || !inner_editor->GetLayoutObject())
-    return -1;
+    return LayoutUnit(-1);
 
   LayoutBlock* inner_editor_layout_object =
       ToLayoutBlock(inner_editor->GetLayoutObject());
@@ -359,7 +359,7 @@ int LayoutTextControl::FirstLineBoxBaseline() const {
       inner_editor_layout_object->Style(true)->GetFont().PrimaryFont();
   DCHECK(font_data);
   if (!font_data)
-    return -1;
+    return LayoutUnit(-1);
 
   LayoutUnit baseline(font_data->GetFontMetrics().Ascent(kAlphabeticBaseline));
   for (LayoutObject* box = inner_editor_layout_object; box && box != this;
@@ -367,7 +367,7 @@ int LayoutTextControl::FirstLineBoxBaseline() const {
     if (box->IsBox())
       baseline += ToLayoutBox(box)->LogicalTop();
   }
-  return baseline.ToInt();
+  return baseline;
 }
 
 }  // namespace blink

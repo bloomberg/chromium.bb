@@ -30,8 +30,8 @@ class CORE_EXPORT LayoutNGBlockFlow final : public LayoutBlockFlow {
   void ResetNGInlineNodeData();
   bool HasNGInlineNodeData() const { return ng_inline_node_data_.get(); }
 
-  int FirstLineBoxBaseline() const override;
-  int InlineBlockBaseline(LineDirectionMode) const override;
+  LayoutUnit FirstLineBoxBaseline() const override;
+  LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;
 
   // Returns the last layout result for this block flow with the given
   // constraint space and break token, or null if it is not up-to-date or

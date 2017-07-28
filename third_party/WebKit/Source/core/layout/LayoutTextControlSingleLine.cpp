@@ -145,14 +145,14 @@ void LayoutTextControlSingleLine::UpdateLayout() {
     if (inner_editor_layout_object) {
       // We use inlineBlockBaseline() for innerEditor because it has no
       // inline boxes when we show the placeholder.
-      int inner_editor_baseline =
+      LayoutUnit inner_editor_baseline =
           inner_editor_layout_object->InlineBlockBaseline(kHorizontalLine);
       // We use firstLineBoxBaseline() for placeholder.
       // TODO(tkent): It's inconsistent with innerEditorBaseline. However
       // placeholderBox->inlineBlockBase() is unexpectedly larger.
-      int placeholder_baseline = placeholder_box->FirstLineBoxBaseline();
-      text_offset +=
-          LayoutSize(0, inner_editor_baseline - placeholder_baseline);
+      LayoutUnit placeholder_baseline = placeholder_box->FirstLineBoxBaseline();
+      text_offset += LayoutSize(LayoutUnit(),
+                                inner_editor_baseline - placeholder_baseline);
     }
     placeholder_box->SetLocation(text_offset);
 

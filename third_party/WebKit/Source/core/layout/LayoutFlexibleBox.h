@@ -53,18 +53,18 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   bool IsFlexibleBox() const final { return true; }
   void UpdateBlockLayout(bool relayout_children) final;
 
-  int BaselinePosition(
+  LayoutUnit BaselinePosition(
       FontBaseline,
       bool first_line,
       LineDirectionMode,
       LinePositionMode = kPositionOnContainingLine) const override;
 
   static const StyleContentAlignmentData& ContentAlignmentNormalBehavior();
-  static int SynthesizedBaselineFromContentBox(const LayoutBox&,
-                                               LineDirectionMode);
+  static LayoutUnit SynthesizedBaselineFromContentBox(const LayoutBox&,
+                                                      LineDirectionMode);
 
-  int FirstLineBoxBaseline() const override;
-  int InlineBlockBaseline(LineDirectionMode) const override;
+  LayoutUnit FirstLineBoxBaseline() const override;
+  LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;
   IntSize OriginAdjustmentForScrollbars() const override;
   bool HasTopOverflow() const override;
   bool HasLeftOverflow() const override;

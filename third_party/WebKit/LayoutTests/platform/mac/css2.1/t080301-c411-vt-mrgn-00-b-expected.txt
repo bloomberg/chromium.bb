@@ -39,8 +39,8 @@ layer at (0,0) size 785x869 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutText {#text} at (0,0) size 6x18
                   text run at (0,0) width 6: "-"
               LayoutBlockFlow {P} at (3,542.88) size 80x55.78 [bgcolor=#00FF00]
-                LayoutText {#text} at (0,38) size 6x18
-                  text run at (0,38) width 6: "-"
+                LayoutText {#text} at (0,37) size 6x19
+                  text run at (0,37) width 6: "-"
               LayoutBlockFlow (floating) {P} at (3,674.22) size 40x18 [bgcolor=#FFFFFF]
                 LayoutText {#text} at (0,0) size 6x18
                   text run at (0,0) width 6: "-"
@@ -51,8 +51,8 @@ layer at (0,0) size 785x869 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutText {#text} at (0,0) size 6x18
                   text run at (0,0) width 6: "-"
               LayoutBlockFlow {P} at (3,748) size 80x55.78 [bgcolor=#FFFF00]
-                LayoutText {#text} at (0,38) size 6x18
-                  text run at (0,38) width 6: "-"
+                LayoutText {#text} at (0,37) size 6x19
+                  text run at (0,37) width 6: "-"
             LayoutTableCell {TD} at (90,2) size 86x806.77 [border: (3px solid #000000)] [r=0 c=1 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (3,3) size 80x18 [bgcolor=#FFFF00]
                 LayoutText {#text} at (0,0) size 6x18

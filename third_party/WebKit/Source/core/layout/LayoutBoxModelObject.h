@@ -405,7 +405,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
       bool first_line,
       LineDirectionMode,
       LinePositionMode = kPositionOnContainingLine) const = 0;
-  virtual int BaselinePosition(
+  virtual LayoutUnit BaselinePosition(
       FontBaseline,
       bool first_line,
       LineDirectionMode,
