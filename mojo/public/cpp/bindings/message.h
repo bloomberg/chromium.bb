@@ -56,11 +56,15 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   //
   // If |handles| is non-null, any handles in |*handles| are attached to the
   // newly constructed message.
+  //
+  // Note that |payload_size| is only the initially known size of the message
+  // payload, if any. The payload can be expanded after construction using the
+  // interface returned by |payload_buffer()|.
   Message(uint32_t name,
           uint32_t flags,
           size_t payload_size,
           size_t payload_interface_id_count,
-          std::vector<ScopedHandle>* handles = nullptr);
+          std::vector<ScopedHandle>* handles);
 
   // Constructs a new serialized Message object from an existing
   // ScopedMessageHandle; e.g., one read from a message pipe.
@@ -87,36 +91,42 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   // Indicates whether this Message is serialized.
   bool is_serialized() const { return serialized_; }
 
-  uint32_t data_num_bytes() const { return static_cast<uint32_t>(data_size_); }
-
   // Access the raw bytes of the message.
-  const uint8_t* data() const { return static_cast<const uint8_t*>(data_); }
-  uint8_t* mutable_data() { return static_cast<uint8_t*>(data_); }
+  const uint8_t* data() const {
+    DCHECK(payload_buffer_.is_valid());
+    return static_cast<const uint8_t*>(payload_buffer_.data());
+  }
+  uint8_t* mutable_data() { return const_cast<uint8_t*>(data()); }
+
+  size_t data_num_bytes() const {
+    DCHECK(payload_buffer_.is_valid());
+    return payload_buffer_.cursor();
+  }
 
   // Access the header.
   const internal::MessageHeader* header() const {
-    return static_cast<const internal::MessageHeader*>(data_);
+    return reinterpret_cast<const internal::MessageHeader*>(data());
   }
   internal::MessageHeader* header() {
-    return static_cast<internal::MessageHeader*>(data_);
+    return reinterpret_cast<internal::MessageHeader*>(mutable_data());
   }
 
   const internal::MessageHeaderV1* header_v1() const {
     DCHECK_GE(version(), 1u);
-    return static_cast<const internal::MessageHeaderV1*>(data_);
+    return reinterpret_cast<const internal::MessageHeaderV1*>(data());
   }
   internal::MessageHeaderV1* header_v1() {
     DCHECK_GE(version(), 1u);
-    return static_cast<internal::MessageHeaderV1*>(data_);
+    return reinterpret_cast<internal::MessageHeaderV1*>(mutable_data());
   }
 
   const internal::MessageHeaderV2* header_v2() const {
     DCHECK_GE(version(), 2u);
-    return static_cast<const internal::MessageHeaderV2*>(data_);
+    return reinterpret_cast<const internal::MessageHeaderV2*>(data());
   }
   internal::MessageHeaderV2* header_v2() {
     DCHECK_GE(version(), 2u);
-    return static_cast<internal::MessageHeaderV2*>(data_);
+    return reinterpret_cast<internal::MessageHeaderV2*>(mutable_data());
   }
 
   uint32_t version() const { return header()->version; }
@@ -197,10 +207,9 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
  private:
   ScopedMessageHandle handle_;
 
-  // Pointer to raw serialized message data, including header. This is only
-  // valid when |handle_| is a valid handle to a serialized message object.
-  void* data_ = nullptr;
-  size_t data_size_ = 0;
+  // A Buffer which may be used to allocate blocks of data within the message
+  // payload for reading or writing.
+  internal::Buffer payload_buffer_;
 
   std::vector<ScopedHandle> handles_;
   std::vector<ScopedInterfaceEndpointHandle> associated_endpoint_handles_;
@@ -213,10 +222,6 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
 
   // Indicates whether this Message object is serialized.
   bool serialized_ = false;
-
-  // A Buffer which may be used to allocated blocks of data within the message
-  // payload. May be invalid if there is no capacity remaining in the payload.
-  internal::Buffer payload_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(Message);
 };
