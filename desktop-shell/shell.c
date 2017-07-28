@@ -1635,9 +1635,12 @@ resize_grab_button(struct weston_pointer_grab *grab,
 	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
 	struct weston_pointer *pointer = grab->pointer;
 	enum wl_pointer_button_state state = state_w;
+	struct weston_desktop_surface *desktop_surface =
+		resize->base.shsurf->desktop_surface;
 
 	if (pointer->button_count == 0 &&
 	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
+		weston_desktop_surface_set_resizing(desktop_surface, false);
 		shell_grab_end(&resize->base);
 		free(grab);
 	}
@@ -1647,7 +1650,10 @@ static void
 resize_grab_cancel(struct weston_pointer_grab *grab)
 {
 	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
+	struct weston_desktop_surface *desktop_surface =
+		resize->base.shsurf->desktop_surface;
 
+	weston_desktop_surface_set_resizing(desktop_surface, false);
 	shell_grab_end(&resize->base);
 	free(grab);
 }
@@ -1731,6 +1737,7 @@ surface_resize(struct shell_surface *shsurf,
 	resize->height = geometry.height;
 
 	shsurf->resize_edges = edges;
+	weston_desktop_surface_set_resizing(shsurf->desktop_surface, true);
 	shell_grab_start(&resize->base, &resize_grab_interface, shsurf,
 			 pointer, edges);
 
