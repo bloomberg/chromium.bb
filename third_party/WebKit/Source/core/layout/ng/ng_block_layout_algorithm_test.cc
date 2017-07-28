@@ -19,6 +19,7 @@
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace blink {
@@ -54,6 +55,9 @@ RefPtr<NGConstraintSpace> ConstructBlockLayoutTestConstraintSpace(
 class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
  protected:
   void SetUp() override {
+    // Make sure to reset this, except for the one test that needs it.
+    RuntimeEnabledFeatures::SetLayoutNGFragmentCachingEnabled(false);
+
     NGBaseLayoutAlgorithmTest::SetUp();
     style_ = ComputedStyle::Create();
   }
@@ -127,6 +131,49 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
   RefPtr<NGPhysicalFragment> frag = RunBlockLayoutAlgorithm(space.Get(), box);
 
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(30), LayoutUnit(40)), frag->Size());
+}
+
+TEST_F(NGBlockLayoutAlgorithmTest, Caching) {
+  RuntimeEnabledFeatures::SetLayoutNGFragmentCachingEnabled(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <div id="box" style="width:30px; height:40px"></div>
+  )HTML");
+
+  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+
+  LayoutNGBlockFlow* block_flow =
+      ToLayoutNGBlockFlow(GetLayoutObjectByElementId("box"));
+  NGBlockNode node(block_flow);
+
+  RefPtr<NGLayoutResult> result(node.Layout(space.Get(), nullptr));
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(30), LayoutUnit(40)),
+            result->PhysicalFragment()->Size());
+
+  // Test pointer-equal constraint space
+  result = block_flow->CachedLayoutResult(space.Get(), nullptr);
+  EXPECT_NE(result.Get(), nullptr);
+
+  // Test identical, but not pointer-equal, constraint space
+  space = ConstructBlockLayoutTestConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  result = block_flow->CachedLayoutResult(space.Get(), nullptr);
+  EXPECT_NE(result.Get(), nullptr);
+
+  // Test different constraint space
+  space = ConstructBlockLayoutTestConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(200), NGSizeIndefinite));
+  result = block_flow->CachedLayoutResult(space.Get(), nullptr);
+  EXPECT_EQ(result.Get(), nullptr);
+
+  // Test layout invalidation
+  block_flow->SetNeedsLayout("");
+  result = block_flow->CachedLayoutResult(space.Get(), nullptr);
+  EXPECT_EQ(result.Get(), nullptr);
 }
 
 // Verifies that two children are laid out with the correct size and position.
@@ -380,6 +427,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase3) {
   auto run_test = [&](const Length& container_height) {
     Element* container = GetDocument().getElementById("container");
     container->MutableComputedStyle()->SetHeight(container_height);
+    container->GetLayoutObject()->SetNeedsLayout("");
     std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
         GetDocument().getElementsByTagName("html")->item(0));
     ASSERT_EQ(1UL, fragment->Children().size());
@@ -431,6 +479,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
   auto run_test = [&](const Length& container_padding_top) {
     Element* container = GetDocument().getElementById("container");
     container->MutableComputedStyle()->SetPaddingTop(container_padding_top);
+    container->GetLayoutObject()->SetNeedsLayout("");
     std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
         GetDocument().getElementsByTagName("html")->item(0));
     ASSERT_EQ(1UL, fragment->Children().size());
@@ -1222,6 +1271,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFragmentsWithClear) {
   auto run_with_clearance = [&](EClear clear_value) {
     Element* el_with_clear = GetDocument().getElementById("clearance");
     el_with_clear->MutableComputedStyle()->SetClear(clear_value);
+    el_with_clear->GetLayoutObject()->SetNeedsLayout("");
     std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
         GetDocument().getElementsByTagName("html")->item(0));
     ASSERT_EQ(1UL, fragment->Children().size());
@@ -2548,6 +2598,7 @@ TEST_F(NGBlockLayoutAlgorithmTest,
   auto run_test = [&](const Length& block_width) {
     Element* new_fc_block = GetDocument().getElementById("new-fc");
     new_fc_block->MutableComputedStyle()->SetWidth(block_width);
+    new_fc_block->GetLayoutObject()->SetNeedsLayout("");
     std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
         GetDocument().getElementsByTagName("html")->item(0));
     ASSERT_EQ(1UL, fragment->Children().size());
