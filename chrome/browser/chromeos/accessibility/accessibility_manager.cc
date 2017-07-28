@@ -278,6 +278,9 @@ AccessibilityManager::AccessibilityManager()
                               chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+                              content::NotificationService::AllSources());
+  notification_registrar_.Add(this,
                               chrome::NOTIFICATION_SESSION_STARTED,
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this,
@@ -1137,6 +1140,13 @@ void AccessibilityManager::OnSessionStateChanged() {
 }
 
 void AccessibilityManager::SetProfile(Profile* profile) {
+  // Do nothing if this is called for the current profile. This can happen. For
+  // example, ChromeSessionManager fires both
+  // NOTIFICATION_LOGIN_USER_PROFILE_PREPARED and NOTIFICATION_SESSION_STARTED,
+  // and we are observing both events.
+  if (profile_ == profile)
+    return;
+
   pref_change_registrar_.reset();
   local_state_pref_change_registrar_.reset();
 
@@ -1382,6 +1392,12 @@ void AccessibilityManager::Observe(
         SetProfile(profile);
       break;
     }
+    case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED:
+      // Update |profile_| when login user profile is prepared.
+      // NOTIFICATION_SESSION_STARTED is not fired from UserSessionManager, but
+      // profile may be changed by UserSessionManager in OOBE flow.
+      SetProfile(ProfileManager::GetActiveUserProfile());
+      break;
     case chrome::NOTIFICATION_SESSION_STARTED:
       // Update |profile_| when entering a session.
       SetProfile(ProfileManager::GetActiveUserProfile());
