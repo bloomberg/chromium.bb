@@ -32,16 +32,6 @@ scoped_refptr<RefcountedKeyedService> BuildPasswordStore(Context* context) {
   return store;
 }
 
-// These constants are used by CreatePasswordFormFromDataForTesting to supply
-// values not covered by PasswordFormData.
-extern const char kTestingIconUrlSpec[];
-extern const char kTestingFederationUrlSpec[];
-extern const int kTestingDaysAfterPasswordsAreSynced;
-
-// Magic value for PasswordFormData::password_value to indicate a federated
-// login.
-extern const wchar_t kTestingFederatedLoginMarker[];
-
 // Struct used for creation of PasswordForms from static arrays of data.
 // Note: This is only meant to be used in unit test.
 struct PasswordFormData {
@@ -58,9 +48,17 @@ struct PasswordFormData {
   const double creation_time;
 };
 
-// Creates and returns a new PasswordForm built from form_data.
-std::unique_ptr<autofill::PasswordForm> CreatePasswordFormFromDataForTesting(
+// Creates and returns a new PasswordForm built from |form_data|.
+std::unique_ptr<autofill::PasswordForm> PasswordFormFromData(
     const PasswordFormData& form_data);
+
+// Like PasswordFormFromData(), but also fills arbitrary values into fields not
+// specified by |form_data|.  This may be useful e.g. for tests looking to
+// verify the handling of these fields.  If |use_federated_login| is true, this
+// function will set the form's |federation_origin|.
+std::unique_ptr<autofill::PasswordForm> FillPasswordFormWithData(
+    const PasswordFormData& form_data,
+    bool use_federated_login = false);
 
 // Convenience method that wraps the passed in forms in unique ptrs and returns
 // the result.

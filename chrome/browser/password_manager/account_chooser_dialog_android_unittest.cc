@@ -72,15 +72,15 @@ AccountChooserDialogAndroid* AccountChooserDialogAndroidTest::CreateDialog(
 AccountChooserDialogAndroid*
 AccountChooserDialogAndroidTest::CreateDialogOneAccount() {
   std::vector<std::unique_ptr<autofill::PasswordForm>> credentials;
-  credentials.push_back(CreatePasswordFormFromDataForTesting(kFormData));
+  credentials.push_back(FillPasswordFormWithData(kFormData));
   return CreateDialog(std::move(credentials));
 }
 
 AccountChooserDialogAndroid*
 AccountChooserDialogAndroidTest::CreateDialogManyAccounts() {
   std::vector<std::unique_ptr<autofill::PasswordForm>> credentials;
-  credentials.push_back(CreatePasswordFormFromDataForTesting(kFormData));
-  credentials.push_back(CreatePasswordFormFromDataForTesting(kFormData));
+  credentials.push_back(FillPasswordFormWithData(kFormData));
+  credentials.push_back(FillPasswordFormWithData(kFormData));
   return CreateDialog(std::move(credentials));
 }
 

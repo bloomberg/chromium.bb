@@ -175,8 +175,7 @@ TEST(PasswordStoreDefaultTest, NonASCIIData) {
   // Build the expected forms vector and add the forms to the store.
   std::vector<std::unique_ptr<PasswordForm>> expected_forms;
   for (unsigned int i = 0; i < arraysize(form_data); ++i) {
-    expected_forms.push_back(
-        CreatePasswordFormFromDataForTesting(form_data[i]));
+    expected_forms.push_back(FillPasswordFormWithData(form_data[i]));
     store->AddLogin(*expected_forms.back());
   }
 
@@ -199,7 +198,7 @@ TEST(PasswordStoreDefaultTest, Notifications) {
   PasswordStoreDefault* store = delegate.store();
 
   std::unique_ptr<PasswordForm> form =
-      CreatePasswordFormFromDataForTesting(CreateTestPasswordFormData());
+      FillPasswordFormWithData(CreateTestPasswordFormData());
 
   MockPasswordStoreObserver observer;
   store->AddObserver(&observer);
@@ -258,7 +257,7 @@ TEST(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
 
   // Add a new autofillable login + a blacklisted login.
   std::unique_ptr<PasswordForm> form =
-      CreatePasswordFormFromDataForTesting(CreateTestPasswordFormData());
+      FillPasswordFormWithData(CreateTestPasswordFormData());
   std::unique_ptr<PasswordForm> blacklisted_form(new PasswordForm(*form));
   blacklisted_form->signon_realm = "http://foo.example.com";
   blacklisted_form->origin = GURL("http://foo.example.com/origin");
