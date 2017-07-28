@@ -2078,7 +2078,9 @@ bool LocalFrameView::ComputeCompositedSelection(
   if (!selection.end.layer)
     return false;
 
-  selection.type = visible_selection.GetSelectionType();
+  DCHECK(!visible_selection.IsNone());
+  selection.type =
+      visible_selection.IsRange() ? kRangeSelection : kCaretSelection;
   selection.start.is_text_direction_rtl |=
       PrimaryDirectionOf(*visible_selection.Start().AnchorNode()) ==
       TextDirection::kRtl;
