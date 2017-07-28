@@ -225,7 +225,6 @@ public class ChildProcessLauncher {
             });
             return false;
         }
-        assert mConnection != null;
 
         if (setupConnection) {
             setupConnection();

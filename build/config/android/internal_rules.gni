@@ -2449,6 +2449,15 @@ if (enable_java_templates) {
     }
     assert(_android_manifest != "")  # Mark as used.
 
+    _enable_build_hooks =
+        _supports_android &&
+        (!defined(invoker.no_build_hooks) ||
+         (defined(invoker.no_build_hooks) && !invoker.no_build_hooks))
+
+    if (_enable_build_hooks) {
+      _accumulated_deps += [ "//build/android:build_hooks_java" ]
+    }
+
     if (defined(invoker.run_findbugs_override)) {
       _run_findbugs = invoker.run_findbugs_override
     } else {
@@ -2530,6 +2539,9 @@ if (enable_java_templates) {
         }
         if (defined(invoker.deps)) {
           possible_config_deps = invoker.deps
+          if (_enable_build_hooks) {
+            possible_config_deps += [ "//build/android:build_hooks_java" ]
+          }
         }
         supports_android = _supports_android
         requires_android = _requires_android
