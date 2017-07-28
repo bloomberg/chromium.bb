@@ -427,19 +427,29 @@ def PrintApkAnalysis(apk_filename, tool_prefix, chartjson=None):
       unknown.AddZipInfo(member)
 
   total_install_size = total_apk_size
+  zip_overhead = total_apk_size
 
   for group in file_groups:
+    actual_size = group.ComputeZippedSize()
     install_size = group.ComputeInstallSize()
+
     total_install_size += group.ComputeExtractedSize()
+    zip_overhead -= actual_size
 
     ReportPerfResult(chartjson, apk_basename + '_Breakdown',
-                     group.name + ' size', group.ComputeZippedSize(), 'bytes')
+                     group.name + ' size', actual_size, 'bytes')
     ReportPerfResult(chartjson, apk_basename + '_InstallBreakdown',
                      group.name + ' size', install_size, 'bytes')
     ReportPerfResult(chartjson, apk_basename + '_Uncompressed',
                      group.name + ' size', group.ComputeUncompressedSize(),
                      'bytes')
 
+  # Per-file zip overhead is caused by:
+  # * 30 byte entry header + len(file name)
+  # * 46 byte central directory entry + len(file name)
+  # * 0-3 bytes for zipalign.
+  ReportPerfResult(chartjson, apk_basename + '_Breakdown', 'Zip Overhead',
+                   zip_overhead, 'bytes')
   ReportPerfResult(chartjson, apk_basename + '_InstallSize', 'APK size',
                    total_apk_size, 'bytes')
   ReportPerfResult(chartjson, apk_basename + '_InstallSize',
