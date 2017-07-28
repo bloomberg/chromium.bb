@@ -327,7 +327,7 @@
       Export bookmarks to HTML file...
     </message>
     <message name="IDS_BOOKMARK_MANAGER_INVALID_URL" desc="Error message to display when the user tries to edit or create a bookmark with an invalid URL.">
-      Invalid URL.
+      Invalid URL
     </message>
     <message name="IDS_BOOKMARK_MANAGER_RECENT" desc="The label for the tree item that shows the recently added bookmarks.">
       Recent
@@ -404,8 +404,29 @@
   <message name="IDS_MD_BOOKMARK_MANAGER_MENU_IMPORT" desc="Title of the bookmark toolbar dropdown menu item that imports bookmarks.">
     Import Bookmarks
   </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MENU_OPEN_ALL" desc="Menu title for opening all urls in a bookmark folder">
+    Open all bookmarks
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MENU_OPEN_ALL_NEW_WINDOW" desc="Menu title for opening all urls in a bookmark folder in a new window">
+    Open all in new window
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MENU_OPEN_ALL_INCOGNITO" desc="Menu description for opening all urls in a bookmark folder in an incognito window">
+    Open all in incognito window
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MENU_OPEN_IN_NEW_TAB" desc="Menu description for opening a bookmark in a new tab">
+    Open in new tab
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MENU_OPEN_IN_NEW_WINDOW" desc="Menu description for opening a bookmark in a new window">
+    Open in new window
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MENU_OPEN_INCOGNITO" desc="Menu description for opening a bookmark in incognito window">
+    Open in incognito window
+  </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_MENU_RENAME" desc="Title of the bookmark list dropdown menu item that renames folders.">
     Rename
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MENU_SHOW_IN_FOLDER" desc="The label of the menu item in the bookmark manager context menu that changes the selection in the tree to match the folder of the selected item in the list.">
+    Show in folder
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_MENU_SORT" desc="Title of the bookmark toolbar dropdown menu item that sorts bookmarks by title.">
     Sort by title
