@@ -38,7 +38,7 @@ constexpr char kMimeType[] = "application/octet-stream";
 std::unique_ptr<KeyedService> CreateArcFileSystemOperationRunnerForTesting(
     content::BrowserContext* context) {
   return ArcFileSystemOperationRunner::CreateForTesting(
-      ArcServiceManager::Get()->arc_bridge_service());
+      context, ArcServiceManager::Get()->arc_bridge_service());
 }
 
 class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {

@@ -17,10 +17,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_bridge.h"
 #include "components/arc/common/file_system.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "storage/browser/fileapi/watcher_manager.h"
 
 class BrowserContextKeyedServiceFactory;
@@ -35,9 +35,10 @@ class ArcBridgeService;
 
 // Runs ARC file system operations.
 //
-// This is an abstraction layer on top of mojom::FileSystemInstance. All ARC
-// file system operations should go through this class, rather than invoking
-// mojom::FileSystemInstance directly.
+// This is an abstraction layer on top of mojom::FileSystemInstance. ARC file
+// system operations from chrome to the ARC container which can be initiated
+// before the ARC container gets ready should go through this class, rather than
+// invoking mojom::FileSystemInstance directly.
 //
 // When ARC is disabled or ARC has already booted, file system operations are
 // performed immediately. While ARC boot is under progress, file operations are
@@ -58,7 +59,7 @@ class ArcBridgeService;
 // All member functions must be called on the UI thread.
 class ArcFileSystemOperationRunner
     : public KeyedService,
-      public mojom::FileSystemHost,
+      public ArcFileSystemBridge::Observer,
       public ArcSessionManager::Observer,
       public InstanceHolder<mojom::FileSystemInstance>::Observer {
  public:
@@ -96,6 +97,7 @@ class ArcFileSystemOperationRunner
   // default. Also, deferring can be enabled/disabled by calling
   // SetShouldDefer() from friend classes.
   static std::unique_ptr<ArcFileSystemOperationRunner> CreateForTesting(
+      content::BrowserContext* context,
       ArcBridgeService* bridge_service);
 
   // Returns Factory instance for ArcFileSystemOperationRunner.
@@ -125,7 +127,10 @@ class ArcFileSystemOperationRunner
                   const AddWatcherCallback& callback);
   void RemoveWatcher(int64_t watcher_id, const RemoveWatcherCallback& callback);
 
-  // FileSystemHost overrides:
+  // KeyedService overrides:
+  void Shutdown() override;
+
+  // ArcFileSystemBridge::Observer overrides:
   void OnDocumentChanged(int64_t watcher_id, ChangeType type) override;
 
   // ArcSessionManager::Observer overrides:
@@ -174,8 +179,6 @@ class ArcFileSystemOperationRunner
   std::map<int64_t, WatcherCallback> watcher_callbacks_;
 
   base::ObserverList<Observer> observer_list_;
-
-  mojo::Binding<mojom::FileSystemHost> binding_;
 
   base::WeakPtrFactory<ArcFileSystemOperationRunner> weak_ptr_factory_;
 

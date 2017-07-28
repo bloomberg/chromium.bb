@@ -111,7 +111,7 @@ void ExpectMatchesSpec(const base::File::Info& info, const DocumentSpec& spec) {
 std::unique_ptr<KeyedService> CreateFileSystemOperationRunnerForTesting(
     content::BrowserContext* context) {
   return ArcFileSystemOperationRunner::CreateForTesting(
-      ArcServiceManager::Get()->arc_bridge_service());
+      context, ArcServiceManager::Get()->arc_bridge_service());
 }
 
 class ArcDocumentsProviderRootTest : public testing::Test {

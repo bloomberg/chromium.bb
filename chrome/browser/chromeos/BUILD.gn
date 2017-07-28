@@ -348,6 +348,8 @@ source_set("chromeos") {
     "arc/fileapi/arc_documents_provider_util.h",
     "arc/fileapi/arc_documents_provider_watcher_manager.cc",
     "arc/fileapi/arc_documents_provider_watcher_manager.h",
+    "arc/fileapi/arc_file_system_bridge.cc",
+    "arc/fileapi/arc_file_system_bridge.h",
     "arc/fileapi/arc_file_system_mounter.cc",
     "arc/fileapi/arc_file_system_mounter.h",
     "arc/fileapi/arc_file_system_operation_runner.cc",

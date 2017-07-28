@@ -62,7 +62,7 @@ bool ReadData(ArcContentFileSystemFileStreamReader* reader,
 std::unique_ptr<KeyedService> CreateFileSystemOperationRunnerForTesting(
     content::BrowserContext* context) {
   return ArcFileSystemOperationRunner::CreateForTesting(
-      ArcServiceManager::Get()->arc_bridge_service());
+      context, ArcServiceManager::Get()->arc_bridge_service());
 }
 
 class ArcContentFileSystemFileStreamReaderTest : public testing::Test {
