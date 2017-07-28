@@ -88,6 +88,11 @@ using safe_browsing::DownloadProtectionService;
 
 namespace {
 
+// The first id assigned to a download when download database failed to
+// initialize.
+const uint32_t kFirstDownloadIdNoPersist =
+    content::DownloadItem::kInvalidId + 1;
+
 #if defined(FULL_SAFE_BROWSING)
 
 // String pointer used for identifying safebrowing data associated with
@@ -251,8 +256,18 @@ ChromeDownloadManagerDelegate::GetDownloadIdReceiverCallback() {
 void ChromeDownloadManagerDelegate::SetNextId(uint32_t next_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!profile_->IsOffTheRecord());
-  DCHECK_NE(content::DownloadItem::kInvalidId, next_id);
-  next_download_id_ = next_id;
+
+  // |content::DownloadItem::kInvalidId| will be returned only when download
+  // database failed to initialize.
+  bool download_db_available = (next_id != content::DownloadItem::kInvalidId);
+  RecordDatabaseAvailability(download_db_available);
+  if (download_db_available) {
+    next_download_id_ = next_id;
+  } else {
+    // Still download files without download database, all download history in
+    // this browser session will not be persisted.
+    next_download_id_ = kFirstDownloadIdNoPersist;
+  }
 
   IdCallbackVector callbacks;
   id_callbacks_.swap(callbacks);
