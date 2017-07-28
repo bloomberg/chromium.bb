@@ -193,7 +193,7 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
                               LayoutUnit visible_right_edge,
                               LayoutUnit ellipsis_width,
                               LayoutUnit& truncated_width,
-                              InlineBox** found_box,
+                              bool& found_box,
                               LayoutUnit logical_left_offset) final;
 
  public:

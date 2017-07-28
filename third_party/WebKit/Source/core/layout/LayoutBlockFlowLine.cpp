@@ -2449,12 +2449,12 @@ void LayoutBlockFlow::CheckLinesForTextOverflow() {
       LayoutUnit width(indent_text == kIndentText ? first_line_ellipsis_width
                                                   : ellipsis_width);
       LayoutUnit block_edge = ltr ? block_right_edge : block_left_edge;
-      InlineBox* box_truncation_starts_at = nullptr;
+      bool found_box = false;
       if (curr->LineCanAccommodateEllipsis(ltr, block_edge, line_box_edge,
                                            width)) {
-        LayoutUnit total_logical_width = curr->PlaceEllipsis(
-            selected_ellipsis_str, ltr, block_left_edge, block_right_edge,
-            width, LayoutUnit(), &box_truncation_starts_at);
+        LayoutUnit total_logical_width =
+            curr->PlaceEllipsis(selected_ellipsis_str, ltr, block_left_edge,
+                                block_right_edge, width, LayoutUnit(), false);
         // We are only interested in the delta from the base position.
         LayoutUnit logical_left;
         LayoutUnit available_logical_width = block_right_edge - block_left_edge;
@@ -2466,10 +2466,11 @@ void LayoutBlockFlow::CheckLinesForTextOverflow() {
         else
           curr->MoveInInlineDirection(
               logical_left - (available_logical_width - total_logical_width));
+        found_box = true;
       }
-      TryPlacingEllipsisOnAtomicInlines(
-          curr, LogicalRightOffsetForContent(), LogicalLeftOffsetForContent(),
-          width, selected_ellipsis_str, box_truncation_starts_at);
+      TryPlacingEllipsisOnAtomicInlines(curr, LogicalRightOffsetForContent(),
+                                        LogicalLeftOffsetForContent(), width,
+                                        selected_ellipsis_str, found_box);
     }
     indent_text = kDoNotIndentText;
   }
@@ -2481,18 +2482,14 @@ void LayoutBlockFlow::TryPlacingEllipsisOnAtomicInlines(
     LayoutUnit block_left_edge,
     LayoutUnit ellipsis_width,
     const AtomicString& selected_ellipsis_str,
-    InlineBox* box_truncation_starts_at) {
-  bool found_box = box_truncation_starts_at ? true : false;
+    bool found_box) {
   bool ltr = Style()->IsLeftToRightDirection();
   LayoutUnit logical_left_offset = block_left_edge;
 
   // Each atomic inline block (e.g. a <span>) inside a blockflow is managed by
   // an InlineBox that allows us to access the lineboxes that live inside the
   // atomic inline block.
-  InlineBox* first_child = box_truncation_starts_at
-                               ? box_truncation_starts_at
-                               : (ltr ? root->FirstChild() : root->LastChild());
-  for (InlineBox* box = first_child; box;
+  for (InlineBox* box = ltr ? root->FirstChild() : root->LastChild(); box;
        box = ltr ? box->NextOnLine() : box->PrevOnLine()) {
     if (!box->GetLineLayoutItem().IsAtomicInlineLevel() ||
         !box->GetLineLayoutItem().IsLayoutBlockFlow()) {
@@ -2522,12 +2519,11 @@ void LayoutBlockFlow::TryPlacingEllipsisOnAtomicInlines(
             logical_left_offset + curr->LogicalLeft();
         LayoutUnit ellipsis_edge =
             curr_logical_left + curr->LogicalWidth() + ellipsis_width;
-        if (ellipsis_edge <= block_right_edge)
+        if (!found_box && ellipsis_edge <= block_right_edge)
           continue;
-        InlineBox* truncation_box = nullptr;
         curr->PlaceEllipsis(selected_ellipsis_str, ltr, block_left_edge,
                             block_right_edge, ellipsis_width,
-                            logical_left_offset, &truncation_box);
+                            logical_left_offset, found_box);
         placed_ellipsis = true;
       }
     } else {
@@ -2536,7 +2532,7 @@ void LayoutBlockFlow::TryPlacingEllipsisOnAtomicInlines(
            curr = curr->NextRootBox()) {
         LayoutUnit ellipsis_edge =
             box->LogicalLeft() + curr->LogicalLeft() - ellipsis_width;
-        if (ellipsis_edge >= block_left_edge)
+        if (!found_box && ellipsis_edge >= block_left_edge)
           continue;
         // Root boxes can vary in width so move our offset out to allow
         // comparison with the right hand edge of the block.
@@ -2545,10 +2541,9 @@ void LayoutBlockFlow::TryPlacingEllipsisOnAtomicInlines(
             std::max<LayoutUnit>(curr->LogicalWidth(), max_root_box_width);
         if (logical_left_offset < 0)
           logical_left_offset += max_root_box_width - curr->LogicalWidth();
-        InlineBox* truncation_box = nullptr;
         curr->PlaceEllipsis(selected_ellipsis_str, ltr, block_left_edge,
                             block_right_edge, ellipsis_width,
-                            logical_left_offset, &truncation_box);
+                            logical_left_offset, found_box);
         placed_ellipsis = true;
       }
     }

@@ -379,9 +379,9 @@ LayoutUnit InlineTextBox::PlaceEllipsisBox(bool flow_is_ltr,
                                            LayoutUnit visible_right_edge,
                                            LayoutUnit ellipsis_width,
                                            LayoutUnit& truncated_width,
-                                           InlineBox** found_box,
+                                           bool& found_box,
                                            LayoutUnit logical_left_offset) {
-  if (*found_box) {
+  if (found_box) {
     SetTruncation(kCFullTruncation);
     return LayoutUnit(-1);
   }
@@ -403,7 +403,7 @@ LayoutUnit InlineTextBox::PlaceEllipsisBox(bool flow_is_ltr,
     // Too far.  Just set full truncation, but return -1 and let the ellipsis
     // just be placed at the edge of the box.
     SetTruncation(kCFullTruncation);
-    *found_box = this;
+    found_box = true;
     return LayoutUnit(-1);
   }
 
@@ -412,7 +412,7 @@ LayoutUnit InlineTextBox::PlaceEllipsisBox(bool flow_is_ltr,
   bool rtl_ellipsis_within_box =
       !flow_is_ltr && ellipsis_x > adjusted_logical_left;
   if (ltr_ellipsis_within_box || rtl_ellipsis_within_box) {
-    *found_box = this;
+    found_box = true;
 
     // OffsetForPosition() expects the position relative to the root box.
     ellipsis_x -= logical_left_offset;
