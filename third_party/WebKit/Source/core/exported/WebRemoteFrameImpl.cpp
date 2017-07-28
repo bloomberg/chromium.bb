@@ -77,7 +77,6 @@ WebRemoteFrameImpl::~WebRemoteFrameImpl() {}
 DEFINE_TRACE(WebRemoteFrameImpl) {
   visitor->Trace(frame_client_);
   visitor->Trace(frame_);
-  WebRemoteFrameBase::Trace(visitor);
   WebFrame::TraceFrames(visitor, this);
 }
 
@@ -353,7 +352,7 @@ v8::Local<v8::Object> WebRemoteFrameImpl::GlobalProxy() const {
 
 WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope,
                                        WebRemoteFrameClient* client)
-    : WebRemoteFrameBase(scope),
+    : WebRemoteFrame(scope),
       frame_client_(RemoteFrameClientImpl::Create(this)),
       client_(client),
       self_keep_alive_(this) {

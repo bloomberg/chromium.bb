@@ -7,10 +7,10 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/RemoteFrame.h"
-#include "core/frame/WebRemoteFrameBase.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/Compiler.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
+#include "public/web/WebRemoteFrame.h"
 #include "public/web/WebRemoteFrameClient.h"
 
 namespace blink {
@@ -22,7 +22,8 @@ enum class WebFrameLoadType;
 class WebView;
 
 class CORE_EXPORT WebRemoteFrameImpl final
-    : NON_EXPORTED_BASE(public WebRemoteFrameBase) {
+    : public NON_EXPORTED_BASE(GarbageCollectedFinalized<WebRemoteFrameImpl>),
+      public NON_EXPORTED_BASE(WebRemoteFrame) {
  public:
   static WebRemoteFrameImpl* Create(WebTreeScopeType, WebRemoteFrameClient*);
   static WebRemoteFrameImpl* CreateMainFrame(WebView*,
@@ -79,14 +80,12 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void SetHasReceivedUserGesture() override;
   v8::Local<v8::Object> GlobalProxy() const override;
 
-  void InitializeCoreFrame(Page&,
-                           FrameOwner*,
-                           const AtomicString& name) override;
-  RemoteFrame* GetFrame() const override { return frame_.Get(); }
+  void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
+  RemoteFrame* GetFrame() const { return frame_.Get(); }
 
-  void SetCoreFrame(RemoteFrame*) override;
+  void SetCoreFrame(RemoteFrame*);
 
-  WebRemoteFrameClient* Client() const override { return client_; }
+  WebRemoteFrameClient* Client() const { return client_; }
 
   static WebRemoteFrameImpl* FromFrame(RemoteFrame&);
 
