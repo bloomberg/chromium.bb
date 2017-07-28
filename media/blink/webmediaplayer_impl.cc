@@ -258,8 +258,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       surface_layer_for_video_enabled_(
           base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)),
       request_routing_token_cb_(params->request_routing_token_cb()),
-      overlay_routing_token_(OverlayInfo::RoutingToken()),
-      watch_time_recorder_provider_(params->watch_time_recorder_provider()) {
+      overlay_routing_token_(OverlayInfo::RoutingToken()) {
   DVLOG(1) << __func__;
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_selector_);
@@ -2413,16 +2412,11 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
     return;
 
   // Create the watch time reporter and synchronize its initial state.
-  watch_time_reporter_.reset(new WatchTimeReporter(
-      mojom::PlaybackProperties::New(
-          pipeline_metadata_.audio_decoder_config.codec(),
-          pipeline_metadata_.video_decoder_config.codec(),
-          pipeline_metadata_.has_audio, pipeline_metadata_.has_video,
-          !!chunk_demuxer_, is_encrypted_, embedded_media_experience_enabled_,
-          pipeline_metadata_.natural_size,
-          url::Origin(frame_->GetSecurityOrigin())),
-      base::BindRepeating(&GetCurrentTimeInternal, this),
-      watch_time_recorder_provider_));
+  watch_time_reporter_.reset(
+      new WatchTimeReporter(HasAudio(), HasVideo(), !!chunk_demuxer_,
+                            is_encrypted_, embedded_media_experience_enabled_,
+                            media_log_.get(), pipeline_metadata_.natural_size,
+                            base::Bind(&GetCurrentTimeInternal, this)));
   watch_time_reporter_->OnVolumeChange(volume_);
 
   if (delegate_->IsFrameHidden())

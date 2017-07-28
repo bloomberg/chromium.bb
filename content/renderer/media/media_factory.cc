@@ -233,11 +233,6 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   if (!url_index_.get() || url_index_->frame() != web_frame)
     url_index_.reset(new media::UrlIndex(web_frame));
 
-  if (!watch_time_recorder_provider_) {
-    remote_interfaces_->GetInterface(
-        mojo::MakeRequest(&watch_time_recorder_provider_));
-  }
-
   std::unique_ptr<media::WebMediaPlayerParams> params(
       new media::WebMediaPlayerParams(
           std::move(media_log),
@@ -253,8 +248,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           initial_cdm, media_surface_manager_, request_routing_token_cb_,
           media_observer, max_keyframe_distance_to_disable_background_video,
           max_keyframe_distance_to_disable_background_video_mse,
-          enable_instant_source_buffer_gc, embedded_media_experience_enabled,
-          watch_time_recorder_provider_.get()));
+          enable_instant_source_buffer_gc,
+          embedded_media_experience_enabled));
 
   media::WebMediaPlayerImpl* media_player = new media::WebMediaPlayerImpl(
       web_frame, client, encrypted_client, GetWebMediaPlayerDelegate(),
