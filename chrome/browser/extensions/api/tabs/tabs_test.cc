@@ -49,6 +49,7 @@
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/test_util.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -432,7 +433,34 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, UpdateNoPermissions) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
-                       DefaultToIncognitoWhenItIsForced) {
+                       DisallowNonIncognitoUrlInIncognitoWindow) {
+  Browser* incognito = CreateIncognitoBrowser();
+
+  scoped_refptr<TabsUpdateFunction> update_tab_function(
+      new TabsUpdateFunction());
+  scoped_refptr<Extension> extension(test_util::CreateEmptyExtension());
+  update_tab_function->set_extension(extension.get());
+  update_tab_function->set_include_incognito(true);
+
+  static const char kArgsWithNonIncognitoUrl[] =
+      "[null, {\"url\": \"chrome://extensions/configureCommands\"}]";
+  std::string error = extension_function_test_utils::RunFunctionAndReturnError(
+      update_tab_function.get(), kArgsWithNonIncognitoUrl,
+      incognito,  // incognito doesn't have any tabs.
+      extension_function_test_utils::NONE);
+  EXPECT_EQ(ErrorUtils::FormatErrorMessage(
+                tabs_constants::kURLsNotAllowedInIncognitoError,
+                "chrome://extensions/configureCommands"),
+            error);
+
+  // Ensure the tab was not updated. It should stay as the new tab page.
+  EXPECT_EQ(1, incognito->tab_strip_model()->count());
+  EXPECT_EQ(GURL(url::kAboutBlankURL), incognito->tab_strip_model()
+                                           ->GetActiveWebContents()
+                                           ->GetLastCommittedURL());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DefaultToIncognitoWhenItIsForced) {
   static const char kArgsWithoutExplicitIncognitoParam[] =
       "[{\"url\": \"about:blank\"}]";
   // Force Incognito mode.
