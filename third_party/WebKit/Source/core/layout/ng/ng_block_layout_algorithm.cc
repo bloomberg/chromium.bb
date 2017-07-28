@@ -268,9 +268,8 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
   input_bfc_block_offset += content_size_;
 
-  WTF::Optional<NGPreviousInflowPosition> previous_inflow_position =
-      NGPreviousInflowPosition{input_bfc_block_offset, content_size_,
-                               input_margin_strut};
+  NGPreviousInflowPosition previous_inflow_position = {
+      input_bfc_block_offset, content_size_, input_margin_strut};
 
   NGBlockChildIterator child_iterator(Node().FirstChild(), BreakToken());
   for (auto entry = child_iterator.NextChild();
@@ -280,18 +279,13 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
     if (child.IsOutOfFlowPositioned()) {
       DCHECK(!child_break_token);
-      HandleOutOfFlowPositioned(previous_inflow_position.value(),
-                                ToNGBlockNode(child));
+      HandleOutOfFlowPositioned(previous_inflow_position, ToNGBlockNode(child));
     } else if (child.IsFloating()) {
-      HandleFloat(previous_inflow_position.value(), ToNGBlockNode(child),
+      HandleFloat(previous_inflow_position, ToNGBlockNode(child),
                   ToNGBlockBreakToken(child_break_token));
     } else {
-      previous_inflow_position = HandleInflow(previous_inflow_position.value(),
-                                              child, child_break_token);
-
-      // If we didn't receive a NGPreviousInflowPosition from HandleInflow, we
-      // need to abort the layout as our BFC offset was resolved.
-      if (!previous_inflow_position) {
+      if (!HandleInflow(child, child_break_token, &previous_inflow_position)) {
+        // We need to abort the layout, as our BFC offset was resolved.
         container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
         return container_builder_.Abort(NGLayoutResult::kBfcOffsetResolved);
       }
@@ -301,8 +295,8 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
       break;
   }
 
-  NGMarginStrut end_margin_strut = previous_inflow_position->margin_strut;
-  LayoutUnit end_bfc_block_offset = previous_inflow_position->bfc_block_offset;
+  NGMarginStrut end_margin_strut = previous_inflow_position.margin_strut;
+  LayoutUnit end_bfc_block_offset = previous_inflow_position.bfc_block_offset;
 
   // Margins collapsing:
   //   Bottom margins of an in-flow block box doesn't collapse with its last
@@ -311,7 +305,7 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   if (border_scrollbar_padding_.block_end ||
       ConstraintSpace().IsNewFormattingContext()) {
     content_size_ =
-        std::max(content_size_, previous_inflow_position->logical_block_offset +
+        std::max(content_size_, previous_inflow_position.logical_block_offset +
                                     end_margin_strut.Sum());
     end_margin_strut = NGMarginStrut();
   }
@@ -439,17 +433,13 @@ void NGBlockLayoutAlgorithm::HandleFloat(
   }
 }
 
-WTF::Optional<NGPreviousInflowPosition> NGBlockLayoutAlgorithm::HandleInflow(
-    const NGPreviousInflowPosition& const_previous_inflow_position,
+bool NGBlockLayoutAlgorithm::HandleInflow(
     NGLayoutInputNode child,
-    NGBreakToken* child_break_token) {
+    NGBreakToken* child_break_token,
+    NGPreviousInflowPosition* previous_inflow_position) {
   DCHECK(child);
   DCHECK(!child.IsFloating());
   DCHECK(!child.IsOutOfFlowPositioned());
-
-  // We need a copy of the previous inflow position as we may change it.
-  NGPreviousInflowPosition previous_inflow_position(
-      const_previous_inflow_position);
 
   // TODO(ikilpatrick): We may only want to position pending floats if there is
   // something that we *might* clear in the unpositioned list. E.g. we may
@@ -464,13 +454,13 @@ WTF::Optional<NGPreviousInflowPosition> NGBlockLayoutAlgorithm::HandleInflow(
   // be positioned before layout. This also resolves our BFC offset.
   if (should_position_pending_floats) {
     LayoutUnit origin_point_block_offset =
-        previous_inflow_position.bfc_block_offset +
-        previous_inflow_position.margin_strut.Sum();
+        previous_inflow_position->bfc_block_offset +
+        previous_inflow_position->margin_strut.Sum();
     bool updated = MaybeUpdateFragmentBfcOffset(
         ConstraintSpace(), origin_point_block_offset, &container_builder_);
 
     if (updated && abort_when_bfc_resolved_)
-      return WTF::nullopt;
+      return false;
 
     bool positioned_direct_child_floats = !unpositioned_floats_.IsEmpty();
 
@@ -486,16 +476,16 @@ WTF::Optional<NGPreviousInflowPosition> NGBlockLayoutAlgorithm::HandleInflow(
     //
     // This behaviour is similar to if we had block-start border or padding.
     if (positioned_direct_child_floats && updated) {
-      previous_inflow_position.bfc_block_offset =
+      previous_inflow_position->bfc_block_offset =
           container_builder_.BfcOffset()->block_offset;
-      previous_inflow_position.margin_strut = NGMarginStrut();
-      previous_inflow_position.logical_block_offset = LayoutUnit();
+      previous_inflow_position->margin_strut = NGMarginStrut();
+      previous_inflow_position->logical_block_offset = LayoutUnit();
     }
   }
 
   // Perform layout on the child.
   NGInflowChildData child_data =
-      ComputeChildData(previous_inflow_position, child);
+      ComputeChildData(*previous_inflow_position, child);
   RefPtr<NGConstraintSpace> child_space =
       CreateConstraintSpaceForChild(child, child_data);
   RefPtr<NGLayoutResult> layout_result =
@@ -534,7 +524,7 @@ WTF::Optional<NGPreviousInflowPosition> NGBlockLayoutAlgorithm::HandleInflow(
     // abort_when_bfc_resolved_, this is simply propagating an abort up to a
     // node which is able to restart the layout (a node that has resolved its
     // BFC offset).
-    return WTF::nullopt;
+    return false;
   }
 
   // We have special behaviour for an empty block which gets pushed down due to
@@ -546,13 +536,13 @@ WTF::Optional<NGPreviousInflowPosition> NGBlockLayoutAlgorithm::HandleInflow(
   // layout if needed.
   WTF::Optional<NGLogicalOffset> child_bfc_offset;
   if (child.CreatesNewFormattingContext()) {
-    if (!PositionNewFc(child, previous_inflow_position, *layout_result,
+    if (!PositionNewFc(child, *previous_inflow_position, *layout_result,
                        child_data, *child_space, &child_bfc_offset))
-      return WTF::nullopt;
+      return false;
   } else if (layout_result->BfcOffset()) {
     if (!PositionWithBfcOffset(layout_result->BfcOffset().value(),
                                &child_bfc_offset))
-      return WTF::nullopt;
+      return false;
   } else if (container_builder_.BfcOffset()) {
     child_bfc_offset =
         PositionWithParentBfc(child, *child_space, child_data, *layout_result,
@@ -600,9 +590,11 @@ WTF::Optional<NGPreviousInflowPosition> NGBlockLayoutAlgorithm::HandleInflow(
 
   container_builder_.AddChild(layout_result, logical_offset);
 
-  return ComputeInflowPosition(previous_inflow_position, child, child_data,
-                               child_bfc_offset, logical_offset, *layout_result,
-                               fragment, empty_block_affected_by_clearance);
+  *previous_inflow_position =
+      ComputeInflowPosition(*previous_inflow_position, child, child_data,
+                            child_bfc_offset, logical_offset, *layout_result,
+                            fragment, empty_block_affected_by_clearance);
+  return true;
 }
 
 NGInflowChildData NGBlockLayoutAlgorithm::ComputeChildData(
