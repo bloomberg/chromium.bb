@@ -75,6 +75,10 @@ class FlexItem {
            main_axis_margin;
   }
 
+  LayoutUnit FlexedBorderBoxSize() const {
+    return flexed_content_size + main_axis_border_and_padding;
+  }
+
   LayoutUnit FlexedMarginBoxSize() const {
     return flexed_content_size + main_axis_border_and_padding +
            main_axis_margin;
@@ -90,7 +94,6 @@ class FlexItem {
   LayoutUnit FlowAwareMarginEnd() const;
   LayoutUnit FlowAwareMarginBefore() const;
   LayoutUnit CrossAxisMarginExtent() const;
-  LayoutUnit CrossAxisExtent() const;
 
   LayoutUnit MarginBoxAscent() const;
 
@@ -104,6 +107,10 @@ class FlexItem {
   const LayoutUnit main_axis_border_and_padding;
   const LayoutUnit main_axis_margin;
   LayoutUnit flexed_content_size;
+
+  LayoutUnit cross_axis_size;
+  LayoutPoint desired_location;
+
   bool frozen;
 };
 
@@ -162,8 +169,9 @@ class FlexLine {
   LayoutUnit initial_free_space;
   LayoutUnit remaining_free_space;
 
-  // These get filled in by PlaceLineItems (for now)
+  // These get filled in by ComputeLineItemsPosition (for now)
   // TODO(cbiesinger): Move that to FlexibleBoxAlgorithm.
+  LayoutUnit main_axis_extent;
   LayoutUnit cross_axis_offset;
   LayoutUnit cross_axis_extent;
   LayoutUnit max_ascent;

@@ -95,21 +95,16 @@ LayoutUnit FlexItem::CrossAxisMarginExtent() const {
                                        : box->MarginWidth();
 }
 
-LayoutUnit FlexItem::CrossAxisExtent() const {
-  return algorithm->IsHorizontalFlow() ? box->Size().Height()
-                                       : box->Size().Width();
-}
-
 LayoutUnit FlexItem::MarginBoxAscent() const {
   LayoutUnit ascent(box->FirstLineBoxBaseline());
   if (ascent == -1)
-    ascent = CrossAxisExtent();
+    ascent = cross_axis_size;
   return ascent + FlowAwareMarginBefore();
 }
 
 LayoutUnit FlexItem::AvailableAlignmentSpace(
     LayoutUnit line_cross_axis_extent) const {
-  LayoutUnit cross_extent = CrossAxisMarginExtent() + CrossAxisExtent();
+  LayoutUnit cross_extent = CrossAxisMarginExtent() + cross_axis_size;
   return line_cross_axis_extent - cross_extent;
 }
 
