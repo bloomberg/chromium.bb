@@ -123,7 +123,7 @@ public class CompositorViewHolder extends FrameLayout
      * The information about {@link ContentView} for overlay panel. Used to adjust the backing
      * size of the content accordingly.
      */
-    private ContentView mOverlayContentView;
+    private View mOverlayContentView;
     private int mOverlayContentWidthMeasureSpec = ContentView.DEFAULT_MEASURE_SPEC;
     private int mOverlayContentHeightMeasureSpec = ContentView.DEFAULT_MEASURE_SPEC;
 
@@ -261,7 +261,7 @@ public class CompositorViewHolder extends FrameLayout
      * @param width The width of the content view in {@link MeasureSpec}.
      * @param height The height of the content view in {@link MeasureSpec}.
      */
-    public void setOverlayContentInfo(ContentView overlayContentView, int width, int height) {
+    public void setOverlayContentInfo(View overlayContentView, int width, int height) {
         mOverlayContentView = overlayContentView;
         mOverlayContentWidthMeasureSpec = width;
         mOverlayContentHeightMeasureSpec = height;
@@ -895,8 +895,7 @@ public class CompositorViewHolder extends FrameLayout
      * @param height The default height.
      */
     private void adjustPhysicalBackingSize(ContentViewCore contentViewCore, int width, int height) {
-        ContentView contentView = (ContentView) contentViewCore.getContainerView();
-        if (contentView == mOverlayContentView) {
+        if (contentViewCore.getContainerView() == mOverlayContentView) {
             width = MeasureSpec.getSize(mOverlayContentWidthMeasureSpec);
             height = MeasureSpec.getSize(mOverlayContentHeightMeasureSpec);
         }
