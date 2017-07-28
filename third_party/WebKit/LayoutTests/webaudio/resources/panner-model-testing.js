@@ -1,30 +1,30 @@
-var sampleRate = 44100.0;
+let sampleRate = 44100.0;
 
-var numberOfChannels = 1;
+let numberOfChannels = 1;
 
 // Time step when each panner node starts.
-var timeStep = 0.001;
+let timeStep = 0.001;
 
 // Length of the impulse signal.
-var pulseLengthFrames = Math.round(timeStep * sampleRate);
+let pulseLengthFrames = Math.round(timeStep * sampleRate);
 
 // How many panner nodes to create for the test
-var nodesToCreate = 100;
+let nodesToCreate = 100;
 
 // Be sure we render long enough for all of our nodes.
-var renderLengthSeconds = timeStep * (nodesToCreate + 1);
+let renderLengthSeconds = timeStep * (nodesToCreate + 1);
 
 // These are global mostly for debugging.
-var context;
-var impulse;
-var bufferSource;
-var panner;
-var position;
-var time;
+let context;
+let impulse;
+let bufferSource;
+let panner;
+let position;
+let time;
 
-var renderedBuffer;
-var renderedLeft;
-var renderedRight;
+let renderedBuffer;
+let renderedLeft;
+let renderedRight;
 
 function createGraph(context, nodeCount, positionSetter) {
   bufferSource = new Array(nodeCount);

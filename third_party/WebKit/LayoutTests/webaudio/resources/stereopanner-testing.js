@@ -1,4 +1,4 @@
-var StereoPannerTest = (function() {
+let StereoPannerTest = (function() {
 
   // Constants
   let PI_OVER_TWO = Math.PI * 0.5;

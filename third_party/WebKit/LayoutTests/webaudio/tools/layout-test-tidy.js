@@ -34,7 +34,7 @@ const OPTIONS = {
   // RegExp text swap collection (ordered key-value pair) for post-processing.
   RegExpSwapCollection: [
     // Replace |var| with |let|.
-    {regexp: /(\n\s{2,}|\()var /, replace: '$1let '},
+    {regexp: /(\n\s{2,}|\(|^)var /, replace: '$1let '},
 
     // Move one line up the dangling closing script tags.
     {regexp: /\>\n\s{2,}\<\/script\>\n/, replace: '></script>\n'},
@@ -82,7 +82,8 @@ const Module = {
   runRegExpSwapSync: (targetString, regExpSwapCollection) => {
     let tempString = targetString;
     regExpSwapCollection.forEach((item) => {
-      let re = new RegExp(item.regexp, 'g');
+      // Use 'global(g)' and 'multi-line(m)' options for RegExp processing.
+      let re = new RegExp(item.regexp, 'gm');
       tempString = tempString.replace(re, item.replace);
     });
 

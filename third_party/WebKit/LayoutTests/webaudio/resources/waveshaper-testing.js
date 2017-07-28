@@ -1,14 +1,14 @@
-var context;
-var lengthInSeconds = 2;
+let context;
+let lengthInSeconds = 2;
 
 // Skip this many frames before comparing against reference to allow
 // a steady-state to be reached in the up-sampling filters.
-var filterStabilizeSkipFrames = 2048;
+let filterStabilizeSkipFrames = 2048;
 
-var numberOfCurveFrames = 65536;
-var waveShapingCurve;
+let numberOfCurveFrames = 65536;
+let waveShapingCurve;
 
-var waveshaper;
+let waveshaper;
 
 // FIXME: test at more frequencies.
 // When using the up-sampling filters (2x, 4x) any significant aliasing
@@ -17,13 +17,13 @@ var waveshaper;
 // Nyquist, but then become more stringent for lower frequencies.
 
 // These test parameters are set in runWaveShaperOversamplingTest().
-var sampleRate;
-var nyquist;
-var oversample;
-var fundamentalFrequency;
-var acceptableAliasingThresholdDecibels;
+let sampleRate;
+let nyquist;
+let oversample;
+let fundamentalFrequency;
+let acceptableAliasingThresholdDecibels;
 
-var kScale = 0.25;
+let kScale = 0.25;
 
 // Chebyshev Polynomials.
 // Given an input sinusoid, returns an output sinusoid of the given frequency

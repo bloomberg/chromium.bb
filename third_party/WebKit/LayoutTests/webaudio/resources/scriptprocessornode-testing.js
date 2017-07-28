@@ -3,10 +3,10 @@
 // event.inputBuffer might be overwrite again before onaudioprocess ever get
 // chance to be called. We carefully arrange the renderLengthInFrames and
 // bufferSize to have exactly the same value to avoid this issue.
-var renderLengthInFrames = 512;
-var bufferSize = 512;
+let renderLengthInFrames = 512;
+let bufferSize = 512;
 
-var context;
+let context;
 
 function createBuffer(context, numberOfChannels, length) {
   let audioBuffer = context.createBuffer(numberOfChannels, length, sampleRate);

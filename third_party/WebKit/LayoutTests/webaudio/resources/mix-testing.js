@@ -1,4 +1,4 @@
-var toneLengthSeconds = 1;
+let toneLengthSeconds = 1;
 
 // Create a buffer with multiple channels.
 // The signal frequency in each channel is the multiple of that in the first

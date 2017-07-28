@@ -1,8 +1,8 @@
-var sampleRate = 44100.0;
+let sampleRate = 44100.0;
 
-var renderLengthSeconds = 8;
-var pulseLengthSeconds = 1;
-var pulseLengthFrames = pulseLengthSeconds * sampleRate;
+let renderLengthSeconds = 8;
+let pulseLengthSeconds = 1;
+let pulseLengthFrames = pulseLengthSeconds * sampleRate;
 
 function createSquarePulseBuffer(context, sampleFrameLength) {
   let audioBuffer =
