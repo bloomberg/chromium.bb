@@ -338,8 +338,8 @@ TEST_F(TabManagerDelegateTest, DoNotKillRecentlyKilledArcProcesses) {
   memory_stat->SetTargetMemoryToFreeKB(250000);
   memory_stat->SetProcessPss(30, 10000);
   TabStatsList tab_list;
-  tab_manager_delegate.LowMemoryKillImpl(tab_list, TabManager::kUrgentShutdown,
-                                         std::move(arc_processes));
+  tab_manager_delegate.LowMemoryKillImpl(TabManager::kUrgentShutdown, tab_list,
+                                         arc_processes);
 
   auto killed_arc_processes = tab_manager_delegate.GetKilledArcProcesses();
   EXPECT_EQ(0U, killed_arc_processes.size());
@@ -416,8 +416,8 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   memory_stat->SetProcessPss(20, 30000);
   memory_stat->SetProcessPss(10, 100000);
 
-  tab_manager_delegate.LowMemoryKillImpl(
-      tab_list, TabManager::kProactiveShutdown, std::move(arc_processes));
+  tab_manager_delegate.LowMemoryKillImpl(TabManager::kProactiveShutdown,
+                                         tab_list, arc_processes);
 
   auto killed_arc_processes = tab_manager_delegate.GetKilledArcProcesses();
   auto killed_tabs = tab_manager_delegate.GetKilledTabs();

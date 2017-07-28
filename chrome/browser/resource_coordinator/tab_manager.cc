@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/metrics/field_trial.h"
@@ -57,6 +58,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/page_importance_signals.h"
 #include "third_party/WebKit/public/platform/WebSuddenTerminationDisablerType.h"
+#include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/multi_profile_uma.h"
@@ -117,6 +119,62 @@ void ReloadWebContentsIfDiscarded(WebContents* contents,
     contents->GetController().LoadIfNecessary();
     contents_data->SetDiscardState(false);
   }
+}
+
+// Returns a set with browsers in |browser_info_list| that are completely
+// covered by another browser in |browser_info_list| (some browsers that match
+// this description might not be included in the set if insufficient z-order
+// information is provided). Non-browser windows are not taken into
+// consideration when computing window occlusion, because there is no simple way
+// to know whether they opaquely fill their bounds.
+//
+// TODO(fdoray): Handle the case where a browser window is completely covered by
+// the union of other browser windows but not by a single browser window.
+base::flat_set<const BrowserInfo*> GetOccludedBrowsers(
+    const std::vector<BrowserInfo>& browser_info_list,
+    const std::vector<gfx::NativeWindow>& windows_sorted_by_z_index) {
+  base::flat_set<const BrowserInfo*> occluded_browsers;
+  std::vector<gfx::Rect> bounds_of_previous_browsers;
+
+  // Traverse windows from topmost to bottommost.
+  for (gfx::NativeWindow native_window : windows_sorted_by_z_index) {
+    // Find the BrowserInfo corresponding to the current NativeWindow.
+    auto browser_info_it = std::find_if(
+        browser_info_list.begin(), browser_info_list.end(),
+        [&native_window](const BrowserInfo& browser_info) {
+          return browser_info.browser->window()->GetNativeWindow() ==
+                 native_window;
+        });
+
+    // Skip the current NativeWindow if no browser is associated with it or if
+    // the associated browser is minimized.
+    if (browser_info_it == browser_info_list.end() ||
+        browser_info_it->browser->window()->IsMinimized()) {
+      continue;
+    }
+
+    // Determine if the browser window is occluded by looking for a previously
+    // traversed browser window that completely covers it.]
+    bool browser_is_occluded = false;
+    const gfx::Rect bounds = browser_info_it->browser->window()->GetBounds();
+    for (const gfx::Rect other_bounds : bounds_of_previous_browsers) {
+      if (other_bounds.Contains(bounds)) {
+        browser_is_occluded = true;
+        break;
+      }
+    }
+
+    // Add the current browser to the list of occluded browsers if
+    // |browser_is_occluded| is true. Otherwise, add the current window bounds
+    // to |bounds_of_previous_browsers| for use in future window occlusion
+    // computations.
+    if (browser_is_occluded)
+      occluded_browsers.insert(&*browser_info_it);
+    else
+      bounds_of_previous_browsers.push_back(bounds);
+  }
+
+  return occluded_browsers;
 }
 
 }  // namespace
@@ -366,7 +424,7 @@ void TabManager::DiscardTab(DiscardTabCondition condition) {
 #if defined(OS_CHROMEOS)
   // Call Chrome OS specific low memory handling process.
   if (base::FeatureList::IsEnabled(features::kArcMemoryManagement)) {
-    delegate_->LowMemoryKill(GetUnsortedTabStats(), condition);
+    delegate_->LowMemoryKill(condition);
     return;
   }
 #endif
@@ -409,19 +467,22 @@ void TabManager::set_test_tick_clock(base::TickClock* test_tick_clock) {
   force_load_timer_.reset(new base::OneShotTimer(test_tick_clock));
 }
 
-// Things to collect on the browser thread (because TabStripModel isn't thread
-// safe):
-// 1) whether or not a tab is pinned
-// 2) last time a tab was selected
-// 3) is the tab currently selected
-TabStatsList TabManager::GetUnsortedTabStats() const {
+TabStatsList TabManager::GetUnsortedTabStats(
+    const std::vector<gfx::NativeWindow>& windows_sorted_by_z_index) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  const auto browser_info_list = GetBrowserInfoList();
+  const base::flat_set<const BrowserInfo*> occluded_browsers =
+      GetOccludedBrowsers(browser_info_list, windows_sorted_by_z_index);
 
   TabStatsList stats_list;
   stats_list.reserve(32);  // 99% of users have < 30 tabs open.
-  for (const BrowserInfo& browser_info : GetBrowserInfoList()) {
+  for (const BrowserInfo& browser_info : browser_info_list) {
     const bool window_is_active = stats_list.empty();
-    AddTabStats(browser_info, window_is_active, &stats_list);
+    const bool window_is_visible =
+        !browser_info.window_is_minimized &&
+        !base::ContainsKey(occluded_browsers, &browser_info);
+    AddTabStats(browser_info, window_is_active, window_is_visible, &stats_list);
   }
 
   return stats_list;
@@ -647,6 +708,7 @@ int TabManager::GetTabCount() const {
 
 void TabManager::AddTabStats(const BrowserInfo& browser_info,
                              bool window_is_active,
+                             bool window_is_visible,
                              TabStatsList* stats_list) const {
   TabStripModel* tab_strip_model = browser_info.tab_strip_model;
   for (int i = 0; i < tab_strip_model->count(); i++) {
@@ -659,10 +721,7 @@ void TabManager::AddTabStats(const BrowserInfo& browser_info,
       stats.is_pinned = tab_strip_model->IsTabPinned(i);
       stats.is_active = tab_strip_model->active_index() == i;
       stats.is_in_active_window = window_is_active;
-      // Only consider the window non-visible if it is minimized. The consumer
-      // of the constructed TabStatsList may update this after performing more
-      // advanced window visibility checks.
-      stats.is_in_visible_window = !browser_info.window_is_minimized;
+      stats.is_in_visible_window = window_is_visible;
       stats.is_discarded = GetWebContentsData(contents)->IsDiscarded();
       stats.has_form_entry =
           contents->GetPageImportanceSignals().had_form_interaction;
@@ -1023,7 +1082,7 @@ bool TabManager::IsActiveWebContentsInActiveBrowser(
          contents;
 }
 
-std::vector<TabManager::BrowserInfo> TabManager::GetBrowserInfoList() const {
+std::vector<BrowserInfo> TabManager::GetBrowserInfoList() const {
   if (!test_browser_info_list_.empty())
     return test_browser_info_list_;
 
@@ -1036,6 +1095,7 @@ std::vector<TabManager::BrowserInfo> TabManager::GetBrowserInfoList() const {
     Browser* browser = *browser_iterator;
 
     BrowserInfo browser_info;
+    browser_info.browser = browser;
     browser_info.tab_strip_model = browser->tab_strip_model();
     browser_info.window_is_minimized = browser->window()->IsMinimized();
     browser_info.browser_is_app = browser->is_app();

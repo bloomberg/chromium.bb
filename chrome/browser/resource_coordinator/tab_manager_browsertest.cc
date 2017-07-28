@@ -15,6 +15,8 @@
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
@@ -787,6 +789,104 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
 #endif  // OS_CHROMEOS
   tester.ExpectUniqueSample(
       "TabManager.Discarding.DiscardedTabCouldFastShutdown", false, 1);
+}
+
+namespace {
+
+// Ensures that |browser| has |num_tabs| open tabs.
+void EnsureTabsInBrowser(Browser* browser, int num_tabs) {
+  for (int i = 0; i < num_tabs; ++i) {
+    content::WindowedNotificationObserver load(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::NotificationService::AllSources());
+    OpenURLParams open(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
+                       i == 0 ? WindowOpenDisposition::CURRENT_TAB
+                              : WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                       ui::PAGE_TRANSITION_TYPED, false);
+    browser->OpenURL(open);
+    load.Wait();
+  }
+
+  EXPECT_EQ(num_tabs, browser->tab_strip_model()->count());
+}
+
+// Creates a browser with |num_tabs| tabs.
+Browser* CreateBrowserWithTabs(int num_tabs) {
+  Browser* current_browser = BrowserList::GetInstance()->GetLastActive();
+  chrome::NewWindow(current_browser);
+  base::RunLoop().RunUntilIdle();
+  Browser* new_browser = BrowserList::GetInstance()->GetLastActive();
+  EXPECT_NE(current_browser, new_browser);
+  EnsureTabsInBrowser(new_browser, num_tabs);
+  return new_browser;
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(TabManagerTest,
+                       DiscardTabsWithMinimizedAndOccludedWindows) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+
+  // Disable the protection of recent tabs.
+  tab_manager->set_minimum_protection_time_for_tests(
+      base::TimeDelta::FromMinutes(0));
+
+  // Covered by |browser2|.
+  Browser* browser1 = browser();
+  EnsureTabsInBrowser(browser1, 2);
+  browser1->window()->SetBounds(gfx::Rect(10, 10, 10, 10));
+  // Covers |browser1|.
+  Browser* browser2 = CreateBrowserWithTabs(2);
+  EXPECT_NE(browser1, browser2);
+  browser2->window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  // Active browser.
+  Browser* browser3 = CreateBrowserWithTabs(2);
+  EXPECT_NE(browser1, browser3);
+  EXPECT_NE(browser2, browser3);
+  browser3->window()->SetBounds(gfx::Rect(110, 0, 100, 100));
+  // Minimized browser.
+  Browser* browser4 = CreateBrowserWithTabs(2);
+  browser4->window()->Minimize();
+  EXPECT_NE(browser1, browser4);
+  EXPECT_NE(browser2, browser4);
+  EXPECT_NE(browser3, browser4);
+
+  for (int i = 0; i < 8; ++i)
+    tab_manager->DiscardTab(TabManager::kProactiveShutdown);
+
+  base::RunLoop().RunUntilIdle();
+
+// On ChromeOS, active tabs are discarded if their window is non-visible. On
+// other platforms, they are never discarded.
+#if defined(OS_CHROMEOS)
+  EXPECT_TRUE(tab_manager->IsTabDiscarded(
+      browser1->tab_strip_model()->GetWebContentsAt(0)));
+  EXPECT_FALSE(tab_manager->IsTabDiscarded(
+      browser2->tab_strip_model()->GetWebContentsAt(0)));
+  EXPECT_FALSE(tab_manager->IsTabDiscarded(
+      browser3->tab_strip_model()->GetWebContentsAt(0)));
+  EXPECT_TRUE(tab_manager->IsTabDiscarded(
+      browser4->tab_strip_model()->GetWebContentsAt(0)));
+#else
+  EXPECT_FALSE(tab_manager->IsTabDiscarded(
+      browser1->tab_strip_model()->GetWebContentsAt(0)));
+  EXPECT_FALSE(tab_manager->IsTabDiscarded(
+      browser2->tab_strip_model()->GetWebContentsAt(0)));
+  EXPECT_FALSE(tab_manager->IsTabDiscarded(
+      browser3->tab_strip_model()->GetWebContentsAt(0)));
+  EXPECT_FALSE(tab_manager->IsTabDiscarded(
+      browser4->tab_strip_model()->GetWebContentsAt(0)));
+#endif
+
+  // Non-active tabs can be discarded on all platforms.
+  EXPECT_TRUE(tab_manager->IsTabDiscarded(
+      browser1->tab_strip_model()->GetWebContentsAt(1)));
+  EXPECT_TRUE(tab_manager->IsTabDiscarded(
+      browser2->tab_strip_model()->GetWebContentsAt(1)));
+  EXPECT_TRUE(tab_manager->IsTabDiscarded(
+      browser3->tab_strip_model()->GetWebContentsAt(1)));
+  EXPECT_TRUE(tab_manager->IsTabDiscarded(
+      browser4->tab_strip_model()->GetWebContentsAt(1)));
 }
 
 }  // namespace resource_coordinator
