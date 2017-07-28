@@ -17,19 +17,19 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (106,18) size 5x18
           text run at (106,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x19
-        LayoutButton {BUTTON} at (0,1) size 75.80x18 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+        LayoutButton {BUTTON} at (0,1) size 75.80x18 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
           LayoutBlockFlow (anonymous) at (8,2) size 59.80x13
             LayoutText {#text} at (0,0) size 60x13
               text run at (0,0) width 60: "UPPERCASE"
         LayoutText {#text} at (75,0) size 5x18
           text run at (75,0) width 5: " "
-        LayoutButton {BUTTON} at (79.80,1) size 68.50x18 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+        LayoutButton {BUTTON} at (79.80,1) size 68.50x18 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
           LayoutBlockFlow (anonymous) at (8,2) size 52.50x13
             LayoutText {#text} at (0,0) size 53x13
               text run at (0,0) width 53: "lowercase"
         LayoutText {#text} at (148,0) size 5x18
           text run at (148,0) width 5: " "
-        LayoutButton {BUTTON} at (152.30,1) size 68.78x18 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+        LayoutButton {BUTTON} at (152.30,1) size 68.78x18 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
           LayoutBlockFlow (anonymous) at (8,2) size 52.78x13
             LayoutText {#text} at (0,0) size 53x13
               text run at (0,0) width 53: "Capitalize"

@@ -1,18 +1,18 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x73
-  LayoutBlockFlow {test} at (0,0) size 800x73
-    LayoutBlockFlow {p} at (0,16) size 800x41
-      LayoutButton {button} at (0,0) size 242.69x22 [bgcolor=#00FF00] [border: (2px solid #D8D8D8) (2px solid #D1D1D1) (2px solid #BABABA) (2px solid #D1D1D1)]
-        LayoutBlockFlow (anonymous) at (8,4) size 226.69x13
+layer at (0,0) size 800x70
+  LayoutBlockFlow {test} at (0,0) size 800x70
+    LayoutBlockFlow {p} at (0,16) size 800x38
+      LayoutButton {button} at (0,1) size 242.69x18 [bgcolor=#00FF00] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
+        LayoutBlockFlow (anonymous) at (8,2) size 226.69x13
           LayoutText {#text} at (0,0) size 227x13
             text run at (0,0) width 227: "A button (enabled) with green background"
-      LayoutText {#text} at (242,1) size 5x18
-        text run at (242,1) width 5: " "
+      LayoutText {#text} at (242,0) size 5x18
+        text run at (242,0) width 5: " "
       LayoutBR {br} at (0,0) size 0x0
-      LayoutTextControl {input} at (0,22) size 203x19 [bgcolor=#00FF00] [border: (2px inset #EEEEEE)]
+      LayoutTextControl {input} at (0,19) size 203x19 [bgcolor=#00FF00] [border: (2px inset #EEEEEE)]
       LayoutText {#text} at (0,0) size 0x0
-layer at (3,41) size 197x13 scrollWidth 238
+layer at (3,38) size 197x13 scrollWidth 238
   LayoutBlockFlow {div} at (3,3) size 197x13
     LayoutText {#text} at (0,0) size 237x13
       text run at (0,0) width 237: "a text area (enabled) with green background"

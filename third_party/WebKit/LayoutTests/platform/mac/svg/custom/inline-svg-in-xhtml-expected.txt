@@ -26,7 +26,7 @@ layer at (48,38) size 722x542 layerType: foreground only
           LayoutTextControl {input} at (113.75,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow {p} at (14,74.59) size 688x19
-          LayoutButton {button} at (0,1) size 62.02x18 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+          LayoutButton {button} at (0,1) size 62.02x18 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
             LayoutBlockFlow (anonymous) at (8,2) size 46.02x13
               LayoutText {#text} at (0,0) size 46x13
                 text run at (0,0) width 46: "Activate!"

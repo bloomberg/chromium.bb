@@ -29,7 +29,7 @@ layer at (8,94) size 100x50
     LayoutText {#text} at (0,0) size 0x0
 layer at (8,164) size 100x50 clip at (8,164) size 100x35 scrollWidth 149
   LayoutBlockFlow {DIV} at (0,156) size 100x50
-    LayoutButton {BUTTON} at (0,0) size 80x18 [bgcolor=#FFFFFF] [border: none (2px solid #D1D1D1) none (2px solid #D1D1D1)]
+    LayoutButton {BUTTON} at (0,0) size 80x18 [bgcolor=#FFFFFF] [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
       LayoutBlockFlow (anonymous) at (8,2) size 64x13
         LayoutText {#text} at (0,0) size 142x13
           text run at (0,0) width 142: "Lorem ipsum dolor sit amet"
