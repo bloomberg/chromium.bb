@@ -40,6 +40,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
   void NotifySupervisedUserCreationStarted() override;
   void NotifySupervisedUserCreationFinished() override;
   void StartDeviceWipe() override;
+  void StartTPMFirmwareUpdate(const std::string& update_mode) override;
   void RequestLockScreen() override;
   void NotifyLockScreenShown() override;
   void NotifyLockScreenDismissed() override;

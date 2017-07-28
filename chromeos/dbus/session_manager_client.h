@@ -129,6 +129,9 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // Starts the factory reset.
   virtual void StartDeviceWipe() = 0;
 
+  // Triggers a TPM firmware update.
+  virtual void StartTPMFirmwareUpdate(const std::string& update_mode) = 0;
+
   // Locks the screen.
   virtual void RequestLockScreen() = 0;
 

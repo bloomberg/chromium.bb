@@ -231,6 +231,17 @@ class SessionManagerClientImpl : public SessionManagerClient {
         login_manager::kSessionManagerStartDeviceWipe);
   }
 
+  void StartTPMFirmwareUpdate(const std::string& update_mode) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerStartTPMFirmwareUpdate);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(update_mode);
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
   void RequestLockScreen() override {
     SimpleMethodCallToSessionManager(login_manager::kSessionManagerLockScreen);
   }
@@ -933,6 +944,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   void NotifySupervisedUserCreationStarted() override {}
   void NotifySupervisedUserCreationFinished() override {}
   void StartDeviceWipe() override {}
+  void StartTPMFirmwareUpdate(const std::string& update_mode) override {}
   void RequestLockScreen() override {
     if (delegate_)
       delegate_->LockScreenForStub();

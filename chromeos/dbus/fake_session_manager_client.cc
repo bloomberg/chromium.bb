@@ -114,6 +114,9 @@ void FakeSessionManagerClient::StartDeviceWipe() {
   start_device_wipe_call_count_++;
 }
 
+void FakeSessionManagerClient::StartTPMFirmwareUpdate(
+    const std::string& update_mode) {}
+
 void FakeSessionManagerClient::RequestLockScreen() {
   request_lock_screen_call_count_++;
 }
