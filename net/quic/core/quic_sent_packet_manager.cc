@@ -175,8 +175,14 @@ void QuicSentPacketManager::ResumeConnectionState(
         std::max(kMinInitialRoundTripTimeUs,
                  std::min(kMaxInitialRoundTripTimeUs, initial_rtt_us)));
   }
-  send_algorithm_->ResumeConnectionState(cached_network_params,
-                                         max_bandwidth_resumption);
+
+  QuicBandwidth bandwidth = QuicBandwidth::FromBytesPerSecond(
+      max_bandwidth_resumption
+          ? cached_network_params.max_bandwidth_estimate_bytes_per_second()
+          : cached_network_params.bandwidth_estimate_bytes_per_second());
+  QuicTime::Delta rtt =
+      QuicTime::Delta::FromMilliseconds(cached_network_params.min_rtt_ms());
+  send_algorithm_->AdjustNetworkParameters(bandwidth, rtt);
 }
 
 void QuicSentPacketManager::SetNumOpenStreams(size_t num_streams) {
